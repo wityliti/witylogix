@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { BarChart3 } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { BarChart3 } from "lucide-react";
 
 export function VariantMapping() {
   return (
@@ -16,19 +16,19 @@ export function VariantMapping() {
         <div className="space-y-4">
           {[
             {
-              attribute: 'Size',
-              shopify: 'size (xs, s, m, l, xl)',
-              woo: 'size (small, medium, large)',
+              attribute: "Size",
+              shopify: "size (xs, s, m, l, xl)",
+              woo: "size (small, medium, large)",
             },
             {
-              attribute: 'Color',
-              shopify: 'color (red, blue, green)',
-              woo: 'color (rouge, bleu, vert)',
+              attribute: "Color",
+              shopify: "color (red, blue, green)",
+              woo: "color (rouge, bleu, vert)",
             },
             {
-              attribute: 'Material',
-              shopify: 'material (cotton, polyester)',
-              woo: 'fabric (cotton, poly)',
+              attribute: "Material",
+              shopify: "material (cotton, polyester)",
+              woo: "fabric (cotton, poly)",
             },
           ].map((variant, idx) => (
             <div
@@ -46,7 +46,9 @@ export function VariantMapping() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-wl-text-tertiary">WooCommerce</div>
+                  <div className="text-xs text-wl-text-tertiary">
+                    WooCommerce
+                  </div>
                   <div className="text-sm text-wl-text-secondary mt-1">
                     {variant.woo}
                   </div>

@@ -90,7 +90,7 @@ class CircuitBreaker {
         this.state = "half_open";
       } else {
         throw new Error(
-          `Circuit breaker is open. Reset in ${this.resetTimeout - timeSinceLastFailure}ms`
+          `Circuit breaker is open. Reset in ${this.resetTimeout - timeSinceLastFailure}ms`,
         );
       }
     }
@@ -129,7 +129,11 @@ class RetryHandler {
   private readonly baseDelay: number;
   private readonly maxDelay: number;
 
-  constructor(maxRetries: number = 3, baseDelay: number = 1000, maxDelay: number = 30000) {
+  constructor(
+    maxRetries: number = 3,
+    baseDelay: number = 1000,
+    maxDelay: number = 30000,
+  ) {
     this.maxRetries = maxRetries;
     this.baseDelay = baseDelay;
     this.maxDelay = maxDelay;
@@ -137,7 +141,7 @@ class RetryHandler {
 
   async execute<T>(
     fn: () => Promise<T>,
-    isRetryable: (error: Error) => boolean = () => true
+    isRetryable: (error: Error) => boolean = () => true,
   ): Promise<T> {
     let lastError: Error | null = null;
 
@@ -153,7 +157,7 @@ class RetryHandler {
 
         const delay = Math.min(
           this.baseDelay * Math.pow(2, attempt),
-          this.maxDelay
+          this.maxDelay,
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
@@ -280,7 +284,10 @@ export abstract class EmailAdapter {
    * @param variables Variables to substitute
    * @returns Rendered template
    */
-  protected renderTemplate(template: string, variables: Record<string, unknown>): string {
+  protected renderTemplate(
+    template: string,
+    variables: Record<string, unknown>,
+  ): string {
     return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
       const value = variables[key];
       return value !== undefined ? String(value) : match;
@@ -313,14 +320,11 @@ export abstract class EmailAdapter {
    */
   protected injectClickTracking(htmlBody: string, messageId: string): string {
     // Replace href="..." with tracking URL
-    return htmlBody.replace(
-      /href="([^"]*)"/g,
-      (match, url) => {
-        if (!url || url.startsWith("mailto:")) return match;
-        const encoded = encodeURIComponent(url);
-        return `href="https://${this.config.tenantId}.track.example.com/click/${messageId}/${encoded}"`;
-      }
-    );
+    return htmlBody.replace(/href="([^"]*)"/g, (match, url) => {
+      if (!url || url.startsWith("mailto:")) return match;
+      const encoded = encodeURIComponent(url);
+      return `href="https://${this.config.tenantId}.track.example.com/click/${messageId}/${encoded}"`;
+    });
   }
 
   /**
@@ -337,18 +341,19 @@ export abstract class EmailAdapter {
 
     if (attachments.length > MAX_ATTACHMENT_COUNT) {
       throw new Error(
-        `Too many attachments. Maximum ${MAX_ATTACHMENT_COUNT} allowed, got ${attachments.length}`
+        `Too many attachments. Maximum ${MAX_ATTACHMENT_COUNT} allowed, got ${attachments.length}`,
       );
     }
 
     for (const attachment of attachments) {
-      const size = typeof attachment.content === "string"
-        ? attachment.content.length
-        : attachment.content.length;
+      const size =
+        typeof attachment.content === "string"
+          ? attachment.content.length
+          : attachment.content.length;
 
       if (size > MAX_ATTACHMENT_SIZE) {
         throw new Error(
-          `Attachment "${attachment.filename}" exceeds maximum size of ${MAX_ATTACHMENT_SIZE / 1024 / 1024}MB`
+          `Attachment "${attachment.filename}" exceeds maximum size of ${MAX_ATTACHMENT_SIZE / 1024 / 1024}MB`,
         );
       }
     }

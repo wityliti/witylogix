@@ -49,7 +49,7 @@ export class SignatureTester {
   generateSignature(
     payload: string,
     secret: string,
-    algorithm: SignatureAlgorithm = "sha256"
+    algorithm: SignatureAlgorithm = "sha256",
   ): SignatureResult {
     const timestamp = Math.floor(Date.now() / 1000).toString();
     const signedContent = `${timestamp}.${payload}`;
@@ -137,7 +137,7 @@ export class SignatureTester {
     timestamp: string,
     secret: string,
     algorithm: SignatureAlgorithm = "sha256",
-    maxAgeSeconds: number = 300 // 5 minutes
+    maxAgeSeconds: number = 300, // 5 minutes
   ): {
     valid: boolean;
     reason?: string;
@@ -183,7 +183,7 @@ export class SignatureTester {
    * Get code snippet for signature verification
    */
   getVerificationSnippet(
-    language: "nodejs" | "python" | "ruby" | "go" | "php"
+    language: "nodejs" | "python" | "ruby" | "go" | "php",
   ): CodeSnippet {
     const snippets: Record<string, string> = {
       nodejs: `
@@ -340,7 +340,7 @@ $isValid = verifySignature(
   testTimestampTolerance(
     payloadString: string,
     secret: string,
-    toleranceSeconds: number = 300
+    toleranceSeconds: number = 300,
   ): {
     current: SignatureResult;
     inTolerance: SignatureResult;
@@ -355,7 +355,7 @@ $isValid = verifySignature(
     const pastSignature = this.generateSignatureWithTimestamp(
       payload,
       secret,
-      pastTime.toString()
+      pastTime.toString(),
     );
 
     // Create a signature outside tolerance window
@@ -363,7 +363,7 @@ $isValid = verifySignature(
     const oldSignature = this.generateSignatureWithTimestamp(
       payload,
       secret,
-      farPastTime.toString()
+      farPastTime.toString(),
     );
 
     const now = new Date();
@@ -386,7 +386,7 @@ $isValid = verifySignature(
     payload: string,
     secret: string,
     timestamp: string,
-    algorithm: SignatureAlgorithm = "sha256"
+    algorithm: SignatureAlgorithm = "sha256",
   ): SignatureResult {
     const signedContent = `${timestamp}.${payload}`;
     const signature = createHmac(algorithm, secret)
@@ -409,7 +409,7 @@ $isValid = verifySignature(
    */
   compareAlgorithms(
     payload: string,
-    secret: string
+    secret: string,
   ): Record<SignatureAlgorithm, string> {
     return {
       sha256: createHmac("sha256", secret).update(payload).digest("hex"),

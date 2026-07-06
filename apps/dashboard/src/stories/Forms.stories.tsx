@@ -83,10 +83,7 @@ export const FormInputErrors: Story = {
         hasError
         value="invalid"
       />
-      <FormInput
-        placeholder="Required field"
-        hasError
-      />
+      <FormInput placeholder="Required field" hasError />
     </div>
   ),
 };
@@ -94,11 +91,7 @@ export const FormInputErrors: Story = {
 export const FormInputDisabled: Story = {
   render: () => (
     <div className="max-w-md space-y-4">
-      <FormInput
-        placeholder="Disabled input"
-        disabled
-        value="Cannot edit"
-      />
+      <FormInput placeholder="Disabled input" disabled value="Cannot edit" />
       <FormInput
         type="email"
         placeholder="Disabled"
@@ -163,9 +156,24 @@ export const FormCheckboxBasic: Story = {
 export const FormRadioBasic: Story = {
   render: () => (
     <div className="space-y-3">
-      <FormRadio name="option" option={{ value: "1", label: "Option 1" }} selected={false} onChange={() => {}} />
-      <FormRadio name="option" option={{ value: "2", label: "Option 2" }} selected={false} onChange={() => {}} />
-      <FormRadio name="option" option={{ value: "3", label: "Option 3" }} selected={true} onChange={() => {}} />
+      <FormRadio
+        name="option"
+        option={{ value: "1", label: "Option 1" }}
+        selected={false}
+        onChange={() => {}}
+      />
+      <FormRadio
+        name="option"
+        option={{ value: "2", label: "Option 2" }}
+        selected={false}
+        onChange={() => {}}
+      />
+      <FormRadio
+        name="option"
+        option={{ value: "3", label: "Option 3" }}
+        selected={true}
+        onChange={() => {}}
+      />
     </div>
   ),
 };
@@ -179,10 +187,7 @@ export const CompleteForm: Story = {
         </h2>
       </div>
 
-      <FormInput
-        placeholder="Your name"
-        value="John Doe"
-      />
+      <FormInput placeholder="Your name" value="John Doe" />
 
       <FormInput
         type="email"
@@ -207,11 +212,7 @@ export const CompleteForm: Story = {
         placeholder="Select subject"
       />
 
-      <FormTextarea
-        label="Message"
-        placeholder="Enter your message"
-        rows={5}
-      />
+      <FormTextarea label="Message" placeholder="Enter your message" rows={5} />
 
       <FormCheckbox label="I agree to be contacted about my inquiry" />
 

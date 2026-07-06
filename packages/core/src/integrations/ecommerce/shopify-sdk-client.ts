@@ -319,11 +319,15 @@ export class ShopifyClient {
   ): Promise<{ accessToken: string; scope: string[] }> {
     const url = `https://${shopName}.myshopify.com/oauth/access_token`;
 
-    const response = await this.request<ShopifyOAuthTokenResponse>("POST", url, {
-      client_id: config.apiKey,
-      client_secret: config.apiSecret,
-      code,
-    });
+    const response = await this.request<ShopifyOAuthTokenResponse>(
+      "POST",
+      url,
+      {
+        client_id: config.apiKey,
+        client_secret: config.apiSecret,
+        code,
+      },
+    );
 
     return {
       accessToken: response.access_token,
@@ -334,13 +338,11 @@ export class ShopifyClient {
   /**
    * List orders
    */
-  async listOrders(
-    options?: {
-      status?: "any" | "pending" | "cancelled" | "processing" | "completed";
-      limit?: number;
-      cursor?: string;
-    },
-  ): Promise<{ orders: ECommerceOrder[]; nextCursor?: string }> {
+  async listOrders(options?: {
+    status?: "any" | "pending" | "cancelled" | "processing" | "completed";
+    limit?: number;
+    cursor?: string;
+  }): Promise<{ orders: ECommerceOrder[]; nextCursor?: string }> {
     const params = new URLSearchParams({
       status: options?.status || "any",
       limit: String(options?.limit || 50),
@@ -386,9 +388,13 @@ export class ShopifyClient {
     billing_address?: Record<string, unknown>;
     shipping_address?: Record<string, unknown>;
   }): Promise<ECommerceOrder> {
-    const response = await this.request<ShopifyOrderWrapResponse>("POST", `${this.baseUrl}/orders.json`, {
-      order: data,
-    });
+    const response = await this.request<ShopifyOrderWrapResponse>(
+      "POST",
+      `${this.baseUrl}/orders.json`,
+      {
+        order: data,
+      },
+    );
     return this.mapShopifyOrderToECommerce(response.order);
   }
 
@@ -570,7 +576,10 @@ export class ShopifyClient {
   /**
    * Update product variant
    */
-  async updateVariant(variantId: string, data: Record<string, unknown>): Promise<ShopifyVariant> {
+  async updateVariant(
+    variantId: string,
+    data: Record<string, unknown>,
+  ): Promise<ShopifyVariant> {
     const response = await this.request<{ variant: ShopifyVariant }>(
       "PUT",
       `${this.baseUrl}/variants/${variantId}.json`,
@@ -718,19 +727,13 @@ export class ShopifyClient {
    * Delete webhook
    */
   async deleteWebhook(webhookId: string): Promise<void> {
-    await this.request(
-      "DELETE",
-      `${this.baseUrl}/webhooks/${webhookId}.json`,
-    );
+    await this.request("DELETE", `${this.baseUrl}/webhooks/${webhookId}.json`);
   }
 
   /**
    * Verify webhook HMAC signature
    */
-  verifyWebhookSignature(
-    payload: unknown,
-    signature: string,
-  ): boolean {
+  verifyWebhookSignature(payload: unknown, signature: string): boolean {
     if (!this.config.webhookSecret) {
       return false;
     }
@@ -818,22 +821,21 @@ export class ShopifyClient {
 
     // Handle rate limiting with exponential backoff
     if (response.status === 429) {
-      const retryAfter =
-        Number(response.headers.get("Retry-After")) || 1;
-      await new Promise((resolve) =>
-        setTimeout(resolve, retryAfter * 1000),
-      );
+      const retryAfter = Number(response.headers.get("Retry-After")) || 1;
+      await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
       response = await fetch(url, options);
       data = await response.json();
     }
 
     // Update rate limit info
-    this.rateLimitRemaining = Number(
-      response.headers.get("X-Shopify-Shop-Api-Call-Limit")?.split("/")[0],
-    ) || this.rateLimitRemaining;
-    this.rateLimitReset = Number(
-      response.headers.get("X-Shopify-Shop-Api-Call-Limit")?.split("/")[1],
-    ) || this.rateLimitReset;
+    this.rateLimitRemaining =
+      Number(
+        response.headers.get("X-Shopify-Shop-Api-Call-Limit")?.split("/")[0],
+      ) || this.rateLimitRemaining;
+    this.rateLimitReset =
+      Number(
+        response.headers.get("X-Shopify-Shop-Api-Call-Limit")?.split("/")[1],
+      ) || this.rateLimitReset;
 
     if (!response.ok) {
       throw new Error(
@@ -852,9 +854,7 @@ export class ShopifyClient {
       const now = Date.now() / 1000;
       const delay = Math.max(0, this.rateLimitReset - now);
       if (delay > 0) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, (delay + 1) * 1000),
-        );
+        await new Promise((resolve) => setTimeout(resolve, (delay + 1) * 1000));
       }
     }
   }
@@ -963,7 +963,11 @@ export class ShopifyClient {
     return {
       id: String(fulfillment.id),
       orderId: String(fulfillment.order_id),
-      status: fulfillment.status as "pending" | "partial" | "complete" | "cancelled",
+      status: fulfillment.status as
+        | "pending"
+        | "partial"
+        | "complete"
+        | "cancelled",
       items: fulfillment.line_items.map((item) => ({
         lineItemId: String(item.id),
         quantity: item.quantity,
@@ -1014,8 +1018,30 @@ export class ShopifyClient {
   /**
    * Map Shopify order status to ECommerce status
    */
-  private mapShopifyOrderStatus(status: string): "processing" | "dispatched" | "pending" | "confirmed" | "out_for_delivery" | "delivered" | "cancelled" | "refunded" | "failed" {
-    const mapping: Record<string, "processing" | "dispatched" | "pending" | "confirmed" | "out_for_delivery" | "delivered" | "cancelled" | "refunded" | "failed"> = {
+  private mapShopifyOrderStatus(
+    status: string,
+  ):
+    | "processing"
+    | "dispatched"
+    | "pending"
+    | "confirmed"
+    | "out_for_delivery"
+    | "delivered"
+    | "cancelled"
+    | "refunded"
+    | "failed" {
+    const mapping: Record<
+      string,
+      | "processing"
+      | "dispatched"
+      | "pending"
+      | "confirmed"
+      | "out_for_delivery"
+      | "delivered"
+      | "cancelled"
+      | "refunded"
+      | "failed"
+    > = {
       pending: "pending",
       authorized: "confirmed",
       partially_paid: "processing",
@@ -1030,8 +1056,13 @@ export class ShopifyClient {
   /**
    * Map Shopify payment status to ECommerce payment status
    */
-  private mapShopifyPaymentStatus(status: string): "pending" | "authorized" | "captured" | "refunded" | "failed" {
-    const mapping: Record<string, "pending" | "authorized" | "captured" | "refunded" | "failed"> = {
+  private mapShopifyPaymentStatus(
+    status: string,
+  ): "pending" | "authorized" | "captured" | "refunded" | "failed" {
+    const mapping: Record<
+      string,
+      "pending" | "authorized" | "captured" | "refunded" | "failed"
+    > = {
       pending: "pending",
       authorized: "authorized",
       paid: "captured",
@@ -1046,9 +1077,14 @@ export class ShopifyClient {
   /**
    * Map Shopify fulfillment status to ECommerce fulfillment status
    */
-  private mapShopifyFulfillmentStatus(status: string | null): "pending" | "partial" | "complete" | "cancelled" {
+  private mapShopifyFulfillmentStatus(
+    status: string | null,
+  ): "pending" | "partial" | "complete" | "cancelled" {
     if (!status) return "pending";
-    const mapping: Record<string, "pending" | "partial" | "complete" | "cancelled"> = {
+    const mapping: Record<
+      string,
+      "pending" | "partial" | "complete" | "cancelled"
+    > = {
       fulfilled: "complete",
       partial: "partial",
       unfulilled: "pending",

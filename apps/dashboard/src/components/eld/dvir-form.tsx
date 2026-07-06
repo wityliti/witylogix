@@ -14,7 +14,14 @@ import { CheckCircle, X, Upload, Edit2, Check, Printer } from "lucide-react";
    ═══════════════════════════════════════════════════════════ */
 
 type InspectionItemStatus = "PASS" | "FAIL" | "N/A";
-type ComponentCategory = "tires" | "brakes" | "lights" | "coupling" | "engine" | "body" | "other";
+type ComponentCategory =
+  | "tires"
+  | "brakes"
+  | "lights"
+  | "coupling"
+  | "engine"
+  | "body"
+  | "other";
 
 interface InspectionItem {
   id: string;
@@ -109,7 +116,8 @@ export function DVIRForm({
   inspectionType,
   onSubmit,
 }: DVIRFormProps) {
-  const [components, setComponents] = useState<ComponentGroup[]>(COMPONENT_GROUPS);
+  const [components, setComponents] =
+    useState<ComponentGroup[]>(COMPONENT_GROUPS);
   const [defects, setDefects] = useState<
     Array<{
       id: string;
@@ -119,7 +127,11 @@ export function DVIRForm({
       photoUrl?: string;
     }>
   >([]);
-  const [newDefect, setNewDefect] = useState<{ component: string; description: string; severity: "CRITICAL" | "MAJOR" | "MINOR" }>({
+  const [newDefect, setNewDefect] = useState<{
+    component: string;
+    description: string;
+    severity: "CRITICAL" | "MAJOR" | "MINOR";
+  }>({
     component: "",
     description: "",
     severity: "MINOR",
@@ -129,7 +141,11 @@ export function DVIRForm({
   const [isSignatureDone, setIsSignatureDone] = useState(false);
   const [photoInput, setPhotoInput] = useState<string | null>(null);
 
-  const handleItemStatusChange = (groupIdx: number, itemIdx: number, status: InspectionItemStatus) => {
+  const handleItemStatusChange = (
+    groupIdx: number,
+    itemIdx: number,
+    status: InspectionItemStatus,
+  ) => {
     setComponents((prev) => {
       const newComponents = [...prev];
       newComponents[groupIdx].items[itemIdx].status = status;
@@ -206,7 +222,9 @@ export function DVIRForm({
     onSubmit?.(formData);
   };
 
-  const failedItems = components.flatMap((g) => g.items).filter((i) => i.status === "FAIL");
+  const failedItems = components
+    .flatMap((g) => g.items)
+    .filter((i) => i.status === "FAIL");
   const isValid = failedItems.length === defects.length && isSignatureDone;
 
   return (
@@ -215,14 +233,17 @@ export function DVIRForm({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>
-              {inspectionType === "PRE_TRIP" ? "Pre-Trip" : "Post-Trip"} Inspection Report
+              {inspectionType === "PRE_TRIP" ? "Pre-Trip" : "Post-Trip"}{" "}
+              Inspection Report
             </CardTitle>
             <p className="text-xs text-wl-text-secondary mt-2">
               Vehicle: {vehicleNumber} • Driver: {driverName}
             </p>
           </div>
           <Badge variant={failedItems.length === 0 ? "success" : "danger"}>
-            {failedItems.length === 0 ? "✓ No Defects" : `${failedItems.length} Defect(s)`}
+            {failedItems.length === 0
+              ? "✓ No Defects"
+              : `${failedItems.length} Defect(s)`}
           </Badge>
         </div>
       </CardHeader>
@@ -234,7 +255,8 @@ export function DVIRForm({
             <h4 className="text-sm font-semibold text-wl-text-primary flex items-center gap-2">
               {group.label}
               <span className="text-xs text-wl-text-secondary">
-                ({group.items.filter((i) => i.status === "PASS").length}/{group.items.length})
+                ({group.items.filter((i) => i.status === "PASS").length}/
+                {group.items.length})
               </span>
             </h4>
 
@@ -245,39 +267,47 @@ export function DVIRForm({
                   className="flex items-center justify-between p-2 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]"
                 >
                   <label className="flex items-center gap-3 flex-1 cursor-pointer">
-                    <span className="text-sm text-wl-text-primary flex-1">{item.name}</span>
+                    <span className="text-sm text-wl-text-primary flex-1">
+                      {item.name}
+                    </span>
                   </label>
 
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => handleItemStatusChange(groupIdx, itemIdx, "PASS")}
+                      onClick={() =>
+                        handleItemStatusChange(groupIdx, itemIdx, "PASS")
+                      }
                       className={cn(
                         "px-2 py-1 rounded text-xs font-medium transition-colors",
                         item.status === "PASS"
                           ? "bg-wl-success-500/20 text-wl-success-400 border border-wl-success-500/30"
-                          : "bg-white/5 text-wl-text-secondary hover:bg-white/10"
+                          : "bg-white/5 text-wl-text-secondary hover:bg-white/10",
                       )}
                     >
                       ✓ Pass
                     </button>
                     <button
-                      onClick={() => handleItemStatusChange(groupIdx, itemIdx, "FAIL")}
+                      onClick={() =>
+                        handleItemStatusChange(groupIdx, itemIdx, "FAIL")
+                      }
                       className={cn(
                         "px-2 py-1 rounded text-xs font-medium transition-colors",
                         item.status === "FAIL"
                           ? "bg-wl-danger-500/20 text-wl-danger-400 border border-wl-danger-500/30"
-                          : "bg-white/5 text-wl-text-secondary hover:bg-white/10"
+                          : "bg-white/5 text-wl-text-secondary hover:bg-white/10",
                       )}
                     >
                       ✗ Fail
                     </button>
                     <button
-                      onClick={() => handleItemStatusChange(groupIdx, itemIdx, "N/A")}
+                      onClick={() =>
+                        handleItemStatusChange(groupIdx, itemIdx, "N/A")
+                      }
                       className={cn(
                         "px-2 py-1 rounded text-xs font-medium transition-colors",
                         item.status === "N/A"
                           ? "bg-wl-info-500/20 text-wl-info-400 border border-wl-info-500/30"
-                          : "bg-white/5 text-wl-text-secondary hover:bg-white/10"
+                          : "bg-white/5 text-wl-text-secondary hover:bg-white/10",
                       )}
                     >
                       N/A
@@ -291,7 +321,9 @@ export function DVIRForm({
 
         {/* Defects section */}
         <div className="border-t border-[var(--wl-border)] pt-6 space-y-4">
-          <h4 className="text-sm font-semibold text-wl-text-primary">Defects & Issues</h4>
+          <h4 className="text-sm font-semibold text-wl-text-primary">
+            Defects & Issues
+          </h4>
 
           {defects.length > 0 && (
             <div className="space-y-2">
@@ -304,7 +336,9 @@ export function DVIRForm({
                     <p className="text-sm font-medium text-wl-text-primary">
                       {defect.component}
                     </p>
-                    <p className="text-xs text-wl-text-secondary mt-1">{defect.description}</p>
+                    <p className="text-xs text-wl-text-secondary mt-1">
+                      {defect.description}
+                    </p>
                     <Badge
                       variant={
                         defect.severity === "CRITICAL"
@@ -331,7 +365,8 @@ export function DVIRForm({
 
           {failedItems.length > defects.length && (
             <div className="p-3 rounded-lg bg-wl-warning-500/10 border border-wl-warning-500/30 text-sm text-wl-warning-300">
-              ⚠ {failedItems.length - defects.length} failed item(s) need defect details
+              ⚠ {failedItems.length - defects.length} failed item(s) need defect
+              details
             </div>
           )}
 
@@ -341,7 +376,12 @@ export function DVIRForm({
               <Input
                 placeholder="Component"
                 value={newDefect.component}
-                onChange={(e) => setNewDefect((prev) => ({ ...prev, component: e.target.value }))}
+                onChange={(e) =>
+                  setNewDefect((prev) => ({
+                    ...prev,
+                    component: e.target.value,
+                  }))
+                }
                 className="h-8 text-xs"
               />
               <select
@@ -363,7 +403,12 @@ export function DVIRForm({
             <textarea
               placeholder="Describe the defect..."
               value={newDefect.description}
-              onChange={(e) => setNewDefect((prev) => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setNewDefect((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
               className="w-full h-20 p-2 text-xs rounded bg-[var(--wl-bg-primary)] border border-[var(--wl-border)] text-wl-text-primary placeholder:text-wl-text-secondary resize-none"
             />
 
@@ -394,7 +439,9 @@ export function DVIRForm({
         {/* Signature section */}
         <div className="border-t border-[var(--wl-border)] pt-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-wl-text-primary">Driver Signature</h4>
+            <h4 className="text-sm font-semibold text-wl-text-primary">
+              Driver Signature
+            </h4>
             {isSignatureDone && <Badge variant="success">✓ Signed</Badge>}
           </div>
 

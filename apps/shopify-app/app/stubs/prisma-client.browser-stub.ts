@@ -11,4 +11,4 @@ export class PrismaClient {
 }
 
 /** Session storage imports `Prisma` for error codes; unused in the stub. */
-export const Prisma = {} as Record<string, unknown>
+export const Prisma = {} as Record<string, unknown>;

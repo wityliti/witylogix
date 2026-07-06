@@ -13,7 +13,10 @@ describe("validateWooCommerceHmac", () => {
   const secret = "test_wc_secret_12345";
 
   function sign(body: string, s = secret): string {
-    return crypto.createHmac("sha256", s).update(body, "utf-8").digest("base64");
+    return crypto
+      .createHmac("sha256", s)
+      .update(body, "utf-8")
+      .digest("base64");
   }
 
   it("returns true for a valid signature", () => {
@@ -23,7 +26,9 @@ describe("validateWooCommerceHmac", () => {
 
   it("returns false for an invalid signature", () => {
     const body = JSON.stringify({ id: 1 });
-    expect(validateWooCommerceHmac(body, "not-a-valid-sig==", secret)).toBe(false);
+    expect(validateWooCommerceHmac(body, "not-a-valid-sig==", secret)).toBe(
+      false,
+    );
   });
 
   it("returns false when payload is modified after signing", () => {
@@ -74,7 +79,10 @@ describe("verifyWooCommerceHmac preHandler", () => {
   const siteUrl = "https://mystore.example.com";
 
   function sign(body: string): string {
-    return crypto.createHmac("sha256", secret).update(body, "utf-8").digest("base64");
+    return crypto
+      .createHmac("sha256", secret)
+      .update(body, "utf-8")
+      .digest("base64");
   }
 
   function makeFastify(shopOverride?: object | null) {
@@ -86,11 +94,13 @@ describe("verifyWooCommerceHmac preHandler", () => {
       },
       db: {
         shop: {
-          findFirst: vi.fn().mockResolvedValue(
-            shopOverride !== undefined
-              ? shopOverride
-              : { woocommerceWebhookSecret: secret }
-          ),
+          findFirst: vi
+            .fn()
+            .mockResolvedValue(
+              shopOverride !== undefined
+                ? shopOverride
+                : { woocommerceWebhookSecret: secret },
+            ),
         },
       },
     };
@@ -137,7 +147,7 @@ describe("verifyWooCommerceHmac preHandler", () => {
 
     expect(reply.code).toHaveBeenCalledWith(401);
     expect(reply.send).toHaveBeenCalledWith(
-      expect.objectContaining({ message: expect.stringContaining("Missing") })
+      expect.objectContaining({ message: expect.stringContaining("Missing") }),
     );
   });
 
@@ -155,7 +165,7 @@ describe("verifyWooCommerceHmac preHandler", () => {
 
     expect(reply.code).toHaveBeenCalledWith(401);
     expect(reply.send).toHaveBeenCalledWith(
-      expect.objectContaining({ message: expect.stringContaining("Invalid") })
+      expect.objectContaining({ message: expect.stringContaining("Invalid") }),
     );
   });
 
@@ -168,7 +178,9 @@ describe("verifyWooCommerceHmac preHandler", () => {
 
     expect(reply.code).toHaveBeenCalledWith(401);
     expect(reply.send).toHaveBeenCalledWith(
-      expect.objectContaining({ message: expect.stringContaining("Unknown shop") })
+      expect.objectContaining({
+        message: expect.stringContaining("Unknown shop"),
+      }),
     );
   });
 
@@ -198,7 +210,10 @@ describe("verifyWooCommerceHmac preHandler", () => {
     const sig = sign(rawBodyStr);
     const fastify = makeFastify();
     const request = {
-      headers: { "x-wc-webhook-signature": sig, "x-wc-webhook-source": siteUrl },
+      headers: {
+        "x-wc-webhook-signature": sig,
+        "x-wc-webhook-source": siteUrl,
+      },
       body,
       // no rawBody
     };

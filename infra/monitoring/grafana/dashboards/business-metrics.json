@@ -16,14 +16,14 @@
           "type": "query",
           "datasource": "Prometheus",
           "query": "label_values(orders_created_total, environment)",
-          "current": {"value": "production", "text": "production"}
+          "current": { "value": "production", "text": "production" }
         },
         {
           "name": "region",
           "type": "query",
           "datasource": "Prometheus",
           "query": "label_values(orders_created_total{environment=\"$environment\"}, region)",
-          "current": {"value": "all", "text": "All"},
+          "current": { "value": "all", "text": "All" },
           "multi": true
         }
       ]
@@ -39,8 +39,8 @@
             "expr": "sum(increase(orders_created_total{environment=\"$environment\",region=~\"$region\"}[1h]))"
           }
         ],
-        "gridPos": {"h": 6, "w": 4, "x": 0, "y": 0},
-        "options": {"colorMode": "value"}
+        "gridPos": { "h": 6, "w": 4, "x": 0, "y": 0 },
+        "options": { "colorMode": "value" }
       },
       {
         "id": 2,
@@ -52,8 +52,8 @@
             "expr": "sum(increase(deliveries_completed_total{environment=\"$environment\",region=~\"$region\"}[1h]))"
           }
         ],
-        "gridPos": {"h": 6, "w": 4, "x": 4, "y": 0},
-        "options": {"colorMode": "value"}
+        "gridPos": { "h": 6, "w": 4, "x": 4, "y": 0 },
+        "options": { "colorMode": "value" }
       },
       {
         "id": 3,
@@ -65,8 +65,8 @@
             "expr": "sum(drivers_active{environment=\"$environment\",region=~\"$region\"})"
           }
         ],
-        "gridPos": {"h": 6, "w": 4, "x": 8, "y": 0},
-        "options": {"colorMode": "value"}
+        "gridPos": { "h": 6, "w": 4, "x": 8, "y": 0 },
+        "options": { "colorMode": "value" }
       },
       {
         "id": 4,
@@ -78,15 +78,15 @@
             "expr": "avg(delivery_time_minutes{environment=\"$environment\",region=~\"$region\"})"
           }
         ],
-        "gridPos": {"h": 6, "w": 4, "x": 12, "y": 0},
+        "gridPos": { "h": 6, "w": 4, "x": 12, "y": 0 },
         "fieldConfig": {
           "defaults": {
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"color": "green", "value": null},
-                {"color": "yellow", "value": 25},
-                {"color": "red", "value": 35}
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 25 },
+                { "color": "red", "value": 35 }
               ]
             }
           }
@@ -102,15 +102,15 @@
             "expr": "100 * (sum(deliveries_on_time_total{environment=\"$environment\",region=~\"$region\"}) / sum(deliveries_completed_total{environment=\"$environment\",region=~\"$region\"}))"
           }
         ],
-        "gridPos": {"h": 6, "w": 4, "x": 16, "y": 0},
+        "gridPos": { "h": 6, "w": 4, "x": 16, "y": 0 },
         "fieldConfig": {
           "defaults": {
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"color": "red", "value": null},
-                {"color": "yellow", "value": 95},
-                {"color": "green", "value": 98}
+                { "color": "red", "value": null },
+                { "color": "yellow", "value": 95 },
+                { "color": "green", "value": 98 }
               ]
             }
           }
@@ -127,8 +127,8 @@
             "legendFormat": "Revenue ($)"
           }
         ],
-        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 6},
-        "yaxes": [{"label": "USD"}]
+        "gridPos": { "h": 8, "w": 8, "x": 0, "y": 6 },
+        "yaxes": [{ "label": "USD" }]
       },
       {
         "id": 7,
@@ -141,7 +141,7 @@
             "format": "table"
           }
         ],
-        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 6}
+        "gridPos": { "h": 8, "w": 8, "x": 8, "y": 6 }
       },
       {
         "id": 8,
@@ -153,15 +153,15 @@
             "expr": "100 * (sum(tenants_onboarding_completed_total{environment=\"$environment\",region=~\"$region\"}) / sum(tenants_signup_total{environment=\"$environment\",region=~\"$region\"}))"
           }
         ],
-        "gridPos": {"h": 8, "w": 4, "x": 16, "y": 6},
+        "gridPos": { "h": 8, "w": 4, "x": 16, "y": 6 },
         "fieldConfig": {
           "defaults": {
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"color": "red", "value": null},
-                {"color": "yellow", "value": 50},
-                {"color": "green", "value": 80}
+                { "color": "red", "value": null },
+                { "color": "yellow", "value": 50 },
+                { "color": "green", "value": 80 }
               ]
             }
           }
@@ -178,7 +178,7 @@
             "legendFormat": "New Tenants"
           }
         ],
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14}
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 }
       },
       {
         "id": 10,
@@ -191,7 +191,7 @@
             "legendFormat": "{{status}}"
           }
         ],
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14}
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 }
       }
     ]
   }

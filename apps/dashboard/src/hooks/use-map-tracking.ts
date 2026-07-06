@@ -7,7 +7,10 @@
 
 import { useCallback, useRef, useEffect, useState } from "react";
 import { useRealtime } from "./use-realtime";
-import type { Driver, MapTrackingEvent } from "@/components/maps/delivery-types";
+import type {
+  Driver,
+  MapTrackingEvent,
+} from "@/components/maps/delivery-types";
 
 /**
  * Configuration for useMapTracking hook.
@@ -34,9 +37,13 @@ export interface UseMapTrackingReturn {
   /** Register position update handler. */
   onPositionUpdate: (callback: (driver: Driver) => void) => void;
   /** Register status change handler. */
-  onStatusChange: (callback: (driverId: string, status: string) => void) => void;
+  onStatusChange: (
+    callback: (driverId: string, status: string) => void,
+  ) => void;
   /** Register delivery update handler. */
-  onDeliveryUpdate: (callback: (driverId: string, deliveryId: string) => void) => void;
+  onDeliveryUpdate: (
+    callback: (driverId: string, deliveryId: string) => void,
+  ) => void;
   /** Manual disconnect. */
   disconnect: () => void;
   /** Get last error message. */
@@ -66,12 +73,14 @@ export interface UseMapTrackingReturn {
  *   };
  * }, []);
  */
-export function useMapTracking(config?: UseMapTrackingConfig): UseMapTrackingReturn {
+export function useMapTracking(
+  config?: UseMapTrackingConfig,
+): UseMapTrackingReturn {
   const eventHandlersRef = useRef<Set<(event: unknown) => void>>(new Set());
 
   // Use existing realtime hook
   const { disconnect: realtimeDisconnect } = useRealtime({
-    channels: config?.url ? [config.url] : ['tracking'],
+    channels: config?.url ? [config.url] : ["tracking"],
     onMessage: (msg) => {
       eventHandlersRef.current.forEach((handler) => handler(msg.data));
     },
@@ -79,20 +88,20 @@ export function useMapTracking(config?: UseMapTrackingConfig): UseMapTrackingRet
   });
 
   const positionUpdateCallbacks = useRef<Set<(driver: Driver) => void>>(
-    new Set()
+    new Set(),
   );
-  const statusChangeCallbacks = useRef<Set<(driverId: string, status: string) => void>>(
-    new Set()
-  );
-  const deliveryUpdateCallbacks = useRef<Set<(driverId: string, deliveryId: string) => void>>(
-    new Set()
-  );
+  const statusChangeCallbacks = useRef<
+    Set<(driverId: string, status: string) => void>
+  >(new Set());
+  const deliveryUpdateCallbacks = useRef<
+    Set<(driverId: string, deliveryId: string) => void>
+  >(new Set());
 
   // Register global event handler
   useEffect(() => {
     const handleEvent = (event: unknown) => {
       // Check for tracking-specific event
-      if (!event || typeof event !== 'object' || !('type' in event)) return;
+      if (!event || typeof event !== "object" || !("type" in event)) return;
 
       const trackingEvent = event as MapTrackingEvent;
 
@@ -140,33 +149,24 @@ export function useMapTracking(config?: UseMapTrackingConfig): UseMapTrackingRet
   }, []);
 
   // Subscribe to tracking room
-  const subscribe = useCallback(
-    async (room: string) => {
-      // Track subscribed rooms for potential cleanup
-      console.debug(`[useMapTracking] Subscribed to room: ${room}`);
-    },
-    []
-  );
+  const subscribe = useCallback(async (room: string) => {
+    // Track subscribed rooms for potential cleanup
+    console.debug(`[useMapTracking] Subscribed to room: ${room}`);
+  }, []);
 
   // Unsubscribe from tracking room
-  const unsubscribe = useCallback(
-    async (room: string) => {
-      console.debug(`[useMapTracking] Unsubscribed from room: ${room}`);
-    },
-    []
-  );
+  const unsubscribe = useCallback(async (room: string) => {
+    console.debug(`[useMapTracking] Unsubscribed from room: ${room}`);
+  }, []);
 
   // Register position update callback
-  const onPositionUpdate = useCallback(
-    (callback: (driver: Driver) => void) => {
-      positionUpdateCallbacks.current.add(callback);
+  const onPositionUpdate = useCallback((callback: (driver: Driver) => void) => {
+    positionUpdateCallbacks.current.add(callback);
 
-      return () => {
-        positionUpdateCallbacks.current.delete(callback);
-      };
-    },
-    []
-  );
+    return () => {
+      positionUpdateCallbacks.current.delete(callback);
+    };
+  }, []);
 
   // Register status change callback
   const onStatusChange = useCallback(
@@ -177,7 +177,7 @@ export function useMapTracking(config?: UseMapTrackingConfig): UseMapTrackingRet
         statusChangeCallbacks.current.delete(callback);
       };
     },
-    []
+    [],
   );
 
   // Register delivery update callback
@@ -189,7 +189,7 @@ export function useMapTracking(config?: UseMapTrackingConfig): UseMapTrackingRet
         deliveryUpdateCallbacks.current.delete(callback);
       };
     },
-    []
+    [],
   );
 
   return {

@@ -244,7 +244,10 @@ describe("BatchLoader", () => {
         return new Map(); // Return empty map
       });
 
-      const promise = loader.loadOr("req1", "999", { id: "999", name: "Fallback" });
+      const promise = loader.loadOr("req1", "999", {
+        id: "999",
+        name: "Fallback",
+      });
       vi.advanceTimersByTime(15);
 
       const result = await promise;
@@ -397,8 +400,10 @@ describe("CompositeKeyBatchLoader", () => {
         const map = new Map();
         keys.forEach((key) => {
           // When custom serializer is used, keys may be strings or objects
-          const userId = typeof key === "string" ? key.split(":")[0] : key.userId;
-          const orderId = typeof key === "string" ? key.split(":")[1] : key.orderId;
+          const userId =
+            typeof key === "string" ? key.split(":")[0] : key.userId;
+          const orderId =
+            typeof key === "string" ? key.split(":")[1] : key.orderId;
           map.set(key, { userId, orderId, data: `${userId}-${orderId}` });
         });
         return map;
@@ -410,7 +415,10 @@ describe("CompositeKeyBatchLoader", () => {
         keySerializer: (key) => `${key.userId}:${key.orderId}`,
       });
 
-      const promise = customLoader.load("req1", { userId: "u1", orderId: "o1" });
+      const promise = customLoader.load("req1", {
+        userId: "u1",
+        orderId: "o1",
+      });
       vi.advanceTimersByTime(15);
 
       const result = await promise;

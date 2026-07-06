@@ -17,7 +17,7 @@
  * 4. Nominatim (open-source, unlimited)
  */
 
-import { RouteCache } from './route-cache.js';
+import { RouteCache } from "./route-cache.js";
 
 export interface GeocodingResult {
   lat: number;
@@ -81,8 +81,14 @@ export class GeocodingService {
   };
 
   constructor(config: GeocodingServiceConfig) {
-    this.providerOrder = config.providers || ['google', 'mapbox', 'here', 'nominatim'];
-    this.cache = config.cacheEnabled !== false ? config.cache || new RouteCache() : null;
+    this.providerOrder = config.providers || [
+      "google",
+      "mapbox",
+      "here",
+      "nominatim",
+    ];
+    this.cache =
+      config.cacheEnabled !== false ? config.cache || new RouteCache() : null;
 
     // Initialize rate limiters
     const defaultRateLimit = config.rateLimitPerProvider || {};
@@ -123,7 +129,7 @@ export class GeocodingService {
 
     // Check cache
     if (this.cache) {
-      const cacheKey = this.cache.generateGeocodeKey(address, 'all');
+      const cacheKey = this.cache.generateGeocodeKey(address, "all");
       const cached = await this.cache.get<GeocodingResult[]>(cacheKey);
       if (cached) {
         this.stats.cacheHits++;
@@ -151,8 +157,16 @@ export class GeocodingService {
         if (results.length > 0) {
           // Cache results
           if (this.cache) {
-            const cacheKey = this.cache.generateGeocodeKey(address, providerName);
-            await this.cache.set(cacheKey, results, this.cache['GEOCODE_TTL'] || 86400, providerName);
+            const cacheKey = this.cache.generateGeocodeKey(
+              address,
+              providerName,
+            );
+            await this.cache.set(
+              cacheKey,
+              results,
+              this.cache["GEOCODE_TTL"] || 86400,
+              providerName,
+            );
           }
 
           return results.map((r) => ({ ...r, cached: false }));
@@ -166,18 +180,23 @@ export class GeocodingService {
       }
     }
 
-    throw new Error(`Geocoding failed for address: ${address} (all providers exhausted)`);
+    throw new Error(
+      `Geocoding failed for address: ${address} (all providers exhausted)`,
+    );
   }
 
   /**
    * Reverse geocoding: coordinates → address
    */
-  async reverseGeocode(lat: number, lng: number): Promise<ReverseGeocodeResult> {
+  async reverseGeocode(
+    lat: number,
+    lng: number,
+  ): Promise<ReverseGeocodeResult> {
     this.stats.reverseGeocodes++;
 
     // Check cache
     if (this.cache) {
-      const cacheKey = this.cache.generateReverseGeocodeKey(lat, lng, 'all');
+      const cacheKey = this.cache.generateReverseGeocodeKey(lat, lng, "all");
       const cached = await this.cache.get<ReverseGeocodeResult>(cacheKey);
       if (cached) {
         this.stats.cacheHits++;
@@ -203,13 +222,20 @@ export class GeocodingService {
 
         // Cache result
         if (this.cache) {
-          const cacheKey = this.cache.generateReverseGeocodeKey(lat, lng, providerName);
+          const cacheKey = this.cache.generateReverseGeocodeKey(
+            lat,
+            lng,
+            providerName,
+          );
           await this.cache.set(cacheKey, result, 86400, providerName); // 24hr TTL
         }
 
         return { ...result, cached: false };
       } catch (error) {
-        console.warn(`Reverse geocoding failed for provider ${providerName}:`, error);
+        console.warn(
+          `Reverse geocoding failed for provider ${providerName}:`,
+          error,
+        );
         if (this.providerOrder.indexOf(providerName) > 0) {
           this.stats.failovers++;
         }
@@ -218,7 +244,7 @@ export class GeocodingService {
     }
 
     throw new Error(
-      `Reverse geocoding failed for coordinates: ${lat},${lng} (all providers exhausted)`
+      `Reverse geocoding failed for coordinates: ${lat},${lng} (all providers exhausted)`,
     );
   }
 
@@ -234,7 +260,7 @@ export class GeocodingService {
 
     // Check cache
     if (this.cache) {
-      const cacheKey = this.cache.generateAutocompleteKey(input, 'all');
+      const cacheKey = this.cache.generateAutocompleteKey(input, "all");
       const cached = await this.cache.get<AutocompleteResult[]>(cacheKey);
       if (cached) {
         this.stats.cacheHits++;
@@ -258,14 +284,20 @@ export class GeocodingService {
         if (results.length > 0) {
           // Cache results with shorter TTL
           if (this.cache) {
-            const cacheKey = this.cache.generateAutocompleteKey(input, providerName);
+            const cacheKey = this.cache.generateAutocompleteKey(
+              input,
+              providerName,
+            );
             await this.cache.set(cacheKey, results, 3600, providerName); // 1hr TTL
           }
 
           return results;
         }
       } catch (error) {
-        console.warn(`Autocomplete failed for provider ${providerName}:`, error);
+        console.warn(
+          `Autocomplete failed for provider ${providerName}:`,
+          error,
+        );
         // Continue to next provider
       }
     }
@@ -276,7 +308,9 @@ export class GeocodingService {
   /**
    * Batch geocoding
    */
-  async batchGeocode(addresses: string[]): Promise<Map<string, GeocodingResult[]>> {
+  async batchGeocode(
+    addresses: string[],
+  ): Promise<Map<string, GeocodingResult[]>> {
     const results = new Map<string, GeocodingResult[]>();
 
     for (const address of addresses) {
@@ -299,10 +333,12 @@ export class GeocodingService {
     return {
       ...this.stats,
       providers: Array.from(this.providers.keys()),
-      rateLimiters: Array.from(this.rateLimiters.entries()).map(([name, limiter]) => ({
-        name,
-        remaining: limiter.remaining(),
-      })),
+      rateLimiters: Array.from(this.rateLimiters.entries()).map(
+        ([name, limiter]) => ({
+          name,
+          remaining: limiter.remaining(),
+        }),
+      ),
     };
   }
 

@@ -26,7 +26,9 @@ export function DateRangePicker({
   maxDate,
 }: DateRangePickerProps) {
   const [mode, setMode] = useState<"preset" | "custom">("preset");
-  const [tempStart, setTempStart] = useState(value.start.toISOString().split("T")[0]);
+  const [tempStart, setTempStart] = useState(
+    value.start.toISOString().split("T")[0],
+  );
   const [tempEnd, setTempEnd] = useState(value.end.toISOString().split("T")[0]);
   const [dateError, setDateError] = useState<string | null>(null);
 
@@ -78,11 +80,7 @@ export function DateRangePicker({
       label: "Last month",
       getValue: () => {
         const now = new Date();
-        const start = new Date(
-          now.getFullYear(),
-          now.getMonth() - 1,
-          1
-        );
+        const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
         const end = new Date(now.getFullYear(), now.getMonth(), 0);
         return { start, end };
       },
@@ -154,8 +152,7 @@ export function DateRangePicker({
       {/* Preset buttons */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {finalPresets.map((preset) => {
-          const isActive =
-            matchedPreset?.label === preset.label;
+          const isActive = matchedPreset?.label === preset.label;
           return (
             <Button
               key={preset.label}
@@ -193,7 +190,7 @@ export function DateRangePicker({
                 "bg-wl-bg-surface border border-wl-border-default",
                 "text-wl-text-primary text-sm",
                 "focus:outline-none focus:border-wl-border-focus",
-                "transition-colors duration-fast"
+                "transition-colors duration-fast",
               )}
             />
           </div>
@@ -214,15 +211,13 @@ export function DateRangePicker({
                 "bg-wl-bg-surface border border-wl-border-default",
                 "text-wl-text-primary text-sm",
                 "focus:outline-none focus:border-wl-border-focus",
-                "transition-colors duration-fast"
+                "transition-colors duration-fast",
               )}
             />
           </div>
         </div>
 
-        {dateError && (
-          <p className="text-xs text-red-400">{dateError}</p>
-        )}
+        {dateError && <p className="text-xs text-red-400">{dateError}</p>}
 
         <Button
           variant="primary"

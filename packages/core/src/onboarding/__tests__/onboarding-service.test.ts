@@ -104,7 +104,10 @@ describe("OnboardingService", () => {
         updatedAt: new Date(),
       });
 
-      await service.startOnboarding({ userId: "user-123", email: "test@example.com" });
+      await service.startOnboarding({
+        userId: "user-123",
+        email: "test@example.com",
+      });
 
       expect(eventListener).toHaveBeenCalled();
       const event = eventListener.mock.calls[0][0];
@@ -120,7 +123,10 @@ describe("OnboardingService", () => {
       });
 
       await expect(
-        service.startOnboarding({ userId: "user-123", email: "test@example.com" }),
+        service.startOnboarding({
+          userId: "user-123",
+          email: "test@example.com",
+        }),
       ).rejects.toThrow(OnboardingError);
     });
   });
@@ -141,11 +147,16 @@ describe("OnboardingService", () => {
       const updatedProgress = {
         ...currentProgress,
         currentStep: OnboardingStep.BASIC_INFO,
-        completedSteps: [OnboardingStep.EMAIL_VERIFICATION, OnboardingStep.BASIC_INFO],
+        completedSteps: [
+          OnboardingStep.EMAIL_VERIFICATION,
+          OnboardingStep.BASIC_INFO,
+        ],
         data: { email: "test@example.com", company: "Acme" },
       };
 
-      (any.onboardingProgress.findUnique as any).mockResolvedValue(currentProgress);
+      (any.onboardingProgress.findUnique as any).mockResolvedValue(
+        currentProgress,
+      );
       (any.onboardingProgress.update as any).mockResolvedValue(updatedProgress);
 
       const result = await service.updateStep({
@@ -168,7 +179,9 @@ describe("OnboardingService", () => {
         isActive: true,
       };
 
-      (any.onboardingProgress.findUnique as any).mockResolvedValue(currentProgress);
+      (any.onboardingProgress.findUnique as any).mockResolvedValue(
+        currentProgress,
+      );
 
       // Try to skip EMAIL_VERIFICATION and go straight to BASIC_INFO
       await expect(
@@ -194,7 +207,9 @@ describe("OnboardingService", () => {
         data: {},
       };
 
-      (any.onboardingProgress.findUnique as any).mockResolvedValue(currentProgress);
+      (any.onboardingProgress.findUnique as any).mockResolvedValue(
+        currentProgress,
+      );
       (any.onboardingProgress.update as any).mockResolvedValue({
         ...currentProgress,
         currentStep: OnboardingStep.BASIC_INFO,
@@ -261,7 +276,9 @@ describe("OnboardingService", () => {
         updatedAt: new Date(),
       };
 
-      (any.onboardingProgress.findUnique as any).mockResolvedValue(mockProgress);
+      (any.onboardingProgress.findUnique as any).mockResolvedValue(
+        mockProgress,
+      );
 
       const result = await service.getProgress(userId);
 
@@ -292,7 +309,9 @@ describe("OnboardingService", () => {
         isActive: true,
       };
 
-      (any.onboardingProgress.findUnique as any).mockResolvedValue(mockProgress);
+      (any.onboardingProgress.findUnique as any).mockResolvedValue(
+        mockProgress,
+      );
       (any.onboardingProgress.update as any).mockResolvedValue({
         ...mockProgress,
         isActive: false,
@@ -346,9 +365,9 @@ describe("OnboardingService", () => {
         isActive: true,
       });
 
-      await expect(
-        service.completeOnboarding({ progressId }),
-      ).rejects.toThrow(OnboardingError);
+      await expect(service.completeOnboarding({ progressId })).rejects.toThrow(
+        OnboardingError,
+      );
     });
   });
 
@@ -430,7 +449,12 @@ describe("OnboardingService", () => {
         .mockResolvedValueOnce(20); // abandoned
 
       (any.onboardingProgress.findMany as any).mockResolvedValue([
-        { completedSteps: [OnboardingStep.EMAIL_VERIFICATION, OnboardingStep.BASIC_INFO] },
+        {
+          completedSteps: [
+            OnboardingStep.EMAIL_VERIFICATION,
+            OnboardingStep.BASIC_INFO,
+          ],
+        },
         { completedSteps: [OnboardingStep.EMAIL_VERIFICATION] },
         { completedSteps: [] },
       ]);
@@ -446,7 +470,9 @@ describe("OnboardingService", () => {
 
   describe("cleanupAbandonedSessions", () => {
     it("should delete abandoned sessions older than N days", async () => {
-      (any.onboardingProgress.deleteMany as any).mockResolvedValue({ count: 5 });
+      (any.onboardingProgress.deleteMany as any).mockResolvedValue({
+        count: 5,
+      });
 
       const deleted = await service.cleanupAbandonedSessions(30);
 
@@ -476,7 +502,10 @@ describe("OnboardingService", () => {
         updatedAt: new Date(),
       });
 
-      await service.startOnboarding({ userId: "user-123", email: "test@example.com" });
+      await service.startOnboarding({
+        userId: "user-123",
+        email: "test@example.com",
+      });
 
       expect(listener).toHaveBeenCalled();
     });
@@ -502,7 +531,10 @@ describe("OnboardingService", () => {
         updatedAt: new Date(),
       });
 
-      await service.startOnboarding({ userId: "user-123", email: "test@example.com" });
+      await service.startOnboarding({
+        userId: "user-123",
+        email: "test@example.com",
+      });
 
       expect(listener).not.toHaveBeenCalled();
     });

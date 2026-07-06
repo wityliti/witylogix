@@ -85,7 +85,7 @@ export function DriverPopover({
       className={cn(
         "fixed z-50 w-80 rounded-lg shadow-2xl",
         "bg-wl-bg-elevated border border-wl-border-strong",
-        "p-4 space-y-4"
+        "p-4 space-y-4",
       )}
       style={{
         left: `${Math.min(position.x, window.innerWidth - 340)}px`,
@@ -98,7 +98,7 @@ export function DriverPopover({
         className={cn(
           "absolute top-3 right-3 p-1",
           "text-wl-text-secondary hover:text-wl-text-primary",
-          "transition-colors"
+          "transition-colors",
         )}
         aria-label="Close"
       >
@@ -112,7 +112,7 @@ export function DriverPopover({
           alt={driver.name}
           className={cn(
             "w-12 h-12 rounded-full flex-shrink-0",
-            "border border-wl-border-default"
+            "border border-wl-border-default",
           )}
         />
         <div className="flex-1 min-w-0">
@@ -127,10 +127,12 @@ export function DriverPopover({
 
       {/* Current Delivery Info */}
       {delivery && (
-        <div className={cn(
-          "p-3 rounded-lg",
-          "bg-wl-bg-surface border border-wl-border-default"
-        )}>
+        <div
+          className={cn(
+            "p-3 rounded-lg",
+            "bg-wl-bg-surface border border-wl-border-default",
+          )}
+        >
           <p className="text-xs text-wl-text-secondary font-semibold mb-1 uppercase">
             Current Delivery
           </p>
@@ -175,7 +177,7 @@ export function DriverPopover({
           className={cn(
             "flex items-center gap-3 text-sm",
             "hover:bg-wl-bg-overlay rounded-md px-2 py-1.5 -mx-2",
-            "transition-colors"
+            "transition-colors",
           )}
         >
           <Phone className="w-4 h-4 text-wl-success-400 flex-shrink-0" />

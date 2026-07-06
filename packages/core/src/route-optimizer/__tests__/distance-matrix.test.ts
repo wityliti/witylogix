@@ -31,7 +31,7 @@ describe("Distance Matrix", () => {
     it("should calculate short distance accurately", () => {
       const points: GeoPoint[] = [
         { latitude: 40.7128, longitude: -74.006 }, // NYC
-        { latitude: 40.7580, longitude: -73.9855 }, // Times Square, ~5km away
+        { latitude: 40.758, longitude: -73.9855 }, // Times Square, ~5km away
       ];
 
       const matrix = computeDistanceMatrix(points);
@@ -79,7 +79,10 @@ describe("Distance Matrix", () => {
       // Check all pairs are symmetric
       for (let i = 0; i < points.length; i++) {
         for (let j = i + 1; j < points.length; j++) {
-          expect(matrix.distances[i][j]).toBeCloseTo(matrix.distances[j][i], -2);
+          expect(matrix.distances[i][j]).toBeCloseTo(
+            matrix.distances[j][i],
+            -2,
+          );
         }
       }
     });
@@ -96,7 +99,10 @@ describe("Distance Matrix", () => {
       // Check all duration pairs are symmetric
       for (let i = 0; i < points.length; i++) {
         for (let j = i + 1; j < points.length; j++) {
-          expect(matrix.durations[i][j]).toBeCloseTo(matrix.durations[j][i], -2);
+          expect(matrix.durations[i][j]).toBeCloseTo(
+            matrix.durations[j][i],
+            -2,
+          );
         }
       }
     });
@@ -172,7 +178,7 @@ describe("Distance Matrix", () => {
     it("should calculate duration proportional to distance", () => {
       const points: GeoPoint[] = [
         { latitude: 40.7128, longitude: -74.006 },
-        { latitude: 40.7580, longitude: -73.9855 }, // Close point
+        { latitude: 40.758, longitude: -73.9855 }, // Close point
         { latitude: 34.0522, longitude: -118.2437 }, // Far point
       ];
 
@@ -185,7 +191,7 @@ describe("Distance Matrix", () => {
     it("should have reasonable duration values", () => {
       const points: GeoPoint[] = [
         { latitude: 40.7128, longitude: -74.006 },
-        { latitude: 40.7580, longitude: -73.9855 },
+        { latitude: 40.758, longitude: -73.9855 },
       ];
 
       const matrix = computeDistanceMatrix(points);
@@ -233,7 +239,8 @@ describe("Distance Matrix", () => {
       expect(matrix.points.length).toBe(points.length);
       matrix.points.forEach((point) => {
         const found = points.some(
-          (p) => p.latitude === point.latitude && p.longitude === point.longitude
+          (p) =>
+            p.latitude === point.latitude && p.longitude === point.longitude,
         );
         expect(found).toBe(true);
       });
@@ -242,7 +249,7 @@ describe("Distance Matrix", () => {
     it("should have valid timestamp", () => {
       const points: GeoPoint[] = [
         { latitude: 40.7128, longitude: -74.006 },
-        { latitude: 40.7580, longitude: -73.9855 },
+        { latitude: 40.758, longitude: -73.9855 },
       ];
 
       const matrix = computeDistanceMatrix(points);
@@ -271,7 +278,7 @@ describe("Distance Matrix", () => {
     it("should handle no traffic factor (default 1.0)", () => {
       const points: GeoPoint[] = [
         { latitude: 40.7128, longitude: -74.006 },
-        { latitude: 40.7580, longitude: -73.9855 },
+        { latitude: 40.758, longitude: -73.9855 },
       ];
 
       const matrix = computeDistanceMatrix(points);
@@ -286,7 +293,7 @@ describe("Distance Matrix", () => {
       const points: GeoPoint[] = [{ latitude: 40.7128, longitude: -74.006 }];
 
       expect(() => computeDistanceMatrix(points)).toThrow(
-        "Distance matrix requires at least 2 points"
+        "Distance matrix requires at least 2 points",
       );
     });
 
@@ -319,8 +326,8 @@ describe("Distance Matrix", () => {
       const points: GeoPoint[] = [];
       for (let i = 0; i < 100; i++) {
         points.push({
-          latitude: 40.7 + (i * 0.01) % 0.5,
-          longitude: -74.0 + (i * 0.01) % 0.5,
+          latitude: 40.7 + ((i * 0.01) % 0.5),
+          longitude: -74.0 + ((i * 0.01) % 0.5),
         });
       }
 

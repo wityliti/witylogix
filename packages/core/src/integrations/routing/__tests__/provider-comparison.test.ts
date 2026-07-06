@@ -9,16 +9,16 @@
  * - Route type classification (urban/suburban/highway/multi-stop)
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   ProviderComparisonEngine,
   DEFAULT_COST_MODELS,
-} from '../provider-comparison.js';
-import type { RouteResponse, MatrixResponse } from '../types.js';
-import type { HERESDKClient } from '../here-sdk-client.js';
-import type { TomTomSDKClient } from '../tomtom-sdk-client.js';
+} from "../provider-comparison.js";
+import type { RouteResponse, MatrixResponse } from "../types.js";
+import type { HERESDKClient } from "../here-sdk-client.js";
+import type { TomTomSDKClient } from "../tomtom-sdk-client.js";
 
-describe('ProviderComparisonEngine', () => {
+describe("ProviderComparisonEngine", () => {
   let engine: ProviderComparisonEngine;
   let mockHEREClient: Partial<HERESDKClient>;
   let mockTomTomClient: Partial<TomTomSDKClient>;
@@ -38,8 +38,8 @@ describe('ProviderComparisonEngine', () => {
     };
 
     // Register providers
-    engine.registerProvider('here', mockHEREClient as HERESDKClient);
-    engine.registerProvider('tomtom', mockTomTomClient as TomTomSDKClient);
+    engine.registerProvider("here", mockHEREClient as HERESDKClient);
+    engine.registerProvider("tomtom", mockTomTomClient as TomTomSDKClient);
 
     // Register cost models
     DEFAULT_COST_MODELS.forEach((model) => {
@@ -47,8 +47,8 @@ describe('ProviderComparisonEngine', () => {
     });
   });
 
-  describe('compareRoute', () => {
-    it('should compare routes from multiple providers', async () => {
+  describe("compareRoute", () => {
+    it("should compare routes from multiple providers", async () => {
       const mockHEREResponse: RouteResponse = {
         distance_m: 2000,
         duration_s: 900,
@@ -60,7 +60,7 @@ describe('ProviderComparisonEngine', () => {
               {
                 distance_m: 500,
                 duration_s: 200,
-                instruction: 'Head north',
+                instruction: "Head north",
                 start_location: { lat: 40.7128, lng: -74.006 },
                 end_location: { lat: 40.714, lng: -73.99 },
               },
@@ -69,7 +69,7 @@ describe('ProviderComparisonEngine', () => {
             end_location: { lat: 40.7589, lng: -73.9851 },
           },
         ],
-        polyline: 'test_polyline',
+        polyline: "test_polyline",
         bounds: {
           ne: { lat: 40.7589, lng: -73.9851 },
           sw: { lat: 40.7128, lng: -74.006 },
@@ -87,7 +87,7 @@ describe('ProviderComparisonEngine', () => {
               {
                 distance_m: 500,
                 duration_s: 200,
-                instruction: 'Head north on Broadway',
+                instruction: "Head north on Broadway",
                 start_location: { lat: 40.7128, lng: -74.006 },
                 end_location: { lat: 40.714, lng: -73.99 },
               },
@@ -96,15 +96,19 @@ describe('ProviderComparisonEngine', () => {
             end_location: { lat: 40.7589, lng: -73.9851 },
           },
         ],
-        polyline: 'test_polyline',
+        polyline: "test_polyline",
         bounds: {
           ne: { lat: 40.7589, lng: -73.9851 },
           sw: { lat: 40.7128, lng: -74.006 },
         },
       };
 
-      vi.mocked(mockHEREClient.route as any).mockResolvedValueOnce(mockHEREResponse);
-      vi.mocked(mockTomTomClient.route as any).mockResolvedValueOnce(mockTomTomResponse);
+      vi.mocked(mockHEREClient.route as any).mockResolvedValueOnce(
+        mockHEREResponse,
+      );
+      vi.mocked(mockTomTomClient.route as any).mockResolvedValueOnce(
+        mockTomTomResponse,
+      );
 
       const report = await engine.compareRoute({
         origin: { lat: 40.7128, lng: -74.006 },
@@ -112,8 +116,8 @@ describe('ProviderComparisonEngine', () => {
       });
 
       expect(report.routes).toHaveLength(2);
-      expect(report.routes[0].provider).toBe('here');
-      expect(report.routes[1].provider).toBe('tomtom');
+      expect(report.routes[0].provider).toBe("here");
+      expect(report.routes[1].provider).toBe("tomtom");
 
       // HERE should be cheaper (shorter distance)
       expect(report.routes[0].distance).toBeLessThan(report.routes[1].distance);
@@ -132,7 +136,7 @@ describe('ProviderComparisonEngine', () => {
       expect(report.summary.length).toBeGreaterThan(0);
     });
 
-    it('should classify urban routes', async () => {
+    it("should classify urban routes", async () => {
       const shortRoute: RouteResponse = {
         distance_m: 5000, // 5km
         duration_s: 600,
@@ -142,28 +146,30 @@ describe('ProviderComparisonEngine', () => {
             duration_s: 600,
             steps: [],
             start_location: { lat: 40.7128, lng: -74.006 },
-            end_location: { lat: 40.7200, lng: -74.0 },
+            end_location: { lat: 40.72, lng: -74.0 },
           },
         ],
-        polyline: 'test',
+        polyline: "test",
         bounds: {
-          ne: { lat: 40.7200, lng: -74.0 },
+          ne: { lat: 40.72, lng: -74.0 },
           sw: { lat: 40.7128, lng: -74.006 },
         },
       };
 
       vi.mocked(mockHEREClient.route as any).mockResolvedValueOnce(shortRoute);
-      vi.mocked(mockTomTomClient.route as any).mockResolvedValueOnce(shortRoute);
+      vi.mocked(mockTomTomClient.route as any).mockResolvedValueOnce(
+        shortRoute,
+      );
 
       const report = await engine.compareRoute({
         origin: { lat: 40.7128, lng: -74.006 },
-        destination: { lat: 40.7200, lng: -74.0 },
+        destination: { lat: 40.72, lng: -74.0 },
       });
 
-      expect(report.routeType).toBe('urban');
+      expect(report.routeType).toBe("urban");
     });
 
-    it('should classify highway routes', async () => {
+    it("should classify highway routes", async () => {
       const longRoute: RouteResponse = {
         distance_m: 150000, // 150km
         duration_s: 5400,
@@ -176,7 +182,7 @@ describe('ProviderComparisonEngine', () => {
             end_location: { lat: 42.6526, lng: -73.7562 },
           },
         ],
-        polyline: 'test',
+        polyline: "test",
         bounds: {
           ne: { lat: 42.6526, lng: -73.7562 },
           sw: { lat: 40.7128, lng: -74.006 },
@@ -191,10 +197,10 @@ describe('ProviderComparisonEngine', () => {
         destination: { lat: 42.6526, lng: -73.7562 },
       });
 
-      expect(report.routeType).toBe('highway');
+      expect(report.routeType).toBe("highway");
     });
 
-    it('should classify multi-stop routes', async () => {
+    it("should classify multi-stop routes", async () => {
       const routeResponse: RouteResponse = {
         distance_m: 5000,
         duration_s: 600,
@@ -204,38 +210,42 @@ describe('ProviderComparisonEngine', () => {
             duration_s: 300,
             steps: [],
             start_location: { lat: 40.7128, lng: -74.006 },
-            end_location: { lat: 40.7200, lng: -74.0 },
+            end_location: { lat: 40.72, lng: -74.0 },
           },
           {
             distance_m: 3000,
             duration_s: 300,
             steps: [],
-            start_location: { lat: 40.7200, lng: -74.0 },
-            end_location: { lat: 40.7300, lng: -74.05 },
+            start_location: { lat: 40.72, lng: -74.0 },
+            end_location: { lat: 40.73, lng: -74.05 },
           },
         ],
-        polyline: 'test',
+        polyline: "test",
         bounds: {
-          ne: { lat: 40.7300, lng: -74.05 },
+          ne: { lat: 40.73, lng: -74.05 },
           sw: { lat: 40.7128, lng: -74.006 },
         },
       };
 
-      vi.mocked(mockHEREClient.route as any).mockResolvedValueOnce(routeResponse);
-      vi.mocked(mockTomTomClient.route as any).mockResolvedValueOnce(routeResponse);
+      vi.mocked(mockHEREClient.route as any).mockResolvedValueOnce(
+        routeResponse,
+      );
+      vi.mocked(mockTomTomClient.route as any).mockResolvedValueOnce(
+        routeResponse,
+      );
 
       const report = await engine.compareRoute({
         origin: { lat: 40.7128, lng: -74.006 },
-        destination: { lat: 40.7300, lng: -74.05 },
-        waypoints: [{ lat: 40.7200, lng: -74.0 }],
+        destination: { lat: 40.73, lng: -74.05 },
+        waypoints: [{ lat: 40.72, lng: -74.0 }],
       });
 
-      expect(report.routeType).toBe('multi-stop');
+      expect(report.routeType).toBe("multi-stop");
     });
 
-    it('should handle provider failures gracefully', async () => {
+    it("should handle provider failures gracefully", async () => {
       vi.mocked(mockHEREClient.route as any).mockRejectedValueOnce(
-        new Error('HERE API error'),
+        new Error("HERE API error"),
       );
 
       const mockTomTomResponse: RouteResponse = {
@@ -250,14 +260,16 @@ describe('ProviderComparisonEngine', () => {
             end_location: { lat: 40.7589, lng: -73.9851 },
           },
         ],
-        polyline: 'test',
+        polyline: "test",
         bounds: {
           ne: { lat: 40.7589, lng: -73.9851 },
           sw: { lat: 40.7128, lng: -74.006 },
         },
       };
 
-      vi.mocked(mockTomTomClient.route as any).mockResolvedValueOnce(mockTomTomResponse);
+      vi.mocked(mockTomTomClient.route as any).mockResolvedValueOnce(
+        mockTomTomResponse,
+      );
 
       const report = await engine.compareRoute({
         origin: { lat: 40.7128, lng: -74.006 },
@@ -266,10 +278,10 @@ describe('ProviderComparisonEngine', () => {
 
       // Should only have TomTom result
       expect(report.routes).toHaveLength(1);
-      expect(report.routes[0].provider).toBe('tomtom');
+      expect(report.routes[0].provider).toBe("tomtom");
     });
 
-    it('should calculate quality scores', async () => {
+    it("should calculate quality scores", async () => {
       const response: RouteResponse = {
         distance_m: 2000,
         duration_s: 900,
@@ -282,7 +294,7 @@ describe('ProviderComparisonEngine', () => {
             end_location: { lat: 40.7589, lng: -73.9851 },
           },
         ],
-        polyline: 'test',
+        polyline: "test",
         bounds: {
           ne: { lat: 40.7589, lng: -73.9851 },
           sw: { lat: 40.7128, lng: -74.006 },
@@ -306,7 +318,7 @@ describe('ProviderComparisonEngine', () => {
       expect(report.routes[1].quality).toBeGreaterThan(85);
     });
 
-    it('should provide cost analysis', async () => {
+    it("should provide cost analysis", async () => {
       const response: RouteResponse = {
         distance_m: 2000,
         duration_s: 900,
@@ -319,7 +331,7 @@ describe('ProviderComparisonEngine', () => {
             end_location: { lat: 40.7589, lng: -73.9851 },
           },
         ],
-        polyline: 'test',
+        polyline: "test",
         bounds: {
           ne: { lat: 40.7589, lng: -73.9851 },
           sw: { lat: 40.7128, lng: -74.006 },
@@ -340,7 +352,7 @@ describe('ProviderComparisonEngine', () => {
       expect(report.costAnalysis?.monthlySavings).toBeGreaterThanOrEqual(0);
     });
 
-    it('should generate recommendations', async () => {
+    it("should generate recommendations", async () => {
       const hereResponse: RouteResponse = {
         distance_m: 2000,
         duration_s: 800, // Faster
@@ -353,7 +365,7 @@ describe('ProviderComparisonEngine', () => {
             end_location: { lat: 40.7589, lng: -73.9851 },
           },
         ],
-        polyline: 'test',
+        polyline: "test",
         bounds: {
           ne: { lat: 40.7589, lng: -73.9851 },
           sw: { lat: 40.7128, lng: -74.006 },
@@ -372,15 +384,19 @@ describe('ProviderComparisonEngine', () => {
             end_location: { lat: 40.7589, lng: -73.9851 },
           },
         ],
-        polyline: 'test',
+        polyline: "test",
         bounds: {
           ne: { lat: 40.7589, lng: -73.9851 },
           sw: { lat: 40.7128, lng: -74.006 },
         },
       };
 
-      vi.mocked(mockHEREClient.route as any).mockResolvedValueOnce(hereResponse);
-      vi.mocked(mockTomTomClient.route as any).mockResolvedValueOnce(tomtomResponse);
+      vi.mocked(mockHEREClient.route as any).mockResolvedValueOnce(
+        hereResponse,
+      );
+      vi.mocked(mockTomTomClient.route as any).mockResolvedValueOnce(
+        tomtomResponse,
+      );
 
       const report = await engine.compareRoute({
         origin: { lat: 40.7128, lng: -74.006 },
@@ -388,14 +404,14 @@ describe('ProviderComparisonEngine', () => {
       });
 
       // HERE should be recommended for speed (faster duration)
-      expect(report.recommendations.bestForSpeed).toBe('here');
+      expect(report.recommendations.bestForSpeed).toBe("here");
       // TomTom has lower baseCostUsd (0.004 vs 0.008)
-      expect(report.recommendations.bestForCost).toBe('tomtom');
+      expect(report.recommendations.bestForCost).toBe("tomtom");
     });
   });
 
-  describe('compareMatrix', () => {
-    it('should compare matrix routes across providers', async () => {
+  describe("compareMatrix", () => {
+    it("should compare matrix routes across providers", async () => {
       const mockMatrixResponse: MatrixResponse = {
         sources: [
           { lat: 40.7128, lng: -74.006 },
@@ -407,18 +423,22 @@ describe('ProviderComparisonEngine', () => {
         ],
         matrix: [
           [
-            { distance_m: 2000, duration_s: 900, status: 'OK' },
-            { distance_m: 3000, duration_s: 1200, status: 'OK' },
+            { distance_m: 2000, duration_s: 900, status: "OK" },
+            { distance_m: 3000, duration_s: 1200, status: "OK" },
           ],
           [
-            { distance_m: 1500, duration_s: 600, status: 'OK' },
-            { distance_m: 2500, duration_s: 900, status: 'OK' },
+            { distance_m: 1500, duration_s: 600, status: "OK" },
+            { distance_m: 2500, duration_s: 900, status: "OK" },
           ],
         ],
       };
 
-      vi.mocked(mockHEREClient.matrix as any).mockResolvedValueOnce(mockMatrixResponse);
-      vi.mocked(mockTomTomClient.matrix as any).mockResolvedValueOnce(mockMatrixResponse);
+      vi.mocked(mockHEREClient.matrix as any).mockResolvedValueOnce(
+        mockMatrixResponse,
+      );
+      vi.mocked(mockTomTomClient.matrix as any).mockResolvedValueOnce(
+        mockMatrixResponse,
+      );
 
       const results = await engine.compareMatrix({
         origins: [
@@ -432,28 +452,28 @@ describe('ProviderComparisonEngine', () => {
       });
 
       expect(results).toHaveLength(2);
-      expect(results[0].provider).toBe('here');
-      expect(results[1].provider).toBe('tomtom');
+      expect(results[0].provider).toBe("here");
+      expect(results[1].provider).toBe("tomtom");
 
       // Both should have quality > 0
       expect(results[0].quality).toBeGreaterThan(0);
       expect(results[1].quality).toBeGreaterThan(0);
     });
 
-    it('should handle matrix errors', async () => {
+    it("should handle matrix errors", async () => {
       vi.mocked(mockHEREClient.matrix as any).mockRejectedValueOnce(
-        new Error('Matrix API error'),
+        new Error("Matrix API error"),
       );
 
       const mockMatrixResponse: MatrixResponse = {
         sources: [{ lat: 40.7128, lng: -74.006 }],
         targets: [{ lat: 40.7589, lng: -73.9851 }],
-        matrix: [
-          [{ distance_m: 2000, duration_s: 900, status: 'OK' }],
-        ],
+        matrix: [[{ distance_m: 2000, duration_s: 900, status: "OK" }]],
       };
 
-      vi.mocked(mockTomTomClient.matrix as any).mockResolvedValueOnce(mockMatrixResponse);
+      vi.mocked(mockTomTomClient.matrix as any).mockResolvedValueOnce(
+        mockMatrixResponse,
+      );
 
       const results = await engine.compareMatrix({
         origins: [{ lat: 40.7128, lng: -74.006 }],
@@ -462,12 +482,12 @@ describe('ProviderComparisonEngine', () => {
 
       // Should only have TomTom result
       expect(results).toHaveLength(1);
-      expect(results[0].provider).toBe('tomtom');
+      expect(results[0].provider).toBe("tomtom");
     });
   });
 
-  describe('cost models', () => {
-    it('should use registered cost models', async () => {
+  describe("cost models", () => {
+    it("should use registered cost models", async () => {
       const response: RouteResponse = {
         distance_m: 2000,
         duration_s: 900,
@@ -480,7 +500,7 @@ describe('ProviderComparisonEngine', () => {
             end_location: { lat: 40.7589, lng: -73.9851 },
           },
         ],
-        polyline: 'test',
+        polyline: "test",
         bounds: {
           ne: { lat: 40.7589, lng: -73.9851 },
           sw: { lat: 40.7128, lng: -74.006 },
@@ -502,8 +522,8 @@ describe('ProviderComparisonEngine', () => {
     });
   });
 
-  describe('provider ranking', () => {
-    it('should identify provider strengths and weaknesses', async () => {
+  describe("provider ranking", () => {
+    it("should identify provider strengths and weaknesses", async () => {
       const hereResponse: RouteResponse = {
         distance_m: 2000,
         duration_s: 900,
@@ -516,7 +536,7 @@ describe('ProviderComparisonEngine', () => {
             end_location: { lat: 40.7589, lng: -73.9851 },
           },
         ],
-        polyline: 'test',
+        polyline: "test",
         bounds: {
           ne: { lat: 40.7589, lng: -73.9851 },
           sw: { lat: 40.7128, lng: -74.006 },
@@ -535,26 +555,30 @@ describe('ProviderComparisonEngine', () => {
             end_location: { lat: 40.7589, lng: -73.9851 },
           },
         ],
-        polyline: 'test',
+        polyline: "test",
         bounds: {
           ne: { lat: 40.7589, lng: -73.9851 },
           sw: { lat: 40.7128, lng: -74.006 },
         },
       };
 
-      vi.mocked(mockHEREClient.route as any).mockResolvedValueOnce(hereResponse);
-      vi.mocked(mockTomTomClient.route as any).mockResolvedValueOnce(tomtomResponse);
+      vi.mocked(mockHEREClient.route as any).mockResolvedValueOnce(
+        hereResponse,
+      );
+      vi.mocked(mockTomTomClient.route as any).mockResolvedValueOnce(
+        tomtomResponse,
+      );
 
       const report = await engine.compareRoute({
         origin: { lat: 40.7128, lng: -74.006 },
         destination: { lat: 40.7589, lng: -73.9851 },
       });
 
-      const hereRank = report.ranking.find((r) => r.provider === 'here');
+      const hereRank = report.ranking.find((r) => r.provider === "here");
       expect(hereRank).toBeDefined();
       expect(hereRank?.strengths.length).toBeGreaterThan(0);
 
-      const tomtomRank = report.ranking.find((r) => r.provider === 'tomtom');
+      const tomtomRank = report.ranking.find((r) => r.provider === "tomtom");
       expect(tomtomRank).toBeDefined();
       expect(tomtomRank?.weaknesses.length).toBeGreaterThan(0);
     });

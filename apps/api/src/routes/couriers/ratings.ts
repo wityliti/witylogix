@@ -40,9 +40,15 @@ const slaConfigSchema = z.object({
   cancelledThresholdPercent: z.number().min(0).max(100).optional().default(5),
   minCustomerRating: z.number().min(1).max(5).optional().default(3.5),
   escalationThresholdPercent: z.number().min(0).max(100).optional().default(80),
-  escalationChannels: z.array(z.enum(["email", "slack", "sms"])).optional().default(["email"]),
+  escalationChannels: z
+    .array(z.enum(["email", "slack", "sms"]))
+    .optional()
+    .default(["email"]),
   escalationContacts: z.array(z.string().email()).optional().default([]),
-  applicableDaysOfWeek: z.array(z.number().min(0).max(6)).optional().default([0, 1, 2, 3, 4, 5, 6]),
+  applicableDaysOfWeek: z
+    .array(z.number().min(0).max(6))
+    .optional()
+    .default([0, 1, 2, 3, 4, 5, 6]),
   startHourUTC: z.number().min(0).max(23).optional().default(0),
   endHourUTC: z.number().min(0).max(23).optional().default(23),
   isActive: z.boolean().optional().default(true),
@@ -54,7 +60,9 @@ const slaQuerySchema = z.object({
 
 // ─── ROUTE REGISTRATION ─────────────────────────────────────────────────
 
-export default async function ratingsRoutes(app: FastifyInstance): Promise<void> {
+export default async function ratingsRoutes(
+  app: FastifyInstance,
+): Promise<void> {
   // All routes require authentication + tenant context
   app.addHook("preHandler", requireAuth);
   app.addHook("preHandler", tenantContext);
@@ -104,7 +112,7 @@ export default async function ratingsRoutes(app: FastifyInstance): Promise<void>
         console.error("[Ratings] Error fetching ratings:", error);
         reply.code(500).send({ error: "Failed to calculate ratings" });
       }
-    }
+    },
   );
 
   // ── GET /couriers/ratings/:partnerId — Get specific partner rating ───
@@ -116,7 +124,8 @@ export default async function ratingsRoutes(app: FastifyInstance): Promise<void>
     "/ratings/:partnerId",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { partnerId } = request.params as { partnerId: string };
-      const period = ((request.query as any)?.period as "30d" | "60d" | "90d") || "30d";
+      const period =
+        ((request.query as any)?.period as "30d" | "60d" | "90d") || "30d";
 
       try {
         // Verify partner belongs to tenant
@@ -153,7 +162,7 @@ export default async function ratingsRoutes(app: FastifyInstance): Promise<void>
         console.error("[Ratings] Error fetching partner rating:", error);
         reply.code(500).send({ error: "Failed to fetch rating" });
       }
-    }
+    },
   );
 
   // ── GET /couriers/ratings/:partnerId/history — Rating history ───────
@@ -165,7 +174,8 @@ export default async function ratingsRoutes(app: FastifyInstance): Promise<void>
     "/ratings/:partnerId/history",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { partnerId } = request.params as { partnerId: string };
-      const period = ((request.query as any)?.period as "30d" | "60d" | "90d") || "30d";
+      const period =
+        ((request.query as any)?.period as "30d" | "60d" | "90d") || "30d";
       const limit = parseInt((request.query as any)?.limit || "30");
 
       try {
@@ -187,7 +197,7 @@ export default async function ratingsRoutes(app: FastifyInstance): Promise<void>
         console.error("[Ratings] Error fetching history:", error);
         reply.code(500).send({ error: "Failed to fetch history" });
       }
-    }
+    },
   );
 
   // ── GET /couriers/ratings/:partnerId/trend — Performance trend ──────
@@ -233,7 +243,7 @@ export default async function ratingsRoutes(app: FastifyInstance): Promise<void>
         console.error("[Ratings] Error fetching trend:", error);
         reply.code(500).send({ error: "Failed to fetch trend" });
       }
-    }
+    },
   );
 
   // ── GET /couriers/sla/:partnerId — SLA compliance report ────────────
@@ -277,7 +287,7 @@ export default async function ratingsRoutes(app: FastifyInstance): Promise<void>
         console.error("[SLA] Error fetching report:", error);
         reply.code(500).send({ error: "Failed to fetch SLA report" });
       }
-    }
+    },
   );
 
   // ── POST /couriers/sla/:partnerId — Define/update SLA ───────────────
@@ -315,10 +325,11 @@ export default async function ratingsRoutes(app: FastifyInstance): Promise<void>
       } catch (error) {
         console.error("[SLA] Error defining SLA:", error);
         reply.code(400).send({
-          error: error instanceof Error ? error.message : "Failed to define SLA",
+          error:
+            error instanceof Error ? error.message : "Failed to define SLA",
         });
       }
-    }
+    },
   );
 
   // ── GET /couriers/sla/:partnerId/trend — SLA compliance trend ───────
@@ -364,7 +375,7 @@ export default async function ratingsRoutes(app: FastifyInstance): Promise<void>
         console.error("[SLA] Error fetching trend:", error);
         reply.code(500).send({ error: "Failed to fetch SLA trend" });
       }
-    }
+    },
   );
 
   // ── GET /couriers/sla/:partnerId/violations — Recent violations ─────
@@ -397,6 +408,6 @@ export default async function ratingsRoutes(app: FastifyInstance): Promise<void>
         console.error("[SLA] Error fetching violations:", error);
         reply.code(500).send({ error: "Failed to fetch violations" });
       }
-    }
+    },
   );
 }

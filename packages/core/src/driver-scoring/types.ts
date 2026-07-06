@@ -33,9 +33,9 @@ export interface DriverScore {
   tenantId: string;
   compositeScore: number; // 0-100
   breakdown: ScoreBreakdown;
-  tier: 'platinum' | 'gold' | 'silver' | 'bronze';
+  tier: "platinum" | "gold" | "silver" | "bronze";
   rank: number; // optional rank in leaderboard context
-  trend: 'up' | 'down' | 'stable';
+  trend: "up" | "down" | "stable";
   previousScore: number | null;
   calculatedAt: Date;
 }
@@ -54,7 +54,7 @@ export interface DriverLeaderboardEntry extends DriverScore {
   deliveriesThisPeriod: number;
 }
 
-export type ScoringPeriod = 'daily' | 'weekly' | 'monthly' | 'all_time';
+export type ScoringPeriod = "daily" | "weekly" | "monthly" | "all_time";
 
 export interface LeaderboardResponse {
   period: ScoringPeriod;

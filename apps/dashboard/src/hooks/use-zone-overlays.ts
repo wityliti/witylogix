@@ -1,13 +1,13 @@
-'use client';
-import { useEffect, useState, useCallback } from 'react';
-import { api } from '@/lib/api';
+"use client";
+import { useEffect, useState, useCallback } from "react";
+import { api } from "@/lib/api";
 
 export interface ZoneOverlay {
   id: string;
   openOrders: number;
   drivers: number;
   slaPct: number;
-  health: 'good' | 'watch' | 'slipping';
+  health: "good" | "watch" | "slipping";
 }
 
 export interface OverlaysPayload {
@@ -18,11 +18,11 @@ export interface OverlaysPayload {
     name: string;
     lng: number;
     lat: number;
-    type: 'warehouse' | 'store' | 'hub';
+    type: "warehouse" | "store" | "hub";
   }>;
 }
 
-export type OverlayWindow = '1h' | '24h' | '7d';
+export type OverlayWindow = "1h" | "24h" | "7d";
 
 export interface UseZoneOverlaysResult {
   data: OverlaysPayload | null;
@@ -38,7 +38,9 @@ export function useZoneOverlays(window: OverlayWindow): UseZoneOverlaysResult {
 
   const fetchOverlays = useCallback(async () => {
     try {
-      const body = await api.get<OverlaysPayload>(`/api/v4/zones/overlays?window=${window}`);
+      const body = await api.get<OverlaysPayload>(
+        `/api/v4/zones/overlays?window=${window}`,
+      );
       setData(body);
       setError(null);
     } catch (e) {
@@ -51,9 +53,9 @@ export function useZoneOverlays(window: OverlayWindow): UseZoneOverlaysResult {
     const onFocus = () => {
       void fetchOverlays();
     };
-    globalThis.window.addEventListener('focus', onFocus);
+    globalThis.window.addEventListener("focus", onFocus);
     return () => {
-      globalThis.window.removeEventListener('focus', onFocus);
+      globalThis.window.removeEventListener("focus", onFocus);
     };
   }, [fetchOverlays]);
 

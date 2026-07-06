@@ -182,7 +182,7 @@ export class ApiError extends Error {
     public code: string,
     public message: string,
     public httpStatus: number,
-    public details?: Record<string, unknown>
+    public details?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "ApiError";
@@ -233,7 +233,13 @@ export const fieldServiceEndpoints = {
     response: z.object({
       id: uuidSchema,
       customerId: uuidSchema,
-      type: z.enum(["SERVICE", "INSTALL", "REPAIR", "MAINTENANCE", "INSPECTION"]),
+      type: z.enum([
+        "SERVICE",
+        "INSTALL",
+        "REPAIR",
+        "MAINTENANCE",
+        "INSPECTION",
+      ]),
       priority: z.enum(["EMERGENCY", "HIGH", "MEDIUM", "LOW"]),
       status: z.enum([
         "CREATED",
@@ -349,15 +355,17 @@ export const fieldServiceEndpoints = {
     path: "/api/field-service/work-orders",
     query: z.object({
       customerId: uuidSchema.optional(),
-      status: z.enum([
-        "CREATED",
-        "SCHEDULED",
-        "DISPATCHED",
-        "EN_ROUTE",
-        "IN_PROGRESS",
-        "COMPLETED",
-        "CANCELLED",
-      ]).optional(),
+      status: z
+        .enum([
+          "CREATED",
+          "SCHEDULED",
+          "DISPATCHED",
+          "EN_ROUTE",
+          "IN_PROGRESS",
+          "COMPLETED",
+          "CANCELLED",
+        ])
+        .optional(),
       technicianId: uuidSchema.optional(),
       page: z.coerce.number().int().min(1).default(1),
       limit: z.coerce.number().int().min(1).max(100).default(25),
@@ -461,7 +469,9 @@ export const fieldServiceEndpoints = {
     method: "GET",
     path: "/api/field-service/technicians",
     query: z.object({
-      status: z.enum(["AVAILABLE", "EN_ROUTE", "ON_JOB", "BREAK", "OFF_DUTY"]).optional(),
+      status: z
+        .enum(["AVAILABLE", "EN_ROUTE", "ON_JOB", "BREAK", "OFF_DUTY"])
+        .optional(),
       skill: z.string().optional(),
       page: z.coerce.number().int().min(1).default(1),
       limit: z.coerce.number().int().min(1).max(100).default(25),
@@ -494,7 +504,7 @@ export const fieldServiceEndpoints = {
           startTime: z.string().datetime(),
           endTime: z.string().datetime(),
           durationMinutes: z.number(),
-        })
+        }),
       ),
     }),
   },
@@ -516,7 +526,7 @@ export const fieldServiceEndpoints = {
           type: z.string(),
           message: z.string(),
           severity: z.enum(["WARNING", "ERROR"]),
-        })
+        }),
       ),
       executionTimeMs: z.number(),
     }),
@@ -589,7 +599,7 @@ export const fieldServiceEndpoints = {
           sequence: z.number(),
           jobId: uuidSchema,
           eta: z.string().datetime(),
-        })
+        }),
       ),
       totalDistance: z.number(),
       totalDuration: z.number(),
@@ -659,8 +669,8 @@ export abstract class FieldServiceHandler<T> {
           result.error.issues.map((issue) => [
             issue.path.join("."),
             issue.message,
-          ])
-        )
+          ]),
+        ),
       );
     }
     return result.data;
@@ -677,7 +687,10 @@ export abstract class FieldServiceHandler<T> {
     };
   }
 
-  protected error(error: ApiError | Error, duration: number): ApiResponse<never> {
+  protected error(
+    error: ApiError | Error,
+    duration: number,
+  ): ApiResponse<never> {
     if (error instanceof ApiError) {
       return {
         success: false,

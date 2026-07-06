@@ -4,16 +4,16 @@
  * Simple key-value memory for cross-session context
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-const MEMORY_DIR = path.join(process.cwd(), '.claude-flow', 'data');
-const MEMORY_FILE = path.join(MEMORY_DIR, 'memory.json');
+const MEMORY_DIR = path.join(process.cwd(), ".claude-flow", "data");
+const MEMORY_FILE = path.join(MEMORY_DIR, "memory.json");
 
 function loadMemory() {
   try {
     if (fs.existsSync(MEMORY_FILE)) {
-      return JSON.parse(fs.readFileSync(MEMORY_FILE, 'utf-8'));
+      return JSON.parse(fs.readFileSync(MEMORY_FILE, "utf-8"));
     }
   } catch (e) {
     // Ignore
@@ -36,7 +36,7 @@ const commands = {
 
   set: (key, value) => {
     if (!key) {
-      console.error('Key required');
+      console.error("Key required");
       return;
     }
     const memory = loadMemory();
@@ -48,7 +48,7 @@ const commands = {
 
   delete: (key) => {
     if (!key) {
-      console.error('Key required');
+      console.error("Key required");
       return;
     }
     const memory = loadMemory();
@@ -59,25 +59,25 @@ const commands = {
 
   clear: () => {
     saveMemory({});
-    console.log('Memory cleared');
+    console.log("Memory cleared");
   },
 
   keys: () => {
     const memory = loadMemory();
-    const keys = Object.keys(memory).filter(k => !k.startsWith('_'));
-    console.log(keys.join('\n'));
+    const keys = Object.keys(memory).filter((k) => !k.startsWith("_"));
+    console.log(keys.join("\n"));
     return keys;
   },
 };
 
 // CLI
-const [,, command, key, ...valueParts] = process.argv;
-const value = valueParts.join(' ');
+const [, , command, key, ...valueParts] = process.argv;
+const value = valueParts.join(" ");
 
 if (command && commands[command]) {
   commands[command](key, value);
 } else {
-  console.log('Usage: memory.js <get|set|delete|clear|keys> [key] [value]');
+  console.log("Usage: memory.js <get|set|delete|clear|keys> [key] [value]");
 }
 
 module.exports = commands;

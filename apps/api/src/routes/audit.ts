@@ -36,61 +36,61 @@ async function auditRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── QUERY AUDIT LOG ─────────────────────────────────────────
 
-  fastify.get(
-    "/",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const query = auditQuerySchema.parse(request.query);
+  fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const query = auditQuerySchema.parse(request.query);
 
-        const pageNum = query.page;
-        const pageSize = query.limit;
-        const skip = (pageNum - 1) * pageSize;
+      const pageNum = query.page;
+      const pageSize = query.limit;
+      const skip = (pageNum - 1) * pageSize;
 
-        let whereClause = "WHERE shop_id = $1::uuid";
-        const params: any[] = [(request as any).shopId];
-        let paramCount = 1;
+      let whereClause = "WHERE shop_id = $1::uuid";
+      const params: any[] = [(request as any).shopId];
+      let paramCount = 1;
 
-        if (query.resource) {
-          paramCount++;
-          whereClause += ` AND resource_type = $${paramCount}::text`;
-          params.push(query.resource);
-        }
+      if (query.resource) {
+        paramCount++;
+        whereClause += ` AND resource_type = $${paramCount}::text`;
+        params.push(query.resource);
+      }
 
-        if (query.userId) {
-          paramCount++;
-          whereClause += ` AND user_id = $${paramCount}::uuid`;
-          params.push(query.userId);
-        }
+      if (query.userId) {
+        paramCount++;
+        whereClause += ` AND user_id = $${paramCount}::uuid`;
+        params.push(query.userId);
+      }
 
-        if (query.action) {
-          paramCount++;
-          whereClause += ` AND action = $${paramCount}::text`;
-          params.push(query.action);
-        }
+      if (query.action) {
+        paramCount++;
+        whereClause += ` AND action = $${paramCount}::text`;
+        params.push(query.action);
+      }
 
-        if (query.startDate) {
-          paramCount++;
-          whereClause += ` AND created_at >= $${paramCount}::timestamptz`;
-          params.push(query.startDate);
-        }
+      if (query.startDate) {
+        paramCount++;
+        whereClause += ` AND created_at >= $${paramCount}::timestamptz`;
+        params.push(query.startDate);
+      }
 
-        if (query.endDate) {
-          paramCount++;
-          whereClause += ` AND created_at <= $${paramCount}::timestamptz`;
-          params.push(query.endDate);
-        }
+      if (query.endDate) {
+        paramCount++;
+        whereClause += ` AND created_at <= $${paramCount}::timestamptz`;
+        params.push(query.endDate);
+      }
 
-        // Get total count
-        const countResult: any[] = await (request as any).tenantDb.$queryRawUnsafe(
-          `SELECT COUNT(*) as count FROM audit_logs ${whereClause}`,
-          ...params
-        );
-        const total = Number(countResult[0]?.count || 0);
+      // Get total count
+      const countResult: any[] = await (
+        request as any
+      ).tenantDb.$queryRawUnsafe(
+        `SELECT COUNT(*) as count FROM audit_logs ${whereClause}`,
+        ...params,
+      );
+      const total = Number(countResult[0]?.count || 0);
 
-        // Get paginated results
-        paramCount += 2;
-        const result: any[] = await (request as any).tenantDb.$queryRawUnsafe(
-          `
+      // Get paginated results
+      paramCount += 2;
+      const result: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+        `
             SELECT
               id, shop_id, user_id, action, resource_type, resource_id,
               changes, ip_address, user_agent, metadata, created_at
@@ -100,26 +100,25 @@ async function auditRoutes(fastify: FastifyInstance): Promise<void> {
             LIMIT $${paramCount - 1}::int
             OFFSET $${paramCount}::int
           `,
-          ...params,
-          pageSize,
-          skip
-        );
+        ...params,
+        pageSize,
+        skip,
+      );
 
-        return {
-          data: result,
-          pagination: {
-            page: pageNum,
-            limit: pageSize,
-            total,
-            pages: Math.ceil(total / pageSize),
-          },
-        };
-      } catch (error) {
-        fastify.log.error({ err: error }, "Failed to query audit log");
-        return reply.code(500).send({ error: "Failed to query audit log" });
-      }
+      return {
+        data: result,
+        pagination: {
+          page: pageNum,
+          limit: pageSize,
+          total,
+          pages: Math.ceil(total / pageSize),
+        },
+      };
+    } catch (error) {
+      fastify.log.error({ err: error }, "Failed to query audit log");
+      return reply.code(500).send({ error: "Failed to query audit log" });
     }
-  );
+  });
 
   // ── GET ENTITY HISTORY ──────────────────────────────────────
 
@@ -137,28 +136,39 @@ async function auditRoutes(fastify: FastifyInstance): Promise<void> {
         };
 
         const pageNum = Math.max(1, parseInt(String(page)) || 1);
-        const pageSize = Math.min(200, Math.max(1, parseInt(String(limit)) || 50));
+        const pageSize = Math.min(
+          200,
+          Math.max(1, parseInt(String(limit)) || 50),
+        );
         const skip = (pageNum - 1) * pageSize;
 
         // Verify UUID format for resource ID
-        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+        if (
+          !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            id,
+          )
+        ) {
           return reply.code(400).send({ error: "Invalid resource ID format" });
         }
 
         // Get total count
-        const countResult: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+        const countResult: any[] = await (
+          request as any
+        ).tenantDb.$queryRawUnsafe(
           `
             SELECT COUNT(*) as count FROM audit_logs
             WHERE shop_id = $1::uuid AND resource_type = $2::text AND resource_id = $3::uuid
           `,
           (request as any).shopId,
           resource,
-          id
+          id,
         );
         const total = Number(countResult[0]?.count || 0);
 
         if (total === 0) {
-          return reply.code(404).send({ error: "No history found for this resource" });
+          return reply
+            .code(404)
+            .send({ error: "No history found for this resource" });
         }
 
         // Get paginated results
@@ -177,7 +187,7 @@ async function auditRoutes(fastify: FastifyInstance): Promise<void> {
           resource,
           id,
           pageSize,
-          skip
+          skip,
         );
 
         return {
@@ -193,7 +203,7 @@ async function auditRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to get entity history");
         return reply.code(500).send({ error: "Failed to get entity history" });
       }
-    }
+    },
   );
 
   // ── GET USER ACTIVITY ───────────────────────────────────────
@@ -203,7 +213,13 @@ async function auditRoutes(fastify: FastifyInstance): Promise<void> {
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { userId } = request.params as { userId: string };
-        const { page = 1, limit = 50, action, startDate, endDate } = request.query as {
+        const {
+          page = 1,
+          limit = 50,
+          action,
+          startDate,
+          endDate,
+        } = request.query as {
           page?: number;
           limit?: number;
           action?: string;
@@ -212,11 +228,18 @@ async function auditRoutes(fastify: FastifyInstance): Promise<void> {
         };
 
         const pageNum = Math.max(1, parseInt(String(page)) || 1);
-        const pageSize = Math.min(200, Math.max(1, parseInt(String(limit)) || 50));
+        const pageSize = Math.min(
+          200,
+          Math.max(1, parseInt(String(limit)) || 50),
+        );
         const skip = (pageNum - 1) * pageSize;
 
         // Verify UUID format
-        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) {
+        if (
+          !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            userId,
+          )
+        ) {
           return reply.code(400).send({ error: "Invalid user ID format" });
         }
 
@@ -243,14 +266,18 @@ async function auditRoutes(fastify: FastifyInstance): Promise<void> {
         }
 
         // Get total count
-        const countResult: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+        const countResult: any[] = await (
+          request as any
+        ).tenantDb.$queryRawUnsafe(
           `SELECT COUNT(*) as count FROM audit_logs ${whereClause}`,
-          ...params
+          ...params,
         );
         const total = Number(countResult[0]?.count || 0);
 
         if (total === 0) {
-          return reply.code(404).send({ error: "No activity found for this user" });
+          return reply
+            .code(404)
+            .send({ error: "No activity found for this user" });
         }
 
         // Get paginated results
@@ -268,7 +295,7 @@ async function auditRoutes(fastify: FastifyInstance): Promise<void> {
           `,
           ...params,
           pageSize,
-          skip
+          skip,
         );
 
         return {
@@ -284,7 +311,7 @@ async function auditRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to get user activity");
         return reply.code(500).send({ error: "Failed to get user activity" });
       }
-    }
+    },
   );
 
   // ── EXPORT AUDIT LOG ────────────────────────────────────────
@@ -293,19 +320,14 @@ async function auditRoutes(fastify: FastifyInstance): Promise<void> {
     "/export",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const {
-          resource,
-          userId,
-          action,
-          startDate,
-          endDate,
-        } = request.query as {
-          resource?: string;
-          userId?: string;
-          action?: string;
-          startDate?: string;
-          endDate?: string;
-        };
+        const { resource, userId, action, startDate, endDate } =
+          request.query as {
+            resource?: string;
+            userId?: string;
+            action?: string;
+            startDate?: string;
+            endDate?: string;
+          };
 
         let whereClause = "WHERE shop_id = $1::uuid";
         const params: any[] = [(request as any).shopId];
@@ -351,7 +373,7 @@ async function auditRoutes(fastify: FastifyInstance): Promise<void> {
             ${whereClause}
             ORDER BY created_at DESC
           `,
-          ...params
+          ...params,
         );
 
         // Generate CSV
@@ -361,12 +383,12 @@ async function auditRoutes(fastify: FastifyInstance): Promise<void> {
         reply.header("Content-Type", "text/csv");
         reply.header(
           "Content-Disposition",
-          `attachment; filename="audit-export-${Date.now()}.csv"`
+          `attachment; filename="audit-export-${Date.now()}.csv"`,
         );
 
         fastify.log.info(
           { recordCount: records.length, shopId: (request as any).shopId },
-          "Audit log exported"
+          "Audit log exported",
         );
 
         return csv;
@@ -374,7 +396,7 @@ async function auditRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to export audit log");
         return reply.code(500).send({ error: "Failed to export audit log" });
       }
-    }
+    },
   );
 }
 
@@ -414,7 +436,7 @@ function generateCsv(records: any[]): string {
   const csvContent = [
     headers.map(escapeQuotes).join(","),
     ...rows.map((row) =>
-      row.map((cell) => escapeQuotes(String(cell || ""))).join(",")
+      row.map((cell) => escapeQuotes(String(cell || ""))).join(","),
     ),
   ].join("\n");
 

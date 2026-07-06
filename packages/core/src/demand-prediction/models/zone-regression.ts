@@ -9,7 +9,7 @@ import type {
   HistoricalDemand,
   ZoneCharacteristics,
   RegressionParameters,
-} from '../types';
+} from "../types";
 
 /**
  * Feature vector for regression
@@ -89,7 +89,7 @@ function invertMatrix(matrix: number[][]): number[][] {
     // Make diagonal 1
     const pivot = aug[col][col];
     if (Math.abs(pivot) < 1e-10) {
-      throw new Error('Matrix is singular');
+      throw new Error("Matrix is singular");
     }
 
     for (let j = 0; j < 2 * n; j++) {
@@ -201,7 +201,7 @@ export function trainZoneRegression(
   zoneId: string,
 ): ZoneCharacteristics {
   if (data.length < 10) {
-    throw new Error('Insufficient data for regression training');
+    throw new Error("Insufficient data for regression training");
   }
 
   // Filter by zone
@@ -211,7 +211,8 @@ export function trainZoneRegression(
   }
 
   // Calculate zone characteristics
-  const historicalAvg = zoneData.reduce((sum, d) => sum + d.value, 0) / zoneData.length;
+  const historicalAvg =
+    zoneData.reduce((sum, d) => sum + d.value, 0) / zoneData.length;
 
   // Day of week factors
   const dayOfWeekSums: Record<number, { sum: number; count: number }> = {};
@@ -226,7 +227,10 @@ export function trainZoneRegression(
 
   const dayOfWeekFactors: Record<number, number> = {};
   for (let i = 0; i < 7; i++) {
-    const avg = dayOfWeekSums[i].count > 0 ? dayOfWeekSums[i].sum / dayOfWeekSums[i].count : historicalAvg;
+    const avg =
+      dayOfWeekSums[i].count > 0
+        ? dayOfWeekSums[i].sum / dayOfWeekSums[i].count
+        : historicalAvg;
     dayOfWeekFactors[i] = avg / historicalAvg;
   }
 
@@ -243,16 +247,23 @@ export function trainZoneRegression(
 
   const hourFactors: Record<number, number> = {};
   for (let i = 0; i < 24; i++) {
-    const avg = hourSums[i].count > 0 ? hourSums[i].sum / hourSums[i].count : historicalAvg;
+    const avg =
+      hourSums[i].count > 0
+        ? hourSums[i].sum / hourSums[i].count
+        : historicalAvg;
     hourFactors[i] = avg / historicalAvg;
   }
 
   // Calculate trend
-  const sortedData = [...zoneData].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  const sortedData = [...zoneData].sort(
+    (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+  );
   let trend = 0;
   if (sortedData.length > 7) {
-    const firstWeekAvg = sortedData.slice(0, 7).reduce((sum, d) => sum + d.value, 0) / 7;
-    const lastWeekAvg = sortedData.slice(-7).reduce((sum, d) => sum + d.value, 0) / 7;
+    const firstWeekAvg =
+      sortedData.slice(0, 7).reduce((sum, d) => sum + d.value, 0) / 7;
+    const lastWeekAvg =
+      sortedData.slice(-7).reduce((sum, d) => sum + d.value, 0) / 7;
     trend = (lastWeekAvg - firstWeekAvg) / (firstWeekAvg || 1);
   }
 
@@ -265,7 +276,14 @@ export function trainZoneRegression(
   const weights: number[] = [];
 
   for (const d of zoneData) {
-    const features = extractFeatures(d, density, historicalAvg, dayOfWeekFactors, hourFactors, trend);
+    const features = extractFeatures(
+      d,
+      density,
+      historicalAvg,
+      dayOfWeekFactors,
+      hourFactors,
+      trend,
+    );
     featureMatrix.push([
       features.intercept,
       features.zone_density,
@@ -279,13 +297,18 @@ export function trainZoneRegression(
     targets.push(d.value);
 
     // Recent data gets higher weight
-    const ageHours = (new Date().getTime() - d.timestamp.getTime()) / (1000 * 60 * 60);
+    const ageHours =
+      (new Date().getTime() - d.timestamp.getTime()) / (1000 * 60 * 60);
     const recencyWeight = Math.exp(-ageHours / 168); // 1 week decay
     weights.push(Math.max(0.1, recencyWeight));
   }
 
   // Solve WLS
-  const coefficients = solveWeightedLeastSquares(featureMatrix, targets, weights);
+  const coefficients = solveWeightedLeastSquares(
+    featureMatrix,
+    targets,
+    weights,
+  );
 
   // Calculate residual variance
   let residualSum = 0;
@@ -297,7 +320,8 @@ export function trainZoneRegression(
     const error = targets[i] - predicted;
     residualSum += Math.pow(error, 2);
   }
-  const residualVariance = residualSum / Math.max(1, targets.length - coefficients.length);
+  const residualVariance =
+    residualSum / Math.max(1, targets.length - coefficients.length);
 
   const params: RegressionParameters = {
     intercept: coefficients[0],
@@ -339,7 +363,8 @@ export function predictWithRegression(
   prediction += features.day_of_week_factor * coefficients.day_of_week_factor;
   prediction += features.hour_factor * coefficients.hour_factor;
   prediction += features.trend * coefficients.trend;
-  prediction += features.interaction_dow_hour * coefficients.interaction_dow_hour;
+  prediction +=
+    features.interaction_dow_hour * coefficients.interaction_dow_hour;
 
   // Ensure non-negative
   prediction = Math.max(0, prediction);

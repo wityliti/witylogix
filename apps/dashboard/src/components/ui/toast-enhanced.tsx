@@ -1,17 +1,30 @@
-'use client';
+"use client";
 
-import React, { type ReactNode, createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { cn } from '../../lib/utils';
+import React, {
+  type ReactNode,
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
+import { cn } from "../../lib/utils";
 import {
   CheckCircle2,
   AlertCircle,
   AlertTriangle,
   Info,
   X,
-} from 'lucide-react';
+} from "lucide-react";
 
-type ToastType = 'success' | 'error' | 'warning' | 'info';
-type ToastPosition = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center' | 'bottom-center';
+type ToastType = "success" | "error" | "warning" | "info";
+type ToastPosition =
+  | "top-right"
+  | "top-left"
+  | "bottom-right"
+  | "bottom-left"
+  | "top-center"
+  | "bottom-center";
 
 interface Toast {
   id: string;
@@ -27,7 +40,7 @@ interface Toast {
 }
 
 interface ToastContextType {
-  addToast: (toast: Omit<Toast, 'id'>) => string;
+  addToast: (toast: Omit<Toast, "id">) => string;
   removeToast: (id: string) => void;
   toasts: Toast[];
 }
@@ -36,41 +49,46 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 const typeConfig: Record<
   ToastType,
-  { bg: string; border: string; text: string; icon: React.ComponentType<{ className?: string }> }
+  {
+    bg: string;
+    border: string;
+    text: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }
 > = {
   success: {
-    bg: 'bg-wl-success-bg',
-    border: 'border-wl-success-400',
-    text: 'text-wl-success-400',
+    bg: "bg-wl-success-bg",
+    border: "border-wl-success-400",
+    text: "text-wl-success-400",
     icon: CheckCircle2,
   },
   error: {
-    bg: 'bg-wl-danger-bg',
-    border: 'border-wl-danger-400',
-    text: 'text-wl-danger-400',
+    bg: "bg-wl-danger-bg",
+    border: "border-wl-danger-400",
+    text: "text-wl-danger-400",
     icon: AlertCircle,
   },
   warning: {
-    bg: 'bg-wl-warning-bg',
-    border: 'border-wl-warning-400',
-    text: 'text-wl-warning-400',
+    bg: "bg-wl-warning-bg",
+    border: "border-wl-warning-400",
+    text: "text-wl-warning-400",
     icon: AlertTriangle,
   },
   info: {
-    bg: 'bg-wl-info-bg',
-    border: 'border-wl-info-400',
-    text: 'text-wl-info-400',
+    bg: "bg-wl-info-bg",
+    border: "border-wl-info-400",
+    text: "text-wl-info-400",
     icon: Info,
   },
 };
 
 const positionClasses: Record<ToastPosition, string> = {
-  'top-right': 'top-4 right-4',
-  'top-left': 'top-4 left-4',
-  'bottom-right': 'bottom-4 right-4',
-  'bottom-left': 'bottom-4 left-4',
-  'top-center': 'top-4 left-1/2 -translate-x-1/2',
-  'bottom-center': 'bottom-4 left-1/2 -translate-x-1/2',
+  "top-right": "top-4 right-4",
+  "top-left": "top-4 left-4",
+  "bottom-right": "bottom-4 right-4",
+  "bottom-left": "bottom-4 left-4",
+  "top-center": "top-4 left-1/2 -translate-x-1/2",
+  "bottom-center": "bottom-4 left-1/2 -translate-x-1/2",
 };
 
 const MAX_VISIBLE_TOASTS = 5;
@@ -82,10 +100,10 @@ const MAX_VISIBLE_TOASTS = 5;
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const addToast = useCallback((toast: Omit<Toast, 'id'>) => {
+  const addToast = useCallback((toast: Omit<Toast, "id">) => {
     const id = `toast-${Date.now()}-${Math.random()}`;
     const duration = toast.duration ?? 5000;
-    const position = toast.position ?? 'top-right';
+    const position = toast.position ?? "top-right";
 
     const newToast: Toast = {
       ...toast,
@@ -97,7 +115,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToasts((prev) => {
       const filtered = prev.filter((t) => t.position === position);
       const willExceed = filtered.length >= MAX_VISIBLE_TOASTS;
-      const updated = willExceed ? [...filtered.slice(1), newToast] : [...prev, newToast];
+      const updated = willExceed
+        ? [...filtered.slice(1), newToast]
+        : [...prev, newToast];
       return updated;
     });
 
@@ -133,7 +153,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 export function useToast() {
   const context = useContext(ToastContext);
   if (!context) {
-    throw new Error('useToast must be used within ToastProvider');
+    throw new Error("useToast must be used within ToastProvider");
   }
   return context;
 }
@@ -146,12 +166,12 @@ interface ToastContainerProps {
 function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
   const groupedByPosition = toasts.reduce(
     (acc, toast) => {
-      const pos = toast.position ?? 'top-right';
+      const pos = toast.position ?? "top-right";
       if (!acc[pos]) acc[pos] = [];
       acc[pos].push(toast);
       return acc;
     },
-    {} as Record<ToastPosition, Toast[]>
+    {} as Record<ToastPosition, Toast[]>,
   );
 
   return (
@@ -160,17 +180,13 @@ function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
         <div
           key={position}
           className={cn(
-            'fixed z-50 flex flex-col gap-3 pointer-events-none',
+            "fixed z-50 flex flex-col gap-3 pointer-events-none",
             positionClasses[position as ToastPosition],
-            position.includes('center') && 'w-full max-w-sm px-4'
+            position.includes("center") && "w-full max-w-sm px-4",
           )}
         >
           {positionToasts.map((toast) => (
-            <ToastItem
-              key={toast.id}
-              toast={toast}
-              onRemove={onRemove}
-            />
+            <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
           ))}
         </div>
       ))}
@@ -234,12 +250,12 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
       `}</style>
       <div
         className={cn(
-          'flex flex-col bg-wl-bg-elevated rounded-lg p-4 min-w-80 max-w-96',
-          'shadow-lg pointer-events-auto toast-slide-in',
-          'border',
+          "flex flex-col bg-wl-bg-elevated rounded-lg p-4 min-w-80 max-w-96",
+          "shadow-lg pointer-events-auto toast-slide-in",
+          "border",
           config.border,
-          'group cursor-pointer',
-          'hover:shadow-xl transition-shadow duration-fast ease-default'
+          "group cursor-pointer",
+          "hover:shadow-xl transition-shadow duration-fast ease-default",
         )}
         onClick={() => onRemove(toast.id)}
         role="alert"
@@ -248,15 +264,12 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
         {/* Header */}
         <div
           className={cn(
-            'flex items-start gap-3',
-            (toast.message || toast.action) && 'mb-2'
+            "flex items-start gap-3",
+            (toast.message || toast.action) && "mb-2",
           )}
         >
           {/* Icon */}
-          <Icon className={cn(
-            'w-5 h-5 flex-shrink-0 mt-0.5',
-            config.text
-          )} />
+          <Icon className={cn("w-5 h-5 flex-shrink-0 mt-0.5", config.text)} />
 
           {/* Title and Message */}
           <div className="flex-1 min-w-0">
@@ -277,10 +290,10 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
               onRemove(toast.id);
             }}
             className={cn(
-              'flex items-center justify-center w-5 h-5 flex-shrink-0',
-              'bg-transparent border-none text-wl-text-tertiary cursor-pointer',
-              'transition-colors duration-fast ease-default',
-              'hover:text-wl-text-secondary'
+              "flex items-center justify-center w-5 h-5 flex-shrink-0",
+              "bg-transparent border-none text-wl-text-tertiary cursor-pointer",
+              "transition-colors duration-fast ease-default",
+              "hover:text-wl-text-secondary",
             )}
             aria-label="Close notification"
           >
@@ -298,10 +311,10 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
                 onRemove(toast.id);
               }}
               className={cn(
-                'text-xs font-semibold px-3 py-1.5 rounded',
-                'transition-colors duration-fast ease-default',
+                "text-xs font-semibold px-3 py-1.5 rounded",
+                "transition-colors duration-fast ease-default",
                 config.text,
-                'hover:bg-wl-bg-surface'
+                "hover:bg-wl-bg-surface",
               )}
             >
               {toast.action.label}
@@ -314,8 +327,8 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
           <div className="h-0.5 bg-wl-bg-surface rounded-full overflow-hidden mt-3">
             <div
               className={cn(
-                'h-full transition-all',
-                config.border.replace('border-', 'bg-')
+                "h-full transition-all",
+                config.border.replace("border-", "bg-"),
               )}
               style={{ width: `${progress}%` }}
             />

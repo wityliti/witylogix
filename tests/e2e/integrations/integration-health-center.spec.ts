@@ -113,9 +113,7 @@ class HealthCenterPageObject {
     }
 
     const dataPoints = Array.from({ length: 24 }, (_, i) => ({
-      timestamp: new Date(
-        Date.now() - (24 - i) * 3600000
-      ),
+      timestamp: new Date(Date.now() - (24 - i) * 3600000),
       latency: 150 + Math.random() * 100,
     }));
 
@@ -215,14 +213,12 @@ describe("E2E: Integration Health Center", () => {
 
       const grid = page.getProviderGrid();
 
-      const providerWithStatus = grid.find(
-        (p) => p.status !== undefined
-      );
+      const providerWithStatus = grid.find((p) => p.status !== undefined);
 
       expect(providerWithStatus?.status).toBeDefined();
-      expect(
-        ["healthy", "degraded", "unhealthy"]
-      ).toContain(providerWithStatus?.status);
+      expect(["healthy", "degraded", "unhealthy"]).toContain(
+        providerWithStatus?.status,
+      );
     });
 
     it("should display uptime percentage", () => {
@@ -241,9 +237,7 @@ describe("E2E: Integration Health Center", () => {
 
       const grid = page.getProviderGrid();
 
-      const degradedProviders = grid.filter(
-        (p) => p.status === "degraded"
-      );
+      const degradedProviders = grid.filter((p) => p.status === "degraded");
 
       expect(degradedProviders.length).toBeGreaterThan(0);
     });
@@ -293,10 +287,10 @@ describe("E2E: Integration Health Center", () => {
       expect(detail.p99ResponseTime).toBeDefined();
 
       expect(detail.p50ResponseTime).toBeLessThan(
-        detail.p95ResponseTime as number
+        detail.p95ResponseTime as number,
       );
       expect(detail.p95ResponseTime).toBeLessThan(
-        detail.p99ResponseTime as number
+        detail.p99ResponseTime as number,
       );
     });
 
@@ -354,9 +348,7 @@ describe("E2E: Integration Health Center", () => {
       // Simulate time passing
       const chart2 = page.getLatencyChart("Braintree");
 
-      expect(chart1.dataPoints).toHaveLength(
-        chart2.dataPoints.length
-      );
+      expect(chart1.dataPoints).toHaveLength(chart2.dataPoints.length);
     });
   });
 
@@ -378,9 +370,7 @@ describe("E2E: Integration Health Center", () => {
       const alerts = page.getAlerts("PayPal");
 
       alerts.forEach((alert) => {
-        expect(
-          ["warning", "critical", "info"]
-        ).toContain(alert.severity);
+        expect(["warning", "critical", "info"]).toContain(alert.severity);
       });
     });
 
@@ -403,8 +393,7 @@ describe("E2E: Integration Health Center", () => {
 
       if (alerts.length > 1) {
         expect(
-          alerts[0].createdAt.getTime() >=
-            alerts[1].createdAt.getTime()
+          alerts[0].createdAt.getTime() >= alerts[1].createdAt.getTime(),
         ).toBe(true);
       }
     });
@@ -445,28 +434,20 @@ describe("E2E: Integration Health Center", () => {
       expect(grid.length).toBeGreaterThan(0);
 
       // Select degraded provider
-      const degradedProvider = grid.find(
-        (p) => p.status === "degraded"
-      );
+      const degradedProvider = grid.find((p) => p.status === "degraded");
       if (degradedProvider) {
         page.selectProviderDetail(degradedProvider.name);
 
         // View detailed metrics
-        const detail = page.getProviderDetail(
-          degradedProvider.name
-        );
+        const detail = page.getProviderDetail(degradedProvider.name);
         expect(detail.status).toBeDefined();
 
         // View latency chart
-        const chart = page.getLatencyChart(
-          degradedProvider.name
-        );
+        const chart = page.getLatencyChart(degradedProvider.name);
         expect(chart.dataPoints).toBeDefined();
 
         // View alerts
-        const alerts = page.getAlerts(
-          degradedProvider.name
-        );
+        const alerts = page.getAlerts(degradedProvider.name);
         expect(alerts).toBeDefined();
 
         // Go back

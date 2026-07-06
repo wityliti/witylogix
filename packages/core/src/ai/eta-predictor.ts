@@ -215,7 +215,7 @@ export class ETAPredictor {
     segment: RouteSegment,
     vehicleType: VehicleType,
     weather: WeatherCondition,
-    departureTime: Date
+    departureTime: Date,
   ): ETAPrediction {
     const distance = segment.distance;
 
@@ -245,7 +245,8 @@ export class ETAPredictor {
     // Determine confidence based on historical data availability
     const historicalData = this.historicalData.get(segment.id);
     const hasHistoricalData =
-      historicalData && historicalData.sampleCount >= MIN_SAMPLES_FOR_HISTORICAL;
+      historicalData &&
+      historicalData.sampleCount >= MIN_SAMPLES_FOR_HISTORICAL;
     const baseConfidence = hasHistoricalData ? 85 : 70;
 
     // Confidence varies with how much data we have
@@ -314,7 +315,7 @@ export class ETAPredictor {
    */
   private updateSegmentCorrection(segmentId: string): void {
     const events = this.deliveryHistory.filter(
-      (e) => e.routeSegmentId === segmentId
+      (e) => e.routeSegmentId === segmentId,
     );
 
     if (events.length < MIN_SAMPLES_FOR_HISTORICAL) {
@@ -334,7 +335,7 @@ export class ETAPredictor {
         },
         event.vehicleType,
         event.weatherCondition,
-        event.timeOfDay
+        event.timeOfDay,
       );
 
       const ratio = event.actualDurationMinutes / predicted.estimatedMinutes;
@@ -353,7 +354,7 @@ export class ETAPredictor {
     progress: RouteProgress,
     vehicleType: VehicleType,
     weather: WeatherCondition,
-    currentTime: Date
+    currentTime: Date,
   ): ETAPrediction {
     const remainingDistance = progress.remainingDistance;
     const remainingSegment: RouteSegment = {
@@ -368,15 +369,18 @@ export class ETAPredictor {
       remainingSegment,
       vehicleType,
       weather,
-      currentTime
+      currentTime,
     );
 
     // Add any remaining stops to estimate
     if (progress.remainingStops > 0) {
       const estimatedMinPerStop = 5; // 5 min per stop
-      prediction.estimatedMinutes += progress.remainingStops * estimatedMinPerStop;
-      prediction.confidenceInterval.high += progress.remainingStops * estimatedMinPerStop;
-      prediction.confidenceInterval.low += progress.remainingStops * estimatedMinPerStop;
+      prediction.estimatedMinutes +=
+        progress.remainingStops * estimatedMinPerStop;
+      prediction.confidenceInterval.high +=
+        progress.remainingStops * estimatedMinPerStop;
+      prediction.confidenceInterval.low +=
+        progress.remainingStops * estimatedMinPerStop;
     }
 
     return prediction;
@@ -389,7 +393,7 @@ export class ETAPredictor {
     segments: RouteSegment[],
     vehicleType: VehicleType,
     weather: WeatherCondition,
-    departureTime: Date
+    departureTime: Date,
   ): {
     totalMinutes: number;
     bySegment: Map<string, number>;
@@ -406,14 +410,16 @@ export class ETAPredictor {
         segment,
         vehicleType,
         weather,
-        currentTime
+        currentTime,
       );
 
       bySegment.set(segment.id, prediction.estimatedMinutes);
       totalMinutes += prediction.estimatedMinutes;
       confidenceSum += prediction.confidencePercent;
 
-      currentTime = new Date(currentTime.getTime() + prediction.estimatedMinutes * 60000);
+      currentTime = new Date(
+        currentTime.getTime() + prediction.estimatedMinutes * 60000,
+      );
     }
 
     const avgConfidence = Math.round(confidenceSum / segments.length);
@@ -429,7 +435,7 @@ export class ETAPredictor {
    * Get historical statistics for a segment
    */
   public getSegmentStatistics(
-    segmentId: string
+    segmentId: string,
   ): HistoricalSpeedData | undefined {
     return this.historicalData.get(segmentId);
   }
@@ -442,7 +448,7 @@ export class ETAPredictor {
     cutoffDate.setDate(cutoffDate.getDate() - HISTORICAL_SPEED_WINDOW_DAYS);
 
     this.deliveryHistory = this.deliveryHistory.filter(
-      (e) => new Date(e.timeOfDay) > cutoffDate
+      (e) => new Date(e.timeOfDay) > cutoffDate,
     );
 
     // Recalculate all segment corrections
@@ -457,7 +463,8 @@ export class ETAPredictor {
       if (!existing) {
         this.historicalData.set(event.routeSegmentId, {
           segmentId: event.routeSegmentId,
-          averageSpeedKmH: event.distanceKm / (event.actualDurationMinutes / 60),
+          averageSpeedKmH:
+            event.distanceKm / (event.actualDurationMinutes / 60),
           sampleCount: 1,
           lastUpdated: new Date(),
         });

@@ -140,13 +140,15 @@ export const generateForecastSchema = z.object({
   forecastDays: z.number().int().min(7).max(365).default(90),
 });
 
-export const fmcsaLookupSchema = z.object({
-  dotNumber: z.string().optional(),
-  mcNumber: z.string().optional(),
-  companyName: z.string().optional(),
-}).refine((data) => data.dotNumber || data.mcNumber || data.companyName, {
-  message: "At least one lookup parameter required",
-});
+export const fmcsaLookupSchema = z
+  .object({
+    dotNumber: z.string().optional(),
+    mcNumber: z.string().optional(),
+    companyName: z.string().optional(),
+  })
+  .refine((data) => data.dotNumber || data.mcNumber || data.companyName, {
+    message: "At least one lookup parameter required",
+  });
 
 // ────────────────────────────────────────────────────────────────────────────
 // API HANDLER SIGNATURES
@@ -182,7 +184,7 @@ export interface ApiResponse<T> {
  */
 export async function createLane(
   context: ApiHandlerContext,
-  body: z.infer<typeof createLaneSchema>
+  body: z.infer<typeof createLaneSchema>,
 ): Promise<ApiResponse<Lane>> {
   try {
     const validated = createLaneSchema.parse(body);
@@ -221,7 +223,7 @@ export async function createLane(
  */
 export async function getLane(
   context: ApiHandlerContext,
-  laneId: string
+  laneId: string,
 ): Promise<ApiResponse<Lane>> {
   try {
     const lane = await (context.prisma as any).lane.findUnique({
@@ -259,7 +261,7 @@ export async function getLane(
  */
 export async function listLanes(
   context: ApiHandlerContext,
-  filters?: { status?: string; equipment?: string }
+  filters?: { status?: string; equipment?: string },
 ): Promise<ApiResponse<Lane[]>> {
   try {
     const lanes = await (context.prisma as any).lane.findMany({
@@ -292,7 +294,7 @@ export async function listLanes(
 export async function updateLane(
   context: ApiHandlerContext,
   laneId: string,
-  body: z.infer<typeof updateLaneSchema>
+  body: z.infer<typeof updateLaneSchema>,
 ): Promise<ApiResponse<Lane>> {
   try {
     const validated = updateLaneSchema.parse(body);
@@ -328,7 +330,7 @@ export async function updateLane(
 export async function addPricingTier(
   context: ApiHandlerContext,
   laneId: string,
-  body: z.infer<typeof addPricingTierSchema>
+  body: z.infer<typeof addPricingTierSchema>,
 ): Promise<ApiResponse<Lane>> {
   try {
     const validated = addPricingTierSchema.parse(body);
@@ -378,7 +380,7 @@ export async function addPricingTier(
  */
 export async function createContract(
   context: ApiHandlerContext,
-  body: z.infer<typeof createContractSchema>
+  body: z.infer<typeof createContractSchema>,
 ): Promise<ApiResponse<CarrierContract>> {
   try {
     const validated = createContractSchema.parse(body);
@@ -424,7 +426,7 @@ export async function createContract(
  */
 export async function getContract(
   context: ApiHandlerContext,
-  contractId: string
+  contractId: string,
 ): Promise<ApiResponse<CarrierContract>> {
   try {
     const contract = await (context.prisma as any).carrierContract.findUnique({
@@ -460,7 +462,7 @@ export async function getContract(
  */
 export async function getCarrierScorecard(
   context: ApiHandlerContext,
-  carrierId: string
+  carrierId: string,
 ): Promise<ApiResponse<ScoreCard>> {
   try {
     const scorecard = await (context.prisma as any).scoreCard.findFirst({
@@ -498,7 +500,7 @@ export async function getCarrierScorecard(
 export async function updateCarrierScorecard(
   context: ApiHandlerContext,
   carrierId: string,
-  body: any
+  body: any,
 ): Promise<ApiResponse<ScoreCard>> {
   try {
     const scorecard = await (context.prisma as any).scoreCard.create({
@@ -537,7 +539,7 @@ export async function updateCarrierScorecard(
  */
 export async function triggerAudit(
   context: ApiHandlerContext,
-  body: z.infer<typeof triggerAuditSchema>
+  body: z.infer<typeof triggerAuditSchema>,
 ): Promise<ApiResponse<AuditResult>> {
   try {
     const validated = triggerAuditSchema.parse(body);
@@ -579,7 +581,7 @@ export async function triggerAudit(
  */
 export async function getAuditResults(
   context: ApiHandlerContext,
-  auditId: string
+  auditId: string,
 ): Promise<ApiResponse<AuditResult>> {
   try {
     const result = await (context.prisma as any).auditResult.findUnique({
@@ -615,7 +617,7 @@ export async function getAuditResults(
  */
 export async function initiateNegotiation(
   context: ApiHandlerContext,
-  body: z.infer<typeof initiateNegotiationSchema>
+  body: z.infer<typeof initiateNegotiationSchema>,
 ): Promise<ApiResponse<NegotiationRound>> {
   try {
     const validated = initiateNegotiationSchema.parse(body);
@@ -626,7 +628,9 @@ export async function initiateNegotiation(
         laneId: validated.laneId,
         roundNumber: 1,
         status: "bid_requested",
-        bidDueDate: new Date(Date.now() + validated.bidDueDays * 24 * 60 * 60 * 1000),
+        bidDueDate: new Date(
+          Date.now() + validated.bidDueDays * 24 * 60 * 60 * 1000,
+        ),
         carriers: validated.carrierIds.map((id) => ({
           carrierId: id,
           carrierName: "",
@@ -655,7 +659,7 @@ export async function initiateNegotiation(
 export async function receiveBid(
   context: ApiHandlerContext,
   negotiationId: string,
-  body: z.infer<typeof receiveBidSchema>
+  body: z.infer<typeof receiveBidSchema>,
 ): Promise<ApiResponse<NegotiationRound>> {
   try {
     const validated = receiveBidSchema.parse(body);
@@ -702,7 +706,7 @@ export async function receiveBid(
 export async function awardNegotiation(
   context: ApiHandlerContext,
   negotiationId: string,
-  body: z.infer<typeof awardContractSchema>
+  body: z.infer<typeof awardContractSchema>,
 ): Promise<ApiResponse<NegotiationRound>> {
   try {
     const validated = awardContractSchema.parse(body);
@@ -739,7 +743,7 @@ export async function awardNegotiation(
  */
 export async function generateForecast(
   context: ApiHandlerContext,
-  body: z.infer<typeof generateForecastSchema>
+  body: z.infer<typeof generateForecastSchema>,
 ): Promise<ApiResponse<CapacityForecast>> {
   try {
     const validated = generateForecastSchema.parse(body);
@@ -751,7 +755,9 @@ export async function generateForecast(
         forecastDays: validated.forecastDays,
         period: {
           startDate: new Date(),
-          endDate: new Date(Date.now() + validated.forecastDays * 24 * 60 * 60 * 1000),
+          endDate: new Date(
+            Date.now() + validated.forecastDays * 24 * 60 * 60 * 1000,
+          ),
         },
         forecastData: [],
         seasonalIndex: 1.0,
@@ -784,7 +790,7 @@ export async function generateForecast(
  */
 export async function fmcsaLookup(
   context: ApiHandlerContext,
-  body: z.infer<typeof fmcsaLookupSchema>
+  body: z.infer<typeof fmcsaLookupSchema>,
 ): Promise<ApiResponse<any>> {
   try {
     const validated = fmcsaLookupSchema.parse(body);
@@ -819,7 +825,7 @@ export async function fmcsaLookup(
  */
 export async function fmcsaAudit(
   context: ApiHandlerContext,
-  dotNumber: string
+  dotNumber: string,
 ): Promise<ApiResponse<any>> {
   try {
     const auditResult = {

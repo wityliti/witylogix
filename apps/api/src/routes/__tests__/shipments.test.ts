@@ -6,7 +6,10 @@
 import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 
-vi.mock("@witylogix/db", () => ({ prisma: {}, Prisma: { sql: vi.fn((...args: any[]) => args[0].join('')) } }));
+vi.mock("@witylogix/db", () => ({
+  prisma: {},
+  Prisma: { sql: vi.fn((...args: any[]) => args[0].join("")) },
+}));
 vi.mock("../../middleware/auth.js", () => ({
   requireAuth: vi.fn(),
   requireRole: vi.fn(() => vi.fn()),
@@ -166,7 +169,9 @@ describe("Shipments Routes", () => {
         },
       ];
 
-      (request.tenantDb.shipment.findMany as any).mockResolvedValue(mockShipments);
+      (request.tenantDb.shipment.findMany as any).mockResolvedValue(
+        mockShipments,
+      );
       (request.tenantDb.shipment.count as any).mockResolvedValue(1);
 
       const handler = handlers["GET"]["/"];
@@ -193,13 +198,17 @@ describe("Shipments Routes", () => {
       expect(request.tenantDb.shipment.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ status: "DELIVERED" }),
-        })
+        }),
       );
     });
 
     it("should filter shipments by driverId", async () => {
       const request = createMockRequest({
-        query: { page: 1, limit: 20, driverId: "11111111-1111-1111-1111-111111111111" },
+        query: {
+          page: 1,
+          limit: 20,
+          driverId: "11111111-1111-1111-1111-111111111111",
+        },
       });
       const reply = createMockReply();
 
@@ -211,8 +220,10 @@ describe("Shipments Routes", () => {
 
       expect(request.tenantDb.shipment.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({ driverId: "11111111-1111-1111-1111-111111111111" }),
-        })
+          where: expect.objectContaining({
+            driverId: "11111111-1111-1111-1111-111111111111",
+          }),
+        }),
       );
     });
 
@@ -228,7 +239,8 @@ describe("Shipments Routes", () => {
       const handler = handlers["GET"]["/"];
       await handler(request, reply);
 
-      const callArgs = (request.tenantDb.shipment.findMany as any).mock.calls[0][0];
+      const callArgs = (request.tenantDb.shipment.findMany as any).mock
+        .calls[0][0];
       expect(callArgs.where.OR).toBeDefined();
     });
 
@@ -247,7 +259,7 @@ describe("Shipments Routes", () => {
       expect(request.tenantDb.shipment.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { deliveryDate: "asc" },
-        })
+        }),
       );
     });
 
@@ -267,7 +279,7 @@ describe("Shipments Routes", () => {
         expect.objectContaining({
           skip: 100,
           take: 50,
-        })
+        }),
       );
     });
   });
@@ -289,7 +301,9 @@ describe("Shipments Routes", () => {
         proofOfDelivery: null,
       };
 
-      (request.tenantDb.shipment.findUnique as any).mockResolvedValue(mockShipment);
+      (request.tenantDb.shipment.findUnique as any).mockResolvedValue(
+        mockShipment,
+      );
 
       const handler = handlers["GET"]["/:id"];
       const result = await handler(request, reply);
@@ -350,7 +364,10 @@ describe("Shipments Routes", () => {
       });
       const reply = createMockReply();
 
-      const mockOrder = { id: "11111111-1111-1111-1111-111111111111", shopId: "shop-123" };
+      const mockOrder = {
+        id: "11111111-1111-1111-1111-111111111111",
+        shopId: "shop-123",
+      };
       const mockShipment = {
         id: "ship-1",
         shipmentNumber: "SHP-ABC123",
@@ -467,8 +484,8 @@ describe("Shipments Routes", () => {
         $executeRaw: vi.fn(),
       };
 
-      (request.tenantDb.$transaction as any).mockImplementation((fn: Function) =>
-        fn(mockTx)
+      (request.tenantDb.$transaction as any).mockImplementation(
+        (fn: Function) => fn(mockTx),
       );
 
       const handler = handlers["POST"]["/"];
@@ -509,7 +526,9 @@ describe("Shipments Routes", () => {
       const handler = handlers["POST"]["/"];
       await handler(request, reply);
 
-      expect(request.tenantRedis.invalidateGroup).toHaveBeenCalledWith("shipments");
+      expect(request.tenantRedis.invalidateGroup).toHaveBeenCalledWith(
+        "shipments",
+      );
     });
   });
 
@@ -599,7 +618,9 @@ describe("Shipments Routes", () => {
       const handler = handlers["PATCH"]["/:id"];
       await handler(request, reply);
 
-      expect(request.tenantRedis.invalidateGroup).toHaveBeenCalledWith("shipments");
+      expect(request.tenantRedis.invalidateGroup).toHaveBeenCalledWith(
+        "shipments",
+      );
     });
   });
 
@@ -782,7 +803,9 @@ describe("Shipments Routes", () => {
       const handler = handlers["PATCH"]["/:id/status"];
       await handler(request, reply);
 
-      expect(request.tenantRedis.invalidateGroup).toHaveBeenCalledWith("shipments");
+      expect(request.tenantRedis.invalidateGroup).toHaveBeenCalledWith(
+        "shipments",
+      );
     });
 
     it("should throw NotFoundError for invalid shipment", async () => {
@@ -916,7 +939,9 @@ describe("Shipments Routes", () => {
       const handler = handlers["PATCH"]["/:id/assign"];
       await handler(request, reply);
 
-      expect(request.tenantRedis.invalidateGroup).toHaveBeenCalledWith("shipments");
+      expect(request.tenantRedis.invalidateGroup).toHaveBeenCalledWith(
+        "shipments",
+      );
     });
   });
 
@@ -1022,7 +1047,9 @@ describe("Shipments Routes", () => {
       const handler = handlers["DELETE"]["/:id"];
       await handler(request, reply);
 
-      expect(request.tenantRedis.invalidateGroup).toHaveBeenCalledWith("shipments");
+      expect(request.tenantRedis.invalidateGroup).toHaveBeenCalledWith(
+        "shipments",
+      );
     });
   });
 
@@ -1051,7 +1078,9 @@ describe("Shipments Routes", () => {
       (request.tenantDb.shipment.findUnique as any).mockResolvedValue({
         id: "ship-1",
       });
-      (request.tenantDb.activityLog.findMany as any).mockResolvedValue(mockLogs);
+      (request.tenantDb.activityLog.findMany as any).mockResolvedValue(
+        mockLogs,
+      );
 
       const handler = handlers["GET"]["/:id/timeline"];
       const result = await handler(request, reply);
@@ -1107,7 +1136,7 @@ describe("Shipments Routes", () => {
       expect(request.tenantDb.activityLog.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { timestamp: "asc" },
-        })
+        }),
       );
     });
   });
@@ -1153,7 +1182,7 @@ describe("Shipments Routes", () => {
       const reply = createMockReply();
 
       (request.tenantDb.shipment.findUnique as any).mockRejectedValue(
-        new Error("Database connection failed")
+        new Error("Database connection failed"),
       );
 
       const handler = handlers["GET"]["/:id"];
@@ -1182,10 +1211,15 @@ describe("Shipments Routes", () => {
       const handler = handlers["GET"]["/"];
       await handler(request, reply);
 
-      const callArgs = (request.tenantDb.shipment.findMany as any).mock.calls[0][0];
+      const callArgs = (request.tenantDb.shipment.findMany as any).mock
+        .calls[0][0];
       expect(callArgs.where.status).toBe("PENDING");
-      expect(callArgs.where.driverId).toBe("ffffffff-ffff-ffff-ffff-ffffffffffff");
-      expect(callArgs.where.orderId).toBe("00000000-0000-0000-0000-000000000001");
+      expect(callArgs.where.driverId).toBe(
+        "ffffffff-ffff-ffff-ffff-ffffffffffff",
+      );
+      expect(callArgs.where.orderId).toBe(
+        "00000000-0000-0000-0000-000000000001",
+      );
     });
 
     it("should support concurrent shipment queries", async () => {
@@ -1204,10 +1238,7 @@ describe("Shipments Routes", () => {
 
       const handler = handlers["GET"]["/"];
 
-      await Promise.all([
-        handler(request1, reply),
-        handler(request2, reply),
-      ]);
+      await Promise.all([handler(request1, reply), handler(request2, reply)]);
 
       expect(request1.tenantDb.shipment.findMany).toHaveBeenCalled();
       expect(request2.tenantDb.shipment.findMany).toHaveBeenCalled();

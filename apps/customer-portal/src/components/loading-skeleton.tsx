@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 interface SkeletonProps {
   className?: string;
@@ -9,10 +9,7 @@ interface SkeletonProps {
 export function Skeleton({ className }: SkeletonProps) {
   return (
     <div
-      className={cn(
-        'animate-pulse rounded-md bg-wl-bg-elevated',
-        className,
-      )}
+      className={cn("animate-pulse rounded-md bg-wl-bg-elevated", className)}
       aria-hidden="true"
     />
   );
@@ -68,7 +65,7 @@ interface ErrorMessageProps {
 }
 
 export function ErrorMessage({
-  message = 'Something went wrong. Please try again.',
+  message = "Something went wrong. Please try again.",
   onRetry,
 }: ErrorMessageProps) {
   return (
@@ -94,7 +91,12 @@ interface EmptyStateProps {
   action?: React.ReactNode;
 }
 
-export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+export function EmptyState({
+  icon,
+  title,
+  description,
+  action,
+}: EmptyStateProps) {
   return (
     <div className="section-card flex flex-col items-center gap-3 py-14 text-center">
       {icon && (

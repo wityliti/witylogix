@@ -8,10 +8,7 @@ export function Skeleton({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn(
-        "animate-pulse bg-wl-bg-surface rounded",
-        className
-      )}
+      className={cn("animate-pulse bg-wl-bg-surface rounded", className)}
       {...props}
     />
   );
@@ -29,10 +26,7 @@ export function SkeletonText({
       {Array.from({ length: lines }).map((_, i) => (
         <Skeleton
           key={i}
-          className={cn(
-            "h-4 rounded",
-            i === lines - 1 && "w-3/4"
-          )}
+          className={cn("h-4 rounded", i === lines - 1 && "w-3/4")}
         />
       ))}
     </div>
@@ -52,15 +46,7 @@ export function SkeletonCircle({
     lg: "w-16 h-16",
   }[size];
 
-  return (
-    <Skeleton
-      className={cn(
-        "rounded-full",
-        sizeClass,
-        className
-      )}
-    />
-  );
+  return <Skeleton className={cn("rounded-full", sizeClass, className)} />;
 }
 
 export function SkeletonRow({
@@ -75,27 +61,19 @@ export function SkeletonRow({
       {Array.from({ length: columns }).map((_, i) => (
         <Skeleton
           key={i}
-          className={cn(
-            "h-6 rounded",
-            i === 0 && "w-12",
-            i > 0 && "flex-1"
-          )}
+          className={cn("h-6 rounded", i === 0 && "w-12", i > 0 && "flex-1")}
         />
       ))}
     </div>
   );
 }
 
-export function SkeletonCard({
-  className,
-}: {
-  className?: string;
-}) {
+export function SkeletonCard({ className }: { className?: string }) {
   return (
     <div
       className={cn(
         "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5 space-y-4",
-        className
+        className,
       )}
     >
       <div className="space-y-2">
@@ -124,17 +102,14 @@ export function SkeletonTable({
     <div
       className={cn(
         "border border-wl-border-subtle rounded-lg overflow-hidden",
-        className
+        className,
       )}
     >
       {/* Header */}
       <div className="bg-wl-bg-surface border-b border-wl-border-subtle p-4">
         <div className="flex gap-4">
           {Array.from({ length: columns }).map((_, i) => (
-            <Skeleton
-              key={`header-${i}`}
-              className="h-4 flex-1 rounded"
-            />
+            <Skeleton key={`header-${i}`} className="h-4 flex-1 rounded" />
           ))}
         </div>
       </div>
@@ -142,10 +117,7 @@ export function SkeletonTable({
       {/* Rows */}
       <div className="divide-y divide-wl-border-subtle">
         {Array.from({ length: rows }).map((_, rowIdx) => (
-          <div
-            key={`row-${rowIdx}`}
-            className="p-4 flex gap-4"
-          >
+          <div key={`row-${rowIdx}`} className="p-4 flex gap-4">
             {Array.from({ length: columns }).map((_, colIdx) => (
               <Skeleton
                 key={`cell-${rowIdx}-${colIdx}`}

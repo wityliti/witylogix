@@ -15,32 +15,53 @@
  * Run with: npm test -- credential-vault.test.ts
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { CredentialVault } from '../credential-vault.js';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { CredentialVault } from "../credential-vault.js";
 import type {
   CredentialEntry,
   EncryptedCredential,
   ICredentialPersistence,
   VaultConfig,
-} from '../credential-vault.js';
-import type { CryptoService } from '../../../encryption/crypto.js';
-import type { AuditLogger } from '../../../audit/logger.js';
+} from "../credential-vault.js";
+import type { CryptoService } from "../../../encryption/crypto.js";
+import type { AuditLogger } from "../../../audit/logger.js";
 
 // ─── Mock Implementations ────────────────────────────────────────
 
 class MockCryptoService {
   getActiveKeyId(): string {
-    return 'v1';
+    return "v1";
   }
 
   // Simple reversible base64 "encryption" for tests — not secure, just functional
-  encrypt(plaintext: string, _keyId?: string): { algorithm: string; iv: string; authTag: string; data: string; keyId: string } {
-    const data = Buffer.from(plaintext, 'utf8').toString('base64');
-    return { algorithm: 'aes-256-gcm', iv: 'dGVzdGl2MTIzNDU2', authTag: 'dGVzdHRhZw==', data, keyId: _keyId ?? 'v1' };
+  encrypt(
+    plaintext: string,
+    _keyId?: string,
+  ): {
+    algorithm: string;
+    iv: string;
+    authTag: string;
+    data: string;
+    keyId: string;
+  } {
+    const data = Buffer.from(plaintext, "utf8").toString("base64");
+    return {
+      algorithm: "aes-256-gcm",
+      iv: "dGVzdGl2MTIzNDU2",
+      authTag: "dGVzdHRhZw==",
+      data,
+      keyId: _keyId ?? "v1",
+    };
   }
 
-  decrypt(payload: { algorithm: string; iv: string; authTag?: string; data: string; keyId?: string }): string {
-    return Buffer.from(payload.data, 'base64').toString('utf8');
+  decrypt(payload: {
+    algorithm: string;
+    iv: string;
+    authTag?: string;
+    data: string;
+    keyId?: string;
+  }): string {
+    return Buffer.from(payload.data, "base64").toString("utf8");
   }
 }
 
@@ -51,7 +72,10 @@ class MockPersistenceLayer implements ICredentialPersistence {
     this.storage.set(credential.id, credential);
   }
 
-  async retrieve(tenantId: string, providerId: string): Promise<EncryptedCredential | null> {
+  async retrieve(
+    tenantId: string,
+    providerId: string,
+  ): Promise<EncryptedCredential | null> {
     const id = `${tenantId}:${providerId}`;
     return this.storage.get(id) ?? null;
   }
@@ -63,7 +87,9 @@ class MockPersistenceLayer implements ICredentialPersistence {
 
   async listByTenant(tenantId: string): Promise<EncryptedCredential[]> {
     const prefix = `${tenantId}:`;
-    return Array.from(this.storage.values()).filter((c) => c.id.startsWith(prefix));
+    return Array.from(this.storage.values()).filter((c) =>
+      c.id.startsWith(prefix),
+    );
   }
 
   async rotateKey(): Promise<void> {
@@ -85,7 +111,7 @@ class MockAuditLogger implements AuditLogger {
 
 // ─── Tests ──────────────────────────────────────────────────────────
 
-describe('CredentialVault', () => {
+describe("CredentialVault", () => {
   let vault: CredentialVault;
   let persistence: MockPersistenceLayer;
   let auditLogger: MockAuditLogger;
@@ -109,34 +135,34 @@ describe('CredentialVault', () => {
 
   // ─── STORE TESTS ────────────────────────────────────────────────
 
-  describe('store', () => {
-    it('should encrypt and store a credential', async () => {
+  describe("store", () => {
+    it("should encrypt and store a credential", async () => {
       const entry: CredentialEntry = {
-        tenantId: 'tenant-123',
-        providerId: 'stripe',
-        credentialType: 'api_key',
+        tenantId: "tenant-123",
+        providerId: "stripe",
+        credentialType: "api_key",
         credential: {
-          apiKey: 'sk_live_FAKEKEY12345',
+          apiKey: "sk_live_FAKEKEY12345",
         },
       };
 
       const result = await vault.store(entry);
 
-      expect(result.tenantId).toBe('tenant-123');
-      expect(result.providerId).toBe('stripe');
-      expect(result.credentialType).toBe('api_key');
+      expect(result.tenantId).toBe("tenant-123");
+      expect(result.providerId).toBe("stripe");
+      expect(result.credentialType).toBe("api_key");
       expect(result.encryptedData).toBeDefined();
       expect(result.iv).toBeDefined();
       expect(result.authTag).toBeDefined();
     });
 
-    it('should support credential expiration', async () => {
+    it("should support credential expiration", async () => {
       const entry: CredentialEntry = {
-        tenantId: 'tenant-123',
-        providerId: 'stripe',
-        credentialType: 'api_key',
+        tenantId: "tenant-123",
+        providerId: "stripe",
+        credentialType: "api_key",
         credential: {
-          apiKey: 'sk_live_FAKEKEY12345',
+          apiKey: "sk_live_FAKEKEY12345",
         },
       };
 
@@ -146,13 +172,13 @@ describe('CredentialVault', () => {
       expect(result.expiresAt).toEqual(expiresAt);
     });
 
-    it('should audit log the store operation', async () => {
+    it("should audit log the store operation", async () => {
       const entry: CredentialEntry = {
-        tenantId: 'tenant-123',
-        providerId: 'stripe',
-        credentialType: 'api_key',
+        tenantId: "tenant-123",
+        providerId: "stripe",
+        credentialType: "api_key",
         credential: {
-          apiKey: 'sk_live_FAKEKEY12345',
+          apiKey: "sk_live_FAKEKEY12345",
         },
       };
 
@@ -160,97 +186,99 @@ describe('CredentialVault', () => {
 
       expect(auditLogger.logs).toContainEqual(
         expect.objectContaining({
-          action: 'credential_stored',
-          tenantId: 'tenant-123',
+          action: "credential_stored",
+          tenantId: "tenant-123",
         }),
       );
     });
 
-    it('should emit credential_stored event', async () => {
+    it("should emit credential_stored event", async () => {
       const entry: CredentialEntry = {
-        tenantId: 'tenant-123',
-        providerId: 'stripe',
-        credentialType: 'api_key',
+        tenantId: "tenant-123",
+        providerId: "stripe",
+        credentialType: "api_key",
         credential: {
-          apiKey: 'sk_live_FAKEKEY12345',
+          apiKey: "sk_live_FAKEKEY12345",
         },
       };
 
       const eventHandler = vi.fn();
-      vault.on('credential_stored', eventHandler);
+      vault.on("credential_stored", eventHandler);
 
       await vault.store(entry);
 
       expect(eventHandler).toHaveBeenCalledWith({
-        tenantId: 'tenant-123',
-        providerId: 'stripe',
+        tenantId: "tenant-123",
+        providerId: "stripe",
       });
     });
   });
 
   // ─── RETRIEVE TESTS ─────────────────────────────────────────────
 
-  describe('retrieve', () => {
-    it('should return null for non-existent credential', async () => {
-      const result = await vault.retrieve('tenant-123', 'stripe');
+  describe("retrieve", () => {
+    it("should return null for non-existent credential", async () => {
+      const result = await vault.retrieve("tenant-123", "stripe");
       expect(result).toBeNull();
     });
 
-    it('should retrieve and decrypt a stored credential', async () => {
+    it("should retrieve and decrypt a stored credential", async () => {
       const entry: CredentialEntry = {
-        tenantId: 'tenant-123',
-        providerId: 'stripe',
-        credentialType: 'api_key',
+        tenantId: "tenant-123",
+        providerId: "stripe",
+        credentialType: "api_key",
         credential: {
-          apiKey: 'sk_live_FAKEKEY12345',
+          apiKey: "sk_live_FAKEKEY12345",
         },
       };
 
       await vault.store(entry);
-      const retrieved = await vault.retrieve('tenant-123', 'stripe');
+      const retrieved = await vault.retrieve("tenant-123", "stripe");
 
       expect(retrieved).toBeDefined();
-      expect(retrieved?.tenantId).toBe('tenant-123');
-      expect(retrieved?.providerId).toBe('stripe');
-      expect(retrieved?.credential.apiKey).toBe('sk_live_FAKEKEY12345');
+      expect(retrieved?.tenantId).toBe("tenant-123");
+      expect(retrieved?.providerId).toBe("stripe");
+      expect(retrieved?.credential.apiKey).toBe("sk_live_FAKEKEY12345");
     });
 
-    it('should use cache on second retrieve', async () => {
+    it("should use cache on second retrieve", async () => {
       const entry: CredentialEntry = {
-        tenantId: 'tenant-123',
-        providerId: 'stripe',
-        credentialType: 'api_key',
+        tenantId: "tenant-123",
+        providerId: "stripe",
+        credentialType: "api_key",
         credential: {
-          apiKey: 'sk_live_FAKEKEY12345',
+          apiKey: "sk_live_FAKEKEY12345",
         },
       };
 
       await vault.store(entry);
 
-      const first = await vault.retrieve('tenant-123', 'stripe');
-      const second = await vault.retrieve('tenant-123', 'stripe');
+      const first = await vault.retrieve("tenant-123", "stripe");
+      const second = await vault.retrieve("tenant-123", "stripe");
 
       expect(first).toEqual(second);
 
       // Check that retrieve from cache was logged
-      const logs = auditLogger.logs.filter((l) => l.action === 'credential_retrieved_cached');
+      const logs = auditLogger.logs.filter(
+        (l) => l.action === "credential_retrieved_cached",
+      );
       expect(logs.length).toBeGreaterThan(0);
     });
 
-    it('should reject expired credentials', async () => {
+    it("should reject expired credentials", async () => {
       const entry: CredentialEntry = {
-        tenantId: 'tenant-123',
-        providerId: 'stripe',
-        credentialType: 'api_key',
+        tenantId: "tenant-123",
+        providerId: "stripe",
+        credentialType: "api_key",
         credential: {
-          apiKey: 'sk_live_FAKEKEY12345',
+          apiKey: "sk_live_FAKEKEY12345",
         },
       };
 
       const expiresAt = new Date(Date.now() - 1000); // Expired 1 second ago
       await vault.store(entry, expiresAt);
 
-      const result = await vault.retrieve('tenant-123', 'stripe');
+      const result = await vault.retrieve("tenant-123", "stripe");
 
       expect(result).toBeNull();
     });
@@ -258,14 +286,14 @@ describe('CredentialVault', () => {
 
   // ─── UPDATE TESTS ────────────────────────────────────────────────
 
-  describe('update', () => {
-    it('should update a credential', async () => {
+  describe("update", () => {
+    it("should update a credential", async () => {
       const entry: CredentialEntry = {
-        tenantId: 'tenant-123',
-        providerId: 'stripe',
-        credentialType: 'api_key',
+        tenantId: "tenant-123",
+        providerId: "stripe",
+        credentialType: "api_key",
         credential: {
-          apiKey: 'sk_live_FAKEKEY12345',
+          apiKey: "sk_live_FAKEKEY12345",
         },
       };
 
@@ -274,52 +302,52 @@ describe('CredentialVault', () => {
       const updated: CredentialEntry = {
         ...entry,
         credential: {
-          apiKey: 'sk_live_NEWFAKE67890',
+          apiKey: "sk_live_NEWFAKE67890",
         },
       };
 
       await vault.update(updated);
-      const retrieved = await vault.retrieve('tenant-123', 'stripe');
+      const retrieved = await vault.retrieve("tenant-123", "stripe");
 
-      expect(retrieved?.credential.apiKey).toBe('sk_live_NEWFAKE67890');
+      expect(retrieved?.credential.apiKey).toBe("sk_live_NEWFAKE67890");
     });
   });
 
   // ─── DELETE TESTS ────────────────────────────────────────────────
 
-  describe('delete', () => {
-    it('should delete a credential', async () => {
+  describe("delete", () => {
+    it("should delete a credential", async () => {
       const entry: CredentialEntry = {
-        tenantId: 'tenant-123',
-        providerId: 'stripe',
-        credentialType: 'api_key',
+        tenantId: "tenant-123",
+        providerId: "stripe",
+        credentialType: "api_key",
         credential: {
-          apiKey: 'sk_live_FAKEKEY12345',
+          apiKey: "sk_live_FAKEKEY12345",
         },
       };
 
       await vault.store(entry);
-      await vault.delete('tenant-123', 'stripe');
+      await vault.delete("tenant-123", "stripe");
 
-      const result = await vault.retrieve('tenant-123', 'stripe');
+      const result = await vault.retrieve("tenant-123", "stripe");
       expect(result).toBeNull();
     });
 
-    it('should emit credential_deleted event', async () => {
+    it("should emit credential_deleted event", async () => {
       const entry: CredentialEntry = {
-        tenantId: 'tenant-123',
-        providerId: 'stripe',
-        credentialType: 'api_key',
+        tenantId: "tenant-123",
+        providerId: "stripe",
+        credentialType: "api_key",
         credential: {
-          apiKey: 'sk_live_FAKEKEY12345',
+          apiKey: "sk_live_FAKEKEY12345",
         },
       };
 
       const eventHandler = vi.fn();
-      vault.on('credential_deleted', eventHandler);
+      vault.on("credential_deleted", eventHandler);
 
       await vault.store(entry);
-      await vault.delete('tenant-123', 'stripe');
+      await vault.delete("tenant-123", "stripe");
 
       expect(eventHandler).toHaveBeenCalled();
     });
@@ -327,125 +355,125 @@ describe('CredentialVault', () => {
 
   // ─── MASK TESTS ─────────────────────────────────────────────────
 
-  describe('getMasked', () => {
-    it('should return null for non-existent credential', async () => {
-      const result = await vault.getMasked('tenant-123', 'stripe');
+  describe("getMasked", () => {
+    it("should return null for non-existent credential", async () => {
+      const result = await vault.getMasked("tenant-123", "stripe");
       expect(result).toBeNull();
     });
 
-    it('should mask credential values', async () => {
+    it("should mask credential values", async () => {
       const entry: CredentialEntry = {
-        tenantId: 'tenant-123',
-        providerId: 'stripe',
-        credentialType: 'api_key',
+        tenantId: "tenant-123",
+        providerId: "stripe",
+        credentialType: "api_key",
         credential: {
-          apiKey: 'sk_live_FAKEKEY12345',
-          secret: 'my_secret_password',
+          apiKey: "sk_live_FAKEKEY12345",
+          secret: "my_secret_password",
         },
       };
 
       await vault.store(entry);
-      const masked = await vault.getMasked('tenant-123', 'stripe');
+      const masked = await vault.getMasked("tenant-123", "stripe");
 
       expect(masked).toBeDefined();
       // maskValue shows last 4 chars, masks the rest with *
       // 'sk_live_FAKEKEY12345' (20 chars) -> '****************2345'
-      expect(masked?.masked.apiKey).toBe('*'.repeat(16) + '2345');
+      expect(masked?.masked.apiKey).toBe("*".repeat(16) + "2345");
       // 'my_secret_password' (18 chars) -> '**************word'
-      expect(masked?.masked.secret).toBe('*'.repeat(14) + 'word');
+      expect(masked?.masked.secret).toBe("*".repeat(14) + "word");
     });
 
-    it('should show only last 4 characters', async () => {
+    it("should show only last 4 characters", async () => {
       const entry: CredentialEntry = {
-        tenantId: 'tenant-123',
-        providerId: 'stripe',
-        credentialType: 'api_key',
+        tenantId: "tenant-123",
+        providerId: "stripe",
+        credentialType: "api_key",
         credential: {
-          apiKey: '12345678',
+          apiKey: "12345678",
         },
       };
 
       await vault.store(entry);
-      const masked = await vault.getMasked('tenant-123', 'stripe');
+      const masked = await vault.getMasked("tenant-123", "stripe");
 
-      expect(masked?.masked.apiKey).toBe('****5678');
+      expect(masked?.masked.apiKey).toBe("****5678");
     });
   });
 
   // ─── CACHE TESTS ────────────────────────────────────────────────
 
-  describe('cache', () => {
-    it('should invalidate cache entry', async () => {
+  describe("cache", () => {
+    it("should invalidate cache entry", async () => {
       const entry: CredentialEntry = {
-        tenantId: 'tenant-123',
-        providerId: 'stripe',
-        credentialType: 'api_key',
+        tenantId: "tenant-123",
+        providerId: "stripe",
+        credentialType: "api_key",
         credential: {
-          apiKey: 'sk_live_FAKEKEY12345',
+          apiKey: "sk_live_FAKEKEY12345",
         },
       };
 
       await vault.store(entry);
-      await vault.retrieve('tenant-123', 'stripe'); // Cache it
+      await vault.retrieve("tenant-123", "stripe"); // Cache it
 
-      vault.invalidateCache('tenant-123', 'stripe');
+      vault.invalidateCache("tenant-123", "stripe");
 
       // Next retrieve should hit persistence layer
-      const result = await vault.retrieve('tenant-123', 'stripe');
+      const result = await vault.retrieve("tenant-123", "stripe");
       expect(result).toBeDefined();
     });
 
-    it('should clear all cache', async () => {
+    it("should clear all cache", async () => {
       const entry: CredentialEntry = {
-        tenantId: 'tenant-123',
-        providerId: 'stripe',
-        credentialType: 'api_key',
+        tenantId: "tenant-123",
+        providerId: "stripe",
+        credentialType: "api_key",
         credential: {
-          apiKey: 'sk_live_FAKEKEY12345',
+          apiKey: "sk_live_FAKEKEY12345",
         },
       };
 
       await vault.store(entry);
-      await vault.retrieve('tenant-123', 'stripe');
+      await vault.retrieve("tenant-123", "stripe");
 
       vault.clearCache();
 
       // Next retrieve should hit persistence layer
-      const result = await vault.retrieve('tenant-123', 'stripe');
+      const result = await vault.retrieve("tenant-123", "stripe");
       expect(result).toBeDefined();
     });
   });
 
   // ─── TENANT ISOLATION TESTS ─────────────────────────────────────
 
-  describe('tenant isolation', () => {
-    it('should isolate credentials per tenant', async () => {
+  describe("tenant isolation", () => {
+    it("should isolate credentials per tenant", async () => {
       const entry1: CredentialEntry = {
-        tenantId: 'tenant-1',
-        providerId: 'stripe',
-        credentialType: 'api_key',
+        tenantId: "tenant-1",
+        providerId: "stripe",
+        credentialType: "api_key",
         credential: {
-          apiKey: 'sk_live_TENANT1KEY',
+          apiKey: "sk_live_TENANT1KEY",
         },
       };
 
       const entry2: CredentialEntry = {
-        tenantId: 'tenant-2',
-        providerId: 'stripe',
-        credentialType: 'api_key',
+        tenantId: "tenant-2",
+        providerId: "stripe",
+        credentialType: "api_key",
         credential: {
-          apiKey: 'sk_live_TENANT2KEY',
+          apiKey: "sk_live_TENANT2KEY",
         },
       };
 
       await vault.store(entry1);
       await vault.store(entry2);
 
-      const result1 = await vault.retrieve('tenant-1', 'stripe');
-      const result2 = await vault.retrieve('tenant-2', 'stripe');
+      const result1 = await vault.retrieve("tenant-1", "stripe");
+      const result2 = await vault.retrieve("tenant-2", "stripe");
 
-      expect(result1?.credential.apiKey).toBe('sk_live_TENANT1KEY');
-      expect(result2?.credential.apiKey).toBe('sk_live_TENANT2KEY');
+      expect(result1?.credential.apiKey).toBe("sk_live_TENANT1KEY");
+      expect(result2?.credential.apiKey).toBe("sk_live_TENANT2KEY");
     });
   });
 });

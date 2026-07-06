@@ -16,48 +16,49 @@
 
 ### New files
 
-| Path | Responsibility |
-|------|----------------|
-| `packages/bench-core/src/http-client.ts` | Thin typed `fetch` wrapper for calling the admin API (auth header, error shape) |
-| `packages/bench-core/src/ops/audit.ts` | `emit(event, data)` — writes structured audit event to local log + optional remote sink |
-| `packages/bench-core/src/ops/tenants.ts` | `createTenant(ctx, input)` — HTTP client for `POST /internal/bench/tenants` |
-| `packages/bench-core/src/ops/migrate.ts` | `run(ctx, opts)` — orchestrates windowed migrate (drain → stop → migrate → verify → start) |
-| `packages/bench-core/src/ops/backup.ts` | `run(ctx, opts)` — writes `.wbak` archive (config + pg_dump + optional blobs) |
-| `packages/bench-core/src/ops/restore.ts` | `run(ctx, archive, opts)` — verifies manifest, restores DB and optionally blobs |
-| `packages/bench-core/src/ops/storage.ts` | `StorageClient` interface + `createStorageClient(config)` factory |
-| `packages/bench-core/src/ops/storage-local.ts` | Filesystem-backed `StorageClient` |
-| `packages/bench-core/src/ops/storage-s3.ts` | S3-compatible `StorageClient` (S3, R2 via custom endpoint) |
-| `packages/bench-core/src/__tests__/ops-*.test.ts` | Unit tests for each ops module |
-| `apps/api/src/middleware/bench-auth.ts` | Bearer + CIDR preHandler for `/internal/bench/*` |
-| `apps/api/src/routes/internal/bench.ts` | Three admin routes: `/health`, `/drain`, `/tenants` |
-| `apps/api/src/__tests__/internal-bench.test.ts` | Contract tests for the admin endpoints |
-| `packages/core/src/onboarding/tenant-provisioner.ts` | `TenantProvisioner.createTenant(input)` — composes Org + User + Workspace |
-| `packages/core/src/onboarding/__tests__/tenant-provisioner.test.ts` | Unit tests |
+| Path                                                                | Responsibility                                                                             |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `packages/bench-core/src/http-client.ts`                            | Thin typed `fetch` wrapper for calling the admin API (auth header, error shape)            |
+| `packages/bench-core/src/ops/audit.ts`                              | `emit(event, data)` — writes structured audit event to local log + optional remote sink    |
+| `packages/bench-core/src/ops/tenants.ts`                            | `createTenant(ctx, input)` — HTTP client for `POST /internal/bench/tenants`                |
+| `packages/bench-core/src/ops/migrate.ts`                            | `run(ctx, opts)` — orchestrates windowed migrate (drain → stop → migrate → verify → start) |
+| `packages/bench-core/src/ops/backup.ts`                             | `run(ctx, opts)` — writes `.wbak` archive (config + pg_dump + optional blobs)              |
+| `packages/bench-core/src/ops/restore.ts`                            | `run(ctx, archive, opts)` — verifies manifest, restores DB and optionally blobs            |
+| `packages/bench-core/src/ops/storage.ts`                            | `StorageClient` interface + `createStorageClient(config)` factory                          |
+| `packages/bench-core/src/ops/storage-local.ts`                      | Filesystem-backed `StorageClient`                                                          |
+| `packages/bench-core/src/ops/storage-s3.ts`                         | S3-compatible `StorageClient` (S3, R2 via custom endpoint)                                 |
+| `packages/bench-core/src/__tests__/ops-*.test.ts`                   | Unit tests for each ops module                                                             |
+| `apps/api/src/middleware/bench-auth.ts`                             | Bearer + CIDR preHandler for `/internal/bench/*`                                           |
+| `apps/api/src/routes/internal/bench.ts`                             | Three admin routes: `/health`, `/drain`, `/tenants`                                        |
+| `apps/api/src/__tests__/internal-bench.test.ts`                     | Contract tests for the admin endpoints                                                     |
+| `packages/core/src/onboarding/tenant-provisioner.ts`                | `TenantProvisioner.createTenant(input)` — composes Org + User + Workspace                  |
+| `packages/core/src/onboarding/__tests__/tenant-provisioner.test.ts` | Unit tests                                                                                 |
 
 ### Modified files
 
-| Path | Change |
-|------|--------|
-| `packages/bench-core/src/provider.ts` | Add `execInService` + `runOneShot` to `Provider` interface |
-| `packages/bench-core/src/config.ts` | Add `storage:` block to zod schema |
-| `packages/bench-core/src/index.ts` | Export new `ops/*` modules and `StorageClient` |
-| `packages/bench-core/tsup.config.ts` | New entry points for each `ops/*` module |
-| `packages/bench-providers/docker-compose/src/provider.ts` | Implement `execInService` + `runOneShot` |
-| `packages/bench-providers/docker-compose/package.json` | Add `yaml` was done in Phase 1a; no new deps here |
-| `packages/bench-cli/src/commands/init.ts` | Extend template with `storage:` block + `BENCH_SERVICE_TOKEN` generation |
-| `packages/bench-cli/src/commands/migrate.ts` | Wire to `ops/migrate.run` |
-| `packages/bench-cli/src/commands/new-tenant.ts` | Wire to `ops/tenants.createTenant` |
-| `packages/bench-cli/src/commands/backup.ts` | Wire to `ops/backup.run` |
-| `packages/bench-cli/src/commands/restore.ts` | Wire to `ops/restore.run` |
-| `packages/bench-cli/src/commands/doctor.ts` | Add `pg_dump` version + token presence checks |
-| `packages/bench-cli/package.json` | Add `@witylogix/bench-core` already present; add nothing new |
-| `apps/api/src/server.ts` | Register bench admin plugin when `BENCH_SERVICE_TOKEN` is set |
+| Path                                                      | Change                                                                   |
+| --------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `packages/bench-core/src/provider.ts`                     | Add `execInService` + `runOneShot` to `Provider` interface               |
+| `packages/bench-core/src/config.ts`                       | Add `storage:` block to zod schema                                       |
+| `packages/bench-core/src/index.ts`                        | Export new `ops/*` modules and `StorageClient`                           |
+| `packages/bench-core/tsup.config.ts`                      | New entry points for each `ops/*` module                                 |
+| `packages/bench-providers/docker-compose/src/provider.ts` | Implement `execInService` + `runOneShot`                                 |
+| `packages/bench-providers/docker-compose/package.json`    | Add `yaml` was done in Phase 1a; no new deps here                        |
+| `packages/bench-cli/src/commands/init.ts`                 | Extend template with `storage:` block + `BENCH_SERVICE_TOKEN` generation |
+| `packages/bench-cli/src/commands/migrate.ts`              | Wire to `ops/migrate.run`                                                |
+| `packages/bench-cli/src/commands/new-tenant.ts`           | Wire to `ops/tenants.createTenant`                                       |
+| `packages/bench-cli/src/commands/backup.ts`               | Wire to `ops/backup.run`                                                 |
+| `packages/bench-cli/src/commands/restore.ts`              | Wire to `ops/restore.run`                                                |
+| `packages/bench-cli/src/commands/doctor.ts`               | Add `pg_dump` version + token presence checks                            |
+| `packages/bench-cli/package.json`                         | Add `@witylogix/bench-core` already present; add nothing new             |
+| `apps/api/src/server.ts`                                  | Register bench admin plugin when `BENCH_SERVICE_TOKEN` is set            |
 
 ---
 
 ## Task 1: Extend `Provider` interface with `execInService` + `runOneShot`
 
 **Files:**
+
 - Modify: `packages/bench-core/src/provider.ts`
 - Modify: `packages/bench-core/src/types.ts` (add `ExecResult` type)
 
@@ -107,7 +108,7 @@ runOneShot(
 Also add the import at the top of the file:
 
 ```typescript
-import type { ExecOptions, ExecResult, OneShotOptions } from './types.js';
+import type { ExecOptions, ExecResult, OneShotOptions } from "./types.js";
 ```
 
 - [ ] **Step 3: Typecheck**
@@ -130,6 +131,7 @@ git commit -m "feat(bench-core): add execInService and runOneShot to Provider in
 ## Task 2: Implement `execInService` + `runOneShot` on Docker Compose provider
 
 **Files:**
+
 - Modify: `packages/bench-providers/docker-compose/src/provider.ts`
 - Modify: `packages/bench-providers/docker-compose/src/compose-bin.ts`
 - Create: `packages/bench-providers/docker-compose/src/__tests__/provider-exec.test.ts`
@@ -154,9 +156,9 @@ export async function execComposeService(
 ): Promise<ComposeRunResult> {
   const envFlags: string[] = [];
   for (const [k, v] of Object.entries(opts.env ?? {})) {
-    envFlags.push('-e', `${k}=${v}`);
+    envFlags.push("-e", `${k}=${v}`);
   }
-  const args = ['exec', '-T', ...envFlags, opts.service, ...opts.cmd];
+  const args = ["exec", "-T", ...envFlags, opts.service, ...opts.cmd];
   return runCompose(
     { composeFile: opts.composeFile, cwd: opts.cwd, args, env: process.env },
     true,
@@ -177,9 +179,16 @@ export async function runOneShotFromService(
 ): Promise<ComposeRunResult> {
   const envFlags: string[] = [];
   for (const [k, v] of Object.entries(opts.env ?? {})) {
-    envFlags.push('-e', `${k}=${v}`);
+    envFlags.push("-e", `${k}=${v}`);
   }
-  const args = ['run', '--rm', '--no-deps', ...envFlags, opts.fromService, ...opts.cmd];
+  const args = [
+    "run",
+    "--rm",
+    "--no-deps",
+    ...envFlags,
+    opts.fromService,
+    ...opts.cmd,
+  ];
   return runCompose(
     { composeFile: opts.composeFile, cwd: opts.cwd, args, env: process.env },
     true,
@@ -198,7 +207,7 @@ import {
   runCompose,
   runOneShotFromService,
   streamComposeLogs,
-} from './compose-bin.js';
+} from "./compose-bin.js";
 ```
 
 Add imports from core types at the top:
@@ -209,7 +218,7 @@ import type {
   ExecResult,
   OneShotOptions,
   // ...existing...
-} from '@witylogix/bench-core';
+} from "@witylogix/bench-core";
 ```
 
 Add these methods to the `DockerComposeProvider` class (after `status`, before `backup`):
@@ -263,36 +272,43 @@ async runOneShot(
 Create `packages/bench-providers/docker-compose/src/__tests__/provider-exec.test.ts`:
 
 ```typescript
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createDockerComposeProvider } from '../provider.js';
-import type { Context } from '@witylogix/bench-core';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createDockerComposeProvider } from "../provider.js";
+import type { Context } from "@witylogix/bench-core";
 
 const ctx: Context = {
-  cwd: '/tmp/fake',
-  config: {} as Context['config'],
+  cwd: "/tmp/fake",
+  config: {} as Context["config"],
   logger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
   dryRun: true,
   json: false,
 };
 
-describe('DockerComposeProvider exec primitives', () => {
+describe("DockerComposeProvider exec primitives", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('execInService respects dry-run and returns zero exit', async () => {
+  it("execInService respects dry-run and returns zero exit", async () => {
     const p = createDockerComposeProvider();
-    const r = await p.execInService(ctx, 'api', ['echo', 'hi']);
+    const r = await p.execInService(ctx, "api", ["echo", "hi"]);
     expect(r.exitCode).toBe(0);
     expect(ctx.logger.info).toHaveBeenCalledWith(
-      expect.stringContaining('[dry-run] would exec in api: echo hi'),
+      expect.stringContaining("[dry-run] would exec in api: echo hi"),
     );
   });
 
-  it('runOneShot respects dry-run and returns zero exit', async () => {
+  it("runOneShot respects dry-run and returns zero exit", async () => {
     const p = createDockerComposeProvider();
-    const r = await p.runOneShot(ctx, 'api', ['pnpm', 'prisma', 'migrate', 'deploy']);
+    const r = await p.runOneShot(ctx, "api", [
+      "pnpm",
+      "prisma",
+      "migrate",
+      "deploy",
+    ]);
     expect(r.exitCode).toBe(0);
     expect(ctx.logger.info).toHaveBeenCalledWith(
-      expect.stringContaining('[dry-run] would run one-shot from api: pnpm prisma migrate deploy'),
+      expect.stringContaining(
+        "[dry-run] would run one-shot from api: pnpm prisma migrate deploy",
+      ),
     );
   });
 });
@@ -328,6 +344,7 @@ git commit -m "feat(bench-provider-docker-compose): implement execInService and 
 ## Task 3: Extend config schema with `storage:` block
 
 **Files:**
+
 - Modify: `packages/bench-core/src/config.ts`
 - Modify: `packages/bench-core/src/__tests__/config.test.ts`
 
@@ -338,14 +355,14 @@ Add above `cloudSchema`:
 ```typescript
 const storageSchema = z
   .object({
-    backend: z.enum(['s3', 'r2', 'gcs', 'local']).default('local'),
+    backend: z.enum(["s3", "r2", "gcs", "local"]).default("local"),
     bucket: z.string().optional(),
     region: z.string().optional(),
     endpoint: z.string().nullable().default(null),
     path: z.string().optional(),
     credentials_ref: z.string().optional(),
   })
-  .default({ backend: 'local', endpoint: null });
+  .default({ backend: "local", endpoint: null });
 ```
 
 Add `storage: storageSchema` to `benchConfigSchema`:
@@ -362,7 +379,7 @@ export const benchConfigSchema = z.object({
 Add the exported type:
 
 ```typescript
-export type BenchConfigStorage = BenchConfig['storage'];
+export type BenchConfigStorage = BenchConfig["storage"];
 ```
 
 - [ ] **Step 2: Write the failing test**
@@ -370,38 +387,38 @@ export type BenchConfigStorage = BenchConfig['storage'];
 Append to `packages/bench-core/src/__tests__/config.test.ts`:
 
 ```typescript
-describe('storage schema', () => {
-  it('defaults to local backend when omitted', () => {
+describe("storage schema", () => {
+  it("defaults to local backend when omitted", () => {
     const parsed = benchConfigSchema.parse({
-      apiVersion: 'bench.witylogix.io/v1',
-      kind: 'Installation',
-      metadata: { name: 'demo' },
-      provider: { type: 'docker-compose' },
+      apiVersion: "bench.witylogix.io/v1",
+      kind: "Installation",
+      metadata: { name: "demo" },
+      provider: { type: "docker-compose" },
     });
-    expect(parsed.storage.backend).toBe('local');
+    expect(parsed.storage.backend).toBe("local");
     expect(parsed.storage.endpoint).toBeNull();
   });
 
-  it('accepts s3 backend with bucket + region', () => {
+  it("accepts s3 backend with bucket + region", () => {
     const parsed = benchConfigSchema.parse({
-      apiVersion: 'bench.witylogix.io/v1',
-      kind: 'Installation',
-      metadata: { name: 'demo' },
-      provider: { type: 'docker-compose' },
-      storage: { backend: 's3', bucket: 'acme-prod', region: 'us-east-1' },
+      apiVersion: "bench.witylogix.io/v1",
+      kind: "Installation",
+      metadata: { name: "demo" },
+      provider: { type: "docker-compose" },
+      storage: { backend: "s3", bucket: "acme-prod", region: "us-east-1" },
     });
-    expect(parsed.storage.backend).toBe('s3');
-    expect(parsed.storage.bucket).toBe('acme-prod');
+    expect(parsed.storage.backend).toBe("s3");
+    expect(parsed.storage.bucket).toBe("acme-prod");
   });
 
-  it('rejects unknown storage backend', () => {
+  it("rejects unknown storage backend", () => {
     expect(() =>
       benchConfigSchema.parse({
-        apiVersion: 'bench.witylogix.io/v1',
-        kind: 'Installation',
-        metadata: { name: 'demo' },
-        provider: { type: 'docker-compose' },
-        storage: { backend: 'dropbox' },
+        apiVersion: "bench.witylogix.io/v1",
+        kind: "Installation",
+        metadata: { name: "demo" },
+        provider: { type: "docker-compose" },
+        storage: { backend: "dropbox" },
       }),
     ).toThrow();
   });
@@ -441,6 +458,7 @@ git commit -m "feat(bench-core): add storage config block with zod schema"
 ## Task 4: `StorageClient` interface + local backend
 
 **Files:**
+
 - Create: `packages/bench-core/src/ops/storage.ts`
 - Create: `packages/bench-core/src/ops/storage-local.ts`
 - Create: `packages/bench-core/src/__tests__/ops-storage-local.test.ts`
@@ -448,8 +466,8 @@ git commit -m "feat(bench-core): add storage config block with zod schema"
 - [ ] **Step 1: Write the interface and factory in `packages/bench-core/src/ops/storage.ts`**
 
 ```typescript
-import type { Readable } from 'node:stream';
-import type { BenchConfigStorage } from '../config.js';
+import type { Readable } from "node:stream";
+import type { BenchConfigStorage } from "../config.js";
 
 export interface StorageObject {
   size: number;
@@ -472,22 +490,24 @@ export async function createStorageClient(
   config: BenchConfigStorage,
 ): Promise<StorageClient> {
   switch (config.backend) {
-    case 'local': {
-      const { LocalStorageClient } = await import('./storage-local.js');
+    case "local": {
+      const { LocalStorageClient } = await import("./storage-local.js");
       if (!config.path) {
-        throw new Error('storage.path is required when backend=local');
+        throw new Error("storage.path is required when backend=local");
       }
       return new LocalStorageClient(config.path);
     }
-    case 's3':
-    case 'r2': {
-      const { S3StorageClient } = await import('./storage-s3.js');
+    case "s3":
+    case "r2": {
+      const { S3StorageClient } = await import("./storage-s3.js");
       return new S3StorageClient(config);
     }
-    case 'gcs':
-      throw new Error('GCS storage backend is planned for Phase 1c');
+    case "gcs":
+      throw new Error("GCS storage backend is planned for Phase 1c");
     default:
-      throw new Error(`Unknown storage backend: ${(config as { backend: string }).backend}`);
+      throw new Error(
+        `Unknown storage backend: ${(config as { backend: string }).backend}`,
+      );
   }
 }
 ```
@@ -495,19 +515,19 @@ export async function createStorageClient(
 - [ ] **Step 2: Write the local backend in `packages/bench-core/src/ops/storage-local.ts`**
 
 ```typescript
-import { createReadStream, createWriteStream } from 'node:fs';
-import { mkdir, stat } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
-import { pipeline } from 'node:stream/promises';
-import type { Readable } from 'node:stream';
-import { Readable as NodeReadable } from 'node:stream';
-import type { StorageClient, StorageObject } from './storage.js';
+import { createReadStream, createWriteStream } from "node:fs";
+import { mkdir, stat } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
+import { pipeline } from "node:stream/promises";
+import type { Readable } from "node:stream";
+import { Readable as NodeReadable } from "node:stream";
+import type { StorageClient, StorageObject } from "./storage.js";
 
 export class LocalStorageClient implements StorageClient {
   constructor(private readonly rootPath: string) {}
 
   private absolutePath(key: string): string {
-    const sanitized = key.replace(/^\/+/, '').replace(/\.\.\//g, '');
+    const sanitized = key.replace(/^\/+/, "").replace(/\.\.\//g, "");
     return resolve(this.rootPath, sanitized);
   }
 
@@ -544,17 +564,17 @@ export class LocalStorageClient implements StorageClient {
 - [ ] **Step 3: Write the failing test `packages/bench-core/src/__tests__/ops-storage-local.test.ts`**
 
 ```typescript
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { Readable } from 'node:stream';
-import { LocalStorageClient } from '../ops/storage-local.js';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { Readable } from "node:stream";
+import { LocalStorageClient } from "../ops/storage-local.js";
 
 let tmp: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(join(tmpdir(), 'storage-local-'));
+  tmp = mkdtempSync(join(tmpdir(), "storage-local-"));
 });
 afterEach(() => {
   rmSync(tmp, { recursive: true, force: true });
@@ -563,34 +583,34 @@ afterEach(() => {
 async function streamToString(s: Readable): Promise<string> {
   const chunks: Buffer[] = [];
   for await (const c of s) chunks.push(Buffer.from(c));
-  return Buffer.concat(chunks).toString('utf8');
+  return Buffer.concat(chunks).toString("utf8");
 }
 
-describe('LocalStorageClient', () => {
-  it('put + get round-trip', async () => {
+describe("LocalStorageClient", () => {
+  it("put + get round-trip", async () => {
     const c = new LocalStorageClient(tmp);
-    await c.put('a/b/c.txt', Buffer.from('hello'));
-    const s = await c.get('a/b/c.txt');
-    expect(await streamToString(s)).toBe('hello');
+    await c.put("a/b/c.txt", Buffer.from("hello"));
+    const s = await c.get("a/b/c.txt");
+    expect(await streamToString(s)).toBe("hello");
   });
 
-  it('head returns metadata for existing object', async () => {
+  it("head returns metadata for existing object", async () => {
     const c = new LocalStorageClient(tmp);
-    await c.put('x.txt', Buffer.from('12345'));
-    const h = await c.head('x.txt');
+    await c.put("x.txt", Buffer.from("12345"));
+    const h = await c.head("x.txt");
     expect(h?.size).toBe(5);
   });
 
-  it('head returns null for missing object', async () => {
+  it("head returns null for missing object", async () => {
     const c = new LocalStorageClient(tmp);
-    expect(await c.head('missing')).toBeNull();
+    expect(await c.head("missing")).toBeNull();
   });
 
-  it('rejects path traversal', async () => {
+  it("rejects path traversal", async () => {
     const c = new LocalStorageClient(tmp);
-    await c.put('../escape.txt', Buffer.from('nope'));
+    await c.put("../escape.txt", Buffer.from("nope"));
     // sanitized — the file ends up inside rootPath, not outside
-    expect(await c.exists('escape.txt')).toBe(true);
+    expect(await c.exists("escape.txt")).toBe(true);
   });
 });
 ```
@@ -617,6 +637,7 @@ git commit -m "feat(bench-core): StorageClient interface + local backend"
 ## Task 5: S3 storage backend
 
 **Files:**
+
 - Create: `packages/bench-core/src/ops/storage-s3.ts`
 - Modify: `packages/bench-core/package.json` (add `@aws-sdk/client-s3`)
 - Create: `packages/bench-core/src/__tests__/ops-storage-s3.test.ts`
@@ -643,10 +664,10 @@ import {
   GetObjectCommand,
   PutObjectCommand,
   HeadObjectCommand,
-} from '@aws-sdk/client-s3';
-import type { Readable } from 'node:stream';
-import type { BenchConfigStorage } from '../config.js';
-import type { StorageClient, StorageObject } from './storage.js';
+} from "@aws-sdk/client-s3";
+import type { Readable } from "node:stream";
+import type { BenchConfigStorage } from "../config.js";
+import type { StorageClient, StorageObject } from "./storage.js";
 
 export class S3StorageClient implements StorageClient {
   private readonly client: S3Client;
@@ -654,13 +675,15 @@ export class S3StorageClient implements StorageClient {
 
   constructor(config: BenchConfigStorage) {
     if (!config.bucket) {
-      throw new Error(`storage.bucket is required when backend=${config.backend}`);
+      throw new Error(
+        `storage.bucket is required when backend=${config.backend}`,
+      );
     }
     this.bucket = config.bucket;
     this.client = new S3Client({
-      region: config.region ?? 'us-east-1',
+      region: config.region ?? "us-east-1",
       endpoint: config.endpoint ?? undefined,
-      forcePathStyle: config.backend === 'r2' || !!config.endpoint,
+      forcePathStyle: config.backend === "r2" || !!config.endpoint,
     });
   }
 
@@ -697,7 +720,7 @@ export class S3StorageClient implements StorageClient {
         lastModified: out.LastModified,
       };
     } catch (err) {
-      if ((err as { name?: string }).name === 'NotFound') return null;
+      if ((err as { name?: string }).name === "NotFound") return null;
       throw err;
     }
   }
@@ -713,63 +736,79 @@ export class S3StorageClient implements StorageClient {
 Create `packages/bench-core/src/__tests__/ops-storage-s3.test.ts`:
 
 ```typescript
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const sendMock = vi.fn();
 
-vi.mock('@aws-sdk/client-s3', () => ({
+vi.mock("@aws-sdk/client-s3", () => ({
   S3Client: vi.fn().mockImplementation(() => ({ send: sendMock })),
-  GetObjectCommand: vi.fn().mockImplementation((i) => ({ __cmd: 'Get', input: i })),
-  PutObjectCommand: vi.fn().mockImplementation((i) => ({ __cmd: 'Put', input: i })),
-  HeadObjectCommand: vi.fn().mockImplementation((i) => ({ __cmd: 'Head', input: i })),
+  GetObjectCommand: vi
+    .fn()
+    .mockImplementation((i) => ({ __cmd: "Get", input: i })),
+  PutObjectCommand: vi
+    .fn()
+    .mockImplementation((i) => ({ __cmd: "Put", input: i })),
+  HeadObjectCommand: vi
+    .fn()
+    .mockImplementation((i) => ({ __cmd: "Head", input: i })),
 }));
 
 beforeEach(() => sendMock.mockReset());
 
-describe('S3StorageClient', () => {
-  it('throws if bucket missing', async () => {
-    const { S3StorageClient } = await import('../ops/storage-s3.js');
-    expect(() => new S3StorageClient({ backend: 's3', endpoint: null })).toThrow(/bucket is required/);
+describe("S3StorageClient", () => {
+  it("throws if bucket missing", async () => {
+    const { S3StorageClient } = await import("../ops/storage-s3.js");
+    expect(
+      () => new S3StorageClient({ backend: "s3", endpoint: null }),
+    ).toThrow(/bucket is required/);
   });
 
-  it('put sends PutObjectCommand with body', async () => {
+  it("put sends PutObjectCommand with body", async () => {
     sendMock.mockResolvedValueOnce({});
-    const { S3StorageClient } = await import('../ops/storage-s3.js');
+    const { S3StorageClient } = await import("../ops/storage-s3.js");
     const c = new S3StorageClient({
-      backend: 's3',
-      bucket: 'b',
-      region: 'us-east-1',
+      backend: "s3",
+      bucket: "b",
+      region: "us-east-1",
       endpoint: null,
     });
-    await c.put('k', Buffer.from('x'), { contentType: 'text/plain' });
+    await c.put("k", Buffer.from("x"), { contentType: "text/plain" });
     expect(sendMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        __cmd: 'Put',
-        input: expect.objectContaining({ Bucket: 'b', Key: 'k', ContentType: 'text/plain' }),
+        __cmd: "Put",
+        input: expect.objectContaining({
+          Bucket: "b",
+          Key: "k",
+          ContentType: "text/plain",
+        }),
       }),
     );
   });
 
-  it('head returns null on NotFound', async () => {
-    sendMock.mockRejectedValueOnce(Object.assign(new Error('nf'), { name: 'NotFound' }));
-    const { S3StorageClient } = await import('../ops/storage-s3.js');
+  it("head returns null on NotFound", async () => {
+    sendMock.mockRejectedValueOnce(
+      Object.assign(new Error("nf"), { name: "NotFound" }),
+    );
+    const { S3StorageClient } = await import("../ops/storage-s3.js");
     const c = new S3StorageClient({
-      backend: 's3',
-      bucket: 'b',
-      region: 'us-east-1',
+      backend: "s3",
+      bucket: "b",
+      region: "us-east-1",
       endpoint: null,
     });
-    expect(await c.head('missing')).toBeNull();
+    expect(await c.head("missing")).toBeNull();
   });
 
-  it('r2 backend forces path style', async () => {
-    const { S3StorageClient } = await import('../ops/storage-s3.js');
+  it("r2 backend forces path style", async () => {
+    const { S3StorageClient } = await import("../ops/storage-s3.js");
     new S3StorageClient({
-      backend: 'r2',
-      bucket: 'b',
-      endpoint: 'https://acct.r2.cloudflarestorage.com',
+      backend: "r2",
+      bucket: "b",
+      endpoint: "https://acct.r2.cloudflarestorage.com",
     });
-    const { S3Client } = (await import('@aws-sdk/client-s3')) as { S3Client: ReturnType<typeof vi.fn> };
+    const { S3Client } = (await import("@aws-sdk/client-s3")) as {
+      S3Client: ReturnType<typeof vi.fn>;
+    };
     expect(S3Client).toHaveBeenCalledWith(
       expect.objectContaining({ forcePathStyle: true }),
     );
@@ -800,13 +839,14 @@ git commit -m "feat(bench-core): S3-compatible storage backend (S3, R2 via endpo
 ## Task 6: HTTP client for admin API
 
 **Files:**
+
 - Create: `packages/bench-core/src/http-client.ts`
 - Create: `packages/bench-core/src/__tests__/http-client.test.ts`
 
 - [ ] **Step 1: Write `packages/bench-core/src/http-client.ts`**
 
 ```typescript
-import type { Context } from './types.js';
+import type { Context } from "./types.js";
 
 export interface BenchApiError {
   status: number;
@@ -818,22 +858,22 @@ export interface BenchApiError {
 export class BenchApiRequestError extends Error {
   constructor(public readonly data: BenchApiError) {
     super(`${data.status} ${data.code}: ${data.message}`);
-    this.name = 'BenchApiRequestError';
+    this.name = "BenchApiRequestError";
   }
 }
 
 function serviceBaseUrl(ctx: Context): string {
   const fromEnv = process.env.BENCH_API_BASE_URL;
-  if (fromEnv) return fromEnv.replace(/\/$/, '');
-  return 'http://localhost:8000';
+  if (fromEnv) return fromEnv.replace(/\/$/, "");
+  return "http://localhost:8000";
 }
 
 function readToken(ctx: Context): string {
   const path = `${ctx.cwd}/secrets/bench-service-token`;
   try {
     // lazy import so web builds don't pull fs
-    const { readFileSync } = require('node:fs') as typeof import('node:fs');
-    return readFileSync(path, 'utf8').trim();
+    const { readFileSync } = require("node:fs") as typeof import("node:fs");
+    return readFileSync(path, "utf8").trim();
   } catch {
     throw new Error(
       `BENCH_SERVICE_TOKEN not found at ${path}. Run \`bench init\` or set BENCH_SERVICE_TOKEN env.`,
@@ -843,7 +883,7 @@ function readToken(ctx: Context): string {
 
 export async function benchApi<T>(
   ctx: Context,
-  method: 'GET' | 'POST',
+  method: "GET" | "POST",
   path: string,
   body?: unknown,
 ): Promise<T> {
@@ -852,8 +892,8 @@ export async function benchApi<T>(
     method,
     headers: {
       Authorization: `Bearer ${token}`,
-      'X-Bench-Initiator': 'cli',
-      'Content-Type': 'application/json',
+      "X-Bench-Initiator": "cli",
+      "Content-Type": "application/json",
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
@@ -861,7 +901,7 @@ export async function benchApi<T>(
     const data = (await res.json().catch(() => ({}))) as Partial<BenchApiError>;
     throw new BenchApiRequestError({
       status: res.status,
-      code: data.code ?? 'unknown',
+      code: data.code ?? "unknown",
       message: data.message ?? res.statusText,
       fields: data.fields,
     });
@@ -875,51 +915,58 @@ export async function benchApi<T>(
 Create `packages/bench-core/src/__tests__/http-client.test.ts`:
 
 ```typescript
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { benchApi, BenchApiRequestError } from '../http-client.js';
-import type { Context } from '../types.js';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { benchApi, BenchApiRequestError } from "../http-client.js";
+import type { Context } from "../types.js";
 
 const ctx: Context = {
-  cwd: '/tmp/fake-install',
-  config: {} as Context['config'],
+  cwd: "/tmp/fake-install",
+  config: {} as Context["config"],
   logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} },
   dryRun: false,
   json: false,
 };
 
 beforeEach(() => {
-  process.env.BENCH_SERVICE_TOKEN = 'test-token';
-  process.env.BENCH_API_BASE_URL = 'http://api.test';
+  process.env.BENCH_SERVICE_TOKEN = "test-token";
+  process.env.BENCH_API_BASE_URL = "http://api.test";
   vi.restoreAllMocks();
 });
 
-describe('benchApi', () => {
-  it('sends Bearer token and parses JSON on 200', async () => {
+describe("benchApi", () => {
+  it("sends Bearer token and parses JSON on 200", async () => {
     vi.stubGlobal(
-      'fetch',
+      "fetch",
       vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => ({ apiVersion: '1.0.0' }),
+        json: async () => ({ apiVersion: "1.0.0" }),
       }),
     );
-    const r = await benchApi<{ apiVersion: string }>(ctx, 'GET', '/internal/bench/health');
-    expect(r.apiVersion).toBe('1.0.0');
-    expect((globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].headers.Authorization)
-      .toBe('Bearer test-token');
+    const r = await benchApi<{ apiVersion: string }>(
+      ctx,
+      "GET",
+      "/internal/bench/health",
+    );
+    expect(r.apiVersion).toBe("1.0.0");
+    expect(
+      (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].headers
+        .Authorization,
+    ).toBe("Bearer test-token");
   });
 
-  it('throws BenchApiRequestError on 4xx', async () => {
+  it("throws BenchApiRequestError on 4xx", async () => {
     vi.stubGlobal(
-      'fetch',
+      "fetch",
       vi.fn().mockResolvedValue({
         ok: false,
         status: 409,
-        statusText: 'Conflict',
-        json: async () => ({ code: 'slug_taken', message: 'slug in use' }),
+        statusText: "Conflict",
+        json: async () => ({ code: "slug_taken", message: "slug in use" }),
       }),
     );
-    await expect(benchApi(ctx, 'POST', '/internal/bench/tenants', {}))
-      .rejects.toBeInstanceOf(BenchApiRequestError);
+    await expect(
+      benchApi(ctx, "POST", "/internal/bench/tenants", {}),
+    ).rejects.toBeInstanceOf(BenchApiRequestError);
   });
 });
 ```
@@ -937,7 +984,7 @@ Expected: PASS.
 Edit `packages/bench-core/src/index.ts`, add:
 
 ```typescript
-export * from './http-client.js';
+export * from "./http-client.js";
 ```
 
 Edit `packages/bench-core/tsup.config.ts`, add `'http-client': 'src/http-client.ts'` to `entry`.
@@ -955,24 +1002,30 @@ git commit -m "feat(bench-core): HTTP client for admin API with bearer auth"
 ## Task 7: Bench auth middleware in `apps/api`
 
 **Files:**
+
 - Create: `apps/api/src/middleware/bench-auth.ts`
 - Create: `apps/api/src/__tests__/bench-auth.test.ts`
 
 - [ ] **Step 1: Write `apps/api/src/middleware/bench-auth.ts`**
 
 ```typescript
-import type { FastifyReply, FastifyRequest } from 'fastify';
-import { timingSafeEqual } from 'node:crypto';
+import type { FastifyReply, FastifyRequest } from "fastify";
+import { timingSafeEqual } from "node:crypto";
 
-const DEFAULT_CIDRS = ['127.0.0.1/32', '::1/128', '172.16.0.0/12', '10.0.0.0/8'];
+const DEFAULT_CIDRS = [
+  "127.0.0.1/32",
+  "::1/128",
+  "172.16.0.0/12",
+  "10.0.0.0/8",
+];
 
 function cidrMatch(ip: string, cidr: string): boolean {
-  if (cidr.includes(':')) return ip === cidr.split('/')[0]; // IPv6 exact-host shortcut
-  const [net, bitsStr] = cidr.split('/');
-  const bits = Number.parseInt(bitsStr ?? '32', 10);
+  if (cidr.includes(":")) return ip === cidr.split("/")[0]; // IPv6 exact-host shortcut
+  const [net, bitsStr] = cidr.split("/");
+  const bits = Number.parseInt(bitsStr ?? "32", 10);
   const toInt = (a: string) =>
-    a.split('.').reduce((acc, o) => (acc << 8) + Number(o), 0) >>> 0;
-  const ipN = toInt(ip.replace(/^::ffff:/, ''));
+    a.split(".").reduce((acc, o) => (acc << 8) + Number(o), 0) >>> 0;
+  const ipN = toInt(ip.replace(/^::ffff:/, ""));
   const netN = toInt(net);
   const mask = bits === 0 ? 0 : (~0 << (32 - bits)) >>> 0;
   return (ipN & mask) === (netN & mask);
@@ -980,7 +1033,7 @@ function cidrMatch(ip: string, cidr: string): boolean {
 
 function allowedCidrs(): string[] {
   const env = process.env.BENCH_ALLOWED_CIDRS;
-  return env ? env.split(',').map((s) => s.trim()) : DEFAULT_CIDRS;
+  return env ? env.split(",").map((s) => s.trim()) : DEFAULT_CIDRS;
 }
 
 export function benchAuth() {
@@ -990,26 +1043,38 @@ export function benchAuth() {
   ): Promise<void> {
     const configured = process.env.BENCH_SERVICE_TOKEN;
     if (!configured) {
-      return reply.code(503).send({ code: 'bench_disabled', message: 'bench admin API not enabled' });
+      return reply.code(503).send({
+        code: "bench_disabled",
+        message: "bench admin API not enabled",
+      });
     }
 
-    const ip = req.ip || req.socket.remoteAddress || '';
+    const ip = req.ip || req.socket.remoteAddress || "";
     if (!allowedCidrs().some((c) => cidrMatch(ip, c))) {
-      return reply.code(403).send({ code: 'forbidden_cidr', message: 'caller IP not allowed' });
+      return reply
+        .code(403)
+        .send({ code: "forbidden_cidr", message: "caller IP not allowed" });
     }
 
-    const auth = req.headers.authorization ?? '';
+    const auth = req.headers.authorization ?? "";
     const m = /^Bearer (.+)$/.exec(auth);
     if (!m) {
-      return reply.code(401).send({ code: 'missing_token', message: 'bearer token required' });
+      return reply
+        .code(401)
+        .send({ code: "missing_token", message: "bearer token required" });
     }
     const presented = Buffer.from(m[1]);
     const expected = Buffer.from(configured);
-    if (presented.length !== expected.length || !timingSafeEqual(presented, expected)) {
-      return reply.code(401).send({ code: 'invalid_token', message: 'invalid bearer token' });
+    if (
+      presented.length !== expected.length ||
+      !timingSafeEqual(presented, expected)
+    ) {
+      return reply
+        .code(401)
+        .send({ code: "invalid_token", message: "invalid bearer token" });
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (req as any).benchActor = 'cli';
+    (req as any).benchActor = "cli";
   };
 }
 ```
@@ -1019,16 +1084,16 @@ export function benchAuth() {
 Create `apps/api/src/__tests__/bench-auth.test.ts`:
 
 ```typescript
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import Fastify from 'fastify';
-import { benchAuth } from '../middleware/bench-auth.js';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import Fastify from "fastify";
+import { benchAuth } from "../middleware/bench-auth.js";
 
 function buildApp(token: string | undefined) {
   if (token) process.env.BENCH_SERVICE_TOKEN = token;
   else delete process.env.BENCH_SERVICE_TOKEN;
-  process.env.BENCH_ALLOWED_CIDRS = '127.0.0.1/32';
+  process.env.BENCH_ALLOWED_CIDRS = "127.0.0.1/32";
   const app = Fastify();
-  app.get('/x', { preHandler: benchAuth() }, async () => ({ ok: true }));
+  app.get("/x", { preHandler: benchAuth() }, async () => ({ ok: true }));
   return app;
 }
 
@@ -1037,50 +1102,50 @@ afterEach(() => {
   delete process.env.BENCH_ALLOWED_CIDRS;
 });
 
-describe('benchAuth middleware', () => {
-  it('503 when token not configured', async () => {
+describe("benchAuth middleware", () => {
+  it("503 when token not configured", async () => {
     const app = buildApp(undefined);
-    const r = await app.inject({ method: 'GET', url: '/x' });
+    const r = await app.inject({ method: "GET", url: "/x" });
     expect(r.statusCode).toBe(503);
   });
 
-  it('401 when missing token', async () => {
-    const app = buildApp('secret');
-    const r = await app.inject({ method: 'GET', url: '/x' });
+  it("401 when missing token", async () => {
+    const app = buildApp("secret");
+    const r = await app.inject({ method: "GET", url: "/x" });
     expect(r.statusCode).toBe(401);
   });
 
-  it('401 when wrong token', async () => {
-    const app = buildApp('secret');
+  it("401 when wrong token", async () => {
+    const app = buildApp("secret");
     const r = await app.inject({
-      method: 'GET',
-      url: '/x',
-      headers: { authorization: 'Bearer nope' },
+      method: "GET",
+      url: "/x",
+      headers: { authorization: "Bearer nope" },
     });
     expect(r.statusCode).toBe(401);
   });
 
-  it('200 when correct token and allowed CIDR', async () => {
-    const app = buildApp('secret');
+  it("200 when correct token and allowed CIDR", async () => {
+    const app = buildApp("secret");
     const r = await app.inject({
-      method: 'GET',
-      url: '/x',
-      headers: { authorization: 'Bearer secret' },
-      remoteAddress: '127.0.0.1',
+      method: "GET",
+      url: "/x",
+      headers: { authorization: "Bearer secret" },
+      remoteAddress: "127.0.0.1",
     });
     expect(r.statusCode).toBe(200);
   });
 
-  it('403 when caller IP outside CIDR', async () => {
-    process.env.BENCH_SERVICE_TOKEN = 'secret';
-    process.env.BENCH_ALLOWED_CIDRS = '10.0.0.0/8';
+  it("403 when caller IP outside CIDR", async () => {
+    process.env.BENCH_SERVICE_TOKEN = "secret";
+    process.env.BENCH_ALLOWED_CIDRS = "10.0.0.0/8";
     const app = Fastify();
-    app.get('/x', { preHandler: benchAuth() }, async () => ({ ok: true }));
+    app.get("/x", { preHandler: benchAuth() }, async () => ({ ok: true }));
     const r = await app.inject({
-      method: 'GET',
-      url: '/x',
-      headers: { authorization: 'Bearer secret' },
-      remoteAddress: '192.168.1.1',
+      method: "GET",
+      url: "/x",
+      headers: { authorization: "Bearer secret" },
+      remoteAddress: "192.168.1.1",
     });
     expect(r.statusCode).toBe(403);
   });
@@ -1108,6 +1173,7 @@ git commit -m "feat(api): bench admin auth middleware with bearer + CIDR gate"
 ## Task 8: Bench admin routes — `/health` and `/drain`
 
 **Files:**
+
 - Create: `apps/api/src/routes/internal/bench.ts`
 - Modify: `apps/api/src/server.ts`
 - Create: `apps/api/src/__tests__/internal-bench-health-drain.test.ts`
@@ -1117,12 +1183,16 @@ git commit -m "feat(api): bench admin auth middleware with bearer + CIDR gate"
 Create `apps/api/src/routes/internal/bench.ts`:
 
 ```typescript
-import type { FastifyInstance } from 'fastify';
-import { z } from 'zod';
-import { prisma } from '@witylogix/db';
-import { benchAuth } from '../../middleware/bench-auth.js';
+import type { FastifyInstance } from "fastify";
+import { z } from "zod";
+import { prisma } from "@witylogix/db";
+import { benchAuth } from "../../middleware/bench-auth.js";
 
-let drainState: { mode: 'read-only' | 'offline' | null; drainedAt?: string; reason?: string } = {
+let drainState: {
+  mode: "read-only" | "offline" | null;
+  drainedAt?: string;
+  reason?: string;
+} = {
   mode: null,
 };
 
@@ -1131,20 +1201,22 @@ export function getDrainState() {
 }
 
 const drainBody = z.object({
-  mode: z.enum(['read-only', 'offline']),
+  mode: z.enum(["read-only", "offline"]),
   reason: z.string().max(500).optional(),
 });
 
-export default async function benchAdminRoutes(app: FastifyInstance): Promise<void> {
-  app.addHook('preHandler', benchAuth());
+export default async function benchAdminRoutes(
+  app: FastifyInstance,
+): Promise<void> {
+  app.addHook("preHandler", benchAuth());
 
-  app.get('/health', async () => {
+  app.get("/health", async () => {
     const migrations = (await prisma.$queryRawUnsafe(
       `SELECT COUNT(*)::int AS applied FROM _prisma_migrations WHERE finished_at IS NOT NULL`,
     )) as Array<{ applied: number }>;
     return {
-      apiVersion: process.env.API_VERSION ?? '0.0.0',
-      witylogixVersion: process.env.WITYLOGIX_VERSION ?? '0.0.0',
+      apiVersion: process.env.API_VERSION ?? "0.0.0",
+      witylogixVersion: process.env.WITYLOGIX_VERSION ?? "0.0.0",
       prismaMigrations: {
         applied: migrations[0]?.applied ?? 0,
         pending: 0, // populated in Phase 1c once migration-diff parsing lands
@@ -1154,17 +1226,23 @@ export default async function benchAdminRoutes(app: FastifyInstance): Promise<vo
     };
   });
 
-  app.post('/drain', async (req, reply) => {
+  app.post("/drain", async (req, reply) => {
     const parsed = drainBody.safeParse(req.body);
     if (!parsed.success) {
-      return reply.code(400).send({ code: 'invalid_body', message: parsed.error.message });
+      return reply
+        .code(400)
+        .send({ code: "invalid_body", message: parsed.error.message });
     }
     drainState = {
       mode: parsed.data.mode,
       drainedAt: new Date().toISOString(),
       reason: parsed.data.reason,
     };
-    return { state: 'drained', mode: drainState.mode, drainedAt: drainState.drainedAt };
+    return {
+      state: "drained",
+      mode: drainState.mode,
+      drainedAt: drainState.drainedAt,
+    };
   });
 }
 ```
@@ -1175,9 +1253,9 @@ Near the other route registrations, add:
 
 ```typescript
 if (process.env.BENCH_SERVICE_TOKEN) {
-  const benchAdminRoutes = (await import('./routes/internal/bench.js')).default;
-  await app.register(benchAdminRoutes, { prefix: '/internal/bench' });
-  app.log.info('bench admin API registered at /internal/bench');
+  const benchAdminRoutes = (await import("./routes/internal/bench.js")).default;
+  await app.register(benchAdminRoutes, { prefix: "/internal/bench" });
+  app.log.info("bench admin API registered at /internal/bench");
 }
 ```
 
@@ -1186,19 +1264,19 @@ if (process.env.BENCH_SERVICE_TOKEN) {
 Create `apps/api/src/__tests__/internal-bench-health-drain.test.ts`:
 
 ```typescript
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import Fastify from 'fastify';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import Fastify from "fastify";
 
-vi.mock('@witylogix/db', () => ({
+vi.mock("@witylogix/db", () => ({
   prisma: { $queryRawUnsafe: vi.fn().mockResolvedValue([{ applied: 42 }]) },
 }));
 
 async function buildApp() {
-  process.env.BENCH_SERVICE_TOKEN = 'tok';
-  process.env.BENCH_ALLOWED_CIDRS = '127.0.0.1/32';
+  process.env.BENCH_SERVICE_TOKEN = "tok";
+  process.env.BENCH_ALLOWED_CIDRS = "127.0.0.1/32";
   const app = Fastify();
-  const routes = (await import('../routes/internal/bench.js')).default;
-  await app.register(routes, { prefix: '/internal/bench' });
+  const routes = (await import("../routes/internal/bench.js")).default;
+  await app.register(routes, { prefix: "/internal/bench" });
   return app;
 }
 
@@ -1207,14 +1285,14 @@ afterEach(() => {
   delete process.env.BENCH_ALLOWED_CIDRS;
 });
 
-describe('internal bench routes — health + drain', () => {
-  it('GET /health returns version + migration state', async () => {
+describe("internal bench routes — health + drain", () => {
+  it("GET /health returns version + migration state", async () => {
     const app = await buildApp();
     const r = await app.inject({
-      method: 'GET',
-      url: '/internal/bench/health',
-      headers: { authorization: 'Bearer tok' },
-      remoteAddress: '127.0.0.1',
+      method: "GET",
+      url: "/internal/bench/health",
+      headers: { authorization: "Bearer tok" },
+      remoteAddress: "127.0.0.1",
     });
     expect(r.statusCode).toBe(200);
     expect(r.json()).toMatchObject({
@@ -1223,35 +1301,35 @@ describe('internal bench routes — health + drain', () => {
     });
   });
 
-  it('POST /drain sets drain state and reflects in /health', async () => {
+  it("POST /drain sets drain state and reflects in /health", async () => {
     const app = await buildApp();
     const d = await app.inject({
-      method: 'POST',
-      url: '/internal/bench/drain',
-      headers: { authorization: 'Bearer tok' },
-      remoteAddress: '127.0.0.1',
-      payload: { mode: 'offline', reason: 'migrate' },
+      method: "POST",
+      url: "/internal/bench/drain",
+      headers: { authorization: "Bearer tok" },
+      remoteAddress: "127.0.0.1",
+      payload: { mode: "offline", reason: "migrate" },
     });
     expect(d.statusCode).toBe(200);
-    expect(d.json().state).toBe('drained');
+    expect(d.json().state).toBe("drained");
 
     const h = await app.inject({
-      method: 'GET',
-      url: '/internal/bench/health',
-      headers: { authorization: 'Bearer tok' },
-      remoteAddress: '127.0.0.1',
+      method: "GET",
+      url: "/internal/bench/health",
+      headers: { authorization: "Bearer tok" },
+      remoteAddress: "127.0.0.1",
     });
     expect(h.json().drained).toBe(true);
   });
 
-  it('POST /drain rejects invalid body', async () => {
+  it("POST /drain rejects invalid body", async () => {
     const app = await buildApp();
     const r = await app.inject({
-      method: 'POST',
-      url: '/internal/bench/drain',
-      headers: { authorization: 'Bearer tok' },
-      remoteAddress: '127.0.0.1',
-      payload: { mode: 'bogus' },
+      method: "POST",
+      url: "/internal/bench/drain",
+      headers: { authorization: "Bearer tok" },
+      remoteAddress: "127.0.0.1",
+      payload: { mode: "bogus" },
     });
     expect(r.statusCode).toBe(400);
   });
@@ -1280,6 +1358,7 @@ git commit -m "feat(api): bench admin routes for health and drain"
 ## Task 9: `TenantProvisioner` in `packages/core`
 
 **Files:**
+
 - Create: `packages/core/src/onboarding/tenant-provisioner.ts`
 - Create: `packages/core/src/onboarding/__tests__/tenant-provisioner.test.ts`
 - Modify: `packages/core/src/onboarding/index.ts` (export)
@@ -1287,15 +1366,15 @@ git commit -m "feat(api): bench admin routes for health and drain"
 - [ ] **Step 1: Write `packages/core/src/onboarding/tenant-provisioner.ts`**
 
 ```typescript
-import { prisma } from '@witylogix/db';
-import { workspaceProvisioner } from './workspace-provisioner.js';
-import { DeploymentType, Industry } from './types.js';
+import { prisma } from "@witylogix/db";
+import { workspaceProvisioner } from "./workspace-provisioner.js";
+import { DeploymentType, Industry } from "./types.js";
 
 export interface CreateTenantInput {
   slug: string;
   ownerEmail: string;
   ownerName: string;
-  plan?: 'starter' | 'pro' | 'enterprise';
+  plan?: "starter" | "pro" | "enterprise";
   features?: Record<string, unknown>;
   limits?: Record<string, unknown>;
 }
@@ -1308,24 +1387,28 @@ export interface CreateTenantResult {
 }
 
 export class TenantAlreadyExistsError extends Error {
-  constructor(public readonly field: 'slug' | 'email') {
+  constructor(public readonly field: "slug" | "email") {
     super(`tenant ${field} already in use`);
-    this.name = 'TenantAlreadyExistsError';
+    this.name = "TenantAlreadyExistsError";
   }
 }
 
 export class TenantProvisioner {
   async createTenant(input: CreateTenantInput): Promise<CreateTenantResult> {
-    const existingOrg = await prisma.organization.findUnique({ where: { slug: input.slug } });
-    if (existingOrg) throw new TenantAlreadyExistsError('slug');
-    const existingUser = await prisma.user.findUnique({ where: { email: input.ownerEmail } });
-    if (existingUser) throw new TenantAlreadyExistsError('email');
+    const existingOrg = await prisma.organization.findUnique({
+      where: { slug: input.slug },
+    });
+    if (existingOrg) throw new TenantAlreadyExistsError("slug");
+    const existingUser = await prisma.user.findUnique({
+      where: { email: input.ownerEmail },
+    });
+    if (existingUser) throw new TenantAlreadyExistsError("email");
 
     const org = await prisma.organization.create({
       data: {
         name: input.slug,
         slug: input.slug,
-        plan: input.plan ?? 'starter',
+        plan: input.plan ?? "starter",
       },
     });
 
@@ -1334,7 +1417,7 @@ export class TenantProvisioner {
         email: input.ownerEmail,
         name: input.ownerName,
         orgId: org.id,
-        role: 'ADMIN',
+        role: "ADMIN",
       },
     });
 
@@ -1380,7 +1463,10 @@ export {
   tenantProvisioner,
   TenantAlreadyExistsError,
 } from "./tenant-provisioner.js";
-export type { CreateTenantInput, CreateTenantResult } from "./tenant-provisioner.js";
+export type {
+  CreateTenantInput,
+  CreateTenantResult,
+} from "./tenant-provisioner.js";
 ```
 
 - [ ] **Step 3: Write the failing test**
@@ -1388,10 +1474,13 @@ export type { CreateTenantInput, CreateTenantResult } from "./tenant-provisioner
 Create `packages/core/src/onboarding/__tests__/tenant-provisioner.test.ts`:
 
 ```typescript
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { TenantProvisioner, TenantAlreadyExistsError } from '../tenant-provisioner.js';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import {
+  TenantProvisioner,
+  TenantAlreadyExistsError,
+} from "../tenant-provisioner.js";
 
-vi.mock('@witylogix/db', () => ({
+vi.mock("@witylogix/db", () => ({
   prisma: {
     organization: {
       findUnique: vi.fn(),
@@ -1404,62 +1493,76 @@ vi.mock('@witylogix/db', () => ({
     tenantConfig: { create: vi.fn() },
   },
 }));
-vi.mock('../workspace-provisioner.js', () => ({
+vi.mock("../workspace-provisioner.js", () => ({
   workspaceProvisioner: { provisionWorkspace: vi.fn().mockResolvedValue({}) },
 }));
 
-const { prisma } = await import('@witylogix/db');
+const { prisma } = await import("@witylogix/db");
 
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe('TenantProvisioner.createTenant', () => {
-  it('returns tenantId/orgId/ownerId/subdomain on happy path', async () => {
-    (prisma.organization.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
-    (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
-    (prisma.organization.create as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'org-1' });
-    (prisma.user.create as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'u-1' });
+describe("TenantProvisioner.createTenant", () => {
+  it("returns tenantId/orgId/ownerId/subdomain on happy path", async () => {
+    (
+      prisma.organization.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(null);
+    (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
+      null,
+    );
+    (prisma.organization.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "org-1",
+    });
+    (prisma.user.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "u-1",
+    });
     (prisma.tenantConfig.create as ReturnType<typeof vi.fn>).mockResolvedValue({
-      id: 'tc-1',
-      subdomain: 'acme',
+      id: "tc-1",
+      subdomain: "acme",
     });
 
     const r = await new TenantProvisioner().createTenant({
-      slug: 'acme',
-      ownerEmail: 'a@acme.co',
-      ownerName: 'A',
+      slug: "acme",
+      ownerEmail: "a@acme.co",
+      ownerName: "A",
     });
 
     expect(r).toEqual({
-      tenantId: 'tc-1',
-      orgId: 'org-1',
-      ownerId: 'u-1',
-      subdomain: 'acme',
+      tenantId: "tc-1",
+      orgId: "org-1",
+      ownerId: "u-1",
+      subdomain: "acme",
     });
   });
 
-  it('throws TenantAlreadyExistsError when slug is taken', async () => {
-    (prisma.organization.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
-      id: 'existing',
+  it("throws TenantAlreadyExistsError when slug is taken", async () => {
+    (
+      prisma.organization.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: "existing",
     });
     await expect(
       new TenantProvisioner().createTenant({
-        slug: 'acme',
-        ownerEmail: 'a@acme.co',
-        ownerName: 'A',
+        slug: "acme",
+        ownerEmail: "a@acme.co",
+        ownerName: "A",
       }),
     ).rejects.toBeInstanceOf(TenantAlreadyExistsError);
   });
 
-  it('throws TenantAlreadyExistsError when email is taken', async () => {
-    (prisma.organization.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
-    (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'u' });
+  it("throws TenantAlreadyExistsError when email is taken", async () => {
+    (
+      prisma.organization.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(null);
+    (prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "u",
+    });
     await expect(
       new TenantProvisioner().createTenant({
-        slug: 'acme',
-        ownerEmail: 'a@acme.co',
-        ownerName: 'A',
+        slug: "acme",
+        ownerEmail: "a@acme.co",
+        ownerName: "A",
       }),
     ).rejects.toBeInstanceOf(TenantAlreadyExistsError);
   });
@@ -1488,6 +1591,7 @@ git commit -m "feat(core): TenantProvisioner composes Org + User + TenantConfig 
 ## Task 10: Bench admin route — `POST /tenants`
 
 **Files:**
+
 - Modify: `apps/api/src/routes/internal/bench.ts`
 - Create: `apps/api/src/__tests__/internal-bench-tenants.test.ts`
 
@@ -1496,25 +1600,30 @@ git commit -m "feat(core): TenantProvisioner composes Org + User + TenantConfig 
 Add at the top:
 
 ```typescript
-import { tenantProvisioner, TenantAlreadyExistsError } from '@witylogix/core/onboarding';
+import {
+  tenantProvisioner,
+  TenantAlreadyExistsError,
+} from "@witylogix/core/onboarding";
 ```
 
 And add after the `/drain` route inside `benchAdminRoutes`:
 
 ```typescript
 const tenantBody = z.object({
-  slug: z.string().regex(/^[a-z0-9][a-z0-9-]{1,62}$/, 'invalid slug'),
+  slug: z.string().regex(/^[a-z0-9][a-z0-9-]{1,62}$/, "invalid slug"),
   ownerEmail: z.string().email(),
   ownerName: z.string().min(1).max(200),
-  plan: z.enum(['starter', 'pro', 'enterprise']).optional(),
+  plan: z.enum(["starter", "pro", "enterprise"]).optional(),
   features: z.record(z.unknown()).optional(),
   limits: z.record(z.unknown()).optional(),
 });
 
-app.post('/tenants', async (req, reply) => {
+app.post("/tenants", async (req, reply) => {
   const parsed = tenantBody.safeParse(req.body);
   if (!parsed.success) {
-    return reply.code(400).send({ code: 'invalid_body', message: parsed.error.message });
+    return reply
+      .code(400)
+      .send({ code: "invalid_body", message: parsed.error.message });
   }
   try {
     const result = await tenantProvisioner.createTenant(parsed.data);
@@ -1536,27 +1645,27 @@ app.post('/tenants', async (req, reply) => {
 Create `apps/api/src/__tests__/internal-bench-tenants.test.ts`:
 
 ```typescript
-import { describe, it, expect, afterEach, vi } from 'vitest';
-import Fastify from 'fastify';
+import { describe, it, expect, afterEach, vi } from "vitest";
+import Fastify from "fastify";
 
-vi.mock('@witylogix/db', () => ({
+vi.mock("@witylogix/db", () => ({
   prisma: { $queryRawUnsafe: vi.fn().mockResolvedValue([{ applied: 0 }]) },
 }));
-vi.mock('@witylogix/core/onboarding', () => ({
+vi.mock("@witylogix/core/onboarding", () => ({
   tenantProvisioner: { createTenant: vi.fn() },
   TenantAlreadyExistsError: class extends Error {
-    constructor(public field: 'slug' | 'email') {
-      super('exists');
+    constructor(public field: "slug" | "email") {
+      super("exists");
     }
   },
 }));
 
 async function buildApp() {
-  process.env.BENCH_SERVICE_TOKEN = 'tok';
-  process.env.BENCH_ALLOWED_CIDRS = '127.0.0.1/32';
+  process.env.BENCH_SERVICE_TOKEN = "tok";
+  process.env.BENCH_ALLOWED_CIDRS = "127.0.0.1/32";
   const app = Fastify();
-  const routes = (await import('../routes/internal/bench.js')).default;
-  await app.register(routes, { prefix: '/internal/bench' });
+  const routes = (await import("../routes/internal/bench.js")).default;
+  await app.register(routes, { prefix: "/internal/bench" });
   return app;
 }
 
@@ -1566,68 +1675,72 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-async function postTenant(app: Awaited<ReturnType<typeof buildApp>>, body: unknown) {
+async function postTenant(
+  app: Awaited<ReturnType<typeof buildApp>>,
+  body: unknown,
+) {
   return app.inject({
-    method: 'POST',
-    url: '/internal/bench/tenants',
-    headers: { authorization: 'Bearer tok' },
-    remoteAddress: '127.0.0.1',
+    method: "POST",
+    url: "/internal/bench/tenants",
+    headers: { authorization: "Bearer tok" },
+    remoteAddress: "127.0.0.1",
     payload: body,
   });
 }
 
-describe('POST /internal/bench/tenants', () => {
-  it('201 on happy path', async () => {
-    const { tenantProvisioner } = await import('@witylogix/core/onboarding');
-    (tenantProvisioner.createTenant as ReturnType<typeof vi.fn>).mockResolvedValue({
-      tenantId: 'tc-1',
-      orgId: 'o-1',
-      ownerId: 'u-1',
-      subdomain: 'acme',
+describe("POST /internal/bench/tenants", () => {
+  it("201 on happy path", async () => {
+    const { tenantProvisioner } = await import("@witylogix/core/onboarding");
+    (
+      tenantProvisioner.createTenant as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      tenantId: "tc-1",
+      orgId: "o-1",
+      ownerId: "u-1",
+      subdomain: "acme",
     });
     const app = await buildApp();
     const r = await postTenant(app, {
-      slug: 'acme',
-      ownerEmail: 'a@acme.co',
-      ownerName: 'Ada',
+      slug: "acme",
+      ownerEmail: "a@acme.co",
+      ownerName: "Ada",
     });
     expect(r.statusCode).toBe(201);
-    expect(r.json().subdomain).toBe('acme');
+    expect(r.json().subdomain).toBe("acme");
   });
 
-  it('409 when slug taken', async () => {
-    const { tenantProvisioner, TenantAlreadyExistsError } = await import(
-      '@witylogix/core/onboarding'
-    );
-    (tenantProvisioner.createTenant as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new TenantAlreadyExistsError('slug'),
-    );
+  it("409 when slug taken", async () => {
+    const { tenantProvisioner, TenantAlreadyExistsError } =
+      await import("@witylogix/core/onboarding");
+    (
+      tenantProvisioner.createTenant as ReturnType<typeof vi.fn>
+    ).mockRejectedValue(new TenantAlreadyExistsError("slug"));
     const app = await buildApp();
     const r = await postTenant(app, {
-      slug: 'acme',
-      ownerEmail: 'a@acme.co',
-      ownerName: 'Ada',
+      slug: "acme",
+      ownerEmail: "a@acme.co",
+      ownerName: "Ada",
     });
     expect(r.statusCode).toBe(409);
-    expect(r.json().code).toBe('slug_taken');
+    expect(r.json().code).toBe("slug_taken");
   });
 
-  it('400 on invalid slug', async () => {
+  it("400 on invalid slug", async () => {
     const app = await buildApp();
     const r = await postTenant(app, {
-      slug: 'Not-Valid',
-      ownerEmail: 'a@acme.co',
-      ownerName: 'Ada',
+      slug: "Not-Valid",
+      ownerEmail: "a@acme.co",
+      ownerName: "Ada",
     });
     expect(r.statusCode).toBe(400);
   });
 
-  it('400 on invalid email', async () => {
+  it("400 on invalid email", async () => {
     const app = await buildApp();
     const r = await postTenant(app, {
-      slug: 'acme',
-      ownerEmail: 'not-email',
-      ownerName: 'Ada',
+      slug: "acme",
+      ownerEmail: "not-email",
+      ownerName: "Ada",
     });
     expect(r.statusCode).toBe(400);
   });
@@ -1655,6 +1768,7 @@ git commit -m "feat(api): bench admin POST /tenants route with zod validation"
 ## Task 11: `ops/tenants.ts` + CLI `new-tenant`
 
 **Files:**
+
 - Create: `packages/bench-core/src/ops/tenants.ts`
 - Modify: `packages/bench-cli/src/commands/new-tenant.ts`
 - Create: `packages/bench-core/src/__tests__/ops-tenants.test.ts`
@@ -1662,14 +1776,14 @@ git commit -m "feat(api): bench admin POST /tenants route with zod validation"
 - [ ] **Step 1: Write `packages/bench-core/src/ops/tenants.ts`**
 
 ```typescript
-import type { Context } from '../types.js';
-import { benchApi } from '../http-client.js';
+import type { Context } from "../types.js";
+import { benchApi } from "../http-client.js";
 
 export interface CreateTenantInput {
   slug: string;
   ownerEmail: string;
   ownerName: string;
-  plan?: 'starter' | 'pro' | 'enterprise';
+  plan?: "starter" | "pro" | "enterprise";
   features?: Record<string, unknown>;
   limits?: Record<string, unknown>;
 }
@@ -1685,7 +1799,12 @@ export async function createTenant(
   ctx: Context,
   input: CreateTenantInput,
 ): Promise<CreateTenantResult> {
-  return benchApi<CreateTenantResult>(ctx, 'POST', '/internal/bench/tenants', input);
+  return benchApi<CreateTenantResult>(
+    ctx,
+    "POST",
+    "/internal/bench/tenants",
+    input,
+  );
 }
 ```
 
@@ -1698,7 +1817,7 @@ Add entry to `packages/bench-core/tsup.config.ts`:
 Export in `packages/bench-core/src/index.ts`:
 
 ```typescript
-export * as tenants from './ops/tenants.js';
+export * as tenants from "./ops/tenants.js";
 ```
 
 - [ ] **Step 2: Write the failing test**
@@ -1706,46 +1825,49 @@ export * as tenants from './ops/tenants.js';
 Create `packages/bench-core/src/__tests__/ops-tenants.test.ts`:
 
 ```typescript
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createTenant } from '../ops/tenants.js';
-import type { Context } from '../types.js';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createTenant } from "../ops/tenants.js";
+import type { Context } from "../types.js";
 
 const ctx: Context = {
-  cwd: '/tmp/fake-install',
-  config: {} as Context['config'],
+  cwd: "/tmp/fake-install",
+  config: {} as Context["config"],
   logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} },
   dryRun: false,
   json: false,
 };
 
 beforeEach(() => {
-  process.env.BENCH_SERVICE_TOKEN = 't';
-  process.env.BENCH_API_BASE_URL = 'http://api.test';
+  process.env.BENCH_SERVICE_TOKEN = "t";
+  process.env.BENCH_API_BASE_URL = "http://api.test";
 });
 
-describe('ops/tenants.createTenant', () => {
-  it('POSTs to /internal/bench/tenants with the right body', async () => {
+describe("ops/tenants.createTenant", () => {
+  it("POSTs to /internal/bench/tenants with the right body", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
-        tenantId: 'tc', orgId: 'o', ownerId: 'u', subdomain: 'acme',
+        tenantId: "tc",
+        orgId: "o",
+        ownerId: "u",
+        subdomain: "acme",
       }),
     });
-    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal("fetch", fetchMock);
     const r = await createTenant(ctx, {
-      slug: 'acme',
-      ownerEmail: 'a@acme.co',
-      ownerName: 'Ada',
+      slug: "acme",
+      ownerEmail: "a@acme.co",
+      ownerName: "Ada",
     });
-    expect(r.subdomain).toBe('acme');
+    expect(r.subdomain).toBe("acme");
     expect(fetchMock).toHaveBeenCalledWith(
-      'http://api.test/internal/bench/tenants',
+      "http://api.test/internal/bench/tenants",
       expect.objectContaining({
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({
-          slug: 'acme',
-          ownerEmail: 'a@acme.co',
-          ownerName: 'Ada',
+          slug: "acme",
+          ownerEmail: "a@acme.co",
+          ownerName: "Ada",
         }),
       }),
     );
@@ -1756,84 +1878,122 @@ describe('ops/tenants.createTenant', () => {
 - [ ] **Step 3: Wire the CLI command `packages/bench-cli/src/commands/new-tenant.ts`** — replace the stub body entirely:
 
 ```typescript
-import type { Command } from 'commander';
-import pc from 'picocolors';
-import { buildContext, tenants, BenchApiRequestError, NoConfigError } from '@witylogix/bench-core';
+import type { Command } from "commander";
+import pc from "picocolors";
+import {
+  buildContext,
+  tenants,
+  BenchApiRequestError,
+  NoConfigError,
+} from "@witylogix/bench-core";
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]{1,62}$/;
 
 export function registerNewTenantCommand(program: Command): void {
   program
-    .command('new-tenant <slug>')
-    .description('Provision a tenant (Managed plan) in the running installation')
-    .requiredOption('--owner-email <email>', 'owner email address')
-    .requiredOption('--owner-name <name>', 'owner full name')
-    .option('--plan <plan>', 'plan tier: starter | pro | enterprise', 'starter')
-    .option('--feature <kv>', 'feature flag k=v (repeatable)', (v, acc: string[] = []) => [...acc, v], [])
-    .option('--limit <kv>', 'limit k=v (repeatable)', (v, acc: string[] = []) => [...acc, v], [])
-    .action(async (slug: string, opts: {
-      ownerEmail: string; ownerName: string; plan: 'starter' | 'pro' | 'enterprise';
-      feature: string[]; limit: string[];
-    }) => {
-      const globals = program.opts<{ json: boolean; dryRun: boolean }>();
+    .command("new-tenant <slug>")
+    .description(
+      "Provision a tenant (Managed plan) in the running installation",
+    )
+    .requiredOption("--owner-email <email>", "owner email address")
+    .requiredOption("--owner-name <name>", "owner full name")
+    .option("--plan <plan>", "plan tier: starter | pro | enterprise", "starter")
+    .option(
+      "--feature <kv>",
+      "feature flag k=v (repeatable)",
+      (v, acc: string[] = []) => [...acc, v],
+      [],
+    )
+    .option(
+      "--limit <kv>",
+      "limit k=v (repeatable)",
+      (v, acc: string[] = []) => [...acc, v],
+      [],
+    )
+    .action(
+      async (
+        slug: string,
+        opts: {
+          ownerEmail: string;
+          ownerName: string;
+          plan: "starter" | "pro" | "enterprise";
+          feature: string[];
+          limit: string[];
+        },
+      ) => {
+        const globals = program.opts<{ json: boolean; dryRun: boolean }>();
 
-      if (!SLUG_RE.test(slug)) {
-        process.stderr.write(pc.red(
-          `bench new-tenant: "${slug}" is not a valid slug. Use lowercase letters, digits, or "-" (2-63 chars).\n`,
-        ));
-        process.exit(1);
-      }
-
-      const parseKv = (arr: string[]): Record<string, string> => {
-        const out: Record<string, string> = {};
-        for (const s of arr) {
-          const i = s.indexOf('=');
-          if (i < 0) continue;
-          out[s.slice(0, i)] = s.slice(i + 1);
-        }
-        return out;
-      };
-
-      try {
-        const ctx = await buildContext({ json: globals.json, dryRun: globals.dryRun });
-        const r = await tenants.createTenant(ctx, {
-          slug,
-          ownerEmail: opts.ownerEmail,
-          ownerName: opts.ownerName,
-          plan: opts.plan,
-          features: parseKv(opts.feature),
-          limits: parseKv(opts.limit),
-        });
-        if (globals.json) {
-          process.stdout.write(`${JSON.stringify(r, null, 2)}\n`);
-        } else {
-          process.stdout.write(
-            pc.green(`✓ tenant "${slug}" created — orgId=${r.orgId}, subdomain=${r.subdomain}\n`),
+        if (!SLUG_RE.test(slug)) {
+          process.stderr.write(
+            pc.red(
+              `bench new-tenant: "${slug}" is not a valid slug. Use lowercase letters, digits, or "-" (2-63 chars).\n`,
+            ),
           );
-        }
-        process.exit(0);
-      } catch (err) {
-        if (err instanceof NoConfigError) {
-          process.stderr.write(pc.red(`${err.message}\n`));
           process.exit(1);
         }
-        if (err instanceof BenchApiRequestError) {
-          if (err.data.status === 409) {
-            process.stderr.write(pc.red(`✗ ${err.data.message}. Try \`bench new-tenant ${slug}-2\`.\n`));
+
+        const parseKv = (arr: string[]): Record<string, string> => {
+          const out: Record<string, string> = {};
+          for (const s of arr) {
+            const i = s.indexOf("=");
+            if (i < 0) continue;
+            out[s.slice(0, i)] = s.slice(i + 1);
+          }
+          return out;
+        };
+
+        try {
+          const ctx = await buildContext({
+            json: globals.json,
+            dryRun: globals.dryRun,
+          });
+          const r = await tenants.createTenant(ctx, {
+            slug,
+            ownerEmail: opts.ownerEmail,
+            ownerName: opts.ownerName,
+            plan: opts.plan,
+            features: parseKv(opts.feature),
+            limits: parseKv(opts.limit),
+          });
+          if (globals.json) {
+            process.stdout.write(`${JSON.stringify(r, null, 2)}\n`);
+          } else {
+            process.stdout.write(
+              pc.green(
+                `✓ tenant "${slug}" created — orgId=${r.orgId}, subdomain=${r.subdomain}\n`,
+              ),
+            );
+          }
+          process.exit(0);
+        } catch (err) {
+          if (err instanceof NoConfigError) {
+            process.stderr.write(pc.red(`${err.message}\n`));
             process.exit(1);
           }
-          if (err.data.status === 400) {
-            process.stderr.write(pc.red(`✗ validation error: ${err.data.message}\n`));
-            process.exit(1);
+          if (err instanceof BenchApiRequestError) {
+            if (err.data.status === 409) {
+              process.stderr.write(
+                pc.red(
+                  `✗ ${err.data.message}. Try \`bench new-tenant ${slug}-2\`.\n`,
+                ),
+              );
+              process.exit(1);
+            }
+            if (err.data.status === 400) {
+              process.stderr.write(
+                pc.red(`✗ validation error: ${err.data.message}\n`),
+              );
+              process.exit(1);
+            }
+            process.stderr.write(pc.red(`✗ ${err.data.message}\n`));
+            process.exit(3);
           }
-          process.stderr.write(pc.red(`✗ ${err.data.message}\n`));
+          const msg = err instanceof Error ? err.message : String(err);
+          process.stderr.write(pc.red(`bench: ${msg}\n`));
           process.exit(3);
         }
-        const msg = err instanceof Error ? err.message : String(err);
-        process.stderr.write(pc.red(`bench: ${msg}\n`));
-        process.exit(3);
-      }
-    });
+      },
+    );
 }
 ```
 
@@ -1862,15 +2022,16 @@ git commit -m "feat(bench): new-tenant command via POST /internal/bench/tenants"
 ## Task 12: `ops/audit.ts` (shared audit event emitter)
 
 **Files:**
+
 - Create: `packages/bench-core/src/ops/audit.ts`
 - Create: `packages/bench-core/src/__tests__/ops-audit.test.ts`
 
 - [ ] **Step 1: Write `packages/bench-core/src/ops/audit.ts`**
 
 ```typescript
-import { appendFileSync, mkdirSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import type { Context } from '../types.js';
+import { appendFileSync, mkdirSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import type { Context } from "../types.js";
 
 export interface AuditEvent {
   event: string;
@@ -1881,7 +2042,7 @@ export interface AuditEvent {
   data: Record<string, unknown>;
 }
 
-const AUDIT_LOG_PATH = 'bench.audit.log';
+const AUDIT_LOG_PATH = "bench.audit.log";
 
 export function emitAudit(
   ctx: Context,
@@ -1890,8 +2051,8 @@ export function emitAudit(
 ): void {
   const payload: AuditEvent = {
     event,
-    actor: 'bench',
-    initiator: process.env.BENCH_INITIATOR ?? 'cli',
+    actor: "bench",
+    initiator: process.env.BENCH_INITIATOR ?? "cli",
     timestamp: new Date().toISOString(),
     installation: ctx.config.metadata.name,
     data,
@@ -1912,7 +2073,7 @@ export function emitAudit(
 Add `'ops/audit': 'src/ops/audit.ts'` to `tsup.config.ts`, export from `index.ts`:
 
 ```typescript
-export * as audit from './ops/audit.js';
+export * as audit from "./ops/audit.js";
 ```
 
 - [ ] **Step 2: Write the failing test**
@@ -1920,18 +2081,23 @@ export * as audit from './ops/audit.js';
 Create `packages/bench-core/src/__tests__/ops-audit.test.ts`:
 
 ```typescript
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { emitAudit } from '../ops/audit.js';
-import type { Context } from '../types.js';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { emitAudit } from "../ops/audit.js";
+import type { Context } from "../types.js";
 
 let tmp: string;
 const ctx: Context = (() => {
   const c = {
-    config: { metadata: { name: 'demo' } },
-    logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} },
+    config: { metadata: { name: "demo" } },
+    logger: {
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+    },
     dryRun: false,
     json: false,
   } as unknown as Context;
@@ -1939,27 +2105,31 @@ const ctx: Context = (() => {
 })();
 
 beforeEach(() => {
-  tmp = mkdtempSync(join(tmpdir(), 'bench-audit-'));
+  tmp = mkdtempSync(join(tmpdir(), "bench-audit-"));
   (ctx as { cwd: string }).cwd = tmp;
 });
 afterEach(() => rmSync(tmp, { recursive: true, force: true }));
 
-describe('emitAudit', () => {
-  it('appends a JSONL line to bench.audit.log', () => {
-    emitAudit(ctx, 'bench.test.event', { foo: 'bar' });
-    const lines = readFileSync(join(tmp, 'bench.audit.log'), 'utf8').trim().split('\n');
+describe("emitAudit", () => {
+  it("appends a JSONL line to bench.audit.log", () => {
+    emitAudit(ctx, "bench.test.event", { foo: "bar" });
+    const lines = readFileSync(join(tmp, "bench.audit.log"), "utf8")
+      .trim()
+      .split("\n");
     expect(lines).toHaveLength(1);
     const parsed = JSON.parse(lines[0]);
-    expect(parsed.event).toBe('bench.test.event');
-    expect(parsed.installation).toBe('demo');
-    expect(parsed.data).toEqual({ foo: 'bar' });
+    expect(parsed.event).toBe("bench.test.event");
+    expect(parsed.installation).toBe("demo");
+    expect(parsed.data).toEqual({ foo: "bar" });
   });
 
-  it('accumulates multiple events', () => {
-    emitAudit(ctx, 'a', {});
-    emitAudit(ctx, 'b', {});
-    emitAudit(ctx, 'c', {});
-    const lines = readFileSync(join(tmp, 'bench.audit.log'), 'utf8').trim().split('\n');
+  it("accumulates multiple events", () => {
+    emitAudit(ctx, "a", {});
+    emitAudit(ctx, "b", {});
+    emitAudit(ctx, "c", {});
+    const lines = readFileSync(join(tmp, "bench.audit.log"), "utf8")
+      .trim()
+      .split("\n");
     expect(lines).toHaveLength(3);
   });
 });
@@ -1988,27 +2158,35 @@ git commit -m "feat(bench-core): audit event emitter to bench.audit.log"
 ## Task 13: `ops/backup.ts` — archive writer (DB + config, no blobs yet)
 
 **Files:**
+
 - Create: `packages/bench-core/src/ops/backup.ts`
 - Create: `packages/bench-core/src/__tests__/ops-backup.test.ts`
 
 - [ ] **Step 1: Write `packages/bench-core/src/ops/backup.ts`**
 
 ```typescript
-import { createHash } from 'node:crypto';
-import { createReadStream, createWriteStream } from 'node:fs';
-import { copyFile, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
-import { join, resolve, dirname } from 'node:path';
-import { pipeline } from 'node:stream/promises';
-import { createGzip } from 'node:zlib';
-import { create as createTar } from 'tar';
-import type { Context, Provider } from '../index.js';
-import { resolveProvider } from '../provider.js';
-import { emitAudit } from './audit.js';
+import { createHash } from "node:crypto";
+import { createReadStream, createWriteStream } from "node:fs";
+import {
+  copyFile,
+  mkdir,
+  readFile,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
+import { join, resolve, dirname } from "node:path";
+import { pipeline } from "node:stream/promises";
+import { createGzip } from "node:zlib";
+import { create as createTar } from "tar";
+import type { Context, Provider } from "../index.js";
+import { resolveProvider } from "../provider.js";
+import { emitAudit } from "./audit.js";
 
 export interface BackupInput {
   to?: string;
   includeBlobs?: boolean;
-  compression?: 'gzip' | 'none';
+  compression?: "gzip" | "none";
 }
 
 export interface BackupResult {
@@ -2031,14 +2209,18 @@ export interface Manifest {
 }
 
 async function sha256OfFile(path: string): Promise<string> {
-  const h = createHash('sha256');
+  const h = createHash("sha256");
   await pipeline(createReadStream(path), h);
-  return `sha256:${h.digest('hex')}`;
+  return `sha256:${h.digest("hex")}`;
 }
 
 function defaultArchivePath(ctx: Context): string {
-  const ts = new Date().toISOString().replace(/[:-]/g, '').replace(/\..+/, '').replace('T', '-');
-  return resolve(ctx.cwd, 'backups', `${ctx.config.metadata.name}-${ts}.wbak`);
+  const ts = new Date()
+    .toISOString()
+    .replace(/[:-]/g, "")
+    .replace(/\..+/, "")
+    .replace("T", "-");
+  return resolve(ctx.cwd, "backups", `${ctx.config.metadata.name}-${ts}.wbak`);
 }
 
 async function dumpDatabase(
@@ -2046,20 +2228,22 @@ async function dumpDatabase(
   provider: Provider,
   scratch: string,
 ): Promise<string> {
-  const dbUser = process.env.POSTGRES_USER ?? 'witylogix';
-  const dbName = process.env.POSTGRES_DB ?? 'witylogix';
-  const destGz = join(scratch, 'db.sql.gz');
-  const r = await provider.execInService(
-    ctx,
-    'postgres',
-    ['pg_dump', '-Fc', '-U', dbUser, dbName],
-  );
+  const dbUser = process.env.POSTGRES_USER ?? "witylogix";
+  const dbName = process.env.POSTGRES_DB ?? "witylogix";
+  const destGz = join(scratch, "db.sql.gz");
+  const r = await provider.execInService(ctx, "postgres", [
+    "pg_dump",
+    "-Fc",
+    "-U",
+    dbUser,
+    dbName,
+  ]);
   if (r.exitCode !== 0) {
     throw new Error(`pg_dump failed: ${r.stderr}`);
   }
   const gz = createGzip();
   const out = createWriteStream(destGz);
-  gz.end(Buffer.from(r.stdout, 'binary'));
+  gz.end(Buffer.from(r.stdout, "binary"));
   await pipeline(gz, out);
   return destGz;
 }
@@ -2068,68 +2252,102 @@ async function countRows(
   ctx: Context,
   provider: Provider,
 ): Promise<{ tenants: number; orders: number }> {
-  const dbUser = process.env.POSTGRES_USER ?? 'witylogix';
-  const dbName = process.env.POSTGRES_DB ?? 'witylogix';
-  const r = await provider.execInService(ctx, 'postgres', [
-    'psql', '-U', dbUser, '-d', dbName, '-t', '-A', '-c',
-    'SELECT COUNT(*) FROM organizations; SELECT COUNT(*) FROM orders;',
+  const dbUser = process.env.POSTGRES_USER ?? "witylogix";
+  const dbName = process.env.POSTGRES_DB ?? "witylogix";
+  const r = await provider.execInService(ctx, "postgres", [
+    "psql",
+    "-U",
+    dbUser,
+    "-d",
+    dbName,
+    "-t",
+    "-A",
+    "-c",
+    "SELECT COUNT(*) FROM organizations; SELECT COUNT(*) FROM orders;",
   ]);
-  const lines = r.stdout.split('\n').map((s) => s.trim()).filter(Boolean);
+  const lines = r.stdout
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
   return {
-    tenants: Number.parseInt(lines[0] ?? '0', 10),
-    orders: Number.parseInt(lines[1] ?? '0', 10),
+    tenants: Number.parseInt(lines[0] ?? "0", 10),
+    orders: Number.parseInt(lines[1] ?? "0", 10),
   };
 }
 
-export async function run(ctx: Context, input: BackupInput = {}): Promise<BackupResult> {
+export async function run(
+  ctx: Context,
+  input: BackupInput = {},
+): Promise<BackupResult> {
   const startedAt = Date.now();
   const archivePath = input.to ?? defaultArchivePath(ctx);
-  const scratch = resolve(ctx.cwd, '.bench', `backup-scratch-${Date.now()}`);
+  const scratch = resolve(ctx.cwd, ".bench", `backup-scratch-${Date.now()}`);
   await mkdir(scratch, { recursive: true });
-  await mkdir(join(scratch, 'config'), { recursive: true });
+  await mkdir(join(scratch, "config"), { recursive: true });
 
   try {
     const provider = await resolveProvider(ctx.config.provider.type);
 
-    await copyFile(join(ctx.cwd, 'bench.config.yaml'), join(scratch, 'config', 'bench.config.yaml'));
-    const composeSrc = join(ctx.cwd, '.bench', 'compose.yaml');
-    if (await stat(composeSrc).then(() => true, () => false)) {
-      await copyFile(composeSrc, join(scratch, 'config', 'compose.yaml'));
+    await copyFile(
+      join(ctx.cwd, "bench.config.yaml"),
+      join(scratch, "config", "bench.config.yaml"),
+    );
+    const composeSrc = join(ctx.cwd, ".bench", "compose.yaml");
+    if (
+      await stat(composeSrc).then(
+        () => true,
+        () => false,
+      )
+    ) {
+      await copyFile(composeSrc, join(scratch, "config", "compose.yaml"));
     }
 
     const dbGz = await dumpDatabase(ctx, provider, scratch);
     const counts = await countRows(ctx, provider);
 
     const checksums: Record<string, string> = {};
-    checksums['db.sql.gz'] = await sha256OfFile(dbGz);
-    checksums['config/bench.config.yaml'] = await sha256OfFile(
-      join(scratch, 'config', 'bench.config.yaml'),
+    checksums["db.sql.gz"] = await sha256OfFile(dbGz);
+    checksums["config/bench.config.yaml"] = await sha256OfFile(
+      join(scratch, "config", "bench.config.yaml"),
     );
 
     const manifest: Manifest = {
       version: 1,
-      benchVersion: '0.0.1',
-      witylogixVersion: ctx.config.witylogix.version ?? 'latest',
+      benchVersion: "0.0.1",
+      witylogixVersion: ctx.config.witylogix.version ?? "latest",
       installationName: ctx.config.metadata.name,
       createdAt: new Date().toISOString(),
       includes: { db: true, config: true, blobs: false },
       counts,
       checksums,
     };
-    await writeFile(join(scratch, 'manifest.json'), JSON.stringify(manifest, null, 2));
+    await writeFile(
+      join(scratch, "manifest.json"),
+      JSON.stringify(manifest, null, 2),
+    );
 
     await mkdir(dirname(archivePath), { recursive: true });
-    await createTar(
-      { gzip: true, file: archivePath, cwd: scratch },
-      ['manifest.json', 'db.sql.gz', 'config'],
-    );
+    await createTar({ gzip: true, file: archivePath, cwd: scratch }, [
+      "manifest.json",
+      "db.sql.gz",
+      "config",
+    ]);
 
     const sz = (await stat(archivePath)).size;
     const durationMs = Date.now() - startedAt;
-    emitAudit(ctx, 'bench.backup.completed', {
-      archive: archivePath, sizeBytes: sz, blobCount: 0, durationMs,
+    emitAudit(ctx, "bench.backup.completed", {
+      archive: archivePath,
+      sizeBytes: sz,
+      blobCount: 0,
+      durationMs,
     });
-    return { ok: true, archive: archivePath, sizeBytes: sz, manifest, durationMs };
+    return {
+      ok: true,
+      archive: archivePath,
+      sizeBytes: sz,
+      manifest,
+      durationMs,
+    };
   } finally {
     await rm(scratch, { recursive: true, force: true });
   }
@@ -2152,7 +2370,7 @@ pnpm install
 Add to `tsup.config.ts`: `'ops/backup': 'src/ops/backup.ts'`. Export from `index.ts`:
 
 ```typescript
-export * as backup from './ops/backup.js';
+export * as backup from "./ops/backup.js";
 ```
 
 - [ ] **Step 2: Write the failing test**
@@ -2160,80 +2378,99 @@ export * as backup from './ops/backup.js';
 Create `packages/bench-core/src/__tests__/ops-backup.test.ts`:
 
 ```typescript
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mkdtempSync, rmSync, writeFileSync, mkdirSync, readFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { registerProvider } from '../provider.js';
-import { run as runBackup } from '../ops/backup.js';
-import type { Context, Provider } from '../types.js';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import {
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+  mkdirSync,
+  readFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { registerProvider } from "../provider.js";
+import { run as runBackup } from "../ops/backup.js";
+import type { Context, Provider } from "../types.js";
 
 let tmp: string;
 
 beforeEach(() => {
-  tmp = mkdtempSync(join(tmpdir(), 'bench-backup-'));
-  mkdirSync(join(tmp, '.bench'), { recursive: true });
-  writeFileSync(join(tmp, 'bench.config.yaml'), 'name: demo\n');
-  writeFileSync(join(tmp, '.bench', 'compose.yaml'), 'services: {}\n');
+  tmp = mkdtempSync(join(tmpdir(), "bench-backup-"));
+  mkdirSync(join(tmp, ".bench"), { recursive: true });
+  writeFileSync(join(tmp, "bench.config.yaml"), "name: demo\n");
+  writeFileSync(join(tmp, ".bench", "compose.yaml"), "services: {}\n");
 });
 afterEach(() => rmSync(tmp, { recursive: true, force: true }));
 
 const fakeProvider: Provider = {
-  id: 'fake',
+  id: "fake",
   preflight: async () => ({ ok: true, checks: [] }),
   provision: async () => ({ ok: true, operationsApplied: 0 }),
-  deploy: async () => ({ ok: true, version: '0', rolledBack: false }),
+  deploy: async () => ({ ok: true, version: "0", rolledBack: false }),
   start: async () => {},
   stop: async () => {},
   restart: async () => {},
   async *logs() {},
   status: async () => ({ services: [] }),
-  backup: async () => { throw new Error('unused'); },
-  restore: async () => { throw new Error('unused'); },
+  backup: async () => {
+    throw new Error("unused");
+  },
+  restore: async () => {
+    throw new Error("unused");
+  },
   rotateSecret: async () => {},
   destroy: async () => {},
-  execInService: vi.fn().mockImplementation(async (_ctx, _svc, cmd: string[]) => {
-    if (cmd[0] === 'pg_dump') {
-      return { stdout: 'PGDUMP_CONTENT', stderr: '', exitCode: 0 };
-    }
-    if (cmd[0] === 'psql') {
-      return { stdout: '7\n123\n', stderr: '', exitCode: 0 };
-    }
-    return { stdout: '', stderr: '', exitCode: 0 };
-  }),
-  runOneShot: async () => ({ stdout: '', stderr: '', exitCode: 0 }),
+  execInService: vi
+    .fn()
+    .mockImplementation(async (_ctx, _svc, cmd: string[]) => {
+      if (cmd[0] === "pg_dump") {
+        return { stdout: "PGDUMP_CONTENT", stderr: "", exitCode: 0 };
+      }
+      if (cmd[0] === "psql") {
+        return { stdout: "7\n123\n", stderr: "", exitCode: 0 };
+      }
+      return { stdout: "", stderr: "", exitCode: 0 };
+    }),
+  runOneShot: async () => ({ stdout: "", stderr: "", exitCode: 0 }),
 };
 
-registerProvider('fake', async () => fakeProvider);
+registerProvider("fake", async () => fakeProvider);
 
 function ctxOf(): Context {
   return {
     cwd: tmp,
     config: {
-      metadata: { name: 'demo' },
-      provider: { type: 'fake' as never, config: {} },
-      witylogix: { version: '4.0.0', channel: 'stable' },
-    } as unknown as Context['config'],
-    logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} },
+      metadata: { name: "demo" },
+      provider: { type: "fake" as never, config: {} },
+      witylogix: { version: "4.0.0", channel: "stable" },
+    } as unknown as Context["config"],
+    logger: {
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+    },
     dryRun: false,
     json: false,
   };
 }
 
-describe('ops/backup.run', () => {
-  it('produces an archive with manifest, db, and config', async () => {
-    const result = await runBackup(ctxOf(), { to: join(tmp, 'out.wbak') });
+describe("ops/backup.run", () => {
+  it("produces an archive with manifest, db, and config", async () => {
+    const result = await runBackup(ctxOf(), { to: join(tmp, "out.wbak") });
     expect(result.ok).toBe(true);
     expect(result.sizeBytes).toBeGreaterThan(0);
     expect(result.manifest.counts).toEqual({ tenants: 7, orders: 123 });
-    expect(result.manifest.checksums['db.sql.gz']).toMatch(/^sha256:/);
+    expect(result.manifest.checksums["db.sql.gz"]).toMatch(/^sha256:/);
   });
 
-  it('writes audit event', async () => {
-    await runBackup(ctxOf(), { to: join(tmp, 'out2.wbak') });
-    const log = readFileSync(join(tmp, 'bench.audit.log'), 'utf8').trim().split('\n');
+  it("writes audit event", async () => {
+    await runBackup(ctxOf(), { to: join(tmp, "out2.wbak") });
+    const log = readFileSync(join(tmp, "bench.audit.log"), "utf8")
+      .trim()
+      .split("\n");
     const event = JSON.parse(log[0]);
-    expect(event.event).toBe('bench.backup.completed');
+    expect(event.event).toBe("bench.backup.completed");
   });
 });
 ```
@@ -2262,48 +2499,70 @@ git commit -m "feat(bench-core): ops/backup with pg_dump + manifest + tar archiv
 ## Task 14: Wire `bench backup` CLI command
 
 **Files:**
+
 - Modify: `packages/bench-cli/src/commands/backup.ts`
 
 - [ ] **Step 1: Replace the stub with real implementation**
 
 ```typescript
-import type { Command } from 'commander';
-import pc from 'picocolors';
-import { buildContext, backup as backupOps, NoConfigError } from '@witylogix/bench-core';
+import type { Command } from "commander";
+import pc from "picocolors";
+import {
+  buildContext,
+  backup as backupOps,
+  NoConfigError,
+} from "@witylogix/bench-core";
 
 export function registerBackupCommand(program: Command): void {
   program
-    .command('backup')
-    .description('Back up the installation (DB + config; optionally blobs)')
-    .option('--to <path>', 'destination path')
-    .option('--include-blobs', 'include object-storage blobs in the archive', false)
-    .option('--compression <mode>', 'gzip | none', 'gzip')
-    .action(async (opts: { to?: string; includeBlobs: boolean; compression: 'gzip' | 'none' }) => {
-      const globals = program.opts<{ json: boolean; dryRun: boolean }>();
-      try {
-        const ctx = await buildContext({ json: globals.json, dryRun: globals.dryRun });
-        const r = await backupOps.run(ctx, {
-          to: opts.to,
-          includeBlobs: opts.includeBlobs,
-          compression: opts.compression,
-        });
-        if (globals.json) {
-          process.stdout.write(`${JSON.stringify(r, null, 2)}\n`);
-        } else {
-          const mb = (r.sizeBytes / 1024 / 1024).toFixed(1);
-          process.stdout.write(pc.green(`✓ backup → ${r.archive} (${mb} MB, ${r.durationMs}ms)\n`));
+    .command("backup")
+    .description("Back up the installation (DB + config; optionally blobs)")
+    .option("--to <path>", "destination path")
+    .option(
+      "--include-blobs",
+      "include object-storage blobs in the archive",
+      false,
+    )
+    .option("--compression <mode>", "gzip | none", "gzip")
+    .action(
+      async (opts: {
+        to?: string;
+        includeBlobs: boolean;
+        compression: "gzip" | "none";
+      }) => {
+        const globals = program.opts<{ json: boolean; dryRun: boolean }>();
+        try {
+          const ctx = await buildContext({
+            json: globals.json,
+            dryRun: globals.dryRun,
+          });
+          const r = await backupOps.run(ctx, {
+            to: opts.to,
+            includeBlobs: opts.includeBlobs,
+            compression: opts.compression,
+          });
+          if (globals.json) {
+            process.stdout.write(`${JSON.stringify(r, null, 2)}\n`);
+          } else {
+            const mb = (r.sizeBytes / 1024 / 1024).toFixed(1);
+            process.stdout.write(
+              pc.green(
+                `✓ backup → ${r.archive} (${mb} MB, ${r.durationMs}ms)\n`,
+              ),
+            );
+          }
+          process.exit(0);
+        } catch (err) {
+          if (err instanceof NoConfigError) {
+            process.stderr.write(pc.red(`${err.message}\n`));
+            process.exit(1);
+          }
+          const msg = err instanceof Error ? err.message : String(err);
+          process.stderr.write(pc.red(`bench backup: ${msg}\n`));
+          process.exit(3);
         }
-        process.exit(0);
-      } catch (err) {
-        if (err instanceof NoConfigError) {
-          process.stderr.write(pc.red(`${err.message}\n`));
-          process.exit(1);
-        }
-        const msg = err instanceof Error ? err.message : String(err);
-        process.stderr.write(pc.red(`bench backup: ${msg}\n`));
-        process.exit(3);
-      }
-    });
+      },
+    );
 }
 ```
 
@@ -2325,6 +2584,7 @@ git commit -m "feat(bench): wire `bench backup` CLI to ops/backup"
 ## Task 15: Extend `ops/backup.ts` with `--include-blobs`
 
 **Files:**
+
 - Modify: `packages/bench-core/src/ops/backup.ts`
 - Modify: `packages/bench-core/src/__tests__/ops-backup.test.ts`
 
@@ -2337,17 +2597,24 @@ async function collectBlobUrls(
   ctx: Context,
   provider: Provider,
 ): Promise<string[]> {
-  const dbUser = process.env.POSTGRES_USER ?? 'witylogix';
-  const dbName = process.env.POSTGRES_DB ?? 'witylogix';
-  const r = await provider.execInService(ctx, 'postgres', [
-    'psql', '-U', dbUser, '-d', dbName, '-t', '-A', '-c',
+  const dbUser = process.env.POSTGRES_USER ?? "witylogix";
+  const dbName = process.env.POSTGRES_DB ?? "witylogix";
+  const r = await provider.execInService(ctx, "postgres", [
+    "psql",
+    "-U",
+    dbUser,
+    "-d",
+    dbName,
+    "-t",
+    "-A",
+    "-c",
     `SELECT unnest(photo_urls) FROM proof_of_delivery WHERE photo_urls IS NOT NULL
      UNION SELECT signature_url FROM proof_of_delivery WHERE signature_url IS NOT NULL
      UNION SELECT photo_url FROM pod_timeline WHERE photo_url IS NOT NULL
      UNION SELECT signature_url FROM pod_timeline WHERE signature_url IS NOT NULL;`,
   ]);
   return r.stdout
-    .split('\n')
+    .split("\n")
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 }
@@ -2360,14 +2627,14 @@ async function copyBlob(
   const res = await fetch(url);
   if (!res.ok) throw new Error(`blob fetch ${url}: ${res.status}`);
   const buf = Buffer.from(await res.arrayBuffer());
-  const h = createHash('sha256').update(buf).digest('hex');
-  const path = join(scratch, 'blobs', h);
+  const h = createHash("sha256").update(buf).digest("hex");
+  const path = join(scratch, "blobs", h);
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, buf);
   return {
     sha256: h,
     size: buf.length,
-    contentType: res.headers.get('content-type') ?? undefined,
+    contentType: res.headers.get("content-type") ?? undefined,
   };
 }
 ```
@@ -2375,35 +2642,44 @@ async function copyBlob(
 Insert inside `run()` before manifest assembly, gated by `input.includeBlobs`:
 
 ```typescript
-    let blobCount = 0;
-    if (input.includeBlobs) {
-      const urls = await collectBlobUrls(ctx, provider);
-      const index: Record<string, { sha256: string; size: number; contentType?: string }> = {};
-      const concurrency = Number.parseInt(process.env.BACKUP_BLOB_CONCURRENCY ?? '16', 10);
-      const queue = [...urls];
-      async function worker() {
-        while (queue.length > 0) {
-          const url = queue.shift() as string;
-          try {
-            const meta = await copyBlob(ctx, url, scratch);
-            index[url] = meta;
-            blobCount++;
-          } catch (err) {
-            ctx.logger.warn(`skip blob ${url}: ${(err as Error).message}`);
-          }
-        }
+let blobCount = 0;
+if (input.includeBlobs) {
+  const urls = await collectBlobUrls(ctx, provider);
+  const index: Record<
+    string,
+    { sha256: string; size: number; contentType?: string }
+  > = {};
+  const concurrency = Number.parseInt(
+    process.env.BACKUP_BLOB_CONCURRENCY ?? "16",
+    10,
+  );
+  const queue = [...urls];
+  async function worker() {
+    while (queue.length > 0) {
+      const url = queue.shift() as string;
+      try {
+        const meta = await copyBlob(ctx, url, scratch);
+        index[url] = meta;
+        blobCount++;
+      } catch (err) {
+        ctx.logger.warn(`skip blob ${url}: ${(err as Error).message}`);
       }
-      await Promise.all(Array.from({ length: concurrency }, worker));
-      await writeFile(join(scratch, 'blobs', 'index.json'), JSON.stringify(index, null, 2));
     }
+  }
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  await writeFile(
+    join(scratch, "blobs", "index.json"),
+    JSON.stringify(index, null, 2),
+  );
+}
 ```
 
 And update the manifest assembly: `includes.blobs = !!input.includeBlobs` and, in the tar call, include `'blobs'` when present:
 
 ```typescript
-    const tarFiles = ['manifest.json', 'db.sql.gz', 'config'];
-    if (input.includeBlobs) tarFiles.push('blobs');
-    await createTar({ gzip: true, file: archivePath, cwd: scratch }, tarFiles);
+const tarFiles = ["manifest.json", "db.sql.gz", "config"];
+if (input.includeBlobs) tarFiles.push("blobs");
+await createTar({ gzip: true, file: archivePath, cwd: scratch }, tarFiles);
 ```
 
 And update the `emitAudit` call's `blobCount` to the new variable.
@@ -2413,29 +2689,38 @@ And update the `emitAudit` call's `blobCount` to the new variable.
 Append to `packages/bench-core/src/__tests__/ops-backup.test.ts`:
 
 ```typescript
-describe('ops/backup with --include-blobs', () => {
-  it('fetches blobs and writes blobs/index.json', async () => {
+describe("ops/backup with --include-blobs", () => {
+  it("fetches blobs and writes blobs/index.json", async () => {
     // Add URLs to the psql response for collectBlobUrls
     const execMock = fakeProvider.execInService as ReturnType<typeof vi.fn>;
     execMock.mockReset();
     execMock.mockImplementation(async (_ctx, _svc, cmd: string[]) => {
-      if (cmd[0] === 'pg_dump') return { stdout: 'PG', stderr: '', exitCode: 0 };
-      if (cmd[0] === 'psql' && cmd.join(' ').includes('photo_urls')) {
-        return { stdout: 'http://fake/a.jpg\nhttp://fake/b.jpg\n', stderr: '', exitCode: 0 };
+      if (cmd[0] === "pg_dump")
+        return { stdout: "PG", stderr: "", exitCode: 0 };
+      if (cmd[0] === "psql" && cmd.join(" ").includes("photo_urls")) {
+        return {
+          stdout: "http://fake/a.jpg\nhttp://fake/b.jpg\n",
+          stderr: "",
+          exitCode: 0,
+        };
       }
-      if (cmd[0] === 'psql') return { stdout: '1\n2\n', stderr: '', exitCode: 0 };
-      return { stdout: '', stderr: '', exitCode: 0 };
+      if (cmd[0] === "psql")
+        return { stdout: "1\n2\n", stderr: "", exitCode: 0 };
+      return { stdout: "", stderr: "", exitCode: 0 };
     });
     vi.stubGlobal(
-      'fetch',
+      "fetch",
       vi.fn().mockResolvedValue({
         ok: true,
         arrayBuffer: async () => new ArrayBuffer(100),
-        headers: { get: () => 'image/jpeg' },
+        headers: { get: () => "image/jpeg" },
       }),
     );
 
-    const result = await runBackup(ctxOf(), { to: join(tmp, 'out3.wbak'), includeBlobs: true });
+    const result = await runBackup(ctxOf(), {
+      to: join(tmp, "out3.wbak"),
+      includeBlobs: true,
+    });
     expect(result.manifest.includes.blobs).toBe(true);
   });
 });
@@ -2462,6 +2747,7 @@ git commit -m "feat(bench-core): backup --include-blobs for content-addressed bl
 ## Task 16: `ops/restore.ts` + CLI wiring
 
 **Files:**
+
 - Create: `packages/bench-core/src/ops/restore.ts`
 - Modify: `packages/bench-cli/src/commands/restore.ts`
 - Create: `packages/bench-core/src/__tests__/ops-restore.test.ts`
@@ -2469,15 +2755,15 @@ git commit -m "feat(bench-core): backup --include-blobs for content-addressed bl
 - [ ] **Step 1: Write `packages/bench-core/src/ops/restore.ts`**
 
 ```typescript
-import { createReadStream } from 'node:fs';
-import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
-import { resolve, join } from 'node:path';
-import { extract as extractTar } from 'tar';
-import type { Context, Provider } from '../index.js';
-import { benchApi } from '../http-client.js';
-import { resolveProvider } from '../provider.js';
-import { emitAudit } from './audit.js';
-import type { Manifest } from './backup.js';
+import { createReadStream } from "node:fs";
+import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { resolve, join } from "node:path";
+import { extract as extractTar } from "tar";
+import type { Context, Provider } from "../index.js";
+import { benchApi } from "../http-client.js";
+import { resolveProvider } from "../provider.js";
+import { emitAudit } from "./audit.js";
+import type { Manifest } from "./backup.js";
 
 export interface RestoreInput {
   yes?: boolean;
@@ -2500,70 +2786,102 @@ export async function run(
   input: RestoreInput = {},
 ): Promise<RestoreResult> {
   const startedAt = Date.now();
-  const scratch = resolve(ctx.cwd, '.bench', `restore-${Date.now()}`);
+  const scratch = resolve(ctx.cwd, ".bench", `restore-${Date.now()}`);
   await mkdir(scratch, { recursive: true });
   try {
     await extractTar({ file: archive, cwd: scratch });
 
-    const manifestRaw = await readFile(join(scratch, 'manifest.json'), 'utf8').catch(() => null);
-    if (!manifestRaw) throw new Error('archive is missing manifest.json — refusing to restore');
+    const manifestRaw = await readFile(
+      join(scratch, "manifest.json"),
+      "utf8",
+    ).catch(() => null);
+    if (!manifestRaw)
+      throw new Error("archive is missing manifest.json — refusing to restore");
     const manifest = JSON.parse(manifestRaw) as Manifest;
-    if (manifest.version !== 1) throw new Error(`unknown manifest version ${manifest.version}`);
+    if (manifest.version !== 1)
+      throw new Error(`unknown manifest version ${manifest.version}`);
 
-    const currentMajor = (ctx.config.witylogix.version ?? '0.0.0').split('.')[0];
-    const archiveMajor = manifest.witylogixVersion.split('.')[0];
+    const currentMajor = (ctx.config.witylogix.version ?? "0.0.0").split(
+      ".",
+    )[0];
+    const archiveMajor = manifest.witylogixVersion.split(".")[0];
     if (currentMajor !== archiveMajor && !input.forceVersion) {
       throw new Error(
         `cross-major version restore (${manifest.witylogixVersion} → ${ctx.config.witylogix.version}) — pass --force-version to proceed`,
       );
     }
-    if (manifest.installationName !== ctx.config.metadata.name && !input.crossInstall) {
+    if (
+      manifest.installationName !== ctx.config.metadata.name &&
+      !input.crossInstall
+    ) {
       throw new Error(
         `archive installation "${manifest.installationName}" does not match target "${ctx.config.metadata.name}" — pass --cross-install to proceed`,
       );
     }
 
     const provider = await resolveProvider(ctx.config.provider.type);
-    const health = await benchApi<{ drained: boolean }>(ctx, 'GET', '/internal/bench/health');
+    const health = await benchApi<{ drained: boolean }>(
+      ctx,
+      "GET",
+      "/internal/bench/health",
+    );
     if (!input.yes && health.drained === false) {
       // assume a non-drained installation may have data; gate is live
       // count check happens server-side during drain/stop — simplified here
     }
 
-    await benchApi(ctx, 'POST', '/internal/bench/drain', { mode: 'offline', reason: 'restore' });
-    await provider.stop(ctx, 'api');
-    await provider.stop(ctx, 'dashboard');
-    await provider.stop(ctx, 'customer-portal');
-    await provider.stop(ctx, 'tracking-page');
+    await benchApi(ctx, "POST", "/internal/bench/drain", {
+      mode: "offline",
+      reason: "restore",
+    });
+    await provider.stop(ctx, "api");
+    await provider.stop(ctx, "dashboard");
+    await provider.stop(ctx, "customer-portal");
+    await provider.stop(ctx, "tracking-page");
 
-    const dbUser = process.env.POSTGRES_USER ?? 'witylogix';
-    const dbName = process.env.POSTGRES_DB ?? 'witylogix';
-    await provider.execInService(ctx, 'postgres', [
-      'psql', '-U', dbUser, '-d', dbName, '-c',
-      'DROP SCHEMA public CASCADE; CREATE SCHEMA public;',
+    const dbUser = process.env.POSTGRES_USER ?? "witylogix";
+    const dbName = process.env.POSTGRES_DB ?? "witylogix";
+    await provider.execInService(ctx, "postgres", [
+      "psql",
+      "-U",
+      dbUser,
+      "-d",
+      dbName,
+      "-c",
+      "DROP SCHEMA public CASCADE; CREATE SCHEMA public;",
     ]);
-    const dbDump = await readFile(join(scratch, 'db.sql.gz'));
+    const dbDump = await readFile(join(scratch, "db.sql.gz"));
     await provider.execInService(
       ctx,
-      'postgres',
-      ['pg_restore', '-Fc', '-U', dbUser, '-d', dbName],
-      { stdin: createReadStream(join(scratch, 'db.sql.gz')) },
+      "postgres",
+      ["pg_restore", "-Fc", "-U", dbUser, "-d", dbName],
+      { stdin: createReadStream(join(scratch, "db.sql.gz")) },
     );
 
     let rewrittenUrls = 0;
     if (manifest.includes.blobs) {
-      rewrittenUrls = await restoreBlobs(ctx, scratch, input.targetStorage, input.skipBlobs);
+      rewrittenUrls = await restoreBlobs(
+        ctx,
+        scratch,
+        input.targetStorage,
+        input.skipBlobs,
+      );
     }
 
-    await provider.runOneShot(ctx, 'api', ['pnpm', 'prisma', 'migrate', 'deploy']);
+    await provider.runOneShot(ctx, "api", [
+      "pnpm",
+      "prisma",
+      "migrate",
+      "deploy",
+    ]);
 
-    await provider.start(ctx, 'api');
-    await provider.start(ctx, 'dashboard');
-    await provider.start(ctx, 'customer-portal');
-    await provider.start(ctx, 'tracking-page');
+    await provider.start(ctx, "api");
+    await provider.start(ctx, "dashboard");
+    await provider.start(ctx, "customer-portal");
+    await provider.start(ctx, "tracking-page");
 
     const durationMs = Date.now() - startedAt;
-    emitAudit(ctx, 'bench.restore.completed', {
+    emitAudit(ctx, "bench.restore.completed", {
       archive,
       manifest: {
         installationName: manifest.installationName,
@@ -2585,14 +2903,22 @@ async function restoreBlobs(
   targetStorage?: string,
   skipBlobs?: boolean,
 ): Promise<number> {
-  const indexRaw = await readFile(join(scratch, 'blobs', 'index.json'), 'utf8').catch(() => null);
+  const indexRaw = await readFile(
+    join(scratch, "blobs", "index.json"),
+    "utf8",
+  ).catch(() => null);
   if (!indexRaw) return 0;
-  const index = JSON.parse(indexRaw) as Record<string, { sha256: string; contentType?: string }>;
+  const index = JSON.parse(indexRaw) as Record<
+    string,
+    { sha256: string; contentType?: string }
+  >;
   const entries = Object.entries(index);
   if (entries.length === 0) return 0;
 
   if (skipBlobs) {
-    ctx.logger.warn(`skipping ${entries.length} blob(s) — DB URLs remain pointing at source storage`);
+    ctx.logger.warn(
+      `skipping ${entries.length} blob(s) — DB URLs remain pointing at source storage`,
+    );
     return 0;
   }
 
@@ -2605,18 +2931,18 @@ async function restoreBlobs(
 
   // Parse targetStorage URL (e.g., "s3://acme-prod" or "s3://acme-prod?region=us-east-1")
   const parsed = new URL(targetStorage);
-  const { createStorageClient } = await import('./storage.js');
+  const { createStorageClient } = await import("./storage.js");
   const client = await createStorageClient({
-    backend: parsed.protocol.replace(':', '') as 's3' | 'r2' | 'gcs' | 'local',
+    backend: parsed.protocol.replace(":", "") as "s3" | "r2" | "gcs" | "local",
     bucket: parsed.hostname,
-    region: parsed.searchParams.get('region') ?? undefined,
-    endpoint: parsed.searchParams.get('endpoint'),
+    region: parsed.searchParams.get("region") ?? undefined,
+    endpoint: parsed.searchParams.get("endpoint"),
   });
 
   let uploaded = 0;
   for (const [originalUrl, meta] of entries) {
-    const key = new URL(originalUrl).pathname.replace(/^\//, '');
-    const body = await readFile(join(scratch, 'blobs', meta.sha256));
+    const key = new URL(originalUrl).pathname.replace(/^\//, "");
+    const body = await readFile(join(scratch, "blobs", meta.sha256));
     await client.put(key, body, { contentType: meta.contentType });
     uploaded++;
   }
@@ -2630,7 +2956,7 @@ async function restoreBlobs(
 Add entry to `tsup.config.ts`: `'ops/restore': 'src/ops/restore.ts'`. Export from `index.ts`:
 
 ```typescript
-export * as restore from './ops/restore.js';
+export * as restore from "./ops/restore.js";
 ```
 
 - [ ] **Step 2: Wire CLI command `packages/bench-cli/src/commands/restore.ts`**
@@ -2638,45 +2964,64 @@ export * as restore from './ops/restore.js';
 Replace the stub with:
 
 ```typescript
-import type { Command } from 'commander';
-import pc from 'picocolors';
-import { buildContext, restore as restoreOps, NoConfigError } from '@witylogix/bench-core';
+import type { Command } from "commander";
+import pc from "picocolors";
+import {
+  buildContext,
+  restore as restoreOps,
+  NoConfigError,
+} from "@witylogix/bench-core";
 
 export function registerRestoreCommand(program: Command): void {
   program
-    .command('restore <archive>')
-    .description('Restore the installation from a backup archive')
-    .option('--yes', 'skip confirmation when target DB is non-empty', false)
-    .option('--skip-blobs', 'do not restore blobs even if present', false)
-    .option('--force-version', 'allow cross-major-version restore', false)
-    .option('--cross-install', 'allow restoring into a differently-named installation', false)
-    .option('--target-storage <url>', 'upload blobs to a different bucket')
-    .action(async (
-      archive: string,
-      opts: { yes: boolean; skipBlobs: boolean; forceVersion: boolean; crossInstall: boolean; targetStorage?: string },
-    ) => {
-      const globals = program.opts<{ json: boolean; dryRun: boolean }>();
-      try {
-        const ctx = await buildContext({ json: globals.json, dryRun: globals.dryRun });
-        const r = await restoreOps.run(ctx, archive, opts);
-        if (globals.json) {
-          process.stdout.write(`${JSON.stringify(r, null, 2)}\n`);
-        } else {
-          process.stdout.write(
-            pc.green(`✓ restored from ${archive} (${r.durationMs}ms)\n`),
-          );
+    .command("restore <archive>")
+    .description("Restore the installation from a backup archive")
+    .option("--yes", "skip confirmation when target DB is non-empty", false)
+    .option("--skip-blobs", "do not restore blobs even if present", false)
+    .option("--force-version", "allow cross-major-version restore", false)
+    .option(
+      "--cross-install",
+      "allow restoring into a differently-named installation",
+      false,
+    )
+    .option("--target-storage <url>", "upload blobs to a different bucket")
+    .action(
+      async (
+        archive: string,
+        opts: {
+          yes: boolean;
+          skipBlobs: boolean;
+          forceVersion: boolean;
+          crossInstall: boolean;
+          targetStorage?: string;
+        },
+      ) => {
+        const globals = program.opts<{ json: boolean; dryRun: boolean }>();
+        try {
+          const ctx = await buildContext({
+            json: globals.json,
+            dryRun: globals.dryRun,
+          });
+          const r = await restoreOps.run(ctx, archive, opts);
+          if (globals.json) {
+            process.stdout.write(`${JSON.stringify(r, null, 2)}\n`);
+          } else {
+            process.stdout.write(
+              pc.green(`✓ restored from ${archive} (${r.durationMs}ms)\n`),
+            );
+          }
+          process.exit(0);
+        } catch (err) {
+          if (err instanceof NoConfigError) {
+            process.stderr.write(pc.red(`${err.message}\n`));
+            process.exit(1);
+          }
+          const msg = err instanceof Error ? err.message : String(err);
+          process.stderr.write(pc.red(`bench restore: ${msg}\n`));
+          process.exit(5);
         }
-        process.exit(0);
-      } catch (err) {
-        if (err instanceof NoConfigError) {
-          process.stderr.write(pc.red(`${err.message}\n`));
-          process.exit(1);
-        }
-        const msg = err instanceof Error ? err.message : String(err);
-        process.stderr.write(pc.red(`bench restore: ${msg}\n`));
-        process.exit(5);
-      }
-    });
+      },
+    );
 }
 ```
 
@@ -2685,59 +3030,70 @@ export function registerRestoreCommand(program: Command): void {
 Create `packages/bench-core/src/__tests__/ops-restore.test.ts`:
 
 ```typescript
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { create as createTar } from 'tar';
-import { registerProvider } from '../provider.js';
-import { run as runRestore } from '../ops/restore.js';
-import type { Context, Provider } from '../types.js';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { create as createTar } from "tar";
+import { registerProvider } from "../provider.js";
+import { run as runRestore } from "../ops/restore.js";
+import type { Context, Provider } from "../types.js";
 
 let tmp: string;
 let archivePath: string;
 
 async function makeArchive(manifest: object): Promise<string> {
-  const scratch = mkdtempSync(join(tmpdir(), 'arch-'));
-  writeFileSync(join(scratch, 'manifest.json'), JSON.stringify(manifest));
-  writeFileSync(join(scratch, 'db.sql.gz'), 'fake');
-  mkdirSync(join(scratch, 'config'));
-  writeFileSync(join(scratch, 'config', 'bench.config.yaml'), 'demo');
+  const scratch = mkdtempSync(join(tmpdir(), "arch-"));
+  writeFileSync(join(scratch, "manifest.json"), JSON.stringify(manifest));
+  writeFileSync(join(scratch, "db.sql.gz"), "fake");
+  mkdirSync(join(scratch, "config"));
+  writeFileSync(join(scratch, "config", "bench.config.yaml"), "demo");
   const out = join(tmp, `a-${Date.now()}.wbak`);
-  await createTar(
-    { gzip: true, file: out, cwd: scratch },
-    ['manifest.json', 'db.sql.gz', 'config'],
-  );
+  await createTar({ gzip: true, file: out, cwd: scratch }, [
+    "manifest.json",
+    "db.sql.gz",
+    "config",
+  ]);
   rmSync(scratch, { recursive: true, force: true });
   return out;
 }
 
 const provider: Provider = {
-  id: 'fake',
+  id: "fake",
   preflight: async () => ({ ok: true, checks: [] }),
   provision: async () => ({ ok: true, operationsApplied: 0 }),
-  deploy: async () => ({ ok: true, version: '0', rolledBack: false }),
+  deploy: async () => ({ ok: true, version: "0", rolledBack: false }),
   start: async () => {},
   stop: async () => {},
   restart: async () => {},
   async *logs() {},
   status: async () => ({ services: [] }),
-  backup: async () => { throw new Error(); },
-  restore: async () => { throw new Error(); },
+  backup: async () => {
+    throw new Error();
+  },
+  restore: async () => {
+    throw new Error();
+  },
   rotateSecret: async () => {},
   destroy: async () => {},
-  execInService: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
-  runOneShot: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
+  execInService: vi
+    .fn()
+    .mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 }),
+  runOneShot: vi
+    .fn()
+    .mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 }),
 };
-registerProvider('fake', async () => provider);
+registerProvider("fake", async () => provider);
 
 beforeEach(() => {
-  tmp = mkdtempSync(join(tmpdir(), 'bench-restore-'));
-  process.env.BENCH_SERVICE_TOKEN = 't';
-  process.env.BENCH_API_BASE_URL = 'http://api.test';
+  tmp = mkdtempSync(join(tmpdir(), "bench-restore-"));
+  process.env.BENCH_SERVICE_TOKEN = "t";
+  process.env.BENCH_API_BASE_URL = "http://api.test";
   vi.stubGlobal(
-    'fetch',
-    vi.fn().mockResolvedValue({ ok: true, json: async () => ({ drained: true }) }),
+    "fetch",
+    vi
+      .fn()
+      .mockResolvedValue({ ok: true, json: async () => ({ drained: true }) }),
   );
 });
 afterEach(() => rmSync(tmp, { recursive: true, force: true }));
@@ -2746,60 +3102,69 @@ function ctxOf(): Context {
   return {
     cwd: tmp,
     config: {
-      metadata: { name: 'demo' },
-      provider: { type: 'fake' as never, config: {} },
-      witylogix: { version: '4.0.0', channel: 'stable' },
-    } as unknown as Context['config'],
-    logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} },
+      metadata: { name: "demo" },
+      provider: { type: "fake" as never, config: {} },
+      witylogix: { version: "4.0.0", channel: "stable" },
+    } as unknown as Context["config"],
+    logger: {
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+    },
     dryRun: false,
     json: false,
   };
 }
 
-describe('ops/restore.run', () => {
-  it('refuses archives without manifest.json', async () => {
-    const scratch = mkdtempSync(join(tmpdir(), 'bad-'));
-    writeFileSync(join(scratch, 'db.sql.gz'), 'x');
-    const out = join(tmp, 'bad.wbak');
-    await createTar({ gzip: true, file: out, cwd: scratch }, ['db.sql.gz']);
+describe("ops/restore.run", () => {
+  it("refuses archives without manifest.json", async () => {
+    const scratch = mkdtempSync(join(tmpdir(), "bad-"));
+    writeFileSync(join(scratch, "db.sql.gz"), "x");
+    const out = join(tmp, "bad.wbak");
+    await createTar({ gzip: true, file: out, cwd: scratch }, ["db.sql.gz"]);
     rmSync(scratch, { recursive: true, force: true });
     await expect(runRestore(ctxOf(), out)).rejects.toThrow(/missing manifest/);
   });
 
-  it('refuses cross-major restores without --force-version', async () => {
+  it("refuses cross-major restores without --force-version", async () => {
     archivePath = await makeArchive({
       version: 1,
-      installationName: 'demo',
-      witylogixVersion: '3.0.0',
-      benchVersion: '0.0.1',
+      installationName: "demo",
+      witylogixVersion: "3.0.0",
+      benchVersion: "0.0.1",
       createdAt: new Date().toISOString(),
       includes: { db: true, config: true, blobs: false },
       counts: { tenants: 0, orders: 0 },
       checksums: {},
     });
-    await expect(runRestore(ctxOf(), archivePath)).rejects.toThrow(/cross-major/);
+    await expect(runRestore(ctxOf(), archivePath)).rejects.toThrow(
+      /cross-major/,
+    );
   });
 
-  it('refuses cross-install restores without --cross-install', async () => {
+  it("refuses cross-install restores without --cross-install", async () => {
     archivePath = await makeArchive({
       version: 1,
-      installationName: 'other',
-      witylogixVersion: '4.0.0',
-      benchVersion: '0.0.1',
+      installationName: "other",
+      witylogixVersion: "4.0.0",
+      benchVersion: "0.0.1",
       createdAt: new Date().toISOString(),
       includes: { db: true, config: true, blobs: false },
       counts: { tenants: 0, orders: 0 },
       checksums: {},
     });
-    await expect(runRestore(ctxOf(), archivePath)).rejects.toThrow(/does not match/);
+    await expect(runRestore(ctxOf(), archivePath)).rejects.toThrow(
+      /does not match/,
+    );
   });
 
-  it('succeeds on valid same-version same-name archive', async () => {
+  it("succeeds on valid same-version same-name archive", async () => {
     archivePath = await makeArchive({
       version: 1,
-      installationName: 'demo',
-      witylogixVersion: '4.0.0',
-      benchVersion: '0.0.1',
+      installationName: "demo",
+      witylogixVersion: "4.0.0",
+      benchVersion: "0.0.1",
       createdAt: new Date().toISOString(),
       includes: { db: true, config: true, blobs: false },
       counts: { tenants: 0, orders: 0 },
@@ -2807,7 +3172,7 @@ describe('ops/restore.run', () => {
     });
     const r = await runRestore(ctxOf(), archivePath);
     expect(r.ok).toBe(true);
-    expect(r.manifest.installationName).toBe('demo');
+    expect(r.manifest.installationName).toBe("demo");
   });
 });
 ```
@@ -2837,6 +3202,7 @@ git commit -m "feat(bench): ops/restore with manifest verification + CLI wiring"
 ## Task 17: `ops/migrate.ts` + CLI wiring
 
 **Files:**
+
 - Create: `packages/bench-core/src/ops/migrate.ts`
 - Modify: `packages/bench-cli/src/commands/migrate.ts`
 - Create: `packages/bench-core/src/__tests__/ops-migrate.test.ts`
@@ -2844,12 +3210,12 @@ git commit -m "feat(bench): ops/restore with manifest verification + CLI wiring"
 - [ ] **Step 1: Write `packages/bench-core/src/ops/migrate.ts`**
 
 ```typescript
-import { resolve } from 'node:path';
-import type { Context } from '../index.js';
-import { benchApi } from '../http-client.js';
-import { resolveProvider } from '../provider.js';
-import { emitAudit } from './audit.js';
-import { run as runBackup } from './backup.js';
+import { resolve } from "node:path";
+import type { Context } from "../index.js";
+import { benchApi } from "../http-client.js";
+import { resolveProvider } from "../provider.js";
+import { emitAudit } from "./audit.js";
+import { run as runBackup } from "./backup.js";
 
 export interface MigrateInput {
   skipBackup?: boolean;
@@ -2864,7 +3230,13 @@ export interface MigrateResult {
   durationMs: number;
 }
 
-const APP_SERVICES = ['api', 'dashboard', 'customer-portal', 'tracking-page', 'docs'];
+const APP_SERVICES = [
+  "api",
+  "dashboard",
+  "customer-portal",
+  "tracking-page",
+  "docs",
+];
 
 export async function run(
   ctx: Context,
@@ -2872,37 +3244,50 @@ export async function run(
 ): Promise<MigrateResult> {
   const startedAt = Date.now();
 
-  const health = await benchApi<{ prismaMigrations: { applied: number; pending: number } }>(
-    ctx,
-    'GET',
-    '/internal/bench/health',
-  );
+  const health = await benchApi<{
+    prismaMigrations: { applied: number; pending: number };
+  }>(ctx, "GET", "/internal/bench/health");
   const before = health.prismaMigrations.applied;
 
   let backupPath: string | undefined;
   if (!input.skipBackup) {
-    const ts = new Date().toISOString().replace(/[:-]/g, '').replace(/\..+/, '').replace('T', '-');
-    const path = resolve(ctx.cwd, '.bench', 'backups', `pre-migrate-${ts}.wbak`);
+    const ts = new Date()
+      .toISOString()
+      .replace(/[:-]/g, "")
+      .replace(/\..+/, "")
+      .replace("T", "-");
+    const path = resolve(
+      ctx.cwd,
+      ".bench",
+      "backups",
+      `pre-migrate-${ts}.wbak`,
+    );
     const r = await runBackup(ctx, { to: path, includeBlobs: false });
     backupPath = r.archive;
     ctx.logger.info(`auto-backup → ${backupPath}`);
   }
 
-  await benchApi(ctx, 'POST', '/internal/bench/drain', { mode: 'offline', reason: 'migrate' });
+  await benchApi(ctx, "POST", "/internal/bench/drain", {
+    mode: "offline",
+    reason: "migrate",
+  });
 
   const provider = await resolveProvider(ctx.config.provider.type);
   for (const svc of APP_SERVICES) {
     await provider.stop(ctx, svc);
   }
 
-  const migrateResult = await provider.runOneShot(
-    ctx,
-    'api',
-    ['pnpm', 'prisma', 'migrate', 'deploy'],
-  );
+  const migrateResult = await provider.runOneShot(ctx, "api", [
+    "pnpm",
+    "prisma",
+    "migrate",
+    "deploy",
+  ]);
   if (migrateResult.exitCode !== 0) {
-    emitAudit(ctx, 'bench.migrate.failed', {
-      exitCode: migrateResult.exitCode, stderr: migrateResult.stderr, backupPath,
+    emitAudit(ctx, "bench.migrate.failed", {
+      exitCode: migrateResult.exitCode,
+      stderr: migrateResult.stderr,
+      backupPath,
     });
     throw new Error(
       `prisma migrate deploy failed (exit ${migrateResult.exitCode}). ` +
@@ -2919,8 +3304,8 @@ export async function run(
     await new Promise((r) => setTimeout(r, 2000));
     const h = await benchApi<{ prismaMigrations: { applied: number } }>(
       ctx,
-      'GET',
-      '/internal/bench/health',
+      "GET",
+      "/internal/bench/health",
     );
     after = h.prismaMigrations.applied;
     if (after >= before) break;
@@ -2928,8 +3313,10 @@ export async function run(
   const applied = after - before;
 
   const durationMs = Date.now() - startedAt;
-  emitAudit(ctx, 'bench.migrate.completed', {
-    migrationsApplied: applied, backupPath, durationMs,
+  emitAudit(ctx, "bench.migrate.completed", {
+    migrationsApplied: applied,
+    backupPath,
+    durationMs,
   });
   return { ok: true, migrationsApplied: applied, backupPath, durationMs };
 }
@@ -2938,7 +3325,7 @@ export async function run(
 Add `'ops/migrate': 'src/ops/migrate.ts'` to `tsup.config.ts`. Export from `index.ts`:
 
 ```typescript
-export * as migrate from './ops/migrate.js';
+export * as migrate from "./ops/migrate.js";
 ```
 
 - [ ] **Step 2: Wire CLI `packages/bench-cli/src/commands/migrate.ts`**
@@ -2946,43 +3333,54 @@ export * as migrate from './ops/migrate.js';
 Replace stub body:
 
 ```typescript
-import type { Command } from 'commander';
-import pc from 'picocolors';
-import { buildContext, migrate as migrateOps, NoConfigError } from '@witylogix/bench-core';
+import type { Command } from "commander";
+import pc from "picocolors";
+import {
+  buildContext,
+  migrate as migrateOps,
+  NoConfigError,
+} from "@witylogix/bench-core";
 
 export function registerMigrateCommand(program: Command): void {
   program
-    .command('migrate')
-    .description('Run Prisma migrations (windowed: stop API, migrate, restart)')
-    .option('--skip-backup', 'skip the pre-migrate auto-backup', false)
-    .option('--yes', 'required for destructive migrations', false)
-    .option('--timeout <seconds>', 'overall timeout in seconds', '600')
-    .action(async (opts: { skipBackup: boolean; yes: boolean; timeout: string }) => {
-      const globals = program.opts<{ json: boolean; dryRun: boolean }>();
-      try {
-        const ctx = await buildContext({ json: globals.json, dryRun: globals.dryRun });
-        const r = await migrateOps.run(ctx, {
-          skipBackup: opts.skipBackup,
-          timeoutMs: Number.parseInt(opts.timeout, 10) * 1000,
-        });
-        if (globals.json) {
-          process.stdout.write(`${JSON.stringify(r, null, 2)}\n`);
-        } else {
-          process.stdout.write(
-            pc.green(`✓ applied ${r.migrationsApplied} migration(s) (${r.durationMs}ms)\n`),
-          );
+    .command("migrate")
+    .description("Run Prisma migrations (windowed: stop API, migrate, restart)")
+    .option("--skip-backup", "skip the pre-migrate auto-backup", false)
+    .option("--yes", "required for destructive migrations", false)
+    .option("--timeout <seconds>", "overall timeout in seconds", "600")
+    .action(
+      async (opts: { skipBackup: boolean; yes: boolean; timeout: string }) => {
+        const globals = program.opts<{ json: boolean; dryRun: boolean }>();
+        try {
+          const ctx = await buildContext({
+            json: globals.json,
+            dryRun: globals.dryRun,
+          });
+          const r = await migrateOps.run(ctx, {
+            skipBackup: opts.skipBackup,
+            timeoutMs: Number.parseInt(opts.timeout, 10) * 1000,
+          });
+          if (globals.json) {
+            process.stdout.write(`${JSON.stringify(r, null, 2)}\n`);
+          } else {
+            process.stdout.write(
+              pc.green(
+                `✓ applied ${r.migrationsApplied} migration(s) (${r.durationMs}ms)\n`,
+              ),
+            );
+          }
+          process.exit(0);
+        } catch (err) {
+          if (err instanceof NoConfigError) {
+            process.stderr.write(pc.red(`${err.message}\n`));
+            process.exit(1);
+          }
+          const msg = err instanceof Error ? err.message : String(err);
+          process.stderr.write(pc.red(`bench migrate: ${msg}\n`));
+          process.exit(5);
         }
-        process.exit(0);
-      } catch (err) {
-        if (err instanceof NoConfigError) {
-          process.stderr.write(pc.red(`${err.message}\n`));
-          process.exit(1);
-        }
-        const msg = err instanceof Error ? err.message : String(err);
-        process.stderr.write(pc.red(`bench migrate: ${msg}\n`));
-        process.exit(5);
-      }
-    });
+      },
+    );
 }
 ```
 
@@ -2991,46 +3389,61 @@ export function registerMigrateCommand(program: Command): void {
 Create `packages/bench-core/src/__tests__/ops-migrate.test.ts`:
 
 ```typescript
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { registerProvider } from '../provider.js';
-import { run as runMigrate } from '../ops/migrate.js';
-import type { Context, Provider } from '../types.js';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { registerProvider } from "../provider.js";
+import { run as runMigrate } from "../ops/migrate.js";
+import type { Context, Provider } from "../types.js";
 
 let tmp: string;
 
 const fakeProvider: Provider = {
-  id: 'fake',
+  id: "fake",
   preflight: async () => ({ ok: true, checks: [] }),
   provision: async () => ({ ok: true, operationsApplied: 0 }),
-  deploy: async () => ({ ok: true, version: '0', rolledBack: false }),
+  deploy: async () => ({ ok: true, version: "0", rolledBack: false }),
   start: vi.fn().mockResolvedValue(undefined),
   stop: vi.fn().mockResolvedValue(undefined),
   restart: async () => {},
   async *logs() {},
   status: async () => ({ services: [] }),
-  backup: async () => { throw new Error(); },
-  restore: async () => { throw new Error(); },
+  backup: async () => {
+    throw new Error();
+  },
+  restore: async () => {
+    throw new Error();
+  },
   rotateSecret: async () => {},
   destroy: async () => {},
-  execInService: vi.fn().mockResolvedValue({ stdout: '0\n0\n', stderr: '', exitCode: 0 }),
-  runOneShot: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
+  execInService: vi
+    .fn()
+    .mockResolvedValue({ stdout: "0\n0\n", stderr: "", exitCode: 0 }),
+  runOneShot: vi
+    .fn()
+    .mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 }),
 };
-registerProvider('fake', async () => fakeProvider);
+registerProvider("fake", async () => fakeProvider);
 
 beforeEach(() => {
-  tmp = mkdtempSync(join(tmpdir(), 'bench-migrate-'));
-  mkdirSync(join(tmp, '.bench'), { recursive: true });
-  writeFileSync(join(tmp, 'bench.config.yaml'), 'name: demo\n');
-  process.env.BENCH_SERVICE_TOKEN = 't';
-  process.env.BENCH_API_BASE_URL = 'http://api.test';
-  const fetchMock = vi.fn()
-    .mockResolvedValueOnce({ ok: true, json: async () => ({ prismaMigrations: { applied: 10, pending: 2 } }) })
+  tmp = mkdtempSync(join(tmpdir(), "bench-migrate-"));
+  mkdirSync(join(tmp, ".bench"), { recursive: true });
+  writeFileSync(join(tmp, "bench.config.yaml"), "name: demo\n");
+  process.env.BENCH_SERVICE_TOKEN = "t";
+  process.env.BENCH_API_BASE_URL = "http://api.test";
+  const fetchMock = vi
+    .fn()
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ prismaMigrations: { applied: 10, pending: 2 } }),
+    })
     .mockResolvedValueOnce({ ok: true, json: async () => ({}) }) // drain
-    .mockResolvedValue({ ok: true, json: async () => ({ prismaMigrations: { applied: 12 } }) });
-  vi.stubGlobal('fetch', fetchMock);
+    .mockResolvedValue({
+      ok: true,
+      json: async () => ({ prismaMigrations: { applied: 12 } }),
+    });
+  vi.stubGlobal("fetch", fetchMock);
 });
 afterEach(() => rmSync(tmp, { recursive: true, force: true }));
 
@@ -3038,18 +3451,23 @@ function ctxOf(): Context {
   return {
     cwd: tmp,
     config: {
-      metadata: { name: 'demo' },
-      provider: { type: 'fake' as never, config: {} },
-      witylogix: { version: '4.0.0', channel: 'stable' },
-    } as unknown as Context['config'],
-    logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} },
+      metadata: { name: "demo" },
+      provider: { type: "fake" as never, config: {} },
+      witylogix: { version: "4.0.0", channel: "stable" },
+    } as unknown as Context["config"],
+    logger: {
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+    },
     dryRun: false,
     json: false,
   };
 }
 
-describe('ops/migrate.run', () => {
-  it('windowed flow: drain, stop 5 services, migrate, restart 5 services, poll', async () => {
+describe("ops/migrate.run", () => {
+  it("windowed flow: drain, stop 5 services, migrate, restart 5 services, poll", async () => {
     const r = await runMigrate(ctxOf(), { skipBackup: true });
     expect(r.ok).toBe(true);
     expect(r.migrationsApplied).toBe(2);
@@ -3057,19 +3475,22 @@ describe('ops/migrate.run', () => {
     expect(fakeProvider.start).toHaveBeenCalledTimes(5);
     expect(fakeProvider.runOneShot).toHaveBeenCalledWith(
       expect.anything(),
-      'api',
-      ['pnpm', 'prisma', 'migrate', 'deploy'],
+      "api",
+      ["pnpm", "prisma", "migrate", "deploy"],
     );
   });
 
-  it('throws with rollback guidance if migration exits non-zero', async () => {
-    (fakeProvider.runOneShot as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      stdout: '',
-      stderr: 'syntax error',
-      exitCode: 1,
-    });
-    await expect(runMigrate(ctxOf(), { skipBackup: true }))
-      .rejects.toThrow(/Rollback:/);
+  it("throws with rollback guidance if migration exits non-zero", async () => {
+    (fakeProvider.runOneShot as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      {
+        stdout: "",
+        stderr: "syntax error",
+        exitCode: 1,
+      },
+    );
+    await expect(runMigrate(ctxOf(), { skipBackup: true })).rejects.toThrow(
+      /Rollback:/,
+    );
   });
 });
 ```
@@ -3099,6 +3520,7 @@ git commit -m "feat(bench): ops/migrate windowed strategy + CLI wiring"
 ## Task 18: Extend `bench doctor` + generate `BENCH_SERVICE_TOKEN` in `bench init`
 
 **Files:**
+
 - Modify: `packages/bench-cli/src/commands/init.ts`
 - Modify: `packages/bench-cli/src/commands/doctor.ts`
 
@@ -3107,14 +3529,16 @@ git commit -m "feat(bench): ops/migrate windowed strategy + CLI wiring"
 In `packages/bench-cli/src/commands/init.ts`, add at the top:
 
 ```typescript
-import { randomBytes } from 'node:crypto';
+import { randomBytes } from "node:crypto";
 ```
 
 Inside the action, after writing `README.md`, add:
 
 ```typescript
-      const token = randomBytes(32).toString('base64url');
-      writeFileSync(join(target, 'secrets', 'bench-service-token'), token, { mode: 0o600 });
+const token = randomBytes(32).toString("base64url");
+writeFileSync(join(target, "secrets", "bench-service-token"), token, {
+  mode: 0o600,
+});
 ```
 
 Update the `GITIGNORE` constant to ensure `secrets/` is ignored (it already is).
@@ -3170,6 +3594,7 @@ git commit -m "feat(bench): generate BENCH_SERVICE_TOKEN in init + doctor checks
 ## Task 19: End-to-end round-trip test
 
 **Files:**
+
 - Create: `packages/bench-cli/src/__tests__/e2e-roundtrip.test.ts`
 
 - [ ] **Step 1: Write a test that exercises init + provision of the compose file**
@@ -3177,43 +3602,47 @@ git commit -m "feat(bench): generate BENCH_SERVICE_TOKEN in init + doctor checks
 Create `packages/bench-cli/src/__tests__/e2e-roundtrip.test.ts`:
 
 ```typescript
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, rmSync, readFileSync, existsSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { execSync } from 'node:child_process';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { mkdtempSync, rmSync, readFileSync, existsSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { execSync } from "node:child_process";
 
 // This test exercises the command surface without a real Docker daemon.
 // True docker E2E lives in a separate (opt-in) suite.
 
-const CLI = require.resolve('../index.ts');
+const CLI = require.resolve("../index.ts");
 const runBench = (cwd: string, args: string) => {
   return execSync(`pnpm --filter @witylogix/bench exec tsx ${CLI} ${args}`, {
     cwd,
-    encoding: 'utf8',
-    env: { ...process.env, BENCH_SERVICE_TOKEN: 'stub' },
+    encoding: "utf8",
+    env: { ...process.env, BENCH_SERVICE_TOKEN: "stub" },
   });
 };
 
 let tmp: string;
-beforeEach(() => { tmp = mkdtempSync(join(tmpdir(), 'bench-e2e-')); });
+beforeEach(() => {
+  tmp = mkdtempSync(join(tmpdir(), "bench-e2e-"));
+});
 afterEach(() => rmSync(tmp, { recursive: true, force: true }));
 
-describe('bench E2E (no-docker surface checks)', () => {
-  it('init creates a valid installation with token', () => {
+describe("bench E2E (no-docker surface checks)", () => {
+  it("init creates a valid installation with token", () => {
     runBench(tmp, `init ${tmp}/demo`);
-    expect(existsSync(join(tmp, 'demo', 'bench.config.yaml'))).toBe(true);
-    expect(existsSync(join(tmp, 'demo', 'secrets', 'bench-service-token'))).toBe(true);
-    const cfg = readFileSync(join(tmp, 'demo', 'bench.config.yaml'), 'utf8');
-    expect(cfg).toContain('name: demo');
-    expect(cfg).toContain('storage:');
+    expect(existsSync(join(tmp, "demo", "bench.config.yaml"))).toBe(true);
+    expect(
+      existsSync(join(tmp, "demo", "secrets", "bench-service-token")),
+    ).toBe(true);
+    const cfg = readFileSync(join(tmp, "demo", "bench.config.yaml"), "utf8");
+    expect(cfg).toContain("name: demo");
+    expect(cfg).toContain("storage:");
   });
 
-  it('doctor exits non-zero when token file missing', () => {
+  it("doctor exits non-zero when token file missing", () => {
     // use a fresh dir without init
     let code = 0;
     try {
-      runBench(tmp, 'doctor');
+      runBench(tmp, "doctor");
     } catch (e) {
       code = (e as { status: number }).status;
     }
@@ -3295,17 +3724,17 @@ EOF
 
 **1. Spec coverage**
 
-| Spec section | Task(s) |
-|--------------|---------|
-| §2 Architecture (seams) | T1, T2, T7, T8, T10 |
-| §3 Admin API (token, endpoints, security) | T7, T8, T10, T18 (token gen) |
-| §4 `bench migrate` windowed | T17 |
-| §5 `bench new-tenant` | T9, T10, T11 |
-| §6 `bench backup` archive format | T13, T15 |
-| §7 `bench restore` | T16 |
-| §8 Testing (60+ tests) | T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T15, T16, T17, T19 |
-| §9 Risks (token leak, version mismatch, lock) | T7 (CIDR + timing-safe), T16 (manifest), T18 (doctor) |
-| §10 Storage config + StorageClient | T3, T4, T5 |
+| Spec section                                  | Task(s)                                                                |
+| --------------------------------------------- | ---------------------------------------------------------------------- |
+| §2 Architecture (seams)                       | T1, T2, T7, T8, T10                                                    |
+| §3 Admin API (token, endpoints, security)     | T7, T8, T10, T18 (token gen)                                           |
+| §4 `bench migrate` windowed                   | T17                                                                    |
+| §5 `bench new-tenant`                         | T9, T10, T11                                                           |
+| §6 `bench backup` archive format              | T13, T15                                                               |
+| §7 `bench restore`                            | T16                                                                    |
+| §8 Testing (60+ tests)                        | T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T15, T16, T17, T19 |
+| §9 Risks (token leak, version mismatch, lock) | T7 (CIDR + timing-safe), T16 (manifest), T18 (doctor)                  |
+| §10 Storage config + StorageClient            | T3, T4, T5                                                             |
 
 No gaps found.
 

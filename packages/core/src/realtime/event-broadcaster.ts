@@ -29,7 +29,7 @@ export class EventBroadcaster {
   /** Callback to emit events to client connections. */
   private emitToClients: (
     roomId: string,
-    event: EventEnvelope
+    event: EventEnvelope,
   ) => Promise<void>;
 
   /** Event sequence counter per room for ordering. */
@@ -39,14 +39,11 @@ export class EventBroadcaster {
   private metricsDebounceTimers = new Map<string, NodeJS.Timeout>();
 
   /** Accumulated metrics for debouncing. */
-  private metricsAccumulator = new Map<
-    string,
-    Partial<MetricsUpdatedEvent>
-  >();
+  private metricsAccumulator = new Map<string, Partial<MetricsUpdatedEvent>>();
 
   constructor(
     eventBus: TypedEventBus<WitylogixEvents>,
-    emitToClients: (roomId: string, event: EventEnvelope) => Promise<void>
+    emitToClients: (roomId: string, event: EventEnvelope) => Promise<void>,
   ) {
     this.eventBus = eventBus;
     this.emitToClients = emitToClients;
@@ -60,64 +57,64 @@ export class EventBroadcaster {
     await this.eventBus.subscribe(
       "order.created",
       (envelope) => this.handleOrderEvent(envelope),
-      { consumerGroup: "dashboard-broadcaster" }
+      { consumerGroup: "dashboard-broadcaster" },
     );
 
     await this.eventBus.subscribe(
       "order.updated",
       (envelope) => this.handleOrderEvent(envelope),
-      { consumerGroup: "dashboard-broadcaster" }
+      { consumerGroup: "dashboard-broadcaster" },
     );
 
     await this.eventBus.subscribe(
       "order.cancelled",
       (envelope) => this.handleOrderEvent(envelope),
-      { consumerGroup: "dashboard-broadcaster" }
+      { consumerGroup: "dashboard-broadcaster" },
     );
 
     // Delivery events -> shop room + org room
     await this.eventBus.subscribe(
       "delivery.assigned",
       (envelope) => this.handleDeliveryEvent(envelope),
-      { consumerGroup: "dashboard-broadcaster" }
+      { consumerGroup: "dashboard-broadcaster" },
     );
 
     await this.eventBus.subscribe(
       "delivery.status_changed",
       (envelope) => this.handleDeliveryEvent(envelope),
-      { consumerGroup: "dashboard-broadcaster" }
+      { consumerGroup: "dashboard-broadcaster" },
     );
 
     await this.eventBus.subscribe(
       "delivery.completed",
       (envelope) => this.handleDeliveryEvent(envelope),
-      { consumerGroup: "dashboard-broadcaster" }
+      { consumerGroup: "dashboard-broadcaster" },
     );
 
     // Driver events -> org room + specific driver room
     await this.eventBus.subscribe(
       "driver.location_updated",
       (envelope) => this.handleLocationUpdate(envelope),
-      { consumerGroup: "dashboard-broadcaster" }
+      { consumerGroup: "dashboard-broadcaster" },
     );
 
     await this.eventBus.subscribe(
       "driver.status_changed",
       (envelope) => this.handleDriverEvent(envelope),
-      { consumerGroup: "dashboard-broadcaster" }
+      { consumerGroup: "dashboard-broadcaster" },
     );
 
     // Alerts -> shop room + org room
     await this.eventBus.subscribe(
       "alert.sla_breach",
       (envelope) => this.handleAlertEvent(envelope),
-      { consumerGroup: "dashboard-broadcaster" }
+      { consumerGroup: "dashboard-broadcaster" },
     );
 
     await this.eventBus.subscribe(
       "alert.system",
       (envelope) => this.handleAlertEvent(envelope),
-      { consumerGroup: "dashboard-broadcaster" }
+      { consumerGroup: "dashboard-broadcaster" },
     );
   }
 
@@ -148,10 +145,11 @@ export class EventBroadcaster {
       ...data,
     };
 
-    await this.broadcastToRooms(orgId, [
-      `shop:${shopId}`,
-      `org:${orgId}`,
-    ], event);
+    await this.broadcastToRooms(
+      orgId,
+      [`shop:${shopId}`, `org:${orgId}`],
+      event,
+    );
   }
 
   /**
@@ -169,11 +167,11 @@ export class EventBroadcaster {
     };
 
     // Broadcast to shop, org, and specific delivery tracking room
-    await this.broadcastToRooms(orgId, [
-      `shop:${shopId}`,
-      `org:${orgId}`,
-      `delivery:${deliveryId}`,
-    ], event);
+    await this.broadcastToRooms(
+      orgId,
+      [`shop:${shopId}`, `org:${orgId}`, `delivery:${deliveryId}`],
+      event,
+    );
   }
 
   /**
@@ -191,10 +189,11 @@ export class EventBroadcaster {
     };
 
     // Broadcast immediately to org room and specific driver room
-    await this.broadcastToRooms(orgId, [
-      `org:${orgId}`,
-      `driver:${driverId}`,
-    ], event);
+    await this.broadcastToRooms(
+      orgId,
+      [`org:${orgId}`, `driver:${driverId}`],
+      event,
+    );
 
     // Trigger metrics update
     this.scheduleMetricsUpdate(shopId, orgId);
@@ -215,10 +214,11 @@ export class EventBroadcaster {
     };
 
     // Broadcast to org and driver-specific rooms
-    await this.broadcastToRooms(orgId, [
-      `org:${orgId}`,
-      `driver:${driverId}`,
-    ], event);
+    await this.broadcastToRooms(
+      orgId,
+      [`org:${orgId}`, `driver:${driverId}`],
+      event,
+    );
   }
 
   /**
@@ -275,7 +275,7 @@ export class EventBroadcaster {
   private async broadcastMetrics(
     orgId: string,
     shopId: string,
-    metrics: Partial<MetricsUpdatedEvent>
+    metrics: Partial<MetricsUpdatedEvent>,
   ): Promise<void> {
     const event: MetricsUpdatedEvent = {
       event: "metrics.updated",
@@ -287,10 +287,11 @@ export class EventBroadcaster {
       lastUpdatedAt: new Date().toISOString(),
     };
 
-    await this.broadcastToRooms(orgId, [
-      `shop:${shopId}`,
-      `org:${orgId}`,
-    ], event);
+    await this.broadcastToRooms(
+      orgId,
+      [`shop:${shopId}`, `org:${orgId}`],
+      event,
+    );
   }
 
   // ─── BROADCAST HELPERS ──────────────────────────────────────────────────
@@ -301,7 +302,7 @@ export class EventBroadcaster {
   private async broadcastToRooms(
     orgId: string,
     roomIds: string[],
-    event: DashboardEvent
+    event: DashboardEvent,
   ): Promise<void> {
     for (const roomId of roomIds) {
       const seq = this.getNextSequence(roomId);
@@ -317,10 +318,7 @@ export class EventBroadcaster {
       try {
         await this.emitToClients(roomId, envelope);
       } catch (error) {
-        console.error(
-          `Failed to broadcast to room ${roomId}:`,
-          error
-        );
+        console.error(`Failed to broadcast to room ${roomId}:`, error);
       }
     }
   }

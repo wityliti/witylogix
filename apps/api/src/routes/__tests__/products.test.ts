@@ -12,9 +12,15 @@ vi.mock("@witylogix/db", () => ({
   Prisma: {
     Decimal: class Decimal {
       private value: string;
-      constructor(v: string | number) { this.value = String(v); }
-      toString() { return this.value; }
-      toNumber() { return Number(this.value); }
+      constructor(v: string | number) {
+        this.value = String(v);
+      }
+      toString() {
+        return this.value;
+      }
+      toNumber() {
+        return Number(this.value);
+      }
     },
     JsonNull: null,
     DbNull: null,
@@ -89,12 +95,24 @@ describe("Products Routes", () => {
     it("should list products with default pagination", async () => {
       mockRequest.query = { page: 1, limit: 20 };
       mockTenantDb.product.findMany.mockResolvedValue([
-        { id: "prod-1", title: "Product 1", shopId: "shop-123", lastSyncAt: new Date() },
+        {
+          id: "prod-1",
+          title: "Product 1",
+          shopId: "shop-123",
+          lastSyncAt: new Date(),
+        },
       ]);
       mockTenantDb.product.count.mockResolvedValue(1);
 
       const result = {
-        data: [{ id: "prod-1", title: "Product 1", shopId: "shop-123", lastSyncAt: new Date() }],
+        data: [
+          {
+            id: "prod-1",
+            title: "Product 1",
+            shopId: "shop-123",
+            lastSyncAt: new Date(),
+          },
+        ],
         pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
       };
 
@@ -210,7 +228,9 @@ describe("Products Routes", () => {
       mockRequest.params = { id: "nonexistent" };
       mockTenantDb.product.findUnique.mockResolvedValue(null);
 
-      const product = await mockTenantDb.product.findUnique({ where: { id: "nonexistent" } });
+      const product = await mockTenantDb.product.findUnique({
+        where: { id: "nonexistent" },
+      });
       expect(product).toBeNull();
     });
 
@@ -253,7 +273,9 @@ describe("Products Routes", () => {
       mockRequest.params = { id: "invalid-id" };
       mockTenantDb.product.findUnique.mockResolvedValue(null);
 
-      const product = await mockTenantDb.product.findUnique({ where: { id: "invalid-id" } });
+      const product = await mockTenantDb.product.findUnique({
+        where: { id: "invalid-id" },
+      });
       expect(product).toBeNull();
     });
   });
@@ -330,7 +352,9 @@ describe("Products Routes", () => {
       }));
 
       mockRequest.body = { products };
-      mockTenantDb.$transaction.mockResolvedValue(products.map((_, i) => ({ id: `prod-${i}` })));
+      mockTenantDb.$transaction.mockResolvedValue(
+        products.map((_, i) => ({ id: `prod-${i}` })),
+      );
 
       expect(mockRequest.body.products).toHaveLength(150);
     });
@@ -411,7 +435,11 @@ describe("Products Routes", () => {
       };
 
       mockTenantDb.$transaction.mockResolvedValue([
-        { id: "prod-123", title: "Updated Title", shopifyProductId: "gid://shopify/Product/123" },
+        {
+          id: "prod-123",
+          title: "Updated Title",
+          shopifyProductId: "gid://shopify/Product/123",
+        },
       ]);
 
       expect(mockRequest.body.products[0].title).toBe("Updated Title");
@@ -441,7 +469,8 @@ describe("Products Routes", () => {
         products: [{ title: "No ID", productType: "Physical" }],
       };
 
-      const hasExternalId = mockRequest.body.products[0].externalId !== undefined;
+      const hasExternalId =
+        mockRequest.body.products[0].externalId !== undefined;
       expect(hasExternalId).toBe(false);
     });
 
@@ -515,7 +544,9 @@ describe("Products Routes", () => {
       mockRequest.params = { id: "nonexistent" };
       mockTenantDb.product.findUnique.mockResolvedValue(null);
 
-      const product = await mockTenantDb.product.findUnique({ where: { id: "nonexistent" } });
+      const product = await mockTenantDb.product.findUnique({
+        where: { id: "nonexistent" },
+      });
       expect(product).toBeNull();
     });
 
@@ -534,7 +565,10 @@ describe("Products Routes", () => {
 
     it("should cascade delete related inventory sync records", async () => {
       mockRequest.params = { id: "prod-123" };
-      mockTenantDb.product.findUnique.mockResolvedValue({ id: "prod-123", shopId: "shop-123" });
+      mockTenantDb.product.findUnique.mockResolvedValue({
+        id: "prod-123",
+        shopId: "shop-123",
+      });
       mockTenantDb.product.delete.mockResolvedValue({ id: "prod-123" });
 
       expect(mockTenantDb.product.delete).toBeDefined();
@@ -544,7 +578,9 @@ describe("Products Routes", () => {
       mockRequest.params = { id: "prod-123" };
       mockTenantDb.product.findUnique.mockResolvedValue(null);
 
-      const product = await mockTenantDb.product.findUnique({ where: { id: "prod-123" } });
+      const product = await mockTenantDb.product.findUnique({
+        where: { id: "prod-123" },
+      });
       expect(product).toBeNull();
     });
   });
@@ -571,7 +607,9 @@ describe("Products Routes", () => {
     it("should count total products in shop", async () => {
       mockTenantDb.product.count.mockResolvedValue(500);
 
-      const total = await mockTenantDb.product.count({ where: { shopId: "shop-123" } });
+      const total = await mockTenantDb.product.count({
+        where: { shopId: "shop-123" },
+      });
       expect(total).toBe(500);
     });
 
@@ -667,7 +705,9 @@ describe("Products Routes", () => {
 
     it("should return stats without exposing sensitive data", async () => {
       mockTenantDb.product.count.mockResolvedValue(50);
-      mockTenantDb.product.findFirst.mockResolvedValue({ lastSyncAt: new Date() });
+      mockTenantDb.product.findFirst.mockResolvedValue({
+        lastSyncAt: new Date(),
+      });
 
       const stats = {
         total: 50,
@@ -747,7 +787,11 @@ describe("Products Routes", () => {
     });
 
     it("should combine search and filter criteria", async () => {
-      mockRequest.query = { search: "widget", productType: "Physical", vendor: "ACME" };
+      mockRequest.query = {
+        search: "widget",
+        productType: "Physical",
+        vendor: "ACME",
+      };
 
       expect(mockRequest.query.search).toBe("widget");
       expect(mockRequest.query.productType).toBe("Physical");
@@ -781,7 +825,9 @@ describe("Products Routes", () => {
       mockRequest.params = { id: "invalid" };
       mockTenantDb.product.findUnique.mockResolvedValue(null);
 
-      const product = await mockTenantDb.product.findUnique({ where: { id: "invalid" } });
+      const product = await mockTenantDb.product.findUnique({
+        where: { id: "invalid" },
+      });
       expect(product).toBeNull();
     });
 
@@ -800,15 +846,21 @@ describe("Products Routes", () => {
     });
 
     it("should handle concurrent request conflicts gracefully", async () => {
-      mockTenantDb.product.delete.mockRejectedValue(new Error("Record not found"));
+      mockTenantDb.product.delete.mockRejectedValue(
+        new Error("Record not found"),
+      );
 
-      await expect(mockTenantDb.product.delete()).rejects.toThrow("Record not found");
+      await expect(mockTenantDb.product.delete()).rejects.toThrow(
+        "Record not found",
+      );
     });
 
     it("should validate page and limit parameters", async () => {
       mockRequest.query = { page: -1, limit: 0 };
 
-      const isInvalid = (mockRequest.query.page as number) < 1 || (mockRequest.query.limit as number) < 1;
+      const isInvalid =
+        (mockRequest.query.page as number) < 1 ||
+        (mockRequest.query.limit as number) < 1;
       expect(isInvalid).toBe(true);
     });
   });

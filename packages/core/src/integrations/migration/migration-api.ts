@@ -99,7 +99,7 @@ export function createMigrationAPI(): Router {
       // Validate compatibility
       const compat = swapEngine.validateCompatibility(
         input.sourceProvider,
-        input.targetProvider
+        input.targetProvider,
       );
 
       if (!compat.compatible) {
@@ -113,13 +113,13 @@ export function createMigrationAPI(): Router {
       // Define mapping
       const mapping = swapEngine.defineMapping(
         input.sourceProvider,
-        input.targetProvider
+        input.targetProvider,
       );
 
       // Check prerequisites
       const prereqs = swapEngine.checkPrerequisites(
         mapping,
-        input.targetCredentials || {}
+        input.targetCredentials || {},
       );
 
       if (!prereqs.valid) {
@@ -132,7 +132,7 @@ export function createMigrationAPI(): Router {
       // Initialize tracker
       const migrationTracker = tracker.initializeTracker(
         mapping.migrationId,
-        mapping
+        mapping,
       );
 
       migrations.set(mapping.migrationId, {
@@ -239,7 +239,7 @@ export function createMigrationAPI(): Router {
         const dataMapperConfig = dataMapper.generateDataMapper(
           migration.mapping.migrationId,
           migration.mapping,
-          mappings
+          mappings,
         );
 
         migration.tracker.dataMapper = dataMapperConfig;
@@ -343,9 +343,10 @@ export function createMigrationAPI(): Router {
       shadowResults: {
         totalComparisons: results.totalComparisons,
         passingComparisons: results.passingComparisons,
-        passRate: results.totalComparisons > 0
-          ? (results.passingComparisons / results.totalComparisons) * 100
-          : 0,
+        passRate:
+          results.totalComparisons > 0
+            ? (results.passingComparisons / results.totalComparisons) * 100
+            : 0,
         avgMatchRate: results.avgMatchRate,
         avgSourceLatency: results.avgSourceLatency,
         avgTargetLatency: results.avgTargetLatency,
@@ -370,12 +371,7 @@ export function createMigrationAPI(): Router {
       const input = CutoverSchema.parse(req.body);
 
       // Create rollback snapshot before cutover
-      const snapshot = rollback.createSnapshot(
-        input.migrationId,
-        {},
-        {},
-        {}
-      );
+      const snapshot = rollback.createSnapshot(input.migrationId, {}, {}, {});
 
       migration.tracker.rollbackSnapshot = snapshot;
       migration.tracker.transitionStatus("CUTOVER", {
@@ -385,7 +381,7 @@ export function createMigrationAPI(): Router {
       // Execute cutover
       const result = await swapEngine.executeCutover(
         migration.mapping,
-        snapshot
+        snapshot,
       );
 
       if (result.success) {
@@ -441,11 +437,11 @@ export function createMigrationAPI(): Router {
         ? await rollback.executePartialRollback(
             migration.tracker.rollbackSnapshot,
             migration.mapping.sourceProvider,
-            input.partialEndpoints
+            input.partialEndpoints,
           )
         : await rollback.executeRollback(
             migration.tracker.rollbackSnapshot,
-            migration.mapping.sourceProvider
+            migration.mapping.sourceProvider,
           );
 
       migration.tracker.transitionStatus("ROLLED_BACK", {
@@ -489,39 +485,39 @@ export function createMigrationAPI(): Router {
       if (input.stage === "pre") {
         const preMigration = await validator.validatePreMigration(
           migration.mapping.sourceProvider,
-          migration.mapping.targetProvider
-        );
-        validationResult = validator.generateValidationReport(
-          input.migrationId,
-          preMigration
-        );
-      } else if (input.stage === "during") {
-        const duringMigration = await validator.validateDuringMigration(
-          migration.mapping.sourceProvider,
-          migration.mapping.targetProvider
-        );
-        const preMigration = await validator.validatePreMigration(
-          migration.mapping.sourceProvider,
-          migration.mapping.targetProvider
+          migration.mapping.targetProvider,
         );
         validationResult = validator.generateValidationReport(
           input.migrationId,
           preMigration,
-          duringMigration
         );
-      } else {
-        const postMigration = await validator.validatePostMigration(
-          migration.mapping.targetProvider
+      } else if (input.stage === "during") {
+        const duringMigration = await validator.validateDuringMigration(
+          migration.mapping.sourceProvider,
+          migration.mapping.targetProvider,
         );
         const preMigration = await validator.validatePreMigration(
           migration.mapping.sourceProvider,
-          migration.mapping.targetProvider
+          migration.mapping.targetProvider,
+        );
+        validationResult = validator.generateValidationReport(
+          input.migrationId,
+          preMigration,
+          duringMigration,
+        );
+      } else {
+        const postMigration = await validator.validatePostMigration(
+          migration.mapping.targetProvider,
+        );
+        const preMigration = await validator.validatePreMigration(
+          migration.mapping.sourceProvider,
+          migration.mapping.targetProvider,
         );
         validationResult = validator.generateValidationReport(
           input.migrationId,
           preMigration,
           undefined,
-          postMigration
+          postMigration,
         );
       }
 
@@ -553,13 +549,7 @@ export function createMigrationAPI(): Router {
    * List all available SDK documentation
    */
   router.get("/docs/sdks", (req, res) => {
-    const providers = [
-      "stripe",
-      "paypal",
-      "square",
-      "google",
-      "amazon",
-    ];
+    const providers = ["stripe", "paypal", "square", "google", "amazon"];
 
     const docs = providers.map((provider) => ({
       provider,
@@ -586,7 +576,7 @@ export function createMigrationAPI(): Router {
     const documentation = docGenerator.generateSDKDocumentation(
       providerId,
       `${providerId.charAt(0).toUpperCase()}${providerId.slice(1)}Client`,
-      mockSDKClass
+      mockSDKClass,
     );
 
     res.json(documentation);
@@ -625,16 +615,10 @@ export function createMigrationAPI(): Router {
    * Get aggregated rate limits for all providers
    */
   router.get("/docs/rate-limits", (req, res) => {
-    const providers = [
-      "stripe",
-      "paypal",
-      "square",
-      "google",
-      "amazon",
-    ];
+    const providers = ["stripe", "paypal", "square", "google", "amazon"];
 
     const rateLimitRefs = providers.map((provider) =>
-      rateLimits.generateRateLimitReference(provider)
+      rateLimits.generateRateLimitReference(provider),
     );
 
     res.json({
@@ -666,7 +650,7 @@ export function createMigrationAPI(): Router {
     const providers = ["stripe", "paypal", "square"];
 
     const troubleshootingRefs = providers.map((provider) =>
-      troubleshooting.generateTroubleshootingReference(provider)
+      troubleshooting.generateTroubleshootingReference(provider),
     );
 
     res.json({
@@ -685,9 +669,8 @@ export function createMigrationAPI(): Router {
    */
   router.get("/docs/troubleshooting/:providerId", (req, res) => {
     const { providerId } = req.params;
-    const reference = troubleshooting.generateTroubleshootingReference(
-      providerId
-    );
+    const reference =
+      troubleshooting.generateTroubleshootingReference(providerId);
     res.json(reference);
   });
 
@@ -695,26 +678,20 @@ export function createMigrationAPI(): Router {
    * GET /docs/troubleshooting/:providerId/:errorCode
    * Get specific playbook for an error
    */
-  router.get(
-    "/docs/troubleshooting/:providerId/:errorCode",
-    (req, res) => {
-      const { providerId, errorCode } = req.params;
-      const playbook = troubleshooting.getPlaybookForError(
-        providerId,
-        errorCode
-      );
+  router.get("/docs/troubleshooting/:providerId/:errorCode", (req, res) => {
+    const { providerId, errorCode } = req.params;
+    const playbook = troubleshooting.getPlaybookForError(providerId, errorCode);
 
-      if (!playbook) {
-        return res.status(404).json({
-          error: "Playbook not found",
-          provider: providerId,
-          errorCode,
-        });
-      }
-
-      res.json(playbook);
+    if (!playbook) {
+      return res.status(404).json({
+        error: "Playbook not found",
+        provider: providerId,
+        errorCode,
+      });
     }
-  );
+
+    res.json(playbook);
+  });
 
   /**
    * GET /docs/config/:providerId
@@ -731,6 +708,19 @@ export function createMigrationAPI(): Router {
 
 // ─── Export for mounting ───────────────────────────────────────
 
-export { ProviderSwapEngine, ShadowModeRunner, RollbackManager, MigrationValidator, MigrationTracker, DataMapperService } from "./migration-toolkit";
+export {
+  ProviderSwapEngine,
+  ShadowModeRunner,
+  RollbackManager,
+  MigrationValidator,
+  MigrationTracker,
+  DataMapperService,
+} from "./migration-toolkit";
 
-export { AutoDocGenerator, WebhookCatalog, RateLimitReference, TroubleshootingPlaybooks, ConfigurationGuideGenerator } from "../docs/documentation-engine";
+export {
+  AutoDocGenerator,
+  WebhookCatalog,
+  RateLimitReference,
+  TroubleshootingPlaybooks,
+  ConfigurationGuideGenerator,
+} from "../docs/documentation-engine";

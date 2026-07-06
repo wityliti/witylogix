@@ -2,7 +2,12 @@
 
 import { forwardRef, HTMLAttributes, useState } from "react";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipTrigger, TooltipContent, Button } from "@/components/ui";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  Button,
+} from "@/components/ui";
 import type { AgingBucket } from "./types";
 
 interface AgingBucketsProps extends HTMLAttributes<HTMLDivElement> {
@@ -34,16 +39,27 @@ function getRiskLevel(percentage: number): { label: string; color: string } {
 }
 
 export const AgingBuckets = forwardRef<HTMLDivElement, AgingBucketsProps>(
-  ({ buckets, totalOutstanding, showTrend = false, onCollect, className, ...props }, ref) => {
+  (
+    {
+      buckets,
+      totalOutstanding,
+      showTrend = false,
+      onCollect,
+      className,
+      ...props
+    },
+    ref,
+  ) => {
     const [expandedBucket, setExpandedBucket] = useState<string | null>(null);
 
     // Calculate overall risk
-    const overallRisk = buckets.reduce((sum, b) => sum + b.percentage, 0) / buckets.length;
+    const overallRisk =
+      buckets.reduce((sum, b) => sum + b.percentage, 0) / buckets.length;
     const riskLevel = getRiskLevel(overallRisk);
 
     // Calculate collection opportunities (buckets over 60 days)
     const collectionOpportunities = buckets.filter(
-      (b) => b.range.includes("61-90") || b.range.includes("90+")
+      (b) => b.range.includes("61-90") || b.range.includes("90+"),
     );
 
     return (
@@ -77,12 +93,16 @@ export const AgingBuckets = forwardRef<HTMLDivElement, AgingBucketsProps>(
                   </TooltipTrigger>
                   <TooltipContent>
                     <div className="space-y-1">
-                      <p className="font-semibold text-wl-text-primary">{bucket.label}</p>
+                      <p className="font-semibold text-wl-text-primary">
+                        {bucket.label}
+                      </p>
                       <p className="text-wl-text-secondary">{bucket.range}</p>
                       <p className="text-wl-text-primary font-semibold">
                         {formatCurrency(bucket.amount)}
                       </p>
-                      <p className="text-wl-text-tertiary">{bucket.percentage.toFixed(1)}% of total</p>
+                      <p className="text-wl-text-tertiary">
+                        {bucket.percentage.toFixed(1)}% of total
+                      </p>
                     </div>
                   </TooltipContent>
                 </Tooltip>
@@ -103,7 +123,9 @@ export const AgingBuckets = forwardRef<HTMLDivElement, AgingBucketsProps>(
                 style={{ backgroundColor: bucket.color }}
               />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-wl-text-primary">{bucket.label}</p>
+                <p className="text-sm font-semibold text-wl-text-primary">
+                  {bucket.label}
+                </p>
                 <p className="text-xs text-wl-text-tertiary">{bucket.range}</p>
                 <p className="text-sm font-semibold text-wl-text-primary mt-1">
                   {formatCurrency(bucket.amount)}
@@ -134,7 +156,10 @@ export const AgingBuckets = forwardRef<HTMLDivElement, AgingBucketsProps>(
                 Risk Assessment: {riskLevel.label}
               </span>
             </div>
-            <span className="text-sm font-bold" style={{ color: riskLevel.color }}>
+            <span
+              className="text-sm font-bold"
+              style={{ color: riskLevel.color }}
+            >
               {overallRisk.toFixed(1)}%
             </span>
           </div>
@@ -153,7 +178,11 @@ export const AgingBuckets = forwardRef<HTMLDivElement, AgingBucketsProps>(
         {collectionOpportunities.length > 0 && (
           <div className="bg-wl-warning-bg/20 border border-wl-warning-500/20 rounded-lg p-3 space-y-3">
             <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-wl-warning-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-5 h-5 text-wl-warning-400 flex-shrink-0"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
               </svg>
               <h4 className="text-sm font-semibold text-wl-text-primary">
@@ -162,7 +191,7 @@ export const AgingBuckets = forwardRef<HTMLDivElement, AgingBucketsProps>(
             </div>
             <p className="text-xs text-wl-text-secondary">
               {formatCurrency(
-                collectionOpportunities.reduce((sum, b) => sum + b.amount, 0)
+                collectionOpportunities.reduce((sum, b) => sum + b.amount, 0),
               )}{" "}
               outstanding over 60 days
             </p>
@@ -193,11 +222,16 @@ export const AgingBuckets = forwardRef<HTMLDivElement, AgingBucketsProps>(
             <div className="space-y-1">
               {buckets.map((bucket) => (
                 <div key={bucket.label} className="flex items-center gap-2">
-                  <span className="text-xs text-wl-text-secondary flex-1">{bucket.label}</span>
+                  <span className="text-xs text-wl-text-secondary flex-1">
+                    {bucket.label}
+                  </span>
                   <div className="w-24 h-1.5 bg-wl-bg-overlay rounded-full overflow-hidden">
                     <div
                       className="h-full"
-                      style={{ width: `${bucket.percentage}%`, backgroundColor: bucket.color }}
+                      style={{
+                        width: `${bucket.percentage}%`,
+                        backgroundColor: bucket.color,
+                      }}
                     />
                   </div>
                   <span className="text-xs font-semibold text-wl-text-primary w-12 text-right">
@@ -210,7 +244,7 @@ export const AgingBuckets = forwardRef<HTMLDivElement, AgingBucketsProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 AgingBuckets.displayName = "AgingBuckets";

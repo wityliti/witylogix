@@ -4,14 +4,20 @@
  * Collects and exports all user PII in portable, machine-readable format
  */
 
-import { DataExportPackage, DatabaseRecord } from './types';
+import { DataExportPackage, DatabaseRecord } from "./types";
 
 /**
  * Generic database interface for flexibility
  */
 export interface DatabaseInterface {
-  query<T extends DatabaseRecord>(query: string, params?: unknown[]): Promise<T[]>;
-  queryOne<T extends DatabaseRecord>(query: string, params?: unknown[]): Promise<T | null>;
+  query<T extends DatabaseRecord>(
+    query: string,
+    params?: unknown[],
+  ): Promise<T[]>;
+  queryOne<T extends DatabaseRecord>(
+    query: string,
+    params?: unknown[],
+  ): Promise<T | null>;
 }
 
 /**
@@ -38,17 +44,18 @@ export class DataExportService {
    * @throws Error if user not found or export fails
    */
   async exportUserData(userId: string): Promise<Record<string, unknown>> {
-    if (!userId || typeof userId !== 'string') {
-      throw new Error('Invalid userId provided');
+    if (!userId || typeof userId !== "string") {
+      throw new Error("Invalid userId provided");
     }
 
-    const [profile, orders, shipments, payments, activityLogs] = await Promise.all([
-      this.fetchUserProfile(userId),
-      this.fetchOrders(userId),
-      this.fetchShipments(userId),
-      this.fetchPayments(userId),
-      this.fetchActivityLogs(userId),
-    ]);
+    const [profile, orders, shipments, payments, activityLogs] =
+      await Promise.all([
+        this.fetchUserProfile(userId),
+        this.fetchOrders(userId),
+        this.fetchShipments(userId),
+        this.fetchPayments(userId),
+        this.fetchActivityLogs(userId),
+      ]);
 
     return {
       profile,
@@ -59,7 +66,11 @@ export class DataExportService {
       exportMetadata: {
         userId,
         exportedAt: new Date().toISOString(),
-        totalRecords: (orders?.length || 0) + (shipments?.length || 0) + (payments?.length || 0) + (activityLogs?.length || 0),
+        totalRecords:
+          (orders?.length || 0) +
+          (shipments?.length || 0) +
+          (payments?.length || 0) +
+          (activityLogs?.length || 0),
       },
     };
   }
@@ -68,11 +79,13 @@ export class DataExportService {
    * Fetch user profile information
    * @private
    */
-  private async fetchUserProfile(userId: string): Promise<Record<string, unknown> | null> {
+  private async fetchUserProfile(
+    userId: string,
+  ): Promise<Record<string, unknown> | null> {
     try {
       return await this.db.queryOne(
-        'SELECT id, email, name, phone, address, city, state, country, created_at, updated_at FROM users WHERE id = ?',
-        [userId]
+        "SELECT id, email, name, phone, address, city, state, country, created_at, updated_at FROM users WHERE id = ?",
+        [userId],
       );
     } catch (error) {
       console.error(`Error fetching profile for user ${userId}:`, error);
@@ -89,7 +102,7 @@ export class DataExportService {
       return await this.db.query(
         `SELECT id, user_id, order_number, total_amount, currency, status, created_at, updated_at 
          FROM orders WHERE user_id = ? ORDER BY created_at DESC`,
-        [userId]
+        [userId],
       );
     } catch (error) {
       console.error(`Error fetching orders for user ${userId}:`, error);
@@ -108,7 +121,7 @@ export class DataExportService {
          FROM shipments s
          JOIN orders o ON s.order_id = o.id
          WHERE o.user_id = ? ORDER BY s.created_at DESC`,
-        [userId]
+        [userId],
       );
     } catch (error) {
       console.error(`Error fetching shipments for user ${userId}:`, error);
@@ -125,7 +138,7 @@ export class DataExportService {
       return await this.db.query(
         `SELECT id, order_id, method, last_four, status, amount, created_at 
          FROM payments WHERE order_id IN (SELECT id FROM orders WHERE user_id = ?) ORDER BY created_at DESC`,
-        [userId]
+        [userId],
       );
     } catch (error) {
       console.error(`Error fetching payments for user ${userId}:`, error);
@@ -142,7 +155,7 @@ export class DataExportService {
       return await this.db.query(
         `SELECT id, user_id, action, resource_type, resource_id, ip_address, created_at 
          FROM activity_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT 10000`,
-        [userId]
+        [userId],
       );
     } catch (error) {
       console.error(`Error fetching activity logs for user ${userId}:`, error);
@@ -156,7 +169,10 @@ export class DataExportService {
    * @param includeConsents - Whether to include consent records
    * @returns DataExportPackage
    */
-  async generateExportPackage(userId: string, includeConsents = true): Promise<DataExportPackage> {
+  async generateExportPackage(
+    userId: string,
+    includeConsents = true,
+  ): Promise<DataExportPackage> {
     const exportData = await this.exportUserData(userId);
     const exportId = `export_${userId}_${Date.now()}`;
 
@@ -164,7 +180,7 @@ export class DataExportService {
       dataSubjectId: userId,
       exportedAt: new Date(),
       exportId,
-      format: 'json',
+      format: "json",
       includes: {
         profile: exportData.profile as Record<string, unknown>,
         orders: (exportData.orders as DatabaseRecord[]) || [],
@@ -191,8 +207,8 @@ export class DataExportService {
         exportId: pkg.exportId,
         dataSubjectId: pkg.dataSubjectId,
         exportedAt: pkg.exportedAt.toISOString(),
-        format: 'application/json',
-        version: '1.0',
+        format: "application/json",
+        version: "1.0",
       },
       data: pkg.includes,
     };
@@ -214,49 +230,52 @@ export class DataExportService {
         exportMetadata: {
           dataSubjectId: userId,
           exportedAt: new Date().toISOString(),
-          format: 'application/jsonl', // JSON Lines format for streaming
+          format: "application/jsonl", // JSON Lines format for streaming
         },
-      }) + '\n';
+      }) + "\n";
 
       // Stream profile
       const profile = await this.fetchUserProfile(userId);
       if (profile) {
-        yield JSON.stringify({ type: 'profile', data: profile }) + '\n';
+        yield JSON.stringify({ type: "profile", data: profile }) + "\n";
       }
 
       // Stream orders in chunks
       const orders = await this.fetchOrders(userId);
       for (let i = 0; i < orders.length; i += chunkSize) {
         const chunk = orders.slice(i, i + chunkSize);
-        yield JSON.stringify({ type: 'orders', data: chunk }) + '\n';
+        yield JSON.stringify({ type: "orders", data: chunk }) + "\n";
       }
 
       // Stream shipments in chunks
       const shipments = await this.fetchShipments(userId);
       for (let i = 0; i < shipments.length; i += chunkSize) {
         const chunk = shipments.slice(i, i + chunkSize);
-        yield JSON.stringify({ type: 'shipments', data: chunk }) + '\n';
+        yield JSON.stringify({ type: "shipments", data: chunk }) + "\n";
       }
 
       // Stream payments in chunks
       const payments = await this.fetchPayments(userId);
       for (let i = 0; i < payments.length; i += chunkSize) {
         const chunk = payments.slice(i, i + chunkSize);
-        yield JSON.stringify({ type: 'payments', data: chunk }) + '\n';
+        yield JSON.stringify({ type: "payments", data: chunk }) + "\n";
       }
 
       // Stream activity logs in chunks
       const activityLogs = await this.fetchActivityLogs(userId);
       for (let i = 0; i < activityLogs.length; i += chunkSize) {
         const chunk = activityLogs.slice(i, i + chunkSize);
-        yield JSON.stringify({ type: 'activityLogs', data: chunk }) + '\n';
+        yield JSON.stringify({ type: "activityLogs", data: chunk }) + "\n";
       }
 
       // Stream completion marker
-      yield JSON.stringify({ type: 'complete', timestamp: new Date().toISOString() }) + '\n';
+      yield JSON.stringify({
+        type: "complete",
+        timestamp: new Date().toISOString(),
+      }) + "\n";
     } catch (error) {
       console.error(`Error streaming export for user ${userId}:`, error);
-      yield JSON.stringify({ type: 'error', message: String(error) }) + '\n';
+      yield JSON.stringify({ type: "error", message: String(error) }) + "\n";
     }
   }
 
@@ -266,8 +285,8 @@ export class DataExportService {
    * @returns SHA-256 hash of content
    */
   calculateChecksum(jsonContent: string): string {
-    const crypto = require('crypto');
-    return crypto.createHash('sha256').update(jsonContent).digest('hex');
+    const crypto = require("crypto");
+    return crypto.createHash("sha256").update(jsonContent).digest("hex");
   }
 
   /**
@@ -275,13 +294,16 @@ export class DataExportService {
    * @param pkg - Package to validate
    * @returns Object with validation results
    */
-  validatePackage(pkg: DataExportPackage): { valid: boolean; errors: string[] } {
+  validatePackage(pkg: DataExportPackage): {
+    valid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
-    if (!pkg.dataSubjectId) errors.push('Missing dataSubjectId');
-    if (!pkg.exportedAt) errors.push('Missing exportedAt timestamp');
-    if (!pkg.exportId) errors.push('Missing exportId');
-    if (!pkg.includes.profile) errors.push('Missing profile data');
+    if (!pkg.dataSubjectId) errors.push("Missing dataSubjectId");
+    if (!pkg.exportedAt) errors.push("Missing exportedAt timestamp");
+    if (!pkg.exportId) errors.push("Missing exportId");
+    if (!pkg.includes.profile) errors.push("Missing profile data");
 
     return {
       valid: errors.length === 0,

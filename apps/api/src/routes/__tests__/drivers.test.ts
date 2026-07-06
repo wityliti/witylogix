@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 
 /**
  * Drivers Route Integration Tests
@@ -45,12 +45,12 @@ interface MockDriver {
   name: string;
   email: string;
   phone: string;
-  vehicleType: 'BICYCLE' | 'MOTORCYCLE' | 'CAR' | 'VAN' | 'TRUCK';
+  vehicleType: "BICYCLE" | "MOTORCYCLE" | "CAR" | "VAN" | "TRUCK";
   vehiclePlate?: string;
   maxCapacity: number;
   maxWeight?: number;
   fcmToken?: string;
-  status: 'OFFLINE' | 'AVAILABLE' | 'ON_ROUTE' | 'ON_BREAK';
+  status: "OFFLINE" | "AVAILABLE" | "ON_ROUTE" | "ON_BREAK";
   isActive: boolean;
   lastLocationAt?: Date;
   heading?: number;
@@ -63,33 +63,33 @@ interface MockDriver {
 }
 
 const createMockDriver = (overrides?: Partial<MockDriver>): MockDriver => ({
-  id: 'driver-' + Math.random().toString(36).substring(7),
-  shopId: 'shop-123',
-  name: 'John Driver',
-  email: 'john@example.com',
-  phone: '+1234567890',
-  vehicleType: 'CAR',
-  vehiclePlate: 'ABC-123',
+  id: "driver-" + Math.random().toString(36).substring(7),
+  shopId: "shop-123",
+  name: "John Driver",
+  email: "john@example.com",
+  phone: "+1234567890",
+  vehicleType: "CAR",
+  vehiclePlate: "ABC-123",
   maxCapacity: 50,
   maxWeight: 100,
-  fcmToken: 'fcm-token-xyz',
-  status: 'OFFLINE',
+  fcmToken: "fcm-token-xyz",
+  status: "OFFLINE",
   isActive: true,
   createdAt: new Date(),
   ...overrides,
 });
 
 const createMockOrder = (overrides?: Partial<MockOrder>): MockOrder => ({
-  id: 'order-' + Math.random().toString(36).substring(7),
-  shopifyOrderNumber: '#1001',
-  status: 'ASSIGNED',
-  customerName: 'Jane Customer',
-  addressLine1: '123 Main St',
-  city: 'New York',
+  id: "order-" + Math.random().toString(36).substring(7),
+  shopifyOrderNumber: "#1001",
+  status: "ASSIGNED",
+  customerName: "Jane Customer",
+  addressLine1: "123 Main St",
+  city: "New York",
   ...overrides,
 });
 
-describe('Drivers Routes', () => {
+describe("Drivers Routes", () => {
   let mockRequest: any;
   let mockReply: any;
   let mockTenantDb: any;
@@ -126,8 +126,8 @@ describe('Drivers Routes', () => {
       query: {},
       params: {},
       body: {},
-      shopId: 'shop-123',
-      auth: { role: 'ADMIN', driverId: undefined },
+      shopId: "shop-123",
+      auth: { role: "ADMIN", driverId: undefined },
       tenantDb: mockTenantDb,
       log: {
         info: vi.fn(),
@@ -147,8 +147,8 @@ describe('Drivers Routes', () => {
     vi.clearAllMocks();
   });
 
-  describe('GET /drivers - List Drivers', () => {
-    it('should return paginated drivers with default pagination', async () => {
+  describe("GET /drivers - List Drivers", () => {
+    it("should return paginated drivers with default pagination", async () => {
       const mockDrivers = [createMockDriver(), createMockDriver()];
       mockTenantDb.driver.findMany.mockResolvedValue(mockDrivers);
       mockTenantDb.driver.count.mockResolvedValue(2);
@@ -164,72 +164,72 @@ describe('Drivers Routes', () => {
       expect(result.pagination.total).toBe(2);
     });
 
-    it('should filter drivers by AVAILABLE status', async () => {
-      const mockDrivers = [createMockDriver({ status: 'AVAILABLE' })];
+    it("should filter drivers by AVAILABLE status", async () => {
+      const mockDrivers = [createMockDriver({ status: "AVAILABLE" })];
       mockTenantDb.driver.findMany.mockResolvedValue(mockDrivers);
       mockTenantDb.driver.count.mockResolvedValue(1);
 
-      mockRequest.query = { page: 1, limit: 20, status: 'AVAILABLE' };
+      mockRequest.query = { page: 1, limit: 20, status: "AVAILABLE" };
 
       const result = {
         data: mockDrivers,
         pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
       };
 
-      expect(result.data[0].status).toBe('AVAILABLE');
+      expect(result.data[0].status).toBe("AVAILABLE");
     });
 
-    it('should filter drivers by OFFLINE status', async () => {
-      const mockDrivers = [createMockDriver({ status: 'OFFLINE' })];
+    it("should filter drivers by OFFLINE status", async () => {
+      const mockDrivers = [createMockDriver({ status: "OFFLINE" })];
       mockTenantDb.driver.findMany.mockResolvedValue(mockDrivers);
       mockTenantDb.driver.count.mockResolvedValue(1);
 
-      mockRequest.query = { page: 1, limit: 20, status: 'OFFLINE' };
+      mockRequest.query = { page: 1, limit: 20, status: "OFFLINE" };
 
       const result = {
         data: mockDrivers,
         pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
       };
 
-      expect(result.data[0].status).toBe('OFFLINE');
+      expect(result.data[0].status).toBe("OFFLINE");
     });
 
-    it('should filter drivers by ON_ROUTE status', async () => {
-      const mockDrivers = [createMockDriver({ status: 'ON_ROUTE' })];
+    it("should filter drivers by ON_ROUTE status", async () => {
+      const mockDrivers = [createMockDriver({ status: "ON_ROUTE" })];
       mockTenantDb.driver.findMany.mockResolvedValue(mockDrivers);
       mockTenantDb.driver.count.mockResolvedValue(1);
 
-      mockRequest.query = { page: 1, limit: 20, status: 'ON_ROUTE' };
+      mockRequest.query = { page: 1, limit: 20, status: "ON_ROUTE" };
 
       const result = {
         data: mockDrivers,
         pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
       };
 
-      expect(result.data[0].status).toBe('ON_ROUTE');
+      expect(result.data[0].status).toBe("ON_ROUTE");
     });
 
-    it('should filter drivers by ON_BREAK status', async () => {
-      const mockDrivers = [createMockDriver({ status: 'ON_BREAK' })];
+    it("should filter drivers by ON_BREAK status", async () => {
+      const mockDrivers = [createMockDriver({ status: "ON_BREAK" })];
       mockTenantDb.driver.findMany.mockResolvedValue(mockDrivers);
       mockTenantDb.driver.count.mockResolvedValue(1);
 
-      mockRequest.query = { page: 1, limit: 20, status: 'ON_BREAK' };
+      mockRequest.query = { page: 1, limit: 20, status: "ON_BREAK" };
 
       const result = {
         data: mockDrivers,
         pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
       };
 
-      expect(result.data[0].status).toBe('ON_BREAK');
+      expect(result.data[0].status).toBe("ON_BREAK");
     });
 
-    it('should filter drivers by active status', async () => {
+    it("should filter drivers by active status", async () => {
       const mockDrivers = [createMockDriver({ isActive: true })];
       mockTenantDb.driver.findMany.mockResolvedValue(mockDrivers);
       mockTenantDb.driver.count.mockResolvedValue(1);
 
-      mockRequest.query = { page: 1, limit: 20, isActive: 'true' };
+      mockRequest.query = { page: 1, limit: 20, isActive: "true" };
 
       const result = {
         data: mockDrivers,
@@ -239,12 +239,12 @@ describe('Drivers Routes', () => {
       expect(result.data[0].isActive).toBe(true);
     });
 
-    it('should filter drivers by inactive status', async () => {
+    it("should filter drivers by inactive status", async () => {
       const mockDrivers = [createMockDriver({ isActive: false })];
       mockTenantDb.driver.findMany.mockResolvedValue(mockDrivers);
       mockTenantDb.driver.count.mockResolvedValue(1);
 
-      mockRequest.query = { page: 1, limit: 20, isActive: 'false' };
+      mockRequest.query = { page: 1, limit: 20, isActive: "false" };
 
       const result = {
         data: mockDrivers,
@@ -254,52 +254,52 @@ describe('Drivers Routes', () => {
       expect(result.data[0].isActive).toBe(false);
     });
 
-    it('should search drivers by name', async () => {
-      const mockDrivers = [createMockDriver({ name: 'Alice Smith' })];
+    it("should search drivers by name", async () => {
+      const mockDrivers = [createMockDriver({ name: "Alice Smith" })];
       mockTenantDb.driver.findMany.mockResolvedValue(mockDrivers);
       mockTenantDb.driver.count.mockResolvedValue(1);
 
-      mockRequest.query = { page: 1, limit: 20, search: 'Alice' };
+      mockRequest.query = { page: 1, limit: 20, search: "Alice" };
 
       const result = {
         data: mockDrivers,
         pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
       };
 
-      expect(result.data[0].name).toContain('Alice');
+      expect(result.data[0].name).toContain("Alice");
     });
 
-    it('should search drivers by email', async () => {
-      const mockDrivers = [createMockDriver({ email: 'alice@example.com' })];
+    it("should search drivers by email", async () => {
+      const mockDrivers = [createMockDriver({ email: "alice@example.com" })];
       mockTenantDb.driver.findMany.mockResolvedValue(mockDrivers);
       mockTenantDb.driver.count.mockResolvedValue(1);
 
-      mockRequest.query = { page: 1, limit: 20, search: 'alice@example.com' };
+      mockRequest.query = { page: 1, limit: 20, search: "alice@example.com" };
 
       const result = {
         data: mockDrivers,
         pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
       };
 
-      expect(result.data[0].email).toBe('alice@example.com');
+      expect(result.data[0].email).toBe("alice@example.com");
     });
 
-    it('should search drivers by phone', async () => {
-      const mockDrivers = [createMockDriver({ phone: '+9876543210' })];
+    it("should search drivers by phone", async () => {
+      const mockDrivers = [createMockDriver({ phone: "+9876543210" })];
       mockTenantDb.driver.findMany.mockResolvedValue(mockDrivers);
       mockTenantDb.driver.count.mockResolvedValue(1);
 
-      mockRequest.query = { page: 1, limit: 20, search: '9876543210' };
+      mockRequest.query = { page: 1, limit: 20, search: "9876543210" };
 
       const result = {
         data: mockDrivers,
         pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
       };
 
-      expect(result.data[0].phone).toBe('+9876543210');
+      expect(result.data[0].phone).toBe("+9876543210");
     });
 
-    it('should include active order count', async () => {
+    it("should include active order count", async () => {
       const mockDrivers = [
         createMockDriver({
           _count: { orders: 5 },
@@ -318,11 +318,11 @@ describe('Drivers Routes', () => {
       expect(result.data[0]._count?.orders).toBe(5);
     });
 
-    it('should return empty array when no drivers match', async () => {
+    it("should return empty array when no drivers match", async () => {
       mockTenantDb.driver.findMany.mockResolvedValue([]);
       mockTenantDb.driver.count.mockResolvedValue(0);
 
-      mockRequest.query = { page: 1, limit: 20, status: 'NONEXISTENT' };
+      mockRequest.query = { page: 1, limit: 20, status: "NONEXISTENT" };
 
       const result = {
         data: [],
@@ -333,9 +333,9 @@ describe('Drivers Routes', () => {
     });
   });
 
-  describe('GET /drivers/:id - Get Single Driver', () => {
-    it('should return driver with current orders', async () => {
-      const mockOrders = [createMockOrder({ status: 'ASSIGNED' })];
+  describe("GET /drivers/:id - Get Single Driver", () => {
+    it("should return driver with current orders", async () => {
+      const mockOrders = [createMockOrder({ status: "ASSIGNED" })];
       const mockDriver = createMockDriver({
         orders: mockOrders,
       });
@@ -346,16 +346,16 @@ describe('Drivers Routes', () => {
       const result = { data: mockDriver };
 
       expect(result.data.orders).toHaveLength(1);
-      expect(result.data.orders?.[0].status).toBe('ASSIGNED');
+      expect(result.data.orders?.[0].status).toBe("ASSIGNED");
     });
 
-    it('should include active routes assigned to driver', async () => {
+    it("should include active routes assigned to driver", async () => {
       const mockRoutes = [
         {
-          id: 'route-123',
+          id: "route-123",
           date: new Date(),
-          status: 'IN_PROGRESS',
-          stops: [{ id: 'stop-1', sequence: 1, status: 'PENDING' }],
+          status: "IN_PROGRESS",
+          stops: [{ id: "stop-1", sequence: 1, status: "PENDING" }],
         },
       ];
 
@@ -369,15 +369,15 @@ describe('Drivers Routes', () => {
       const result = { data: mockDriver };
 
       expect(result.data.routes).toHaveLength(1);
-      expect(result.data.routes?.[0].status).toBe('IN_PROGRESS');
+      expect(result.data.routes?.[0].status).toBe("IN_PROGRESS");
     });
 
-    it('should filter orders by active statuses only', async () => {
+    it("should filter orders by active statuses only", async () => {
       const activeOrders = [
-        createMockOrder({ status: 'ASSIGNED' }),
-        createMockOrder({ status: 'PICKED_UP' }),
-        createMockOrder({ status: 'OUT_FOR_DELIVERY' }),
-        createMockOrder({ status: 'ARRIVED' }),
+        createMockOrder({ status: "ASSIGNED" }),
+        createMockOrder({ status: "PICKED_UP" }),
+        createMockOrder({ status: "OUT_FOR_DELIVERY" }),
+        createMockOrder({ status: "ARRIVED" }),
       ];
 
       const mockDriver = createMockDriver({
@@ -389,31 +389,38 @@ describe('Drivers Routes', () => {
 
       const result = { data: mockDriver };
 
-      const validStatuses = ['ASSIGNED', 'PICKED_UP', 'OUT_FOR_DELIVERY', 'ARRIVED'];
+      const validStatuses = [
+        "ASSIGNED",
+        "PICKED_UP",
+        "OUT_FOR_DELIVERY",
+        "ARRIVED",
+      ];
       result.data.orders?.forEach((order) => {
         expect(validStatuses).toContain(order.status);
       });
     });
 
-    it('should throw 404 if driver not found', async () => {
+    it("should throw 404 if driver not found", async () => {
       mockTenantDb.driver.findUnique.mockResolvedValue(null);
-      mockRequest.params = { id: 'non-existent' };
+      mockRequest.params = { id: "non-existent" };
 
       const willThrow = async () => {
-        const result = await mockTenantDb.driver.findUnique({ where: { id: mockRequest.params.id } });
+        const result = await mockTenantDb.driver.findUnique({
+          where: { id: mockRequest.params.id },
+        });
         if (!result) {
-          throw new Error('Driver not found');
+          throw new Error("Driver not found");
         }
       };
 
-      await expect(willThrow()).rejects.toThrow('Driver not found');
+      await expect(willThrow()).rejects.toThrow("Driver not found");
     });
 
-    it('should include driver contact information', async () => {
+    it("should include driver contact information", async () => {
       const mockDriver = createMockDriver({
-        name: 'John Doe',
-        email: 'john@example.com',
-        phone: '+1234567890',
+        name: "John Doe",
+        email: "john@example.com",
+        phone: "+1234567890",
       });
 
       mockTenantDb.driver.findUnique.mockResolvedValue(mockDriver);
@@ -421,15 +428,15 @@ describe('Drivers Routes', () => {
 
       const result = { data: mockDriver };
 
-      expect(result.data.name).toBe('John Doe');
-      expect(result.data.email).toBe('john@example.com');
-      expect(result.data.phone).toBe('+1234567890');
+      expect(result.data.name).toBe("John Doe");
+      expect(result.data.email).toBe("john@example.com");
+      expect(result.data.phone).toBe("+1234567890");
     });
 
-    it('should include vehicle information', async () => {
+    it("should include vehicle information", async () => {
       const mockDriver = createMockDriver({
-        vehicleType: 'VAN',
-        vehiclePlate: 'XYZ-789',
+        vehicleType: "VAN",
+        vehiclePlate: "XYZ-789",
         maxCapacity: 100,
         maxWeight: 500,
       });
@@ -439,29 +446,29 @@ describe('Drivers Routes', () => {
 
       const result = { data: mockDriver };
 
-      expect(result.data.vehicleType).toBe('VAN');
-      expect(result.data.vehiclePlate).toBe('XYZ-789');
+      expect(result.data.vehicleType).toBe("VAN");
+      expect(result.data.vehiclePlate).toBe("XYZ-789");
       expect(result.data.maxCapacity).toBe(100);
     });
   });
 
-  describe('POST /drivers - Create Driver', () => {
+  describe("POST /drivers - Create Driver", () => {
     const validDriverBody = {
-      name: 'Alice Johnson',
-      email: 'alice@example.com',
-      phone: '+1234567890',
-      vehicleType: 'CAR',
-      vehiclePlate: 'ABC-123',
+      name: "Alice Johnson",
+      email: "alice@example.com",
+      phone: "+1234567890",
+      vehicleType: "CAR",
+      vehiclePlate: "ABC-123",
       maxCapacity: 50,
       maxWeight: 100,
     };
 
-    it('should create driver with valid data', async () => {
+    it("should create driver with valid data", async () => {
       const mockDriver = createMockDriver(validDriverBody);
       mockTenantDb.driver.create.mockResolvedValue(mockDriver);
 
       mockRequest.body = validDriverBody;
-      mockRequest.auth = { role: 'ADMIN' };
+      mockRequest.auth = { role: "ADMIN" };
 
       const result = { data: mockDriver };
 
@@ -469,8 +476,8 @@ describe('Drivers Routes', () => {
       expect(result.data.phone).toBe(validDriverBody.phone);
     });
 
-    it('should validate phone number format', async () => {
-      const validPhones = ['+1234567890', '+15551234567', '+447700900123'];
+    it("should validate phone number format", async () => {
+      const validPhones = ["+1234567890", "+15551234567", "+447700900123"];
 
       validPhones.forEach((phone) => {
         const isValidPhone = /^\+\d{10,}$/.test(phone);
@@ -478,8 +485,8 @@ describe('Drivers Routes', () => {
       });
     });
 
-    it('should reject invalid phone numbers', async () => {
-      const invalidPhones = ['1234567890', 'not-a-phone', '123'];
+    it("should reject invalid phone numbers", async () => {
+      const invalidPhones = ["1234567890", "not-a-phone", "123"];
 
       invalidPhones.forEach((phone) => {
         const isValidPhone = /^\+\d{10,}$/.test(phone);
@@ -487,22 +494,26 @@ describe('Drivers Routes', () => {
       });
     });
 
-    it('should validate vehicle type enum', async () => {
-      const validVehicles = ['BICYCLE', 'MOTORCYCLE', 'CAR', 'VAN', 'TRUCK'];
-      const testVehicle = 'CAR';
+    it("should validate vehicle type enum", async () => {
+      const validVehicles = ["BICYCLE", "MOTORCYCLE", "CAR", "VAN", "TRUCK"];
+      const testVehicle = "CAR";
 
       expect(validVehicles).toContain(testVehicle);
     });
 
-    it('should reject invalid vehicle type', async () => {
-      const validVehicles = ['BICYCLE', 'MOTORCYCLE', 'CAR', 'VAN', 'TRUCK'];
-      const testVehicle = 'AIRPLANE';
+    it("should reject invalid vehicle type", async () => {
+      const validVehicles = ["BICYCLE", "MOTORCYCLE", "CAR", "VAN", "TRUCK"];
+      const testVehicle = "AIRPLANE";
 
       expect(validVehicles).not.toContain(testVehicle);
     });
 
-    it('should validate email format', async () => {
-      const validEmails = ['alice@example.com', 'test.email@domain.co.uk', 'driver+tag@company.io'];
+    it("should validate email format", async () => {
+      const validEmails = [
+        "alice@example.com",
+        "test.email@domain.co.uk",
+        "driver+tag@company.io",
+      ];
 
       validEmails.forEach((email) => {
         const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -510,14 +521,14 @@ describe('Drivers Routes', () => {
       });
     });
 
-    it('should require ADMIN role or higher', async () => {
+    it("should require ADMIN role or higher", async () => {
       mockRequest.body = validDriverBody;
-      mockRequest.auth = { role: 'DISPATCHER' };
+      mockRequest.auth = { role: "DISPATCHER" };
 
       expect(mockRequest.auth.role).not.toMatch(/ADMIN|SUPER_ADMIN/);
     });
 
-    it('should return 201 Created status', async () => {
+    it("should return 201 Created status", async () => {
       const mockDriver = createMockDriver(validDriverBody);
       mockTenantDb.driver.create.mockResolvedValue(mockDriver);
 
@@ -528,10 +539,10 @@ describe('Drivers Routes', () => {
       expect(mockReply.status).toHaveBeenCalledWith(201);
     });
 
-    it('should include shopId in created driver', async () => {
+    it("should include shopId in created driver", async () => {
       const mockDriver = createMockDriver({
         ...validDriverBody,
-        shopId: 'shop-123',
+        shopId: "shop-123",
       });
       mockTenantDb.driver.create.mockResolvedValue(mockDriver);
 
@@ -539,18 +550,18 @@ describe('Drivers Routes', () => {
 
       const result = { data: mockDriver };
 
-      expect(result.data.shopId).toBe('shop-123');
+      expect(result.data.shopId).toBe("shop-123");
     });
   });
 
-  describe('PATCH /drivers/:id - Update Driver', () => {
+  describe("PATCH /drivers/:id - Update Driver", () => {
     const updateBody = {
-      name: 'Updated Name',
-      phone: '+9876543210',
-      vehicleType: 'VAN',
+      name: "Updated Name",
+      phone: "+9876543210",
+      vehicleType: "VAN",
     };
 
-    it('should update driver fields', async () => {
+    it("should update driver fields", async () => {
       const originalDriver = createMockDriver();
       const updatedDriver = createMockDriver(updateBody);
 
@@ -566,9 +577,9 @@ describe('Drivers Routes', () => {
       expect(result.data.vehicleType).toBe(updateBody.vehicleType);
     });
 
-    it('should support partial updates', async () => {
+    it("should support partial updates", async () => {
       const originalDriver = createMockDriver();
-      const partialUpdate = { name: 'New Name' };
+      const partialUpdate = { name: "New Name" };
       const updatedDriver = createMockDriver({
         ...originalDriver,
         ...partialUpdate,
@@ -582,128 +593,130 @@ describe('Drivers Routes', () => {
 
       const result = { data: updatedDriver };
 
-      expect(result.data.name).toBe('New Name');
+      expect(result.data.name).toBe("New Name");
     });
 
-    it('should throw 404 if driver not found', async () => {
+    it("should throw 404 if driver not found", async () => {
       mockTenantDb.driver.findUnique.mockResolvedValue(null);
 
-      mockRequest.params = { id: 'non-existent' };
+      mockRequest.params = { id: "non-existent" };
       mockRequest.body = updateBody;
 
       const willThrow = async () => {
-        const result = await mockTenantDb.driver.findUnique({ where: { id: mockRequest.params.id } });
+        const result = await mockTenantDb.driver.findUnique({
+          where: { id: mockRequest.params.id },
+        });
         if (!result) {
-          throw new Error('Driver not found');
+          throw new Error("Driver not found");
         }
       };
 
-      await expect(willThrow()).rejects.toThrow('Driver not found');
+      await expect(willThrow()).rejects.toThrow("Driver not found");
     });
 
-    it('should require ADMIN role or higher', async () => {
+    it("should require ADMIN role or higher", async () => {
       const driver = createMockDriver();
 
       mockRequest.params = { id: driver.id };
       mockRequest.body = updateBody;
-      mockRequest.auth = { role: 'DISPATCHER' };
+      mockRequest.auth = { role: "DISPATCHER" };
 
       expect(mockRequest.auth.role).not.toMatch(/ADMIN|SUPER_ADMIN/);
     });
 
-    it('should update FCM token for push notifications', async () => {
+    it("should update FCM token for push notifications", async () => {
       const originalDriver = createMockDriver();
       const updatedDriver = createMockDriver({
-        fcmToken: 'new-fcm-token-abc',
+        fcmToken: "new-fcm-token-abc",
       });
 
       mockTenantDb.driver.findUnique.mockResolvedValue(originalDriver);
       mockTenantDb.driver.update.mockResolvedValue(updatedDriver);
 
       mockRequest.params = { id: originalDriver.id };
-      mockRequest.body = { fcmToken: 'new-fcm-token-abc' };
+      mockRequest.body = { fcmToken: "new-fcm-token-abc" };
 
       const result = { data: updatedDriver };
 
-      expect(result.data.fcmToken).toBe('new-fcm-token-abc');
+      expect(result.data.fcmToken).toBe("new-fcm-token-abc");
     });
   });
 
-  describe('PATCH /drivers/:id/status - Update Driver Status', () => {
-    it('should update driver status to AVAILABLE', async () => {
-      const driver = createMockDriver({ status: 'OFFLINE' });
+  describe("PATCH /drivers/:id/status - Update Driver Status", () => {
+    it("should update driver status to AVAILABLE", async () => {
+      const driver = createMockDriver({ status: "OFFLINE" });
       mockTenantDb.driver.findUnique.mockResolvedValue(driver);
       mockTenantDb.driver.update.mockResolvedValue({
         ...driver,
-        status: 'AVAILABLE',
+        status: "AVAILABLE",
       });
 
       mockRequest.params = { id: driver.id };
-      mockRequest.body = { status: 'AVAILABLE' };
+      mockRequest.body = { status: "AVAILABLE" };
 
-      const result = { data: { ...driver, status: 'AVAILABLE' } };
+      const result = { data: { ...driver, status: "AVAILABLE" } };
 
-      expect(result.data.status).toBe('AVAILABLE');
+      expect(result.data.status).toBe("AVAILABLE");
     });
 
-    it('should update driver status to OFFLINE', async () => {
-      const driver = createMockDriver({ status: 'AVAILABLE' });
+    it("should update driver status to OFFLINE", async () => {
+      const driver = createMockDriver({ status: "AVAILABLE" });
       mockTenantDb.driver.findUnique.mockResolvedValue(driver);
       mockTenantDb.driver.update.mockResolvedValue({
         ...driver,
-        status: 'OFFLINE',
+        status: "OFFLINE",
       });
 
       mockRequest.params = { id: driver.id };
-      mockRequest.body = { status: 'OFFLINE' };
+      mockRequest.body = { status: "OFFLINE" };
 
-      const result = { data: { ...driver, status: 'OFFLINE' } };
+      const result = { data: { ...driver, status: "OFFLINE" } };
 
-      expect(result.data.status).toBe('OFFLINE');
+      expect(result.data.status).toBe("OFFLINE");
     });
 
-    it('should update driver status to ON_ROUTE', async () => {
-      const driver = createMockDriver({ status: 'AVAILABLE' });
+    it("should update driver status to ON_ROUTE", async () => {
+      const driver = createMockDriver({ status: "AVAILABLE" });
       mockTenantDb.driver.findUnique.mockResolvedValue(driver);
       mockTenantDb.driver.update.mockResolvedValue({
         ...driver,
-        status: 'ON_ROUTE',
+        status: "ON_ROUTE",
       });
 
       mockRequest.params = { id: driver.id };
-      mockRequest.body = { status: 'ON_ROUTE' };
+      mockRequest.body = { status: "ON_ROUTE" };
 
-      const result = { data: { ...driver, status: 'ON_ROUTE' } };
+      const result = { data: { ...driver, status: "ON_ROUTE" } };
 
-      expect(result.data.status).toBe('ON_ROUTE');
+      expect(result.data.status).toBe("ON_ROUTE");
     });
 
-    it('should update driver status to ON_BREAK', async () => {
-      const driver = createMockDriver({ status: 'ON_ROUTE' });
+    it("should update driver status to ON_BREAK", async () => {
+      const driver = createMockDriver({ status: "ON_ROUTE" });
       mockTenantDb.driver.findUnique.mockResolvedValue(driver);
       mockTenantDb.driver.update.mockResolvedValue({
         ...driver,
-        status: 'ON_BREAK',
+        status: "ON_BREAK",
       });
 
       mockRequest.params = { id: driver.id };
-      mockRequest.body = { status: 'ON_BREAK' };
+      mockRequest.body = { status: "ON_BREAK" };
 
-      const result = { data: { ...driver, status: 'ON_BREAK' } };
+      const result = { data: { ...driver, status: "ON_BREAK" } };
 
-      expect(result.data.status).toBe('ON_BREAK');
+      expect(result.data.status).toBe("ON_BREAK");
     });
 
-    it('should remove driver from Redis GEO when going OFFLINE', async () => {
-      const driver = createMockDriver({ status: 'AVAILABLE' });
+    it("should remove driver from Redis GEO when going OFFLINE", async () => {
+      const driver = createMockDriver({ status: "AVAILABLE" });
       mockTenantDb.driver.findUnique.mockResolvedValue(driver);
       mockTenantDb.driver.update.mockResolvedValue({
         ...driver,
-        status: 'OFFLINE',
+        status: "OFFLINE",
       });
 
       mockRequest.params = { id: driver.id };
-      mockRequest.body = { status: 'OFFLINE' };
+      mockRequest.body = { status: "OFFLINE" };
 
       // Redis GEO cleanup should be called
       await mockRedis.removeDriverGeo(driver.id);
@@ -711,52 +724,54 @@ describe('Drivers Routes', () => {
       expect(mockRedis.removeDriverGeo).toHaveBeenCalledWith(driver.id);
     });
 
-    it('should allow driver to update own status', async () => {
-      const driver = createMockDriver({ status: 'OFFLINE' });
+    it("should allow driver to update own status", async () => {
+      const driver = createMockDriver({ status: "OFFLINE" });
       mockTenantDb.driver.findUnique.mockResolvedValue(driver);
       mockTenantDb.driver.update.mockResolvedValue({
         ...driver,
-        status: 'AVAILABLE',
+        status: "AVAILABLE",
       });
 
       mockRequest.params = { id: driver.id };
-      mockRequest.body = { status: 'AVAILABLE' };
-      mockRequest.auth = { role: 'DRIVER', driverId: driver.id };
+      mockRequest.body = { status: "AVAILABLE" };
+      mockRequest.auth = { role: "DRIVER", driverId: driver.id };
 
-      const result = { data: { ...driver, status: 'AVAILABLE' } };
+      const result = { data: { ...driver, status: "AVAILABLE" } };
 
-      expect(result.data.status).toBe('AVAILABLE');
+      expect(result.data.status).toBe("AVAILABLE");
     });
 
-    it('should prevent driver from updating other driver status', async () => {
-      const driver = createMockDriver({ status: 'OFFLINE' });
+    it("should prevent driver from updating other driver status", async () => {
+      const driver = createMockDriver({ status: "OFFLINE" });
 
       mockRequest.params = { id: driver.id };
-      mockRequest.body = { status: 'AVAILABLE' };
-      mockRequest.auth = { role: 'DRIVER', driverId: 'other-driver-id' };
+      mockRequest.body = { status: "AVAILABLE" };
+      mockRequest.auth = { role: "DRIVER", driverId: "other-driver-id" };
 
       // Validation should fail
       expect(mockRequest.auth.driverId).not.toBe(driver.id);
     });
 
-    it('should throw 404 if driver not found', async () => {
+    it("should throw 404 if driver not found", async () => {
       mockTenantDb.driver.findUnique.mockResolvedValue(null);
 
-      mockRequest.params = { id: 'non-existent' };
-      mockRequest.body = { status: 'AVAILABLE' };
+      mockRequest.params = { id: "non-existent" };
+      mockRequest.body = { status: "AVAILABLE" };
 
       const willThrow = async () => {
-        const result = await mockTenantDb.driver.findUnique({ where: { id: mockRequest.params.id } });
+        const result = await mockTenantDb.driver.findUnique({
+          where: { id: mockRequest.params.id },
+        });
         if (!result) {
-          throw new Error('Driver not found');
+          throw new Error("Driver not found");
         }
       };
 
-      await expect(willThrow()).rejects.toThrow('Driver not found');
+      await expect(willThrow()).rejects.toThrow("Driver not found");
     });
   });
 
-  describe('POST /drivers/:id/location - Update Driver Location (GPS)', () => {
+  describe("POST /drivers/:id/location - Update Driver Location (GPS)", () => {
     const validLocationBody = {
       latitude: 40.7128,
       longitude: -74.006,
@@ -764,7 +779,7 @@ describe('Drivers Routes', () => {
       heading: 90,
     };
 
-    it('should update PostGIS location', async () => {
+    it("should update PostGIS location", async () => {
       const driver = createMockDriver();
 
       mockTenantDb.driver.findUnique.mockResolvedValue(driver);
@@ -780,7 +795,7 @@ describe('Drivers Routes', () => {
       expect(mockTenantDb.$executeRaw).toHaveBeenCalled();
     });
 
-    it('should update Redis GEO for proximity search', async () => {
+    it("should update Redis GEO for proximity search", async () => {
       const driver = createMockDriver();
 
       mockTenantDb.driver.findUnique.mockResolvedValue(driver);
@@ -793,19 +808,19 @@ describe('Drivers Routes', () => {
       await mockRedis.updateDriverGeo(
         driver.id,
         validLocationBody.longitude,
-        validLocationBody.latitude
+        validLocationBody.latitude,
       );
 
       expect(mockRedis.updateDriverGeo).toHaveBeenCalledWith(
         driver.id,
         validLocationBody.longitude,
-        validLocationBody.latitude
+        validLocationBody.latitude,
       );
     });
 
-    it('should emit real-time Socket.io event', async () => {
+    it("should emit real-time Socket.io event", async () => {
       const driver = createMockDriver({
-        status: 'ON_ROUTE',
+        status: "ON_ROUTE",
         _count: { orders: 3 },
       });
 
@@ -816,16 +831,20 @@ describe('Drivers Routes', () => {
       mockRequest.body = validLocationBody;
 
       // Socket event should be emitted
-      await mockSocket.emitToShop(`shop:${mockRequest.shopId}`, 'driver:location_updated', {
-        id: driver.id,
-        latitude: validLocationBody.latitude,
-        longitude: validLocationBody.longitude,
-      });
+      await mockSocket.emitToShop(
+        `shop:${mockRequest.shopId}`,
+        "driver:location_updated",
+        {
+          id: driver.id,
+          latitude: validLocationBody.latitude,
+          longitude: validLocationBody.longitude,
+        },
+      );
 
       expect(mockSocket.emitToShop).toHaveBeenCalled();
     });
 
-    it('should validate latitude range', async () => {
+    it("should validate latitude range", async () => {
       const validLatitudes = [-90, -45, 0, 45, 90];
       const invalidLatitudes = [-91, 91];
 
@@ -838,7 +857,7 @@ describe('Drivers Routes', () => {
       });
     });
 
-    it('should validate longitude range', async () => {
+    it("should validate longitude range", async () => {
       const validLongitudes = [-180, -90, 0, 90, 180];
       const invalidLongitudes = [-181, 181];
 
@@ -851,7 +870,7 @@ describe('Drivers Routes', () => {
       });
     });
 
-    it('should store heading for direction tracking', async () => {
+    it("should store heading for direction tracking", async () => {
       const driver = createMockDriver();
 
       mockTenantDb.driver.findUnique.mockResolvedValue(driver);
@@ -867,7 +886,7 @@ describe('Drivers Routes', () => {
       expect(mockTenantDb.$executeRaw).toHaveBeenCalled();
     });
 
-    it('should allow driver to update own location', async () => {
+    it("should allow driver to update own location", async () => {
       const driver = createMockDriver();
 
       mockTenantDb.driver.findUnique.mockResolvedValue(driver);
@@ -875,7 +894,7 @@ describe('Drivers Routes', () => {
 
       mockRequest.params = { id: driver.id };
       mockRequest.body = validLocationBody;
-      mockRequest.auth = { role: 'DRIVER', driverId: driver.id };
+      mockRequest.auth = { role: "DRIVER", driverId: driver.id };
 
       // Simulate route handler updating location
       await mockTenantDb.$executeRaw`UPDATE drivers SET location = ST_Point(${validLocationBody.longitude}, ${validLocationBody.latitude}) WHERE id = ${driver.id}`;
@@ -884,18 +903,18 @@ describe('Drivers Routes', () => {
       expect(mockTenantDb.$executeRaw).toHaveBeenCalled();
     });
 
-    it('should prevent driver from updating other driver location', async () => {
+    it("should prevent driver from updating other driver location", async () => {
       const driver = createMockDriver();
 
       mockRequest.params = { id: driver.id };
       mockRequest.body = validLocationBody;
-      mockRequest.auth = { role: 'DRIVER', driverId: 'other-driver-id' };
+      mockRequest.auth = { role: "DRIVER", driverId: "other-driver-id" };
 
       // Validation should fail
       expect(mockRequest.auth.driverId).not.toBe(driver.id);
     });
 
-    it('should return success status', async () => {
+    it("should return success status", async () => {
       const driver = createMockDriver();
 
       mockTenantDb.driver.findUnique.mockResolvedValue(driver);
@@ -904,29 +923,37 @@ describe('Drivers Routes', () => {
       mockRequest.params = { id: driver.id };
       mockRequest.body = validLocationBody;
 
-      const result = { status: 'ok' };
+      const result = { status: "ok" };
 
-      expect(result.status).toBe('ok');
+      expect(result.status).toBe("ok");
     });
   });
 
-  describe('GET /drivers/nearby - Find Nearby Drivers', () => {
-    it('should find drivers within radius', async () => {
+  describe("GET /drivers/nearby - Find Nearby Drivers", () => {
+    it("should find drivers within radius", async () => {
       const nearbyDrivers = [
         {
-          driverId: 'driver-1',
+          driverId: "driver-1",
           distance: 2.5,
         },
         {
-          driverId: 'driver-2',
+          driverId: "driver-2",
           distance: 5.3,
         },
       ];
 
       mockRedis.findNearbyDriversGeo.mockResolvedValue(nearbyDrivers);
       mockTenantDb.driver.findMany.mockResolvedValue([
-        createMockDriver({ id: 'driver-1', status: 'AVAILABLE', isActive: true }),
-        createMockDriver({ id: 'driver-2', status: 'AVAILABLE', isActive: true }),
+        createMockDriver({
+          id: "driver-1",
+          status: "AVAILABLE",
+          isActive: true,
+        }),
+        createMockDriver({
+          id: "driver-2",
+          status: "AVAILABLE",
+          isActive: true,
+        }),
       ]);
 
       mockRequest.query = {
@@ -938,8 +965,8 @@ describe('Drivers Routes', () => {
 
       const result = {
         data: [
-          { id: 'driver-1', distanceKm: 2.5 },
-          { id: 'driver-2', distanceKm: 5.3 },
+          { id: "driver-1", distanceKm: 2.5 },
+          { id: "driver-2", distanceKm: 5.3 },
         ],
       };
 
@@ -947,7 +974,7 @@ describe('Drivers Routes', () => {
       expect(result.data[0].distanceKm).toBeLessThan(result.data[1].distanceKm);
     });
 
-    it('should support custom radius parameter', async () => {
+    it("should support custom radius parameter", async () => {
       mockRedis.findNearbyDriversGeo.mockResolvedValue([]);
 
       mockRequest.query = {
@@ -958,12 +985,16 @@ describe('Drivers Routes', () => {
       };
 
       // Simulate route handler calling geo search with custom radius
-      await mockRedis.findNearbyDriversGeo(mockRequest.query.latitude, mockRequest.query.longitude, mockRequest.query.radiusKm);
+      await mockRedis.findNearbyDriversGeo(
+        mockRequest.query.latitude,
+        mockRequest.query.longitude,
+        mockRequest.query.radiusKm,
+      );
 
       expect(mockRedis.findNearbyDriversGeo).toHaveBeenCalled();
     });
 
-    it('should support custom limit parameter', async () => {
+    it("should support custom limit parameter", async () => {
       mockRedis.findNearbyDriversGeo.mockResolvedValue([]);
 
       mockRequest.query = {
@@ -974,18 +1005,23 @@ describe('Drivers Routes', () => {
       };
 
       // Simulate route handler calling geo search with custom limit
-      await mockRedis.findNearbyDriversGeo(mockRequest.query.latitude, mockRequest.query.longitude, mockRequest.query.radiusKm, mockRequest.query.limit);
+      await mockRedis.findNearbyDriversGeo(
+        mockRequest.query.latitude,
+        mockRequest.query.longitude,
+        mockRequest.query.radiusKm,
+        mockRequest.query.limit,
+      );
 
       expect(mockRedis.findNearbyDriversGeo).toHaveBeenCalled();
     });
 
-    it('should filter by AVAILABLE status only', async () => {
-      const nearbyDrivers = [{ driverId: 'driver-1', distance: 2.5 }];
+    it("should filter by AVAILABLE status only", async () => {
+      const nearbyDrivers = [{ driverId: "driver-1", distance: 2.5 }];
       mockRedis.findNearbyDriversGeo.mockResolvedValue(nearbyDrivers);
 
       const availableDriver = createMockDriver({
-        id: 'driver-1',
-        status: 'AVAILABLE',
+        id: "driver-1",
+        status: "AVAILABLE",
         isActive: true,
       });
       mockTenantDb.driver.findMany.mockResolvedValue([availableDriver]);
@@ -1002,12 +1038,12 @@ describe('Drivers Routes', () => {
       };
 
       result.data.forEach((driver) => {
-        expect(driver.status).toBe('AVAILABLE');
+        expect(driver.status).toBe("AVAILABLE");
         expect(driver.isActive).toBe(true);
       });
     });
 
-    it('should return empty array if no nearby drivers', async () => {
+    it("should return empty array if no nearby drivers", async () => {
       mockRedis.findNearbyDriversGeo.mockResolvedValue([]);
 
       mockRequest.query = {
@@ -1022,17 +1058,21 @@ describe('Drivers Routes', () => {
       expect(result.data).toHaveLength(0);
     });
 
-    it('should include distance in results', async () => {
+    it("should include distance in results", async () => {
       const nearbyDrivers = [
         {
-          driverId: 'driver-1',
+          driverId: "driver-1",
           distance: 2.5,
         },
       ];
 
       mockRedis.findNearbyDriversGeo.mockResolvedValue(nearbyDrivers);
       mockTenantDb.driver.findMany.mockResolvedValue([
-        createMockDriver({ id: 'driver-1', status: 'AVAILABLE', isActive: true }),
+        createMockDriver({
+          id: "driver-1",
+          status: "AVAILABLE",
+          isActive: true,
+        }),
       ]);
 
       mockRequest.query = {
@@ -1045,7 +1085,7 @@ describe('Drivers Routes', () => {
       const result = {
         data: [
           {
-            id: 'driver-1',
+            id: "driver-1",
             distanceKm: 2.5,
           },
         ],
@@ -1054,78 +1094,82 @@ describe('Drivers Routes', () => {
       expect(result.data[0].distanceKm).toBe(2.5);
     });
 
-    it('should require DISPATCHER role or higher', async () => {
+    it("should require DISPATCHER role or higher", async () => {
       mockRequest.query = {
         latitude: 40.7128,
         longitude: -74.006,
         radiusKm: 10,
       };
-      mockRequest.auth = { role: 'DRIVER' };
+      mockRequest.auth = { role: "DRIVER" };
 
       expect(mockRequest.auth.role).not.toMatch(/DISPATCHER|ADMIN|SUPER_ADMIN/);
     });
 
-    it('should validate latitude range', async () => {
+    it("should validate latitude range", async () => {
       mockRequest.query = {
         latitude: 91, // Invalid
         longitude: -74.006,
         radiusKm: 10,
       };
 
-      const isValidLat = mockRequest.query.latitude >= -90 && mockRequest.query.latitude <= 90;
+      const isValidLat =
+        mockRequest.query.latitude >= -90 && mockRequest.query.latitude <= 90;
       expect(isValidLat).toBe(false);
     });
 
-    it('should validate longitude range', async () => {
+    it("should validate longitude range", async () => {
       mockRequest.query = {
         latitude: 40.7128,
         longitude: 181, // Invalid
         radiusKm: 10,
       };
 
-      const isValidLng = mockRequest.query.longitude >= -180 && mockRequest.query.longitude <= 180;
+      const isValidLng =
+        mockRequest.query.longitude >= -180 &&
+        mockRequest.query.longitude <= 180;
       expect(isValidLng).toBe(false);
     });
 
-    it('should validate radius parameter', async () => {
+    it("should validate radius parameter", async () => {
       mockRequest.query = {
         latitude: 40.7128,
         longitude: -74.006,
         radiusKm: 0.05, // Too small
       };
 
-      const isValidRadius = mockRequest.query.radiusKm >= 0.1 && mockRequest.query.radiusKm <= 100;
+      const isValidRadius =
+        mockRequest.query.radiusKm >= 0.1 && mockRequest.query.radiusKm <= 100;
       expect(isValidRadius).toBe(false);
     });
   });
 
-  describe('DELETE /drivers/:id - Deactivate Driver', () => {
-    it('should deactivate driver and set status OFFLINE', async () => {
-      const driver = createMockDriver({ isActive: true, status: 'AVAILABLE' });
+  describe("DELETE /drivers/:id - Deactivate Driver", () => {
+    it("should deactivate driver and set status OFFLINE", async () => {
+      const driver = createMockDriver({ isActive: true, status: "AVAILABLE" });
       mockTenantDb.driver.findUnique.mockResolvedValue(driver);
       mockTenantDb.driver.update.mockResolvedValue({
         ...driver,
         isActive: false,
-        status: 'OFFLINE',
+        status: "OFFLINE",
       });
 
       mockRequest.params = { id: driver.id };
 
       const result = {
-        data: { ...driver, isActive: false, status: 'OFFLINE' },
+        data: { ...driver, isActive: false, status: "OFFLINE" },
       };
 
       expect(result.data.isActive).toBe(false);
-      expect(result.data.status).toBe('OFFLINE');
+      expect(result.data.status).toBe("OFFLINE");
     });
 
-    it('should remove driver from Redis GEO', async () => {
+    it("should remove driver from Redis GEO", async () => {
       const driver = createMockDriver();
       mockTenantDb.driver.findUnique.mockResolvedValue(driver);
       mockTenantDb.driver.update.mockResolvedValue({
         ...driver,
         isActive: false,
-        status: 'OFFLINE',
+        status: "OFFLINE",
       });
 
       mockRequest.params = { id: driver.id };
@@ -1135,43 +1179,45 @@ describe('Drivers Routes', () => {
       expect(mockRedis.removeDriverGeo).toHaveBeenCalledWith(driver.id);
     });
 
-    it('should throw 404 if driver not found', async () => {
+    it("should throw 404 if driver not found", async () => {
       mockTenantDb.driver.findUnique.mockResolvedValue(null);
 
-      mockRequest.params = { id: 'non-existent' };
+      mockRequest.params = { id: "non-existent" };
 
       const willThrow = async () => {
-        const result = await mockTenantDb.driver.findUnique({ where: { id: mockRequest.params.id } });
+        const result = await mockTenantDb.driver.findUnique({
+          where: { id: mockRequest.params.id },
+        });
         if (!result) {
-          throw new Error('Driver not found');
+          throw new Error("Driver not found");
         }
       };
 
-      await expect(willThrow()).rejects.toThrow('Driver not found');
+      await expect(willThrow()).rejects.toThrow("Driver not found");
     });
 
-    it('should require ADMIN role or higher', async () => {
+    it("should require ADMIN role or higher", async () => {
       const driver = createMockDriver();
 
       mockRequest.params = { id: driver.id };
-      mockRequest.auth = { role: 'DISPATCHER' };
+      mockRequest.auth = { role: "DISPATCHER" };
 
       expect(mockRequest.auth.role).not.toMatch(/ADMIN|SUPER_ADMIN/);
     });
 
-    it('should return deactivated driver data', async () => {
+    it("should return deactivated driver data", async () => {
       const driver = createMockDriver({ isActive: true });
       mockTenantDb.driver.findUnique.mockResolvedValue(driver);
       mockTenantDb.driver.update.mockResolvedValue({
         ...driver,
         isActive: false,
-        status: 'OFFLINE',
+        status: "OFFLINE",
       });
 
       mockRequest.params = { id: driver.id };
 
       const result = {
-        data: { ...driver, isActive: false, status: 'OFFLINE' },
+        data: { ...driver, isActive: false, status: "OFFLINE" },
       };
 
       expect(result.data.id).toBe(driver.id);
@@ -1179,41 +1225,44 @@ describe('Drivers Routes', () => {
     });
   });
 
-  describe('Authentication & Authorization', () => {
-    it('should require JWT auth for all routes', async () => {
+  describe("Authentication & Authorization", () => {
+    it("should require JWT auth for all routes", async () => {
       mockRequest.auth = null;
       expect(mockRequest.auth).toBeNull();
     });
 
-    it('should enforce shop scoping on list', async () => {
+    it("should enforce shop scoping on list", async () => {
       mockRequest.query = { page: 1, limit: 20 };
-      expect(mockRequest.shopId).toBe('shop-123');
+      expect(mockRequest.shopId).toBe("shop-123");
     });
   });
 
-  describe('Error Handling', () => {
-    it('should handle database errors gracefully', async () => {
-      mockTenantDb.driver.findUnique.mockRejectedValue(new Error('Database error'));
+  describe("Error Handling", () => {
+    it("should handle database errors gracefully", async () => {
+      mockTenantDb.driver.findUnique.mockRejectedValue(
+        new Error("Database error"),
+      );
 
-      mockRequest.params = { id: 'driver-123' };
+      mockRequest.params = { id: "driver-123" };
 
       const willThrow = async () => {
         try {
-          await mockTenantDb.driver.findUnique({ where: { id: 'driver-123' } });
+          await mockTenantDb.driver.findUnique({ where: { id: "driver-123" } });
         } catch (e) {
-          throw new Error('Failed to fetch driver');
+          throw new Error("Failed to fetch driver");
         }
       };
 
-      await expect(willThrow()).rejects.toThrow('Failed to fetch driver');
+      await expect(willThrow()).rejects.toThrow("Failed to fetch driver");
     });
 
-    it('should validate UUID format in params', async () => {
-      mockRequest.params = { id: 'invalid-uuid' };
+    it("should validate UUID format in params", async () => {
+      mockRequest.params = { id: "invalid-uuid" };
 
-      const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        'invalid-uuid'
-      );
+      const isValidUUID =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          "invalid-uuid",
+        );
       expect(isValidUUID).toBe(false);
     });
   });

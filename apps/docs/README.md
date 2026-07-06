@@ -213,6 +213,7 @@ npm start
 ```
 
 Environment variables:
+
 - `ANTHROPIC_API_KEY` - Required for search functionality
 - `NEXT_PUBLIC_DOCS_URL` - Public docs URL
 - `NODE_ENV` - Set to `production`
@@ -228,6 +229,7 @@ Docs auto-generates API reference from `content/api/openapi.json`:
 ## Theme Customization
 
 Witylogix color scheme defined in:
+
 - `app/global.css` - CSS custom properties
 - `tailwind.config.ts` - Tailwind color definitions
 

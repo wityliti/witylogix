@@ -16,6 +16,7 @@ Witylogix platform integrates with multiple external carriers (FedEx, UPS, DHL),
 6. **No unified error tracking** — Errors buried in logs with no structured reporting
 
 Currently, the platform handles errors reactively:
+
 - Express error middleware catches exceptions and returns generic 500 responses
 - Workers restart on uncaught errors, losing context about what failed
 - No standardized way to classify errors (validation vs. transient vs. permanent)
@@ -69,7 +70,10 @@ export abstract class WitylogixError extends Error {
   readonly timestamp = new Date();
   readonly id = crypto.randomUUID();
 
-  constructor(message: string, public context?: Record<string, any>) {
+  constructor(
+    message: string,
+    public context?: Record<string, any>,
+  ) {
     super(message);
     this.name = this.constructor.name;
     Error.captureStackTrace(this, this.constructor);
@@ -79,11 +83,11 @@ export abstract class WitylogixError extends Error {
 // ValidationError (400)
 export class ValidationError extends WitylogixError {
   statusCode = 400;
-  code = 'VALIDATION_ERROR';
+  code = "VALIDATION_ERROR";
 
   constructor(
     message: string,
-    public fieldErrors?: Record<string, string>
+    public fieldErrors?: Record<string, string>,
   ) {
     super(message);
   }
@@ -92,7 +96,7 @@ export class ValidationError extends WitylogixError {
 // NotFoundError (404)
 export class NotFoundError extends WitylogixError {
   statusCode = 404;
-  code = 'NOT_FOUND';
+  code = "NOT_FOUND";
 
   constructor(resourceType: string, id: string) {
     super(`${resourceType} not found: ${id}`, { resourceType, id });
@@ -102,12 +106,12 @@ export class NotFoundError extends WitylogixError {
 // AuthError (401/403)
 export class AuthError extends WitylogixError {
   statusCode: 401 | 403;
-  code = 'AUTH_ERROR';
+  code = "AUTH_ERROR";
 
   constructor(
     message: string,
     statusCode: 401 | 403 = 401,
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ) {
     super(message, context);
     this.statusCode = statusCode;
@@ -119,7 +123,10 @@ export class TransientError extends WitylogixError {
   statusCode = 503;
   code: string;
 
-  constructor(code: 'TIMEOUT' | 'RATE_LIMIT' | 'TEMPORARILY_UNAVAILABLE', message: string) {
+  constructor(
+    code: "TIMEOUT" | "RATE_LIMIT" | "TEMPORARILY_UNAVAILABLE",
+    message: string,
+  ) {
     super(message);
     this.code = code;
   }
@@ -131,8 +138,8 @@ export class PermanentError extends WitylogixError {
   code: string;
 
   constructor(
-    code: 'CONFIGURATION' | 'INCOMPATIBILITY' | 'DATA_INTEGRITY',
-    message: string
+    code: "CONFIGURATION" | "INCOMPATIBILITY" | "DATA_INTEGRITY",
+    message: string,
   ) {
     super(message);
     this.code = code;
@@ -181,13 +188,11 @@ export const errorResponsePlugin = fp(async (fastify) => {
         traceId,
         timestamp: error.timestamp,
         ...(error instanceof ValidationError && {
-          errors: error.fieldErrors
+          errors: error.fieldErrors,
         }),
       };
 
-      return reply
-        .status(error.statusCode)
-        .send(problemDetails);
+      return reply.status(error.statusCode).send(problemDetails);
     }
 
     // Unknown error — log and return generic response
@@ -199,10 +204,10 @@ export const errorResponsePlugin = fp(async (fastify) => {
     });
 
     return reply.status(500).send({
-      type: 'https://api.witylogix.com/docs/errors#INTERNAL_SERVER_ERROR',
-      title: 'Internal Server Error',
+      type: "https://api.witylogix.com/docs/errors#INTERNAL_SERVER_ERROR",
+      title: "Internal Server Error",
       status: 500,
-      detail: 'An unexpected error occurred',
+      detail: "An unexpected error occurred",
       traceId,
       timestamp: new Date(),
     });
@@ -373,7 +378,7 @@ interface RetryOptions {
 
 export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
-  options: RetryOptions = {}
+  options: RetryOptions = {},
 ): Promise<T> {
   const {
     maxAttempts = 3,
@@ -414,7 +419,7 @@ export async function retryWithBackoff<T>(
     }
   }
 
-  throw lastError || new Error('Retry failed');
+  throw lastError || new Error("Retry failed");
 }
 ```
 
@@ -422,9 +427,9 @@ export async function retryWithBackoff<T>(
 
 ```typescript
 export enum CircuitState {
-  CLOSED = 'CLOSED',
-  OPEN = 'OPEN',
-  HALF_OPEN = 'HALF_OPEN',
+  CLOSED = "CLOSED",
+  OPEN = "OPEN",
+  HALF_OPEN = "HALF_OPEN",
 }
 
 export class CircuitBreaker {
@@ -436,15 +441,15 @@ export class CircuitBreaker {
   constructor(
     private name: string,
     private failureThreshold: number = 5,
-    private resetTimeoutMs: number = 60000
+    private resetTimeoutMs: number = 60000,
   ) {}
 
   async execute<T>(fn: () => Promise<T>): Promise<T> {
     if (this.state === CircuitState.OPEN) {
       if (Date.now() < (this.nextAttemptTime || 0)) {
         throw new PermanentError(
-          'CONFIGURATION',
-          `Circuit breaker "${this.name}" is OPEN`
+          "CONFIGURATION",
+          `Circuit breaker "${this.name}" is OPEN`,
         );
       }
       this.state = CircuitState.HALF_OPEN;
@@ -495,45 +500,45 @@ export class FedexCarrier {
   private logger: Logger;
 
   constructor(apiKey: string) {
-    this.circuitBreaker = new CircuitBreaker('fedex', 5, 60000);
-    this.logger = getLogger('fedex-carrier');
+    this.circuitBreaker = new CircuitBreaker("fedex", 5, 60000);
+    this.logger = getLogger("fedex-carrier");
   }
 
   async createShipment(shipment: Shipment): Promise<FedexLabel> {
     return this.circuitBreaker.execute(async () => {
       return retryWithBackoff(
         async () => {
-          const response = await fetch('https://apis.fedex.com/shipping/v1/shipments', {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${this.apiKey}` },
-            body: JSON.stringify(shipment),
-            signal: AbortSignal.timeout(10000), // 10s timeout
-          });
+          const response = await fetch(
+            "https://apis.fedex.com/shipping/v1/shipments",
+            {
+              method: "POST",
+              headers: { Authorization: `Bearer ${this.apiKey}` },
+              body: JSON.stringify(shipment),
+              signal: AbortSignal.timeout(10000), // 10s timeout
+            },
+          );
 
           if (response.status === 429) {
-            throw new TransientError(
-              'RATE_LIMIT',
-              'FedEx rate limit exceeded'
-            );
+            throw new TransientError("RATE_LIMIT", "FedEx rate limit exceeded");
           }
 
           if (response.status === 502 || response.status === 503) {
             throw new TransientError(
-              'TEMPORARILY_UNAVAILABLE',
-              'FedEx API temporarily unavailable'
+              "TEMPORARILY_UNAVAILABLE",
+              "FedEx API temporarily unavailable",
             );
           }
 
           if (!response.ok) {
             throw new PermanentError(
-              'INCOMPATIBILITY',
-              `FedEx API error: ${response.statusText}`
+              "INCOMPATIBILITY",
+              `FedEx API error: ${response.statusText}`,
             );
           }
 
           return response.json();
         },
-        { maxAttempts: 3, initialDelayMs: 100 }
+        { maxAttempts: 3, initialDelayMs: 100 },
       );
     });
   }
@@ -545,15 +550,15 @@ export class FedexCarrier {
 For BullMQ workers, failed jobs are moved to a DLQ for manual inspection and replay:
 
 ```typescript
-import { Queue, Worker } from 'bullmq';
-import { Redis } from 'ioredis';
+import { Queue, Worker } from "bullmq";
+import { Redis } from "ioredis";
 
 const redis = new Redis();
-const shipmentQueue = new Queue('shipments', { connection: redis });
-const dlq = new Queue('shipments-dlq', { connection: redis });
+const shipmentQueue = new Queue("shipments", { connection: redis });
+const dlq = new Queue("shipments-dlq", { connection: redis });
 
 export const shipmentWorker = new Worker(
-  'shipments',
+  "shipments",
   async (job) => {
     try {
       await createShipmentLabel(job.data);
@@ -561,14 +566,14 @@ export const shipmentWorker = new Worker(
       // Move to DLQ after max retries
       if (job.attemptsMade >= job.opts.attempts!) {
         await dlq.add(
-          'failed-shipment',
+          "failed-shipment",
           {
             originalJobId: job.id,
             originalData: job.data,
             error: error instanceof Error ? error.message : String(error),
             failedAt: new Date(),
           },
-          { removeOnComplete: false }
+          { removeOnComplete: false },
         );
       }
       throw error;
@@ -579,27 +584,27 @@ export const shipmentWorker = new Worker(
     defaultJobOptions: {
       attempts: 3,
       backoff: {
-        type: 'exponential',
+        type: "exponential",
         delay: 2000,
       },
       removeOnComplete: true,
       removeOnFail: false,
     },
-  }
+  },
 );
 
 // DLQ worker monitors for failed jobs
 export const dlqWorker = new Worker(
-  'shipments-dlq',
+  "shipments-dlq",
   async (job) => {
     // Alert team that manual intervention is needed
     await notificationService.alertEngineering({
-      channel: 'slack',
+      channel: "slack",
       message: `Failed shipment job: ${job.data.originalJobId}`,
       context: job.data,
     });
   },
-  { connection: redis }
+  { connection: redis },
 );
 ```
 
@@ -619,9 +624,9 @@ export interface ErrorEvent {
 
 export async function reportError(event: ErrorEvent): Promise<void> {
   try {
-    await fetch('/api/v4/errors/report', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    await fetch("/api/v4/errors/report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...event,
         timestamp: event.timestamp.toISOString(),
@@ -631,26 +636,25 @@ export async function reportError(event: ErrorEvent): Promise<void> {
     });
   } catch {
     // Fail silently — don't create infinite error loop
-    console.error('Failed to report error:', event);
+    console.error("Failed to report error:", event);
   }
 }
 
 // Usage in client components
-'use client';
+("use client");
 
 export default function UserProfile() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    fetchUserProfile()
-      .catch((error) => {
-        reportError({
-          type: 'USER_PROFILE_LOAD_FAILED',
-          message: error.message,
-          stack: error.stack,
-          context: { userId: currentUserId },
-        });
+    fetchUserProfile().catch((error) => {
+      reportError({
+        type: "USER_PROFILE_LOAD_FAILED",
+        message: error.message,
+        stack: error.stack,
+        context: { userId: currentUserId },
       });
+    });
   }, []);
 
   // ...
@@ -665,35 +669,35 @@ export default function UserProfile() {
 // lib/metrics.ts
 export const errorMetrics = {
   totalErrors: new Counter({
-    name: 'errors_total',
-    help: 'Total errors by code',
-    labelNames: ['code', 'source'],
+    name: "errors_total",
+    help: "Total errors by code",
+    labelNames: ["code", "source"],
   }),
 
   retryAttempts: new Histogram({
-    name: 'retry_attempts',
-    help: 'Number of retry attempts',
-    labelNames: ['operation'],
+    name: "retry_attempts",
+    help: "Number of retry attempts",
+    labelNames: ["operation"],
     buckets: [1, 2, 3, 5, 10],
   }),
 
   circuitBreakerState: new Gauge({
-    name: 'circuit_breaker_state',
-    help: 'Circuit breaker state (0=CLOSED, 1=HALF_OPEN, 2=OPEN)',
-    labelNames: ['breaker_name'],
+    name: "circuit_breaker_state",
+    help: "Circuit breaker state (0=CLOSED, 1=HALF_OPEN, 2=OPEN)",
+    labelNames: ["breaker_name"],
   }),
 
   dlqSize: new Gauge({
-    name: 'dlq_size',
-    help: 'Number of jobs in dead letter queue',
-    labelNames: ['queue_name'],
+    name: "dlq_size",
+    help: "Number of jobs in dead letter queue",
+    labelNames: ["queue_name"],
   }),
 };
 
 // Usage
 errorMetrics.totalErrors.inc({
   code: error.code,
-  source: 'carrier_api',
+  source: "carrier_api",
 });
 ```
 
@@ -709,21 +713,24 @@ errorMetrics.totalErrors.inc({
 #### PagerDuty Integration
 
 ```typescript
-export async function createPagerDutyAlert(error: WitylogixError): Promise<void> {
+export async function createPagerDutyAlert(
+  error: WitylogixError,
+): Promise<void> {
   // Alert on transient errors that exceed retry threshold
   if (error instanceof TransientError) {
     const errorCount = await redis.incr(`error:${error.code}`);
 
-    if (errorCount > 100) { // 100 rate limit errors in 5 minutes
-      await fetch('https://events.pagerduty.com/v2/enqueue', {
-        method: 'POST',
+    if (errorCount > 100) {
+      // 100 rate limit errors in 5 minutes
+      await fetch("https://events.pagerduty.com/v2/enqueue", {
+        method: "POST",
         body: JSON.stringify({
           routing_key: process.env.PAGERDUTY_ROUTING_KEY,
-          event_action: 'trigger',
+          event_action: "trigger",
           payload: {
             summary: `${error.code}: ${error.message}`,
-            severity: 'critical',
-            source: 'witylogix-api',
+            severity: "critical",
+            source: "witylogix-api",
             custom_details: {
               errorId: error.id,
               timestamp: error.timestamp,
@@ -782,10 +789,10 @@ Finally: Log to Prometheus + PagerDuty if critical
 ### Test Examples
 
 ```typescript
-describe('FedexCarrier', () => {
-  it('retries on 429 (rate limit)', async () => {
+describe("FedexCarrier", () => {
+  it("retries on 429 (rate limit)", async () => {
     let attempts = 0;
-    jest.spyOn(global, 'fetch').mockImplementation(() => {
+    jest.spyOn(global, "fetch").mockImplementation(() => {
       attempts++;
       if (attempts < 2) {
         return Promise.resolve({ status: 429 });
@@ -793,22 +800,22 @@ describe('FedexCarrier', () => {
       return Promise.resolve({ status: 200, json: async () => ({}) });
     });
 
-    const carrier = new FedexCarrier('test-key');
+    const carrier = new FedexCarrier("test-key");
     await carrier.createShipment(mockShipment);
 
     expect(attempts).toBe(2); // Retried once
   });
 
-  it('does not retry on 400 (validation error)', async () => {
-    jest.spyOn(global, 'fetch').mockResolvedValue({
+  it("does not retry on 400 (validation error)", async () => {
+    jest.spyOn(global, "fetch").mockResolvedValue({
       status: 400,
-      statusText: 'Bad Request',
+      statusText: "Bad Request",
     });
 
-    const carrier = new FedexCarrier('test-key');
-    await expect(() =>
-      carrier.createShipment(mockShipment)
-    ).rejects.toThrow(PermanentError);
+    const carrier = new FedexCarrier("test-key");
+    await expect(() => carrier.createShipment(mockShipment)).rejects.toThrow(
+      PermanentError,
+    );
   });
 });
 ```
@@ -822,21 +829,25 @@ describe('FedexCarrier', () => {
 ## Migration Path
 
 ### Phase 1 (Now — Sprint 3.9)
+
 - Define error classes + RFC 7807 formatter
 - Add to Fastify API error handler
 - Document in API docs
 
 ### Phase 2 (Sprint 3.10)
+
 - Implement retry/circuit-breaker utilities
 - Refactor carrier adapters to use them
 - Add Prometheus metrics
 
 ### Phase 3 (Sprint 4.0)
+
 - Add error boundaries to Next.js dashboard
 - Client-side error reporting SDK
 - DLQ worker + manual replay UI
 
 ### Phase 4 (Sprint 4.1+)
+
 - Grafana dashboards + PagerDuty integration
 - Error rate SLOs and alerting
 
@@ -861,6 +872,7 @@ describe('FedexCarrier', () => {
 ### Q: How do we replay DLQ jobs?
 
 **A:** Manual process (for now):
+
 1. Admin reviews failed job in DLQ dashboard
 2. Clicks "Replay" button
 3. Job moved back to main queue with reset attempt count

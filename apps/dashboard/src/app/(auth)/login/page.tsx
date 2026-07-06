@@ -12,8 +12,12 @@ function LoginPageInner() {
   const searchParams = useSearchParams();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
 
-  const [email, setEmail] = useState(process.env.NODE_ENV === "development" ? "admin@demo.witylogix.io" : "");
-  const [password, setPassword] = useState(process.env.NODE_ENV === "development" ? "Admin123!" : "");
+  const [email, setEmail] = useState(
+    process.env.NODE_ENV === "development" ? "admin@demo.witylogix.io" : "",
+  );
+  const [password, setPassword] = useState(
+    process.env.NODE_ENV === "development" ? "Admin123!" : "",
+  );
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -35,7 +39,8 @@ function LoginPageInner() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
-      const returnUrl = searchParams.get("redirect") || searchParams.get("returnUrl") || "/";
+      const returnUrl =
+        searchParams.get("redirect") || searchParams.get("returnUrl") || "/";
       router.push(returnUrl);
     }
   }, [isAuthenticated, authLoading, router, searchParams]);
@@ -77,10 +82,12 @@ function LoginPageInner() {
 
     try {
       await login(email, password, rememberMe);
-      const returnUrl = searchParams.get("redirect") || searchParams.get("returnUrl") || "/";
+      const returnUrl =
+        searchParams.get("redirect") || searchParams.get("returnUrl") || "/";
       router.push(returnUrl);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Login failed. Please try again.";
+      const errorMessage =
+        err instanceof Error ? err.message : "Login failed. Please try again.";
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -102,7 +109,9 @@ function LoginPageInner() {
       setEmailError("Please enter your email address");
       return;
     }
-    router.push(`/forgot-password?email=${encodeURIComponent(email)}&type=magic-link`);
+    router.push(
+      `/forgot-password?email=${encodeURIComponent(email)}&type=magic-link`,
+    );
   };
 
   if (authLoading) {
@@ -158,26 +167,28 @@ function LoginPageInner() {
                 emailError
                   ? "border-wl-danger-500 border-1.5"
                   : "border-wl-border-default",
-                isLoading && "opacity-60"
+                isLoading && "opacity-60",
               )}
               onFocus={(e) => {
                 if (!isLoading) {
-                  e.currentTarget.style.borderColor = emailError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
+                  e.currentTarget.style.borderColor = emailError
+                    ? "var(--wl-danger-500)"
+                    : "var(--wl-primary-500)";
                   e.currentTarget.style.boxShadow = emailError
                     ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
                     : "0 0 0 3px rgba(108, 99, 255, 0.1)";
                 }
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = emailError ? "var(--wl-danger-500)" : "1px solid var(--wl-border-default)";
+                e.currentTarget.style.borderColor = emailError
+                  ? "var(--wl-danger-500)"
+                  : "1px solid var(--wl-border-default)";
                 e.currentTarget.style.boxShadow = "none";
               }}
             />
           </div>
           {emailError && (
-            <span className="text-xs text-wl-danger-400">
-              {emailError}
-            </span>
+            <span className="text-xs text-wl-danger-400">{emailError}</span>
           )}
         </div>
 
@@ -209,26 +220,28 @@ function LoginPageInner() {
                 passwordError
                   ? "border-wl-danger-500 border-1.5"
                   : "border-wl-border-default",
-                isLoading && "opacity-60"
+                isLoading && "opacity-60",
               )}
               onFocus={(e) => {
                 if (!isLoading) {
-                  e.currentTarget.style.borderColor = passwordError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
+                  e.currentTarget.style.borderColor = passwordError
+                    ? "var(--wl-danger-500)"
+                    : "var(--wl-primary-500)";
                   e.currentTarget.style.boxShadow = passwordError
                     ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
                     : "0 0 0 3px rgba(108, 99, 255, 0.1)";
                 }
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = passwordError ? "var(--wl-danger-500)" : "1px solid var(--wl-border-default)";
+                e.currentTarget.style.borderColor = passwordError
+                  ? "var(--wl-danger-500)"
+                  : "1px solid var(--wl-border-default)";
                 e.currentTarget.style.boxShadow = "none";
               }}
             />
           </div>
           {passwordError && (
-            <span className="text-xs text-wl-danger-400">
-              {passwordError}
-            </span>
+            <span className="text-xs text-wl-danger-400">{passwordError}</span>
           )}
         </div>
 
@@ -237,7 +250,7 @@ function LoginPageInner() {
           <label
             className={cn(
               "flex items-center gap-2 cursor-pointer text-wl-text-secondary select-none",
-              isLoading && "opacity-60 pointer-events-none"
+              isLoading && "opacity-60 pointer-events-none",
             )}
           >
             <input
@@ -256,7 +269,7 @@ function LoginPageInner() {
             href="/forgot-password"
             className={cn(
               "text-wl-primary-400 no-underline transition-colors hover:text-wl-primary-300",
-              isLoading && "opacity-60 pointer-events-none"
+              isLoading && "opacity-60 pointer-events-none",
             )}
           >
             Forgot password?
@@ -276,7 +289,7 @@ function LoginPageInner() {
           disabled={isLoading}
           className={cn(
             "py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all",
-            isLoading && "opacity-80 cursor-not-allowed"
+            isLoading && "opacity-80 cursor-not-allowed",
           )}
           style={{
             background: isLoading
@@ -286,20 +299,27 @@ function LoginPageInner() {
           }}
           onMouseEnter={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 20px rgba(108, 99, 255, 0.35)";
-              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                "0 6px 20px rgba(108, 99, 255, 0.35)";
+              (e.currentTarget as HTMLButtonElement).style.transform =
+                "translateY(-1px)";
             }
           }}
           onMouseLeave={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(108, 99, 255, 0.25)";
-              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                "0 4px 12px rgba(108, 99, 255, 0.25)";
+              (e.currentTarget as HTMLButtonElement).style.transform =
+                "translateY(0)";
             }
           }}
         >
           {isLoading ? (
             <>
-              <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />
+              <Loader2
+                size={16}
+                style={{ animation: "spin 1s linear infinite" }}
+              />
               Signing in...
             </>
           ) : (
@@ -326,18 +346,22 @@ function LoginPageInner() {
           disabled={isLoading}
           className={cn(
             "py-3 px-4 rounded-lg border border-wl-border-default bg-wl-bg-surface text-wl-text-primary text-sm font-semibold flex items-center justify-center gap-2 transition-all",
-            isLoading && "opacity-60 cursor-not-allowed"
+            isLoading && "opacity-60 cursor-not-allowed",
           )}
           onMouseEnter={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-primary-500)";
-              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg-overlay)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor =
+                "var(--wl-primary-500)";
+              (e.currentTarget as HTMLButtonElement).style.background =
+                "var(--wl-bg-overlay)";
             }
           }}
           onMouseLeave={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-border-default)";
-              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg-surface)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor =
+                "var(--wl-border-default)";
+              (e.currentTarget as HTMLButtonElement).style.background =
+                "var(--wl-bg-surface)";
             }
           }}
         >
@@ -351,18 +375,22 @@ function LoginPageInner() {
           disabled={isLoading}
           className={cn(
             "py-3 px-4 rounded-lg border border-wl-border-default bg-wl-bg-surface text-wl-text-primary text-sm font-semibold flex items-center justify-center gap-2 transition-all",
-            isLoading && "opacity-60 cursor-not-allowed"
+            isLoading && "opacity-60 cursor-not-allowed",
           )}
           onMouseEnter={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-primary-500)";
-              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg-overlay)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor =
+                "var(--wl-primary-500)";
+              (e.currentTarget as HTMLButtonElement).style.background =
+                "var(--wl-bg-overlay)";
             }
           }}
           onMouseLeave={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-border-default)";
-              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg-surface)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor =
+                "var(--wl-border-default)";
+              (e.currentTarget as HTMLButtonElement).style.background =
+                "var(--wl-bg-surface)";
             }
           }}
         >
@@ -387,14 +415,13 @@ function LoginPageInner() {
           disabled={isLoading || !email}
           className={cn(
             "py-3 px-4 rounded-lg border border-wl-border-default bg-wl-bg-surface text-wl-text-primary text-sm font-semibold flex items-center justify-center gap-2 transition-all",
-            (isLoading || !email) && "opacity-60 cursor-not-allowed"
+            (isLoading || !email) && "opacity-60 cursor-not-allowed",
           )}
         >
           <Zap size={16} />
           Send Magic Link
         </button>
       )}
-
 
       {/* Sign Up Link */}
       <div className="text-center text-sm text-wl-text-tertiary">
@@ -403,7 +430,7 @@ function LoginPageInner() {
           href="/register"
           className={cn(
             "text-wl-primary-400 no-underline font-semibold transition-colors hover:text-wl-primary-300",
-            isLoading && "opacity-60 pointer-events-none"
+            isLoading && "opacity-60 pointer-events-none",
           )}
         >
           Create one
@@ -415,7 +442,17 @@ function LoginPageInner() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen bg-wl-bg"><Loader2 size={32} className="animate-spin" style={{ color: "var(--wl-primary, #6C63FF)" }} /></div>}>
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen bg-wl-bg">
+          <Loader2
+            size={32}
+            className="animate-spin"
+            style={{ color: "var(--wl-primary, #6C63FF)" }}
+          />
+        </div>
+      }
+    >
       <LoginPageInner />
     </Suspense>
   );

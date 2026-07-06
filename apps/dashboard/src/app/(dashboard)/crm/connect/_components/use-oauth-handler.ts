@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useCallback } from 'react';
-import { useCrmConnection } from '@/hooks/use-crm-connection';
-import type { OAuthConfig } from './types';
+import { useCallback } from "react";
+import { useCrmConnection } from "@/hooks/use-crm-connection";
+import type { OAuthConfig } from "./types";
 
 export function useOAuthHandler() {
   const { initiateOAuth } = useCrmConnection();
@@ -14,14 +14,14 @@ export function useOAuthHandler() {
       // In a real implementation, you'd get these from environment variables
       const oauthConfig: OAuthConfig = {
         platformId: selectedPlatform,
-        clientId: process.env.NEXT_PUBLIC_CRM_CLIENT_ID || '',
-        redirectUri: `${typeof window !== 'undefined' ? window.location.origin : ''}/api/integrations/crm/oauth/callback`,
-        scope: ['contacts', 'deals'],
+        clientId: process.env.NEXT_PUBLIC_CRM_CLIENT_ID || "",
+        redirectUri: `${typeof window !== "undefined" ? window.location.origin : ""}/api/integrations/crm/oauth/callback`,
+        scope: ["contacts", "deals"],
       };
 
       initiateOAuth(oauthConfig);
     },
-    [initiateOAuth]
+    [initiateOAuth],
   );
 
   return { handleStartOAuth };

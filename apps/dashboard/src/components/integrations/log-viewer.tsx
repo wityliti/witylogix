@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
  * Features: severity/provider/type filtering, expandable entries with JSON viewer, auto-scroll
  */
 
-export type LogSeverity = 'info' | 'warning' | 'error';
+export type LogSeverity = "info" | "warning" | "error";
 
 export interface LogEntry {
   id: string;
@@ -47,10 +47,12 @@ function formatRelativeTime(date: Date): string {
 
 export function LogViewer({ logs, onLogSelect, className }: LogViewerProps) {
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
-  const [filterSeverity, setFilterSeverity] = useState<LogSeverity | 'all'>('all');
-  const [filterProvider, setFilterProvider] = useState<string | 'all'>('all');
-  const [filterEventType, setFilterEventType] = useState<string | 'all'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [filterSeverity, setFilterSeverity] = useState<LogSeverity | "all">(
+    "all",
+  );
+  const [filterProvider, setFilterProvider] = useState<string | "all">("all");
+  const [filterEventType, setFilterEventType] = useState<string | "all">("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [autoScroll, setAutoScroll] = useState(true);
   const logsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -61,49 +63,57 @@ export function LogViewer({ logs, onLogSelect, className }: LogViewerProps) {
   // Auto-scroll to bottom when new logs arrive
   useEffect(() => {
     if (autoScroll && logsContainerRef.current) {
-      logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight;
+      logsContainerRef.current.scrollTop =
+        logsContainerRef.current.scrollHeight;
     }
   }, [logs, autoScroll]);
 
   // Filter logs
   const filteredLogs = logs.filter((log) => {
-    const matchesSeverity = filterSeverity === 'all' || log.severity === filterSeverity;
-    const matchesProvider = filterProvider === 'all' || log.provider === filterProvider;
-    const matchesEventType = filterEventType === 'all' || log.eventType === filterEventType;
-    const matchesSearch = searchQuery === '' || log.message.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSeverity =
+      filterSeverity === "all" || log.severity === filterSeverity;
+    const matchesProvider =
+      filterProvider === "all" || log.provider === filterProvider;
+    const matchesEventType =
+      filterEventType === "all" || log.eventType === filterEventType;
+    const matchesSearch =
+      searchQuery === "" ||
+      log.message.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return matchesSeverity && matchesProvider && matchesEventType && matchesSearch;
+    return (
+      matchesSeverity && matchesProvider && matchesEventType && matchesSearch
+    );
   });
 
   const getSeverityColor = (severity: LogSeverity): string => {
     switch (severity) {
-      case 'info':
-        return 'var(--wl-info-500)';
-      case 'warning':
-        return 'var(--wl-warning-500)';
-      case 'error':
-        return 'var(--wl-danger-500)';
+      case "info":
+        return "var(--wl-info-500)";
+      case "warning":
+        return "var(--wl-warning-500)";
+      case "error":
+        return "var(--wl-danger-500)";
     }
   };
 
   const getSeverityBgColor = (severity: LogSeverity): string => {
     switch (severity) {
-      case 'info':
-        return 'bg-wl-info-100 dark:bg-wl-info-900/30 text-wl-info-700 dark:text-wl-info-300';
-      case 'warning':
-        return 'bg-wl-warning-100 dark:bg-wl-warning-900/30 text-wl-warning-700 dark:text-wl-warning-300';
-      case 'error':
-        return 'bg-wl-danger-100 dark:bg-wl-danger-900/30 text-wl-danger-700 dark:text-wl-danger-300';
+      case "info":
+        return "bg-wl-info-100 dark:bg-wl-info-900/30 text-wl-info-700 dark:text-wl-info-300";
+      case "warning":
+        return "bg-wl-warning-100 dark:bg-wl-warning-900/30 text-wl-warning-700 dark:text-wl-warning-300";
+      case "error":
+        return "bg-wl-danger-100 dark:bg-wl-danger-900/30 text-wl-danger-700 dark:text-wl-danger-300";
     }
   };
 
   return (
     <div
       className={cn(
-        'border border-wl-border-subtle rounded-lg bg-wl-bg-surface overflow-hidden flex flex-col',
-        className
+        "border border-wl-border-subtle rounded-lg bg-wl-bg-surface overflow-hidden flex flex-col",
+        className,
       )}
-      style={{ height: '600px' }}
+      style={{ height: "600px" }}
     >
       {/* Header with filters */}
       <div className="border-b border-wl-border-subtle bg-wl-surface-hover p-4">
@@ -114,10 +124,10 @@ export function LogViewer({ logs, onLogSelect, className }: LogViewerProps) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={cn(
-              'w-full px-3 py-2 rounded-lg border border-wl-border-subtle',
-              'bg-wl-bg-surface text-wl-text-primary placeholder-wl-text-tertiary',
-              'focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/20',
-              'transition-colors'
+              "w-full px-3 py-2 rounded-lg border border-wl-border-subtle",
+              "bg-wl-bg-surface text-wl-text-primary placeholder-wl-text-tertiary",
+              "focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/20",
+              "transition-colors",
             )}
           />
         </div>
@@ -126,12 +136,14 @@ export function LogViewer({ logs, onLogSelect, className }: LogViewerProps) {
           {/* Severity Filter */}
           <select
             value={filterSeverity}
-            onChange={(e) => setFilterSeverity(e.target.value as LogSeverity | 'all')}
+            onChange={(e) =>
+              setFilterSeverity(e.target.value as LogSeverity | "all")
+            }
             className={cn(
-              'px-3 py-2 rounded-lg border border-wl-border-subtle',
-              'bg-wl-bg-surface text-wl-text-primary',
-              'focus:outline-none focus:border-wl-primary-500',
-              'transition-colors text-sm'
+              "px-3 py-2 rounded-lg border border-wl-border-subtle",
+              "bg-wl-bg-surface text-wl-text-primary",
+              "focus:outline-none focus:border-wl-primary-500",
+              "transition-colors text-sm",
             )}
           >
             <option value="all">All Severities</option>
@@ -145,10 +157,10 @@ export function LogViewer({ logs, onLogSelect, className }: LogViewerProps) {
             value={filterProvider}
             onChange={(e) => setFilterProvider(e.target.value)}
             className={cn(
-              'px-3 py-2 rounded-lg border border-wl-border-subtle',
-              'bg-wl-bg-surface text-wl-text-primary',
-              'focus:outline-none focus:border-wl-primary-500',
-              'transition-colors text-sm'
+              "px-3 py-2 rounded-lg border border-wl-border-subtle",
+              "bg-wl-bg-surface text-wl-text-primary",
+              "focus:outline-none focus:border-wl-primary-500",
+              "transition-colors text-sm",
             )}
           >
             <option value="all">All Providers</option>
@@ -164,10 +176,10 @@ export function LogViewer({ logs, onLogSelect, className }: LogViewerProps) {
             value={filterEventType}
             onChange={(e) => setFilterEventType(e.target.value)}
             className={cn(
-              'px-3 py-2 rounded-lg border border-wl-border-subtle',
-              'bg-wl-bg-surface text-wl-text-primary',
-              'focus:outline-none focus:border-wl-primary-500',
-              'transition-colors text-sm'
+              "px-3 py-2 rounded-lg border border-wl-border-subtle",
+              "bg-wl-bg-surface text-wl-text-primary",
+              "focus:outline-none focus:border-wl-primary-500",
+              "transition-colors text-sm",
             )}
           >
             <option value="all">All Events</option>
@@ -186,13 +198,13 @@ export function LogViewer({ logs, onLogSelect, className }: LogViewerProps) {
           <button
             onClick={() => setAutoScroll(!autoScroll)}
             className={cn(
-              'px-2 py-1 rounded transition-colors',
+              "px-2 py-1 rounded transition-colors",
               autoScroll
-                ? 'bg-wl-primary-100 text-wl-primary-700 dark:bg-wl-primary-900/30 dark:text-wl-primary-300'
-                : 'text-wl-text-secondary hover:text-wl-text-primary'
+                ? "bg-wl-primary-100 text-wl-primary-700 dark:bg-wl-primary-900/30 dark:text-wl-primary-300"
+                : "text-wl-text-secondary hover:text-wl-text-primary",
             )}
           >
-            {autoScroll ? 'Auto-scroll: On' : 'Auto-scroll: Off'}
+            {autoScroll ? "Auto-scroll: On" : "Auto-scroll: Off"}
           </button>
         </div>
       </div>
@@ -201,14 +213,16 @@ export function LogViewer({ logs, onLogSelect, className }: LogViewerProps) {
       <div
         ref={logsContainerRef}
         className={cn(
-          'flex-1 overflow-y-auto',
-          filteredLogs.length === 0 && 'flex items-center justify-center'
+          "flex-1 overflow-y-auto",
+          filteredLogs.length === 0 && "flex items-center justify-center",
         )}
       >
         {filteredLogs.length === 0 ? (
           <div className="text-center text-wl-text-tertiary">
             <div className="text-sm">No logs found</div>
-            <div className="text-xs mt-1">Adjust filters or search criteria</div>
+            <div className="text-xs mt-1">
+              Adjust filters or search criteria
+            </div>
           </div>
         ) : (
           <div className="divide-y divide-wl-border-subtle">
@@ -216,7 +230,10 @@ export function LogViewer({ logs, onLogSelect, className }: LogViewerProps) {
               const isExpanded = expandedLogId === log.id;
 
               return (
-                <div key={log.id} className="hover:bg-wl-surface-hover transition-colors">
+                <div
+                  key={log.id}
+                  className="hover:bg-wl-surface-hover transition-colors"
+                >
                   <button
                     onClick={() => {
                       setExpandedLogId(isExpanded ? null : log.id);
@@ -228,7 +245,9 @@ export function LogViewer({ logs, onLogSelect, className }: LogViewerProps) {
                       {/* Severity dot */}
                       <div
                         className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5"
-                        style={{ backgroundColor: getSeverityColor(log.severity) }}
+                        style={{
+                          backgroundColor: getSeverityColor(log.severity),
+                        }}
                       />
 
                       {/* Content */}
@@ -236,27 +255,33 @@ export function LogViewer({ logs, onLogSelect, className }: LogViewerProps) {
                         <div className="flex items-center gap-2 mb-1">
                           <span
                             className={cn(
-                              'px-2 py-0.5 rounded text-xs font-medium',
-                              getSeverityBgColor(log.severity)
+                              "px-2 py-0.5 rounded text-xs font-medium",
+                              getSeverityBgColor(log.severity),
                             )}
                           >
                             {log.severity.toUpperCase()}
                           </span>
-                          <span className="text-xs text-wl-text-secondary">{log.provider}</span>
-                          <span className="text-xs text-wl-text-tertiary">{log.eventType}</span>
+                          <span className="text-xs text-wl-text-secondary">
+                            {log.provider}
+                          </span>
+                          <span className="text-xs text-wl-text-tertiary">
+                            {log.eventType}
+                          </span>
                           <span className="text-xs text-wl-text-tertiary ml-auto">
                             {formatRelativeTime(log.timestamp)}
                           </span>
                         </div>
-                        <p className="text-sm text-wl-text-secondary truncate">{log.message}</p>
+                        <p className="text-sm text-wl-text-secondary truncate">
+                          {log.message}
+                        </p>
                       </div>
 
                       {/* Expand indicator */}
                       <div className="flex-shrink-0 mt-1">
                         <span
                           className={cn(
-                            'text-wl-text-tertiary transition-transform',
-                            isExpanded && 'rotate-180'
+                            "text-wl-text-tertiary transition-transform",
+                            isExpanded && "rotate-180",
                           )}
                         >
                           ▾
@@ -268,12 +293,14 @@ export function LogViewer({ logs, onLogSelect, className }: LogViewerProps) {
                   {/* Expanded payload */}
                   {isExpanded && log.payload && (
                     <div className="bg-wl-surface-hover p-4 border-t border-wl-border-subtle">
-                      <div className="text-xs font-semibold text-wl-text-primary mb-2">Payload:</div>
+                      <div className="text-xs font-semibold text-wl-text-primary mb-2">
+                        Payload:
+                      </div>
                       <pre
                         className={cn(
-                          'text-xs overflow-x-auto rounded p-2',
-                          'bg-wl-bg-surface border border-wl-border-subtle',
-                          'text-wl-text-secondary'
+                          "text-xs overflow-x-auto rounded p-2",
+                          "bg-wl-bg-surface border border-wl-border-subtle",
+                          "text-wl-text-secondary",
                         )}
                       >
                         {JSON.stringify(log.payload, null, 2)}

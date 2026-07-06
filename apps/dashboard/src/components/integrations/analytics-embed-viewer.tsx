@@ -131,7 +131,7 @@ export function AnalyticsEmbedViewer({
       className={cn(
         "flex flex-col bg-wl-bg-surface border border-wl-border-subtle rounded-lg overflow-hidden",
         isFullscreen && "fixed inset-0 z-50 rounded-none border-0",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -142,8 +142,12 @@ export function AnalyticsEmbedViewer({
             style={{ backgroundColor: getProviderColor() }}
           />
           <div>
-            <h3 className="text-sm font-semibold text-wl-text-primary">{title}</h3>
-            <p className="text-xs text-wl-text-secondary">{getProviderLabel()}</p>
+            <h3 className="text-sm font-semibold text-wl-text-primary">
+              {title}
+            </h3>
+            <p className="text-xs text-wl-text-secondary">
+              {getProviderLabel()}
+            </p>
           </div>
         </div>
 
@@ -167,7 +171,9 @@ export function AnalyticsEmbedViewer({
           <AlertTriangle className="w-4 h-4 text-wl-warning-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="text-sm font-medium text-wl-warning-400">
-              {tokenStatus === "expiring" ? "Token expiring soon" : "Token expired"}
+              {tokenStatus === "expiring"
+                ? "Token expiring soon"
+                : "Token expired"}
             </p>
             <p className="text-xs text-wl-warning-300 mt-1">
               {tokenStatus === "expiring"
@@ -182,7 +188,11 @@ export function AnalyticsEmbedViewer({
             disabled={isLoading}
             className="flex-shrink-0"
           >
-            {isLoading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+            {isLoading ? (
+              <RefreshCw className="w-3 h-3 animate-spin" />
+            ) : (
+              <RefreshCw className="w-3 h-3" />
+            )}
             Refresh
           </Button>
         </div>
@@ -195,7 +205,8 @@ export function AnalyticsEmbedViewer({
           <div className="flex-1">
             <p className="text-sm font-medium text-wl-danger-400">{error}</p>
             <p className="text-xs text-wl-danger-300 mt-1">
-              The embedded dashboard failed to load. Check your connection and try again.
+              The embedded dashboard failed to load. Check your connection and
+              try again.
             </p>
           </div>
           <Button
@@ -214,13 +225,18 @@ export function AnalyticsEmbedViewer({
         <div className="absolute inset-0 bg-wl-bg-surface/80 flex items-center justify-center z-10 rounded-lg">
           <div className="text-center">
             <RefreshCw className="w-8 h-8 animate-spin text-wl-primary-500 mx-auto mb-2" />
-            <p className="text-sm text-wl-text-secondary">Loading dashboard...</p>
+            <p className="text-sm text-wl-text-secondary">
+              Loading dashboard...
+            </p>
           </div>
         </div>
       )}
 
       {/* Embed container */}
-      <div className="flex-1 relative bg-wl-bg-surface" style={{ minHeight: `${height}px` }}>
+      <div
+        className="flex-1 relative bg-wl-bg-surface"
+        style={{ minHeight: `${height}px` }}
+      >
         <iframe
           src={embedUrl}
           title={title}
@@ -231,7 +247,8 @@ export function AnalyticsEmbedViewer({
 
         {/* Fallback message */}
         <div className="hidden absolute inset-0 flex items-center justify-center text-wl-text-secondary text-sm p-8 text-center">
-          Unable to load the embedded analytics dashboard. Please check your connection and token status.
+          Unable to load the embedded analytics dashboard. Please check your
+          connection and token status.
         </div>
       </div>
 

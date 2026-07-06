@@ -34,9 +34,12 @@ import {
 } from "lucide-react";
 
 const statusVariant = (
-  status: DriverComplianceStatus
+  status: DriverComplianceStatus,
 ): "success" | "warning" | "danger" | "info" | "default" => {
-  const map: Record<DriverComplianceStatus, "success" | "warning" | "danger" | "info" | "default"> = {
+  const map: Record<
+    DriverComplianceStatus,
+    "success" | "warning" | "danger" | "info" | "default"
+  > = {
     COMPLIANT: "success",
     WARNING: "warning",
     VIOLATION: "danger",
@@ -63,28 +66,33 @@ const dutyStatusColor = (duty: DutyStatus): string => {
 };
 
 export default function ELDOverviewPage() {
-  const complianceResult  = useFleetCompliance();
-  const violationsResult  = useViolations(undefined);
-  const eventsResult      = useELDEvents(undefined);
-  const driversResult     = useELDDriverStatus();
+  const complianceResult = useFleetCompliance();
+  const violationsResult = useViolations(undefined);
+  const eventsResult = useELDEvents(undefined);
+  const driversResult = useELDDriverStatus();
 
   const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
 
-  const compliance        = complianceResult.data;
+  const compliance = complianceResult.data;
   const complianceLoading = complianceResult.loading;
-  const complianceError   = complianceResult.error;
-  const violations        = violationsResult.items;
+  const complianceError = complianceResult.error;
+  const violations = violationsResult.items;
   const violationsLoading = violationsResult.loading;
-  const events            = eventsResult.items;
-  const eventsLoading     = eventsResult.loading;
-  const drivers           = driversResult.items;
-  const driversLoading    = driversResult.loading;
+  const events = eventsResult.items;
+  const eventsLoading = eventsResult.loading;
+  const drivers = driversResult.items;
+  const driversLoading = driversResult.loading;
 
   if (driversLoading && complianceLoading) {
     return <TableSkeleton rows={10} columns={6} />;
   }
   if (complianceError) {
-    return <ErrorState message={complianceError.message} onRetry={complianceResult.refetch} />;
+    return (
+      <ErrorState
+        message={complianceError.message}
+        onRetry={complianceResult.refetch}
+      />
+    );
   }
 
   const complianceScore = compliance?.compliancePercentage ?? 0;
@@ -95,12 +103,15 @@ export default function ELDOverviewPage() {
         ? "text-wl-warning-400"
         : "text-wl-danger-400";
 
-  const statusCounts = useMemo(() => ({
-    compliant: drivers.filter((d) => d.status === "COMPLIANT").length,
-    warning:   drivers.filter((d) => d.status === "WARNING").length,
-    violation: drivers.filter((d) => d.status === "VIOLATION").length,
-    offline:   drivers.filter((d) => d.status === "OFFLINE").length,
-  }), [drivers]);
+  const statusCounts = useMemo(
+    () => ({
+      compliant: drivers.filter((d) => d.status === "COMPLIANT").length,
+      warning: drivers.filter((d) => d.status === "WARNING").length,
+      violation: drivers.filter((d) => d.status === "VIOLATION").length,
+      offline: drivers.filter((d) => d.status === "OFFLINE").length,
+    }),
+    [drivers],
+  );
 
   return (
     <div className="min-h-screen bg-wl-bg-root space-y-6 p-6">
@@ -167,7 +178,8 @@ export default function ELDOverviewPage() {
                   <Users className="w-12 h-12 mb-3 opacity-40" />
                   <p className="text-sm font-medium">No drivers active today</p>
                   <p className="text-xs mt-1 text-center max-w-xs">
-                    Driver HOS records appear here once drivers start their shift
+                    Driver HOS records appear here once drivers start their
+                    shift
                   </p>
                 </div>
               ) : (
@@ -181,7 +193,7 @@ export default function ELDOverviewPage() {
                         "hover:border-blue-500/30 hover:bg-wl-bg-elevated",
                         selectedDriver === driver.driverId
                           ? "border-blue-500/50 bg-blue-500/5"
-                          : "border-wl-border-default"
+                          : "border-wl-border-default",
                       )}
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
@@ -193,7 +205,10 @@ export default function ELDOverviewPage() {
                             {driver.driverId}
                           </p>
                         </div>
-                        <Badge variant={statusVariant(driver.status)} className="text-xs">
+                        <Badge
+                          variant={statusVariant(driver.status)}
+                          className="text-xs"
+                        >
                           {driver.status === "COMPLIANT"
                             ? "✓"
                             : driver.status === "WARNING"
@@ -205,7 +220,12 @@ export default function ELDOverviewPage() {
                       </div>
 
                       <div className="flex items-center gap-2 text-xs mb-2">
-                        <span className={cn("text-lg", dutyStatusColor(driver.currentDuty))}>
+                        <span
+                          className={cn(
+                            "text-lg",
+                            dutyStatusColor(driver.currentDuty),
+                          )}
+                        >
                           {dutyStatusIcon[driver.currentDuty]}
                         </span>
                         <span className="text-wl-text-secondary">
@@ -215,7 +235,9 @@ export default function ELDOverviewPage() {
 
                       <div className="flex items-center gap-3 text-xs">
                         <div className="flex-1">
-                          <span className="text-wl-text-secondary">Driving: </span>
+                          <span className="text-wl-text-secondary">
+                            Driving:{" "}
+                          </span>
                           <span
                             className={cn(
                               "font-semibold",
@@ -223,7 +245,7 @@ export default function ELDOverviewPage() {
                                 ? "text-emerald-500"
                                 : driver.drivingRemaining > 2
                                   ? "text-amber-500"
-                                  : "text-red-500"
+                                  : "text-red-500",
                             )}
                           >
                             {driver.drivingRemaining.toFixed(1)}h
@@ -237,7 +259,8 @@ export default function ELDOverviewPage() {
                       </div>
 
                       <div className="text-xs text-wl-text-secondary mt-2 pt-2 border-t border-wl-border-default">
-                        Updated {new Date(driver.lastUpdate).toLocaleTimeString([], {
+                        Updated{" "}
+                        {new Date(driver.lastUpdate).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
@@ -351,7 +374,11 @@ export default function ELDOverviewPage() {
               </div>
             </div>
 
-            <Button variant="primary" className="w-full h-8 text-xs" href="/eld/dvir">
+            <Button
+              variant="primary"
+              className="w-full h-8 text-xs"
+              href="/eld/dvir"
+            >
               <Wrench className="w-3 h-3 mr-2" />
               Manage DVIRs
             </Button>
@@ -377,7 +404,9 @@ export default function ELDOverviewPage() {
                 <div className="flex flex-col items-center justify-center py-12 text-wl-text-secondary">
                   <Activity className="w-12 h-12 mb-3 opacity-40" />
                   <p className="text-sm font-medium">No ELD events yet</p>
-                  <p className="text-xs mt-1">Events appear here as drivers update their status</p>
+                  <p className="text-xs mt-1">
+                    Events appear here as drivers update their status
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -400,7 +429,9 @@ export default function ELDOverviewPage() {
                           <p className="font-semibold text-white">
                             {event.driverName}
                           </p>
-                          <p className="text-wl-text-secondary">{event.description}</p>
+                          <p className="text-wl-text-secondary">
+                            {event.description}
+                          </p>
                           <p className="text-wl-text-tertiary mt-0.5">
                             {new Date(event.timestamp).toLocaleDateString()} at{" "}
                             {new Date(event.timestamp).toLocaleTimeString([], {

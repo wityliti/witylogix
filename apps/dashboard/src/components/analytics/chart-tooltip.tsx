@@ -62,16 +62,14 @@ export function ChartTooltip({
         "bg-wl-bg-elevated border border-wl-border-default rounded-md",
         "shadow-lg p-2 text-xs",
         "transition-opacity duration-fast ease-default",
-        visible ? "opacity-100" : "opacity-0"
+        visible ? "opacity-100" : "opacity-0",
       )}
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,
       }}
     >
-      <div className="text-wl-text-primary">
-        {renderContent(data)}
-      </div>
+      <div className="text-wl-text-primary">{renderContent(data)}</div>
     </div>
   );
 }

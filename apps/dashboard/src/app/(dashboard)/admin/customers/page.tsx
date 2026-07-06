@@ -1,15 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Modal } from '@/components/ui/modal';
-import { cn } from '@/lib/utils';
-import { LoadingSkeleton, TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
+import { useState, useMemo } from "react";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
+import { cn } from "@/lib/utils";
+import {
+  LoadingSkeleton,
+  TableSkeleton,
+} from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiList } from "@/hooks/use-api";
 import {
   Users,
   ShoppingCart,
@@ -48,8 +51,9 @@ interface Customer {
   tags: string[];
 }
 
-
-const getStatusBadgeVariant = (status: Customer["status"]): "success" | "warning" | "danger" | "info" | "default" => {
+const getStatusBadgeVariant = (
+  status: Customer["status"],
+): "success" | "warning" | "danger" | "info" | "default" => {
   switch (status) {
     case "active":
       return "success";
@@ -63,13 +67,28 @@ const getStatusBadgeVariant = (status: Customer["status"]): "success" | "warning
 };
 
 // Customer Detail Modal
-const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer | null; isOpen: boolean; onClose: () => void }) => {
-  const [expandedSections, setExpandedSections] = useState<string[]>(["overview", "addresses"]);
+const CustomerDetailModal = ({
+  customer,
+  isOpen,
+  onClose,
+}: {
+  customer: Customer | null;
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
+  const [expandedSections, setExpandedSections] = useState<string[]>([
+    "overview",
+    "addresses",
+  ]);
 
   if (!customer) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Customer Details: ${customer.name}`}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Customer Details: ${customer.name}`}
+    >
       <div className="flex flex-col gap-4">
         {/* Overview Section */}
         <div className="border-b border-wl-border-default pb-3">
@@ -78,12 +97,16 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
               setExpandedSections(
                 expandedSections.includes("overview")
                   ? expandedSections.filter((s) => s !== "overview")
-                  : [...expandedSections, "overview"]
+                  : [...expandedSections, "overview"],
               )
             }
             className="bg-transparent border-none text-white font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
-            {expandedSections.includes("overview") ? <ChevronUp /> : <ChevronDown />}
+            {expandedSections.includes("overview") ? (
+              <ChevronUp />
+            ) : (
+              <ChevronDown />
+            )}
             Overview
           </button>
           {expandedSections.includes("overview") && (
@@ -100,7 +123,10 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Status
                 </p>
-                <Badge variant={getStatusBadgeVariant(customer.status)} className="text-xs capitalize">
+                <Badge
+                  variant={getStatusBadgeVariant(customer.status)}
+                  className="text-xs capitalize"
+                >
                   {customer.status}
                 </Badge>
               </div>
@@ -108,7 +134,10 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Email
                 </p>
-                <a href={`mailto:${customer.email}`} className="text-blue-500 no-underline text-sm font-medium">
+                <a
+                  href={`mailto:${customer.email}`}
+                  className="text-blue-500 no-underline text-sm font-medium"
+                >
                   {customer.email}
                 </a>
               </div>
@@ -147,12 +176,16 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
               setExpandedSections(
                 expandedSections.includes("orders")
                   ? expandedSections.filter((s) => s !== "orders")
-                  : [...expandedSections, "orders"]
+                  : [...expandedSections, "orders"],
               )
             }
             className="bg-transparent border-none text-white font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
-            {expandedSections.includes("orders") ? <ChevronUp /> : <ChevronDown />}
+            {expandedSections.includes("orders") ? (
+              <ChevronUp />
+            ) : (
+              <ChevronDown />
+            )}
             Order History
           </button>
           {expandedSections.includes("orders") && (
@@ -192,12 +225,16 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
               setExpandedSections(
                 expandedSections.includes("addresses")
                   ? expandedSections.filter((s) => s !== "addresses")
-                  : [...expandedSections, "addresses"]
+                  : [...expandedSections, "addresses"],
               )
             }
             className="bg-transparent border-none text-white font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
-            {expandedSections.includes("addresses") ? <ChevronUp /> : <ChevronDown />}
+            {expandedSections.includes("addresses") ? (
+              <ChevronUp />
+            ) : (
+              <ChevronDown />
+            )}
             Addresses ({customer.addresses.length})
           </button>
           {expandedSections.includes("addresses") && (
@@ -210,9 +247,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                     {addr.type}
                   </p>
-                  <p className="text-white text-sm m-0">
-                    {addr.address}
-                  </p>
+                  <p className="text-white text-sm m-0">{addr.address}</p>
                 </div>
               ))}
             </div>
@@ -226,12 +261,16 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
               setExpandedSections(
                 expandedSections.includes("tags")
                   ? expandedSections.filter((s) => s !== "tags")
-                  : [...expandedSections, "tags"]
+                  : [...expandedSections, "tags"],
               )
             }
             className="bg-transparent border-none text-white font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
-            {expandedSections.includes("tags") ? <ChevronUp /> : <ChevronDown />}
+            {expandedSections.includes("tags") ? (
+              <ChevronUp />
+            ) : (
+              <ChevronDown />
+            )}
             Tags ({customer.tags.length})
           </button>
           {expandedSections.includes("tags") && (
@@ -252,12 +291,16 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
               setExpandedSections(
                 expandedSections.includes("notes")
                   ? expandedSections.filter((s) => s !== "notes")
-                  : [...expandedSections, "notes"]
+                  : [...expandedSections, "notes"],
               )
             }
             className="bg-transparent border-none text-white font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
-            {expandedSections.includes("notes") ? <ChevronUp /> : <ChevronDown />}
+            {expandedSections.includes("notes") ? (
+              <ChevronUp />
+            ) : (
+              <ChevronDown />
+            )}
             Notes
           </button>
           {expandedSections.includes("notes") && (
@@ -284,20 +327,50 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
 };
 
 // Stats Bar
-const StatsBar = ({ customers, loading }: { customers: Customer[]; loading: boolean }) => {
+const StatsBar = ({
+  customers,
+  loading,
+}: {
+  customers: Customer[];
+  loading: boolean;
+}) => {
   if (loading) return <TableSkeleton rows={1} columns={4} />;
-  const activeCustomers = customers.filter((c) => c.status !== 'inactive').length;
-  const vipCustomers = customers.filter((c) => c.status === 'vip').length;
+  const activeCustomers = customers.filter(
+    (c) => c.status !== "inactive",
+  ).length;
+  const vipCustomers = customers.filter((c) => c.status === "vip").length;
   const totalSpent = customers.reduce((sum, c) => sum + c.totalSpent, 0);
-  const avgOrders = Math.round(customers.reduce((sum, c) => sum + c.ordersCount, 0) / customers.length);
+  const avgOrders = Math.round(
+    customers.reduce((sum, c) => sum + c.ordersCount, 0) / customers.length,
+  );
 
   return (
     <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4 mb-6">
       {[
-        { label: "Total Customers", value: customers.length.toString(), icon: Users, color: "var(--wl-chart-indigo)" },
-        { label: "Active", value: activeCustomers.toString(), icon: TrendingUp, color: "var(--wl-success-500)" },
-        { label: "VIP", value: vipCustomers.toString(), icon: ShoppingCart, color: "var(--wl-warning-500)" },
-        { label: "Total Revenue", value: `$${(totalSpent / 1000).toFixed(0)}K`, icon: DollarSign, color: "var(--wl-chart-purple)" },
+        {
+          label: "Total Customers",
+          value: customers.length.toString(),
+          icon: Users,
+          color: "var(--wl-chart-indigo)",
+        },
+        {
+          label: "Active",
+          value: activeCustomers.toString(),
+          icon: TrendingUp,
+          color: "var(--wl-success-500)",
+        },
+        {
+          label: "VIP",
+          value: vipCustomers.toString(),
+          icon: ShoppingCart,
+          color: "var(--wl-warning-500)",
+        },
+        {
+          label: "Total Revenue",
+          value: `$${(totalSpent / 1000).toFixed(0)}K`,
+          icon: DollarSign,
+          color: "var(--wl-chart-purple)",
+        },
       ].map((stat, idx) => {
         const Icon = stat.icon;
         return (
@@ -335,11 +408,20 @@ const StatsBar = ({ customers, loading }: { customers: Customer[]; loading: bool
 
 // Main Page
 export default function AdminCustomersPage() {
-  const { items: customers, loading, error, refetch } = useApiList<Customer>('/api/v4/customers');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [storeFilter, setStoreFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'vip'>('all');
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const {
+    items: customers,
+    loading,
+    error,
+    refetch,
+  } = useApiList<Customer>("/api/v4/customers");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [storeFilter, setStoreFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "inactive" | "vip"
+  >("all");
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null,
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const filteredCustomers = useMemo(() => {
@@ -349,14 +431,16 @@ export default function AdminCustomersPage() {
         customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         customer.phone.includes(searchTerm);
 
-      const matchesStore = storeFilter === 'all' || customer.store === storeFilter;
-      const matchesStatus = statusFilter === 'all' || customer.status === statusFilter;
+      const matchesStore =
+        storeFilter === "all" || customer.store === storeFilter;
+      const matchesStatus =
+        statusFilter === "all" || customer.status === statusFilter;
 
       return matchesSearch && matchesStore && matchesStatus;
     });
   }, [searchTerm, storeFilter, statusFilter, customers]);
 
-  const stores = ['all', ...new Set(customers.map((c) => c.store))];
+  const stores = ["all", ...new Set(customers.map((c) => c.store))];
 
   const handleCustomerClick = (customer: Customer) => {
     setSelectedCustomer(customer);
@@ -364,11 +448,33 @@ export default function AdminCustomersPage() {
   };
 
   const handleExport = () => {
-    const csv = [["Name", "Email", "Phone", "Store", "Orders", "Total Spent", "Last Order", "Status"]];
+    const csv = [
+      [
+        "Name",
+        "Email",
+        "Phone",
+        "Store",
+        "Orders",
+        "Total Spent",
+        "Last Order",
+        "Status",
+      ],
+    ];
     filteredCustomers.forEach((customer) => {
-      csv.push([customer.name, customer.email, customer.phone, customer.store, customer.ordersCount.toString(), customer.totalSpent.toString(), customer.lastOrder, customer.status]);
+      csv.push([
+        customer.name,
+        customer.email,
+        customer.phone,
+        customer.store,
+        customer.ordersCount.toString(),
+        customer.totalSpent.toString(),
+        customer.lastOrder,
+        customer.status,
+      ]);
     });
-    const csvString = csv.map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n");
+    const csvString = csv
+      .map((row) => row.map((cell) => `"${cell}"`).join(","))
+      .join("\n");
     const blob = new Blob([csvString], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -378,7 +484,8 @@ export default function AdminCustomersPage() {
   };
 
   if (loading && customers.length === 0) return <LoadingSkeleton />;
-  if (error && customers.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
+  if (error && customers.length === 0)
+    return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="bg-wl-bg-root min-h-screen">
@@ -445,7 +552,7 @@ export default function AdminCustomersPage() {
                     "px-3 py-1 border rounded-md text-xs font-semibold cursor-pointer transition-all capitalize",
                     statusFilter === status
                       ? "bg-blue-500 text-white border-blue-500"
-                      : "bg-wl-bg-root min-h-screen text-white border-wl-border-default"
+                      : "bg-wl-bg-root min-h-screen text-white border-wl-border-default",
                   )}
                 >
                   {status === "all" ? "All" : status}
@@ -460,19 +567,30 @@ export default function AdminCustomersPage() {
           {filteredCustomers.length > 0 ? (
             <>
               <div className="p-3 border-b border-wl-border-default text-xs text-wl-text-secondary">
-                Showing {filteredCustomers.length} of {customers.length} customers
+                Showing {filteredCustomers.length} of {customers.length}{" "}
+                customers
               </div>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-sm">
                     <thead>
                       <tr className="border-b border-wl-border-default bg-wl-bg-root min-h-screen">
-                        {["Name", "Email", "Phone", "Store", "Orders", "Total Spent", "Last Order", "Status", "Actions"].map((header) => (
+                        {[
+                          "Name",
+                          "Email",
+                          "Phone",
+                          "Store",
+                          "Orders",
+                          "Total Spent",
+                          "Last Order",
+                          "Status",
+                          "Actions",
+                        ].map((header) => (
                           <th
                             key={header}
                             className={cn(
                               "p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wide",
-                              header === "Actions" && "text-center"
+                              header === "Actions" && "text-center",
                             )}
                           >
                             {header}
@@ -486,13 +604,22 @@ export default function AdminCustomersPage() {
                           key={customer.id}
                           className={cn(
                             "border-b border-wl-border-default transition-all cursor-pointer",
-                            idx % 2 === 0 ? "bg-wl-bg-root min-h-screen" : "bg-wl-bg-surface"
+                            idx % 2 === 0
+                              ? "bg-wl-bg-root min-h-screen"
+                              : "bg-wl-bg-surface",
                           )}
                           onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "var(--wl-bg-elevated)";
+                            (
+                              e.currentTarget as HTMLTableRowElement
+                            ).style.backgroundColor = "var(--wl-bg-elevated)";
                           }}
                           onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLTableRowElement).style.backgroundColor = idx % 2 === 0 ? "var(--wl-bg-root)" : "var(--wl-bg-elevated)";
+                            (
+                              e.currentTarget as HTMLTableRowElement
+                            ).style.backgroundColor =
+                              idx % 2 === 0
+                                ? "var(--wl-bg-root)"
+                                : "var(--wl-bg-elevated)";
                           }}
                           onClick={() => handleCustomerClick(customer)}
                         >
@@ -518,7 +645,10 @@ export default function AdminCustomersPage() {
                             {customer.lastOrder}
                           </td>
                           <td className="p-3">
-                            <Badge variant={getStatusBadgeVariant(customer.status)} className="text-xs capitalize">
+                            <Badge
+                              variant={getStatusBadgeVariant(customer.status)}
+                              className="text-xs capitalize"
+                            >
                               {customer.status}
                             </Badge>
                           </td>
@@ -551,7 +681,11 @@ export default function AdminCustomersPage() {
         </Card>
       </main>
 
-      <CustomerDetailModal customer={selectedCustomer} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <CustomerDetailModal
+        customer={selectedCustomer}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
 
       <style>{`
         @keyframes fadeInUp {

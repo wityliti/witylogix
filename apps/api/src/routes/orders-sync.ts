@@ -15,18 +15,29 @@
  *   POST /orders/conflicts/bulk-resolve   — Bulk resolve by field
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { z } from 'zod';
-import { requireAuth } from '../middleware/auth.js';
-import { tenantContext } from '../middleware/tenant.js';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { z } from "zod";
+import { requireAuth } from "../middleware/auth.js";
+import { tenantContext } from "../middleware/tenant.js";
 
-const ECOMMERCE_SLUGS = ['shopify', 'woocommerce', 'bigcommerce', 'magento', 'etsy', 'ebay', 'square', 'amazon'];
+const ECOMMERCE_SLUGS = [
+  "shopify",
+  "woocommerce",
+  "bigcommerce",
+  "magento",
+  "etsy",
+  "ebay",
+  "square",
+  "amazon",
+];
 
-export async function registerOrdersSyncRoutes(fastify: FastifyInstance): Promise<void> {
+export async function registerOrdersSyncRoutes(
+  fastify: FastifyInstance,
+): Promise<void> {
   // ─── Sync Status ───────────────────────────────────────────────
 
   fastify.get(
-    '/orders/sync/status',
+    "/orders/sync/status",
     { onRequest: [requireAuth, tenantContext] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const shopId = request.shopId;
@@ -44,11 +55,18 @@ export async function registerOrdersSyncRoutes(fastify: FastifyInstance): Promis
 
       const platformHealth = integrations.map((i) => ({
         platform: i.appSlug,
-        status: i.healthStatus === 'HEALTHY' ? 'healthy' : i.healthStatus === 'DEGRADED' ? 'warning' : i.healthStatus === 'ERROR' ? 'error' : 'warning',
+        status:
+          i.healthStatus === "HEALTHY"
+            ? "healthy"
+            : i.healthStatus === "DEGRADED"
+              ? "warning"
+              : i.healthStatus === "ERROR"
+                ? "error"
+                : "warning",
         lastSyncTime: i.lastSyncAt?.toISOString() ?? null,
         nextSyncTime: null,
         errorRate: 0,
-        connectionStatus: i.isEnabled ? 'connected' : 'disconnected',
+        connectionStatus: i.isEnabled ? "connected" : "disconnected",
         isConnected: i.isEnabled,
       }));
 
@@ -59,16 +77,16 @@ export async function registerOrdersSyncRoutes(fastify: FastifyInstance): Promis
   // ─── Trigger Sync ──────────────────────────────────────────────
 
   fastify.post(
-    '/orders/sync/trigger',
+    "/orders/sync/trigger",
     { onRequest: [requireAuth, tenantContext] },
     async (request: FastifyRequest, _reply: FastifyReply) => {
       const { platform } = (request.body ?? {}) as { platform?: string };
       return {
         jobId: `job_${Date.now()}`,
-        platform: platform ?? 'all',
-        status: 'pending',
+        platform: platform ?? "all",
+        status: "pending",
         startTime: new Date().toISOString(),
-        message: 'Sync queued',
+        message: "Sync queued",
       };
     },
   );
@@ -76,18 +94,18 @@ export async function registerOrdersSyncRoutes(fastify: FastifyInstance): Promis
   // ─── Retry Sync Job ────────────────────────────────────────────
 
   fastify.post(
-    '/orders/sync/jobs/:id/retry',
+    "/orders/sync/jobs/:id/retry",
     { onRequest: [requireAuth, tenantContext] },
     async (request: FastifyRequest, _reply: FastifyReply) => {
       const { id } = request.params as { id: string };
-      return { jobId: id, status: 'pending', message: 'Retry queued' };
+      return { jobId: id, status: "pending", message: "Retry queued" };
     },
   );
 
   // ─── Sync Metrics ──────────────────────────────────────────────
 
   fastify.get(
-    '/orders/sync/metrics',
+    "/orders/sync/metrics",
     { onRequest: [requireAuth, tenantContext] },
     async (request: FastifyRequest, _reply: FastifyReply) => {
       const shopId = request.shopId;
@@ -95,13 +113,13 @@ export async function registerOrdersSyncRoutes(fastify: FastifyInstance): Promis
 
       const [total, pending, failed] = await Promise.all([
         db.order.count({ where: { shopId } }),
-        db.order.count({ where: { shopId, status: 'PENDING' } }),
-        db.order.count({ where: { shopId, status: 'FAILED' } }),
+        db.order.count({ where: { shopId, status: "PENDING" } }),
+        db.order.count({ where: { shopId, status: "FAILED" } }),
       ]);
 
       const lastOrder = await db.order.findFirst({
         where: { shopId },
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { updatedAt: "desc" },
         select: { updatedAt: true },
       });
 
@@ -111,7 +129,8 @@ export async function registerOrdersSyncRoutes(fastify: FastifyInstance): Promis
           pendingOrders: pending,
           failedOrders: failed,
           activeConflicts: 0,
-          lastSyncTimestamp: lastOrder?.updatedAt.toISOString() ?? new Date().toISOString(),
+          lastSyncTimestamp:
+            lastOrder?.updatedAt.toISOString() ?? new Date().toISOString(),
           platformStats: {},
         },
       };
@@ -121,7 +140,7 @@ export async function registerOrdersSyncRoutes(fastify: FastifyInstance): Promis
   // ─── List Conflicts ────────────────────────────────────────────
 
   fastify.get(
-    '/orders/conflicts',
+    "/orders/conflicts",
     { onRequest: [requireAuth, tenantContext] },
     async (_request: FastifyRequest, _reply: FastifyReply) => {
       return { conflicts: [] };
@@ -131,7 +150,7 @@ export async function registerOrdersSyncRoutes(fastify: FastifyInstance): Promis
   // ─── Resolve Conflict ──────────────────────────────────────────
 
   fastify.post(
-    '/orders/conflicts/:id/resolve',
+    "/orders/conflicts/:id/resolve",
     { onRequest: [requireAuth, tenantContext] },
     async (request: FastifyRequest, _reply: FastifyReply) => {
       const { id } = request.params as { id: string };
@@ -142,7 +161,7 @@ export async function registerOrdersSyncRoutes(fastify: FastifyInstance): Promis
   // ─── Bulk Resolve ──────────────────────────────────────────────
 
   fastify.post(
-    '/orders/conflicts/bulk-resolve',
+    "/orders/conflicts/bulk-resolve",
     { onRequest: [requireAuth, tenantContext] },
     async (_request: FastifyRequest, _reply: FastifyReply) => {
       return { success: true, resolved: 0 };

@@ -30,7 +30,13 @@ const CASES: SanityCase[] = [
     name: "drivers",
     path: "/drivers",
     // Seed driver names — at least one must render.
-    expected: ["James Wilson", "Maria Garcia", "David Kim", "Lisa Thompson", "Ahmed Hassan"],
+    expected: [
+      "James Wilson",
+      "Maria Garcia",
+      "David Kim",
+      "Lisa Thompson",
+      "Ahmed Hassan",
+    ],
   },
   {
     name: "customers",
@@ -42,20 +48,30 @@ const CASES: SanityCase[] = [
     name: "orders",
     path: "/orders",
     // Orders have synthetic customer names from the seed pool.
-    expected: ["Kevin Patel", "Emily Davis", "Amanda Chen", "John Smith", "Rachel Green"],
+    expected: [
+      "Kevin Patel",
+      "Emily Davis",
+      "Amanda Chen",
+      "John Smith",
+      "Rachel Green",
+    ],
   },
 ];
 
 async function collectVisibleText(page: Page): Promise<string> {
   // Wait for network to settle then pull the full body text.
-  await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
+  await page
+    .waitForLoadState("networkidle", { timeout: 15000 })
+    .catch(() => {});
   await page.waitForTimeout(1200);
   return (await page.locator("body").textContent()) ?? "";
 }
 
 test.describe("Tier 3 — seed data renders in the UI", () => {
   for (const c of CASES) {
-    test(`${c.name} page renders seeded records`, async ({ authedPage }, testInfo) => {
+    test(`${c.name} page renders seeded records`, async ({
+      authedPage,
+    }, testInfo) => {
       const page = authedPage;
       await page.goto(c.path, { waitUntil: "domcontentloaded" });
       const text = await collectVisibleText(page);

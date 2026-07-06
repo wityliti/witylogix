@@ -4,7 +4,12 @@ import { Truck, Package, Clock, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import type { Route, Driver, DriverStatus, VehicleType } from "@witylogix/core/dispatch";
+import type {
+  Route,
+  Driver,
+  DriverStatus,
+  VehicleType,
+} from "@witylogix/core/dispatch";
 
 interface DriverCardProps {
   driver: Driver;
@@ -21,7 +26,10 @@ const VEHICLE_ICONS: Record<VehicleType, React.ReactNode> = {
   truck: <Truck className="w-4 h-4" />,
 };
 
-const STATUS_BADGE_VARIANT: Record<DriverStatus, "success" | "warning" | "info" | "default"> = {
+const STATUS_BADGE_VARIANT: Record<
+  DriverStatus,
+  "success" | "warning" | "info" | "default"
+> = {
   offline: "default",
   available: "success",
   on_route: "info",
@@ -49,7 +57,7 @@ export function DriverCard({
         "transition-all duration-200 cursor-pointer",
         isSelected
           ? "border-wl-primary-500 ring-1 ring-wl-primary-500/20 bg-wl-primary-500/5"
-          : "border-wl-border-subtle hover:border-wl-border-default"
+          : "border-wl-border-subtle hover:border-wl-border-default",
       )}
     >
       {/* Header */}
@@ -101,7 +109,10 @@ export function DriverCard({
               <span>Distance</span>
             </div>
             <span className="font-semibold text-wl-text-primary">
-              {route.totalDistance ? Number(route.totalDistance).toFixed(1) : "0"} km
+              {route.totalDistance
+                ? Number(route.totalDistance).toFixed(1)
+                : "0"}{" "}
+              km
             </span>
           </div>
 
@@ -111,7 +122,8 @@ export function DriverCard({
               <span>Est. Time</span>
             </div>
             <span className="font-semibold text-wl-text-primary">
-              {route.totalDuration ? Math.round(route.totalDuration / 60) : "0"} hrs
+              {route.totalDuration ? Math.round(route.totalDuration / 60) : "0"}{" "}
+              hrs
             </span>
           </div>
 

@@ -93,23 +93,27 @@ interface ReachPoint {
 const statusVariant = (
   s: CampaignStatus,
 ): "success" | "warning" | "danger" | "info" | "primary" | "default" =>
-  ({
-    DRAFT: "default",
-    SCHEDULED: "info",
-    SENDING: "warning",
-    PAUSED: "danger",
-    COMPLETED: "success",
-  } as const)[s] ?? "default";
+  (
+    ({
+      DRAFT: "default",
+      SCHEDULED: "info",
+      SENDING: "warning",
+      PAUSED: "danger",
+      COMPLETED: "success",
+    }) as const
+  )[s] ?? "default";
 
 const typeVariant = (
   t: CampaignType,
 ): "success" | "warning" | "danger" | "info" | "primary" | "default" =>
-  ({
-    EMAIL: "info",
-    SMS: "success",
-    WHATSAPP: "primary",
-    PUSH: "warning",
-  } as const)[t] ?? "default";
+  (
+    ({
+      EMAIL: "info",
+      SMS: "success",
+      WHATSAPP: "primary",
+      PUSH: "warning",
+    }) as const
+  )[t] ?? "default";
 
 const eventIcon = (type: EventType) => {
   const icons: Record<EventType, React.ReactNode> = {
@@ -149,26 +153,30 @@ export default function CampaignDetailPage({
     activeTab === "events" ? `/api/v4/campaigns/${id}/events` : null,
   );
 
-  const { items: recipients, loading: recipientsLoading } = useApiList<CampaignRecipient>(
-    activeTab === "recipients" ? `/api/v4/campaigns/${id}/recipients` : null,
-  );
+  const { items: recipients, loading: recipientsLoading } =
+    useApiList<CampaignRecipient>(
+      activeTab === "recipients" ? `/api/v4/campaigns/${id}/recipients` : null,
+    );
 
   const { data: reachPoints, loading: geoLoading } = useApiQuery<ReachPoint[]>(
-    `/api/v4/campaigns/${id}/geo`
+    `/api/v4/campaigns/${id}/geo`,
   );
 
-  const runAction = useCallback(async (action: () => Promise<unknown>) => {
-    setActionLoading(true);
-    setActionError(null);
-    try {
-      await action();
-      refetch();
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Action failed");
-    } finally {
-      setActionLoading(false);
-    }
-  }, [refetch]);
+  const runAction = useCallback(
+    async (action: () => Promise<unknown>) => {
+      setActionLoading(true);
+      setActionError(null);
+      try {
+        await action();
+        refetch();
+      } catch (err) {
+        setActionError(err instanceof Error ? err.message : "Action failed");
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [refetch],
+  );
 
   const pieData = useMemo(() => {
     if (!campaign) return [];
@@ -177,9 +185,24 @@ export default function CampaignDetailPage({
     const d = campaign.deliveredCount;
     const f = campaign.failedCount;
     return [
-      { label: "Opened", value: o, color: "var(--wl-info-500)", pct: s > 0 ? ((o / s) * 100).toFixed(1) : "0" },
-      { label: "Delivered (not opened)", value: Math.max(0, d - o), color: "var(--wl-success-500)", pct: s > 0 ? (((d - o) / s) * 100).toFixed(1) : "0" },
-      { label: "Failed", value: f, color: "var(--wl-danger-500)", pct: s > 0 ? ((f / s) * 100).toFixed(1) : "0" },
+      {
+        label: "Opened",
+        value: o,
+        color: "var(--wl-info-500)",
+        pct: s > 0 ? ((o / s) * 100).toFixed(1) : "0",
+      },
+      {
+        label: "Delivered (not opened)",
+        value: Math.max(0, d - o),
+        color: "var(--wl-success-500)",
+        pct: s > 0 ? (((d - o) / s) * 100).toFixed(1) : "0",
+      },
+      {
+        label: "Failed",
+        value: f,
+        color: "var(--wl-danger-500)",
+        pct: s > 0 ? ((f / s) * 100).toFixed(1) : "0",
+      },
     ];
   }, [campaign]);
 
@@ -198,12 +221,10 @@ export default function CampaignDetailPage({
   const opened = campaign.openedCount;
   const clicked = campaign.clickedCount;
   const failed = campaign.failedCount;
-  const deliveryRate =
-    sent > 0 ? ((delivered / sent) * 100).toFixed(1) : "0.0";
+  const deliveryRate = sent > 0 ? ((delivered / sent) * 100).toFixed(1) : "0.0";
   const openRate =
     delivered > 0 ? ((opened / delivered) * 100).toFixed(1) : "0.0";
-  const clickRate =
-    opened > 0 ? ((clicked / opened) * 100).toFixed(1) : "0.0";
+  const clickRate = opened > 0 ? ((clicked / opened) * 100).toFixed(1) : "0.0";
 
   const tabs: { key: ActiveTab; label: string; icon: React.ReactNode }[] = [
     { key: "overview", label: "Overview", icon: <BarChart3 size={14} /> },
@@ -267,9 +288,7 @@ export default function CampaignDetailPage({
                 size="md"
                 disabled={actionLoading}
                 onClick={() =>
-                  runAction(() =>
-                    api.post(`/api/v4/campaigns/${id}/pause`, {}),
-                  )
+                  runAction(() => api.post(`/api/v4/campaigns/${id}/pause`, {}))
                 }
               >
                 <Pause size={14} className="mr-1" />

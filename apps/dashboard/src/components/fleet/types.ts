@@ -13,7 +13,7 @@ export interface VehiclePosition {
   longitude: number;
   speed: number; // km/h
   heading: number; // 0-360 degrees
-  status: 'moving' | 'idle' | 'stopped' | 'offline' | 'maintenance';
+  status: "moving" | "idle" | "stopped" | "offline" | "maintenance";
   lastUpdate: string; // ISO string
   driver?: string;
   fuelLevel?: number; // 0-100
@@ -43,7 +43,7 @@ export interface FuelGaugeProps {
   fuelLevel: number; // 0-100
   tankCapacity?: number; // liters
   animated?: boolean;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   className?: string;
 }
 
@@ -54,7 +54,7 @@ export interface DiagnosticAlert {
   id: string;
   vehicleId: string;
   vehicleName: string;
-  severity: 'critical' | 'warning' | 'info';
+  severity: "critical" | "warning" | "info";
   message: string;
   timestamp: string; // ISO string
   dismissed?: boolean;
@@ -66,7 +66,7 @@ export interface DiagnosticAlert {
 export interface DiagnosticAlertsPanelProps {
   alerts: DiagnosticAlert[];
   onDismiss?: (alertId: string) => void;
-  filterBySeverity?: 'critical' | 'warning' | 'info' | 'all';
+  filterBySeverity?: "critical" | "warning" | "info" | "all";
   maxHeight?: number;
   className?: string;
 }
@@ -110,7 +110,7 @@ export interface IdleTimeChartProps {
   data: IdleTimeEntry[];
   height?: number;
   fleetAverage?: number;
-  sortBy?: 'idle' | 'name';
+  sortBy?: "idle" | "name";
   className?: string;
 }
 
@@ -141,6 +141,6 @@ export interface FleetStatsCardsProps {
  * Vehicle status badge props
  */
 export interface VehicleStatusBadgeProps {
-  status: 'moving' | 'idle' | 'stopped' | 'offline' | 'maintenance';
+  status: "moving" | "idle" | "stopped" | "offline" | "maintenance";
   className?: string;
 }

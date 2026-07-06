@@ -4,8 +4,8 @@
  * ~200 lines
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createHash, createHmac } from 'crypto';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { createHash, createHmac } from "crypto";
 import {
   mockEasyPostWebhook,
   mockShipStationWebhook,
@@ -15,7 +15,7 @@ import {
   mockTrackingStatusNormalization,
   mockWebhookRetryScenario,
   mockOutOfOrderWebhookEvents,
-} from '../fixtures/shipping-fixtures.js';
+} from "../fixtures/shipping-fixtures.js";
 
 interface WebhookPayload {
   [key: string]: any;
@@ -24,34 +24,60 @@ interface WebhookPayload {
 // Mock webhook handler
 class WebhookHandler {
   private processedIds: Set<string> = new Set();
-  private eventLog: Array<{ eventId: string; timestamp: number; status?: string }> = [];
+  private eventLog: Array<{
+    eventId: string;
+    timestamp: number;
+    status?: string;
+  }> = [];
 
-  verifyEasyPostSignature(payload: WebhookPayload, signature: string, secret: string): boolean {
+  verifyEasyPostSignature(
+    payload: WebhookPayload,
+    signature: string,
+    secret: string,
+  ): boolean {
     const timestamp = Math.floor(Date.now() / 1000).toString();
     const message = `${timestamp}.${JSON.stringify(payload)}`;
-    const expectedSignature = createHmac('sha256', secret).update(message).digest('hex');
+    const expectedSignature = createHmac("sha256", secret)
+      .update(message)
+      .digest("hex");
 
     return expectedSignature === signature;
   }
 
   verifyShipStationSignature(body: string, authToken: string): boolean {
-    const hash = createHash('sha256').update(body + authToken).digest('base64');
+    const hash = createHash("sha256")
+      .update(body + authToken)
+      .digest("base64");
     // In real implementation, would compare with header
     return hash.length > 0;
   }
 
-  verifyDoorDashSignature(payload: WebhookPayload, signature: string, secret: string): boolean {
+  verifyDoorDashSignature(
+    payload: WebhookPayload,
+    signature: string,
+    secret: string,
+  ): boolean {
     const timestamp = payload.created_at || new Date().toISOString();
     const message = `${timestamp}${JSON.stringify(payload)}`;
-    const expectedSignature = createHmac('sha256', secret).update(message).digest('hex');
+    const expectedSignature = createHmac("sha256", secret)
+      .update(message)
+      .digest("hex");
 
     return expectedSignature === signature;
   }
 
-  verifyUberDirectSignature(payload: WebhookPayload, signature: string, secret: string): boolean {
-    const timestamp = payload.created_at?.toString() || Math.floor(Date.now() / 1000).toString();
+  verifyUberDirectSignature(
+    payload: WebhookPayload,
+    signature: string,
+    secret: string,
+  ): boolean {
+    const timestamp =
+      payload.created_at?.toString() ||
+      Math.floor(Date.now() / 1000).toString();
     const message = `${timestamp}${JSON.stringify(payload)}`;
-    const expectedSignature = createHmac('sha256', secret).update(message).digest('hex');
+    const expectedSignature = createHmac("sha256", secret)
+      .update(message)
+      .digest("hex");
 
     return expectedSignature === signature;
   }
@@ -123,32 +149,50 @@ class WebhookHandler {
     return true;
   }
 
-  normalizeTrackingStatus(carrier: string, status: string): { status: string; message: string } {
-    const normalization: Record<string, Record<string, { status: string; message: string }>> = {
+  normalizeTrackingStatus(
+    carrier: string,
+    status: string,
+  ): { status: string; message: string } {
+    const normalization: Record<
+      string,
+      Record<string, { status: string; message: string }>
+    > = {
       usps: {
-        in_transit: { status: 'IN_TRANSIT', message: 'Shipment in transit' },
-        delivered: { status: 'DELIVERED', message: 'Delivered' },
-        out_for_delivery: { status: 'OUT_FOR_DELIVERY', message: 'Out for delivery' },
+        in_transit: { status: "IN_TRANSIT", message: "Shipment in transit" },
+        delivered: { status: "DELIVERED", message: "Delivered" },
+        out_for_delivery: {
+          status: "OUT_FOR_DELIVERY",
+          message: "Out for delivery",
+        },
       },
       fedex: {
-        in_transit: { status: 'IN_TRANSIT', message: 'In Transit' },
-        delivered: { status: 'DELIVERED', message: 'Delivered' },
-        on_fedex_vehicle: { status: 'IN_TRANSIT', message: 'On FedEx vehicle' },
+        in_transit: { status: "IN_TRANSIT", message: "In Transit" },
+        delivered: { status: "DELIVERED", message: "Delivered" },
+        on_fedex_vehicle: { status: "IN_TRANSIT", message: "On FedEx vehicle" },
       },
       ups: {
-        in_transit: { status: 'IN_TRANSIT', message: 'On Its Way' },
-        delivered: { status: 'DELIVERED', message: 'Delivered' },
-        out_for_delivery: { status: 'OUT_FOR_DELIVERY', message: 'Out for delivery today' },
+        in_transit: { status: "IN_TRANSIT", message: "On Its Way" },
+        delivered: { status: "DELIVERED", message: "Delivered" },
+        out_for_delivery: {
+          status: "OUT_FOR_DELIVERY",
+          message: "Out for delivery today",
+        },
       },
       doordash: {
-        in_progress: { status: 'IN_TRANSIT', message: 'Delivery in progress' },
-        completed: { status: 'DELIVERED', message: 'Delivery completed' },
-        en_route_to_destination: { status: 'IN_TRANSIT', message: 'En route to destination' },
+        in_progress: { status: "IN_TRANSIT", message: "Delivery in progress" },
+        completed: { status: "DELIVERED", message: "Delivery completed" },
+        en_route_to_destination: {
+          status: "IN_TRANSIT",
+          message: "En route to destination",
+        },
       },
       uberdirect: {
-        en_route_to_destination: { status: 'IN_TRANSIT', message: 'Going to delivery' },
-        arrived_at_destination: { status: 'DELIVERED', message: 'Arrived' },
-        picked_up: { status: 'IN_TRANSIT', message: 'Package picked up' },
+        en_route_to_destination: {
+          status: "IN_TRANSIT",
+          message: "Going to delivery",
+        },
+        arrived_at_destination: { status: "DELIVERED", message: "Arrived" },
+        picked_up: { status: "IN_TRANSIT", message: "Package picked up" },
       },
     };
 
@@ -176,14 +220,18 @@ class WebhookHandler {
         }
 
         // Exponential backoff
-        await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
+        await new Promise((resolve) =>
+          setTimeout(resolve, Math.pow(2, attempt) * 100),
+        );
       }
     }
 
     return false;
   }
 
-  processEventsInOrder(events: Array<{ eventId: string; timestamp: number; status?: string }>): void {
+  processEventsInOrder(
+    events: Array<{ eventId: string; timestamp: number; status?: string }>,
+  ): void {
     const sorted = [...events].sort((a, b) => a.timestamp - b.timestamp);
     this.eventLog = sorted;
   }
@@ -192,7 +240,11 @@ class WebhookHandler {
     return new Set(this.processedIds);
   }
 
-  getEventLog(): Array<{ eventId: string; timestamp: number; status?: string }> {
+  getEventLog(): Array<{
+    eventId: string;
+    timestamp: number;
+    status?: string;
+  }> {
     return [...this.eventLog];
   }
 
@@ -202,7 +254,7 @@ class WebhookHandler {
   }
 }
 
-describe('Tracking Webhooks', () => {
+describe("Tracking Webhooks", () => {
   let handler: WebhookHandler;
 
   beforeEach(() => {
@@ -213,8 +265,8 @@ describe('Tracking Webhooks', () => {
     handler.clearHistory();
   });
 
-  describe('EasyPost Webhook Signature Verification', () => {
-    it('should verify valid EasyPost webhook signature', () => {
+  describe("EasyPost Webhook Signature Verification", () => {
+    it("should verify valid EasyPost webhook signature", () => {
       const payload = mockEasyPostWebhook;
       const signature = mockWebhookSignature.easypost.expectedSignature;
       const secret = mockWebhookSignature.easypost.secret;
@@ -223,17 +275,18 @@ describe('Tracking Webhooks', () => {
       expect(signature).toBeDefined();
     });
 
-    it('should reject invalid EasyPost signatures', () => {
+    it("should reject invalid EasyPost signatures", () => {
       const payload = mockEasyPostWebhook;
-      const invalidSignature = 'invalid_signature_12345';
+      const invalidSignature = "invalid_signature_12345";
       const secret = mockWebhookSignature.easypost.secret;
 
       // Mock verification failure
-      const verified = invalidSignature === mockWebhookSignature.easypost.expectedSignature;
+      const verified =
+        invalidSignature === mockWebhookSignature.easypost.expectedSignature;
       expect(verified).toBe(false);
     });
 
-    it('should validate timestamp in EasyPost webhook', () => {
+    it("should validate timestamp in EasyPost webhook", () => {
       const payload = mockEasyPostWebhook;
 
       expect(payload.created_at).toBeDefined();
@@ -242,132 +295,145 @@ describe('Tracking Webhooks', () => {
     });
   });
 
-  describe('ShipStation Webhook Payload Handling', () => {
-    it('should extract resource ID from ShipStation webhook', async () => {
+  describe("ShipStation Webhook Payload Handling", () => {
+    it("should extract resource ID from ShipStation webhook", async () => {
       await handler.handleShipStationWebhook(mockShipStationWebhook);
 
       expect(mockShipStationWebhook.resourceId).toBe(123456789);
     });
 
-    it('should handle order status updates', async () => {
-      const result = await handler.handleShipStationWebhook(mockShipStationWebhook);
+    it("should handle order status updates", async () => {
+      const result = await handler.handleShipStationWebhook(
+        mockShipStationWebhook,
+      );
 
       expect(result).toBe(true);
-      expect(mockShipStationWebhook.data.status).toBe('shipped');
+      expect(mockShipStationWebhook.data.status).toBe("shipped");
     });
 
-    it('should extract shipment details from webhook', () => {
+    it("should extract shipment details from webhook", () => {
       const shipment = mockShipStationWebhook.data.shipments[0];
 
       expect(shipment.shipmentId).toBeDefined();
-      expect(shipment.carrier).toBe('USPS');
+      expect(shipment.carrier).toBe("USPS");
       expect(shipment.trackingNumber).toBeDefined();
     });
 
-    it('should include event timestamp in ShipStation webhook', () => {
+    it("should include event timestamp in ShipStation webhook", () => {
       expect(mockShipStationWebhook.eventTime).toBeDefined();
       const eventTime = new Date(mockShipStationWebhook.eventTime).getTime();
       expect(eventTime).toBeGreaterThan(0);
     });
   });
 
-  describe('DoorDash Webhook Signature Verification', () => {
-    it('should verify DoorDash webhook signature', () => {
+  describe("DoorDash Webhook Signature Verification", () => {
+    it("should verify DoorDash webhook signature", () => {
       const payload = mockDoorDashWebhook;
       const signature = mockWebhookSignature.doordash.expectedSignature;
 
       expect(signature).toBeDefined();
     });
 
-    it('should extract delivery ID from DoorDash webhook', async () => {
+    it("should extract delivery ID from DoorDash webhook", async () => {
       const result = await handler.handleDoorDashWebhook(mockDoorDashWebhook);
 
       expect(result).toBe(true);
       expect(mockDoorDashWebhook.data.delivery_id).toBeDefined();
     });
 
-    it('should track delivery status updates', async () => {
+    it("should track delivery status updates", async () => {
       await handler.handleDoorDashWebhook(mockDoorDashWebhook);
 
-      expect(mockDoorDashWebhook.data.status).toBe('picked_up');
+      expect(mockDoorDashWebhook.data.status).toBe("picked_up");
     });
 
-    it('should include tracking URL in DoorDash webhook', () => {
+    it("should include tracking URL in DoorDash webhook", () => {
       expect(mockDoorDashWebhook.data.tracking_url).toBeDefined();
-      expect(mockDoorDashWebhook.data.tracking_url).toContain('doordash.com');
+      expect(mockDoorDashWebhook.data.tracking_url).toContain("doordash.com");
     });
   });
 
-  describe('Uber Direct Webhook Signature Verification', () => {
-    it('should verify Uber Direct webhook signature', () => {
+  describe("Uber Direct Webhook Signature Verification", () => {
+    it("should verify Uber Direct webhook signature", () => {
       const payload = mockUberDirectWebhook;
       const signature = mockWebhookSignature.uberdirect.expectedSignature;
 
       expect(signature).toBeDefined();
     });
 
-    it('should extract delivery ID from Uber Direct webhook', async () => {
-      const result = await handler.handleUberDirectWebhook(mockUberDirectWebhook);
+    it("should extract delivery ID from Uber Direct webhook", async () => {
+      const result = await handler.handleUberDirectWebhook(
+        mockUberDirectWebhook,
+      );
 
       expect(result).toBe(true);
       expect(mockUberDirectWebhook.delivery_id).toBeDefined();
     });
 
-    it('should process Uber Direct status changes', () => {
-      expect(mockUberDirectWebhook.status).toBe('en_route_to_pickup');
+    it("should process Uber Direct status changes", () => {
+      expect(mockUberDirectWebhook.status).toBe("en_route_to_pickup");
     });
 
-    it('should handle Unix timestamp format', () => {
+    it("should handle Unix timestamp format", () => {
       const timestamp = mockUberDirectWebhook.created_at;
 
-      expect(typeof timestamp).toBe('number');
+      expect(typeof timestamp).toBe("number");
       expect(timestamp).toBeGreaterThan(0);
     });
   });
 
-  describe('Tracking Status Normalization', () => {
-    it('should normalize USPS status to standard format', () => {
-      const normalized = handler.normalizeTrackingStatus('usps', 'in_transit');
+  describe("Tracking Status Normalization", () => {
+    it("should normalize USPS status to standard format", () => {
+      const normalized = handler.normalizeTrackingStatus("usps", "in_transit");
 
-      expect(normalized.status).toBe('IN_TRANSIT');
+      expect(normalized.status).toBe("IN_TRANSIT");
       expect(normalized.message).toBeDefined();
     });
 
-    it('should normalize FedEx status to standard format', () => {
-      const normalized = handler.normalizeTrackingStatus('fedex', 'in_transit');
+    it("should normalize FedEx status to standard format", () => {
+      const normalized = handler.normalizeTrackingStatus("fedex", "in_transit");
 
-      expect(normalized.status).toBe('IN_TRANSIT');
+      expect(normalized.status).toBe("IN_TRANSIT");
     });
 
-    it('should normalize UPS status to standard format', () => {
-      const normalized = handler.normalizeTrackingStatus('ups', 'in_transit');
+    it("should normalize UPS status to standard format", () => {
+      const normalized = handler.normalizeTrackingStatus("ups", "in_transit");
 
-      expect(normalized.status).toBe('IN_TRANSIT');
-      expect(normalized.message).toContain('Its Way');
+      expect(normalized.status).toBe("IN_TRANSIT");
+      expect(normalized.message).toContain("Its Way");
     });
 
-    it('should normalize DoorDash status to standard format', () => {
-      const normalized = handler.normalizeTrackingStatus('doordash', 'in_progress');
+    it("should normalize DoorDash status to standard format", () => {
+      const normalized = handler.normalizeTrackingStatus(
+        "doordash",
+        "in_progress",
+      );
 
-      expect(normalized.status).toBe('IN_TRANSIT');
+      expect(normalized.status).toBe("IN_TRANSIT");
     });
 
-    it('should normalize Uber Direct status to standard format', () => {
-      const normalized = handler.normalizeTrackingStatus('uberdirect', 'en_route_to_destination');
+    it("should normalize Uber Direct status to standard format", () => {
+      const normalized = handler.normalizeTrackingStatus(
+        "uberdirect",
+        "en_route_to_destination",
+      );
 
-      expect(normalized.status).toBe('IN_TRANSIT');
+      expect(normalized.status).toBe("IN_TRANSIT");
     });
 
-    it('should handle unknown status gracefully', () => {
-      const normalized = handler.normalizeTrackingStatus('unknown_carrier', 'custom_status');
+    it("should handle unknown status gracefully", () => {
+      const normalized = handler.normalizeTrackingStatus(
+        "unknown_carrier",
+        "custom_status",
+      );
 
       expect(normalized.status).toBeDefined();
       expect(normalized.message).toBeDefined();
     });
   });
 
-  describe('Webhook Retry Behavior', () => {
-    it('should implement idempotent processing for EasyPost webhooks', async () => {
+  describe("Webhook Retry Behavior", () => {
+    it("should implement idempotent processing for EasyPost webhooks", async () => {
       const payload = mockEasyPostWebhook;
 
       const result1 = await handler.handleEasyPostWebhook(payload);
@@ -380,7 +446,7 @@ describe('Tracking Webhooks', () => {
       expect(ids.has(payload.id)).toBe(true);
     });
 
-    it('should track processed webhook IDs', async () => {
+    it("should track processed webhook IDs", async () => {
       await handler.handleEasyPostWebhook(mockEasyPostWebhook);
       await handler.handleShipStationWebhook(mockShipStationWebhook);
 
@@ -388,7 +454,7 @@ describe('Tracking Webhooks', () => {
       expect(ids.size).toBe(2);
     });
 
-    it('should not reprocess duplicate webhooks', async () => {
+    it("should not reprocess duplicate webhooks", async () => {
       const payload = mockEasyPostWebhook;
 
       await handler.handleEasyPostWebhook(payload);
@@ -400,11 +466,11 @@ describe('Tracking Webhooks', () => {
       expect(firstLog.length).toBe(secondLog.length);
     });
 
-    it('should support retry logic with exponential backoff', async () => {
+    it("should support retry logic with exponential backoff", async () => {
       let attempts = 0;
       const failingHandler = async () => {
         attempts++;
-        if (attempts < 3) throw new Error('Temporary failure');
+        if (attempts < 3) throw new Error("Temporary failure");
         return true;
       };
 
@@ -415,8 +481,8 @@ describe('Tracking Webhooks', () => {
     });
   });
 
-  describe('Webhook Event Ordering', () => {
-    it('should handle out-of-order webhook events', async () => {
+  describe("Webhook Event Ordering", () => {
+    it("should handle out-of-order webhook events", async () => {
       const outOfOrderEvents = mockOutOfOrderWebhookEvents;
 
       handler.processEventsInOrder(outOfOrderEvents);
@@ -427,7 +493,7 @@ describe('Tracking Webhooks', () => {
       expect(orderedLog[2].sequence).toBe(3);
     });
 
-    it('should sort events by timestamp', async () => {
+    it("should sort events by timestamp", async () => {
       const events = mockOutOfOrderWebhookEvents;
 
       handler.processEventsInOrder(events);
@@ -438,21 +504,21 @@ describe('Tracking Webhooks', () => {
       }
     });
 
-    it('should preserve event status through reordering', () => {
+    it("should preserve event status through reordering", () => {
       const events = mockOutOfOrderWebhookEvents;
 
       handler.processEventsInOrder(events);
       const log = handler.getEventLog();
 
-      expect(log[0].status).toBe('picked_up');
-      expect(log[1].status).toBe('in_transit');
-      expect(log[2].status).toBe('delivered');
+      expect(log[0].status).toBe("picked_up");
+      expect(log[1].status).toBe("in_transit");
+      expect(log[2].status).toBe("delivered");
     });
 
-    it('should handle events with same timestamp', () => {
+    it("should handle events with same timestamp", () => {
       const sameTimestamp = [
-        { eventId: 'evt_1', timestamp: 1000, status: 'event1' },
-        { eventId: 'evt_2', timestamp: 1000, status: 'event2' },
+        { eventId: "evt_1", timestamp: 1000, status: "event1" },
+        { eventId: "evt_2", timestamp: 1000, status: "event2" },
       ];
 
       handler.processEventsInOrder(sameTimestamp);
@@ -464,8 +530,8 @@ describe('Tracking Webhooks', () => {
     });
   });
 
-  describe('Multi-Carrier Webhook Processing', () => {
-    it('should process EasyPost, ShipStation, and DoorDash webhooks', async () => {
+  describe("Multi-Carrier Webhook Processing", () => {
+    it("should process EasyPost, ShipStation, and DoorDash webhooks", async () => {
       await handler.handleEasyPostWebhook(mockEasyPostWebhook);
       await handler.handleShipStationWebhook(mockShipStationWebhook);
       await handler.handleDoorDashWebhook(mockDoorDashWebhook);
@@ -474,7 +540,7 @@ describe('Tracking Webhooks', () => {
       expect(ids.size).toBe(3);
     });
 
-    it('should differentiate between carrier webhook formats', () => {
+    it("should differentiate between carrier webhook formats", () => {
       expect(mockEasyPostWebhook.id).toBeDefined();
       expect(mockShipStationWebhook.resourceId).toBeDefined();
       expect(mockDoorDashWebhook.data.delivery_id).toBeDefined();

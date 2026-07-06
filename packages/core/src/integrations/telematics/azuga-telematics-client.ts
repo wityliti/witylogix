@@ -166,12 +166,18 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
   /**
    * Make authenticated request to Azuga API
    */
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  private async request<T>(
+    method: string,
+    path: string,
+    body?: unknown,
+  ): Promise<T> {
     return this.circuitBreaker.execute(async () => {
       await this.rateLimiter.waitIfNeeded();
 
       const url = `${this.baseUrl}${path}`;
-      const auth = Buffer.from(`${this.accountId}:${this.apiKey}`).toString("base64");
+      const auth = Buffer.from(`${this.accountId}:${this.apiKey}`).toString(
+        "base64",
+      );
 
       const response = await fetch(url, {
         method,
@@ -183,7 +189,9 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
       });
 
       if (!response.ok) {
-        throw new Error(`Azuga API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Azuga API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       return (await response.json()) as T;
@@ -279,7 +287,9 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
   /**
    * Get diagnostics by vehicle ID
    */
-  async getDiagnosticsByVehicleId(vehicleId: string): Promise<NormalizedDiagnostic> {
+  async getDiagnosticsByVehicleId(
+    vehicleId: string,
+  ): Promise<NormalizedDiagnostic> {
     try {
       const response = await this.request<{
         dtc: Array<{ code: string; description: string }>;
@@ -305,7 +315,9 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
   /**
    * Get driver behavior events
    */
-  async getBehaviorEvents(options?: SyncOptions): Promise<NormalizedBehaviorEvent[]> {
+  async getBehaviorEvents(
+    options?: SyncOptions,
+  ): Promise<NormalizedBehaviorEvent[]> {
     try {
       const response = await this.request<{
         data: AzugaDriverBehavior[];
@@ -321,7 +333,9 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
   /**
    * Get fuel readings
    */
-  async getFuelReadings(options?: SyncOptions): Promise<NormalizedFuelReading[]> {
+  async getFuelReadings(
+    options?: SyncOptions,
+  ): Promise<NormalizedFuelReading[]> {
     try {
       const response = await this.request<{
         data: AzugaFuelReading[];
@@ -337,7 +351,9 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
   /**
    * Get fuel reading by vehicle ID
    */
-  async getFuelReadingByVehicleId(vehicleId: string): Promise<NormalizedFuelReading> {
+  async getFuelReadingByVehicleId(
+    vehicleId: string,
+  ): Promise<NormalizedFuelReading> {
     const response = await this.request<AzugaFuelReading>(
       "GET",
       `/fuel/${vehicleId}/latest`,
@@ -381,9 +397,13 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
   /**
    * Get maintenance schedule
    */
-  async getMaintenanceSchedule(vehicleId?: string): Promise<AzugaMaintenance[]> {
+  async getMaintenanceSchedule(
+    vehicleId?: string,
+  ): Promise<AzugaMaintenance[]> {
     try {
-      const path = vehicleId ? `/vehicles/${vehicleId}/maintenance` : "/maintenance";
+      const path = vehicleId
+        ? `/vehicles/${vehicleId}/maintenance`
+        : "/maintenance";
       const response = await this.request<{
         data: AzugaMaintenance[];
       }>("GET", path);
@@ -468,7 +488,9 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
     return this.getPositionByVehicleId(vehicleId);
   }
 
-  async getVehicleDiagnostics(vehicleId: string): Promise<NormalizedDiagnostic> {
+  async getVehicleDiagnostics(
+    vehicleId: string,
+  ): Promise<NormalizedDiagnostic> {
     return this.getDiagnosticsByVehicleId(vehicleId);
   }
 
@@ -476,7 +498,10 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
     driverId: string,
     dateRange: { startDate: Date; endDate: Date },
   ): Promise<NormalizedBehaviorEvent[]> {
-    return this.getBehaviorEvents({ startDate: dateRange.startDate, endDate: dateRange.endDate });
+    return this.getBehaviorEvents({
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate,
+    });
   }
 
   async getFuelLevel(vehicleId: string): Promise<NormalizedFuelReading> {
@@ -487,8 +512,18 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
     webhookUrl: string,
     eventTypes: string[],
   ): Promise<WebhookSubscription> {
-    await this.subscribeWebhook({ webhookId: "", url: webhookUrl, events: eventTypes, createdAt: new Date() });
-    return { webhookId: `azuga-${Date.now()}`, url: webhookUrl, events: eventTypes, createdAt: new Date() };
+    await this.subscribeWebhook({
+      webhookId: "",
+      url: webhookUrl,
+      events: eventTypes,
+      createdAt: new Date(),
+    });
+    return {
+      webhookId: `azuga-${Date.now()}`,
+      url: webhookUrl,
+      events: eventTypes,
+      createdAt: new Date(),
+    };
   }
 
   async unsubscribeFromEvents(webhookId: string): Promise<void> {
@@ -540,7 +575,9 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
   /**
    * Normalize Azuga driver behavior event
    */
-  private normalizeBehaviorEvent(event: AzugaDriverBehavior): NormalizedBehaviorEvent {
+  private normalizeBehaviorEvent(
+    event: AzugaDriverBehavior,
+  ): NormalizedBehaviorEvent {
     return {
       externalEventId: event.eventId,
       externalVehicleId: event.vehicleId.toString(),
@@ -550,7 +587,9 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
       latitude: event.latitude,
       longitude: event.longitude,
       speed: event.speed ? { value: event.speed, unit: "mph" } : undefined,
-      speedLimit: event.speedLimit ? { value: event.speedLimit, unit: "mph" } : undefined,
+      speedLimit: event.speedLimit
+        ? { value: event.speedLimit, unit: "mph" }
+        : undefined,
       timestamp: new Date(event.timestamp),
     };
   }
@@ -558,7 +597,9 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
   /**
    * Normalize Azuga fuel reading
    */
-  private normalizeFuelReading(reading: AzugaFuelReading): NormalizedFuelReading {
+  private normalizeFuelReading(
+    reading: AzugaFuelReading,
+  ): NormalizedFuelReading {
     return {
       externalVehicleId: reading.vehicleId.toString(),
       fuelLevel: reading.fuelLevel,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,9 +10,9 @@ import {
   Alert,
   Linking,
   FlatList,
-} from 'react-native';
-import { useRoute } from '@react-navigation/native';
-import { api } from '../services/api';
+} from "react-native";
+import { useRoute } from "@react-navigation/native";
+import { api } from "../services/api";
 
 interface Stop {
   id: string;
@@ -53,8 +53,8 @@ const RouteDetailScreen: React.FC = () => {
       const data = await api.get(`/api/v4/routes/${routeId}`);
       setRouteDetail(data);
     } catch (error) {
-      console.error('Failed to fetch route detail:', error);
-      Alert.alert('Error', 'Failed to load route details');
+      console.error("Failed to fetch route detail:", error);
+      Alert.alert("Error", "Failed to load route details");
     } finally {
       setIsLoading(false);
     }
@@ -64,50 +64,61 @@ const RouteDetailScreen: React.FC = () => {
     if (routeDetail?.stops[0]) {
       const stop = routeDetail.stops[0];
       Alert.alert(
-        'Start Navigation',
+        "Start Navigation",
         `Navigate to ${stop.customerName} at ${stop.address}?`,
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: "Cancel", style: "cancel" },
           {
-            text: 'Navigate',
+            text: "Navigate",
             onPress: () => {
               const url = `maps://app?saddr=&daddr=${stop.latitude},${stop.longitude}`;
               Linking.openURL(url).catch(() => {
-                Alert.alert('Info', 'Maps app not available. Coordinates: ' + stop.latitude + ', ' + stop.longitude);
+                Alert.alert(
+                  "Info",
+                  "Maps app not available. Coordinates: " +
+                    stop.latitude +
+                    ", " +
+                    stop.longitude,
+                );
               });
             },
           },
-        ]
+        ],
       );
     }
   };
 
   const handleOptimizeRoute = () => {
-    Alert.alert('Route Optimization', 'Route optimized for fastest delivery. 2 minutes saved!');
+    Alert.alert(
+      "Route Optimization",
+      "Route optimized for fastest delivery. 2 minutes saved!",
+    );
   };
 
   const handleStartRoute = async () => {
     try {
-      await api.patch(`/api/v4/routes/${routeId}`, { status: 'in_progress' });
+      await api.patch(`/api/v4/routes/${routeId}`, { status: "in_progress" });
       fetchRouteDetail();
-      Alert.alert('Success', 'Route started');
+      Alert.alert("Success", "Route started");
     } catch (error) {
-      Alert.alert('Error', 'Failed to start route');
+      Alert.alert("Error", "Failed to start route");
     }
   };
 
   const handleCompleteRoute = async () => {
-    Alert.alert('Complete Route?', 'Mark this route as completed?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert("Complete Route?", "Mark this route as completed?", [
+      { text: "Cancel", style: "cancel" },
       {
-        text: 'Complete',
+        text: "Complete",
         onPress: async () => {
           try {
-            await api.patch(`/api/v4/routes/${routeId}`, { status: 'completed' });
+            await api.patch(`/api/v4/routes/${routeId}`, {
+              status: "completed",
+            });
             fetchRouteDetail();
-            Alert.alert('Success', 'Route completed');
+            Alert.alert("Success", "Route completed");
           } catch (error) {
-            Alert.alert('Error', 'Failed to complete route');
+            Alert.alert("Error", "Failed to complete route");
           }
         },
       },
@@ -133,28 +144,29 @@ const RouteDetailScreen: React.FC = () => {
         )}
         <View style={styles.stopStatus}>
           <View style={[styles.statusIndicator, getStatusColor(item.status)]} />
-          <Text style={styles.statusLabel}>{item.status.replace(/_/g, ' ')}</Text>
+          <Text style={styles.statusLabel}>
+            {item.status.replace(/_/g, " ")}
+          </Text>
         </View>
       </View>
       <TouchableOpacity
         style={styles.navButton}
         onPress={() => {
-          Alert.alert(
-            'Navigate',
-            `Go to ${item.customerName}?`,
-            [
-              { text: 'Cancel', style: 'cancel' },
-              {
-                text: 'Navigate',
-                onPress: () => {
-                  const url = `maps://app?saddr=&daddr=${item.latitude},${item.longitude}`;
-                  Linking.openURL(url).catch(() => {
-                    Alert.alert('Info', 'Coordinates: ' + item.latitude + ', ' + item.longitude);
-                  });
-                },
+          Alert.alert("Navigate", `Go to ${item.customerName}?`, [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Navigate",
+              onPress: () => {
+                const url = `maps://app?saddr=&daddr=${item.latitude},${item.longitude}`;
+                Linking.openURL(url).catch(() => {
+                  Alert.alert(
+                    "Info",
+                    "Coordinates: " + item.latitude + ", " + item.longitude,
+                  );
+                });
               },
-            ]
-          );
+            },
+          ]);
         }}
       >
         <Text style={styles.navButtonText}>Navigate</Text>
@@ -189,8 +201,12 @@ const RouteDetailScreen: React.FC = () => {
         <View style={styles.header}>
           <View style={styles.headerContent}>
             <Text style={styles.routeName}>{routeDetail.name}</Text>
-            <View style={[styles.statusBadge, getStatusBgColor(routeDetail.status)]}>
-              <Text style={styles.statusText}>{routeDetail.status.replace(/_/g, ' ').toUpperCase()}</Text>
+            <View
+              style={[styles.statusBadge, getStatusBgColor(routeDetail.status)]}
+            >
+              <Text style={styles.statusText}>
+                {routeDetail.status.replace(/_/g, " ").toUpperCase()}
+              </Text>
             </View>
           </View>
         </View>
@@ -204,12 +220,16 @@ const RouteDetailScreen: React.FC = () => {
           <View style={styles.summarySeparator} />
           <View style={styles.summaryItem}>
             <Text style={styles.summaryLabel}>Distance</Text>
-            <Text style={styles.summaryValue}>{routeDetail.totalDistance || 0} km</Text>
+            <Text style={styles.summaryValue}>
+              {routeDetail.totalDistance || 0} km
+            </Text>
           </View>
           <View style={styles.summarySeparator} />
           <View style={styles.summaryItem}>
             <Text style={styles.summaryLabel}>Est. Time</Text>
-            <Text style={styles.summaryValue}>{routeDetail.estimatedTime || 0} min</Text>
+            <Text style={styles.summaryValue}>
+              {routeDetail.estimatedTime || 0} min
+            </Text>
           </View>
         </View>
 
@@ -222,11 +242,17 @@ const RouteDetailScreen: React.FC = () => {
 
         {/* Route Actions */}
         <View style={styles.quickActionsContainer}>
-          <TouchableOpacity style={styles.actionButtonSmall} onPress={handleOptimizeRoute}>
+          <TouchableOpacity
+            style={styles.actionButtonSmall}
+            onPress={handleOptimizeRoute}
+          >
             <Text style={styles.actionButtonIcon}>⚡</Text>
             <Text style={styles.actionButtonLabel}>Optimize</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButtonSmall} onPress={handleStartNavigation}>
+          <TouchableOpacity
+            style={styles.actionButtonSmall}
+            onPress={handleStartNavigation}
+          >
             <Text style={styles.actionButtonIcon}>📍</Text>
             <Text style={styles.actionButtonLabel}>Navigate</Text>
           </TouchableOpacity>
@@ -234,7 +260,9 @@ const RouteDetailScreen: React.FC = () => {
 
         {/* Stops Section */}
         <View style={styles.stopsContainer}>
-          <Text style={styles.sectionTitle}>Delivery Stops ({routeDetail.stops.length})</Text>
+          <Text style={styles.sectionTitle}>
+            Delivery Stops ({routeDetail.stops.length})
+          </Text>
           <FlatList
             data={routeDetail.stops}
             keyExtractor={(item) => item.id}
@@ -245,17 +273,23 @@ const RouteDetailScreen: React.FC = () => {
 
         {/* Primary Actions */}
         <View style={styles.actionContainer}>
-          {routeDetail.status === 'pending' && (
-            <TouchableOpacity style={styles.primaryButton} onPress={handleStartRoute}>
+          {routeDetail.status === "pending" && (
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={handleStartRoute}
+            >
               <Text style={styles.buttonText}>Start Route</Text>
             </TouchableOpacity>
           )}
-          {routeDetail.status === 'in_progress' && (
-            <TouchableOpacity style={styles.primaryButton} onPress={handleCompleteRoute}>
+          {routeDetail.status === "in_progress" && (
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={handleCompleteRoute}
+            >
               <Text style={styles.buttonText}>Complete Route</Text>
             </TouchableOpacity>
           )}
-          {routeDetail.status === 'completed' && (
+          {routeDetail.status === "completed" && (
             <View style={[styles.primaryButton, styles.completedButton]}>
               <Text style={styles.buttonText}>Route Completed ✓</Text>
             </View>
@@ -268,56 +302,56 @@ const RouteDetailScreen: React.FC = () => {
 
 const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
-    case 'completed':
-      return { backgroundColor: '#22c55e' };
-    case 'in_progress':
-      return { backgroundColor: '#3b82f6' };
-    case 'pending':
-      return { backgroundColor: '#f59e0b' };
+    case "completed":
+      return { backgroundColor: "#22c55e" };
+    case "in_progress":
+      return { backgroundColor: "#3b82f6" };
+    case "pending":
+      return { backgroundColor: "#f59e0b" };
     default:
-      return { backgroundColor: '#6b7280' };
+      return { backgroundColor: "#6b7280" };
   }
 };
 
 const getStatusBgColor = (status: string) => {
   switch (status.toLowerCase()) {
-    case 'completed':
-      return { backgroundColor: '#064e3b' };
-    case 'in_progress':
-      return { backgroundColor: '#1e3a8a' };
-    case 'pending':
-      return { backgroundColor: '#78350f' };
+    case "completed":
+      return { backgroundColor: "#064e3b" };
+    case "in_progress":
+      return { backgroundColor: "#1e3a8a" };
+    case "pending":
+      return { backgroundColor: "#78350f" };
     default:
-      return { backgroundColor: '#374151' };
+      return { backgroundColor: "#374151" };
   }
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: "#0f172a",
   },
   centerContent: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
-    backgroundColor: '#1a2332',
+    backgroundColor: "#1a2332",
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
+    borderBottomColor: "#334155",
   },
   headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   routeName: {
     fontSize: 24,
-    fontWeight: '700',
-    color: '#e2e8f0',
+    fontWeight: "700",
+    color: "#e2e8f0",
     flex: 1,
   },
   statusBadge: {
@@ -327,55 +361,55 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#e2e8f0',
+    fontWeight: "700",
+    color: "#e2e8f0",
     letterSpacing: 0.3,
   },
   summaryCard: {
     marginHorizontal: 12,
     marginVertical: 12,
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     borderRadius: 10,
     padding: 14,
-    flexDirection: 'row',
+    flexDirection: "row",
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: "#334155",
   },
   summaryItem: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   summaryLabel: {
     fontSize: 11,
-    color: '#94a3b8',
-    fontWeight: '600',
+    color: "#94a3b8",
+    fontWeight: "600",
     marginBottom: 6,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 0.4,
   },
   summaryValue: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#3b82f6',
+    fontWeight: "700",
+    color: "#3b82f6",
   },
   summarySeparator: {
     width: 1,
-    backgroundColor: '#334155',
+    backgroundColor: "#334155",
     marginHorizontal: 8,
   },
   mapPlaceholder: {
     marginHorizontal: 12,
     marginVertical: 12,
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     borderRadius: 10,
     padding: 24,
-    alignItems: 'center',
+    alignItems: "center",
     minHeight: 160,
-    justifyContent: 'center',
+    justifyContent: "center",
     borderWidth: 2,
-    borderColor: '#334155',
-    borderStyle: 'dashed',
+    borderColor: "#334155",
+    borderStyle: "dashed",
   },
   mapIcon: {
     fontSize: 32,
@@ -383,29 +417,29 @@ const styles = StyleSheet.create({
   },
   mapText: {
     fontSize: 15,
-    fontWeight: '700',
-    color: '#3b82f6',
+    fontWeight: "700",
+    color: "#3b82f6",
     marginBottom: 4,
   },
   mapSubtext: {
     fontSize: 12,
-    color: '#94a3b8',
-    fontWeight: '500',
+    color: "#94a3b8",
+    fontWeight: "500",
   },
   quickActionsContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: 12,
     gap: 10,
     marginBottom: 12,
   },
   actionButtonSmall: {
     flex: 1,
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     borderRadius: 8,
     padding: 12,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: "#334155",
   },
   actionButtonIcon: {
     fontSize: 20,
@@ -413,8 +447,8 @@ const styles = StyleSheet.create({
   },
   actionButtonLabel: {
     fontSize: 12,
-    color: '#cbd5e1',
-    fontWeight: '600',
+    color: "#cbd5e1",
+    fontWeight: "600",
   },
   stopsContainer: {
     paddingHorizontal: 12,
@@ -422,48 +456,48 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#e2e8f0',
+    fontWeight: "700",
+    color: "#e2e8f0",
     marginBottom: 12,
   },
   stopItem: {
-    flexDirection: 'row',
-    backgroundColor: '#1e293b',
+    flexDirection: "row",
+    backgroundColor: "#1e293b",
     borderRadius: 10,
     padding: 12,
     marginBottom: 10,
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: "#334155",
   },
   stopNumber: {
     width: 40,
     height: 40,
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 12,
     flexShrink: 0,
   },
   stopNumberText: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   stopInfo: {
     flex: 1,
   },
   stopName: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#e2e8f0',
+    fontWeight: "700",
+    color: "#e2e8f0",
     marginBottom: 6,
   },
   addressRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 6,
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
     gap: 6,
   },
   addressIcon: {
@@ -472,15 +506,15 @@ const styles = StyleSheet.create({
   },
   stopAddress: {
     fontSize: 12,
-    color: '#cbd5e1',
+    color: "#cbd5e1",
     flex: 1,
-    fontWeight: '500',
+    fontWeight: "500",
     lineHeight: 16,
   },
   timeWindowRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 6,
-    alignItems: 'center',
+    alignItems: "center",
     gap: 6,
   },
   timeWindowIcon: {
@@ -488,12 +522,12 @@ const styles = StyleSheet.create({
   },
   timeWindow: {
     fontSize: 11,
-    color: '#60a5fa',
-    fontWeight: '600',
+    color: "#60a5fa",
+    fontWeight: "600",
   },
   stopStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   statusIndicator: {
@@ -503,43 +537,43 @@ const styles = StyleSheet.create({
   },
   statusLabel: {
     fontSize: 11,
-    color: '#94a3b8',
-    fontWeight: '600',
-    textTransform: 'capitalize',
+    color: "#94a3b8",
+    fontWeight: "600",
+    textTransform: "capitalize",
   },
   navButton: {
-    backgroundColor: '#334155',
+    backgroundColor: "#334155",
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 6,
     marginLeft: 8,
   },
   navButtonText: {
-    color: '#60a5fa',
+    color: "#60a5fa",
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   actionContainer: {
     paddingHorizontal: 12,
     paddingVertical: 16,
   },
   primaryButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
     borderRadius: 8,
     paddingVertical: 14,
-    alignItems: 'center',
+    alignItems: "center",
   },
   completedButton: {
-    backgroundColor: '#22c55e',
+    backgroundColor: "#22c55e",
   },
   buttonText: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   errorText: {
     fontSize: 16,
-    color: '#cbd5e1',
+    color: "#cbd5e1",
   },
 });
 

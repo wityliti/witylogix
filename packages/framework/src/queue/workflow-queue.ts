@@ -39,7 +39,7 @@ class InMemoryQueue implements QueueInterface<WorkflowJobData> {
   async add(
     name: string,
     data: WorkflowJobData,
-    opts?: any
+    opts?: any,
   ): Promise<Job<WorkflowJobData>> {
     const jobId = String(++this.jobCounter);
     let jobProgress: number | object = 0;
@@ -91,7 +91,9 @@ class InMemoryQueue implements QueueInterface<WorkflowJobData> {
     return { waiting: this.jobs.size };
   }
 
-  async getJob(jobId: string | number): Promise<Job<WorkflowJobData> | undefined> {
+  async getJob(
+    jobId: string | number,
+  ): Promise<Job<WorkflowJobData> | undefined> {
     return this.jobs.get(String(jobId));
   }
 
@@ -152,8 +154,13 @@ export class WorkflowQueue extends EventEmitter {
   async enqueue(
     workflowName: string,
     input: unknown,
-    context: { userId: string; tenantId: string; transactionId: string; metadata?: Record<string, unknown> },
-    options?: any
+    context: {
+      userId: string;
+      tenantId: string;
+      transactionId: string;
+      metadata?: Record<string, unknown>;
+    },
+    options?: any,
   ): Promise<string> {
     const jobData: WorkflowJobData = {
       workflowName,
@@ -169,7 +176,8 @@ export class WorkflowQueue extends EventEmitter {
         delay: 1000,
       },
       timeout: this.config.defaultJobOptions?.timeout ?? 60000,
-      removeOnComplete: this.config.defaultJobOptions?.removeOnComplete ?? false,
+      removeOnComplete:
+        this.config.defaultJobOptions?.removeOnComplete ?? false,
       removeOnFail: this.config.defaultJobOptions?.removeOnFail ?? false,
       ...options,
     };
@@ -389,7 +397,10 @@ export class WorkflowQueue extends EventEmitter {
    * @param limit Maximum number of jobs to remove
    * @returns Number of jobs removed
    */
-  async clean(gracePeriodMs: number = 3600000, limit: number = 1000): Promise<number> {
+  async clean(
+    gracePeriodMs: number = 3600000,
+    limit: number = 1000,
+  ): Promise<number> {
     try {
       const removed = await this.queue.clean(gracePeriodMs, limit);
       return removed.length;
@@ -435,7 +446,7 @@ export class WorkflowQueue extends EventEmitter {
   async reportProgress(
     jobId: string,
     progress: number,
-    data?: unknown
+    data?: unknown,
   ): Promise<void> {
     try {
       const job = await this.queue.getJob(jobId);
@@ -461,7 +472,7 @@ export class WorkflowQueue extends EventEmitter {
    */
   async reportCompletion(
     jobId: string,
-    result: WorkflowJobResult
+    result: WorkflowJobResult,
   ): Promise<void> {
     try {
       this.emit("job:completed", {
@@ -486,7 +497,7 @@ export class WorkflowQueue extends EventEmitter {
     jobId: string,
     error: Error,
     attempts: number,
-    maxAttempts: number
+    maxAttempts: number,
   ): Promise<void> {
     try {
       this.emit("job:failed", {

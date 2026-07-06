@@ -1,4 +1,4 @@
-'use client';
+"use client";
 /**
  * ShipmentMarkerLayer — renders shipment delivery locations as status-coloured
  * circles on a WLMap.  Click a marker to trigger onShipmentClick.
@@ -11,24 +11,28 @@
  *   failed/returned/cancelled          → pinDelayed  (red)
  */
 
-import { useEffect } from 'react';
-import type { GeoJSONSource, MapMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
-import { useWLMap } from './wl-map-context';
-import { mapTokens } from './resolve-token';
+import { useEffect } from "react";
+import type {
+  GeoJSONSource,
+  MapMouseEvent,
+  MapGeoJSONFeature,
+} from "maplibre-gl";
+import { useWLMap } from "./wl-map-context";
+import { mapTokens } from "./resolve-token";
 
 export type ShipmentMarkerStatus =
-  | 'PENDING'
-  | 'PROCESSING'
-  | 'READY_FOR_PICKUP'
-  | 'PICKED_UP'
-  | 'IN_TRANSIT'
-  | 'OUT_FOR_DELIVERY'
-  | 'ARRIVED'
-  | 'DELIVERED'
-  | 'FAILED'
-  | 'FAILED_ATTEMPT'
-  | 'RETURNED'
-  | 'CANCELLED';
+  | "PENDING"
+  | "PROCESSING"
+  | "READY_FOR_PICKUP"
+  | "PICKED_UP"
+  | "IN_TRANSIT"
+  | "OUT_FOR_DELIVERY"
+  | "ARRIVED"
+  | "DELIVERED"
+  | "FAILED"
+  | "FAILED_ATTEMPT"
+  | "RETURNED"
+  | "CANCELLED";
 
 export interface ShipmentMarker {
   id: string;
@@ -44,25 +48,28 @@ export interface ShipmentMarkerLayerProps {
   onShipmentClick?: (id: string) => void;
 }
 
-const SOURCE_ID = 'shipment-markers';
-const LAYER_CIRCLES = 'shipment-circles';
-const LAYER_SELECTED = 'shipment-selected-ring';
-const LAYER_LABELS = 'shipment-labels';
+const SOURCE_ID = "shipment-markers";
+const LAYER_CIRCLES = "shipment-circles";
+const LAYER_SELECTED = "shipment-selected-ring";
+const LAYER_LABELS = "shipment-labels";
 
-function resolveStatusColour(status: ShipmentMarkerStatus, tokens: ReturnType<typeof mapTokens>): string {
+function resolveStatusColour(
+  status: ShipmentMarkerStatus,
+  tokens: ReturnType<typeof mapTokens>,
+): string {
   switch (status) {
-    case 'DELIVERED':
+    case "DELIVERED":
       return tokens.fillGood;
-    case 'OUT_FOR_DELIVERY':
-    case 'ARRIVED':
+    case "OUT_FOR_DELIVERY":
+    case "ARRIVED":
       return tokens.pinInTransit;
-    case 'IN_TRANSIT':
-    case 'PICKED_UP':
+    case "IN_TRANSIT":
+    case "PICKED_UP":
       return tokens.pinAssigned;
-    case 'FAILED':
-    case 'FAILED_ATTEMPT':
-    case 'RETURNED':
-    case 'CANCELLED':
+    case "FAILED":
+    case "FAILED_ATTEMPT":
+    case "RETURNED":
+    case "CANCELLED":
       return tokens.pinDelayed;
     default:
       // PENDING, PROCESSING, READY_FOR_PICKUP
@@ -70,12 +77,15 @@ function resolveStatusColour(status: ShipmentMarkerStatus, tokens: ReturnType<ty
   }
 }
 
-function buildFeatureCollection(markers: ShipmentMarker[], tokens: ReturnType<typeof mapTokens>) {
+function buildFeatureCollection(
+  markers: ShipmentMarker[],
+  tokens: ReturnType<typeof mapTokens>,
+) {
   return {
-    type: 'FeatureCollection' as const,
+    type: "FeatureCollection" as const,
     features: markers.map((m) => ({
-      type: 'Feature' as const,
-      geometry: { type: 'Point' as const, coordinates: [m.lng, m.lat] },
+      type: "Feature" as const,
+      geometry: { type: "Point" as const, coordinates: [m.lng, m.lat] },
       properties: {
         id: m.id,
         status: m.status,
@@ -100,92 +110,82 @@ export function ShipmentMarkerLayer({
       if (map.getSource(SOURCE_ID)) return;
 
       map.addSource(SOURCE_ID, {
-        type: 'geojson',
+        type: "geojson",
         data: buildFeatureCollection(markers, t),
       });
 
       // Base circles — colour driven by feature property set at data-update time
       map.addLayer({
         id: LAYER_CIRCLES,
-        type: 'circle',
+        type: "circle",
         source: SOURCE_ID,
         paint: {
-          'circle-radius': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            8, 5,
-            14, 10,
-          ],
-          'circle-color': ['get', 'colour'],
-          'circle-stroke-color': t.labelHalo,
-          'circle-stroke-width': 1.5,
-          'circle-opacity': 0.9,
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 5, 14, 10],
+          "circle-color": ["get", "colour"],
+          "circle-stroke-color": t.labelHalo,
+          "circle-stroke-width": 1.5,
+          "circle-opacity": 0.9,
         },
       });
 
       // Selection ring (rendered on top of base circles)
       map.addLayer({
         id: LAYER_SELECTED,
-        type: 'circle',
+        type: "circle",
         source: SOURCE_ID,
-        filter: ['==', ['get', 'id'], selectedId ?? ''],
+        filter: ["==", ["get", "id"], selectedId ?? ""],
         paint: {
-          'circle-radius': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            8, 9,
-            14, 16,
-          ],
-          'circle-color': 'transparent',
-          'circle-stroke-color': t.strokeSelected,
-          'circle-stroke-width': 2.5,
-          'circle-opacity': 1,
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 9, 14, 16],
+          "circle-color": "transparent",
+          "circle-stroke-color": t.strokeSelected,
+          "circle-stroke-width": 2.5,
+          "circle-opacity": 1,
         },
       });
 
       // Labels
       map.addLayer({
         id: LAYER_LABELS,
-        type: 'symbol',
+        type: "symbol",
         source: SOURCE_ID,
         minzoom: 12,
         layout: {
-          'text-field': ['get', 'label'],
-          'text-size': 10,
-          'text-offset': [0, 1.4],
-          'text-anchor': 'top',
-          'text-font': ['DM Sans Regular', 'Open Sans Regular'],
+          "text-field": ["get", "label"],
+          "text-size": 10,
+          "text-offset": [0, 1.4],
+          "text-anchor": "top",
+          "text-font": ["DM Sans Regular", "Open Sans Regular"],
         },
         paint: {
-          'text-color': t.label,
-          'text-halo-color': t.labelHalo,
-          'text-halo-width': 1.5,
+          "text-color": t.label,
+          "text-halo-color": t.labelHalo,
+          "text-halo-width": 1.5,
         },
       });
 
       // Click handler
       if (onShipmentClick) {
-        const handleClick = (e: MapMouseEvent & { features?: MapGeoJSONFeature[] }) => {
+        const handleClick = (
+          e: MapMouseEvent & { features?: MapGeoJSONFeature[] },
+        ) => {
           const feature = e.features?.[0];
           if (feature) {
             const id = feature.properties?.id as string;
             onShipmentClick(id);
           }
         };
-        map.on('click', LAYER_CIRCLES, handleClick);
-        map.on('mouseenter', LAYER_CIRCLES, () => {
-          map.getCanvas().style.cursor = 'pointer';
+        map.on("click", LAYER_CIRCLES, handleClick);
+        map.on("mouseenter", LAYER_CIRCLES, () => {
+          map.getCanvas().style.cursor = "pointer";
         });
-        map.on('mouseleave', LAYER_CIRCLES, () => {
-          map.getCanvas().style.cursor = '';
+        map.on("mouseleave", LAYER_CIRCLES, () => {
+          map.getCanvas().style.cursor = "";
         });
       }
     };
 
     if (map.isStyleLoaded()) setup();
-    else map.on('load', setup);
+    else map.on("load", setup);
 
     return () => {
       if (map.getLayer(LAYER_LABELS)) map.removeLayer(LAYER_LABELS);
@@ -207,7 +207,7 @@ export function ShipmentMarkerLayer({
   // ── Update selected ring filter ──────────────────────────────
   useEffect(() => {
     if (map.getLayer(LAYER_SELECTED)) {
-      map.setFilter(LAYER_SELECTED, ['==', ['get', 'id'], selectedId ?? '']);
+      map.setFilter(LAYER_SELECTED, ["==", ["get", "id"], selectedId ?? ""]);
     }
   }, [map, selectedId]);
 

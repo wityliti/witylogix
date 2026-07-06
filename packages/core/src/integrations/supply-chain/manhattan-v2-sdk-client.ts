@@ -34,7 +34,7 @@ import type {
   SlottingRecommendation,
   DockDoor,
   Appointment,
-} from './supply-chain-sdk-types.js';
+} from "./supply-chain-sdk-types.js";
 
 // ─── MANHATTAN SPECIFIC TYPES ──────────────────────────────────────
 
@@ -157,7 +157,7 @@ class RateLimiter {
   async acquire(): Promise<void> {
     const now = Date.now();
     this.requestTimestamps = this.requestTimestamps.filter(
-      (ts) => now - ts < this.windowMs
+      (ts) => now - ts < this.windowMs,
     );
 
     if (this.requestTimestamps.length >= this.maxRequests) {
@@ -173,7 +173,7 @@ class RateLimiter {
   getInfo(): RateLimitInfo {
     const now = Date.now();
     const recentRequests = this.requestTimestamps.filter(
-      (ts) => now - ts < this.windowMs
+      (ts) => now - ts < this.windowMs,
     );
     const remaining = Math.max(0, this.maxRequests - recentRequests.length);
 
@@ -208,13 +208,12 @@ class RetryHandler {
       try {
         return await fn();
       } catch (error: unknown) {
-        lastError =
-          error instanceof Error ? error : new Error(String(error));
+        lastError = error instanceof Error ? error : new Error(String(error));
 
         const statusCode =
           lastError instanceof Error &&
-          'statusCode' in lastError &&
-          typeof (lastError as Record<string, unknown>).statusCode === 'number'
+          "statusCode" in lastError &&
+          typeof (lastError as Record<string, unknown>).statusCode === "number"
             ? ((lastError as Record<string, unknown>).statusCode as number)
             : 500;
 
@@ -228,7 +227,7 @@ class RetryHandler {
         const delay = Math.min(
           this.config.maxDelayMs,
           this.config.initialDelayMs *
-            Math.pow(this.config.backoffMultiplier, attempt)
+            Math.pow(this.config.backoffMultiplier, attempt),
         );
 
         await new Promise((resolve) => setTimeout(resolve, delay));
@@ -254,7 +253,7 @@ export class ManhattanV2SDKClient {
 
   constructor(authConfig: ManhattanAuthConfig) {
     this.authConfig = authConfig;
-    this.baseUrl = authConfig.apiUrl.replace(/\/$/, '');
+    this.baseUrl = authConfig.apiUrl.replace(/\/$/, "");
     this.rateLimiter = new RateLimiter(300, 60000);
     this.retryHandler = new RetryHandler({
       maxAttempts: 3,
@@ -280,15 +279,15 @@ export class ManhattanV2SDKClient {
       await this.rateLimiter.acquire();
 
       const payload = new URLSearchParams();
-      payload.append('grant_type', 'client_credentials');
-      payload.append('client_id', this.authConfig.clientId);
-      payload.append('client_secret', this.authConfig.clientSecret);
+      payload.append("grant_type", "client_credentials");
+      payload.append("client_id", this.authConfig.clientId);
+      payload.append("client_secret", this.authConfig.clientSecret);
 
       const response = await fetch(`${this.baseUrl}/oauth/token`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'X-API-Key': this.authConfig.apiKey,
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-API-Key": this.authConfig.apiKey,
         },
         body: payload.toString(),
       });
@@ -311,17 +310,17 @@ export class ManhattanV2SDKClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     return this.retryHandler.execute(async () => {
       await this.rateLimiter.acquire();
 
       const token = await this.ensureAuthenticated();
       const headers = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
-        'X-API-Key': this.authConfig.apiKey,
-        'X-Tenant-ID': this.authConfig.tenantId,
+        "X-API-Key": this.authConfig.apiKey,
+        "X-Tenant-ID": this.authConfig.tenantId,
         ...(options.headers as Record<string, string>),
       };
 
@@ -332,14 +331,15 @@ export class ManhattanV2SDKClient {
 
       if (!response.ok) {
         const error = new Error(
-          `API request failed: ${response.status} ${response.statusText}`
+          `API request failed: ${response.status} ${response.statusText}`,
         );
-        (error as unknown as Record<string, unknown>).statusCode = response.status;
+        (error as unknown as Record<string, unknown>).statusCode =
+          response.status;
         throw error;
       }
 
-      const contentType = response.headers.get('content-type');
-      if (contentType?.includes('application/json')) {
+      const contentType = response.headers.get("content-type");
+      if (contentType?.includes("application/json")) {
         return (await response.json()) as T;
       }
 
@@ -360,7 +360,7 @@ export class ManhattanV2SDKClient {
     expectedArrivalDate?: string;
   }): Promise<ManhattanASN> {
     const data = (await this.request<ManhattanASN>(`/inbound/asn`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(config),
     })) as ManhattanASN;
 
@@ -372,7 +372,7 @@ export class ManhattanV2SDKClient {
    */
   async getASN(asnId: string): Promise<ManhattanASN> {
     const data = (await this.request<ManhattanASN>(
-      `/inbound/asn/${asnId}`
+      `/inbound/asn/${asnId}`,
     )) as ManhattanASN;
 
     return data;
@@ -387,14 +387,17 @@ export class ManhattanV2SDKClient {
     limit?: number;
   }): Promise<PaginatedResponse<ManhattanASN>> {
     const params = new URLSearchParams();
-    if (options?.warehouseId)
-      params.append('warehouseId', options.warehouseId);
-    if (options?.status) params.append('status', options.status);
-    if (options?.limit) params.append('limit', String(options.limit));
+    if (options?.warehouseId) params.append("warehouseId", options.warehouseId);
+    if (options?.status) params.append("status", options.status);
+    if (options?.limit) params.append("limit", String(options.limit));
 
-    const data = (await this.request<{ items: ManhattanASN[]; totalCount: number }>(
-      `/inbound/asn?${params.toString()}`
-    )) as { items: ManhattanASN[]; totalCount: number };
+    const data = (await this.request<{
+      items: ManhattanASN[];
+      totalCount: number;
+    }>(`/inbound/asn?${params.toString()}`)) as {
+      items: ManhattanASN[];
+      totalCount: number;
+    };
 
     return {
       items: data.items,
@@ -417,9 +420,9 @@ export class ManhattanV2SDKClient {
     const data = (await this.request<ManhattanReceiptOrder>(
       `/inbound/receipt`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(config),
-      }
+      },
     )) as ManhattanReceiptOrder;
 
     return data;
@@ -430,10 +433,10 @@ export class ManhattanV2SDKClient {
    */
   async completePutaway(
     lpnId: string,
-    locationId: string
+    locationId: string,
   ): Promise<{ success: boolean }> {
     await this.request(`/inbound/putaway/${lpnId}`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ locationId }),
     });
 
@@ -447,7 +450,7 @@ export class ManhattanV2SDKClient {
    */
   async getInventoryLocation(
     warehouseId: string,
-    locationId: string
+    locationId: string,
   ): Promise<{
     id: string;
     locationId: string;
@@ -474,10 +477,10 @@ export class ManhattanV2SDKClient {
    */
   async getOnHandInventory(
     warehouseId: string,
-    skuId: string
+    skuId: string,
   ): Promise<NormalizedInventory> {
     const data = (await this.request<NormalizedInventory>(
-      `/inventory/onhand/${warehouseId}/${skuId}`
+      `/inventory/onhand/${warehouseId}/${skuId}`,
     )) as NormalizedInventory;
 
     return data;
@@ -487,14 +490,14 @@ export class ManhattanV2SDKClient {
    * Create inventory adjustment
    */
   async createInventoryAdjustment(
-    config: InventoryAdjustment
+    config: InventoryAdjustment,
   ): Promise<InventoryAdjustment> {
     const data = (await this.request<InventoryAdjustment>(
       `/inventory/adjustments`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(config),
-      }
+      },
     )) as InventoryAdjustment;
 
     return data;
@@ -504,14 +507,14 @@ export class ManhattanV2SDKClient {
    * Create inventory transfer
    */
   async createInventoryTransfer(
-    config: InventoryTransfer
+    config: InventoryTransfer,
   ): Promise<InventoryTransfer> {
     const data = (await this.request<InventoryTransfer>(
       `/inventory/transfers`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(config),
-      }
+      },
     )) as InventoryTransfer;
 
     return data;
@@ -526,7 +529,7 @@ export class ManhattanV2SDKClient {
     countType: string;
   }): Promise<CycleCount> {
     const data = (await this.request<CycleCount>(`/inventory/cycle-counts`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(config),
     })) as CycleCount;
 
@@ -538,7 +541,7 @@ export class ManhattanV2SDKClient {
    */
   async getLPNDetails(lpnNumber: string): Promise<ManhattanLPNDetail> {
     const data = (await this.request<ManhattanLPNDetail>(
-      `/inventory/lpn/${lpnNumber}`
+      `/inventory/lpn/${lpnNumber}`,
     )) as ManhattanLPNDetail;
 
     return data;
@@ -555,19 +558,16 @@ export class ManhattanV2SDKClient {
     shipMethod?: string;
     priority?: string;
   }): Promise<NormalizedWave> {
-    const data = (await this.request<ManhattanWaveDetail>(
-      `/outbound/waves`,
-      {
-        method: 'POST',
-        body: JSON.stringify(config),
-      }
-    )) as ManhattanWaveDetail;
+    const data = (await this.request<ManhattanWaveDetail>(`/outbound/waves`, {
+      method: "POST",
+      body: JSON.stringify(config),
+    })) as ManhattanWaveDetail;
 
     return {
       id: data.id,
       waveNumber: data.waveNumber,
       warehouseId: data.warehouseId,
-      status: (data.status as any),
+      status: data.status as any,
       planDate: new Date(),
       orders: [],
       orderCount: 0,
@@ -582,7 +582,7 @@ export class ManhattanV2SDKClient {
    */
   async releaseWave(waveId: string): Promise<{ success: boolean }> {
     await this.request(`/outbound/waves/${waveId}/release`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({}),
     });
 
@@ -596,9 +596,9 @@ export class ManhattanV2SDKClient {
     const data = (await this.request<{ allocatedLines: number }>(
       `/outbound/waves/${waveId}/allocate`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({}),
-      }
+      },
     )) as { allocatedLines: number };
 
     return data;
@@ -609,7 +609,7 @@ export class ManhattanV2SDKClient {
    */
   async getPickList(waveId: string): Promise<ManhattanPickList> {
     const data = (await this.request<ManhattanPickList>(
-      `/outbound/pick-lists/wave/${waveId}`
+      `/outbound/pick-lists/wave/${waveId}`,
     )) as ManhattanPickList;
 
     return data;
@@ -620,7 +620,7 @@ export class ManhattanV2SDKClient {
    */
   async completePicking(pickListId: string): Promise<{ success: boolean }> {
     await this.request(`/outbound/pick-lists/${pickListId}/complete`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({}),
     });
 
@@ -634,13 +634,10 @@ export class ManhattanV2SDKClient {
     pickListId: string;
     cartonBarcode: string;
   }): Promise<ManhattanPackDetail> {
-    const data = (await this.request<ManhattanPackDetail>(
-      `/outbound/packing`,
-      {
-        method: 'POST',
-        body: JSON.stringify(config),
-      }
-    )) as ManhattanPackDetail;
+    const data = (await this.request<ManhattanPackDetail>(`/outbound/packing`, {
+      method: "POST",
+      body: JSON.stringify(config),
+    })) as ManhattanPackDetail;
 
     return data;
   }
@@ -650,7 +647,7 @@ export class ManhattanV2SDKClient {
    */
   async completeWavePacking(waveId: string): Promise<{ success: boolean }> {
     await this.request(`/outbound/waves/${waveId}/packing-complete`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({}),
     });
 
@@ -669,16 +666,16 @@ export class ManhattanV2SDKClient {
     const data = (await this.request<ManhattanShipmentDetail>(
       `/outbound/shipments`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(config),
-      }
+      },
     )) as ManhattanShipmentDetail;
 
     return {
       id: data.id,
       shipmentNumber: data.shipmentNumber,
       warehouseId: data.warehouseId,
-      status: (data.status as any),
+      status: data.status as any,
       orders: [],
       lines: [],
       createdAt: new Date(data.shippedDate || new Date().toISOString()),
@@ -692,7 +689,7 @@ export class ManhattanV2SDKClient {
    */
   async getShipment(shipmentId: string): Promise<ManhattanShipmentDetail> {
     const data = (await this.request<ManhattanShipmentDetail>(
-      `/outbound/shipments/${shipmentId}`
+      `/outbound/shipments/${shipmentId}`,
     )) as ManhattanShipmentDetail;
 
     return data;
@@ -704,15 +701,12 @@ export class ManhattanV2SDKClient {
    * Record labor transaction
    */
   async recordLaborTransaction(
-    config: LaborTransaction
+    config: LaborTransaction,
   ): Promise<LaborTransaction> {
-    const data = (await this.request<LaborTransaction>(
-      `/labor/transactions`,
-      {
-        method: 'POST',
-        body: JSON.stringify(config),
-      }
-    )) as LaborTransaction;
+    const data = (await this.request<LaborTransaction>(`/labor/transactions`, {
+      method: "POST",
+      body: JSON.stringify(config),
+    })) as LaborTransaction;
 
     return data;
   }
@@ -722,11 +716,15 @@ export class ManhattanV2SDKClient {
    */
   async getEmployeeLaborSummary(
     employeeId: string,
-    dateRange: { startDate: string; endDate: string }
-  ): Promise<{ efficiency: number; hoursWorked: number; unitsProcessed: number }> {
+    dateRange: { startDate: string; endDate: string },
+  ): Promise<{
+    efficiency: number;
+    hoursWorked: number;
+    unitsProcessed: number;
+  }> {
     const params = new URLSearchParams();
-    params.append('startDate', dateRange.startDate);
-    params.append('endDate', dateRange.endDate);
+    params.append("startDate", dateRange.startDate);
+    params.append("endDate", dateRange.endDate);
 
     const data = (await this.request<{
       efficiency: number;
@@ -747,10 +745,10 @@ export class ManhattanV2SDKClient {
    * Get slotting recommendations
    */
   async getSlottingRecommendations(
-    warehouseId: string
+    warehouseId: string,
   ): Promise<SlottingRecommendation[]> {
     const data = (await this.request<{ items: ManhattanSlot[] }>(
-      `/slotting/recommendations/${warehouseId}`
+      `/slotting/recommendations/${warehouseId}`,
     )) as { items: ManhattanSlot[] };
 
     return data.items.map((s) => ({
@@ -758,8 +756,8 @@ export class ManhattanV2SDKClient {
       warehouseId: s.warehouseId,
       skuId: s.skuId,
       recommendedLocationId: s.locationId,
-      reason: (s.reason as any) || 'velocity',
-      priority: (s.priority as any) || 'low',
+      reason: (s.reason as any) || "velocity",
+      priority: (s.priority as any) || "low",
       createdAt: new Date(s.createdDate || new Date().toISOString()),
     }));
   }
@@ -767,9 +765,11 @@ export class ManhattanV2SDKClient {
   /**
    * Apply slotting changes
    */
-  async applySlotting(recommendations: string[]): Promise<{ success: boolean }> {
+  async applySlotting(
+    recommendations: string[],
+  ): Promise<{ success: boolean }> {
     await this.request(`/slotting/apply`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ recommendationIds: recommendations }),
     });
 
@@ -783,7 +783,7 @@ export class ManhattanV2SDKClient {
    */
   async getDockDoors(warehouseId: string): Promise<DockDoor[]> {
     const data = (await this.request<{ items: DockDoor[] }>(
-      `/yard/dock-doors/${warehouseId}`
+      `/yard/dock-doors/${warehouseId}`,
     )) as { items: DockDoor[] };
 
     return data.items;
@@ -794,7 +794,7 @@ export class ManhattanV2SDKClient {
    */
   async createAppointment(config: Appointment): Promise<Appointment> {
     const data = (await this.request<Appointment>(`/yard/appointments`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(config),
     })) as Appointment;
 
@@ -804,9 +804,11 @@ export class ManhattanV2SDKClient {
   /**
    * Check in appointment
    */
-  async checkInAppointment(appointmentId: string): Promise<{ success: boolean }> {
+  async checkInAppointment(
+    appointmentId: string,
+  ): Promise<{ success: boolean }> {
     await this.request(`/yard/appointments/${appointmentId}/check-in`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({}),
     });
 
@@ -816,9 +818,11 @@ export class ManhattanV2SDKClient {
   /**
    * Check out appointment
    */
-  async checkOutAppointment(appointmentId: string): Promise<{ success: boolean }> {
+  async checkOutAppointment(
+    appointmentId: string,
+  ): Promise<{ success: boolean }> {
     await this.request(`/yard/appointments/${appointmentId}/check-out`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({}),
     });
 
@@ -832,7 +836,7 @@ export class ManhattanV2SDKClient {
    */
   async createWebhook(config: SCWebhookConfig): Promise<SCWebhookConfig> {
     const data = (await this.request<SCWebhookConfig>(`/webhooks`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(config),
     })) as SCWebhookConfig;
 
@@ -844,7 +848,7 @@ export class ManhattanV2SDKClient {
    */
   async listWebhooks(): Promise<SCWebhookConfig[]> {
     const data = (await this.request<{ items: SCWebhookConfig[] }>(
-      `/webhooks`
+      `/webhooks`,
     )) as { items: SCWebhookConfig[] };
 
     return data.items;
@@ -854,17 +858,22 @@ export class ManhattanV2SDKClient {
    * Delete webhook
    */
   async deleteWebhook(webhookId: string): Promise<void> {
-    await this.request(`/webhooks/${webhookId}`, { method: 'DELETE' });
+    await this.request(`/webhooks/${webhookId}`, { method: "DELETE" });
   }
 
   /**
    * Test webhook delivery
    */
-  async testWebhook(webhookId: string): Promise<{ statusCode: number; responseTime: number }> {
-    const data = (await this.request<{ statusCode: number; responseTime: number }>(
-      `/webhooks/${webhookId}/test`,
-      { method: 'POST', body: JSON.stringify({}) }
-    )) as { statusCode: number; responseTime: number };
+  async testWebhook(
+    webhookId: string,
+  ): Promise<{ statusCode: number; responseTime: number }> {
+    const data = (await this.request<{
+      statusCode: number;
+      responseTime: number;
+    }>(`/webhooks/${webhookId}/test`, {
+      method: "POST",
+      body: JSON.stringify({}),
+    })) as { statusCode: number; responseTime: number };
 
     return data;
   }
@@ -876,7 +885,7 @@ export class ManhattanV2SDKClient {
    */
   async getWMSConfig(warehouseId: string): Promise<WMSConfig> {
     const data = (await this.request<WMSConfig>(
-      `/configuration/wms/${warehouseId}`
+      `/configuration/wms/${warehouseId}`,
     )) as WMSConfig;
 
     return data;
@@ -887,14 +896,14 @@ export class ManhattanV2SDKClient {
    */
   async updateWMSConfig(
     warehouseId: string,
-    config: Partial<WMSConfig>
+    config: Partial<WMSConfig>,
   ): Promise<WMSConfig> {
     const data = (await this.request<WMSConfig>(
       `/configuration/wms/${warehouseId}`,
       {
-        method: 'PATCH',
+        method: "PATCH",
         body: JSON.stringify(config),
-      }
+      },
     )) as WMSConfig;
 
     return data;
@@ -913,17 +922,17 @@ export class ManhattanV2SDKClient {
       const duration = Date.now() - startTime;
 
       return {
-        status: 'healthy',
+        status: "healthy",
         timestamp: new Date(),
         responseTimeMs: duration,
       };
     } catch (error: unknown) {
       return {
-        status: 'unhealthy',
+        status: "unhealthy",
         timestamp: new Date(),
         responseTimeMs: Date.now() - startTime,
         details: {
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         },
       };
     }

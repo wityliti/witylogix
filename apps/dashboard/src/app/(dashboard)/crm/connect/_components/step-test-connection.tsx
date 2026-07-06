@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { WizardStep } from './wizard';
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { WizardStep } from "./wizard";
 
 interface TestResults {
   success: boolean;
@@ -25,19 +25,19 @@ export function StepTestConnection({
 }: StepTestConnectionProps) {
   return (
     <WizardStep stepId={4} title="Test Connection">
-      <div className={cn('space-y-6 max-w-2xl')}>
-        <p className={cn('text-wl-text-secondary')}>
+      <div className={cn("space-y-6 max-w-2xl")}>
+        <p className={cn("text-wl-text-secondary")}>
           Verify your connection and pull sample data from your CRM.
         </p>
 
         {testResults && (
           <Card
             className={cn(
-              testResults.success && 'border-emerald-500 bg-emerald-500/5'
+              testResults.success && "border-emerald-500 bg-emerald-500/5",
             )}
           >
-            <CardContent className={cn('pt-5')}>
-              <div className={cn('flex items-start gap-3')}>
+            <CardContent className={cn("pt-5")}>
+              <div className={cn("flex items-start gap-3")}>
                 {testResults.success ? (
                   <svg
                     width="20"
@@ -69,10 +69,8 @@ export function StepTestConnection({
                 )}
                 <p
                   className={cn(
-                    'm-0',
-                    testResults.success
-                      ? 'text-emerald-400'
-                      : 'text-red-400'
+                    "m-0",
+                    testResults.success ? "text-emerald-400" : "text-red-400",
                   )}
                 >
                   {testResults.message}
@@ -82,11 +80,11 @@ export function StepTestConnection({
           </Card>
         )}
 
-        <div className={cn('flex justify-between gap-3 pt-6')}>
+        <div className={cn("flex justify-between gap-3 pt-6")}>
           <Button variant="ghost" onClick={onBack}>
             Back
           </Button>
-          <div className={cn('flex gap-3')}>
+          <div className={cn("flex gap-3")}>
             <Button variant="secondary" onClick={onTestConnection}>
               Test Connection
             </Button>

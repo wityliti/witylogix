@@ -17,22 +17,25 @@ import {
   PriceTier,
   DistanceTier,
   LocationAttachment,
-} from './types';
+} from "./types";
 
 // ─── CONVERSION HELPERS ────────────────────────────────────────────────────
 
 /**
  * Convert weight to kilograms
  */
-export function convertWeightToKg(weight: number, unit: 'g' | 'kg' | 'oz' | 'lb'): number {
+export function convertWeightToKg(
+  weight: number,
+  unit: "g" | "kg" | "oz" | "lb",
+): number {
   switch (unit) {
-    case 'kg':
+    case "kg":
       return weight;
-    case 'g':
+    case "g":
       return weight / 1000;
-    case 'lb':
+    case "lb":
       return weight * 0.453592;
-    case 'oz':
+    case "oz":
       return (weight / 16) * 0.453592;
     default:
       return weight;
@@ -46,7 +49,7 @@ export function convertCurrency(
   amount: number,
   fromCurrency: string,
   toCurrency: string,
-  rates: Record<string, number> = {}
+  rates: Record<string, number> = {},
 ): number {
   if (fromCurrency === toCurrency) {
     return amount;
@@ -55,12 +58,12 @@ export function convertCurrency(
   // Simple exchange rate lookup
   // In production, this would use real-time rates or a service
   const exchangeRates: Record<string, number> = {
-    'USD_EUR': 0.92,
-    'USD_GBP': 0.79,
-    'USD_CAD': 1.36,
-    'EUR_USD': 1.09,
-    'GBP_USD': 1.27,
-    'CAD_USD': 0.74,
+    USD_EUR: 0.92,
+    USD_GBP: 0.79,
+    USD_CAD: 1.36,
+    EUR_USD: 1.09,
+    GBP_USD: 1.27,
+    CAD_USD: 0.74,
     ...rates,
   };
 
@@ -68,7 +71,9 @@ export function convertCurrency(
   const rate = exchangeRates[key];
 
   if (!rate) {
-    console.warn(`No exchange rate found for ${fromCurrency} to ${toCurrency}, returning original`);
+    console.warn(
+      `No exchange rate found for ${fromCurrency} to ${toCurrency}, returning original`,
+    );
     return amount;
   }
 
@@ -88,9 +93,9 @@ export function findMatchingZone(
     city: string;
     state?: string;
     country: string;
-  }
+  },
 ): ShippingZone | undefined {
-  const activeZones = zones.filter(z => z.isActive);
+  const activeZones = zones.filter((z) => z.isActive);
 
   // Sort by priority (higher first), then by specificity
   const sorted = activeZones.sort((a, b) => {
@@ -118,7 +123,10 @@ export function findMatchingZone(
 /**
  * Calculate zone specificity score for matching priority
  */
-function calculateZoneSpecificity(zone: ShippingZone, address: Record<string, unknown>): number {
+function calculateZoneSpecificity(
+  zone: ShippingZone,
+  address: Record<string, unknown>,
+): number {
   let score = 0;
 
   if (zone.postalCodes?.length) score += 4;
@@ -139,37 +147,37 @@ function matchesZoneCriteria(
     city: string;
     state?: string;
     country: string;
-  }
+  },
 ): boolean {
   // Check postal code
   if (zone.postalCodes?.length) {
     // Normalize and check for prefix or exact match
-    const matches = zone.postalCodes.some(pc =>
-      address.postalCode.toUpperCase().startsWith(pc.toUpperCase())
+    const matches = zone.postalCodes.some((pc) =>
+      address.postalCode.toUpperCase().startsWith(pc.toUpperCase()),
     );
     if (matches) return true;
   }
 
   // Check city
   if (zone.cities?.length) {
-    const matches = zone.cities.some(c =>
-      c.toLowerCase() === address.city.toLowerCase()
+    const matches = zone.cities.some(
+      (c) => c.toLowerCase() === address.city.toLowerCase(),
     );
     if (matches) return true;
   }
 
   // Check state
   if (zone.states?.length) {
-    const matches = zone.states.some(s =>
-      s.toLowerCase() === (address.state || '').toLowerCase()
+    const matches = zone.states.some(
+      (s) => s.toLowerCase() === (address.state || "").toLowerCase(),
     );
     if (matches) return true;
   }
 
   // Check country (most generic)
   if (zone.countries?.length) {
-    const matches = zone.countries.some(c =>
-      c.toUpperCase() === address.country.toUpperCase()
+    const matches = zone.countries.some(
+      (c) => c.toUpperCase() === address.country.toUpperCase(),
     );
     if (matches) return true;
   }
@@ -186,7 +194,7 @@ export function calculateBaseRate(
   rate: ShippingRate | ZoneRate,
   weight: number,
   orderAmount: number,
-  distance?: number
+  distance?: number,
 ): number {
   const rateType = rate.rateType;
 
@@ -194,23 +202,25 @@ export function calculateBaseRate(
   const safeWeight = weight > 0 ? weight : 0.1; // Minimum weight for calculation
 
   switch (rateType) {
-    case 'flat':
+    case "flat":
       return rate.flatRate || 0;
 
-    case 'weight_based':
+    case "weight_based":
       return calculateWeightBasedRate(rate.weightTiers || [], safeWeight);
 
-    case 'price_based':
+    case "price_based":
       return calculatePriceBasedRate(rate.priceTiers || [], orderAmount);
 
-    case 'distance_based':
+    case "distance_based":
       if (!distance) {
-        console.warn('Distance not provided for distance-based rate calculation');
+        console.warn(
+          "Distance not provided for distance-based rate calculation",
+        );
         return rate.baseRate || 0;
       }
       return calculateDistanceBasedRate(rate.distanceTiers || [], distance);
 
-    case 'tiered':
+    case "tiered":
       return calculateTieredRate(rate.tieredRates || [], safeWeight);
 
     default:
@@ -221,7 +231,10 @@ export function calculateBaseRate(
 /**
  * Calculate weight-based tiered rate
  */
-export function calculateWeightBasedRate(tiers: WeightTier[], weight: number): number {
+export function calculateWeightBasedRate(
+  tiers: WeightTier[],
+  weight: number,
+): number {
   if (tiers.length === 0) return 0;
 
   // Sort by max weight ascending
@@ -241,7 +254,10 @@ export function calculateWeightBasedRate(tiers: WeightTier[], weight: number): n
 /**
  * Calculate price-based rate (for free shipping thresholds, etc)
  */
-export function calculatePriceBasedRate(tiers: PriceTier[], orderAmount: number): number {
+export function calculatePriceBasedRate(
+  tiers: PriceTier[],
+  orderAmount: number,
+): number {
   if (tiers.length === 0) return 0;
 
   // Sort by order amount descending
@@ -261,7 +277,10 @@ export function calculatePriceBasedRate(tiers: PriceTier[], orderAmount: number)
 /**
  * Calculate distance-based rate
  */
-export function calculateDistanceBasedRate(tiers: DistanceTier[], distance: number): number {
+export function calculateDistanceBasedRate(
+  tiers: DistanceTier[],
+  distance: number,
+): number {
   if (tiers.length === 0) return 0;
 
   // Sort by max distance ascending
@@ -307,7 +326,7 @@ export function applySurcharges(
     distance?: number;
     isResidential?: boolean;
     zone?: ShippingZone;
-  } = {}
+  } = {},
 ): SurchargeDetail[] {
   const applied: SurchargeDetail[] = [];
 
@@ -317,7 +336,10 @@ export function applySurcharges(
     if (!surcharge.isActive) continue;
 
     // Check conditions
-    if (surcharge.condition && !evaluateSurchargeCondition(surcharge.condition, context)) {
+    if (
+      surcharge.condition &&
+      !evaluateSurchargeCondition(surcharge.condition, context)
+    ) {
       continue;
     }
 
@@ -331,7 +353,7 @@ export function applySurcharges(
 
     applied.push({
       type: surcharge.type,
-      description: `${surcharge.type.replace(/_/g, ' ')} surcharge`,
+      description: `${surcharge.type.replace(/_/g, " ")} surcharge`,
       amount,
       percentage: surcharge.percentage,
     });
@@ -345,24 +367,24 @@ export function applySurcharges(
  */
 function evaluateSurchargeCondition(
   condition: any,
-  context: Record<string, unknown>
+  context: Record<string, unknown>,
 ): boolean {
   switch (condition.type) {
-    case 'weight_above':
+    case "weight_above":
       return (context.weight as number) > (condition.value as number);
 
-    case 'distance_above':
+    case "distance_above":
       return (context.distance as number) > (condition.value as number);
 
-    case 'address_type':
-      return condition.value === 'residential'
+    case "address_type":
+      return condition.value === "residential"
         ? context.isResidential
         : !context.isResidential;
 
-    case 'zone':
+    case "zone":
       return (context.zone as any)?.id === condition.value;
 
-    case 'custom':
+    case "custom":
       // Custom conditions handled by application logic
       return true;
 
@@ -377,7 +399,7 @@ function evaluateSurchargeCondition(
 export function applyFreeShippingThreshold(
   rate: number,
   orderAmount: number,
-  threshold?: number
+  threshold?: number,
 ): { rate: number; isFree: boolean } {
   if (!threshold || orderAmount < threshold) {
     return { rate, isFree: false };
@@ -392,11 +414,11 @@ export function applyFreeShippingThreshold(
 export async function calculateRate(
   profile: ShippingProfile,
   request: RateCalculationRequest,
-  exchangeRates?: Record<string, number>
+  exchangeRates?: Record<string, number>,
 ): Promise<CalculatedShippingRate> {
   // Normalize weight
   const weight = request.weight
-    ? convertWeightToKg(request.weight, request.weightUnit || 'kg')
+    ? convertWeightToKg(request.weight, request.weightUnit || "kg")
     : 0;
 
   const orderAmount = request.orderAmount || 0;
@@ -407,12 +429,12 @@ export async function calculateRate(
 
   if (!zone) {
     throw new Error(
-      `No matching zone found for address: ${request.recipientAddress.city}, ${request.recipientAddress.country}`
+      `No matching zone found for address: ${request.recipientAddress.city}, ${request.recipientAddress.country}`,
     );
   }
 
   // Find matching rate within zone
-  const zoneRate = zone.rates.find(r => r.isActive);
+  const zoneRate = zone.rates.find((r) => r.isActive);
   if (!zoneRate) {
     throw new Error(`No active rate found in zone: ${zone.name}`);
   }
@@ -421,12 +443,15 @@ export async function calculateRate(
   const baseRate = calculateBaseRate(zoneRate, weight, orderAmount, distance);
 
   // Apply surcharges from rate definition
-  const rateSurcharges = applySurcharges((profile.rates[0] as any)?.surcharges || [], {
-    weight,
-    distance,
-    isResidential: request.recipientAddress.isResidential,
-    zone,
-  });
+  const rateSurcharges = applySurcharges(
+    (profile.rates[0] as any)?.surcharges || [],
+    {
+      weight,
+      distance,
+      isResidential: request.recipientAddress.isResidential,
+      zone,
+    },
+  );
 
   // Calculate surcharge total
   const surchargeTotal = rateSurcharges.reduce((sum, s) => sum + s.amount, 0);
@@ -436,19 +461,19 @@ export async function calculateRate(
   const { rate: rateAfterFreeShip, isFree } = applyFreeShippingThreshold(
     finalRate,
     orderAmount,
-    profile.freeShippingThreshold
+    profile.freeShippingThreshold,
   );
 
   // Get delivery method config for estimated days
   const methodConfig = getDeliveryMethodConfig(profile.deliveryMethod);
 
   // Currency conversion
-  const currency = request.currency || 'USD';
+  const currency = request.currency || "USD";
   const convertedRate = convertCurrency(
     rateAfterFreeShip,
-    'USD',
+    "USD",
     currency,
-    exchangeRates
+    exchangeRates,
   );
 
   return {
@@ -467,8 +492,8 @@ export async function calculateRate(
       rateType: zoneRate.rateType,
       appliedRules: [
         `zone:${zone.name}`,
-        isFree ? 'free_shipping_applied' : 'standard_rate',
-        ...rateSurcharges.map(s => `surcharge:${s.type}`),
+        isFree ? "free_shipping_applied" : "standard_rate",
+        ...rateSurcharges.map((s) => `surcharge:${s.type}`),
       ],
       conditions: {
         weight,
@@ -484,7 +509,10 @@ export async function calculateRate(
  * Get delivery method configuration
  */
 function getDeliveryMethodConfig(method: string) {
-  const configs: Record<string, { estimatedDaysMin: number; estimatedDaysMax: number }> = {
+  const configs: Record<
+    string,
+    { estimatedDaysMin: number; estimatedDaysMax: number }
+  > = {
     local: { estimatedDaysMin: 0, estimatedDaysMax: 1 },
     standard: { estimatedDaysMin: 2, estimatedDaysMax: 5 },
     express: { estimatedDaysMin: 1, estimatedDaysMax: 2 },
@@ -500,10 +528,10 @@ function getDeliveryMethodConfig(method: string) {
 export async function calculateRatesBatch(
   profile: ShippingProfile,
   requests: RateCalculationRequest[],
-  exchangeRates?: Record<string, number>
+  exchangeRates?: Record<string, number>,
 ): Promise<CalculatedShippingRate[]> {
   return Promise.all(
-    requests.map(req => calculateRate(profile, req, exchangeRates))
+    requests.map((req) => calculateRate(profile, req, exchangeRates)),
   );
 }
 
@@ -512,9 +540,14 @@ export async function calculateRatesBatch(
  */
 export function selectBestLocation(
   locations: LocationAttachment[],
-  address: { postalCode: string; city: string; state?: string; country: string }
+  address: {
+    postalCode: string;
+    city: string;
+    state?: string;
+    country: string;
+  },
 ): LocationAttachment | undefined {
-  const active = locations.filter(l => l.isActive);
+  const active = locations.filter((l) => l.isActive);
 
   if (active.length === 0) return undefined;
 

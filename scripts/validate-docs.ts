@@ -14,8 +14,8 @@
  *   1 - Issues found
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from "fs";
+import * as path from "path";
 
 interface ValidationResult {
   passed: number;
@@ -24,15 +24,15 @@ interface ValidationResult {
   warnings: string[];
 }
 
-const DOCS_ROOT = path.resolve(__dirname, '..', 'apps', 'docs', 'content');
+const DOCS_ROOT = path.resolve(__dirname, "..", "apps", "docs", "content");
 
 // Color codes for terminal output
 const COLORS = {
-  reset: '\x1b[0m',
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
+  reset: "\x1b[0m",
+  red: "\x1b[31m",
+  green: "\x1b[32m",
+  yellow: "\x1b[33m",
+  blue: "\x1b[34m",
 };
 
 /**
@@ -42,15 +42,15 @@ function parseFrontmatter(content: string): {
   data: Record<string, any>;
   body: string;
 } | null {
-  if (!content.startsWith('---')) {
+  if (!content.startsWith("---")) {
     return null;
   }
 
-  const lines = content.split('\n');
+  const lines = content.split("\n");
   let endIndex = -1;
 
   for (let i = 1; i < lines.length; i++) {
-    if (lines[i].trim() === '---') {
+    if (lines[i].trim() === "---") {
       endIndex = i;
       break;
     }
@@ -70,8 +70,10 @@ function parseFrontmatter(content: string): {
       let value: any = match[2].trim();
 
       // Remove quotes if present
-      if ((value.startsWith('"') && value.endsWith('"')) ||
-          (value.startsWith("'") && value.endsWith("'"))) {
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
         value = value.slice(1, -1);
       }
 
@@ -79,7 +81,10 @@ function parseFrontmatter(content: string): {
     }
   }
 
-  const body = lines.slice(endIndex + 1).join('\n').trim();
+  const body = lines
+    .slice(endIndex + 1)
+    .join("\n")
+    .trim();
   return { data, body };
 }
 
@@ -106,7 +111,7 @@ function getMdxFiles(dir: string): string[] {
 
       if (stat.isDirectory()) {
         walk(fullPath);
-      } else if (item.endsWith('.mdx')) {
+      } else if (item.endsWith(".mdx")) {
         files.push(fullPath);
       }
     }
@@ -131,7 +136,7 @@ function getMetaFiles(dir: string): string[] {
 
       if (stat.isDirectory()) {
         walk(fullPath);
-      } else if (item === 'meta.json') {
+      } else if (item === "meta.json") {
         files.push(fullPath);
       }
     }
@@ -146,10 +151,10 @@ function getMetaFiles(dir: string): string[] {
  */
 function validateMdxFile(
   filePath: string,
-  result: ValidationResult
+  result: ValidationResult,
 ): { title: string | null } {
   try {
-    const content = fs.readFileSync(filePath, 'utf-8');
+    const content = fs.readFileSync(filePath, "utf-8");
 
     // Check for empty files
     if (content.trim().length === 0) {
@@ -160,12 +165,11 @@ function validateMdxFile(
 
     // Parse frontmatter and extract title
     const frontmatter = parseFrontmatter(content);
-    const title =
-      frontmatter?.data?.title || extractFirstHeading(content);
+    const title = frontmatter?.data?.title || extractFirstHeading(content);
 
     if (!title) {
       result.errors.push(
-        `❌ No title found in: ${filePath}\n   Add title to frontmatter or as first # heading`
+        `❌ No title found in: ${filePath}\n   Add title to frontmatter or as first # heading`,
       );
       result.failed++;
       return { title: null };
@@ -174,7 +178,9 @@ function validateMdxFile(
     result.passed++;
     return { title };
   } catch (error: any) {
-    result.errors.push(`❌ Error reading file: ${filePath}\n   ${error.message}`);
+    result.errors.push(
+      `❌ Error reading file: ${filePath}\n   ${error.message}`,
+    );
     result.failed++;
     return { title: null };
   }
@@ -186,38 +192,36 @@ function validateMdxFile(
 function validateMetaJson(
   filePath: string,
   mdxFiles: Set<string>,
-  result: ValidationResult
+  result: ValidationResult,
 ) {
   try {
-    const content = fs.readFileSync(filePath, 'utf-8');
+    const content = fs.readFileSync(filePath, "utf-8");
     const config = JSON.parse(content);
 
     if (!config.title) {
-      result.warnings.push(
-        `⚠ No title in meta.json: ${filePath}`
-      );
+      result.warnings.push(`⚠ No title in meta.json: ${filePath}`);
     }
 
     if (config.pages && Array.isArray(config.pages)) {
       for (const page of config.pages) {
-        const pageName = typeof page === 'string' ? page : page.path;
+        const pageName = typeof page === "string" ? page : page.path;
 
         // Skip index pages - always valid
-        if (pageName === 'index') {
+        if (pageName === "index") {
           continue;
         }
 
         // Check if referenced MDX file exists
         if (!mdxFiles.has(pageName)) {
           result.warnings.push(
-            `⚠ Meta references missing file: ${filePath} -> ${pageName}.mdx`
+            `⚠ Meta references missing file: ${filePath} -> ${pageName}.mdx`,
           );
         }
       }
     }
   } catch (error: any) {
     result.errors.push(
-      `❌ Invalid meta.json: ${filePath}\n   ${error.message}`
+      `❌ Invalid meta.json: ${filePath}\n   ${error.message}`,
     );
     result.failed++;
   }
@@ -234,14 +238,20 @@ function validateDocs(): ValidationResult {
     warnings: [],
   };
 
-  console.log(`${COLORS.blue}=================================================================================${COLORS.reset}`);
+  console.log(
+    `${COLORS.blue}=================================================================================${COLORS.reset}`,
+  );
   console.log(`${COLORS.blue}Documentation Validation${COLORS.reset}`);
-  console.log(`${COLORS.blue}=================================================================================${COLORS.reset}`);
+  console.log(
+    `${COLORS.blue}=================================================================================${COLORS.reset}`,
+  );
   console.log();
 
   // Check if docs directory exists
   if (!fs.existsSync(DOCS_ROOT)) {
-    console.error(`${COLORS.red}Error: Docs directory not found at ${DOCS_ROOT}${COLORS.reset}`);
+    console.error(
+      `${COLORS.red}Error: Docs directory not found at ${DOCS_ROOT}${COLORS.reset}`,
+    );
     result.failed++;
     return result;
   }
@@ -255,8 +265,8 @@ function validateDocs(): ValidationResult {
   for (const file of mdxFiles) {
     const relativePath = path
       .relative(DOCS_ROOT, file)
-      .replace(/\\/g, '/')
-      .replace('.mdx', '');
+      .replace(/\\/g, "/")
+      .replace(".mdx", "");
 
     mdxFileSet.add(relativePath);
   }
@@ -278,9 +288,13 @@ function validateDocs(): ValidationResult {
   console.log();
 
   // Print results
-  console.log(`${COLORS.blue}=================================================================================${COLORS.reset}`);
+  console.log(
+    `${COLORS.blue}=================================================================================${COLORS.reset}`,
+  );
   console.log(`Validation Results`);
-  console.log(`${COLORS.blue}=================================================================================${COLORS.reset}`);
+  console.log(
+    `${COLORS.blue}=================================================================================${COLORS.reset}`,
+  );
   console.log(`${COLORS.green}Passed: ${result.passed}${COLORS.reset}`);
 
   if (result.failed > 0) {
@@ -288,7 +302,9 @@ function validateDocs(): ValidationResult {
   }
 
   if (result.warnings.length > 0) {
-    console.log(`${COLORS.yellow}Warnings: ${result.warnings.length}${COLORS.reset}`);
+    console.log(
+      `${COLORS.yellow}Warnings: ${result.warnings.length}${COLORS.reset}`,
+    );
   }
 
   console.log();
@@ -311,7 +327,9 @@ function validateDocs(): ValidationResult {
     console.log();
   }
 
-  console.log(`${COLORS.blue}=================================================================================${COLORS.reset}`);
+  console.log(
+    `${COLORS.blue}=================================================================================${COLORS.reset}`,
+  );
 
   return result;
 }
@@ -322,11 +340,15 @@ function validateDocs(): ValidationResult {
 const result = validateDocs();
 
 if (result.failed === 0) {
-  console.log(`${COLORS.green}✅ All documentation validations passed!${COLORS.reset}`);
+  console.log(
+    `${COLORS.green}✅ All documentation validations passed!${COLORS.reset}`,
+  );
   console.log();
   process.exit(0);
 } else {
-  console.log(`${COLORS.red}❌ Documentation validation failed. Please fix the errors above.${COLORS.reset}`);
+  console.log(
+    `${COLORS.red}❌ Documentation validation failed. Please fix the errors above.${COLORS.reset}`,
+  );
   console.log();
   process.exit(1);
 }

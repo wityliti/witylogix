@@ -7,9 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { SyncPlatform } from "@/hooks/use-order-sync";
-import { useApiList, useApiQuery } from '@/hooks/use-api';
-import { useToast } from '@/components/ui/toast';
-import { api } from '@/lib/api';
+import { useApiList, useApiQuery } from "@/hooks/use-api";
+import { useToast } from "@/components/ui/toast";
+import { api } from "@/lib/api";
 
 /* ═══════════════════════════════════════════════════════════
    ORDER IMPORT DASHBOARD — Platform sync management, status,
@@ -19,7 +19,7 @@ import { api } from '@/lib/api';
 interface SyncJob {
   id: string;
   platform: SyncPlatform;
-  status: 'running' | 'completed' | 'failed';
+  status: "running" | "completed" | "failed";
   startTime: string;
   endTime: string | null;
   ordersProcessed: number;
@@ -48,7 +48,9 @@ const getHealthColor = (status: "healthy" | "warning" | "error") => {
   return colors[status];
 };
 
-const getHealthBadgeVariant = (status: "healthy" | "warning" | "error"): "success" | "warning" | "danger" | "default" => {
+const getHealthBadgeVariant = (
+  status: "healthy" | "warning" | "error",
+): "success" | "warning" | "danger" | "default" => {
   const variants = {
     healthy: "success",
     warning: "warning",
@@ -59,51 +61,64 @@ const getHealthBadgeVariant = (status: "healthy" | "warning" | "error"): "succes
 
 export default function OrderImportPage() {
   const { addToast } = useToast();
-  const [selectedPlatform, setSelectedPlatform] = useState<SyncPlatform | null>(null);
-  const [wizardStep, setWizardStep] = useState<"select" | "configure" | "preview" | "import">("select");
-  const [filterPlatform, setFilterPlatform] = useState<SyncPlatform | "all">("all");
+  const [selectedPlatform, setSelectedPlatform] = useState<SyncPlatform | null>(
+    null,
+  );
+  const [wizardStep, setWizardStep] = useState<
+    "select" | "configure" | "preview" | "import"
+  >("select");
+  const [filterPlatform, setFilterPlatform] = useState<SyncPlatform | "all">(
+    "all",
+  );
 
   const [triggerLoading, setTriggerLoading] = useState(false);
 
-  const { items: connections, loading: statusLoading, error: connectionsError } = useApiList<{
+  const {
+    items: connections,
+    loading: statusLoading,
+    error: connectionsError,
+  } = useApiList<{
     id: string;
     providerName: string;
     status: string;
     lastSyncTime: string | null;
     apiCallsCount: number;
     category: string;
-  }>('/api/v4/integrations/connections');
+  }>("/api/v4/integrations/connections");
 
-  const platformHealth = useMemo(() =>
-    connections
-      .filter((c) => ['ecommerce', 'marketplace'].includes(c.category))
-      .map((c) => {
-        const platKey = c.providerName.toLowerCase().replace(/\s+/g, '');
-        const matchedPlatform = PLATFORMS.find(
-          (p) => platKey.includes(p.id) || p.id.includes(platKey),
-        );
-        return {
-          platform: (matchedPlatform?.id ?? platKey) as SyncPlatform,
-          isConnected: c.status === 'connected',
-          status: (c.status === 'connected'
-            ? 'healthy'
-            : c.status === 'error'
-              ? 'error'
-              : 'warning') as 'healthy' | 'warning' | 'error',
-          lastSyncTime: c.lastSyncTime,
-          errorRate: 0,
-          ordersImported: c.apiCallsCount,
-          _connectionId: c.id,
-        };
-      }),
-  [connections]);
+  const platformHealth = useMemo(
+    () =>
+      connections
+        .filter((c) => ["ecommerce", "marketplace"].includes(c.category))
+        .map((c) => {
+          const platKey = c.providerName.toLowerCase().replace(/\s+/g, "");
+          const matchedPlatform = PLATFORMS.find(
+            (p) => platKey.includes(p.id) || p.id.includes(platKey),
+          );
+          return {
+            platform: (matchedPlatform?.id ?? platKey) as SyncPlatform,
+            isConnected: c.status === "connected",
+            status: (c.status === "connected"
+              ? "healthy"
+              : c.status === "error"
+                ? "error"
+                : "warning") as "healthy" | "warning" | "error",
+            lastSyncTime: c.lastSyncTime,
+            errorRate: 0,
+            ordersImported: c.apiCallsCount,
+            _connectionId: c.id,
+          };
+        }),
+    [connections],
+  );
 
   const recentSyncJobs: SyncJob[] = [];
   const failedJobs: SyncJob[] = [];
 
-  const { data: statsData } = useApiQuery<{ totalOrders: number; pendingOrders: number }>(
-    '/api/v4/dashboard/stats',
-  );
+  const { data: statsData } = useApiQuery<{
+    totalOrders: number;
+    pendingOrders: number;
+  }>("/api/v4/dashboard/stats");
   const metrics = useMemo(
     () => ({
       totalOrdersSynced: statsData?.totalOrders ?? 0,
@@ -128,10 +143,21 @@ export default function OrderImportPage() {
     if (!connection?._connectionId) return;
     setTriggerLoading(true);
     try {
-      await api.post(`/api/v4/integrations/connections/${connection._connectionId}/force-sync`, {});
-      addToast({ type: 'success', title: 'Sync triggered', message: `${platform} sync started` });
+      await api.post(
+        `/api/v4/integrations/connections/${connection._connectionId}/force-sync`,
+        {},
+      );
+      addToast({
+        type: "success",
+        title: "Sync triggered",
+        message: `${platform} sync started`,
+      });
     } catch (err) {
-      addToast({ type: 'error', title: 'Sync trigger failed', message: err instanceof Error ? err.message : undefined });
+      addToast({
+        type: "error",
+        title: "Sync trigger failed",
+        message: err instanceof Error ? err.message : undefined,
+      });
     } finally {
       setTriggerLoading(false);
     }
@@ -168,7 +194,8 @@ export default function OrderImportPage() {
         {connectionsError && (
           <div className="flex items-center gap-3 p-4 rounded-lg border border-amber-500/30 bg-amber-500/10">
             <span className="text-amber-400 text-sm font-medium">
-              Could not load platform connections — platform status may be incomplete.
+              Could not load platform connections — platform status may be
+              incomplete.
             </span>
           </div>
         )}
@@ -183,7 +210,9 @@ export default function OrderImportPage() {
               <p className="text-3xl font-bold font-mono text-white">
                 {metrics.totalOrdersSynced}
               </p>
-              <p className="text-xs text-wl-text-secondary mt-2">orders imported</p>
+              <p className="text-xs text-wl-text-secondary mt-2">
+                orders imported
+              </p>
             </Card>
 
             <Card className="p-5 bg-wl-bg-surface border border-wl-border-default">
@@ -193,7 +222,9 @@ export default function OrderImportPage() {
               <p className="text-3xl font-bold font-mono text-blue-500">
                 {metrics.pendingOrders}
               </p>
-              <p className="text-xs text-wl-text-secondary mt-2">awaiting sync</p>
+              <p className="text-xs text-wl-text-secondary mt-2">
+                awaiting sync
+              </p>
             </Card>
 
             <Card className="p-5 bg-wl-bg-surface border border-wl-border-default">
@@ -223,7 +254,9 @@ export default function OrderImportPage() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-lg font-bold text-white">Platform Status</h2>
-              <p className="text-sm text-wl-text-secondary mt-1">Connection and health overview</p>
+              <p className="text-sm text-wl-text-secondary mt-1">
+                Connection and health overview
+              </p>
             </div>
             <Badge variant={statusLoading ? "info" : "default"}>
               {statusLoading ? "⟳ Updating..." : "Live"}
@@ -232,7 +265,9 @@ export default function OrderImportPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {PLATFORMS.map((platform) => {
-              const health = platformHealth.find((h) => h.platform === platform.id);
+              const health = platformHealth.find(
+                (h) => h.platform === platform.id,
+              );
               const isConnected = health?.isConnected ?? false;
 
               return (
@@ -243,15 +278,19 @@ export default function OrderImportPage() {
                     "bg-wl-bg-root hover:border-blue-500",
                     selectedPlatform === platform.id
                       ? "border-blue-500 bg-[rgba(59,82,255,0.08)]"
-                      : "border-wl-border-default"
+                      : "border-wl-border-default",
                   )}
-                  onClick={() => isConnected && handlePlatformSelect(platform.id)}
+                  onClick={() =>
+                    isConnected && handlePlatformSelect(platform.id)
+                  }
                 >
                   {/* Icon & Name */}
                   <div className="flex items-center gap-3 mb-3">
                     <span className="text-2xl">{platform.icon}</span>
                     <div>
-                      <p className="font-semibold text-white">{platform.name}</p>
+                      <p className="font-semibold text-white">
+                        {platform.name}
+                      </p>
                       <p className="text-xs text-wl-text-secondary">
                         {isConnected ? "Connected" : "Disconnected"}
                       </p>
@@ -264,7 +303,9 @@ export default function OrderImportPage() {
                       <div className="flex items-center gap-2 mb-3">
                         <div
                           className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: getHealthColor(health.status) }}
+                          style={{
+                            backgroundColor: getHealthColor(health.status),
+                          }}
                         />
                         <span className="text-xs font-medium text-wl-neutral-300">
                           {health.status === "healthy"
@@ -313,8 +354,12 @@ export default function OrderImportPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-lg font-bold text-wl-text-primary">Recent Sync Jobs</h2>
-              <p className="text-sm text-wl-text-secondary mt-1">Latest {filteredSyncJobs.length} sync operations</p>
+              <h2 className="text-lg font-bold text-wl-text-primary">
+                Recent Sync Jobs
+              </h2>
+              <p className="text-sm text-wl-text-secondary mt-1">
+                Latest {filteredSyncJobs.length} sync operations
+              </p>
             </div>
 
             {/* Platform Filter */}
@@ -325,7 +370,7 @@ export default function OrderImportPage() {
                   "px-2.5 py-1 rounded text-xs font-semibold cursor-pointer transition-all",
                   filterPlatform === "all"
                     ? "bg-wl-primary-500 text-wl-text-inverse"
-                    : "bg-transparent text-wl-text-tertiary border border-wl-border-subtle"
+                    : "bg-transparent text-wl-text-tertiary border border-wl-border-subtle",
                 )}
               >
                 All
@@ -338,7 +383,7 @@ export default function OrderImportPage() {
                     "px-2.5 py-1 rounded text-xs font-semibold cursor-pointer transition-all",
                     filterPlatform === p.id
                       ? "bg-wl-primary-500 text-wl-text-inverse"
-                      : "bg-transparent text-wl-text-tertiary border border-wl-border-subtle"
+                      : "bg-transparent text-wl-text-tertiary border border-wl-border-subtle",
                   )}
                 >
                   {p.name.split(" ")[0]}
@@ -349,7 +394,9 @@ export default function OrderImportPage() {
 
           {filteredSyncJobs.length === 0 ? (
             <div className="py-12 text-center">
-              <div className="text-wl-text-tertiary text-sm">No sync jobs found</div>
+              <div className="text-wl-text-tertiary text-sm">
+                No sync jobs found
+              </div>
             </div>
           ) : (
             <div className="space-y-3">
@@ -357,7 +404,9 @@ export default function OrderImportPage() {
                 const platform = PLATFORMS.find((p) => p.id === job.platform);
                 const duration = job.endTime
                   ? Math.round(
-                      (new Date(job.endTime).getTime() - new Date(job.startTime).getTime()) / 1000
+                      (new Date(job.endTime).getTime() -
+                        new Date(job.startTime).getTime()) /
+                        1000,
                     )
                   : null;
 
@@ -378,8 +427,20 @@ export default function OrderImportPage() {
                           </div>
                         </div>
                       </div>
-                      <Badge variant={job.status === "completed" ? "success" : job.status === "failed" ? "danger" : "info"}>
-                        {job.status === "completed" ? "✓ Done" : job.status === "failed" ? "✕ Failed" : "⟳ Running"}
+                      <Badge
+                        variant={
+                          job.status === "completed"
+                            ? "success"
+                            : job.status === "failed"
+                              ? "danger"
+                              : "info"
+                        }
+                      >
+                        {job.status === "completed"
+                          ? "✓ Done"
+                          : job.status === "failed"
+                            ? "✕ Failed"
+                            : "⟳ Running"}
                       </Badge>
                     </div>
 
@@ -417,7 +478,9 @@ export default function OrderImportPage() {
                     {/* Duration & Actions */}
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-wl-text-tertiary">
-                        {duration ? `Completed in ${duration}s` : "In progress..."}
+                        {duration
+                          ? `Completed in ${duration}s`
+                          : "In progress..."}
                       </span>
                       {job.status === "failed" && (
                         <Button
@@ -442,7 +505,9 @@ export default function OrderImportPage() {
           <Card className="p-6 border-wl-danger-400/20 bg-[rgba(255,69,69,0.05)]">
             <div className="flex items-center gap-2 mb-4">
               <span className="text-xl">⚠️</span>
-              <h2 className="text-lg font-bold text-wl-danger-400">Failed Sync Jobs ({failedJobs.length})</h2>
+              <h2 className="text-lg font-bold text-wl-danger-400">
+                Failed Sync Jobs ({failedJobs.length})
+              </h2>
             </div>
 
             <div className="space-y-3">
@@ -494,25 +559,33 @@ export default function OrderImportPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
               {PLATFORMS.map((platform) => {
-                const health = platformHealth.find((h) => h.platform === platform.id);
+                const health = platformHealth.find(
+                  (h) => h.platform === platform.id,
+                );
                 const isConnected = health?.isConnected ?? false;
 
                 return (
                   <button
                     key={platform.id}
-                    onClick={() => isConnected && handlePlatformSelect(platform.id)}
+                    onClick={() =>
+                      isConnected && handlePlatformSelect(platform.id)
+                    }
                     disabled={!isConnected}
                     className={cn(
                       "p-4 rounded-lg border-2 transition-all text-center",
                       isConnected
                         ? "border-wl-primary-400 bg-wl-bg-surface hover:bg-wl-bg-elevated cursor-pointer"
-                        : "border-wl-border-subtle bg-wl-bg opacity-50 cursor-not-allowed"
+                        : "border-wl-border-subtle bg-wl-bg opacity-50 cursor-not-allowed",
                     )}
                   >
                     <div className="text-3xl mb-2">{platform.icon}</div>
-                    <div className="font-semibold text-wl-text-primary">{platform.name}</div>
+                    <div className="font-semibold text-wl-text-primary">
+                      {platform.name}
+                    </div>
                     {!isConnected && (
-                      <div className="text-xs text-wl-danger-400 mt-1">Not connected</div>
+                      <div className="text-xs text-wl-danger-400 mt-1">
+                        Not connected
+                      </div>
                     )}
                   </button>
                 );
@@ -536,7 +609,8 @@ export default function OrderImportPage() {
         {wizardStep === "configure" && selectedPlatform && (
           <Card className="p-6 border-wl-primary-400/30 bg-[rgba(245,166,35,0.05)]">
             <h2 className="text-lg font-bold text-wl-text-primary mb-4">
-              Configure {PLATFORMS.find((p) => p.id === selectedPlatform)?.name} Sync
+              Configure {PLATFORMS.find((p) => p.id === selectedPlatform)?.name}{" "}
+              Sync
             </h2>
 
             <div className="space-y-4 mb-6">
@@ -550,7 +624,9 @@ export default function OrderImportPage() {
                 <div className="grid grid-cols-2 gap-3">
                   {["Customer", "Email", "Phone", "Address"].map((field) => (
                     <div key={field}>
-                      <label className="text-xs text-wl-text-secondary">{field}</label>
+                      <label className="text-xs text-wl-text-secondary">
+                        {field}
+                      </label>
                       <input
                         type="text"
                         placeholder={field}
@@ -563,21 +639,33 @@ export default function OrderImportPage() {
 
               <div>
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input type="checkbox" defaultChecked className="cursor-pointer" />
-                  <span className="font-medium text-wl-text-primary">Create new orders only</span>
+                  <input
+                    type="checkbox"
+                    defaultChecked
+                    className="cursor-pointer"
+                  />
+                  <span className="font-medium text-wl-text-primary">
+                    Create new orders only
+                  </span>
                 </label>
               </div>
 
               <div>
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
                   <input type="checkbox" className="cursor-pointer" />
-                  <span className="font-medium text-wl-text-primary">Update existing orders</span>
+                  <span className="font-medium text-wl-text-primary">
+                    Update existing orders
+                  </span>
                 </label>
               </div>
             </div>
 
             <div className="flex gap-3">
-              <Button variant="primary" size="md" onClick={() => setWizardStep("preview")}>
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => setWizardStep("preview")}
+              >
                 Next: Preview →
               </Button>
               <Button
@@ -618,8 +706,12 @@ export default function OrderImportPage() {
                 </thead>
                 <tbody>
                   <tr className="border-b border-wl-border-subtle">
-                    <td className="px-3 py-2 text-wl-text-primary">Sample Customer</td>
-                    <td className="px-3 py-2 text-wl-text-secondary">customer@example.com</td>
+                    <td className="px-3 py-2 text-wl-text-primary">
+                      Sample Customer
+                    </td>
+                    <td className="px-3 py-2 text-wl-text-secondary">
+                      customer@example.com
+                    </td>
                     <td className="px-3 py-2">
                       <Badge variant="info">Preview</Badge>
                     </td>
@@ -629,7 +721,11 @@ export default function OrderImportPage() {
             </div>
 
             <div className="flex gap-3">
-              <Button variant="primary" size="md" onClick={() => setWizardStep("import")}>
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => setWizardStep("import")}
+              >
                 Import Now
               </Button>
               <Button
@@ -657,7 +753,9 @@ export default function OrderImportPage() {
                   style={{ width: "45%" }}
                 />
               </div>
-              <div className="text-xs text-wl-text-tertiary mt-2">45% complete</div>
+              <div className="text-xs text-wl-text-tertiary mt-2">
+                45% complete
+              </div>
             </div>
 
             <div className="flex gap-3">

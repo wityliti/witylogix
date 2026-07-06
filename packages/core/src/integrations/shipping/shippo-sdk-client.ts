@@ -318,7 +318,7 @@ export class ShippoSDKClient {
       email?: string;
       is_residential?: boolean;
     },
-    validate = false
+    validate = false,
   ): Promise<ShippoAddress> {
     const payload = {
       ...address,
@@ -355,7 +355,7 @@ export class ShippoSDKClient {
    */
   async listAddresses(
     results = 25,
-    cursor?: string
+    cursor?: string,
   ): Promise<ShippoPaginatedResult<ShippoAddress>> {
     const params = new URLSearchParams();
     params.append("results", results.toString());
@@ -364,7 +364,7 @@ export class ShippoSDKClient {
     }
     return this.request<ShippoPaginatedResult<ShippoAddress>>(
       "GET",
-      `/addresses?${params.toString()}`
+      `/addresses?${params.toString()}`,
     );
   }
 
@@ -413,7 +413,7 @@ export class ShippoSDKClient {
   async listParcelTemplates(): Promise<ShippoPaginatedResult<ShippoParcel>> {
     return this.request<ShippoPaginatedResult<ShippoParcel>>(
       "GET",
-      "/parcel_templates"
+      "/parcel_templates",
     );
   }
 
@@ -443,7 +443,7 @@ export class ShippoSDKClient {
    */
   async listShipments(
     results = 25,
-    cursor?: string
+    cursor?: string,
   ): Promise<ShippoPaginatedResult<ShippoShipment>> {
     const params = new URLSearchParams();
     params.append("results", results.toString());
@@ -452,7 +452,7 @@ export class ShippoSDKClient {
     }
     return this.request<ShippoPaginatedResult<ShippoShipment>>(
       "GET",
-      `/shipments?${params.toString()}`
+      `/shipments?${params.toString()}`,
     );
   }
 
@@ -477,7 +477,7 @@ export class ShippoSDKClient {
   async getRatesForShipment(
     shipmentId: string,
     carrierAccounts?: string[],
-    serviceLevels?: string[]
+    serviceLevels?: string[],
   ): Promise<ShippoRate[]> {
     const params = new URLSearchParams();
     if (carrierAccounts?.length) {
@@ -489,7 +489,7 @@ export class ShippoSDKClient {
     const url = `/shipments/${shipmentId}/rates${params.toString() ? `?${params}` : ""}`;
     const result = await this.request<ShippoPaginatedResult<ShippoRate>>(
       "GET",
-      url
+      url,
     );
     return result.results;
   }
@@ -513,7 +513,7 @@ export class ShippoSDKClient {
    */
   async createTransaction(
     rateId: string,
-    labelFileType: "pdf" | "png" | "zpl" = "pdf"
+    labelFileType: "pdf" | "png" | "zpl" = "pdf",
   ): Promise<ShippoTransaction> {
     return this.request<ShippoTransaction>("POST", "/transactions", {
       rate: rateId,
@@ -530,7 +530,7 @@ export class ShippoSDKClient {
   async getTransaction(transactionId: string): Promise<ShippoTransaction> {
     return this.request<ShippoTransaction>(
       "GET",
-      `/transactions/${transactionId}`
+      `/transactions/${transactionId}`,
     );
   }
 
@@ -543,7 +543,7 @@ export class ShippoSDKClient {
    */
   async listTransactions(
     results = 25,
-    cursor?: string
+    cursor?: string,
   ): Promise<ShippoPaginatedResult<ShippoTransaction>> {
     const params = new URLSearchParams();
     params.append("results", results.toString());
@@ -552,7 +552,7 @@ export class ShippoSDKClient {
     }
     return this.request<ShippoPaginatedResult<ShippoTransaction>>(
       "GET",
-      `/transactions?${params.toString()}`
+      `/transactions?${params.toString()}`,
     );
   }
 
@@ -565,11 +565,11 @@ export class ShippoSDKClient {
    */
   async getTracking(
     carrier: string,
-    trackingNumber: string
+    trackingNumber: string,
   ): Promise<ShippoTrack> {
     return this.request<ShippoTrack>(
       "GET",
-      `/tracks/${carrier}/${trackingNumber}`
+      `/tracks/${carrier}/${trackingNumber}`,
     );
   }
 
@@ -584,12 +584,12 @@ export class ShippoSDKClient {
   async registerTrackingWebhook(
     trackingNumber: string,
     carrier: string,
-    url: string
+    url: string,
   ): Promise<{ id: string; url: string }> {
     return this.request<{ id: string; url: string }>(
       "POST",
       `/tracks/${carrier}/${trackingNumber}/register`,
-      { url }
+      { url },
     );
   }
 
@@ -600,12 +600,12 @@ export class ShippoSDKClient {
    * @returns Created customs declaration
    */
   async createCustomsDeclaration(
-    declaration: Omit<ShippoCustomsDeclaration, "object_id">
+    declaration: Omit<ShippoCustomsDeclaration, "object_id">,
   ): Promise<ShippoCustomsDeclaration> {
     return this.request<ShippoCustomsDeclaration>(
       "POST",
       "/customs/declarations",
-      declaration
+      declaration,
     );
   }
 
@@ -616,11 +616,11 @@ export class ShippoSDKClient {
    * @returns Customs declaration details
    */
   async getCustomsDeclaration(
-    declarationId: string
+    declarationId: string,
   ): Promise<ShippoCustomsDeclaration> {
     return this.request<ShippoCustomsDeclaration>(
       "GET",
-      `/customs/declarations/${declarationId}`
+      `/customs/declarations/${declarationId}`,
     );
   }
 
@@ -657,7 +657,7 @@ export class ShippoSDKClient {
    */
   async listManifests(
     results = 25,
-    cursor?: string
+    cursor?: string,
   ): Promise<ShippoPaginatedResult<ShippoManifest>> {
     const params = new URLSearchParams();
     params.append("results", results.toString());
@@ -666,7 +666,7 @@ export class ShippoSDKClient {
     }
     return this.request<ShippoPaginatedResult<ShippoManifest>>(
       "GET",
-      `/manifests?${params.toString()}`
+      `/manifests?${params.toString()}`,
     );
   }
 
@@ -677,11 +677,11 @@ export class ShippoSDKClient {
    * @returns Paginated carrier account list
    */
   async listCarrierAccounts(
-    results = 25
+    results = 25,
   ): Promise<ShippoPaginatedResult<ShippoCarrierAccount>> {
     return this.request<ShippoPaginatedResult<ShippoCarrierAccount>>(
       "GET",
-      `/carrier_accounts?results=${results}`
+      `/carrier_accounts?results=${results}`,
     );
   }
 
@@ -691,12 +691,10 @@ export class ShippoSDKClient {
    * @param accountId Carrier account object ID
    * @returns Carrier account details
    */
-  async getCarrierAccount(
-    accountId: string
-  ): Promise<ShippoCarrierAccount> {
+  async getCarrierAccount(accountId: string): Promise<ShippoCarrierAccount> {
     return this.request<ShippoCarrierAccount>(
       "GET",
-      `/carrier_accounts/${accountId}`
+      `/carrier_accounts/${accountId}`,
     );
   }
 
@@ -714,7 +712,7 @@ export class ShippoSDKClient {
     return this.request<ShippoCarrierAccount>(
       "POST",
       "/carrier_accounts",
-      account
+      account,
     );
   }
 
@@ -727,12 +725,12 @@ export class ShippoSDKClient {
    */
   async updateCarrierAccount(
     accountId: string,
-    updates: Partial<ShippoCarrierAccount>
+    updates: Partial<ShippoCarrierAccount>,
   ): Promise<ShippoCarrierAccount> {
     return this.request<ShippoCarrierAccount>(
       "PUT",
       `/carrier_accounts/${accountId}`,
-      updates
+      updates,
     );
   }
 
@@ -783,12 +781,12 @@ export class ShippoSDKClient {
   private enforceRateLimit(): void {
     const now = Date.now();
     this.requestTimestamps = this.requestTimestamps.filter(
-      (ts) => now - ts < this.rateLimitWindow
+      (ts) => now - ts < this.rateLimitWindow,
     );
 
     if (this.requestTimestamps.length >= this.maxRequestsPerWindow) {
       throw new Error(
-        `Rate limit exceeded: ${this.maxRequestsPerWindow} requests per minute`
+        `Rate limit exceeded: ${this.maxRequestsPerWindow} requests per minute`,
       );
     }
 
@@ -801,7 +799,7 @@ export class ShippoSDKClient {
   private async request<T>(
     method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
     path: string,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     this.enforceRateLimit();
 
@@ -823,7 +821,7 @@ export class ShippoSDKClient {
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(
-          `Shippo API error ${response.status}: ${errorText || response.statusText}`
+          `Shippo API error ${response.status}: ${errorText || response.statusText}`,
         );
       }
 

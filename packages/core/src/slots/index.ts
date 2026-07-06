@@ -13,7 +13,13 @@ import { ZoneRateCalculator } from "./zone-rate-calculator.js";
 import { DeadlineEngine } from "./deadline-engine.js";
 import { BlackoutManager } from "./blackout-manager.js";
 
-export { SlotEngine, CapacityManager, ZoneRateCalculator, DeadlineEngine, BlackoutManager };
+export {
+  SlotEngine,
+  CapacityManager,
+  ZoneRateCalculator,
+  DeadlineEngine,
+  BlackoutManager,
+};
 
 // Factory function for initialization
 export function initializeSlotEngines(db: any) {

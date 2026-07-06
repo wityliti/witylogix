@@ -8,11 +8,11 @@
  * Log level enumeration following standard logging conventions
  */
 export enum LogLevel {
-  DEBUG = 'debug',
-  INFO = 'info',
-  WARN = 'warn',
-  ERROR = 'error',
-  FATAL = 'fatal',
+  DEBUG = "debug",
+  INFO = "info",
+  WARN = "warn",
+  ERROR = "error",
+  FATAL = "fatal",
 }
 
 /**
@@ -108,37 +108,37 @@ export interface RequestContext {
  * These fields will be masked in logs to prevent credential leakage
  */
 export const SENSITIVE_FIELD_PATTERNS = [
-  'password',
-  'token',
-  'secret',
-  'apiKey',
-  'api_key',
-  'authorization',
-  'accessToken',
-  'access_token',
-  'refreshToken',
-  'refresh_token',
-  'sessionId',
-  'session_id',
-  'cookieValue',
-  'cookie',
-  'creditCard',
-  'credit_card',
-  'ssn',
-  'privateKey',
-  'private_key',
-  'webhookSecret',
-  'webhook_secret',
+  "password",
+  "token",
+  "secret",
+  "apiKey",
+  "api_key",
+  "authorization",
+  "accessToken",
+  "access_token",
+  "refreshToken",
+  "refresh_token",
+  "sessionId",
+  "session_id",
+  "cookieValue",
+  "cookie",
+  "creditCard",
+  "credit_card",
+  "ssn",
+  "privateKey",
+  "private_key",
+  "webhookSecret",
+  "webhook_secret",
 ];
 
 /**
  * Sensitive HTTP headers that should be redacted
  */
 export const SENSITIVE_HEADERS = [
-  'authorization',
-  'cookie',
-  'x-api-key',
-  'x-access-token',
-  'x-csrf-token',
-  'set-cookie',
+  "authorization",
+  "cookie",
+  "x-api-key",
+  "x-access-token",
+  "x-csrf-token",
+  "set-cookie",
 ];

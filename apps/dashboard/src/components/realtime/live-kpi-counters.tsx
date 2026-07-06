@@ -40,7 +40,13 @@ const statusBgColors: Record<"good" | "warning" | "critical", string> = {
   critical: "from-wl-danger-500/10 to-wl-danger-500/5",
 };
 
-function AnimatedNumber({ value, duration = 1000 }: { value: number; duration?: number }) {
+function AnimatedNumber({
+  value,
+  duration = 1000,
+}: {
+  value: number;
+  duration?: number;
+}) {
   const [displayValue, setDisplayValue] = useState(value);
 
   useEffect(() => {
@@ -68,7 +74,13 @@ function AnimatedNumber({ value, duration = 1000 }: { value: number; duration?: 
   return <>{displayValue}</>;
 }
 
-function Sparkline({ data, color = "text-wl-primary-500" }: { data: number[]; color?: string }) {
+function Sparkline({
+  data,
+  color = "text-wl-primary-500",
+}: {
+  data: number[];
+  color?: string;
+}) {
   if (data.length < 2) return null;
 
   const max = Math.max(...data);
@@ -102,13 +114,18 @@ function Sparkline({ data, color = "text-wl-primary-500" }: { data: number[]; co
 
 function KPICard({ metric }: { metric: KPIMetric }) {
   const trendPercent = metric.previousValue
-    ? ((metric.value - metric.previousValue) / metric.previousValue * 100).toFixed(1)
+    ? (
+        ((metric.value - metric.previousValue) / metric.previousValue) *
+        100
+      ).toFixed(1)
     : 0;
 
   const isPositiveTrend = metric.value >= metric.previousValue;
   const trendIcon = isPositiveTrend ? TrendingUp : TrendingDown;
   const TrendIcon = trendIcon;
-  const trendColor = isPositiveTrend ? "text-wl-success-400" : "text-wl-danger-400";
+  const trendColor = isPositiveTrend
+    ? "text-wl-success-400"
+    : "text-wl-danger-400";
 
   const sparklineColor =
     metric.status === "good"
@@ -123,7 +140,7 @@ function KPICard({ metric }: { metric: KPIMetric }) {
         "bg-gradient-to-br rounded-lg p-5 border border-wl-border-subtle",
         "transition-all duration-base ease-default",
         statusBgColors[metric.status],
-        "hover:border-wl-border-default hover:shadow-md"
+        "hover:border-wl-border-default hover:shadow-md",
       )}
     >
       <div className="flex items-start justify-between mb-4">
@@ -135,7 +152,9 @@ function KPICard({ metric }: { metric: KPIMetric }) {
             <span className="text-2xl font-bold text-wl-text-primary">
               <AnimatedNumber value={metric.value} duration={800} />
             </span>
-            <span className="text-xs text-wl-text-secondary">{metric.unit}</span>
+            <span className="text-xs text-wl-text-secondary">
+              {metric.unit}
+            </span>
           </div>
         </div>
         <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-wl-bg-surface">
@@ -152,16 +171,23 @@ function KPICard({ metric }: { metric: KPIMetric }) {
       <div className="flex items-center gap-1">
         <TrendIcon className={cn("w-3 h-3", trendColor)} />
         <span className={cn("text-xs font-semibold", trendColor)}>
-          {isPositiveTrend ? "+" : ""}{trendPercent}%
+          {isPositiveTrend ? "+" : ""}
+          {trendPercent}%
         </span>
         <span className="text-xs text-wl-text-secondary">vs yesterday</span>
       </div>
 
       {/* Pulse animation for status indicator */}
       {metric.status !== "good" && (
-        <div className="absolute top-3 right-3 w-2 h-2 rounded-full animate-pulse" style={{
-          backgroundColor: metric.status === "warning" ? "rgb(251, 146, 60)" : "rgb(220, 38, 38)",
-        }} />
+        <div
+          className="absolute top-3 right-3 w-2 h-2 rounded-full animate-pulse"
+          style={{
+            backgroundColor:
+              metric.status === "warning"
+                ? "rgb(251, 146, 60)"
+                : "rgb(220, 38, 38)",
+          }}
+        />
       )}
     </div>
   );
@@ -192,11 +218,15 @@ interface AnalyticsOverview {
 }
 
 export function LiveKPICounters({ className }: LiveKPICountersProps) {
-  const { data, loading, refetch } = useApiQuery<AnalyticsOverview>('/api/v4/analytics/overview?range=today');
+  const { data, loading, refetch } = useApiQuery<AnalyticsOverview>(
+    "/api/v4/analytics/overview?range=today",
+  );
 
   // Poll every 60 seconds for fresh data
   useEffect(() => {
-    const interval = setInterval(() => { refetch(); }, 60_000);
+    const interval = setInterval(() => {
+      refetch();
+    }, 60_000);
     return () => clearInterval(interval);
   }, [refetch]);
 
@@ -228,7 +258,12 @@ export function LiveKPICounters({ className }: LiveKPICountersProps) {
         previousValue: 0,
         icon: <Users className="w-5 h-5" />,
         unit: "drivers",
-        status: data.activeDrivers < 5 ? "critical" : data.activeDrivers < 10 ? "warning" : "good",
+        status:
+          data.activeDrivers < 5
+            ? "critical"
+            : data.activeDrivers < 10
+              ? "warning"
+              : "good",
         sparkline: [data.activeDrivers],
       },
       {
@@ -243,12 +278,15 @@ export function LiveKPICounters({ className }: LiveKPICountersProps) {
     ];
   }, [data]);
   return (
-    <div className={cn("grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4", className)}>
+    <div
+      className={cn(
+        "grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
+        className,
+      )}
+    >
       {loading
         ? Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
-        : metrics.map((metric, i) => (
-            <KPICard key={i} metric={metric} />
-          ))}
+        : metrics.map((metric, i) => <KPICard key={i} metric={metric} />)}
     </div>
   );
 }

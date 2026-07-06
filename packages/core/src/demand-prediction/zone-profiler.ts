@@ -5,8 +5,8 @@
  * similarity-based feature generation.
  */
 
-import { DataAggregator, type DeliveryRecord } from './data-aggregator.js';
-import { TimeSeriesExtractor } from './time-series-extractor.js';
+import { DataAggregator, type DeliveryRecord } from "./data-aggregator.js";
+import { TimeSeriesExtractor } from "./time-series-extractor.js";
 
 /**
  * Zone profile characteristics
@@ -28,7 +28,7 @@ export interface ZoneProfile {
 
   // Growth & stability
   growthRate: number; // Monthly growth rate
-  growthClassification: 'declining' | 'stable' | 'growing';
+  growthClassification: "declining" | "stable" | "growing";
   volatilityScore: number; // 0-1, higher = less predictable
 
   // Delivery time
@@ -69,7 +69,7 @@ export class ZoneProfiler {
    */
   async profileZone(
     zoneId: string,
-    lookbackDays: number = 90
+    lookbackDays: number = 90,
   ): Promise<ZoneProfile> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - lookbackDays);
@@ -80,40 +80,41 @@ export class ZoneProfiler {
       zoneId,
       startDate,
       endDate,
-      'daily'
+      "daily",
     );
 
     const hourlyAgg = await this.aggregator.aggregateDeliveries(
       zoneId,
       startDate,
       endDate,
-      'hourly'
+      "hourly",
     );
 
     const dailyPattern = await this.aggregator.computeDayOfWeekPattern(
       zoneId,
       startDate,
-      endDate
+      endDate,
     );
 
     const hourlyDist = await this.aggregator.computeHourlyDistribution(
       zoneId,
       startDate,
-      endDate
+      endDate,
     );
 
-    const deliveryTimes = await this.aggregator.computeAverageDeliveryTimePerHour(
-      zoneId,
-      startDate,
-      endDate
-    );
+    const deliveryTimes =
+      await this.aggregator.computeAverageDeliveryTimePerHour(
+        zoneId,
+        startDate,
+        endDate,
+      );
 
     const growthTrend = await this.aggregator.computeGrowthTrend(zoneId, 12);
 
     const volatility = await this.aggregator.computeVolatilityScore(
       zoneId,
       startDate,
-      endDate
+      endDate,
     );
 
     const seasonalIndex = await this.aggregator.computeSeasonalIndex(zoneId);
@@ -126,29 +127,29 @@ export class ZoneProfiler {
     const stdDev = this.standardDeviation(volumes);
 
     // Extract delivery time metrics
-    const deliveryTimeValues = Object.values(deliveryTimes).filter(v => v > 0);
-    const avgDeliveryTime = deliveryTimeValues.length > 0
-      ? this.mean(deliveryTimeValues)
-      : 30;
-    const deliveryTimeStdDev = deliveryTimeValues.length > 0
-      ? this.standardDeviation(deliveryTimeValues)
-      : 0;
+    const deliveryTimeValues = Object.values(deliveryTimes).filter(
+      (v) => v > 0,
+    );
+    const avgDeliveryTime =
+      deliveryTimeValues.length > 0 ? this.mean(deliveryTimeValues) : 30;
+    const deliveryTimeStdDev =
+      deliveryTimeValues.length > 0
+        ? this.standardDeviation(deliveryTimeValues)
+        : 0;
 
     // Find primary hours (top 25% by volume)
     const hoursSorted = Object.entries(hourlyDist)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 6);
-    const primaryHours = hoursSorted.map(h => parseInt(h[0]));
+    const primaryHours = hoursSorted.map((h) => parseInt(h[0]));
 
     // Find dominant day
-    const daysSorted = Object.entries(dailyPattern)
-      .sort((a, b) => b[1] - a[1]);
+    const daysSorted = Object.entries(dailyPattern).sort((a, b) => b[1] - a[1]);
     const dominantDay = parseInt(daysSorted[0][0]);
 
     // Find peak hour
     const peakHour = parseInt(
-      Object.entries(hourlyDist)
-        .sort((a, b) => b[1] - a[1])[0][0]
+      Object.entries(hourlyDist).sort((a, b) => b[1] - a[1])[0][0],
     );
 
     // Growth classification
@@ -159,8 +160,9 @@ export class ZoneProfiler {
     const seasonalityStrength = this.computeSeasonalityStrength(seasonalValues);
 
     // Peak season
-    const peakMonth = Object.entries(seasonalIndex)
-      .sort((a, b) => parseFloat(b[1].toString()) - parseFloat(a[1].toString()))[0][0];
+    const peakMonth = Object.entries(seasonalIndex).sort(
+      (a, b) => parseFloat(b[1].toString()) - parseFloat(a[1].toString()),
+    )[0][0];
     const peakSeason = this.monthToQuarter(parseInt(peakMonth));
 
     // Build profile vector for clustering
@@ -172,7 +174,7 @@ export class ZoneProfiler {
       volatility,
       seasonalityStrength,
       avgDeliveryTime,
-      primaryHours.length
+      primaryHours.length,
     );
 
     return {
@@ -202,7 +204,7 @@ export class ZoneProfiler {
     zoneIds: string[],
     k: number = 5,
     maxIterations: number = 100,
-    lookbackDays: number = 90
+    lookbackDays: number = 90,
   ): Promise<ClusterAssignment[]> {
     // Generate profiles for all zones
     const profiles = new Map<string, ZoneProfile>();
@@ -238,7 +240,10 @@ export class ZoneProfiler {
         let bestCluster = 0;
 
         for (let c = 0; c < centers.length; c++) {
-          const distance = this.euclideanDistance(profile.profileVector, centers[c]);
+          const distance = this.euclideanDistance(
+            profile.profileVector,
+            centers[c],
+          );
           if (distance < minDistance) {
             minDistance = distance;
             bestCluster = c;
@@ -257,8 +262,8 @@ export class ZoneProfiler {
 
       for (let c = 0; c < centers.length; c++) {
         const zonesInCluster = assignments
-          .filter(a => a.clusterId === c)
-          .map(a => profiles.get(a.zoneId)!.profileVector);
+          .filter((a) => a.clusterId === c)
+          .map((a) => profiles.get(a.zoneId)!.profileVector);
 
         if (zonesInCluster.length > 0) {
           const newCenter = this.computeCentroid(zonesInCluster);
@@ -293,7 +298,7 @@ export class ZoneProfiler {
   async computeZoneSimilarity(
     zoneA: string,
     zoneB: string,
-    lookbackDays: number = 90
+    lookbackDays: number = 90,
   ): Promise<number> {
     const profileA = await this.profileZone(zoneA, lookbackDays);
     const profileB = await this.profileZone(zoneB, lookbackDays);
@@ -313,7 +318,7 @@ export class ZoneProfiler {
     targetZoneId: string,
     candidateZoneIds: string[],
     topK: number = 5,
-    lookbackDays: number = 90
+    lookbackDays: number = 90,
   ): Promise<Array<{ zoneId: string; similarity: number }>> {
     const similarities: Array<{ zoneId: string; similarity: number }> = [];
 
@@ -323,7 +328,7 @@ export class ZoneProfiler {
       const similarity = await this.computeZoneSimilarity(
         targetZoneId,
         candidateId,
-        lookbackDays
+        lookbackDays,
       );
 
       similarities.push({
@@ -340,10 +345,12 @@ export class ZoneProfiler {
   /**
    * Classify growth rate
    */
-  private classifyGrowth(growthRate: number): 'declining' | 'stable' | 'growing' {
-    if (growthRate < -0.01) return 'declining';
-    if (growthRate > 0.01) return 'growing';
-    return 'stable';
+  private classifyGrowth(
+    growthRate: number,
+  ): "declining" | "stable" | "growing" {
+    if (growthRate < -0.01) return "declining";
+    if (growthRate > 0.01) return "growing";
+    return "stable";
   }
 
   /**
@@ -351,7 +358,7 @@ export class ZoneProfiler {
    */
   private computeSeasonalityStrength(seasonalValues: number[]): number {
     const mean = this.mean(seasonalValues);
-    const deviations = seasonalValues.map(v => Math.abs(v - mean));
+    const deviations = seasonalValues.map((v) => Math.abs(v - mean));
     const avgDeviation = this.mean(deviations);
 
     // Strength is average deviation from mean (0-1 range)
@@ -362,8 +369,21 @@ export class ZoneProfiler {
    * Convert month number to quarter string
    */
   private monthToQuarter(month: number): string {
-    const quarters = ['Q1', 'Q1', 'Q1', 'Q2', 'Q2', 'Q2', 'Q3', 'Q3', 'Q3', 'Q4', 'Q4', 'Q4'];
-    return quarters[month] || 'Q1';
+    const quarters = [
+      "Q1",
+      "Q1",
+      "Q1",
+      "Q2",
+      "Q2",
+      "Q2",
+      "Q3",
+      "Q3",
+      "Q3",
+      "Q4",
+      "Q4",
+      "Q4",
+    ];
+    return quarters[month] || "Q1";
   }
 
   /**
@@ -377,7 +397,7 @@ export class ZoneProfiler {
     volatility: number,
     seasonality: number,
     deliveryTime: number,
-    numPrimaryHours: number
+    numPrimaryHours: number,
   ): number[] {
     // Normalize features to roughly [0, 1]
     return [
@@ -433,7 +453,7 @@ export class ZoneProfiler {
     const max = Math.max(...vector);
     const range = max - min || 1;
 
-    return vector.map(v => (v - min) / range);
+    return vector.map((v) => (v - min) / range);
   }
 
   /**
@@ -469,7 +489,9 @@ export class ZoneProfiler {
     if (values.length < 2) return 0;
 
     const m = mean ?? this.mean(values);
-    const variance = values.reduce((sum, val) => sum + Math.pow(val - m, 2), 0) / values.length;
+    const variance =
+      values.reduce((sum, val) => sum + Math.pow(val - m, 2), 0) /
+      values.length;
 
     return Math.sqrt(variance);
   }

@@ -159,7 +159,7 @@ export class USPSAdapter extends ShippingAdapter {
     const cfg = this.config as USPSConfig;
     if (!cfg.consumerKey || !cfg.consumerSecret) {
       throw new Error(
-        "USPS adapter requires consumerKey and consumerSecret (USPS_CONSUMER_KEY, USPS_CONSUMER_SECRET)"
+        "USPS adapter requires consumerKey and consumerSecret (USPS_CONSUMER_KEY, USPS_CONSUMER_SECRET)",
       );
     }
     await this.ensureAuthenticated();
@@ -196,7 +196,7 @@ export class USPSAdapter extends ShippingAdapter {
     const data = await this.request<USPSRateResponse>(
       "POST",
       `${this.baseUrl}/v3/prices/search`,
-      { headers: this.authHeaders(), body }
+      { headers: this.authHeaders(), body },
     );
 
     const rates: ShipmentRate[] = [];
@@ -220,7 +220,7 @@ export class USPSAdapter extends ShippingAdapter {
 
   async createShipment(
     request: ShipmentRequest,
-    rateId: string
+    rateId: string,
   ): Promise<ShipmentLabel> {
     await this.ensureAuthenticated();
 
@@ -271,7 +271,7 @@ export class USPSAdapter extends ShippingAdapter {
     const data = await this.request<USPSLabel>(
       "POST",
       `${this.baseUrl}/v3/labels`,
-      { headers: this.authHeaders(), body }
+      { headers: this.authHeaders(), body },
     );
 
     const meta = data.labelMetadata;
@@ -281,7 +281,8 @@ export class USPSAdapter extends ShippingAdapter {
       labelId: meta.trackingNumber,
       trackingNumber: meta.trackingNumber,
       carrier: "USPS",
-      service: (USPS_SERVICE_MAP[rateId] ?? "STANDARD") as ShipmentLabel["service"],
+      service: (USPS_SERVICE_MAP[rateId] ??
+        "STANDARD") as ShipmentLabel["service"],
       labelUrl: "",
       format: "PDF",
       labelBytes,
@@ -310,7 +311,7 @@ export class USPSAdapter extends ShippingAdapter {
     const data = await this.request<USPSTrackingResponse>(
       "GET",
       `${this.baseUrl}/v3/tracking/${encodeURIComponent(trackingNumber)}`,
-      { headers: this.authHeaders() }
+      { headers: this.authHeaders() },
     );
 
     const events: TrackingEvent[] = [];
@@ -344,7 +345,9 @@ export class USPSAdapter extends ShippingAdapter {
     return false;
   }
 
-  async validateAddress(address: ShippingAddress): Promise<AddressValidationResult> {
+  async validateAddress(
+    address: ShippingAddress,
+  ): Promise<AddressValidationResult> {
     await this.ensureAuthenticated();
 
     const normalized = this.AddressNormalizer.normalize(address);
@@ -362,7 +365,7 @@ export class USPSAdapter extends ShippingAdapter {
       const data = await this.request<USPSAddressResponse>(
         "GET",
         `${this.baseUrl}/v3/addresses?${params.toString()}`,
-        { headers: this.authHeaders() }
+        { headers: this.authHeaders() },
       );
 
       const corrected = data.address;
@@ -380,7 +383,7 @@ export class USPSAdapter extends ShippingAdapter {
           email: address.email,
         },
         messages: (data.corrections ?? []).map(
-          (c) => `${c.originalValue} → ${c.correctedValue}`
+          (c) => `${c.originalValue} → ${c.correctedValue}`,
         ),
         rawResponse: data,
       };
@@ -438,9 +441,7 @@ export class USPSAdapter extends ShippingAdapter {
     return map[mailClass] ?? 5;
   }
 
-  private parseEvent(
-    e: USPSTrackingResponse["TrackSummary"]
-  ): TrackingEvent {
+  private parseEvent(e: USPSTrackingResponse["TrackSummary"]): TrackingEvent {
     const ts = new Date(`${e.EventDate} ${e.EventTime}`);
     const location = [e.EventCity, e.EventState, e.EventZIPCode]
       .filter(Boolean)
@@ -459,11 +460,14 @@ export class USPSAdapter extends ShippingAdapter {
     const lower = event.toLowerCase();
     if (lower.includes("delivered")) return "DELIVERED";
     if (lower.includes("out for delivery")) return "OUT_FOR_DELIVERY";
-    if (lower.includes("in transit") || lower.includes("in-transit")) return "IN_TRANSIT";
-    if (lower.includes("accepted") || lower.includes("picked up")) return "PICKED_UP";
+    if (lower.includes("in transit") || lower.includes("in-transit"))
+      return "IN_TRANSIT";
+    if (lower.includes("accepted") || lower.includes("picked up"))
+      return "PICKED_UP";
     if (lower.includes("arrived")) return "IN_TRANSIT";
     if (lower.includes("departed")) return "IN_TRANSIT";
-    if (lower.includes("exception") || lower.includes("held")) return "EXCEPTION";
+    if (lower.includes("exception") || lower.includes("held"))
+      return "EXCEPTION";
     return "UNKNOWN";
   }
 }

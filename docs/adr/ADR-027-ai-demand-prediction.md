@@ -9,6 +9,7 @@
 ## Problem Statement
 
 Current platform lacks predictive capabilities:
+
 - Static delivery slots cannot adapt to demand fluctuations
 - Driver allocation decided day-of without forecasting
 - No visibility into peak demand periods for capacity planning
@@ -17,6 +18,7 @@ Current platform lacks predictive capabilities:
 - Customer frustration from unavailable time slots during peak hours
 
 We need an intelligent system that forecasts delivery volume using historical patterns, zone characteristics, and external events to enable:
+
 - Automatic slot capacity adjustment
 - Proactive driver scheduling
 - Demand spike prediction (e.g., weekend, promotional days)
@@ -63,45 +65,48 @@ Auto-adjust slot capacity + Driver allocation suggestions
 ### 2. Feature Store Design
 
 **Zone-Level Features:**
+
 ```typescript
 interface ZoneDemandFeatures {
   zoneId: string;
-  populationDensity: number;      // people per sq km
-  businessDensity: number;         // businesses per sq km
-  historicalAvgVolume: number;     // avg deliveries per day
-  historicalPeakVolume: number;    // 95th percentile
-  competitorPresence: number;      // count of competitors in zone
-  avgDeliveryDistance: number;     // km (affects time slots)
-  residentialRatio: number;        // 0-1, proportion of residential
-  commercialRatio: number;         // 0-1, proportion of commercial
+  populationDensity: number; // people per sq km
+  businessDensity: number; // businesses per sq km
+  historicalAvgVolume: number; // avg deliveries per day
+  historicalPeakVolume: number; // 95th percentile
+  competitorPresence: number; // count of competitors in zone
+  avgDeliveryDistance: number; // km (affects time slots)
+  residentialRatio: number; // 0-1, proportion of residential
+  commercialRatio: number; // 0-1, proportion of commercial
 }
 ```
 
 **Temporal Features:**
+
 ```typescript
 interface TemporalFeatures {
-  hour: number;                    // 0-23
-  dayOfWeek: number;               // 0-6 (0=Sunday)
-  dayOfMonth: number;              // 1-31
-  weekOfYear: number;              // 1-52
-  isHoliday: boolean;              // public holidays
-  seasonalIndex: number;           // 0-3 (Q1-Q4)
+  hour: number; // 0-23
+  dayOfWeek: number; // 0-6 (0=Sunday)
+  dayOfMonth: number; // 1-31
+  weekOfYear: number; // 1-52
+  isHoliday: boolean; // public holidays
+  seasonalIndex: number; // 0-3 (Q1-Q4)
   isWeekend: boolean;
-  isMonday: boolean;               // special handling for Mondays
-  isFriday: boolean;               // special handling for Fridays
-  daysUntilHoliday: number;        // anticipation effect
+  isMonday: boolean; // special handling for Mondays
+  isFriday: boolean; // special handling for Fridays
+  daysUntilHoliday: number; // anticipation effect
 }
 ```
 
 **Event Features:**
+
 ```typescript
 interface EventFeatures {
-  hasPromotion: boolean;           // active marketing campaign
-  promotionIntensity: number;      // 0-10 scale
-  weatherCondition: 'clear' | 'rain' | 'snow' | 'fog';
+  hasPromotion: boolean; // active marketing campaign
+  promotionIntensity: number; // 0-10 scale
+  weatherCondition: "clear" | "rain" | "snow" | "fog";
   temperatureC: number;
-  majorEventNearby: boolean;       // concert, sports, etc.
-  lastMileApiDown: boolean;        // external service outages
+  majorEventNearby: boolean; // concert, sports, etc.
+  lastMileApiDown: boolean; // external service outages
 }
 ```
 
@@ -110,7 +115,9 @@ interface EventFeatures {
 **Ensemble Approach (Best of Breed):**
 
 #### 3.1 Seasonal Decomposition Model
+
 Decomposes historical series into additive components:
+
 ```
 demand(t) = trend(t) + seasonal(t) + residual(t)
 ```
@@ -122,7 +129,9 @@ demand(t) = trend(t) + seasonal(t) + residual(t)
 Used for: Smooth forecasts, handling strong repeating patterns
 
 #### 3.2 Zone-Weighted Regression
+
 Learns feature → demand mapping per zone:
+
 ```
 demand = β₀ + β₁×hour + β₂×dayOfWeek + β₃×isHoliday
        + β₄×promotion + β₅×temperature + β₆×competitorCount
@@ -135,7 +144,9 @@ demand = β₀ + β₁×hour + β₂×dayOfWeek + β₃×isHoliday
 Used for: Feature-driven predictions, external variable incorporation
 
 #### 3.3 Day-of-Week Patterns
+
 Simple but effective for weekly periodicity:
+
 ```
 forecast = historical_avg(hour, day_of_week) × trend_multiplier
 ```
@@ -147,6 +158,7 @@ forecast = historical_avg(hour, day_of_week) × trend_multiplier
 Used for: Baseline predictions, handling strong weekly patterns
 
 **Ensemble Voting:**
+
 ```typescript
 forecast = 0.4 × seasonalModel + 0.3 × regressionModel + 0.3 × dayOfWeekModel
 
@@ -393,7 +405,7 @@ async function adjustSlotCapacity(zoneId: string, slotDate: Date) {
   // 2. For each hour, calculate recommended capacity
   const recommendations = [];
   for (let hour = 0; hour < 24; hour++) {
-    const forecast = forecasts.find(f => getHour(f.forecastTime) === hour);
+    const forecast = forecasts.find((f) => getHour(f.forecastTime) === hour);
     if (!forecast) continue;
 
     // 3. Convert predicted volume to slot capacity
@@ -402,7 +414,7 @@ async function adjustSlotCapacity(zoneId: string, slotDate: Date) {
     const deliveriesPerSlot = 3; // avg deliveries per time slot
 
     const recommended = Math.ceil(
-      (forecast.predictedVolume * safetyFactor) / deliveriesPerSlot
+      (forecast.predictedVolume * safetyFactor) / deliveriesPerSlot,
     );
 
     recommendations.push({
@@ -440,12 +452,14 @@ async function adjustSlotCapacity(zoneId: string, slotDate: Date) {
 function calculateOptimalDriverCount(hourlyRecommendations: any[]): number {
   // Find peak hour demand
   const peakHour = hourlyRecommendations.reduce((max, curr) =>
-    curr.recommendedCapacity > max.recommendedCapacity ? curr : max
+    curr.recommendedCapacity > max.recommendedCapacity ? curr : max,
   );
 
   // Estimate drivers needed (1 driver can handle ~5 deliveries in peak period)
   const deliveriesPerDriver = 5;
-  const driversForPeak = Math.ceil(peakHour.recommendedCapacity / deliveriesPerDriver);
+  const driversForPeak = Math.ceil(
+    peakHour.recommendedCapacity / deliveriesPerDriver,
+  );
 
   // Add 20% reserve for contingencies
   return Math.ceil(driversForPeak * 1.2);
@@ -464,13 +478,15 @@ async function detectAnomalies(zoneId: string, forecastTime: Date) {
 
   if (!forecast || !forecast.actualVolume) return null;
 
-  const deviation = (forecast.actualVolume - forecast.predictedVolume) / forecast.predictedVolume;
+  const deviation =
+    (forecast.actualVolume - forecast.predictedVolume) /
+    forecast.predictedVolume;
   const absDeviation = Math.abs(deviation);
 
   // Spike: >50% above prediction
   if (deviation > 0.5 && absDeviation > 2) {
     return {
-      anomalyType: 'spike',
+      anomalyType: "spike",
       severity: Math.min(absDeviation / 5, 1),
       likelyReason: await inferAnomalyReason(zoneId, forecastTime, deviation),
     };
@@ -479,7 +495,7 @@ async function detectAnomalies(zoneId: string, forecastTime: Date) {
   // Drop: >30% below prediction
   if (deviation < -0.3 && absDeviation > 1.5) {
     return {
-      anomalyType: 'drop',
+      anomalyType: "drop",
       severity: Math.min(absDeviation / 3, 1),
       likelyReason: await inferAnomalyReason(zoneId, forecastTime, deviation),
     };
@@ -488,9 +504,9 @@ async function detectAnomalies(zoneId: string, forecastTime: Date) {
   // Seasonal break: different pattern than historical
   if (await isSeasonalBreak(zoneId, forecastTime, forecast)) {
     return {
-      anomalyType: 'seasonal_break',
+      anomalyType: "seasonal_break",
       severity: 0.7,
-      likelyReason: 'holiday_shift_or_promotional_event',
+      likelyReason: "holiday_shift_or_promotional_event",
     };
   }
 
@@ -517,18 +533,21 @@ async function detectAnomalies(zoneId: string, forecastTime: Date) {
 ## Rollout Plan
 
 **Phase 1 (Sprint 4.8):**
+
 - ADR-027 + core types
 - Zone profile feature store
 - Seasonal decomposition + day-of-week models
 - Basic demand forecast API
 
 **Phase 2 (Sprint 4.9):**
+
 - Zone-weighted regression model
 - Ensemble voting integration
 - Capacity recommendation engine
 - Dashboard visualization
 
 **Phase 3 (Sprint 5.0):**
+
 - Anomaly detection system
 - Platform health dashboard
 - Auto-apply capacity recommendations (with manual override)
@@ -537,21 +556,25 @@ async function detectAnomalies(zoneId: string, forecastTime: Date) {
 ## Rationale
 
 **Why ensemble approach?**
+
 - No single model dominates all scenarios; ensemble reduces systematic bias
 - Seasonal + regression + day-of-week captures different aspects of demand
 - Weighted voting allows easy model updates without retraining
 
 **Why zone clustering?**
+
 - Enables transfer learning; zones with similar profiles share patterns
 - Reduces cold-start problem for new zones
 - Improves prediction for low-volume zones
 
 **Why confidence intervals?**
+
 - Uncertainty quantification helps with risk-aware capacity planning
 - High uncertainty → conservative recommendation (more drivers/capacity)
 - Low uncertainty → aggressive optimization possible
 
 **Why Prisma models?**
+
 - Feature snapshots create audit trail for model debugging
 - Forecasts enable backtest/accuracy tracking
 - Recommendation records track adoption and ROI

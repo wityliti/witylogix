@@ -1,40 +1,50 @@
-'use client';
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Header } from '@/components/layout/header';
-import { Button } from '@/components/ui/button';
-import { WLMap } from '@/components/map/wl-map';
-import { ZoneLayer } from '@/components/map/zone-layer';
-import { HeatmapLayer } from '@/components/map/heatmap-layer';
-import { PinLayer } from '@/components/map/pin-layer';
-import { HubLayer } from '@/components/map/hub-layer';
-import { DrawLayer } from '@/components/map/draw-layer';
-import { ModeToggle, type ZoneMode } from '@/components/zones/mode-toggle';
-import { OverlayControls, type OverlayState } from '@/components/zones/overlay-controls';
-import { ZoneSearch } from '@/components/zones/zone-search';
-import { KpiStrip } from '@/components/zones/kpi-strip';
-import { ZoneInspector } from '@/components/zones/zone-inspector';
-import { ErrorState } from '@/components/ui/error-state';
-import { track } from '@/lib/track';
-import { api } from '@/lib/api';
-import { useZonesGeoJson } from '@/hooks/use-zones-geojson';
-import { useZoneOverlays } from '@/hooks/use-zone-overlays';
+"use client";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Header } from "@/components/layout/header";
+import { Button } from "@/components/ui/button";
+import { WLMap } from "@/components/map/wl-map";
+import { ZoneLayer } from "@/components/map/zone-layer";
+import { HeatmapLayer } from "@/components/map/heatmap-layer";
+import { PinLayer } from "@/components/map/pin-layer";
+import { HubLayer } from "@/components/map/hub-layer";
+import { DrawLayer } from "@/components/map/draw-layer";
+import { ModeToggle, type ZoneMode } from "@/components/zones/mode-toggle";
+import {
+  OverlayControls,
+  type OverlayState,
+} from "@/components/zones/overlay-controls";
+import { ZoneSearch } from "@/components/zones/zone-search";
+import { KpiStrip } from "@/components/zones/kpi-strip";
+import { ZoneInspector } from "@/components/zones/zone-inspector";
+import { ErrorState } from "@/components/ui/error-state";
+import { track } from "@/lib/track";
+import { api } from "@/lib/api";
+import { useZonesGeoJson } from "@/hooks/use-zones-geojson";
+import { useZoneOverlays } from "@/hooks/use-zone-overlays";
 
 const DEFAULT_OVERLAYS: OverlayState = {
   heatmap: true,
   sla: true,
   openOrders: true,
   hubs: true,
-  window: '24h',
+  window: "24h",
 };
 const DEFAULT_CENTER: [number, number] = [77.12, 28.65]; // per-org override to come later
 
 export default function ZonesPage() {
   const router = useRouter();
-  const { data: geojson, loading: zonesLoading, error: zonesError, refetch: refetchZones } = useZonesGeoJson();
+  const {
+    data: geojson,
+    loading: zonesLoading,
+    error: zonesError,
+    refetch: refetchZones,
+  } = useZonesGeoJson();
   const [overlays, setOverlays] = useState<OverlayState>(DEFAULT_OVERLAYS);
-  const { data: overlaysData, error: overlaysError } = useZoneOverlays(overlays.window);
-  const [mode, setMode] = useState<ZoneMode>('monitor');
+  const { data: overlaysData, error: overlaysError } = useZoneOverlays(
+    overlays.window,
+  );
+  const [mode, setMode] = useState<ZoneMode>("monitor");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [drawing, setDrawing] = useState(false);
 
@@ -67,13 +77,14 @@ export default function ZonesPage() {
     zones: overlaysData?.zones.length ?? 0,
     driversOnline: overlaysData?.zones.reduce((s, z) => s + z.drivers, 0) ?? 0,
     openOrders: overlaysData?.zones.reduce((s, z) => s + z.openOrders, 0) ?? 0,
-    slipping: overlaysData?.zones.filter((z) => z.health === 'slipping').length ?? 0,
+    slipping:
+      overlaysData?.zones.filter((z) => z.health === "slipping").length ?? 0,
   };
 
   const fetchError = zonesError ?? overlaysError;
 
   useEffect(() => {
-    track('zones.viewed', {
+    track("zones.viewed", {
       mode,
       overlays: (Object.keys(overlays) as (keyof OverlayState)[]).filter(
         (k) => overlays[k] === true,
@@ -87,18 +98,20 @@ export default function ZonesPage() {
     <>
       <Header
         title="Delivery Zones"
-        subtitle={`${zones.length} zones · ${mode === 'monitor' ? 'Monitor' : 'Configure'}`}
+        subtitle={`${zones.length} zones · ${mode === "monitor" ? "Monitor" : "Configure"}`}
       />
       <div
         className="relative h-[calc(100vh-64px)] w-full"
-        style={{ background: 'var(--wl-bg-root)' }}
+        style={{ background: "var(--wl-bg-root)" }}
       >
         {/* Loading overlay — shown while zone geojson is fetching */}
         {zonesLoading && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-wl-bg-root/80 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-3">
               <div className="w-8 h-8 border-2 border-wl-primary-500 border-t-transparent rounded-full animate-spin" />
-              <span className="text-wl-text-secondary text-sm">Loading zones…</span>
+              <span className="text-wl-text-secondary text-sm">
+                Loading zones…
+              </span>
             </div>
           </div>
         )}
@@ -112,20 +125,26 @@ export default function ZonesPage() {
         )}
         <WLMap center={DEFAULT_CENTER} zoom={11}>
           {geojson && (
-            <ZoneLayer zones={geojson} selectedId={selectedId} onSelect={setSelectedId} />
+            <ZoneLayer
+              zones={geojson}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+            />
           )}
           {overlays.heatmap && overlaysData?.heatmap && (
             <HeatmapLayer points={overlaysData.heatmap} />
           )}
           {overlays.openOrders && <PinLayer pins={[]} />}
-          {overlays.hubs && overlaysData?.hubs && <HubLayer hubs={overlaysData.hubs} />}
+          {overlays.hubs && overlaysData?.hubs && (
+            <HubLayer hubs={overlaysData.hubs} />
+          )}
           {drawing && selectedZone && (
             <DrawLayer
               mode="polygon"
               value={null}
               onChange={async (shape) => {
-                if (!shape || shape.type !== 'polygon') return;
-                track('zones.geometry_edited', {
+                if (!shape || shape.type !== "polygon") return;
+                track("zones.geometry_edited", {
                   zoneId: selectedZone.id,
                   type: shape.type,
                 });
@@ -144,7 +163,11 @@ export default function ZonesPage() {
 
         <div className="absolute top-4 right-4 flex gap-2 items-center">
           <ZoneSearch zones={zones} onSelect={setSelectedId} />
-          <Button variant="primary" size="md" onClick={() => router.push('/zones/new')}>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => router.push("/zones/new")}
+          >
             + New zone
           </Button>
         </div>
@@ -153,7 +176,9 @@ export default function ZonesPage() {
           <KpiStrip
             stats={stats}
             onClickSlipping={() => {
-              const z = overlaysData?.zones.find((zone) => zone.health === 'slipping');
+              const z = overlaysData?.zones.find(
+                (zone) => zone.health === "slipping",
+              );
               if (z) setSelectedId(z.id);
             }}
           />

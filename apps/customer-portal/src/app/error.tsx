@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { cn } from '@/lib/utils';
+import { useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -10,7 +10,7 @@ interface ErrorProps {
 
 export default function Error({ error, reset }: ErrorProps) {
   useEffect(() => {
-    console.error('Customer portal error boundary caught:', {
+    console.error("Customer portal error boundary caught:", {
       message: error.message,
       digest: error.digest,
       stack: error.stack,
@@ -19,18 +19,18 @@ export default function Error({ error, reset }: ErrorProps) {
   }, [error]);
 
   return (
-    <div className={cn('flex min-h-screen items-center justify-center p-6')}>
+    <div className={cn("flex min-h-screen items-center justify-center p-6")}>
       <div className="card w-full max-w-sm text-center space-y-4">
         <div className="space-y-2">
           <p className="text-2xl">⚠️</p>
           <h1 className="text-lg font-semibold">Something went wrong</h1>
-          <p className="text-sm" style={{ color: 'var(--wl-text-secondary)' }}>
+          <p className="text-sm" style={{ color: "var(--wl-text-secondary)" }}>
             We couldn&apos;t load this page. Please try again.
           </p>
           {error.digest && (
             <p
               className="text-xs font-mono"
-              style={{ color: 'var(--wl-text-tertiary)' }}
+              style={{ color: "var(--wl-text-tertiary)" }}
             >
               Error ID: {error.digest}
             </p>

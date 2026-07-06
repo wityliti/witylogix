@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { api } from '../services/api';
+import { useState, useCallback } from "react";
+import { api } from "../services/api";
 
 interface ApiState {
   loading: boolean;
@@ -20,7 +20,7 @@ export const useApi = () => {
   });
 
   const get = useCallback(
-    async <T = any,>(path: string, options?: UseApiOptions): Promise<T> => {
+    async <T = any>(path: string, options?: UseApiOptions): Promise<T> => {
       setState({ loading: true, error: null, data: null });
       try {
         const response = await api.get<T>(path);
@@ -28,20 +28,21 @@ export const useApi = () => {
         options?.onSuccess?.(response);
         return response;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
         setState({ loading: false, error: errorMessage, data: null });
         options?.onError?.(error);
         throw error;
       }
     },
-    []
+    [],
   );
 
   const post = useCallback(
-    async <T = any,>(
+    async <T = any>(
       path: string,
       body?: any,
-      options?: UseApiOptions
+      options?: UseApiOptions,
     ): Promise<T> => {
       setState({ loading: true, error: null, data: null });
       try {
@@ -50,20 +51,21 @@ export const useApi = () => {
         options?.onSuccess?.(response);
         return response;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
         setState({ loading: false, error: errorMessage, data: null });
         options?.onError?.(error);
         throw error;
       }
     },
-    []
+    [],
   );
 
   const put = useCallback(
-    async <T = any,>(
+    async <T = any>(
       path: string,
       body?: any,
-      options?: UseApiOptions
+      options?: UseApiOptions,
     ): Promise<T> => {
       setState({ loading: true, error: null, data: null });
       try {
@@ -72,17 +74,18 @@ export const useApi = () => {
         options?.onSuccess?.(response);
         return response;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
         setState({ loading: false, error: errorMessage, data: null });
         options?.onError?.(error);
         throw error;
       }
     },
-    []
+    [],
   );
 
   const remove = useCallback(
-    async <T = any,>(path: string, options?: UseApiOptions): Promise<T> => {
+    async <T = any>(path: string, options?: UseApiOptions): Promise<T> => {
       setState({ loading: true, error: null, data: null });
       try {
         const response = await api.delete<T>(path);
@@ -90,13 +93,14 @@ export const useApi = () => {
         options?.onSuccess?.(response);
         return response;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
         setState({ loading: false, error: errorMessage, data: null });
         options?.onError?.(error);
         throw error;
       }
     },
-    []
+    [],
   );
 
   return {

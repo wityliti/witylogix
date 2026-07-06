@@ -10,12 +10,14 @@
  *   3. Mark the original shipment as RETURNED atomically
  */
 
-import { Worker } from 'bullmq';
-import { prisma } from '@witylogix/db';
-import { getQueueConnection, registerWorker } from '../lib/queue.js';
-import type { FailedDeliveryJobData } from '../lib/queue.js';
+import { Worker } from "bullmq";
+import { prisma } from "@witylogix/db";
+import { getQueueConnection, registerWorker } from "../lib/queue.js";
+import type { FailedDeliveryJobData } from "../lib/queue.js";
 
-async function processAutoReturn(data: FailedDeliveryJobData): Promise<{ skipped?: boolean; returned?: boolean; returnNumber?: string }> {
+async function processAutoReturn(
+  data: FailedDeliveryJobData,
+): Promise<{ skipped?: boolean; returned?: boolean; returnNumber?: string }> {
   const { shipmentId } = data;
 
   const shipment = await prisma.shipment.findUnique({
@@ -34,7 +36,7 @@ async function processAutoReturn(data: FailedDeliveryJobData): Promise<{ skipped
   }
 
   // Idempotency: if already returned or not in FAILED, skip
-  if (shipment.status !== 'FAILED') {
+  if (shipment.status !== "FAILED") {
     return { skipped: true };
   }
 
@@ -46,8 +48,8 @@ async function processAutoReturn(data: FailedDeliveryJobData): Promise<{ skipped
         shopId: shipment.shopId,
         orderId: shipment.orderId,
         shipmentNumber: returnNumber,
-        status: 'RETURNED',
-        deliveryMethod: 'LOCAL_DELIVERY',
+        status: "RETURNED",
+        deliveryMethod: "LOCAL_DELIVERY",
         metadata: {
           returnedFrom: shipmentId,
           autoReturn: true,
@@ -56,7 +58,7 @@ async function processAutoReturn(data: FailedDeliveryJobData): Promise<{ skipped
     }),
     prisma.shipment.update({
       where: { id: shipmentId },
-      data: { status: 'RETURNED' },
+      data: { status: "RETURNED" },
     }),
   ]);
 
@@ -65,7 +67,7 @@ async function processAutoReturn(data: FailedDeliveryJobData): Promise<{ skipped
 
 export function startFailedDeliveryWorker(): void {
   const worker = new Worker<FailedDeliveryJobData>(
-    'failed-deliveries',
+    "failed-deliveries",
     async (job) => {
       return processAutoReturn(job.data);
     },

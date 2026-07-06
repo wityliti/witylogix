@@ -28,16 +28,13 @@ export {
   type RefundCalculation,
   type ConditionAdjustment,
   type ItemCondition,
-} from './types.js';
+} from "./types.js";
 
 // ============================================================================
 // Return Service Exports
 // ============================================================================
 
-export {
-  ReturnService,
-  returnService,
-} from './return-service.js';
+export { ReturnService, returnService } from "./return-service.js";
 
 // ============================================================================
 // Status Machine Exports
@@ -49,7 +46,7 @@ export {
   validateTransition,
   isTerminalStatus,
   isActive,
-} from './status-machine.js';
+} from "./status-machine.js";
 
 // ============================================================================
 // Refund Calculator Exports
@@ -60,7 +57,7 @@ export {
   calculateRestockingFee,
   adjustForCondition,
   calculateItemRefund,
-} from './refund-calculator.js';
+} from "./refund-calculator.js";
 
 // ============================================================================
 // Event & Workflow Exports
@@ -74,8 +71,6 @@ export {
   type ReturnReceivedPayload,
   type ReturnInspectedPayload,
   type ReturnRefundedPayload,
-} from './events.js';
+} from "./events.js";
 
-export {
-  registerReturnWorkflows,
-} from './return-workflow.js';
+export { registerReturnWorkflows } from "./return-workflow.js";

@@ -125,7 +125,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     if (expectedHmac !== hmac) {
       console.warn(
-        `HMAC validation failed for shop ${shop}. Rejecting request.`
+        `HMAC validation failed for shop ${shop}. Rejecting request.`,
       );
       return {
         error: "HMAC validation failed. Invalid request origin.",
@@ -157,7 +157,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           client_secret: process.env.SHOPIFY_API_SECRET!,
           code,
         }),
-      }
+      },
     );
 
     if (!tokenResponse.ok) {
@@ -206,7 +206,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         scope: scopes,
         installSource: "app_store",
         planName: "trial", // Default trial plan for new installations
-      }
+      },
     );
 
     shopRecord = shopCreateResponse.data;
@@ -233,7 +233,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     for (const webhook of MANDATORY_WEBHOOKS) {
       // Mock: notify our API that webhooks should be registered
       // In reality, this would be a POST to the Shopify API webhook create endpoint
-      console.log(`Webhook registered: ${webhook.topic} -> ${webhook.endpoint}`);
+      console.log(
+        `Webhook registered: ${webhook.topic} -> ${webhook.endpoint}`,
+      );
     }
 
     // Call our API to confirm webhook setup

@@ -3,8 +3,8 @@
  * Provides domain-specific caching patterns
  */
 
-import { CacheClient } from './client';
-import { RateLimitConfig } from './types';
+import { CacheClient } from "./client";
+import { RateLimitConfig } from "./types";
 
 /**
  * TenantCacheStrategy - Namespace keys by tenant (shop)
@@ -21,7 +21,7 @@ export class TenantCacheStrategy {
   static createKey(
     shopId: string,
     entityType: string,
-    entityId?: string
+    entityId?: string,
   ): string {
     if (entityId) {
       return `tenant:${shopId}:${entityType}:${entityId}`;
@@ -172,9 +172,9 @@ export class RateLimitStrategy {
    */
   static async checkLimit(
     cache: CacheClient,
-    config: RateLimitConfig
+    config: RateLimitConfig,
   ): Promise<number> {
-    const key = config.key || 'default';
+    const key = config.key || "default";
     const current = await cache.increment(key, 1);
     return Math.max(0, config.maxRequests - current);
   }
@@ -186,9 +186,9 @@ export class RateLimitStrategy {
    */
   static async resetLimit(
     cache: CacheClient,
-    config: RateLimitConfig
+    config: RateLimitConfig,
   ): Promise<void> {
-    const key = config.key || 'default';
+    const key = config.key || "default";
     await cache.delete(key);
   }
 
@@ -200,9 +200,9 @@ export class RateLimitStrategy {
    */
   static async getRemainingRequests(
     cache: CacheClient,
-    config: RateLimitConfig
+    config: RateLimitConfig,
   ): Promise<number> {
-    const key = config.key || 'default';
+    const key = config.key || "default";
     const ttl = await cache.ttl(key);
 
     // Key doesn't exist, bucket is reset
@@ -257,7 +257,7 @@ export class SessionCacheStrategy {
   static async getSession<T = any>(
     cache: CacheClient,
     sessionId: string,
-    ttl?: number
+    ttl?: number,
   ): Promise<T | null> {
     const key = this.createKey(sessionId);
     const session = await cache.get<T>(key);
@@ -285,7 +285,7 @@ export class SessionCacheStrategy {
     data: T,
     ttl: number,
     userId?: string,
-    shopId?: string
+    shopId?: string,
   ): Promise<void> {
     const key = this.createKey(sessionId);
     const tags: string[] = [];
@@ -308,7 +308,7 @@ export class SessionCacheStrategy {
    */
   static async invalidateUserSessions(
     cache: CacheClient,
-    userId: string
+    userId: string,
   ): Promise<number> {
     const tag = this.createUserTag(userId);
     return await cache.deleteByTag(tag);
@@ -322,7 +322,7 @@ export class SessionCacheStrategy {
    */
   static async invalidateTenantSessions(
     cache: CacheClient,
-    shopId: string
+    shopId: string,
   ): Promise<number> {
     const tag = this.createTenantTag(shopId);
     return await cache.deleteByTag(tag);

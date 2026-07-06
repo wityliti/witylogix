@@ -24,10 +24,7 @@ export {
 } from "./delivery-method-card";
 
 // Zone Map Mini
-export {
-  ZoneMapMini,
-  type ZoneMapMiniProps,
-} from "./zone-map-mini";
+export { ZoneMapMini, type ZoneMapMiniProps } from "./zone-map-mini";
 
 // Address Suggestion Item
 export {

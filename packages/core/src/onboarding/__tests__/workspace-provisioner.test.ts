@@ -199,7 +199,9 @@ describe("WorkspaceProvisioner", () => {
       });
 
       (any.workspaceSettings.create as any).mockResolvedValue({});
-      (any.workspaceApiKey.create as any).mockResolvedValue({ keyPrefix: "ws_123" });
+      (any.workspaceApiKey.create as any).mockResolvedValue({
+        keyPrefix: "ws_123",
+      });
 
       await provisioner.provisionWorkspace(config, "user-123");
       const result1 = await provisioner.provisionWorkspace(config, "user-123");
@@ -224,11 +226,13 @@ describe("WorkspaceProvisioner", () => {
         orgId: "org-123",
       };
 
-      (any.workspace.create as any).mockRejectedValue(new Error("Database error"));
-
-      await expect(provisioner.provisionWorkspace(config, "user-123")).rejects.toThrow(
-        OnboardingError,
+      (any.workspace.create as any).mockRejectedValue(
+        new Error("Database error"),
       );
+
+      await expect(
+        provisioner.provisionWorkspace(config, "user-123"),
+      ).rejects.toThrow(OnboardingError);
     });
   });
 
@@ -332,7 +336,10 @@ describe("WorkspaceProvisioner", () => {
         industry: updates.industry,
       });
 
-      const result = await provisioner.updateWorkspaceSettings(workspaceId, updates);
+      const result = await provisioner.updateWorkspaceSettings(
+        workspaceId,
+        updates,
+      );
 
       expect(result.name).toBe(updates.name);
     });

@@ -1,17 +1,21 @@
-'use client';
-import { useMemo } from 'react';
-import { PinLayer } from './pin-layer';
-import { useFitBounds } from './use-fit-bounds';
-import { useWLMap } from './wl-map-context';
-import type { TerminalLocation } from '@/hooks/use-pos';
+"use client";
+import { useMemo } from "react";
+import { PinLayer } from "./pin-layer";
+import { useFitBounds } from "./use-fit-bounds";
+import { useWLMap } from "./wl-map-context";
+import type { TerminalLocation } from "@/hooks/use-pos";
 
 const STATUS_TO_PIN = {
-  online: 'in_transit',   // green
-  offline: 'open',        // blue/info — neutral
-  error: 'delayed',       // red
+  online: "in_transit", // green
+  offline: "open", // blue/info — neutral
+  error: "delayed", // red
 } as const;
 
-export function PosTerminalLayer({ terminals }: { terminals: TerminalLocation[] }) {
+export function PosTerminalLayer({
+  terminals,
+}: {
+  terminals: TerminalLocation[];
+}) {
   const map = useWLMap();
 
   const pins = useMemo(
@@ -20,7 +24,7 @@ export function PosTerminalLayer({ terminals }: { terminals: TerminalLocation[] 
         id: t.id,
         lng: t.lng,
         lat: t.lat,
-        status: STATUS_TO_PIN[t.status] ?? 'open',
+        status: STATUS_TO_PIN[t.status] ?? "open",
         label: t.name,
       })),
     [terminals],

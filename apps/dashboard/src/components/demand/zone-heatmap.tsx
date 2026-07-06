@@ -43,21 +43,24 @@ export function ZoneHeatmap({
   }, [data]);
 
   // Get color based on demand intensity
-  const getDemandColor = useCallback((demand: number): string => {
-    const ratio = Math.min(demand / maxDemand, 1);
+  const getDemandColor = useCallback(
+    (demand: number): string => {
+      const ratio = Math.min(demand / maxDemand, 1);
 
-    if (ratio < 0.33) {
-      // Green to yellow
-      return `rgb(34, 197, 94)`;
-    } else if (ratio < 0.66) {
-      // Yellow
-      const intensity = (ratio - 0.33) / 0.33;
-      return `rgb(234, 179, 8)`;
-    } else {
-      // Yellow to red
-      return `rgb(239, 68, 68)`;
-    }
-  }, [maxDemand]);
+      if (ratio < 0.33) {
+        // Green to yellow
+        return `rgb(34, 197, 94)`;
+      } else if (ratio < 0.66) {
+        // Yellow
+        const intensity = (ratio - 0.33) / 0.33;
+        return `rgb(234, 179, 8)`;
+      } else {
+        // Yellow to red
+        return `rgb(239, 68, 68)`;
+      }
+    },
+    [maxDemand],
+  );
 
   const getBoundingColor = (zoneId: string): string => {
     if (hoveredZoneId === zoneId) return "var(--wl-primary-500)";
@@ -70,7 +73,7 @@ export function ZoneHeatmap({
       setSelectedZoneId(zone.zone.id);
       onZoneSelect?.(zone.zone.id);
     },
-    [onZoneSelect]
+    [onZoneSelect],
   );
 
   const handleZoneHover = useCallback(
@@ -86,7 +89,7 @@ export function ZoneHeatmap({
         setTooltipData(null);
       }
     },
-    []
+    [],
   );
 
   const maxRows = Math.ceil(data.length / gridCols);
@@ -238,7 +241,8 @@ export function ZoneHeatmap({
             </p>
             {tooltipData.historicalAverage && (
               <p className="text-xs text-wl-text-tertiary">
-                Historical Avg: {Math.round(tooltipData.historicalAverage)} units
+                Historical Avg: {Math.round(tooltipData.historicalAverage)}{" "}
+                units
               </p>
             )}
           </div>

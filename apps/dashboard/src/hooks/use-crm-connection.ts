@@ -143,7 +143,7 @@ export function useCrmConnection(): UseCrmConnectionReturn {
 
         const result = await api.post<{ data: CrmConnection }>(
           "/api/v4/integrations/crm/oauth/callback",
-          { code: data.code }
+          { code: data.code },
         );
         const connectionData = result.data;
         setConnection(connectionData);
@@ -156,18 +156,22 @@ export function useCrmConnection(): UseCrmConnectionReturn {
 
         return connectionData;
       } catch (err) {
-        const message = err instanceof Error ? err.message : "OAuth callback failed";
+        const message =
+          err instanceof Error ? err.message : "OAuth callback failed";
         setError(message);
         throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   const configureSyncSettings = useCallback(
-    async (config: { direction: "in" | "out" | "bidirectional"; objectTypes: string[] }) => {
+    async (config: {
+      direction: "in" | "out" | "bidirectional";
+      objectTypes: string[];
+    }) => {
       try {
         setIsLoading(true);
         setError(undefined);
@@ -178,19 +182,21 @@ export function useCrmConnection(): UseCrmConnectionReturn {
 
         const result = await api.patch<{ data: CrmConnection }>(
           `/api/v4/integrations/crm/${connection.id}/sync-config`,
-          { direction: config.direction, objectTypes: config.objectTypes }
+          { direction: config.direction, objectTypes: config.objectTypes },
         );
         setConnection(result.data);
       } catch (err) {
         const message =
-          err instanceof Error ? err.message : "Failed to configure sync settings";
+          err instanceof Error
+            ? err.message
+            : "Failed to configure sync settings";
         setError(message);
         throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    [connection]
+    [connection],
   );
 
   const testConnection = useCallback(async () => {
@@ -204,11 +210,12 @@ export function useCrmConnection(): UseCrmConnectionReturn {
 
       const result = await api.post<{ success: boolean; message: string }>(
         `/api/v4/integrations/crm/${connection.id}/test`,
-        {}
+        {},
       );
       return result;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Connection test failed";
+      const message =
+        err instanceof Error ? err.message : "Connection test failed";
       setError(message);
       return { success: false, message };
     } finally {
@@ -227,7 +234,7 @@ export function useCrmConnection(): UseCrmConnectionReturn {
 
       const result = await api.post<{ data: CrmConnection }>(
         `/api/v4/integrations/crm/${connection.id}/activate`,
-        {}
+        {},
       );
       setConnection(result.data);
     } catch (err) {
@@ -252,7 +259,8 @@ export function useCrmConnection(): UseCrmConnectionReturn {
       await api.delete(`/api/v4/integrations/crm/${connection.id}`);
       setConnection(null);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to disconnect";
+      const message =
+        err instanceof Error ? err.message : "Failed to disconnect";
       setError(message);
       throw err;
     } finally {
@@ -271,13 +279,14 @@ export function useCrmConnection(): UseCrmConnectionReturn {
 
       const result = await api.post<{ data: { lastSyncAt: string } }>(
         `/api/v4/integrations/crm/${connection.id}/sync`,
-        {}
+        {},
       );
       setConnection((prev) =>
-        prev ? { ...prev, lastSync: result.data.lastSyncAt } : prev
+        prev ? { ...prev, lastSync: result.data.lastSyncAt } : prev,
       );
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to trigger sync";
+      const message =
+        err instanceof Error ? err.message : "Failed to trigger sync";
       setError(message);
       throw err;
     } finally {
@@ -314,7 +323,7 @@ export function useOAuthFlow() {
 
         const result = await api.post<{ accessToken: string }>(
           "/api/v4/integrations/crm/oauth/token",
-          { platformId, code }
+          { platformId, code },
         );
         return result.accessToken;
       } catch (err) {
@@ -326,7 +335,7 @@ export function useOAuthFlow() {
         setIsProcessing(false);
       }
     },
-    []
+    [],
   );
 
   const refreshToken = useCallback(
@@ -337,18 +346,19 @@ export function useOAuthFlow() {
 
         const result = await api.post<{ accessToken: string }>(
           "/api/v4/integrations/crm/oauth/refresh",
-          { platformId, refreshToken: token }
+          { platformId, refreshToken: token },
         );
         return result.accessToken;
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Token refresh failed";
+        const message =
+          err instanceof Error ? err.message : "Token refresh failed";
         setError(message);
         throw err;
       } finally {
         setIsProcessing(false);
       }
     },
-    []
+    [],
   );
 
   return { exchangeCodeForToken, refreshToken, isProcessing, error };
@@ -394,7 +404,7 @@ export function useCrmMetrics(): UseCrmMetricsReturn {
       setError(undefined);
 
       const result = await api.get<{ data: ProviderItem[] }>(
-        "/api/v4/integrations/crm/providers"
+        "/api/v4/integrations/crm/providers",
       );
       const providers = result.data ?? [];
 
@@ -405,14 +415,22 @@ export function useCrmMetrics(): UseCrmMetricsReturn {
         .at(-1);
 
       setMetrics({
-        totalContactsSynced: providers.reduce((sum, p) => sum + (p.contactsCount ?? 0), 0),
-        totalDealsSynced: providers.reduce((sum, p) => sum + (p.dealsCount ?? 0), 0),
+        totalContactsSynced: providers.reduce(
+          (sum, p) => sum + (p.contactsCount ?? 0),
+          0,
+        ),
+        totalDealsSynced: providers.reduce(
+          (sum, p) => sum + (p.dealsCount ?? 0),
+          0,
+        ),
         lastSyncTime,
         activeSyncs: providers.filter((p) => p.status === "connected").length,
-        failedSyncs: providers.filter((p) => p.status === "disconnected").length,
+        failedSyncs: providers.filter((p) => p.status === "disconnected")
+          .length,
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to fetch metrics";
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch metrics";
       setError(message);
     } finally {
       setIsLoading(false);
@@ -422,7 +440,9 @@ export function useCrmMetrics(): UseCrmMetricsReturn {
   useEffect(() => {
     void revalidate();
 
-    const interval = setInterval(() => { void revalidate(); }, 30000);
+    const interval = setInterval(() => {
+      void revalidate();
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [revalidate]);
@@ -437,7 +457,7 @@ function generateRandomString(length: number): string {
   const bytes = new Uint8Array(Math.ceil(length * 0.75));
   crypto.getRandomValues(bytes);
   return btoa(String.fromCharCode(...bytes))
-    .replace(/[+/=]/g, '')
+    .replace(/[+/=]/g, "")
     .slice(0, length);
 }
 
@@ -446,7 +466,7 @@ function generateRandomString(length: number): string {
  */
 function buildAuthorizationUrl(
   platformId: string,
-  params: URLSearchParams
+  params: URLSearchParams,
 ): string {
   const baseUrls: Record<string, string> = {
     salesforce: "https://login.salesforce.com/services/oauth2/authorize",

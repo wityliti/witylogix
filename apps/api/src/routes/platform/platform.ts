@@ -100,7 +100,10 @@ async function statusHandler(request: FastifyRequest, reply: FastifyReply) {
   services.push({
     name: "API Server",
     status: "healthy",
-    uptime: Math.min(100, Math.round((process.uptime() / (30 * 24 * 3600)) * 1000) / 10),
+    uptime: Math.min(
+      100,
+      Math.round((process.uptime() / (30 * 24 * 3600)) * 1000) / 10,
+    ),
     responseTime: Date.now() - now,
     lastChecked: new Date(),
   });
@@ -118,7 +121,12 @@ async function statusHandler(request: FastifyRequest, reply: FastifyReply) {
       lastChecked: new Date(),
     });
   } catch {
-    services.push({ name: "PostgreSQL", status: "down", uptime: 0, lastChecked: new Date() });
+    services.push({
+      name: "PostgreSQL",
+      status: "down",
+      uptime: 0,
+      lastChecked: new Date(),
+    });
   }
 
   // ── Redis ─────────────────────────────────────────────────
@@ -135,7 +143,12 @@ async function statusHandler(request: FastifyRequest, reply: FastifyReply) {
       lastChecked: new Date(),
     });
   } catch {
-    services.push({ name: "Redis Cache", status: "down", uptime: 0, lastChecked: new Date() });
+    services.push({
+      name: "Redis Cache",
+      status: "down",
+      uptime: 0,
+      lastChecked: new Date(),
+    });
   }
 
   const healthyCount = services.filter((s) => s.status === "healthy").length;
@@ -160,7 +173,10 @@ async function statusHandler(request: FastifyRequest, reply: FastifyReply) {
  * Returns the current tenant's connected integrations from the database.
  * Requires authentication (shopId from session).
  */
-async function integrationsHandler(request: FastifyRequest, reply: FastifyReply) {
+async function integrationsHandler(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
   try {
     const shopId = (request as any).shopId as string;
 
@@ -196,7 +212,8 @@ async function integrationsHandler(request: FastifyRequest, reply: FastifyReply)
       summary: {
         total: integrations.length,
         connected: integrations.filter((i) => i.status === "connected").length,
-        disconnected: integrations.filter((i) => i.status === "disconnected").length,
+        disconnected: integrations.filter((i) => i.status === "disconnected")
+          .length,
         error: integrations.filter((i) => i.status === "error").length,
       },
     });
@@ -230,7 +247,9 @@ async function metricsHandler(request: FastifyRequest, reply: FastifyReply) {
       const start = Date.now();
       await prisma.$queryRaw`SELECT 1`;
       dbLatencyMs = Date.now() - start;
-    } catch { /* db down — leave at 0 */ }
+    } catch {
+      /* db down — leave at 0 */
+    }
 
     return reply.send({
       timestamp: new Date().toISOString(),
@@ -268,16 +287,27 @@ async function alertsHandler(_request: FastifyRequest, reply: FastifyReply) {
 /**
  * POST /platform/alerts/:alertId/acknowledge
  */
-async function acknowledgeAlertHandler(request: FastifyRequest, reply: FastifyReply) {
+async function acknowledgeAlertHandler(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
   try {
     AcknowledgeAlertSchema.parse(request.body);
-    return reply.send({ status: "acknowledged", timestamp: new Date().toISOString() });
+    return reply.send({
+      status: "acknowledged",
+      timestamp: new Date().toISOString(),
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return reply.code(400).send({ error: "Invalid request body", details: error.errors });
+      return reply
+        .code(400)
+        .send({ error: "Invalid request body", details: error.errors });
     }
     request.log.error(error, "Alert acknowledgement failed");
-    return reply.code(500).send({ error: "Failed to acknowledge alert", timestamp: new Date().toISOString() });
+    return reply.code(500).send({
+      error: "Failed to acknowledge alert",
+      timestamp: new Date().toISOString(),
+    });
   }
 }
 
@@ -291,11 +321,19 @@ export async function platformRoutes(app: FastifyInstance) {
   app.get("/platform/status", statusHandler);
 
   // Authenticated routes — need shopId for tenant context
-  app.get("/platform/integrations", { preHandler: [requireAuth] }, integrationsHandler);
+  app.get(
+    "/platform/integrations",
+    { preHandler: [requireAuth] },
+    integrationsHandler,
+  );
   app.get("/platform/metrics", metricsHandler);
   app.get("/platform/alerts", alertsHandler);
 
-  app.post("/platform/alerts/:alertId/acknowledge", {
-    preHandler: [requireAuth, requireRole("SUPER_ADMIN")],
-  }, acknowledgeAlertHandler);
+  app.post(
+    "/platform/alerts/:alertId/acknowledge",
+    {
+      preHandler: [requireAuth, requireRole("SUPER_ADMIN")],
+    },
+    acknowledgeAlertHandler,
+  );
 }

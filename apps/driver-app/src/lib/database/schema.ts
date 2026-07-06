@@ -11,8 +11,13 @@
 
 // ─── Table: offline_events ───────────────────────────────────────────────────
 
-export type SyncStatus = 'pending' | 'syncing' | 'synced' | 'conflict' | 'error';
-export type AssetType = 'signature' | 'photo_delivery' | 'photo_exception';
+export type SyncStatus =
+  | "pending"
+  | "syncing"
+  | "synced"
+  | "conflict"
+  | "error";
+export type AssetType = "signature" | "photo_delivery" | "photo_exception";
 
 export interface OfflineEvent {
   id: string;
@@ -75,7 +80,7 @@ export interface Migration {
 
 export const MIGRATIONS: Migration[] = [
   {
-    name: '001_create_offline_events',
+    name: "001_create_offline_events",
     sql: `
       CREATE TABLE IF NOT EXISTS offline_events (
         id                TEXT    PRIMARY KEY NOT NULL,
@@ -95,7 +100,7 @@ export const MIGRATIONS: Migration[] = [
     `,
   },
   {
-    name: '002_create_cached_routes',
+    name: "002_create_cached_routes",
     sql: `
       CREATE TABLE IF NOT EXISTS cached_routes (
         route_id   TEXT PRIMARY KEY NOT NULL,
@@ -106,7 +111,7 @@ export const MIGRATIONS: Migration[] = [
     `,
   },
   {
-    name: '003_create_cached_deliveries',
+    name: "003_create_cached_deliveries",
     sql: `
       CREATE TABLE IF NOT EXISTS cached_deliveries (
         delivery_id   TEXT PRIMARY KEY NOT NULL,
@@ -116,7 +121,7 @@ export const MIGRATIONS: Migration[] = [
     `,
   },
   {
-    name: '004_create_pod_assets',
+    name: "004_create_pod_assets",
     sql: `
       CREATE TABLE IF NOT EXISTS pod_assets (
         id          TEXT PRIMARY KEY NOT NULL,

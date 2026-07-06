@@ -5,7 +5,7 @@
  * Suitable for server-side rendered and SPA applications.
  */
 
-import { randomBytes } from 'crypto';
+import { randomBytes } from "crypto";
 
 export interface CSRFConfig {
   cookieName?: string;
@@ -13,7 +13,7 @@ export interface CSRFConfig {
   paramName?: string;
   secure?: boolean;
   httpOnly?: boolean;
-  sameSite?: 'Strict' | 'Lax' | 'None';
+  sameSite?: "Strict" | "Lax" | "None";
   maxAge?: number;
   excludeUrls?: string[];
 }
@@ -23,16 +23,17 @@ export interface CSRFConfig {
  */
 export class CSRFTokenManager {
   private config: Required<CSRFConfig>;
-  private tokenStore: Map<string, { token: string; expiresAt: number }> = new Map();
+  private tokenStore: Map<string, { token: string; expiresAt: number }> =
+    new Map();
 
   constructor(config: CSRFConfig = {}) {
     this.config = {
-      cookieName: config.cookieName || '__Host-csrf-token',
-      headerName: config.headerName || 'X-CSRF-Token',
-      paramName: config.paramName || '_csrf',
+      cookieName: config.cookieName || "__Host-csrf-token",
+      headerName: config.headerName || "X-CSRF-Token",
+      paramName: config.paramName || "_csrf",
       secure: config.secure !== false,
       httpOnly: config.httpOnly !== false,
-      sameSite: config.sameSite || 'Strict',
+      sameSite: config.sameSite || "Strict",
       maxAge: config.maxAge || 3600000, // 1 hour
       excludeUrls: config.excludeUrls || [],
     };
@@ -46,7 +47,7 @@ export class CSRFTokenManager {
    * @returns Generated token
    */
   generateToken(sessionId: string): string {
-    const token = randomBytes(32).toString('hex');
+    const token = randomBytes(32).toString("hex");
     const expiresAt = Date.now() + this.config.maxAge;
 
     this.tokenStore.set(`${sessionId}:${token}`, {
@@ -64,7 +65,11 @@ export class CSRFTokenManager {
    * @param submitToken Token from form/header
    * @returns True if tokens match and are valid
    */
-  validateToken(sessionId: string, cookieToken: string, submitToken: string): boolean {
+  validateToken(
+    sessionId: string,
+    cookieToken: string,
+    submitToken: string,
+  ): boolean {
     // Tokens must match
     if (cookieToken !== submitToken) {
       return false;
@@ -124,7 +129,9 @@ export class CSRFTokenManager {
    * Check if a URL should be excluded from CSRF validation
    */
   shouldExclude(url: string): boolean {
-    return this.config.excludeUrls.some((excludeUrl) => url.startsWith(excludeUrl));
+    return this.config.excludeUrls.some((excludeUrl) =>
+      url.startsWith(excludeUrl),
+    );
   }
 
   /**
@@ -201,7 +208,7 @@ export function createCSRFMiddleware(config?: CSRFConfig) {
 
       // Check if we should generate a new token
       if (!req.cookies?.[manager.getConfig().cookieName]) {
-        const sessionId = req.session?.id || req.user?.id || 'anonymous';
+        const sessionId = req.session?.id || req.user?.id || "anonymous";
         const token = manager.generateToken(sessionId);
 
         const cookieOptions = manager.getCookieOptions();
@@ -225,7 +232,7 @@ export function createCSRFMiddleware(config?: CSRFConfig) {
     validateToken: (req: any, res: any, next: any) => {
       if (
         manager.shouldExclude(req.path) ||
-        ['GET', 'HEAD', 'OPTIONS'].includes(req.method)
+        ["GET", "HEAD", "OPTIONS"].includes(req.method)
       ) {
         return next();
       }
@@ -233,23 +240,27 @@ export function createCSRFMiddleware(config?: CSRFConfig) {
       const cookieToken = req.cookies?.[manager.getConfig().cookieName];
       const headerToken =
         req.headers[manager.getConfig().headerName.toLowerCase()] ||
-        req.headers[manager.getConfig().headerName.replace(/-/g, '_').toLowerCase()];
+        req.headers[
+          manager.getConfig().headerName.replace(/-/g, "_").toLowerCase()
+        ];
       const bodyToken = req.body?.[manager.getConfig().paramName];
 
       const submitToken = headerToken || bodyToken;
-      const sessionId = req.session?.id || req.user?.id || 'anonymous';
+      const sessionId = req.session?.id || req.user?.id || "anonymous";
 
       if (!cookieToken || !submitToken) {
         return res.status(403).json({
-          error: 'Forbidden',
-          message: 'CSRF token missing',
+          error: "Forbidden",
+          message: "CSRF token missing",
         });
       }
 
-      if (!manager.validateToken(sessionId, cookieToken, submitToken as string)) {
+      if (
+        !manager.validateToken(sessionId, cookieToken, submitToken as string)
+      ) {
         return res.status(403).json({
-          error: 'Forbidden',
-          message: 'CSRF token invalid',
+          error: "Forbidden",
+          message: "CSRF token invalid",
         });
       }
 

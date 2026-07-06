@@ -69,7 +69,7 @@ describe("EasyPostClient", () => {
       const invalidClient = new EasyPostClient({});
 
       await expect(invalidClient.validateConfig()).rejects.toThrow(
-        "API key is required"
+        "API key is required",
       );
     });
 
@@ -90,9 +90,7 @@ describe("EasyPostClient", () => {
         json: async () => ({}),
       });
 
-      await expect(client.validateConfig()).rejects.toThrow(
-        "Invalid response"
-      );
+      await expect(client.validateConfig()).rejects.toThrow("Invalid response");
     });
   });
 
@@ -136,9 +134,7 @@ describe("EasyPostClient", () => {
 
       const address = await client["createOrValidateAddress"](mockAddress);
 
-      expect(address.message).toBe(
-        "Address corrected: ZIP code was inferred"
-      );
+      expect(address.message).toBe("Address corrected: ZIP code was inferred");
     });
   });
 
@@ -246,9 +242,7 @@ describe("EasyPostClient", () => {
     });
 
     it("should handle API errors during rate fetching", async () => {
-      (global.fetch as any).mockRejectedValueOnce(
-        new Error("Network error")
-      );
+      (global.fetch as any).mockRejectedValueOnce(new Error("Network error"));
 
       await expect(client.getRates(mockShipmentRequest)).rejects.toThrow();
     });
@@ -441,9 +435,7 @@ describe("EasyPostClient", () => {
     });
 
     it("should handle validation errors", async () => {
-      (global.fetch as any).mockRejectedValueOnce(
-        new Error("API error")
-      );
+      (global.fetch as any).mockRejectedValueOnce(new Error("API error"));
 
       const result = await client.validateAddress(mockAddress);
 

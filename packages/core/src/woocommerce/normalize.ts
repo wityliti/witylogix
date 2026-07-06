@@ -8,9 +8,9 @@
  * same Order / Shipment records without duplicating them.
  */
 
-import { normalizeWooCommerceOrder } from './normalizer.js';
-import type { WooCommerceOrder } from '../platforms/adapters/woocommerce.js';
-import type { CreateShipmentInput } from './normalizer.js';
+import { normalizeWooCommerceOrder } from "./normalizer.js";
+import type { WooCommerceOrder } from "../platforms/adapters/woocommerce.js";
+import type { CreateShipmentInput } from "./normalizer.js";
 
 export { normalizeWooCommerceOrder };
 export type { CreateShipmentInput };
@@ -27,7 +27,13 @@ export type { CreateShipmentInput };
 export interface WCPersistenceDb {
   order: {
     upsert(args: {
-      where: { shopId_externalOrderId_source: { shopId: string; externalOrderId: string; source: string } };
+      where: {
+        shopId_externalOrderId_source: {
+          shopId: string;
+          externalOrderId: string;
+          source: string;
+        };
+      };
       create: Record<string, unknown>;
       update: Record<string, unknown>;
       select?: Record<string, boolean>;
@@ -58,16 +64,16 @@ export interface WCOrderPersistResult {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const WC_SHIPMENT_STATUS_TO_ORDER_STATUS: Record<string, string> = {
-  pending: 'PENDING',
-  ready_for_fulfillment: 'PENDING',
-  delivered: 'DELIVERED',
-  cancelled: 'CANCELLED',
-  returned: 'RETURNED',
-  on_hold: 'PENDING',
+  pending: "PENDING",
+  ready_for_fulfillment: "PENDING",
+  delivered: "DELIVERED",
+  cancelled: "CANCELLED",
+  returned: "RETURNED",
+  on_hold: "PENDING",
 };
 
 function wcShipmentStatusToOrderStatus(status: string): string {
-  return WC_SHIPMENT_STATUS_TO_ORDER_STATUS[status] ?? 'PENDING';
+  return WC_SHIPMENT_STATUS_TO_ORDER_STATUS[status] ?? "PENDING";
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -102,14 +108,14 @@ export async function persistWCOrder(
         shopId_externalOrderId_source: {
           shopId,
           externalOrderId,
-          source: 'WOOCOMMERCE',
+          source: "WOOCOMMERCE",
         },
       },
       create: {
         shopId,
         externalOrderId,
         externalOrderNumber: input.order_number,
-        source: 'WOOCOMMERCE',
+        source: "WOOCOMMERCE",
         status: orderStatus,
         customerName: input.delivery_address.name,
         customerEmail: input.delivery_address.email ?? null,
@@ -153,7 +159,7 @@ export async function persistWCOrder(
         shopId,
         orderId: order.id,
         shipmentNumber,
-        status: 'PENDING',
+        status: "PENDING",
         recipientName: input.delivery_address.name,
         recipientPhone: input.delivery_address.phone ?? null,
         recipientEmail: input.delivery_address.email ?? null,

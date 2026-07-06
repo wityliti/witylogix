@@ -9,7 +9,7 @@ export default function RootLoading() {
           <aside
             className={cn(
               "w-64 bg-wl-bg-elevated border-r border-wl-border-subtle",
-              "hidden lg:flex flex-col p-4 gap-4"
+              "hidden lg:flex flex-col p-4 gap-4",
             )}
             style={{
               width: "var(--wl-sidebar-width)",
@@ -52,7 +52,7 @@ export default function RootLoading() {
                   key={i}
                   className={cn(
                     "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5",
-                    "animate-pulse"
+                    "animate-pulse",
                   )}
                 >
                   <div className="h-4 bg-wl-bg-primary rounded w-1/2 mb-4" />
@@ -66,7 +66,7 @@ export default function RootLoading() {
             <div
               className={cn(
                 "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5",
-                "animate-pulse"
+                "animate-pulse",
               )}
             >
               <div className="h-6 bg-wl-bg-primary rounded w-1/4 mb-4" />

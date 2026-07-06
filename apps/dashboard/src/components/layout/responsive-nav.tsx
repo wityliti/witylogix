@@ -55,15 +55,11 @@ export function ResponsiveNav({
           "p-4",
           "bg-wl-bg-sidebar",
           "border-r border-wl-border-subtle",
-          className
+          className,
         )}
       >
         {items.map((item) => (
-          <NavItemDesktop
-            key={item.id}
-            item={item}
-            onNavigate={onNavigate}
-          />
+          <NavItemDesktop key={item.id} item={item} onNavigate={onNavigate} />
         ))}
       </nav>
     );
@@ -79,15 +75,11 @@ export function ResponsiveNav({
           "bg-wl-bg-sidebar",
           "border-r border-wl-border-subtle",
           "w-20",
-          className
+          className,
         )}
       >
         {items.map((item) => (
-          <NavItemTablet
-            key={item.id}
-            item={item}
-            onNavigate={onNavigate}
-          />
+          <NavItemTablet key={item.id} item={item} onNavigate={onNavigate} />
         ))}
       </nav>
     );
@@ -103,15 +95,11 @@ export function ResponsiveNav({
         "bg-wl-bg-sidebar backdrop-blur-md",
         "border-t border-wl-border-subtle",
         "z-40",
-        className
+        className,
       )}
     >
       {items.map((item) => (
-        <NavItemMobile
-          key={item.id}
-          item={item}
-          onNavigate={onNavigate}
-        />
+        <NavItemMobile key={item.id} item={item} onNavigate={onNavigate} />
       ))}
     </nav>
   );
@@ -139,16 +127,18 @@ function NavItemDesktop({ item, onNavigate }: NavItemProps) {
           ? cn(
               "bg-wl-bg-elevated",
               "text-wl-primary-500",
-              "border border-wl-primary-500/30"
+              "border border-wl-primary-500/30",
             )
           : cn(
               "text-wl-text-secondary",
               "hover:text-wl-text-primary",
-              "hover:bg-wl-bg-elevated"
-            )
+              "hover:bg-wl-bg-elevated",
+            ),
       )}
     >
-      <span className="w-5 h-5 flex items-center justify-center">{item.icon}</span>
+      <span className="w-5 h-5 flex items-center justify-center">
+        {item.icon}
+      </span>
       <span className="flex-1 text-left">{item.label}</span>
       {item.badge && (
         <span
@@ -156,7 +146,7 @@ function NavItemDesktop({ item, onNavigate }: NavItemProps) {
             "px-2 py-0.5",
             "rounded-full",
             "text-xs font-semibold",
-            "bg-wl-primary-500/20 text-wl-primary-400"
+            "bg-wl-primary-500/20 text-wl-primary-400",
           )}
         >
           {item.badge}
@@ -181,19 +171,17 @@ function NavItemTablet({ item, onNavigate }: NavItemProps) {
         "transition-colors duration-200",
         "relative",
         item.active
-          ? cn(
-              "bg-wl-bg-elevated",
-              "text-wl-primary-500",
-              "shadow-md"
-            )
+          ? cn("bg-wl-bg-elevated", "text-wl-primary-500", "shadow-md")
           : cn(
               "text-wl-text-secondary",
               "hover:text-wl-text-primary",
-              "hover:bg-wl-bg-elevated"
-            )
+              "hover:bg-wl-bg-elevated",
+            ),
       )}
     >
-      <span className="w-5 h-5 flex items-center justify-center">{item.icon}</span>
+      <span className="w-5 h-5 flex items-center justify-center">
+        {item.icon}
+      </span>
       {item.badge && (
         <span
           className={cn(
@@ -202,7 +190,7 @@ function NavItemTablet({ item, onNavigate }: NavItemProps) {
             "rounded-full",
             "text-xs font-bold",
             "bg-wl-danger-500 text-white",
-            "transform translate-x-1/4 -translate-y-1/4"
+            "transform translate-x-1/4 -translate-y-1/4",
           )}
         >
           {item.badge}
@@ -227,17 +215,13 @@ function NavItemMobile({ item, onNavigate }: NavItemProps) {
         "transition-colors duration-200",
         "text-xs font-medium",
         item.active
-          ? cn(
-              "text-wl-primary-500",
-              "bg-wl-primary-500/10"
-            )
-          : cn(
-              "text-wl-text-secondary",
-              "hover:text-wl-text-primary"
-            )
+          ? cn("text-wl-primary-500", "bg-wl-primary-500/10")
+          : cn("text-wl-text-secondary", "hover:text-wl-text-primary"),
       )}
     >
-      <span className="w-5 h-5 flex items-center justify-center">{item.icon}</span>
+      <span className="w-5 h-5 flex items-center justify-center">
+        {item.icon}
+      </span>
       <span className="truncate">{item.label}</span>
       {item.badge && (
         <span
@@ -245,7 +229,7 @@ function NavItemMobile({ item, onNavigate }: NavItemProps) {
             "px-1",
             "rounded-full",
             "text-xs font-bold",
-            "bg-wl-danger-500 text-white"
+            "bg-wl-danger-500 text-white",
           )}
         >
           {item.badge}

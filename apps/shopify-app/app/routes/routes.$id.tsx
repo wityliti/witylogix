@@ -15,7 +15,10 @@
 
 import type { LoaderFunctionArgs } from "react-router";
 import { useLoaderData, Link } from "react-router";
-import { createApiClientFromRequest, type SingleResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type SingleResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 import {
   Page,
@@ -238,9 +241,7 @@ export default function RouteDetailPage() {
       backAction={{ content: "Routes", url: "/routes" }}
       title={route.name}
       titleMetadata={
-        <Badge tone={STATUS_BADGE_TONE[route.status]}>
-          {route.status}
-        </Badge>
+        <Badge tone={STATUS_BADGE_TONE[route.status]}>{route.status}</Badge>
       }
       subtitle={new Date(route.date).toLocaleDateString("en-US", {
         month: "short",
@@ -279,7 +280,11 @@ export default function RouteDetailPage() {
                           term: "Name",
                           description: (
                             <Link to={`/drivers/${route.driver.id}`}>
-                              <Text as="span" tone="magic" fontWeight="semibold">
+                              <Text
+                                as="span"
+                                tone="magic"
+                                fontWeight="semibold"
+                              >
                                 {route.driver.name}
                               </Text>
                             </Link>

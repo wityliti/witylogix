@@ -50,9 +50,12 @@ const getPassRate = (passed: number, total: number): number =>
   total === 0 ? 0 : Math.round((passed / total) * 100);
 
 export default function TestDashboardPage() {
-  const { data: response, loading, error, refetch } = useApiQuery<TestStatsResponse>(
-    '/api/v4/admin/test-stats'
-  );
+  const {
+    data: response,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<TestStatsResponse>("/api/v4/admin/test-stats");
 
   const testData = response?.data ?? null;
 
@@ -65,7 +68,12 @@ export default function TestDashboardPage() {
         <Header
           title="Test Results Dashboard"
           actions={
-            <Button variant="secondary" size="md" onClick={refetch} disabled={loading}>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={refetch}
+              disabled={loading}
+            >
               <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
               Refresh
             </Button>
@@ -73,15 +81,19 @@ export default function TestDashboardPage() {
         />
         <div className="container mx-auto px-4 py-16 max-w-2xl text-center">
           <Info className="w-12 h-12 text-blue-500 mx-auto mb-4 opacity-60" />
-          <h2 className="text-lg font-semibold text-white mb-2">No Test Results Available</h2>
+          <h2 className="text-lg font-semibold text-white mb-2">
+            No Test Results Available
+          </h2>
           <p className="text-sm text-wl-text-secondary mb-4">
-            Test results are generated during CI runs. To populate this dashboard, run:
+            Test results are generated during CI runs. To populate this
+            dashboard, run:
           </p>
           <pre className="bg-wl-bg-elevated border border-wl-border-default rounded-lg p-4 text-xs text-wl-text-secondary text-left mb-4">
-            pnpm test:run --reporter=json {'>'} test-results.json
+            pnpm test:run --reporter=json {">"} test-results.json
           </pre>
           <p className="text-xs text-wl-text-tertiary">
-            The report file is read from the monorepo root. Commit it or write it as part of your CI pipeline.
+            The report file is read from the monorepo root. Commit it or write
+            it as part of your CI pipeline.
           </p>
         </div>
       </div>
@@ -91,7 +103,7 @@ export default function TestDashboardPage() {
   const { stats, testResults, generatedAt } = testData;
   const passRate = getPassRate(stats.passed, stats.total);
   const failRate = getPassRate(stats.failed, stats.total);
-  const failedFiles = testResults.filter(f => f.failed > 0);
+  const failedFiles = testResults.filter((f) => f.failed > 0);
 
   return (
     <div className="min-h-screen bg-wl-bg-root">
@@ -99,7 +111,12 @@ export default function TestDashboardPage() {
         title="Test Results Dashboard"
         subtitle={`Generated ${new Date(generatedAt).toLocaleString()}`}
         actions={
-          <Button variant="secondary" size="md" onClick={refetch} disabled={loading}>
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={refetch}
+            disabled={loading}
+          >
             <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
             Refresh
           </Button>
@@ -113,7 +130,9 @@ export default function TestDashboardPage() {
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-wl-text-secondary mb-2">Total Tests</p>
+                  <p className="text-sm text-wl-text-secondary mb-2">
+                    Total Tests
+                  </p>
                   <p className="text-3xl font-bold text-white">{stats.total}</p>
                 </div>
               </div>
@@ -125,8 +144,12 @@ export default function TestDashboardPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-wl-text-secondary mb-2">Passed</p>
-                  <p className="text-3xl font-bold text-green-600">{stats.passed}</p>
-                  <p className="text-xs text-wl-text-secondary mt-1">{passRate}% pass rate</p>
+                  <p className="text-3xl font-bold text-green-600">
+                    {stats.passed}
+                  </p>
+                  <p className="text-xs text-wl-text-secondary mt-1">
+                    {passRate}% pass rate
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -137,8 +160,12 @@ export default function TestDashboardPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-wl-text-secondary mb-2">Failed</p>
-                  <p className="text-3xl font-bold text-red-600">{stats.failed}</p>
-                  <p className="text-xs text-wl-text-secondary mt-1">{failRate}% fail rate</p>
+                  <p className="text-3xl font-bold text-red-600">
+                    {stats.failed}
+                  </p>
+                  <p className="text-xs text-wl-text-secondary mt-1">
+                    {failRate}% fail rate
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -149,7 +176,9 @@ export default function TestDashboardPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-wl-text-secondary mb-2">Skipped</p>
-                  <p className="text-3xl font-bold text-amber-500">{stats.skipped}</p>
+                  <p className="text-3xl font-bold text-amber-500">
+                    {stats.skipped}
+                  </p>
                 </div>
                 <TrendingUp className="w-8 h-8 text-amber-500 opacity-60" />
               </div>
@@ -160,8 +189,12 @@ export default function TestDashboardPage() {
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-wl-text-secondary mb-2">Duration</p>
-                  <p className="text-3xl font-bold text-white">{stats.duration}s</p>
+                  <p className="text-sm text-wl-text-secondary mb-2">
+                    Duration
+                  </p>
+                  <p className="text-3xl font-bold text-white">
+                    {stats.duration}s
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -177,13 +210,20 @@ export default function TestDashboardPage() {
             <CardContent>
               <div className="space-y-3">
                 {failedFiles.map((file, idx) => (
-                  <div key={idx} className="p-3 bg-red-600/10 rounded-lg border border-red-500/20 flex items-center justify-between">
+                  <div
+                    key={idx}
+                    className="p-3 bg-red-600/10 rounded-lg border border-red-500/20 flex items-center justify-between"
+                  >
                     <div>
                       <p className="text-sm font-medium text-white font-mono">
-                        {file.file.replace(process.env.NEXT_PUBLIC_APP_URL ?? '', '')}
+                        {file.file.replace(
+                          process.env.NEXT_PUBLIC_APP_URL ?? "",
+                          "",
+                        )}
                       </p>
                       <p className="text-xs text-wl-text-secondary mt-0.5">
-                        {file.passed} passed / {file.failed} failed · {file.duration}s
+                        {file.passed} passed / {file.failed} failed ·{" "}
+                        {file.duration}s
                       </p>
                     </div>
                     <Badge variant="danger">{file.failed} failed</Badge>
@@ -201,36 +241,68 @@ export default function TestDashboardPage() {
           </CardHeader>
           <CardContent>
             {testResults.length === 0 ? (
-              <p className="text-sm text-wl-text-secondary text-center py-4">No test files in results.</p>
+              <p className="text-sm text-wl-text-secondary text-center py-4">
+                No test files in results.
+              </p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-wl-border-default">
-                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">File</th>
-                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Tests</th>
-                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Passed</th>
-                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Failed</th>
-                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Duration</th>
-                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Status</th>
+                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">
+                        File
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">
+                        Tests
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">
+                        Passed
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">
+                        Failed
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">
+                        Duration
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">
+                        Status
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {testResults.map((file, idx) => (
-                      <tr key={idx} className="border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
+                      <tr
+                        key={idx}
+                        className="border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors"
+                      >
                         <td className="py-3 px-4 text-white font-mono text-xs max-w-sm truncate">
-                          {file.file.split('/').slice(-2).join('/')}
+                          {file.file.split("/").slice(-2).join("/")}
                         </td>
-                        <td className="py-3 px-4 text-wl-text-secondary">{file.tests}</td>
-                        <td className="py-3 px-4 text-green-600 font-medium">{file.passed}</td>
+                        <td className="py-3 px-4 text-wl-text-secondary">
+                          {file.tests}
+                        </td>
+                        <td className="py-3 px-4 text-green-600 font-medium">
+                          {file.passed}
+                        </td>
                         <td className="py-3 px-4">
-                          <span className={cn("font-medium", file.failed > 0 ? "text-red-600" : "text-green-600")}>
+                          <span
+                            className={cn(
+                              "font-medium",
+                              file.failed > 0
+                                ? "text-red-600"
+                                : "text-green-600",
+                            )}
+                          >
                             {file.failed}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-wl-text-secondary">{file.duration}s</td>
+                        <td className="py-3 px-4 text-wl-text-secondary">
+                          {file.duration}s
+                        </td>
                         <td className="py-3 px-4">
-                          <Badge variant={file.failed === 0 ? "success" : "danger"}>
+                          <Badge
+                            variant={file.failed === 0 ? "success" : "danger"}
+                          >
                             {file.failed === 0 ? "pass" : "fail"}
                           </Badge>
                         </td>

@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import dynamic from 'next/dynamic';
-import { useApiQuery, useApiList } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { DollarSign, AlertCircle, BarChart3, Map } from 'lucide-react';
-import Link from 'next/link';
+import { useState } from "react";
+import dynamic from "next/dynamic";
+import { useApiQuery, useApiList } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { DollarSign, AlertCircle, BarChart3, Map } from "lucide-react";
+import Link from "next/link";
 
 const FinanceMapView = dynamic(
-  () => import('./components/finance-map-view').then((m) => m.FinanceMapView),
+  () => import("./components/finance-map-view").then((m) => m.FinanceMapView),
   { ssr: false },
 );
 
@@ -40,18 +40,21 @@ interface Payment {
   reference?: string;
 }
 
-type ViewMode = 'charts' | 'map';
+type ViewMode = "charts" | "map";
 
 export default function FinancePage() {
-  const [viewMode, setViewMode] = useState<ViewMode>('charts');
+  const [viewMode, setViewMode] = useState<ViewMode>("charts");
 
-  const { data: summaryData, loading: summaryLoading, error: summaryError } =
-    useApiQuery<{ summary: InvoiceSummary }>('/api/v4/invoices/summary');
+  const {
+    data: summaryData,
+    loading: summaryLoading,
+    error: summaryError,
+  } = useApiQuery<{ summary: InvoiceSummary }>("/api/v4/invoices/summary");
   const {
     items: payments,
     loading: paymentsLoading,
     error: paymentsError,
-  } = useApiList<Payment>('/api/v4/payments');
+  } = useApiList<Payment>("/api/v4/payments");
 
   const loading = summaryLoading || paymentsLoading;
   const error = summaryError || paymentsError;
@@ -68,30 +71,32 @@ export default function FinancePage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-white">Finance</h1>
-              <p className="text-sm text-wl-text-secondary mt-1">Revenue, invoices, and payments</p>
+              <p className="text-sm text-wl-text-secondary mt-1">
+                Revenue, invoices, and payments
+              </p>
             </div>
             <div className="flex items-center gap-3">
               {/* View toggle */}
               <div className="flex items-center rounded-lg border border-wl-border-default bg-wl-bg-surface overflow-hidden">
                 <button
-                  onClick={() => setViewMode('charts')}
+                  onClick={() => setViewMode("charts")}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors',
-                    viewMode === 'charts'
-                      ? 'bg-wl-primary-600 text-white'
-                      : 'text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated',
+                    "flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors",
+                    viewMode === "charts"
+                      ? "bg-wl-primary-600 text-white"
+                      : "text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated",
                   )}
                 >
                   <BarChart3 className="w-4 h-4" />
                   Charts
                 </button>
                 <button
-                  onClick={() => setViewMode('map')}
+                  onClick={() => setViewMode("map")}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors',
-                    viewMode === 'map'
-                      ? 'bg-wl-primary-600 text-white'
-                      : 'text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated',
+                    "flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors",
+                    viewMode === "map"
+                      ? "bg-wl-primary-600 text-white"
+                      : "text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated",
                   )}
                 >
                   <Map className="w-4 h-4" />
@@ -115,26 +120,62 @@ export default function FinancePage() {
           {/* KPI cards — always visible */}
           {summary && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
-                <p className="text-xs font-medium text-wl-text-secondary uppercase">Total Billed</p>
+              <Card
+                className={cn(
+                  "p-4 bg-wl-bg-surface border border-wl-border-default",
+                )}
+              >
+                <p className="text-xs font-medium text-wl-text-secondary uppercase">
+                  Total Billed
+                </p>
                 <p className="text-2xl font-bold text-emerald-500 mt-2">
-                  ${summary.totalBilled.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  $
+                  {summary.totalBilled.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </Card>
-              <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
-                <p className="text-xs font-medium text-wl-text-secondary uppercase">Collected</p>
+              <Card
+                className={cn(
+                  "p-4 bg-wl-bg-surface border border-wl-border-default",
+                )}
+              >
+                <p className="text-xs font-medium text-wl-text-secondary uppercase">
+                  Collected
+                </p>
                 <p className="text-2xl font-bold text-white mt-2">
-                  ${summary.totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  $
+                  {summary.totalPaid.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </Card>
-              <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
-                <p className="text-xs font-medium text-wl-text-secondary uppercase">Outstanding</p>
+              <Card
+                className={cn(
+                  "p-4 bg-wl-bg-surface border border-wl-border-default",
+                )}
+              >
+                <p className="text-xs font-medium text-wl-text-secondary uppercase">
+                  Outstanding
+                </p>
                 <p className="text-2xl font-bold text-red-500 mt-2">
-                  ${summary.totalOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  $
+                  {summary.totalOutstanding.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </Card>
-              <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
-                <p className="text-xs font-medium text-wl-text-secondary uppercase">Payment Rate</p>
+              <Card
+                className={cn(
+                  "p-4 bg-wl-bg-surface border border-wl-border-default",
+                )}
+              >
+                <p className="text-xs font-medium text-wl-text-secondary uppercase">
+                  Payment Rate
+                </p>
                 <p className="text-2xl font-bold text-white mt-2">
                   {summary.paymentRate.toFixed(1)}%
                 </p>
@@ -142,12 +183,16 @@ export default function FinancePage() {
             </div>
           )}
 
-          {viewMode === 'map' ? (
+          {viewMode === "map" ? (
             <FinanceMapView days={30} className="h-[600px]" />
           ) : (
             <>
               {summary && (
-                <Card className={cn('p-6 bg-wl-bg-surface border border-wl-border-default')}>
+                <Card
+                  className={cn(
+                    "p-6 bg-wl-bg-surface border border-wl-border-default",
+                  )}
+                >
                   <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                     <AlertCircle className="w-5 h-5" />
                     Invoice Status Breakdown
@@ -155,17 +200,19 @@ export default function FinancePage() {
                   <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
                     {Object.entries(summary.byStatus).map(([status, count]) => (
                       <div key={status}>
-                        <p className="text-xs font-medium text-wl-text-secondary capitalize">{status}</p>
+                        <p className="text-xs font-medium text-wl-text-secondary capitalize">
+                          {status}
+                        </p>
                         <p
                           className={cn(
-                            'text-2xl font-bold mt-2',
-                            status === 'paid'
-                              ? 'text-emerald-500'
-                              : status === 'overdue'
-                                ? 'text-red-500'
-                                : status === 'voided'
-                                  ? 'text-wl-text-tertiary'
-                                  : 'text-white',
+                            "text-2xl font-bold mt-2",
+                            status === "paid"
+                              ? "text-emerald-500"
+                              : status === "overdue"
+                                ? "text-red-500"
+                                : status === "voided"
+                                  ? "text-wl-text-tertiary"
+                                  : "text-white",
                           )}
                         >
                           {count}
@@ -176,25 +223,46 @@ export default function FinancePage() {
                 </Card>
               )}
 
-              <Card className={cn('p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden')}>
-                <h2 className="text-lg font-semibold text-white mb-4">Recent Payments</h2>
+              <Card
+                className={cn(
+                  "p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden",
+                )}
+              >
+                <h2 className="text-lg font-semibold text-white mb-4">
+                  Recent Payments
+                </h2>
                 {payments.length === 0 ? (
-                  <p className="text-wl-text-secondary text-center py-8">No payments found</p>
+                  <p className="text-wl-text-secondary text-center py-8">
+                    No payments found
+                  </p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-wl-border-default">
-                          <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Date</th>
-                          <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Reference</th>
-                          <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Amount</th>
-                          <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">Method</th>
-                          <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">Status</th>
+                          <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">
+                            Date
+                          </th>
+                          <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">
+                            Reference
+                          </th>
+                          <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">
+                            Amount
+                          </th>
+                          <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">
+                            Method
+                          </th>
+                          <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">
+                            Status
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {payments.slice(0, 10).map((payment) => (
-                          <tr key={payment.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
+                          <tr
+                            key={payment.id}
+                            className="border-b border-wl-border-default hover:bg-wl-bg-elevated"
+                          >
                             <td className="px-4 py-3 text-wl-neutral-300">
                               {new Date(payment.createdAt).toLocaleDateString()}
                             </td>
@@ -203,25 +271,30 @@ export default function FinancePage() {
                             </td>
                             <td className="text-right px-4 py-3 font-medium text-white">
                               $
-                              {parseFloat(payment.amount).toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
+                              {parseFloat(payment.amount).toLocaleString(
+                                undefined,
+                                {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                },
+                              )}
                             </td>
                             <td className="text-center px-4 py-3">
-                              <Badge variant="primary">{payment.method?.toLowerCase() ?? '—'}</Badge>
+                              <Badge variant="primary">
+                                {payment.method?.toLowerCase() ?? "—"}
+                              </Badge>
                             </td>
                             <td className="text-center px-4 py-3">
                               <Badge
                                 variant={
-                                  payment.status === 'COMPLETED'
-                                    ? 'success'
-                                    : payment.status === 'FAILED'
-                                      ? 'danger'
-                                      : 'warning'
+                                  payment.status === "COMPLETED"
+                                    ? "success"
+                                    : payment.status === "FAILED"
+                                      ? "danger"
+                                      : "warning"
                                 }
                               >
-                                {payment.status?.toLowerCase() ?? '—'}
+                                {payment.status?.toLowerCase() ?? "—"}
                               </Badge>
                             </td>
                           </tr>

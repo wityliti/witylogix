@@ -11,52 +11,59 @@
  * Supported visualization types for analytics dashboards.
  */
 export type VisualizationType =
-  | 'table'
-  | 'line'
-  | 'bar'
-  | 'column'
-  | 'scatter'
-  | 'pie'
-  | 'donut'
-  | 'area'
-  | 'gauge'
-  | 'number'
-  | 'pivot'
-  | 'card'
-  | 'map'
-  | 'heatmap'
-  | 'sankey';
+  | "table"
+  | "line"
+  | "bar"
+  | "column"
+  | "scatter"
+  | "pie"
+  | "donut"
+  | "area"
+  | "gauge"
+  | "number"
+  | "pivot"
+  | "card"
+  | "map"
+  | "heatmap"
+  | "sankey";
 
 /**
  * Supported data types in analytics queries.
  */
-export type DataType = 'string' | 'number' | 'boolean' | 'date' | 'datetime' | 'time' | 'geographic';
+export type DataType =
+  | "string"
+  | "number"
+  | "boolean"
+  | "date"
+  | "datetime"
+  | "time"
+  | "geographic";
 
 /**
  * Supported export formats for dashboards and reports.
  */
-export type AnalyticsExportFormat = 'csv' | 'pdf' | 'png' | 'xlsx' | 'json';
+export type AnalyticsExportFormat = "csv" | "pdf" | "png" | "xlsx" | "json";
 
 /**
  * Operator types for filter conditions.
  */
 export type FilterOperator =
-  | 'equals'
-  | 'not_equals'
-  | 'contains'
-  | 'not_contains'
-  | 'starts_with'
-  | 'ends_with'
-  | 'greater_than'
-  | 'less_than'
-  | 'greater_than_or_equal'
-  | 'less_than_or_equal'
-  | 'in'
-  | 'not_in'
-  | 'is_null'
-  | 'is_not_null'
-  | 'between'
-  | 'regex';
+  | "equals"
+  | "not_equals"
+  | "contains"
+  | "not_contains"
+  | "starts_with"
+  | "ends_with"
+  | "greater_than"
+  | "less_than"
+  | "greater_than_or_equal"
+  | "less_than_or_equal"
+  | "in"
+  | "not_in"
+  | "is_null"
+  | "is_not_null"
+  | "between"
+  | "regex";
 
 /**
  * Filter definition for query constraints.
@@ -73,7 +80,7 @@ export interface FilterDefinition {
   /** Case-insensitive comparison flag */
   caseSensitive?: boolean;
   /** Logical operator to parent filter (AND/OR) */
-  logicalOperator?: 'AND' | 'OR';
+  logicalOperator?: "AND" | "OR";
 }
 
 /**
@@ -109,7 +116,7 @@ export interface QueryDefinition {
   /** Group by dimensions */
   groupBy?: string[];
   /** Sort order specifications */
-  orderBy?: Array<{ field: string; direction: 'asc' | 'desc' }>;
+  orderBy?: Array<{ field: string; direction: "asc" | "desc" }>;
   /** Result limit */
   limit?: number;
   /** Result offset for pagination */
@@ -223,12 +230,18 @@ export interface DrilldownPath {
 /**
  * Delivery methods for scheduled reports.
  */
-export type ReportDeliveryMethod = 'email' | 's3' | 'webhook' | 'ftp' | 'sftp';
+export type ReportDeliveryMethod = "email" | "s3" | "webhook" | "ftp" | "sftp";
 
 /**
  * Frequency options for report scheduling.
  */
-export type ReportFrequency = 'hourly' | 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annually';
+export type ReportFrequency =
+  | "hourly"
+  | "daily"
+  | "weekly"
+  | "monthly"
+  | "quarterly"
+  | "annually";
 
 /**
  * Scheduled report definition.
@@ -266,13 +279,13 @@ export interface ReportSchedule {
  * Embed scope permissions.
  */
 export type EmbedScope =
-  | 'view'
-  | 'edit'
-  | 'manage'
-  | 'share'
-  | 'download'
-  | 'subscribe'
-  | 'alert';
+  | "view"
+  | "edit"
+  | "manage"
+  | "share"
+  | "download"
+  | "subscribe"
+  | "alert";
 
 /**
  * Row-level security (RLS) rules for embedded content.
@@ -295,7 +308,7 @@ export interface EmbedToken {
   /** Entity being embedded (dashboard ID, report ID, etc.) */
   entityId: string;
   /** Type of entity */
-  entityType: 'dashboard' | 'report' | 'look' | 'explore' | 'tile';
+  entityType: "dashboard" | "report" | "look" | "explore" | "tile";
   /** User identifier for token */
   userId: string;
   /** Scopes granted by this token */
@@ -449,7 +462,7 @@ export interface ExportResult {
   /** S3/file URL for download */
   url?: string;
   /** Export status */
-  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  status: "pending" | "in_progress" | "completed" | "failed";
   /** Error message if failed */
   errorMessage?: string;
   /** Completion timestamp */
@@ -549,7 +562,13 @@ export interface MetricComparison {
 /**
  * Supported aggregation levels for normalized metrics.
  */
-export type AggregationLevel = 'raw' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly';
+export type AggregationLevel =
+  | "raw"
+  | "hourly"
+  | "daily"
+  | "weekly"
+  | "monthly"
+  | "yearly";
 
 // ─── FEDERATION RESULT ──────────────────────────────────────────────────
 

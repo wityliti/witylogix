@@ -26,9 +26,9 @@ export const ETACountdown = ({
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isArrived, setIsArrived] = useState(false);
   const [lateByMinutes, setLateByMinutes] = useState(0);
-  const [displayStatus, setDisplayStatus] = useState<"on-time" | "close" | "late" | "arrived">(
-    "on-time"
-  );
+  const [displayStatus, setDisplayStatus] = useState<
+    "on-time" | "close" | "late" | "arrived"
+  >("on-time");
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -111,7 +111,7 @@ export const ETACountdown = ({
           "bg-wl-success-bg text-wl-success-400",
           "text-sm font-semibold",
           compact && "text-xs px-2 py-1",
-          className
+          className,
         )}
       >
         Arrived
@@ -128,7 +128,7 @@ export const ETACountdown = ({
           "bg-wl-danger-bg text-wl-danger-400",
           "text-sm font-semibold",
           compact && "text-xs px-2 py-1",
-          className
+          className,
         )}
       >
         Late by {lateByMinutes}m
@@ -137,7 +137,9 @@ export const ETACountdown = ({
   }
 
   return (
-    <div className={cn("flex items-center gap-1", compact && "gap-0.5", className)}>
+    <div
+      className={cn("flex items-center gap-1", compact && "gap-0.5", className)}
+    >
       <div
         className={cn(
           "inline-flex items-center justify-center",
@@ -147,7 +149,7 @@ export const ETACountdown = ({
           "text-sm font-semibold",
           "font-mono",
           compact && "text-xs px-2 py-1",
-          "transition-colors duration-300"
+          "transition-colors duration-300",
         )}
       >
         {timeRemaining < 60 ? (
@@ -165,7 +167,9 @@ export const ETACountdown = ({
       </div>
 
       {showOriginalEta && originalEta && displayStatus === "close" && (
-        <div className={cn("text-xs text-wl-text-secondary", compact && "hidden")}>
+        <div
+          className={cn("text-xs text-wl-text-secondary", compact && "hidden")}
+        >
           <span className="line-through text-wl-text-tertiary">
             {new Date(originalEta).toLocaleTimeString("en-US", {
               hour: "2-digit",

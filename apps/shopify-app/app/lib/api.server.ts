@@ -18,7 +18,10 @@
 
 /** Normalized origin for `new URL(path, base)` (no trailing slash). */
 export function getApiBaseUrl(): string {
-  return (process.env.API_BASE_URL ?? "http://localhost:8000").replace(/\/$/, "");
+  return (process.env.API_BASE_URL ?? "http://localhost:8000").replace(
+    /\/$/,
+    "",
+  );
 }
 
 // ─── Types ─────────────────────────────────────────────────
@@ -58,9 +61,11 @@ export function createApiClientFromRequest(
   request: Request,
   session: { accessToken?: string | null },
 ) {
-  const header = request.headers.get('authorization') ?? ''
-  const token = header.startsWith('Bearer ') ? header.slice(7) : (session.accessToken ?? '')
-  return createApiClient(token)
+  const header = request.headers.get("authorization") ?? "";
+  const token = header.startsWith("Bearer ")
+    ? header.slice(7)
+    : (session.accessToken ?? "");
+  return createApiClient(token);
 }
 
 export function createApiClient(sessionToken: string) {
@@ -103,17 +108,25 @@ export function createApiClient(sessionToken: string) {
       throw new ApiRequestError(error);
     }
 
-    const json = await response.json() as any;
+    const json = (await response.json()) as any;
     // The API uses `pagination` for list endpoints; normalise to `meta`
     // so all callers can use the PaginatedResponse<T> shape consistently.
-    if (json && typeof json === 'object' && 'pagination' in json && !('meta' in json)) {
+    if (
+      json &&
+      typeof json === "object" &&
+      "pagination" in json &&
+      !("meta" in json)
+    ) {
       json.meta = json.pagination;
     }
     return json as T;
   }
 
   return {
-    get<T>(path: string, params?: Record<string, string | number | boolean | undefined>) {
+    get<T>(
+      path: string,
+      params?: Record<string, string | number | boolean | undefined>,
+    ) {
       return request<T>("GET", path, { params });
     },
 

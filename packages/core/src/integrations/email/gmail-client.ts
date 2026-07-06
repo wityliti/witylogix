@@ -65,7 +65,7 @@ export class GmailClient extends EmailAdapter {
       }).toString(),
     });
 
-    const data = await response.json() as {
+    const data = (await response.json()) as {
       access_token: string;
       expires_in: number;
     };
@@ -81,7 +81,7 @@ export class GmailClient extends EmailAdapter {
   private async request<T>(
     method: string,
     endpoint: string,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     const token = await this.ensureAccessToken();
     const url = `${this.baseUrl}${endpoint}`;
@@ -101,12 +101,12 @@ export class GmailClient extends EmailAdapter {
     }
 
     const response = await fetch(url, options);
-    const data = await response.json() as T;
+    const data = (await response.json()) as T;
 
     if (!response.ok) {
       const error = data as Record<string, unknown>;
       throw new Error(
-        `Gmail API error: ${(error as Record<string, unknown>).message || response.statusText}`
+        `Gmail API error: ${(error as Record<string, unknown>).message || response.statusText}`,
       );
     }
 
@@ -126,7 +126,9 @@ export class GmailClient extends EmailAdapter {
 
     if (message.cc) {
       const ccAddresses = Array.isArray(message.cc)
-        ? message.cc.map((r) => `${r.name || ""} <${r.email}>`.trim()).join(", ")
+        ? message.cc
+            .map((r) => `${r.name || ""} <${r.email}>`.trim())
+            .join(", ")
         : `${message.cc.name || ""} <${message.cc.email}>`.trim();
       mimeMessage += `Cc: ${ccAddresses}\r\n`;
     }
@@ -177,7 +179,7 @@ export class GmailClient extends EmailAdapter {
         const response = await this.request<{ id: string; labelIds: string[] }>(
           "POST",
           "/users/me/messages/send",
-          { raw }
+          { raw },
         );
 
         return {
@@ -196,7 +198,9 @@ export class GmailClient extends EmailAdapter {
    */
   async sendBatch(request: BulkEmailRequest): Promise<SendResult[]> {
     return this.circuitBreaker.execute(async () => {
-      await this.rateLimiter.acquire(Math.ceil(request.recipients.length / 100));
+      await this.rateLimiter.acquire(
+        Math.ceil(request.recipients.length / 100),
+      );
 
       const results: SendResult[] = [];
 
@@ -253,7 +257,7 @@ export class GmailClient extends EmailAdapter {
       }
 
       const headerMap = Object.fromEntries(
-        response.headers.map((h) => [h.name.toLowerCase(), h.value])
+        response.headers.map((h) => [h.name.toLowerCase(), h.value]),
       );
 
       return {
@@ -296,7 +300,7 @@ export class GmailClient extends EmailAdapter {
    * Validate an email address.
    */
   async validateEmail(
-    email: string
+    email: string,
   ): Promise<{ email: string; valid: boolean; reason?: string }> {
     return this.circuitBreaker.execute(async () => {
       const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -318,7 +322,7 @@ export class GmailClient extends EmailAdapter {
       const response = await this.request<{ resultSizeEstimate: number }>(
         "GET",
         `/users/me/messages?q=${encodeURIComponent(query)}`,
-        undefined
+        undefined,
       );
 
       return {
@@ -379,10 +383,13 @@ export class GmailClient extends EmailAdapter {
       }>("GET", `/users/me/messages/${templateId}`, undefined);
 
       const headerMap = Object.fromEntries(
-        response.headers.map((h) => [h.name.toLowerCase(), h.value])
+        response.headers.map((h) => [h.name.toLowerCase(), h.value]),
       );
 
-      const subject = (headerMap.subject as string || "").replace("[TEMPLATE] ", "");
+      const subject = ((headerMap.subject as string) || "").replace(
+        "[TEMPLATE] ",
+        "",
+      );
       const htmlBody = response.parts?.[0]?.body?.data
         ? Buffer.from(response.parts[0].body.data, "base64").toString()
         : "";
@@ -403,7 +410,11 @@ export class GmailClient extends EmailAdapter {
     return this.circuitBreaker.execute(async () => {
       const response = await this.request<{
         messages?: Array<{ id: string }>;
-      }>("GET", `/users/me/messages?q=${encodeURIComponent("subject:[TEMPLATE]")}`, undefined);
+      }>(
+        "GET",
+        `/users/me/messages?q=${encodeURIComponent("subject:[TEMPLATE]")}`,
+        undefined,
+      );
 
       const templates: EmailTemplate[] = [];
 
@@ -425,7 +436,11 @@ export class GmailClient extends EmailAdapter {
    */
   async deleteTemplate(templateId: string): Promise<void> {
     return this.circuitBreaker.execute(async () => {
-      await this.request("DELETE", `/users/me/messages/${templateId}`, undefined);
+      await this.request(
+        "DELETE",
+        `/users/me/messages/${templateId}`,
+        undefined,
+      );
     });
   }
 
@@ -434,14 +449,16 @@ export class GmailClient extends EmailAdapter {
    */
   async validateConfig(): Promise<void> {
     if (!this.clientId || !this.clientSecret || !this.refreshToken) {
-      throw new Error("Gmail adapter requires OAuth2 credentials (clientId, clientSecret, refreshToken)");
+      throw new Error(
+        "Gmail adapter requires OAuth2 credentials (clientId, clientSecret, refreshToken)",
+      );
     }
 
     try {
       await this.ensureAccessToken();
     } catch (error) {
       throw new Error(
-        `Gmail validation failed: ${error instanceof Error ? error.message : String(error)}`
+        `Gmail validation failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }

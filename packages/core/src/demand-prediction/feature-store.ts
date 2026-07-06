@@ -5,7 +5,7 @@
  * Implements a time-series feature store with caching and versioning.
  */
 
-import type { PrismaClient } from '@repo/db';
+import type { PrismaClient } from "@repo/db";
 
 /**
  * Zone features for demand prediction
@@ -64,10 +64,15 @@ interface CacheEntry<T> {
  */
 export interface IFeatureStore {
   getZoneFeatures(zoneId: string): Promise<ZoneFeatures | null>;
-  getZoneFeaturesMultiple(zoneIds: string[]): Promise<Map<string, ZoneFeatures>>;
+  getZoneFeaturesMultiple(
+    zoneIds: string[],
+  ): Promise<Map<string, ZoneFeatures>>;
   saveZoneFeatures(features: ZoneFeatures): Promise<void>;
   getTemporalFeatures(date: Date): Promise<TemporalFeatures>;
-  getTemporalFeaturesRange(startDate: Date, endDate: Date): Promise<TemporalFeatures[]>;
+  getTemporalFeaturesRange(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<TemporalFeatures[]>;
   clearCache(): Promise<void>;
 }
 
@@ -116,7 +121,9 @@ export class ZoneFeatureStore implements IFeatureStore {
   /**
    * Get features for multiple zones (batch retrieval)
    */
-  async getZoneFeaturesMultiple(zoneIds: string[]): Promise<Map<string, ZoneFeatures>> {
+  async getZoneFeaturesMultiple(
+    zoneIds: string[],
+  ): Promise<Map<string, ZoneFeatures>> {
     const result = new Map<string, ZoneFeatures>();
     const missingZones: string[] = [];
 
@@ -196,7 +203,7 @@ export class ZoneFeatureStore implements IFeatureStore {
    */
   async getTemporalFeaturesRange(
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<TemporalFeatures[]> {
     const features: TemporalFeatures[] = [];
     const current = new Date(startDate);
@@ -239,7 +246,11 @@ export class ZoneFeatureStore implements IFeatureStore {
     // Assign raw weights first, then normalize to sum to 1.0
     const rawWeights: Record<number, number> = {};
     for (let hour = 0; hour < 24; hour++) {
-      if ((hour >= 9 && hour <= 11) || (hour >= 14 && hour <= 16) || (hour >= 18 && hour <= 20)) {
+      if (
+        (hour >= 9 && hour <= 11) ||
+        (hour >= 14 && hour <= 16) ||
+        (hour >= 18 && hour <= 20)
+      ) {
         hourlyDeliveries[hour] = 150 + Math.random() * 50;
         rawWeights[hour] = 10;
       } else if (hour >= 7 && hour < 22) {
@@ -270,9 +281,7 @@ export class ZoneFeatureStore implements IFeatureStore {
       deliveryCountWeekly: 7000,
       averageDeliveryTime: 25,
       peakHourDistribution: peakDistribution,
-      dayOfWeekPattern: Object.fromEntries(
-        dayPatterns.map((p, i) => [i, p])
-      ),
+      dayOfWeekPattern: Object.fromEntries(dayPatterns.map((p, i) => [i, p])),
       seasonalIndex: 1.0,
       growthTrendCoefficient: 0.02, // 2% weekly growth
       volatilityScore: 0.35,
@@ -295,7 +304,7 @@ export class ZoneFeatureStore implements IFeatureStore {
       { month: 10, day: 23 }, // Thanksgiving (approximation)
     ];
 
-    return holidays.some(h => h.month === month && h.day === day);
+    return holidays.some((h) => h.month === month && h.day === day);
   }
 
   /**
@@ -353,7 +362,7 @@ export class ZoneFeatureStore implements IFeatureStore {
    * Convert date to string key
    */
   private dateToString(date: Date): string {
-    return date.toISOString().split('T')[0];
+    return date.toISOString().split("T")[0];
   }
 }
 
@@ -391,7 +400,10 @@ export class VersionedFeatureStore extends ZoneFeatureStore {
   /**
    * Get specific version of zone features
    */
-  async getZoneFeaturesVersion(zoneId: string, version: number): Promise<ZoneFeatures | null> {
+  async getZoneFeaturesVersion(
+    zoneId: string,
+    version: number,
+  ): Promise<ZoneFeatures | null> {
     const key = `zone_${zoneId}`;
     const versions = this.versions.get(key);
 
@@ -399,7 +411,7 @@ export class VersionedFeatureStore extends ZoneFeatureStore {
       return null;
     }
 
-    return versions.find(v => v.version === version) || null;
+    return versions.find((v) => v.version === version) || null;
   }
 
   /**

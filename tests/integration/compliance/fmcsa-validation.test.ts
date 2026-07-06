@@ -7,7 +7,10 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { Mock } from "vitest";
-import { createMockFMCSACarrier, createMockCarrierProfile } from "../fixtures/freight-fixtures.js";
+import {
+  createMockFMCSACarrier,
+  createMockCarrierProfile,
+} from "../fixtures/freight-fixtures.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES & MOCKS
@@ -58,7 +61,9 @@ describe("FMCSA Carrier Lookup by DOT Number", () => {
 
   it("should return 404 for non-existent DOT number", async () => {
     mockFetch.mockResolvedValueOnce(
-      new Response(JSON.stringify({ error: "Carrier not found" }), { status: 404 }),
+      new Response(JSON.stringify({ error: "Carrier not found" }), {
+        status: 404,
+      }),
     );
 
     const response = await mockFetch();
@@ -147,8 +152,7 @@ describe("Safety Rating Validation", () => {
       safetyRating: "Unsatisfactory",
     });
 
-    const shouldBlock =
-      carrier.safetyRating === "Unsatisfactory";
+    const shouldBlock = carrier.safetyRating === "Unsatisfactory";
 
     expect(shouldBlock).toBe(true);
   });
@@ -161,8 +165,12 @@ describe("Safety Rating Validation", () => {
       safetyRatingDate: oneYearAgo,
     });
 
-    expect(mockCarrier.safetyRatingDate.getTime()).toBeGreaterThan(oneYearAgo.getTime());
-    expect(mockCarrier.safetyRatingDate.getTime()).toBeLessThanOrEqual(now.getTime());
+    expect(mockCarrier.safetyRatingDate.getTime()).toBeGreaterThan(
+      oneYearAgo.getTime(),
+    );
+    expect(mockCarrier.safetyRatingDate.getTime()).toBeLessThanOrEqual(
+      now.getTime(),
+    );
   });
 });
 
@@ -197,9 +205,7 @@ describe("SMS BASIC Scores Retrieval and Interpretation", () => {
   it("should interpret SMS BASIC percentile scores", () => {
     const score = 65; // Percentile (0-100)
     const interpretation =
-      score > 50
-        ? "Above average (higher risk)"
-        : "Below average (lower risk)";
+      score > 50 ? "Above average (higher risk)" : "Below average (lower risk)";
 
     expect(interpretation).toBe("Above average (higher risk)");
   });
@@ -239,12 +245,7 @@ describe("SMS BASIC Scores Retrieval and Interpretation", () => {
   it("should generate SMS BASIC risk level classification", () => {
     const avgScore = 65;
 
-    const riskLevel =
-      avgScore > 70
-        ? "HIGH"
-        : avgScore > 50
-          ? "MEDIUM"
-          : "LOW";
+    const riskLevel = avgScore > 70 ? "HIGH" : avgScore > 50 ? "MEDIUM" : "LOW";
 
     expect(riskLevel).toBe("MEDIUM");
   });
@@ -302,7 +303,8 @@ describe("Insurance Verification", () => {
     const today = new Date();
     const soonExpiry = new Date(today.getTime() + 15 * 24 * 60 * 60 * 1000); // 15 days
 
-    const daysUntilExpiry = (soonExpiry.getTime() - today.getTime()) / (24 * 60 * 60 * 1000);
+    const daysUntilExpiry =
+      (soonExpiry.getTime() - today.getTime()) / (24 * 60 * 60 * 1000);
     const shouldWarn = daysUntilExpiry < 30;
 
     expect(shouldWarn).toBe(true);
@@ -410,7 +412,10 @@ describe("Out-of-Service Rate Threshold Alerts", () => {
       { date: "2024-03-01", rate: 12 },
     ];
 
-    const trend = history[history.length - 1].rate > history[0].rate ? "WORSENING" : "IMPROVING";
+    const trend =
+      history[history.length - 1].rate > history[0].rate
+        ? "WORSENING"
+        : "IMPROVING";
 
     expect(trend).toBe("WORSENING");
   });
@@ -435,7 +440,8 @@ describe("Census Data Accuracy", () => {
     const censusFleetSize = 100;
     const reportedFleetSize = 80; // 20% discrepancy
 
-    const discrepancy = Math.abs(reportedFleetSize - censusFleetSize) / censusFleetSize;
+    const discrepancy =
+      Math.abs(reportedFleetSize - censusFleetSize) / censusFleetSize;
     const isSuspicious = discrepancy > 0.15; // >15% variance
 
     expect(isSuspicious).toBe(true);
@@ -455,7 +461,8 @@ describe("Census Data Accuracy", () => {
     const lastUpdate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000); // 90 days ago
     const today = new Date();
 
-    const daysSinceUpdate = (today.getTime() - lastUpdate.getTime()) / (24 * 60 * 60 * 1000);
+    const daysSinceUpdate =
+      (today.getTime() - lastUpdate.getTime()) / (24 * 60 * 60 * 1000);
 
     const needsUpdate = daysSinceUpdate > 365; // Over a year old
 

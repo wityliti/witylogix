@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Eye,
   AlertTriangle,
@@ -11,7 +11,7 @@ import {
   Activity,
   Clock,
   CheckCircle2,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface Driver {
   id: string;
@@ -84,10 +84,12 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
               Vehicle: {driver.vehicle} • {driver.location}
             </p>
           </div>
-          <div className={cn(
-            "px-3 py-2 rounded-lg border capitalize font-semibold text-sm flex items-center gap-2",
-            getStatusColor(driver.status)
-          )}>
+          <div
+            className={cn(
+              "px-3 py-2 rounded-lg border capitalize font-semibold text-sm flex items-center gap-2",
+              getStatusColor(driver.status),
+            )}
+          >
             {getStatusIcon(driver.status)}
             {driver.status.replace("-", " ")}
           </div>
@@ -135,9 +137,14 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
             <p className="text-xs font-medium text-wl-text-tertiary uppercase">
               Break Status
             </p>
-            <p className={cn("text-sm font-semibold",
-              driver.nextBreak?.includes("URGENT") ? "text-red-400" : "text-green-400"
-            )}>
+            <p
+              className={cn(
+                "text-sm font-semibold",
+                driver.nextBreak?.includes("URGENT")
+                  ? "text-red-400"
+                  : "text-green-400",
+              )}
+            >
               {driver.nextBreak}
             </p>
           </div>
@@ -148,7 +155,8 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
           {driver.hosViolations > 0 && (
             <Badge variant="danger" className="bg-red-500/20 text-red-400">
               <AlertTriangle className="w-3 h-3 mr-1" />
-              {driver.hosViolations} violation{driver.hosViolations > 1 ? "s" : ""}
+              {driver.hosViolations} violation
+              {driver.hosViolations > 1 ? "s" : ""}
             </Badge>
           )}
           <div className="flex gap-2 ml-auto">

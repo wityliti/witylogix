@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from "react";
 import {
   AlertTriangle,
   TrendingUp,
@@ -11,20 +11,20 @@ import {
   ChevronDown,
   Trash2,
   CheckCircle,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { useApiQuery } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { useApiQuery } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 
 interface AnomalyEvent {
   id: string;
-  type: 'spike' | 'drop' | 'trend_shift' | 'seasonal_break' | 'drift';
+  type: "spike" | "drop" | "trend_shift" | "seasonal_break" | "drift";
   zone: string;
-  severity: 'low' | 'medium' | 'high';
+  severity: "low" | "medium" | "high";
   description: string;
   value: number;
   previousValue: number;
@@ -44,19 +44,26 @@ interface AnomalyEvent {
  * - Anomaly detail expandable cards
  */
 export default function AnomaliesPage() {
-  const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
-  const [selectedZone, setSelectedZone] = useState<string>('all');
-  const [expandedAnomalies, setExpandedAnomalies] = useState<Set<string>>(new Set());
+  const [selectedSeverity, setSelectedSeverity] = useState<string>("all");
+  const [selectedZone, setSelectedZone] = useState<string>("all");
+  const [expandedAnomalies, setExpandedAnomalies] = useState<Set<string>>(
+    new Set(),
+  );
 
-  const { data: rawData, loading, error } = useApiQuery<{ items: AnomalyEvent[]; total: number }>(
-    '/api/v4/analytics/demand-anomalies'
+  const {
+    data: rawData,
+    loading,
+    error,
+  } = useApiQuery<{ items: AnomalyEvent[]; total: number }>(
+    "/api/v4/analytics/demand-anomalies",
   );
   const anomalies = rawData?.items ?? [];
 
   const filteredAnomalies = useMemo(() => {
     return anomalies.filter((a) => {
-      if (selectedSeverity !== 'all' && a.severity !== selectedSeverity) return false;
-      if (selectedZone !== 'all' && a.zone !== selectedZone) return false;
+      if (selectedSeverity !== "all" && a.severity !== selectedSeverity)
+        return false;
+      if (selectedZone !== "all" && a.zone !== selectedZone) return false;
       return true;
     });
   }, [anomalies, selectedSeverity, selectedZone]);
@@ -74,14 +81,14 @@ export default function AnomaliesPage() {
           ...acc,
           [a.type]: (acc[a.type] || 0) + 1,
         }),
-        {} as Record<string, number>
+        {} as Record<string, number>,
       ),
       bySeverity: anomalies.reduce(
         (acc, a) => ({
           ...acc,
           [a.severity]: (acc[a.severity] || 0) + 1,
         }),
-        {} as Record<string, number>
+        {} as Record<string, number>,
       ),
     };
   }, [anomalies]);
@@ -108,23 +115,23 @@ export default function AnomaliesPage() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'high':
-        return 'border-wl-danger-500/50 bg-wl-danger-500/5';
-      case 'medium':
-        return 'border-wl-warning-500/50 bg-wl-warning-500/5';
+      case "high":
+        return "border-wl-danger-500/50 bg-wl-danger-500/5";
+      case "medium":
+        return "border-wl-warning-500/50 bg-wl-warning-500/5";
       default:
-        return 'border-wl-info-500/50 bg-wl-info-500/5';
+        return "border-wl-info-500/50 bg-wl-info-500/5";
     }
   };
 
   const getSeverityBadgeVariant = (severity: string) => {
     switch (severity) {
-      case 'high':
-        return 'danger';
-      case 'medium':
-        return 'warning';
+      case "high":
+        return "danger";
+      case "medium":
+        return "warning";
       default:
-        return 'info';
+        return "info";
     }
   };
 
@@ -135,8 +142,12 @@ export default function AnomaliesPage() {
         <div className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-wl-text-primary">Anomaly Monitoring</h1>
-              <p className="text-sm text-wl-text-secondary mt-1">Track and manage demand anomalies</p>
+              <h1 className="text-2xl font-bold text-wl-text-primary">
+                Anomaly Monitoring
+              </h1>
+              <p className="text-sm text-wl-text-secondary mt-1">
+                Track and manage demand anomalies
+              </p>
             </div>
             <Button variant="primary" size="md">
               <AlertTriangle className="w-4 h-4" />
@@ -147,12 +158,20 @@ export default function AnomaliesPage() {
           {/* Stats Row */}
           <div className="flex flex-wrap gap-4 mt-6">
             <div>
-              <p className="text-xs font-medium text-wl-text-tertiary uppercase">Total Anomalies</p>
-              <p className="text-2xl font-bold text-wl-text-primary">{stats.total}</p>
+              <p className="text-xs font-medium text-wl-text-tertiary uppercase">
+                Total Anomalies
+              </p>
+              <p className="text-2xl font-bold text-wl-text-primary">
+                {stats.total}
+              </p>
             </div>
             <div>
-              <p className="text-xs font-medium text-wl-text-tertiary uppercase">Active</p>
-              <p className="text-2xl font-bold text-wl-danger-500">{stats.active}</p>
+              <p className="text-xs font-medium text-wl-text-tertiary uppercase">
+                Active
+              </p>
+              <p className="text-2xl font-bold text-wl-danger-500">
+                {stats.active}
+              </p>
             </div>
           </div>
 
@@ -164,10 +183,10 @@ export default function AnomaliesPage() {
                 value={selectedSeverity}
                 onChange={(e) => setSelectedSeverity(e.target.value)}
                 className={cn(
-                  'px-3 py-2 rounded-md text-sm font-medium',
-                  'bg-wl-bg-overlay border border-wl-border-default',
-                  'text-wl-text-primary',
-                  'focus:outline-none focus:ring-2 focus:ring-wl-primary-500'
+                  "px-3 py-2 rounded-md text-sm font-medium",
+                  "bg-wl-bg-overlay border border-wl-border-default",
+                  "text-wl-text-primary",
+                  "focus:outline-none focus:ring-2 focus:ring-wl-primary-500",
                 )}
               >
                 <option value="all">All Severities</option>
@@ -181,10 +200,10 @@ export default function AnomaliesPage() {
               value={selectedZone}
               onChange={(e) => setSelectedZone(e.target.value)}
               className={cn(
-                'px-3 py-2 rounded-md text-sm font-medium',
-                'bg-wl-bg-overlay border border-wl-border-default',
-                'text-wl-text-primary',
-                'focus:outline-none focus:ring-2 focus:ring-wl-primary-500'
+                "px-3 py-2 rounded-md text-sm font-medium",
+                "bg-wl-bg-overlay border border-wl-border-default",
+                "text-wl-text-primary",
+                "focus:outline-none focus:ring-2 focus:ring-wl-primary-500",
               )}
             >
               <option value="all">All Zones</option>
@@ -217,42 +236,55 @@ export default function AnomaliesPage() {
                   <Card
                     key={anomaly.id}
                     className={cn(
-                      'border cursor-pointer transition-all p-4',
+                      "border cursor-pointer transition-all p-4",
                       getSeverityColor(anomaly.severity),
-                      'hover:border-opacity-75'
+                      "hover:border-opacity-75",
                     )}
                     onClick={() => toggleAnomalyExpansion(anomaly.id)}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <Badge variant={getSeverityBadgeVariant(anomaly.severity) as any}>
+                          <Badge
+                            variant={
+                              getSeverityBadgeVariant(anomaly.severity) as any
+                            }
+                          >
                             {anomaly.severity}
                           </Badge>
                           <span className="font-medium text-wl-text-primary capitalize">
-                            {anomaly.type.replace(/_/g, ' ')}
+                            {anomaly.type.replace(/_/g, " ")}
                           </span>
-                          <span className="text-xs text-wl-text-tertiary">{anomaly.zone}</span>
+                          <span className="text-xs text-wl-text-tertiary">
+                            {anomaly.zone}
+                          </span>
                           {anomaly.resolved && (
                             <CheckCircle className="w-4 h-4 text-wl-success-500" />
                           )}
                         </div>
-                        <p className="text-sm text-wl-text-secondary">{anomaly.description}</p>
+                        <p className="text-sm text-wl-text-secondary">
+                          {anomaly.description}
+                        </p>
 
                         {isExpanded && (
                           <div className="mt-4 pt-4 border-t border-wl-border-default/30 space-y-2 text-sm">
                             <p className="text-wl-text-tertiary">
-                              <span className="font-medium">Previous:</span> {anomaly.previousValue}
+                              <span className="font-medium">Previous:</span>{" "}
+                              {anomaly.previousValue}
                             </p>
                             <p className="text-wl-text-tertiary">
-                              <span className="font-medium">Current:</span> {anomaly.value}
+                              <span className="font-medium">Current:</span>{" "}
+                              {anomaly.value}
                             </p>
                             <p className="text-wl-text-tertiary">
-                              <span className="font-medium">Detected:</span> {timestamp.toLocaleString()}
+                              <span className="font-medium">Detected:</span>{" "}
+                              {timestamp.toLocaleString()}
                             </p>
                             {anomaly.metadata && (
                               <div className="mt-2">
-                                <p className="font-medium text-wl-text-secondary">Metadata:</p>
+                                <p className="font-medium text-wl-text-secondary">
+                                  Metadata:
+                                </p>
                                 <pre className="text-xs bg-wl-bg-overlay p-2 rounded mt-1 overflow-auto">
                                   {JSON.stringify(anomaly.metadata, null, 2)}
                                 </pre>
@@ -264,12 +296,15 @@ export default function AnomaliesPage() {
                       <div className="flex flex-col gap-2 items-end">
                         <ChevronDown
                           className={cn(
-                            'w-4 h-4 text-wl-text-tertiary transition-transform',
-                            isExpanded && 'rotate-180'
+                            "w-4 h-4 text-wl-text-tertiary transition-transform",
+                            isExpanded && "rotate-180",
                           )}
                         />
                         <span className="text-xs text-wl-text-tertiary">
-                          {Math.round((Date.now() - timestamp.getTime()) / 60000)}m ago
+                          {Math.round(
+                            (Date.now() - timestamp.getTime()) / 60000,
+                          )}
+                          m ago
                         </span>
                       </div>
                     </div>

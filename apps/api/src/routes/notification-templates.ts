@@ -15,7 +15,11 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
-import { NotFoundError, ConflictError, ValidationError } from "../lib/errors.js";
+import {
+  NotFoundError,
+  ConflictError,
+  ValidationError,
+} from "../lib/errors.js";
 import {
   createNotificationTemplateSchema,
   updateNotificationTemplateSchema,
@@ -23,7 +27,10 @@ import {
   duplicateNotificationTemplateSchema,
   paginationSchema,
 } from "@witylogix/validators";
-import { renderTemplate, validateTemplateVariables } from "@witylogix/core/templates";
+import {
+  renderTemplate,
+  validateTemplateVariables,
+} from "@witylogix/core/templates";
 
 // ─── Zod Schemas ────────────────────────────────────────────
 
@@ -44,61 +51,62 @@ export default async function notificationTemplateRoutes(
 
   // ── GET / — List notification templates ──────────────────
 
-  fastify.get(
-    "/",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const query = listQuerySchema.parse(request.query);
-      const shopId = request.shopId;
+  fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
+    const query = listQuerySchema.parse(request.query);
+    const shopId = request.shopId;
 
-      const where: Record<string, unknown> = { shopId };
+    const where: Record<string, unknown> = { shopId };
 
-      if (query.channel) {
-        where.channel = query.channel;
-      }
+    if (query.channel) {
+      where.channel = query.channel;
+    }
 
-      if (query.eventType) {
-        where.eventType = query.eventType;
-      }
+    if (query.eventType) {
+      where.eventType = query.eventType;
+    }
 
-      if (query.isActive !== undefined) {
-        where.isActive = query.isActive;
-      }
+    if (query.isActive !== undefined) {
+      where.isActive = query.isActive;
+    }
 
-      const [templates, total] = await Promise.all([
-        request.tenantDb.notificationTemplate.findMany({
-          where,
-          orderBy: [{ eventType: "asc" }, { channel: "asc" }, { createdAt: "desc" }],
-          take: query.limit,
-          skip: (query.page - 1) * query.limit,
-          select: {
-            id: true,
-            name: true,
-            channel: true,
-            eventType: true,
-            subject: true,
-            version: true,
-            isActive: true,
-            variables: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        }),
-        request.tenantDb.notificationTemplate.count({ where }),
-      ]);
-
-      const totalPages = Math.ceil(total / query.limit);
-
-      return {
-        data: templates,
-        pagination: {
-          page: query.page,
-          limit: query.limit,
-          total,
-          totalPages,
+    const [templates, total] = await Promise.all([
+      request.tenantDb.notificationTemplate.findMany({
+        where,
+        orderBy: [
+          { eventType: "asc" },
+          { channel: "asc" },
+          { createdAt: "desc" },
+        ],
+        take: query.limit,
+        skip: (query.page - 1) * query.limit,
+        select: {
+          id: true,
+          name: true,
+          channel: true,
+          eventType: true,
+          subject: true,
+          version: true,
+          isActive: true,
+          variables: true,
+          createdAt: true,
+          updatedAt: true,
         },
-      };
-    },
-  );
+      }),
+      request.tenantDb.notificationTemplate.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / query.limit);
+
+    return {
+      data: templates,
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        total,
+        totalPages,
+      },
+    };
+  });
 
   // ── GET /:id — Get single template ──────────────────────────
 
@@ -130,12 +138,12 @@ export default async function notificationTemplateRoutes(
       const shopId = request.shopId;
 
       // Validate template syntax
-      const validationErrors = validateTemplateVariables(
-        body.bodyTemplate,
-        {},
-      );
+      const validationErrors = validateTemplateVariables(body.bodyTemplate, {});
       if (validationErrors.length > 0) {
-        throw new ValidationError("Template validation failed", validationErrors);
+        throw new ValidationError(
+          "Template validation failed",
+          validationErrors,
+        );
       }
 
       // If subject is provided, validate it too
@@ -190,7 +198,10 @@ export default async function notificationTemplateRoutes(
           {},
         );
         if (validationErrors.length > 0) {
-          throw new ValidationError("Template validation failed", validationErrors);
+          throw new ValidationError(
+            "Template validation failed",
+            validationErrors,
+          );
         }
       }
 
@@ -279,13 +290,25 @@ export default async function notificationTemplateRoutes(
       }
 
       // Render body template
-      const previewBody = previewNotificationTemplateSchema.parse(request.body) as any;
-      const bodyResult = renderTemplate(previewBody.bodyTemplate, previewBody.sampleVariables);
+      const previewBody = previewNotificationTemplateSchema.parse(
+        request.body,
+      ) as any;
+      const bodyResult = renderTemplate(
+        previewBody.bodyTemplate,
+        previewBody.sampleVariables,
+      );
 
       // Render subject if provided
-      let subjectResult: { html: string; text: string; errors: string[] } = { html: "", text: "", errors: [] };
+      let subjectResult: { html: string; text: string; errors: string[] } = {
+        html: "",
+        text: "",
+        errors: [],
+      };
       if (previewBody.subject) {
-        subjectResult = renderTemplate(previewBody.subject, previewBody.sampleVariables);
+        subjectResult = renderTemplate(
+          previewBody.subject,
+          previewBody.sampleVariables,
+        );
       }
 
       // Combine errors
@@ -318,7 +341,9 @@ export default async function notificationTemplateRoutes(
     { preHandler: [requireRole("ADMIN")] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { id } = request.params as { id: string };
-      const body = duplicateNotificationTemplateSchema.parse(request.body) as any;
+      const body = duplicateNotificationTemplateSchema.parse(
+        request.body,
+      ) as any;
       const shopId = request.shopId;
 
       const existing = await request.tenantDb.notificationTemplate.findUnique({

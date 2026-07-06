@@ -109,7 +109,7 @@ export class CorsManager {
       methods?: string[];
       allowedHeaders?: string[];
       exposedHeaders?: string[];
-    }
+    },
   ) {
     this.whitelist = whitelist;
 
@@ -117,8 +117,10 @@ export class CorsManager {
     if (options?.credentials !== undefined)
       this.defaultCredentials = options.credentials;
     if (options?.methods) this.defaultMethods = options.methods;
-    if (options?.allowedHeaders) this.defaultAllowedHeaders = options.allowedHeaders;
-    if (options?.exposedHeaders) this.defaultExposedHeaders = options.exposedHeaders;
+    if (options?.allowedHeaders)
+      this.defaultAllowedHeaders = options.allowedHeaders;
+    if (options?.exposedHeaders)
+      this.defaultExposedHeaders = options.exposedHeaders;
   }
 
   /**
@@ -142,7 +144,9 @@ export class CorsManager {
     // Wildcard subdomain matching (https://*.example.com or *.example.com)
     if (pattern.includes("*.")) {
       // Extract protocol and domain from pattern
-      const patternProtocol = pattern.includes("://") ? pattern.split("://")[0] : null;
+      const patternProtocol = pattern.includes("://")
+        ? pattern.split("://")[0]
+        : null;
       const patternDomain = pattern.includes("://")
         ? pattern.split("://")[1].replace("*.", "")
         : pattern.replace("*.", "");
@@ -182,7 +186,9 @@ export class CorsManager {
       return false;
     }
 
-    return this.whitelist.some((pattern) => this.originMatches(origin, pattern));
+    return this.whitelist.some((pattern) =>
+      this.originMatches(origin, pattern),
+    );
   }
 
   /**
@@ -207,9 +213,7 @@ export class CorsManager {
    * @returns true if path matches pattern
    */
   private pathMatches(path: string, pattern: string): boolean {
-    const regexPattern = pattern
-      .replace(/\./g, "\\.")
-      .replace(/\*/g, ".*");
+    const regexPattern = pattern.replace(/\./g, "\\.").replace(/\*/g, ".*");
     return new RegExp(`^${regexPattern}$`).test(path);
   }
 
@@ -314,7 +318,11 @@ export class CorsManager {
    * @param path - Request path
    * @returns CORS headers
    */
-  getHeaders(origin: string, method: string, path: string = "/"): Record<string, string> {
+  getHeaders(
+    origin: string,
+    method: string,
+    path: string = "/",
+  ): Record<string, string> {
     const context: CorsContext = {
       origin,
       method,

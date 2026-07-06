@@ -11,7 +11,8 @@ const poppins = Poppins({
 });
 
 const APP_NAME = "Witylogix Dashboard";
-const APP_DESCRIPTION = "Delivery logistics command center. Real-time fleet tracking, route optimization, and delivery management for modern logistics operations.";
+const APP_DESCRIPTION =
+  "Delivery logistics command center. Real-time fleet tracking, route optimization, and delivery management for modern logistics operations.";
 const THEME_COLOR = "#0a0a0f";
 
 export const metadata: Metadata = {
@@ -60,9 +61,7 @@ export const metadata: Metadata = {
     description: APP_DESCRIPTION,
   },
   icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-    ],
+    icon: [{ url: "/favicon.ico", sizes: "any" }],
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
@@ -90,14 +89,15 @@ export default function RootLayout({
         <meta charSet="utf-8" />
         <meta name="theme-color" content={THEME_COLOR} />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
         <meta name="apple-mobile-web-app-title" content="Witylogix" />
         <meta name="format-detection" content="telephone=no" />
       </head>
       <body className="wl-noise">
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

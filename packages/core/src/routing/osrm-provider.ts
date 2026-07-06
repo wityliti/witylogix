@@ -34,7 +34,10 @@ export class OSRMProvider implements RoutingProvider {
    * Get driving route between two points
    * Uses OSRM Route Service v1
    */
-  async getRoute(origin: Coordinates, destination: Coordinates): Promise<RouteResult> {
+  async getRoute(
+    origin: Coordinates,
+    destination: Coordinates,
+  ): Promise<RouteResult> {
     return this.getRouteWithWaypoints([origin, destination]);
   }
 
@@ -51,21 +54,22 @@ export class OSRMProvider implements RoutingProvider {
       .map((w) => `${w.longitude},${w.latitude}`)
       .join(";");
 
-    const url = `${this.baseUrl}/route/v1/driving/${coords}?` +
+    const url =
+      `${this.baseUrl}/route/v1/driving/${coords}?` +
       `overview=full&geometries=geojson&steps=true`;
 
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(
-        `OSRM Route Service error: ${response.status} ${response.statusText}`
+        `OSRM Route Service error: ${response.status} ${response.statusText}`,
       );
     }
 
-    const data = await response.json() as OsrmRouteResponse;
+    const data = (await response.json()) as OsrmRouteResponse;
 
     if (data.code !== "Ok" || !data.routes || data.routes.length === 0) {
       throw new Error(
-        `OSRM Route Service failed: ${data.message || "No route found"}`
+        `OSRM Route Service failed: ${data.message || "No route found"}`,
       );
     }
 
@@ -83,30 +87,31 @@ export class OSRMProvider implements RoutingProvider {
    * GET /table/v1/driving/{coords}?annotations=duration,distance
    * OSRM killer feature: unlimited matrix size, ~3s for 1000 points
    */
-  async getDistanceMatrix(points: Coordinates[]): Promise<DistanceMatrixResult> {
+  async getDistanceMatrix(
+    points: Coordinates[],
+  ): Promise<DistanceMatrixResult> {
     if (points.length < 2) {
       throw new Error("At least 2 points required for distance matrix");
     }
 
-    const coords = points
-      .map((p) => `${p.longitude},${p.latitude}`)
-      .join(";");
+    const coords = points.map((p) => `${p.longitude},${p.latitude}`).join(";");
 
-    const url = `${this.baseUrl}/table/v1/driving/${coords}?` +
+    const url =
+      `${this.baseUrl}/table/v1/driving/${coords}?` +
       `annotations=duration,distance`;
 
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(
-        `OSRM Table Service error: ${response.status} ${response.statusText}`
+        `OSRM Table Service error: ${response.status} ${response.statusText}`,
       );
     }
 
-    const data = await response.json() as OsrmTableResponse;
+    const data = (await response.json()) as OsrmTableResponse;
 
     if (data.code !== "Ok") {
       throw new Error(
-        `OSRM Table Service failed: ${data.message || "Matrix computation failed"}`
+        `OSRM Table Service failed: ${data.message || "Matrix computation failed"}`,
       );
     }
 
@@ -122,7 +127,7 @@ export class OSRMProvider implements RoutingProvider {
    */
   async geocode(_address: string): Promise<GeocodingResult[]> {
     throw new Error(
-      "OSRM does not support geocoding. Use Nominatim or retain Mapbox geocoding."
+      "OSRM does not support geocoding. Use Nominatim or retain Mapbox geocoding.",
     );
   }
 
@@ -132,7 +137,7 @@ export class OSRMProvider implements RoutingProvider {
    */
   async reverseGeocode(_coords: Coordinates): Promise<GeocodingResult> {
     throw new Error(
-      "OSRM does not support reverse geocoding. Use Nominatim or retain Mapbox geocoding."
+      "OSRM does not support reverse geocoding. Use Nominatim or retain Mapbox geocoding.",
     );
   }
 
@@ -140,7 +145,10 @@ export class OSRMProvider implements RoutingProvider {
    * Get ETA from origin to destination
    * Uses getRoute and extracts duration
    */
-  async getETA(origin: Coordinates, destination: Coordinates): Promise<ETAResult> {
+  async getETA(
+    origin: Coordinates,
+    destination: Coordinates,
+  ): Promise<ETAResult> {
     const route = await this.getRoute(origin, destination);
 
     return {
@@ -161,15 +169,15 @@ export class OSRMProvider implements RoutingProvider {
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(
-        `OSRM Nearest Service error: ${response.status} ${response.statusText}`
+        `OSRM Nearest Service error: ${response.status} ${response.statusText}`,
       );
     }
 
-    const data = await response.json() as OsrmNearestResponse;
+    const data = (await response.json()) as OsrmNearestResponse;
 
     if (data.code !== "Ok" || !data.waypoints || data.waypoints.length === 0) {
       throw new Error(
-        `OSRM Nearest Service failed: ${data.message || "No nearest road found"}`
+        `OSRM Nearest Service failed: ${data.message || "No nearest road found"}`,
       );
     }
 
@@ -199,21 +207,22 @@ export class OSRMProvider implements RoutingProvider {
       .map((w) => `${w.longitude},${w.latitude}`)
       .join(";");
 
-    const url = `${this.baseUrl}/trip/v1/driving/${coords}?` +
+    const url =
+      `${this.baseUrl}/trip/v1/driving/${coords}?` +
       `roundtrip=false&source=first&destination=last&geometries=geojson`;
 
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(
-        `OSRM Trip Service error: ${response.status} ${response.statusText}`
+        `OSRM Trip Service error: ${response.status} ${response.statusText}`,
       );
     }
 
-    const data = await response.json() as OsrmTripResponse;
+    const data = (await response.json()) as OsrmTripResponse;
 
     if (data.code !== "Ok") {
       throw new Error(
-        `OSRM Trip Service failed: ${data.message || "Route optimization failed"}`
+        `OSRM Trip Service failed: ${data.message || "Route optimization failed"}`,
       );
     }
 

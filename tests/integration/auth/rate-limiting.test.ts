@@ -4,8 +4,8 @@
  * ~500 lines, 25+ tests
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { createHash, randomBytes } from 'crypto';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { createHash, randomBytes } from "crypto";
 
 // ───────────────────────────────────────────────────────────────────────────
 // TYPES & CONSTANTS
@@ -39,7 +39,7 @@ class SlidingWindowRateLimiter {
 
   constructor(
     private limit: number,
-    private windowMs: number
+    private windowMs: number,
   ) {}
 
   check(key: string, timestamp: number = Date.now()): RateLimitResult {
@@ -54,12 +54,15 @@ class SlidingWindowRateLimiter {
     }
 
     // Remove requests outside the window
-    window.requestTimes = window.requestTimes.filter(t => timestamp - t < this.windowMs);
+    window.requestTimes = window.requestTimes.filter(
+      (t) => timestamp - t < this.windowMs,
+    );
 
     const remaining = Math.max(0, this.limit - window.requestTimes.length);
-    const reset = window.requestTimes.length > 0
-      ? window.requestTimes[0] + this.windowMs
-      : timestamp + this.windowMs;
+    const reset =
+      window.requestTimes.length > 0
+        ? window.requestTimes[0] + this.windowMs
+        : timestamp + this.windowMs;
 
     if (window.requestTimes.length < this.limit) {
       window.requestTimes.push(timestamp);
@@ -104,7 +107,7 @@ class CSRFTokenManager {
 
   generateToken(sessionId: string, timestamp: number = Date.now()): CSRFToken {
     const token: CSRFToken = {
-      token: randomBytes(32).toString('hex'),
+      token: randomBytes(32).toString("hex"),
       createdAt: timestamp,
       expiresAt: timestamp + this.tokenTtlMs,
     };
@@ -113,7 +116,11 @@ class CSRFTokenManager {
     return token;
   }
 
-  validateToken(sessionId: string, token: string, timestamp: number = Date.now()): boolean {
+  validateToken(
+    sessionId: string,
+    token: string,
+    timestamp: number = Date.now(),
+  ): boolean {
     const stored = this.tokens.get(sessionId);
 
     if (!stored) {
@@ -128,10 +135,7 @@ class CSRFTokenManager {
     return stored.token === token;
   }
 
-  validateDoubleSumbitCookie(
-    token: string,
-    cookieValue: string
-  ): boolean {
+  validateDoubleSumbitCookie(token: string, cookieValue: string): boolean {
     // Double-submit cookie: token in body must match token in cookie
     return token === cookieValue;
   }
@@ -156,21 +160,21 @@ interface EndpointLimit {
 }
 
 const endpointLimits: EndpointLimit[] = [
-  { endpoint: '/login', requestsPerWindow: 5, windowMs: 60000 }, // 5 per minute
-  { endpoint: '/register', requestsPerWindow: 3, windowMs: 60000 }, // 3 per minute
-  { endpoint: '/password-reset', requestsPerWindow: 3, windowMs: 3600000 }, // 3 per hour
-  { endpoint: '/email-verify', requestsPerWindow: 10, windowMs: 60000 }, // 10 per minute
+  { endpoint: "/login", requestsPerWindow: 5, windowMs: 60000 }, // 5 per minute
+  { endpoint: "/register", requestsPerWindow: 3, windowMs: 60000 }, // 3 per minute
+  { endpoint: "/password-reset", requestsPerWindow: 3, windowMs: 3600000 }, // 3 per hour
+  { endpoint: "/email-verify", requestsPerWindow: 10, windowMs: 60000 }, // 10 per minute
 ];
 
 function getEndpointLimit(endpoint: string): EndpointLimit | null {
-  return endpointLimits.find(l => l.endpoint === endpoint) || null;
+  return endpointLimits.find((l) => l.endpoint === endpoint) || null;
 }
 
 // ───────────────────────────────────────────────────────────────────────────
 // TESTS
 // ───────────────────────────────────────────────────────────────────────────
 
-describe('Sliding Window Rate Limiter', () => {
+describe("Sliding Window Rate Limiter", () => {
   let limiter: SlidingWindowRateLimiter;
 
   beforeEach(() => {
@@ -181,9 +185,9 @@ describe('Sliding Window Rate Limiter', () => {
     limiter.resetAll();
   });
 
-  describe('Basic Rate Limiting', () => {
-    it('should allow requests within limit', () => {
-      const key = 'test-key';
+  describe("Basic Rate Limiting", () => {
+    it("should allow requests within limit", () => {
+      const key = "test-key";
 
       for (let i = 0; i < 5; i++) {
         const result = limiter.check(key);
@@ -191,8 +195,8 @@ describe('Sliding Window Rate Limiter', () => {
       }
     });
 
-    it('should block requests over limit', () => {
-      const key = 'test-key';
+    it("should block requests over limit", () => {
+      const key = "test-key";
 
       // Use up limit
       for (let i = 0; i < 5; i++) {
@@ -205,8 +209,8 @@ describe('Sliding Window Rate Limiter', () => {
       expect(result.remaining).toBe(0);
     });
 
-    it('should return correct headers (Limit, Remaining, Reset)', () => {
-      const key = 'test-key';
+    it("should return correct headers (Limit, Remaining, Reset)", () => {
+      const key = "test-key";
 
       const result1 = limiter.check(key);
       expect(result1.allowed).toBe(true);
@@ -217,8 +221,8 @@ describe('Sliding Window Rate Limiter', () => {
       expect(result2.remaining).toBe(3);
     });
 
-    it('should return 429 with Retry-After', () => {
-      const key = 'test-key';
+    it("should return 429 with Retry-After", () => {
+      const key = "test-key";
 
       // Use up limit
       for (let i = 0; i < 5; i++) {
@@ -231,8 +235,8 @@ describe('Sliding Window Rate Limiter', () => {
       expect(result.retryAfter).toBeLessThanOrEqual(60);
     });
 
-    it('should reset after window slides', () => {
-      const key = 'test-key';
+    it("should reset after window slides", () => {
+      const key = "test-key";
       const baseTime = Date.now();
 
       // Use up limit
@@ -246,8 +250,8 @@ describe('Sliding Window Rate Limiter', () => {
       expect(result.remaining).toBe(4);
     });
 
-    it('should handle sliding window correctly', () => {
-      const key = 'test-key';
+    it("should handle sliding window correctly", () => {
+      const key = "test-key";
       const baseTime = Date.now();
 
       // Make 5 requests at different times
@@ -266,9 +270,9 @@ describe('Sliding Window Rate Limiter', () => {
     });
   });
 
-  describe('Remaining Count', () => {
-    it('should track remaining requests accurately', () => {
-      const key = 'test-key';
+  describe("Remaining Count", () => {
+    it("should track remaining requests accurately", () => {
+      const key = "test-key";
 
       expect(limiter.check(key).remaining).toBe(4);
       expect(limiter.check(key).remaining).toBe(3);
@@ -277,8 +281,8 @@ describe('Sliding Window Rate Limiter', () => {
       expect(limiter.check(key).remaining).toBe(0);
     });
 
-    it('should show 0 remaining when limit reached', () => {
-      const key = 'test-key';
+    it("should show 0 remaining when limit reached", () => {
+      const key = "test-key";
 
       for (let i = 0; i < 5; i++) {
         limiter.check(key);
@@ -289,31 +293,31 @@ describe('Sliding Window Rate Limiter', () => {
     });
   });
 
-  describe('Multiple Keys', () => {
-    it('should isolate rate limits per key', () => {
-      const result1 = limiter.check('user-1');
-      const result2 = limiter.check('user-2');
+  describe("Multiple Keys", () => {
+    it("should isolate rate limits per key", () => {
+      const result1 = limiter.check("user-1");
+      const result2 = limiter.check("user-2");
 
       expect(result1.remaining).toBe(4);
       expect(result2.remaining).toBe(4);
     });
 
-    it('should allow different keys to exceed limit independently', () => {
+    it("should allow different keys to exceed limit independently", () => {
       // Use up limit for user-1
       for (let i = 0; i < 5; i++) {
-        limiter.check('user-1');
+        limiter.check("user-1");
       }
 
       // user-2 should still have capacity
-      const user2Result = limiter.check('user-2');
+      const user2Result = limiter.check("user-2");
       expect(user2Result.allowed).toBe(true);
       expect(user2Result.remaining).toBe(4);
     });
   });
 
-  describe('Window Reset', () => {
-    it('should reset individual key', () => {
-      const key = 'test-key';
+  describe("Window Reset", () => {
+    it("should reset individual key", () => {
+      const key = "test-key";
 
       limiter.check(key);
       limiter.check(key);
@@ -324,24 +328,24 @@ describe('Sliding Window Rate Limiter', () => {
       expect(result.remaining).toBe(4);
     });
 
-    it('should reset all keys', () => {
-      limiter.check('user-1');
-      limiter.check('user-1');
-      limiter.check('user-2');
+    it("should reset all keys", () => {
+      limiter.check("user-1");
+      limiter.check("user-1");
+      limiter.check("user-2");
 
       limiter.resetAll();
 
-      expect(limiter.check('user-1').remaining).toBe(4);
-      expect(limiter.check('user-2').remaining).toBe(4);
+      expect(limiter.check("user-1").remaining).toBe(4);
+      expect(limiter.check("user-2").remaining).toBe(4);
     });
   });
 });
 
-describe('Per-Endpoint Limits', () => {
-  describe('Login Endpoint', () => {
-    it('should enforce 5 requests per minute on /login', () => {
+describe("Per-Endpoint Limits", () => {
+  describe("Login Endpoint", () => {
+    it("should enforce 5 requests per minute on /login", () => {
       const limiter = new SlidingWindowRateLimiter(5, 60000);
-      const key = 'ip-192.168.1.1';
+      const key = "ip-192.168.1.1";
 
       for (let i = 0; i < 5; i++) {
         const result = limiter.check(key);
@@ -352,18 +356,18 @@ describe('Per-Endpoint Limits', () => {
       expect(result.allowed).toBe(false);
     });
 
-    it('should have correct limit definition', () => {
-      const limit = getEndpointLimit('/login');
+    it("should have correct limit definition", () => {
+      const limit = getEndpointLimit("/login");
       expect(limit).not.toBeNull();
       expect(limit?.requestsPerWindow).toBe(5);
       expect(limit?.windowMs).toBe(60000);
     });
   });
 
-  describe('Register Endpoint', () => {
-    it('should enforce 3 requests per minute on /register', () => {
+  describe("Register Endpoint", () => {
+    it("should enforce 3 requests per minute on /register", () => {
       const limiter = new SlidingWindowRateLimiter(3, 60000);
-      const key = 'ip-192.168.1.2';
+      const key = "ip-192.168.1.2";
 
       for (let i = 0; i < 3; i++) {
         const result = limiter.check(key);
@@ -374,18 +378,18 @@ describe('Per-Endpoint Limits', () => {
       expect(result.allowed).toBe(false);
     });
 
-    it('should have correct limit definition', () => {
-      const limit = getEndpointLimit('/register');
+    it("should have correct limit definition", () => {
+      const limit = getEndpointLimit("/register");
       expect(limit).not.toBeNull();
       expect(limit?.requestsPerWindow).toBe(3);
       expect(limit?.windowMs).toBe(60000);
     });
   });
 
-  describe('Password Reset Endpoint', () => {
-    it('should enforce 3 requests per hour on /password-reset', () => {
+  describe("Password Reset Endpoint", () => {
+    it("should enforce 3 requests per hour on /password-reset", () => {
       const limiter = new SlidingWindowRateLimiter(3, 3600000);
-      const key = 'user-123';
+      const key = "user-123";
 
       for (let i = 0; i < 3; i++) {
         const result = limiter.check(key);
@@ -396,111 +400,111 @@ describe('Per-Endpoint Limits', () => {
       expect(result.allowed).toBe(false);
     });
 
-    it('should have correct limit definition', () => {
-      const limit = getEndpointLimit('/password-reset');
+    it("should have correct limit definition", () => {
+      const limit = getEndpointLimit("/password-reset");
       expect(limit).not.toBeNull();
       expect(limit?.requestsPerWindow).toBe(3);
       expect(limit?.windowMs).toBe(3600000);
     });
   });
 
-  describe('Endpoint Discovery', () => {
-    it('should find limit by endpoint path', () => {
-      const loginLimit = getEndpointLimit('/login');
-      const registerLimit = getEndpointLimit('/register');
+  describe("Endpoint Discovery", () => {
+    it("should find limit by endpoint path", () => {
+      const loginLimit = getEndpointLimit("/login");
+      const registerLimit = getEndpointLimit("/register");
 
       expect(loginLimit).not.toBeNull();
       expect(registerLimit).not.toBeNull();
     });
 
-    it('should return null for unknown endpoints', () => {
-      const limit = getEndpointLimit('/unknown');
+    it("should return null for unknown endpoints", () => {
+      const limit = getEndpointLimit("/unknown");
       expect(limit).toBeNull();
     });
   });
 });
 
-describe('Per-User vs Per-IP', () => {
-  describe('Unauthenticated Requests', () => {
-    it('should track per-IP for unauthenticated users', () => {
+describe("Per-User vs Per-IP", () => {
+  describe("Unauthenticated Requests", () => {
+    it("should track per-IP for unauthenticated users", () => {
       const limiter = new SlidingWindowRateLimiter(5, 60000);
 
       // Same IP, should share limit
-      const result1 = limiter.check('ip-192.168.1.1');
-      const result2 = limiter.check('ip-192.168.1.1');
+      const result1 = limiter.check("ip-192.168.1.1");
+      const result2 = limiter.check("ip-192.168.1.1");
 
       expect(result1.remaining).toBe(4);
       expect(result2.remaining).toBe(3);
     });
 
-    it('should isolate limits across different IPs', () => {
+    it("should isolate limits across different IPs", () => {
       const limiter = new SlidingWindowRateLimiter(5, 60000);
 
-      const result1 = limiter.check('ip-192.168.1.1');
-      const result2 = limiter.check('ip-192.168.1.2');
+      const result1 = limiter.check("ip-192.168.1.1");
+      const result2 = limiter.check("ip-192.168.1.2");
 
       expect(result1.remaining).toBe(4);
       expect(result2.remaining).toBe(4);
     });
   });
 
-  describe('Authenticated Requests', () => {
-    it('should track per-user for authenticated users', () => {
+  describe("Authenticated Requests", () => {
+    it("should track per-user for authenticated users", () => {
       const limiter = new SlidingWindowRateLimiter(10, 60000);
 
-      const result1 = limiter.check('user-123');
-      const result2 = limiter.check('user-123');
+      const result1 = limiter.check("user-123");
+      const result2 = limiter.check("user-123");
 
       expect(result1.remaining).toBe(9);
       expect(result2.remaining).toBe(8);
     });
 
-    it('should isolate limits across different users', () => {
+    it("should isolate limits across different users", () => {
       const limiter = new SlidingWindowRateLimiter(10, 60000);
 
-      const result1 = limiter.check('user-123');
-      const result2 = limiter.check('user-456');
+      const result1 = limiter.check("user-123");
+      const result2 = limiter.check("user-456");
 
       expect(result1.remaining).toBe(9);
       expect(result2.remaining).toBe(9);
     });
 
-    it('should be more lenient with authenticated users', () => {
+    it("should be more lenient with authenticated users", () => {
       const unauthLimiter = new SlidingWindowRateLimiter(5, 60000);
       const authLimiter = new SlidingWindowRateLimiter(10, 60000);
 
-      expect(authLimiter.check('user-1').remaining).toBeGreaterThan(
-        unauthLimiter.check('ip-1.1.1.1').remaining
+      expect(authLimiter.check("user-1").remaining).toBeGreaterThan(
+        unauthLimiter.check("ip-1.1.1.1").remaining,
       );
     });
   });
 
-  describe('VPN/Proxy Handling', () => {
-    it('should handle multiple users behind same IP', () => {
+  describe("VPN/Proxy Handling", () => {
+    it("should handle multiple users behind same IP", () => {
       const limiter = new SlidingWindowRateLimiter(5, 60000);
 
       // If tracking by user, should work fine
-      const result1 = limiter.check('user-123');
-      const result2 = limiter.check('user-456');
+      const result1 = limiter.check("user-123");
+      const result2 = limiter.check("user-456");
 
       expect(result1.allowed).toBe(true);
       expect(result2.allowed).toBe(true);
     });
 
-    it('should block if same IP attempts too many logins', () => {
+    it("should block if same IP attempts too many logins", () => {
       const limiter = new SlidingWindowRateLimiter(5, 60000);
 
       for (let i = 0; i < 5; i++) {
-        limiter.check('ip-1.1.1.1');
+        limiter.check("ip-1.1.1.1");
       }
 
-      const result = limiter.check('ip-1.1.1.1');
+      const result = limiter.check("ip-1.1.1.1");
       expect(result.allowed).toBe(false);
     });
   });
 });
 
-describe('CSRF Protection', () => {
+describe("CSRF Protection", () => {
   let csrfManager: CSRFTokenManager;
 
   beforeEach(() => {
@@ -511,9 +515,9 @@ describe('CSRF Protection', () => {
     csrfManager.clear();
   });
 
-  describe('Token Generation', () => {
-    it('should generate CSRF token', () => {
-      const token = csrfManager.generateToken('session-123');
+  describe("Token Generation", () => {
+    it("should generate CSRF token", () => {
+      const token = csrfManager.generateToken("session-123");
 
       expect(token.token).toBeTruthy();
       expect(token.token.length).toBe(64); // 32 bytes hex
@@ -521,133 +525,151 @@ describe('CSRF Protection', () => {
       expect(token.expiresAt).toBeGreaterThan(token.createdAt);
     });
 
-    it('should generate unique tokens', () => {
-      const token1 = csrfManager.generateToken('session-1');
-      const token2 = csrfManager.generateToken('session-2');
+    it("should generate unique tokens", () => {
+      const token1 = csrfManager.generateToken("session-1");
+      const token2 = csrfManager.generateToken("session-2");
 
       expect(token1.token).not.toBe(token2.token);
     });
 
-    it('should overwrite previous token for same session', () => {
-      const token1 = csrfManager.generateToken('session-123');
-      const token2 = csrfManager.generateToken('session-123');
+    it("should overwrite previous token for same session", () => {
+      const token1 = csrfManager.generateToken("session-123");
+      const token2 = csrfManager.generateToken("session-123");
 
       expect(token1.token).not.toBe(token2.token);
     });
   });
 
-  describe('Token Validation', () => {
-    it('should validate correct token', () => {
-      const token = csrfManager.generateToken('session-123');
-      const isValid = csrfManager.validateToken('session-123', token.token);
+  describe("Token Validation", () => {
+    it("should validate correct token", () => {
+      const token = csrfManager.generateToken("session-123");
+      const isValid = csrfManager.validateToken("session-123", token.token);
 
       expect(isValid).toBe(true);
     });
 
-    it('should reject wrong token', () => {
-      const token = csrfManager.generateToken('session-123');
-      const isValid = csrfManager.validateToken('session-123', 'wrong-token');
+    it("should reject wrong token", () => {
+      const token = csrfManager.generateToken("session-123");
+      const isValid = csrfManager.validateToken("session-123", "wrong-token");
 
       expect(isValid).toBe(false);
     });
 
-    it('should reject missing session', () => {
-      const isValid = csrfManager.validateToken('missing-session', 'any-token');
+    it("should reject missing session", () => {
+      const isValid = csrfManager.validateToken("missing-session", "any-token");
       expect(isValid).toBe(false);
     });
 
-    it('should reject expired token', () => {
+    it("should reject expired token", () => {
       const baseTime = Date.now();
-      const token = csrfManager.generateToken('session-123', baseTime);
+      const token = csrfManager.generateToken("session-123", baseTime);
 
       // Validate after expiry
-      const isValid = csrfManager.validateToken('session-123', token.token, baseTime + 25 * 60 * 60 * 1000);
+      const isValid = csrfManager.validateToken(
+        "session-123",
+        token.token,
+        baseTime + 25 * 60 * 60 * 1000,
+      );
       expect(isValid).toBe(false);
     });
 
-    it('should clean up expired tokens', () => {
+    it("should clean up expired tokens", () => {
       const baseTime = Date.now();
-      const token = csrfManager.generateToken('session-123', baseTime);
+      const token = csrfManager.generateToken("session-123", baseTime);
 
       // First validation within TTL should work
-      const isValid1 = csrfManager.validateToken('session-123', token.token, baseTime + 1000);
+      const isValid1 = csrfManager.validateToken(
+        "session-123",
+        token.token,
+        baseTime + 1000,
+      );
       expect(isValid1).toBe(true);
 
       // After expiry, token should be removed and next check should fail
-      const isValid2 = csrfManager.validateToken('session-123', token.token, baseTime + 25 * 60 * 60 * 1000);
+      const isValid2 = csrfManager.validateToken(
+        "session-123",
+        token.token,
+        baseTime + 25 * 60 * 60 * 1000,
+      );
       expect(isValid2).toBe(false);
     });
   });
 
-  describe('Double-Submit Cookie Pattern', () => {
-    it('should validate double-submit cookie', () => {
-      const token = csrfManager.generateToken('session-123').token;
+  describe("Double-Submit Cookie Pattern", () => {
+    it("should validate double-submit cookie", () => {
+      const token = csrfManager.generateToken("session-123").token;
       const cookieValue = token;
 
-      const isValid = csrfManager.validateDoubleSumbitCookie(token, cookieValue);
+      const isValid = csrfManager.validateDoubleSumbitCookie(
+        token,
+        cookieValue,
+      );
       expect(isValid).toBe(true);
     });
 
-    it('should reject mismatched double-submit cookie', () => {
-      const token = 'token-from-body';
-      const cookieValue = 'token-from-cookie';
+    it("should reject mismatched double-submit cookie", () => {
+      const token = "token-from-body";
+      const cookieValue = "token-from-cookie";
 
-      const isValid = csrfManager.validateDoubleSumbitCookie(token, cookieValue);
+      const isValid = csrfManager.validateDoubleSumbitCookie(
+        token,
+        cookieValue,
+      );
       expect(isValid).toBe(false);
     });
   });
 
-  describe('Token Revocation', () => {
-    it('should revoke token', () => {
-      const token = csrfManager.generateToken('session-123');
+  describe("Token Revocation", () => {
+    it("should revoke token", () => {
+      const token = csrfManager.generateToken("session-123");
 
-      csrfManager.revokeToken('session-123');
+      csrfManager.revokeToken("session-123");
 
-      const isValid = csrfManager.validateToken('session-123', token.token);
+      const isValid = csrfManager.validateToken("session-123", token.token);
       expect(isValid).toBe(false);
     });
 
-    it('should not affect other sessions', () => {
-      const token1 = csrfManager.generateToken('session-1');
-      const token2 = csrfManager.generateToken('session-2');
+    it("should not affect other sessions", () => {
+      const token1 = csrfManager.generateToken("session-1");
+      const token2 = csrfManager.generateToken("session-2");
 
-      csrfManager.revokeToken('session-1');
+      csrfManager.revokeToken("session-1");
 
-      expect(csrfManager.validateToken('session-1', token1.token)).toBe(false);
-      expect(csrfManager.validateToken('session-2', token2.token)).toBe(true);
+      expect(csrfManager.validateToken("session-1", token1.token)).toBe(false);
+      expect(csrfManager.validateToken("session-2", token2.token)).toBe(true);
     });
   });
 
-  describe('CSRF Protection Exempt Endpoints', () => {
-    it('should exempt health check endpoints', () => {
-      const exemptEndpoints = ['/health', '/health/live', '/metrics'];
-      const protectedEndpoints = ['/login', '/register', '/api/create'];
+  describe("CSRF Protection Exempt Endpoints", () => {
+    it("should exempt health check endpoints", () => {
+      const exemptEndpoints = ["/health", "/health/live", "/metrics"];
+      const protectedEndpoints = ["/login", "/register", "/api/create"];
 
-      exemptEndpoints.forEach(endpoint => {
+      exemptEndpoints.forEach((endpoint) => {
         expect(endpoint).toMatch(/^\/(health|metrics)/);
       });
 
-      protectedEndpoints.forEach(endpoint => {
+      protectedEndpoints.forEach((endpoint) => {
         expect(endpoint).not.toMatch(/^\/(health|metrics)/);
       });
     });
 
-    it('should exempt GET requests', () => {
+    it("should exempt GET requests", () => {
       // GET requests should not require CSRF
-      const getMethod = 'GET';
-      const postMethod = 'POST';
+      const getMethod = "GET";
+      const postMethod = "POST";
 
-      expect(['POST', 'PUT', 'DELETE', 'PATCH']).toContain(postMethod);
-      expect(['POST', 'PUT', 'DELETE', 'PATCH']).not.toContain(getMethod);
+      expect(["POST", "PUT", "DELETE", "PATCH"]).toContain(postMethod);
+      expect(["POST", "PUT", "DELETE", "PATCH"]).not.toContain(getMethod);
     });
 
-    it('should exempt API key authenticated routes', () => {
+    it("should exempt API key authenticated routes", () => {
       // Routes with valid API key should bypass CSRF
       const hasApiKey = (headers: Record<string, string>) => {
-        return 'x-api-key' in headers && headers['x-api-key'].length > 0;
+        return "x-api-key" in headers && headers["x-api-key"].length > 0;
       };
 
-      const headersWithKey = { 'x-api-key': 'valid-key' };
+      const headersWithKey = { "x-api-key": "valid-key" };
       const headersWithoutKey = {};
 
       expect(hasApiKey(headersWithKey)).toBe(true);

@@ -3,7 +3,12 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-export type MigrationStep = "source" | "mapping" | "shadow" | "cutover" | "complete";
+export type MigrationStep =
+  | "source"
+  | "mapping"
+  | "shadow"
+  | "cutover"
+  | "complete";
 
 export interface StepStats {
   requestsProcessed: number;
@@ -27,7 +32,9 @@ export function MigrationProgressBar({
   className,
 }: MigrationProgressBarProps) {
   const [expandedStep, setExpandedStep] = useState<MigrationStep | null>(null);
-  const [isRollingBack, setIsRollingBack] = useState<MigrationStep | null>(null);
+  const [isRollingBack, setIsRollingBack] = useState<MigrationStep | null>(
+    null,
+  );
 
   const steps: { id: MigrationStep; label: string }[] = [
     { id: "source", label: "Source" },
@@ -37,13 +44,17 @@ export function MigrationProgressBar({
     { id: "complete", label: "Complete" },
   ];
 
-  const getStepStatus = (step: MigrationStep): "pending" | "current" | "completed" => {
+  const getStepStatus = (
+    step: MigrationStep,
+  ): "pending" | "current" | "completed" => {
     if (completedSteps.includes(step)) return "completed";
     if (step === currentStep) return "current";
     return "pending";
   };
 
-  const getStepColor = (status: "pending" | "current" | "completed"): string => {
+  const getStepColor = (
+    status: "pending" | "current" | "completed",
+  ): string => {
     switch (status) {
       case "completed":
         return "var(--wl-success-500)";
@@ -90,10 +101,13 @@ export function MigrationProgressBar({
                 <div key={step.id} className="flex-1 flex items-center">
                   {/* Step circle */}
                   <button
-                    onClick={() => isClickable && setExpandedStep(expandedStep === step.id ? null : step.id)}
+                    onClick={() =>
+                      isClickable &&
+                      setExpandedStep(expandedStep === step.id ? null : step.id)
+                    }
                     className={cn(
                       "w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all",
-                      isClickable && "cursor-pointer hover:shadow-md"
+                      isClickable && "cursor-pointer hover:shadow-md",
                     )}
                     style={{
                       backgroundColor:
@@ -187,13 +201,14 @@ export function MigrationProgressBar({
                   <div className="flex items-center gap-3">
                     {status === "completed" && (
                       <span className="text-xs text-wl-text-secondary">
-                        {stats.requestsProcessed.toLocaleString()} requests • {stats.errors} errors
+                        {stats.requestsProcessed.toLocaleString()} requests •{" "}
+                        {stats.errors} errors
                       </span>
                     )}
                     <span
                       className={cn(
                         "transition-transform",
-                        isExpanded && "rotate-180"
+                        isExpanded && "rotate-180",
                       )}
                     >
                       ▼
@@ -245,7 +260,7 @@ export function MigrationProgressBar({
                                 "h-full transition-all",
                                 stats.errors === 0
                                   ? "bg-wl-success-500"
-                                  : "bg-wl-danger-500"
+                                  : "bg-wl-danger-500",
                               )}
                               style={{
                                 width: `${((stats.errors / stats.requestsProcessed) * 100).toFixed(1)}%`,
@@ -253,7 +268,11 @@ export function MigrationProgressBar({
                             />
                           </div>
                           <span className="text-xs font-semibold text-wl-text-secondary">
-                            {((stats.errors / stats.requestsProcessed) * 100).toFixed(2)}%
+                            {(
+                              (stats.errors / stats.requestsProcessed) *
+                              100
+                            ).toFixed(2)}
+                            %
                           </span>
                         </div>
                       </div>
@@ -268,10 +287,13 @@ export function MigrationProgressBar({
                           "w-full px-3 py-2 rounded text-xs font-medium transition-colors",
                           "bg-wl-danger-100 dark:bg-wl-danger-900/30 text-wl-danger-600 hover:bg-wl-danger-200 dark:hover:bg-wl-danger-900/50",
                           "border border-wl-danger-200 dark:border-wl-danger-800",
-                          isRollingBack === step.id && "opacity-60 cursor-not-allowed"
+                          isRollingBack === step.id &&
+                            "opacity-60 cursor-not-allowed",
                         )}
                       >
-                        {isRollingBack === step.id ? "Rolling Back..." : "Rollback to This Step"}
+                        {isRollingBack === step.id
+                          ? "Rolling Back..."
+                          : "Rollback to This Step"}
                       </button>
                     )}
                   </div>

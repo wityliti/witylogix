@@ -6,7 +6,15 @@ import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { KanbanCard } from "./kanban-card";
 
-export type OrderStatus = "PENDING" | "CONFIRMED" | "ASSIGNED" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "FAILED" | "CANCELLED";
+export type OrderStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "ASSIGNED"
+  | "PICKED_UP"
+  | "IN_TRANSIT"
+  | "DELIVERED"
+  | "FAILED"
+  | "CANCELLED";
 
 interface Order {
   id: string;
@@ -83,7 +91,7 @@ export function KanbanColumn({
       className={cn(
         "flex flex-col flex-shrink-0 w-80 rounded-lg",
         "bg-wl-bg-surface border border-wl-border-default",
-        "overflow-hidden transition-all duration-200"
+        "overflow-hidden transition-all duration-200",
       )}
     >
       {/* Column Header */}
@@ -91,16 +99,13 @@ export function KanbanColumn({
         className={cn(
           "sticky top-0 z-10 flex items-center justify-between gap-2 px-4 py-3",
           "bg-wl-bg-overlay border-b border-wl-border-default",
-          "cursor-pointer hover:bg-wl-bg-elevated transition-colors"
+          "cursor-pointer hover:bg-wl-bg-elevated transition-colors",
         )}
         onClick={onToggleCollapse}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <h2
-            className={cn(
-              "font-bold text-sm truncate",
-              getHeaderColor(status)
-            )}
+            className={cn("font-bold text-sm truncate", getHeaderColor(status))}
           >
             {title}
           </h2>
@@ -141,7 +146,7 @@ export function KanbanColumn({
           "flex-1 overflow-y-auto p-3 space-y-2 min-h-96",
           "transition-all duration-200",
           dragOverIndex !== null &&
-            "bg-wl-primary-500/8 border-l-2 border-wl-primary-500"
+            "bg-wl-primary-500/8 border-l-2 border-wl-primary-500",
         )}
       >
         {isCollapsed ? (
@@ -160,7 +165,7 @@ export function KanbanColumn({
                   JSON.stringify({
                     id: order.id,
                     sourceStatus: status,
-                  })
+                  }),
                 );
               }}
             />

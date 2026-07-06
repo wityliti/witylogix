@@ -1,23 +1,27 @@
 # Sprint 9.7 — Dark Theme Design System
 
 ## Overview
+
 Professional dark theme for all dashboard pages. This document provides the complete color palette and implementation guidelines for applying the dark theme across the remaining 135 pages.
 
 ## Color Palette
 
 ### Primary Colors
+
 - **Page Background**: `#0a0a0f` — Use for main container
 - **Card Background**: `#12121a` — Use for all Card components
 - **Input/Overlay Background**: `#1a1a2e` — Use for inputs, modals, hover states
 - **Border Color**: `#1e1e2e` — Use for all borders and dividers
 
 ### Text Colors
+
 - **Primary Text**: `text-white` — Headings, main content
 - **Secondary Text**: `text-gray-400` — Descriptions, labels
 - **Tertiary Text**: `text-gray-500` — Meta information, timestamps
 - **Muted Text**: `text-gray-600` — Disabled states
 
 ### Status Colors (Tailwind v3.4)
+
 - **Success**: `text-emerald-500` / `bg-emerald-500`
 - **Warning**: `text-amber-500` / `bg-amber-500`
 - **Danger**: `text-red-500` / `bg-red-500`
@@ -26,6 +30,7 @@ Professional dark theme for all dashboard pages. This document provides the comp
 ## Implementation Pattern
 
 ### Page Template
+
 ```tsx
 export default function YourPage() {
   return (
@@ -35,7 +40,7 @@ export default function YourPage() {
         subtitle="Subtitle or stats"
         actions={/* buttons */}
       />
-      
+
       <div className="p-6 bg-[#0a0a0f] min-h-screen">
         {/* Stats Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
@@ -52,19 +57,27 @@ export default function YourPage() {
         <div className="flex gap-4 mb-5 items-center flex-wrap">
           <input
             className={cn(
-              "flex-1 max-w-96 p-2 px-4 bg-[#1a1a2e] border border-[#1e1e2e] rounded-md text-white text-sm outline-none"
+              "flex-1 max-w-96 p-2 px-4 bg-[#1a1a2e] border border-[#1e1e2e] rounded-md text-white text-sm outline-none",
             )}
             placeholder="Search..."
           />
         </div>
 
         {/* Data Table */}
-        <Card className={cn("overflow-hidden p-0 bg-[#12121a] border border-[#1e1e2e]")}>
+        <Card
+          className={cn(
+            "overflow-hidden p-0 bg-[#12121a] border border-[#1e1e2e]",
+          )}
+        >
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className={cn("border-b border-[#1e1e2e] bg-[#1a1a2e]")}>
-                  <th className={cn("p-3 px-4 text-left font-semibold text-gray-400")}>
+                  <th
+                    className={cn(
+                      "p-3 px-4 text-left font-semibold text-gray-400",
+                    )}
+                  >
                     Column
                   </th>
                 </tr>
@@ -75,7 +88,7 @@ export default function YourPage() {
                     key={item.id}
                     className={cn(
                       "border-b border-[#1e1e2e] transition-colors duration-fast hover:bg-[#1a1a2e]",
-                      idx % 2 === 0 ? "bg-transparent" : "bg-[#1a1a2e]"
+                      idx % 2 === 0 ? "bg-transparent" : "bg-[#1a1a2e]",
                     )}
                   >
                     <td className="p-3 px-4 text-white">{item.name}</td>
@@ -94,6 +107,7 @@ export default function YourPage() {
 ## Component Styling Guidelines
 
 ### Card Component
+
 ```tsx
 <Card className={cn("bg-[#12121a] border border-[#1e1e2e]")}>
   {/* Content */}
@@ -101,6 +115,7 @@ export default function YourPage() {
 ```
 
 ### Button Component
+
 ```tsx
 // Primary action (blue)
 <Button variant="primary">Action</Button>
@@ -113,6 +128,7 @@ export default function YourPage() {
 ```
 
 ### Badge Component
+
 ```tsx
 // Status indicators
 <Badge variant="success">Active</Badge>
@@ -122,6 +138,7 @@ export default function YourPage() {
 ```
 
 ### Form Inputs
+
 ```tsx
 <input
   className={cn(
@@ -140,31 +157,37 @@ export default function YourPage() {
 ```
 
 ### Filter/Action Chips
+
 ```tsx
-{/* Active */}
+{
+  /* Active */
+}
 <button
   className={cn(
     "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer",
-    "bg-blue-500 text-white border-blue-500"
+    "bg-blue-500 text-white border-blue-500",
   )}
 >
   Active Filter
-</button>
+</button>;
 
-{/* Inactive */}
+{
+  /* Inactive */
+}
 <button
   className={cn(
     "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer",
-    "bg-transparent text-gray-400 border-[#1e1e2e]"
+    "bg-transparent text-gray-400 border-[#1e1e2e]",
   )}
 >
   Inactive Filter
-</button>
+</button>;
 ```
 
 ## Pages Completed (47)
 
 ### Finance & Payments (Agent 7)
+
 - ✓ finance/page.tsx
 - ✓ finance/invoices/page.tsx
 - ✓ finance/reconciliation/page.tsx
@@ -177,6 +200,7 @@ export default function YourPage() {
 - ✓ inventory/page.tsx
 
 ### Orders & Routes (Agents 3-4, partial)
+
 - ✓ orders/page.tsx
 - ✓ orders/[id]/page.tsx
 - ✓ orders/bulk/page.tsx
@@ -193,6 +217,7 @@ export default function YourPage() {
 - ✓ dispatch/couriers/page.tsx
 
 ### Fleet & Shipping (Agent 5, partial)
+
 - ✓ fleet/vehicles/page.tsx
 - ✓ fleet/vehicles/[id]/page.tsx
 - ✓ fleet/fuel/page.tsx
@@ -203,6 +228,7 @@ export default function YourPage() {
 - ✓ shipping/tracking/[trackingNumber]/page.tsx
 
 ### Tracking & Delivery (Agent 6, partial)
+
 - ✓ tracking/page.tsx
 - ✓ tracking/live/page.tsx
 - ✓ tracking-config/page.tsx
@@ -215,6 +241,7 @@ export default function YourPage() {
 ## Pages Remaining (135)
 
 ### CRM & Customers (Agent 8) - 8 pages
+
 - [ ] crm/page.tsx
 - [ ] crm/connect/page.tsx
 - [ ] customers/page.tsx
@@ -225,6 +252,7 @@ export default function YourPage() {
 - [ ] collaboration/page.tsx
 
 ### ELD + Campaigns + Misc (Agent 9) - 12+ pages
+
 - [ ] eld/page.tsx
 - [ ] eld/dvir/page.tsx
 - [ ] eld/hos/page.tsx
@@ -240,6 +268,7 @@ export default function YourPage() {
 - [ ] returns/page.tsx
 
 ### Platform + Stores + Misc (Agent 10) - 8+ pages
+
 - [ ] platform/page.tsx
 - [ ] stores/page.tsx
 - [ ] locations/page.tsx
@@ -250,6 +279,7 @@ export default function YourPage() {
 - [ ] mobile-config/page.tsx
 
 ### Settings & Admin (Additional) - 40+ pages
+
 - [ ] settings/page.tsx (and all subpages)
 - [ ] admin/page.tsx (and all subpages)
 - [ ] integrations/page.tsx (and all subpages)

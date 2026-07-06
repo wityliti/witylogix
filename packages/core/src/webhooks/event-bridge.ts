@@ -12,23 +12,11 @@
  */
 
 import { db } from "@witylogix/db";
-import type {
-  TypedEventBus,
-} from "../event-bus/index.js";
-import type {
-  EventEnvelope,
-  EventMetadata,
-} from "../event-bus/types.js";
-import {
-  WebhookManager,
-} from "./webhook-manager.js";
-import {
-  WebhookDeliveryService,
-} from "./webhook-delivery.js";
-import type {
-  WebhookEndpoint,
-  WebhookEvent,
-} from "./types.js";
+import type { TypedEventBus } from "../event-bus/index.js";
+import type { EventEnvelope, EventMetadata } from "../event-bus/types.js";
+import { WebhookManager } from "./webhook-manager.js";
+import { WebhookDeliveryService } from "./webhook-delivery.js";
+import type { WebhookEndpoint, WebhookEvent } from "./types.js";
 import type {
   EventWebhookBridgeConfig,
   BridgeMetrics,
@@ -271,9 +259,8 @@ export class EventWebhookBridge {
         } catch (error) {
           this.metrics.deliveryErrors++;
           this.metrics.lastErrorAt = new Date();
-          const errorType = error instanceof Error
-            ? error.constructor.name
-            : "UnknownError";
+          const errorType =
+            error instanceof Error ? error.constructor.name : "UnknownError";
           this.metrics.errorsByType[errorType] =
             (this.metrics.errorsByType[errorType] ?? 0) + 1;
 
@@ -453,9 +440,7 @@ export class EventWebhookBridge {
    * @returns Current metrics snapshot
    */
   getMetrics(): BridgeMetrics {
-    const uptimeMs = this.startTime
-      ? Date.now() - this.startTime.getTime()
-      : 0;
+    const uptimeMs = this.startTime ? Date.now() - this.startTime.getTime() : 0;
 
     return {
       ...this.metrics,

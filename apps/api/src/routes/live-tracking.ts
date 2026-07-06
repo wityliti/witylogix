@@ -81,7 +81,10 @@ async function liveTrackingRoutes(fastify: FastifyInstance): Promise<void> {
 
       // Fetch current driver location from GPS tracking
       let driverLocation = null;
-      if (order.driverId && ["OUT_FOR_DELIVERY", "ARRIVED"].includes(order.status)) {
+      if (
+        order.driverId &&
+        ["OUT_FOR_DELIVERY", "ARRIVED"].includes(order.status)
+      ) {
         const [loc] = await prisma.$queryRaw<
           Array<{
             lat: number;
@@ -124,7 +127,7 @@ async function liveTrackingRoutes(fastify: FastifyInstance): Promise<void> {
           trackingUrl: `https://track.witylogix.com/orders/${orderId}`,
         },
       };
-    }
+    },
   );
 
   // ── UPDATE DRIVER LOCATION ──────────────────────────────────
@@ -149,13 +152,15 @@ async function liveTrackingRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       // Update driver location in GPS service
-      const timestamp = payload.timestamp ? new Date(payload.timestamp) : new Date();
+      const timestamp = payload.timestamp
+        ? new Date(payload.timestamp)
+        : new Date();
 
       const result = await prisma.driver.update({
         where: { id: order.driverId },
         data: {
           currentLocation: prisma.$queryRawUnsafe(
-            `ST_GeomFromText('POINT(${payload.longitude} ${payload.latitude})')`
+            `ST_GeomFromText('POINT(${payload.longitude} ${payload.latitude})')`,
           ),
           heading: payload.heading,
           speed: payload.speed,
@@ -180,12 +185,15 @@ async function liveTrackingRoutes(fastify: FastifyInstance): Promise<void> {
           updatedAt: timestamp,
         },
       };
-    }
+    },
   );
 
   // ── GET LOCATION HISTORY ────────────────────────────────────
 
-  fastify.get<{ Params: { orderId: string }; Querystring: { page: number; limit: number } }>(
+  fastify.get<{
+    Params: { orderId: string };
+    Querystring: { page: number; limit: number };
+  }>(
     "/:orderId/history",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { orderId } = orderIdSchema.parse(request.params);
@@ -259,7 +267,7 @@ async function liveTrackingRoutes(fastify: FastifyInstance): Promise<void> {
           totalPages: Math.ceil(totalCount / query.limit),
         },
       };
-    }
+    },
   );
 
   // ── CHECK GEOFENCE STATUS ───────────────────────────────────
@@ -326,7 +334,7 @@ async function liveTrackingRoutes(fastify: FastifyInstance): Promise<void> {
           },
         },
       };
-    }
+    },
   );
 }
 

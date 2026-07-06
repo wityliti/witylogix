@@ -19,7 +19,7 @@ import type {
   Coordinate,
   BoundingBox,
   IncidentType,
-} from './types.js';
+} from "./types.js";
 
 interface CacheEntry {
   data: unknown;
@@ -37,7 +37,7 @@ interface RateLimitState {
  */
 export class TomTomTrafficClient {
   private apiKey: string;
-  private baseUrl = 'https://api.tomtom.com';
+  private baseUrl = "https://api.tomtom.com";
   private rateLimit: number; // requests per second
   private cache: Map<string, CacheEntry>;
   private rateLimitState: RateLimitState;
@@ -49,7 +49,7 @@ export class TomTomTrafficClient {
 
   constructor(apiKey: string, rateLimit: number = 30) {
     if (!apiKey || apiKey.trim().length === 0) {
-      throw new Error('TomTom API key is required');
+      throw new Error("TomTom API key is required");
     }
     this.apiKey = apiKey;
     this.rateLimit = rateLimit;
@@ -149,19 +149,19 @@ export class TomTomTrafficClient {
    */
   private mapIncidentType(tomtomType: string): IncidentType {
     const typeMap: Record<string, IncidentType> = {
-      ACCIDENT: 'accident',
-      CONGESTION: 'congestion',
-      CONSTRUCTION: 'construction',
-      DISABLED_VEHICLE: 'accident',
-      MASS_TRANSIT: 'event',
-      MISC: 'other',
-      OTHER_NEWS: 'other',
-      PLANNED_EVENT: 'event',
-      ROAD_HAZARD: 'accident',
-      ROAD_WORK: 'construction',
-      CLOSED_ROAD: 'road_closure',
+      ACCIDENT: "accident",
+      CONGESTION: "congestion",
+      CONSTRUCTION: "construction",
+      DISABLED_VEHICLE: "accident",
+      MASS_TRANSIT: "event",
+      MISC: "other",
+      OTHER_NEWS: "other",
+      PLANNED_EVENT: "event",
+      ROAD_HAZARD: "accident",
+      ROAD_WORK: "construction",
+      CLOSED_ROAD: "road_closure",
     };
-    return typeMap[tomtomType] || 'other';
+    return typeMap[tomtomType] || "other";
   }
 
   /**
@@ -177,7 +177,7 @@ export class TomTomTrafficClient {
     destination: Coordinate,
     options?: {
       alternatives?: boolean;
-      trafficModel?: 'historical' | 'real_time' | 'all';
+      trafficModel?: "historical" | "real_time" | "all";
       departureTime?: Date;
       avoidVignettes?: boolean;
       avoidAreas?: Coordinate[][];
@@ -187,7 +187,12 @@ export class TomTomTrafficClient {
     const originLoc = this.normalizeCoordinate(origin);
     const destLoc = this.normalizeCoordinate(destination);
 
-    const cacheKey = this.getCacheKey('routing', originLoc, destLoc, options || {});
+    const cacheKey = this.getCacheKey(
+      "routing",
+      originLoc,
+      destLoc,
+      options || {},
+    );
     const cached = this.getFromCache(cacheKey);
     if (cached) {
       return cached as TomTomRoute;
@@ -198,22 +203,22 @@ export class TomTomTrafficClient {
 
     const params = new URLSearchParams({
       key: this.apiKey,
-      routeType: options?.alternatives ? 'fastest,shortest' : 'fastest',
-      traffic: options?.trafficModel === 'historical' ? 'false' : 'true',
-      computeTravelTimeFor: 'all',
+      routeType: options?.alternatives ? "fastest,shortest" : "fastest",
+      traffic: options?.trafficModel === "historical" ? "false" : "true",
+      computeTravelTimeFor: "all",
     });
 
     if (options?.departureTime) {
       const departTime = Math.floor(options.departureTime.getTime() / 1000);
-      params.append('departAt', new Date(departTime * 1000).toISOString());
+      params.append("departAt", new Date(departTime * 1000).toISOString());
     }
 
     if (options?.avoidVignettes) {
-      params.append('avoidVignettes', 'true');
+      params.append("avoidVignettes", "true");
     }
 
     if (options?.avoidUTurns) {
-      params.append('avoidUTurns', 'true');
+      params.append("avoidUTurns", "true");
     }
 
     try {
@@ -222,7 +227,9 @@ export class TomTomTrafficClient {
       const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
 
       if (!response.ok) {
-        throw new Error(`TomTom API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `TomTom API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as {
@@ -230,7 +237,7 @@ export class TomTomTrafficClient {
       };
 
       if (!data.routes || data.routes.length === 0) {
-        throw new Error('No routes found');
+        throw new Error("No routes found");
       }
 
       const route = data.routes[0];
@@ -240,7 +247,9 @@ export class TomTomTrafficClient {
 
       return route;
     } catch (error) {
-      throw new Error(`Failed to get route from TomTom: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get route from TomTom: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -254,8 +263,8 @@ export class TomTomTrafficClient {
   async getTrafficFlow(
     boundingBox: BoundingBox,
     options?: {
-      trafficModel?: 'historical' | 'real_time' | 'all';
-      thickness?: 'thin' | 'normal' | 'thick';
+      trafficModel?: "historical" | "real_time" | "all";
+      thickness?: "thin" | "normal" | "thick";
     },
   ): Promise<TrafficFlowData> {
     const cacheKey = `flow:${JSON.stringify(boundingBox)}:${JSON.stringify(options || {})}`;
@@ -272,8 +281,9 @@ export class TomTomTrafficClient {
     const params = new URLSearchParams({
       key: this.apiKey,
       bbox,
-      trafficFlow: options?.trafficModel === 'historical' ? 'historical' : 'current',
-      thickness: options?.thickness || 'normal',
+      trafficFlow:
+        options?.trafficModel === "historical" ? "historical" : "current",
+      thickness: options?.thickness || "normal",
     });
 
     try {
@@ -282,7 +292,9 @@ export class TomTomTrafficClient {
       const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
 
       if (!response.ok) {
-        throw new Error(`TomTom Traffic Flow API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `TomTom Traffic Flow API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as {
@@ -308,7 +320,10 @@ export class TomTomTrafficClient {
           free_flow_speed_kmh: segment.currentFlow.freeFlowSpeed,
           confidence: segment.currentFlow.confidence || 0.8,
           location: segment.coordinates[0]
-            ? { lat: segment.coordinates[0].latitude, lng: segment.coordinates[0].longitude }
+            ? {
+                lat: segment.coordinates[0].latitude,
+                lng: segment.coordinates[0].longitude,
+              }
             : { lat: 0, lng: 0 },
         })),
         incidents: [],
@@ -319,7 +334,9 @@ export class TomTomTrafficClient {
 
       return result;
     } catch (error) {
-      throw new Error(`Failed to get traffic flow from TomTom: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get traffic flow from TomTom: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -334,7 +351,7 @@ export class TomTomTrafficClient {
     boundingBox: BoundingBox,
     options?: {
       includingCaused?: boolean;
-      minSeverity?: 'minor' | 'moderate' | 'severe';
+      minSeverity?: "minor" | "moderate" | "severe";
     },
   ): Promise<TrafficIncident[]> {
     const cacheKey = `incidents:${JSON.stringify(boundingBox)}:${JSON.stringify(options || {})}`;
@@ -351,12 +368,12 @@ export class TomTomTrafficClient {
     const params = new URLSearchParams({
       key: this.apiKey,
       bbox,
-      fields: '{incidents{id,type,geometry,startTime,endTime,delaySeconds}}',
-      language: 'en-US',
+      fields: "{incidents{id,type,geometry,startTime,endTime,delaySeconds}}",
+      language: "en-US",
     });
 
     if (options?.includingCaused) {
-      params.append('includingCaused', 'true');
+      params.append("includingCaused", "true");
     }
 
     try {
@@ -365,7 +382,9 @@ export class TomTomTrafficClient {
       const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
 
       if (!response.ok) {
-        throw new Error(`TomTom Traffic Incidents API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `TomTom Traffic Incidents API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as {
@@ -386,27 +405,41 @@ export class TomTomTrafficClient {
         }>;
       };
 
-      const incidents = (data.incidents || []).map((incident): TrafficIncident => {
-        const coords = incident.geometry?.coordinates[0] || [0, 0];
-        return {
-          id: incident.id,
-          type: this.mapIncidentType(incident.type),
-          severity: incident.delaySeconds ? (incident.delaySeconds > 300 ? 'severe' : incident.delaySeconds > 60 ? 'moderate' : 'minor') : 'minor',
-          location: { lat: coords[1], lng: coords[0] },
-          description: incident.description || incident.type,
-          start_time: incident.startTime ? new Date(incident.startTime) : new Date(),
-          end_time: incident.endTime ? new Date(incident.endTime) : undefined,
-          affected_roads: (incident.affectedRoads || []).map((r) => r.name),
-          delay_minutes: incident.delaySeconds ? Math.ceil(incident.delaySeconds / 60) : undefined,
-        };
-      });
+      const incidents = (data.incidents || []).map(
+        (incident): TrafficIncident => {
+          const coords = incident.geometry?.coordinates[0] || [0, 0];
+          return {
+            id: incident.id,
+            type: this.mapIncidentType(incident.type),
+            severity: incident.delaySeconds
+              ? incident.delaySeconds > 300
+                ? "severe"
+                : incident.delaySeconds > 60
+                  ? "moderate"
+                  : "minor"
+              : "minor",
+            location: { lat: coords[1], lng: coords[0] },
+            description: incident.description || incident.type,
+            start_time: incident.startTime
+              ? new Date(incident.startTime)
+              : new Date(),
+            end_time: incident.endTime ? new Date(incident.endTime) : undefined,
+            affected_roads: (incident.affectedRoads || []).map((r) => r.name),
+            delay_minutes: incident.delaySeconds
+              ? Math.ceil(incident.delaySeconds / 60)
+              : undefined,
+          };
+        },
+      );
 
       // Cache for 2 minutes
       this.setCache(cacheKey, incidents, 2 * 60 * 1000);
 
       return incidents;
     } catch (error) {
-      throw new Error(`Failed to get traffic incidents from TomTom: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get traffic incidents from TomTom: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -462,7 +495,7 @@ export class TomTomTrafficClient {
     try {
       // INTEGRATION: Make a simple test call to verify API availability
       await this.getRoute(
-        { lat: 40.7128, lng: -74.0060 }, // NYC
+        { lat: 40.7128, lng: -74.006 }, // NYC
         { lat: 34.0522, lng: -118.2437 }, // LA
       );
       return true;

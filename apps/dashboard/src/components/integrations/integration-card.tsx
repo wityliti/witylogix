@@ -135,7 +135,7 @@ export function IntegrationCard({
         "w-full rounded-lg border transition-all duration-200",
         "bg-wl-bg-surface border-wl-border-subtle",
         isHovering && "border-wl-border-default shadow-md",
-        className
+        className,
       )}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
@@ -153,7 +153,7 @@ export function IntegrationCard({
                 <span
                   className={cn(
                     "px-2 py-0.5 rounded text-xs font-medium capitalize",
-                    "bg-wl-surface-hover text-wl-text-secondary"
+                    "bg-wl-surface-hover text-wl-text-secondary",
                   )}
                 >
                   {category}
@@ -163,7 +163,12 @@ export function IntegrationCard({
           </div>
 
           {/* Status badge */}
-          <div className={cn(currentStatusConfig.bgColor, currentStatusConfig.color)}>
+          <div
+            className={cn(
+              currentStatusConfig.bgColor,
+              currentStatusConfig.color,
+            )}
+          >
             <ConnectionStatusBadge
               status={
                 status === "available"
@@ -193,7 +198,7 @@ export function IntegrationCard({
               className={cn(
                 "px-2 py-1 rounded text-xs font-medium",
                 "bg-wl-primary-100/50 text-wl-primary-700",
-                "dark:bg-wl-primary-900/20 dark:text-wl-primary-300"
+                "dark:bg-wl-primary-900/20 dark:text-wl-primary-300",
               )}
               title={`Authentication: ${authMethod}`}
             >
@@ -206,7 +211,7 @@ export function IntegrationCard({
               className={cn(
                 "px-2 py-1 rounded text-xs font-medium",
                 "bg-wl-success-100/50 text-wl-success-700",
-                "dark:bg-wl-success-900/20 dark:text-wl-success-300"
+                "dark:bg-wl-success-900/20 dark:text-wl-success-300",
               )}
               title="Webhook support enabled"
             >
@@ -220,9 +225,7 @@ export function IntegrationCard({
           <div className="mb-4 pb-4 border-t border-wl-border-subtle pt-3">
             <div className="flex items-center justify-between text-xs text-wl-text-secondary">
               {lastSyncAt && (
-                <div>
-                  Last sync: {new Date(lastSyncAt).toLocaleString()}
-                </div>
+                <div>Last sync: {new Date(lastSyncAt).toLocaleString()}</div>
               )}
               {errorCount > 0 && (
                 <div className="text-wl-danger-600 dark:text-wl-danger-400">
@@ -242,18 +245,19 @@ export function IntegrationCard({
             status === "connected"
               ? cn(
                   "bg-wl-surface-hover text-wl-text-primary hover:bg-wl-border-subtle",
-                  "dark:bg-wl-surface-hover dark:hover:bg-wl-border-default"
+                  "dark:bg-wl-surface-hover dark:hover:bg-wl-border-default",
                 )
               : status === "error"
                 ? cn(
                     "bg-wl-danger-100 text-wl-danger-700 hover:bg-wl-danger-200",
-                    "dark:bg-wl-danger-900/30 dark:text-wl-danger-300 dark:hover:bg-wl-danger-900/50"
+                    "dark:bg-wl-danger-900/30 dark:text-wl-danger-300 dark:hover:bg-wl-danger-900/50",
                   )
                 : cn(
                     "bg-wl-primary-500 text-white hover:bg-wl-primary-600",
-                    "dark:bg-wl-primary-600 dark:hover:bg-wl-primary-700"
+                    "dark:bg-wl-primary-600 dark:hover:bg-wl-primary-700",
                   ),
-            (actionButton.disabled || isActionLoading) && "opacity-60 cursor-not-allowed"
+            (actionButton.disabled || isActionLoading) &&
+              "opacity-60 cursor-not-allowed",
           )}
         >
           {isActionLoading ? (
@@ -261,7 +265,7 @@ export function IntegrationCard({
               <span
                 className={cn(
                   "w-3 h-3 rounded-full animate-spin",
-                  "border-2 border-current border-t-transparent"
+                  "border-2 border-current border-t-transparent",
                 )}
               />
               {actionButton.label}

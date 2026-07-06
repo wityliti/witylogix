@@ -249,13 +249,17 @@ describe("Shops Routes", () => {
     it("should require SUPER_ADMIN or ADMIN role", async () => {
       mockRequest.auth.role = "DISPATCHER";
 
-      const canUpdate = ["SUPER_ADMIN", "ADMIN"].includes(mockRequest.auth.role);
+      const canUpdate = ["SUPER_ADMIN", "ADMIN"].includes(
+        mockRequest.auth.role,
+      );
       expect(canUpdate).toBe(false);
     });
 
     it("should update shop email", async () => {
       mockRequest.body = { email: "newemail@shop.com" };
-      mockTenantDb.shop.update.mockResolvedValue({ email: "newemail@shop.com" });
+      mockTenantDb.shop.update.mockResolvedValue({
+        email: "newemail@shop.com",
+      });
 
       expect(mockRequest.body.email).toBe("newemail@shop.com");
     });
@@ -301,7 +305,9 @@ describe("Shops Routes", () => {
     it("should validate email format", async () => {
       mockRequest.body = { email: "invalid-email" };
 
-      const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mockRequest.body.email as string);
+      const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        mockRequest.body.email as string,
+      );
       expect(isValidEmail).toBe(false);
     });
 
@@ -482,7 +488,9 @@ describe("Shops Routes", () => {
     it("should require SUPER_ADMIN or ADMIN role", async () => {
       mockRequest.auth.role = "VIEWER";
 
-      const canUpdate = ["SUPER_ADMIN", "ADMIN"].includes(mockRequest.auth.role);
+      const canUpdate = ["SUPER_ADMIN", "ADMIN"].includes(
+        mockRequest.auth.role,
+      );
       expect(canUpdate).toBe(false);
     });
 
@@ -577,7 +585,9 @@ describe("Shops Routes", () => {
     it("should require SUPER_ADMIN or ADMIN role", async () => {
       mockRequest.auth.role = "DISPATCHER";
 
-      const canAccess = ["SUPER_ADMIN", "ADMIN"].includes(mockRequest.auth.role);
+      const canAccess = ["SUPER_ADMIN", "ADMIN"].includes(
+        mockRequest.auth.role,
+      );
       expect(canAccess).toBe(false);
     });
 
@@ -609,7 +619,9 @@ describe("Shops Routes", () => {
     });
 
     it("should return 0 stats if metering table not yet created", async () => {
-      mockTenantDb.routingMeterEvent.count.mockRejectedValue(new Error("Table not found"));
+      mockTenantDb.routingMeterEvent.count.mockRejectedValue(
+        new Error("Table not found"),
+      );
 
       const stats = {
         totalFallbackCalls: 0,
@@ -697,9 +709,7 @@ describe("Shops Routes", () => {
           { slug: "sendgrid", displayName: "SendGrid" },
           { slug: "mailgun", displayName: "Mailgun" },
         ],
-        sms: [
-          { slug: "twilio", displayName: "Twilio" },
-        ],
+        sms: [{ slug: "twilio", displayName: "Twilio" }],
       };
 
       expect(registries.email).toHaveLength(2);
@@ -743,7 +753,9 @@ describe("Shops Routes", () => {
     it("should require SUPER_ADMIN or ADMIN role", async () => {
       mockRequest.auth.role = "VIEWER";
 
-      const canUpdate = ["SUPER_ADMIN", "ADMIN"].includes(mockRequest.auth.role);
+      const canUpdate = ["SUPER_ADMIN", "ADMIN"].includes(
+        mockRequest.auth.role,
+      );
       expect(canUpdate).toBe(false);
     });
 
@@ -751,7 +763,9 @@ describe("Shops Routes", () => {
       mockRequest.params = { channel: "invalid_channel" };
 
       const validChannels = ["email", "sms", "whatsapp", "push"];
-      const isValid = validChannels.includes(mockRequest.params.channel as string);
+      const isValid = validChannels.includes(
+        mockRequest.params.channel as string,
+      );
 
       expect(isValid).toBe(false);
     });
@@ -783,7 +797,9 @@ describe("Shops Routes", () => {
           },
         },
       });
-      mockTenantDb.shop.update.mockResolvedValue({ settings: { notifications: {} } });
+      mockTenantDb.shop.update.mockResolvedValue({
+        settings: { notifications: {} },
+      });
 
       expect(mockRequest.body.removeCredentials).toBe(true);
     });
@@ -865,7 +881,9 @@ describe("Shops Routes", () => {
     it("should require SUPER_ADMIN or ADMIN role", async () => {
       mockRequest.auth.role = "DISPATCHER";
 
-      const canAccess = ["SUPER_ADMIN", "ADMIN"].includes(mockRequest.auth.role);
+      const canAccess = ["SUPER_ADMIN", "ADMIN"].includes(
+        mockRequest.auth.role,
+      );
       expect(canAccess).toBe(false);
     });
 
@@ -898,7 +916,9 @@ describe("Shops Routes", () => {
     });
 
     it("should return 0 stats if metering table not yet created", async () => {
-      mockTenantDb.notificationMeterEvent.count.mockRejectedValue(new Error("Table not found"));
+      mockTenantDb.notificationMeterEvent.count.mockRejectedValue(
+        new Error("Table not found"),
+      );
 
       const stats = {
         totalFallbackCalls: 0,
@@ -922,7 +942,13 @@ describe("Shops Routes", () => {
       mockTenantDb.deliveryZone.count.mockResolvedValue(3);
 
       const stats = {
-        orders: { total: 100, today: 10, pending: 5, inTransit: 2, deliveredToday: 8 },
+        orders: {
+          total: 100,
+          today: 10,
+          pending: 5,
+          inTransit: 2,
+          deliveredToday: 8,
+        },
         drivers: { active: 3, total: 5 },
         zones: { active: 3 },
       };
@@ -987,7 +1013,9 @@ describe("Shops Routes", () => {
     it("should count total active drivers", async () => {
       mockTenantDb.driver.count.mockResolvedValue(10);
 
-      const total = await mockTenantDb.driver.count({ where: { isActive: true } });
+      const total = await mockTenantDb.driver.count({
+        where: { isActive: true },
+      });
       expect(total).toBe(10);
     });
 
@@ -1038,7 +1066,9 @@ describe("Shops Routes", () => {
     it("should return 403 for insufficient permissions", async () => {
       mockRequest.auth.role = "VIEWER";
 
-      const canAccess = ["SUPER_ADMIN", "ADMIN"].includes(mockRequest.auth.role);
+      const canAccess = ["SUPER_ADMIN", "ADMIN"].includes(
+        mockRequest.auth.role,
+      );
       expect(canAccess).toBe(false);
     });
 
@@ -1046,7 +1076,9 @@ describe("Shops Routes", () => {
       mockRequest.params = { channel: "invalid" };
 
       const validChannels = ["email", "sms", "whatsapp", "push"];
-      const isValid = validChannels.includes(mockRequest.params.channel as string);
+      const isValid = validChannels.includes(
+        mockRequest.params.channel as string,
+      );
 
       expect(isValid).toBe(false);
     });
@@ -1071,7 +1103,9 @@ describe("Shops Routes", () => {
     });
 
     it("should handle metering table not existing gracefully", async () => {
-      mockTenantDb.routingMeterEvent.count.mockRejectedValue(new Error("Table not found"));
+      mockTenantDb.routingMeterEvent.count.mockRejectedValue(
+        new Error("Table not found"),
+      );
 
       const fallback = {
         totalFallbackCalls: 0,

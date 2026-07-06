@@ -105,11 +105,7 @@ export class DVIREngine {
       },
       {
         name: "Fuel System",
-        items: [
-          "Fuel tank condition",
-          "Fuel leaks",
-          "Fuel cap secure",
-        ],
+        items: ["Fuel tank condition", "Fuel leaks", "Fuel cap secure"],
       },
       {
         name: "General Body",
@@ -141,7 +137,7 @@ export class DVIREngine {
     driverId: string,
     vehicleId: string,
     defects: Partial<VehicleDefect>[],
-    driverRemarks?: string
+    driverRemarks?: string,
   ): DVIREntry {
     const inspection: DVIREntry = {
       id: `dvir_${Date.now()}`,
@@ -189,7 +185,7 @@ export class DVIREngine {
     driverId: string,
     vehicleId: string,
     defects: Partial<VehicleDefect>[],
-    driverRemarks?: string
+    driverRemarks?: string,
   ): DVIREntry {
     const inspection: DVIREntry = {
       id: `dvir_${Date.now()}`,
@@ -238,7 +234,7 @@ export class DVIREngine {
     inspectionId: string,
     defectId: string,
     mechanicName: string,
-    mechanicLicense: string
+    mechanicLicense: string,
   ): DVIREntry | null {
     const key = `${accountId}:${vehicleId}`;
     const inspections = this.inspections.get(key) || [];
@@ -260,7 +256,7 @@ export class DVIREngine {
     accountId: string,
     vehicleId: string,
     inspectionId: string,
-    mechanicRemarks: string
+    mechanicRemarks: string,
   ): DVIREntry | null {
     const key = `${accountId}:${vehicleId}`;
     const inspections = this.inspections.get(key) || [];
@@ -288,7 +284,7 @@ export class DVIREngine {
    */
   compareInspections(
     accountId: string,
-    vehicleId: string
+    vehicleId: string,
   ): {
     newDefects: VehicleDefect[];
     resolvedDefects: VehicleDefect[];
@@ -300,11 +296,15 @@ export class DVIREngine {
     // Find latest pre-trip and post-trip
     const preTrip = inspections
       .filter((i) => i.inspectionType === "PRE_TRIP")
-      .sort((a, b) => b.inspectionDate.getTime() - a.inspectionDate.getTime())[0];
+      .sort(
+        (a, b) => b.inspectionDate.getTime() - a.inspectionDate.getTime(),
+      )[0];
 
     const postTrip = inspections
       .filter((i) => i.inspectionType === "POST_TRIP")
-      .sort((a, b) => b.inspectionDate.getTime() - a.inspectionDate.getTime())[0];
+      .sort(
+        (a, b) => b.inspectionDate.getTime() - a.inspectionDate.getTime(),
+      )[0];
 
     const newDefects: VehicleDefect[] = [];
     const resolvedDefects: VehicleDefect[] = [];
@@ -317,7 +317,7 @@ export class DVIREngine {
     // Defects found in post-trip but not pre-trip
     for (const postDefect of postTrip.defects) {
       const preDefect = preTrip.defects.find(
-        (d) => d.component === postDefect.component
+        (d) => d.component === postDefect.component,
       );
       if (!preDefect) {
         newDefects.push(postDefect);
@@ -329,7 +329,7 @@ export class DVIREngine {
     // Defects found in pre-trip but not post-trip
     for (const preDefect of preTrip.defects) {
       const postDefect = postTrip.defects.find(
-        (d) => d.component === preDefect.component
+        (d) => d.component === preDefect.component,
       );
       if (!postDefect) {
         resolvedDefects.push(preDefect);
@@ -345,7 +345,7 @@ export class DVIREngine {
   getInspectionHistory(
     accountId: string,
     vehicleId: string,
-    days?: number
+    days?: number,
   ): DVIREntry[] {
     const key = `${accountId}:${vehicleId}`;
     const inspections = this.inspections.get(key) || [];
@@ -359,7 +359,10 @@ export class DVIREngine {
   /**
    * Analyze defect trends for vehicle.
    */
-  analyzeTrends(accountId: string, vehicleId: string): {
+  analyzeTrends(
+    accountId: string,
+    vehicleId: string,
+  ): {
     commonDefects: { component: string; count: number }[];
     severeDefectTrend: boolean;
     recommendedActions: string[];
@@ -376,10 +379,7 @@ export class DVIREngine {
         defectCounts[defect.component] =
           (defectCounts[defect.component] || 0) + 1;
 
-        if (
-          defect.severity === "MAJOR" ||
-          defect.severity === "CRITICAL"
-        ) {
+        if (defect.severity === "MAJOR" || defect.severity === "CRITICAL") {
           severeCount++;
         }
       }
@@ -395,7 +395,7 @@ export class DVIREngine {
     // Generate recommendations
     if (commonDefects.length > 0) {
       recommendations.push(
-        `Schedule maintenance for: ${commonDefects[0].component}`
+        `Schedule maintenance for: ${commonDefects[0].component}`,
       );
     }
 
@@ -407,7 +407,7 @@ export class DVIREngine {
       const recentInspections = inspections.slice(-5);
       const defectCount = recentInspections.reduce(
         (sum, i) => sum + i.defects.length,
-        0
+        0,
       );
 
       if (defectCount > recentInspections.length) {
@@ -435,7 +435,7 @@ export class DVIREngine {
   authorizeForService(
     accountId: string,
     vehicleId: string,
-    inspectionId: string
+    inspectionId: string,
   ): boolean {
     const key = `${accountId}:${vehicleId}`;
     const inspections = this.inspections.get(key) || [];
@@ -465,7 +465,7 @@ export class DVIREngine {
    * Determine overall inspection condition from defects.
    */
   private determineCondition(
-    defects: Partial<VehicleDefect>[]
+    defects: Partial<VehicleDefect>[],
   ): "PASS" | "DEFECT" | "OUT_OF_SERVICE" {
     if (defects.length === 0) return "PASS";
 
@@ -495,7 +495,7 @@ export class DVIREngine {
   getComponentDefectTrend(
     vehicleId: string,
     component: string,
-    days?: number
+    days?: number,
   ): {
     occurrences: number;
     averageSeverity: string;
@@ -519,8 +519,10 @@ export class DVIREngine {
     const avgSeverity =
       relevant.length > 0
         ? (
-            relevant.reduce((sum, d) => sum + (severityMap[d.severity] || 0), 0) /
-            relevant.length
+            relevant.reduce(
+              (sum, d) => sum + (severityMap[d.severity] || 0),
+              0,
+            ) / relevant.length
           ).toFixed(1)
         : "0";
 
@@ -544,7 +546,7 @@ export class DVIREngine {
   exportInspectionReport(
     accountId: string,
     vehicleId: string,
-    inspectionId: string
+    inspectionId: string,
   ): Record<string, unknown> | null {
     const key = `${accountId}:${vehicleId}`;
     const inspections = this.inspections.get(key) || [];

@@ -28,9 +28,7 @@ describe("Healthcare Normalizer", () => {
       const patient1: Patient = {
         resourceType: "Patient",
         id: "p1",
-        identifier: [
-          { system: "http://hospital.org/mrn", value: "MRN123456" },
-        ],
+        identifier: [{ system: "http://hospital.org/mrn", value: "MRN123456" }],
         name: [{ family: "Smith", given: ["John"] }],
         birthDate: "1980-01-15",
       };
@@ -38,9 +36,7 @@ describe("Healthcare Normalizer", () => {
       const patient2: Patient = {
         resourceType: "Patient",
         id: "p2",
-        identifier: [
-          { system: "http://clinic.org/mrn", value: "MRN123456" },
-        ],
+        identifier: [{ system: "http://clinic.org/mrn", value: "MRN123456" }],
         name: [{ family: "Smith", given: ["John"] }],
         birthDate: "1980-01-15",
       };
@@ -95,18 +91,14 @@ describe("Healthcare Normalizer", () => {
         resourceType: "Patient",
         id: "p1",
         name: [{ family: "Test" }],
-        telecom: [
-          { system: "phone", value: "(555) 123-4567" },
-        ],
+        telecom: [{ system: "phone", value: "(555) 123-4567" }],
       };
 
       const patient2: Patient = {
         resourceType: "Patient",
         id: "p2",
         name: [{ family: "Test" }],
-        telecom: [
-          { system: "phone", value: "(555) 123-4567" },
-        ],
+        telecom: [{ system: "phone", value: "(555) 123-4567" }],
       };
 
       const match = matchPatients(patient1, patient2);
@@ -241,7 +233,11 @@ describe("Healthcare Normalizer", () => {
 
       const normalized = normalizeObservation(observation, "mmol/L");
 
-      if (normalized.value && typeof normalized.value === "object" && "value" in normalized.value) {
+      if (
+        normalized.value &&
+        typeof normalized.value === "object" &&
+        "value" in normalized.value
+      ) {
         expect(normalized.value.value).toBeCloseTo(9.99, 1);
         expect(normalized.value.unit).toBe("mmol/L");
       }
@@ -399,14 +395,21 @@ describe("Healthcare Normalizer", () => {
         },
         subject: { reference: "Patient/p1" },
         performer: [{ reference: "Practitioner/doc1" }],
-        value: { value: 100, unit: "mg/dL", system: "http://unitsofmeasure.org", code: "mg/dL" },
+        value: {
+          value: 100,
+          unit: "mg/dL",
+          system: "http://unitsofmeasure.org",
+          code: "mg/dL",
+        },
       };
 
       const deidentified = deidentifyObservation(observation);
 
       expect(deidentified.subject.reference).toBe("Patient/REDACTED");
       if (deidentified.performer) {
-        expect(deidentified.performer[0].reference).toBe("Practitioner/REDACTED");
+        expect(deidentified.performer[0].reference).toBe(
+          "Practitioner/REDACTED",
+        );
       }
     });
 

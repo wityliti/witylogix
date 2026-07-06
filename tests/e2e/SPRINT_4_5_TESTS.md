@@ -40,6 +40,7 @@ tests/e2e/
 Encapsulates all dispatch dashboard interactions.
 
 **Key Methods:**
+
 - `navigateToDispatch()` - Navigate to dispatch dashboard
 - `getStatsBar()` - Get dashboard statistics (drivers, stops, km, time)
 - `getRouteTimeline()` - Get route information with driver details
@@ -59,6 +60,7 @@ Encapsulates all dispatch dashboard interactions.
 Encapsulates checkout flow interactions.
 
 **Key Methods:**
+
 - `waitForWidgetLoad()` - Wait for widget initialization
 - `enterAddress(address)` - Enter delivery address
 - `validateZipcode(zip)` - Validate postal code
@@ -79,6 +81,7 @@ Encapsulates checkout flow interactions.
 Encapsulates customer portal interactions.
 
 **Key Methods:**
+
 - `login(email, password)` - Login to portal
 - `navigateToOrders()` / `navigateToTrack()` / `navigateToPreferences()` - Navigate sections
 - `getOrderList()` - Get list of customer orders
@@ -98,6 +101,7 @@ Encapsulates customer portal interactions.
 ### Dispatch Fixtures (`fixtures/dispatch-fixtures.ts`)
 
 Mock data for dispatch testing:
+
 - `mockDrivers` - Array of 3 test drivers with details
 - `mockRoutes` - Array of 2 sample routes with stops
 - `mockUnscheduledStops` - Unscheduled deliveries for assignment
@@ -108,8 +112,9 @@ Mock data for dispatch testing:
 - `mockStopDetail` - Single stop detail response
 
 **Usage:**
+
 ```typescript
-import { getDispatchTestData, mockDrivers } from './fixtures/dispatch-fixtures';
+import { getDispatchTestData, mockDrivers } from "./fixtures/dispatch-fixtures";
 
 const testData = getDispatchTestData();
 ```
@@ -117,6 +122,7 @@ const testData = getDispatchTestData();
 ### Checkout Fixtures (`fixtures/checkout-fixtures.ts`)
 
 Mock data for checkout testing:
+
 - `mockDeliveryZones` - 3 delivery zones with rates
 - `mockAvailableDates` - Sample dates with availability
 - `mockTimeSlots` - Time slots with capacity
@@ -127,8 +133,12 @@ Mock data for checkout testing:
 - `mockBlackoutDates` - Unavailable dates
 
 **Usage:**
+
 ```typescript
-import { getCheckoutTestData, mockDeliveryZones } from './fixtures/checkout-fixtures';
+import {
+  getCheckoutTestData,
+  mockDeliveryZones,
+} from "./fixtures/checkout-fixtures";
 
 const testData = getCheckoutTestData();
 ```
@@ -138,6 +148,7 @@ const testData = getCheckoutTestData();
 Provides API mocking functions for isolated testing.
 
 **Key Functions:**
+
 - `setupDispatchMocks(page)` - Setup all dispatch API mocks
 - `setupCheckoutMocks(page)` - Setup checkout API mocks
 - `setupPortalMocks(page)` - Setup portal API mocks
@@ -146,14 +157,16 @@ Provides API mocking functions for isolated testing.
 - `clearAllMocks(page)` - Clean up all routes
 
 **Error Types:**
+
 - `'outside-zone'` - Address outside delivery zone
 - `'invalid-zipcode'` - Invalid postal code
 - `'no-slots'` - No available time slots
 - `'network-error'` - Network failure
 
 **Usage:**
+
 ```typescript
-import { setupDispatchMocks, clearAllMocks } from './helpers/mock-api';
+import { setupDispatchMocks, clearAllMocks } from "./helpers/mock-api";
 
 test.beforeEach(async ({ page }) => {
   await setupDispatchMocks(page);
@@ -169,6 +182,7 @@ test.afterEach(async ({ page }) => {
 ### Dispatch Dashboard Tests (`specs/dispatch/dispatch-dashboard.spec.ts`)
 
 **14 test cases** covering:
+
 1. Stats bar display (drivers, stops, km, time)
 2. Color-coded routes on map
 3. Route timeline with driver information
@@ -185,6 +199,7 @@ test.afterEach(async ({ page }) => {
 14. Route metrics calculation
 
 **Run:**
+
 ```bash
 npx playwright test specs/dispatch/dispatch-dashboard.spec.ts
 ```
@@ -192,6 +207,7 @@ npx playwright test specs/dispatch/dispatch-dashboard.spec.ts
 ### Checkout Widget Tests (`specs/checkout/checkout-widget.spec.ts`)
 
 **18 test cases** covering:
+
 1. Address validation and zone detection
 2. Available dates display with capacity
 3. Blackout dates disabled
@@ -212,6 +228,7 @@ npx playwright test specs/dispatch/dispatch-dashboard.spec.ts
 18. Unavailable time slot disabling
 
 **Run:**
+
 ```bash
 npx playwright test specs/checkout/checkout-widget.spec.ts
 ```
@@ -219,6 +236,7 @@ npx playwright test specs/checkout/checkout-widget.spec.ts
 ### Customer Portal Tests (`specs/portal/customer-portal.spec.ts`)
 
 **18 test cases** covering:
+
 1. Customer login
 2. Order history display with status badges
 3. Delivery status timeline with timestamps
@@ -239,6 +257,7 @@ npx playwright test specs/checkout/checkout-widget.spec.ts
 18. Login error handling
 
 **Run:**
+
 ```bash
 npx playwright test specs/portal/customer-portal.spec.ts
 ```
@@ -246,6 +265,7 @@ npx playwright test specs/portal/customer-portal.spec.ts
 ### POD Capture Tests (`specs/pod/pod-capture.spec.ts`)
 
 **12 test cases** covering:
+
 1. Photo POD upload with thumbnail generation
 2. E-signature capture and SVG storage
 3. QR code validation
@@ -260,6 +280,7 @@ npx playwright test specs/portal/customer-portal.spec.ts
 12. Offline indicator display
 
 **Run:**
+
 ```bash
 npx playwright test specs/pod/pod-capture.spec.ts
 ```
@@ -267,6 +288,7 @@ npx playwright test specs/pod/pod-capture.spec.ts
 ### Notification Delivery Tests (`specs/notifications/notification-delivery.spec.ts`)
 
 **11 test cases** covering:
+
 1. Email notification on order confirmation
 2. SMS with tracking link on out-for-delivery
 3. Notification preference respect
@@ -280,6 +302,7 @@ npx playwright test specs/pod/pod-capture.spec.ts
 11. Multiple notification channels
 
 **Run:**
+
 ```bash
 npx playwright test specs/notifications/notification-delivery.spec.ts
 ```
@@ -287,11 +310,13 @@ npx playwright test specs/notifications/notification-delivery.spec.ts
 ## Running Tests
 
 ### Run All Sprint 4.5 Tests
+
 ```bash
 npx playwright test specs/dispatch/ specs/checkout/ specs/portal/ specs/pod/ specs/notifications/
 ```
 
 ### Run Specific Test Suite
+
 ```bash
 # Dispatch only
 npx playwright test specs/dispatch/dispatch-dashboard.spec.ts
@@ -310,11 +335,13 @@ npx playwright test specs/notifications/notification-delivery.spec.ts
 ```
 
 ### Run Specific Test
+
 ```bash
 npx playwright test -g "should display stats bar"
 ```
 
 ### Run with Specific Browser
+
 ```bash
 npx playwright test --project=chromium
 npx playwright test --project=firefox
@@ -322,16 +349,19 @@ npx playwright test --project=webkit
 ```
 
 ### Run with UI Mode
+
 ```bash
 npx playwright test --ui
 ```
 
 ### Run with Debug Mode
+
 ```bash
 npx playwright test --debug
 ```
 
 ### Generate HTML Report
+
 ```bash
 npx playwright test
 npx playwright show-report
@@ -340,22 +370,26 @@ npx playwright show-report
 ## Test Data
 
 ### Mock Users
+
 - **Admin**: admin@test.com / admin123
 - **Dispatcher**: dispatcher@test.com / dispatcher123
 - **Driver**: driver@test.com / driver123
 - **Customer**: customer@example.com / password123
 
 ### Mock Orders
+
 - **ORD-001**: Delivered
 - **ORD-002**: In-transit
 - **ORD-003-008**: Various statuses
 
 ### Mock Drivers
+
 - **driver-001**: John Smith (Rating: 4.8)
 - **driver-002**: Maria Garcia (Rating: 4.9)
 - **driver-003**: Ahmed Hassan (Rating: 4.6)
 
 ### Mock Zones
+
 - **Zone 001 (Downtown)**: Zipcode 10001-10005, Rate $5.99
 - **Zone 002 (Midtown)**: Zipcode 10016-10022, Rate $6.99
 - **Zone 003 (Uptown)**: Zipcode 10023-10027, Rate $8.99
@@ -392,22 +426,27 @@ npx playwright show-report
 ## Debugging
 
 ### Run Tests in Debug Mode
+
 ```bash
 npx playwright test --debug
 ```
 
 ### View Test Traces
+
 ```bash
 npx playwright show-trace trace.zip
 ```
 
 ### View Network Activity
+
 Check browser dev tools in headed mode:
+
 ```bash
 npx playwright test --headed
 ```
 
 ### Screenshot on Failure
+
 Automatically captured in `tests/e2e/results/screenshots/`
 
 ## Performance Considerations
@@ -420,6 +459,7 @@ Automatically captured in `tests/e2e/results/screenshots/`
 ## CI/CD Integration
 
 Tests are configured to run in CI with:
+
 - Serial execution (1 worker)
 - 2 retries on failure
 - HTML and List reporters
@@ -433,6 +473,7 @@ CI=true npx playwright test
 ## Maintenance
 
 ### Adding New Tests
+
 1. Create test file in appropriate `specs/` subdirectory
 2. Import page object and fixtures
 3. Use `setupMocks()` in beforeEach
@@ -440,11 +481,13 @@ CI=true npx playwright test
 5. Follow naming convention: `should [action] [expected result]`
 
 ### Updating Mock Data
+
 1. Edit fixture files in `fixtures/`
 2. Ensure mock data matches actual API responses
 3. Keep fixture data realistic and comprehensive
 
 ### Updating Page Objects
+
 1. Add new methods for new UI elements
 2. Keep selectors in constructor
 3. Add wait strategies for async operations
@@ -453,16 +496,19 @@ CI=true npx playwright test
 ## Troubleshooting
 
 ### Tests Timeout
+
 - Increase timeout in playwright.config.ts
 - Check if API mocks are returning properly
 - Verify waitForLoadState('networkidle') calls
 
 ### Flaky Tests
+
 - Use proper wait strategies instead of fixed delays
 - Ensure data-testid attributes exist on elements
 - Check mock API responses match expectations
 
 ### Element Not Found
+
 - Verify selector in test using Playwright Inspector
 - Check element visibility in dev tools
 - Ensure proper wait before interaction

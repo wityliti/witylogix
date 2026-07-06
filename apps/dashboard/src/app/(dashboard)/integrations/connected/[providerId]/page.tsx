@@ -53,8 +53,17 @@ export default function IntegrationDetailPage() {
   const params = useParams();
   const connectionId = params.providerId as string;
 
-  const { connections, getStatus, pauseSync, resumeSync, forceSync, disconnect, isLoading: connectionsLoading, error: connectionsError, revalidate } =
-    useIntegrationStatus({ enablePolling: true });
+  const {
+    connections,
+    getStatus,
+    pauseSync,
+    resumeSync,
+    forceSync,
+    disconnect,
+    isLoading: connectionsLoading,
+    error: connectionsError,
+    revalidate,
+  } = useIntegrationStatus({ enablePolling: true });
 
   const connection = getStatus(connectionId);
 
@@ -79,7 +88,14 @@ export default function IntegrationDetailPage() {
     message: string;
   } | null>(null);
 
-  if (connectionsError && !connectionsLoading) return <ErrorState title="Failed to load integration" message={connectionsError} onRetry={revalidate} />;
+  if (connectionsError && !connectionsLoading)
+    return (
+      <ErrorState
+        title="Failed to load integration"
+        message={connectionsError}
+        onRetry={revalidate}
+      />
+    );
 
   if (!connection) {
     const isLoading = connections.length === 0;
@@ -107,10 +123,13 @@ export default function IntegrationDetailPage() {
               {!isLoading && (
                 <>
                   <p className="text-wl-text-secondary mb-4">
-                    The integration you&apos;re looking for doesn&apos;t exist or has been disconnected.
+                    The integration you&apos;re looking for doesn&apos;t exist
+                    or has been disconnected.
                   </p>
                   <Button variant="primary" asChild>
-                    <Link href="/integrations/connected">View All Integrations</Link>
+                    <Link href="/integrations/connected">
+                      View All Integrations
+                    </Link>
                   </Button>
                 </>
               )}
@@ -146,9 +165,7 @@ export default function IntegrationDetailPage() {
               {connection.providerName}
             </h1>
             <div className="flex items-center gap-3 mt-2">
-              <Badge
-                variant={isHealthy ? "success" : "danger"}
-              >
+              <Badge variant={isHealthy ? "success" : "danger"}>
                 {connection.status.charAt(0).toUpperCase() +
                   connection.status.slice(1)}
               </Badge>
@@ -239,7 +256,7 @@ export default function IntegrationDetailPage() {
                     try {
                       const result = await api.post<{ message?: string }>(
                         `/api/v4/integrations/${connectionId}/test`,
-                        {}
+                        {},
                       );
                       setShowTestResult({
                         success: true,
@@ -248,7 +265,8 @@ export default function IntegrationDetailPage() {
                     } catch (err) {
                       setShowTestResult({
                         success: false,
-                        message: err instanceof Error ? err.message : "Test failed",
+                        message:
+                          err instanceof Error ? err.message : "Test failed",
                       });
                     }
                   }}
@@ -266,7 +284,7 @@ export default function IntegrationDetailPage() {
                 "bg-wl-bg-elevated border",
                 showTestResult.success
                   ? "border-emerald-500/20"
-                  : "border-red-500/20"
+                  : "border-red-500/20",
               )}
             >
               <CardContent className="pt-6">
@@ -297,11 +315,7 @@ export default function IntegrationDetailPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Recent Activity</CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  asChild
-                >
+                <Button variant="ghost" size="sm" asChild>
                   <Link href="/integrations/logs">
                     View All
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -311,7 +325,9 @@ export default function IntegrationDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {activityLog.length === 0 ? (
-                <p className="text-sm text-wl-text-tertiary text-center py-4">No activity recorded yet.</p>
+                <p className="text-sm text-wl-text-tertiary text-center py-4">
+                  No activity recorded yet.
+                </p>
               ) : (
                 activityLog.map((entry) => {
                   const time = new Date(entry.timestamp);
@@ -330,7 +346,7 @@ export default function IntegrationDetailPage() {
                         "p-3 rounded-lg border-l-2",
                         entry.status === "success"
                           ? "border-l-emerald-500 bg-emerald-500/5"
-                          : "border-l-amber-500 bg-amber-500/5"
+                          : "border-l-amber-500 bg-amber-500/5",
                       )}
                     >
                       <div className="flex items-start justify-between">
@@ -445,23 +461,25 @@ export default function IntegrationDetailPage() {
                   Subscribed Events
                 </label>
                 <div className="space-y-2">
-                  {["orders.created", "orders.updated", "inventory.changed"].map(
-                    (event) => (
-                      <label
-                        key={event}
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          defaultChecked
-                          className="w-4 h-4 rounded"
-                        />
-                        <span className="text-sm text-wl-text-secondary">
-                          {event}
-                        </span>
-                      </label>
-                    )
-                  )}
+                  {[
+                    "orders.created",
+                    "orders.updated",
+                    "inventory.changed",
+                  ].map((event) => (
+                    <label
+                      key={event}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        defaultChecked
+                        className="w-4 h-4 rounded"
+                      />
+                      <span className="text-sm text-wl-text-secondary">
+                        {event}
+                      </span>
+                    </label>
+                  ))}
                 </div>
               </div>
             </CardContent>
@@ -491,9 +509,13 @@ export default function IntegrationDetailPage() {
               </div>
               {connection.credentialsExpireAt && (
                 <div>
-                  <p className="text-wl-text-tertiary mb-1">Credentials Expire</p>
+                  <p className="text-wl-text-tertiary mb-1">
+                    Credentials Expire
+                  </p>
                   <p className="text-white font-medium">
-                    {new Date(connection.credentialsExpireAt).toLocaleDateString()}
+                    {new Date(
+                      connection.credentialsExpireAt,
+                    ).toLocaleDateString()}
                   </p>
                 </div>
               )}
@@ -506,12 +528,7 @@ export default function IntegrationDetailPage() {
               <p className="text-sm text-wl-text-secondary mb-4">
                 Need help? Check the integration documentation.
               </p>
-              <Button
-                variant="primary"
-                size="sm"
-                className="w-full"
-                asChild
-              >
+              <Button variant="primary" size="sm" className="w-full" asChild>
                 <a
                   href={`https://docs.example.com/${connection.providerName.toLowerCase()}`}
                   target="_blank"
@@ -538,7 +555,8 @@ export default function IntegrationDetailPage() {
               Disconnect {connection.providerName}?
             </h2>
             <p className="text-wl-text-secondary">
-              This will stop syncing data from {connection.providerName}. You can reconnect anytime.
+              This will stop syncing data from {connection.providerName}. You
+              can reconnect anytime.
             </p>
             <div className="flex gap-3 pt-4">
               <Button

@@ -491,11 +491,7 @@ describe("Payment Processor", () => {
     });
 
     it("should handle temporary network failures", async () => {
-      const networkErrors = [
-        "ECONNREFUSED",
-        "ETIMEDOUT",
-        "EHOSTUNREACH",
-      ];
+      const networkErrors = ["ECONNREFUSED", "ETIMEDOUT", "EHOSTUNREACH"];
 
       for (const errorCode of networkErrors) {
         const error = new Error(`Network error: ${errorCode}`);

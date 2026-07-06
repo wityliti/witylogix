@@ -3,12 +3,12 @@
  * Validates documentation structure, frontmatter, and configuration
  */
 
-import { describe, it, expect } from 'vitest';
-import * as fs from 'fs';
-import * as path from 'path';
+import { describe, it, expect } from "vitest";
+import * as fs from "fs";
+import * as path from "path";
 
-const DOCS_ROOT = path.resolve(__dirname, '..', 'content', 'docs');
-const SOURCE_CONFIG = path.resolve(__dirname, '..', 'source.config.ts');
+const DOCS_ROOT = path.resolve(__dirname, "..", "content", "docs");
+const SOURCE_CONFIG = path.resolve(__dirname, "..", "source.config.ts");
 
 /**
  * Validate that a file exists and is readable
@@ -26,17 +26,17 @@ function fileExists(filePath: string): boolean {
  * Parse frontmatter from MDX content (YAML format)
  */
 function parseFrontmatter(
-  content: string
+  content: string,
 ): { data: Record<string, any>; body: string } | null {
-  if (!content.startsWith('---')) {
+  if (!content.startsWith("---")) {
     return null;
   }
 
-  const lines = content.split('\n');
+  const lines = content.split("\n");
   let endIndex = -1;
 
   for (let i = 1; i < lines.length; i++) {
-    if (lines[i].trim() === '---') {
+    if (lines[i].trim() === "---") {
       endIndex = i;
       break;
     }
@@ -56,8 +56,10 @@ function parseFrontmatter(
       let value: any = match[2].trim();
 
       // Remove quotes if present
-      if ((value.startsWith('"') && value.endsWith('"')) ||
-          (value.startsWith("'") && value.endsWith("'"))) {
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
         value = value.slice(1, -1);
       }
 
@@ -65,7 +67,10 @@ function parseFrontmatter(
     }
   }
 
-  const body = lines.slice(endIndex + 1).join('\n').trim();
+  const body = lines
+    .slice(endIndex + 1)
+    .join("\n")
+    .trim();
   return { data, body };
 }
 
@@ -92,24 +97,24 @@ function findMarkdownLinks(content: string): string[] {
   return links;
 }
 
-describe('Docs Configuration', () => {
+describe("Docs Configuration", () => {
   // =========================================================================
   // Configuration File Tests
   // =========================================================================
 
-  describe('source.config.ts', () => {
-    it('should exist', () => {
+  describe("source.config.ts", () => {
+    it("should exist", () => {
       expect(fileExists(SOURCE_CONFIG)).toBe(true);
     });
 
-    it('should export valid config', () => {
-      const content = fs.readFileSync(SOURCE_CONFIG, 'utf-8');
-      expect(content).toContain('defineConfig');
-      expect(content).toContain('defineDocs');
+    it("should export valid config", () => {
+      const content = fs.readFileSync(SOURCE_CONFIG, "utf-8");
+      expect(content).toContain("defineConfig");
+      expect(content).toContain("defineDocs");
     });
 
-    it('should reference correct docs directory', () => {
-      const content = fs.readFileSync(SOURCE_CONFIG, 'utf-8');
+    it("should reference correct docs directory", () => {
+      const content = fs.readFileSync(SOURCE_CONFIG, "utf-8");
       expect(content).toContain("'content/docs'");
     });
   });
@@ -118,7 +123,7 @@ describe('Docs Configuration', () => {
   // MDX File Structure Tests
   // =========================================================================
 
-  describe('MDX Files', () => {
+  describe("MDX Files", () => {
     function getMdxFiles(): string[] {
       const files: string[] = [];
 
@@ -131,7 +136,7 @@ describe('Docs Configuration', () => {
 
           if (stat.isDirectory()) {
             walkDir(fullPath);
-          } else if (item.endsWith('.mdx')) {
+          } else if (item.endsWith(".mdx")) {
             files.push(fullPath);
           }
         }
@@ -141,17 +146,17 @@ describe('Docs Configuration', () => {
       return files;
     }
 
-    it('should have MDX files in docs directory', () => {
+    it("should have MDX files in docs directory", () => {
       const mdxFiles = getMdxFiles();
       expect(mdxFiles.length).toBeGreaterThan(0);
     });
 
-    it('should not have empty MDX files', () => {
+    it("should not have empty MDX files", () => {
       const mdxFiles = getMdxFiles();
       const emptyFiles: string[] = [];
 
       for (const file of mdxFiles) {
-        const content = fs.readFileSync(file, 'utf-8');
+        const content = fs.readFileSync(file, "utf-8");
         if (content.trim().length === 0) {
           emptyFiles.push(file);
         }
@@ -160,12 +165,12 @@ describe('Docs Configuration', () => {
       expect(emptyFiles).toHaveLength(0);
     });
 
-    it('should have title in frontmatter or as first heading', () => {
+    it("should have title in frontmatter or as first heading", () => {
       const mdxFiles = getMdxFiles();
       const filesWithoutTitle: string[] = [];
 
       for (const file of mdxFiles) {
-        const content = fs.readFileSync(file, 'utf-8');
+        const content = fs.readFileSync(file, "utf-8");
         const frontmatter = parseFrontmatter(content);
         const hasTitle =
           frontmatter?.data?.title || extractFirstHeading(content);
@@ -178,12 +183,12 @@ describe('Docs Configuration', () => {
       expect(filesWithoutTitle).toHaveLength(0);
     });
 
-    it('should have description in frontmatter (optional but nice)', () => {
+    it("should have description in frontmatter (optional but nice)", () => {
       const mdxFiles = getMdxFiles();
       const filesWithDescription: string[] = [];
 
       for (const file of mdxFiles) {
-        const content = fs.readFileSync(file, 'utf-8');
+        const content = fs.readFileSync(file, "utf-8");
         const frontmatter = parseFrontmatter(content);
 
         if (frontmatter?.data?.description) {
@@ -196,20 +201,20 @@ describe('Docs Configuration', () => {
       expect(ratio).toBeGreaterThanOrEqual(0.3);
     });
 
-    it('should have valid content structure', () => {
+    it("should have valid content structure", () => {
       const mdxFiles = getMdxFiles();
       const invalidFiles: string[] = [];
 
       for (const file of mdxFiles) {
-        const content = fs.readFileSync(file, 'utf-8');
+        const content = fs.readFileSync(file, "utf-8");
 
         // Check for basic markdown structure
         const hasContent =
-          content.includes('#') ||
-          content.includes('-') ||
-          content.includes('*');
+          content.includes("#") ||
+          content.includes("-") ||
+          content.includes("*");
 
-        if (!hasContent && !content.includes('title:')) {
+        if (!hasContent && !content.includes("title:")) {
           invalidFiles.push(file);
         }
       }
@@ -222,7 +227,7 @@ describe('Docs Configuration', () => {
   // Meta.json File Tests
   // =========================================================================
 
-  describe('meta.json Files', () => {
+  describe("meta.json Files", () => {
     function getMetaFiles(): string[] {
       const files: string[] = [];
 
@@ -235,7 +240,7 @@ describe('Docs Configuration', () => {
 
           if (stat.isDirectory()) {
             walkDir(fullPath);
-          } else if (item === 'meta.json') {
+          } else if (item === "meta.json") {
             files.push(fullPath);
           }
         }
@@ -245,13 +250,13 @@ describe('Docs Configuration', () => {
       return files;
     }
 
-    it('should have valid JSON format', () => {
+    it("should have valid JSON format", () => {
       const metaFiles = getMetaFiles();
       const invalidFiles: string[] = [];
 
       for (const file of metaFiles) {
         try {
-          const content = fs.readFileSync(file, 'utf-8');
+          const content = fs.readFileSync(file, "utf-8");
           JSON.parse(content);
         } catch {
           invalidFiles.push(file);
@@ -261,12 +266,12 @@ describe('Docs Configuration', () => {
       expect(invalidFiles).toHaveLength(0);
     });
 
-    it('should have required title field', () => {
+    it("should have required title field", () => {
       const metaFiles = getMetaFiles();
       const invalidFiles: string[] = [];
 
       for (const file of metaFiles) {
-        const content = fs.readFileSync(file, 'utf-8');
+        const content = fs.readFileSync(file, "utf-8");
         const config = JSON.parse(content);
 
         if (!config.title) {
@@ -277,12 +282,12 @@ describe('Docs Configuration', () => {
       expect(invalidFiles).toHaveLength(0);
     });
 
-    it('should have pages array', () => {
+    it("should have pages array", () => {
       const metaFiles = getMetaFiles();
       const invalidFiles: string[] = [];
 
       for (const file of metaFiles) {
-        const content = fs.readFileSync(file, 'utf-8');
+        const content = fs.readFileSync(file, "utf-8");
         const config = JSON.parse(content);
 
         if (!Array.isArray(config.pages) && !config.pages) {
@@ -298,12 +303,12 @@ describe('Docs Configuration', () => {
       expect(invalidFiles).toHaveLength(0);
     });
 
-    it('should reference existing MDX files', () => {
+    it("should reference existing MDX files", () => {
       const metaFiles = getMetaFiles();
       const mdxFiles = new Set<string>();
 
       // Build set of all MDX file basenames (without extension)
-      function walkDir(dir: string, prefix = '') {
+      function walkDir(dir: string, prefix = "") {
         const items = fs.readdirSync(dir);
 
         for (const item of items) {
@@ -312,8 +317,8 @@ describe('Docs Configuration', () => {
 
           if (stat.isDirectory()) {
             walkDir(fullPath, prefix ? `${prefix}/${item}` : item);
-          } else if (item.endsWith('.mdx') && item !== 'index.mdx') {
-            const baseName = item.replace('.mdx', '');
+          } else if (item.endsWith(".mdx") && item !== "index.mdx") {
+            const baseName = item.replace(".mdx", "");
             const fullName = prefix ? `${prefix}/${baseName}` : baseName;
             mdxFiles.add(fullName);
           }
@@ -325,19 +330,19 @@ describe('Docs Configuration', () => {
       const brokenReferences: string[] = [];
 
       for (const file of metaFiles) {
-        const content = fs.readFileSync(file, 'utf-8');
+        const content = fs.readFileSync(file, "utf-8");
         const config = JSON.parse(content);
 
         if (config.pages && Array.isArray(config.pages)) {
           for (const page of config.pages) {
-            const pageName = typeof page === 'string' ? page : page.path;
+            const pageName = typeof page === "string" ? page : page.path;
 
             // index files are always valid
-            if (pageName === 'index') {
+            if (pageName === "index") {
               continue;
             }
 
-            if (!mdxFiles.has(pageName) && pageName !== 'index') {
+            if (!mdxFiles.has(pageName) && pageName !== "index") {
               brokenReferences.push(`${file}: missing ${pageName}`);
             }
           }
@@ -353,8 +358,8 @@ describe('Docs Configuration', () => {
   // Internal Link Validation
   // =========================================================================
 
-  describe('Internal Links', () => {
-    it('should not have broken internal links', () => {
+  describe("Internal Links", () => {
+    it("should not have broken internal links", () => {
       const mdxFiles: string[] = [];
 
       function walkDir(dir: string) {
@@ -366,7 +371,7 @@ describe('Docs Configuration', () => {
 
           if (stat.isDirectory()) {
             walkDir(fullPath);
-          } else if (item.endsWith('.mdx')) {
+          } else if (item.endsWith(".mdx")) {
             mdxFiles.push(fullPath);
           }
         }
@@ -379,28 +384,28 @@ describe('Docs Configuration', () => {
       for (const file of mdxFiles) {
         const relativePath = path
           .relative(DOCS_ROOT, file)
-          .replace(/\\/g, '/')
-          .replace('.mdx', '')
-          .replace(/\/index$/, '');
+          .replace(/\\/g, "/")
+          .replace(".mdx", "")
+          .replace(/\/index$/, "");
         validDocs.add(`/docs/${relativePath}`);
       }
 
       const brokenLinks: string[] = [];
 
       for (const file of mdxFiles) {
-        const content = fs.readFileSync(file, 'utf-8');
+        const content = fs.readFileSync(file, "utf-8");
         const links = findMarkdownLinks(content);
 
         for (const link of links) {
           // Skip external links
-          if (link.startsWith('http') || link.startsWith('#')) {
+          if (link.startsWith("http") || link.startsWith("#")) {
             continue;
           }
 
           // Normalize link
-          const normalizedLink = link.startsWith('/') ? link : `/docs/${link}`;
+          const normalizedLink = link.startsWith("/") ? link : `/docs/${link}`;
 
-          if (!validDocs.has(normalizedLink) && !link.includes('://')) {
+          if (!validDocs.has(normalizedLink) && !link.includes("://")) {
             brokenLinks.push(`${file}: ${link}`);
           }
         }
@@ -415,17 +420,17 @@ describe('Docs Configuration', () => {
   // Directory Structure Tests
   // =========================================================================
 
-  describe('Directory Structure', () => {
-    it('should have docs directory', () => {
+  describe("Directory Structure", () => {
+    it("should have docs directory", () => {
       expect(fileExists(DOCS_ROOT)).toBe(true);
     });
 
-    it('should have index.mdx in docs root', () => {
-      const indexPath = path.join(DOCS_ROOT, 'index.mdx');
+    it("should have index.mdx in docs root", () => {
+      const indexPath = path.join(DOCS_ROOT, "index.mdx");
       expect(fileExists(indexPath)).toBe(true);
     });
 
-    it('should have at least one meta.json', () => {
+    it("should have at least one meta.json", () => {
       const metaFiles: string[] = [];
 
       function walkDir(dir: string) {
@@ -437,7 +442,7 @@ describe('Docs Configuration', () => {
 
           if (stat.isDirectory()) {
             walkDir(fullPath);
-          } else if (item === 'meta.json') {
+          } else if (item === "meta.json") {
             metaFiles.push(fullPath);
           }
         }

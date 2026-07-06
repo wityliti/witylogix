@@ -160,7 +160,10 @@ interface EBayFulfillmentData {
 /**
  * eBay REST API Client
  */
-export class EBayClient extends ECommerceAdapterBase implements IECommerceAdapter {
+export class EBayClient
+  extends ECommerceAdapterBase
+  implements IECommerceAdapter
+{
   private baseUrl = "https://api.ebay.com";
   private clientId: string;
   private clientSecret: string;
@@ -176,7 +179,9 @@ export class EBayClient extends ECommerceAdapterBase implements IECommerceAdapte
     super(config);
 
     if (!config.apiKey || !config.apiSecret || !config.accessToken) {
-      throw new Error("eBay API requires clientId, clientSecret, and refreshToken");
+      throw new Error(
+        "eBay API requires clientId, clientSecret, and refreshToken",
+      );
     }
 
     this.clientId = config.apiKey;
@@ -202,7 +207,9 @@ export class EBayClient extends ECommerceAdapterBase implements IECommerceAdapte
    */
   private async refreshAccessToken(): Promise<void> {
     const url = "https://api.ebay.com/identity/v1/oauth2/token";
-    const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString("base64");
+    const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString(
+      "base64",
+    );
 
     const body = new URLSearchParams({
       grant_type: "refresh_token",
@@ -231,7 +238,11 @@ export class EBayClient extends ECommerceAdapterBase implements IECommerceAdapte
   /**
    * Make authenticated request to eBay API
    */
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  private async request<T>(
+    method: string,
+    path: string,
+    body?: unknown,
+  ): Promise<T> {
     await this.rateLimiter.waitIfNeeded();
 
     const accessToken = await this.getAccessToken();
@@ -247,7 +258,9 @@ export class EBayClient extends ECommerceAdapterBase implements IECommerceAdapte
     });
 
     if (!response.ok) {
-      throw new Error(`eBay API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `eBay API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     return (await response.json()) as T;
@@ -268,7 +281,10 @@ export class EBayClient extends ECommerceAdapterBase implements IECommerceAdapte
         orders: EBayOrderData[];
         pageNumber?: number;
         pageSize?: number;
-      }>("GET", `/sell/fulfillment/v1/order?limit=${Math.min(options?.limit ?? 50, 50)}${filter ? `&filter=${filter}` : ""}`);
+      }>(
+        "GET",
+        `/sell/fulfillment/v1/order?limit=${Math.min(options?.limit ?? 50, 50)}${filter ? `&filter=${filter}` : ""}`,
+      );
 
       orders.push(
         ...response.orders.map((order) => this.normalizeOrder(order)),
@@ -295,8 +311,15 @@ export class EBayClient extends ECommerceAdapterBase implements IECommerceAdapte
   /**
    * Update order (mark as acknowledged/received)
    */
-  async updateOrder(orderId: string, data: Partial<ECommerceOrder>): Promise<ECommerceOrder> {
-    await this.request<unknown>("POST", `/sell/fulfillment/v1/order/${orderId}/acknowledge`, {});
+  async updateOrder(
+    orderId: string,
+    data: Partial<ECommerceOrder>,
+  ): Promise<ECommerceOrder> {
+    await this.request<unknown>(
+      "POST",
+      `/sell/fulfillment/v1/order/${orderId}/acknowledge`,
+      {},
+    );
 
     return this.getOrderById(orderId);
   }
@@ -310,9 +333,14 @@ export class EBayClient extends ECommerceAdapterBase implements IECommerceAdapte
     try {
       const response = await this.request<{
         listings: EBayListing[];
-      }>("GET", `/sell/inventory/v1/inventory_item?limit=${Math.min(options?.limit ?? 25, 25)}`);
+      }>(
+        "GET",
+        `/sell/inventory/v1/inventory_item?limit=${Math.min(options?.limit ?? 25, 25)}`,
+      );
 
-      products.push(...response.listings.map((listing) => this.normalizeListing(listing)));
+      products.push(
+        ...response.listings.map((listing) => this.normalizeListing(listing)),
+      );
     } catch (error) {
       this.logger.error("Failed to get products from eBay", error);
     }
@@ -365,7 +393,10 @@ export class EBayClient extends ECommerceAdapterBase implements IECommerceAdapte
   /**
    * Update product (listing)
    */
-  async updateProduct(productId: string, data: Partial<ECommerceProduct>): Promise<ECommerceProduct> {
+  async updateProduct(
+    productId: string,
+    data: Partial<ECommerceProduct>,
+  ): Promise<ECommerceProduct> {
     const updateData: Record<string, unknown> = {};
 
     if (data.title) updateData.title = data.title;
@@ -403,14 +434,20 @@ export class EBayClient extends ECommerceAdapterBase implements IECommerceAdapte
   /**
    * Update customer
    */
-  async updateCustomer(customerId: string, data: Partial<ECommerceCustomer>): Promise<ECommerceCustomer> {
+  async updateCustomer(
+    customerId: string,
+    data: Partial<ECommerceCustomer>,
+  ): Promise<ECommerceCustomer> {
     throw new Error("eBay does not provide customer endpoints");
   }
 
   /**
    * Create fulfillment
    */
-  async createFulfillment(orderId: string, request: FulfillmentRequest): Promise<FulfillmentResponse> {
+  async createFulfillment(
+    orderId: string,
+    request: FulfillmentRequest,
+  ): Promise<FulfillmentResponse> {
     try {
       const response = await this.request<EBayFulfillmentData>(
         "POST",
@@ -494,7 +531,9 @@ export class EBayClient extends ECommerceAdapterBase implements IECommerceAdapte
   /**
    * Update inventory
    */
-  async updateInventory(request: InventoryUpdateRequest): Promise<ECommerceInventory> {
+  async updateInventory(
+    request: InventoryUpdateRequest,
+  ): Promise<ECommerceInventory> {
     await this.request<unknown>(
       "PUT",
       `/sell/inventory/v1/inventory_item/${request.variantId}`,
@@ -563,8 +602,10 @@ export class EBayClient extends ECommerceAdapterBase implements IECommerceAdapte
    */
   private normalizeOrder(order: EBayOrderData): ECommerceOrder {
     const status: OrderStatus = this.mapOrderStatus(order.orderStatus);
-    const paymentStatus: PaymentStatus = order.paymentStatus === "PAID" ? "captured" : "pending";
-    const fulfillmentStatus: FulfillmentStatus = order.fulfillmentStatus === "FULFILLED" ? "complete" : "pending";
+    const paymentStatus: PaymentStatus =
+      order.paymentStatus === "PAID" ? "captured" : "pending";
+    const fulfillmentStatus: FulfillmentStatus =
+      order.fulfillmentStatus === "FULFILLED" ? "complete" : "pending";
 
     return {
       id: order.orderId,

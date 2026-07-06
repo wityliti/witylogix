@@ -75,7 +75,9 @@ const quoteRequestSchema = z.object({
   package: z
     .object({
       weight: z.number().optional(),
-      dimensions: z.object({ length: z.number(), width: z.number(), height: z.number() }).optional(),
+      dimensions: z
+        .object({ length: z.number(), width: z.number(), height: z.number() })
+        .optional(),
       transportType: z.enum(["bike", "car", "van"]).optional(),
       itemCount: z.number().optional(),
       fragile: z.boolean().optional(),
@@ -100,7 +102,10 @@ const dispatchSchema = z.object({
     })
     .optional(),
   preferredCourier: z.string().optional(),
-  strategy: z.enum(["cheapest", "fastest", "preferred", "auto"]).optional().default("auto"),
+  strategy: z
+    .enum(["cheapest", "fastest", "preferred", "auto"])
+    .optional()
+    .default("auto"),
   scheduledFor: z.string().datetime().optional(),
 });
 
@@ -114,12 +119,23 @@ const statsQuerySchema = z.object({
   since: z.string().datetime().optional(),
   until: z.string().datetime().optional(),
   provider: z.string().optional(),
-  status: z.enum(["pending", "picked_up", "in_transit", "delivered", "failed", "cancelled"]).optional(),
+  status: z
+    .enum([
+      "pending",
+      "picked_up",
+      "in_transit",
+      "delivered",
+      "failed",
+      "cancelled",
+    ])
+    .optional(),
 });
 
 // ─── Route Registration ─────────────────────────────────────────
 
-export default async function courierRoutes(app: FastifyInstance): Promise<void> {
+export default async function courierRoutes(
+  app: FastifyInstance,
+): Promise<void> {
   // All routes require authentication + tenant context
   app.addHook("preHandler", requireAuth);
   app.addHook("preHandler", tenantContext);
@@ -154,120 +170,145 @@ export default async function courierRoutes(app: FastifyInstance): Promise<void>
 
   // ── POST /couriers/partners — Register new partner ───────────────
 
-  app.post("/partners", async (request: FastifyRequest, reply: FastifyReply) => {
-    const tenantId = request.tenantId!;
-    const body = registerPartnerSchema.parse(request.body);
+  app.post(
+    "/partners",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const tenantId = request.tenantId!;
+      const body = registerPartnerSchema.parse(request.body);
 
-    // Validate credentials with provider
-    const adapter = this.createAdapter(body.provider, body.credentials as CourierConfig);
-    try {
-      await adapter.validateConfig();
-    } catch (error) {
-      return reply.status(400).send({
-        error: "Invalid credentials",
-        message: error instanceof Error ? error.message : "Failed to validate credentials",
-      });
-    }
-
-    // Check for duplicate provider
-    const existing = await prisma.courierPartner.findFirst({
-      where: { tenantId, provider: body.provider },
-    });
-
-    if (existing) {
-      return reply.status(409).send({
-        error: "Duplicate provider",
-        message: `${body.provider} is already registered for this tenant`,
-      });
-    }
-
-    const partner = await prisma.courierPartner.create({
-      data: {
-        tenantId,
-        provider: body.provider,
-        name: body.name,
-        description: body.description,
-        credentials: body.credentials,
-        config: body.config,
-        status: "ACTIVE",
-        healthStatus: "UNKNOWN",
-      },
-    });
-
-    return reply.status(201).send(partner);
-  });
-
-  // ── DELETE /couriers/partners/:id — Unregister partner ──────────
-
-  app.delete("/partners/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    const tenantId = request.tenantId!;
-    const { id } = request.params as { id: string };
-
-    const partner = await prisma.courierPartner.findFirst({
-      where: { id, tenantId },
-    });
-
-    if (!partner) {
-      return reply.status(404).send({ error: "Partner not found" });
-    }
-
-    await prisma.courierPartner.delete({
-      where: { id },
-    });
-
-    return reply.send({ message: "Partner unregistered" });
-  });
-
-  // ── PATCH /couriers/partners/:id — Update partner ────────────────
-
-  app.patch("/partners/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    const tenantId = request.tenantId!;
-    const { id } = request.params as { id: string };
-    const body = updatePartnerSchema.parse(request.body);
-
-    const partner = await prisma.courierPartner.findFirst({
-      where: { id, tenantId },
-    });
-
-    if (!partner) {
-      return reply.status(404).send({ error: "Partner not found" });
-    }
-
-    // If credentials updated, validate them
-    if (body.credentials) {
+      // Validate credentials with provider
       const adapter = this.createAdapter(
-        partner.provider,
-        { ...partner.credentials, ...body.credentials } as CourierConfig,
+        body.provider,
+        body.credentials as CourierConfig,
       );
       try {
         await adapter.validateConfig();
       } catch (error) {
         return reply.status(400).send({
           error: "Invalid credentials",
-          message: error instanceof Error ? error.message : "Failed to validate credentials",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to validate credentials",
         });
       }
-    }
 
-    const updated = await prisma.courierPartner.update({
-      where: { id },
-      data: {
-        name: body.name,
-        description: body.description,
-        credentials: body.credentials ? { ...partner.credentials, ...body.credentials } : undefined,
-        config: body.config ? { ...partner.config, ...body.config } : undefined,
-        isEnabled: body.isEnabled,
-      },
-    });
+      // Check for duplicate provider
+      const existing = await prisma.courierPartner.findFirst({
+        where: { tenantId, provider: body.provider },
+      });
 
-    return reply.send(updated);
-  });
+      if (existing) {
+        return reply.status(409).send({
+          error: "Duplicate provider",
+          message: `${body.provider} is already registered for this tenant`,
+        });
+      }
+
+      const partner = await prisma.courierPartner.create({
+        data: {
+          tenantId,
+          provider: body.provider,
+          name: body.name,
+          description: body.description,
+          credentials: body.credentials,
+          config: body.config,
+          status: "ACTIVE",
+          healthStatus: "UNKNOWN",
+        },
+      });
+
+      return reply.status(201).send(partner);
+    },
+  );
+
+  // ── DELETE /couriers/partners/:id — Unregister partner ──────────
+
+  app.delete(
+    "/partners/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const tenantId = request.tenantId!;
+      const { id } = request.params as { id: string };
+
+      const partner = await prisma.courierPartner.findFirst({
+        where: { id, tenantId },
+      });
+
+      if (!partner) {
+        return reply.status(404).send({ error: "Partner not found" });
+      }
+
+      await prisma.courierPartner.delete({
+        where: { id },
+      });
+
+      return reply.send({ message: "Partner unregistered" });
+    },
+  );
+
+  // ── PATCH /couriers/partners/:id — Update partner ────────────────
+
+  app.patch(
+    "/partners/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const tenantId = request.tenantId!;
+      const { id } = request.params as { id: string };
+      const body = updatePartnerSchema.parse(request.body);
+
+      const partner = await prisma.courierPartner.findFirst({
+        where: { id, tenantId },
+      });
+
+      if (!partner) {
+        return reply.status(404).send({ error: "Partner not found" });
+      }
+
+      // If credentials updated, validate them
+      if (body.credentials) {
+        const adapter = this.createAdapter(partner.provider, {
+          ...partner.credentials,
+          ...body.credentials,
+        } as CourierConfig);
+        try {
+          await adapter.validateConfig();
+        } catch (error) {
+          return reply.status(400).send({
+            error: "Invalid credentials",
+            message:
+              error instanceof Error
+                ? error.message
+                : "Failed to validate credentials",
+          });
+        }
+      }
+
+      const updated = await prisma.courierPartner.update({
+        where: { id },
+        data: {
+          name: body.name,
+          description: body.description,
+          credentials: body.credentials
+            ? { ...partner.credentials, ...body.credentials }
+            : undefined,
+          config: body.config
+            ? { ...partner.config, ...body.config }
+            : undefined,
+          isEnabled: body.isEnabled,
+        },
+      });
+
+      return reply.send(updated);
+    },
+  );
 
   // ── GET /couriers/quote — Get quotes from all/specified providers ──
 
   app.get(
     "/quote",
-    async (request: FastifyRequest<{ Querystring: typeof quoteRequestSchema._type }>, reply: FastifyReply) => {
+    async (
+      request: FastifyRequest<{ Querystring: typeof quoteRequestSchema._type }>,
+      reply: FastifyReply,
+    ) => {
       const tenantId = request.tenantId!;
       const query = quoteRequestSchema.parse(request.query);
 
@@ -288,7 +329,10 @@ export default async function courierRoutes(app: FastifyInstance): Promise<void>
 
       // Register adapters
       for (const partner of partners) {
-        const adapter = this.createAdapter(partner.provider, partner.credentials as CourierConfig);
+        const adapter = this.createAdapter(
+          partner.provider,
+          partner.credentials as CourierConfig,
+        );
         dispatcher.registerAdapter(adapter);
       }
 
@@ -297,11 +341,14 @@ export default async function courierRoutes(app: FastifyInstance): Promise<void>
         pickup: query.pickup,
         dropoff: query.dropoff,
         package: query.package,
-        scheduledFor: query.scheduledFor ? new Date(query.scheduledFor) : undefined,
+        scheduledFor: query.scheduledFor
+          ? new Date(query.scheduledFor)
+          : undefined,
       };
 
       try {
-        const { quotes, normalized, errors } = await dispatcher.getQuotes(quoteRequest);
+        const { quotes, normalized, errors } =
+          await dispatcher.getQuotes(quoteRequest);
 
         return reply.send({
           quotes,
@@ -319,253 +366,282 @@ export default async function courierRoutes(app: FastifyInstance): Promise<void>
 
   // ── POST /couriers/dispatch — Create delivery with auto-selection ──
 
-  app.post("/dispatch", async (request: FastifyRequest, reply: FastifyReply) => {
-    const tenantId = request.tenantId!;
-    const body = dispatchSchema.parse(request.body);
+  app.post(
+    "/dispatch",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const tenantId = request.tenantId!;
+      const body = dispatchSchema.parse(request.body);
 
-    // Get active partners
-    const partners = await prisma.courierPartner.findMany({
-      where: { tenantId, isEnabled: true },
-    });
-
-    if (partners.length === 0) {
-      return reply.status(400).send({
-        error: "No active partners configured",
-      });
-    }
-
-    // Register adapters
-    for (const partner of partners) {
-      const adapter = this.createAdapter(partner.provider, partner.credentials as CourierConfig);
-      dispatcher.registerAdapter(adapter);
-    }
-
-    const dispatchRequest: DispatchRequest = {
-      orderId: body.orderId,
-      pickup: body.pickup,
-      dropoff: body.dropoff,
-      package: body.package,
-      recipient: body.recipient,
-      preferredCourier: body.preferredCourier,
-      strategy: body.strategy,
-      scheduledFor: body.scheduledFor ? new Date(body.scheduledFor) : undefined,
-    };
-
-    try {
-      const result = await dispatcher.dispatch(dispatchRequest);
-
-      // Save delivery record
-      const partnerRecord = await prisma.courierPartner.findFirst({
-        where: { tenantId, provider: result.courier },
+      // Get active partners
+      const partners = await prisma.courierPartner.findMany({
+        where: { tenantId, isEnabled: true },
       });
 
-      if (!partnerRecord) {
-        throw new Error("Partner record not found");
+      if (partners.length === 0) {
+        return reply.status(400).send({
+          error: "No active partners configured",
+        });
       }
 
-      const delivery = await prisma.courierDelivery.create({
-        data: {
-          tenantId,
-          partnerId: partnerRecord.id,
-          externalId: result.deliveryId,
-          orderId: body.orderId,
-          status: "PENDING",
-          trackingUrl: result.trackingUrl,
-          trackingNumber: result.deliveryId,
-          quote: result.quote as unknown as Prisma.InputJsonValue,
-        },
-      });
+      // Register adapters
+      for (const partner of partners) {
+        const adapter = this.createAdapter(
+          partner.provider,
+          partner.credentials as CourierConfig,
+        );
+        dispatcher.registerAdapter(adapter);
+      }
 
-      return reply.status(201).send({
-        dispatch: result,
-        tracking: delivery,
-      });
-    } catch (error) {
-      return reply.status(400).send({
-        error: "Dispatch failed",
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  });
+      const dispatchRequest: DispatchRequest = {
+        orderId: body.orderId,
+        pickup: body.pickup,
+        dropoff: body.dropoff,
+        package: body.package,
+        recipient: body.recipient,
+        preferredCourier: body.preferredCourier,
+        strategy: body.strategy,
+        scheduledFor: body.scheduledFor
+          ? new Date(body.scheduledFor)
+          : undefined,
+      };
+
+      try {
+        const result = await dispatcher.dispatch(dispatchRequest);
+
+        // Save delivery record
+        const partnerRecord = await prisma.courierPartner.findFirst({
+          where: { tenantId, provider: result.courier },
+        });
+
+        if (!partnerRecord) {
+          throw new Error("Partner record not found");
+        }
+
+        const delivery = await prisma.courierDelivery.create({
+          data: {
+            tenantId,
+            partnerId: partnerRecord.id,
+            externalId: result.deliveryId,
+            orderId: body.orderId,
+            status: "PENDING",
+            trackingUrl: result.trackingUrl,
+            trackingNumber: result.deliveryId,
+            quote: result.quote as unknown as Prisma.InputJsonValue,
+          },
+        });
+
+        return reply.status(201).send({
+          dispatch: result,
+          tracking: delivery,
+        });
+      } catch (error) {
+        return reply.status(400).send({
+          error: "Dispatch failed",
+          message: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    },
+  );
 
   // ── GET /couriers/deliveries/:id — Get delivery status ──────────
 
-  app.get("/deliveries/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    const tenantId = request.tenantId!;
-    const { id } = request.params as { id: string };
+  app.get(
+    "/deliveries/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const tenantId = request.tenantId!;
+      const { id } = request.params as { id: string };
 
-    const delivery = await prisma.courierDelivery.findFirst({
-      where: { id, tenantId },
-      include: { partner: true },
-    });
-
-    if (!delivery) {
-      return reply.status(404).send({ error: "Delivery not found" });
-    }
-
-    try {
-      const adapter = this.createAdapter(delivery.partner.provider, delivery.partner.credentials as CourierConfig);
-      const status = await adapter.getDeliveryStatus(delivery.externalId);
-
-      return reply.send({
-        delivery: {
-          id: delivery.id,
-          externalId: delivery.externalId,
-          status: delivery.status,
-          trackingUrl: delivery.trackingUrl,
-          driverName: delivery.driverName,
-          driverPhone: delivery.driverPhone,
-          createdAt: delivery.createdAt,
-          deliveredAt: delivery.deliveredAt,
-        },
-        liveStatus: status,
+      const delivery = await prisma.courierDelivery.findFirst({
+        where: { id, tenantId },
+        include: { partner: true },
       });
-    } catch (error) {
-      return reply.status(500).send({
-        error: "Failed to fetch status",
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  });
+
+      if (!delivery) {
+        return reply.status(404).send({ error: "Delivery not found" });
+      }
+
+      try {
+        const adapter = this.createAdapter(
+          delivery.partner.provider,
+          delivery.partner.credentials as CourierConfig,
+        );
+        const status = await adapter.getDeliveryStatus(delivery.externalId);
+
+        return reply.send({
+          delivery: {
+            id: delivery.id,
+            externalId: delivery.externalId,
+            status: delivery.status,
+            trackingUrl: delivery.trackingUrl,
+            driverName: delivery.driverName,
+            driverPhone: delivery.driverPhone,
+            createdAt: delivery.createdAt,
+            deliveredAt: delivery.deliveredAt,
+          },
+          liveStatus: status,
+        });
+      } catch (error) {
+        return reply.status(500).send({
+          error: "Failed to fetch status",
+          message: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    },
+  );
 
   // ── POST /couriers/deliveries/:id/cancel — Cancel delivery ──────
 
-  app.post("/deliveries/:id/cancel", async (request: FastifyRequest, reply: FastifyReply) => {
-    const tenantId = request.tenantId!;
-    const { id } = request.params as { id: string };
+  app.post(
+    "/deliveries/:id/cancel",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const tenantId = request.tenantId!;
+      const { id } = request.params as { id: string };
 
-    const delivery = await prisma.courierDelivery.findFirst({
-      where: { id, tenantId },
-      include: { partner: true },
-    });
-
-    if (!delivery) {
-      return reply.status(404).send({ error: "Delivery not found" });
-    }
-
-    if (delivery.status === "DELIVERED" || delivery.status === "CANCELLED") {
-      return reply.status(400).send({
-        error: "Cannot cancel delivery",
-        message: `Delivery is already ${delivery.status.toLowerCase()}`,
-      });
-    }
-
-    try {
-      const adapter = this.createAdapter(delivery.partner.provider, delivery.partner.credentials as CourierConfig);
-      const status = await adapter.cancelDelivery(delivery.externalId);
-
-      // Update delivery status
-      await prisma.courierDelivery.update({
-        where: { id },
-        data: {
-          status: "CANCELLED",
-          lastStatusUpdate: new Date(),
-        },
+      const delivery = await prisma.courierDelivery.findFirst({
+        where: { id, tenantId },
+        include: { partner: true },
       });
 
-      return reply.send({
-        message: "Delivery cancelled",
-        status,
-      });
-    } catch (error) {
-      return reply.status(500).send({
-        error: "Failed to cancel delivery",
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  });
+      if (!delivery) {
+        return reply.status(404).send({ error: "Delivery not found" });
+      }
+
+      if (delivery.status === "DELIVERED" || delivery.status === "CANCELLED") {
+        return reply.status(400).send({
+          error: "Cannot cancel delivery",
+          message: `Delivery is already ${delivery.status.toLowerCase()}`,
+        });
+      }
+
+      try {
+        const adapter = this.createAdapter(
+          delivery.partner.provider,
+          delivery.partner.credentials as CourierConfig,
+        );
+        const status = await adapter.cancelDelivery(delivery.externalId);
+
+        // Update delivery status
+        await prisma.courierDelivery.update({
+          where: { id },
+          data: {
+            status: "CANCELLED",
+            lastStatusUpdate: new Date(),
+          },
+        });
+
+        return reply.send({
+          message: "Delivery cancelled",
+          status,
+        });
+      } catch (error) {
+        return reply.status(500).send({
+          error: "Failed to cancel delivery",
+          message: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    },
+  );
 
   // ── GET /couriers/deliveries/:id/tracking — Live tracking info ───
 
-  app.get("/deliveries/:id/tracking", async (request: FastifyRequest, reply: FastifyReply) => {
-    const tenantId = request.tenantId!;
-    const { id } = request.params as { id: string };
+  app.get(
+    "/deliveries/:id/tracking",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const tenantId = request.tenantId!;
+      const { id } = request.params as { id: string };
 
-    const delivery = await prisma.courierDelivery.findFirst({
-      where: { id, tenantId },
-      include: { partner: true },
-    });
-
-    if (!delivery) {
-      return reply.status(404).send({ error: "Delivery not found" });
-    }
-
-    try {
-      const adapter = this.createAdapter(delivery.partner.provider, delivery.partner.credentials as CourierConfig);
-
-      // Get driver location and status in parallel
-      const [location, status] = await Promise.all([
-        adapter.getDriverLocation(delivery.externalId).catch(() => null),
-        adapter.getDeliveryStatus(delivery.externalId),
-      ]);
-
-      return reply.send({
-        delivery: {
-          id: delivery.id,
-          status: status.status,
-          trackingUrl: delivery.trackingUrl,
-        },
-        driver: location
-          ? {
-              location,
-              name: status.driverName,
-              phone: status.driverPhone,
-            }
-          : null,
-        estimatedArrival: status.estimatedArrivalAt,
+      const delivery = await prisma.courierDelivery.findFirst({
+        where: { id, tenantId },
+        include: { partner: true },
       });
-    } catch (error) {
-      return reply.status(500).send({
-        error: "Failed to get tracking info",
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  });
+
+      if (!delivery) {
+        return reply.status(404).send({ error: "Delivery not found" });
+      }
+
+      try {
+        const adapter = this.createAdapter(
+          delivery.partner.provider,
+          delivery.partner.credentials as CourierConfig,
+        );
+
+        // Get driver location and status in parallel
+        const [location, status] = await Promise.all([
+          adapter.getDriverLocation(delivery.externalId).catch(() => null),
+          adapter.getDeliveryStatus(delivery.externalId),
+        ]);
+
+        return reply.send({
+          delivery: {
+            id: delivery.id,
+            status: status.status,
+            trackingUrl: delivery.trackingUrl,
+          },
+          driver: location
+            ? {
+                location,
+                name: status.driverName,
+                phone: status.driverPhone,
+              }
+            : null,
+          estimatedArrival: status.estimatedArrivalAt,
+        });
+      } catch (error) {
+        return reply.status(500).send({
+          error: "Failed to get tracking info",
+          message: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    },
+  );
 
   // ── POST /couriers/webhooks/:provider — Receive webhook ──────────
 
-  app.post("/webhooks/:provider", async (request: FastifyRequest, reply: FastifyReply) => {
-    const tenantId = request.tenantId!;
-    const { provider } = request.params as { provider: string };
+  app.post(
+    "/webhooks/:provider",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const tenantId = request.tenantId!;
+      const { provider } = request.params as { provider: string };
 
-    // Log webhook
-    const log = await prisma.courierWebhookLog.create({
-      data: {
-        partnerId: "unknown",
-        eventType: "unknown",
-        payload: request.body as Prisma.InputJsonValue,
-        headers: request.headers as Prisma.InputJsonValue,
-      },
-    });
-
-    try {
-      // Process webhook
-      await dispatcher.handleWebhook(provider, request.body);
-
-      // Mark as processed
-      await prisma.courierWebhookLog.update({
-        where: { id: log.id },
+      // Log webhook
+      const log = await prisma.courierWebhookLog.create({
         data: {
-          processed: true,
-          processedAt: new Date(),
+          partnerId: "unknown",
+          eventType: "unknown",
+          payload: request.body as Prisma.InputJsonValue,
+          headers: request.headers as Prisma.InputJsonValue,
         },
       });
 
-      return reply.send({ success: true });
-    } catch (error) {
-      await prisma.courierWebhookLog.update({
-        where: { id: log.id },
-        data: {
-          error: error instanceof Error ? error.message : "Unknown error",
-        },
-      });
+      try {
+        // Process webhook
+        await dispatcher.handleWebhook(provider, request.body);
 
-      return reply.status(400).send({
-        error: "Failed to process webhook",
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  });
+        // Mark as processed
+        await prisma.courierWebhookLog.update({
+          where: { id: log.id },
+          data: {
+            processed: true,
+            processedAt: new Date(),
+          },
+        });
+
+        return reply.send({ success: true });
+      } catch (error) {
+        await prisma.courierWebhookLog.update({
+          where: { id: log.id },
+          data: {
+            error: error instanceof Error ? error.message : "Unknown error",
+          },
+        });
+
+        return reply.status(400).send({
+          error: "Failed to process webhook",
+          message: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    },
+  );
 
   // ── GET /couriers/compare — Compare all active providers ────────
 
@@ -612,9 +688,13 @@ export default async function courierRoutes(app: FastifyInstance): Promise<void>
 
     const [total, delivered, failed, cancelled, avgCost] = await Promise.all([
       prisma.courierDelivery.count({ where }),
-      prisma.courierDelivery.count({ where: { ...where, status: "DELIVERED" } }),
+      prisma.courierDelivery.count({
+        where: { ...where, status: "DELIVERED" },
+      }),
       prisma.courierDelivery.count({ where: { ...where, status: "FAILED" } }),
-      prisma.courierDelivery.count({ where: { ...where, status: "CANCELLED" } }),
+      prisma.courierDelivery.count({
+        where: { ...where, status: "CANCELLED" },
+      }),
       prisma.courierDelivery.aggregate({
         where,
         _avg: { actualCost: true },
@@ -628,7 +708,8 @@ export default async function courierRoutes(app: FastifyInstance): Promise<void>
         failed,
         cancelled,
         pending: total - delivered - failed - cancelled,
-        successRate: total > 0 ? ((delivered / total) * 100).toFixed(2) + "%" : "0%",
+        successRate:
+          total > 0 ? ((delivered / total) * 100).toFixed(2) + "%" : "0%",
         averageCost: avgCost._avg.actualCost,
       },
     });
@@ -636,76 +717,91 @@ export default async function courierRoutes(app: FastifyInstance): Promise<void>
 
   // ── GET /couriers/partner-stats — Per-provider delivery stats ────
 
-  app.get("/partner-stats", async (request: FastifyRequest, reply: FastifyReply) => {
-    const tenantId = request.tenantId!;
+  app.get(
+    "/partner-stats",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const tenantId = request.tenantId!;
 
-    const partners = await prisma.courierPartner.findMany({
-      where: { tenantId },
-      select: { id: true, provider: true },
-    });
+      const partners = await prisma.courierPartner.findMany({
+        where: { tenantId },
+        select: { id: true, provider: true },
+      });
 
-    const stats = await Promise.all(
-      partners.map(async (p) => {
-        const [active, total, delivered] = await Promise.all([
-          prisma.courierDelivery.count({
-            where: { partnerId: p.id, status: { in: ["PENDING", "PICKED_UP", "IN_TRANSIT"] } },
-          }),
-          prisma.courierDelivery.count({ where: { partnerId: p.id } }),
-          prisma.courierDelivery.count({
-            where: { partnerId: p.id, status: "DELIVERED" },
-          }),
-        ]);
-        return {
-          provider: p.provider,
-          activeDeliveries: active,
-          totalDeliveries: total,
-          successRate: total > 0 ? Math.round((delivered / total) * 100) : null,
-        };
-      })
-    );
+      const stats = await Promise.all(
+        partners.map(async (p) => {
+          const [active, total, delivered] = await Promise.all([
+            prisma.courierDelivery.count({
+              where: {
+                partnerId: p.id,
+                status: { in: ["PENDING", "PICKED_UP", "IN_TRANSIT"] },
+              },
+            }),
+            prisma.courierDelivery.count({ where: { partnerId: p.id } }),
+            prisma.courierDelivery.count({
+              where: { partnerId: p.id, status: "DELIVERED" },
+            }),
+          ]);
+          return {
+            provider: p.provider,
+            activeDeliveries: active,
+            totalDeliveries: total,
+            successRate:
+              total > 0 ? Math.round((delivered / total) * 100) : null,
+          };
+        }),
+      );
 
-    return reply.send({ data: { stats } });
-  });
+      return reply.send({ data: { stats } });
+    },
+  );
 
   // ── GET /couriers/deliveries — List courier deliveries ───────────
 
-  app.get("/deliveries", async (request: FastifyRequest, reply: FastifyReply) => {
-    const tenantId = request.tenantId!;
-    const { status, partnerId, page = "1", limit = "20" } = request.query as Record<string, string>;
+  app.get(
+    "/deliveries",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const tenantId = request.tenantId!;
+      const {
+        status,
+        partnerId,
+        page = "1",
+        limit = "20",
+      } = request.query as Record<string, string>;
 
-    const pageNum = Math.max(1, parseInt(page, 10) || 1);
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
-    const skip = (pageNum - 1) * limitNum;
+      const pageNum = Math.max(1, parseInt(page, 10) || 1);
+      const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+      const skip = (pageNum - 1) * limitNum;
 
-    const where: Prisma.CourierDeliveryWhereInput = {
-      tenantId,
-      ...(status ? { status: status.toUpperCase() as any } : {}),
-      ...(partnerId ? { partnerId } : {}),
-    };
+      const where: Prisma.CourierDeliveryWhereInput = {
+        tenantId,
+        ...(status ? { status: status.toUpperCase() as any } : {}),
+        ...(partnerId ? { partnerId } : {}),
+      };
 
-    const [deliveries, total] = await Promise.all([
-      prisma.courierDelivery.findMany({
-        where,
-        include: {
-          partner: { select: { name: true, provider: true } },
+      const [deliveries, total] = await Promise.all([
+        prisma.courierDelivery.findMany({
+          where,
+          include: {
+            partner: { select: { name: true, provider: true } },
+          },
+          orderBy: { createdAt: "desc" },
+          skip,
+          take: limitNum,
+        }),
+        prisma.courierDelivery.count({ where }),
+      ]);
+
+      return reply.send({
+        data: deliveries,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          totalPages: Math.ceil(total / limitNum),
         },
-        orderBy: { createdAt: "desc" },
-        skip,
-        take: limitNum,
-      }),
-      prisma.courierDelivery.count({ where }),
-    ]);
-
-    return reply.send({
-      data: deliveries,
-      pagination: {
-        page: pageNum,
-        limit: limitNum,
-        total,
-        totalPages: Math.ceil(total / limitNum),
-      },
-    });
-  });
+      });
+    },
+  );
 }
 
 // ─── Helper Functions ────────────────────────────────────────────

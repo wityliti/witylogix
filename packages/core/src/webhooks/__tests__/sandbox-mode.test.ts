@@ -29,7 +29,7 @@ describe("SandboxMode", () => {
 
       expect(config.expiresAt.getTime()).toBeGreaterThan(now.getTime());
       expect(config.expiresAt.getTime() - now.getTime()).toBeGreaterThan(
-        59 * 60 * 1000
+        59 * 60 * 1000,
       ); // At least 59 minutes
     });
 
@@ -37,8 +37,7 @@ describe("SandboxMode", () => {
       const customDuration = 30 * 60 * 1000; // 30 minutes
       const config = sandbox.enableSandbox("integration-1", customDuration);
 
-      const expectedExpiry =
-        config.enabledAt.getTime() + customDuration;
+      const expectedExpiry = config.enabledAt.getTime() + customDuration;
       expect(config.expiresAt.getTime()).toBeCloseTo(expectedExpiry, -3);
     });
   });
@@ -295,7 +294,7 @@ describe("SandboxMode", () => {
 
       const filtered = sandbox.filterEventsByType(
         "integration-1",
-        "shipment.created"
+        "shipment.created",
       );
       expect(filtered.length).toBe(1);
       expect(filtered[0].type).toBe("shipment.created");

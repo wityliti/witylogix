@@ -2,7 +2,11 @@
 
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { useBreakpoint, type Breakpoint, BREAKPOINTS } from "@/hooks/use-breakpoint";
+import {
+  useBreakpoint,
+  type Breakpoint,
+  BREAKPOINTS,
+} from "@/hooks/use-breakpoint";
 
 interface GridConfig {
   /** Minimum column width in pixels */
@@ -62,11 +66,13 @@ export function ResponsiveGrid({
 }: ResponsiveGridProps) {
   const breakpoint = useBreakpoint();
 
-  const columnCount = customColumns?.[breakpoint] ?? DEFAULT_COLUMNS[breakpoint];
+  const columnCount =
+    customColumns?.[breakpoint] ?? DEFAULT_COLUMNS[breakpoint];
   const currentGap = customGaps?.[breakpoint] ?? gap;
 
   const gridStyle = useMemo(() => {
-    const gapValue = typeof currentGap === "number" ? `${currentGap}rem` : currentGap;
+    const gapValue =
+      typeof currentGap === "number" ? `${currentGap}rem` : currentGap;
 
     if (masonry) {
       return {
@@ -88,11 +94,7 @@ export function ResponsiveGrid({
   return (
     <div
       style={gridStyle}
-      className={cn(
-        "w-full",
-        masonry && "auto-rows-min",
-        className
-      )}
+      className={cn("w-full", masonry && "auto-rows-min", className)}
     >
       {children}
     </div>
@@ -119,11 +121,7 @@ export function GridItem({ span = 1, className, children }: GridItemProps) {
       style={{
         gridColumn: `span ${Math.min(span, 4)}`,
       }}
-      className={cn(
-        "min-w-0",
-        "transition-all duration-200",
-        className
-      )}
+      className={cn("min-w-0", "transition-all duration-200", className)}
     >
       {children}
     </div>
@@ -137,7 +135,7 @@ export function GridItem({ span = 1, className, children }: GridItemProps) {
  * const cols = useGridColumns({ sm: 1, md: 2 });
  */
 export function useGridColumns(
-  customColumns?: Partial<Record<Breakpoint, number>>
+  customColumns?: Partial<Record<Breakpoint, number>>,
 ): number {
   const breakpoint = useBreakpoint();
   return customColumns?.[breakpoint] ?? DEFAULT_COLUMNS[breakpoint];
@@ -196,7 +194,8 @@ export function MasonryGrid({
   className,
 }: ResponsiveGridProps) {
   const breakpoint = useBreakpoint();
-  const columnCount = customColumns?.[breakpoint] ?? DEFAULT_COLUMNS[breakpoint];
+  const columnCount =
+    customColumns?.[breakpoint] ?? DEFAULT_COLUMNS[breakpoint];
   const gapValue = typeof gap === "number" ? `${gap}rem` : gap;
 
   return (

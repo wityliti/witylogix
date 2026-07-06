@@ -168,10 +168,7 @@
       "Bash(node .claude/*)",
       "mcp__claude-flow__:*"
     ],
-    "deny": [
-      "Read(./.env)",
-      "Read(./.env.*)"
-    ]
+    "deny": ["Read(./.env)", "Read(./.env.*)"]
   },
   "attribution": {
     "commit": "Co-Authored-By: claude-flow <ruv@ruv.net>",
@@ -268,17 +265,12 @@
         "document": {
           "interval": "1h",
           "priority": "normal",
-          "triggers": [
-            "adr-update",
-            "api-change"
-          ]
+          "triggers": ["adr-update", "api-change"]
         },
         "deepdive": {
           "interval": "4h",
           "priority": "normal",
-          "triggers": [
-            "complex-change"
-          ]
+          "triggers": ["complex-change"]
         },
         "ultralearn": {
           "interval": "1h",
@@ -289,11 +281,7 @@
     "learning": {
       "enabled": true,
       "autoTrain": true,
-      "patterns": [
-        "coordination",
-        "optimization",
-        "prediction"
-      ],
+      "patterns": ["coordination", "optimization", "prediction"],
       "retention": {
         "shortTerm": "24h",
         "longTerm": "30d"

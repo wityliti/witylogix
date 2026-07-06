@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,10 +10,10 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-} from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import * as Location from 'expo-location';
-import { offlineQueue } from '../lib/offline-queue';
+} from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import * as Location from "expo-location";
+import { offlineQueue } from "../lib/offline-queue";
 
 interface RouteParams {
   shipmentId: string;
@@ -27,12 +27,14 @@ export const DeliveryProofScreen = () => {
   const params = route.params as RouteParams;
   const { shipmentId } = params;
 
-  const [photoBase64, setPhotoBase64] = useState<string | undefined>(params.photoBase64);
+  const [photoBase64, setPhotoBase64] = useState<string | undefined>(
+    params.photoBase64,
+  );
   const [signatureBase64, setSignatureBase64] = useState<string | undefined>(
     params.signatureBase64,
   );
-  const [recipientName, setRecipientName] = useState('');
-  const [notes, setNotes] = useState('');
+  const [recipientName, setRecipientName] = useState("");
+  const [notes, setNotes] = useState("");
   const [qrScanned, setQrScanned] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -44,29 +46,29 @@ export const DeliveryProofScreen = () => {
   }, [route.params]);
 
   const handleCapturePhoto = () => {
-    navigation.navigate('CameraCapture', { shipmentId });
+    navigation.navigate("CameraCapture", { shipmentId });
   };
 
   const handleCaptureSignature = () => {
-    navigation.navigate('SignaturePad', { shipmentId, photoBase64 });
+    navigation.navigate("SignaturePad", { shipmentId, photoBase64 });
   };
 
   const handleScanQrCode = () => {
-    navigation.navigate('BarcodeScanner', { mode: 'pod', shipmentId });
+    navigation.navigate("BarcodeScanner", { mode: "pod", shipmentId });
     setQrScanned(true);
   };
 
   const handleSubmitProof = async () => {
     if (!recipientName.trim()) {
-      Alert.alert('Validation Error', 'Please enter recipient name');
+      Alert.alert("Validation Error", "Please enter recipient name");
       return;
     }
     if (!photoBase64) {
-      Alert.alert('Validation Error', 'Please capture a package photo');
+      Alert.alert("Validation Error", "Please capture a package photo");
       return;
     }
     if (!signatureBase64) {
-      Alert.alert('Validation Error', 'Please capture recipient signature');
+      Alert.alert("Validation Error", "Please capture recipient signature");
       return;
     }
 
@@ -76,8 +78,10 @@ export const DeliveryProofScreen = () => {
       let latitude: number | undefined;
       let longitude: number | undefined;
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      if (status === "granted") {
+        const loc = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
         latitude = loc.coords.latitude;
         longitude = loc.coords.longitude;
       }
@@ -95,9 +99,9 @@ export const DeliveryProofScreen = () => {
 
       // Enqueue for offline-first submission
       offlineQueue.enqueue({
-        type: 'POST',
+        type: "POST",
         endpoint: `/api/v4/shipments/${shipmentId}/proof-of-delivery`,
-        method: 'POST',
+        method: "POST",
         body: proofData,
       });
 
@@ -106,12 +110,15 @@ export const DeliveryProofScreen = () => {
         await offlineQueue.processQueue();
       }
 
-      Alert.alert('Success', 'Delivery proof submitted successfully', [
-        { text: 'OK', onPress: () => navigation.goBack() },
+      Alert.alert("Success", "Delivery proof submitted successfully", [
+        { text: "OK", onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
-      Alert.alert('Error', 'Failed to submit delivery proof. It has been queued for retry.');
-      console.error('Submit proof error:', error);
+      Alert.alert(
+        "Error",
+        "Failed to submit delivery proof. It has been queued for retry.",
+      );
+      console.error("Submit proof error:", error);
     } finally {
       setSubmitting(false);
     }
@@ -121,11 +128,16 @@ export const DeliveryProofScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Proof of Delivery</Text>
-          <Text style={styles.headerSubtitle}>Complete all required fields</Text>
+          <Text style={styles.headerSubtitle}>
+            Complete all required fields
+          </Text>
         </View>
 
         {/* Photo Section */}
@@ -139,13 +151,20 @@ export const DeliveryProofScreen = () => {
           </View>
 
           <TouchableOpacity
-            style={[styles.captureButton, photoBase64 && styles.captureButtonSuccess]}
+            style={[
+              styles.captureButton,
+              photoBase64 && styles.captureButtonSuccess,
+            ]}
             onPress={handleCapturePhoto}
             disabled={submitting}
           >
-            <Text style={styles.captureButtonIcon}>{photoBase64 ? '✓' : '📱'}</Text>
+            <Text style={styles.captureButtonIcon}>
+              {photoBase64 ? "✓" : "📱"}
+            </Text>
             <Text style={styles.captureButtonText}>
-              {photoBase64 ? 'Photo Captured — Tap to Retake' : 'Tap to Capture Package Photo'}
+              {photoBase64
+                ? "Photo Captured — Tap to Retake"
+                : "Tap to Capture Package Photo"}
             </Text>
           </TouchableOpacity>
 
@@ -169,13 +188,20 @@ export const DeliveryProofScreen = () => {
           </View>
 
           <TouchableOpacity
-            style={[styles.captureButton, signatureBase64 && styles.captureButtonSuccess]}
+            style={[
+              styles.captureButton,
+              signatureBase64 && styles.captureButtonSuccess,
+            ]}
             onPress={handleCaptureSignature}
             disabled={submitting}
           >
-            <Text style={styles.captureButtonIcon}>{signatureBase64 ? '✓' : '✏'}</Text>
+            <Text style={styles.captureButtonIcon}>
+              {signatureBase64 ? "✓" : "✏"}
+            </Text>
             <Text style={styles.captureButtonText}>
-              {signatureBase64 ? 'Signature Captured — Tap to Redo' : 'Tap to Capture Signature'}
+              {signatureBase64
+                ? "Signature Captured — Tap to Redo"
+                : "Tap to Capture Signature"}
             </Text>
           </TouchableOpacity>
 
@@ -194,17 +220,24 @@ export const DeliveryProofScreen = () => {
             <Text style={styles.sectionIcon}>⬛</Text>
             <View style={styles.sectionHeaderText}>
               <Text style={styles.sectionTitle}>QR Code Scan</Text>
-              <Text style={styles.sectionOptional}>Optional — alternative POD</Text>
+              <Text style={styles.sectionOptional}>
+                Optional — alternative POD
+              </Text>
             </View>
           </View>
           <TouchableOpacity
-            style={[styles.captureButton, qrScanned && styles.captureButtonSuccess]}
+            style={[
+              styles.captureButton,
+              qrScanned && styles.captureButtonSuccess,
+            ]}
             onPress={handleScanQrCode}
             disabled={submitting}
           >
-            <Text style={styles.captureButtonIcon}>{qrScanned ? '✓' : '⬛'}</Text>
+            <Text style={styles.captureButtonIcon}>
+              {qrScanned ? "✓" : "⬛"}
+            </Text>
             <Text style={styles.captureButtonText}>
-              {qrScanned ? 'QR Code Scanned' : 'Scan Delivery QR Code'}
+              {qrScanned ? "QR Code Scanned" : "Scan Delivery QR Code"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -219,7 +252,10 @@ export const DeliveryProofScreen = () => {
             </View>
           </View>
           <TextInput
-            style={[styles.textInput, recipientName.trim() && styles.textInputFilled]}
+            style={[
+              styles.textInput,
+              recipientName.trim() && styles.textInputFilled,
+            ]}
             placeholder="Full name of recipient"
             placeholderTextColor="#64748b"
             value={recipientName}
@@ -227,7 +263,9 @@ export const DeliveryProofScreen = () => {
             editable={!submitting}
             maxLength={100}
           />
-          <Text style={styles.inputHint}>{recipientName.length}/100 characters</Text>
+          <Text style={styles.inputHint}>
+            {recipientName.length}/100 characters
+          </Text>
         </View>
 
         {/* Delivery Notes */}
@@ -260,16 +298,26 @@ export const DeliveryProofScreen = () => {
         {/* Checklist */}
         <View style={styles.validationContainer}>
           {[
-            { done: !!photoBase64, label: 'Package Photo' },
-            { done: !!signatureBase64, label: 'Recipient Signature' },
-            { done: !!recipientName.trim(), label: 'Recipient Name' },
-            { done: qrScanned, label: 'QR Scan (optional)' },
+            { done: !!photoBase64, label: "Package Photo" },
+            { done: !!signatureBase64, label: "Recipient Signature" },
+            { done: !!recipientName.trim(), label: "Recipient Name" },
+            { done: qrScanned, label: "QR Scan (optional)" },
           ].map(({ done, label }) => (
             <View key={label} style={styles.validationItem}>
-              <Text style={[styles.validationIcon, done ? styles.iconSuccess : styles.iconPending]}>
-                {done ? '✓' : '○'}
+              <Text
+                style={[
+                  styles.validationIcon,
+                  done ? styles.iconSuccess : styles.iconPending,
+                ]}
+              >
+                {done ? "✓" : "○"}
               </Text>
-              <Text style={[styles.validationText, done && styles.validationTextSuccess]}>
+              <Text
+                style={[
+                  styles.validationText,
+                  done && styles.validationTextSuccess,
+                ]}
+              >
                 {label}
               </Text>
             </View>
@@ -279,7 +327,10 @@ export const DeliveryProofScreen = () => {
         {/* Actions */}
         <View style={styles.actionContainer}>
           <TouchableOpacity
-            style={[styles.submitButton, (!isReady || submitting) && styles.submitButtonDisabled]}
+            style={[
+              styles.submitButton,
+              (!isReady || submitting) && styles.submitButtonDisabled,
+            ]}
             onPress={handleSubmitProof}
             disabled={!isReady || submitting}
           >
@@ -309,42 +360,42 @@ export const DeliveryProofScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: "#0f172a",
   },
   scrollView: {
     flex: 1,
   },
   header: {
-    backgroundColor: '#1a2332',
+    backgroundColor: "#1a2332",
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
+    borderBottomColor: "#334155",
   },
   headerTitle: {
     fontSize: 22,
-    fontWeight: '700',
-    color: '#e2e8f0',
+    fontWeight: "700",
+    color: "#e2e8f0",
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 13,
-    color: '#94a3b8',
-    fontWeight: '500',
+    color: "#94a3b8",
+    fontWeight: "500",
   },
   section: {
     marginHorizontal: 12,
     marginVertical: 14,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: "#334155",
   },
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
   },
   sectionIcon: {
@@ -356,40 +407,40 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#e2e8f0',
+    fontWeight: "700",
+    color: "#e2e8f0",
     marginBottom: 2,
   },
   sectionRequired: {
     fontSize: 11,
-    color: '#ef4444',
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    color: "#ef4444",
+    fontWeight: "600",
+    textTransform: "uppercase",
     letterSpacing: 0.3,
   },
   sectionOptional: {
     fontSize: 11,
-    color: '#64748b',
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    color: "#64748b",
+    fontWeight: "600",
+    textTransform: "uppercase",
     letterSpacing: 0.3,
   },
   captureButton: {
-    backgroundColor: '#2d3748',
+    backgroundColor: "#2d3748",
     borderRadius: 10,
     paddingVertical: 18,
     paddingHorizontal: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 2,
-    borderColor: '#475569',
-    borderStyle: 'dashed',
+    borderColor: "#475569",
+    borderStyle: "dashed",
     marginBottom: 12,
   },
   captureButtonSuccess: {
-    borderColor: '#22c55e',
-    backgroundColor: '#1a3f2a',
-    borderStyle: 'solid',
+    borderColor: "#22c55e",
+    backgroundColor: "#1a3f2a",
+    borderStyle: "solid",
   },
   captureButtonIcon: {
     fontSize: 32,
@@ -397,46 +448,46 @@ const styles = StyleSheet.create({
   },
   captureButtonText: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#e2e8f0',
-    textAlign: 'center',
+    fontWeight: "700",
+    color: "#e2e8f0",
+    textAlign: "center",
   },
   photoPreview: {
-    width: '100%',
+    width: "100%",
     height: 180,
     borderRadius: 8,
-    backgroundColor: '#2d3748',
+    backgroundColor: "#2d3748",
   },
   signaturePreview: {
-    width: '100%',
+    width: "100%",
     height: 100,
     borderRadius: 8,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   textInput: {
-    backgroundColor: '#2d3748',
+    backgroundColor: "#2d3748",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#475569',
+    borderColor: "#475569",
     paddingHorizontal: 12,
     paddingVertical: 11,
     fontSize: 14,
-    color: '#e2e8f0',
+    color: "#e2e8f0",
     marginBottom: 6,
   },
   textInputFilled: {
-    borderColor: '#3b82f6',
-    backgroundColor: '#1e293b',
+    borderColor: "#3b82f6",
+    backgroundColor: "#1e293b",
   },
   textInputMultiline: {
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
     paddingVertical: 11,
     minHeight: 80,
   },
   inputHint: {
     fontSize: 11,
-    color: '#64748b',
-    fontWeight: '500',
+    color: "#64748b",
+    fontWeight: "500",
     marginTop: 4,
   },
   validationContainer: {
@@ -444,78 +495,78 @@ const styles = StyleSheet.create({
     marginVertical: 12,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    backgroundColor: '#2d3748',
+    backgroundColor: "#2d3748",
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: "#334155",
   },
   validationItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginVertical: 6,
   },
   validationIcon: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     marginRight: 10,
     minWidth: 20,
   },
   iconSuccess: {
-    color: '#22c55e',
+    color: "#22c55e",
   },
   iconPending: {
-    color: '#64748b',
+    color: "#64748b",
   },
   validationText: {
     fontSize: 13,
-    color: '#cbd5e1',
-    fontWeight: '600',
+    color: "#cbd5e1",
+    fontWeight: "600",
   },
   validationTextSuccess: {
-    color: '#22c55e',
+    color: "#22c55e",
   },
   actionContainer: {
     paddingHorizontal: 12,
     paddingVertical: 16,
   },
   submitButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
     borderRadius: 8,
     paddingVertical: 13,
     paddingHorizontal: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
     marginBottom: 10,
   },
   submitButtonDisabled: {
-    backgroundColor: '#475569',
+    backgroundColor: "#475569",
   },
   submitButtonText: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
     flex: 1,
-    textAlign: 'center',
+    textAlign: "center",
   },
   submitButtonIcon: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 16,
     marginLeft: 8,
   },
   cancelButton: {
-    backgroundColor: '#2d3748',
+    backgroundColor: "#2d3748",
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#475569',
+    borderColor: "#475569",
   },
   cancelButtonText: {
-    color: '#cbd5e1',
+    color: "#cbd5e1",
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 });

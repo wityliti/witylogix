@@ -176,7 +176,7 @@ export class ProviderFailoverTester {
     backupProvider: string,
     testRequest: unknown,
     primaryFailureFn: () => Promise<void>,
-    recoveryCheckFn?: () => Promise<boolean>
+    recoveryCheckFn?: () => Promise<boolean>,
   ): Promise<FailoverResult> {
     const startTime = Date.now();
     let detectionTime = 0;
@@ -214,7 +214,9 @@ export class ProviderFailoverTester {
       }
     } catch (error) {
       status = "failure";
-      inconsistencies.push(`Failover error: ${error instanceof Error ? error.message : String(error)}`);
+      inconsistencies.push(
+        `Failover error: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
 
     return {
@@ -243,7 +245,7 @@ export class CircuitBreakerValidator {
   constructor(
     failureThreshold: number = 5,
     successThreshold: number = 2,
-    resetTimeout: number = 60000
+    resetTimeout: number = 60000,
   ) {
     this.failureThreshold = failureThreshold;
     this.successThreshold = successThreshold;
@@ -257,7 +259,10 @@ export class CircuitBreakerValidator {
     const now = Date.now();
 
     // If open and timeout elapsed, move to half-open
-    if (this.state === "open" && now - this.lastFailureTime >= this.resetTimeout) {
+    if (
+      this.state === "open" &&
+      now - this.lastFailureTime >= this.resetTimeout
+    ) {
       this.state = "half-open";
       this.failureCount = 0;
     }
@@ -317,7 +322,7 @@ export class CircuitBreakerValidator {
    */
   async stressTest(
     requestFn: () => Promise<boolean>,
-    durationMs: number = 30000
+    durationMs: number = 30000,
   ): Promise<{ opened: boolean; timeToOpen: number; recoveryTime: number }> {
     const startTime = Date.now();
     let timeToOpen = 0;
@@ -359,7 +364,7 @@ export class RateLimitStressTester {
    */
   static async stressTest(
     requestFn: (rate: number) => Promise<{ success: boolean; status: number }>,
-    maxDurationSeconds: number = 300
+    maxDurationSeconds: number = 300,
   ): Promise<StressTestResult> {
     const startTime = Date.now();
     const errors: string[] = [];
@@ -399,13 +404,17 @@ export class RateLimitStressTester {
           }
         } catch (error) {
           failureCount++;
-          errors.push(`Request error: ${error instanceof Error ? error.message : String(error)}`);
+          errors.push(
+            `Request error: ${error instanceof Error ? error.message : String(error)}`,
+          );
         }
         sentRequests++;
 
         // Rate limiting - space out requests
         const timeBetweenRequests = testDuration / expectedRequests;
-        await new Promise((resolve) => setTimeout(resolve, timeBetweenRequests));
+        await new Promise((resolve) =>
+          setTimeout(resolve, timeBetweenRequests),
+        );
       }
 
       const errorRate = failureCount / (successCount + failureCount);
@@ -502,14 +511,17 @@ export class ChaosScheduler {
 
       while (Date.now() < deadline) {
         // Inject faults based on scenario configuration
-        const shouldFail = Math.random() * 100 < (scenario.faults[0]?.affectPercentage ?? 0);
+        const shouldFail =
+          Math.random() * 100 < (scenario.faults[0]?.affectPercentage ?? 0);
 
         if (shouldFail) {
           failureCount++;
           // Simulate fault injection
           const fault = scenario.faults[0];
           if (fault?.fixedLatency) {
-            await new Promise((resolve) => setTimeout(resolve, fault.fixedLatency));
+            await new Promise((resolve) =>
+              setTimeout(resolve, fault.fixedLatency),
+            );
           }
         } else {
           successCount++;
@@ -521,7 +533,8 @@ export class ChaosScheduler {
         // Check auto-stop threshold
         if (
           scenario.autoStopThreshold &&
-          failureCount / execution.totalRequests > scenario.autoStopThreshold / 100
+          failureCount / execution.totalRequests >
+            scenario.autoStopThreshold / 100
         ) {
           execution.status = "stopped";
           execution.stopReason = `Auto-stopped: error rate exceeded ${scenario.autoStopThreshold}%`;
@@ -534,9 +547,10 @@ export class ChaosScheduler {
 
       execution.successfulRequests = successCount;
       execution.failedRequests = failureCount;
-      execution.avgResponseTime = responseTimes.length > 0
-        ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
-        : 0;
+      execution.avgResponseTime =
+        responseTimes.length > 0
+          ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
+          : 0;
 
       if (responseTimes.length > 0) {
         responseTimes.sort((a, b) => a - b);
@@ -578,7 +592,7 @@ export class ChaosScheduler {
    */
   getExecutionsForScenario(scenarioId: string): ChaosExecution[] {
     return Array.from(this.executions.values()).filter(
-      (e) => e.scenarioId === scenarioId
+      (e) => e.scenarioId === scenarioId,
     );
   }
 
@@ -607,32 +621,36 @@ export class ChaosReporter {
     // Analyze findings
     if (execution.errorRate > 50) {
       findings.push(
-        `High error rate: ${execution.errorRate.toFixed(2)}% of requests failed`
+        `High error rate: ${execution.errorRate.toFixed(2)}% of requests failed`,
       );
-      recommendations.push("Increase timeout tolerance or improve error handling");
+      recommendations.push(
+        "Increase timeout tolerance or improve error handling",
+      );
     }
 
     if (execution.p99ResponseTime > 5000) {
       findings.push(
-        `High P99 latency: ${execution.p99ResponseTime.toFixed(0)}ms detected`
+        `High P99 latency: ${execution.p99ResponseTime.toFixed(0)}ms detected`,
       );
       recommendations.push(
-        "Consider optimizing slow endpoints or implementing caching"
+        "Consider optimizing slow endpoints or implementing caching",
       );
     }
 
     if (execution.avgResponseTime > 1000) {
       findings.push(
-        `High average latency: ${execution.avgResponseTime.toFixed(0)}ms`
+        `High average latency: ${execution.avgResponseTime.toFixed(0)}ms`,
       );
       recommendations.push("Investigate performance bottlenecks");
     }
 
     if (execution.failedRequests > execution.successfulRequests * 0.1) {
       findings.push(
-        "Failure rate exceeds acceptable threshold (>10% of requests)"
+        "Failure rate exceeds acceptable threshold (>10% of requests)",
       );
-      recommendations.push("Improve resilience patterns or add circuit breaker");
+      recommendations.push(
+        "Improve resilience patterns or add circuit breaker",
+      );
     }
 
     const metrics = {
@@ -667,9 +685,10 @@ export class ChaosReporter {
    */
   static compareResults(before: ChaosResult, after: ChaosResult): string {
     const improvement = before.execution.errorRate - after.execution.errorRate;
-    const message = improvement > 0
-      ? `Improvement: ${improvement.toFixed(2)}% error rate reduction`
-      : `Regression: ${Math.abs(improvement).toFixed(2)}% error rate increase`;
+    const message =
+      improvement > 0
+        ? `Improvement: ${improvement.toFixed(2)}% error rate reduction`
+        : `Regression: ${Math.abs(improvement).toFixed(2)}% error rate increase`;
 
     return message;
   }

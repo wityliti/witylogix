@@ -1,6 +1,12 @@
 "use client";
 
-import { forwardRef, useState, useRef, useEffect, type HTMLAttributes } from "react";
+import {
+  forwardRef,
+  useState,
+  useRef,
+  useEffect,
+  type HTMLAttributes,
+} from "react";
 import { TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
@@ -41,7 +47,7 @@ const FuelGaugeChart = forwardRef<HTMLDivElement, FuelGaugeChartProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const svgRef = useRef<SVGSVGElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -94,7 +100,9 @@ const FuelGaugeChart = forwardRef<HTMLDivElement, FuelGaugeChartProps>(
       height - padding.bottom - (value / maxFuelSpend) * chartHeight;
 
     const yScaleMpg = (value: number) =>
-      height - padding.bottom - ((value - minMpg) / (maxMpg - minMpg)) * chartHeight;
+      height -
+      padding.bottom -
+      ((value - minMpg) / (maxMpg - minMpg)) * chartHeight;
 
     // Generate bar positions
     const bars = data.map((d, i) => ({
@@ -114,9 +122,7 @@ const FuelGaugeChart = forwardRef<HTMLDivElement, FuelGaugeChartProps>(
     const avgFuel = totalSpend / data.length;
     const avgMpg = mpgs.reduce((a, b) => a + b, 0) / data.length;
     const trend =
-      data.length > 1
-        ? ((mpgs[mpgs.length - 1] - mpgs[0]) / mpgs[0]) * 100
-        : 0;
+      data.length > 1 ? ((mpgs[mpgs.length - 1] - mpgs[0]) / mpgs[0]) * 100 : 0;
 
     return (
       <Card ref={ref} className={cn("p-6 space-y-6", className)} {...props}>
@@ -142,7 +148,7 @@ const FuelGaugeChart = forwardRef<HTMLDivElement, FuelGaugeChartProps>(
                     "px-2.5 py-1 rounded text-xs font-medium transition-all",
                     period === p
                       ? "bg-wl-primary-500/20 text-wl-primary-400"
-                      : "text-wl-text-secondary hover:text-wl-text-primary"
+                      : "text-wl-text-secondary hover:text-wl-text-primary",
                   )}
                 >
                   {p.charAt(0).toUpperCase() + p.slice(1)}
@@ -176,7 +182,7 @@ const FuelGaugeChart = forwardRef<HTMLDivElement, FuelGaugeChartProps>(
               <p
                 className={cn(
                   "text-sm font-semibold flex items-center gap-1",
-                  trend > 0 ? "text-wl-success-400" : "text-wl-danger-400"
+                  trend > 0 ? "text-wl-success-400" : "text-wl-danger-400",
                 )}
               >
                 {trend > 0 ? "+" : ""}
@@ -187,7 +193,10 @@ const FuelGaugeChart = forwardRef<HTMLDivElement, FuelGaugeChartProps>(
         </div>
 
         {/* Chart */}
-        <div ref={containerRef} className="relative h-72 bg-wl-bg-surface rounded-lg p-4">
+        <div
+          ref={containerRef}
+          className="relative h-72 bg-wl-bg-surface rounded-lg p-4"
+        >
           <svg
             ref={svgRef}
             width={width - 32}
@@ -253,7 +262,8 @@ const FuelGaugeChart = forwardRef<HTMLDivElement, FuelGaugeChartProps>(
                 onMouseEnter={(e) => {
                   setHoveredIndex(i);
                   const rect = (e.target as SVGElement).getBoundingClientRect();
-                  const container = containerRef.current?.getBoundingClientRect();
+                  const container =
+                    containerRef.current?.getBoundingClientRect();
                   if (container) {
                     setTooltip({
                       date: data[i].date,
@@ -349,7 +359,9 @@ const FuelGaugeChart = forwardRef<HTMLDivElement, FuelGaugeChartProps>(
               <p className="font-semibold text-wl-text-primary">
                 Fuel: ${tooltip.fuelSpend.toFixed(2)}
               </p>
-              <p className="text-wl-warning-400">Efficiency: {tooltip.mpg.toFixed(1)} MPG</p>
+              <p className="text-wl-warning-400">
+                Efficiency: {tooltip.mpg.toFixed(1)} MPG
+              </p>
               {comparisonMode && fleetAverage && (
                 <p className="text-wl-text-secondary mt-1">
                   Fleet Avg: {fleetAverage.toFixed(1)} MPG
@@ -367,12 +379,14 @@ const FuelGaugeChart = forwardRef<HTMLDivElement, FuelGaugeChartProps>(
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-0.5 bg-wl-warning-400" />
-            <span className="text-wl-text-secondary">MPG Efficiency (line)</span>
+            <span className="text-wl-text-secondary">
+              MPG Efficiency (line)
+            </span>
           </div>
         </div>
       </Card>
     );
-  }
+  },
 );
 
 FuelGaugeChart.displayName = "FuelGaugeChart";

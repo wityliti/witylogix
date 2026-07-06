@@ -6,7 +6,10 @@ interface MockRequest extends Partial<FastifyRequest> {
   body?: Record<string, unknown>;
   params?: Record<string, unknown>;
   jwt?: {
-    sign: (payload: Record<string, unknown>, options?: Record<string, unknown>) => string;
+    sign: (
+      payload: Record<string, unknown>,
+      options?: Record<string, unknown>,
+    ) => string;
   };
 }
 
@@ -120,7 +123,10 @@ describe("Feature Requests Routes", () => {
       };
 
       mockPrisma.tenant.findUnique.mockResolvedValue(tenant);
-      mockPrisma.featureRequest.findMany.mockResolvedValue([request1, request2]);
+      mockPrisma.featureRequest.findMany.mockResolvedValue([
+        request1,
+        request2,
+      ]);
 
       const requests = await (mockPrisma as any).featureRequest.findMany({
         where: { tenantId: tenant.id },
@@ -159,10 +165,17 @@ describe("Feature Requests Routes", () => {
     it("should sort requests by upvote count", async () => {
       const tenant = generateTestTenant();
       const request1 = { ...generateTestFeatureRequest(), upvotes: 100 };
-      const request2 = { ...generateTestFeatureRequest(), id: "feature-124", upvotes: 50 };
+      const request2 = {
+        ...generateTestFeatureRequest(),
+        id: "feature-124",
+        upvotes: 50,
+      };
 
       mockPrisma.tenant.findUnique.mockResolvedValue(tenant);
-      mockPrisma.featureRequest.findMany.mockResolvedValue([request1, request2]);
+      mockPrisma.featureRequest.findMany.mockResolvedValue([
+        request1,
+        request2,
+      ]);
 
       const requests = await (mockPrisma as any).featureRequest.findMany({
         where: { tenantId: tenant.id },
@@ -198,7 +211,10 @@ describe("Feature Requests Routes", () => {
 
     it("should filter requests by category", async () => {
       const tenant = generateTestTenant();
-      const request = { ...generateTestFeatureRequest(), category: "Performance" };
+      const request = {
+        ...generateTestFeatureRequest(),
+        category: "Performance",
+      };
 
       mockPrisma.tenant.findUnique.mockResolvedValue(tenant);
       mockPrisma.featureRequest.findMany.mockResolvedValue([request]);
@@ -284,7 +300,9 @@ describe("Feature Requests Routes", () => {
 
       mockPrisma.tenant.findUnique.mockResolvedValue(tenant);
       mockPrisma.user.findUnique.mockResolvedValue(user);
-      mockPrisma.featureRequest.create.mockResolvedValue(generateTestFeatureRequest());
+      mockPrisma.featureRequest.create.mockResolvedValue(
+        generateTestFeatureRequest(),
+      );
 
       mockRequest.body = {
         tenantId: tenant.id,
@@ -353,7 +371,9 @@ describe("Feature Requests Routes", () => {
       const tenant = generateTestTenant();
 
       mockPrisma.tenant.findUnique.mockResolvedValue(tenant);
-      mockPrisma.featureRequest.findMany.mockResolvedValue([generateTestFeatureRequest()]);
+      mockPrisma.featureRequest.findMany.mockResolvedValue([
+        generateTestFeatureRequest(),
+      ]);
 
       mockRequest.body = {
         tenantId: tenant.id,
@@ -477,9 +497,16 @@ describe("Feature Requests Routes", () => {
       mockRequest.params = { id: request.id };
       mockRequest.body = { voteType: "UPVOTE" };
 
-      const existingUserVote = await (mockPrisma as any).featureVote.findUnique({
-        where: { featureRequestId_userId: { featureRequestId: request.id, userId: "user-789" } },
-      });
+      const existingUserVote = await (mockPrisma as any).featureVote.findUnique(
+        {
+          where: {
+            featureRequestId_userId: {
+              featureRequestId: request.id,
+              userId: "user-789",
+            },
+          },
+        },
+      );
 
       expect(existingUserVote).toBeDefined();
     });
@@ -572,7 +599,10 @@ describe("Feature Requests Routes", () => {
     });
 
     it("should transition request from IN_PROGRESS to COMPLETED", async () => {
-      const request = { ...generateTestFeatureRequest(), status: "IN_PROGRESS" };
+      const request = {
+        ...generateTestFeatureRequest(),
+        status: "IN_PROGRESS",
+      };
       const completedRequest = {
         ...request,
         status: "COMPLETED",

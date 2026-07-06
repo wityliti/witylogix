@@ -11,31 +11,31 @@
 // ─── RETURN STATUS ENUM ──────────────────────────────────────────
 
 export enum ReturnStatus {
-  REQUESTED = 'REQUESTED',
-  APPROVED = 'APPROVED',
-  REJECTED = 'REJECTED',
-  SHIPPED_BACK = 'SHIPPED_BACK',
-  RECEIVED = 'RECEIVED',
-  INSPECTED = 'INSPECTED',
-  REFUNDED = 'REFUNDED',
-  CLOSED = 'CLOSED',
+  REQUESTED = "REQUESTED",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
+  SHIPPED_BACK = "SHIPPED_BACK",
+  RECEIVED = "RECEIVED",
+  INSPECTED = "INSPECTED",
+  REFUNDED = "REFUNDED",
+  CLOSED = "CLOSED",
 }
 
 // ─── RETURN REASON ENUM ──────────────────────────────────────────
 
 export enum ReturnReason {
-  DAMAGED = 'DAMAGED',
-  WRONG_ITEM = 'WRONG_ITEM',
-  NOT_AS_DESCRIBED = 'NOT_AS_DESCRIBED',
-  CHANGED_MIND = 'CHANGED_MIND',
-  DEFECTIVE = 'DEFECTIVE',
-  LATE_DELIVERY = 'LATE_DELIVERY',
-  OTHER = 'OTHER',
+  DAMAGED = "DAMAGED",
+  WRONG_ITEM = "WRONG_ITEM",
+  NOT_AS_DESCRIBED = "NOT_AS_DESCRIBED",
+  CHANGED_MIND = "CHANGED_MIND",
+  DEFECTIVE = "DEFECTIVE",
+  LATE_DELIVERY = "LATE_DELIVERY",
+  OTHER = "OTHER",
 }
 
 // ─── RETURN ITEM ────────────────────────────────────────────────
 
-export type ItemCondition = 'new' | 'opened' | 'damaged' | 'defective';
+export type ItemCondition = "new" | "opened" | "damaged" | "defective";
 
 export interface ReturnItem {
   orderItemId: string;

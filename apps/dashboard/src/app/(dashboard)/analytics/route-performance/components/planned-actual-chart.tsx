@@ -31,7 +31,7 @@ export function PlannedActualChart({
   const chartData = useMemo(() => {
     if (!data) return [];
 
-    return data.map(point => ({
+    return data.map((point) => ({
       ...point,
       // Calculate the variance area boundaries
       varianceUpper: Math.max(point.plannedDuration, point.actualDuration) + 5,
@@ -76,9 +76,12 @@ export function PlannedActualChart({
           <div>
             <CardTitle>Planned vs Actual Delivery Time</CardTitle>
             <p className="text-sm text-wl-text-secondary mt-1">
-              Time trend analysis: {dateRange.from instanceof Date
+              Time trend analysis:{" "}
+              {dateRange.from instanceof Date
                 ? dateRange.from.toLocaleDateString()
-                : dateRange.from} to {dateRange.to instanceof Date
+                : dateRange.from}{" "}
+              to{" "}
+              {dateRange.to instanceof Date
                 ? dateRange.to.toLocaleDateString()
                 : dateRange.to}
             </p>
@@ -87,13 +90,34 @@ export function PlannedActualChart({
       </CardHeader>
       <CardContent>
         <div className="w-full h-80">
-          <Suspense fallback={<div className="h-80 bg-wl-bg-secondary animate-pulse rounded-lg border border-wl-neutral-800" />}>
+          <Suspense
+            fallback={
+              <div className="h-80 bg-wl-bg-secondary animate-pulse rounded-lg border border-wl-neutral-800" />
+            }
+          >
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+              <ComposedChart
+                data={chartData}
+                margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+              >
                 <defs>
-                  <linearGradient id="varianceGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--wl-warning-500)" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="var(--wl-warning-500)" stopOpacity={0} />
+                  <linearGradient
+                    id="varianceGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="5%"
+                      stopColor="var(--wl-warning-500)"
+                      stopOpacity={0.15}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--wl-warning-500)"
+                      stopOpacity={0}
+                    />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
@@ -108,7 +132,11 @@ export function PlannedActualChart({
                 />
                 <YAxis
                   stroke="var(--wl-text-secondary)"
-                  label={{ value: "Minutes", angle: -90, position: "insideLeft" }}
+                  label={{
+                    value: "Minutes",
+                    angle: -90,
+                    position: "insideLeft",
+                  }}
                   style={{ fontSize: "12px" }}
                 />
                 <Tooltip
@@ -118,7 +146,9 @@ export function PlannedActualChart({
                     borderRadius: "var(--wl-radius-md)",
                     color: "var(--wl-text-primary)",
                   }}
-                  formatter={(value: unknown) => [`${value}m`, ""] as [string, string]}
+                  formatter={(value: unknown) =>
+                    [`${value}m`, ""] as [string, string]
+                  }
                   labelStyle={{ color: "var(--wl-text-primary)" }}
                 />
                 <Legend
@@ -167,22 +197,28 @@ export function PlannedActualChart({
         {/* Summary stats below chart */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 bg-wl-bg-secondary rounded-lg border border-wl-neutral-800">
-            <p className="text-sm text-wl-text-secondary mb-1">Avg Planned Time</p>
+            <p className="text-sm text-wl-text-secondary mb-1">
+              Avg Planned Time
+            </p>
             <p className="text-lg font-semibold text-wl-text-primary">
               {chartData.length > 0
                 ? Math.round(
-                    chartData.reduce((sum, d) => sum + d.plannedDuration, 0) / chartData.length
+                    chartData.reduce((sum, d) => sum + d.plannedDuration, 0) /
+                      chartData.length,
                   )
                 : 0}
               m
             </p>
           </div>
           <div className="p-4 bg-wl-bg-secondary rounded-lg border border-wl-neutral-800">
-            <p className="text-sm text-wl-text-secondary mb-1">Avg Actual Time</p>
+            <p className="text-sm text-wl-text-secondary mb-1">
+              Avg Actual Time
+            </p>
             <p className="text-lg font-semibold text-wl-text-primary">
               {chartData.length > 0
                 ? Math.round(
-                    chartData.reduce((sum, d) => sum + d.actualDuration, 0) / chartData.length
+                    chartData.reduce((sum, d) => sum + d.actualDuration, 0) /
+                      chartData.length,
                   )
                 : 0}
               m
@@ -193,7 +229,8 @@ export function PlannedActualChart({
             <p className="text-lg font-semibold text-wl-text-primary">
               {chartData.length > 0
                 ? Math.round(
-                    chartData.reduce((sum, d) => sum + d.onTimePercentage, 0) / chartData.length
+                    chartData.reduce((sum, d) => sum + d.onTimePercentage, 0) /
+                      chartData.length,
                   )
                 : 0}
               %

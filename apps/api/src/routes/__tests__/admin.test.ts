@@ -94,7 +94,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/stores"
+        (call) => call[0] === "/stores",
       )?.[1];
 
       db.shop = {
@@ -115,7 +115,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/stores"
+        (call) => call[0] === "/stores",
       )?.[1];
 
       db.shop = {
@@ -132,7 +132,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/stores"
+        (call) => call[0] === "/stores",
       )?.[1];
 
       db.shop = {
@@ -149,7 +149,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/stores"
+        (call) => call[0] === "/stores",
       )?.[1];
 
       db.shop = {
@@ -181,7 +181,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/stores"
+        (call) => call[0] === "/stores",
       )?.[1];
 
       db.shop = {
@@ -199,11 +199,11 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/stores"
+        (call) => call[0] === "/stores",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
   });
@@ -221,12 +221,16 @@ describe("Admin Routes", () => {
         orders: Array(50),
         users: Array(10),
         drivers: Array(5),
-        subscription: { planTier: "PRO", status: "ACTIVE", billingCycleEnd: new Date() },
+        subscription: {
+          planTier: "PRO",
+          status: "ACTIVE",
+          billingCycleEnd: new Date(),
+        },
       };
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/stores/:id"
+        (call) => call[0] === "/stores/:id",
       )?.[1];
 
       db.shop = {
@@ -246,7 +250,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/stores/:id"
+        (call) => call[0] === "/stores/:id",
       )?.[1];
 
       db.shop = {
@@ -254,7 +258,7 @@ describe("Admin Routes", () => {
       };
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        NotFoundError
+        NotFoundError,
       );
     });
 
@@ -274,7 +278,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/stores/:id"
+        (call) => call[0] === "/stores/:id",
       )?.[1];
 
       db.shop = {
@@ -302,7 +306,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/stores/:id/suspend"
+        (call) => call[0] === "/stores/:id/suspend",
       )?.[1];
 
       db.shop = {
@@ -319,7 +323,7 @@ describe("Admin Routes", () => {
       expect(result.data.status).toBe("SUSPENDED");
       expect(fastify.log.info).toHaveBeenCalledWith(
         expect.objectContaining({ storeId: "shop-1" }),
-        "Store suspended"
+        "Store suspended",
       );
     });
 
@@ -335,7 +339,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/stores/:id/suspend"
+        (call) => call[0] === "/stores/:id/suspend",
       )?.[1];
 
       db.shop = {
@@ -343,7 +347,7 @@ describe("Admin Routes", () => {
       };
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ConflictError
+        ConflictError,
       );
     });
 
@@ -353,7 +357,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/stores/:id/suspend"
+        (call) => call[0] === "/stores/:id/suspend",
       )?.[1];
 
       db.shop = {
@@ -361,7 +365,7 @@ describe("Admin Routes", () => {
       };
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        NotFoundError
+        NotFoundError,
       );
     });
   });
@@ -378,7 +382,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/stores/:id/restore"
+        (call) => call[0] === "/stores/:id/restore",
       )?.[1];
 
       db.shop = {
@@ -395,7 +399,7 @@ describe("Admin Routes", () => {
       expect(result.data.status).toBe("ACTIVE");
       expect(fastify.log.info).toHaveBeenCalledWith(
         expect.objectContaining({ storeId: "shop-1" }),
-        "Store restored"
+        "Store restored",
       );
     });
 
@@ -410,7 +414,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/stores/:id/restore"
+        (call) => call[0] === "/stores/:id/restore",
       )?.[1];
 
       db.shop = {
@@ -418,7 +422,7 @@ describe("Admin Routes", () => {
       };
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ConflictError
+        ConflictError,
       );
     });
   });
@@ -443,7 +447,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/users"
+        (call) => call[0] === "/users",
       )?.[1];
 
       db.user = {
@@ -462,7 +466,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/users"
+        (call) => call[0] === "/users",
       )?.[1];
 
       db.user = {
@@ -477,11 +481,13 @@ describe("Admin Routes", () => {
           where: expect.objectContaining({
             OR: expect.arrayContaining([
               expect.objectContaining({
-                email: expect.objectContaining({ contains: "user@example.com" }),
+                email: expect.objectContaining({
+                  contains: "user@example.com",
+                }),
               }),
             ]),
           }),
-        })
+        }),
       );
     });
   });
@@ -502,7 +508,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/users/:id"
+        (call) => call[0] === "/users/:id",
       )?.[1];
 
       db.user = {
@@ -520,7 +526,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/users/:id"
+        (call) => call[0] === "/users/:id",
       )?.[1];
 
       db.user = {
@@ -528,7 +534,7 @@ describe("Admin Routes", () => {
       };
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        NotFoundError
+        NotFoundError,
       );
     });
   });
@@ -547,7 +553,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/users/:id/role"
+        (call) => call[0] === "/users/:id/role",
       )?.[1];
 
       db.user = {
@@ -567,7 +573,7 @@ describe("Admin Routes", () => {
           previousRole: "VIEWER",
           newRole: "DISPATCHER",
         }),
-        "User role changed"
+        "User role changed",
       );
     });
 
@@ -584,7 +590,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/users/:id/role"
+        (call) => call[0] === "/users/:id/role",
       )?.[1];
 
       db.user = {
@@ -592,7 +598,7 @@ describe("Admin Routes", () => {
       };
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
 
@@ -602,7 +608,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/users/:id/role"
+        (call) => call[0] === "/users/:id/role",
       )?.[1];
 
       db.user = {
@@ -610,7 +616,7 @@ describe("Admin Routes", () => {
       };
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        NotFoundError
+        NotFoundError,
       );
     });
   });
@@ -630,7 +636,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/users/:id/suspend"
+        (call) => call[0] === "/users/:id/suspend",
       )?.[1];
 
       db.user = {
@@ -661,7 +667,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/users/:id/suspend"
+        (call) => call[0] === "/users/:id/suspend",
       )?.[1];
 
       db.user = {
@@ -669,7 +675,7 @@ describe("Admin Routes", () => {
       };
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
 
@@ -687,7 +693,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/users/:id/suspend"
+        (call) => call[0] === "/users/:id/suspend",
       )?.[1];
 
       db.user = {
@@ -695,7 +701,7 @@ describe("Admin Routes", () => {
       };
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ConflictError
+        ConflictError,
       );
     });
   });
@@ -714,7 +720,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/users/:id/restore"
+        (call) => call[0] === "/users/:id/restore",
       )?.[1];
 
       db.user = {
@@ -744,7 +750,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/users/:id/restore"
+        (call) => call[0] === "/users/:id/restore",
       )?.[1];
 
       db.user = {
@@ -752,7 +758,7 @@ describe("Admin Routes", () => {
       };
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ConflictError
+        ConflictError,
       );
     });
   });
@@ -775,7 +781,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/customers"
+        (call) => call[0] === "/customers",
       )?.[1];
 
       db.customer = {
@@ -790,11 +796,15 @@ describe("Admin Routes", () => {
     });
 
     it("should search customers by email, name, or phone", async () => {
-      mockRequest.query = { page: 1, limit: 20, search: "customer@example.com" };
+      mockRequest.query = {
+        page: 1,
+        limit: 20,
+        search: "customer@example.com",
+      };
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/customers"
+        (call) => call[0] === "/customers",
       )?.[1];
 
       db.customer = {
@@ -820,15 +830,25 @@ describe("Admin Routes", () => {
         createdAt: new Date(),
         shop: { id: "shop-1", name: "Store One" },
         orders: [
-          { id: "order-1", status: "COMPLETED", totalAmount: 100, createdAt: new Date() },
-          { id: "order-2", status: "COMPLETED", totalAmount: 200, createdAt: new Date() },
+          {
+            id: "order-1",
+            status: "COMPLETED",
+            totalAmount: 100,
+            createdAt: new Date(),
+          },
+          {
+            id: "order-2",
+            status: "COMPLETED",
+            totalAmount: 200,
+            createdAt: new Date(),
+          },
         ],
         _count: { orders: 5 },
       };
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/customers/:id"
+        (call) => call[0] === "/customers/:id",
       )?.[1];
 
       db.customer = {
@@ -846,7 +866,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/customers/:id"
+        (call) => call[0] === "/customers/:id",
       )?.[1];
 
       db.customer = {
@@ -854,7 +874,7 @@ describe("Admin Routes", () => {
       };
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        NotFoundError
+        NotFoundError,
       );
     });
   });
@@ -863,11 +883,12 @@ describe("Admin Routes", () => {
     it("should return platform-wide metrics", async () => {
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/dashboard"
+        (call) => call[0] === "/dashboard",
       )?.[1];
 
       db.shop = {
-        count: vi.fn()
+        count: vi
+          .fn()
           .mockResolvedValueOnce(100)
           .mockResolvedValueOnce(95)
           .mockResolvedValueOnce(5),
@@ -882,10 +903,9 @@ describe("Admin Routes", () => {
       };
 
       db.order = {
-        count: vi.fn()
-          .mockResolvedValueOnce(10000)
-          .mockResolvedValueOnce(500),
-        aggregate: vi.fn()
+        count: vi.fn().mockResolvedValueOnce(10000).mockResolvedValueOnce(500),
+        aggregate: vi
+          .fn()
           .mockResolvedValueOnce({ _sum: { totalAmount: 1000000 } })
           .mockResolvedValueOnce({ _sum: { totalAmount: 50000 } }),
       };
@@ -907,7 +927,7 @@ describe("Admin Routes", () => {
     it("should calculate 30-day metrics", async () => {
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/dashboard"
+        (call) => call[0] === "/dashboard",
       )?.[1];
 
       db.shop = {
@@ -920,10 +940,9 @@ describe("Admin Routes", () => {
       };
 
       db.order = {
-        count: vi.fn()
-          .mockResolvedValueOnce(10000)
-          .mockResolvedValueOnce(500),
-        aggregate: vi.fn()
+        count: vi.fn().mockResolvedValueOnce(10000).mockResolvedValueOnce(500),
+        aggregate: vi
+          .fn()
           .mockResolvedValueOnce({ _sum: { totalAmount: 1000000 } })
           .mockResolvedValueOnce({ _sum: { totalAmount: 50000 } }),
       };
@@ -941,7 +960,7 @@ describe("Admin Routes", () => {
     it("should include top stores by order count", async () => {
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/dashboard"
+        (call) => call[0] === "/dashboard",
       )?.[1];
 
       const topStores = [
@@ -961,7 +980,9 @@ describe("Admin Routes", () => {
 
       db.order = {
         count: vi.fn().mockResolvedValue(10000),
-        aggregate: vi.fn().mockResolvedValue({ _sum: { totalAmount: 1000000 } }),
+        aggregate: vi
+          .fn()
+          .mockResolvedValue({ _sum: { totalAmount: 1000000 } }),
       };
 
       db.customer = {
@@ -991,14 +1012,16 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/impersonate/:userId"
+        (call) => call[0] === "/impersonate/:userId",
       )?.[2];
 
       db.user = {
         findUnique: vi.fn().mockResolvedValue(user),
       };
 
-      (mockRequest as any).jwtSign = vi.fn().mockResolvedValue("token-jwt-value");
+      (mockRequest as any).jwtSign = vi
+        .fn()
+        .mockResolvedValue("token-jwt-value");
 
       const result = await handler(mockRequest, mockReply);
 
@@ -1023,7 +1046,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/impersonate/:userId"
+        (call) => call[0] === "/impersonate/:userId",
       )?.[2];
 
       db.user = {
@@ -1036,7 +1059,7 @@ describe("Admin Routes", () => {
 
       expect((mockRequest as any).jwtSign).toHaveBeenCalledWith(
         expect.any(Object),
-        expect.objectContaining({ expiresIn: 3600 })
+        expect.objectContaining({ expiresIn: 3600 }),
       );
     });
 
@@ -1046,7 +1069,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/impersonate/:userId"
+        (call) => call[0] === "/impersonate/:userId",
       )?.[2];
 
       db.user = {
@@ -1054,7 +1077,7 @@ describe("Admin Routes", () => {
       };
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        NotFoundError
+        NotFoundError,
       );
     });
 
@@ -1074,7 +1097,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/impersonate/:userId"
+        (call) => call[0] === "/impersonate/:userId",
       )?.[2];
 
       db.user = {
@@ -1091,14 +1114,14 @@ describe("Admin Routes", () => {
           impersonatedUserId: "user-1",
           jti: expect.any(String),
         }),
-        "Impersonation session started"
+        "Impersonation session started",
       );
     });
 
     it("should register per-endpoint rate limit config", async () => {
       await adminRoutes(fastify);
       const call = (fastify.post as any).mock.calls.find(
-        (c: any[]) => c[0] === "/impersonate/:userId"
+        (c: any[]) => c[0] === "/impersonate/:userId",
       );
       expect(call?.[1]?.config?.rateLimit?.max).toBe(10);
       expect(call?.[1]?.config?.rateLimit?.timeWindow).toBe("1 minute");
@@ -1108,7 +1131,7 @@ describe("Admin Routes", () => {
   describe("POST /impersonate/:userId/revoke", () => {
     function getRevokeHandler() {
       return (fastify.post as any).mock.calls.find(
-        (call: any[]) => call[0] === "/impersonate/:userId/revoke"
+        (call: any[]) => call[0] === "/impersonate/:userId/revoke",
       )?.[2];
     }
 
@@ -1116,12 +1139,21 @@ describe("Admin Routes", () => {
       mockRequest.params = { userId: "user-1" };
       mockRequest.body = { jti: "test-jti-uuid" };
       (mockRequest as any).auth = { userId: "admin-123" };
-      mockRedisInstance.get.mockResolvedValueOnce(JSON.stringify({ adminId: "admin-123", userId: "user-1", shopId: "shop-1", createdAt: new Date().toISOString() }));
+      mockRedisInstance.get.mockResolvedValueOnce(
+        JSON.stringify({
+          adminId: "admin-123",
+          userId: "user-1",
+          shopId: "shop-1",
+          createdAt: new Date().toISOString(),
+        }),
+      );
 
       await adminRoutes(fastify);
       const result = await getRevokeHandler()(mockRequest, mockReply);
 
-      expect(mockRedisInstance.del).toHaveBeenCalledWith("impersonation:test-jti-uuid");
+      expect(mockRedisInstance.del).toHaveBeenCalledWith(
+        "impersonation:test-jti-uuid",
+      );
       expect(result.data.revoked).toBe(true);
     });
 
@@ -1142,10 +1174,19 @@ describe("Admin Routes", () => {
       mockRequest.params = { userId: "user-1" };
       mockRequest.body = { jti: "test-jti-uuid" };
       (mockRequest as any).auth = { userId: "other-admin" };
-      mockRedisInstance.get.mockResolvedValueOnce(JSON.stringify({ adminId: "admin-123", userId: "user-1", shopId: "shop-1", createdAt: new Date().toISOString() }));
+      mockRedisInstance.get.mockResolvedValueOnce(
+        JSON.stringify({
+          adminId: "admin-123",
+          userId: "user-1",
+          shopId: "shop-1",
+          createdAt: new Date().toISOString(),
+        }),
+      );
 
       await adminRoutes(fastify);
-      await expect(getRevokeHandler()(mockRequest, mockReply)).rejects.toThrow(ForbiddenError);
+      await expect(getRevokeHandler()(mockRequest, mockReply)).rejects.toThrow(
+        ForbiddenError,
+      );
     });
 
     it("should throw ValidationError when jti is missing", async () => {
@@ -1154,7 +1195,9 @@ describe("Admin Routes", () => {
       (mockRequest as any).auth = { userId: "admin-123" };
 
       await adminRoutes(fastify);
-      await expect(getRevokeHandler()(mockRequest, mockReply)).rejects.toThrow(ValidationError);
+      await expect(getRevokeHandler()(mockRequest, mockReply)).rejects.toThrow(
+        ValidationError,
+      );
     });
   });
 
@@ -1163,19 +1206,57 @@ describe("Admin Routes", () => {
       await adminRoutes(fastify);
 
       expect(fastify.get).toHaveBeenCalledWith("/stores", expect.any(Function));
-      expect(fastify.get).toHaveBeenCalledWith("/stores/:id", expect.any(Function));
-      expect(fastify.put).toHaveBeenCalledWith("/stores/:id/suspend", expect.any(Function));
-      expect(fastify.put).toHaveBeenCalledWith("/stores/:id/restore", expect.any(Function));
+      expect(fastify.get).toHaveBeenCalledWith(
+        "/stores/:id",
+        expect.any(Function),
+      );
+      expect(fastify.put).toHaveBeenCalledWith(
+        "/stores/:id/suspend",
+        expect.any(Function),
+      );
+      expect(fastify.put).toHaveBeenCalledWith(
+        "/stores/:id/restore",
+        expect.any(Function),
+      );
       expect(fastify.get).toHaveBeenCalledWith("/users", expect.any(Function));
-      expect(fastify.get).toHaveBeenCalledWith("/users/:id", expect.any(Function));
-      expect(fastify.put).toHaveBeenCalledWith("/users/:id/role", expect.any(Function));
-      expect(fastify.put).toHaveBeenCalledWith("/users/:id/suspend", expect.any(Function));
-      expect(fastify.put).toHaveBeenCalledWith("/users/:id/restore", expect.any(Function));
-      expect(fastify.get).toHaveBeenCalledWith("/customers", expect.any(Function));
-      expect(fastify.get).toHaveBeenCalledWith("/customers/:id", expect.any(Function));
-      expect(fastify.get).toHaveBeenCalledWith("/dashboard", expect.any(Function));
-      expect(fastify.post).toHaveBeenCalledWith("/impersonate/:userId", expect.any(Object), expect.any(Function));
-      expect(fastify.post).toHaveBeenCalledWith("/impersonate/:userId/revoke", expect.any(Object), expect.any(Function));
+      expect(fastify.get).toHaveBeenCalledWith(
+        "/users/:id",
+        expect.any(Function),
+      );
+      expect(fastify.put).toHaveBeenCalledWith(
+        "/users/:id/role",
+        expect.any(Function),
+      );
+      expect(fastify.put).toHaveBeenCalledWith(
+        "/users/:id/suspend",
+        expect.any(Function),
+      );
+      expect(fastify.put).toHaveBeenCalledWith(
+        "/users/:id/restore",
+        expect.any(Function),
+      );
+      expect(fastify.get).toHaveBeenCalledWith(
+        "/customers",
+        expect.any(Function),
+      );
+      expect(fastify.get).toHaveBeenCalledWith(
+        "/customers/:id",
+        expect.any(Function),
+      );
+      expect(fastify.get).toHaveBeenCalledWith(
+        "/dashboard",
+        expect.any(Function),
+      );
+      expect(fastify.post).toHaveBeenCalledWith(
+        "/impersonate/:userId",
+        expect.any(Object),
+        expect.any(Function),
+      );
+      expect(fastify.post).toHaveBeenCalledWith(
+        "/impersonate/:userId/revoke",
+        expect.any(Object),
+        expect.any(Function),
+      );
     });
 
     it("should add requireAuth hook to all routes", async () => {
@@ -1183,7 +1264,7 @@ describe("Admin Routes", () => {
 
       expect(fastify.addHook).toHaveBeenCalledWith(
         "preHandler",
-        expect.any(Function)
+        expect.any(Function),
       );
     });
   });
@@ -1194,12 +1275,16 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/stores"
+        (call) => call[0] === "/stores",
       )?.[1];
 
       db.shop = {
-        findMany: vi.fn().mockRejectedValue(new Error("Database connection failed")),
-        count: vi.fn().mockRejectedValue(new Error("Database connection failed")),
+        findMany: vi
+          .fn()
+          .mockRejectedValue(new Error("Database connection failed")),
+        count: vi
+          .fn()
+          .mockRejectedValue(new Error("Database connection failed")),
       };
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow();
@@ -1210,11 +1295,11 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/stores"
+        (call) => call[0] === "/stores",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
 
@@ -1230,7 +1315,7 @@ describe("Admin Routes", () => {
 
       await adminRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/users/:id/role"
+        (call) => call[0] === "/users/:id/role",
       )?.[1];
 
       db.user = {
@@ -1238,7 +1323,7 @@ describe("Admin Routes", () => {
       };
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
   });

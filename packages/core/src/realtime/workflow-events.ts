@@ -45,7 +45,10 @@ import {
  * Prevents event flooding to Socket.io by limiting emissions per execution.
  */
 class EventRateLimiter {
-  private executionEventCounts: Map<string, { count: number; resetAt: number }> = new Map();
+  private executionEventCounts: Map<
+    string,
+    { count: number; resetAt: number }
+  > = new Map();
   private readonly maxEventsPerSecond: number = 10;
   private readonly windowMs: number = 1000; // 1 second
 
@@ -118,7 +121,7 @@ export class WorkflowRealtimeService {
   async handleWorkflowEvent(
     event: WorkflowEvent,
     tenantId: string,
-    transactionId?: string
+    transactionId?: string,
   ): Promise<void> {
     try {
       // Rate limit to prevent flooding
@@ -193,7 +196,7 @@ export class WorkflowRealtimeService {
    */
   private async emitWorkflowStarted(
     base: WorkflowEventBase,
-    event: WorkflowEvent
+    event: WorkflowEvent,
   ): Promise<void> {
     const payload: WorkflowStartedPayload = {
       ...base,
@@ -214,7 +217,7 @@ export class WorkflowRealtimeService {
    */
   private async emitWorkflowCompleted(
     base: WorkflowEventBase,
-    event: WorkflowEvent
+    event: WorkflowEvent,
   ): Promise<void> {
     const payload: WorkflowCompletedPayload = {
       ...base,
@@ -237,7 +240,7 @@ export class WorkflowRealtimeService {
    */
   private async emitWorkflowFailed(
     base: WorkflowEventBase,
-    event: WorkflowEvent
+    event: WorkflowEvent,
   ): Promise<void> {
     const payload: WorkflowFailedPayload = {
       ...base,
@@ -262,7 +265,7 @@ export class WorkflowRealtimeService {
    */
   private async emitStepStarted(
     base: WorkflowEventBase,
-    event: WorkflowEvent
+    event: WorkflowEvent,
   ): Promise<void> {
     const payload: StepStartedPayload = {
       ...base,
@@ -281,7 +284,7 @@ export class WorkflowRealtimeService {
    */
   private async emitStepCompleted(
     base: WorkflowEventBase,
-    event: WorkflowEvent
+    event: WorkflowEvent,
   ): Promise<void> {
     const payload: StepCompletedPayload = {
       ...base,
@@ -306,7 +309,7 @@ export class WorkflowRealtimeService {
    */
   private async emitStepFailed(
     base: WorkflowEventBase,
-    event: WorkflowEvent
+    event: WorkflowEvent,
   ): Promise<void> {
     const payload: StepFailedPayload = {
       ...base,
@@ -335,7 +338,7 @@ export class WorkflowRealtimeService {
    */
   private async emitCompensationStarted(
     base: WorkflowEventBase,
-    event: WorkflowEvent
+    event: WorkflowEvent,
   ): Promise<void> {
     const payload: CompensationStartedPayload = {
       ...base,
@@ -357,7 +360,7 @@ export class WorkflowRealtimeService {
    */
   private async emitCompensationCompleted(
     base: WorkflowEventBase,
-    event: WorkflowEvent
+    event: WorkflowEvent,
   ): Promise<void> {
     const payload: CompensationCompletedPayload = {
       ...base,
@@ -388,7 +391,7 @@ export class WorkflowRealtimeService {
   private emitToRooms(
     base: WorkflowEventBase,
     eventName: string,
-    payload: any
+    payload: any,
   ): void {
     // Non-blocking emit: don't wait for delivery
     setImmediate(() => {
@@ -421,7 +424,7 @@ export class WorkflowRealtimeService {
    */
   createEngineListener(
     tenantId: string,
-    transactionId?: string
+    transactionId?: string,
   ): WorkflowEventListener {
     return (event: WorkflowEvent) => {
       // Fire and forget

@@ -47,7 +47,7 @@ export function StatsBar({ stats, isLoading = false }: StatsBarProps) {
         icon: <Package className="w-5 h-5" />,
       },
     ],
-    [stats]
+    [stats],
   );
 
   return (
@@ -60,7 +60,7 @@ export function StatsBar({ stats, isLoading = false }: StatsBarProps) {
               className={cn(
                 "bg-wl-bg-surface rounded-lg border border-wl-border-subtle p-4",
                 "transition-all duration-300 hover:border-wl-border-default",
-                isLoading && "opacity-60 pointer-events-none"
+                isLoading && "opacity-60 pointer-events-none",
               )}
             >
               <div className="flex items-start justify-between mb-3">
@@ -91,7 +91,7 @@ export function StatsBar({ stats, isLoading = false }: StatsBarProps) {
                     "inline-flex items-center gap-1 text-xs font-medium",
                     card.trend.direction === "up"
                       ? "text-wl-success-400"
-                      : "text-wl-warning-400"
+                      : "text-wl-warning-400",
                   )}
                 >
                   <span>

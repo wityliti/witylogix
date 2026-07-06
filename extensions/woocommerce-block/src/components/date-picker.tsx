@@ -3,8 +3,8 @@
  * Calendar-based date selection for WooCommerce checkout
  */
 
-import { useState, useEffect, useMemo } from '@wordpress/element';
-import type { SlotAvailability } from '../api/witylogix-api';
+import { useState, useEffect, useMemo } from "@wordpress/element";
+import type { SlotAvailability } from "../api/witylogix-api";
 
 interface DatePickerProps {
   onDateSelect: (date: string) => void;
@@ -34,42 +34,45 @@ function getDatesBetween(startDate: Date, endDate: Date): Date[] {
  * Format date as YYYY-MM-DD
  */
 function formatDate(date: Date): string {
-  return date.toISOString().split('T')[0];
+  return date.toISOString().split("T")[0];
 }
 
 /**
  * Parse YYYY-MM-DD string to Date
  */
 function parseDate(dateStr: string): Date {
-  const [year, month, day] = dateStr.split('-').map(Number);
+  const [year, month, day] = dateStr.split("-").map(Number);
   return new Date(year, month - 1, day);
 }
 
 /**
  * Get availability status for a date
  */
-function getAvailabilityStatus(date: string, slots?: SlotAvailability[]): 'available' | 'limited' | 'unavailable' {
+function getAvailabilityStatus(
+  date: string,
+  slots?: SlotAvailability[],
+): "available" | "limited" | "unavailable" {
   if (!slots || slots.length === 0) {
-    return 'unavailable';
+    return "unavailable";
   }
 
-  const dateSlots = slots.filter(slot => slot.date === date);
+  const dateSlots = slots.filter((slot) => slot.date === date);
 
   if (dateSlots.length === 0) {
-    return 'unavailable';
+    return "unavailable";
   }
 
-  const availableSlots = dateSlots.filter(slot => slot.available);
+  const availableSlots = dateSlots.filter((slot) => slot.available);
 
   if (availableSlots.length === 0) {
-    return 'unavailable';
+    return "unavailable";
   }
 
   if (availableSlots.length < dateSlots.length) {
-    return 'limited';
+    return "limited";
   }
 
-  return 'available';
+  return "available";
 }
 
 /**
@@ -88,7 +91,9 @@ export function DatePicker({
 
   // Calculate date range
   const start = minDate ? parseDate(minDate) : new Date();
-  const end = maxDate ? parseDate(maxDate) : new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days ahead
+  const end = maxDate
+    ? parseDate(maxDate)
+    : new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days ahead
 
   // Get calendar dates
   const calendarDates = useMemo(() => {
@@ -112,11 +117,15 @@ export function DatePicker({
   }, [currentMonth]);
 
   const handlePrevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1),
+    );
   };
 
   const handleNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1),
+    );
   };
 
   const handleDateClick = (date: Date) => {
@@ -132,7 +141,7 @@ export function DatePicker({
     }
 
     const status = getAvailabilityStatus(dateStr, slots);
-    if (status === 'unavailable') {
+    if (status === "unavailable") {
       return;
     }
 
@@ -140,7 +149,10 @@ export function DatePicker({
     onDateSelect(dateStr);
   };
 
-  const monthName = currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
+  const monthName = currentMonth.toLocaleString("default", {
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <div className="witylogix-date-picker">
@@ -167,7 +179,7 @@ export function DatePicker({
 
       {/* Weekday headers */}
       <div className="date-picker-weekdays">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
           <div key={day} className="date-picker-weekday">
             {day}
           </div>
@@ -176,7 +188,7 @@ export function DatePicker({
 
       {/* Calendar grid */}
       <div className="date-picker-grid">
-        {calendarDates.map(date => {
+        {calendarDates.map((date) => {
           const dateStr = formatDate(date);
           const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
           const isInRange = date >= start && date <= end;
@@ -190,9 +202,9 @@ export function DatePicker({
               onClick={() => handleDateClick(date)}
               className={`
                 date-picker-day
-                ${!isCurrentMonth ? 'date-picker-day--other-month' : ''}
-                ${isDisabled ? 'date-picker-day--disabled' : ''}
-                ${isSelected ? 'date-picker-day--selected' : ''}
+                ${!isCurrentMonth ? "date-picker-day--other-month" : ""}
+                ${isDisabled ? "date-picker-day--disabled" : ""}
+                ${isSelected ? "date-picker-day--selected" : ""}
                 date-picker-day--${availability}
               `}
               disabled={isDisabled || isLoading}
@@ -200,10 +212,13 @@ export function DatePicker({
               aria-pressed={isSelected}
             >
               <span className="date-picker-day-number">{date.getDate()}</span>
-              {availability !== 'unavailable' && (
-                <span className="date-picker-day-indicator" title={availability}>
-                  {availability === 'available' && '●'}
-                  {availability === 'limited' && '◐'}
+              {availability !== "unavailable" && (
+                <span
+                  className="date-picker-day-indicator"
+                  title={availability}
+                >
+                  {availability === "available" && "●"}
+                  {availability === "limited" && "◐"}
                 </span>
               )}
             </button>

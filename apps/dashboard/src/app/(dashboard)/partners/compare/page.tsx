@@ -50,23 +50,36 @@ interface Courier {
   };
 }
 
-const ROUTING_SLUGS = new Set(["onfleet", "stuart", "uber-direct", "lalamove", "doordash-drive"]);
+const ROUTING_SLUGS = new Set([
+  "onfleet",
+  "stuart",
+  "uber-direct",
+  "lalamove",
+  "doordash-drive",
+]);
 
 function healthToRate(healthStatus: string | undefined): number {
   switch (healthStatus) {
-    case "HEALTHY": return 100;
-    case "DEGRADED": return 75;
-    case "ERROR": case "UNHEALTHY": return 50;
-    default: return 0;
+    case "HEALTHY":
+      return 100;
+    case "DEGRADED":
+      return 75;
+    case "ERROR":
+    case "UNHEALTHY":
+      return 50;
+    default:
+      return 0;
   }
 }
 
 function integrationToCourier(
   i: InstalledIntegration,
-  statsByProvider: Map<string, PartnerStat>
+  statsByProvider: Map<string, PartnerStat>,
 ): Courier {
   const cfg = (i.config ?? {}) as Record<string, unknown>;
-  const stat = statsByProvider.get(i.slug) ?? statsByProvider.get(i.slug.replace(/-/g, "_"));
+  const stat =
+    statsByProvider.get(i.slug) ??
+    statsByProvider.get(i.slug.replace(/-/g, "_"));
   return {
     id: i.slug,
     name: i.name,
@@ -76,7 +89,8 @@ function integrationToCourier(
     },
     deliverySpeed:
       typeof cfg.deliverySpeed === "string" ? cfg.deliverySpeed : "2-4 hours",
-    coverageAreas: typeof cfg.coverageAreas === "number" ? cfg.coverageAreas : 0,
+    coverageAreas:
+      typeof cfg.coverageAreas === "number" ? cfg.coverageAreas : 0,
     successRate:
       stat?.successRate ??
       (typeof cfg.successRate === "number"
@@ -98,8 +112,12 @@ export default function ComparePage() {
   const router = useRouter();
   const [selectedCouriers, setSelectedCouriers] = useState<string[]>([]);
 
-  const { data: integrationsData, loading: intLoading, error, refetch } =
-    useApiQuery<IntegrationsResponse>("/api/v4/integrations");
+  const {
+    data: integrationsData,
+    loading: intLoading,
+    error,
+    refetch,
+  } = useApiQuery<IntegrationsResponse>("/api/v4/integrations");
 
   const { data: partnerStatsData, loading: statsLoading } =
     useApiQuery<PartnerStatsResponse>("/api/v4/couriers/partner-stats");
@@ -137,14 +155,20 @@ export default function ComparePage() {
   const canAddMore = selectedCouriers.length < 4;
   const loading = intLoading || statsLoading;
 
-  if (loading && !integrationsData) return <TableSkeleton rows={6} columns={4} />;
+  if (loading && !integrationsData)
+    return <TableSkeleton rows={6} columns={4} />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="flex flex-col gap-6 p-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="md" onClick={() => router.back()} className="gap-2">
+        <Button
+          variant="ghost"
+          size="md"
+          onClick={() => router.back()}
+          className="gap-2"
+        >
           <ArrowLeft className="w-4 h-4" />
           Back
         </Button>
@@ -152,14 +176,18 @@ export default function ComparePage() {
 
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold text-white">Compare Couriers</h1>
-        <p className="text-wl-text-secondary">Select up to 4 couriers to compare side-by-side</p>
+        <p className="text-wl-text-secondary">
+          Select up to 4 couriers to compare side-by-side
+        </p>
       </div>
 
       {/* Courier Selection Grid */}
       {couriers.length === 0 ? (
         <Card className="py-12 text-center">
           <div className="flex flex-col items-center gap-2">
-            <p className="text-wl-text-secondary">No courier integrations installed yet.</p>
+            <p className="text-wl-text-secondary">
+              No courier integrations installed yet.
+            </p>
             <Button
               variant="primary"
               size="sm"
@@ -183,13 +211,15 @@ export default function ComparePage() {
                 className={cn(
                   "cursor-pointer transition-all",
                   isSelected && "ring-2 ring-blue-400 bg-blue-500/10",
-                  isDisabled && "opacity-50 cursor-not-allowed"
+                  isDisabled && "opacity-50 cursor-not-allowed",
                 )}
               >
                 <CardContent className="pt-0">
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-white">{courier.name}</h3>
+                      <h3 className="font-semibold text-white">
+                        {courier.name}
+                      </h3>
                       {courier.rating > 0 ? (
                         <div className="flex items-center gap-1 mt-1">
                           {[...Array(5)].map((_, i) => (
@@ -199,7 +229,7 @@ export default function ComparePage() {
                                 "w-3 h-3",
                                 i < Math.floor(courier.rating)
                                   ? "fill-amber-400 text-amber-400"
-                                  : "text-wl-text-tertiary"
+                                  : "text-wl-text-tertiary",
                               )}
                             />
                           ))}
@@ -208,7 +238,9 @@ export default function ComparePage() {
                           </span>
                         </div>
                       ) : (
-                        <p className="text-xs text-wl-text-tertiary mt-1">No ratings yet</p>
+                        <p className="text-xs text-wl-text-tertiary mt-1">
+                          No ratings yet
+                        </p>
                       )}
                     </div>
 
@@ -223,25 +255,37 @@ export default function ComparePage() {
 
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-wl-text-secondary">Price Range:</span>
+                      <span className="text-wl-text-secondary">
+                        Price Range:
+                      </span>
                       <span className="text-white font-medium">
                         ${courier.priceRange.min} – ${courier.priceRange.max}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-wl-text-secondary">Speed:</span>
-                      <span className="text-white font-medium">{courier.deliverySpeed}</span>
+                      <span className="text-white font-medium">
+                        {courier.deliverySpeed}
+                      </span>
                     </div>
                     {courier.coverageAreas > 0 && (
                       <div className="flex justify-between">
-                        <span className="text-wl-text-secondary">Coverage:</span>
-                        <span className="text-white font-medium">{courier.coverageAreas} areas</span>
+                        <span className="text-wl-text-secondary">
+                          Coverage:
+                        </span>
+                        <span className="text-white font-medium">
+                          {courier.coverageAreas} areas
+                        </span>
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-wl-text-secondary">Success Rate:</span>
+                      <span className="text-wl-text-secondary">
+                        Success Rate:
+                      </span>
                       <span className="text-white font-medium">
-                        {courier.successRate > 0 ? `${courier.successRate}%` : "—"}
+                        {courier.successRate > 0
+                          ? `${courier.successRate}%`
+                          : "—"}
                       </span>
                     </div>
                   </div>
@@ -289,9 +333,14 @@ export default function ComparePage() {
                 </thead>
                 <tbody className="divide-y divide-wl-border-subtle">
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-white">Price Range</td>
+                    <td className="px-4 py-3 font-semibold text-white">
+                      Price Range
+                    </td>
                     {comparisonCouriers.map((courier) => (
-                      <td key={courier.id} className="px-4 py-3 text-center text-white">
+                      <td
+                        key={courier.id}
+                        className="px-4 py-3 text-center text-white"
+                      >
                         <span className="inline-flex items-center px-2 py-1 rounded bg-blue-500/20 text-blue-400 text-xs font-semibold">
                           ${courier.priceRange.min} – ${courier.priceRange.max}
                         </span>
@@ -299,41 +348,65 @@ export default function ComparePage() {
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-white">Delivery Speed</td>
+                    <td className="px-4 py-3 font-semibold text-white">
+                      Delivery Speed
+                    </td>
                     {comparisonCouriers.map((courier) => (
-                      <td key={courier.id} className="px-4 py-3 text-center text-white">
+                      <td
+                        key={courier.id}
+                        className="px-4 py-3 text-center text-white"
+                      >
                         {courier.deliverySpeed}
                       </td>
                     ))}
                   </tr>
                   {comparisonCouriers.some((c) => c.coverageAreas > 0) && (
                     <tr>
-                      <td className="px-4 py-3 font-semibold text-white">Coverage Areas</td>
+                      <td className="px-4 py-3 font-semibold text-white">
+                        Coverage Areas
+                      </td>
                       {comparisonCouriers.map((courier) => (
-                        <td key={courier.id} className="px-4 py-3 text-center text-white">
-                          {courier.coverageAreas > 0 ? courier.coverageAreas : "—"}
+                        <td
+                          key={courier.id}
+                          className="px-4 py-3 text-center text-white"
+                        >
+                          {courier.coverageAreas > 0
+                            ? courier.coverageAreas
+                            : "—"}
                         </td>
                       ))}
                     </tr>
                   )}
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-white">Success Rate</td>
+                    <td className="px-4 py-3 font-semibold text-white">
+                      Success Rate
+                    </td>
                     {comparisonCouriers.map((courier) => (
-                      <td key={courier.id} className="px-4 py-3 text-center text-white">
+                      <td
+                        key={courier.id}
+                        className="px-4 py-3 text-center text-white"
+                      >
                         {courier.successRate > 0 ? (
                           <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-semibold">
                             {courier.successRate}%
                           </span>
                         ) : (
-                          <span className="text-wl-text-tertiary text-sm">—</span>
+                          <span className="text-wl-text-tertiary text-sm">
+                            —
+                          </span>
                         )}
                       </td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-white">Rating</td>
+                    <td className="px-4 py-3 font-semibold text-white">
+                      Rating
+                    </td>
                     {comparisonCouriers.map((courier) => (
-                      <td key={courier.id} className="px-4 py-3 text-center text-white">
+                      <td
+                        key={courier.id}
+                        className="px-4 py-3 text-center text-white"
+                      >
                         {courier.rating > 0 ? (
                           <div className="flex items-center justify-center gap-2">
                             <div className="flex items-center gap-1">
@@ -344,60 +417,85 @@ export default function ComparePage() {
                                     "w-3 h-3",
                                     i < Math.floor(courier.rating)
                                       ? "fill-amber-400 text-amber-400"
-                                      : "text-wl-text-tertiary"
+                                      : "text-wl-text-tertiary",
                                   )}
                                 />
                               ))}
                             </div>
-                            <span className="text-xs">{courier.rating.toFixed(1)}</span>
+                            <span className="text-xs">
+                              {courier.rating.toFixed(1)}
+                            </span>
                           </div>
                         ) : (
-                          <span className="text-wl-text-tertiary text-sm">No ratings</span>
+                          <span className="text-wl-text-tertiary text-sm">
+                            No ratings
+                          </span>
                         )}
                       </td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-white">Real-time Tracking</td>
+                    <td className="px-4 py-3 font-semibold text-white">
+                      Real-time Tracking
+                    </td>
                     {comparisonCouriers.map((courier) => (
-                      <td key={courier.id} className="px-4 py-3 text-center text-white">
+                      <td
+                        key={courier.id}
+                        className="px-4 py-3 text-center text-white"
+                      >
                         {courier.features.realTimeTracking ? (
                           <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-semibold gap-1">
                             <CheckCircle className="w-3 h-3" />
                             Yes
                           </span>
                         ) : (
-                          <span className="text-wl-text-secondary text-sm">No</span>
+                          <span className="text-wl-text-secondary text-sm">
+                            No
+                          </span>
                         )}
                       </td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-white">Proof of Delivery</td>
+                    <td className="px-4 py-3 font-semibold text-white">
+                      Proof of Delivery
+                    </td>
                     {comparisonCouriers.map((courier) => (
-                      <td key={courier.id} className="px-4 py-3 text-center text-white">
+                      <td
+                        key={courier.id}
+                        className="px-4 py-3 text-center text-white"
+                      >
                         {courier.features.proofOfDelivery ? (
                           <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-semibold gap-1">
                             <CheckCircle className="w-3 h-3" />
                             Yes
                           </span>
                         ) : (
-                          <span className="text-wl-text-secondary text-sm">No</span>
+                          <span className="text-wl-text-secondary text-sm">
+                            No
+                          </span>
                         )}
                       </td>
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-white">Insurance</td>
+                    <td className="px-4 py-3 font-semibold text-white">
+                      Insurance
+                    </td>
                     {comparisonCouriers.map((courier) => (
-                      <td key={courier.id} className="px-4 py-3 text-center text-white">
+                      <td
+                        key={courier.id}
+                        className="px-4 py-3 text-center text-white"
+                      >
                         {courier.features.insurance ? (
                           <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-semibold gap-1">
                             <CheckCircle className="w-3 h-3" />
                             Yes
                           </span>
                         ) : (
-                          <span className="text-wl-text-secondary text-sm">No</span>
+                          <span className="text-wl-text-secondary text-sm">
+                            No
+                          </span>
                         )}
                       </td>
                     ))}
@@ -412,7 +510,9 @@ export default function ComparePage() {
       {comparisonCouriers.length === 0 && couriers.length > 0 && (
         <Card className="py-12 text-center">
           <div className="flex flex-col items-center gap-2">
-            <p className="text-wl-text-secondary">Select couriers above to compare them</p>
+            <p className="text-wl-text-secondary">
+              Select couriers above to compare them
+            </p>
           </div>
         </Card>
       )}

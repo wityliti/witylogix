@@ -13,7 +13,7 @@ import {
   Envelope,
   SigningField,
   AuthenticationMethod,
-} from './esignature-types';
+} from "./esignature-types";
 
 /**
  * Signing Ceremony Orchestrator
@@ -29,7 +29,7 @@ export class SigningCeremonyOrchestrator {
   async createCeremony(
     envelopeId: string,
     signer: Signer,
-    signingType: 'remote' | 'embedded' | 'in_person',
+    signingType: "remote" | "embedded" | "in_person",
     ipAddress: string,
     userAgent: string,
   ): Promise<SigningCeremony> {
@@ -43,7 +43,7 @@ export class SigningCeremonyOrchestrator {
       signerEmail: signer.email,
       sessionToken,
       sessionKey,
-      status: 'created',
+      status: "created",
       signingType,
       ipAddress,
       userAgent,
@@ -90,11 +90,11 @@ export class SigningCeremonyOrchestrator {
     const ceremony = this.ceremonies.get(ceremonyId);
     if (!ceremony) throw new Error(`Ceremony ${ceremonyId} not found`);
 
-    if (ceremony.status !== 'created') {
+    if (ceremony.status !== "created") {
       throw new Error(`Cannot start ceremony in ${ceremony.status} status`);
     }
 
-    ceremony.status = 'active';
+    ceremony.status = "active";
     ceremony.startedAt = new Date();
     ceremony.lastActivityAt = new Date();
 
@@ -112,7 +112,7 @@ export class SigningCeremonyOrchestrator {
     const ceremony = this.ceremonies.get(ceremonyId);
     if (!ceremony) throw new Error(`Ceremony ${ceremonyId} not found`);
 
-    ceremony.status = 'completed';
+    ceremony.status = "completed";
     ceremony.completedAt = new Date();
     ceremony.completionReason = reason;
 
@@ -130,7 +130,7 @@ export class SigningCeremonyOrchestrator {
     const ceremony = this.ceremonies.get(ceremonyId);
     if (!ceremony) throw new Error(`Ceremony ${ceremonyId} not found`);
 
-    ceremony.status = 'declined';
+    ceremony.status = "declined";
     ceremony.completedAt = new Date();
     ceremony.completionReason = reason;
 
@@ -145,8 +145,8 @@ export class SigningCeremonyOrchestrator {
     const ceremony = this.ceremonies.get(ceremonyId);
     if (!ceremony) return;
 
-    if (ceremony.status === 'active' || ceremony.status === 'created') {
-      ceremony.status = 'expired';
+    if (ceremony.status === "active" || ceremony.status === "created") {
+      ceremony.status = "expired";
     }
 
     this.ceremonies.set(ceremonyId, ceremony);
@@ -163,16 +163,16 @@ export class SigningCeremonyOrchestrator {
    * Private: Generate secure session token
    */
   private generateSessionToken(): string {
-    const crypto = require('crypto');
-    return crypto.randomBytes(32).toString('hex');
+    const crypto = require("crypto");
+    return crypto.randomBytes(32).toString("hex");
   }
 
   /**
    * Private: Generate session encryption key
    */
   private generateSessionKey(): string {
-    const crypto = require('crypto');
-    return crypto.randomBytes(32).toString('hex');
+    const crypto = require("crypto");
+    return crypto.randomBytes(32).toString("hex");
   }
 }
 
@@ -181,12 +181,17 @@ export class SigningCeremonyOrchestrator {
  * Handles multi-method signer authentication
  */
 export class SignerAuthenticator {
-  private authSessions: Map<string, { signerId: string; verifiedAt?: Date; attempts: number }> = new Map();
+  private authSessions: Map<
+    string,
+    { signerId: string; verifiedAt?: Date; attempts: number }
+  > = new Map();
 
   /**
    * Send email authentication
    */
-  async sendEmailAuthentication(signer: Signer): Promise<{ success: boolean; sentTo: string }> {
+  async sendEmailAuthentication(
+    signer: Signer,
+  ): Promise<{ success: boolean; sentTo: string }> {
     const authCode = this.generateAuthCode();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
@@ -208,9 +213,11 @@ export class SignerAuthenticator {
   /**
    * Send SMS authentication
    */
-  async sendSmsAuthentication(signer: Signer): Promise<{ success: boolean; sentTo: string }> {
+  async sendSmsAuthentication(
+    signer: Signer,
+  ): Promise<{ success: boolean; sentTo: string }> {
     if (!signer.phone) {
-      throw new Error('Phone number not provided');
+      throw new Error("Phone number not provided");
     }
 
     const authCode = this.generateAuthCode();
@@ -239,7 +246,7 @@ export class SignerAuthenticator {
     const session = this.authSessions.get(authCode);
 
     if (!session) {
-      return { verified: false, error: 'Invalid or expired code' };
+      return { verified: false, error: "Invalid or expired code" };
     }
 
     if (session.signerId !== signerId) {
@@ -247,7 +254,7 @@ export class SignerAuthenticator {
       if (session.attempts >= 3) {
         this.authSessions.delete(authCode);
       }
-      return { verified: false, error: 'Code does not match signer' };
+      return { verified: false, error: "Code does not match signer" };
     }
 
     session.verifiedAt = new Date();
@@ -284,7 +291,7 @@ export class SignerAuthenticator {
 
     // Stub implementation
     if (!idType || !idNumber) {
-      return { verified: false, error: 'ID information incomplete' };
+      return { verified: false, error: "ID information incomplete" };
     }
 
     return { verified: true };
@@ -375,16 +382,16 @@ export class SigningSessionManager {
     // Update completion percentage
     const totalFields = Object.keys(session.signedFields).length;
     // Assuming we know total fields needed; this would come from envelope
-    session.completionPercentage = Math.min(
-      100,
-      (totalFields / 10) * 100,
-    ); // Simplified
+    session.completionPercentage = Math.min(100, (totalFields / 10) * 100); // Simplified
   }
 
   /**
    * Record document preview
    */
-  async recordDocumentPreview(sessionToken: string, pageNumber: number): Promise<void> {
+  async recordDocumentPreview(
+    sessionToken: string,
+    pageNumber: number,
+  ): Promise<void> {
     const session = this.sessions.get(sessionToken);
     if (session) {
       if (!session.documentsPreviewed.includes(pageNumber)) {
@@ -407,7 +414,7 @@ export class SigningSessionManager {
    */
   async generateResumeToken(sessionToken: string): Promise<string> {
     const session = this.sessions.get(sessionToken);
-    if (!session) throw new Error('Session not found');
+    if (!session) throw new Error("Session not found");
 
     session.resumeToken = `resume_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     return session.resumeToken;
@@ -416,7 +423,9 @@ export class SigningSessionManager {
   /**
    * Resume session from token
    */
-  async resumeSession(resumeToken: string): Promise<SigningSessionState | null> {
+  async resumeSession(
+    resumeToken: string,
+  ): Promise<SigningSessionState | null> {
     for (const [token, session] of this.sessions.entries()) {
       if (session.resumeToken === resumeToken) {
         session.lastActivity = new Date();
@@ -435,7 +444,10 @@ export class FieldRenderer {
   /**
    * Render field configuration
    */
-  renderFieldConfig(field: SigningField, required: boolean = true): FieldRenderConfig {
+  renderFieldConfig(
+    field: SigningField,
+    required: boolean = true,
+  ): FieldRenderConfig {
     return {
       fieldId: field.id,
       required,
@@ -443,7 +455,7 @@ export class FieldRenderer {
       prefilledValue: field.prefilled,
       readOnly: false,
       highlightRequired: required,
-      requiredMarker: required ? '*' : '',
+      requiredMarker: required ? "*" : "",
       helpText: field.label ? `Enter ${field.label}` : undefined,
       tooltipText: field.label,
     };
@@ -452,7 +464,10 @@ export class FieldRenderer {
   /**
    * Validate field input before signing
    */
-  validateFieldInput(field: SigningField, value: any): { valid: boolean; errors: string[] } {
+  validateFieldInput(
+    field: SigningField,
+    value: any,
+  ): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
 
     if (field.required && (!value || String(value).trim().length === 0)) {
@@ -463,13 +478,13 @@ export class FieldRenderer {
     // Type-specific validation
     switch (field.fieldType) {
       case FieldType.EMAIL:
-        if (value && !String(value).includes('@')) {
+        if (value && !String(value).includes("@")) {
           errors.push(`Invalid email address`);
         }
         break;
 
       case FieldType.PHONE:
-        if (value && !/^\d{10,}$/.test(String(value).replace(/\D/g, ''))) {
+        if (value && !/^\d{10,}$/.test(String(value).replace(/\D/g, ""))) {
           errors.push(`Invalid phone number`);
         }
         break;
@@ -522,8 +537,8 @@ export class FieldRenderer {
     height: number;
   } {
     return {
-      type: 'signature',
-      placeholder: field.placeholder || 'Sign here',
+      type: "signature",
+      placeholder: field.placeholder || "Sign here",
       width: field.width,
       height: field.height,
     };
@@ -538,8 +553,8 @@ export class FieldRenderer {
     prefilled?: string;
   } {
     return {
-      type: 'date',
-      placeholder: 'MM/DD/YYYY',
+      type: "date",
+      placeholder: "MM/DD/YYYY",
       prefilled: field.prefilled,
     };
   }
@@ -555,8 +570,8 @@ export class FieldRenderer {
     prefilled?: string;
   } {
     return {
-      type: 'text',
-      placeholder: field.placeholder || field.label || '',
+      type: "text",
+      placeholder: field.placeholder || field.label || "",
       minLength: field.minLength,
       maxLength: field.maxLength,
       prefilled: field.prefilled,
@@ -573,19 +588,23 @@ export class CompletionHandler {
    * Check if all signers have signed
    */
   allSignersSigned(envelope: Envelope): boolean {
-    const allSighersSigned = envelope.signers.every(signer => signer.status === 'signed');
+    const allSighersSigned = envelope.signers.every(
+      (signer) => signer.status === "signed",
+    );
     const requiredSignersSigned = envelope.signers
-      .filter(s => s.role === 'signer')
-      .every(s => s.status === 'signed');
+      .filter((s) => s.role === "signer")
+      .every((s) => s.status === "signed");
 
-    return envelope.requireAllSignatures ? allSighersSigned : requiredSignersSigned;
+    return envelope.requireAllSignatures
+      ? allSighersSigned
+      : requiredSignersSigned;
   }
 
   /**
    * Check if any signer has declined
    */
   anySignerDeclined(envelope: Envelope): boolean {
-    return envelope.signers.some(signer => signer.status === 'declined');
+    return envelope.signers.some((signer) => signer.status === "declined");
   }
 
   /**
@@ -597,10 +616,14 @@ export class CompletionHandler {
     declinedCount: number;
     pendingCount: number;
   } {
-    const signedCount = envelope.signers.filter(s => s.status === 'signed').length;
-    const declinedCount = envelope.signers.filter(s => s.status === 'declined').length;
+    const signedCount = envelope.signers.filter(
+      (s) => s.status === "signed",
+    ).length;
+    const declinedCount = envelope.signers.filter(
+      (s) => s.status === "declined",
+    ).length;
     const pendingCount = envelope.signers.filter(
-      s => s.status === 'pending' || s.status === 'viewed',
+      (s) => s.status === "pending" || s.status === "viewed",
     ).length;
 
     return {
@@ -619,7 +642,7 @@ export class CompletionHandler {
     const certificateData = {
       envelopeId: envelope.id,
       completedAt: new Date(),
-      signatories: envelope.signers.map(s => ({
+      signatories: envelope.signers.map((s) => ({
         signerId: s.id,
         email: s.email,
         name: s.name,
@@ -629,16 +652,16 @@ export class CompletionHandler {
     };
 
     // In production, this would create a proper X.509 certificate
-    return Buffer.from(JSON.stringify(certificateData)).toString('base64');
+    return Buffer.from(JSON.stringify(certificateData)).toString("base64");
   }
 
   /**
    * Private: Calculate envelope hash
    */
   private calculateEnvelopeHash(envelope: Envelope): string {
-    const crypto = require('crypto');
-    const data = envelope.documents.map(d => d.documentHash).join('|');
-    return crypto.createHash('sha256').update(data).digest('hex');
+    const crypto = require("crypto");
+    const data = envelope.documents.map((d) => d.documentHash).join("|");
+    return crypto.createHash("sha256").update(data).digest("hex");
   }
 }
 
@@ -656,8 +679,8 @@ export class NotificationManager {
     signingUrl: string,
   ): Promise<{ success: boolean; messageId?: string }> {
     const notification: NotificationConfig = {
-      type: 'send',
-      channel: 'email',
+      type: "send",
+      channel: "email",
       subject: `Sign required for: ${envelope.name}`,
       body: `Please sign the document: ${envelope.name}\nClick here to sign: ${signingUrl}`,
     };
@@ -675,8 +698,8 @@ export class NotificationManager {
     signingUrl: string,
   ): Promise<{ success: boolean; messageId?: string }> {
     const notification: NotificationConfig = {
-      type: 'remind',
-      channel: 'email',
+      type: "remind",
+      channel: "email",
       subject: `Reminder: Sign required for ${envelope.name}`,
       body: `This is a reminder to sign: ${envelope.name}\nSign now: ${signingUrl}`,
     };
@@ -696,8 +719,8 @@ export class NotificationManager {
     envelope: Envelope,
   ): Promise<{ success: boolean; messageId?: string }> {
     const notification: NotificationConfig = {
-      type: 'complete',
-      channel: 'email',
+      type: "complete",
+      channel: "email",
       subject: `Signing complete for: ${envelope.name}`,
       body: `All required signatures have been collected for: ${envelope.name}`,
     };
@@ -715,10 +738,10 @@ export class NotificationManager {
     declineReason?: string,
   ): Promise<{ success: boolean; messageId?: string }> {
     const notification: NotificationConfig = {
-      type: 'decline',
-      channel: 'email',
+      type: "decline",
+      channel: "email",
       subject: `${signer.name} declined to sign: ${envelope.name}`,
-      body: `${signer.name} (${signer.email}) declined to sign.\nReason: ${declineReason || 'Not provided'}`,
+      body: `${signer.name} (${signer.email}) declined to sign.\nReason: ${declineReason || "Not provided"}`,
     };
 
     // TODO: Send via notification service
@@ -733,8 +756,8 @@ export class NotificationManager {
     hoursRemaining: number,
   ): Promise<{ success: boolean; messageId?: string }> {
     const notification: NotificationConfig = {
-      type: 'expire',
-      channel: 'email',
+      type: "expire",
+      channel: "email",
       subject: `Warning: ${envelope.name} expires in ${hoursRemaining} hours`,
       body: `Document ${envelope.name} will expire in ${hoursRemaining} hours. Please sign immediately.`,
     };

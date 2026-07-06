@@ -90,7 +90,7 @@ describe("TwilioClient", () => {
           to: "invalid",
           from: "+14155552222",
           body: "Test",
-        })
+        }),
       ).rejects.toThrow();
     });
 
@@ -132,7 +132,7 @@ describe("TwilioClient", () => {
         "+14155552671",
         "+14155552222",
         "Check this out",
-        ["https://example.com/image.jpg"]
+        ["https://example.com/image.jpg"],
       );
 
       expect(result.sid).toBe("MMaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
@@ -154,10 +154,7 @@ describe("TwilioClient", () => {
         "+14155552671",
         "+14155552222",
         "Photos",
-        [
-          "https://example.com/photo1.jpg",
-          "https://example.com/photo2.jpg",
-        ]
+        ["https://example.com/photo1.jpg", "https://example.com/photo2.jpg"],
       );
 
       expect(result.status).toBe("queued");
@@ -179,7 +176,7 @@ describe("TwilioClient", () => {
       const result = await client.sendWhatsAppTemplate(
         "whatsapp:+14155552671",
         "whatsapp:+14155552222",
-        "hello_world"
+        "hello_world",
       );
 
       expect(result.status).toBe("queued");
@@ -200,7 +197,7 @@ describe("TwilioClient", () => {
         "whatsapp:+14155552671",
         "whatsapp:+14155552222",
         "greeting",
-        [{ type: "text", text: "John" }]
+        [{ type: "text", text: "John" }],
       );
 
       expect(result.status).toBe("queued");
@@ -220,7 +217,7 @@ describe("TwilioClient", () => {
       const result = await client.sendWhatsAppMessage(
         "whatsapp:+14155552671",
         "whatsapp:+14155552222",
-        "Hello from WhatsApp!"
+        "Hello from WhatsApp!",
       );
 
       expect(result.status).toBe("sent");
@@ -243,7 +240,7 @@ describe("TwilioClient", () => {
       const result = await client.createVerification(
         "+14155552671",
         "sms",
-        "VAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        "VAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       );
 
       expect(result.status).toBe("pending");
@@ -262,10 +259,7 @@ describe("TwilioClient", () => {
         }),
       });
 
-      const result = await client.createVerification(
-        "+14155552671",
-        "call"
-      );
+      const result = await client.createVerification("+14155552671", "call");
 
       expect(result.status).toBe("pending");
     });
@@ -280,10 +274,7 @@ describe("TwilioClient", () => {
         }),
       });
 
-      const result = await client.checkVerification(
-        "+14155552671",
-        "123456"
-      );
+      const result = await client.checkVerification("+14155552671", "123456");
 
       expect(result.valid).toBe(true);
       expect(result.status).toBe("approved");
@@ -299,10 +290,7 @@ describe("TwilioClient", () => {
         }),
       });
 
-      const result = await client.checkVerification(
-        "+14155552671",
-        "000000"
-      );
+      const result = await client.checkVerification("+14155552671", "000000");
 
       expect(result.valid).toBe(false);
     });
@@ -323,7 +311,7 @@ describe("TwilioClient", () => {
       const isValid = client.validateWebhookRequest(
         url,
         params,
-        "fake-signature"
+        "fake-signature",
       );
 
       // Signature validation will fail with fake values
@@ -424,7 +412,7 @@ describe("TwilioClient", () => {
       await client.updatePhoneNumberWebhooks(
         "PNxxx",
         "https://example.com/sms",
-        "https://example.com/voice"
+        "https://example.com/voice",
       );
 
       expect(mockFetch).toHaveBeenCalled();

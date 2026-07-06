@@ -31,7 +31,9 @@ async function handleSync(job: Job<IntegrationJobData>): Promise<void> {
   });
 
   if (!integration || !integration.isEnabled) {
-    console.warn(`[integration-worker] Integration ${appSlug} not found or disabled for shop ${shopId}`);
+    console.warn(
+      `[integration-worker] Integration ${appSlug} not found or disabled for shop ${shopId}`,
+    );
     return;
   }
 
@@ -54,7 +56,9 @@ async function handleSync(job: Job<IntegrationJobData>): Promise<void> {
         // Process collections — placeholder for actual sync logic
         // In production, this would sync collections and products to the database
         for (const collection of collections) {
-          console.debug(`[integration-worker] Processing collection: ${collection.node?.title}`);
+          console.debug(
+            `[integration-worker] Processing collection: ${collection.node?.title}`,
+          );
         }
 
         break;
@@ -80,7 +84,10 @@ async function handleSync(job: Job<IntegrationJobData>): Promise<void> {
         integrationId,
         eventType: "SYNC",
         operation: "sync",
-        metadata: { status: "completed", recordsProcessed: payload?.collections?.length || 0 },
+        metadata: {
+          status: "completed",
+          recordsProcessed: payload?.collections?.length || 0,
+        },
       },
     });
 
@@ -162,7 +169,9 @@ async function handleHealthCheck(job: Job<IntegrationJobData>): Promise<void> {
   }
 }
 
-async function handleWebhookProcess(job: Job<IntegrationJobData>): Promise<void> {
+async function handleWebhookProcess(
+  job: Job<IntegrationJobData>,
+): Promise<void> {
   const { shopId, appSlug, integrationId, payload } = job.data;
 
   const integration = await db.integration.findUnique({
@@ -274,7 +283,9 @@ async function handleWebhookProcess(job: Job<IntegrationJobData>): Promise<void>
 
 // ─── Worker Setup ──────────────────────────────────────────
 
-async function processIntegrationJob(job: Job<IntegrationJobData>): Promise<void> {
+async function processIntegrationJob(
+  job: Job<IntegrationJobData>,
+): Promise<void> {
   const startTime = Date.now();
 
   try {
@@ -289,7 +300,9 @@ async function processIntegrationJob(job: Job<IntegrationJobData>): Promise<void
         await handleWebhookProcess(job);
         break;
       default:
-        console.error(`[integration-worker] Unknown job type: ${(job.data as any).jobType}`);
+        console.error(
+          `[integration-worker] Unknown job type: ${(job.data as any).jobType}`,
+        );
     }
   } catch (err) {
     console.error(

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { X, Plus, Upload, GripVertical, MapPin, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import type { Stop, Priority } from '@/hooks/use-route-planner';
+import { useState, useRef, useCallback, useEffect } from "react";
+import { X, Plus, Upload, GripVertical, MapPin, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import type { Stop, Priority } from "@/hooks/use-route-planner";
 
 interface NominatimResult {
   place_id: string;
@@ -25,7 +25,7 @@ async function searchAddresses(query: string): Promise<NominatimResult[]> {
     const encoded = encodeURIComponent(query);
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=5&addressdetails=1`,
-      { headers: { 'Accept-Language': 'en' } },
+      { headers: { "Accept-Language": "en" } },
     );
     if (!res.ok) return [];
     const data: NominatimResult[] = await res.json();
@@ -37,27 +37,32 @@ async function searchAddresses(query: string): Promise<NominatimResult[]> {
 
 interface StopListEditorProps {
   stops: Stop[];
-  onAddStop: (stop: Omit<Stop, 'id'>) => void;
+  onAddStop: (stop: Omit<Stop, "id">) => void;
   onUpdateStop: (stopId: string, updates: Partial<Stop>) => void;
   onRemoveStop: (stopId: string) => void;
   onReorderStops: (fromIndex: number, toIndex: number) => void;
   onImportCSV: (csvData: string) => void;
 }
 
-const priorityVariant = (p: Priority): 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary' => {
-  const map: Record<Priority, 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary'> = {
-    normal: 'default',
-    high: 'warning',
-    urgent: 'danger',
+const priorityVariant = (
+  p: Priority,
+): "default" | "success" | "warning" | "danger" | "info" | "primary" => {
+  const map: Record<
+    Priority,
+    "default" | "success" | "warning" | "danger" | "info" | "primary"
+  > = {
+    normal: "default",
+    high: "warning",
+    urgent: "danger",
   };
   return map[p];
 };
 
 const priorityColor = (p: Priority): string => {
   const colors: Record<Priority, string> = {
-    normal: 'var(--wl-neutral-500)',
-    high: 'var(--wl-warning-500)',
-    urgent: 'var(--wl-danger-500)',
+    normal: "var(--wl-neutral-500)",
+    high: "var(--wl-warning-500)",
+    urgent: "var(--wl-danger-500)",
   };
   return colors[p];
 };
@@ -70,7 +75,7 @@ export function StopListEditor({
   onReorderStops,
   onImportCSV,
 }: StopListEditorProps) {
-  const [newAddress, setNewAddress] = useState('');
+  const [newAddress, setNewAddress] = useState("");
   const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -107,15 +112,15 @@ export function StopListEditor({
   }, []);
 
   const handleSelectSuggestion = (result: NominatimResult) => {
-    setNewAddress('');
+    setNewAddress("");
     setSuggestions([]);
     setShowSuggestions(false);
     onAddStop({
       address: result.display_name,
       latitude: parseFloat(result.lat),
       longitude: parseFloat(result.lon),
-      priority: 'normal',
-      notes: '',
+      priority: "normal",
+      notes: "",
     });
   };
 
@@ -123,10 +128,10 @@ export function StopListEditor({
     if (newAddress.trim()) {
       onAddStop({
         address: newAddress,
-        priority: 'normal',
-        notes: '',
+        priority: "normal",
+        notes: "",
       });
-      setNewAddress('');
+      setNewAddress("");
       setSuggestions([]);
       setShowSuggestions(false);
     }
@@ -143,7 +148,7 @@ export function StopListEditor({
       reader.readAsText(file);
     }
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -163,7 +168,7 @@ export function StopListEditor({
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleAddManually();
     }
   };
@@ -187,12 +192,12 @@ export function StopListEditor({
                 onChange={(e) => handleAddressChange(e.target.value)}
                 onKeyPress={handleKeyPress}
                 className={cn(
-                  'w-full px-4 py-2 rounded-md text-sm pr-8',
-                  'bg-wl-bg-surface text-wl-text-primary',
-                  'border border-wl-border-default',
-                  'placeholder-wl-text-tertiary',
-                  'focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500',
-                  'transition-colors'
+                  "w-full px-4 py-2 rounded-md text-sm pr-8",
+                  "bg-wl-bg-surface text-wl-text-primary",
+                  "border border-wl-border-default",
+                  "placeholder-wl-text-tertiary",
+                  "focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500",
+                  "transition-colors",
                 )}
               />
               {isSearching && (
@@ -208,9 +213,11 @@ export function StopListEditor({
                     key={result.place_id}
                     onClick={() => handleSelectSuggestion(result)}
                     className={cn(
-                      'w-full px-4 py-2 text-sm text-left text-wl-text-primary',
-                      'hover:bg-wl-bg-overlay transition-colors',
-                      idx < suggestions.length - 1 ? 'border-b border-wl-border-default' : ''
+                      "w-full px-4 py-2 text-sm text-left text-wl-text-primary",
+                      "hover:bg-wl-bg-overlay transition-colors",
+                      idx < suggestions.length - 1
+                        ? "border-b border-wl-border-default"
+                        : "",
                     )}
                   >
                     <div className="flex items-start gap-2">
@@ -236,11 +243,7 @@ export function StopListEditor({
             </Button>
 
             <label>
-              <Button
-                variant="secondary"
-                size="sm"
-                asChild
-              >
+              <Button variant="secondary" size="sm" asChild>
                 <span>
                   <Upload className="w-4 h-4" />
                   Import CSV
@@ -286,10 +289,10 @@ export function StopListEditor({
                   onDragOver={handleDragOver}
                   onDrop={() => handleDrop(index)}
                   className={cn(
-                    'flex items-center gap-3 p-3 rounded-md',
-                    'bg-wl-bg-surface border border-wl-border-default',
-                    'hover:border-wl-border-strong transition-colors',
-                    draggedIndex === index && 'opacity-50'
+                    "flex items-center gap-3 p-3 rounded-md",
+                    "bg-wl-bg-surface border border-wl-border-default",
+                    "hover:border-wl-border-strong transition-colors",
+                    draggedIndex === index && "opacity-50",
                   )}
                 >
                   {/* Drag Handle */}
@@ -301,7 +304,7 @@ export function StopListEditor({
                   <div
                     className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
                     style={{
-                      backgroundColor: 'var(--wl-primary-500)',
+                      backgroundColor: "var(--wl-primary-500)",
                     }}
                   >
                     {index + 1}
@@ -320,7 +323,10 @@ export function StopListEditor({
                   </div>
 
                   {/* Priority Badge */}
-                  <Badge variant={priorityVariant(stop.priority)} className="flex-shrink-0">
+                  <Badge
+                    variant={priorityVariant(stop.priority)}
+                    className="flex-shrink-0"
+                  >
                     {stop.priority}
                   </Badge>
 
@@ -341,9 +347,9 @@ export function StopListEditor({
                   <button
                     onClick={() => onRemoveStop(stop.id)}
                     className={cn(
-                      'flex-shrink-0 p-1 rounded-md text-wl-text-tertiary',
-                      'hover:bg-wl-danger-bg hover:text-wl-danger-400',
-                      'transition-colors'
+                      "flex-shrink-0 p-1 rounded-md text-wl-text-tertiary",
+                      "hover:bg-wl-danger-bg hover:text-wl-danger-400",
+                      "transition-colors",
                     )}
                   >
                     <X className="w-4 h-4" />
@@ -355,11 +361,12 @@ export function StopListEditor({
             {/* Summary */}
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-wl-border-default text-xs text-wl-text-tertiary">
               <span>
-                {stops.length} stop{stops.length !== 1 ? 's' : ''} added
+                {stops.length} stop{stops.length !== 1 ? "s" : ""} added
               </span>
               <span>
-                {stops.filter((s) => s.priority === 'urgent').length} urgent ·{' '}
-                {stops.filter((s) => s.priority === 'high').length} high priority
+                {stops.filter((s) => s.priority === "urgent").length} urgent ·{" "}
+                {stops.filter((s) => s.priority === "high").length} high
+                priority
               </span>
             </div>
           </div>

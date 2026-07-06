@@ -202,16 +202,13 @@ export class AfterShipSDKClient {
   private maxRequestsPerWindow = 10;
   private requestTimestamps: number[] = [];
 
-  constructor(config: {
-    apiKey: string;
-    baseUrl?: string;
-    timeout?: number;
-  }) {
+  constructor(config: { apiKey: string; baseUrl?: string; timeout?: number }) {
     if (!config.apiKey) {
       throw new Error("AfterShip API key is required");
     }
     this.apiKey = config.apiKey;
-    this.baseUrl = config.baseUrl || "https://api.aftership.com/tracking/2026-01";
+    this.baseUrl =
+      config.baseUrl || "https://api.aftership.com/tracking/2026-01";
     this.timeout = config.timeout || 30000;
   }
 
@@ -239,7 +236,7 @@ export class AfterShipSDKClient {
     const response = await this.request<AfterShipResponse<AfterShipTracking>>(
       "POST",
       "/trackings",
-      { tracking }
+      { tracking },
     );
     return response.data;
   }
@@ -255,7 +252,7 @@ export class AfterShipSDKClient {
   async getTracking(
     trackingId: string,
     slug: string,
-    fields?: string[]
+    fields?: string[],
   ): Promise<AfterShipTracking> {
     const params = new URLSearchParams();
     if (fields?.length) {
@@ -264,7 +261,7 @@ export class AfterShipSDKClient {
     const url = `/trackings/${slug}/${trackingId}${params.toString() ? `?${params}` : ""}`;
     const response = await this.request<AfterShipResponse<AfterShipTracking>>(
       "GET",
-      url
+      url,
     );
     return response.data;
   }
@@ -280,7 +277,7 @@ export class AfterShipSDKClient {
   async getTrackingByNumber(
     trackingNumber: string,
     slug: string,
-    fields?: string[]
+    fields?: string[],
   ): Promise<AfterShipTracking> {
     const params = new URLSearchParams();
     params.append("tracking_number", trackingNumber);
@@ -290,7 +287,7 @@ export class AfterShipSDKClient {
     const url = `/trackings/${slug}?${params.toString()}`;
     const response = await this.request<AfterShipResponse<AfterShipTracking>>(
       "GET",
-      url
+      url,
     );
     return response.data;
   }
@@ -310,7 +307,7 @@ export class AfterShipSDKClient {
     limit = 100,
     statuses?: string[],
     createdDateMin?: string,
-    createdDateMax?: string
+    createdDateMax?: string,
   ): Promise<AfterShipPaginatedResponse<AfterShipTracking>> {
     const params = new URLSearchParams();
     params.append("page", page.toString());
@@ -326,7 +323,7 @@ export class AfterShipSDKClient {
     }
     return this.request<AfterShipPaginatedResponse<AfterShipTracking>>(
       "GET",
-      `/trackings?${params.toString()}`
+      `/trackings?${params.toString()}`,
     );
   }
 
@@ -341,12 +338,12 @@ export class AfterShipSDKClient {
   async updateTracking(
     trackingId: string,
     slug: string,
-    updates: Partial<AfterShipTracking>
+    updates: Partial<AfterShipTracking>,
   ): Promise<AfterShipTracking> {
     const response = await this.request<AfterShipResponse<AfterShipTracking>>(
       "PUT",
       `/trackings/${slug}/${trackingId}`,
-      { tracking: updates }
+      { tracking: updates },
     );
     return response.data;
   }
@@ -360,11 +357,11 @@ export class AfterShipSDKClient {
    */
   async deleteTracking(
     trackingId: string,
-    slug: string
+    slug: string,
   ): Promise<{ data: Record<string, unknown> }> {
     return this.request<{ data: Record<string, unknown> }>(
       "DELETE",
-      `/trackings/${slug}/${trackingId}`
+      `/trackings/${slug}/${trackingId}`,
     );
   }
 
@@ -377,11 +374,11 @@ export class AfterShipSDKClient {
    */
   async retractTracking(
     trackingId: string,
-    slug: string
+    slug: string,
   ): Promise<AfterShipTracking> {
     const response = await this.request<AfterShipResponse<AfterShipTracking>>(
       "POST",
-      `/trackings/${slug}/${trackingId}/retrack`
+      `/trackings/${slug}/${trackingId}/retrack`,
     );
     return response.data;
   }
@@ -394,7 +391,7 @@ export class AfterShipSDKClient {
   async listCouriers(): Promise<AfterShipCourier[]> {
     const response = await this.request<AfterShipResponse<AfterShipCourier[]>>(
       "GET",
-      "/couriers"
+      "/couriers",
     );
     return response.data;
   }
@@ -408,7 +405,7 @@ export class AfterShipSDKClient {
    */
   async detectCourier(
     trackingNumber: string,
-    carriers?: string[]
+    carriers?: string[],
   ): Promise<AfterShipCourier[]> {
     const params = new URLSearchParams();
     params.append("tracking_number", trackingNumber);
@@ -417,7 +414,7 @@ export class AfterShipSDKClient {
     }
     const response = await this.request<AfterShipResponse<AfterShipCourier[]>>(
       "GET",
-      `/couriers/detect?${params.toString()}`
+      `/couriers/detect?${params.toString()}`,
     );
     return response.data;
   }
@@ -430,7 +427,7 @@ export class AfterShipSDKClient {
   async listUserCouriers(): Promise<AfterShipCourier[]> {
     const response = await this.request<AfterShipResponse<AfterShipCourier[]>>(
       "GET",
-      "/couriers/user_couriers"
+      "/couriers/user_couriers",
     );
     return response.data;
   }
@@ -444,7 +441,7 @@ export class AfterShipSDKClient {
    */
   async getNotifications(
     trackingId: string,
-    slug: string
+    slug: string,
   ): Promise<AfterShipNotification[]> {
     const response = await this.request<
       AfterShipResponse<AfterShipNotification[]>
@@ -465,19 +462,15 @@ export class AfterShipSDKClient {
     trackingId: string,
     slug: string,
     notificationType: "sms" | "email" | "push_notif",
-    value: string
+    value: string,
   ): Promise<AfterShipNotification[]> {
     const response = await this.request<
       AfterShipResponse<AfterShipNotification[]>
-    >(
-      "POST",
-      `/trackings/${slug}/${trackingId}/notification`,
-      {
-        notification: {
-          [`${notificationType}s`]: [value],
-        },
-      }
-    );
+    >("POST", `/trackings/${slug}/${trackingId}/notification`, {
+      notification: {
+        [`${notificationType}s`]: [value],
+      },
+    });
     return response.data;
   }
 
@@ -494,19 +487,15 @@ export class AfterShipSDKClient {
     trackingId: string,
     slug: string,
     notificationType: "sms" | "email" | "push_notif",
-    value: string
+    value: string,
   ): Promise<AfterShipNotification[]> {
     const response = await this.request<
       AfterShipResponse<AfterShipNotification[]>
-    >(
-      "DELETE",
-      `/trackings/${slug}/${trackingId}/notification`,
-      {
-        notification: {
-          [notificationType]: value,
-        },
-      }
-    );
+    >("DELETE", `/trackings/${slug}/${trackingId}/notification`, {
+      notification: {
+        [notificationType]: value,
+      },
+    });
     return response.data;
   }
 
@@ -519,7 +508,7 @@ export class AfterShipSDKClient {
    */
   async getEstimatedDelivery(
     trackingId: string,
-    slug: string
+    slug: string,
   ): Promise<AfterShipEstimatedDelivery | null> {
     const tracking = await this.getTracking(trackingId, slug);
     return tracking.estimated_delivery || null;
@@ -534,7 +523,7 @@ export class AfterShipSDKClient {
    */
   async getLastCheckpoint(
     trackingId: string,
-    slug: string
+    slug: string,
   ): Promise<AfterShipCheckpoint | null> {
     const tracking = await this.getTracking(trackingId, slug);
     return tracking.last_checkpoint || null;
@@ -567,7 +556,7 @@ export class AfterShipSDKClient {
     try {
       await this.request<AfterShipPaginatedResponse<AfterShipTracking>>(
         "GET",
-        "/trackings?page=1&limit=1"
+        "/trackings?page=1&limit=1",
       );
       return true;
     } catch {
@@ -581,12 +570,12 @@ export class AfterShipSDKClient {
   private enforceRateLimit(): void {
     const now = Date.now();
     this.requestTimestamps = this.requestTimestamps.filter(
-      (ts) => now - ts < this.rateLimitWindow
+      (ts) => now - ts < this.rateLimitWindow,
     );
 
     if (this.requestTimestamps.length >= this.maxRequestsPerWindow) {
       throw new Error(
-        `Rate limit exceeded: ${this.maxRequestsPerWindow} requests per second`
+        `Rate limit exceeded: ${this.maxRequestsPerWindow} requests per second`,
       );
     }
 
@@ -599,7 +588,7 @@ export class AfterShipSDKClient {
   private async request<T>(
     method: "GET" | "POST" | "PUT" | "DELETE",
     path: string,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     this.enforceRateLimit();
 
@@ -621,7 +610,7 @@ export class AfterShipSDKClient {
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(
-          `AfterShip API error ${response.status}: ${errorText || response.statusText}`
+          `AfterShip API error ${response.status}: ${errorText || response.statusText}`,
         );
       }
 

@@ -11,7 +11,7 @@
  * - Querying views with filters
  */
 
-import { AnalyticsAdapter } from './analytics-adapter.js';
+import { AnalyticsAdapter } from "./analytics-adapter.js";
 import type {
   AnalyticsConfig,
   QueryDefinition,
@@ -26,7 +26,7 @@ import type {
   HealthCheckResult,
   DataSource,
   FilterDefinition,
-} from './types.js';
+} from "./types.js";
 
 interface TableauWorkbook {
   id: string;
@@ -61,7 +61,7 @@ interface TableauSubscription {
   id: string;
   subject: string;
   contentId: string;
-  contentType: 'workbook' | 'view';
+  contentType: "workbook" | "view";
   recipient: string;
   frequency: string;
   nextRunAt?: Date;
@@ -81,7 +81,7 @@ interface TableauTrustedTicket {
 export class TableauClient extends AnalyticsAdapter {
   private accessToken: string | null = null;
   private tokenExpiresAt: number = 0;
-  private siteId: string = '';
+  private siteId: string = "";
 
   constructor(config: AnalyticsConfig) {
     super(config);
@@ -96,46 +96,53 @@ export class TableauClient extends AnalyticsAdapter {
       return this.accessToken;
     }
 
-    const token: string = this.config.credentials.pat || this.config.credentials.personalAccessToken;
-    const username: string = this.config.credentials.username || '';
-    const contentUrl: string = this.config.credentials.contentUrl || '';
+    const token: string =
+      this.config.credentials.pat ||
+      this.config.credentials.personalAccessToken;
+    const username: string = this.config.credentials.username || "";
+    const contentUrl: string = this.config.credentials.contentUrl || "";
 
     if (!token || !username) {
-      throw new Error('Tableau authentication requires PAT token and username');
+      throw new Error("Tableau authentication requires PAT token and username");
     }
 
     try {
       const response: Response = await fetch(
         `${this.config.apiUrl}/auth/signin`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/xml',
+            "Content-Type": "application/xml",
           },
           body: this._buildSigninXml(username, token, contentUrl),
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`Tableau authentication failed: ${response.statusText}`);
+        throw new Error(
+          `Tableau authentication failed: ${response.statusText}`,
+        );
       }
 
       const text: string = await response.text();
-      const tokenMatch: RegExpMatchArray | null = text.match(/<token>([^<]+)<\/token>/);
-      const siteMatch: RegExpMatchArray | null = text.match(/<site id="([^"]+)"/);
+      const tokenMatch: RegExpMatchArray | null = text.match(
+        /<token>([^<]+)<\/token>/,
+      );
+      const siteMatch: RegExpMatchArray | null =
+        text.match(/<site id="([^"]+)"/);
 
       if (!tokenMatch || !tokenMatch[1]) {
-        throw new Error('Failed to extract token from Tableau response');
+        throw new Error("Failed to extract token from Tableau response");
       }
 
       this.accessToken = tokenMatch[1];
-      this.siteId = siteMatch ? siteMatch[1] : '';
+      this.siteId = siteMatch ? siteMatch[1] : "";
       this.tokenExpiresAt = Date.now() + 12 * 60 * 60 * 1000; // 12 hour TTL
 
       return this.accessToken;
     } catch (error: unknown) {
       throw new Error(
-        `Tableau authentication error: ${error instanceof Error ? error.message : String(error)}`
+        `Tableau authentication error: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -145,38 +152,42 @@ export class TableauClient extends AnalyticsAdapter {
    * @returns JWT token
    */
   async generateJWT(): Promise<string> {
-    const clientId: string = this.config.credentials.clientId || '';
-    const clientSecret: string = this.config.credentials.clientSecret || '';
+    const clientId: string = this.config.credentials.clientId || "";
+    const clientSecret: string = this.config.credentials.clientSecret || "";
 
     if (!clientId || !clientSecret) {
-      throw new Error('JWT generation requires clientId and clientSecret');
+      throw new Error("JWT generation requires clientId and clientSecret");
     }
 
     // Create JWT header and payload
     const header = {
-      alg: 'HS256',
-      typ: 'JWT',
+      alg: "HS256",
+      typ: "JWT",
     };
 
     const now: number = Math.floor(Date.now() / 1000);
     const payload = {
       iss: clientId,
       sub: clientId,
-      aud: 'tableau',
+      aud: "tableau",
       iat: now,
       exp: now + 3600,
     };
 
     // Base64 encode and sign
-    const headerB64: string = Buffer.from(JSON.stringify(header)).toString('base64url');
-    const payloadB64: string = Buffer.from(JSON.stringify(payload)).toString('base64url');
+    const headerB64: string = Buffer.from(JSON.stringify(header)).toString(
+      "base64url",
+    );
+    const payloadB64: string = Buffer.from(JSON.stringify(payload)).toString(
+      "base64url",
+    );
 
     // Create signature using HMAC-SHA256
-    const crypto = await import('crypto');
+    const crypto = await import("crypto");
     const signature: string = crypto
-      .createHmac('sha256', clientSecret)
+      .createHmac("sha256", clientSecret)
       .update(`${headerB64}.${payloadB64}`)
-      .digest('base64url');
+      .digest("base64url");
 
     return `${headerB64}.${payloadB64}.${signature}`;
   }
@@ -191,12 +202,12 @@ export class TableauClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/sites/${this.siteId}/workbooks`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'X-Tableau-Auth': token,
-          'Accept': 'application/json',
+          "X-Tableau-Auth": token,
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -228,12 +239,12 @@ export class TableauClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/sites/${this.siteId}/workbooks/${workbookId}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'X-Tableau-Auth': token,
-          'Accept': 'application/json',
+          "X-Tableau-Auth": token,
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -262,28 +273,28 @@ export class TableauClient extends AnalyticsAdapter {
   async publishWorkbook(
     workbookName: string,
     filePath: string,
-    projectId: string
+    projectId: string,
   ): Promise<TableauWorkbook> {
     const token: string = await this.authenticate();
 
     // Read file
-    const fs = await import('fs');
+    const fs = await import("fs");
     const fileContent: Buffer = fs.readFileSync(filePath);
 
     const formData = new FormData();
-    const blob = new Blob([fileContent], { type: 'application/octet-stream' });
-    formData.append('file', blob, workbookName);
-    formData.append('overwrite', 'true');
+    const blob = new Blob([fileContent], { type: "application/octet-stream" });
+    formData.append("file", blob, workbookName);
+    formData.append("overwrite", "true");
 
     const response: Response = await fetch(
       `${this.config.apiUrl}/sites/${this.siteId}/workbooks?projectId=${projectId}`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'X-Tableau-Auth': token,
+          "X-Tableau-Auth": token,
         },
         body: formData,
-      }
+      },
     );
 
     if (!response.ok) {
@@ -311,11 +322,11 @@ export class TableauClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/sites/${this.siteId}/workbooks/${workbookId}/content`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'X-Tableau-Auth': token,
+          "X-Tableau-Auth": token,
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -335,12 +346,12 @@ export class TableauClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/sites/${this.siteId}/datasources`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'X-Tableau-Auth': token,
-          'Accept': 'application/json',
+          "X-Tableau-Auth": token,
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -352,10 +363,12 @@ export class TableauClient extends AnalyticsAdapter {
       data.datasources?.map((ds: any) => ({
         id: ds.id,
         name: ds.name,
-        type: ds.datasourceType || 'unknown',
+        type: ds.datasourceType || "unknown",
         tableName: ds.name,
         archived: ds.isArchived || false,
-        lastRefreshedAt: ds.lastRefreshedAt ? new Date(ds.lastRefreshedAt) : undefined,
+        lastRefreshedAt: ds.lastRefreshedAt
+          ? new Date(ds.lastRefreshedAt)
+          : undefined,
         fields: [],
       })) || []
     );
@@ -372,12 +385,12 @@ export class TableauClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/sites/${this.siteId}/datasources/${datasourceId}/refresh`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'X-Tableau-Auth': token,
-          'Content-Type': 'application/json',
+          "X-Tableau-Auth": token,
+          "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -389,7 +402,7 @@ export class TableauClient extends AnalyticsAdapter {
       id: data.id,
       name: data.name,
       lastRefreshedAt: new Date(),
-      type: 'extract',
+      type: "extract",
     };
   }
 
@@ -403,7 +416,7 @@ export class TableauClient extends AnalyticsAdapter {
   async createSubscription(
     contentId: string,
     recipient: string,
-    frequency: string
+    frequency: string,
   ): Promise<TableauSubscription> {
     const token: string = await this.authenticate();
 
@@ -418,13 +431,13 @@ export class TableauClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/sites/${this.siteId}/subscriptions`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'X-Tableau-Auth': token,
-          'Content-Type': 'application/json',
+          "X-Tableau-Auth": token,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -434,11 +447,11 @@ export class TableauClient extends AnalyticsAdapter {
     const data: any = await response.json();
     return {
       id: data.subscription.id,
-      subject: data.subscription.subject || '',
+      subject: data.subscription.subject || "",
       contentId: data.subscription.contentId,
-      contentType: data.subscription.contentType || 'view',
-      recipient: data.subscription.recipient?.id || '',
-      frequency: data.subscription.frequency || '',
+      contentType: data.subscription.contentType || "view",
+      recipient: data.subscription.recipient?.id || "",
+      frequency: data.subscription.frequency || "",
     };
   }
 
@@ -448,32 +461,38 @@ export class TableauClient extends AnalyticsAdapter {
    * @param siteId Site identifier (optional)
    * @returns Trusted ticket
    */
-  async generateTrustedTicket(username: string, siteId?: string): Promise<TableauTrustedTicket> {
-    const token: string = await this.config.credentials.trustedTicketToken || '';
+  async generateTrustedTicket(
+    username: string,
+    siteId?: string,
+  ): Promise<TableauTrustedTicket> {
+    const token: string =
+      (await this.config.credentials.trustedTicketToken) || "";
 
     if (!token) {
-      throw new Error('Trusted ticket token not configured');
+      throw new Error("Trusted ticket token not configured");
     }
 
     const body = new URLSearchParams();
-    body.append('username', username);
+    body.append("username", username);
     if (siteId) {
-      body.append('siteid', siteId);
+      body.append("siteid", siteId);
     }
 
     const response: Response = await fetch(
       `${this.config.instanceUrl}/api/auth/v1.0/trusted-ticket`,
       {
-        method: 'POST',
+        method: "POST",
         body,
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to generate trusted ticket: ${response.statusText}`);
+      throw new Error(
+        `Failed to generate trusted ticket: ${response.statusText}`,
+      );
     }
 
     const ticket: string = await response.text();
@@ -493,7 +512,8 @@ export class TableauClient extends AnalyticsAdapter {
    * @returns Full embed URL
    */
   async generateEmbedUrl(viewId: string, username: string): Promise<string> {
-    const trustedTicket: TableauTrustedTicket = await this.generateTrustedTicket(username);
+    const trustedTicket: TableauTrustedTicket =
+      await this.generateTrustedTicket(username);
 
     return `${this.config.instanceUrl}/#/views/${viewId}?:ticket=${trustedTicket.ticket}`;
   }
@@ -504,7 +524,10 @@ export class TableauClient extends AnalyticsAdapter {
    * @param filters Optional filter definitions
    * @returns Query result
    */
-  async queryView(viewId: string, filters?: FilterDefinition[]): Promise<QueryResult> {
+  async queryView(
+    viewId: string,
+    filters?: FilterDefinition[],
+  ): Promise<QueryResult> {
     const token: string = await this.authenticate();
 
     let url: string = `${this.config.apiUrl}/sites/${this.siteId}/views/${viewId}/data`;
@@ -512,16 +535,16 @@ export class TableauClient extends AnalyticsAdapter {
     if (filters && filters.length > 0) {
       const queryParams: string[] = filters.map(
         (f: FilterDefinition) =>
-          `${encodeURIComponent(f.field)}=${encodeURIComponent(String(f.value))}`
+          `${encodeURIComponent(f.field)}=${encodeURIComponent(String(f.value))}`,
       );
-      url += '?' + queryParams.join('&');
+      url += "?" + queryParams.join("&");
     }
 
     const response: Response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'X-Tableau-Auth': token,
-        'Accept': 'application/json',
+        "X-Tableau-Auth": token,
+        Accept: "application/json",
       },
     });
 
@@ -535,7 +558,7 @@ export class TableauClient extends AnalyticsAdapter {
       executionId: `tableau-${viewId}-${Date.now()}`,
       columns: (data.columns || []).map((col: any) => ({
         name: col.name,
-        type: 'string',
+        type: "string",
       })),
       rows: data.rows || [],
       totalRowCount: data.totalRowCount,
@@ -547,9 +570,14 @@ export class TableauClient extends AnalyticsAdapter {
   /**
    * Protected method: Execute query implementation for Tableau.
    */
-  protected async _executeQueryImpl(query: QueryDefinition): Promise<QueryResult> {
+  protected async _executeQueryImpl(
+    query: QueryDefinition,
+  ): Promise<QueryResult> {
     // For Tableau, queries map to views or direct API queries
-    const result: QueryResult = await this.queryView(query.dataSource, query.filters);
+    const result: QueryResult = await this.queryView(
+      query.dataSource,
+      query.filters,
+    );
     result.executionId = query.id;
     return result;
   }
@@ -558,7 +586,7 @@ export class TableauClient extends AnalyticsAdapter {
    * Protected method: Create dashboard implementation for Tableau.
    */
   protected async _createDashboardImpl(
-    dashboard: DashboardDefinition
+    dashboard: DashboardDefinition,
   ): Promise<DashboardDefinition> {
     // Tableau dashboards are typically workbooks with multiple views
     // This would create a new workbook with the specified configuration
@@ -575,13 +603,13 @@ export class TableauClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/sites/${this.siteId}/dashboards`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'X-Tableau-Auth': token,
-          'Content-Type': 'application/json',
+          "X-Tableau-Auth": token,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -595,18 +623,20 @@ export class TableauClient extends AnalyticsAdapter {
   /**
    * Protected method: Get dashboard implementation for Tableau.
    */
-  protected async _getDashboardImpl(dashboardId: string): Promise<DashboardDefinition> {
+  protected async _getDashboardImpl(
+    dashboardId: string,
+  ): Promise<DashboardDefinition> {
     const token: string = await this.authenticate();
 
     const response: Response = await fetch(
       `${this.config.apiUrl}/sites/${this.siteId}/dashboards/${dashboardId}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'X-Tableau-Auth': token,
-          'Accept': 'application/json',
+          "X-Tableau-Auth": token,
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -630,7 +660,7 @@ export class TableauClient extends AnalyticsAdapter {
    */
   protected async _updateDashboardImpl(
     dashboardId: string,
-    updates: Partial<DashboardDefinition>
+    updates: Partial<DashboardDefinition>,
   ): Promise<DashboardDefinition> {
     const token: string = await this.authenticate();
 
@@ -644,13 +674,13 @@ export class TableauClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/sites/${this.siteId}/dashboards/${dashboardId}`,
       {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'X-Tableau-Auth': token,
-          'Content-Type': 'application/json',
+          "X-Tableau-Auth": token,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -669,11 +699,11 @@ export class TableauClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/sites/${this.siteId}/dashboards/${dashboardId}`,
       {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'X-Tableau-Auth': token,
+          "X-Tableau-Auth": token,
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -689,15 +719,16 @@ export class TableauClient extends AnalyticsAdapter {
     userId: string,
     scopes: EmbedScope[],
     rlsRules?: RLSRule[],
-    expiryMinutes: number = 60
+    expiryMinutes: number = 60,
   ): Promise<EmbedToken> {
-    const trustedTicket: TableauTrustedTicket = await this.generateTrustedTicket(userId);
+    const trustedTicket: TableauTrustedTicket =
+      await this.generateTrustedTicket(userId);
 
     return {
       id: `tableau-token-${Date.now()}`,
       token: trustedTicket.ticket,
       entityId,
-      entityType: 'report',
+      entityType: "report",
       userId,
       scopes,
       rlsRules,
@@ -712,34 +743,34 @@ export class TableauClient extends AnalyticsAdapter {
   protected async _exportDashboardImpl(
     entityId: string,
     format: AnalyticsExportFormat,
-    _filters?: FilterDefinition[]
+    _filters?: FilterDefinition[],
   ): Promise<ExportResult> {
     const token: string = await this.authenticate();
 
     let mimeType: string;
     switch (format) {
-      case 'pdf':
-        mimeType = 'application/pdf';
+      case "pdf":
+        mimeType = "application/pdf";
         break;
-      case 'png':
-        mimeType = 'image/png';
+      case "png":
+        mimeType = "image/png";
         break;
-      case 'csv':
-        mimeType = 'text/csv';
+      case "csv":
+        mimeType = "text/csv";
         break;
       default:
-        mimeType = 'application/octet-stream';
+        mimeType = "application/octet-stream";
     }
 
     const response: Response = await fetch(
       `${this.config.apiUrl}/sites/${this.siteId}/views/${entityId}/${format}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'X-Tableau-Auth': token,
-          'Accept': mimeType,
+          "X-Tableau-Auth": token,
+          Accept: mimeType,
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -752,7 +783,7 @@ export class TableauClient extends AnalyticsAdapter {
       jobId: `export-${Date.now()}`,
       format,
       fileSizeBytes: buffer.length,
-      status: 'completed',
+      status: "completed",
       completedAt: new Date(),
     };
   }
@@ -767,11 +798,11 @@ export class TableauClient extends AnalyticsAdapter {
       const response: Response = await fetch(
         `${this.config.apiUrl}/sites/${this.siteId}/datasources`,
         {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'X-Tableau-Auth': token,
+            "X-Tableau-Auth": token,
           },
-        }
+        },
       );
 
       return {
@@ -780,7 +811,8 @@ export class TableauClient extends AnalyticsAdapter {
         responseTimeMs: 0,
       };
     } catch (error: unknown) {
-      const message: string = error instanceof Error ? error.message : String(error);
+      const message: string =
+        error instanceof Error ? error.message : String(error);
       return {
         healthy: false,
         authenticated: false,
@@ -790,7 +822,11 @@ export class TableauClient extends AnalyticsAdapter {
     }
   }
 
-  private _buildSigninXml(username: string, token: string, contentUrl: string): string {
+  private _buildSigninXml(
+    username: string,
+    token: string,
+    contentUrl: string,
+  ): string {
     return `<?xml version='1.0' encoding='UTF-8'?>
       <tsRequest xmlns="http://tableauserverclient.com/api"
                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

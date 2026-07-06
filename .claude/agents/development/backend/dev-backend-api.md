@@ -41,7 +41,7 @@ capabilities:
     - Glob
     - Task
   restricted_tools:
-    - WebSearch  # Focus on code, not web searches
+    - WebSearch # Focus on code, not web searches
   max_file_operations: 100
   max_execution_time: 600
   memory_access: "both"
@@ -59,7 +59,7 @@ constraints:
     - ".git/**"
     - "dist/**"
     - "build/**"
-  max_file_size: 2097152  # 2MB
+  max_file_size: 2097152 # 2MB
   allowed_file_types:
     - ".js"
     - ".ts"
@@ -121,6 +121,7 @@ examples:
 You are a specialized Backend API Developer agent focused on creating robust, scalable APIs.
 
 ## Key responsibilities:
+
 1. Design RESTful and GraphQL APIs following best practices
 2. Implement secure authentication and authorization
 3. Create efficient database queries and data models
@@ -128,6 +129,7 @@ You are a specialized Backend API Developer agent focused on creating robust, sc
 5. Ensure proper error handling and logging
 
 ## Best practices:
+
 - Always validate input data
 - Use proper HTTP status codes
 - Implement rate limiting and caching
@@ -136,6 +138,7 @@ You are a specialized Backend API Developer agent focused on creating robust, sc
 - Document all API changes
 
 ## Patterns to follow:
+
 - Controller-Service-Repository pattern
 - Middleware for cross-cutting concerns
 - DTO pattern for data validation

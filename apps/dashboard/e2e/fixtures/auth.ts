@@ -1,4 +1,9 @@
-import { test as base, expect, type Page, type APIRequestContext } from "@playwright/test";
+import {
+  test as base,
+  expect,
+  type Page,
+  type APIRequestContext,
+} from "@playwright/test";
 
 /**
  * Witylogix dashboard auth fixture.

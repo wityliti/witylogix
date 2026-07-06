@@ -15,7 +15,11 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { Request } from "express";
-import { resolveTenant, invalidateTenantCache, clearTenantCache } from "../tenant-resolver";
+import {
+  resolveTenant,
+  invalidateTenantCache,
+  clearTenantCache,
+} from "../tenant-resolver";
 import { generateApiKey } from "../api-key-service";
 import { prisma } from "@witylogix/db";
 import * as jwt from "jsonwebtoken";
@@ -396,7 +400,9 @@ describe("Tenant Resolver", () => {
       const context2 = await resolveTenant(req2);
 
       expect(context2.orgId).toBe(context1.orgId);
-      expect(context2.resolvedAt.getTime()).toBeGreaterThanOrEqual(context1.resolvedAt.getTime());
+      expect(context2.resolvedAt.getTime()).toBeGreaterThanOrEqual(
+        context1.resolvedAt.getTime(),
+      );
 
       // Restore for cleanup
       await prisma.organization.update({
@@ -508,7 +514,9 @@ describe("Tenant Resolver", () => {
       const context = await resolveTenant(req);
       const afterResolve = Date.now();
 
-      expect(context.resolvedAt.getTime()).toBeGreaterThanOrEqual(beforeResolve);
+      expect(context.resolvedAt.getTime()).toBeGreaterThanOrEqual(
+        beforeResolve,
+      );
       expect(context.resolvedAt.getTime()).toBeLessThanOrEqual(afterResolve);
     });
   });

@@ -15,7 +15,10 @@ import type { Prisma } from "@witylogix/db";
 
 // ─── TYPES ─────────────────────────────────────────────────────────────
 
-export type EmbeddingModel = "openai-ada-002" | "sentence-transformers" | "tfidf";
+export type EmbeddingModel =
+  | "openai-ada-002"
+  | "sentence-transformers"
+  | "tfidf";
 
 export type SearchableEntity =
   | "order"
@@ -91,7 +94,10 @@ class EmbeddingGenerator {
     // Mock implementation - in production would call OpenAI API
     // This prevents real API calls while maintaining correct interface
     const normalized = text.toLowerCase().substring(0, 100);
-    const seed = Array.from(normalized).reduce((s, c) => s + c.charCodeAt(0), 0);
+    const seed = Array.from(normalized).reduce(
+      (s, c) => s + c.charCodeAt(0),
+      0,
+    );
     return this.generateDeterministicEmbedding(seed, this.config.dimension);
   }
 
@@ -102,13 +108,19 @@ class EmbeddingGenerator {
 
     // Mock implementation - in production would use sentence-transformers
     const normalized = text.toLowerCase().substring(0, 100);
-    const seed = Array.from(normalized).reduce((s, c) => s + c.charCodeAt(0), 1);
+    const seed = Array.from(normalized).reduce(
+      (s, c) => s + c.charCodeAt(0),
+      1,
+    );
     return this.generateDeterministicEmbedding(seed, this.config.dimension);
   }
 
   private generateTFIDFEmbedding(text: string): number[] {
     // Simplified TF-IDF: tokenize and create sparse representation
-    const tokens = text.toLowerCase().split(/\W+/).filter((t) => t);
+    const tokens = text
+      .toLowerCase()
+      .split(/\W+/)
+      .filter((t) => t);
     const embedding = new Array(this.config.dimension).fill(0);
 
     tokens.forEach((token) => {
@@ -129,9 +141,8 @@ class EmbeddingGenerator {
       embedding[i] = (state % 1000) / 1000 - 0.5;
     }
     // Normalize to unit vector
-    const norm = Math.sqrt(
-      embedding.reduce((s: number, v: number) => s + v * v, 0)
-    ) || 1;
+    const norm =
+      Math.sqrt(embedding.reduce((s: number, v: number) => s + v * v, 0)) || 1;
     return embedding.map((v: number) => v / norm);
   }
 
@@ -164,7 +175,7 @@ export class SemanticSearch {
     entityType: SearchableEntity,
     content: string,
     tenantId: string,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): Promise<void> {
     const embedding = await this.embedder.generate(content);
 
@@ -194,10 +205,10 @@ export class SemanticSearch {
       content: string;
       metadata?: Record<string, unknown>;
     }>,
-    tenantId: string
+    tenantId: string,
   ): Promise<void> {
     const embeddings = await Promise.all(
-      entities.map((e) => this.embedder.generate(e.content))
+      entities.map((e) => this.embedder.generate(e.content)),
     );
 
     const createData = entities.map((e, i) => ({
@@ -231,7 +242,7 @@ export class SemanticSearch {
     query: string,
     tenantId: string,
     entityTypes?: SearchableEntity[],
-    limit: number = 10
+    limit: number = 10,
   ): Promise<SearchResult[]> {
     const queryEmbedding = await this.embedder.generate(query);
 
@@ -278,11 +289,14 @@ export class SemanticSearch {
       query,
       tenantId,
       entityTypes,
-      limit * 2
+      limit * 2,
     );
 
     // Text search (simple substring matching for BM25 simulation)
-    const queryTokens = query.toLowerCase().split(/\W+/).filter((t) => t);
+    const queryTokens = query
+      .toLowerCase()
+      .split(/\W+/)
+      .filter((t) => t);
     const textResults = await db.searchIndex.findMany({
       where: {
         tenantId,
@@ -367,7 +381,10 @@ export class SemanticSearch {
    * Simple BM25-like scoring for text relevance
    */
   private calculateBM25Score(content: string, queryTokens: string[]): number {
-    const contentTokens = content.toLowerCase().split(/\W+/).filter((t) => t);
+    const contentTokens = content
+      .toLowerCase()
+      .split(/\W+/)
+      .filter((t) => t);
     let matches = 0;
 
     queryTokens.forEach((qt) => {
@@ -384,7 +401,7 @@ export class SemanticSearch {
 export function createSemanticSearch(
   model: EmbeddingModel = "tfidf",
   openaiApiKey?: string,
-  localModelPath?: string
+  localModelPath?: string,
 ): SemanticSearch {
   const config: EmbeddingConfig = {
     model,

@@ -20,22 +20,22 @@ export {
   DataExportPackage,
   DatabaseRecord,
   AnonymizationReportData,
-} from './types.js';
+} from "./types.js";
 
 // Data export service
-export { DataExportService, type DatabaseInterface } from './data-export.js';
+export { DataExportService, type DatabaseInterface } from "./data-export.js";
 
 // Anonymizer
-export { DataAnonymizer } from './anonymizer.js';
+export { DataAnonymizer } from "./anonymizer.js";
 
 // Consent management
-export { ConsentManager } from './consent-manager.js';
+export { ConsentManager } from "./consent-manager.js";
 
 // Retention management
-export { RetentionManager } from './retention.js';
+export { RetentionManager } from "./retention.js";
 
 // Audit logging
-export { ComplianceAuditLogger } from './audit-logger.js';
+export { ComplianceAuditLogger } from "./audit-logger.js";
 
 // ─── HOS (Hours of Service) Compliance v2 ──────────────────────
 
@@ -56,18 +56,18 @@ export type {
   DVIREntry,
   VehicleDefect,
   InspectionResult,
-} from './hos-types.js';
+} from "./hos-types.js";
 
-export { DutyStatus } from './hos-types.js';
+export { DutyStatus } from "./hos-types.js";
 
 // HOS Rules Engine
-export { HOSRulesEngine, RuleEvaluator } from './hos-rules-engine-v2.js';
+export { HOSRulesEngine, RuleEvaluator } from "./hos-rules-engine-v2.js";
 
 // HOS Calculator
-export { HOSCalculator } from './hos-calculator.js';
+export { HOSCalculator } from "./hos-calculator.js";
 
 // HOS Violation Detector
-export { ViolationDetector } from './hos-violation-detector.js';
+export { ViolationDetector } from "./hos-violation-detector.js";
 
 // DVIR Engine
-export { DVIREngine } from './dvir-engine.js';
+export { DVIREngine } from "./dvir-engine.js";

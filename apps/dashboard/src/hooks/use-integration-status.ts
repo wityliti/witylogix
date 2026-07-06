@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
 /**
  * useIntegrationStatus — Hook for fetching and managing integration connection status.
  * Uses api.get() (auth-aware) — no raw fetch().
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { api } from '@/lib/api';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { api } from "@/lib/api";
 
 export interface IntegrationConnection {
   id: string;
   providerId: string;
   providerName: string;
-  status: 'connected' | 'disconnected' | 'error' | 'pending';
+  status: "connected" | "disconnected" | "error" | "pending";
   lastSyncTime?: string;
   apiCallsCount: number;
   errorCount: number;
@@ -66,14 +66,17 @@ export function useIntegrationStatus(
 
       try {
         const data = await api.get<{ connections: IntegrationConnection[] }>(
-          '/api/v4/integrations/connections',
+          "/api/v4/integrations/connections",
         );
-        const fetched = Array.isArray(data?.connections) ? data.connections : [];
+        const fetched = Array.isArray(data?.connections)
+          ? data.connections
+          : [];
         const merged = fetched.map((c) => optimisticRef.current.get(c.id) ?? c);
         setConnections(merged);
         cacheTimeRef.current = Date.now();
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Failed to load integrations';
+        const msg =
+          err instanceof Error ? err.message : "Failed to load integrations";
         setError(msg);
         setConnections([]);
       } finally {
@@ -89,19 +92,20 @@ export function useIntegrationStatus(
     async (providerId: string): Promise<IntegrationConnection> => {
       setError(undefined);
       try {
-        const { connection } = await api.post<{ connection: IntegrationConnection }>(
-          '/api/v4/integrations/connect',
-          { providerId },
-        );
+        const { connection } = await api.post<{
+          connection: IntegrationConnection;
+        }>("/api/v4/integrations/connect", { providerId });
         optimisticRef.current.set(connection.id, connection);
         setConnections((prev) => {
           const exists = prev.find((c) => c.id === connection.id);
-          return exists ? prev.map((c) => (c.id === connection.id ? connection : c)) : [...prev, connection];
+          return exists
+            ? prev.map((c) => (c.id === connection.id ? connection : c))
+            : [...prev, connection];
         });
         setTimeout(() => revalidate(), 1_000);
         return connection;
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Connection failed';
+        const msg = err instanceof Error ? err.message : "Connection failed";
         setError(msg);
         throw err;
       }
@@ -113,7 +117,9 @@ export function useIntegrationStatus(
     async (connectionId: string) => {
       setError(undefined);
       setConnections((prev) =>
-        prev.map((c) => (c.id === connectionId ? { ...c, status: 'disconnected' as const } : c)),
+        prev.map((c) =>
+          c.id === connectionId ? { ...c, status: "disconnected" as const } : c,
+        ),
       );
       try {
         await api.delete(`/api/v4/integrations/connections/${connectionId}`);
@@ -121,7 +127,7 @@ export function useIntegrationStatus(
         optimisticRef.current.delete(connectionId);
         setTimeout(() => revalidate(), 1_000);
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Disconnection failed';
+        const msg = err instanceof Error ? err.message : "Disconnection failed";
         setError(msg);
         await revalidate();
         throw err;
@@ -134,10 +140,12 @@ export function useIntegrationStatus(
     async (connectionId: string) => {
       setError(undefined);
       try {
-        await api.post(`/api/v4/integrations/connections/${connectionId}/pause`);
+        await api.post(
+          `/api/v4/integrations/connections/${connectionId}/pause`,
+        );
         await revalidate();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Pause failed');
+        setError(err instanceof Error ? err.message : "Pause failed");
         throw err;
       }
     },
@@ -148,10 +156,12 @@ export function useIntegrationStatus(
     async (connectionId: string) => {
       setError(undefined);
       try {
-        await api.post(`/api/v4/integrations/connections/${connectionId}/resume`);
+        await api.post(
+          `/api/v4/integrations/connections/${connectionId}/resume`,
+        );
         await revalidate();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Resume failed');
+        setError(err instanceof Error ? err.message : "Resume failed");
         throw err;
       }
     },
@@ -162,10 +172,12 @@ export function useIntegrationStatus(
     async (connectionId: string) => {
       setError(undefined);
       try {
-        await api.post(`/api/v4/integrations/connections/${connectionId}/force-sync`);
+        await api.post(
+          `/api/v4/integrations/connections/${connectionId}/force-sync`,
+        );
         await revalidate();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Force sync failed');
+        setError(err instanceof Error ? err.message : "Force sync failed");
         throw err;
       }
     },
@@ -194,5 +206,16 @@ export function useIntegrationStatus(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { connections, isLoading, error, revalidate, connect, disconnect, getStatus, pauseSync, resumeSync, forceSync };
+  return {
+    connections,
+    isLoading,
+    error,
+    revalidate,
+    connect,
+    disconnect,
+    getStatus,
+    pauseSync,
+    resumeSync,
+    forceSync,
+  };
 }

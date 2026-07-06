@@ -5,7 +5,7 @@
  * Supports Google, Microsoft, and custom OIDC providers.
  */
 
-import { randomBytes } from 'crypto';
+import { randomBytes } from "crypto";
 
 export interface OAuthConfig {
   clientId: string;
@@ -26,7 +26,7 @@ export interface UserProfile {
 export interface AuthorizationUrlOptions {
   state?: string;
   codeChallenge?: string;
-  codeChallengeMethod?: 'S256' | 'plain';
+  codeChallengeMethod?: "S256" | "plain";
 }
 
 export interface CallbackResult {
@@ -52,7 +52,11 @@ abstract class SSOProvider {
    * Validate configuration
    */
   protected validate(): void {
-    if (!this.config.clientId || !this.config.clientSecret || !this.config.redirectUri) {
+    if (
+      !this.config.clientId ||
+      !this.config.clientSecret ||
+      !this.config.redirectUri
+    ) {
       throw new Error(`Invalid ${this.provider} configuration`);
     }
   }
@@ -64,14 +68,14 @@ abstract class SSOProvider {
     codeVerifier: string;
     codeChallenge: string;
   } {
-    const codeVerifier = randomBytes(32).toString('base64url');
+    const codeVerifier = randomBytes(32).toString("base64url");
 
     // Create S256 challenge (SHA256 hash of verifier)
-    const crypto = require('crypto');
+    const crypto = require("crypto");
     const codeChallenge = crypto
-      .createHash('sha256')
+      .createHash("sha256")
       .update(codeVerifier)
-      .digest('base64url');
+      .digest("base64url");
 
     return { codeVerifier, codeChallenge };
   }
@@ -80,7 +84,7 @@ abstract class SSOProvider {
    * Generate random state parameter
    */
   protected generateState(): string {
-    return randomBytes(16).toString('hex');
+    return randomBytes(16).toString("hex");
   }
 
   /**
@@ -91,7 +95,10 @@ abstract class SSOProvider {
   /**
    * Exchange authorization code for access token
    */
-  abstract exchangeCodeForToken(code: string, codeVerifier?: string): Promise<string>;
+  abstract exchangeCodeForToken(
+    code: string,
+    codeVerifier?: string,
+  ): Promise<string>;
 
   /**
    * Get user profile from provider
@@ -101,13 +108,17 @@ abstract class SSOProvider {
   /**
    * Handle OAuth callback
    */
-  async handleCallback(code: string, codeVerifier?: string): Promise<CallbackResult> {
+  async handleCallback(
+    code: string,
+    codeVerifier?: string,
+  ): Promise<CallbackResult> {
     try {
       const accessToken = await this.exchangeCodeForToken(code, codeVerifier);
       const user = await this.getUserProfile(accessToken);
       return { success: true, user };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'OAuth callback failed';
+      const errorMessage =
+        error instanceof Error ? error.message : "OAuth callback failed";
       return { success: false, error: errorMessage };
     }
   }
@@ -117,14 +128,15 @@ abstract class SSOProvider {
  * Google OAuth2 Provider
  */
 export class GoogleSSOProvider extends SSOProvider {
-  private authorizationEndpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
-  private tokenEndpoint = 'https://oauth2.googleapis.com/token';
-  private userInfoEndpoint = 'https://www.googleapis.com/oauth2/v2/userinfo';
+  private authorizationEndpoint =
+    "https://accounts.google.com/o/oauth2/v2/auth";
+  private tokenEndpoint = "https://oauth2.googleapis.com/token";
+  private userInfoEndpoint = "https://www.googleapis.com/oauth2/v2/userinfo";
 
   constructor(config: OAuthConfig) {
     const defaultScope = [
-      'https://www.googleapis.com/auth/userinfo.email',
-      'https://www.googleapis.com/auth/userinfo.profile',
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile",
     ];
 
     super(
@@ -132,7 +144,7 @@ export class GoogleSSOProvider extends SSOProvider {
         ...config,
         scope: config.scope || defaultScope,
       },
-      'Google'
+      "Google",
     );
   }
 
@@ -143,55 +155,62 @@ export class GoogleSSOProvider extends SSOProvider {
     const params = new URLSearchParams({
       client_id: this.config.clientId,
       redirect_uri: this.config.redirectUri,
-      response_type: 'code',
-      scope: this.config.scope?.join(' ') || '',
+      response_type: "code",
+      scope: this.config.scope?.join(" ") || "",
       state,
-      access_type: 'offline',
-      prompt: 'consent',
+      access_type: "offline",
+      prompt: "consent",
     });
 
     // Add PKCE if provided
     if (codeChallenge && codeChallengeMethod) {
-      params.append('code_challenge', codeChallenge);
-      params.append('code_challenge_method', codeChallengeMethod);
+      params.append("code_challenge", codeChallenge);
+      params.append("code_challenge_method", codeChallengeMethod);
     }
 
     return `${this.authorizationEndpoint}?${params.toString()}`;
   }
 
-  async exchangeCodeForToken(code: string, codeVerifier?: string): Promise<string> {
+  async exchangeCodeForToken(
+    code: string,
+    codeVerifier?: string,
+  ): Promise<string> {
     const params = new URLSearchParams({
       code,
       client_id: this.config.clientId,
       client_secret: this.config.clientSecret,
       redirect_uri: this.config.redirectUri,
-      grant_type: 'authorization_code',
+      grant_type: "authorization_code",
     });
 
     if (codeVerifier) {
-      params.append('code_verifier', codeVerifier);
+      params.append("code_verifier", codeVerifier);
     }
 
     const response = await fetch(this.tokenEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(),
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to exchange code for token: ${response.statusText}`);
+      throw new Error(
+        `Failed to exchange code for token: ${response.statusText}`,
+      );
     }
 
     const data = await response.json();
     if (!data.access_token) {
-      throw new Error('No access token in response');
+      throw new Error("No access token in response");
     }
 
     return data.access_token;
   }
 
   async getUserProfile(accessToken: string): Promise<UserProfile> {
-    const response = await fetch(`${this.userInfoEndpoint}?access_token=${accessToken}`);
+    const response = await fetch(
+      `${this.userInfoEndpoint}?access_token=${accessToken}`,
+    );
 
     if (!response.ok) {
       throw new Error(`Failed to fetch user profile: ${response.statusText}`);
@@ -200,15 +219,15 @@ export class GoogleSSOProvider extends SSOProvider {
     const data = await response.json();
 
     if (!data.email) {
-      throw new Error('No email in user profile');
+      throw new Error("No email in user profile");
     }
 
     return {
       id: data.id,
       email: data.email,
-      name: data.name || data.email.split('@')[0],
+      name: data.name || data.email.split("@")[0],
       avatar: data.picture,
-      provider: 'google',
+      provider: "google",
       metadata: {
         verified_email: data.verified_email,
         locale: data.locale,
@@ -221,24 +240,21 @@ export class GoogleSSOProvider extends SSOProvider {
  * Microsoft OAuth2 Provider
  */
 export class MicrosoftSSOProvider extends SSOProvider {
-  private authorizationEndpoint = 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize';
-  private tokenEndpoint = 'https://login.microsoftonline.com/common/oauth2/v2.0/token';
-  private userInfoEndpoint = 'https://graph.microsoft.com/v1.0/me';
+  private authorizationEndpoint =
+    "https://login.microsoftonline.com/common/oauth2/v2.0/authorize";
+  private tokenEndpoint =
+    "https://login.microsoftonline.com/common/oauth2/v2.0/token";
+  private userInfoEndpoint = "https://graph.microsoft.com/v1.0/me";
 
   constructor(config: OAuthConfig) {
-    const defaultScope = [
-      'User.Read',
-      'email',
-      'profile',
-      'openid',
-    ];
+    const defaultScope = ["User.Read", "email", "profile", "openid"];
 
     super(
       {
         ...config,
         scope: config.scope || defaultScope,
       },
-      'Microsoft'
+      "Microsoft",
     );
   }
 
@@ -249,47 +265,52 @@ export class MicrosoftSSOProvider extends SSOProvider {
     const params = new URLSearchParams({
       client_id: this.config.clientId,
       redirect_uri: this.config.redirectUri,
-      response_type: 'code',
-      scope: this.config.scope?.join(' ') || '',
+      response_type: "code",
+      scope: this.config.scope?.join(" ") || "",
       state,
-      response_mode: 'query',
+      response_mode: "query",
     });
 
     // Add PKCE if provided
     if (codeChallenge && codeChallengeMethod) {
-      params.append('code_challenge', codeChallenge);
-      params.append('code_challenge_method', codeChallengeMethod);
+      params.append("code_challenge", codeChallenge);
+      params.append("code_challenge_method", codeChallengeMethod);
     }
 
     return `${this.authorizationEndpoint}?${params.toString()}`;
   }
 
-  async exchangeCodeForToken(code: string, codeVerifier?: string): Promise<string> {
+  async exchangeCodeForToken(
+    code: string,
+    codeVerifier?: string,
+  ): Promise<string> {
     const params = new URLSearchParams({
       code,
       client_id: this.config.clientId,
       client_secret: this.config.clientSecret,
       redirect_uri: this.config.redirectUri,
-      grant_type: 'authorization_code',
+      grant_type: "authorization_code",
     });
 
     if (codeVerifier) {
-      params.append('code_verifier', codeVerifier);
+      params.append("code_verifier", codeVerifier);
     }
 
     const response = await fetch(this.tokenEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(),
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to exchange code for token: ${response.statusText}`);
+      throw new Error(
+        `Failed to exchange code for token: ${response.statusText}`,
+      );
     }
 
     const data = await response.json();
     if (!data.access_token) {
-      throw new Error('No access token in response');
+      throw new Error("No access token in response");
     }
 
     return data.access_token;
@@ -299,7 +320,7 @@ export class MicrosoftSSOProvider extends SSOProvider {
     const response = await fetch(this.userInfoEndpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -310,7 +331,7 @@ export class MicrosoftSSOProvider extends SSOProvider {
     const data = await response.json();
 
     if (!data.userPrincipalName && !data.mail) {
-      throw new Error('No email in user profile');
+      throw new Error("No email in user profile");
     }
 
     const email = data.mail || data.userPrincipalName;
@@ -318,9 +339,9 @@ export class MicrosoftSSOProvider extends SSOProvider {
     return {
       id: data.id,
       email,
-      name: data.displayName || email.split('@')[0],
+      name: data.displayName || email.split("@")[0],
       avatar: undefined, // Microsoft Graph doesn't provide avatar URL directly
-      provider: 'microsoft',
+      provider: "microsoft",
       metadata: {
         jobTitle: data.jobTitle,
         officeLocation: data.officeLocation,
@@ -344,7 +365,7 @@ export class GenericOIDCProvider extends SSOProvider {
       tokenEndpoint: string;
       userInfoEndpoint: string;
     },
-    providerName: string = 'OIDC'
+    providerName: string = "OIDC",
   ) {
     super(config, providerName);
     this.authorizationEndpoint = config.authorizationEndpoint;
@@ -359,45 +380,50 @@ export class GenericOIDCProvider extends SSOProvider {
     const params = new URLSearchParams({
       client_id: this.config.clientId,
       redirect_uri: this.config.redirectUri,
-      response_type: 'code',
-      scope: this.config.scope?.join(' ') || 'openid profile email',
+      response_type: "code",
+      scope: this.config.scope?.join(" ") || "openid profile email",
       state,
     });
 
     if (codeChallenge && codeChallengeMethod) {
-      params.append('code_challenge', codeChallenge);
-      params.append('code_challenge_method', codeChallengeMethod);
+      params.append("code_challenge", codeChallenge);
+      params.append("code_challenge_method", codeChallengeMethod);
     }
 
     return `${this.authorizationEndpoint}?${params.toString()}`;
   }
 
-  async exchangeCodeForToken(code: string, codeVerifier?: string): Promise<string> {
+  async exchangeCodeForToken(
+    code: string,
+    codeVerifier?: string,
+  ): Promise<string> {
     const params = new URLSearchParams({
       code,
       client_id: this.config.clientId,
       client_secret: this.config.clientSecret,
       redirect_uri: this.config.redirectUri,
-      grant_type: 'authorization_code',
+      grant_type: "authorization_code",
     });
 
     if (codeVerifier) {
-      params.append('code_verifier', codeVerifier);
+      params.append("code_verifier", codeVerifier);
     }
 
     const response = await fetch(this.tokenEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(),
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to exchange code for token: ${response.statusText}`);
+      throw new Error(
+        `Failed to exchange code for token: ${response.statusText}`,
+      );
     }
 
     const data = await response.json();
     if (!data.access_token) {
-      throw new Error('No access token in response');
+      throw new Error("No access token in response");
     }
 
     return data.access_token;
@@ -407,7 +433,7 @@ export class GenericOIDCProvider extends SSOProvider {
     const response = await fetch(this.userInfoEndpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -418,7 +444,7 @@ export class GenericOIDCProvider extends SSOProvider {
     const data = await response.json();
 
     if (!data.email && !data.preferred_username) {
-      throw new Error('No email in user profile');
+      throw new Error("No email in user profile");
     }
 
     const email = data.email || data.preferred_username;
@@ -426,7 +452,7 @@ export class GenericOIDCProvider extends SSOProvider {
     return {
       id: data.sub || data.id,
       email,
-      name: data.name || email.split('@')[0],
+      name: data.name || email.split("@")[0],
       avatar: data.picture,
       provider: this.provider,
       metadata: data,
@@ -459,7 +485,7 @@ export class SSOProviderFactory {
    */
   createGoogleProvider(config: OAuthConfig): GoogleSSOProvider {
     const provider = new GoogleSSOProvider(config);
-    this.registerProvider('google', provider);
+    this.registerProvider("google", provider);
     return provider;
   }
 
@@ -468,7 +494,7 @@ export class SSOProviderFactory {
    */
   createMicrosoftProvider(config: OAuthConfig): MicrosoftSSOProvider {
     const provider = new MicrosoftSSOProvider(config);
-    this.registerProvider('microsoft', provider);
+    this.registerProvider("microsoft", provider);
     return provider;
   }
 
@@ -481,7 +507,7 @@ export class SSOProviderFactory {
       authorizationEndpoint: string;
       tokenEndpoint: string;
       userInfoEndpoint: string;
-    }
+    },
   ): GenericOIDCProvider {
     const provider = new GenericOIDCProvider(config, name);
     this.registerProvider(name, provider);

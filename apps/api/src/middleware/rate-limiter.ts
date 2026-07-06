@@ -140,7 +140,10 @@ function defaultKeyGenerator(request: FastifyRequest): string {
  * Create a preHandler hook for rate limiting
  */
 export function createRateLimiter(config: RateLimitConfig) {
-  return async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+  return async (
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ): Promise<void> => {
     // Skip if configured
     if (config.skip && config.skip(request)) {
       return;
@@ -215,7 +218,9 @@ export const authenticatedRateLimiter = createRateLimiter({
     }
 
     const forwarded = request.headers["x-forwarded-for"];
-    const ip = Array.isArray(forwarded) ? forwarded[0] : forwarded || request.ip;
+    const ip = Array.isArray(forwarded)
+      ? forwarded[0]
+      : forwarded || request.ip;
     return `ratelimit:${ip}`;
   },
   skip: (request: FastifyRequest): boolean => {
@@ -246,7 +251,9 @@ export const apiKeyRateLimiter = createRateLimiter({
     }
 
     const forwarded = request.headers["x-forwarded-for"];
-    const ip = Array.isArray(forwarded) ? forwarded[0] : forwarded || request.ip;
+    const ip = Array.isArray(forwarded)
+      ? forwarded[0]
+      : forwarded || request.ip;
     return `ratelimit:${ip}`;
   },
   skip: (request: FastifyRequest): boolean => {

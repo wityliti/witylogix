@@ -62,7 +62,8 @@ const statusConfig: Record<
   },
   delivering: {
     label: "Delivering",
-    color: "bg-wl-warning-bg text-wl-warning-400 border-wl-warning-500/30 animate-pulse",
+    color:
+      "bg-wl-warning-bg text-wl-warning-400 border-wl-warning-500/30 animate-pulse",
     icon: (
       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
@@ -89,7 +90,8 @@ const statusConfig: Record<
   },
   cancelled: {
     label: "Cancelled",
-    color: "bg-wl-bg-overlay text-wl-text-tertiary border-wl-border-subtle line-through",
+    color:
+      "bg-wl-bg-overlay text-wl-text-tertiary border-wl-border-subtle line-through",
     icon: (
       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
@@ -99,7 +101,17 @@ const statusConfig: Record<
 };
 
 const DeliveryStatusPill = forwardRef<HTMLDivElement, DeliveryStatusPillProps>(
-  ({ status, lastUpdated, showTimestamp = false, compact = false, className, ...props }, ref) => {
+  (
+    {
+      status,
+      lastUpdated,
+      showTimestamp = false,
+      compact = false,
+      className,
+      ...props
+    },
+    ref,
+  ) => {
     const config = statusConfig[status];
 
     const formatTime = (date: Date): string => {
@@ -118,19 +130,25 @@ const DeliveryStatusPill = forwardRef<HTMLDivElement, DeliveryStatusPillProps>(
           "border text-xs font-medium transition-all duration-base",
           compact && "px-2 py-1 text-xs gap-1",
           config.color,
-          className
+          className,
         )}
         {...props}
-        title={lastUpdated ? `Last updated: ${formatTime(lastUpdated)}` : undefined}
+        title={
+          lastUpdated ? `Last updated: ${formatTime(lastUpdated)}` : undefined
+        }
       >
         {config.icon}
-        <span className={compact ? "hidden sm:inline" : ""}>{config.label}</span>
+        <span className={compact ? "hidden sm:inline" : ""}>
+          {config.label}
+        </span>
         {!compact && showTimestamp && lastUpdated && (
-          <span className="text-xs opacity-75 ml-1">({formatTime(lastUpdated)})</span>
+          <span className="text-xs opacity-75 ml-1">
+            ({formatTime(lastUpdated)})
+          </span>
         )}
       </div>
     );
-  }
+  },
 );
 
 DeliveryStatusPill.displayName = "DeliveryStatusPill";

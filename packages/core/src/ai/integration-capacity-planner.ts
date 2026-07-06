@@ -31,7 +31,7 @@ export interface GrowthMetric {
 
 export interface GrowthProjection {
   providerId: string;
-  projectionType: 'linear' | 'exponential';
+  projectionType: "linear" | "exponential";
   currentValue: number;
   growthRatePerDay: number; // percentage
   projectionDate: Date;
@@ -61,7 +61,7 @@ export interface CostMetrics {
   totalCostPerDay: number;
   totalCostPerMonth: number;
   costPerRequest: number;
-  trend: 'decreasing' | 'stable' | 'increasing';
+  trend: "decreasing" | "stable" | "increasing";
 }
 
 export interface CheaperAlternative {
@@ -69,7 +69,7 @@ export interface CheaperAlternative {
   currentProviderId: string;
   featureParity: number; // 0-1
   costSavingsPerMonth: number;
-  migrationEffort: 'low' | 'medium' | 'high';
+  migrationEffort: "low" | "medium" | "high";
   riskScore: number; // 0-1
 }
 
@@ -97,8 +97,12 @@ export interface SLAMetrics {
 export interface CapacityAlert {
   alertId: string;
   providerId: string;
-  alertType: 'approaching_limit' | 'rate_limit_breach_imminent' | 'cost_spike' | 'sla_risk';
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  alertType:
+    | "approaching_limit"
+    | "rate_limit_breach_imminent"
+    | "cost_spike"
+    | "sla_risk";
+  severity: "low" | "medium" | "high" | "critical";
   message: string;
   recommendedActions: string[];
   timeToAction?: number; // seconds
@@ -122,7 +126,7 @@ export class GrowthProjector {
     if (data.length < 2) {
       return {
         providerId,
-        projectionType: 'linear',
+        projectionType: "linear",
         currentValue: 0,
         growthRatePerDay: 0,
         projectionDate: new Date(Date.now() + days * 24 * 60 * 60 * 1000),
@@ -131,13 +135,18 @@ export class GrowthProjector {
       };
     }
 
-    const sorted = [...data].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    const sorted = [...data].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+    );
     const first = sorted[0];
     const last = sorted[sorted.length - 1];
 
-    const daysDiff = (last.timestamp.getTime() - first.timestamp.getTime()) / (24 * 60 * 60 * 1000);
+    const daysDiff =
+      (last.timestamp.getTime() - first.timestamp.getTime()) /
+      (24 * 60 * 60 * 1000);
     const valueDiff = last.value - first.value;
-    const growthRatePerDay = daysDiff > 0 ? (valueDiff / first.value / daysDiff) * 100 : 0;
+    const growthRatePerDay =
+      daysDiff > 0 ? (valueDiff / first.value / daysDiff) * 100 : 0;
 
     const currentValue = last.value;
     const projectedValue = currentValue * (1 + (growthRatePerDay / 100) * days);
@@ -145,7 +154,7 @@ export class GrowthProjector {
 
     return {
       providerId,
-      projectionType: 'linear',
+      projectionType: "linear",
       currentValue,
       growthRatePerDay,
       projectionDate: new Date(Date.now() + days * 24 * 60 * 60 * 1000),
@@ -154,12 +163,15 @@ export class GrowthProjector {
     };
   }
 
-  projectExponentialGrowth(providerId: string, days: number = 30): GrowthProjection {
+  projectExponentialGrowth(
+    providerId: string,
+    days: number = 30,
+  ): GrowthProjection {
     const data = this.historicalData.get(providerId) || [];
     if (data.length < 3) {
       return {
         providerId,
-        projectionType: 'exponential',
+        projectionType: "exponential",
         currentValue: 0,
         growthRatePerDay: 0,
         projectionDate: new Date(Date.now() + days * 24 * 60 * 60 * 1000),
@@ -168,7 +180,9 @@ export class GrowthProjector {
       };
     }
 
-    const sorted = [...data].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    const sorted = [...data].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+    );
     const currentValue = sorted[sorted.length - 1].value;
 
     // Fit exponential curve: y = a * e^(b*t)
@@ -195,7 +209,7 @@ export class GrowthProjector {
 
     return {
       providerId,
-      projectionType: 'exponential',
+      projectionType: "exponential",
       currentValue,
       growthRatePerDay,
       projectionDate: new Date(Date.now() + days * 24 * 60 * 60 * 1000),
@@ -249,7 +263,7 @@ export class ProviderLimitForecaster {
 
   forecastLimit(
     providerId: string,
-    metricType: string = 'requests'
+    metricType: string = "requests",
   ): LimitForecast {
     const history = this.usageHistory.get(providerId) || [];
     if (history.length === 0) {
@@ -292,17 +306,18 @@ export class ProviderLimitForecaster {
     if (growthRate > 0) {
       const remaining = limit - current;
       const dailyGrowth = current * (growthRate / 100);
-      daysUntilLimit = dailyGrowth > 0 ? Math.ceil(remaining / dailyGrowth) : 999;
+      daysUntilLimit =
+        dailyGrowth > 0 ? Math.ceil(remaining / dailyGrowth) : 999;
     }
 
-    let recommendedAction = '';
+    let recommendedAction = "";
     let upgradeCost = 0;
 
     if (usagePercent > 80) {
-      recommendedAction = 'Consider provider upgrade';
+      recommendedAction = "Consider provider upgrade";
       upgradeCost = this.estimateUpgradeCost(latest);
     } else if (usagePercent > 60) {
-      recommendedAction = 'Monitor usage closely';
+      recommendedAction = "Monitor usage closely";
     }
 
     return {
@@ -322,26 +337,32 @@ export class ProviderLimitForecaster {
     };
   }
 
-  private getMetricValue(capacity: ProviderCapacity, metricType: string): number {
+  private getMetricValue(
+    capacity: ProviderCapacity,
+    metricType: string,
+  ): number {
     switch (metricType) {
-      case 'requests':
+      case "requests":
         return capacity.requestsPerSecond * 86400; // RPS to daily
-      case 'data_transfer':
+      case "data_transfer":
         return capacity.dataTransferBytesPerDay;
-      case 'compute':
+      case "compute":
         return capacity.computeUnitsPerDay;
       default:
         return capacity.currentUsage;
     }
   }
 
-  private getLimitValue(capacity: ProviderCapacity, metricType: string): number {
+  private getLimitValue(
+    capacity: ProviderCapacity,
+    metricType: string,
+  ): number {
     switch (metricType) {
-      case 'requests':
+      case "requests":
         return capacity.rateLimit;
-      case 'data_transfer':
+      case "data_transfer":
         return capacity.rateLimit * 100; // Simplified
-      case 'compute':
+      case "compute":
         return capacity.rateLimit * 10;
       default:
         return capacity.rateLimit;
@@ -364,7 +385,8 @@ export class ProviderLimitForecaster {
 
 export class CostOptimizer {
   private costHistory: Map<string, CostMetrics[]> = new Map();
-  private providerPricingModels: Map<string, Record<string, number>> = new Map();
+  private providerPricingModels: Map<string, Record<string, number>> =
+    new Map();
 
   recordCost(metrics: CostMetrics): void {
     const key = metrics.providerId;
@@ -397,20 +419,23 @@ export class CostOptimizer {
 
       const latest = metrics[metrics.length - 1];
       if (latest.totalCostPerMonth < currentMetrics.totalCostPerMonth) {
-        const savings = currentMetrics.totalCostPerMonth - latest.totalCostPerMonth;
+        const savings =
+          currentMetrics.totalCostPerMonth - latest.totalCostPerMonth;
 
         alternatives.push({
           alternativeProviderId: providerId,
           currentProviderId,
           featureParity: 0.85, // Simplified
           costSavingsPerMonth: savings,
-          migrationEffort: 'medium',
+          migrationEffort: "medium",
           riskScore: 0.3,
         });
       }
     }
 
-    return alternatives.sort((a, b) => b.costSavingsPerMonth - a.costSavingsPerMonth);
+    return alternatives.sort(
+      (a, b) => b.costSavingsPerMonth - a.costSavingsPerMonth,
+    );
   }
 
   optimizeRouting(providers: string[], request: any): string {
@@ -464,13 +489,13 @@ export class CapacityPlanner {
     }
 
     return {
-      providerId: 'aggregate',
+      providerId: "aggregate",
       currentUsage: totalUsage,
       rateLimit: totalLimit,
       requestsPerSecond: totalRPS,
       dataTransferBytesPerDay: totalDataTransfer,
       computeUnitsPerDay: totalCompute,
-      currentTier: 'multi',
+      currentTier: "multi",
       upgradeAvailable: false,
     };
   }
@@ -496,9 +521,13 @@ export class CapacityPlanner {
 
       if (usagePercent > 85) {
         if (provider.upgradeAvailable && provider.nextTierLimit) {
-          recommendations.push(`${providerId}: Upgrade to next tier (${provider.nextTierLimit} limit)`);
+          recommendations.push(
+            `${providerId}: Upgrade to next tier (${provider.nextTierLimit} limit)`,
+          );
         } else {
-          recommendations.push(`${providerId}: Add backup provider for redundancy`);
+          recommendations.push(
+            `${providerId}: Add backup provider for redundancy`,
+          );
         }
       }
     }
@@ -506,7 +535,12 @@ export class CapacityPlanner {
     return recommendations;
   }
 
-  simulateScenario(scenario: Omit<CapacitySimulation, 'projectedProviders' | 'bottlenecks' | 'recommendedCapacityAdditions'>): CapacitySimulation {
+  simulateScenario(
+    scenario: Omit<
+      CapacitySimulation,
+      "projectedProviders" | "bottlenecks" | "recommendedCapacityAdditions"
+    >,
+  ): CapacitySimulation {
     const projectedProviders: ProviderCapacity[] = [];
     const bottlenecks: string[] = [];
     const recommendations: string[] = [];
@@ -514,10 +548,14 @@ export class CapacityPlanner {
     for (const [, provider] of this.providers) {
       const projectedUsage =
         provider.currentUsage *
-        (1 + (scenario.additionalAPICallsPercent / 100) * (scenario.timeframeMonths / 1));
+        (1 +
+          (scenario.additionalAPICallsPercent / 100) *
+            (scenario.timeframeMonths / 1));
 
       if (projectedUsage > provider.rateLimit * 0.8) {
-        bottlenecks.push(`${provider.providerId}: projected ${((projectedUsage / provider.rateLimit) * 100).toFixed(1)}% usage`);
+        bottlenecks.push(
+          `${provider.providerId}: projected ${((projectedUsage / provider.rateLimit) * 100).toFixed(1)}% usage`,
+        );
         recommendations.push(`Scale ${provider.providerId} or add backup`);
       }
 
@@ -575,7 +613,8 @@ export class SLAPredictor {
       };
     }
 
-    const historicalUptime = uptime.reduce((a, b) => a + b, 0) / uptime.length / 100;
+    const historicalUptime =
+      uptime.reduce((a, b) => a + b, 0) / uptime.length / 100;
 
     // Recent incident frequency
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);

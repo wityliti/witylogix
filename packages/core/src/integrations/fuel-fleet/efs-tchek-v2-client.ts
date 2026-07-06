@@ -34,7 +34,7 @@ export class EFSTChekAPIError extends Error {
   constructor(
     public code: string,
     message: string,
-    public details?: Record<string, unknown>
+    public details?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "EFSTChekAPIError";
@@ -78,12 +78,16 @@ export class EFSTChekv2Client {
   private async apiRequest<T>(
     method: string,
     endpoint: string,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     await this.checkRateLimit();
     const url = new URL(endpoint, this.config.baseUrl).toString();
 
-    for (let attempt = 0; attempt < (this.config.retryConfig?.maxAttempts || 3); attempt++) {
+    for (
+      let attempt = 0;
+      attempt < (this.config.retryConfig?.maxAttempts || 3);
+      attempt++
+    ) {
       try {
         const response = (await nodeFetch(url, {
           method,
@@ -104,7 +108,7 @@ export class EFSTChekv2Client {
           throw new EFSTChekAPIError(
             errorData.code || `HTTP_${response.status}`,
             errorData.message || response.statusText,
-            errorData.details
+            errorData.details,
           );
         }
 
@@ -116,15 +120,17 @@ export class EFSTChekv2Client {
           this.failureCount += 1;
           throw error;
         }
-        const delay = (this.config.retryConfig?.delayMs || 1000) * Math.pow(
-          this.config.retryConfig?.backoffMultiplier || 2,
-          attempt
-        );
+        const delay =
+          (this.config.retryConfig?.delayMs || 1000) *
+          Math.pow(this.config.retryConfig?.backoffMultiplier || 2, attempt);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
-    throw new EFSTChekAPIError("RETRY_EXHAUSTED", "All retry attempts exhausted");
+    throw new EFSTChekAPIError(
+      "RETRY_EXHAUSTED",
+      "All retry attempts exhausted",
+    );
   }
 
   /**
@@ -143,7 +149,9 @@ export class EFSTChekv2Client {
     const maxRequests = 300;
     if (this.requestCount >= maxRequests) {
       const retryAfter = Math.ceil((windowMs - elapsed) / 1000);
-      throw new Error(`Rate limit exceeded (300/min). Retry after ${retryAfter}s`);
+      throw new Error(
+        `Rate limit exceeded (300/min). Retry after ${retryAfter}s`,
+      );
     }
 
     this.requestCount += 1;
@@ -192,7 +200,7 @@ export class EFSTChekv2Client {
   async processLumperFee(
     driverId: string,
     amount: number,
-    description?: string
+    description?: string,
   ): Promise<{
     lumperFeeId: string;
     driverId: string;
@@ -213,7 +221,7 @@ export class EFSTChekv2Client {
   async issueAdvance(
     driverId: string,
     amount: number,
-    purpose?: string
+    purpose?: string,
   ): Promise<{
     advanceId: string;
     driverId: string;
@@ -234,7 +242,7 @@ export class EFSTChekv2Client {
   async issueComcheck(
     driverId: string,
     amount: number,
-    merchantRestrictions?: string[]
+    merchantRestrictions?: string[],
   ): Promise<{
     comcheckId: string;
     driverId: string;
@@ -331,7 +339,10 @@ export class EFSTChekv2Client {
     pumpActivated: boolean;
     activatedAt: Date;
   }> {
-    return this.apiRequest("POST", `/api/v2/fuel/pre-auth/${preAuthId}/activate-pump`);
+    return this.apiRequest(
+      "POST",
+      `/api/v2/fuel/pre-auth/${preAuthId}/activate-pump`,
+    );
   }
 
   /**
@@ -341,7 +352,7 @@ export class EFSTChekv2Client {
     preAuthId: string,
     actualAmount: number,
     actualQuantity: number,
-    fuelGrade?: string
+    fuelGrade?: string,
   ): Promise<{
     transactionId: string;
     preAuthId: string;
@@ -351,11 +362,15 @@ export class EFSTChekv2Client {
     adjustmentAmount?: number;
     completedAt: Date;
   }> {
-    return this.apiRequest("POST", `/api/v2/fuel/pre-auth/${preAuthId}/post-auth`, {
-      actualAmount,
-      actualQuantity,
-      fuelGrade,
-    });
+    return this.apiRequest(
+      "POST",
+      `/api/v2/fuel/pre-auth/${preAuthId}/post-auth`,
+      {
+        actualAmount,
+        actualQuantity,
+        fuelGrade,
+      },
+    );
   }
 
   /**
@@ -364,10 +379,13 @@ export class EFSTChekv2Client {
   async getTransactionHistory(
     driverId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<PaginatedResponse<TransactionDetail>> {
     const params = `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
-    return this.apiRequest("GET", `/api/v2/driver/${driverId}/transactions${params}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/driver/${driverId}/transactions${params}`,
+    );
   }
 
   /**
@@ -376,7 +394,7 @@ export class EFSTChekv2Client {
   async getSettlementHistory(
     driverId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<
     Array<{
       settlementId: string;
@@ -387,7 +405,10 @@ export class EFSTChekv2Client {
     }>
   > {
     const params = `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
-    return this.apiRequest("GET", `/api/v2/driver/${driverId}/settlements${params}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/driver/${driverId}/settlements${params}`,
+    );
   }
 
   /**
@@ -408,7 +429,7 @@ export class EFSTChekv2Client {
   async payDriver(
     driverId: string,
     amount: number,
-    paymentMethod: "ach" | "check" | "comcheck"
+    paymentMethod: "ach" | "check" | "comcheck",
   ): Promise<{
     paymentId: string;
     driverId: string;
@@ -430,10 +451,13 @@ export class EFSTChekv2Client {
   async getIFTAData(
     vehicleId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<IFTAReportingData> {
     const params = `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
-    return this.apiRequest("GET", `/api/v2/compliance/ifta/${vehicleId}${params}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/compliance/ifta/${vehicleId}${params}`,
+    );
   }
 
   /**
@@ -442,7 +466,7 @@ export class EFSTChekv2Client {
   async getFuelTaxReporting(
     startDate: Date,
     endDate: Date,
-    vehicleId?: string
+    vehicleId?: string,
   ): Promise<{
     reportingPeriod: { startDate: Date; endDate: Date };
     jurisdictions: Array<{
@@ -461,7 +485,10 @@ export class EFSTChekv2Client {
     params.append("endDate", endDate.toISOString());
     if (vehicleId) params.append("vehicleId", vehicleId);
 
-    return this.apiRequest("GET", `/api/v2/compliance/fuel-tax?${params.toString()}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/compliance/fuel-tax?${params.toString()}`,
+    );
   }
 
   /**
@@ -470,7 +497,7 @@ export class EFSTChekv2Client {
   async exportIFTAReport(
     startDate: Date,
     endDate: Date,
-    format: "json" | "csv" | "pdf" = "json"
+    format: "json" | "csv" | "pdf" = "json",
   ): Promise<{
     reportId: string;
     format: string;
@@ -489,7 +516,7 @@ export class EFSTChekv2Client {
    */
   async subscribeWebhook(
     webhookUrl: string,
-    eventTypes: WebhookEventType[]
+    eventTypes: WebhookEventType[],
   ): Promise<{ webhookId: string; url: string; events: WebhookEventType[] }> {
     return this.apiRequest("POST", "/api/v2/webhooks/subscribe", {
       url: webhookUrl,
@@ -528,7 +555,12 @@ export class EFSTChekv2Client {
     const uptime = now.getTime() - this.lastHealthCheck.getTime();
 
     return {
-      status: this.failureCount === 0 ? "healthy" : this.failureCount < 5 ? "degraded" : "unhealthy",
+      status:
+        this.failureCount === 0
+          ? "healthy"
+          : this.failureCount < 5
+            ? "degraded"
+            : "unhealthy",
       provider: "efs_tchek_v2" as SDKProvider,
       lastChecked: now,
       circuitBreaker: {

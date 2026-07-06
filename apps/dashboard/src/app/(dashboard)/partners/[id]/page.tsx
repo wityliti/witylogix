@@ -14,7 +14,10 @@ import {
   Settings,
 } from "lucide-react";
 
-const PartnersMapView = dynamic(() => import("../components/partners-map-view"), { ssr: false });
+const PartnersMapView = dynamic(
+  () => import("../components/partners-map-view"),
+  { ssr: false },
+);
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
@@ -71,7 +74,9 @@ function KPICard({ label, value, suffix, icon: Icon }: KPICardProps) {
       </div>
       <div className="flex items-baseline gap-1">
         <span className="text-2xl font-bold text-white">{value}</span>
-        {suffix && <span className="text-sm text-wl-neutral-300">{suffix}</span>}
+        {suffix && (
+          <span className="text-sm text-wl-neutral-300">{suffix}</span>
+        )}
       </div>
     </Card>
   );
@@ -94,30 +99,42 @@ export default function PartnerDetailPage() {
   const [showApiSecret, setShowApiSecret] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  const { data: integrationsData, loading, error, refetch } = useApiQuery<IntegrationsResponse>(
-    "/api/v4/integrations"
-  );
+  const {
+    data: integrationsData,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<IntegrationsResponse>("/api/v4/integrations");
 
   const { data: partnerStatsData } = useApiQuery<{
-    stats: Array<{ provider: string; activeDeliveries: number; totalDeliveries: number; successRate: number | null }>;
+    stats: Array<{
+      provider: string;
+      activeDeliveries: number;
+      totalDeliveries: number;
+      successRate: number | null;
+    }>;
   }>("/api/v4/couriers/partner-stats");
 
   const partner = useMemo(
-    () => integrationsData?.integrations.find((i) => i.slug === params.id) ?? null,
-    [integrationsData, params.id]
+    () =>
+      integrationsData?.integrations.find((i) => i.slug === params.id) ?? null,
+    [integrationsData, params.id],
   );
 
   const partnerStat = useMemo(() => {
     const slug = params.id;
     return (
-      partnerStatsData?.stats.find((s) => s.provider === slug || s.provider === slug.replace(/-/g, "_")) ??
-      null
+      partnerStatsData?.stats.find(
+        (s) => s.provider === slug || s.provider === slug.replace(/-/g, "_"),
+      ) ?? null
     );
   }, [partnerStatsData, params.id]);
 
   const cfg = (partner?.config ?? {}) as Record<string, unknown>;
   const creds = (partner?.credentials ?? {}) as Record<string, unknown>;
-  const serviceAreas = Array.isArray(cfg.serviceAreas) ? (cfg.serviceAreas as string[]) : [];
+  const serviceAreas = Array.isArray(cfg.serviceAreas)
+    ? (cfg.serviceAreas as string[])
+    : [];
 
   const handleCopy = useCallback((text: string, field: string) => {
     navigator.clipboard.writeText(text);
@@ -130,14 +147,25 @@ export default function PartnerDetailPage() {
   if (!partner) {
     return (
       <div className="flex flex-col gap-6 p-6">
-        <Button variant="ghost" size="md" onClick={() => router.back()} className="gap-2 w-fit">
+        <Button
+          variant="ghost"
+          size="md"
+          onClick={() => router.back()}
+          className="gap-2 w-fit"
+        >
           <ArrowLeft className="w-4 h-4" />
           Back
         </Button>
         <Card className="flex flex-col items-center gap-4 py-16">
           <Settings className="w-12 h-12 text-wl-neutral-300/50" />
-          <p className="text-wl-text-secondary">Partner &quot;{params.id}&quot; not found or not installed.</p>
-          <Button variant="primary" size="md" onClick={() => router.push("/dashboard/partners/onboard")}>
+          <p className="text-wl-text-secondary">
+            Partner &quot;{params.id}&quot; not found or not installed.
+          </p>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => router.push("/dashboard/partners/onboard")}
+          >
             Install Partner
           </Button>
         </Card>
@@ -149,14 +177,21 @@ export default function PartnerDetailPage() {
   const apiSecret = String(creds.apiSecret ?? "");
   const webhookSecret = String(creds.webhookSecret ?? "");
   const baseUrl = String(cfg.baseUrl ?? "");
-  const maxDeliveryTime = typeof cfg.maxDeliveryTime === "number" ? cfg.maxDeliveryTime : null;
-  const maxDistance = typeof cfg.maxDistance === "number" ? cfg.maxDistance : null;
+  const maxDeliveryTime =
+    typeof cfg.maxDeliveryTime === "number" ? cfg.maxDeliveryTime : null;
+  const maxDistance =
+    typeof cfg.maxDistance === "number" ? cfg.maxDistance : null;
 
   return (
     <div className="flex flex-col gap-6 p-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="md" onClick={() => router.back()} className="gap-2">
+        <Button
+          variant="ghost"
+          size="md"
+          onClick={() => router.back()}
+          className="gap-2"
+        >
           <ArrowLeft className="w-4 h-4" />
           Back
         </Button>
@@ -169,10 +204,10 @@ export default function PartnerDetailPage() {
                 partner.healthStatus === "HEALTHY"
                   ? "success"
                   : partner.healthStatus === "UNHEALTHY"
-                  ? "danger"
-                  : partner.isEnabled
-                  ? "info"
-                  : "default"
+                    ? "danger"
+                    : partner.isEnabled
+                      ? "info"
+                      : "default"
               }
             >
               {partner.isEnabled
@@ -202,7 +237,11 @@ export default function PartnerDetailPage() {
             />
             <KPICard
               label="Success Rate"
-              value={partnerStat?.successRate != null ? `${partnerStat.successRate}%` : "—"}
+              value={
+                partnerStat?.successRate != null
+                  ? `${partnerStat.successRate}%`
+                  : "—"
+              }
               icon={CheckCircle}
             />
             <KPICard
@@ -237,17 +276,25 @@ export default function PartnerDetailPage() {
                   </div>
                   <div className="h-64 rounded-lg overflow-hidden border border-wl-border-default">
                     <PartnersMapView
-                      partners={[{
-                        id: partner.slug,
-                        name: partner.name,
-                        status: partner.isEnabled && partner.healthStatus !== "UNHEALTHY" ? "active" : "inactive",
-                        serviceAreas,
-                      }]}
+                      partners={[
+                        {
+                          id: partner.slug,
+                          name: partner.name,
+                          status:
+                            partner.isEnabled &&
+                            partner.healthStatus !== "UNHEALTHY"
+                              ? "active"
+                              : "inactive",
+                          serviceAreas,
+                        },
+                      ]}
                     />
                   </div>
                 </>
               ) : (
-                <p className="text-wl-text-secondary text-sm">No service areas configured yet.</p>
+                <p className="text-wl-text-secondary text-sm">
+                  No service areas configured yet.
+                </p>
               )}
             </CardContent>
           </Card>
@@ -277,7 +324,9 @@ export default function PartnerDetailPage() {
                 </div>
                 <div>
                   <dt className="text-wl-text-secondary mb-1">Last Updated</dt>
-                  <dd className="text-white">{new Date(partner.updatedAt).toLocaleString()}</dd>
+                  <dd className="text-white">
+                    {new Date(partner.updatedAt).toLocaleString()}
+                  </dd>
                 </div>
               </dl>
               {partner.description && (
@@ -300,7 +349,9 @@ export default function PartnerDetailPage() {
             <CardContent className="space-y-4">
               {/* API Key */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-white">API Key</label>
+                <label className="text-sm font-semibold text-white">
+                  API Key
+                </label>
                 <div className="flex gap-2">
                   <Input
                     type={showApiKey ? "text" : "password"}
@@ -308,8 +359,16 @@ export default function PartnerDetailPage() {
                     readOnly
                     className="flex-1 font-mono text-xs"
                   />
-                  <Button variant="secondary" size="md" onClick={() => setShowApiKey(!showApiKey)}>
-                    {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                  >
+                    {showApiKey ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </Button>
                   {apiKey && (
                     <Button
@@ -329,7 +388,9 @@ export default function PartnerDetailPage() {
 
               {/* API Secret */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-white">API Secret</label>
+                <label className="text-sm font-semibold text-white">
+                  API Secret
+                </label>
                 <div className="flex gap-2">
                   <Input
                     type={showApiSecret ? "text" : "password"}
@@ -342,7 +403,11 @@ export default function PartnerDetailPage() {
                     size="md"
                     onClick={() => setShowApiSecret(!showApiSecret)}
                   >
-                    {showApiSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showApiSecret ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </Button>
                   {apiSecret && (
                     <Button
@@ -363,9 +428,16 @@ export default function PartnerDetailPage() {
               {/* Base URL */}
               {baseUrl && (
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-white">Base URL</label>
+                  <label className="text-sm font-semibold text-white">
+                    Base URL
+                  </label>
                   <div className="flex gap-2">
-                    <Input type="text" value={baseUrl} readOnly className="flex-1 font-mono text-xs" />
+                    <Input
+                      type="text"
+                      value={baseUrl}
+                      readOnly
+                      className="flex-1 font-mono text-xs"
+                    />
                     <Button
                       variant="secondary"
                       size="md"
@@ -384,7 +456,9 @@ export default function PartnerDetailPage() {
               {/* Webhook Secret */}
               {webhookSecret && (
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-white">Webhook Secret</label>
+                  <label className="text-sm font-semibold text-white">
+                    Webhook Secret
+                  </label>
                   <div className="flex gap-2">
                     <Input
                       type="password"
@@ -437,7 +511,9 @@ export default function PartnerDetailPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-wl-text-secondary text-sm mb-4">No service areas configured.</p>
+                <p className="text-wl-text-secondary text-sm mb-4">
+                  No service areas configured.
+                </p>
               )}
               <Button variant="secondary" size="md">
                 Manage Service Areas
@@ -461,7 +537,9 @@ export default function PartnerDetailPage() {
                     Max Delivery Time
                   </span>
                   <p className="text-2xl font-bold text-white mt-2">
-                    {maxDeliveryTime != null ? `${maxDeliveryTime} min` : "Not configured"}
+                    {maxDeliveryTime != null
+                      ? `${maxDeliveryTime} min`
+                      : "Not configured"}
                   </p>
                 </div>
                 <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
@@ -469,7 +547,9 @@ export default function PartnerDetailPage() {
                     Max Distance
                   </span>
                   <p className="text-2xl font-bold text-white mt-2">
-                    {maxDistance != null ? `${maxDistance} km` : "Not configured"}
+                    {maxDistance != null
+                      ? `${maxDistance} km`
+                      : "Not configured"}
                   </p>
                 </div>
               </div>
@@ -479,7 +559,7 @@ export default function PartnerDetailPage() {
                   "p-4 rounded-lg border",
                   partner.healthStatus === "HEALTHY" || partner.isEnabled
                     ? "bg-emerald-500/10 border-emerald-500/20"
-                    : "bg-red-500/10 border-red-500/20"
+                    : "bg-red-500/10 border-red-500/20",
                 )}
               >
                 <p
@@ -487,14 +567,14 @@ export default function PartnerDetailPage() {
                     "text-sm",
                     partner.healthStatus === "HEALTHY" || partner.isEnabled
                       ? "text-emerald-400"
-                      : "text-red-400"
+                      : "text-red-400",
                   )}
                 >
                   {partner.healthStatus === "HEALTHY"
                     ? "Integration is healthy and meeting SLA requirements"
                     : partner.isEnabled
-                    ? "Integration is active"
-                    : "Integration is disabled — no SLA monitoring active"}
+                      ? "Integration is active"
+                      : "Integration is disabled — no SLA monitoring active"}
                 </p>
               </div>
             </CardContent>

@@ -23,81 +23,80 @@ export interface AssignZoneOutput {
   perKmRate: number;
 }
 
-export const assignZoneStep: WorkflowStep<AssignZoneInput, AssignZoneOutput> =
-  {
-    name: "assignZone",
-    description: "Assign delivery zone based on geocoded address",
+export const assignZoneStep: WorkflowStep<AssignZoneInput, AssignZoneOutput> = {
+  name: "assignZone",
+  description: "Assign delivery zone based on geocoded address",
 
-    async invoke(
-      input: AssignZoneInput,
-      context: WorkflowContext
-    ): Promise<StepResult<AssignZoneOutput>> {
-      const logger = context.logger;
-      logger?.info("Starting zone assignment", {
-        lat: input.deliveryLat,
-        lng: input.deliveryLng,
-        shopId: input.shopId,
+  async invoke(
+    input: AssignZoneInput,
+    context: WorkflowContext,
+  ): Promise<StepResult<AssignZoneOutput>> {
+    const logger = context.logger;
+    logger?.info("Starting zone assignment", {
+      lat: input.deliveryLat,
+      lng: input.deliveryLng,
+      shopId: input.shopId,
+    });
+
+    try {
+      const prisma = context.prisma as any;
+
+      // In production: query against PostGIS geometry column
+      // For now: find first active zone for shop
+      const zones = await prisma.deliveryZone.findMany({
+        where: {
+          shopId: input.shopId,
+          isActive: true,
+        },
+        orderBy: {
+          priority: "desc",
+        },
       });
 
-      try {
-        const prisma = (context.prisma as any);
-
-        // In production: query against PostGIS geometry column
-        // For now: find first active zone for shop
-        const zones = await prisma.deliveryZone.findMany({
-          where: {
-            shopId: input.shopId,
-            isActive: true,
-          },
-          orderBy: {
-            priority: "desc",
-          },
-        });
-
-        if (!zones || zones.length === 0) {
-          return {
-            success: false,
-            error: "No active delivery zones found for shop",
-            code: "NO_ZONES_AVAILABLE",
-          };
-        }
-
-        const zone = zones[0];
-
-        logger?.info("Zone assigned", {
-          zoneId: zone.id,
-          zoneName: zone.name,
-          baseRate: zone.baseRate,
-        });
-
-        return {
-          success: true,
-          data: {
-            zoneId: zone.id,
-            zoneName: zone.name,
-            baseRate: parseFloat(zone.baseRate.toString()),
-            perKmRate: parseFloat(zone.perKmRate.toString()),
-          },
-        };
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        logger?.error("Zone assignment failed", { error: errorMsg });
+      if (!zones || zones.length === 0) {
         return {
           success: false,
-          error: `Zone assignment error: ${errorMsg}`,
-          code: "ZONE_ASSIGNMENT_ERROR",
+          error: "No active delivery zones found for shop",
+          code: "NO_ZONES_AVAILABLE",
         };
       }
-    },
 
-    async compensate(
-      _input: AssignZoneInput,
-      context: WorkflowContext
-    ): Promise<void> {
-      // No-op: unassigning a zone is just clearing the field
-      context.logger?.info("Compensating zone assignment (no-op)");
-    },
-  };
+      const zone = zones[0];
+
+      logger?.info("Zone assigned", {
+        zoneId: zone.id,
+        zoneName: zone.name,
+        baseRate: zone.baseRate,
+      });
+
+      return {
+        success: true,
+        data: {
+          zoneId: zone.id,
+          zoneName: zone.name,
+          baseRate: parseFloat(zone.baseRate.toString()),
+          perKmRate: parseFloat(zone.perKmRate.toString()),
+        },
+      };
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger?.error("Zone assignment failed", { error: errorMsg });
+      return {
+        success: false,
+        error: `Zone assignment error: ${errorMsg}`,
+        code: "ZONE_ASSIGNMENT_ERROR",
+      };
+    }
+  },
+
+  async compensate(
+    _input: AssignZoneInput,
+    context: WorkflowContext,
+  ): Promise<void> {
+    // No-op: unassigning a zone is just clearing the field
+    context.logger?.info("Compensating zone assignment (no-op)");
+  },
+};
 
 // ─── FIND AVAILABLE DRIVERS STEP ────────────────────────────────────────
 
@@ -133,7 +132,7 @@ export const findAvailableDriversStep: WorkflowStep<
 
   async invoke(
     input: FindAvailableDriversInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<FindAvailableDriversOutput>> {
     const logger = context.logger;
     logger?.info("Searching for available drivers", {
@@ -143,7 +142,7 @@ export const findAvailableDriversStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
       const searchRadius = input.maxDistance || 15; // Default 15 km radius
 
       // Query: drivers with AVAILABLE or ON_ROUTE status
@@ -176,7 +175,7 @@ export const findAvailableDriversStep: WorkflowStep<
                 input.pickupLat,
                 input.pickupLng,
                 d.currentLocation.lat || 0,
-                d.currentLocation.lng || 0
+                d.currentLocation.lng || 0,
               )
             : searchRadius + 1; // Out of range if no location
 
@@ -192,7 +191,10 @@ export const findAvailableDriversStep: WorkflowStep<
           };
         })
         .filter((d: any) => d.distanceFromPickup! <= searchRadius)
-        .sort((a: any, b: any) => (a.distanceFromPickup || 0) - (b.distanceFromPickup || 0));
+        .sort(
+          (a: any, b: any) =>
+            (a.distanceFromPickup || 0) - (b.distanceFromPickup || 0),
+        );
 
       logger?.info("Driver filtering completed", {
         candidates: candidates.length,
@@ -249,7 +251,7 @@ export const optimizeAssignmentStep: WorkflowStep<
 
   async invoke(
     input: OptimizeAssignmentInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<OptimizeAssignmentOutput>> {
     const logger = context.logger;
     logger?.info("Starting driver optimization", {
@@ -268,8 +270,11 @@ export const optimizeAssignmentStep: WorkflowStep<
       // ─── Scoring Algorithm ────────────────────────────────────────
       // Multi-factor scoring: distance, capacity, vehicle type
       const scoredDrivers = input.driverCandidates.map((driver) => {
-        const scoreBreakdown: { factor: string; weight: number; score: number }[] =
-          [];
+        const scoreBreakdown: {
+          factor: string;
+          weight: number;
+          score: number;
+        }[] = [];
 
         let totalScore = 0;
 
@@ -278,7 +283,7 @@ export const optimizeAssignmentStep: WorkflowStep<
         const maxDistance = 10;
         const distanceScore = Math.max(
           0,
-          100 * (1 - (driver.distanceFromPickup || 0) / maxDistance)
+          100 * (1 - (driver.distanceFromPickup || 0) / maxDistance),
         );
         const distanceWeight = 0.4;
         const distanceContribution = distanceScore * distanceWeight;
@@ -385,7 +390,7 @@ export const assignDriverRecordStep: WorkflowStep<
 
   async invoke(
     input: AssignDriverRecordInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<AssignDriverRecordOutput>> {
     const logger = context.logger;
     logger?.info("Creating driver assignment record", {
@@ -394,7 +399,7 @@ export const assignDriverRecordStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
 
       // Update order with driver assignment
       const updatedOrder = await prisma.order.update({
@@ -434,7 +439,7 @@ export const assignDriverRecordStep: WorkflowStep<
 
   async compensate(
     input: AssignDriverRecordInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<void> {
     const logger = context.logger;
     logger?.info("Compensating driver assignment", {
@@ -442,7 +447,7 @@ export const assignDriverRecordStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
 
       // Unassign driver and revert status
       await prisma.order.update({
@@ -469,7 +474,7 @@ function calculateSimpleDistance(
   lat1: number,
   lng1: number,
   lat2: number,
-  lng2: number
+  lng2: number,
 ): number {
   const dLat = lat2 - lat1;
   const dLng = lng2 - lng1;

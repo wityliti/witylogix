@@ -3,7 +3,12 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { SmartRouter, type ICourierProvider, type DeliveryRequest, type CourierOption } from "../smart-router.js";
+import {
+  SmartRouter,
+  type ICourierProvider,
+  type DeliveryRequest,
+  type CourierOption,
+} from "../smart-router.js";
 import { PartnerPerformance } from "../partner-performance.js";
 import type { CourierAvailability, CourierQuote } from "../types.js";
 
@@ -27,10 +32,12 @@ class MockCourierProvider implements ICourierProvider {
       loadPercentage: this.options.loadPercent || 50,
       activeDeliveries: 10,
       maxCapacity: 20,
-      serviceAreas: (this.options.serviceAreas || ["downtown", "suburbs"]).map((area) => ({
-        area,
-        available: true,
-      })),
+      serviceAreas: (this.options.serviceAreas || ["downtown", "suburbs"]).map(
+        (area) => ({
+          area,
+          available: true,
+        }),
+      ),
       apiStatus: "healthy",
       lastUpdated: new Date(),
     };
@@ -63,9 +70,18 @@ describe("SmartRouter", () => {
     performance = new PartnerPerformance();
 
     // Register mock providers
-    router.registerProvider("onfleet", new MockCourierProvider("onfleet", { price: 4.5, eta: 25 }));
-    router.registerProvider("stuart", new MockCourierProvider("stuart", { price: 5.0, eta: 30 }));
-    router.registerProvider("uber", new MockCourierProvider("uber", { price: 6.0, eta: 20 }));
+    router.registerProvider(
+      "onfleet",
+      new MockCourierProvider("onfleet", { price: 4.5, eta: 25 }),
+    );
+    router.registerProvider(
+      "stuart",
+      new MockCourierProvider("stuart", { price: 5.0, eta: 30 }),
+    );
+    router.registerProvider(
+      "uber",
+      new MockCourierProvider("uber", { price: 6.0, eta: 20 }),
+    );
 
     // Cache some performance scores
     const excellentScore = performance.calculatePerformanceScore({
@@ -103,7 +119,11 @@ describe("SmartRouter", () => {
     it("should route delivery and return ranked options", async () => {
       const delivery: DeliveryRequest = {
         pickup: { latitude: 40.7128, longitude: -74.006, address: "NYC" },
-        dropoff: { latitude: 40.7489, longitude: -73.968, address: "Manhattan" },
+        dropoff: {
+          latitude: 40.7489,
+          longitude: -73.968,
+          address: "Manhattan",
+        },
         package: { weight: 5, transportType: "car" },
       };
 
@@ -126,7 +146,9 @@ describe("SmartRouter", () => {
 
       const viable = result.options.filter((o) => o.isViable);
       for (let i = 0; i < viable.length - 1; i++) {
-        expect(viable[i].routingScore).toBeGreaterThanOrEqual(viable[i + 1].routingScore);
+        expect(viable[i].routingScore).toBeGreaterThanOrEqual(
+          viable[i + 1].routingScore,
+        );
       }
     });
 
@@ -166,11 +188,15 @@ describe("SmartRouter", () => {
         dropoff: { latitude: 40.7489, longitude: -73.968 },
       };
 
-      const result = await router.routeDelivery(delivery, { prioritizeSpeed: true });
+      const result = await router.routeDelivery(delivery, {
+        prioritizeSpeed: true,
+      });
 
       const viable = result.options.filter((o) => o.isViable);
       if (viable.length > 1) {
-        expect(viable[0].quote.estimatedMinutes).toBeLessThanOrEqual(viable[1].quote.estimatedMinutes);
+        expect(viable[0].quote.estimatedMinutes).toBeLessThanOrEqual(
+          viable[1].quote.estimatedMinutes,
+        );
       }
     });
 
@@ -180,11 +206,15 @@ describe("SmartRouter", () => {
         dropoff: { latitude: 40.7489, longitude: -73.968 },
       };
 
-      const result = await router.routeDelivery(delivery, { prioritizeCost: true });
+      const result = await router.routeDelivery(delivery, {
+        prioritizeCost: true,
+      });
 
       const viable = result.options.filter((o) => o.isViable);
       if (viable.length > 1) {
-        expect(viable[0].quote.price).toBeLessThanOrEqual(viable[1].quote.price);
+        expect(viable[0].quote.price).toBeLessThanOrEqual(
+          viable[1].quote.price,
+        );
       }
     });
 
@@ -199,7 +229,9 @@ describe("SmartRouter", () => {
       expect(result.costComparison.cheapest).toBeGreaterThan(0);
       expect(result.costComparison.recommended).toBeGreaterThan(0);
       expect(result.costComparison.avgCost).toBeGreaterThan(0);
-      expect(result.costComparison.mostExpensive).toBeGreaterThanOrEqual(result.costComparison.cheapest);
+      expect(result.costComparison.mostExpensive).toBeGreaterThanOrEqual(
+        result.costComparison.cheapest,
+      );
     });
   });
 
@@ -246,7 +278,9 @@ describe("SmartRouter", () => {
         },
       ];
 
-      const result = await router.routeBatch(deliveries, { optimizeForCost: true });
+      const result = await router.routeBatch(deliveries, {
+        optimizeForCost: true,
+      });
 
       expect(result.costOptimization.savings).toBeGreaterThanOrEqual(0);
     });
@@ -265,7 +299,9 @@ describe("SmartRouter", () => {
         },
       ];
 
-      const result = await router.routeBatch(deliveries, { allowSplitDeliveries: true });
+      const result = await router.routeBatch(deliveries, {
+        allowSplitDeliveries: true,
+      });
 
       // May or may not have splits depending on the calculation
       expect(result.splitAssignments).toBeDefined();
@@ -281,7 +317,9 @@ describe("SmartRouter", () => {
 
       const result = await router.routeDelivery(delivery);
 
-      const onfleetOption = result.options.find((o) => o.provider === "onfleet");
+      const onfleetOption = result.options.find(
+        (o) => o.provider === "onfleet",
+      );
       expect(onfleetOption?.performanceScore).toBeDefined();
       expect(onfleetOption?.performanceScore?.tier).toBe("gold");
     });
@@ -354,8 +392,14 @@ describe("SmartRouter", () => {
   describe("custom scoring", () => {
     it("should support custom scoring functions", async () => {
       const customRouter = new SmartRouter();
-      customRouter.registerProvider("onfleet", new MockCourierProvider("onfleet", { price: 4.5, eta: 25 }));
-      customRouter.registerProvider("stuart", new MockCourierProvider("stuart", { price: 5.0, eta: 30 }));
+      customRouter.registerProvider(
+        "onfleet",
+        new MockCourierProvider("onfleet", { price: 4.5, eta: 25 }),
+      );
+      customRouter.registerProvider(
+        "stuart",
+        new MockCourierProvider("stuart", { price: 5.0, eta: 30 }),
+      );
 
       // Register custom scoring that heavily prioritizes cost
       customRouter.registerScoringFunction("cost-focused", (option) => {
@@ -367,7 +411,9 @@ describe("SmartRouter", () => {
         dropoff: { latitude: 40.7489, longitude: -73.968 },
       };
 
-      const result = await router.routeDelivery(delivery, { customScoringFunction: "cost-focused" });
+      const result = await router.routeDelivery(delivery, {
+        customScoringFunction: "cost-focused",
+      });
 
       expect(result.recommended).toBeDefined();
     });

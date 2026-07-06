@@ -15,7 +15,8 @@ import type { DeadLetterEntry } from "./types.js";
 
 export class DeadLetterHandler extends EventEmitter {
   private dlqEntries: Map<string, DeadLetterEntry> = new Map();
-  private alertHooks: Set<(entry: DeadLetterEntry) => Promise<void>> = new Set();
+  private alertHooks: Set<(entry: DeadLetterEntry) => Promise<void>> =
+    new Set();
 
   constructor() {
     super();
@@ -29,7 +30,9 @@ export class DeadLetterHandler extends EventEmitter {
     this.alertHooks.delete(hook);
   }
 
-  async addEntry(entry: Omit<DeadLetterEntry, "id" | "timestamp">): Promise<string> {
+  async addEntry(
+    entry: Omit<DeadLetterEntry, "id" | "timestamp">,
+  ): Promise<string> {
     const dlqEntry: DeadLetterEntry = {
       ...entry,
       id: `dlq_${randomUUID()}`,
@@ -43,15 +46,15 @@ export class DeadLetterHandler extends EventEmitter {
       timestamp: new Date(),
     });
     console.warn(
-      `[DeadLetterHandler] Job added to DLQ: ${dlqEntry.jobId || "unknown"} (${dlqEntry.workflowName})`
+      `[DeadLetterHandler] Job added to DLQ: ${dlqEntry.jobId || "unknown"} (${dlqEntry.workflowName})`,
     );
     try {
       await Promise.all(
         Array.from(this.alertHooks).map((hook) =>
           hook(dlqEntry).catch((err) => {
             console.error("[DeadLetterHandler] Alert hook error:", err);
-          })
-        )
+          }),
+        ),
       );
     } catch (error) {
       console.error("[DeadLetterHandler] Error calling alert hooks:", error);
@@ -59,7 +62,10 @@ export class DeadLetterHandler extends EventEmitter {
     return dlqEntry.id;
   }
 
-  async listDeadLetters(limit: number = 100, offset: number = 0): Promise<DeadLetterEntry[]> {
+  async listDeadLetters(
+    limit: number = 100,
+    offset: number = 0,
+  ): Promise<DeadLetterEntry[]> {
     const entries = Array.from(this.dlqEntries.values())
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
       .slice(offset, offset + limit);
@@ -72,30 +78,29 @@ export class DeadLetterHandler extends EventEmitter {
 
   async getEntriesByWorkflow(workflowName: string): Promise<DeadLetterEntry[]> {
     return Array.from(this.dlqEntries.values()).filter(
-      (entry) => entry.workflowName === workflowName
+      (entry) => entry.workflowName === workflowName,
     );
   }
 
   async getEntriesSince(since: Date): Promise<DeadLetterEntry[]> {
     return Array.from(this.dlqEntries.values()).filter(
-      (entry) => entry.timestamp.getTime() >= since.getTime()
+      (entry) => entry.timestamp.getTime() >= since.getTime(),
     );
   }
 
-  async retryDeadLetter(entryId: string, queue: any): Promise<string | undefined> {
+  async retryDeadLetter(
+    entryId: string,
+    queue: any,
+  ): Promise<string | undefined> {
     const entry = this.dlqEntries.get(entryId);
     if (!entry) return undefined;
     try {
-      const jobId = await queue.enqueue(
-        entry.workflowName,
-        entry.input,
-        {
-          userId: "system",
-          tenantId: "system",
-          transactionId: `retry_${entryId}_${Date.now()}`,
-          metadata: { dlqRetry: true, originalEntryId: entryId },
-        }
-      );
+      const jobId = await queue.enqueue(entry.workflowName, entry.input, {
+        userId: "system",
+        tenantId: "system",
+        transactionId: `retry_${entryId}_${Date.now()}`,
+        metadata: { dlqRetry: true, originalEntryId: entryId },
+      });
       this.dlqEntries.delete(entryId);
       this.emit("dlq:entry-retried", {
         entryId,
@@ -103,12 +108,21 @@ export class DeadLetterHandler extends EventEmitter {
         workflowName: entry.workflowName,
         timestamp: new Date(),
       });
-      console.log(`[DeadLetterHandler] Retried DLQ entry ${entryId} as job ${jobId}`);
+      console.log(
+        `[DeadLetterHandler] Retried DLQ entry ${entryId} as job ${jobId}`,
+      );
       return jobId;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.emit("dlq:retry-failed", { entryId, error: message, timestamp: new Date() });
-      console.error(`[DeadLetterHandler] Failed to retry DLQ entry ${entryId}:`, error);
+      this.emit("dlq:retry-failed", {
+        entryId,
+        error: message,
+        timestamp: new Date(),
+      });
+      console.error(
+        `[DeadLetterHandler] Failed to retry DLQ entry ${entryId}:`,
+        error,
+      );
       return undefined;
     }
   }
@@ -157,12 +171,20 @@ export class DeadLetterHandler extends EventEmitter {
     const entries = Array.from(this.dlqEntries.values());
     const byWorkflow: Record<string, number> = {};
     for (const entry of entries) {
-      byWorkflow[entry.workflowName] = (byWorkflow[entry.workflowName] ?? 0) + 1;
+      byWorkflow[entry.workflowName] =
+        (byWorkflow[entry.workflowName] ?? 0) + 1;
     }
     const timestamps = entries.map((e) => e.timestamp.getTime());
-    const oldestEntry = timestamps.length > 0 ? new Date(Math.min(...timestamps)) : undefined;
-    const newestEntry = timestamps.length > 0 ? new Date(Math.max(...timestamps)) : undefined;
-    return { totalEntries: entries.length, byWorkflow, oldestEntry, newestEntry };
+    const oldestEntry =
+      timestamps.length > 0 ? new Date(Math.min(...timestamps)) : undefined;
+    const newestEntry =
+      timestamps.length > 0 ? new Date(Math.max(...timestamps)) : undefined;
+    return {
+      totalEntries: entries.length,
+      byWorkflow,
+      oldestEntry,
+      newestEntry,
+    };
   }
 
   async exportAsJSON(): Promise<string> {

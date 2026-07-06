@@ -107,16 +107,52 @@ export function FuelGauge({
       >
         <defs>
           <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="var(--wl-danger-400)" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="var(--wl-danger-500)" stopOpacity="1" />
+            <stop
+              offset="0%"
+              stopColor="var(--wl-danger-400)"
+              stopOpacity="0.8"
+            />
+            <stop
+              offset="100%"
+              stopColor="var(--wl-danger-500)"
+              stopOpacity="1"
+            />
           </linearGradient>
-          <linearGradient id="yellowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="var(--wl-warning-400)" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="var(--wl-warning-500)" stopOpacity="1" />
+          <linearGradient
+            id="yellowGradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
+            <stop
+              offset="0%"
+              stopColor="var(--wl-warning-400)"
+              stopOpacity="0.8"
+            />
+            <stop
+              offset="100%"
+              stopColor="var(--wl-warning-500)"
+              stopOpacity="1"
+            />
           </linearGradient>
-          <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="var(--wl-success-400)" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="var(--wl-success-500)" stopOpacity="1" />
+          <linearGradient
+            id="greenGradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
+            <stop
+              offset="0%"
+              stopColor="var(--wl-success-400)"
+              stopOpacity="0.8"
+            />
+            <stop
+              offset="100%"
+              stopColor="var(--wl-success-500)"
+              stopOpacity="1"
+            />
           </linearGradient>
         </defs>
 

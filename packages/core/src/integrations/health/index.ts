@@ -5,8 +5,8 @@
  * degradation detection, and multi-channel alerting for integrations.
  */
 
-export * from './health-types.js';
-export * from './integration-health-monitor.js';
+export * from "./health-types.js";
+export * from "./integration-health-monitor.js";
 export {
   HealthAPIHandler,
   attachHealthAPI,
@@ -15,4 +15,4 @@ export {
   ResolveAlertSchema,
   ExecuteHealthCheckSchema,
   AlertQuerySchema,
-} from './health-api.js';
+} from "./health-api.js";

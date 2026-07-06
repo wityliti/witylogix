@@ -3,7 +3,7 @@
  * 20+ comprehensive tests covering spec generation, schema conversion, and validation
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   OpenAPIGenerator,
   type OpenAPIGeneratorConfig,
@@ -11,115 +11,115 @@ import {
   zodToJsonSchema,
   validateOpenAPISpec,
   createOpenAPIConfig,
-} from '../openapi-generator';
-import { z } from 'zod';
+} from "../openapi-generator";
+import { z } from "zod";
 
 // ─── Test Fixtures ──────────────────────────────────────────────
 
 const mockFastifyInstance = {
   routes: [
     {
-      url: '/orders',
-      method: 'GET',
+      url: "/orders",
+      method: "GET",
     },
     {
-      url: '/orders/:id',
-      method: 'GET',
+      url: "/orders/:id",
+      method: "GET",
     },
     {
-      url: '/orders',
-      method: 'POST',
+      url: "/orders",
+      method: "POST",
     },
     {
-      url: '/orders/:id',
-      method: 'PUT',
+      url: "/orders/:id",
+      method: "PUT",
     },
     {
-      url: '/orders/:id',
-      method: 'DELETE',
+      url: "/orders/:id",
+      method: "DELETE",
     },
     {
-      url: '/drivers',
-      method: 'GET',
+      url: "/drivers",
+      method: "GET",
     },
     {
-      url: '/drivers/:id',
-      method: 'GET',
+      url: "/drivers/:id",
+      method: "GET",
     },
     {
-      url: '/drivers',
-      method: 'POST',
+      url: "/drivers",
+      method: "POST",
     },
     {
-      url: '/shipments/:shipmentId/tracking',
-      method: 'GET',
+      url: "/shipments/:shipmentId/tracking",
+      method: "GET",
     },
     {
-      url: '/api/v1/integration/shopify/webhook',
-      method: 'POST',
+      url: "/api/v1/integration/shopify/webhook",
+      method: "POST",
     },
   ],
 } as any;
 
 const testConfig: OpenAPIGeneratorConfig = {
-  title: 'Test API',
-  version: '1.0.0',
-  description: 'Test OpenAPI specification',
-  baseUrl: 'http://localhost:3000',
+  title: "Test API",
+  version: "1.0.0",
+  description: "Test OpenAPI specification",
+  baseUrl: "http://localhost:3000",
   contact: {
-    name: 'Test Support',
-    email: 'test@example.com',
+    name: "Test Support",
+    email: "test@example.com",
   },
 };
 
 // ─── Zod to JSON Schema Converter Tests ──────────────────────────
 
-describe('zodToJsonSchema', () => {
-  it('should convert string schema', () => {
+describe("zodToJsonSchema", () => {
+  it("should convert string schema", () => {
     const schema = z.string();
     const jsonSchema = zodToJsonSchema(schema);
 
-    expect(jsonSchema.type).toBe('string');
+    expect(jsonSchema.type).toBe("string");
   });
 
-  it('should convert number schema', () => {
+  it("should convert number schema", () => {
     const schema = z.number();
     const jsonSchema = zodToJsonSchema(schema);
 
-    expect(jsonSchema.type).toBe('number');
+    expect(jsonSchema.type).toBe("number");
   });
 
-  it('should convert boolean schema', () => {
+  it("should convert boolean schema", () => {
     const schema = z.boolean();
     const jsonSchema = zodToJsonSchema(schema);
 
-    expect(jsonSchema.type).toBe('boolean');
+    expect(jsonSchema.type).toBe("boolean");
   });
 
-  it('should convert array schema', () => {
+  it("should convert array schema", () => {
     const schema = z.array(z.string());
     const jsonSchema = zodToJsonSchema(schema);
 
-    expect(jsonSchema.type).toBe('array');
+    expect(jsonSchema.type).toBe("array");
     expect(jsonSchema.items).toBeDefined();
   });
 
-  it('should convert enum schema', () => {
-    const schema = z.enum(['small', 'medium', 'large']);
+  it("should convert enum schema", () => {
+    const schema = z.enum(["small", "medium", "large"]);
     const jsonSchema = zodToJsonSchema(schema);
 
-    expect(jsonSchema.enum).toEqual(['small', 'medium', 'large']);
+    expect(jsonSchema.enum).toEqual(["small", "medium", "large"]);
   });
 
-  it('should convert date schema', () => {
+  it("should convert date schema", () => {
     const schema = z.date();
     const jsonSchema = zodToJsonSchema(schema);
 
-    expect(jsonSchema.type).toBe('string');
-    expect(jsonSchema.format).toBe('date-time');
+    expect(jsonSchema.type).toBe("string");
+    expect(jsonSchema.format).toBe("date-time");
   });
 
-  it('should convert object schema with properties', () => {
+  it("should convert object schema with properties", () => {
     const schema = z.object({
       name: z.string(),
       age: z.number(),
@@ -128,7 +128,7 @@ describe('zodToJsonSchema', () => {
 
     const jsonSchema = zodToJsonSchema(schema);
 
-    expect(jsonSchema.type).toBe('object');
+    expect(jsonSchema.type).toBe("object");
     expect(jsonSchema.properties).toBeDefined();
     expect(jsonSchema.properties.name).toBeDefined();
     expect(jsonSchema.properties.age).toBeDefined();
@@ -138,44 +138,44 @@ describe('zodToJsonSchema', () => {
 
 // ─── OpenAPI Generator Tests ────────────────────────────────────
 
-describe('OpenAPIGenerator', () => {
+describe("OpenAPIGenerator", () => {
   let generator: OpenAPIGenerator;
 
   beforeEach(() => {
     generator = new OpenAPIGenerator(testConfig);
   });
 
-  describe('Basic Specification Generation', () => {
-    it('should create OpenAPI generator with config', () => {
+  describe("Basic Specification Generation", () => {
+    it("should create OpenAPI generator with config", () => {
       expect(generator).toBeDefined();
     });
 
-    it('should generate valid OpenAPI spec', () => {
+    it("should generate valid OpenAPI spec", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
       expect(spec).toBeDefined();
-      expect(spec.openapi).toBe('3.1.0');
-      expect(spec.info.title).toBe('Test API');
-      expect(spec.info.version).toBe('1.0.0');
+      expect(spec.openapi).toBe("3.1.0");
+      expect(spec.info.title).toBe("Test API");
+      expect(spec.info.version).toBe("1.0.0");
     });
 
-    it('should include info section with contact', () => {
+    it("should include info section with contact", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
       expect(spec.info.contact).toBeDefined();
-      expect(spec.info.contact?.name).toBe('Test Support');
-      expect(spec.info.contact?.email).toBe('test@example.com');
+      expect(spec.info.contact?.name).toBe("Test Support");
+      expect(spec.info.contact?.email).toBe("test@example.com");
     });
 
-    it('should include servers', () => {
+    it("should include servers", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
       expect(spec.servers).toBeDefined();
       expect(spec.servers.length).toBeGreaterThan(0);
-      expect(spec.servers[0].url).toContain('localhost');
+      expect(spec.servers[0].url).toContain("localhost");
     });
 
-    it('should include paths from routes', () => {
+    it("should include paths from routes", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
       expect(spec.paths).toBeDefined();
@@ -183,124 +183,125 @@ describe('OpenAPIGenerator', () => {
     });
   });
 
-  describe('Path Normalization', () => {
-    it('should normalize path with single parameter', () => {
+  describe("Path Normalization", () => {
+    it("should normalize path with single parameter", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
-      expect(spec.paths['/orders/{id}']).toBeDefined();
+      expect(spec.paths["/orders/{id}"]).toBeDefined();
     });
 
-    it('should normalize path with multiple parameters', () => {
+    it("should normalize path with multiple parameters", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
-      expect(spec.paths['/shipments/{shipmentId}/tracking']).toBeDefined();
+      expect(spec.paths["/shipments/{shipmentId}/tracking"]).toBeDefined();
     });
 
-    it('should handle paths without parameters', () => {
+    it("should handle paths without parameters", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
-      expect(spec.paths['/orders']).toBeDefined();
+      expect(spec.paths["/orders"]).toBeDefined();
     });
   });
 
-  describe('Route Tagging', () => {
-    it('should extract tags from route paths', () => {
+  describe("Route Tagging", () => {
+    it("should extract tags from route paths", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
       expect(spec.tags).toBeDefined();
       expect(spec.tags?.length).toBeGreaterThan(0);
 
-      const tagNames = spec.tags?.map(t => t.name) ?? [];
-      expect(tagNames).toContain('Orders');
+      const tagNames = spec.tags?.map((t) => t.name) ?? [];
+      expect(tagNames).toContain("Orders");
     });
 
-    it('should skip internal routes in tags', () => {
+    it("should skip internal routes in tags", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
-      const tagNames = spec.tags?.map(t => t.name) ?? [];
-      expect(tagNames).not.toContain('Health');
-      expect(tagNames).not.toContain('Metrics');
+      const tagNames = spec.tags?.map((t) => t.name) ?? [];
+      expect(tagNames).not.toContain("Health");
+      expect(tagNames).not.toContain("Metrics");
     });
 
-    it('should group operations by tag', () => {
+    it("should group operations by tag", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
-      const ordersOps = Object.entries(spec.paths['/orders'] ?? {})
-        .filter(([method]) => method !== 'parameters');
+      const ordersOps = Object.entries(spec.paths["/orders"] ?? {}).filter(
+        ([method]) => method !== "parameters",
+      );
 
       for (const [_, op] of ordersOps) {
-        expect(op.tags).toContain('Orders');
+        expect(op.tags).toContain("Orders");
       }
     });
   });
 
-  describe('Operation Building', () => {
-    it('should build GET operation with query parameters', () => {
+  describe("Operation Building", () => {
+    it("should build GET operation with query parameters", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
-      const getOp = spec.paths['/orders']?.get;
+      const getOp = spec.paths["/orders"]?.get;
 
       expect(getOp).toBeDefined();
       expect(getOp?.parameters).toBeDefined();
 
       const paramNames = getOp?.parameters?.map((p: any) => p.name) ?? [];
-      expect(paramNames).toContain('limit');
-      expect(paramNames).toContain('offset');
+      expect(paramNames).toContain("limit");
+      expect(paramNames).toContain("offset");
     });
 
-    it('should build POST operation with request body', () => {
+    it("should build POST operation with request body", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
-      const postOp = spec.paths['/orders']?.post;
+      const postOp = spec.paths["/orders"]?.post;
 
       expect(postOp).toBeDefined();
       expect(postOp?.requestBody).toBeDefined();
-      expect(postOp?.requestBody?.content['application/json']).toBeDefined();
+      expect(postOp?.requestBody?.content["application/json"]).toBeDefined();
     });
 
-    it('should build DELETE operation', () => {
+    it("should build DELETE operation", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
-      const delOp = spec.paths['/orders/{id}']?.delete;
+      const delOp = spec.paths["/orders/{id}"]?.delete;
 
       expect(delOp).toBeDefined();
       expect(delOp?.responses).toBeDefined();
     });
 
-    it('should include responses for all operations', () => {
+    it("should include responses for all operations", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
       for (const [path, methods] of Object.entries(spec.paths)) {
         for (const [method, operation] of Object.entries(methods)) {
-          if (method !== 'parameters') {
+          if (method !== "parameters") {
             expect(operation.responses).toBeDefined();
-            expect(operation.responses['200']).toBeDefined();
+            expect(operation.responses["200"]).toBeDefined();
           }
         }
       }
     });
 
-    it('should generate operation IDs', () => {
+    it("should generate operation IDs", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
-      const getOp = spec.paths['/orders']?.get;
+      const getOp = spec.paths["/orders"]?.get;
 
       expect(getOp?.operationId).toBeDefined();
-      expect(typeof getOp?.operationId).toBe('string');
+      expect(typeof getOp?.operationId).toBe("string");
     });
 
-    it('should generate summaries', () => {
+    it("should generate summaries", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
-      const getOp = spec.paths['/orders']?.get;
+      const getOp = spec.paths["/orders"]?.get;
 
       expect(getOp?.summary).toBeDefined();
-      expect(typeof getOp?.summary).toBe('string');
+      expect(typeof getOp?.summary).toBe("string");
     });
   });
 
-  describe('Components and Security', () => {
-    it('should include security schemes', () => {
+  describe("Components and Security", () => {
+    it("should include security schemes", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
       expect(spec.components.securitySchemes).toBeDefined();
@@ -308,27 +309,27 @@ describe('OpenAPIGenerator', () => {
       expect(spec.components.securitySchemes.apiKey).toBeDefined();
     });
 
-    it('should include bearer auth scheme', () => {
+    it("should include bearer auth scheme", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
       const bearer = spec.components.securitySchemes.bearerAuth;
 
-      expect(bearer.type).toBe('http');
-      expect(bearer.scheme).toBe('bearer');
-      expect(bearer.bearerFormat).toBe('JWT');
+      expect(bearer.type).toBe("http");
+      expect(bearer.scheme).toBe("bearer");
+      expect(bearer.bearerFormat).toBe("JWT");
     });
 
-    it('should include API key scheme', () => {
+    it("should include API key scheme", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
       const apiKey = spec.components.securitySchemes.apiKey;
 
-      expect(apiKey.type).toBe('apiKey');
-      expect(apiKey.in).toBe('header');
-      expect(apiKey.name).toBe('X-API-Key');
+      expect(apiKey.type).toBe("apiKey");
+      expect(apiKey.in).toBe("header");
+      expect(apiKey.name).toBe("X-API-Key");
     });
 
-    it('should apply default security requirement', () => {
+    it("should apply default security requirement", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
       expect(spec.security).toBeDefined();
@@ -336,20 +337,20 @@ describe('OpenAPIGenerator', () => {
     });
   });
 
-  describe('JSON Serialization', () => {
-    it('should serialize spec to JSON', () => {
+  describe("JSON Serialization", () => {
+    it("should serialize spec to JSON", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
       const json = generator.toJSON(spec);
 
       expect(json).toBeDefined();
-      expect(typeof json).toBe('string');
+      expect(typeof json).toBe("string");
 
       const parsed = JSON.parse(json);
-      expect(parsed.openapi).toBe('3.1.0');
+      expect(parsed.openapi).toBe("3.1.0");
     });
 
-    it('should produce valid JSON', () => {
+    it("should produce valid JSON", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
       const json = generator.toJSON(spec);
@@ -357,7 +358,7 @@ describe('OpenAPIGenerator', () => {
       expect(() => JSON.parse(json)).not.toThrow();
     });
 
-    it('should include all spec properties in JSON', () => {
+    it("should include all spec properties in JSON", () => {
       const spec = generator.generateSpec(mockFastifyInstance);
 
       const json = generator.toJSON(spec);
@@ -370,18 +371,18 @@ describe('OpenAPIGenerator', () => {
     });
   });
 
-  describe('Swagger UI Generation', () => {
-    it('should generate Swagger UI HTML', () => {
-      const html = generator.generateSwaggerUI('/api/docs/spec');
+  describe("Swagger UI Generation", () => {
+    it("should generate Swagger UI HTML", () => {
+      const html = generator.generateSwaggerUI("/api/docs/spec");
 
       expect(html).toBeDefined();
-      expect(typeof html).toBe('string');
-      expect(html).toContain('DOCTYPE');
-      expect(html).toContain('redoc');
+      expect(typeof html).toBe("string");
+      expect(html).toContain("DOCTYPE");
+      expect(html).toContain("redoc");
     });
 
-    it('should include spec URL in HTML', () => {
-      const specUrl = '/api/docs/spec';
+    it("should include spec URL in HTML", () => {
+      const specUrl = "/api/docs/spec";
       const html = generator.generateSwaggerUI(specUrl);
 
       expect(html).toContain(specUrl);
@@ -391,21 +392,21 @@ describe('OpenAPIGenerator', () => {
 
 // ─── Specification Validation Tests ────────────────────────────
 
-describe('OpenAPI Specification Validation', () => {
-  it('should validate correct spec', () => {
+describe("OpenAPI Specification Validation", () => {
+  it("should validate correct spec", () => {
     const spec: OpenAPIDocument = {
-      openapi: '3.1.0',
+      openapi: "3.1.0",
       info: {
-        title: 'Test API',
-        version: '1.0.0',
+        title: "Test API",
+        version: "1.0.0",
       },
-      servers: [{ url: 'http://localhost:3000' }],
+      servers: [{ url: "http://localhost:3000" }],
       paths: {
-        '/test': {
+        "/test": {
           get: {
             responses: {
-              '200': {
-                description: 'Success',
+              "200": {
+                description: "Success",
               },
             },
           },
@@ -422,11 +423,11 @@ describe('OpenAPI Specification Validation', () => {
     expect(errors).toEqual([]);
   });
 
-  it('should catch missing openapi version', () => {
+  it("should catch missing openapi version", () => {
     const spec: any = {
       info: {
-        title: 'Test API',
-        version: '1.0.0',
+        title: "Test API",
+        version: "1.0.0",
       },
       paths: {},
       components: {
@@ -437,12 +438,12 @@ describe('OpenAPI Specification Validation', () => {
 
     const errors = validateOpenAPISpec(spec);
 
-    expect(errors.some(e => e.includes('openapi'))).toBe(true);
+    expect(errors.some((e) => e.includes("openapi"))).toBe(true);
   });
 
-  it('should catch missing info', () => {
+  it("should catch missing info", () => {
     const spec: any = {
-      openapi: '3.1.0',
+      openapi: "3.1.0",
       paths: {},
       components: {
         schemas: {},
@@ -452,15 +453,15 @@ describe('OpenAPI Specification Validation', () => {
 
     const errors = validateOpenAPISpec(spec);
 
-    expect(errors.some(e => e.includes('info'))).toBe(true);
+    expect(errors.some((e) => e.includes("info"))).toBe(true);
   });
 
-  it('should catch missing paths', () => {
+  it("should catch missing paths", () => {
     const spec: any = {
-      openapi: '3.1.0',
+      openapi: "3.1.0",
       info: {
-        title: 'Test API',
-        version: '1.0.0',
+        title: "Test API",
+        version: "1.0.0",
       },
       paths: {},
       components: {
@@ -471,14 +472,14 @@ describe('OpenAPI Specification Validation', () => {
 
     const errors = validateOpenAPISpec(spec);
 
-    expect(errors.some(e => e.includes('No paths'))).toBe(true);
+    expect(errors.some((e) => e.includes("No paths"))).toBe(true);
   });
 });
 
 // ─── Configuration Helper Tests ─────────────────────────────────
 
-describe('OpenAPI Configuration Helpers', () => {
-  it('should create config with defaults', () => {
+describe("OpenAPI Configuration Helpers", () => {
+  it("should create config with defaults", () => {
     const config = createOpenAPIConfig();
 
     expect(config.title).toBeDefined();
@@ -487,22 +488,22 @@ describe('OpenAPI Configuration Helpers', () => {
     expect(config.contact).toBeDefined();
   });
 
-  it('should allow config overrides', () => {
+  it("should allow config overrides", () => {
     const config = createOpenAPIConfig({
-      title: 'Custom API',
-      version: '2.0.0',
+      title: "Custom API",
+      version: "2.0.0",
     });
 
-    expect(config.title).toBe('Custom API');
-    expect(config.version).toBe('2.0.0');
+    expect(config.title).toBe("Custom API");
+    expect(config.version).toBe("2.0.0");
   });
 
-  it('should use environment URL', () => {
-    process.env.API_URL = 'https://api.example.com';
+  it("should use environment URL", () => {
+    process.env.API_URL = "https://api.example.com";
 
     const config = createOpenAPIConfig();
 
-    expect(config.baseUrl).toContain('api.example.com');
+    expect(config.baseUrl).toContain("api.example.com");
 
     delete process.env.API_URL;
   });

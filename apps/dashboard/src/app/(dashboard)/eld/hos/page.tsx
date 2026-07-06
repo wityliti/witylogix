@@ -6,7 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useDriverHOS, useViolations, useELDDriverStatus, DutyStatus } from "@/hooks/use-eld";
+import {
+  useDriverHOS,
+  useViolations,
+  useELDDriverStatus,
+  DutyStatus,
+} from "@/hooks/use-eld";
 import { HOSClock, MultiHOSGauge } from "@/components/eld/hos-clock";
 import { ViolationTimeline } from "@/components/eld/violation-timeline";
 import { TableSkeleton } from "@/components/ui/loading-skeleton";
@@ -53,13 +58,24 @@ const generateDailyLog = (): DailyLogEntry[] => {
   return log;
 };
 
-const generateEightDayRecap = (cycleHoursUsed = 0, drivingRemaining = 660): EightDayEntry[] => {
+const generateEightDayRecap = (
+  cycleHoursUsed = 0,
+  drivingRemaining = 660,
+): EightDayEntry[] => {
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Today"];
   const dailyAvg = cycleHoursUsed / 7;
   return days.map((day, i) => {
-    const driving = i < 7 ? Math.round((dailyAvg * 0.7) * 10) / 10 : Math.round(((660 - drivingRemaining) / 60) * 10) / 10;
-    const onDuty = i < 7 ? Math.round((dailyAvg * 0.3) * 10) / 10 : 0;
-    return { day, driving, onDuty, total: Math.round((driving + onDuty) * 10) / 10 };
+    const driving =
+      i < 7
+        ? Math.round(dailyAvg * 0.7 * 10) / 10
+        : Math.round(((660 - drivingRemaining) / 60) * 10) / 10;
+    const onDuty = i < 7 ? Math.round(dailyAvg * 0.3 * 10) / 10 : 0;
+    return {
+      day,
+      driving,
+      onDuty,
+      total: Math.round((driving + onDuty) * 10) / 10,
+    };
   });
 };
 
@@ -87,9 +103,16 @@ export default function HOSPage() {
   const [personalConveyance, setPersonalConveyance] = useState(false);
   const [yardMove, setYardMove] = useState(false);
 
-  const { items: driverList, loading: driversLoading, error: driversError, refetch: refetchDrivers } = useELDDriverStatus();
+  const {
+    items: driverList,
+    loading: driversLoading,
+    error: driversError,
+    refetch: refetchDrivers,
+  } = useELDDriverStatus();
   const { data: hos, loading: isLoading } = useDriverHOS(selectedDriverId);
-  const { items: violations, loading: violationsLoading } = useViolations({ search: selectedDriverId ?? undefined });
+  const { items: violations, loading: violationsLoading } = useViolations({
+    search: selectedDriverId ?? undefined,
+  });
 
   // Auto-select first driver when loaded
   useEffect(() => {
@@ -101,17 +124,24 @@ export default function HOSPage() {
   const dailyLog = useMemo(() => generateDailyLog(), []);
   const eightDayRecap = useMemo(
     () => generateEightDayRecap(hos?.cycleHoursUsed, hos?.drivingTimeRemaining),
-    [hos?.cycleHoursUsed, hos?.drivingTimeRemaining]
+    [hos?.cycleHoursUsed, hos?.drivingTimeRemaining],
   );
 
-  const selectedDriver = driverList.find((d) => d.driverId === selectedDriverId);
+  const selectedDriver = driverList.find(
+    (d) => d.driverId === selectedDriverId,
+  );
   const filteredDrivers = useMemo(() => {
     if (!searchQuery) return driverList;
-    return driverList.filter((d) => d.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    return driverList.filter((d) =>
+      d.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
   }, [searchQuery, driverList]);
 
   if (driversLoading) return <TableSkeleton rows={10} columns={6} />;
-  if (driversError) return <ErrorState message={driversError.message} onRetry={refetchDrivers} />;
+  if (driversError)
+    return (
+      <ErrorState message={driversError.message} onRetry={refetchDrivers} />
+    );
 
   const getHosStatus = () => {
     if (!hos) return "unknown";
@@ -136,11 +166,13 @@ export default function HOSPage() {
               onClick={() => setShowSearch(!showSearch)}
               className="w-full h-10 px-3 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-white text-left flex items-center justify-between hover:bg-wl-bg-root transition-colors"
             >
-              <span className="text-sm font-medium">{selectedDriver?.name}</span>
+              <span className="text-sm font-medium">
+                {selectedDriver?.name}
+              </span>
               <ChevronDown
                 className={cn(
                   "w-4 h-4 text-wl-text-secondary transition-transform",
-                  showSearch && "rotate-180"
+                  showSearch && "rotate-180",
                 )}
               />
             </button>
@@ -168,7 +200,7 @@ export default function HOSPage() {
                         "w-full text-left px-3 py-2 text-xs transition-colors border-b border-wl-border-default last:border-0",
                         selectedDriverId === driver.driverId
                           ? "bg-blue-500/10 text-blue-400"
-                          : "text-wl-text-secondary hover:bg-wl-bg-root"
+                          : "text-wl-text-secondary hover:bg-wl-bg-root",
                       )}
                     >
                       {driver.name}
@@ -192,7 +224,9 @@ export default function HOSPage() {
             driving={hos.drivingTimeRemaining}
             onDutyWindow={hos.onDutyWindowRemaining}
             cycle={{ used: hos.cycleHoursUsed, max: hos.cycleHours }}
-            breakRemaining={hos.breakStatus === "REQUIRED" ? hos.breakTimeRemaining : 0}
+            breakRemaining={
+              hos.breakStatus === "REQUIRED" ? hos.breakTimeRemaining : 0
+            }
             isViolation={hosStatus === "critical"}
           />
 
@@ -201,12 +235,16 @@ export default function HOSPage() {
             {/* Current Status */}
             <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-sm text-white">Current Status</CardTitle>
+                <CardTitle className="text-sm text-white">
+                  Current Status
+                </CardTitle>
               </CardHeader>
 
               <CardContent className="space-y-3">
                 <div>
-                  <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold mb-1">Duty Status</p>
+                  <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold mb-1">
+                    Duty Status
+                  </p>
                   <div className="flex items-center gap-2">
                     <div
                       className={cn(
@@ -217,24 +255,37 @@ export default function HOSPage() {
                             ? "bg-blue-500"
                             : hos.currentStatus === "SLEEPER"
                               ? "bg-amber-500"
-                              : "bg-wl-neutral-400"
+                              : "bg-wl-neutral-400",
                       )}
                     />
-                    <p className="text-sm font-semibold text-white">{hos.currentStatus.replace(/_/g, " ")}</p>
+                    <p className="text-sm font-semibold text-white">
+                      {hos.currentStatus.replace(/_/g, " ")}
+                    </p>
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold mb-1">Break Status</p>
-                  <Badge variant={hos.breakStatus === "TAKEN" ? "success" : "warning"}>
+                  <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold mb-1">
+                    Break Status
+                  </p>
+                  <Badge
+                    variant={
+                      hos.breakStatus === "TAKEN" ? "success" : "warning"
+                    }
+                  >
                     {hos.breakStatus === "TAKEN" ? "✓ Taken" : "⚠ Required"}
                   </Badge>
                 </div>
 
                 <div>
-                  <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold mb-1">Last Updated</p>
+                  <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold mb-1">
+                    Last Updated
+                  </p>
                   <p className="text-xs text-white">
-                    {new Date(hos.lastStatusChange).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    {new Date(hos.lastStatusChange).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </p>
                 </div>
               </CardContent>
@@ -243,7 +294,9 @@ export default function HOSPage() {
             {/* Toggles */}
             <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-sm text-white">HOS Exemptions</CardTitle>
+                <CardTitle className="text-sm text-white">
+                  HOS Exemptions
+                </CardTitle>
               </CardHeader>
 
               <CardContent className="space-y-3">
@@ -254,7 +307,9 @@ export default function HOSPage() {
                     onChange={(e) => setPersonalConveyance(e.target.checked)}
                     className="w-4 h-4 rounded border-wl-border-default"
                   />
-                  <span className="text-xs text-white font-medium">Personal Conveyance</span>
+                  <span className="text-xs text-white font-medium">
+                    Personal Conveyance
+                  </span>
                 </label>
 
                 <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-wl-bg-elevated transition-colors">
@@ -264,7 +319,9 @@ export default function HOSPage() {
                     onChange={(e) => setYardMove(e.target.checked)}
                     className="w-4 h-4 rounded border-wl-border-default"
                   />
-                  <span className="text-xs text-white font-medium">Yard Move</span>
+                  <span className="text-xs text-white font-medium">
+                    Yard Move
+                  </span>
                 </label>
 
                 <p className="text-xs text-wl-text-secondary pt-2 border-t border-wl-border-default">
@@ -277,7 +334,7 @@ export default function HOSPage() {
             <Card
               className={cn(
                 "bg-wl-bg-surface border-wl-border-default",
-                hosStatus === "critical" && "border-red-500/50 bg-red-500/5"
+                hosStatus === "critical" && "border-red-500/50 bg-red-500/5",
               )}
             >
               <CardHeader>
@@ -304,9 +361,12 @@ export default function HOSPage() {
               </CardHeader>
 
               <CardContent className="text-xs text-wl-text-secondary">
-                {hosStatus === "compliant" && "Driver is within safe HOS limits. Continue monitoring."}
-                {hosStatus === "warning" && "Driving hours approaching limit. Schedule break soon."}
-                {hosStatus === "critical" && "URGENT: Driver must stop driving immediately. HOS violation imminent."}
+                {hosStatus === "compliant" &&
+                  "Driver is within safe HOS limits. Continue monitoring."}
+                {hosStatus === "warning" &&
+                  "Driving hours approaching limit. Schedule break soon."}
+                {hosStatus === "critical" &&
+                  "URGENT: Driver must stop driving immediately. HOS violation imminent."}
               </CardContent>
             </Card>
           </div>
@@ -315,8 +375,12 @@ export default function HOSPage() {
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg text-white">24-Hour Daily Log</CardTitle>
-                <span className="text-xs text-wl-text-secondary">{new Date().toLocaleDateString()}</span>
+                <CardTitle className="text-lg text-white">
+                  24-Hour Daily Log
+                </CardTitle>
+                <span className="text-xs text-wl-text-secondary">
+                  {new Date().toLocaleDateString()}
+                </span>
               </div>
             </CardHeader>
 
@@ -327,7 +391,10 @@ export default function HOSPage() {
                   <div className="w-12" />
                   <div className="flex-1 flex gap-2">
                     {Array.from({ length: 24 }, (_, i) => (
-                      <div key={i} className="flex-1 text-center text-wl-text-secondary">
+                      <div
+                        key={i}
+                        className="flex-1 text-center text-wl-text-secondary"
+                      >
                         {String(i).padStart(2, "0")}
                       </div>
                     ))}
@@ -337,14 +404,18 @@ export default function HOSPage() {
                 {/* Status bars */}
                 {[hos.currentStatus].map((statusType) => (
                   <div key={statusType} className="flex items-center gap-2">
-                    <div className="w-12 text-xs font-semibold text-wl-text-secondary">{dutyStatusLabel[statusType]}</div>
+                    <div className="w-12 text-xs font-semibold text-wl-text-secondary">
+                      {dutyStatusLabel[statusType]}
+                    </div>
                     <div className="flex-1 flex gap-2 h-8">
                       {dailyLog.map((entry) => (
                         <div
                           key={entry.hour}
                           className={cn(
                             "flex-1 rounded-sm transition-all hover:opacity-80",
-                            entry.status === "NONE" ? "bg-white/3" : dutyStatusColor(entry.status)
+                            entry.status === "NONE"
+                              ? "bg-white/3"
+                              : dutyStatusColor(entry.status),
                           )}
                           title={`${String(entry.hour).padStart(2, "0")}:00 - ${entry.label}`}
                         />
@@ -379,7 +450,9 @@ export default function HOSPage() {
           {/* 8-Day Recap Table */}
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-lg text-white">8-Day Cycle Recap</CardTitle>
+              <CardTitle className="text-lg text-white">
+                8-Day Cycle Recap
+              </CardTitle>
             </CardHeader>
 
             <CardContent>
@@ -387,19 +460,38 @@ export default function HOSPage() {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-wl-border-default">
-                      <th className="text-left py-2 px-3 text-wl-text-secondary font-semibold">Day</th>
-                      <th className="text-center py-2 px-3 text-wl-text-secondary font-semibold">Driving</th>
-                      <th className="text-center py-2 px-3 text-wl-text-secondary font-semibold">On-Duty</th>
-                      <th className="text-center py-2 px-3 text-wl-text-secondary font-semibold">Total Hours</th>
-                      <th className="text-center py-2 px-3 text-wl-text-secondary font-semibold">Cycle Usage</th>
+                      <th className="text-left py-2 px-3 text-wl-text-secondary font-semibold">
+                        Day
+                      </th>
+                      <th className="text-center py-2 px-3 text-wl-text-secondary font-semibold">
+                        Driving
+                      </th>
+                      <th className="text-center py-2 px-3 text-wl-text-secondary font-semibold">
+                        On-Duty
+                      </th>
+                      <th className="text-center py-2 px-3 text-wl-text-secondary font-semibold">
+                        Total Hours
+                      </th>
+                      <th className="text-center py-2 px-3 text-wl-text-secondary font-semibold">
+                        Cycle Usage
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {eightDayRecap.map((entry, idx) => (
-                      <tr key={idx} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
-                        <td className="py-2 px-3 font-semibold text-white">{entry.day}</td>
-                        <td className="py-2 px-3 text-center text-white">{entry.driving.toFixed(1)}h</td>
-                        <td className="py-2 px-3 text-center text-white">{entry.onDuty.toFixed(1)}h</td>
+                      <tr
+                        key={idx}
+                        className="border-b border-wl-border-default hover:bg-wl-bg-elevated"
+                      >
+                        <td className="py-2 px-3 font-semibold text-white">
+                          {entry.day}
+                        </td>
+                        <td className="py-2 px-3 text-center text-white">
+                          {entry.driving.toFixed(1)}h
+                        </td>
+                        <td className="py-2 px-3 text-center text-white">
+                          {entry.onDuty.toFixed(1)}h
+                        </td>
                         <td className="py-2 px-3 text-center text-white font-semibold">
                           {(entry.driving + entry.onDuty).toFixed(1)}h
                         </td>
@@ -408,7 +500,9 @@ export default function HOSPage() {
                             <div className="w-16 h-1.5 rounded-full bg-white/5 overflow-hidden">
                               <div
                                 className="h-full bg-blue-500 transition-all"
-                                style={{ width: `${(entry.total / 70) * 100}%` }}
+                                style={{
+                                  width: `${(entry.total / 70) * 100}%`,
+                                }}
                               />
                             </div>
                             <span
@@ -418,7 +512,7 @@ export default function HOSPage() {
                                   ? "text-red-500"
                                   : entry.total > 60
                                     ? "text-amber-500"
-                                    : "text-white"
+                                    : "text-white",
                               )}
                             >
                               {entry.total}h
@@ -434,7 +528,10 @@ export default function HOSPage() {
           </Card>
 
           {/* Violations Timeline */}
-          <ViolationTimeline violations={violations} isLoading={violationsLoading} />
+          <ViolationTimeline
+            violations={violations}
+            isLoading={violationsLoading}
+          />
 
           {/* Edit Request Workflow */}
           <Card className="bg-wl-bg-surface border-wl-border-default">
@@ -448,12 +545,18 @@ export default function HOSPage() {
             <CardContent>
               <div className="space-y-3">
                 <div className="p-3 rounded-lg bg-wl-bg-elevated border border-wl-border-default">
-                  <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-2">How It Works</p>
+                  <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-2">
+                    How It Works
+                  </p>
                   <ol className="space-y-2 text-xs text-white">
-                    <li>1. Driver submits log edit request with reason and time</li>
+                    <li>
+                      1. Driver submits log edit request with reason and time
+                    </li>
                     <li>2. Fleet manager reviews request and documentation</li>
                     <li>3. Manager approves or rejects with feedback</li>
-                    <li>4. Approved edits are logged and auditable for compliance</li>
+                    <li>
+                      4. Approved edits are logged and auditable for compliance
+                    </li>
                   </ol>
                 </div>
 

@@ -10,7 +10,10 @@ interface SelectOption {
   label: string;
 }
 
-interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "size"> {
+interface SelectProps extends Omit<
+  SelectHTMLAttributes<HTMLSelectElement>,
+  "size"
+> {
   label?: string;
   options?: SelectOption[];
   placeholder?: string;
@@ -41,7 +44,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       onChange,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [isFocused, setIsFocused] = useState(false);
 
@@ -78,12 +81,15 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               "disabled:opacity-60 disabled:cursor-not-allowed",
               "pr-10",
               sizeClasses[size],
-              className
+              className,
             )}
             disabled={disabled}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            onChange={(e) => { onChange?.(e); onValueChange?.(e.target.value); }}
+            onChange={(e) => {
+              onChange?.(e);
+              onValueChange?.(e.target.value);
+            }}
             {...props}
           >
             {placeholder && (
@@ -110,14 +116,10 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           </svg>
         </div>
 
-        {error && (
-          <span className="text-xs text-wl-danger-400">
-            {error}
-          </span>
-        )}
+        {error && <span className="text-xs text-wl-danger-400">{error}</span>}
       </div>
     );
-  }
+  },
 );
 
 Select.displayName = "Select";
@@ -149,15 +151,41 @@ interface SelectValueProps {
 }
 
 export function SelectTrigger({ children, className }: SelectTriggerProps) {
-  return <div className={cn("flex items-center gap-2 cursor-pointer", className)}>{children}</div>;
+  return (
+    <div className={cn("flex items-center gap-2 cursor-pointer", className)}>
+      {children}
+    </div>
+  );
 }
 
 export function SelectContent({ children, className }: SelectContentProps) {
-  return <div className={cn("bg-wl-bg-elevated border border-wl-border-default rounded-md", className)}>{children}</div>;
+  return (
+    <div
+      className={cn(
+        "bg-wl-bg-elevated border border-wl-border-default rounded-md",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
-export function SelectItem({ children, value: _value, className }: SelectItemProps) {
-  return <div className={cn("px-3 py-2 cursor-pointer hover:bg-wl-bg-overlay", className)}>{children}</div>;
+export function SelectItem({
+  children,
+  value: _value,
+  className,
+}: SelectItemProps) {
+  return (
+    <div
+      className={cn(
+        "px-3 py-2 cursor-pointer hover:bg-wl-bg-overlay",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function SelectValue({ placeholder }: SelectValueProps) {

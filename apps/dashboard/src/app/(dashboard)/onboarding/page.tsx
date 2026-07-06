@@ -28,9 +28,21 @@ type SubStep =
   | "review";
 
 const mainSteps: { id: MainStep; label: string; description: string }[] = [
-  { id: "verify-email", label: "Verify Email", description: "Confirm your email address" },
-  { id: "choose-deployment", label: "Deployment", description: "Choose your setup" },
-  { id: "configure-workspace", label: "Configure", description: "Customize workspace" },
+  {
+    id: "verify-email",
+    label: "Verify Email",
+    description: "Confirm your email address",
+  },
+  {
+    id: "choose-deployment",
+    label: "Deployment",
+    description: "Choose your setup",
+  },
+  {
+    id: "configure-workspace",
+    label: "Configure",
+    description: "Customize workspace",
+  },
 ];
 
 const subSteps: { id: SubStep; label: string }[] = [
@@ -66,7 +78,8 @@ export default function OnboardingPage() {
   const searchParams = useSearchParams();
   const { token, user } = useAuth();
 
-  const [currentMainStep, setCurrentMainStep] = useState<MainStep>("verify-email");
+  const [currentMainStep, setCurrentMainStep] =
+    useState<MainStep>("verify-email");
   const [currentSubStep, setCurrentSubStep] = useState<SubStep>("company-info");
   const [data, setData] = useState<OnboardingData>(initialData);
   const [progressHydrated, setProgressHydrated] = useState(false);
@@ -150,7 +163,9 @@ export default function OnboardingPage() {
         body: JSON.stringify({
           currentStep: currentMainStep,
           currentSubStep:
-            currentMainStep === "configure-workspace" ? currentSubStep : undefined,
+            currentMainStep === "configure-workspace"
+              ? currentSubStep
+              : undefined,
           data,
         }),
       }).catch((err) => {
@@ -159,14 +174,7 @@ export default function OnboardingPage() {
     }, 1000);
 
     return () => clearTimeout(handle);
-  }, [
-    token,
-    API_URL,
-    currentMainStep,
-    currentSubStep,
-    data,
-    progressHydrated,
-  ]);
+  }, [token, API_URL, currentMainStep, currentSubStep, data, progressHydrated]);
 
   // Initialize from URL params (override backend state if URL has params)
   useEffect(() => {
@@ -266,11 +274,14 @@ export default function OnboardingPage() {
         },
         body: JSON.stringify({
           workspaceName: data.companyName || "default-workspace",
-          deploymentType: data.deploymentType === "cloud" ? "CLOUD" : "SELF_MANAGED",
+          deploymentType:
+            data.deploymentType === "cloud" ? "CLOUD" : "SELF_MANAGED",
           industry: data.industry,
           goals: data.goals,
           selectedIntegrations: data.integrations,
-          dashboardLayout: data.dashboardLayout ? { type: data.dashboardLayout } : undefined,
+          dashboardLayout: data.dashboardLayout
+            ? { type: data.dashboardLayout }
+            : undefined,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
         }),
       });
@@ -306,8 +317,7 @@ export default function OnboardingPage() {
   };
 
   const isLastStep =
-    currentMainStep === "configure-workspace" &&
-    currentSubStep === "review";
+    currentMainStep === "configure-workspace" && currentSubStep === "review";
 
   return (
     <div className="w-full max-w-4xl mx-auto bg-wl-bg-root min-h-screen p-6">
@@ -323,14 +333,17 @@ export default function OnboardingPage() {
             return (
               <div
                 key={step.id}
-                className={cn("flex-1 flex flex-col items-center", idx < mainSteps.length - 1 ? "mr-3" : "")}
+                className={cn(
+                  "flex-1 flex flex-col items-center",
+                  idx < mainSteps.length - 1 ? "mr-3" : "",
+                )}
               >
                 <div
                   className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center mb-2 font-semibold text-sm transition-all duration-200",
                     isCompleted || isActive
                       ? "bg-blue-500 text-white"
-                      : "bg-wl-bg-elevated text-wl-text-tertiary border border-wl-border-default"
+                      : "bg-wl-bg-elevated text-wl-text-tertiary border border-wl-border-default",
                   )}
                 >
                   {isCompleted ? <Check size={20} /> : idx + 1}
@@ -339,7 +352,7 @@ export default function OnboardingPage() {
                   <p
                     className={cn(
                       "text-xs font-semibold",
-                      isActive ? "text-white" : "text-wl-text-secondary"
+                      isActive ? "text-white" : "text-wl-text-secondary",
                     )}
                   >
                     {step.label}
@@ -365,7 +378,9 @@ export default function OnboardingPage() {
           <div className="flex gap-2 overflow-x-auto pb-2">
             {subSteps.map((step) => {
               const isActive = step.id === currentSubStep;
-              const isCompleted = subSteps.findIndex((s) => s.id === currentSubStep) > subSteps.findIndex((s) => s.id === step.id);
+              const isCompleted =
+                subSteps.findIndex((s) => s.id === currentSubStep) >
+                subSteps.findIndex((s) => s.id === step.id);
 
               return (
                 <button
@@ -377,7 +392,7 @@ export default function OnboardingPage() {
                       ? "bg-blue-500 text-white"
                       : isCompleted
                         ? "bg-emerald-500/20 text-emerald-400 border border-emerald-400/30"
-                        : "bg-wl-bg-elevated text-wl-text-secondary border border-wl-border-default hover:border-wl-border-strong"
+                        : "bg-wl-bg-elevated text-wl-text-secondary border border-wl-border-default hover:border-wl-border-strong",
                   )}
                 >
                   {step.label}
@@ -423,9 +438,7 @@ export default function OnboardingPage() {
         {currentMainStep === "choose-deployment" && (
           <ChooseDeployment
             data={data}
-            onSelect={(deploymentType) =>
-              setData({ ...data, deploymentType })
-            }
+            onSelect={(deploymentType) => setData({ ...data, deploymentType })}
           />
         )}
 
@@ -464,9 +477,7 @@ export default function OnboardingPage() {
           currentSubStep === "integrations" && (
             <IntegrationsSelect
               data={data}
-              onSelect={(integrations) =>
-                setData({ ...data, integrations })
-              }
+              onSelect={(integrations) => setData({ ...data, integrations })}
             />
           )}
 
@@ -537,11 +548,7 @@ export default function OnboardingPage() {
 
         <div className="flex gap-3">
           {!isLastStep && currentMainStep === "configure-workspace" && (
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={handleSkip}
-            >
+            <Button variant="secondary" size="md" onClick={handleSkip}>
               Skip
             </Button>
           )}

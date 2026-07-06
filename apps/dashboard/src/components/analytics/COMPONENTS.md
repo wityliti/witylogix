@@ -6,7 +6,7 @@ Complete analytics visualization library for the Witylogix Dashboard (Sprint 4.6
 
 - **Zero Dependencies**: No recharts, chart.js, d3, or similar libraries
 - **Pure SVG**: Hand-crafted SVG rendering for maximum control and customization
-- **Dark Theme Ready**: Full support for --wl-* CSS variables and dark mode
+- **Dark Theme Ready**: Full support for --wl-\* CSS variables and dark mode
 - **Responsive**: ResizeObserver-based responsive behavior
 - **Animated**: Smooth entrance animations on all charts
 - **Accessible**: Proper ARIA labels and keyboard navigation
@@ -19,6 +19,7 @@ Complete analytics visualization library for the Witylogix Dashboard (Sprint 4.6
 SVG-based multi-series line chart with advanced features.
 
 **Features:**
+
 - Multiple series support with legend
 - Smooth curve interpolation (cubic bezier)
 - Grid lines and axis labels
@@ -28,6 +29,7 @@ SVG-based multi-series line chart with advanced features.
 - Entrance animations
 
 **Props:**
+
 ```typescript
 interface LineChartProps {
   data: { label: string }[];
@@ -48,6 +50,7 @@ interface LineChartProps {
 ```
 
 **Usage:**
+
 ```typescript
 <LineChart
   data={[
@@ -78,6 +81,7 @@ interface LineChartProps {
 SVG-based vertical/horizontal bar chart with grouped and stacked modes.
 
 **Features:**
+
 - Grouped and stacked modes
 - Vertical and horizontal orientations
 - Animated entrance (bars grow from bottom)
@@ -86,6 +90,7 @@ SVG-based vertical/horizontal bar chart with grouped and stacked modes.
 - Color-coded series
 
 **Props:**
+
 ```typescript
 interface BarChartProps {
   data: { label: string }[];
@@ -103,6 +108,7 @@ interface BarChartProps {
 ```
 
 **Usage:**
+
 ```typescript
 <BarChart
   data={[{ label: "Q1" }, { label: "Q2" }]}
@@ -123,6 +129,7 @@ interface BarChartProps {
 SVG donut/pie chart with configurable inner radius.
 
 **Features:**
+
 - Animated segment entrance (sweep animation)
 - Center label (total, percentage, or custom text)
 - Legend with values and percentages
@@ -130,6 +137,7 @@ SVG donut/pie chart with configurable inner radius.
 - Configurable inner radius for donut effect
 
 **Props:**
+
 ```typescript
 interface DonutChartProps {
   data: {
@@ -147,6 +155,7 @@ interface DonutChartProps {
 ```
 
 **Usage:**
+
 ```typescript
 <DonutChart
   data={[
@@ -168,6 +177,7 @@ interface DonutChartProps {
 Grid-based heatmap for visualizing 2D data patterns (e.g., day × hour).
 
 **Features:**
+
 - Configurable cell size and color palette
 - Row and column labels
 - Cell hover with exact value
@@ -175,6 +185,7 @@ Grid-based heatmap for visualizing 2D data patterns (e.g., day × hour).
 - Legend showing value range
 
 **Props:**
+
 ```typescript
 interface HeatmapProps {
   data: number[][];
@@ -187,6 +198,7 @@ interface HeatmapProps {
 ```
 
 **Usage:**
+
 ```typescript
 <Heatmap
   data={[
@@ -208,6 +220,7 @@ interface HeatmapProps {
 Tiny inline SVG line chart for tables and cards (no axes, no labels).
 
 **Features:**
+
 - Minimal inline design
 - Optional area fill
 - Trend-based coloring (green for up, red for down)
@@ -215,6 +228,7 @@ Tiny inline SVG line chart for tables and cards (no axes, no labels).
 - Configurable width/height
 
 **Props:**
+
 ```typescript
 interface SparklineProps {
   data: number[];
@@ -228,6 +242,7 @@ interface SparklineProps {
 ```
 
 **Usage:**
+
 ```typescript
 <Sparkline
   data={[20, 22, 19, 24, 25, 23, 26, 28]}
@@ -246,6 +261,7 @@ interface SparklineProps {
 Large value display with change indicator and optional sparkline.
 
 **Features:**
+
 - Large, readable value display
 - Change indicator (↑ +12% or ↓ -5% with color)
 - Sparkline integration
@@ -254,6 +270,7 @@ Large value display with change indicator and optional sparkline.
 - Multiple format options
 
 **Props:**
+
 ```typescript
 interface KPICardProps {
   title: string;
@@ -269,6 +286,7 @@ interface KPICardProps {
 ```
 
 **Usage:**
+
 ```typescript
 <KPICard
   title="Total Revenue"
@@ -287,6 +305,7 @@ interface KPICardProps {
 Side-by-side metric comparison (Planned vs Actual, This Week vs Last Week).
 
 **Features:**
+
 - Side-by-side value comparison
 - Progress bar showing ratio
 - Delta badge showing difference and trend
@@ -294,6 +313,7 @@ Side-by-side metric comparison (Planned vs Actual, This Week vs Last Week).
 - Percentage breakdowns
 
 **Props:**
+
 ```typescript
 interface ComparisonCardProps {
   label: string;
@@ -307,6 +327,7 @@ interface ComparisonCardProps {
 ```
 
 **Usage:**
+
 ```typescript
 <ComparisonCard
   label="Sales Performance"
@@ -325,6 +346,7 @@ interface ComparisonCardProps {
 Sortable data table with pagination, row hover, and custom formatters.
 
 **Features:**
+
 - Click header to sort (asc/desc)
 - Row hover highlight
 - Optional row click handler
@@ -335,6 +357,7 @@ Sortable data table with pagination, row hover, and custom formatters.
 - Configurable page size
 
 **Props:**
+
 ```typescript
 interface DataTableProps<T> {
   columns: ColumnDefinition<T>[];
@@ -356,6 +379,7 @@ interface ColumnDefinition<T> {
 ```
 
 **Usage:**
+
 ```typescript
 <DataTable
   columns={[
@@ -380,6 +404,7 @@ interface ColumnDefinition<T> {
 Interactive date range selector with presets.
 
 **Features:**
+
 - Preset ranges: Today, Yesterday, Last 7 days, Last 30 days, This month, Last month
 - Custom range input with two calendars
 - Display selected range as badge
@@ -387,6 +412,7 @@ Interactive date range selector with presets.
 - Customizable presets
 
 **Props:**
+
 ```typescript
 interface DateRangePickerProps {
   value: DateRange;
@@ -408,6 +434,7 @@ interface DateRangePreset {
 ```
 
 **Usage:**
+
 ```typescript
 const [range, setRange] = useState<DateRange>({
   start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
@@ -427,6 +454,7 @@ const [range, setRange] = useState<DateRange>({
 Reusable tooltip component for all charts.
 
 **Features:**
+
 - Positioned relative to cursor
 - Auto-flip when near edges
 - Customizable content via render prop
@@ -434,6 +462,7 @@ Reusable tooltip component for all charts.
 - Fixed positioning
 
 **Props:**
+
 ```typescript
 interface ChartTooltipProps {
   visible: boolean;
@@ -446,6 +475,7 @@ interface ChartTooltipProps {
 ```
 
 **Usage:**
+
 ```typescript
 <ChartTooltip
   visible={tooltipVisible}

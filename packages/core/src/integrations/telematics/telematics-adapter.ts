@@ -32,7 +32,9 @@ export class RateLimiter {
 
   async waitIfNeeded(): Promise<void> {
     const now = Date.now();
-    this.requestTimes = this.requestTimes.filter((t) => t > now - this.windowMs);
+    this.requestTimes = this.requestTimes.filter(
+      (t) => t > now - this.windowMs,
+    );
 
     if (this.requestTimes.length >= this.maxRequests) {
       const oldestTime = this.requestTimes[0];
@@ -47,9 +49,13 @@ export class RateLimiter {
 
   getState(): RateLimitState {
     const now = Date.now();
-    this.requestTimes = this.requestTimes.filter((t) => t > now - this.windowMs);
+    this.requestTimes = this.requestTimes.filter(
+      (t) => t > now - this.windowMs,
+    );
     const oldestTime = this.requestTimes[0];
-    const resetAt = oldestTime ? new Date(oldestTime + this.windowMs) : new Date();
+    const resetAt = oldestTime
+      ? new Date(oldestTime + this.windowMs)
+      : new Date();
     return { requestCount: this.requestTimes.length, resetAt };
   }
 }
@@ -191,7 +197,9 @@ export abstract class TelematicsAdapter implements ITelematicsAdapter {
   abstract authenticate(): Promise<void>;
   abstract getVehicles(): Promise<NormalizedVehicle[]>;
   abstract getVehiclePosition(vehicleId: string): Promise<NormalizedPosition>;
-  abstract getVehicleDiagnostics(vehicleId: string): Promise<NormalizedDiagnostic>;
+  abstract getVehicleDiagnostics(
+    vehicleId: string,
+  ): Promise<NormalizedDiagnostic>;
   abstract getDriverBehaviorEvents(
     driverId: string,
     dateRange: { startDate: Date; endDate: Date },
@@ -224,7 +232,7 @@ export abstract class TelematicsAdapter implements ITelematicsAdapter {
         // Don't retry on non-retryable errors (e.g. 4xx except 429 rate limit)
         if (
           error instanceof Error &&
-          'retryable' in error &&
+          "retryable" in error &&
           !(error as any).retryable
         ) {
           throw error;
@@ -298,7 +306,9 @@ export abstract class TelematicsAdapter implements ITelematicsAdapter {
 /**
  * Telematics Adapter Factory
  */
-export function createTelematicsAdapter(config: TelematicsConfig): TelematicsAdapter {
+export function createTelematicsAdapter(
+  config: TelematicsConfig,
+): TelematicsAdapter {
   const { SamsaraClient } = require("./samsara-client.js");
   const { GeotabClient } = require("./geotab-client.js");
 

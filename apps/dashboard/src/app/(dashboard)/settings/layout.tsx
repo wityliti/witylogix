@@ -91,7 +91,8 @@ export default function SettingsLayout({
 
         <nav className="space-y-1">
           {SIDEBAR_LINKS.map((link) => {
-            const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+            const isActive =
+              pathname === link.href || pathname.startsWith(link.href + "/");
             return (
               <Link
                 key={link.href}
@@ -100,16 +101,18 @@ export default function SettingsLayout({
                   "flex items-center justify-between gap-3 px-3 py-3 rounded-lg transition-all no-underline",
                   isActive
                     ? "bg-[var(--wl-primary)] bg-opacity-10 text-[var(--wl-primary)] border border-[var(--wl-primary)] border-opacity-30"
-                    : "text-[var(--wl-text-secondary)] hover:bg-[var(--wl-bg-secondary)] hover:text-[var(--wl-text-primary)]"
+                    : "text-[var(--wl-text-secondary)] hover:bg-[var(--wl-bg-secondary)] hover:text-[var(--wl-text-primary)]",
                 )}
               >
                 <div className="flex items-center gap-3">
-                  <span className={cn(
-                    "p-2 rounded-lg",
-                    isActive
-                      ? "bg-[var(--wl-primary)] text-white"
-                      : "bg-[var(--wl-bg-secondary)] text-[var(--wl-text-secondary)]"
-                  )}>
+                  <span
+                    className={cn(
+                      "p-2 rounded-lg",
+                      isActive
+                        ? "bg-[var(--wl-primary)] text-white"
+                        : "bg-[var(--wl-bg-secondary)] text-[var(--wl-text-secondary)]",
+                    )}
+                  >
                     {link.icon}
                   </span>
                   <div>
@@ -129,9 +132,7 @@ export default function SettingsLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1">
-        {children}
-      </main>
+      <main className="flex-1">{children}</main>
     </div>
   );
 }

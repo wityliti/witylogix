@@ -22,7 +22,7 @@ const companySizes: { value: CompanySize; label: string }[] = [
 
 export function CompanyInfo({ data, onUpdate }: CompanyInfoProps) {
   const [logoPreview, setLogoPreview] = useState<string | null>(
-    data.companyLogo || null
+    data.companyLogo || null,
   );
   const [dragActive, setDragActive] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
@@ -92,7 +92,7 @@ export function CompanyInfo({ data, onUpdate }: CompanyInfoProps) {
             "bg-wl-bg-surface border border-wl-border-default",
             "text-wl-text-primary placeholder:text-wl-text-tertiary",
             "focus:border-wl-primary-500 focus:outline-none",
-            "transition-all duration-200"
+            "transition-all duration-200",
           )}
         />
       </div>
@@ -100,19 +100,22 @@ export function CompanyInfo({ data, onUpdate }: CompanyInfoProps) {
       {/* Company Website */}
       <div>
         <label className="block text-sm font-semibold text-wl-text-primary mb-2">
-          Company Website <span className="text-wl-text-tertiary">(optional)</span>
+          Company Website{" "}
+          <span className="text-wl-text-tertiary">(optional)</span>
         </label>
         <input
           type="url"
           placeholder="https://acmelogistics.com"
           value={data.companyWebsite}
-          onChange={(e) => onUpdate({ ...data, companyWebsite: e.target.value })}
+          onChange={(e) =>
+            onUpdate({ ...data, companyWebsite: e.target.value })
+          }
           className={cn(
             "w-full px-4 py-2.5 rounded-lg text-sm",
             "bg-wl-bg-surface border border-wl-border-default",
             "text-wl-text-primary placeholder:text-wl-text-tertiary",
             "focus:border-wl-primary-500 focus:outline-none",
-            "transition-all duration-200"
+            "transition-all duration-200",
           )}
         />
       </div>
@@ -137,7 +140,7 @@ export function CompanyInfo({ data, onUpdate }: CompanyInfoProps) {
               className={cn(
                 "absolute -top-2 -right-2 w-6 h-6 rounded-full",
                 "bg-wl-danger-500 text-wl-text-inverse flex items-center justify-center",
-                "hover:bg-wl-danger-600 transition-colors"
+                "hover:bg-wl-danger-600 transition-colors",
               )}
             >
               <X className="w-3 h-3" />
@@ -156,13 +159,13 @@ export function CompanyInfo({ data, onUpdate }: CompanyInfoProps) {
               "transition-all duration-200",
               dragActive
                 ? "border-wl-primary-500 bg-wl-primary-500/10"
-                : "border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong hover:bg-wl-bg-overlay"
+                : "border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong hover:bg-wl-bg-overlay",
             )}
           >
             <Upload
               className={cn(
                 "w-5 h-5",
-                dragActive ? "text-wl-primary-400" : "text-wl-text-tertiary"
+                dragActive ? "text-wl-primary-400" : "text-wl-text-tertiary",
               )}
             />
             <div className="text-center">
@@ -185,9 +188,7 @@ export function CompanyInfo({ data, onUpdate }: CompanyInfoProps) {
             />
           </div>
         )}
-        {logoError && (
-          <p className="text-xs text-red-400 mt-2">{logoError}</p>
-        )}
+        {logoError && <p className="text-xs text-red-400 mt-2">{logoError}</p>}
       </div>
 
       {/* Company Size */}
@@ -204,7 +205,7 @@ export function CompanyInfo({ data, onUpdate }: CompanyInfoProps) {
                 "px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
                 data.companySize === value
                   ? "bg-wl-primary-500 text-wl-text-inverse border border-wl-primary-500"
-                  : "bg-wl-bg-overlay border border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong hover:text-wl-text-primary"
+                  : "bg-wl-bg-overlay border border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong hover:text-wl-text-primary",
               )}
             >
               {label}
@@ -228,7 +229,7 @@ export function CompanyInfo({ data, onUpdate }: CompanyInfoProps) {
             "bg-wl-bg-surface border border-wl-border-default",
             "text-wl-text-primary placeholder:text-wl-text-tertiary",
             "focus:border-wl-primary-500 focus:outline-none",
-            "transition-all duration-200"
+            "transition-all duration-200",
           )}
         />
       </div>

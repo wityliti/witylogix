@@ -10,11 +10,13 @@ git config user.name "youthocrat"
 ## Branching
 
 One branch per sprint:
+
 ```
 sprint-X.X-descriptive-kebab-case
 ```
 
 Create from the latest sprint branch:
+
 ```bash
 git checkout -b sprint-9.6-feature-name
 ```
@@ -39,12 +41,12 @@ EOF
 
 ### Prefixes
 
-| Prefix | When |
-|--------|------|
-| `feat(sprint-X.X):` | New features in a sprint |
-| `fix(component):` | Bug fixes |
-| `chore(scope):` | Maintenance, config, deps |
-| `docs(scope):` | Documentation changes |
+| Prefix              | When                      |
+| ------------------- | ------------------------- |
+| `feat(sprint-X.X):` | New features in a sprint  |
+| `fix(component):`   | Bug fixes                 |
+| `chore(scope):`     | Maintenance, config, deps |
+| `docs(scope):`      | Documentation changes     |
 
 ## Staging Rules
 
@@ -56,6 +58,7 @@ EOF
 ## Secrets Scanning
 
 Run before EVERY commit:
+
 ```bash
 git diff HEAD --no-color | grep -iE '^[+].*(?:sk_live|sk_test|secret_key|PRIVATE.KEY|password\s*=)' | head -5
 ```
@@ -65,6 +68,7 @@ If anything shows up with a `+` prefix (added line), DO NOT commit. Fix it first
 ## Push
 
 Git push fails in the sandbox environment. The user pushes manually after each sprint:
+
 ```bash
 git push origin sprint-X.X-branch-name
 ```

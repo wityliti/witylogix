@@ -19,9 +19,9 @@ import {
   BarChart3,
   Mail,
 } from "lucide-react";
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiQuery } from '@/hooks/use-api';
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiQuery } from "@/hooks/use-api";
 
 interface Integration {
   id: string;
@@ -41,7 +41,11 @@ interface IntegrationsResponse {
   pagination: { total: number };
 }
 
-function StatusBadge({ status }: { status: "connected" | "disconnected" | "error" }) {
+function StatusBadge({
+  status,
+}: {
+  status: "connected" | "disconnected" | "error";
+}) {
   const variants: Record<typeof status, any> = {
     connected: "success",
     disconnected: "warning",
@@ -52,7 +56,11 @@ function StatusBadge({ status }: { status: "connected" | "disconnected" | "error
     disconnected: "Disconnected",
     error: "Error",
   };
-  return <Badge variant={variants[status]} dot>{labels[status]}</Badge>;
+  return (
+    <Badge variant={variants[status]} dot>
+      {labels[status]}
+    </Badge>
+  );
 }
 
 function CategoryIcon({ category }: { category: string }) {
@@ -87,7 +95,9 @@ function IntegrationRow({
             <CategoryIcon category={integration.category} />
           </div>
           <div className="flex-1">
-            <h4 className="text-sm font-semibold text-white">{integration.name}</h4>
+            <h4 className="text-sm font-semibold text-white">
+              {integration.name}
+            </h4>
             <p className="text-xs text-wl-text-secondary mt-0.5">
               {integration.shopName ? `Store: ${integration.shopName} · ` : ""}
               {integration.lastSyncTime
@@ -97,16 +107,24 @@ function IntegrationRow({
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-sm font-semibold text-white">{integration.successRate}%</p>
+              <p className="text-sm font-semibold text-white">
+                {integration.successRate}%
+              </p>
               <p className="text-xs text-wl-text-secondary">Success Rate</p>
             </div>
             <div className="text-right min-w-fit">
-              <p className="text-sm font-semibold text-white">{integration.errorCount}</p>
+              <p className="text-sm font-semibold text-white">
+                {integration.errorCount}
+              </p>
               <p className="text-xs text-wl-text-secondary">Errors</p>
             </div>
             <StatusBadge status={integration.status} />
             <div className="ml-2">
-              {expanded ? <ChevronUp className="w-4 h-4 text-wl-text-secondary" /> : <ChevronDown className="w-4 h-4 text-wl-text-secondary" />}
+              {expanded ? (
+                <ChevronUp className="w-4 h-4 text-wl-text-secondary" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-wl-text-secondary" />
+              )}
             </div>
           </div>
         </div>
@@ -116,35 +134,65 @@ function IntegrationRow({
         <div className="px-5 py-4 bg-wl-bg-elevated border-t border-wl-border-default">
           <div className="grid grid-cols-2 gap-6 mb-6">
             <div>
-              <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">Performance Metrics</p>
+              <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">
+                Performance Metrics
+              </p>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm text-wl-text-secondary">Total Syncs:</span>
-                  <span className="text-sm font-semibold text-white">{integration.totalSyncs.toLocaleString()}</span>
+                  <span className="text-sm text-wl-text-secondary">
+                    Total Syncs:
+                  </span>
+                  <span className="text-sm font-semibold text-white">
+                    {integration.totalSyncs.toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-wl-text-secondary">Success Rate:</span>
-                  <span className={cn("text-sm font-semibold", integration.successRate >= 99 ? "text-emerald-500" : "text-amber-500")}>
+                  <span className="text-sm text-wl-text-secondary">
+                    Success Rate:
+                  </span>
+                  <span
+                    className={cn(
+                      "text-sm font-semibold",
+                      integration.successRate >= 99
+                        ? "text-emerald-500"
+                        : "text-amber-500",
+                    )}
+                  >
                     {integration.successRate}%
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-wl-text-secondary">Error Count:</span>
-                  <span className={cn("text-sm font-semibold", integration.errorCount === 0 ? "text-emerald-500" : "text-red-500")}>
+                  <span className="text-sm text-wl-text-secondary">
+                    Error Count:
+                  </span>
+                  <span
+                    className={cn(
+                      "text-sm font-semibold",
+                      integration.errorCount === 0
+                        ? "text-emerald-500"
+                        : "text-red-500",
+                    )}
+                  >
                     {integration.errorCount}
                   </span>
                 </div>
               </div>
             </div>
             <div>
-              <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">Actions</p>
+              <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">
+                Actions
+              </p>
               <div className="flex gap-2 flex-wrap">
                 <Button variant="secondary" size="sm">
                   <RefreshCw className="w-4 h-4" />
                   Test Connection
                 </Button>
-                <Button variant="ghost" size="sm">Reconnect</Button>
-                <Button variant="ghost" size="sm">Settings</Button>
+                <Button variant="ghost" size="sm">
+                  Reconnect
+                </Button>
+                <Button variant="ghost" size="sm">
+                  Settings
+                </Button>
               </div>
             </div>
           </div>
@@ -156,13 +204,22 @@ function IntegrationRow({
               </p>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {integration.errors.map((error, idx) => (
-                  <div key={idx} className="p-3 bg-red-600/50 rounded-md border border-red-500/30">
+                  <div
+                    key={idx}
+                    className="p-3 bg-red-600/50 rounded-md border border-red-500/30"
+                  >
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-xs font-semibold text-red-500">{error.code}</p>
-                        <p className="text-xs text-wl-text-secondary mt-0.5">{error.message}</p>
+                        <p className="text-xs font-semibold text-red-500">
+                          {error.code}
+                        </p>
+                        <p className="text-xs text-wl-text-secondary mt-0.5">
+                          {error.message}
+                        </p>
                       </div>
-                      <span className="text-xs text-wl-text-secondary whitespace-nowrap ml-2">{error.timestamp}</span>
+                      <span className="text-xs text-wl-text-secondary whitespace-nowrap ml-2">
+                        {error.timestamp}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -171,7 +228,9 @@ function IntegrationRow({
           ) : (
             <div className="p-3 bg-emerald-600/50 rounded-md border border-emerald-500/30 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-              <span className="text-sm text-emerald-500">No recent errors. Integration is operating normally.</span>
+              <span className="text-sm text-emerald-500">
+                No recent errors. Integration is operating normally.
+              </span>
             </div>
           )}
         </div>
@@ -184,29 +243,48 @@ export default function IntegrationsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const { data: integrationsData, loading, error, refetch } = useApiQuery<IntegrationsResponse>('/api/v4/admin/integrations');
+  const {
+    data: integrationsData,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<IntegrationsResponse>("/api/v4/admin/integrations");
 
   const allIntegrations = integrationsData?.data ?? [];
 
   const categories = useMemo(() => {
-    const cats = ["payment", "shipping", "analytics", "notification", "inventory"];
-    return cats.map(id => ({
+    const cats = [
+      "payment",
+      "shipping",
+      "analytics",
+      "notification",
+      "inventory",
+    ];
+    return cats.map((id) => ({
       id,
       label: id.charAt(0).toUpperCase() + id.slice(1),
-      count: allIntegrations.filter(i => i.category === id).length,
+      count: allIntegrations.filter((i) => i.category === id).length,
     }));
   }, [allIntegrations]);
 
   const filteredIntegrations = useMemo(() => {
     if (!selectedCategory) return allIntegrations;
-    return allIntegrations.filter(i => i.category === selectedCategory);
+    return allIntegrations.filter((i) => i.category === selectedCategory);
   }, [allIntegrations, selectedCategory]);
 
-  const connectedCount = filteredIntegrations.filter(i => i.status === "connected").length;
-  const errorCount = filteredIntegrations.filter(i => i.status === "error").length;
-  const avgSuccessRate = filteredIntegrations.length > 0
-    ? (filteredIntegrations.reduce((sum, i) => sum + i.successRate, 0) / filteredIntegrations.length).toFixed(1)
-    : "0";
+  const connectedCount = filteredIntegrations.filter(
+    (i) => i.status === "connected",
+  ).length;
+  const errorCount = filteredIntegrations.filter(
+    (i) => i.status === "error",
+  ).length;
+  const avgSuccessRate =
+    filteredIntegrations.length > 0
+      ? (
+          filteredIntegrations.reduce((sum, i) => sum + i.successRate, 0) /
+          filteredIntegrations.length
+        ).toFixed(1)
+      : "0";
 
   return (
     <div className="min-h-screen bg-wl-bg-surface">
@@ -214,8 +292,15 @@ export default function IntegrationsPage() {
         title="Integration Health"
         subtitle="Monitor connected integrations and sync status across all stores"
         actions={
-          <Button variant="secondary" size="md" onClick={refetch} disabled={loading}>
-            <RefreshCw className={cn("w-4 h-4 mr-1", loading && "animate-spin")} />
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={refetch}
+            disabled={loading}
+          >
+            <RefreshCw
+              className={cn("w-4 h-4 mr-1", loading && "animate-spin")}
+            />
             Refresh
           </Button>
         }
@@ -232,26 +317,43 @@ export default function IntegrationsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
                 <CardContent className="pt-5">
-                  <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">Connected</p>
+                  <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">
+                    Connected
+                  </p>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-emerald-500">{connectedCount}</span>
-                    <span className="text-sm text-wl-text-secondary">of {filteredIntegrations.length}</span>
+                    <span className="text-3xl font-bold text-emerald-500">
+                      {connectedCount}
+                    </span>
+                    <span className="text-sm text-wl-text-secondary">
+                      of {filteredIntegrations.length}
+                    </span>
                   </div>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="pt-5">
-                  <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">Avg Success Rate</p>
+                  <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">
+                    Avg Success Rate
+                  </p>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-white">{avgSuccessRate}%</span>
+                    <span className="text-3xl font-bold text-white">
+                      {avgSuccessRate}%
+                    </span>
                   </div>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="pt-5">
-                  <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">With Errors</p>
+                  <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">
+                    With Errors
+                  </p>
                   <div className="flex items-baseline gap-2">
-                    <span className={cn("text-3xl font-bold", errorCount === 0 ? "text-emerald-500" : "text-red-500")}>
+                    <span
+                      className={cn(
+                        "text-3xl font-bold",
+                        errorCount === 0 ? "text-emerald-500" : "text-red-500",
+                      )}
+                    >
                       {errorCount}
                     </span>
                   </div>
@@ -265,18 +367,22 @@ export default function IntegrationsPage() {
                 onClick={() => setSelectedCategory(null)}
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                  !selectedCategory ? "bg-blue-600 text-white" : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated"
+                  !selectedCategory
+                    ? "bg-blue-600 text-white"
+                    : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated",
                 )}
               >
                 All ({allIntegrations.length})
               </button>
-              {categories.map(cat => (
+              {categories.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
                   className={cn(
                     "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                    selectedCategory === cat.id ? "bg-blue-600 text-white" : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated"
+                    selectedCategory === cat.id
+                      ? "bg-blue-600 text-white"
+                      : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated",
                   )}
                 >
                   {cat.label} ({cat.count})
@@ -292,15 +398,23 @@ export default function IntegrationsPage() {
               <CardContent className="p-0">
                 {filteredIntegrations.length === 0 ? (
                   <div className="p-6 text-center text-wl-text-secondary">
-                    No integrations found{selectedCategory ? ` in the ${selectedCategory} category` : ""}. Integrations are added via the Integrations marketplace.
+                    No integrations found
+                    {selectedCategory
+                      ? ` in the ${selectedCategory} category`
+                      : ""}
+                    . Integrations are added via the Integrations marketplace.
                   </div>
                 ) : (
-                  filteredIntegrations.map(integration => (
+                  filteredIntegrations.map((integration) => (
                     <IntegrationRow
                       key={integration.id}
                       integration={integration}
                       expanded={expandedId === integration.id}
-                      onToggle={() => setExpandedId(expandedId === integration.id ? null : integration.id)}
+                      onToggle={() =>
+                        setExpandedId(
+                          expandedId === integration.id ? null : integration.id,
+                        )
+                      }
                     />
                   ))
                 )}
@@ -314,10 +428,12 @@ export default function IntegrationsPage() {
                     <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <h4 className="text-sm font-semibold text-red-500">
-                        {errorCount} Integration{errorCount !== 1 ? "s" : ""} Require Attention
+                        {errorCount} Integration{errorCount !== 1 ? "s" : ""}{" "}
+                        Require Attention
                       </h4>
                       <p className="text-sm text-wl-text-secondary mt-1">
-                        Review and fix the issues above to restore full integration functionality.
+                        Review and fix the issues above to restore full
+                        integration functionality.
                       </p>
                     </div>
                   </div>

@@ -38,13 +38,13 @@ ML-powered delivery slot recommendation system that intelligently ranks availabl
 ### Basic Recommendation
 
 ```typescript
-import { slotRecommender } from '@witylogix/core/ai-slots';
+import { slotRecommender } from "@witylogix/core/ai-slots";
 
 // Get top 5 recommended slots for a customer
 const slots = slotRecommender.recommendSlots({
-  customerId: 'cust_123',
-  zoneId: 'zone_456',
-  date: new Date('2026-03-15'),
+  customerId: "cust_123",
+  zoneId: "zone_456",
+  date: new Date("2026-03-15"),
   maxSlots: 5,
 });
 
@@ -64,32 +64,32 @@ console.log(slots[0]); // Top recommendation
 ### Demand Forecasting
 
 ```typescript
-import { demandPredictor } from '@witylogix/core/ai-slots';
+import { demandPredictor } from "@witylogix/core/ai-slots";
 
 // Get demand forecast for a specific hour
-const forecast = demandPredictor.predictDemand('zone_456', new Date(), 10);
+const forecast = demandPredictor.predictDemand("zone_456", new Date(), 10);
 console.log(`Predicted orders at 10 AM: ${forecast.predictedOrders}`);
 console.log(`Confidence: ${(forecast.confidence * 100).toFixed(0)}%`);
 console.log(`Trend: ${forecast.trend}`); // 'increasing', 'stable', 'decreasing'
 
 // Get full day forecast
-const dayForecasts = demandPredictor.predictDemandBatch('zone_456', new Date());
+const dayForecasts = demandPredictor.predictDemandBatch("zone_456", new Date());
 ```
 
 ### Driver Availability
 
 ```typescript
-import { driverAvailabilityPredictor } from '@witylogix/core/ai-slots';
+import { driverAvailabilityPredictor } from "@witylogix/core/ai-slots";
 
 // Set up driver shifts
 const shifts = [
   {
-    driverId: 'driver_1',
+    driverId: "driver_1",
     date: new Date(),
     startHour: 9,
     endHour: 17,
-    zoneId: 'zone_456',
-    vehicleType: 'car',
+    zoneId: "zone_456",
+    vehicleType: "car",
     packageCapacity: 35,
     noShowHistory: 0.05,
   },
@@ -110,13 +110,13 @@ console.log(`Available drivers: ${forecast.expectedAvailableDrivers}`);
 
 ```typescript
 const preference = {
-  customerId: 'cust_123',
-  averageDeliveryValue: 75.50,
+  customerId: "cust_123",
+  averageDeliveryValue: 75.5,
   preferredHours: [9, 10, 18, 19], // Morning and evening
   preferredDays: [1, 2, 3, 4, 5], // Weekdays
   successRate: 0.95,
   totalOrders: 120,
-  lastOrderDate: new Date('2026-03-10'),
+  lastOrderDate: new Date("2026-03-10"),
   averageDeliveryDuration: 25,
 };
 
@@ -180,7 +180,7 @@ interface HistoricalDeliveryData {
   items: number;
   driverId: string;
   weatherCondition?: string;
-  trafficLevel?: 'light' | 'moderate' | 'heavy';
+  trafficLevel?: "light" | "moderate" | "heavy";
   success: boolean;
 }
 ```
@@ -192,12 +192,14 @@ interface HistoricalDeliveryData {
 Recommend delivery slots for a customer.
 
 **Query Parameters:**
+
 - `customerId` (uuid, required): Customer ID
 - `zoneId` (uuid, required): Delivery zone
 - `date` (ISO datetime, required): Delivery date
 - `maxSlots` (number, default 5): Number of recommendations
 
 **Response:**
+
 ```json
 {
   "recommendations": [
@@ -223,11 +225,13 @@ Recommend delivery slots for a customer.
 Forecast demand for a zone.
 
 **Query Parameters:**
+
 - `zoneId` (uuid, required): Zone ID
 - `date` (ISO datetime, required): Date
 - `hour` (number, optional): Specific hour (0-23)
 
 **Response:**
+
 ```json
 {
   "forecast": {
@@ -273,22 +277,22 @@ Record actual delivery times to improve model accuracy:
 ```typescript
 // After delivery completion
 const historicalData: HistoricalDeliveryData = {
-  orderId: 'order_123',
-  customerId: 'cust_456',
-  zoneId: 'zone_789',
-  slotStartTime: new Date('2026-03-15T09:00:00'),
-  slotEndTime: new Date('2026-03-15T12:00:00'),
-  orderPlacedAt: new Date('2026-03-13T14:30:00'),
-  actualDeliveryTime: new Date('2026-03-15T10:45:00'),
-  estimatedDeliveryTime: new Date('2026-03-15T10:50:00'),
+  orderId: "order_123",
+  customerId: "cust_456",
+  zoneId: "zone_789",
+  slotStartTime: new Date("2026-03-15T09:00:00"),
+  slotEndTime: new Date("2026-03-15T12:00:00"),
+  orderPlacedAt: new Date("2026-03-13T14:30:00"),
+  actualDeliveryTime: new Date("2026-03-15T10:45:00"),
+  estimatedDeliveryTime: new Date("2026-03-15T10:50:00"),
   dayOfWeek: 0,
   hourOfDay: 10,
   distanceKm: 5.2,
   weight: 2.5,
   items: 3,
-  driverId: 'driver_123',
-  weatherCondition: 'sunny',
-  trafficLevel: 'light',
+  driverId: "driver_123",
+  weatherCondition: "sunny",
+  trafficLevel: "light",
   success: true,
 };
 
@@ -304,6 +308,7 @@ npm test -- ai-slots
 ```
 
 Tests include:
+
 - Slot recommendation accuracy
 - Demand prediction validation
 - Driver availability forecasting

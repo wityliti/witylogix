@@ -24,13 +24,17 @@ import type {
 } from "../types.js";
 
 /** Create a mock fetch that handles the 3-call initialize sequence then delegates to a custom handler */
-function createInitMock(afterInitHandler?: (...args: any[]) => Promise<Response>) {
-  const tokenResponse = () => new Response(JSON.stringify({ access_token: "token", expires_in: 3600 }));
+function createInitMock(
+  afterInitHandler?: (...args: any[]) => Promise<Response>,
+) {
+  const tokenResponse = () =>
+    new Response(JSON.stringify({ access_token: "token", expires_in: 3600 }));
   const okResponse = () => new Response("{}", { status: 200 });
-  const fn = vi.fn()
-    .mockResolvedValueOnce(tokenResponse())   // refreshOAuth2Token during verifyCredentials
-    .mockResolvedValueOnce(okResponse())       // account check during verifyCredentials
-    .mockResolvedValueOnce(tokenResponse());   // refreshToken at end of initialize
+  const fn = vi
+    .fn()
+    .mockResolvedValueOnce(tokenResponse()) // refreshOAuth2Token during verifyCredentials
+    .mockResolvedValueOnce(okResponse()) // account check during verifyCredentials
+    .mockResolvedValueOnce(tokenResponse()); // refreshToken at end of initialize
   if (afterInitHandler) {
     fn.mockImplementation(afterInitHandler);
   }
@@ -57,24 +61,44 @@ describe("DocuSignClient", () => {
 
   describe("initialization", () => {
     it("should initialize with OAuth2 config", async () => {
-      mockFetch = vi.fn()
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })))
+      mockFetch = vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        )
         .mockResolvedValueOnce(new Response("{}", { status: 200 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })));
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        );
 
       await expect(client.initialize(mockConfig)).resolves.not.toThrow();
     });
 
     it("should throw error if accountId is missing", async () => {
       const config = { ...mockConfig, accountId: "" };
-      await expect(client.initialize(config)).rejects.toThrow("accountId is required");
+      await expect(client.initialize(config)).rejects.toThrow(
+        "accountId is required",
+      );
     });
 
     it("should verify credentials", async () => {
-      mockFetch = vi.fn()
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })))
+      mockFetch = vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        )
         .mockResolvedValueOnce(new Response("{}", { status: 200 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })))
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        )
         .mockResolvedValueOnce(new Response("{}", { status: 200 }));
 
       await client.initialize(mockConfig);
@@ -87,10 +111,19 @@ describe("DocuSignClient", () => {
     beforeEach(async () => {
       // initialize makes 3 fetch calls: refreshToken during verifyCredentials,
       // account check during verifyCredentials, and refreshToken at end
-      mockFetch = vi.fn()
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })))
+      mockFetch = vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        )
         .mockResolvedValueOnce(new Response("{}", { status: 200 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })));
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        );
       await client.initialize(mockConfig);
     });
 
@@ -99,8 +132,10 @@ describe("DocuSignClient", () => {
 
       mockFetch = vi.fn(() =>
         Promise.resolve(
-          new Response(JSON.stringify({ envelopeId: "test-envelope-id" }), { status: 201 })
-        )
+          new Response(JSON.stringify({ envelopeId: "test-envelope-id" }), {
+            status: 201,
+          }),
+        ),
       );
 
       const result = await client.createEnvelope(envelope);
@@ -110,7 +145,7 @@ describe("DocuSignClient", () => {
 
     it("should send envelope", async () => {
       mockFetch = vi.fn(() =>
-        Promise.resolve(new Response(JSON.stringify({}), { status: 200 }))
+        Promise.resolve(new Response(JSON.stringify({}), { status: 200 })),
       );
 
       const result = await client.sendEnvelope("test-envelope-id");
@@ -119,10 +154,12 @@ describe("DocuSignClient", () => {
 
     it("should void envelope", async () => {
       mockFetch = vi.fn(() =>
-        Promise.resolve(new Response(JSON.stringify({}), { status: 200 }))
+        Promise.resolve(new Response(JSON.stringify({}), { status: 200 })),
       );
 
-      await expect(client.voidEnvelope("test-envelope-id", "User request")).resolves.not.toThrow();
+      await expect(
+        client.voidEnvelope("test-envelope-id", "User request"),
+      ).resolves.not.toThrow();
     });
 
     it("should get envelope status", async () => {
@@ -143,9 +180,9 @@ describe("DocuSignClient", () => {
                 ],
               },
             }),
-            { status: 200 }
-          )
-        )
+            { status: 200 },
+          ),
+        ),
       );
 
       const status = await client.getEnvelopeStatus("test-envelope-id");
@@ -169,9 +206,9 @@ describe("DocuSignClient", () => {
               ],
               totalSetSize: 1,
             }),
-            { status: 200 }
-          )
-        )
+            { status: 200 },
+          ),
+        ),
       );
 
       const result = await client.listEnvelopes({ limit: 20 });
@@ -181,11 +218,11 @@ describe("DocuSignClient", () => {
 
     it("should resend envelope", async () => {
       mockFetch = vi.fn(() =>
-        Promise.resolve(new Response(JSON.stringify({}), { status: 200 }))
+        Promise.resolve(new Response(JSON.stringify({}), { status: 200 })),
       );
 
       await expect(
-        client.resendEnvelope("test-envelope-id", ["signer@example.com"])
+        client.resendEnvelope("test-envelope-id", ["signer@example.com"]),
       ).resolves.not.toThrow();
     });
   });
@@ -194,10 +231,19 @@ describe("DocuSignClient", () => {
     beforeEach(async () => {
       // initialize makes 3 fetch calls: refreshToken during verifyCredentials,
       // account check during verifyCredentials, and refreshToken at end
-      mockFetch = vi.fn()
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })))
+      mockFetch = vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        )
         .mockResolvedValueOnce(new Response("{}", { status: 200 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })));
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        );
       await client.initialize(mockConfig);
     });
 
@@ -215,9 +261,9 @@ describe("DocuSignClient", () => {
               ],
               totalSetSize: 1,
             }),
-            { status: 200 }
-          )
-        )
+            { status: 200 },
+          ),
+        ),
       );
 
       const result = await client.listTemplates({ limit: 20 });
@@ -234,9 +280,9 @@ describe("DocuSignClient", () => {
               name: "Test Template",
               dateModified: new Date().toISOString(),
             }),
-            { status: 200 }
-          )
-        )
+            { status: 200 },
+          ),
+        ),
       );
 
       const template = await client.getTemplate("template-1");
@@ -247,12 +293,21 @@ describe("DocuSignClient", () => {
     it("should create envelope from template", async () => {
       mockFetch = vi.fn(() =>
         Promise.resolve(
-          new Response(JSON.stringify({ envelopeId: "env-from-template" }), { status: 201 })
-        )
+          new Response(JSON.stringify({ envelopeId: "env-from-template" }), {
+            status: 201,
+          }),
+        ),
       );
 
       const result = await client.createEnvelopeFromTemplate("template-1", {
-        signers: [{ email: "signer@example.com", name: "John", order: 1, requiresSequentialSigning: false }],
+        signers: [
+          {
+            email: "signer@example.com",
+            name: "John",
+            order: 1,
+            requiresSequentialSigning: false,
+          },
+        ],
         subject: "Sign This",
       });
 
@@ -265,10 +320,19 @@ describe("DocuSignClient", () => {
     beforeEach(async () => {
       // initialize makes 3 fetch calls: refreshToken during verifyCredentials,
       // account check during verifyCredentials, and refreshToken at end
-      mockFetch = vi.fn()
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })))
+      mockFetch = vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        )
         .mockResolvedValueOnce(new Response("{}", { status: 200 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })));
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        );
       await client.initialize(mockConfig);
     });
 
@@ -276,7 +340,9 @@ describe("DocuSignClient", () => {
       const pdfContent = Buffer.from("PDF content").toString("base64");
 
       mockFetch = vi.fn(() =>
-        Promise.resolve(new Response(Buffer.from(pdfContent, "base64"), { status: 200 }))
+        Promise.resolve(
+          new Response(Buffer.from(pdfContent, "base64"), { status: 200 }),
+        ),
       );
 
       const result = await client.downloadDocument("env-id", "doc-id");
@@ -288,7 +354,9 @@ describe("DocuSignClient", () => {
       const zipContent = Buffer.from("ZIP content").toString("base64");
 
       mockFetch = vi.fn(() =>
-        Promise.resolve(new Response(Buffer.from(zipContent, "base64"), { status: 200 }))
+        Promise.resolve(
+          new Response(Buffer.from(zipContent, "base64"), { status: 200 }),
+        ),
       );
 
       const result = await client.downloadEnvelopeDocuments("env-id");
@@ -301,22 +369,36 @@ describe("DocuSignClient", () => {
     beforeEach(async () => {
       // initialize makes 3 fetch calls: refreshToken during verifyCredentials,
       // account check during verifyCredentials, and refreshToken at end
-      mockFetch = vi.fn()
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })))
+      mockFetch = vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        )
         .mockResolvedValueOnce(new Response("{}", { status: 200 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })));
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        );
       await client.initialize(mockConfig);
     });
 
     it("should get embedded signing URL", async () => {
       mockFetch = vi.fn(() =>
-        Promise.resolve(new Response(JSON.stringify({ url: "https://docusign.com/signing" }), { status: 200 }))
+        Promise.resolve(
+          new Response(
+            JSON.stringify({ url: "https://docusign.com/signing" }),
+            { status: 200 },
+          ),
+        ),
       );
 
       const result = await client.getEmbeddedSigningUrl(
         "env-id",
         "signer@example.com",
-        "https://return.example.com"
+        "https://return.example.com",
       );
 
       expect(result.signingUrl).toBe("https://docusign.com/signing");
@@ -325,7 +407,7 @@ describe("DocuSignClient", () => {
 
     it("should mark document as viewed", async () => {
       await expect(
-        client.markDocumentViewed("env-id", "signer@example.com")
+        client.markDocumentViewed("env-id", "signer@example.com"),
       ).resolves.not.toThrow();
     });
   });
@@ -334,10 +416,19 @@ describe("DocuSignClient", () => {
     beforeEach(async () => {
       // initialize makes 3 fetch calls: refreshToken during verifyCredentials,
       // account check during verifyCredentials, and refreshToken at end
-      mockFetch = vi.fn()
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })))
+      mockFetch = vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        )
         .mockResolvedValueOnce(new Response("{}", { status: 200 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })));
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        );
       await client.initialize(mockConfig);
     });
 
@@ -360,9 +451,9 @@ describe("DocuSignClient", () => {
                 ],
               },
             }),
-            { status: 200 }
-          )
-        )
+            { status: 200 },
+          ),
+        ),
       );
 
       const events = await client.getEnvelopeEvents("env-id");
@@ -398,10 +489,19 @@ describe("DocuSignClient", () => {
 
   describe("health checks", () => {
     it("should perform health check", async () => {
-      mockFetch = vi.fn()
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })))
+      mockFetch = vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        )
         .mockResolvedValueOnce(new Response("{}", { status: 200 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })));
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        );
 
       await client.initialize(mockConfig);
       const health = await client.healthCheck();
@@ -415,10 +515,19 @@ describe("DocuSignClient", () => {
     beforeEach(async () => {
       // initialize makes 3 fetch calls: refreshToken during verifyCredentials,
       // account check during verifyCredentials, and refreshToken at end
-      mockFetch = vi.fn()
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })))
+      mockFetch = vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        )
         .mockResolvedValueOnce(new Response("{}", { status: 200 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })));
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ access_token: "token", expires_in: 3600 }),
+          ),
+        );
       await client.initialize(mockConfig);
     });
 

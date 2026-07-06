@@ -2,7 +2,12 @@
  * Collection Manager - Barrel Export
  */
 
-export { CollectionManager, collectionManager, CollectionNotFoundError, CollectionError } from './collection-manager';
+export {
+  CollectionManager,
+  collectionManager,
+  CollectionNotFoundError,
+  CollectionError,
+} from "./collection-manager";
 export type {
   CollectionType,
   SortOrder,
@@ -20,4 +25,4 @@ export type {
   PaginationOptions,
   CollectionListResponse,
   CollectionPlatformAdapter,
-} from './types';
+} from "./types";

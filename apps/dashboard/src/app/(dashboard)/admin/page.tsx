@@ -1,14 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import Link from 'next/link';
-import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { LoadingSkeleton, TableSkeleton } from '@/components/ui/loading-skeleton';
-import { useApiList, useApiQuery } from '@/hooks/use-api';
+import { useState, useMemo } from "react";
+import Link from "next/link";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  LoadingSkeleton,
+  TableSkeleton,
+} from "@/components/ui/loading-skeleton";
+import { useApiList, useApiQuery } from "@/hooks/use-api";
 import {
   BarChart3,
   Users,
@@ -23,25 +26,25 @@ import {
   CheckCircle2,
   Plus,
   ShieldCheck,
-} from 'lucide-react';
+} from "lucide-react";
 
 // Types
 interface Store {
   id: string;
   name: string;
   domain: string;
-  planTier: 'free' | 'starter' | 'growth' | 'enterprise';
+  planTier: "free" | "starter" | "growth" | "enterprise";
   owner: string;
   ordersThisMonth: number;
   revenue: number;
-  status: 'active' | 'suspended' | 'trial';
+  status: "active" | "suspended" | "trial";
   lastActive: string;
   totalUsers: number;
 }
 
 interface SystemService {
   name: string;
-  status: 'healthy' | 'degraded' | 'critical';
+  status: "healthy" | "degraded" | "critical";
   uptime24h: number;
   responseTime: number;
 }
@@ -60,30 +63,69 @@ interface SystemData {
 }
 
 // Plan → Badge variant
-const getPlanVariant = (plan: string): 'default' | 'info' | 'warning' | 'success' | 'primary' => {
+const getPlanVariant = (
+  plan: string,
+): "default" | "info" | "warning" | "success" | "primary" => {
   switch (plan) {
-    case 'free':       return 'default';
-    case 'starter':    return 'info';
-    case 'growth':     return 'warning';
-    case 'enterprise': return 'success';
-    default:           return 'primary';
+    case "free":
+      return "default";
+    case "starter":
+      return "info";
+    case "growth":
+      return "warning";
+    case "enterprise":
+      return "success";
+    default:
+      return "primary";
   }
 };
 
 // Key Metrics Cards — colours use WL design tokens + Tailwind semantic classes
 const MetricsBar = ({ stores }: { stores: Store[] }) => {
-  const totalStores        = stores.length;
-  const activeStores       = stores.filter((s) => s.status === 'active').length;
-  const totalOrders        = stores.reduce((sum, s) => sum + s.ordersThisMonth, 0);
-  const totalRevenue       = stores.reduce((sum, s) => sum + s.revenue, 0);
-  const activeSubscriptions = stores.filter((s) => s.planTier !== 'free').length;
+  const totalStores = stores.length;
+  const activeStores = stores.filter((s) => s.status === "active").length;
+  const totalOrders = stores.reduce((sum, s) => sum + s.ordersThisMonth, 0);
+  const totalRevenue = stores.reduce((sum, s) => sum + s.revenue, 0);
+  const activeSubscriptions = stores.filter(
+    (s) => s.planTier !== "free",
+  ).length;
 
   const metrics = [
-    { label: 'Total Stores',  value: totalStores.toString(),                      icon: ShoppingCart, iconClass: 'text-indigo-400',         bgClass: 'bg-indigo-400/10'         },
-    { label: 'Active Stores', value: activeStores.toString(),                     icon: CheckCircle2, iconClass: 'text-wl-success-500',      bgClass: 'bg-wl-success-500/10'     },
-    { label: 'Orders (30d)',  value: totalOrders.toLocaleString(),                icon: BarChart3,    iconClass: 'text-wl-warning-500',      bgClass: 'bg-wl-warning-500/10'     },
-    { label: 'Revenue',       value: `$${(totalRevenue / 1000).toFixed(0)}K`,    icon: TrendingUp,   iconClass: 'text-violet-400',          bgClass: 'bg-violet-400/10'         },
-    { label: 'Paid Plans',    value: activeSubscriptions.toString(),              icon: Zap,          iconClass: 'text-wl-info-500',         bgClass: 'bg-wl-info-500/10'        },
+    {
+      label: "Total Stores",
+      value: totalStores.toString(),
+      icon: ShoppingCart,
+      iconClass: "text-indigo-400",
+      bgClass: "bg-indigo-400/10",
+    },
+    {
+      label: "Active Stores",
+      value: activeStores.toString(),
+      icon: CheckCircle2,
+      iconClass: "text-wl-success-500",
+      bgClass: "bg-wl-success-500/10",
+    },
+    {
+      label: "Orders (30d)",
+      value: totalOrders.toLocaleString(),
+      icon: BarChart3,
+      iconClass: "text-wl-warning-500",
+      bgClass: "bg-wl-warning-500/10",
+    },
+    {
+      label: "Revenue",
+      value: `$${(totalRevenue / 1000).toFixed(0)}K`,
+      icon: TrendingUp,
+      iconClass: "text-violet-400",
+      bgClass: "bg-violet-400/10",
+    },
+    {
+      label: "Paid Plans",
+      value: activeSubscriptions.toString(),
+      icon: Zap,
+      iconClass: "text-wl-info-500",
+      bgClass: "bg-wl-info-500/10",
+    },
   ];
 
   return (
@@ -97,8 +139,13 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
             style={{ animation: `fadeInUp 0.4s ease-out ${idx * 50}ms both` }}
           >
             <CardContent className="p-4 flex gap-3 items-start">
-              <div className={cn('p-2 rounded-md flex items-center justify-center flex-shrink-0', metric.bgClass)}>
-                <Icon className={cn('w-5 h-5', metric.iconClass)} />
+              <div
+                className={cn(
+                  "p-2 rounded-md flex items-center justify-center flex-shrink-0",
+                  metric.bgClass,
+                )}
+              >
+                <Icon className={cn("w-5 h-5", metric.iconClass)} />
               </div>
               <div className="flex-1">
                 <p className="text-wl-text-tertiary text-xs font-semibold m-0 uppercase tracking-wider">
@@ -118,7 +165,7 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
 
 // System Health — wired to real GET /api/v4/admin/system
 const SystemHealth = () => {
-  const { data, loading } = useApiQuery<SystemData>('/api/v4/admin/system');
+  const { data, loading } = useApiQuery<SystemData>("/api/v4/admin/system");
 
   if (loading) {
     return (
@@ -144,24 +191,36 @@ const SystemHealth = () => {
   }
 
   const services = data?.data?.services ?? [];
-  const sys      = data?.data?.metrics;
+  const sys = data?.data?.metrics;
 
   const displayItems = [
     ...services.map((s) => ({
-      label:  s.name,
-      value:  s.status === 'healthy'
-        ? `${s.uptime24h}% uptime (${s.responseTime}ms)`
-        : s.status,
-      status: s.status === 'healthy' ? ('healthy' as const) : ('warning' as const),
-      icon:   s.name === 'PostgreSQL' ? Database : s.name === 'Redis Cache' ? Zap : Server,
+      label: s.name,
+      value:
+        s.status === "healthy"
+          ? `${s.uptime24h}% uptime (${s.responseTime}ms)`
+          : s.status,
+      status:
+        s.status === "healthy" ? ("healthy" as const) : ("warning" as const),
+      icon:
+        s.name === "PostgreSQL"
+          ? Database
+          : s.name === "Redis Cache"
+            ? Zap
+            : Server,
     })),
     ...(sys
-      ? [{
-          label:  'Memory',
-          value:  `${sys.memoryUsage}% used`,
-          status: sys.memoryUsage > 90 ? ('warning' as const) : ('healthy' as const),
-          icon:   ActivitySquare,
-        }]
+      ? [
+          {
+            label: "Memory",
+            value: `${sys.memoryUsage}% used`,
+            status:
+              sys.memoryUsage > 90
+                ? ("warning" as const)
+                : ("healthy" as const),
+            icon: ActivitySquare,
+          },
+        ]
       : []),
   ];
 
@@ -181,14 +240,18 @@ const SystemHealth = () => {
               <div key={idx} className="flex gap-3 items-start">
                 <div
                   className={cn(
-                    'p-2 rounded-md flex items-center justify-center flex-shrink-0',
-                    item.status === 'healthy' ? 'bg-wl-success-500/10' : 'bg-wl-warning-500/10'
+                    "p-2 rounded-md flex items-center justify-center flex-shrink-0",
+                    item.status === "healthy"
+                      ? "bg-wl-success-500/10"
+                      : "bg-wl-warning-500/10",
                   )}
                 >
                   <Icon
                     className={cn(
-                      'w-[18px] h-[18px]',
-                      item.status === 'healthy' ? 'text-wl-success-500' : 'text-wl-warning-500'
+                      "w-[18px] h-[18px]",
+                      item.status === "healthy"
+                        ? "text-wl-success-500"
+                        : "text-wl-warning-500",
                     )}
                   />
                 </div>
@@ -265,7 +328,7 @@ const StoresHealthTable = ({
   error: Error | null;
   onRetry: () => void;
 }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   const filteredStores = useMemo(
     () =>
@@ -273,9 +336,9 @@ const StoresHealthTable = ({
         (store) =>
           store.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           store.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          store.owner.toLowerCase().includes(searchTerm.toLowerCase())
+          store.owner.toLowerCase().includes(searchTerm.toLowerCase()),
       ),
-    [stores, searchTerm]
+    [stores, searchTerm],
   );
 
   if (loading) return <TableSkeleton rows={5} columns={8} className="mb-6" />;
@@ -283,7 +346,9 @@ const StoresHealthTable = ({
     return (
       <Card className="bg-wl-bg-surface border border-wl-border-default mb-6 p-6 text-center">
         <p className="text-wl-text-tertiary text-sm mb-3">{error.message}</p>
-        <Button variant="secondary" size="sm" onClick={onRetry}>Retry</Button>
+        <Button variant="secondary" size="sm" onClick={onRetry}>
+          Retry
+        </Button>
       </Card>
     );
 
@@ -310,16 +375,23 @@ const StoresHealthTable = ({
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-wl-border-default bg-wl-bg-root">
-                {['Store', 'Plan', 'Orders (30d)', 'Revenue', 'Users', 'Status', 'Last Active', 'Actions'].map(
-                  (header) => (
-                    <th
-                      key={header}
-                      className="p-3 text-left text-wl-text-tertiary font-semibold text-xs uppercase tracking-wider"
-                    >
-                      {header}
-                    </th>
-                  )
-                )}
+                {[
+                  "Store",
+                  "Plan",
+                  "Orders (30d)",
+                  "Revenue",
+                  "Users",
+                  "Status",
+                  "Last Active",
+                  "Actions",
+                ].map((header) => (
+                  <th
+                    key={header}
+                    className="p-3 text-left text-wl-text-tertiary font-semibold text-xs uppercase tracking-wider"
+                  >
+                    {header}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -327,8 +399,8 @@ const StoresHealthTable = ({
                 <tr
                   key={store.id}
                   className={cn(
-                    'border-b border-wl-border-default transition-all duration-200 hover:bg-wl-bg-elevated',
-                    idx % 2 === 0 ? 'bg-wl-bg-root' : 'bg-wl-bg-surface'
+                    "border-b border-wl-border-default transition-all duration-200 hover:bg-wl-bg-elevated",
+                    idx % 2 === 0 ? "bg-wl-bg-root" : "bg-wl-bg-surface",
                   )}
                 >
                   <td className="p-3">
@@ -338,10 +410,15 @@ const StoresHealthTable = ({
                     >
                       {store.name}
                     </Link>
-                    <p className="text-wl-text-tertiary m-0 mt-0.5 text-xs">{store.domain}</p>
+                    <p className="text-wl-text-tertiary m-0 mt-0.5 text-xs">
+                      {store.domain}
+                    </p>
                   </td>
                   <td className="p-3">
-                    <Badge variant={getPlanVariant(store.planTier)} className="text-xs capitalize">
+                    <Badge
+                      variant={getPlanVariant(store.planTier)}
+                      className="text-xs capitalize"
+                    >
                       {store.planTier}
                     </Badge>
                   </td>
@@ -357,18 +434,20 @@ const StoresHealthTable = ({
                   <td className="p-3">
                     <Badge
                       variant={
-                        store.status === 'active'
-                          ? 'success'
-                          : store.status === 'suspended'
-                            ? 'danger'
-                            : 'info'
+                        store.status === "active"
+                          ? "success"
+                          : store.status === "suspended"
+                            ? "danger"
+                            : "info"
                       }
                       className="text-xs capitalize"
                     >
                       {store.status}
                     </Badge>
                   </td>
-                  <td className="p-3 text-wl-text-tertiary text-xs">{store.lastActive}</td>
+                  <td className="p-3 text-wl-text-tertiary text-xs">
+                    {store.lastActive}
+                  </td>
                   <td className="p-3 text-center">
                     <button className="bg-transparent border-0 text-wl-text-tertiary cursor-pointer p-1 inline-flex items-center justify-center transition-all duration-200 hover:text-wl-text-primary">
                       <MoreVertical className="w-4 h-4" />
@@ -386,7 +465,12 @@ const StoresHealthTable = ({
 
 // Main Page
 export default function AdminDashboardPage() {
-  const { items: stores, loading, error, refetch } = useApiList<Store>('/api/v4/shops');
+  const {
+    items: stores,
+    loading,
+    error,
+    refetch,
+  } = useApiList<Store>("/api/v4/shops");
 
   if (loading && stores.length === 0) return <LoadingSkeleton />;
 
@@ -401,7 +485,12 @@ export default function AdminDashboardPage() {
         <MetricsBar stores={stores} />
         <SystemHealth />
         <QuickActions />
-        <StoresHealthTable stores={stores} loading={loading} error={error} onRetry={refetch} />
+        <StoresHealthTable
+          stores={stores}
+          loading={loading}
+          error={error}
+          onRetry={refetch}
+        />
       </main>
 
       <style>{`

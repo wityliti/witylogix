@@ -1,9 +1,14 @@
-'use client';
-import { useEffect, useCallback } from 'react';
-import type { GeoJSONSource, MapMouseEvent } from 'maplibre-gl';
-import { useWLMap } from './wl-map-context';
+"use client";
+import { useEffect, useCallback } from "react";
+import type { GeoJSONSource, MapMouseEvent } from "maplibre-gl";
+import { useWLMap } from "./wl-map-context";
 
-export type VehicleMapStatus = 'ACTIVE' | 'IDLE' | 'OFFLINE' | 'MAINTENANCE' | 'INACTIVE';
+export type VehicleMapStatus =
+  | "ACTIVE"
+  | "IDLE"
+  | "OFFLINE"
+  | "MAINTENANCE"
+  | "INACTIVE";
 
 export interface VehicleMapMarker {
   id: string;
@@ -26,31 +31,31 @@ export interface VehicleMarkerLayerProps {
 
 // Status → color mapping using design-system tokens as fallbacks
 const STATUS_COLORS: Record<VehicleMapStatus, string> = {
-  ACTIVE: '#10b981',    // wl-success-500
-  IDLE: '#f59e0b',      // wl-warning-500
-  OFFLINE: '#6b7280',   // neutral
-  MAINTENANCE: '#3b82f6', // wl-info-500
-  INACTIVE: '#4b5563',
+  ACTIVE: "#10b981", // wl-success-500
+  IDLE: "#f59e0b", // wl-warning-500
+  OFFLINE: "#6b7280", // neutral
+  MAINTENANCE: "#3b82f6", // wl-info-500
+  INACTIVE: "#4b5563",
 };
 
-const SOURCE_ID = 'vehicle-markers';
-const LAYER_CIRCLE = 'vehicle-markers-circle';
-const LAYER_LABEL = 'vehicle-markers-label';
-const LAYER_SELECTED = 'vehicle-markers-selected';
+const SOURCE_ID = "vehicle-markers";
+const LAYER_CIRCLE = "vehicle-markers-circle";
+const LAYER_LABEL = "vehicle-markers-label";
+const LAYER_SELECTED = "vehicle-markers-selected";
 
 function buildFeatureCollection(vehicles: VehicleMapMarker[]) {
   return {
-    type: 'FeatureCollection' as const,
+    type: "FeatureCollection" as const,
     features: vehicles.map((v) => ({
-      type: 'Feature' as const,
+      type: "Feature" as const,
       geometry: {
-        type: 'Point' as const,
+        type: "Point" as const,
         coordinates: [v.longitude, v.latitude],
       },
       properties: {
         id: v.id,
         name: v.name,
-        licensePlate: v.licensePlate ?? '',
+        licensePlate: v.licensePlate ?? "",
         status: v.status,
         speed: v.speed,
         heading: v.heading,
@@ -76,7 +81,7 @@ export function VehicleMarkerLayer({
       if (features.length === 0) return;
       const props = features[0]?.properties;
       if (!props) return;
-      const vehicle = vehicles.find((v) => v.id === props['id']);
+      const vehicle = vehicles.find((v) => v.id === props["id"]);
       if (vehicle) onVehicleClick(vehicle);
     },
     [vehicles, onVehicleClick],
@@ -88,82 +93,89 @@ export function VehicleMarkerLayer({
       if (map.getSource(SOURCE_ID)) return;
 
       map.addSource(SOURCE_ID, {
-        type: 'geojson',
+        type: "geojson",
         data: buildFeatureCollection(vehicles),
       });
 
       // Outer pulse ring for selected vehicle
       map.addLayer({
         id: LAYER_SELECTED,
-        type: 'circle',
+        type: "circle",
         source: SOURCE_ID,
         paint: {
-          'circle-radius': 20,
-          'circle-color': ['get', 'color'],
-          'circle-opacity': 0.15,
-          'circle-stroke-width': 1.5,
-          'circle-stroke-color': ['get', 'color'],
-          'circle-stroke-opacity': 0.4,
+          "circle-radius": 20,
+          "circle-color": ["get", "color"],
+          "circle-opacity": 0.15,
+          "circle-stroke-width": 1.5,
+          "circle-stroke-color": ["get", "color"],
+          "circle-stroke-opacity": 0.4,
         },
-        filter: ['==', ['get', 'id'], selectedVehicleId ?? ''],
+        filter: ["==", ["get", "id"], selectedVehicleId ?? ""],
       });
 
       // Main vehicle circle
       map.addLayer({
         id: LAYER_CIRCLE,
-        type: 'circle',
+        type: "circle",
         source: SOURCE_ID,
         paint: {
-          'circle-radius': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            4, 5,
-            10, 9,
-            14, 11,
+          "circle-radius": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            4,
+            5,
+            10,
+            9,
+            14,
+            11,
           ],
-          'circle-color': ['get', 'color'],
-          'circle-stroke-color': '#0a0a0c',
-          'circle-stroke-width': 2,
-          'circle-opacity': 0.95,
+          "circle-color": ["get", "color"],
+          "circle-stroke-color": "#0a0a0c",
+          "circle-stroke-width": 2,
+          "circle-opacity": 0.95,
         },
       });
 
       // Vehicle name label
       map.addLayer({
         id: LAYER_LABEL,
-        type: 'symbol',
+        type: "symbol",
         source: SOURCE_ID,
         minzoom: 9,
         layout: {
-          'text-field': ['get', 'name'],
-          'text-size': 11,
-          'text-offset': [0, 1.5],
-          'text-anchor': 'top',
-          'text-font': ['DM Sans Medium', 'Open Sans Semibold', 'Arial Unicode MS Regular'],
-          'text-max-width': 10,
+          "text-field": ["get", "name"],
+          "text-size": 11,
+          "text-offset": [0, 1.5],
+          "text-anchor": "top",
+          "text-font": [
+            "DM Sans Medium",
+            "Open Sans Semibold",
+            "Arial Unicode MS Regular",
+          ],
+          "text-max-width": 10,
         },
         paint: {
-          'text-color': '#d5d5dd',
-          'text-halo-color': '#0a0a0c',
-          'text-halo-width': 1.5,
+          "text-color": "#d5d5dd",
+          "text-halo-color": "#0a0a0c",
+          "text-halo-width": 1.5,
         },
       });
 
-      map.on('click', LAYER_CIRCLE, handleClick as (e: MapMouseEvent) => void);
-      map.on('mouseenter', LAYER_CIRCLE, () => {
-        map.getCanvas().style.cursor = 'pointer';
+      map.on("click", LAYER_CIRCLE, handleClick as (e: MapMouseEvent) => void);
+      map.on("mouseenter", LAYER_CIRCLE, () => {
+        map.getCanvas().style.cursor = "pointer";
       });
-      map.on('mouseleave', LAYER_CIRCLE, () => {
-        map.getCanvas().style.cursor = '';
+      map.on("mouseleave", LAYER_CIRCLE, () => {
+        map.getCanvas().style.cursor = "";
       });
     };
 
     if (map.isStyleLoaded()) setup();
-    else map.on('load', setup);
+    else map.on("load", setup);
 
     return () => {
-      map.off('click', LAYER_CIRCLE, handleClick as (e: MapMouseEvent) => void);
+      map.off("click", LAYER_CIRCLE, handleClick as (e: MapMouseEvent) => void);
       if (map.getLayer(LAYER_LABEL)) map.removeLayer(LAYER_LABEL);
       if (map.getLayer(LAYER_SELECTED)) map.removeLayer(LAYER_SELECTED);
       if (map.getLayer(LAYER_CIRCLE)) map.removeLayer(LAYER_CIRCLE);
@@ -184,7 +196,11 @@ export function VehicleMarkerLayer({
   // Update selected vehicle filter
   useEffect(() => {
     if (map.getLayer(LAYER_SELECTED)) {
-      map.setFilter(LAYER_SELECTED, ['==', ['get', 'id'], selectedVehicleId ?? '']);
+      map.setFilter(LAYER_SELECTED, [
+        "==",
+        ["get", "id"],
+        selectedVehicleId ?? "",
+      ]);
     }
   }, [map, selectedVehicleId]);
 

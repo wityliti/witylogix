@@ -31,7 +31,10 @@ import type {
   SyncStatus,
   SyncDirection,
 } from "./sync-types.js";
-import { ConflictStrategy as ConflictStrategyEnum, SyncStatus as SyncStatusEnum } from "./sync-types.js";
+import {
+  ConflictStrategy as ConflictStrategyEnum,
+  SyncStatus as SyncStatusEnum,
+} from "./sync-types.js";
 
 /**
  * Conflict resolution engine using configured strategies
@@ -43,7 +46,10 @@ export class ConflictResolver {
    * @param strategy - Resolution strategy to apply
    * @returns Resolution decision
    */
-  public resolve(conflict: SyncConflict, strategy: ConflictStrategy): "INTERNAL" | "EXTERNAL" {
+  public resolve(
+    conflict: SyncConflict,
+    strategy: ConflictStrategy,
+  ): "INTERNAL" | "EXTERNAL" {
     switch (strategy) {
       case ConflictStrategyEnum.LAST_WRITE_WINS: {
         const internalTime = new Date(conflict.internalUpdatedAt).getTime();
@@ -90,7 +96,7 @@ export class ConflictResolver {
     externalValue: unknown,
     internalUpdatedAt: string,
     externalUpdatedAt: string,
-    strategy: ConflictStrategy
+    strategy: ConflictStrategy,
   ): SyncConflict {
     return {
       conflictId: this.generateId("CONFLICT"),
@@ -168,7 +174,10 @@ export class DeltaSyncTracker {
    * @param platformType - Platform type
    * @returns Last checkpoint or undefined
    */
-  public getCheckpoint(tenantId: string, platformType: string): DeltaCheckpoint | undefined {
+  public getCheckpoint(
+    tenantId: string,
+    platformType: string,
+  ): DeltaCheckpoint | undefined {
     return this.checkpoints.get(`${tenantId}#${platformType}`);
   }
 
@@ -183,7 +192,7 @@ export class DeltaSyncTracker {
     tenantId: string,
     platformType: string,
     syncCount: number,
-    cursor?: string
+    cursor?: string,
   ): void {
     const key = `${tenantId}#${platformType}`;
     const checkpoint: DeltaCheckpoint = {
@@ -204,7 +213,11 @@ export class DeltaSyncTracker {
    * @param intervalMs - Sync interval in milliseconds
    * @returns Whether sync is needed
    */
-  public shouldSync(tenantId: string, platformType: string, intervalMs: number): boolean {
+  public shouldSync(
+    tenantId: string,
+    platformType: string,
+    intervalMs: number,
+  ): boolean {
     if (intervalMs === 0) return false; // Webhook-only
 
     const checkpoint = this.getCheckpoint(tenantId, platformType);
@@ -248,7 +261,9 @@ export class RetryQueue {
    */
   public getReadyEntries(): RetryQueueEntry[] {
     const now = Date.now();
-    return this.queue.filter((entry) => new Date(entry.nextRetryAt).getTime() <= now);
+    return this.queue.filter(
+      (entry) => new Date(entry.nextRetryAt).getTime() <= now,
+    );
   }
 
   /**
@@ -258,7 +273,11 @@ export class RetryQueue {
    * @param error - New error if failed
    * @returns Whether entry should be moved to DLQ
    */
-  public markRetried(retryId: string, success: boolean, error?: string): boolean {
+  public markRetried(
+    retryId: string,
+    success: boolean,
+    error?: string,
+  ): boolean {
     const entry = this.queue.find((e) => e.retryId === retryId);
     if (!entry) return false;
 
@@ -273,8 +292,13 @@ export class RetryQueue {
       return true; // Move to DLQ
     }
 
-    const backoffIndex = Math.min(entry.attemptNumber - 1, this.backoffMs.length - 1);
-    entry.nextRetryAt = new Date(Date.now() + this.backoffMs[backoffIndex]).toISOString();
+    const backoffIndex = Math.min(
+      entry.attemptNumber - 1,
+      this.backoffMs.length - 1,
+    );
+    entry.nextRetryAt = new Date(
+      Date.now() + this.backoffMs[backoffIndex],
+    ).toISOString();
     if (error) {
       entry.error = error;
     }
@@ -309,7 +333,7 @@ export class DeadLetterQueue {
     jobId: string,
     error: string,
     retryAttempts: number,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): void {
     const entry: DeadLetterEntry = {
       dlqId: `DLQ_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
@@ -360,8 +384,12 @@ export class BatchProcessor {
    */
   public async processBatch(
     orders: PlatformOrder[],
-    onProgress?: (processed: number, total: number) => void
-  ): Promise<{ succeeded: number; failed: number; errors: Map<string, string> }> {
+    onProgress?: (processed: number, total: number) => void,
+  ): Promise<{
+    succeeded: number;
+    failed: number;
+    errors: Map<string, string>;
+  }> {
     const total = orders.length;
     const errors = new Map<string, string>();
     let succeeded = 0;
@@ -425,7 +453,7 @@ export class SyncMetrics {
     tenantId: string,
     success: boolean,
     latencyMs: number,
-    conflictCount: number = 0
+    conflictCount: number = 0,
   ): void {
     const key = `${platformType}#${tenantId}`;
     const existing = this.metrics.get(key) || {
@@ -447,9 +475,11 @@ export class SyncMetrics {
       existing.failedSyncs++;
     }
 
-    existing.successRate = (existing.successfulSyncs / existing.totalSyncs) * 100;
+    existing.successRate =
+      (existing.successfulSyncs / existing.totalSyncs) * 100;
     existing.avgLatencyMs =
-      (existing.avgLatencyMs * (existing.totalSyncs - 1) + latencyMs) / existing.totalSyncs;
+      (existing.avgLatencyMs * (existing.totalSyncs - 1) + latencyMs) /
+      existing.totalSyncs;
     existing.totalConflicts += conflictCount;
     existing.unresolvedConflicts += conflictCount;
     existing.lastSyncAt = new Date().toISOString();
@@ -509,7 +539,7 @@ export class SyncOrchestrator {
     platformType: string,
     direction: SyncDirection,
     orders: PlatformOrder[],
-    config: SyncConfig
+    config: SyncConfig,
   ): Promise<SyncResult> {
     const jobId = this.generateJobId();
     const startTime = Date.now();
@@ -534,7 +564,10 @@ export class SyncOrchestrator {
     try {
       // Check idempotency for each order
       for (const order of orders) {
-        const key = this.idempotencyManager.generateKey(platformType, order.externalOrderId);
+        const key = this.idempotencyManager.generateKey(
+          platformType,
+          order.externalOrderId,
+        );
 
         if (this.idempotencyManager.isDuplicate(key)) {
           continue; // Skip duplicate
@@ -560,7 +593,7 @@ export class SyncOrchestrator {
               "processing",
               new Date(Date.now() - 3600000).toISOString(),
               new Date().toISOString(),
-              config.conflictStrategy
+              config.conflictStrategy,
             );
             conflicts.push(conflict);
             job.conflictCount++;
@@ -568,10 +601,11 @@ export class SyncOrchestrator {
             // Resolve conflict
             const resolution = this.conflictResolver.resolve(
               conflict,
-              config.conflictStrategy
+              config.conflictStrategy,
             );
             conflict.resolution = resolution;
-            conflict.isResolved = config.conflictStrategy !== ConflictStrategyEnum.MANUAL_REVIEW;
+            conflict.isResolved =
+              config.conflictStrategy !== ConflictStrategyEnum.MANUAL_REVIEW;
           }
 
           job.syncedCount++;
@@ -586,12 +620,20 @@ export class SyncOrchestrator {
           });
 
           // Enqueue for retry
-          this.retryQueue.enqueue(order.orderId, jobId, (error as Error).message);
+          this.retryQueue.enqueue(
+            order.orderId,
+            jobId,
+            (error as Error).message,
+          );
         }
       }
 
       // Update delta sync checkpoint
-      this.deltaSyncTracker.updateCheckpoint(tenantId, platformType, job.syncedCount);
+      this.deltaSyncTracker.updateCheckpoint(
+        tenantId,
+        platformType,
+        job.syncedCount,
+      );
 
       job.status = SyncStatusEnum.COMPLETED;
       job.completedAt = new Date().toISOString();
@@ -603,7 +645,7 @@ export class SyncOrchestrator {
         tenantId,
         job.failedCount === 0,
         durationMs,
-        job.conflictCount
+        job.conflictCount,
       );
 
       return {
@@ -650,7 +692,7 @@ export class SyncOrchestrator {
   public resolveConflict(
     conflictId: string,
     resolution: "INTERNAL" | "EXTERNAL",
-    resolvedBy: string
+    resolvedBy: string,
   ): ConflictResolution {
     return {
       conflictId,

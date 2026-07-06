@@ -195,7 +195,7 @@ describe("VehicleStatusBadge Component", () => {
   describe("Custom className", () => {
     it("should accept custom className", () => {
       const { container } = render(
-        <VehicleStatusBadge status="moving" className="custom-class" />
+        <VehicleStatusBadge status="moving" className="custom-class" />,
       );
       const badge = container.querySelector("span");
       expect(badge?.className).toContain("custom-class");
@@ -203,7 +203,7 @@ describe("VehicleStatusBadge Component", () => {
 
     it("should merge custom className with base classes", () => {
       const { container } = render(
-        <VehicleStatusBadge status="moving" className="custom-class" />
+        <VehicleStatusBadge status="moving" className="custom-class" />,
       );
       const badge = container.querySelector("span");
       expect(badge?.className).toContain("custom-class");
@@ -215,7 +215,7 @@ describe("VehicleStatusBadge Component", () => {
   describe("HTML Attributes", () => {
     it("should support data attributes", () => {
       const { container } = render(
-        <VehicleStatusBadge status="moving" data-testid="status-badge" />
+        <VehicleStatusBadge status="moving" data-testid="status-badge" />,
       );
       const badge = container.querySelector("span");
       expect(badge?.getAttribute("data-testid")).toBe("status-badge");
@@ -223,7 +223,7 @@ describe("VehicleStatusBadge Component", () => {
 
     it("should support aria attributes", () => {
       const { container } = render(
-        <VehicleStatusBadge status="moving" aria-label="Vehicle moving" />
+        <VehicleStatusBadge status="moving" aria-label="Vehicle moving" />,
       );
       const badge = container.querySelector("span");
       expect(badge?.getAttribute("aria-label")).toBe("Vehicle moving");
@@ -231,7 +231,7 @@ describe("VehicleStatusBadge Component", () => {
 
     it("should support id attribute", () => {
       const { container } = render(
-        <VehicleStatusBadge status="moving" id="status-1" />
+        <VehicleStatusBadge status="moving" id="status-1" />,
       );
       const badge = container.querySelector("span");
       expect(badge?.getAttribute("id")).toBe("status-1");
@@ -239,7 +239,7 @@ describe("VehicleStatusBadge Component", () => {
 
     it("should support title attribute", () => {
       const { container } = render(
-        <VehicleStatusBadge status="moving" title="Vehicle is moving" />
+        <VehicleStatusBadge status="moving" title="Vehicle is moving" />,
       );
       const badge = container.querySelector("span");
       expect(badge?.getAttribute("title")).toBe("Vehicle is moving");
@@ -250,7 +250,7 @@ describe("VehicleStatusBadge Component", () => {
     it("should allow ref assignment", () => {
       const ref = { current: null };
       const { container } = render(
-        <VehicleStatusBadge ref={ref as any} status="moving" />
+        <VehicleStatusBadge ref={ref as any} status="moving" />,
       );
       const badge = container.querySelector("span");
       expect(badge).toBeTruthy();
@@ -259,13 +259,9 @@ describe("VehicleStatusBadge Component", () => {
 
   describe("All Status Types", () => {
     it("should handle all status types", () => {
-      const statuses: Array<"moving" | "idle" | "stopped" | "offline" | "maintenance"> = [
-        "moving",
-        "idle",
-        "stopped",
-        "offline",
-        "maintenance",
-      ];
+      const statuses: Array<
+        "moving" | "idle" | "stopped" | "offline" | "maintenance"
+      > = ["moving", "idle", "stopped", "offline", "maintenance"];
 
       statuses.forEach((status) => {
         const { container } = render(<VehicleStatusBadge status={status} />);
@@ -283,7 +279,7 @@ describe("VehicleStatusBadge Component", () => {
           className="custom"
           aria-label="Test label"
           data-testid="test"
-        />
+        />,
       );
       const badge = container.querySelector("span");
       expect(badge?.className).toContain("custom");

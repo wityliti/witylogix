@@ -4,10 +4,13 @@
  * Tests time series decomposition, anomaly detection, and analysis.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { TimeSeriesExtractor, type TimeSeriesPoint } from '../time-series-extractor.js';
+import { describe, it, expect, beforeEach } from "vitest";
+import {
+  TimeSeriesExtractor,
+  type TimeSeriesPoint,
+} from "../time-series-extractor.js";
 
-describe('TimeSeriesExtractor', () => {
+describe("TimeSeriesExtractor", () => {
   let extractor: TimeSeriesExtractor;
   let sampleSeries: TimeSeriesPoint[];
 
@@ -30,8 +33,8 @@ describe('TimeSeriesExtractor', () => {
     }
   });
 
-  describe('Time Series Extraction', () => {
-    it('should extract raw time series', () => {
+  describe("Time Series Extraction", () => {
+    it("should extract raw time series", () => {
       const data = [
         { timestamp: new Date(2026, 0, 1), value: 100 },
         { timestamp: new Date(2026, 0, 2), value: 105 },
@@ -45,35 +48,37 @@ describe('TimeSeriesExtractor', () => {
       expect(series[1].index).toBe(1);
     });
 
-    it('should maintain temporal order', () => {
-      const series = extractor.extractTimeSeries(sampleSeries.map(s => ({
-        timestamp: s.timestamp,
-        value: s.value,
-      })));
+    it("should maintain temporal order", () => {
+      const series = extractor.extractTimeSeries(
+        sampleSeries.map((s) => ({
+          timestamp: s.timestamp,
+          value: s.value,
+        })),
+      );
 
       for (let i = 1; i < series.length; i++) {
         expect(series[i].timestamp.getTime()).toBeGreaterThanOrEqual(
-          series[i - 1].timestamp.getTime()
+          series[i - 1].timestamp.getTime(),
         );
       }
     });
 
-    it('should handle different granularities', () => {
-      const data = sampleSeries.map(s => ({
+    it("should handle different granularities", () => {
+      const data = sampleSeries.map((s) => ({
         timestamp: s.timestamp,
         value: s.value,
       }));
 
-      const daily = extractor.extractTimeSeries(data, 'daily');
-      const weekly = extractor.extractTimeSeries(data, 'weekly');
+      const daily = extractor.extractTimeSeries(data, "daily");
+      const weekly = extractor.extractTimeSeries(data, "weekly");
 
       expect(daily).toBeDefined();
       expect(weekly).toBeDefined();
     });
   });
 
-  describe('Decomposition', () => {
-    it('should decompose time series into components', () => {
+  describe("Decomposition", () => {
+    it("should decompose time series into components", () => {
       const result = extractor.decompose(sampleSeries, 30);
 
       expect(result.trend).toBeDefined();
@@ -82,7 +87,7 @@ describe('TimeSeriesExtractor', () => {
       expect(result.period).toBe(30);
     });
 
-    it('should identify trend component', () => {
+    it("should identify trend component", () => {
       const result = extractor.decompose(sampleSeries, 30);
 
       // Trend should be relatively smooth
@@ -91,11 +96,14 @@ describe('TimeSeriesExtractor', () => {
 
       // Overall trend should be upward: last values higher than first values
       const firstTrend = trend.slice(10, 20).reduce((a, b) => a + b, 0) / 10;
-      const lastTrend = trend.slice(trend.length - 20, trend.length - 10).reduce((a, b) => a + b, 0) / 10;
+      const lastTrend =
+        trend
+          .slice(trend.length - 20, trend.length - 10)
+          .reduce((a, b) => a + b, 0) / 10;
       expect(lastTrend).toBeGreaterThan(firstTrend);
     });
 
-    it('should identify seasonal component', () => {
+    it("should identify seasonal component", () => {
       const result = extractor.decompose(sampleSeries, 30);
 
       // Seasonal component should repeat every period
@@ -109,7 +117,7 @@ describe('TimeSeriesExtractor', () => {
       }
     });
 
-    it('should produce residuals', () => {
+    it("should produce residuals", () => {
       const result = extractor.decompose(sampleSeries, 30);
 
       const residual = result.residual;
@@ -117,25 +125,27 @@ describe('TimeSeriesExtractor', () => {
 
       // Residuals should be small relative to original
       const mean = residual.reduce((a, b) => a + b, 0) / residual.length;
-      const expectedMean = sampleSeries.reduce((a, b) => a + b.value, 0) / sampleSeries.length;
+      const expectedMean =
+        sampleSeries.reduce((a, b) => a + b.value, 0) / sampleSeries.length;
 
       // Residual mean should be close to 0
       expect(Math.abs(mean)).toBeLessThan(5);
     });
 
-    it('should satisfy additive decomposition property', () => {
+    it("should satisfy additive decomposition property", () => {
       const result = extractor.decompose(sampleSeries, 30);
 
       // Original ≈ Trend + Seasonal + Residual
       for (let i = 0; i < sampleSeries.length; i++) {
-        const reconstructed = result.trend[i] + result.seasonal[i] + result.residual[i];
+        const reconstructed =
+          result.trend[i] + result.seasonal[i] + result.residual[i];
         expect(Math.abs(reconstructed - sampleSeries[i].value)).toBeLessThan(5);
       }
     });
   });
 
-  describe('Change Point Detection', () => {
-    it('should detect change points', () => {
+  describe("Change Point Detection", () => {
+    it("should detect change points", () => {
       const changePointSeries: TimeSeriesPoint[] = [];
 
       // First half: low values
@@ -159,21 +169,23 @@ describe('TimeSeriesExtractor', () => {
       const changePoints = extractor.detectChangePoints(changePointSeries, 2.0);
 
       // Should detect change around index 50
-      const hasChangeNear50 = changePoints.some(cp => cp.index > 40 && cp.index < 60);
+      const hasChangeNear50 = changePoints.some(
+        (cp) => cp.index > 40 && cp.index < 60,
+      );
       expect(hasChangeNear50).toBe(true);
     });
 
-    it('should assign confidence to change points', () => {
+    it("should assign confidence to change points", () => {
       const series = sampleSeries.slice(0, 100);
       const changePoints = extractor.detectChangePoints(series);
 
-      changePoints.forEach(cp => {
+      changePoints.forEach((cp) => {
         expect(cp.confidence).toBeGreaterThanOrEqual(0);
         expect(cp.confidence).toBeLessThanOrEqual(1);
       });
     });
 
-    it('should identify change magnitude', () => {
+    it("should identify change magnitude", () => {
       const series: TimeSeriesPoint[] = [];
       for (let i = 0; i < 100; i++) {
         series.push({
@@ -192,15 +204,15 @@ describe('TimeSeriesExtractor', () => {
     });
   });
 
-  describe('Autocorrelation', () => {
-    it('should compute autocorrelation function', () => {
+  describe("Autocorrelation", () => {
+    it("should compute autocorrelation function", () => {
       const acf = extractor.computeAutocorrelation(sampleSeries, 20);
 
       expect(acf.length).toBeGreaterThan(0);
       expect(acf[0]).toBeCloseTo(1, 1); // ACF at lag 0 should be ~1
     });
 
-    it('should decay for non-stationary series', () => {
+    it("should decay for non-stationary series", () => {
       const acf = extractor.computeAutocorrelation(sampleSeries, 30);
 
       // ACF should decrease with lag (for trending series)
@@ -209,7 +221,7 @@ describe('TimeSeriesExtractor', () => {
       }
     });
 
-    it('should identify seasonal patterns in ACF', () => {
+    it("should identify seasonal patterns in ACF", () => {
       // Create purely seasonal data
       const seasonalSeries: TimeSeriesPoint[] = [];
       for (let i = 0; i < 120; i++) {
@@ -227,8 +239,8 @@ describe('TimeSeriesExtractor', () => {
     });
   });
 
-  describe('Moving Average', () => {
-    it('should compute simple moving average', () => {
+  describe("Moving Average", () => {
+    it("should compute simple moving average", () => {
       const values = [10, 20, 30, 40, 50];
       const ma = extractor.computeMovingAverage(values, 3, false);
 
@@ -237,7 +249,7 @@ describe('TimeSeriesExtractor', () => {
       expect(ma[2]).toBeCloseTo((10 + 20 + 30 + 40 + 50) / 5, 1);
     });
 
-    it('should compute exponential moving average', () => {
+    it("should compute exponential moving average", () => {
       const values = [100, 102, 101, 103, 105];
       const ema = extractor.computeMovingAverage(values, 3, true);
 
@@ -248,7 +260,7 @@ describe('TimeSeriesExtractor', () => {
       expect(ema[4]).toBeGreaterThan(ema[0]);
     });
 
-    it('should smooth noisy data', () => {
+    it("should smooth noisy data", () => {
       const noisy: number[] = [];
       for (let i = 0; i < 100; i++) {
         noisy.push(100 + (Math.random() - 0.5) * 30);
@@ -264,8 +276,8 @@ describe('TimeSeriesExtractor', () => {
     });
   });
 
-  describe('Outlier Detection', () => {
-    it('should detect outliers using z-score', () => {
+  describe("Outlier Detection", () => {
+    it("should detect outliers using z-score", () => {
       const seriesWithOutliers: TimeSeriesPoint[] = [];
 
       // Normal data
@@ -286,23 +298,23 @@ describe('TimeSeriesExtractor', () => {
       expect(outliers.length).toBeGreaterThan(0);
 
       // Should include the extreme values
-      const hasExtreme500 = outliers.some(o => o.value > 400);
-      const hasExtremeMinus200 = outliers.some(o => o.value < -100);
+      const hasExtreme500 = outliers.some((o) => o.value > 400);
+      const hasExtremeMinus200 = outliers.some((o) => o.value < -100);
 
       expect(hasExtreme500).toBe(true);
       expect(hasExtremeMinus200).toBe(true);
     });
 
-    it('should assign z-scores to outliers', () => {
+    it("should assign z-scores to outliers", () => {
       const series: TimeSeriesPoint[] = sampleSeries.slice(0, 50);
       const outliers = extractor.detectOutliers(series, 2.5);
 
-      outliers.forEach(o => {
+      outliers.forEach((o) => {
         expect(Math.abs(o.zScore)).toBeGreaterThan(2.5);
       });
     });
 
-    it('should not detect normal points as outliers', () => {
+    it("should not detect normal points as outliers", () => {
       // Create normal distribution data
       const series: TimeSeriesPoint[] = [];
       for (let i = 0; i < 100; i++) {
@@ -320,8 +332,8 @@ describe('TimeSeriesExtractor', () => {
     });
   });
 
-  describe('Interpolation', () => {
-    it('should interpolate missing values', () => {
+  describe("Interpolation", () => {
+    it("should interpolate missing values", () => {
       const data: (number | null)[] = [10, 20, null, null, 50, 60];
       const interpolated = extractor.interpolateMissing(data);
 
@@ -334,7 +346,7 @@ describe('TimeSeriesExtractor', () => {
       expect(interpolated[3]).toBe(40);
     });
 
-    it('should handle leading nulls', () => {
+    it("should handle leading nulls", () => {
       const data: (number | null)[] = [null, null, 100, 110, 120];
       const interpolated = extractor.interpolateMissing(data);
 
@@ -342,7 +354,7 @@ describe('TimeSeriesExtractor', () => {
       expect(interpolated[1]).toBe(100);
     });
 
-    it('should handle trailing nulls', () => {
+    it("should handle trailing nulls", () => {
       const data: (number | null)[] = [100, 110, 120, null, null];
       const interpolated = extractor.interpolateMissing(data);
 
@@ -350,17 +362,17 @@ describe('TimeSeriesExtractor', () => {
       expect(interpolated[4]).toBe(120);
     });
 
-    it('should fill all gaps', () => {
+    it("should fill all gaps", () => {
       const data: (number | null)[] = [10, null, null, null, 50];
       const interpolated = extractor.interpolateMissing(data);
 
-      const allFilled = interpolated.every(v => v !== null);
+      const allFilled = interpolated.every((v) => v !== null);
       expect(allFilled).toBe(true);
     });
   });
 
-  describe('Advanced Operations', () => {
-    it('should compute differences', () => {
+  describe("Advanced Operations", () => {
+    it("should compute differences", () => {
       const values = [100, 105, 103, 108, 110];
       const diffs = extractor.computeDifferences(values);
 
@@ -369,7 +381,7 @@ describe('TimeSeriesExtractor', () => {
       expect(diffs[1]).toBe(-2); // 103 - 105
     });
 
-    it('should compute growth rate', () => {
+    it("should compute growth rate", () => {
       const values = [100, 110, 120, 130];
       const rates = extractor.computeGrowthRate(values);
 
@@ -377,7 +389,7 @@ describe('TimeSeriesExtractor', () => {
       expect(rates[0]).toBeCloseTo(0.1, 2); // 10% growth
     });
 
-    it('should handle edge cases in growth rate', () => {
+    it("should handle edge cases in growth rate", () => {
       const values = [0, 100, 200, 0, 100];
       const rates = extractor.computeGrowthRate(values);
 
@@ -385,17 +397,19 @@ describe('TimeSeriesExtractor', () => {
       expect(rates[0]).toBe(0); // Division by zero handled
     });
   });
-
 });
 
 // Helper functions
 function variance(values: number[]): number {
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
-  return values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+  return (
+    values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length
+  );
 }
 
 function randomNormal(mean: number, stdDev: number): number {
-  let u = 0, v = 0;
+  let u = 0,
+    v = 0;
   while (u === 0) u = Math.random();
   while (v === 0) v = Math.random();
 

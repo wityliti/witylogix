@@ -1,10 +1,7 @@
 import type { FastifyInstance, FastifyReply } from "fastify";
 import { z } from "zod";
 import crypto from "crypto";
-import {
-  NotFoundError,
-  ValidationError,
-} from "../lib/errors.js";
+import { NotFoundError, ValidationError } from "../lib/errors.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
 
@@ -41,7 +38,7 @@ const GeneralSettingsSchema = z.object({
         open: z.string(),
         close: z.string(),
         closed: z.boolean().optional(),
-      })
+      }),
     )
     .optional(),
 });
@@ -67,7 +64,7 @@ const NotificationSettingsSchema = z.record(
     sms: z.boolean().default(false),
     inApp: z.boolean().default(true),
     webhook: z.boolean().default(false),
-  })
+  }),
 );
 
 const ApiKeyCreateSchema = z.object({
@@ -91,7 +88,7 @@ function getShopConfig(settings: any, section?: string): any {
 function mergeShopConfig(settings: any, section: string, data: any): any {
   const current = settings || {};
   return {
-    ...(current),
+    ...current,
     [section]: {
       ...(current[section] || {}),
       ...data,
@@ -102,7 +99,7 @@ function mergeShopConfig(settings: any, section: string, data: any): any {
 // ─── Route Plugin ────────────────────────────────────────
 
 export default async function settingsRoutes(
-  fastify: FastifyInstance
+  fastify: FastifyInstance,
 ): Promise<void> {
   fastify.addHook("preHandler", requireAuth);
   fastify.addHook("preHandler", tenantContext);
@@ -122,7 +119,12 @@ export default async function settingsRoutes(
     return reply.code(200).send({
       success: true,
       data: {
-        general: config.general || { timezone: "UTC", currency: "USD", weightUnit: "kg", distanceUnit: "km" },
+        general: config.general || {
+          timezone: "UTC",
+          currency: "USD",
+          weightUnit: "kg",
+          distanceUnit: "km",
+        },
         branding: config.branding || {},
         notifications: config.notifications || {},
       },
@@ -202,7 +204,11 @@ export default async function settingsRoutes(
         select: { settings: true },
       });
 
-      const updatedSettings = mergeShopConfig(shop?.settings, "notifications", body);
+      const updatedSettings = mergeShopConfig(
+        shop?.settings,
+        "notifications",
+        body,
+      );
 
       await request.tenantDb.shop.update({
         where: { id: request.shopId },
@@ -224,98 +230,109 @@ export default async function settingsRoutes(
 
   // ── GET /api-keys — List API keys (masked) ────────────
 
-  fastify.get("/api-keys", { preHandler: requireRole("ADMIN", "SUPER_ADMIN") }, async (request: any, reply: FastifyReply) => {
-    const shop = await request.tenantDb.shop.findUnique({
-      where: { id: request.shopId },
-      select: { settings: true },
-    });
-
-    const config = getShopConfig(shop?.settings);
-    const apiKeys: any[] = config.apiKeys || [];
-
-    // Mask all key values
-    const masked = apiKeys
-      .filter((k: any) => !k.revoked)
-      .map((k: any) => ({
-        id: k.id,
-        name: k.name,
-        keyPreview: k.keyPreview || "wlx_****",
-        scopes: k.scopes,
-        createdAt: k.createdAt,
-        lastUsedAt: k.lastUsedAt || null,
-        expiresAt: k.expiresAt || null,
-      }));
-
-    return reply.code(200).send({
-      success: true,
-      data: masked,
-    });
-  });
-
-  // ── POST /api-keys — Create new API key ───────────────
-
-  fastify.post("/api-keys", { preHandler: requireRole("ADMIN", "SUPER_ADMIN") }, async (request: any, reply: FastifyReply) => {
-    try {
-      const body = ApiKeyCreateSchema.parse(request.body);
-
-      // Generate random API key
-      const rawKey = `wlx_${crypto.randomBytes(32).toString("hex")}`;
-      const keyHash = crypto.createHash("sha256").update(rawKey).digest("hex");
-      const keyPreview = `wlx_${rawKey.slice(4, 8)}...${rawKey.slice(-4)}`;
-      const keyId = crypto.randomBytes(8).toString("hex");
-
+  fastify.get(
+    "/api-keys",
+    { preHandler: requireRole("ADMIN", "SUPER_ADMIN") },
+    async (request: any, reply: FastifyReply) => {
       const shop = await request.tenantDb.shop.findUnique({
         where: { id: request.shopId },
         select: { settings: true },
       });
 
       const config = getShopConfig(shop?.settings);
-      const existingKeys: any[] = config.apiKeys || [];
+      const apiKeys: any[] = config.apiKeys || [];
 
-      const newKey = {
-        id: keyId,
-        name: body.name,
-        keyHash,
-        keyPreview,
-        scopes: body.scopes,
-        createdAt: new Date().toISOString(),
-        lastUsedAt: null,
-        expiresAt: body.expiresInDays
-          ? new Date(Date.now() + body.expiresInDays * 86400000).toISOString()
-          : null,
-        revoked: false,
-      };
+      // Mask all key values
+      const masked = apiKeys
+        .filter((k: any) => !k.revoked)
+        .map((k: any) => ({
+          id: k.id,
+          name: k.name,
+          keyPreview: k.keyPreview || "wlx_****",
+          scopes: k.scopes,
+          createdAt: k.createdAt,
+          lastUsedAt: k.lastUsedAt || null,
+          expiresAt: k.expiresAt || null,
+        }));
 
-      const settings = shop?.settings || {};
-      const apiKeys: any[] = settings.apiKeys || [];
-      apiKeys.push(newKey);
-
-      await request.tenantDb.shop.update({
-        where: { id: request.shopId },
-        data: { settings: { ...settings, apiKeys } },
-      });
-
-      // Return plaintext key ONLY on creation
-      return reply.code(201).send({
+      return reply.code(200).send({
         success: true,
-        data: {
+        data: masked,
+      });
+    },
+  );
+
+  // ── POST /api-keys — Create new API key ───────────────
+
+  fastify.post(
+    "/api-keys",
+    { preHandler: requireRole("ADMIN", "SUPER_ADMIN") },
+    async (request: any, reply: FastifyReply) => {
+      try {
+        const body = ApiKeyCreateSchema.parse(request.body);
+
+        // Generate random API key
+        const rawKey = `wlx_${crypto.randomBytes(32).toString("hex")}`;
+        const keyHash = crypto
+          .createHash("sha256")
+          .update(rawKey)
+          .digest("hex");
+        const keyPreview = `wlx_${rawKey.slice(4, 8)}...${rawKey.slice(-4)}`;
+        const keyId = crypto.randomBytes(8).toString("hex");
+
+        const shop = await request.tenantDb.shop.findUnique({
+          where: { id: request.shopId },
+          select: { settings: true },
+        });
+
+        const config = getShopConfig(shop?.settings);
+        const existingKeys: any[] = config.apiKeys || [];
+
+        const newKey = {
           id: keyId,
           name: body.name,
-          key: rawKey, // Only returned once!
+          keyHash,
           keyPreview,
           scopes: body.scopes,
-          createdAt: newKey.createdAt,
-          expiresAt: newKey.expiresAt,
-        },
-        message: "API key created. Save it now — it won't be shown again.",
-      });
-    } catch (error: any) {
-      if (error?.name === "ZodError") {
-        throw new ValidationError(error.message);
+          createdAt: new Date().toISOString(),
+          lastUsedAt: null,
+          expiresAt: body.expiresInDays
+            ? new Date(Date.now() + body.expiresInDays * 86400000).toISOString()
+            : null,
+          revoked: false,
+        };
+
+        const settings = shop?.settings || {};
+        const apiKeys: any[] = settings.apiKeys || [];
+        apiKeys.push(newKey);
+
+        await request.tenantDb.shop.update({
+          where: { id: request.shopId },
+          data: { settings: { ...settings, apiKeys } },
+        });
+
+        // Return plaintext key ONLY on creation
+        return reply.code(201).send({
+          success: true,
+          data: {
+            id: keyId,
+            name: body.name,
+            key: rawKey, // Only returned once!
+            keyPreview,
+            scopes: body.scopes,
+            createdAt: newKey.createdAt,
+            expiresAt: newKey.expiresAt,
+          },
+          message: "API key created. Save it now — it won't be shown again.",
+        });
+      } catch (error: any) {
+        if (error?.name === "ZodError") {
+          throw new ValidationError(error.message);
+        }
+        throw error;
       }
-      throw error;
-    }
-  });
+    },
+  );
 
   // ── DELETE /api-keys/:id — Revoke API key ─────────────
 
@@ -350,90 +367,98 @@ export default async function settingsRoutes(
         success: true,
         message: "API key revoked",
       });
-    }
+    },
   );
 
   // ── GET /team — List team members ─────────────────────
 
-  fastify.get("/team", { preHandler: requireRole("ADMIN", "SUPER_ADMIN") }, async (request: any, reply: FastifyReply) => {
-    const users = await request.tenantDb.user.findMany({
-      where: { shopId: request.shopId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: "asc" },
-    });
+  fastify.get(
+    "/team",
+    { preHandler: requireRole("ADMIN", "SUPER_ADMIN") },
+    async (request: any, reply: FastifyReply) => {
+      const users = await request.tenantDb.user.findMany({
+        where: { shopId: request.shopId },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: "asc" },
+      });
 
-    return reply.code(200).send({
-      success: true,
-      data: users,
-    });
-  });
+      return reply.code(200).send({
+        success: true,
+        data: users,
+      });
+    },
+  );
 
   // ── POST /team/invite — Send team invitation ──────────
 
-  fastify.post("/team/invite", { preHandler: requireRole("ADMIN", "SUPER_ADMIN") }, async (request: any, reply: FastifyReply) => {
-    try {
-      const body = TeamInviteSchema.parse(request.body);
+  fastify.post(
+    "/team/invite",
+    { preHandler: requireRole("ADMIN", "SUPER_ADMIN") },
+    async (request: any, reply: FastifyReply) => {
+      try {
+        const body = TeamInviteSchema.parse(request.body);
 
-      // Check if user already exists
-      const existing = await request.tenantDb.user.findFirst({
-        where: { email: body.email, shopId: request.shopId },
-      });
-
-      if (existing) {
-        return reply.code(409).send({
-          success: false,
-          error: `User ${body.email} is already a team member`,
+        // Check if user already exists
+        const existing = await request.tenantDb.user.findFirst({
+          where: { email: body.email, shopId: request.shopId },
         });
-      }
 
-      // Generate invite token
-      const inviteToken = crypto.randomBytes(32).toString("hex");
+        if (existing) {
+          return reply.code(409).send({
+            success: false,
+            error: `User ${body.email} is already a team member`,
+          });
+        }
 
-      // Store invitation in shop settings
-      const shop = await request.tenantDb.shop.findUnique({
-        where: { id: request.shopId },
-        select: { settings: true },
-      });
+        // Generate invite token
+        const inviteToken = crypto.randomBytes(32).toString("hex");
 
-      const settings = (shop?.settings || {}) as any;
-      const invitations: any[] = settings.invitations || [];
+        // Store invitation in shop settings
+        const shop = await request.tenantDb.shop.findUnique({
+          where: { id: request.shopId },
+          select: { settings: true },
+        });
 
-      invitations.push({
-        email: body.email,
-        role: body.role,
-        token: inviteToken,
-        createdAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
-        status: "pending",
-      });
+        const settings = (shop?.settings || {}) as any;
+        const invitations: any[] = settings.invitations || [];
 
-      await request.tenantDb.shop.update({
-        where: { id: request.shopId },
-        data: { settings: { ...settings, invitations } },
-      });
-
-      return reply.code(201).send({
-        success: true,
-        data: {
+        invitations.push({
           email: body.email,
           role: body.role,
+          token: inviteToken,
+          createdAt: new Date().toISOString(),
           expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
-        },
-        message: `Invitation sent to ${body.email}`,
-      });
-    } catch (error: any) {
-      if (error?.name === "ZodError") {
-        throw new ValidationError(error.message);
+          status: "pending",
+        });
+
+        await request.tenantDb.shop.update({
+          where: { id: request.shopId },
+          data: { settings: { ...settings, invitations } },
+        });
+
+        return reply.code(201).send({
+          success: true,
+          data: {
+            email: body.email,
+            role: body.role,
+            expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
+          },
+          message: `Invitation sent to ${body.email}`,
+        });
+      } catch (error: any) {
+        if (error?.name === "ZodError") {
+          throw new ValidationError(error.message);
+        }
+        throw error;
       }
-      throw error;
-    }
-  });
+    },
+  );
 
   // ── DELETE /team/:userId — Remove team member ─────────
 
@@ -487,6 +512,6 @@ export default async function settingsRoutes(
         success: true,
         message: "Team member removed",
       });
-    }
+    },
   );
 }

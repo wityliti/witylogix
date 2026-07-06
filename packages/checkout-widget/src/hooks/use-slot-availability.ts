@@ -3,8 +3,12 @@
  * Fetches and manages time slot availability for a given date and zone
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import type { SlotAvailability, AvailabilityRequest, DeliveryMethodType } from '../types';
+import { useState, useCallback, useEffect } from "react";
+import type {
+  SlotAvailability,
+  AvailabilityRequest,
+  DeliveryMethodType,
+} from "../types";
 
 interface UseSlotAvailabilityState {
   data: SlotAvailability | null;
@@ -23,7 +27,7 @@ export const useSlotAvailability = (
   startDate: string,
   endDate: string,
   deliveryMethod: DeliveryMethodType,
-  options: UseSlotAvailabilityOptions
+  options: UseSlotAvailabilityOptions,
 ) => {
   const [state, setState] = useState<UseSlotAvailabilityState>({
     data: null,
@@ -48,9 +52,9 @@ export const useSlotAvailability = (
       };
 
       const response = await fetch(`${options.apiBaseUrl}/api/availability`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(request),
       });
@@ -64,11 +68,18 @@ export const useSlotAvailability = (
     } catch (error) {
       setState((prev) => ({
         ...prev,
-        error: error instanceof Error ? error : new Error('Unknown error'),
+        error: error instanceof Error ? error : new Error("Unknown error"),
         isLoading: false,
       }));
     }
-  }, [zoneId, startDate, endDate, deliveryMethod, options.apiBaseUrl, options.enabled]);
+  }, [
+    zoneId,
+    startDate,
+    endDate,
+    deliveryMethod,
+    options.apiBaseUrl,
+    options.enabled,
+  ]);
 
   useEffect(() => {
     fetch();
@@ -93,7 +104,7 @@ export const useBatchSlotAvailability = (
   startDate: string,
   endDate: string,
   deliveryMethod: DeliveryMethodType,
-  options: UseSlotAvailabilityOptions
+  options: UseSlotAvailabilityOptions,
 ) => {
   const [state, setState] = useState<{
     data: Map<string, SlotAvailability>;
@@ -121,16 +132,21 @@ export const useBatchSlotAvailability = (
         deliveryMethod,
       };
 
-      const response = await fetch(`${options.apiBaseUrl}/api/availability/batch`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${options.apiBaseUrl}/api/availability/batch`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(request),
         },
-        body: JSON.stringify(request),
-      });
+      );
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch batch availability: ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch batch availability: ${response.statusText}`,
+        );
       }
 
       const data: SlotAvailability[] = await response.json();
@@ -140,11 +156,18 @@ export const useBatchSlotAvailability = (
     } catch (error) {
       setState((prev) => ({
         ...prev,
-        error: error instanceof Error ? error : new Error('Unknown error'),
+        error: error instanceof Error ? error : new Error("Unknown error"),
         isLoading: false,
       }));
     }
-  }, [zoneId, startDate, endDate, deliveryMethod, options.apiBaseUrl, options.enabled]);
+  }, [
+    zoneId,
+    startDate,
+    endDate,
+    deliveryMethod,
+    options.apiBaseUrl,
+    options.enabled,
+  ]);
 
   useEffect(() => {
     fetch();

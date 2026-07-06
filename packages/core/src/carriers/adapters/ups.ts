@@ -18,23 +18,23 @@ import {
   AddressValidationResponse,
   CarrierError,
   Package,
-} from '../types';
+} from "../types";
 
 /**
  * UPS service code mappings
  * Maps generic service levels to UPS service codes
  */
 const UPS_SERVICE_CODES = {
-  '01': { name: 'UPS Next Day Air', level: 'overnight' },
-  '02': { name: 'UPS 2nd Day Air', level: 'express' },
-  '03': { name: 'UPS Ground', level: 'ground' },
-  '13': { name: 'UPS Next Day Air Saver', level: 'overnight' },
-  '14': { name: 'UPS 2nd Day Air A.M.', level: 'express' },
-  '59': { name: 'UPS 2nd Day Air A.M.', level: 'express' },
-  '11': { name: 'UPS Standard', level: 'economy' },
-  '07': { name: 'UPS Worldwide Express', level: 'international' },
-  '08': { name: 'UPS Worldwide Expedited', level: 'international' },
-  '54': { name: 'UPS Worldwide Express Plus', level: 'international' },
+  "01": { name: "UPS Next Day Air", level: "overnight" },
+  "02": { name: "UPS 2nd Day Air", level: "express" },
+  "03": { name: "UPS Ground", level: "ground" },
+  "13": { name: "UPS Next Day Air Saver", level: "overnight" },
+  "14": { name: "UPS 2nd Day Air A.M.", level: "express" },
+  "59": { name: "UPS 2nd Day Air A.M.", level: "express" },
+  "11": { name: "UPS Standard", level: "economy" },
+  "07": { name: "UPS Worldwide Express", level: "international" },
+  "08": { name: "UPS Worldwide Expedited", level: "international" },
+  "54": { name: "UPS Worldwide Express Plus", level: "international" },
 } as const;
 
 /**
@@ -42,8 +42,8 @@ const UPS_SERVICE_CODES = {
  * Handles rate quotes, label generation, tracking, and pickups via UPS API
  */
 export class UpsAdapter implements CarrierAdapter {
-  readonly name = 'UPS';
-  readonly code = 'ups';
+  readonly name = "UPS";
+  readonly code = "ups";
 
   /** OAuth2 access token (cached) */
   private accessToken: string | null = null;
@@ -62,7 +62,7 @@ export class UpsAdapter implements CarrierAdapter {
     private clientId: string,
     private clientSecret: string,
     private accountNumber?: string,
-    private apiBaseUrl = 'https://onlinetools.ups.com/rest',
+    private apiBaseUrl = "https://onlinetools.ups.com/rest",
   ) {}
 
   /**
@@ -72,45 +72,55 @@ export class UpsAdapter implements CarrierAdapter {
    */
   private async getAccessToken(): Promise<string> {
     // Return cached token if still valid (refresh 5 minutes before expiry)
-    if (this.accessToken && this.tokenExpiresAt && new Date().getTime() < this.tokenExpiresAt.getTime() - 5 * 60 * 1000) {
+    if (
+      this.accessToken &&
+      this.tokenExpiresAt &&
+      new Date().getTime() < this.tokenExpiresAt.getTime() - 5 * 60 * 1000
+    ) {
       return this.accessToken;
     }
 
     try {
-      const tokenUrl = 'https://onlinetools.ups.com/security/v1/oauth/token';
-      const credentials = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
+      const tokenUrl = "https://onlinetools.ups.com/security/v1/oauth/token";
+      const credentials = Buffer.from(
+        `${this.clientId}:${this.clientSecret}`,
+      ).toString("base64");
 
       const body = new URLSearchParams();
-      body.append('grant_type', 'client_credentials');
+      body.append("grant_type", "client_credentials");
 
       const response = await fetch(tokenUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Basic ${credentials}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `Basic ${credentials}`,
+          "Content-Type": "application/x-www-form-urlencoded",
         },
         body: body.toString(),
       });
 
       if (!response.ok) {
-        throw new Error(`OAuth2 token request failed: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `OAuth2 token request failed: ${response.status} ${response.statusText}`,
+        );
       }
 
-      const tokenResponse = await response.json() as {
+      const tokenResponse = (await response.json()) as {
         access_token: string;
         expires_in: number;
         token_type: string;
       };
 
       this.accessToken = tokenResponse.access_token;
-      this.tokenExpiresAt = new Date(Date.now() + tokenResponse.expires_in * 1000);
+      this.tokenExpiresAt = new Date(
+        Date.now() + tokenResponse.expires_in * 1000,
+      );
 
       return this.accessToken;
     } catch (error) {
       throw new CarrierError(
-        'ups',
-        'AUTH_ERROR',
-        'Failed to obtain UPS OAuth2 token',
+        "ups",
+        "AUTH_ERROR",
+        "Failed to obtain UPS OAuth2 token",
         error instanceof Error ? error : undefined,
       );
     }
@@ -135,29 +145,33 @@ export class UpsAdapter implements CarrierAdapter {
       const transId = this.generateTransactionId();
 
       const response = await fetch(rateUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'transId': transId,
-          'transactionSrc': 'WITYLOGIX',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          transId: transId,
+          transactionSrc: "WITYLOGIX",
         },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as { response?: { errors?: Array<{ message: string }> } };
-        const errorMessage = errorData.response?.errors?.[0]?.message || `Rate lookup failed: ${response.status}`;
+        const errorData = (await response.json()) as {
+          response?: { errors?: Array<{ message: string }> };
+        };
+        const errorMessage =
+          errorData.response?.errors?.[0]?.message ||
+          `Rate lookup failed: ${response.status}`;
         throw new CarrierError(
-          'ups',
-          'RATE_ERROR',
+          "ups",
+          "RATE_ERROR",
           errorMessage,
           undefined,
           response.status,
         );
       }
 
-      const data = await response.json() as UpsRateResponse;
+      const data = (await response.json()) as UpsRateResponse;
 
       // Parse response and build RateResponse array
       const rates: RateResponse[] = [];
@@ -168,8 +182,9 @@ export class UpsAdapter implements CarrierAdapter {
           : [data.RateResponse.RatedShipment];
 
         for (const shipment of shipments) {
-          const serviceCode = shipment.Service?.Code || '03';
-          const serviceInfo = UPS_SERVICE_CODES[serviceCode as keyof typeof UPS_SERVICE_CODES];
+          const serviceCode = shipment.Service?.Code || "03";
+          const serviceInfo =
+            UPS_SERVICE_CODES[serviceCode as keyof typeof UPS_SERVICE_CODES];
 
           const totalCharge = shipment.TotalCharges?.MonetaryValue
             ? parseFloat(shipment.TotalCharges.MonetaryValue)
@@ -178,16 +193,18 @@ export class UpsAdapter implements CarrierAdapter {
           const breakdown: Array<{ description: string; amount: number }> = [];
           if (shipment.BaseServiceCharge?.MonetaryValue) {
             breakdown.push({
-              description: 'Base Rate',
+              description: "Base Rate",
               amount: parseFloat(shipment.BaseServiceCharge.MonetaryValue),
             });
           }
           if (shipment.SurCharges) {
-            const surcharges = Array.isArray(shipment.SurCharges) ? shipment.SurCharges : [shipment.SurCharges];
+            const surcharges = Array.isArray(shipment.SurCharges)
+              ? shipment.SurCharges
+              : [shipment.SurCharges];
             for (const surcharge of surcharges) {
               if (surcharge.MonetaryValue) {
                 breakdown.push({
-                  description: surcharge.SurChargeType || 'Surcharge',
+                  description: surcharge.SurChargeType || "Surcharge",
                   amount: parseFloat(surcharge.MonetaryValue),
                 });
               }
@@ -196,22 +213,33 @@ export class UpsAdapter implements CarrierAdapter {
 
           // Estimate delivery days based on service
           let deliveryDays = 5;
-          if (serviceCode === '01' || serviceCode === '13') deliveryDays = 1;
-          else if (serviceCode === '02' || serviceCode === '14' || serviceCode === '59') deliveryDays = 2;
-          else if (serviceCode === '03' || serviceCode === '11') deliveryDays = 5;
+          if (serviceCode === "01" || serviceCode === "13") deliveryDays = 1;
+          else if (
+            serviceCode === "02" ||
+            serviceCode === "14" ||
+            serviceCode === "59"
+          )
+            deliveryDays = 2;
+          else if (serviceCode === "03" || serviceCode === "11")
+            deliveryDays = 5;
 
           const estimatedDeliveryDate = new Date(request.shipDate);
-          estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + deliveryDays);
+          estimatedDeliveryDate.setDate(
+            estimatedDeliveryDate.getDate() + deliveryDays,
+          );
 
           rates.push({
-            carrier: 'UPS',
+            carrier: "UPS",
             service: serviceInfo?.name || serviceCode,
             serviceCode,
             totalCharge,
-            currency: shipment.TotalCharges?.CurrencyCode || request.currency || 'USD',
+            currency:
+              shipment.TotalCharges?.CurrencyCode || request.currency || "USD",
             estimatedDeliveryDate,
             estimatedTransitDays: deliveryDays,
-            guaranteedDelivery: serviceInfo?.level === 'overnight' || serviceInfo?.level === 'express',
+            guaranteedDelivery:
+              serviceInfo?.level === "overnight" ||
+              serviceInfo?.level === "express",
             breakdown,
           });
         }
@@ -220,21 +248,21 @@ export class UpsAdapter implements CarrierAdapter {
       return rates.length > 0
         ? rates
         : (() => {
-          throw new CarrierError(
-            'ups',
-            'RATE_ERROR',
-            'No rates returned from UPS API',
-          );
-        })();
+            throw new CarrierError(
+              "ups",
+              "RATE_ERROR",
+              "No rates returned from UPS API",
+            );
+          })();
     } catch (error) {
       if (error instanceof CarrierError) {
         throw error;
       }
 
       throw new CarrierError(
-        'ups',
-        'RATE_ERROR',
-        'Failed to retrieve UPS shipping rates',
+        "ups",
+        "RATE_ERROR",
+        "Failed to retrieve UPS shipping rates",
         error instanceof Error ? error : undefined,
       );
     }
@@ -259,33 +287,37 @@ export class UpsAdapter implements CarrierAdapter {
       const transId = this.generateTransactionId();
 
       const response = await fetch(shipUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'transId': transId,
-          'transactionSrc': 'WITYLOGIX',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          transId: transId,
+          transactionSrc: "WITYLOGIX",
         },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as { response?: { errors?: Array<{ message: string }> } };
-        const errorMessage = errorData.response?.errors?.[0]?.message || `Label creation failed: ${response.status}`;
+        const errorData = (await response.json()) as {
+          response?: { errors?: Array<{ message: string }> };
+        };
+        const errorMessage =
+          errorData.response?.errors?.[0]?.message ||
+          `Label creation failed: ${response.status}`;
         throw new CarrierError(
-          'ups',
-          'SHIP_ERROR',
+          "ups",
+          "SHIP_ERROR",
           errorMessage,
           undefined,
           response.status,
         );
       }
 
-      const data = await response.json() as UpsShipResponse;
+      const data = (await response.json()) as UpsShipResponse;
 
       // Extract tracking number and label from response
-      let trackingNumber = '';
-      let labelData = '';
+      let trackingNumber = "";
+      let labelData = "";
       let cost = 0;
 
       if (data.ShipmentResponse?.ShipmentResults) {
@@ -293,7 +325,9 @@ export class UpsAdapter implements CarrierAdapter {
 
         // Get tracking number from package level
         if (results.PackageResults) {
-          const packages = Array.isArray(results.PackageResults) ? results.PackageResults : [results.PackageResults];
+          const packages = Array.isArray(results.PackageResults)
+            ? results.PackageResults
+            : [results.PackageResults];
           if (packages.length > 0 && packages[0].TrackingNumber) {
             trackingNumber = packages[0].TrackingNumber;
           }
@@ -311,28 +345,43 @@ export class UpsAdapter implements CarrierAdapter {
       }
 
       if (!trackingNumber) {
-        throw new CarrierError('ups', 'SHIP_ERROR', 'No tracking number received from UPS');
+        throw new CarrierError(
+          "ups",
+          "SHIP_ERROR",
+          "No tracking number received from UPS",
+        );
       }
 
-      const serviceInfo = UPS_SERVICE_CODES[request.serviceCode as keyof typeof UPS_SERVICE_CODES];
+      const serviceInfo =
+        UPS_SERVICE_CODES[
+          request.serviceCode as keyof typeof UPS_SERVICE_CODES
+        ];
       let deliveryDays = 5;
-      if (request.serviceCode === '01' || request.serviceCode === '13') deliveryDays = 1;
-      else if (request.serviceCode === '02' || request.serviceCode === '14' || request.serviceCode === '59') deliveryDays = 2;
+      if (request.serviceCode === "01" || request.serviceCode === "13")
+        deliveryDays = 1;
+      else if (
+        request.serviceCode === "02" ||
+        request.serviceCode === "14" ||
+        request.serviceCode === "59"
+      )
+        deliveryDays = 2;
 
       const shipDate = new Date();
       const estimatedDeliveryDate = new Date(shipDate);
-      estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + deliveryDays);
+      estimatedDeliveryDate.setDate(
+        estimatedDeliveryDate.getDate() + deliveryDays,
+      );
 
       return {
         trackingNumber,
         labelUrl: `https://tools.ups.com/track/v3/documents/${trackingNumber}`,
         labelData: labelData || this.generateMockLabelData(trackingNumber),
-        labelFormat: request.labelFormat || 'PDF',
-        carrier: 'UPS',
-        service: serviceInfo?.name || 'UPS Ground',
+        labelFormat: request.labelFormat || "PDF",
+        carrier: "UPS",
+        service: serviceInfo?.name || "UPS Ground",
         estimatedDeliveryDate,
         cost: cost || 18.99,
-        currency: request.currency || 'USD',
+        currency: request.currency || "USD",
         barcode: trackingNumber,
       };
     } catch (error) {
@@ -341,9 +390,9 @@ export class UpsAdapter implements CarrierAdapter {
       }
 
       throw new CarrierError(
-        'ups',
-        'SHIP_ERROR',
-        'Failed to create UPS shipping label',
+        "ups",
+        "SHIP_ERROR",
+        "Failed to create UPS shipping label",
         error instanceof Error ? error : undefined,
       );
     }
@@ -359,27 +408,35 @@ export class UpsAdapter implements CarrierAdapter {
       const token = await this.getAccessToken();
 
       if (!trackingNumber || trackingNumber.length < 10) {
-        throw new CarrierError('ups', 'INVALID_TRACKING', 'Invalid tracking number provided');
+        throw new CarrierError(
+          "ups",
+          "INVALID_TRACKING",
+          "Invalid tracking number provided",
+        );
       }
 
       const voidUrl = `${this.apiBaseUrl}/v2409/void/${encodeURIComponent(trackingNumber)}`;
       const transId = this.generateTransactionId();
 
       const response = await fetch(voidUrl, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'transId': transId,
-          'transactionSrc': 'WITYLOGIX',
+          Authorization: `Bearer ${token}`,
+          transId: transId,
+          transactionSrc: "WITYLOGIX",
         },
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as { response?: { errors?: Array<{ message: string }> } };
-        const errorMessage = errorData.response?.errors?.[0]?.message || `Void operation failed: ${response.status}`;
+        const errorData = (await response.json()) as {
+          response?: { errors?: Array<{ message: string }> };
+        };
+        const errorMessage =
+          errorData.response?.errors?.[0]?.message ||
+          `Void operation failed: ${response.status}`;
         throw new CarrierError(
-          'ups',
-          'VOID_ERROR',
+          "ups",
+          "VOID_ERROR",
           errorMessage,
           undefined,
           response.status,
@@ -390,9 +447,9 @@ export class UpsAdapter implements CarrierAdapter {
         success: true,
         trackingNumber,
         refund: 18.99,
-        currency: 'USD',
+        currency: "USD",
         voidedAt: new Date(),
-        message: 'Shipping label successfully voided',
+        message: "Shipping label successfully voided",
       };
     } catch (error) {
       if (error instanceof CarrierError) {
@@ -400,9 +457,9 @@ export class UpsAdapter implements CarrierAdapter {
       }
 
       throw new CarrierError(
-        'ups',
-        'VOID_ERROR',
-        'Failed to void UPS shipping label',
+        "ups",
+        "VOID_ERROR",
+        "Failed to void UPS shipping label",
         error instanceof Error ? error : undefined,
       );
     }
@@ -418,79 +475,99 @@ export class UpsAdapter implements CarrierAdapter {
       const token = await this.getAccessToken();
 
       if (!trackingNumber || trackingNumber.length < 10) {
-        throw new CarrierError('ups', 'INVALID_TRACKING', 'Invalid tracking number provided');
+        throw new CarrierError(
+          "ups",
+          "INVALID_TRACKING",
+          "Invalid tracking number provided",
+        );
       }
 
       const trackUrl = `${this.apiBaseUrl}/v1/details/${encodeURIComponent(trackingNumber)}`;
       const transId = this.generateTransactionId();
 
       const response = await fetch(trackUrl, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'transId': transId,
-          'transactionSrc': 'WITYLOGIX',
+          Authorization: `Bearer ${token}`,
+          transId: transId,
+          transactionSrc: "WITYLOGIX",
         },
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as { response?: { errors?: Array<{ message: string }> } };
-        const errorMessage = errorData.response?.errors?.[0]?.message || `Tracking lookup failed: ${response.status}`;
+        const errorData = (await response.json()) as {
+          response?: { errors?: Array<{ message: string }> };
+        };
+        const errorMessage =
+          errorData.response?.errors?.[0]?.message ||
+          `Tracking lookup failed: ${response.status}`;
         throw new CarrierError(
-          'ups',
-          'TRACK_ERROR',
+          "ups",
+          "TRACK_ERROR",
           errorMessage,
           undefined,
           response.status,
         );
       }
 
-      const data = await response.json() as UpsTrackResponse;
+      const data = (await response.json()) as UpsTrackResponse;
 
       // Parse tracking events from response
-      const events: TrackingResponse['events'] = [];
-      let status: TrackingResponse['status'] = 'unknown';
+      const events: TrackingResponse["events"] = [];
+      let status: TrackingResponse["status"] = "unknown";
       let delivered = false;
       let estimatedDeliveryDate: Date | undefined;
 
-      if (data.trackResponse?.shipment && data.trackResponse.shipment.length > 0) {
+      if (
+        data.trackResponse?.shipment &&
+        data.trackResponse.shipment.length > 0
+      ) {
         const shipment = data.trackResponse.shipment[0];
 
         // Get overall status
         if (shipment.deliveryDetail?.location?.address) {
-          status = 'delivered';
+          status = "delivered";
           delivered = true;
-          estimatedDeliveryDate = new Date(shipment.deliveryDetail.date || new Date());
-        } else if (shipment.currentStatus?.status === 'IN_TRANSIT') {
-          status = 'in_transit';
-        } else if (shipment.currentStatus?.status === 'OUT_FOR_DELIVERY') {
-          status = 'out_for_delivery';
+          estimatedDeliveryDate = new Date(
+            shipment.deliveryDetail.date || new Date(),
+          );
+        } else if (shipment.currentStatus?.status === "IN_TRANSIT") {
+          status = "in_transit";
+        } else if (shipment.currentStatus?.status === "OUT_FOR_DELIVERY") {
+          status = "out_for_delivery";
         }
 
         // Parse activity array into tracking events
         if (shipment.activity) {
-          const activities = Array.isArray(shipment.activity) ? shipment.activity : [shipment.activity];
+          const activities = Array.isArray(shipment.activity)
+            ? shipment.activity
+            : [shipment.activity];
 
           for (const activity of activities) {
-            const eventStatus = activity.status?.statusType?.includes('DELIVERY')
-              ? 'delivered'
-              : activity.status?.statusType?.includes('OUT_FOR_DELIVERY')
-              ? 'out_for_delivery'
-              : activity.status?.statusType?.includes('PICKUP')
-              ? 'picked_up'
-              : 'in_transit';
+            const eventStatus = activity.status?.statusType?.includes(
+              "DELIVERY",
+            )
+              ? "delivered"
+              : activity.status?.statusType?.includes("OUT_FOR_DELIVERY")
+                ? "out_for_delivery"
+                : activity.status?.statusType?.includes("PICKUP")
+                  ? "picked_up"
+                  : "in_transit";
 
             events.push({
               timestamp: activity.date ? new Date(activity.date) : new Date(),
               status: eventStatus,
-              description: activity.status?.statusDescription || activity.status?.statusType || 'Package update',
+              description:
+                activity.status?.statusDescription ||
+                activity.status?.statusType ||
+                "Package update",
               location: activity.location?.address
                 ? {
-                  city: activity.location.address.city || '',
-                  state: activity.location.address.stateProvinceCode || '',
-                  country: activity.location.address.countryCode || '',
-                  zipCode: activity.location.address.postalCode || '',
-                }
+                    city: activity.location.address.city || "",
+                    state: activity.location.address.stateProvinceCode || "",
+                    country: activity.location.address.countryCode || "",
+                    zipCode: activity.location.address.postalCode || "",
+                  }
                 : undefined,
             });
           }
@@ -503,12 +580,14 @@ export class UpsAdapter implements CarrierAdapter {
       }
 
       return {
-        carrier: 'UPS',
+        carrier: "UPS",
         trackingNumber,
         status,
         delivered,
         events,
-        estimatedDeliveryDate: estimatedDeliveryDate || new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+        estimatedDeliveryDate:
+          estimatedDeliveryDate ||
+          new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
       };
     } catch (error) {
       if (error instanceof CarrierError) {
@@ -516,9 +595,9 @@ export class UpsAdapter implements CarrierAdapter {
       }
 
       throw new CarrierError(
-        'ups',
-        'TRACK_ERROR',
-        'Failed to retrieve UPS tracking information',
+        "ups",
+        "TRACK_ERROR",
+        "Failed to retrieve UPS tracking information",
         error instanceof Error ? error : undefined,
       );
     }
@@ -543,29 +622,33 @@ export class UpsAdapter implements CarrierAdapter {
       const transId = this.generateTransactionId();
 
       const response = await fetch(pickupUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'transId': transId,
-          'transactionSrc': 'WITYLOGIX',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          transId: transId,
+          transactionSrc: "WITYLOGIX",
         },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as { response?: { errors?: Array<{ message: string }> } };
-        const errorMessage = errorData.response?.errors?.[0]?.message || `Pickup scheduling failed: ${response.status}`;
+        const errorData = (await response.json()) as {
+          response?: { errors?: Array<{ message: string }> };
+        };
+        const errorMessage =
+          errorData.response?.errors?.[0]?.message ||
+          `Pickup scheduling failed: ${response.status}`;
         throw new CarrierError(
-          'ups',
-          'PICKUP_FAILED',
+          "ups",
+          "PICKUP_FAILED",
           errorMessage,
           undefined,
           response.status,
         );
       }
 
-      const data = await response.json() as UpsPickupResponse;
+      const data = (await response.json()) as UpsPickupResponse;
 
       const pickupId = data.PickupResponse?.PRN || this.generatePickupId();
 
@@ -576,7 +659,7 @@ export class UpsAdapter implements CarrierAdapter {
         confirmedAt: new Date(),
         estimatedArrivalWindow: request.timeWindow,
         confirmationCode: `UPS-${pickupId}`,
-        message: 'Pickup scheduled successfully',
+        message: "Pickup scheduled successfully",
       };
     } catch (error) {
       if (error instanceof CarrierError) {
@@ -584,9 +667,9 @@ export class UpsAdapter implements CarrierAdapter {
       }
 
       throw new CarrierError(
-        'ups',
-        'PICKUP_FAILED',
-        'Failed to schedule UPS pickup',
+        "ups",
+        "PICKUP_FAILED",
+        "Failed to schedule UPS pickup",
         error instanceof Error ? error : undefined,
       );
     }
@@ -601,27 +684,35 @@ export class UpsAdapter implements CarrierAdapter {
       const token = await this.getAccessToken();
 
       if (!pickupId) {
-        throw new CarrierError('ups', 'INVALID_PICKUP_ID', 'Pickup ID is required');
+        throw new CarrierError(
+          "ups",
+          "INVALID_PICKUP_ID",
+          "Pickup ID is required",
+        );
       }
 
       const cancelUrl = `${this.apiBaseUrl}/v2409/pickups/${encodeURIComponent(pickupId)}`;
       const transId = this.generateTransactionId();
 
       const response = await fetch(cancelUrl, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'transId': transId,
-          'transactionSrc': 'WITYLOGIX',
+          Authorization: `Bearer ${token}`,
+          transId: transId,
+          transactionSrc: "WITYLOGIX",
         },
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as { response?: { errors?: Array<{ message: string }> } };
-        const errorMessage = errorData.response?.errors?.[0]?.message || `Pickup cancellation failed: ${response.status}`;
+        const errorData = (await response.json()) as {
+          response?: { errors?: Array<{ message: string }> };
+        };
+        const errorMessage =
+          errorData.response?.errors?.[0]?.message ||
+          `Pickup cancellation failed: ${response.status}`;
         throw new CarrierError(
-          'ups',
-          'PICKUP_FAILED',
+          "ups",
+          "PICKUP_FAILED",
           errorMessage,
           undefined,
           response.status,
@@ -633,9 +724,9 @@ export class UpsAdapter implements CarrierAdapter {
       }
 
       throw new CarrierError(
-        'ups',
-        'PICKUP_FAILED',
-        'Failed to cancel UPS pickup',
+        "ups",
+        "PICKUP_FAILED",
+        "Failed to cancel UPS pickup",
         error instanceof Error ? error : undefined,
       );
     }
@@ -657,42 +748,47 @@ export class UpsAdapter implements CarrierAdapter {
       const transId = this.generateTransactionId();
 
       const payload = {
-        UPSAccessPointIndicator: '',
+        UPSAccessPointIndicator: "",
         AddressKeyFormat: this.addressToUpsFormat(address),
       };
 
       const response = await fetch(validateUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'transId': transId,
-          'transactionSrc': 'WITYLOGIX',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          transId: transId,
+          transactionSrc: "WITYLOGIX",
         },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as { response?: { errors?: Array<{ message: string }> } };
-        const errorMessage = errorData.response?.errors?.[0]?.message || `Address validation failed: ${response.status}`;
+        const errorData = (await response.json()) as {
+          response?: { errors?: Array<{ message: string }> };
+        };
+        const errorMessage =
+          errorData.response?.errors?.[0]?.message ||
+          `Address validation failed: ${response.status}`;
         throw new CarrierError(
-          'ups',
-          'ADDRESS_VALIDATION_FAILED',
+          "ups",
+          "ADDRESS_VALIDATION_FAILED",
           errorMessage,
           undefined,
           response.status,
         );
       }
 
-      const data = await response.json() as UpsAddressResponse;
+      const data = (await response.json()) as UpsAddressResponse;
 
       // Parse address validation response
       let valid = false;
       let standardized = false;
       let correctedAddress: Address | undefined;
-      let addressType: 'residential' | 'commercial' | 'po_box' | 'mixed' = 'residential';
+      let addressType: "residential" | "commercial" | "po_box" | "mixed" =
+        "residential";
 
-      if (data.ValidAddressIndicator === 'Y' && data.ValidAddressResults) {
+      if (data.ValidAddressIndicator === "Y" && data.ValidAddressResults) {
         const results = Array.isArray(data.ValidAddressResults)
           ? data.ValidAddressResults[0]
           : data.ValidAddressResults;
@@ -713,16 +809,16 @@ export class UpsAdapter implements CarrierAdapter {
             country: upsAddr.CountryCode || address.country,
             phone: address.phone,
             email: address.email,
-            residential: upsAddr.ResidentialAddressIndicator === 'Y',
+            residential: upsAddr.ResidentialAddressIndicator === "Y",
           };
 
           // Determine address type
-          if (results.AddressClassificationCode === 'Residential') {
-            addressType = 'residential';
-          } else if (results.AddressClassificationCode === 'Commercial') {
-            addressType = 'commercial';
-          } else if (results.AddressClassificationCode === 'POBOX') {
-            addressType = 'po_box';
+          if (results.AddressClassificationCode === "Residential") {
+            addressType = "residential";
+          } else if (results.AddressClassificationCode === "Commercial") {
+            addressType = "commercial";
+          } else if (results.AddressClassificationCode === "POBOX") {
+            addressType = "po_box";
           }
         }
       }
@@ -739,9 +835,9 @@ export class UpsAdapter implements CarrierAdapter {
       }
 
       throw new CarrierError(
-        'ups',
-        'ADDRESS_VALIDATION_FAILED',
-        'Failed to validate address',
+        "ups",
+        "ADDRESS_VALIDATION_FAILED",
+        "Failed to validate address",
         error instanceof Error ? error : undefined,
       );
     }
@@ -756,15 +852,23 @@ export class UpsAdapter implements CarrierAdapter {
    */
   private validateRateRequest(request: RateRequest): void {
     if (!request.origin?.street1 || !request.origin?.city) {
-      throw new CarrierError('ups', 'INVALID_ORIGIN', 'Invalid origin address');
+      throw new CarrierError("ups", "INVALID_ORIGIN", "Invalid origin address");
     }
 
     if (!request.destination?.street1 || !request.destination?.city) {
-      throw new CarrierError('ups', 'INVALID_DESTINATION', 'Invalid destination address');
+      throw new CarrierError(
+        "ups",
+        "INVALID_DESTINATION",
+        "Invalid destination address",
+      );
     }
 
     if (!request.packages || request.packages.length === 0) {
-      throw new CarrierError('ups', 'NO_PACKAGES', 'At least one package is required');
+      throw new CarrierError(
+        "ups",
+        "NO_PACKAGES",
+        "At least one package is required",
+      );
     }
   }
 
@@ -774,19 +878,31 @@ export class UpsAdapter implements CarrierAdapter {
   private validateLabelRequest(request: LabelRequest): void {
     // Validate common address and package fields
     if (!request.origin?.street1 || !request.origin?.city) {
-      throw new CarrierError('ups', 'INVALID_ORIGIN', 'Invalid origin address');
+      throw new CarrierError("ups", "INVALID_ORIGIN", "Invalid origin address");
     }
 
     if (!request.destination?.street1 || !request.destination?.city) {
-      throw new CarrierError('ups', 'INVALID_DESTINATION', 'Invalid destination address');
+      throw new CarrierError(
+        "ups",
+        "INVALID_DESTINATION",
+        "Invalid destination address",
+      );
     }
 
     if (!request.packages || request.packages.length === 0) {
-      throw new CarrierError('ups', 'NO_PACKAGES', 'At least one package is required');
+      throw new CarrierError(
+        "ups",
+        "NO_PACKAGES",
+        "At least one package is required",
+      );
     }
 
     if (!request.serviceCode) {
-      throw new CarrierError('ups', 'NO_SERVICE_CODE', 'Service code is required');
+      throw new CarrierError(
+        "ups",
+        "NO_SERVICE_CODE",
+        "Service code is required",
+      );
     }
   }
 
@@ -795,11 +911,19 @@ export class UpsAdapter implements CarrierAdapter {
    */
   private validatePickupRequest(request: PickupRequest): void {
     if (!request.location?.street1 || !request.location?.city) {
-      throw new CarrierError('ups', 'INVALID_LOCATION', 'Invalid pickup location');
+      throw new CarrierError(
+        "ups",
+        "INVALID_LOCATION",
+        "Invalid pickup location",
+      );
     }
 
     if (request.packageCount <= 0) {
-      throw new CarrierError('ups', 'INVALID_PACKAGE_COUNT', 'Package count must be positive');
+      throw new CarrierError(
+        "ups",
+        "INVALID_PACKAGE_COUNT",
+        "Package count must be positive",
+      );
     }
   }
 
@@ -807,8 +931,17 @@ export class UpsAdapter implements CarrierAdapter {
    * Validate address format
    */
   private validateAddress_(address: Address): void {
-    if (!address.street1 || !address.city || !address.state || !address.postalCode) {
-      throw new CarrierError('ups', 'INVALID_ADDRESS', 'Address is missing required fields');
+    if (
+      !address.street1 ||
+      !address.city ||
+      !address.state ||
+      !address.postalCode
+    ) {
+      throw new CarrierError(
+        "ups",
+        "INVALID_ADDRESS",
+        "Address is missing required fields",
+      );
     }
   }
 
@@ -819,15 +952,15 @@ export class UpsAdapter implements CarrierAdapter {
     return {
       RateRequest: {
         Request: {
-          RequestOption: 'Rate',
-          SubVersion: '1902',
+          RequestOption: "Rate",
+          SubVersion: "1902",
         },
         Shipment: {
           Shipper: this.addressToUpsFormat(request.origin),
           ShipTo: this.addressToUpsFormat(request.destination),
           Package: request.packages.map((pkg) => this.packageToUpsFormat(pkg)),
           ShipmentRatingOptions: {
-            NegotiatedRatesIndicator: this.accountNumber ? '' : undefined,
+            NegotiatedRatesIndicator: this.accountNumber ? "" : undefined,
             UserIDOptions: {},
           },
         },
@@ -842,22 +975,24 @@ export class UpsAdapter implements CarrierAdapter {
     return {
       ShipmentRequest: {
         Request: {
-          RequestOption: 'nonvalidate',
-          SubVersion: '1908',
+          RequestOption: "nonvalidate",
+          SubVersion: "1908",
         },
         Shipment: {
-          Description: 'Witylogix Shipment',
+          Description: "Witylogix Shipment",
           Shipper: this.addressToUpsFormat(request.origin),
           ShipTo: this.addressToUpsFormat(request.destination),
           Package: request.packages.map((pkg) => this.packageToUpsFormat(pkg)),
           Service: {
             Code: request.serviceCode,
-            Description: UPS_SERVICE_CODES[request.serviceCode as keyof typeof UPS_SERVICE_CODES]
-              ?.name,
+            Description:
+              UPS_SERVICE_CODES[
+                request.serviceCode as keyof typeof UPS_SERVICE_CODES
+              ]?.name,
           },
         },
         LabelSpecification: {
-          LabelImageFormat: request.labelFormat || 'PDF',
+          LabelImageFormat: request.labelFormat || "PDF",
           LabelStockSize: {
             Height: this.getLabelHeight(request.labelSize),
             Width: this.getLabelWidth(request.labelSize),
@@ -874,34 +1009,34 @@ export class UpsAdapter implements CarrierAdapter {
     return {
       PickupRequest: {
         Request: {
-          RequestOption: 'nonvalidate',
-          SubVersion: '1908',
+          RequestOption: "nonvalidate",
+          SubVersion: "1908",
         },
         PickupCreationDetails: {
           PickupDateInfo: {
-            ClassOfPickup: '01',
+            ClassOfPickup: "01",
             PickupDate: this.formatDate(request.pickupDate),
-            PickupTime: request.timeWindow?.start || '08:00',
-            ReadyTimeAM: request.timeWindow?.start || '08:00',
-            CloseTimeAM: request.timeWindow?.end || '17:00',
+            PickupTime: request.timeWindow?.start || "08:00",
+            ReadyTimeAM: request.timeWindow?.start || "08:00",
+            CloseTimeAM: request.timeWindow?.end || "17:00",
           },
-          CompanyCloseTime: '17:30',
+          CompanyCloseTime: "17:30",
           PickupLocation: this.addressToUpsFormat(request.location),
           ContactInfo: {
             CompanyName: request.location.company || request.location.name,
             ContactName: request.location.name,
-            Phone: request.location.phone || '5551234567',
+            Phone: request.location.phone || "5551234567",
           },
           ShipmentIndicators: {
-            DocumentsOnly: '',
-            PackagesOnly: '',
-            DeliveryConfirmation: '',
+            DocumentsOnly: "",
+            PackagesOnly: "",
+            DeliveryConfirmation: "",
           },
           PickupDetails: {
             NumberOfContainers: String(request.packageCount),
             TotalWeight: request.totalWeight || 0,
-            WeightUnitOfMeasure: request.weightUnit || 'LB',
-            ServiceType: '03',
+            WeightUnitOfMeasure: request.weightUnit || "LB",
+            ServiceType: "03",
           },
           SpecialInstructions: request.instructions,
         },
@@ -912,9 +1047,7 @@ export class UpsAdapter implements CarrierAdapter {
   /**
    * Convert Address to UPS format
    */
-  private addressToUpsFormat(
-    address: Address,
-  ): Record<string, unknown> {
+  private addressToUpsFormat(address: Address): Record<string, unknown> {
     return {
       Name: address.name,
       CompanyName: address.company,
@@ -928,7 +1061,7 @@ export class UpsAdapter implements CarrierAdapter {
         StateProvinceCode: address.state,
         PostalCode: address.postalCode,
         CountryCode: address.country,
-        ResidentialAddressIndicator: address.residential ? 'Y' : 'N',
+        ResidentialAddressIndicator: address.residential ? "Y" : "N",
       },
     };
   }
@@ -942,14 +1075,14 @@ export class UpsAdapter implements CarrierAdapter {
     return {
       PackageWeight: {
         UnitOfMeasurement: {
-          Code: 'LBS',
+          Code: "LBS",
         },
         Weight: String(Math.ceil(weightInLbs)),
       },
       Dimensions: pkg.length
         ? {
             UnitOfMeasurement: {
-              Code: pkg.dimensionUnit === 'cm' ? 'CM' : 'IN',
+              Code: pkg.dimensionUnit === "cm" ? "CM" : "IN",
             },
             Length: String(Math.ceil(pkg.length)),
             Width: String(Math.ceil(pkg.width || 0)),
@@ -963,7 +1096,7 @@ export class UpsAdapter implements CarrierAdapter {
             },
           }
         : undefined,
-      Description: pkg.description || 'Package',
+      Description: pkg.description || "Package",
     };
   }
 
@@ -972,13 +1105,13 @@ export class UpsAdapter implements CarrierAdapter {
    */
   private convertToLbs(weight: number, unit: string): number {
     switch (unit) {
-      case 'lb':
+      case "lb":
         return weight;
-      case 'oz':
+      case "oz":
         return weight / 16;
-      case 'kg':
+      case "kg":
         return weight * 2.20462;
-      case 'g':
+      case "g":
         return weight * 0.00220462;
       default:
         return weight;
@@ -990,14 +1123,14 @@ export class UpsAdapter implements CarrierAdapter {
    */
   private getLabelHeight(size?: string): string {
     switch (size) {
-      case '4x6':
-        return '6';
-      case '6x4':
-        return '4';
-      case '8.5x11':
-        return '11';
+      case "4x6":
+        return "6";
+      case "6x4":
+        return "4";
+      case "8.5x11":
+        return "11";
       default:
-        return '6';
+        return "6";
     }
   }
 
@@ -1006,14 +1139,14 @@ export class UpsAdapter implements CarrierAdapter {
    */
   private getLabelWidth(size?: string): string {
     switch (size) {
-      case '4x6':
-        return '4';
-      case '6x4':
-        return '6';
-      case '8.5x11':
-        return '8.5';
+      case "4x6":
+        return "4";
+      case "6x4":
+        return "6";
+      case "8.5x11":
+        return "8.5";
       default:
-        return '4';
+        return "4";
     }
   }
 
@@ -1021,7 +1154,7 @@ export class UpsAdapter implements CarrierAdapter {
    * Format date for UPS API (YYYYMMDD)
    */
   private formatDate(date: Date): string {
-    return date.toISOString().split('T')[0].replace(/-/g, '');
+    return date.toISOString().split("T")[0].replace(/-/g, "");
   }
 
   /**
@@ -1029,7 +1162,7 @@ export class UpsAdapter implements CarrierAdapter {
    */
   private generateTrackingNumber(): string {
     // UPS tracking numbers are 1Z followed by 16 characters
-    return '1Z' + Math.random().toString(36).substring(2, 18).toUpperCase();
+    return "1Z" + Math.random().toString(36).substring(2, 18).toUpperCase();
   }
 
   /**
@@ -1045,16 +1178,16 @@ export class UpsAdapter implements CarrierAdapter {
   private generateMockLabelData(trackingNumber: string): string {
     // In production, this would be the actual PDF/ZPL label data
     const labelContent = `UPS SHIPPING LABEL\nTracking: ${trackingNumber}\n\nThis is a mock label`;
-    return Buffer.from(labelContent).toString('base64');
+    return Buffer.from(labelContent).toString("base64");
   }
 
   /**
    * Generate transaction ID (UUID v4)
    */
   private generateTransactionId(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
       const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      const v = c === "x" ? r : (r & 0x3) | 0x8;
       return v.toString(16);
     });
   }

@@ -26,20 +26,21 @@ All error responses follow this format:
 
 ## HTTP Status Codes
 
-| Status | Meaning | Error Category |
-|--------|---------|-----------------|
-| 400 | Bad Request | Validation errors |
-| 401 | Unauthorized | Authentication failures |
-| 403 | Forbidden | Authorization/permission failures |
-| 404 | Not Found | Resource not found |
-| 409 | Conflict | State/business logic conflicts |
-| 429 | Too Many Requests | Rate limit exceeded |
-| 500 | Internal Server Error | Server errors |
-| 503 | Service Unavailable | Service temporarily unavailable |
+| Status | Meaning               | Error Category                    |
+| ------ | --------------------- | --------------------------------- |
+| 400    | Bad Request           | Validation errors                 |
+| 401    | Unauthorized          | Authentication failures           |
+| 403    | Forbidden             | Authorization/permission failures |
+| 404    | Not Found             | Resource not found                |
+| 409    | Conflict              | State/business logic conflicts    |
+| 429    | Too Many Requests     | Rate limit exceeded               |
+| 500    | Internal Server Error | Server errors                     |
+| 503    | Service Unavailable   | Service temporarily unavailable   |
 
 ## Authentication Errors (401)
 
 ### AUTH_UNAUTHORIZED
+
 ```json
 {
   "error": {
@@ -49,11 +50,13 @@ All error responses follow this format:
   }
 }
 ```
+
 - **Status**: 401
 - **Cause**: Invalid credentials provided
 - **Solution**: Verify email and password are correct
 
 ### AUTH_TOKEN_EXPIRED
+
 ```json
 {
   "error": {
@@ -66,6 +69,7 @@ All error responses follow this format:
   }
 }
 ```
+
 - **Status**: 401
 - **Cause**: Access token lifetime exceeded (1 hour)
 - **Solution**: Use refresh token to obtain new access token
@@ -76,6 +80,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/refresh \
 ```
 
 ### AUTH_INVALID_TOKEN
+
 ```json
 {
   "error": {
@@ -84,11 +89,13 @@ curl -X POST https://api.witylogix.com/api/v4/auth/refresh \
   }
 }
 ```
+
 - **Status**: 401
 - **Cause**: Token format is invalid or corrupted
 - **Solution**: Obtain new token by logging in again
 
 ### AUTH_MISSING_TOKEN
+
 ```json
 {
   "error": {
@@ -97,11 +104,13 @@ curl -X POST https://api.witylogix.com/api/v4/auth/refresh \
   }
 }
 ```
+
 - **Status**: 401
 - **Cause**: No Authorization header provided
 - **Solution**: Add `Authorization: Bearer {token}` header
 
 ### AUTH_INVALID_API_KEY
+
 ```json
 {
   "error": {
@@ -110,11 +119,13 @@ curl -X POST https://api.witylogix.com/api/v4/auth/refresh \
   }
 }
 ```
+
 - **Status**: 401
 - **Cause**: API key is invalid, expired, or revoked
 - **Solution**: Verify API key or create a new one
 
 ### AUTH_MFA_REQUIRED
+
 ```json
 {
   "error": {
@@ -127,6 +138,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/refresh \
   }
 }
 ```
+
 - **Status**: 401
 - **Cause**: MFA is enabled but not verified
 - **Solution**: Complete MFA verification with TOTP code
@@ -140,6 +152,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
 ```
 
 ### AUTH_MFA_INVALID
+
 ```json
 {
   "error": {
@@ -148,11 +161,13 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
   }
 }
 ```
+
 - **Status**: 401
 - **Cause**: TOTP code is incorrect or expired (30 seconds)
 - **Solution**: Verify correct code from authenticator app
 
 ### AUTH_SESSION_EXPIRED
+
 ```json
 {
   "error": {
@@ -161,6 +176,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
   }
 }
 ```
+
 - **Status**: 401
 - **Cause**: Refresh token expired (30 days)
 - **Solution**: Log in again
@@ -168,6 +184,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
 ## Authorization Errors (403)
 
 ### AUTH_INSUFFICIENT_PERMISSIONS
+
 ```json
 {
   "error": {
@@ -180,11 +197,13 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
   }
 }
 ```
+
 - **Status**: 403
 - **Cause**: User role lacks required permissions
 - **Solution**: Request higher permission level or contact admin
 
 ### AUTH_TENANT_MISMATCH
+
 ```json
 {
   "error": {
@@ -193,6 +212,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
   }
 }
 ```
+
 - **Status**: 403
 - **Cause**: Attempting to access resource from different shop/org
 - **Solution**: Ensure you're accessing resources within your tenant
@@ -200,6 +220,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
 ## Validation Errors (400)
 
 ### VALIDATION_ERROR
+
 ```json
 {
   "error": {
@@ -213,11 +234,13 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
   }
 }
 ```
+
 - **Status**: 400
 - **Cause**: Request body contains invalid data
 - **Solution**: Fix validation errors and retry
 
 ### VALIDATION_REQUIRED_FIELD
+
 ```json
 {
   "error": {
@@ -229,11 +252,13 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
   }
 }
 ```
+
 - **Status**: 400
 - **Cause**: Required request field is missing
 - **Solution**: Provide the required field
 
 ### VALIDATION_INVALID_FORMAT
+
 ```json
 {
   "error": {
@@ -246,11 +271,13 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
   }
 }
 ```
+
 - **Status**: 400
 - **Cause**: Field value doesn't match expected format
 - **Solution**: Use correct format (e.g., RFC 5322 for emails)
 
 ### VALIDATION_INVALID_ENUM
+
 ```json
 {
   "error": {
@@ -263,6 +290,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
   }
 }
 ```
+
 - **Status**: 400
 - **Cause**: Field value is not in allowed set
 - **Solution**: Use one of the allowed values
@@ -270,6 +298,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
 ## Resource Errors (404)
 
 ### RESOURCE_NOT_FOUND
+
 ```json
 {
   "error": {
@@ -282,11 +311,13 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
   }
 }
 ```
+
 - **Status**: 404
 - **Cause**: Requested resource doesn't exist or is deleted
 - **Solution**: Verify resource ID is correct
 
 ### RESOURCE_DELETED
+
 ```json
 {
   "error": {
@@ -295,11 +326,13 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
   }
 }
 ```
+
 - **Status**: 404
 - **Cause**: Resource was soft-deleted
 - **Solution**: Cannot recover deleted resource
 
 ### SHOP_NOT_FOUND
+
 ```json
 {
   "error": {
@@ -311,6 +344,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
   }
 }
 ```
+
 - **Status**: 404
 - **Cause**: Shop doesn't exist or isn't connected
 - **Solution**: Verify shop domain is correct
@@ -318,6 +352,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
 ## Conflict Errors (409)
 
 ### STATE_CONFLICT
+
 ```json
 {
   "error": {
@@ -331,11 +366,13 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
   }
 }
 ```
+
 - **Status**: 409
 - **Cause**: Requested status transition is invalid
 - **Solution**: Use one of the valid status transitions
 
 ### RESOURCE_ALREADY_EXISTS
+
 ```json
 {
   "error": {
@@ -348,11 +385,13 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
   }
 }
 ```
+
 - **Status**: 409
 - **Cause**: Attempting to create duplicate resource
 - **Solution**: Use existing resource or modify creation parameters
 
 ### CONCURRENT_MODIFICATION
+
 ```json
 {
   "error": {
@@ -365,11 +404,13 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
   }
 }
 ```
+
 - **Status**: 409
 - **Cause**: Resource was updated after you retrieved it
 - **Solution**: Fetch latest version and retry
 
 ### BUSINESS_LOGIC_ERROR
+
 ```json
 {
   "error": {
@@ -381,6 +422,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
   }
 }
 ```
+
 - **Status**: 409
 - **Cause**: Operation doesn't comply with business logic
 - **Solution**: Ensure all prerequisites are met
@@ -388,6 +430,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
 ## Rate Limit Errors (429)
 
 ### RATE_LIMIT_EXCEEDED
+
 ```json
 {
   "error": {
@@ -401,11 +444,13 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify-login \
   }
 }
 ```
+
 - **Status**: 429
 - **Cause**: Too many requests in time window
 - **Solution**: Wait before retrying (see `retryAfter` seconds)
 
 **Headers:**
+
 ```
 X-RateLimit-Limit: 1000
 X-RateLimit-Remaining: 0
@@ -416,6 +461,7 @@ X-RateLimit-Retry-After: 18
 ## Integration Errors (5xx)
 
 ### INTEGRATION_ERROR
+
 ```json
 {
   "error": {
@@ -428,11 +474,13 @@ X-RateLimit-Retry-After: 18
   }
 }
 ```
+
 - **Status**: 502/503
 - **Cause**: External service error
 - **Solution**: Retry after a delay
 
 ### WEBHOOK_DELIVERY_FAILED
+
 ```json
 {
   "error": {
@@ -446,6 +494,7 @@ X-RateLimit-Retry-After: 18
   }
 }
 ```
+
 - **Status**: 500
 - **Cause**: Webhook endpoint returned error
 - **Solution**: Fix endpoint and retry delivery via DLQ
@@ -453,6 +502,7 @@ X-RateLimit-Retry-After: 18
 ## Server Errors (5xx)
 
 ### INTERNAL_SERVER_ERROR
+
 ```json
 {
   "error": {
@@ -462,11 +512,13 @@ X-RateLimit-Retry-After: 18
   }
 }
 ```
+
 - **Status**: 500
 - **Cause**: Unexpected server error
 - **Solution**: Retry request. If persists, contact support with requestId
 
 ### SERVICE_UNAVAILABLE
+
 ```json
 {
   "error": {
@@ -478,11 +530,13 @@ X-RateLimit-Retry-After: 18
   }
 }
 ```
+
 - **Status**: 503
 - **Cause**: Server maintenance or overload
 - **Solution**: Retry after specified delay
 
 ### DATABASE_ERROR
+
 ```json
 {
   "error": {
@@ -491,6 +545,7 @@ X-RateLimit-Retry-After: 18
   }
 }
 ```
+
 - **Status**: 500
 - **Cause**: Database connectivity or query error
 - **Solution**: Retry request with exponential backoff
@@ -532,15 +587,19 @@ curl https://api.witylogix.com/api/v4/orders \
 ## Common Issues & Solutions
 
 ### Issue: `AUTH_INVALID_TOKEN`
+
 **Cause**: Token has been corrupted or tampered with
 **Solution**:
+
 1. Log out completely
 2. Clear any cached tokens
 3. Log in again to get fresh token
 
 ### Issue: `STATE_CONFLICT` on order status update
+
 **Cause**: Invalid status transition attempted
 **Solution**: Check valid transitions for current status:
+
 ```
 PENDING → ACCEPTED, CANCELLED
 ACCEPTED → ASSIGNED, CANCELLED
@@ -550,16 +609,20 @@ PICKED_UP → OUT_FOR_DELIVERY
 ```
 
 ### Issue: `RATE_LIMIT_EXCEEDED`
+
 **Cause**: Making too many requests
 **Solution**:
+
 1. Implement exponential backoff retry logic
 2. Use batch endpoints when available
 3. Consider upgrading plan
 4. Cache responses locally
 
 ### Issue: `TENANT_MISMATCH`
+
 **Cause**: Accessing resource from wrong shop/organization
 **Solution**:
+
 1. Verify you're using the correct Authorization header
 2. Check that resource belongs to your tenant
 3. If accessing multiple shops, re-authenticate with correct token
@@ -569,10 +632,7 @@ PICKED_UP → OUT_FOR_DELIVERY
 ### Exponential Backoff
 
 ```typescript
-async function callWithRetry(
-  fn: () => Promise<Response>,
-  maxRetries = 3
-) {
+async function callWithRetry(fn: () => Promise<Response>, maxRetries = 3) {
   let lastError: Error | undefined;
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -583,7 +643,7 @@ async function callWithRetry(
 
       if (attempt < maxRetries - 1) {
         const delayMs = Math.pow(2, attempt) * 1000;
-        await new Promise(resolve => setTimeout(resolve, delayMs));
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
     }
   }
@@ -597,22 +657,22 @@ async function callWithRetry(
 ```typescript
 class CircuitBreaker {
   private failureCount = 0;
-  private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED';
+  private state: "CLOSED" | "OPEN" | "HALF_OPEN" = "CLOSED";
   private lastFailureTime?: number;
 
   async call<T>(fn: () => Promise<T>): Promise<T> {
-    if (this.state === 'OPEN') {
+    if (this.state === "OPEN") {
       if (Date.now() - (this.lastFailureTime || 0) > 60000) {
-        this.state = 'HALF_OPEN';
+        this.state = "HALF_OPEN";
       } else {
-        throw new Error('Circuit breaker is OPEN');
+        throw new Error("Circuit breaker is OPEN");
       }
     }
 
     try {
       const result = await fn();
-      if (this.state === 'HALF_OPEN') {
-        this.state = 'CLOSED';
+      if (this.state === "HALF_OPEN") {
+        this.state = "CLOSED";
         this.failureCount = 0;
       }
       return result;
@@ -620,7 +680,7 @@ class CircuitBreaker {
       this.failureCount++;
       this.lastFailureTime = Date.now();
       if (this.failureCount >= 3) {
-        this.state = 'OPEN';
+        this.state = "OPEN";
       }
       throw error;
     }

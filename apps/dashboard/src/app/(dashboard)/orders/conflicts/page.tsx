@@ -8,9 +8,13 @@ import { Button } from "@/components/ui/button";
 import { TableSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { cn } from "@/lib/utils";
-import { useConflicts, type SyncPlatform, type SyncConflict } from "@/hooks/use-order-sync";
-import { useApiList } from '@/hooks/use-api';
-import { useToast } from '@/components/ui/toast';
+import {
+  useConflicts,
+  type SyncPlatform,
+  type SyncConflict,
+} from "@/hooks/use-order-sync";
+import { useApiList } from "@/hooks/use-api";
+import { useToast } from "@/components/ui/toast";
 
 /* ═══════════════════════════════════════════════════════════
    CONFLICT RESOLUTION PAGE — Side-by-side diff view with
@@ -30,14 +34,21 @@ const PLATFORMS: Record<SyncPlatform, { name: string; icon: string }> = {
 
 export default function ConflictsPage() {
   const { addToast } = useToast();
-  const [filterPlatform, setFilterPlatform] = useState<SyncPlatform | "all">("all");
+  const [filterPlatform, setFilterPlatform] = useState<SyncPlatform | "all">(
+    "all",
+  );
   const [filterField, setFilterField] = useState<string | "all">("all");
-  const [filterDateRange, setFilterDateRange] = useState<"all" | "today" | "week" | "month">("all");
+  const [filterDateRange, setFilterDateRange] = useState<
+    "all" | "today" | "week" | "month"
+  >("all");
   const [expandedConflict, setExpandedConflict] = useState<string | null>(null);
   const [resolving, setResolving] = useState<Set<string>>(new Set());
-  const [bulkResolvingField, setBulkResolvingField] = useState<string | null>(null);
+  const [bulkResolvingField, setBulkResolvingField] = useState<string | null>(
+    null,
+  );
 
-  const { conflicts, isLoading, error, resolveConflict, bulkResolveByType } = useConflicts();
+  const { conflicts, isLoading, error, resolveConflict, bulkResolveByType } =
+    useConflicts();
 
   // Filter conflicts
   const filteredConflicts = useMemo(() => {
@@ -55,7 +66,8 @@ export default function ConflictsPage() {
       // Date range filter
       const createdDate = new Date(conflict.createdAt);
       const now = new Date();
-      const daysDiff = (now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
+      const daysDiff =
+        (now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
 
       if (filterDateRange === "today" && daysDiff > 1) return false;
       if (filterDateRange === "week" && daysDiff > 7) return false;
@@ -85,13 +97,17 @@ export default function ConflictsPage() {
   const handleResolveConflict = async (
     conflictId: string,
     action: "external" | "internal" | "skip",
-    manualValue?: string
+    manualValue?: string,
   ) => {
     try {
       setResolving((prev) => new Set(prev).add(conflictId));
       await resolveConflict(conflictId, action, manualValue);
     } catch (err) {
-      addToast({ type: 'error', title: 'Resolution failed', message: err instanceof Error ? err.message : undefined });
+      addToast({
+        type: "error",
+        title: "Resolution failed",
+        message: err instanceof Error ? err.message : undefined,
+      });
     } finally {
       setResolving((prev) => {
         const next = new Set(prev);
@@ -102,12 +118,19 @@ export default function ConflictsPage() {
   };
 
   // Handle bulk resolve by field
-  const handleBulkResolveByField = async (field: string, action: "external" | "internal") => {
+  const handleBulkResolveByField = async (
+    field: string,
+    action: "external" | "internal",
+  ) => {
     try {
       setBulkResolvingField(field);
       await bulkResolveByType(field, action);
     } catch (err) {
-      addToast({ type: 'error', title: 'Bulk resolution failed', message: err instanceof Error ? err.message : undefined });
+      addToast({
+        type: "error",
+        title: "Bulk resolution failed",
+        message: err instanceof Error ? err.message : undefined,
+      });
     } finally {
       setBulkResolvingField(null);
     }
@@ -116,10 +139,20 @@ export default function ConflictsPage() {
   const unresolved = conflicts.filter((c) => !c.resolved).length;
 
   if (isLoading) return <TableSkeleton columns={4} rows={6} />;
-  if (error) return <ErrorState message={String(error)} onRetry={() => window.location.reload()} />;
+  if (error)
+    return (
+      <ErrorState
+        message={String(error)}
+        onRetry={() => window.location.reload()}
+      />
+    );
 
   const headerActions = (
-    <Button variant="primary" size="md" onClick={() => window.location.reload()}>
+    <Button
+      variant="primary"
+      size="md"
+      onClick={() => window.location.reload()}
+    >
       🔄 Refresh
     </Button>
   );
@@ -135,7 +168,9 @@ export default function ConflictsPage() {
       <div className="p-6 space-y-6">
         {/* Conflict Stats */}
         <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
-          <h2 className="text-lg font-bold text-white mb-4">Conflict Summary</h2>
+          <h2 className="text-lg font-bold text-white mb-4">
+            Conflict Summary
+          </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 rounded-lg bg-wl-bg-root border border-wl-border-default">
@@ -155,7 +190,15 @@ export default function ConflictsPage() {
                 Affected Platforms
               </p>
               <p className="text-3xl font-bold font-mono text-white">
-                {Array.from(new Set(conflicts.filter((c) => !c.resolved).map((c) => c.platform))).length}
+                {
+                  Array.from(
+                    new Set(
+                      conflicts
+                        .filter((c) => !c.resolved)
+                        .map((c) => c.platform),
+                    ),
+                  ).length
+                }
               </p>
               <p className="text-xs text-wl-text-secondary mt-2">
                 platforms with conflicts
@@ -169,7 +212,8 @@ export default function ConflictsPage() {
               <p className="text-3xl font-bold font-mono text-white">
                 {conflicts.length > 0
                   ? Math.round(
-                      ((conflicts.length - unresolved) / conflicts.length) * 100
+                      ((conflicts.length - unresolved) / conflicts.length) *
+                        100,
                     )
                   : 0}
                 %
@@ -184,7 +228,9 @@ export default function ConflictsPage() {
         {/* Conflicts by Field */}
         {Object.keys(conflictsByField).length > 0 && (
           <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
-            <h2 className="text-lg font-bold text-white mb-4">Conflicts by Field</h2>
+            <h2 className="text-lg font-bold text-white mb-4">
+              Conflicts by Field
+            </h2>
 
             <div className="space-y-2">
               {Object.entries(conflictsByField).map(([field, count]) => (
@@ -283,7 +329,7 @@ export default function ConflictsPage() {
                 value={filterDateRange}
                 onChange={(e) =>
                   setFilterDateRange(
-                    e.target.value as "all" | "today" | "week" | "month"
+                    e.target.value as "all" | "today" | "week" | "month",
                   )
                 }
                 className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-wl-neutral-300 outline-none focus:border-blue-500"
@@ -324,16 +370,14 @@ export default function ConflictsPage() {
                       "rounded-lg border transition-all",
                       isExpanded
                         ? "border-blue-500 bg-[rgba(59,82,255,0.08)]"
-                        : "border-wl-border-default bg-wl-bg-root hover:border-blue-500"
+                        : "border-wl-border-default bg-wl-bg-root hover:border-blue-500",
                     )}
                   >
                     {/* Header */}
                     <div
                       className="p-4 cursor-pointer flex items-center justify-between"
                       onClick={() =>
-                        setExpandedConflict(
-                          isExpanded ? null : conflict.id
-                        )
+                        setExpandedConflict(isExpanded ? null : conflict.id)
                       }
                     >
                       <div className="flex items-center gap-3 flex-1">
@@ -345,7 +389,9 @@ export default function ConflictsPage() {
                           <div className="flex gap-2 mt-1">
                             <Badge variant="info">{conflict.field}</Badge>
                             <span className="text-xs text-wl-text-secondary">
-                              {new Date(conflict.createdAt).toLocaleDateString()}
+                              {new Date(
+                                conflict.createdAt,
+                              ).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
@@ -412,10 +458,8 @@ export default function ConflictsPage() {
                             }
                             disabled={resolving.has(conflict.id)}
                           >
-                            {resolving.has(conflict.id)
-                              ? "⟳"
-                              : "✓"}{" "}
-                            Accept {platform?.name}
+                            {resolving.has(conflict.id) ? "⟳" : "✓"} Accept{" "}
+                            {platform?.name}
                           </Button>
 
                           <Button
@@ -426,10 +470,8 @@ export default function ConflictsPage() {
                             }
                             disabled={resolving.has(conflict.id)}
                           >
-                            {resolving.has(conflict.id)
-                              ? "⟳"
-                              : "✓"}{" "}
-                            Accept Internal
+                            {resolving.has(conflict.id) ? "⟳" : "✓"} Accept
+                            Internal
                           </Button>
 
                           <Button
@@ -440,10 +482,7 @@ export default function ConflictsPage() {
                             }
                             disabled={resolving.has(conflict.id)}
                           >
-                            {resolving.has(conflict.id)
-                              ? "⟳"
-                              : "○"}{" "}
-                            Skip
+                            {resolving.has(conflict.id) ? "⟳" : "○"} Skip
                           </Button>
                         </div>
                       </>

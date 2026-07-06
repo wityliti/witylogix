@@ -9,7 +9,11 @@ This document shows exactly how to integrate the Socket.io real-time layer into 
 At the top of the file, add:
 
 ```typescript
-import { emitShipmentCreated, emitShipmentStatusChanged, emitShipmentAssigned } from "../lib/events.js";
+import {
+  emitShipmentCreated,
+  emitShipmentStatusChanged,
+  emitShipmentAssigned,
+} from "../lib/events.js";
 ```
 
 ### Step 2: Emit on Create (POST /)
@@ -67,70 +71,73 @@ Find the status change route and add the emit:
 ```typescript
 // ── UPDATE SHIPMENT STATUS ──────────────────────────────
 
-fastify.patch("/:id/status", async (request: FastifyRequest, reply: FastifyReply) => {
-  const { id } = request.params as { id: string };
-  const body = updateShipmentStatusSchema.parse(request.body);
-  const shopId = (request as any).shopId;
+fastify.patch(
+  "/:id/status",
+  async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+    const body = updateShipmentStatusSchema.parse(request.body);
+    const shopId = (request as any).shopId;
 
-  // Get current shipment
-  const shipment = await prisma.shipment.findUnique({
-    where: { id },
-  });
+    // Get current shipment
+    const shipment = await prisma.shipment.findUnique({
+      where: { id },
+    });
 
-  if (!shipment || shipment.shopId !== shopId) {
-    throw new NotFoundError(`Shipment ${id} not found`);
-  }
+    if (!shipment || shipment.shopId !== shopId) {
+      throw new NotFoundError(`Shipment ${id} not found`);
+    }
 
-  // Validate status transition
-  const allowedTransitions = STATUS_TRANSITIONS[shipment.status] || [];
-  if (!allowedTransitions.includes(body.status)) {
-    throw new ConflictError(
-      `Cannot transition from ${shipment.status} to ${body.status}. Allowed: ${allowedTransitions.join(", ")}`,
-    );
-  }
+    // Validate status transition
+    const allowedTransitions = STATUS_TRANSITIONS[shipment.status] || [];
+    if (!allowedTransitions.includes(body.status)) {
+      throw new ConflictError(
+        `Cannot transition from ${shipment.status} to ${body.status}. Allowed: ${allowedTransitions.join(", ")}`,
+      );
+    }
 
-  const previousStatus = shipment.status;
+    const previousStatus = shipment.status;
 
-  // Update shipment
-  const updated = await prisma.shipment.update({
-    where: { id },
-    data: {
-      status: body.status,
-    },
-  });
-
-  // Create activity log
-  await prisma.activityLog.create({
-    data: {
-      shopId,
-      entityType: "SHIPMENT",
-      entityId: id,
-      action: "STATUS_CHANGED",
-      metadata: {
-        previousStatus,
-        newStatus: body.status,
-        reason: body.reason,
+    // Update shipment
+    const updated = await prisma.shipment.update({
+      where: { id },
+      data: {
+        status: body.status,
       },
-    },
-  });
+    });
 
-  // NEW: Emit real-time event
-  emitShipmentStatusChanged({
-    id: updated.id,
-    shopId: updated.shopId,
-    status: updated.status,
-    orderId: updated.orderId,
-    trackingNumber: updated.trackingNumber,
-    driverId: updated.driverId || undefined,
-    createdAt: updated.createdAt.toISOString(),
-    updatedAt: updated.updatedAt.toISOString(),
-    previousStatus,
-    changedAt: new Date().toISOString(),
-    reason: body.reason,
-  });
+    // Create activity log
+    await prisma.activityLog.create({
+      data: {
+        shopId,
+        entityType: "SHIPMENT",
+        entityId: id,
+        action: "STATUS_CHANGED",
+        metadata: {
+          previousStatus,
+          newStatus: body.status,
+          reason: body.reason,
+        },
+      },
+    });
 
-  return reply.send(updated);
-});
+    // NEW: Emit real-time event
+    emitShipmentStatusChanged({
+      id: updated.id,
+      shopId: updated.shopId,
+      status: updated.status,
+      orderId: updated.orderId,
+      trackingNumber: updated.trackingNumber,
+      driverId: updated.driverId || undefined,
+      createdAt: updated.createdAt.toISOString(),
+      updatedAt: updated.updatedAt.toISOString(),
+      previousStatus,
+      changedAt: new Date().toISOString(),
+      reason: body.reason,
+    });
+
+    return reply.send(updated);
+  },
+);
 ```
 
 ### Step 4: Emit on Assign (PATCH /:id/assign)
@@ -140,58 +147,62 @@ Find the assign route and add the emit:
 ```typescript
 // ── ASSIGN SHIPMENT TO DRIVER ──────────────────────────
 
-fastify.patch("/:id/assign", async (request: FastifyRequest, reply: FastifyReply) => {
-  const { id } = request.params as { id: string };
-  const { driverId } = request.body as { driverId: string };
-  const shopId = (request as any).shopId;
+fastify.patch(
+  "/:id/assign",
+  async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+    const { driverId } = request.body as { driverId: string };
+    const shopId = (request as any).shopId;
 
-  // Get shipment
-  const shipment = await prisma.shipment.findUnique({
-    where: { id },
-  });
+    // Get shipment
+    const shipment = await prisma.shipment.findUnique({
+      where: { id },
+    });
 
-  if (!shipment || shipment.shopId !== shopId) {
-    throw new NotFoundError(`Shipment ${id} not found`);
-  }
+    if (!shipment || shipment.shopId !== shopId) {
+      throw new NotFoundError(`Shipment ${id} not found`);
+    }
 
-  // Verify driver exists and belongs to shop
-  const driver = await prisma.driver.findUnique({
-    where: { id: driverId },
-  });
+    // Verify driver exists and belongs to shop
+    const driver = await prisma.driver.findUnique({
+      where: { id: driverId },
+    });
 
-  if (!driver || driver.shopId !== shopId) {
-    throw new NotFoundError(`Driver ${driverId} not found`);
-  }
+    if (!driver || driver.shopId !== shopId) {
+      throw new NotFoundError(`Driver ${driverId} not found`);
+    }
 
-  // Assign shipment
-  const updated = await prisma.shipment.update({
-    where: { id },
-    data: {
-      driverId,
-    },
-  });
+    // Assign shipment
+    const updated = await prisma.shipment.update({
+      where: { id },
+      data: {
+        driverId,
+      },
+    });
 
-  // NEW: Emit real-time event
-  emitShipmentAssigned({
-    id: updated.id,
-    shopId: updated.shopId,
-    status: updated.status,
-    orderId: updated.orderId,
-    trackingNumber: updated.trackingNumber,
-    driverId: driver.id,
-    createdAt: updated.createdAt.toISOString(),
-    updatedAt: updated.updatedAt.toISOString(),
-    driverName: driver.name,
-    assignedAt: new Date().toISOString(),
-  });
+    // NEW: Emit real-time event
+    emitShipmentAssigned({
+      id: updated.id,
+      shopId: updated.shopId,
+      status: updated.status,
+      orderId: updated.orderId,
+      trackingNumber: updated.trackingNumber,
+      driverId: driver.id,
+      createdAt: updated.createdAt.toISOString(),
+      updatedAt: updated.updatedAt.toISOString(),
+      driverName: driver.name,
+      assignedAt: new Date().toISOString(),
+    });
 
-  return reply.send(updated);
-});
+    return reply.send(updated);
+  },
+);
 ```
 
 ## Complete Example: Before & After
 
 ### Before (Current)
+
 ```typescript
 fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
   const body = createShipmentSchema.parse(request.body);
@@ -201,6 +212,7 @@ fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
 ```
 
 ### After (With Real-time)
+
 ```typescript
 fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
   const body = createShipmentSchema.parse(request.body);
@@ -292,12 +304,14 @@ emitDriverLocationUpdated({
 ## Testing the Integration
 
 ### 1. Start the API server
+
 ```bash
 cd apps/api
 npm run dev
 ```
 
 ### 2. Create a shipment via curl
+
 ```bash
 curl -X POST http://localhost:3000/api/v4/shipments \
   -H "Authorization: Bearer YOUR_TOKEN" \
@@ -313,13 +327,16 @@ curl -X POST http://localhost:3000/api/v4/shipments \
 ```
 
 ### 3. Check browser console (if dashboard is connected)
+
 You should see:
+
 ```
 [Socket] Subscribed to shop: shop-123
 [Socket] Received event: shipment:created
 ```
 
 ### 4. Dashboard updates automatically
+
 The shipment list will show the new shipment without page refresh!
 
 ## Common Patterns
@@ -388,6 +405,7 @@ return reply.status(201).send(shipment);
 ## Summary
 
 The pattern is simple:
+
 1. Import emit helpers at top of file
 2. After any mutation (create/update/delete), call emit function
 3. Pass the updated data to emit function

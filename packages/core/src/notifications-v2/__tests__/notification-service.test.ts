@@ -244,7 +244,11 @@ describe("NotificationService", () => {
 
       // Set preferences
       PreferenceManager.enableEventType(customerId, "email", "order_confirmed");
-      PreferenceManager.enableEventType(customerId, "sms", "delivery_scheduled");
+      PreferenceManager.enableEventType(
+        customerId,
+        "sms",
+        "delivery_scheduled",
+      );
       PreferenceManager.disableEventType(customerId, "push", "order_confirmed");
 
       // Send notification

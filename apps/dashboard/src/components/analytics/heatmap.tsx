@@ -63,7 +63,7 @@ export function Heatmap({
       setTooltipPos({ x: event.clientX, y: event.clientY });
       setTooltipVisible(true);
     },
-    [rowLabels, colLabels]
+    [rowLabels, colLabels],
   );
 
   const handleCellMouseLeave = () => {
@@ -76,7 +76,7 @@ export function Heatmap({
 
   const labelWidth = Math.max(
     rowLabels.length > 0 ? Math.max(...rowLabels.map((l) => l.length)) * 7 : 0,
-    40
+    40,
   );
   const labelHeight = colLabels.length > 0 ? 50 : 20;
 
@@ -154,7 +154,7 @@ export function Heatmap({
                       : "none",
                 }}
               />
-            ))
+            )),
           )}
         </svg>
       </div>
@@ -170,9 +170,7 @@ export function Heatmap({
             <p className="text-wl-text-secondary text-xs">
               {data?.row} × {data?.col}
             </p>
-            <p className="font-semibold text-wl-text-primary">
-              {data?.value}
-            </p>
+            <p className="font-semibold text-wl-text-primary">{data?.value}</p>
           </div>
         )}
       />

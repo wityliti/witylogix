@@ -80,7 +80,10 @@ describe("Goal-to-Feature Mapper", () => {
     });
 
     it("should deduplicate page names", () => {
-      const features = mapGoalsToFeatures([Goal.ROUTE_OPTIMIZATION, Goal.ROUTE_OPTIMIZATION]);
+      const features = mapGoalsToFeatures([
+        Goal.ROUTE_OPTIMIZATION,
+        Goal.ROUTE_OPTIMIZATION,
+      ]);
       const unique = new Set(features);
       expect(features.length).toBe(unique.size);
     });
@@ -118,7 +121,10 @@ describe("Goal-to-Feature Mapper", () => {
     });
 
     it("should use first goal for multi-goal layout", () => {
-      const layout1 = suggestDashboardLayout([Goal.FLEET_TRACKING, Goal.ROUTE_OPTIMIZATION]);
+      const layout1 = suggestDashboardLayout([
+        Goal.FLEET_TRACKING,
+        Goal.ROUTE_OPTIMIZATION,
+      ]);
       const layout2 = suggestDashboardLayout([Goal.FLEET_TRACKING]);
       expect(layout1.name).toBe(layout2.name);
     });
@@ -249,17 +255,23 @@ describe("Goal-to-Feature Mapper", () => {
 
   describe("isIntegrationRelevantToGoals", () => {
     it("should find Samsara relevant to FLEET_TRACKING", () => {
-      const relevant = isIntegrationRelevantToGoals("samsara", [Goal.FLEET_TRACKING]);
+      const relevant = isIntegrationRelevantToGoals("samsara", [
+        Goal.FLEET_TRACKING,
+      ]);
       expect(relevant).toBe(true);
     });
 
     it("should find Shopify relevant to ORDER_MANAGEMENT", () => {
-      const relevant = isIntegrationRelevantToGoals("shopify", [Goal.ORDER_MANAGEMENT]);
+      const relevant = isIntegrationRelevantToGoals("shopify", [
+        Goal.ORDER_MANAGEMENT,
+      ]);
       expect(relevant).toBe(true);
     });
 
     it("should find Twilio relevant to CUSTOMER_NOTIFICATIONS", () => {
-      const relevant = isIntegrationRelevantToGoals("twilio", [Goal.CUSTOMER_NOTIFICATIONS]);
+      const relevant = isIntegrationRelevantToGoals("twilio", [
+        Goal.CUSTOMER_NOTIFICATIONS,
+      ]);
       expect(relevant).toBe(true);
     });
 
@@ -279,26 +291,23 @@ describe("Goal-to-Feature Mapper", () => {
 
   describe("getIntegrationsByCategory", () => {
     it("should return fleet integrations", () => {
-      const integrations = getIntegrationsByCategory(
-        "fleet-telematics",
-        [Goal.FLEET_TRACKING],
-      );
+      const integrations = getIntegrationsByCategory("fleet-telematics", [
+        Goal.FLEET_TRACKING,
+      ]);
       expect(Array.isArray(integrations)).toBe(true);
     });
 
     it("should return routing integrations", () => {
-      const integrations = getIntegrationsByCategory(
-        "routing",
-        [Goal.ROUTE_OPTIMIZATION],
-      );
+      const integrations = getIntegrationsByCategory("routing", [
+        Goal.ROUTE_OPTIMIZATION,
+      ]);
       expect(Array.isArray(integrations)).toBe(true);
     });
 
     it("should filter by goal relevance", () => {
-      const integrations = getIntegrationsByCategory(
-        "fleet-telematics",
-        [Goal.FLEET_TRACKING],
-      );
+      const integrations = getIntegrationsByCategory("fleet-telematics", [
+        Goal.FLEET_TRACKING,
+      ]);
 
       // All returned should be fleet-related and relevant
       for (const slug of integrations) {
@@ -307,10 +316,9 @@ describe("Goal-to-Feature Mapper", () => {
     });
 
     it("should return empty for unknown category", () => {
-      const integrations = getIntegrationsByCategory(
-        "unknown_category",
-        [Goal.FLEET_TRACKING],
-      );
+      const integrations = getIntegrationsByCategory("unknown_category", [
+        Goal.FLEET_TRACKING,
+      ]);
       expect(Array.isArray(integrations)).toBe(true);
     });
   });

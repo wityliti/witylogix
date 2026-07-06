@@ -5,7 +5,7 @@
  * Exponentially weighted moving average (EWMA) control charts
  */
 
-import type { Anomaly, AnomalyType } from '../types';
+import type { Anomaly, AnomalyType } from "../types";
 
 /**
  * EWMA (Exponentially Weighted Moving Average) state
@@ -30,9 +30,12 @@ export function initializeStatistics(historicalValues: number[]): EWMAState {
     };
   }
 
-  const mean = historicalValues.reduce((sum, val) => sum + val, 0) / historicalValues.length;
+  const mean =
+    historicalValues.reduce((sum, val) => sum + val, 0) /
+    historicalValues.length;
   const variance =
-    historicalValues.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / historicalValues.length;
+    historicalValues.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+    historicalValues.length;
   const stdDev = Math.sqrt(variance);
 
   return {
@@ -46,11 +49,16 @@ export function initializeStatistics(historicalValues: number[]): EWMAState {
 /**
  * Update EWMA state with new observation
  */
-export function updateEWMA(state: EWMAState, observation: number, lambda: number = 0.3): EWMAState {
+export function updateEWMA(
+  state: EWMAState,
+  observation: number,
+  lambda: number = 0.3,
+): EWMAState {
   const newEWMA = lambda * observation + (1 - lambda) * state.ewma;
 
   const deviation = observation - state.ewma;
-  const newEWMAVar = lambda * Math.pow(deviation, 2) + (1 - lambda) * state.ewmaVar;
+  const newEWMAVar =
+    lambda * Math.pow(deviation, 2) + (1 - lambda) * state.ewmaVar;
 
   return {
     mean: state.mean,
@@ -80,17 +88,25 @@ export class CUSUMDetector {
   /**
    * Update CUSUM with new observation
    */
-  update(observation: number): { positiveSum: number; negativeSum: number; isAnomaly: boolean } {
+  update(observation: number): {
+    positiveSum: number;
+    negativeSum: number;
+    isAnomaly: boolean;
+  } {
     // Standardize
     const standardized =
-      this.stdDev > 0 ? (observation - this.mean) / this.stdDev : observation - this.mean;
+      this.stdDev > 0
+        ? (observation - this.mean) / this.stdDev
+        : observation - this.mean;
 
     // Update sums with min of 0 (one-sided CUSUM)
     this.positiveSum = Math.max(0, this.positiveSum + standardized);
     this.negativeSum = Math.min(0, this.negativeSum + standardized);
 
     // Check if exceeded threshold
-    const isAnomaly = Math.abs(this.positiveSum) > this.threshold || Math.abs(this.negativeSum) > this.threshold;
+    const isAnomaly =
+      Math.abs(this.positiveSum) > this.threshold ||
+      Math.abs(this.negativeSum) > this.threshold;
 
     if (isAnomaly) {
       // Reset on detection
@@ -121,15 +137,16 @@ export function classifyAnomaly(
   historicalValues: number[],
   lookbackWindow: number = 20,
 ): AnomalyType {
-  if (expected === 0) return 'none';
+  if (expected === 0) return "none";
 
   const deviation = observation - expected;
   const percentDeviation = Math.abs(deviation) / (expected || 1);
-  const zScore = historicalStdDev > 0 ? Math.abs(deviation) / historicalStdDev : 0;
+  const zScore =
+    historicalStdDev > 0 ? Math.abs(deviation) / historicalStdDev : 0;
 
   // Spike or drop
   if (percentDeviation > 0.5 && zScore > 2) {
-    return deviation > 0 ? 'spike' : 'drop';
+    return deviation > 0 ? "spike" : "drop";
   }
 
   // Trend shift - check if last few values consistently differ
@@ -137,25 +154,28 @@ export function classifyAnomaly(
     const recent = historicalValues.slice(-lookbackWindow);
     const recentMean = recent.reduce((a, b) => a + b, 0) / recent.length;
     const older = historicalValues.slice(-2 * lookbackWindow, -lookbackWindow);
-    const olderMean = older.length > 0 ? older.reduce((a, b) => a + b, 0) / older.length : recentMean;
+    const olderMean =
+      older.length > 0
+        ? older.reduce((a, b) => a + b, 0) / older.length
+        : recentMean;
 
     const trendChange = Math.abs(recentMean - olderMean) / (olderMean || 1);
     if (trendChange > 0.3) {
-      return 'trend-shift';
+      return "trend-shift";
     }
   }
 
   // Seasonal break - expected value based on seasonal pattern but actual differs significantly
   if (percentDeviation > 0.4) {
-    return 'seasonal-break';
+    return "seasonal-break";
   }
 
   // Gradual drift
   if (percentDeviation > 0.2 && zScore > 1.5) {
-    return 'gradual-drift';
+    return "gradual-drift";
   }
 
-  return 'none';
+  return "none";
 }
 
 /**
@@ -167,28 +187,29 @@ export function calculateSeverity(
   historicalStdDev: number,
   anomalyType: AnomalyType,
 ): number {
-  if (anomalyType === 'none') return 0;
+  if (anomalyType === "none") return 0;
 
   const deviation = Math.abs(observation - expected);
   const percentDeviation = Math.abs(deviation) / (expected || 1);
-  const zScore = historicalStdDev > 0 ? deviation / historicalStdDev : percentDeviation * 3;
+  const zScore =
+    historicalStdDev > 0 ? deviation / historicalStdDev : percentDeviation * 3;
 
   // Base severity from z-score
   let severity = Math.min(10, zScore);
 
   // Type-specific adjustments
   switch (anomalyType) {
-    case 'spike':
-    case 'drop':
+    case "spike":
+    case "drop":
       severity = Math.min(10, severity * 1.2);
       break;
-    case 'trend-shift':
+    case "trend-shift":
       severity = Math.min(10, severity * 1.5); // Trend shifts are serious
       break;
-    case 'seasonal-break':
+    case "seasonal-break":
       severity = Math.min(10, severity * 1.1);
       break;
-    case 'gradual-drift':
+    case "gradual-drift":
       severity = Math.min(10, severity * 0.8);
       break;
   }
@@ -221,7 +242,12 @@ export function detectAnomaly(
   );
 
   // Calculate severity
-  const severity = calculateSeverity(observation, expectedValue, stats.stdDev, anomalyType);
+  const severity = calculateSeverity(
+    observation,
+    expectedValue,
+    stats.stdDev,
+    anomalyType,
+  );
 
   // Generate message
   const message = generateAnomalyMessage(
@@ -232,7 +258,7 @@ export function detectAnomaly(
   );
 
   // Determine if should alert
-  const shouldAlert = anomalyType !== 'none' && severity >= 5;
+  const shouldAlert = anomalyType !== "none" && severity >= 5;
 
   return {
     timestamp,
@@ -240,7 +266,8 @@ export function detectAnomaly(
     expectedValue,
     actualValue: observation,
     severity,
-    zStatistic: stats.stdDev > 0 ? (observation - stats.mean) / stats.stdDev : 0,
+    zStatistic:
+      stats.stdDev > 0 ? (observation - stats.mean) / stats.stdDev : 0,
     cumulativeSum: cusumResult.positiveSum + cusumResult.negativeSum,
     message,
     shouldAlert,
@@ -256,28 +283,29 @@ function generateAnomalyMessage(
   type: AnomalyType,
   severity: number,
 ): string {
-  if (type === 'none') {
-    return 'No anomaly detected';
+  if (type === "none") {
+    return "No anomaly detected";
   }
 
   const percentDiff = Math.abs(observation - expected) / (expected || 1);
-  const direction = observation > expected ? 'higher' : 'lower';
+  const direction = observation > expected ? "higher" : "lower";
 
-  const severityLabel = severity >= 8 ? 'Critical' : severity >= 6 ? 'High' : 'Medium';
+  const severityLabel =
+    severity >= 8 ? "Critical" : severity >= 6 ? "High" : "Medium";
 
   switch (type) {
-    case 'spike':
+    case "spike":
       return `${severityLabel}: Demand spike detected - ${percentDiff.toFixed(0)}% ${direction} than expected`;
-    case 'drop':
+    case "drop":
       return `${severityLabel}: Demand drop detected - ${percentDiff.toFixed(0)}% ${direction} than expected`;
-    case 'trend-shift':
+    case "trend-shift":
       return `${severityLabel}: Trend shift detected - sustained change in demand pattern`;
-    case 'seasonal-break':
+    case "seasonal-break":
       return `${severityLabel}: Seasonal pattern break - demand differs from seasonal expectation`;
-    case 'gradual-drift':
+    case "gradual-drift":
       return `${severityLabel}: Gradual drift detected - slow but consistent change in demand`;
     default:
-      return 'Unknown anomaly type';
+      return "Unknown anomaly type";
   }
 }
 
@@ -303,7 +331,7 @@ export function detectAnomalies(
       cusum,
     );
 
-    if (anomaly.type !== 'none') {
+    if (anomaly.type !== "none") {
       anomalies.push(anomaly);
     }
 
@@ -330,7 +358,9 @@ export interface ControlChartBounds {
 /**
  * Calculate Shewhart control chart limits
  */
-export function calculateControlLimits(historicalValues: number[]): ControlChartBounds {
+export function calculateControlLimits(
+  historicalValues: number[],
+): ControlChartBounds {
   const stats = initializeStatistics(historicalValues);
 
   return {

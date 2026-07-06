@@ -168,7 +168,9 @@ export function emitShipmentsCreated(shipments: ShipmentEvent[]): void {
 /**
  * Emit multiple driver location updates
  */
-export function emitDriverLocationsUpdated(drivers: DriverLocationEvent[]): void {
+export function emitDriverLocationsUpdated(
+  drivers: DriverLocationEvent[],
+): void {
   for (const driver of drivers) {
     emitDriverLocationUpdated(driver);
   }

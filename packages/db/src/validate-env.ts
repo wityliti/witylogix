@@ -73,16 +73,9 @@ function parseEnvExample(filePath: string): Map<string, string> {
  * Categorize environment variables by requirement level
  */
 function categorizeEnvVars(envVars: Map<string, string>): EnvCategory {
-  const requiredVars = [
-    "DATABASE_URL",
-    "REDIS_URL",
-    "JWT_SECRET",
-  ];
+  const requiredVars = ["DATABASE_URL", "REDIS_URL", "JWT_SECRET"];
 
-  const developmentOnlyVars = [
-    "DEBUG",
-    "LOG_LEVEL",
-  ];
+  const developmentOnlyVars = ["DEBUG", "LOG_LEVEL"];
 
   const required: EnvVar[] = [];
   const optional: EnvVar[] = [];
@@ -115,15 +108,21 @@ function categorizeEnvVars(envVars: Map<string, string>): EnvCategory {
 export function validateEnv(): boolean {
   const envExamplePath = path.resolve(process.cwd(), ".env.example");
 
-  console.log(`\n${colors.cyan}${colors.bright}● Environment Validation${colors.reset}\n`);
+  console.log(
+    `\n${colors.cyan}${colors.bright}● Environment Validation${colors.reset}\n`,
+  );
 
   // Parse .env.example
   let envVars: Map<string, string>;
   try {
     envVars = parseEnvExample(envExamplePath);
-    console.log(`${colors.green}✓${colors.reset} Loaded .env.example with ${envVars.size} variables\n`);
+    console.log(
+      `${colors.green}✓${colors.reset} Loaded .env.example with ${envVars.size} variables\n`,
+    );
   } catch (error) {
-    console.error(`${colors.red}✗${colors.reset} Failed to parse .env.example: ${error}\n`);
+    console.error(
+      `${colors.red}✗${colors.reset} Failed to parse .env.example: ${error}\n`,
+    );
     return false;
   }
 
@@ -134,9 +133,13 @@ export function validateEnv(): boolean {
   const missingRequired = required.filter((v) => !v.value);
 
   if (missingRequired.length > 0) {
-    console.log(`${colors.red}${colors.bright}Required Variables (Missing):${colors.reset}`);
+    console.log(
+      `${colors.red}${colors.bright}Required Variables (Missing):${colors.reset}`,
+    );
     for (const v of missingRequired) {
-      console.log(`  ${colors.red}✗${colors.reset} ${colors.bright}${v.name}${colors.reset}`);
+      console.log(
+        `  ${colors.red}✗${colors.reset} ${colors.bright}${v.name}${colors.reset}`,
+      );
       if (v.description) {
         console.log(`    ${colors.yellow}${v.description}${colors.reset}`);
       }
@@ -147,10 +150,15 @@ export function validateEnv(): boolean {
   // Summary of required variables
   const presentRequired = required.filter((v) => v.value);
   if (presentRequired.length > 0) {
-    console.log(`${colors.green}${colors.bright}Required Variables (Set):${colors.reset}`);
+    console.log(
+      `${colors.green}${colors.bright}Required Variables (Set):${colors.reset}`,
+    );
     for (const v of presentRequired) {
-      const displayValue = v.value!.length > 50 ? `${v.value!.substring(0, 47)}...` : v.value!;
-      console.log(`  ${colors.green}✓${colors.reset} ${colors.bright}${v.name}${colors.reset} = ${colors.dim}${displayValue}${colors.reset}`);
+      const displayValue =
+        v.value!.length > 50 ? `${v.value!.substring(0, 47)}...` : v.value!;
+      console.log(
+        `  ${colors.green}✓${colors.reset} ${colors.bright}${v.name}${colors.reset} = ${colors.dim}${displayValue}${colors.reset}`,
+      );
     }
     console.log("");
   }
@@ -160,7 +168,9 @@ export function validateEnv(): boolean {
   const missingOptional = optional.filter((v) => !v.value);
 
   if (presentOptional.length > 0) {
-    console.log(`${colors.blue}${colors.bright}Optional Variables (Set):${colors.reset}`);
+    console.log(
+      `${colors.blue}${colors.bright}Optional Variables (Set):${colors.reset}`,
+    );
     for (const v of presentOptional) {
       console.log(`  ${colors.blue}●${colors.reset} ${v.name}`);
     }
@@ -168,12 +178,16 @@ export function validateEnv(): boolean {
   }
 
   if (missingOptional.length > 0) {
-    console.log(`${colors.yellow}${colors.bright}Optional Variables (Not Set):${colors.reset}`);
+    console.log(
+      `${colors.yellow}${colors.bright}Optional Variables (Not Set):${colors.reset}`,
+    );
     for (const v of missingOptional.slice(0, 5)) {
       console.log(`  ${colors.yellow}○${colors.reset} ${v.name}`);
     }
     if (missingOptional.length > 5) {
-      console.log(`  ${colors.yellow}○${colors.reset} ...and ${missingOptional.length - 5} more`);
+      console.log(
+        `  ${colors.yellow}○${colors.reset} ...and ${missingOptional.length - 5} more`,
+      );
     }
     console.log("");
   }
@@ -181,7 +195,9 @@ export function validateEnv(): boolean {
   // Development variables
   const presentDev = development.filter((v) => v.value);
   if (presentDev.length > 0) {
-    console.log(`${colors.cyan}${colors.bright}Development Variables:${colors.reset}`);
+    console.log(
+      `${colors.cyan}${colors.bright}Development Variables:${colors.reset}`,
+    );
     for (const v of presentDev) {
       console.log(`  ${colors.cyan}▸${colors.reset} ${v.name} = ${v.value}`);
     }
@@ -190,15 +206,21 @@ export function validateEnv(): boolean {
 
   // Final result
   if (missingRequired.length === 0) {
-    console.log(`${colors.green}${colors.bright}✓ Validation passed!${colors.reset} All required environment variables are set.\n`);
+    console.log(
+      `${colors.green}${colors.bright}✓ Validation passed!${colors.reset} All required environment variables are set.\n`,
+    );
     return true;
   } else {
     console.log(
-      `${colors.red}${colors.bright}✗ Validation failed!${colors.reset} ${missingRequired.length} required variable(s) missing.\n`
+      `${colors.red}${colors.bright}✗ Validation failed!${colors.reset} ${missingRequired.length} required variable(s) missing.\n`,
     );
-    console.log(`${colors.yellow}Please set the following before continuing:${colors.reset}`);
+    console.log(
+      `${colors.yellow}Please set the following before continuing:${colors.reset}`,
+    );
     for (const v of missingRequired) {
-      console.log(`  ${colors.bright}${v.name}${colors.reset}${v.description ? ` — ${v.description}` : ""}`);
+      console.log(
+        `  ${colors.bright}${v.name}${colors.reset}${v.description ? ` — ${v.description}` : ""}`,
+      );
     }
     console.log("");
     return false;

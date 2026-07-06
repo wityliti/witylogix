@@ -2,12 +2,12 @@
  * Finance Section Layout — Shared layout for all finance pages
  */
 
-'use client';
+"use client";
 
-import { ReactNode } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import { ReactNode } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 interface FinanceLayoutProps {
   children: ReactNode;
@@ -17,15 +17,15 @@ export default function FinanceLayout({ children }: FinanceLayoutProps) {
   const pathname = usePathname();
 
   const tabs = [
-    { href: '/finance', label: 'Dashboard' },
-    { href: '/finance/invoices', label: 'Invoices' },
-    { href: '/finance/reconciliation', label: 'Reconciliation' },
-    { href: '/finance/cod', label: 'COD Reconciliation' },
+    { href: "/finance", label: "Dashboard" },
+    { href: "/finance/invoices", label: "Invoices" },
+    { href: "/finance/reconciliation", label: "Reconciliation" },
+    { href: "/finance/cod", label: "COD Reconciliation" },
   ];
 
   const isActive = (href: string) => {
-    if (href === '/finance') {
-      return pathname === '/finance' || pathname === '/(dashboard)/finance';
+    if (href === "/finance") {
+      return pathname === "/finance" || pathname === "/(dashboard)/finance";
     }
     return pathname.includes(href);
   };
@@ -41,10 +41,10 @@ export default function FinanceLayout({ children }: FinanceLayoutProps) {
                 key={tab.href}
                 href={tab.href}
                 className={cn(
-                  'px-4 py-4 text-sm font-medium border-b-2 transition-colors duration-fast',
+                  "px-4 py-4 text-sm font-medium border-b-2 transition-colors duration-fast",
                   isActive(tab.href)
-                    ? 'border-wl-primary-400 text-wl-primary-400'
-                    : 'border-transparent text-wl-text-secondary hover:text-wl-text-primary'
+                    ? "border-wl-primary-400 text-wl-primary-400"
+                    : "border-transparent text-wl-text-secondary hover:text-wl-text-primary",
                 )}
               >
                 {tab.label}
@@ -55,9 +55,7 @@ export default function FinanceLayout({ children }: FinanceLayoutProps) {
       </div>
 
       {/* Page Content */}
-      <main className="flex-1">
-        {children}
-      </main>
+      <main className="flex-1">{children}</main>
     </div>
   );
 }

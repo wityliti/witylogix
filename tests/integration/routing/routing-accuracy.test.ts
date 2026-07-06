@@ -222,8 +222,10 @@ describe("Routing Accuracy - Provider Capabilities", () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("Routing Accuracy - NYC Short Route (3km)", () => {
-  let mockClients: Map<string, ReturnType<typeof createMockHTTPClient>> =
-    new Map();
+  let mockClients: Map<
+    string,
+    ReturnType<typeof createMockHTTPClient>
+  > = new Map();
   const route = testRoutes[0];
 
   beforeEach(() => {
@@ -278,12 +280,7 @@ describe("Routing Accuracy - NYC Short Route (3km)", () => {
       });
       const data = await response.json();
       results.push(
-        createMockRouteResponse(
-          provider,
-          data.distance,
-          data.duration,
-          false,
-        ),
+        createMockRouteResponse(provider, data.distance, data.duration, false),
       );
     }
 
@@ -308,12 +305,7 @@ describe("Routing Accuracy - NYC Short Route (3km)", () => {
       });
       const data = await response.json();
       results.push(
-        createMockRouteResponse(
-          provider,
-          data.distance,
-          data.duration,
-          false,
-        ),
+        createMockRouteResponse(provider, data.distance, data.duration, false),
       );
     }
 
@@ -337,7 +329,12 @@ describe("Routing Accuracy - NYC Short Route (3km)", () => {
       },
     );
     const data = await response.json();
-    const result = createMockRouteResponse("here", data.distance, data.duration, true);
+    const result = createMockRouteResponse(
+      "here",
+      data.distance,
+      data.duration,
+      true,
+    );
 
     expect(result.alternative).toBeDefined();
     expect(result.alternative?.length).toBeGreaterThan(0);
@@ -346,8 +343,10 @@ describe("Routing Accuracy - NYC Short Route (3km)", () => {
 });
 
 describe("Routing Accuracy - LA Medium Route (15km)", () => {
-  let mockClients: Map<string, ReturnType<typeof createMockHTTPClient>> =
-    new Map();
+  let mockClients: Map<
+    string,
+    ReturnType<typeof createMockHTTPClient>
+  > = new Map();
   const route = testRoutes[1];
 
   beforeEach(() => {
@@ -389,7 +388,8 @@ describe("Routing Accuracy - LA Medium Route (15km)", () => {
       distances.push(data.distance);
     }
 
-    const meanDistance = distances.reduce((a, b) => a + b, 0) / distances.length;
+    const meanDistance =
+      distances.reduce((a, b) => a + b, 0) / distances.length;
     const minDistance = Math.min(...distances);
     const maxDistance = Math.max(...distances);
 
@@ -408,14 +408,17 @@ describe("Routing Accuracy - LA Medium Route (15km)", () => {
       durations.push(data.duration);
     }
 
-    const meanDuration = durations.reduce((a, b) => a + b, 0) / durations.length;
+    const meanDuration =
+      durations.reduce((a, b) => a + b, 0) / durations.length;
     expect(meanDuration).toBeCloseTo(route.durationSec, -1);
   });
 });
 
 describe("Routing Accuracy - Highway Long Route (600km)", () => {
-  let mockClients: Map<string, ReturnType<typeof createMockHTTPClient>> =
-    new Map();
+  let mockClients: Map<
+    string,
+    ReturnType<typeof createMockHTTPClient>
+  > = new Map();
   const route = testRoutes[2];
 
   beforeEach(() => {
@@ -460,7 +463,11 @@ describe("Routing Accuracy - Highway Long Route (600km)", () => {
   });
 
   it("should handle long-distance routing accurately", async () => {
-    const results: Array<{ provider: string; distance: number; duration: number }> = [];
+    const results: Array<{
+      provider: string;
+      distance: number;
+      duration: number;
+    }> = [];
 
     for (const [provider, client] of mockClients) {
       const response = await client.fetch("https://example.com", {
@@ -678,9 +685,12 @@ describe("Routing Accuracy - Truck Routing", () => {
   });
 
   it("should be longer than car routing for same route", async () => {
-    const truckResponse = await mockTruckClient.fetch("https://here.com/truck", {
-      method: "POST",
-    });
+    const truckResponse = await mockTruckClient.fetch(
+      "https://here.com/truck",
+      {
+        method: "POST",
+      },
+    );
     const truckData = await truckResponse.json();
 
     const carClient = createMockHTTPClient({
@@ -728,7 +738,9 @@ describe("Routing Accuracy - Provider Failover", () => {
       ],
     });
 
-    const primaryResponse = await primaryClient.fetch("https://provider.com/primary");
+    const primaryResponse = await primaryClient.fetch(
+      "https://provider.com/primary",
+    );
     expect(primaryResponse.status).toBe(500);
 
     const secondaryResponse = await secondaryClient.fetch(
@@ -777,7 +789,9 @@ describe("Routing Accuracy - Provider Failover", () => {
     const primaryResult = createMockRouteResponse("primary", 3200, 600);
     const secondaryResult = createMockRouteResponse("secondary", 3180, 595);
 
-    const variance = Math.abs(primaryResult.distance - secondaryResult.distance) / primaryResult.distance;
+    const variance =
+      Math.abs(primaryResult.distance - secondaryResult.distance) /
+      primaryResult.distance;
     expect(variance).toBeLessThan(0.15); // Results should be similar
   });
 });

@@ -1,10 +1,10 @@
-import { render } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import { WLMapContext } from '../wl-map-context';
-import { ZoneLayer } from '../zone-layer';
+import { render } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { WLMapContext } from "../wl-map-context";
+import { ZoneLayer } from "../zone-layer";
 
-describe('<ZoneLayer>', () => {
-  it('adds a GeoJSON source and layer on mount', () => {
+describe("<ZoneLayer>", () => {
+  it("adds a GeoJSON source and layer on mount", () => {
     const addSource = vi.fn();
     const addLayer = vi.fn();
     const getSource = vi.fn();
@@ -22,10 +22,17 @@ describe('<ZoneLayer>', () => {
     };
     render(
       <WLMapContext.Provider value={map as unknown as never}>
-        <ZoneLayer zones={{ type: 'FeatureCollection', features: [] }} selectedId={null} onSelect={() => {}} />
+        <ZoneLayer
+          zones={{ type: "FeatureCollection", features: [] }}
+          selectedId={null}
+          onSelect={() => {}}
+        />
       </WLMapContext.Provider>,
     );
-    expect(addSource).toHaveBeenCalledWith('zones', expect.objectContaining({ type: 'geojson' }));
+    expect(addSource).toHaveBeenCalledWith(
+      "zones",
+      expect.objectContaining({ type: "geojson" }),
+    );
     expect(addLayer).toHaveBeenCalled();
   });
 });

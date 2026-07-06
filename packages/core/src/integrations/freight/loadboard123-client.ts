@@ -123,7 +123,7 @@ export class LoadBoard123Client extends FreightAdapter {
   private async apiRequest<T>(
     endpoint: string,
     method: string = "GET",
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     await this.preRequestCheck();
 
@@ -141,7 +141,7 @@ export class LoadBoard123Client extends FreightAdapter {
             },
             body: body ? JSON.stringify(body) : undefined,
           }),
-        `123Loadboard ${method} ${endpoint}`
+        `123Loadboard ${method} ${endpoint}`,
       )) as Response;
 
       if (!response.ok) {
@@ -189,7 +189,7 @@ export class LoadBoard123Client extends FreightAdapter {
         deliveryDate: load.deliveryDate?.toISOString(),
         commodity: load.commodity,
         hazmat: load.isHazmat,
-      }
+      },
     );
 
     return this.mapLoadBoard123LoadToLoadPosting(response);
@@ -211,10 +211,11 @@ export class LoadBoard123Client extends FreightAdapter {
     });
 
     const endpoint = `/api/v1/loads?${params.toString()}`;
-    const responses = await this.apiRequest<LoadBoard123LoadResponse[]>(endpoint);
+    const responses =
+      await this.apiRequest<LoadBoard123LoadResponse[]>(endpoint);
 
     return responses.map((response) =>
-      this.mapLoadBoard123LoadToLoadPosting(response)
+      this.mapLoadBoard123LoadToLoadPosting(response),
     );
   }
 
@@ -239,11 +240,13 @@ export class LoadBoard123Client extends FreightAdapter {
    * @param truck - Truck posting data
    * @returns Created truck posting
    */
-  async postTruck(truck: Record<string, unknown>): Promise<Record<string, unknown>> {
+  async postTruck(
+    truck: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
     const response = await this.apiRequest<Record<string, unknown>>(
       "/api/v1/trucks",
       "POST",
-      truck
+      truck,
     );
 
     return response;
@@ -255,7 +258,9 @@ export class LoadBoard123Client extends FreightAdapter {
    * @param criteria - Search criteria
    * @returns Array of truck postings
    */
-  async searchTrucks(criteria: Record<string, unknown>): Promise<Record<string, unknown>[]> {
+  async searchTrucks(
+    criteria: Record<string, unknown>,
+  ): Promise<Record<string, unknown>[]> {
     const params = new URLSearchParams();
 
     Object.entries(criteria).forEach(([key, value]) => {
@@ -283,7 +288,7 @@ export class LoadBoard123Client extends FreightAdapter {
       "POST",
       {
         carrierId,
-      }
+      },
     );
 
     return quote as FreightQuote;
@@ -297,7 +302,7 @@ export class LoadBoard123Client extends FreightAdapter {
    */
   async getQuotes(loadId: string): Promise<FreightQuote[]> {
     const quotes = await this.apiRequest<FreightQuote[]>(
-      `/api/v1/loads/${loadId}/quotes`
+      `/api/v1/loads/${loadId}/quotes`,
     );
 
     return quotes;
@@ -313,7 +318,7 @@ export class LoadBoard123Client extends FreightAdapter {
     const confirmation = await this.apiRequest(
       `/api/v1/quotes/${quoteId}/accept`,
       "POST",
-      {}
+      {},
     );
 
     return confirmation as BookingConfirmation;
@@ -326,9 +331,7 @@ export class LoadBoard123Client extends FreightAdapter {
    * @returns Carrier profile
    */
   async getCarrier(carrierId: string): Promise<CarrierProfile> {
-    const carrier = await this.apiRequest(
-      `/api/v1/carriers/${carrierId}`
-    );
+    const carrier = await this.apiRequest(`/api/v1/carriers/${carrierId}`);
 
     return carrier as CarrierProfile;
   }
@@ -339,7 +342,9 @@ export class LoadBoard123Client extends FreightAdapter {
    * @param criteria - Search criteria
    * @returns Array of carrier profiles
    */
-  async searchCarriers(criteria: Record<string, unknown>): Promise<CarrierProfile[]> {
+  async searchCarriers(
+    criteria: Record<string, unknown>,
+  ): Promise<CarrierProfile[]> {
     const params = new URLSearchParams();
 
     Object.entries(criteria).forEach(([key, value]) => {
@@ -364,7 +369,7 @@ export class LoadBoard123Client extends FreightAdapter {
     const carrier = await this.apiRequest(
       `/api/v1/carriers/${carrierId}/score`,
       "POST",
-      {}
+      {},
     );
 
     return carrier as CarrierProfile;
@@ -378,7 +383,7 @@ export class LoadBoard123Client extends FreightAdapter {
    */
   async getCarrierCreditReport(usdotNumber: string): Promise<CreditReport> {
     const creditReport = await this.apiRequest(
-      `/api/v1/credit-reports/${usdotNumber}`
+      `/api/v1/credit-reports/${usdotNumber}`,
     );
 
     return creditReport as CreditReport;
@@ -392,7 +397,7 @@ export class LoadBoard123Client extends FreightAdapter {
    */
   async monitorCarrier(carrierId: string): Promise<Record<string, unknown>> {
     const monitoring = await this.apiRequest<Record<string, unknown>>(
-      `/api/v1/carriers/${carrierId}/monitoring`
+      `/api/v1/carriers/${carrierId}/monitoring`,
     );
 
     return monitoring;
@@ -407,7 +412,7 @@ export class LoadBoard123Client extends FreightAdapter {
    */
   async getLaneRate(origin: string, destination: string): Promise<LaneRate> {
     const laneRate = await this.apiRequest(
-      `/api/v1/rates/lane?origin=${origin}&destination=${destination}`
+      `/api/v1/rates/lane?origin=${origin}&destination=${destination}`,
     );
 
     return laneRate as LaneRate;
@@ -419,11 +424,13 @@ export class LoadBoard123Client extends FreightAdapter {
    * @param rateParams - Rate calculation parameters
    * @returns Rate calculation result
    */
-  async calculateRate(rateParams: Partial<RateCalculation>): Promise<RateCalculation> {
+  async calculateRate(
+    rateParams: Partial<RateCalculation>,
+  ): Promise<RateCalculation> {
     const calculation = await this.apiRequest(
       "/api/v1/rates/calculate",
       "POST",
-      rateParams
+      rateParams,
     );
 
     return calculation as RateCalculation;
@@ -438,10 +445,10 @@ export class LoadBoard123Client extends FreightAdapter {
    */
   async getRoutingInfo(
     origin: string,
-    destination: string
+    destination: string,
   ): Promise<Record<string, unknown>> {
     const routing = await this.apiRequest<Record<string, unknown>>(
-      `/api/v1/routing?origin=${origin}&destination=${destination}`
+      `/api/v1/routing?origin=${origin}&destination=${destination}`,
     );
 
     return routing;
@@ -455,7 +462,7 @@ export class LoadBoard123Client extends FreightAdapter {
    */
   async getTracking(trackingNumber: string): Promise<ShipmentTracking> {
     const tracking = await this.apiRequest(
-      `/api/v1/shipments/${trackingNumber}`
+      `/api/v1/shipments/${trackingNumber}`,
     );
 
     return tracking as ShipmentTracking;
@@ -468,9 +475,7 @@ export class LoadBoard123Client extends FreightAdapter {
    * @returns Freight invoice
    */
   async getInvoice(loadId: string): Promise<FreightInvoice> {
-    const invoice = await this.apiRequest(
-      `/api/v1/loads/${loadId}/invoice`
-    );
+    const invoice = await this.apiRequest(`/api/v1/loads/${loadId}/invoice`);
 
     return invoice as FreightInvoice;
   }
@@ -481,9 +486,11 @@ export class LoadBoard123Client extends FreightAdapter {
    * @param carrierId - Carrier identifier
    * @returns Array of compliance documents
    */
-  async getComplianceDocuments(carrierId: string): Promise<ComplianceDocument[]> {
+  async getComplianceDocuments(
+    carrierId: string,
+  ): Promise<ComplianceDocument[]> {
     const documents = await this.apiRequest<ComplianceDocument[]>(
-      `/api/v1/carriers/${carrierId}/documents`
+      `/api/v1/carriers/${carrierId}/documents`,
     );
 
     return documents;
@@ -496,7 +503,7 @@ export class LoadBoard123Client extends FreightAdapter {
    * @returns LoadPosting object
    */
   private mapLoadBoard123LoadToLoadPosting(
-    response: LoadBoard123LoadResponse
+    response: LoadBoard123LoadResponse,
   ): LoadPosting {
     return {
       loadId: response.id,

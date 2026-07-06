@@ -38,7 +38,7 @@ describe("WebhookDebugger", () => {
           body: '{"success":true}',
           durationMs: 150,
         },
-        "delivered"
+        "delivered",
       );
 
       expect(delivery.endpointId).toBe("endpoint-1");
@@ -62,7 +62,7 @@ describe("WebhookDebugger", () => {
           3,
           { headers: {}, body: "{}" },
           { durationMs: 100, status: 200 },
-          "delivered"
+          "delivered",
         );
       }
 
@@ -81,7 +81,7 @@ describe("WebhookDebugger", () => {
         3,
         { headers: {}, body: "{}" },
         { durationMs: 100, status: 200 },
-        "delivered"
+        "delivered",
       );
 
       webhookDebugger.storeDelivery(
@@ -92,7 +92,7 @@ describe("WebhookDebugger", () => {
         3,
         { headers: {}, body: "{}" },
         { durationMs: 150, status: 200 },
-        "delivered"
+        "delivered",
       );
 
       const history = webhookDebugger.getEndpointHistory("endpoint-1", 10);
@@ -113,7 +113,7 @@ describe("WebhookDebugger", () => {
         3,
         { headers: {}, body: "{}" },
         { durationMs: 100 },
-        "pending"
+        "pending",
       );
 
       webhookDebugger.storeDelivery(
@@ -125,7 +125,7 @@ describe("WebhookDebugger", () => {
         { headers: {}, body: "{}" },
         { durationMs: 120, status: 500 },
         "pending",
-        "Server error"
+        "Server error",
       );
 
       webhookDebugger.storeDelivery(
@@ -136,14 +136,16 @@ describe("WebhookDebugger", () => {
         3,
         { headers: {}, body: "{}" },
         { durationMs: 110, status: 200 },
-        "delivered"
+        "delivered",
       );
 
       const timeline = webhookDebugger.getEventTimeline(eventId);
       expect(timeline.length).toBe(3);
 
       // Sort by attempt number for deterministic assertions
-      const sorted = [...timeline].sort((a, b) => a.attemptNumber - b.attemptNumber);
+      const sorted = [...timeline].sort(
+        (a, b) => a.attemptNumber - b.attemptNumber,
+      );
       expect(sorted[0].attemptNumber).toBe(1);
       expect(sorted[2].attemptNumber).toBe(3);
       expect(sorted[2].status).toBe("delivered");
@@ -160,7 +162,7 @@ describe("WebhookDebugger", () => {
         3,
         { headers: {}, body: "{}" },
         { durationMs: 100 },
-        "delivered"
+        "delivered",
       );
 
       const retrieved = webhookDebugger.getDelivery(delivery1.id);
@@ -192,7 +194,7 @@ describe("WebhookDebugger", () => {
           body: '{"success":true}',
           durationMs: 100,
         },
-        "delivered"
+        "delivered",
       );
 
       const replay = webhookDebugger.replayDelivery(delivery.id);
@@ -213,7 +215,7 @@ describe("WebhookDebugger", () => {
         3,
         { headers: {}, body: "{}" },
         { durationMs: 100, status: 200 },
-        "delivered"
+        "delivered",
       );
 
       // Failure (retry required)
@@ -226,7 +228,7 @@ describe("WebhookDebugger", () => {
         { headers: {}, body: "{}" },
         { durationMs: 500 },
         "pending",
-        "Timeout"
+        "Timeout",
       );
 
       webhookDebugger.storeDelivery(
@@ -237,7 +239,7 @@ describe("WebhookDebugger", () => {
         3,
         { headers: {}, body: "{}" },
         { durationMs: 120, status: 200 },
-        "delivered"
+        "delivered",
       );
 
       const stats = webhookDebugger.getEndpointStats("endpoint-1");
@@ -260,16 +262,17 @@ describe("WebhookDebugger", () => {
           3,
           { headers: {}, body: "{}" },
           { durationMs: 50 + i * 10, status: 200 },
-          "delivered"
+          "delivered",
         );
       }
 
-      const histogram = webhookDebugger.getResponseTimeHistogram("endpoint-1", 5);
+      const histogram = webhookDebugger.getResponseTimeHistogram(
+        "endpoint-1",
+        5,
+      );
       expect(histogram.length).toBe(5);
       expect(histogram[0].bucket).toMatch(/ms/);
-      expect(
-        histogram.reduce((sum, b) => sum + b.count, 0)
-      ).toBe(10);
+      expect(histogram.reduce((sum, b) => sum + b.count, 0)).toBe(10);
     });
   });
 
@@ -284,7 +287,7 @@ describe("WebhookDebugger", () => {
         { headers: {}, body: "{}" },
         { durationMs: 100 },
         "pending",
-        "ECONNREFUSED"
+        "ECONNREFUSED",
       );
 
       expect(webhookDebugger.classifyError(timeout)).toBe("timeout");
@@ -297,7 +300,7 @@ describe("WebhookDebugger", () => {
         3,
         { headers: {}, body: "{}" },
         { durationMs: 100, status: 500 },
-        "failed"
+        "failed",
       );
 
       expect(webhookDebugger.classifyError(serverError)).toBe("server_error");
@@ -314,7 +317,7 @@ describe("WebhookDebugger", () => {
         3,
         { headers: {}, body: "{}" },
         { durationMs: 100, status: 200 },
-        "delivered"
+        "delivered",
       );
 
       webhookDebugger.storeDelivery(
@@ -325,7 +328,7 @@ describe("WebhookDebugger", () => {
         3,
         { headers: {}, body: "{}" },
         { durationMs: 100, status: 200 },
-        "delivered"
+        "delivered",
       );
 
       const filtered = webhookDebugger.filterDeliveries({
@@ -344,7 +347,7 @@ describe("WebhookDebugger", () => {
         3,
         { headers: {}, body: "{}" },
         { durationMs: 100, status: 200 },
-        "delivered"
+        "delivered",
       );
 
       webhookDebugger.storeDelivery(
@@ -355,7 +358,7 @@ describe("WebhookDebugger", () => {
         3,
         { headers: {}, body: "{}" },
         { durationMs: 100 },
-        "pending"
+        "pending",
       );
 
       const failed = webhookDebugger.filterDeliveries({ status: "pending" });
@@ -374,7 +377,7 @@ describe("WebhookDebugger", () => {
         3,
         { headers: {}, body: "{}" },
         { durationMs: 100, status: 200 },
-        "delivered"
+        "delivered",
       );
 
       webhookDebugger.clearEndpointHistory("endpoint-1");

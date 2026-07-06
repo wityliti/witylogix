@@ -1,7 +1,13 @@
 // @ts-nocheck
-import { h } from 'preact';
-import { extend, BlockStack, InlineStack, Text, useApi } from '@shopify/ui-extensions/checkout';
-import { DeliveryDatePicker } from './DeliveryDatePicker';
+import { h } from "preact";
+import {
+  extend,
+  BlockStack,
+  InlineStack,
+  Text,
+  useApi,
+} from "@shopify/ui-extensions/checkout";
+import { DeliveryDatePicker } from "./DeliveryDatePicker";
 
 /**
  * Shopify Checkout UI Extension Entry Point
@@ -21,7 +27,7 @@ class ErrorBoundary {
     try {
       root.appendChild(component);
     } catch (error) {
-      console.error('Extension render error:', error);
+      console.error("Extension render error:", error);
       root.appendChild(fallback);
     }
   }
@@ -32,21 +38,21 @@ class ErrorBoundary {
  */
 function createFallbackUI() {
   return h(
-    'div',
+    "div",
     {
       style: {
-        padding: '16px',
-        borderRadius: '8px',
-        backgroundColor: '#fef3f2',
-        color: '#d02c2c',
-        border: '1px solid #d02c2c'
-      }
+        padding: "16px",
+        borderRadius: "8px",
+        backgroundColor: "#fef3f2",
+        color: "#d02c2c",
+        border: "1px solid #d02c2c",
+      },
     },
     h(
-      'p',
-      { style: { margin: '0' } },
-      'Delivery date picker temporarily unavailable. Please refresh the page.'
-    )
+      "p",
+      { style: { margin: "0" } },
+      "Delivery date picker temporarily unavailable. Please refresh the page.",
+    ),
   );
 }
 
@@ -62,25 +68,28 @@ const analytics = {
         timestamp: new Date().toISOString(),
         properties: {
           ...properties,
-          extensionVersion: '1.0.0',
+          extensionVersion: "1.0.0",
           locale: Intl.DateTimeFormat().resolvedOptions().locale,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        }
+        },
       };
 
       // Log to console in development
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Analytics]', event);
+      if (process.env.NODE_ENV === "development") {
+        console.log("[Analytics]", event);
       }
 
       // Send to backend analytics service
-      if (typeof window !== 'undefined' && (window as any).__WITYLOGIX_ANALYTICS__) {
+      if (
+        typeof window !== "undefined" &&
+        (window as any).__WITYLOGIX_ANALYTICS__
+      ) {
         (window as any).__WITYLOGIX_ANALYTICS__.track(event);
       }
     } catch (error) {
-      console.error('Analytics tracking error:', error);
+      console.error("Analytics tracking error:", error);
     }
-  }
+  },
 };
 
 /**
@@ -89,9 +98,9 @@ const analytics = {
 function reportExtensionMetadata(api: any) {
   try {
     const metadata = {
-      extensionId: 'checkout-delivery-picker',
-      version: '1.0.0',
-      apiVersion: api?.checkout?.apiVersion || 'unknown',
+      extensionId: "checkout-delivery-picker",
+      version: "1.0.0",
+      apiVersion: api?.checkout?.apiVersion || "unknown",
       capabilities: {
         setCheckoutAttributes: !!api?.checkout?.setAttributes,
         cartAccess: !!api?.cart,
@@ -101,107 +110,105 @@ function reportExtensionMetadata(api: any) {
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
 
-    console.log('[Extension Metadata]', metadata);
+    console.log("[Extension Metadata]", metadata);
 
     // Report to analytics
-    analytics.track('extension:loaded', metadata);
+    analytics.track("extension:loaded", metadata);
   } catch (error) {
-    console.error('Failed to report extension metadata:', error);
+    console.error("Failed to report extension metadata:", error);
   }
 }
 
 /**
  * Main extension registration
  */
-extend(
-  'purchase.checkout.block.render',
-  (root, api) => {
-    try {
-      // Report extension metadata
-      reportExtensionMetadata(api);
+extend("purchase.checkout.block.render", (root, api) => {
+  try {
+    // Report extension metadata
+    reportExtensionMetadata(api);
 
-      // Track extension load
-      analytics.track('extension:mounted', {
-        shopId: api.shop?.id
-      });
+    // Track extension load
+    analytics.track("extension:mounted", {
+      shopId: api.shop?.id,
+    });
 
-      // Get shop ID from API
-      const shopId = api.shop?.id || 'unknown';
+    // Get shop ID from API
+    const shopId = api.shop?.id || "unknown";
 
-      // Create main component
-      const component = h(
-        BlockStack,
-        { spacing: 'base' },
-        h(
-          'div',
-          {
-            style: {
-              padding: '16px',
-              borderRadius: '8px',
-              backgroundColor: '#ffffff',
-              marginBottom: '16px'
-            }
+    // Create main component
+    const component = h(
+      BlockStack,
+      { spacing: "base" },
+      h(
+        "div",
+        {
+          style: {
+            padding: "16px",
+            borderRadius: "8px",
+            backgroundColor: "#ffffff",
+            marginBottom: "16px",
           },
-          h(DeliveryDatePicker, {
-            shopId,
-            cartItems: [],
-            onSelectionChange: (selection) => {
-              // Track date selection
-              analytics.track('delivery:date_selected', {
-                date: selection.date,
-                slotId: selection.slotId,
-                fee: selection.deliveryFee
-              });
+        },
+        h(DeliveryDatePicker, {
+          shopId,
+          cartItems: [],
+          onSelectionChange: (selection) => {
+            // Track date selection
+            analytics.track("delivery:date_selected", {
+              date: selection.date,
+              slotId: selection.slotId,
+              fee: selection.deliveryFee,
+            });
 
-              // Store selection in checkout attributes
-              if (api.checkout && api.checkout.setAttributes) {
-                try {
-                  api.checkout.setAttributes({
-                    'witylogix_delivery_date': selection.date,
-                    'witylogix_delivery_slot': selection.slotId,
-                    'witylogix_time_label': selection.timeLabel,
-                    'witylogix_delivery_fee': selection.deliveryFee.toString()
-                  });
+            // Store selection in checkout attributes
+            if (api.checkout && api.checkout.setAttributes) {
+              try {
+                api.checkout.setAttributes({
+                  witylogix_delivery_date: selection.date,
+                  witylogix_delivery_slot: selection.slotId,
+                  witylogix_time_label: selection.timeLabel,
+                  witylogix_delivery_fee: selection.deliveryFee.toString(),
+                });
 
-                  // Track successful save
-                  analytics.track('delivery:selection_saved', {
-                    date: selection.date,
-                    slotId: selection.slotId
-                  });
-                } catch (error) {
-                  console.error('Failed to set checkout attributes:', error);
-                  analytics.track('delivery:save_failed', {
-                    error: error instanceof Error ? error.message : 'Unknown error'
-                  });
-                }
+                // Track successful save
+                analytics.track("delivery:selection_saved", {
+                  date: selection.date,
+                  slotId: selection.slotId,
+                });
+              } catch (error) {
+                console.error("Failed to set checkout attributes:", error);
+                analytics.track("delivery:save_failed", {
+                  error:
+                    error instanceof Error ? error.message : "Unknown error",
+                });
               }
             }
-          })
-        )
-      );
+          },
+        }),
+      ),
+    );
 
-      // Create fallback UI
-      const fallback = createFallbackUI();
+    // Create fallback UI
+    const fallback = createFallbackUI();
 
-      // Render with error boundary
-      ErrorBoundary.render(root, component, fallback);
+    // Render with error boundary
+    ErrorBoundary.render(root, component, fallback);
 
-      // Track successful render
-      analytics.track('extension:rendered', {
-        shopId,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('[Extension Error]', error);
+    // Track successful render
+    analytics.track("extension:rendered", {
+      shopId,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("[Extension Error]", error);
 
-      // Track error
-      analytics.track('extension:error', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
-      });
+    // Track error
+    analytics.track("extension:error", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
 
-      // Show fallback
-      root.appendChild(createFallbackUI());
-    }
+    // Show fallback
+    root.appendChild(createFallbackUI());
   }
-);
+});

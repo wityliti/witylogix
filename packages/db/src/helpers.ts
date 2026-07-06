@@ -5,7 +5,7 @@
  * All 132+ Prisma models are exposed as camelCase helpers.
  */
 
-import { prisma } from './index';
+import { prisma } from "./index";
 
 // Type-safe model access for all Prisma models
 export const db = {

@@ -3,8 +3,19 @@
  * Provides location/terminal awareness, rate limiting, and menu sync helpers
  */
 
-import { type POSAdapterInterface, type POSLocation, type POSMenuItem, type POSOrder, type POSPayment, type POSWebhookEvent, type MenuSyncOptions, type OrderFilters, type POSModifier, type KitchenOrderStatus } from './types';
-import { createHmac } from 'crypto';
+import {
+  type POSAdapterInterface,
+  type POSLocation,
+  type POSMenuItem,
+  type POSOrder,
+  type POSPayment,
+  type POSWebhookEvent,
+  type MenuSyncOptions,
+  type OrderFilters,
+  type POSModifier,
+  type KitchenOrderStatus,
+} from "./types";
+import { createHmac } from "crypto";
 
 /**
  * Rate limiter state
@@ -32,7 +43,10 @@ export abstract class POSAdapter implements POSAdapterInterface {
   private rateLimitBurst: number = 200;
 
   // Menu sync cache
-  private menuSyncCache = new Map<string, { timestamp: number; menu: POSMenuItem[] }>();
+  private menuSyncCache = new Map<
+    string,
+    { timestamp: number; menu: POSMenuItem[] }
+  >();
   private menuSyncCacheTtl = 15 * 60 * 1000; // 15 minutes
 
   constructor(providerId: string) {
@@ -42,7 +56,9 @@ export abstract class POSAdapter implements POSAdapterInterface {
   /**
    * Execute with exponential backoff retries
    */
-  protected async executeWithRetries<T>(executor: () => Promise<T>): Promise<T> {
+  protected async executeWithRetries<T>(
+    executor: () => Promise<T>,
+  ): Promise<T> {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
@@ -56,19 +72,20 @@ export abstract class POSAdapter implements POSAdapterInterface {
         lastError = error as Error;
 
         // Don't retry on client errors (4xx)
-        if (error instanceof Error && error.message.includes('4xx')) {
+        if (error instanceof Error && error.message.includes("4xx")) {
           throw error;
         }
 
         // Retry with exponential backoff
         if (attempt < this.maxRetries) {
-          const delayMs = this.retryDelayMs * Math.pow(this.retryBackoffMultiplier, attempt);
-          await new Promise(resolve => setTimeout(resolve, delayMs));
+          const delayMs =
+            this.retryDelayMs * Math.pow(this.retryBackoffMultiplier, attempt);
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
         }
       }
     }
 
-    throw lastError || new Error('Max retries exceeded');
+    throw lastError || new Error("Max retries exceeded");
   }
 
   /**
@@ -82,14 +99,15 @@ export abstract class POSAdapter implements POSAdapterInterface {
     const tokensToAdd = timeSinceLastRefill * this.rateLimitPerSecond;
     this.rateLimiterState.tokens = Math.min(
       this.rateLimitBurst,
-      this.rateLimiterState.tokens + tokensToAdd
+      this.rateLimiterState.tokens + tokensToAdd,
     );
     this.rateLimiterState.lastRefill = now;
 
     // Check if we have tokens
     if (this.rateLimiterState.tokens < 1) {
-      const waitTime = (1 - this.rateLimiterState.tokens) / this.rateLimitPerSecond * 1000;
-      await new Promise(resolve => setTimeout(resolve, waitTime));
+      const waitTime =
+        ((1 - this.rateLimiterState.tokens) / this.rateLimitPerSecond) * 1000;
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
       this.rateLimiterState.tokens--;
     } else {
       this.rateLimiterState.tokens--;
@@ -128,13 +146,18 @@ export abstract class POSAdapter implements POSAdapterInterface {
    * Format amount from cents to dollars
    */
   protected formatAmount(amountInCents: number, decimals: number = 2): number {
-    return parseFloat((amountInCents / Math.pow(10, decimals)).toFixed(decimals));
+    return parseFloat(
+      (amountInCents / Math.pow(10, decimals)).toFixed(decimals),
+    );
   }
 
   /**
    * Format amount from dollars to cents
    */
-  protected formatAmountToCents(amountInDollars: number, decimals: number = 2): number {
+  protected formatAmountToCents(
+    amountInDollars: number,
+    decimals: number = 2,
+  ): number {
     return Math.round(amountInDollars * Math.pow(10, decimals));
   }
 
@@ -143,10 +166,14 @@ export abstract class POSAdapter implements POSAdapterInterface {
    */
   protected calculateOrderTotals(
     order: Partial<{
-      lineItems?: Array<{ quantity: number; price: number; modifiers?: Array<{ price: number }> }>;
+      lineItems?: Array<{
+        quantity: number;
+        price: number;
+        modifiers?: Array<{ price: number }>;
+      }>;
       discounts?: Array<{ type: string; amount: number }>;
       tax?: number;
-    }>
+    }>,
   ): { subtotal: number; discount: number; tax: number; total: number } {
     let subtotal = 0;
     let discount = 0;
@@ -155,7 +182,10 @@ export abstract class POSAdapter implements POSAdapterInterface {
       for (const item of order.lineItems) {
         let itemTotal = item.price * item.quantity;
         if (item.modifiers) {
-          itemTotal += item.modifiers.reduce((sum, m) => sum + m.price * item.quantity, 0);
+          itemTotal += item.modifiers.reduce(
+            (sum, m) => sum + m.price * item.quantity,
+            0,
+          );
         }
         subtotal += itemTotal;
       }
@@ -163,9 +193,9 @@ export abstract class POSAdapter implements POSAdapterInterface {
 
     if (order.discounts) {
       for (const d of order.discounts) {
-        if (d.type === 'fixed') {
+        if (d.type === "fixed") {
           discount += d.amount;
-        } else if (d.type === 'percentage') {
+        } else if (d.type === "percentage") {
           discount += Math.round(subtotal * (d.amount / 100));
         }
       }
@@ -185,31 +215,37 @@ export abstract class POSAdapter implements POSAdapterInterface {
   /**
    * Validate order data
    */
-  protected validateOrder(order: Partial<any>): { valid: boolean; errors: string[] } {
+  protected validateOrder(order: Partial<any>): {
+    valid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
     if (!order.lineItems || order.lineItems.length === 0) {
-      errors.push('Order must contain at least one line item');
+      errors.push("Order must contain at least one line item");
     }
 
     if (order.lineItems) {
       for (const item of order.lineItems) {
         if (item.quantity <= 0) {
-          errors.push('Item quantity must be greater than 0');
+          errors.push("Item quantity must be greater than 0");
         }
         if (item.price < 0) {
-          errors.push('Item price cannot be negative');
+          errors.push("Item price cannot be negative");
         }
       }
     }
 
     if (order.discounts) {
       for (const discount of order.discounts) {
-        if (discount.type === 'percentage' && (discount.amount < 0 || discount.amount > 100)) {
-          errors.push('Discount percentage must be between 0 and 100');
+        if (
+          discount.type === "percentage" &&
+          (discount.amount < 0 || discount.amount > 100)
+        ) {
+          errors.push("Discount percentage must be between 0 and 100");
         }
-        if (discount.type === 'fixed' && discount.amount < 0) {
-          errors.push('Discount amount cannot be negative');
+        if (discount.type === "fixed" && discount.amount < 0) {
+          errors.push("Discount amount cannot be negative");
         }
       }
     }
@@ -223,11 +259,13 @@ export abstract class POSAdapter implements POSAdapterInterface {
   /**
    * Build modifier group from items
    */
-  protected buildModifierGroups(modifiers: POSModifier[]): Record<string, POSModifier[]> {
+  protected buildModifierGroups(
+    modifiers: POSModifier[],
+  ): Record<string, POSModifier[]> {
     const groups: Record<string, POSModifier[]> = {};
 
     for (const modifier of modifiers) {
-      const groupId = modifier.groupId || 'default';
+      const groupId = modifier.groupId || "default";
       if (!groups[groupId]) {
         groups[groupId] = [];
       }
@@ -242,12 +280,17 @@ export abstract class POSAdapter implements POSAdapterInterface {
    */
   protected mergeMenuUpdates(
     existingMenu: POSMenuItem[],
-    updates: POSMenuItem[]
+    updates: POSMenuItem[],
   ): POSMenuItem[] {
-    const menuMap = new Map(existingMenu.map(item => [item.externalId, item]));
+    const menuMap = new Map(
+      existingMenu.map((item) => [item.externalId, item]),
+    );
 
     for (const update of updates) {
-      menuMap.set(update.externalId, { ...menuMap.get(update.externalId), ...update });
+      menuMap.set(update.externalId, {
+        ...menuMap.get(update.externalId),
+        ...update,
+      });
     }
 
     return Array.from(menuMap.values());
@@ -257,14 +300,20 @@ export abstract class POSAdapter implements POSAdapterInterface {
    * Sign request for HMAC verification
    */
   protected signRequest(payload: string, secret: string): string {
-    return createHmac('sha256', secret).update(payload).digest('hex');
+    return createHmac("sha256", secret).update(payload).digest("hex");
   }
 
   /**
    * Verify webhook HMAC signature
    */
-  protected verifyHmacSignature(payload: string, signature: string, secret: string): boolean {
-    const expectedSignature = createHmac('sha256', secret).update(payload).digest('hex');
+  protected verifyHmacSignature(
+    payload: string,
+    signature: string,
+    secret: string,
+  ): boolean {
+    const expectedSignature = createHmac("sha256", secret)
+      .update(payload)
+      .digest("hex");
     return signature === expectedSignature;
   }
 
@@ -275,29 +324,52 @@ export abstract class POSAdapter implements POSAdapterInterface {
 
   abstract listLocations(): Promise<POSLocation[]>;
 
-  abstract getMenuItems(locationId: string, categoryId?: string): Promise<POSMenuItem[]>;
+  abstract getMenuItems(
+    locationId: string,
+    categoryId?: string,
+  ): Promise<POSMenuItem[]>;
 
-  abstract syncMenu(locationId: string, options?: MenuSyncOptions): Promise<void>;
+  abstract syncMenu(
+    locationId: string,
+    options?: MenuSyncOptions,
+  ): Promise<void>;
 
-  abstract createOrder(locationId: string, order: Partial<POSOrder>): Promise<POSOrder>;
+  abstract createOrder(
+    locationId: string,
+    order: Partial<POSOrder>,
+  ): Promise<POSOrder>;
 
   abstract getOrder(locationId: string, orderId: string): Promise<POSOrder>;
 
-  abstract listOrders(locationId: string, filters?: OrderFilters): Promise<POSOrder[]>;
+  abstract listOrders(
+    locationId: string,
+    filters?: OrderFilters,
+  ): Promise<POSOrder[]>;
 
-  abstract updateOrder(locationId: string, orderId: string, updates: Partial<POSOrder>): Promise<POSOrder>;
+  abstract updateOrder(
+    locationId: string,
+    orderId: string,
+    updates: Partial<POSOrder>,
+  ): Promise<POSOrder>;
 
   abstract addPayment(
     locationId: string,
     orderId: string,
-    payment: Partial<POSPayment>
+    payment: Partial<POSPayment>,
   ): Promise<POSPayment>;
 
-  abstract voidOrder(locationId: string, orderId: string, reason?: string): Promise<POSOrder>;
+  abstract voidOrder(
+    locationId: string,
+    orderId: string,
+    reason?: string,
+  ): Promise<POSOrder>;
 
   abstract sendToKitchen(locationId: string, orderId: string): Promise<void>;
 
-  abstract getKitchenDisplayStatus(locationId: string, orderId: string): Promise<KitchenOrderStatus>;
+  abstract getKitchenDisplayStatus(
+    locationId: string,
+    orderId: string,
+  ): Promise<KitchenOrderStatus>;
 
   abstract listEmployees(locationId: string): Promise<any[]>;
 
@@ -305,11 +377,16 @@ export abstract class POSAdapter implements POSAdapterInterface {
 
   abstract closeShift(locationId: string, shiftId: string): Promise<any>;
 
-  abstract getRevenueCenter(locationId: string, revenueCenterId: string): Promise<any>;
+  abstract getRevenueCenter(
+    locationId: string,
+    revenueCenterId: string,
+  ): Promise<any>;
 
   abstract listRevenueCenters(locationId: string): Promise<any[]>;
 
   abstract verifyWebhookSignature(payload: string, signature: string): boolean;
 
-  abstract parseWebhookPayload(payload: Record<string, any>): POSWebhookEvent | null;
+  abstract parseWebhookPayload(
+    payload: Record<string, any>,
+  ): POSWebhookEvent | null;
 }

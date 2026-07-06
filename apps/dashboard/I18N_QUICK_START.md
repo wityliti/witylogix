@@ -17,9 +17,9 @@ pnpm add -D @types/date-fns glob
 Add the next-intl plugin at the top of your `next.config.ts`:
 
 ```typescript
-import createNextIntlPlugin from 'next-intl/plugin';
+import createNextIntlPlugin from "next-intl/plugin";
 
-const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 export default withNextIntl({
   // ... your existing config
@@ -118,53 +118,53 @@ export function Header() {
 
 ```typescript
 // In any component (server or client)
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
 
-const t = useTranslations('orders');
-t('title')          // "Orders"
-t('list.columns.id') // "Order ID"
+const t = useTranslations("orders");
+t("title"); // "Orders"
+t("list.columns.id"); // "Order ID"
 ```
 
 ### Using Dates
 
 ```typescript
-import { formatDate, getTimeAgoLabel } from '@/i18n/formatting';
-import { useLocale } from 'next-intl';
+import { formatDate, getTimeAgoLabel } from "@/i18n/formatting";
+import { useLocale } from "next-intl";
 
 const locale = useLocale() as any;
 
 // Relative date
-formatDate(new Date(), 'relative', locale) // "just now"
+formatDate(new Date(), "relative", locale); // "just now"
 
 // Absolute date
-formatDate(new Date(), 'absolute', locale) // "March 16, 2026, 10:30 AM"
+formatDate(new Date(), "absolute", locale); // "March 16, 2026, 10:30 AM"
 
 // Time ago
-getTimeAgoLabel(new Date(), locale) // "just now"
+getTimeAgoLabel(new Date(), locale); // "just now"
 ```
 
 ### Using Currency
 
 ```typescript
-import { formatCurrency } from '@/i18n/formatting';
-import { useLocale } from 'next-intl';
+import { formatCurrency } from "@/i18n/formatting";
+import { useLocale } from "next-intl";
 
 const locale = useLocale() as any;
 
-formatCurrency(1234.56, 'USD', locale) // "$1,234.56" (en)
-                                       // "1.234,56 $" (es)
+formatCurrency(1234.56, "USD", locale); // "$1,234.56" (en)
+// "1.234,56 $" (es)
 ```
 
 ### Using Numbers
 
 ```typescript
-import { formatNumber } from '@/i18n/formatting';
-import { useLocale } from 'next-intl';
+import { formatNumber } from "@/i18n/formatting";
+import { useLocale } from "next-intl";
 
 const locale = useLocale() as any;
 
-formatNumber(1234567.89, locale) // "1,234,567.89" (en)
-                                  // "1.234.567,89" (es)
+formatNumber(1234567.89, locale); // "1,234,567.89" (en)
+// "1.234.567,89" (es)
 ```
 
 ### Routing
@@ -207,11 +207,11 @@ node -e "require('./src/i18n/extract-keys.ts').generateReport()"
 
 ## Locales
 
-| Locale | Language | Region | Flag |
-|--------|----------|--------|------|
-| `en` | English | United States | 🇺🇸 |
-| `es` | Spanish | Spain | 🇪🇸 |
-| `fr` | French | France | 🇫🇷 |
+| Locale | Language | Region        | Flag |
+| ------ | -------- | ------------- | ---- |
+| `en`   | English  | United States | 🇺🇸   |
+| `es`   | Spanish  | Spain         | 🇪🇸   |
+| `fr`   | French   | France        | 🇫🇷   |
 
 ## Key Paths
 
@@ -222,6 +222,7 @@ All translations are in `messages/` folder:
 - `messages/fr.json` - French
 
 Structure:
+
 ```
 {
   "common": { ... },
@@ -248,16 +249,19 @@ Structure:
 ## Troubleshooting
 
 **Messages not showing?**
+
 - Verify `next.config.ts` has the plugin
 - Check layout has `LocaleProvider`
 - Run `pnpm install` again
 
 **Locale not changing?**
+
 - Open DevTools → Application → Cookies
 - Check `NEXT_LOCALE` cookie is being set
 - Verify middleware.ts exists
 
 **Build failing?**
+
 - Check for import errors in i18n files
 - Verify `request.ts` file path in next.config
 - Run `pnpm run build` to see full error

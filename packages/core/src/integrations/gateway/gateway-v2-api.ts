@@ -19,17 +19,21 @@
  * - DELETE /webhooks/dlq/:id — Delete DLQ entry
  */
 
-import { z } from 'zod';
-import type { GatewayOrchestrator } from './integration-gateway-v2';
-import type { MetricsCollectorV2 } from './gateway-metrics';
-import type { WebhookRegistry, DeadLetterQueue, FanOutManager } from '../webhooks/webhook-engine';
-import type { WebhookEndpoint, WebhookEvent } from '../webhooks/webhook-types';
+import { z } from "zod";
+import type { GatewayOrchestrator } from "./integration-gateway-v2";
+import type { MetricsCollectorV2 } from "./gateway-metrics";
+import type {
+  WebhookRegistry,
+  DeadLetterQueue,
+  FanOutManager,
+} from "../webhooks/webhook-engine";
+import type { WebhookEndpoint, WebhookEvent } from "../webhooks/webhook-types";
 
 // ─── Validation Schemas ──────────────────────────────────────────
 
 const WebhookEndpointSchema = z.object({
   url: z.string().url(),
-  method: z.enum(['POST', 'PUT', 'PATCH']).optional().default('POST'),
+  method: z.enum(["POST", "PUT", "PATCH"]).optional().default("POST"),
   headers: z.record(z.string()).optional(),
   eventTypes: z.array(z.string()).min(1),
   rateLimit: z.number().optional(),
@@ -68,7 +72,7 @@ export class GatewayV2API {
    * Gateway health status
    */
   async healthCheck(): Promise<{
-    status: 'healthy' | 'degraded' | 'unhealthy';
+    status: "healthy" | "degraded" | "unhealthy";
     timestamp: Date;
     cacheSize: number;
     dlqDepth: number;
@@ -78,7 +82,7 @@ export class GatewayV2API {
     const dlqDepth = this.dlq.getDepth();
 
     return {
-      status: dlqDepth > 100 ? 'degraded' : 'healthy',
+      status: dlqDepth > 100 ? "degraded" : "healthy",
       timestamp: new Date(),
       cacheSize: cacheStats.size,
       dlqDepth,
@@ -102,7 +106,7 @@ export class GatewayV2API {
     const metrics = this.metrics.getProviderMetrics(providerId);
 
     const healthy =
-      cbStatus?.state === 'closed' &&
+      cbStatus?.state === "closed" &&
       (metrics?.errorCount ?? 0) / (metrics?.requestCount ?? 1) < 0.05;
 
     return {
@@ -118,7 +122,13 @@ export class GatewayV2API {
    * GET /gateway/metrics
    * Aggregated metrics for time window
    */
-  async getMetrics(timeWindow: 'one_minute' | 'five_minute' | 'one_hour' | 'one_day' = 'one_hour'): Promise<any> {
+  async getMetrics(
+    timeWindow:
+      | "one_minute"
+      | "five_minute"
+      | "one_hour"
+      | "one_day" = "one_hour",
+  ): Promise<any> {
     return this.metrics.getAggregatedMetrics(timeWindow);
   }
 
@@ -128,10 +138,15 @@ export class GatewayV2API {
    * POST /gateway/circuit-breakers/:id/reset
    * Manually reset circuit breaker
    */
-  async resetCircuitBreaker(providerId: string): Promise<{ success: boolean; message: string }> {
+  async resetCircuitBreaker(
+    providerId: string,
+  ): Promise<{ success: boolean; message: string }> {
     const cbStatus = this.gateway.getCircuitBreakerStatus(providerId);
     if (!cbStatus) {
-      return { success: false, message: `No circuit breaker found for provider ${providerId}` };
+      return {
+        success: false,
+        message: `No circuit breaker found for provider ${providerId}`,
+      };
     }
 
     this.gateway.resetCircuitBreaker(providerId);
@@ -167,7 +182,7 @@ export class GatewayV2API {
    */
   async clearCache(): Promise<{ success: boolean; message: string }> {
     this.gateway.clearCache();
-    return { success: true, message: 'Cache cleared' };
+    return { success: true, message: "Cache cleared" };
   }
 
   // ─── Webhook Endpoints ──────────────────────────────────────────
@@ -225,7 +240,10 @@ export class GatewayV2API {
    * PUT /webhooks/:id
    * Update webhook endpoint
    */
-  async updateWebhook(endpointId: string, data: unknown): Promise<WebhookEndpoint | null> {
+  async updateWebhook(
+    endpointId: string,
+    data: unknown,
+  ): Promise<WebhookEndpoint | null> {
     const updates = WebhookEndpointSchema.partial().parse(data);
 
     return this.webhookRegistry.updateEndpoint(endpointId, updates);
@@ -235,12 +253,16 @@ export class GatewayV2API {
    * DELETE /webhooks/:id
    * Delete webhook endpoint
    */
-  async deleteWebhook(endpointId: string): Promise<{ success: boolean; message: string }> {
+  async deleteWebhook(
+    endpointId: string,
+  ): Promise<{ success: boolean; message: string }> {
     const success = this.webhookRegistry.deleteEndpoint(endpointId);
 
     return {
       success,
-      message: success ? `Webhook ${endpointId} deleted` : `Webhook ${endpointId} not found`,
+      message: success
+        ? `Webhook ${endpointId} deleted`
+        : `Webhook ${endpointId} not found`,
     };
   }
 
@@ -265,7 +287,10 @@ export class GatewayV2API {
    * POST /webhooks/:id/test
    * Send test webhook
    */
-  async testWebhook(endpointId: string, data: unknown): Promise<{
+  async testWebhook(
+    endpointId: string,
+    data: unknown,
+  ): Promise<{
     success: boolean;
     statusCode?: number;
     latencyMs?: number;
@@ -301,17 +326,17 @@ export class GatewayV2API {
       const delivery = deliveries[0];
 
       return {
-        success: delivery.status === 'success',
+        success: delivery.status === "success",
         statusCode: delivery.attempts[0]?.statusCode,
         latencyMs,
         error:
           delivery.attempts[0]?.error ||
-          (delivery.status === 'success' ? undefined : 'Delivery failed'),
+          (delivery.status === "success" ? undefined : "Delivery failed"),
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -322,7 +347,10 @@ export class GatewayV2API {
    * GET /webhooks/dlq
    * List DLQ entries
    */
-  async listDLQEntries(limit: number = 50, offset: number = 0): Promise<{
+  async listDLQEntries(
+    limit: number = 50,
+    offset: number = 0,
+  ): Promise<{
     total: number;
     entries: any[];
     hasMore: boolean;
@@ -341,7 +369,10 @@ export class GatewayV2API {
    * POST /webhooks/dlq/:id/retry
    * Manually retry DLQ delivery
    */
-  async retryDLQEntry(entryId: string, data?: unknown): Promise<{
+  async retryDLQEntry(
+    entryId: string,
+    data?: unknown,
+  ): Promise<{
     success: boolean;
     deliveryId?: string;
     message: string;
@@ -355,12 +386,15 @@ export class GatewayV2API {
     const endpoint = this.webhookRegistry.getEndpoint(entry.endpointId);
 
     if (!endpoint) {
-      return { success: false, message: `Endpoint ${entry.endpointId} not found` };
+      return {
+        success: false,
+        message: `Endpoint ${entry.endpointId} not found`,
+      };
     }
 
     const event: WebhookEvent = {
       id: entry.eventId,
-      type: 'manual_retry',
+      type: "manual_retry",
       providerId: endpoint.providerId,
       payload: entry.eventPayload,
       timestamp: new Date(),
@@ -374,7 +408,7 @@ export class GatewayV2API {
         timeoutMs: 30000,
       });
 
-      const success = deliveries[0].status === 'success';
+      const success = deliveries[0].status === "success";
 
       if (success) {
         this.dlq.markRetried(entryId);
@@ -384,12 +418,12 @@ export class GatewayV2API {
       return {
         success,
         deliveryId: deliveries[0].id,
-        message: success ? 'Delivery succeeded' : 'Delivery failed',
+        message: success ? "Delivery succeeded" : "Delivery failed",
       };
     } catch (error) {
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -398,12 +432,16 @@ export class GatewayV2API {
    * DELETE /webhooks/dlq/:id
    * Delete DLQ entry
    */
-  async deleteDLQEntry(entryId: string): Promise<{ success: boolean; message: string }> {
+  async deleteDLQEntry(
+    entryId: string,
+  ): Promise<{ success: boolean; message: string }> {
     const success = this.dlq.deleteEntry(entryId);
 
     return {
       success,
-      message: success ? `DLQ entry ${entryId} deleted` : `DLQ entry ${entryId} not found`,
+      message: success
+        ? `DLQ entry ${entryId} deleted`
+        : `DLQ entry ${entryId} not found`,
     };
   }
 
@@ -421,31 +459,31 @@ export class GatewayV2API {
 
 export function createGatewayV2Routes(api: GatewayV2API) {
   return {
-    'GET /gateway/health': () => api.healthCheck(),
-    'GET /gateway/providers/:providerId/status': (params: any) =>
+    "GET /gateway/health": () => api.healthCheck(),
+    "GET /gateway/providers/:providerId/status": (params: any) =>
       api.getProviderStatus(params.providerId),
-    'GET /gateway/metrics': (query: any) => api.getMetrics(query.timeWindow),
-    'POST /gateway/circuit-breakers/:providerId/reset': (params: any) =>
+    "GET /gateway/metrics": (query: any) => api.getMetrics(query.timeWindow),
+    "POST /gateway/circuit-breakers/:providerId/reset": (params: any) =>
       api.resetCircuitBreaker(params.providerId),
-    'GET /gateway/cache/stats': () => api.getCacheStats(),
-    'DELETE /gateway/cache': () => api.clearCache(),
-    'POST /webhooks': (body: any, query: any) =>
+    "GET /gateway/cache/stats": () => api.getCacheStats(),
+    "DELETE /gateway/cache": () => api.clearCache(),
+    "POST /webhooks": (body: any, query: any) =>
       api.registerWebhook(query.providerId, query.organizationId, body),
-    'GET /webhooks': (query: any) =>
+    "GET /webhooks": (query: any) =>
       api.listWebhooks(query.providerId, query.organizationId),
-    'PUT /webhooks/:endpointId': (body: any, params: any) =>
+    "PUT /webhooks/:endpointId": (body: any, params: any) =>
       api.updateWebhook(params.endpointId, body),
-    'DELETE /webhooks/:endpointId': (params: any) =>
+    "DELETE /webhooks/:endpointId": (params: any) =>
       api.deleteWebhook(params.endpointId),
-    'GET /webhooks/:endpointId/deliveries': (params: any, query: any) =>
+    "GET /webhooks/:endpointId/deliveries": (params: any, query: any) =>
       api.getDeliveryHistory(params.endpointId, query.limit, query.offset),
-    'POST /webhooks/:endpointId/test': (body: any, params: any) =>
+    "POST /webhooks/:endpointId/test": (body: any, params: any) =>
       api.testWebhook(params.endpointId, body),
-    'GET /webhooks/dlq': (query: any) =>
+    "GET /webhooks/dlq": (query: any) =>
       api.listDLQEntries(query.limit, query.offset),
-    'POST /webhooks/dlq/:entryId/retry': (body: any, params: any) =>
+    "POST /webhooks/dlq/:entryId/retry": (body: any, params: any) =>
       api.retryDLQEntry(params.entryId, body),
-    'DELETE /webhooks/dlq/:entryId': (params: any) =>
+    "DELETE /webhooks/dlq/:entryId": (params: any) =>
       api.deleteDLQEntry(params.entryId),
   };
 }

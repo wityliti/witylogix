@@ -267,9 +267,9 @@ export class DHLExpressSDKClient {
    * Should be called once at startup. Token is cached and automatically renewed.
    */
   async authenticate(): Promise<void> {
-    const credentials = Buffer.from(`${this.username}:${this.password}`).toString(
-      "base64"
-    );
+    const credentials = Buffer.from(
+      `${this.username}:${this.password}`,
+    ).toString("base64");
 
     const response = await fetch(`${this.authBaseUrl}/token`, {
       method: "POST",
@@ -282,7 +282,7 @@ export class DHLExpressSDKClient {
 
     if (!response.ok) {
       throw new Error(
-        `DHL authentication failed: ${response.status} ${response.statusText}`
+        `DHL authentication failed: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -339,7 +339,7 @@ export class DHLExpressSDKClient {
     const response = await this.request<{ products: DHLRating[] }>(
       "POST",
       "/rates",
-      payload
+      payload,
     );
     return response.products;
   }
@@ -433,10 +433,7 @@ export class DHLExpressSDKClient {
    */
   async getShipment(trackingNumber: string): Promise<DHLShipment> {
     await this.ensureAuthenticated();
-    return this.request<DHLShipment>(
-      "GET",
-      `/shipments/${trackingNumber}`
-    );
+    return this.request<DHLShipment>("GET", `/shipments/${trackingNumber}`);
   }
 
   /**
@@ -445,13 +442,11 @@ export class DHLExpressSDKClient {
    * @param trackingNumber DHL tracking number
    * @returns Deletion confirmation
    */
-  async deleteShipment(
-    trackingNumber: string
-  ): Promise<{ message: string }> {
+  async deleteShipment(trackingNumber: string): Promise<{ message: string }> {
     await this.ensureAuthenticated();
     return this.request<{ message: string }>(
       "DELETE",
-      `/shipments/${trackingNumber}`
+      `/shipments/${trackingNumber}`,
     );
   }
 
@@ -494,12 +489,12 @@ export class DHLExpressSDKClient {
    * @returns Cancellation confirmation
    */
   async cancelPickup(
-    pickupRequestNumber: string
+    pickupRequestNumber: string,
   ): Promise<{ message: string }> {
     await this.ensureAuthenticated();
     return this.request<{ message: string }>(
       "DELETE",
-      `/pickups/${pickupRequestNumber}`
+      `/pickups/${pickupRequestNumber}`,
     );
   }
 
@@ -512,13 +507,13 @@ export class DHLExpressSDKClient {
    */
   async updatePickup(
     pickupRequestNumber: string,
-    updates: Partial<DHLPickup>
+    updates: Partial<DHLPickup>,
   ): Promise<DHLPickup> {
     await this.ensureAuthenticated();
     return this.request<DHLPickup>(
       "PATCH",
       `/pickups/${pickupRequestNumber}`,
-      updates
+      updates,
     );
   }
 
@@ -531,7 +526,7 @@ export class DHLExpressSDKClient {
    */
   async trackShipment(
     trackingNumber: string,
-    isReference = false
+    isReference = false,
   ): Promise<DHLTracking> {
     await this.ensureAuthenticated();
 
@@ -554,13 +549,13 @@ export class DHLExpressSDKClient {
    */
   async listProducts(
     originCountry: string,
-    destinationCountry: string
+    destinationCountry: string,
   ): Promise<DHLProduct[]> {
     await this.ensureAuthenticated();
 
     return this.request<DHLProduct[]>(
       "GET",
-      `/products?originCountry=${originCountry}&destinationCountry=${destinationCountry}`
+      `/products?originCountry=${originCountry}&destinationCountry=${destinationCountry}`,
     );
   }
 
@@ -584,11 +579,7 @@ export class DHLExpressSDKClient {
   async validateAddress(address: DHLAddress): Promise<DHLAddress> {
     await this.ensureAuthenticated();
 
-    return this.request<DHLAddress>(
-      "POST",
-      "/addresses/validate",
-      address
-    );
+    return this.request<DHLAddress>("POST", "/addresses/validate", address);
   }
 
   /**
@@ -600,13 +591,13 @@ export class DHLExpressSDKClient {
    */
   async suggestAddresses(
     addressLine: string,
-    countryCode: string
+    countryCode: string,
   ): Promise<DHLAddress[]> {
     await this.ensureAuthenticated();
 
     return this.request<DHLAddress[]>(
       "GET",
-      `/addresses/suggest?address=${encodeURIComponent(addressLine)}&countryCode=${countryCode}`
+      `/addresses/suggest?address=${encodeURIComponent(addressLine)}&countryCode=${countryCode}`,
     );
   }
 
@@ -628,14 +619,14 @@ export class DHLExpressSDKClient {
         quantity: number;
         unitPrice: DHLMonetaryValue;
       }>;
-    }
+    },
   ): Promise<DHLInvoice> {
     await this.ensureAuthenticated();
 
     return this.request<DHLInvoice>(
       "POST",
       `/shipments/${shipmentTrackingNumber}/invoice`,
-      invoiceData
+      invoiceData,
     );
   }
 
@@ -657,7 +648,10 @@ export class DHLExpressSDKClient {
    * Ensure token is valid and refresh if needed
    */
   private async ensureAuthenticated(): Promise<void> {
-    if (!this.accessToken || (this.tokenExpiresAt && Date.now() >= this.tokenExpiresAt)) {
+    if (
+      !this.accessToken ||
+      (this.tokenExpiresAt && Date.now() >= this.tokenExpiresAt)
+    ) {
       await this.authenticate();
     }
   }
@@ -668,12 +662,12 @@ export class DHLExpressSDKClient {
   private enforceRateLimit(): void {
     const now = Date.now();
     this.requestTimestamps = this.requestTimestamps.filter(
-      (ts) => now - ts < this.rateLimitWindow
+      (ts) => now - ts < this.rateLimitWindow,
     );
 
     if (this.requestTimestamps.length >= this.maxRequestsPerWindow) {
       throw new Error(
-        `Rate limit exceeded: ${this.maxRequestsPerWindow} requests per minute`
+        `Rate limit exceeded: ${this.maxRequestsPerWindow} requests per minute`,
       );
     }
 
@@ -686,7 +680,7 @@ export class DHLExpressSDKClient {
   private async request<T>(
     method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
     path: string,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     this.enforceRateLimit();
 
@@ -712,7 +706,7 @@ export class DHLExpressSDKClient {
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(
-          `DHL API error ${response.status}: ${errorText || response.statusText}`
+          `DHL API error ${response.status}: ${errorText || response.statusText}`,
         );
       }
 

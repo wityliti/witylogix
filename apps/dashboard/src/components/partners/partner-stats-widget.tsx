@@ -21,10 +21,7 @@ interface PartnerStatsWidgetProps extends HTMLAttributes<HTMLDivElement> {
   isLoading?: boolean;
 }
 
-const PartnerStatsWidget = forwardRef<
-  HTMLDivElement,
-  PartnerStatsWidgetProps
->(
+const PartnerStatsWidget = forwardRef<HTMLDivElement, PartnerStatsWidgetProps>(
   (
     {
       totalPartners,
@@ -35,7 +32,7 @@ const PartnerStatsWidget = forwardRef<
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const stats: StatItem[] = [
       {
@@ -65,7 +62,11 @@ const PartnerStatsWidget = forwardRef<
     ];
 
     return (
-      <div ref={ref} className={cn("grid grid-cols-4 gap-4", className)} {...props}>
+      <div
+        ref={ref}
+        className={cn("grid grid-cols-4 gap-4", className)}
+        {...props}
+      >
         {stats.map((stat, index) => {
           const Icon = stat.icon;
 
@@ -78,7 +79,7 @@ const PartnerStatsWidget = forwardRef<
                 <div
                   className={cn(
                     "w-10 h-10 rounded-lg flex items-center justify-center",
-                    stat.color
+                    stat.color,
                   )}
                 >
                   <Icon className="w-5 h-5" />
@@ -98,10 +99,11 @@ const PartnerStatsWidget = forwardRef<
                         "text-sm font-medium",
                         stat.trend >= 0
                           ? "text-wl-success-400"
-                          : "text-wl-danger-400"
+                          : "text-wl-danger-400",
                       )}
                     >
-                      {stat.trend >= 0 ? "+" : ""}{stat.trend}%
+                      {stat.trend >= 0 ? "+" : ""}
+                      {stat.trend}%
                     </span>
                   )}
                 </div>
@@ -111,7 +113,7 @@ const PartnerStatsWidget = forwardRef<
         })}
       </div>
     );
-  }
+  },
 );
 
 PartnerStatsWidget.displayName = "PartnerStatsWidget";

@@ -32,7 +32,7 @@ const PartnerSLAIndicator = forwardRef<
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const data = useMemo(() => {
       if (sparklineData.length > 0) return sparklineData;
@@ -74,7 +74,8 @@ const PartnerSLAIndicator = forwardRef<
     const size = 120;
     const radius = 50;
     const circumference = 2 * Math.PI * radius;
-    const strokeDashoffset = circumference - (onTimePercentage / 100) * circumference;
+    const strokeDashoffset =
+      circumference - (onTimePercentage / 100) * circumference;
 
     // Sparkline dimensions
     const sparkWidth = 100;
@@ -97,9 +98,16 @@ const PartnerSLAIndicator = forwardRef<
             <h3 className="text-sm font-semibold text-wl-text-primary">
               {partnerName}
             </h3>
-            <p className="text-xs text-wl-text-secondary mt-1">SLA Compliance</p>
+            <p className="text-xs text-wl-text-secondary mt-1">
+              SLA Compliance
+            </p>
           </div>
-          <div className={cn("flex items-center gap-1 px-2 py-1 rounded", getTrendColor())}>
+          <div
+            className={cn(
+              "flex items-center gap-1 px-2 py-1 rounded",
+              getTrendColor(),
+            )}
+          >
             {getTrendIcon()}
             <span className="text-xs font-semibold">
               {trend === "up" ? "↑" : trend === "down" ? "↓" : "→"}
@@ -148,7 +156,9 @@ const PartnerSLAIndicator = forwardRef<
 
         {/* Metrics */}
         <div className="grid grid-cols-2 gap-3">
-          <div className={cn("p-3 rounded-md", getScoreBgColor(onTimePercentage))}>
+          <div
+            className={cn("p-3 rounded-md", getScoreBgColor(onTimePercentage))}
+          >
             <p className="text-xs text-wl-text-secondary font-medium mb-1">
               Deliveries Met
             </p>
@@ -236,7 +246,7 @@ const PartnerSLAIndicator = forwardRef<
         </div>
       </Card>
     );
-  }
+  },
 );
 
 PartnerSLAIndicator.displayName = "PartnerSLAIndicator";

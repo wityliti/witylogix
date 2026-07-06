@@ -20,9 +20,15 @@ import {
   type TransactionStatus,
 } from "@/hooks/use-pos";
 
-const WLMap = dynamic(() => import("@/components/map/wl-map").then((m) => ({ default: m.WLMap })), { ssr: false });
+const WLMap = dynamic(
+  () => import("@/components/map/wl-map").then((m) => ({ default: m.WLMap })),
+  { ssr: false },
+);
 const PosTerminalLayer = dynamic(
-  () => import("@/components/map/pos-terminal-layer").then((m) => ({ default: m.PosTerminalLayer })),
+  () =>
+    import("@/components/map/pos-terminal-layer").then((m) => ({
+      default: m.PosTerminalLayer,
+    })),
   { ssr: false },
 );
 
@@ -31,8 +37,13 @@ const PosTerminalLayer = dynamic(
  * Daily sales, transaction feed, top items, terminal status
  */
 
-const terminalStatusVariant = (status: string): "success" | "warning" | "info" | "primary" | "default" | "danger" => {
-  const map: Record<string, "success" | "warning" | "info" | "primary" | "default" | "danger"> = {
+const terminalStatusVariant = (
+  status: string,
+): "success" | "warning" | "info" | "primary" | "default" | "danger" => {
+  const map: Record<
+    string,
+    "success" | "warning" | "info" | "primary" | "default" | "danger"
+  > = {
     online: "success",
     offline: "default",
     error: "danger",
@@ -40,8 +51,13 @@ const terminalStatusVariant = (status: string): "success" | "warning" | "info" |
   return (map[status] as any) || "default";
 };
 
-const txnStatusVariant = (status: TransactionStatus): "success" | "warning" | "info" | "primary" | "default" | "danger" => {
-  const map: Record<TransactionStatus, "success" | "warning" | "info" | "primary" | "default" | "danger"> = {
+const txnStatusVariant = (
+  status: TransactionStatus,
+): "success" | "warning" | "info" | "primary" | "default" | "danger" => {
+  const map: Record<
+    TransactionStatus,
+    "success" | "warning" | "info" | "primary" | "default" | "danger"
+  > = {
     completed: "success",
     pending: "info",
     refunded: "warning",
@@ -67,7 +83,12 @@ const DEFAULT_OVERVIEW: POSOverview = {
 };
 
 export default function POSPage() {
-  const { data: overviewData, loading: overviewLoading, error: overviewError, refetch: refetchOverview } = usePOSOverview();
+  const {
+    data: overviewData,
+    loading: overviewLoading,
+    error: overviewError,
+    refetch: refetchOverview,
+  } = usePOSOverview();
   const { items: liveTransactions, loading: txnLoading } = useTransactions();
   const { items: terminals, loading: terminalsLoading } = useTerminals();
   const { items: topItems } = useTopSellingItems();
@@ -89,31 +110,56 @@ export default function POSPage() {
   const recentTransactions = useMemo(
     () =>
       [...liveTransactions]
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .sort(
+          (a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+        )
         .slice(0, 10),
-    [liveTransactions]
+    [liveTransactions],
   );
 
   // Calculate payment breakdown percentages
   const paymentBreakdownPercentages = useMemo(() => {
-    const total = Object.values(overview.paymentBreakdown).reduce((a: number, b: number) => a + b, 0);
+    const total = Object.values(overview.paymentBreakdown).reduce(
+      (a: number, b: number) => a + b,
+      0,
+    );
     return {
-      cash: total > 0 ? ((overview.paymentBreakdown.cash / total) * 100).toFixed(1) : "0",
-      card: total > 0 ? ((overview.paymentBreakdown.card / total) * 100).toFixed(1) : "0",
-      mobile: total > 0 ? ((overview.paymentBreakdown.mobile / total) * 100).toFixed(1) : "0",
-      other: total > 0 ? ((overview.paymentBreakdown.other / total) * 100).toFixed(1) : "0",
+      cash:
+        total > 0
+          ? ((overview.paymentBreakdown.cash / total) * 100).toFixed(1)
+          : "0",
+      card:
+        total > 0
+          ? ((overview.paymentBreakdown.card / total) * 100).toFixed(1)
+          : "0",
+      mobile:
+        total > 0
+          ? ((overview.paymentBreakdown.mobile / total) * 100).toFixed(1)
+          : "0",
+      other:
+        total > 0
+          ? ((overview.paymentBreakdown.other / total) * 100).toFixed(1)
+          : "0",
     };
   }, [overview.paymentBreakdown]);
 
   if (loading) return <LoadingSkeleton />;
-  if (overviewError) return <ErrorState message={overviewError.message} onRetry={refetchOverview} />;
+  if (overviewError)
+    return (
+      <ErrorState message={overviewError.message} onRetry={refetchOverview} />
+    );
 
   return (
     <>
       <Header
         title="POS Dashboard"
         subtitle={`${overview.transactionCount} transactions · ${terminals.filter((t) => t.status === "online").length}/${terminals.length} terminals online`}
-        actions={<Button variant="primary" size="md">+ New Sale</Button>}
+        actions={
+          <Button variant="primary" size="md">
+            + New Sale
+          </Button>
+        }
       />
 
       <div className="p-6 space-y-6 bg-wl-bg-root min-h-[calc(100vh-var(--header-height))]">
@@ -159,7 +205,9 @@ export default function POSPage() {
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{paymentMethodIcon.cash}</span>
-                    <span className="text-sm font-medium text-wl-text-secondary">Cash</span>
+                    <span className="text-sm font-medium text-wl-text-secondary">
+                      Cash
+                    </span>
                   </div>
                   <span className="text-sm font-bold text-white">
                     {paymentBreakdownPercentages.cash}%
@@ -181,7 +229,9 @@ export default function POSPage() {
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{paymentMethodIcon.card}</span>
-                    <span className="text-sm font-medium text-wl-text-secondary">Card</span>
+                    <span className="text-sm font-medium text-wl-text-secondary">
+                      Card
+                    </span>
                   </div>
                   <span className="text-sm font-bold text-white">
                     {paymentBreakdownPercentages.card}%
@@ -203,7 +253,9 @@ export default function POSPage() {
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{paymentMethodIcon.mobile}</span>
-                    <span className="text-sm font-medium text-wl-text-secondary">Mobile</span>
+                    <span className="text-sm font-medium text-wl-text-secondary">
+                      Mobile
+                    </span>
                   </div>
                   <span className="text-sm font-bold text-white">
                     {paymentBreakdownPercentages.mobile}%
@@ -226,7 +278,9 @@ export default function POSPage() {
                   <div className="flex justify-between items-center mb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-lg">💳</span>
-                      <span className="text-sm font-medium text-wl-text-secondary">Other</span>
+                      <span className="text-sm font-medium text-wl-text-secondary">
+                        Other
+                      </span>
                     </div>
                     <span className="text-sm font-bold text-white">
                       {paymentBreakdownPercentages.other}%
@@ -265,7 +319,7 @@ export default function POSPage() {
                         key={txn.id}
                         className={cn(
                           "p-3 bg-wl-bg-elevated rounded-md border-l-4 border-blue-500 hover:bg-wl-bg-elevated transition-colors opacity-0",
-                          "cursor-pointer"
+                          "cursor-pointer",
                         )}
                         style={{
                           animation: `wl-fade-in var(--wl-duration-default) var(--wl-ease-default) ${idx * 50}ms forwards`,
@@ -282,7 +336,11 @@ export default function POSPage() {
                               </span>
                             </div>
                             <div className="text-xs text-wl-text-secondary">
-                              {txn.terminalName} • {new Date(txn.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                              {txn.terminalName} •{" "}
+                              {new Date(txn.timestamp).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
                             </div>
                           </div>
 
@@ -290,7 +348,10 @@ export default function POSPage() {
                             <div className="text-sm font-bold text-emerald-400">
                               ${txn.amount.toFixed(2)}
                             </div>
-                            <Badge variant={txnStatusVariant(txn.status)} className="mt-1">
+                            <Badge
+                              variant={txnStatusVariant(txn.status)}
+                              className="mt-1"
+                            >
                               {txn.status}
                             </Badge>
                           </div>
@@ -298,7 +359,8 @@ export default function POSPage() {
 
                         {txn.items.length > 0 && (
                           <div className="text-xs text-wl-text-secondary pl-6">
-                            {txn.items.length} item{txn.items.length !== 1 ? "s" : ""}
+                            {txn.items.length} item
+                            {txn.items.length !== 1 ? "s" : ""}
                           </div>
                         )}
                       </div>
@@ -335,10 +397,17 @@ export default function POSPage() {
                 </thead>
                 <tbody className="divide-y divide-[#1e1e2e]">
                   {topItems.map((item, idx) => (
-                    <tr key={item.id} className="hover:bg-wl-bg-elevated transition-colors">
+                    <tr
+                      key={item.id}
+                      className="hover:bg-wl-bg-elevated transition-colors"
+                    >
                       <td className="px-4 py-3">
-                        <div className="text-white font-medium">{item.name}</div>
-                        <div className="text-xs text-wl-text-tertiary">{item.sku}</div>
+                        <div className="text-white font-medium">
+                          {item.name}
+                        </div>
+                        <div className="text-xs text-wl-text-tertiary">
+                          {item.sku}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-wl-text-secondary font-mono">
                         {item.unitsSold}
@@ -366,7 +435,7 @@ export default function POSPage() {
                         "px-3 py-1 text-xs rounded transition-colors",
                         terminalView === "list"
                           ? "bg-wl-primary-500 text-white"
-                          : "text-wl-text-secondary hover:text-white"
+                          : "text-wl-text-secondary hover:text-white",
                       )}
                     >
                       List
@@ -377,7 +446,7 @@ export default function POSPage() {
                         "px-3 py-1 text-xs rounded transition-colors",
                         terminalView === "map"
                           ? "bg-wl-primary-500 text-white"
-                          : "text-wl-text-secondary hover:text-white"
+                          : "text-wl-text-secondary hover:text-white",
                       )}
                     >
                       Map
@@ -390,7 +459,13 @@ export default function POSPage() {
             <CardContent>
               {terminalView === "map" && mappableTerminals.length > 0 ? (
                 <div className="h-64 rounded-md overflow-hidden">
-                  <WLMap center={[mappableTerminals[0].lng, mappableTerminals[0].lat]} zoom={11}>
+                  <WLMap
+                    center={[
+                      mappableTerminals[0].lng,
+                      mappableTerminals[0].lat,
+                    ]}
+                    zoom={11}
+                  >
                     <PosTerminalLayer terminals={mappableTerminals} />
                   </WLMap>
                 </div>
@@ -409,7 +484,7 @@ export default function POSPage() {
                           "p-3 bg-wl-bg-elevated rounded-md border transition-colors cursor-pointer opacity-0",
                           selectedTerminal === terminal.id
                             ? "border-blue-500 bg-wl-bg-elevated"
-                            : "border-wl-border-default hover:border-wl-border-strong"
+                            : "border-wl-border-default hover:border-wl-border-strong",
                         )}
                         style={{
                           animation: `wl-fade-in var(--wl-duration-default) var(--wl-ease-default) ${idx * 50}ms forwards`,
@@ -425,26 +500,34 @@ export default function POSPage() {
                               {terminal.location}
                             </div>
                           </div>
-                          <Badge variant={terminalStatusVariant(terminal.status)}>
+                          <Badge
+                            variant={terminalStatusVariant(terminal.status)}
+                          >
                             {terminal.status}
                           </Badge>
                         </div>
 
                         <div className="grid grid-cols-3 gap-2 text-center text-xs mt-2">
                           <div>
-                            <div className="text-wl-text-secondary text-xs">Sales</div>
+                            <div className="text-wl-text-secondary text-xs">
+                              Sales
+                            </div>
                             <div className="text-white font-bold">
                               ${terminal.totalSales.toFixed(0)}
                             </div>
                           </div>
                           <div>
-                            <div className="text-wl-text-secondary text-xs">Txns</div>
+                            <div className="text-wl-text-secondary text-xs">
+                              Txns
+                            </div>
                             <div className="text-white font-bold">
                               {terminal.totalTransactions}
                             </div>
                           </div>
                           <div>
-                            <div className="text-wl-text-secondary text-xs">Last Activity</div>
+                            <div className="text-wl-text-secondary text-xs">
+                              Last Activity
+                            </div>
                             <div className="text-white font-bold">
                               {terminal.lastActivity}
                             </div>

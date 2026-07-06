@@ -46,9 +46,7 @@ describe("Calendar Engine (Task Scheduler)", () => {
 
       scheduler.register(task);
 
-      expect(() => scheduler.register(task)).toThrow(
-        "is already registered"
-      );
+      expect(() => scheduler.register(task)).toThrow("is already registered");
     });
 
     it("should validate cron expression format", () => {
@@ -60,7 +58,7 @@ describe("Calendar Engine (Task Scheduler)", () => {
       };
 
       expect(() => scheduler.register(invalidTask)).toThrow(
-        "Invalid cron expression"
+        "Invalid cron expression",
       );
     });
 
@@ -133,8 +131,7 @@ describe("Calendar Engine (Task Scheduler)", () => {
       const isInMaintenanceWindow = (date: Date) => {
         const isoDate = date.toISOString();
         return maintenanceWindows.some(
-          (window) =>
-            isoDate >= window.start && isoDate <= window.end
+          (window) => isoDate >= window.start && isoDate <= window.end,
         );
       };
 
@@ -241,14 +238,14 @@ describe("Calendar Engine (Task Scheduler)", () => {
       const prepTimeMinutes = 30;
 
       const actualDeliveryTime = new Date(
-        deliveryTime.getTime() + prepTimeMinutes * 60000
+        deliveryTime.getTime() + prepTimeMinutes * 60000,
       );
 
       expect(actualDeliveryTime.getTime()).toBeGreaterThan(
-        deliveryTime.getTime()
+        deliveryTime.getTime(),
       );
       expect(
-        (actualDeliveryTime.getTime() - deliveryTime.getTime()) / 60000
+        (actualDeliveryTime.getTime() - deliveryTime.getTime()) / 60000,
       ).toBe(prepTimeMinutes);
     });
 
@@ -263,9 +260,7 @@ describe("Calendar Engine (Task Scheduler)", () => {
 
       for (const [type, minutes] of Object.entries(prepTimes)) {
         const withPrep = new Date(baseTime.getTime() + minutes * 60000);
-        expect(
-          (withPrep.getTime() - baseTime.getTime()) / 60000
-        ).toBe(minutes);
+        expect((withPrep.getTime() - baseTime.getTime()) / 60000).toBe(minutes);
       }
     });
 
@@ -279,15 +274,13 @@ describe("Calendar Engine (Task Scheduler)", () => {
 
       let currentTime = new Date(baseTime);
       for (const step of steps) {
-        currentTime = new Date(
-          currentTime.getTime() + step.duration * 60000
-        );
+        currentTime = new Date(currentTime.getTime() + step.duration * 60000);
       }
 
       const totalMinutes = steps.reduce((sum, s) => sum + s.duration, 0);
-      expect(
-        (currentTime.getTime() - baseTime.getTime()) / 60000
-      ).toBe(totalMinutes);
+      expect((currentTime.getTime() - baseTime.getTime()) / 60000).toBe(
+        totalMinutes,
+      );
     });
   });
 
@@ -337,11 +330,7 @@ describe("Calendar Engine (Task Scheduler)", () => {
 
   describe("holiday handling", () => {
     it("should skip execution on holidays", () => {
-      const holidays = [
-        "2025-01-01",
-        "2025-07-04",
-        "2025-12-25",
-      ];
+      const holidays = ["2025-01-01", "2025-07-04", "2025-12-25"];
 
       const isHoliday = (date: Date) => {
         const dateStr = date.toISOString().split("T")[0];

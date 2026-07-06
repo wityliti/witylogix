@@ -18,11 +18,11 @@ export interface SKU {
   asin?: string;
   weight: number; // kg
   length: number; // cm
-  width: number;  // cm
+  width: number; // cm
   height: number; // cm
   volume: number; // cubic cm
-  cost: number;   // unit cost
-  price: number;  // retail price
+  cost: number; // unit cost
+  price: number; // retail price
   discontinued: boolean;
   createdAt: string;
   updatedAt: string;
@@ -42,8 +42,8 @@ export interface InventoryItem {
   binLocation?: string;
   lastCountDate?: string;
   lastMovementDate?: string;
-  abcClassification: 'A' | 'B' | 'C'; // ABC analysis
-  xyzClassification: 'X' | 'Y' | 'Z'; // Demand variability
+  abcClassification: "A" | "B" | "C"; // ABC analysis
+  xyzClassification: "X" | "Y" | "Z"; // Demand variability
   turnoverRate: number; // times per year
   createdAt: string;
   updatedAt: string;
@@ -53,7 +53,7 @@ export interface Warehouse {
   warehouseId: string;
   name: string;
   description?: string;
-  type: 'distribution_center' | 'fulfillment_center' | 'storage' | 'transit';
+  type: "distribution_center" | "fulfillment_center" | "storage" | "transit";
   address: {
     line1: string;
     line2?: string;
@@ -88,12 +88,12 @@ export interface StorageLocation {
   aisle: string;
   shelf: number;
   bin: string;
-  level: 'floor' | 'low' | 'medium' | 'high';
+  level: "floor" | "low" | "medium" | "high";
   capacity: number;
   currentOccupancy: number;
   isActive: boolean;
   requirements?: {
-    climate?: 'ambient' | 'cold' | 'dry';
+    climate?: "ambient" | "cold" | "dry";
     hazmat?: boolean;
     security?: boolean;
   };
@@ -104,7 +104,13 @@ export interface PurchaseOrder {
   poNumber: string;
   vendorId: string;
   vendorName: string;
-  status: 'draft' | 'confirmed' | 'shipped' | 'received' | 'cancelled' | 'completed';
+  status:
+    | "draft"
+    | "confirmed"
+    | "shipped"
+    | "received"
+    | "cancelled"
+    | "completed";
   orderDate: string;
   expectedDeliveryDate: string;
   actualDeliveryDate?: string;
@@ -133,7 +139,15 @@ export interface PurchaseOrder {
 export interface SalesOrder {
   orderId: string;
   orderNumber: string;
-  status: 'pending' | 'confirmed' | 'picking' | 'packed' | 'shipped' | 'delivered' | 'returned' | 'cancelled';
+  status:
+    | "pending"
+    | "confirmed"
+    | "picking"
+    | "packed"
+    | "shipped"
+    | "delivered"
+    | "returned"
+    | "cancelled";
   customerId: string;
   customerName: string;
   orderDate: string;
@@ -165,7 +179,7 @@ export interface SalesOrder {
   shippingMethod?: string;
   carrierName?: string;
   trackingNumber?: string;
-  priority: 'standard' | 'express' | 'overnight';
+  priority: "standard" | "express" | "overnight";
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -174,9 +188,9 @@ export interface SalesOrder {
 export interface FulfillmentWave {
   waveId: string;
   warehouseId: string;
-  status: 'planning' | 'active' | 'in-progress' | 'closed' | 'completed';
+  status: "planning" | "active" | "in-progress" | "closed" | "completed";
   priority: number; // 1=highest
-  waveType: 'standard' | 'express' | 'priority';
+  waveType: "standard" | "express" | "priority";
   cutoffTime: string;
   startTime?: string;
   endTime?: string;
@@ -198,7 +212,7 @@ export interface PickList {
   warehouseId: string;
   pickerId: string;
   pickerName: string;
-  status: 'assigned' | 'in-progress' | 'completed' | 'verified';
+  status: "assigned" | "in-progress" | "completed" | "verified";
   items: Array<{
     lineItemId: string;
     skuId: string;
@@ -230,7 +244,7 @@ export interface PackSlip {
   cartonNumber?: string;
   packedDate: string;
   packedBy: string;
-  qcStatus: 'pending' | 'passed' | 'failed' | 'rework';
+  qcStatus: "pending" | "passed" | "failed" | "rework";
   qcNotes?: string;
   printedCount: number;
 }
@@ -239,11 +253,11 @@ export interface ShipmentPlan {
   planId: string;
   orders: string[]; // order IDs to consolidate
   carrierName: string;
-  serviceLevel: 'ground' | 'express' | 'overnight' | 'international';
+  serviceLevel: "ground" | "express" | "overnight" | "international";
   estimatedWeight: number;
   estimatedCost: number;
   estimatedDeliveryDate: string;
-  consolidationMethod: 'full_truckload' | 'less_than_truckload' | 'parcel';
+  consolidationMethod: "full_truckload" | "less_than_truckload" | "parcel";
   pickupSchedule?: string;
   dropOffLocation?: string;
   specialInstructions?: string;
@@ -259,7 +273,7 @@ export interface DemandForecast {
   promotionLift: number;
   forecastedDemand: number;
   confidenceInterval: { lower: number; upper: number };
-  method: 'exponential_smoothing' | 'arima' | 'decomposition' | 'ml_model';
+  method: "exponential_smoothing" | "arima" | "decomposition" | "ml_model";
   mae: number; // Mean Absolute Error
   rmse: number; // Root Mean Square Error
   mape: number; // Mean Absolute Percentage Error
@@ -300,7 +314,7 @@ export interface CycleCount {
   countedQuantity: number;
   variance: number;
   variancePercentage: number;
-  status: 'pending' | 'in-progress' | 'completed' | 'discrepancy';
+  status: "pending" | "in-progress" | "completed" | "discrepancy";
   countDate: string;
   countedBy: string;
   verifiedBy?: string;
@@ -312,13 +326,17 @@ export interface TransferOrder {
   transferId: string;
   sourceWarehouseId: string;
   destinationWarehouseId: string;
-  status: 'pending' | 'shipped' | 'in-transit' | 'received' | 'cancelled';
+  status: "pending" | "shipped" | "in-transit" | "received" | "cancelled";
   items: Array<{
     skuId: string;
     quantity: number;
     receivedQuantity?: number;
   }>;
-  reason: 'rebalancing' | 'emergency_replenish' | 'consolidation' | 'return_to_vendor';
+  reason:
+    | "rebalancing"
+    | "emergency_replenish"
+    | "consolidation"
+    | "return_to_vendor";
   shipDate?: string;
   expectedDeliveryDate: string;
   actualDeliveryDate?: string;
@@ -331,12 +349,24 @@ export interface ReturnAuthorization {
   raNumber: string;
   orderId: string;
   customerId: string;
-  status: 'authorized' | 'received' | 'inspected' | 'processed' | 'rejected' | 'cancelled';
-  reason: 'defective' | 'wrong_item' | 'not_as_described' | 'changed_mind' | 'damaged' | 'other';
+  status:
+    | "authorized"
+    | "received"
+    | "inspected"
+    | "processed"
+    | "rejected"
+    | "cancelled";
+  reason:
+    | "defective"
+    | "wrong_item"
+    | "not_as_described"
+    | "changed_mind"
+    | "damaged"
+    | "other";
   items: Array<{
     skuId: string;
     quantity: number;
-    condition: 'new' | 'used' | 'damaged' | 'incomplete';
+    condition: "new" | "used" | "damaged" | "incomplete";
     inspectedQuantity?: number;
     acceptedQuantity?: number;
     restockQuantity?: number;
@@ -346,8 +376,8 @@ export interface ReturnAuthorization {
   receivedDate?: string;
   inspectionDate?: string;
   inspectedBy?: string;
-  disposition: 'restock' | 'liquidate' | 'scrap' | 'repair' | 'pending';
-  refundStatus: 'pending' | 'processed' | 'rejected';
+  disposition: "restock" | "liquidate" | "scrap" | "repair" | "pending";
+  refundStatus: "pending" | "processed" | "rejected";
   refundAmount?: number;
   notes?: string;
   createdAt: string;
@@ -356,13 +386,13 @@ export interface ReturnAuthorization {
 // ABC/XYZ Analysis
 export interface ABCXYZAnalysis {
   skuId: string;
-  abcClass: 'A' | 'B' | 'C'; // A=high value, C=low value
-  xyzClass: 'X' | 'Y' | 'Z'; // X=stable demand, Z=unpredictable
+  abcClass: "A" | "B" | "C"; // A=high value, C=low value
+  xyzClass: "X" | "Y" | "Z"; // X=stable demand, Z=unpredictable
   annualDollarValue: number;
   demandVariability: number; // coefficient of variation
   category: string; // AX, AY, AZ, BX, etc.
   recommendedStrategy: string;
-  reviewFrequency: 'weekly' | 'monthly' | 'quarterly';
+  reviewFrequency: "weekly" | "monthly" | "quarterly";
 }
 
 // Vendor data
@@ -395,7 +425,7 @@ export interface Vendor {
 export interface Carrier {
   carrierId: string;
   name: string;
-  type: 'parcel' | 'ltl' | 'ftl' | 'international';
+  type: "parcel" | "ltl" | "ftl" | "international";
   apiKey?: string;
   serviceTypes: Array<{
     code: string;
@@ -419,7 +449,13 @@ export interface InventoryMovement {
   warehouseId: string;
   fromLocationId?: string;
   toLocationId?: string;
-  movementType: 'receipt' | 'shipment' | 'transfer' | 'adjustment' | 'return' | 'damage';
+  movementType:
+    | "receipt"
+    | "shipment"
+    | "transfer"
+    | "adjustment"
+    | "return"
+    | "damage";
   quantity: number;
   referenceId?: string; // PO, SO, Transfer, etc.
   timestamp: string;

@@ -31,7 +31,10 @@ import {
 } from "@shopify/polaris";
 import { OrderStatusBadge } from "~/components/OrderStatusBadge";
 import { EmptyState } from "~/components/EmptyState";
-import { createApiClientFromRequest, type PaginatedResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type PaginatedResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -219,10 +222,7 @@ export default function OrdersList() {
   ));
 
   return (
-    <Page
-      title="Orders"
-      subtitle={`${meta.total} total orders`}
-    >
+    <Page title="Orders" subtitle={`${meta.total} total orders`}>
       <BlockStack gap="400">
         <Card>
           <BlockStack gap="400">
@@ -280,7 +280,9 @@ export default function OrdersList() {
                     ? "Try adjusting your filters to find what you're looking for."
                     : "Orders will appear here when they're created from Shopify or the API."
                 }
-                actionLabel={currentSearch || currentStatus ? "Clear filters" : undefined}
+                actionLabel={
+                  currentSearch || currentStatus ? "Clear filters" : undefined
+                }
                 onAction={
                   currentSearch || currentStatus
                     ? () => setSearchParams(new URLSearchParams())

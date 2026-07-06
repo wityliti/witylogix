@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface DeliveryStatsCardProps {
   title: string;
   value: string | number;
   subtitle: string;
-  variant: 'success' | 'info' | 'warning' | 'danger';
+  variant: "success" | "info" | "warning" | "danger";
   action?: {
     label: string;
     onClick: () => void;
@@ -15,17 +15,17 @@ interface DeliveryStatsCardProps {
 }
 
 const variantClasses = {
-  success: 'text-emerald-400',
-  info: 'text-cyan-400',
-  warning: 'text-yellow-400',
-  danger: 'text-red-400',
+  success: "text-emerald-400",
+  info: "text-cyan-400",
+  warning: "text-yellow-400",
+  danger: "text-red-400",
 };
 
 const cardBorders = {
-  success: '',
-  info: '',
-  warning: '',
-  danger: 'border border-red-500/20',
+  success: "",
+  info: "",
+  warning: "",
+  danger: "border border-red-500/20",
 };
 
 export function DeliveryStatsCard({
@@ -36,7 +36,9 @@ export function DeliveryStatsCard({
   action,
 }: DeliveryStatsCardProps) {
   return (
-    <Card className={`bg-wl-bg-elevated border-wl-border-default ${cardBorders[variant]}`}>
+    <Card
+      className={`bg-wl-bg-elevated border-wl-border-default ${cardBorders[variant]}`}
+    >
       <CardContent className="pt-6">
         <h4 className="text-xs uppercase tracking-wide text-wl-text-tertiary font-semibold mb-3">
           {title}

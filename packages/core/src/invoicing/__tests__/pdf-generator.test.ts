@@ -3,38 +3,38 @@
  * Tests for invoice PDF generation including layout and content validation
  */
 
-import { describe, it, expect } from 'vitest';
-import { generateInvoicePDF } from '../pdf-generator.js';
-import type { Invoice } from '../types.js';
+import { describe, it, expect } from "vitest";
+import { generateInvoicePDF } from "../pdf-generator.js";
+import type { Invoice } from "../types.js";
 
 // ─── FIXTURES ────────────────────────────────────────────────────────
 
 const mockInvoice: Invoice = {
-  id: 'inv-1',
-  tenantId: 'tenant-1',
-  invoiceNumber: 'INV-2026-00001',
-  customerId: 'cust-1',
-  status: 'finalized',
+  id: "inv-1",
+  tenantId: "tenant-1",
+  invoiceNumber: "INV-2026-00001",
+  customerId: "cust-1",
+  status: "finalized",
   subtotal: 100.0,
   discountTotal: 10.0,
   taxTotal: 6.75,
   total: 96.75,
-  currency: 'USD',
-  issuedAt: new Date('2026-03-11'),
-  dueAt: new Date('2026-04-10'),
+  currency: "USD",
+  issuedAt: new Date("2026-03-11"),
+  dueAt: new Date("2026-04-10"),
   paidAt: undefined,
   voidedAt: undefined,
   voidReason: undefined,
-  notes: 'Thank you for your business',
+  notes: "Thank you for your business",
   metadata: {
-    address: '123 Main St, Springfield, IL 62701',
+    address: "123 Main St, Springfield, IL 62701",
   },
   lineItems: [
     {
-      id: 'li-1',
-      invoiceId: 'inv-1',
-      description: 'Delivery from Warehouse to Customer',
-      deliveryId: 'delv-1',
+      id: "li-1",
+      invoiceId: "inv-1",
+      description: "Delivery from Warehouse to Customer",
+      deliveryId: "delv-1",
       quantity: 1,
       unitPrice: 50.0,
       amount: 50.0,
@@ -45,10 +45,10 @@ const mockInvoice: Invoice = {
       createdAt: new Date(),
     },
     {
-      id: 'li-2',
-      invoiceId: 'inv-1',
-      description: 'Express Delivery Service',
-      deliveryId: 'delv-2',
+      id: "li-2",
+      invoiceId: "inv-1",
+      description: "Express Delivery Service",
+      deliveryId: "delv-2",
       quantity: 1,
       unitPrice: 50.0,
       amount: 50.0,
@@ -61,10 +61,10 @@ const mockInvoice: Invoice = {
   ],
   discounts: [
     {
-      id: 'disc-1',
-      invoiceId: 'inv-1',
-      description: 'Volume Discount',
-      type: 'percentage',
+      id: "disc-1",
+      invoiceId: "inv-1",
+      description: "Volume Discount",
+      type: "percentage",
       value: 10,
       amount: 10.0,
       createdAt: new Date(),
@@ -72,23 +72,23 @@ const mockInvoice: Invoice = {
   ],
   taxes: [
     {
-      id: 'tax-1',
-      invoiceId: 'inv-1',
-      description: 'Sales Tax (IL)',
+      id: "tax-1",
+      invoiceId: "inv-1",
+      description: "Sales Tax (IL)",
       rate: 6.75,
       amount: 6.75,
-      jurisdiction: 'IL',
+      jurisdiction: "IL",
       createdAt: new Date(),
     },
   ],
   payments: [
     {
-      id: 'pmt-1',
-      invoiceId: 'inv-1',
+      id: "pmt-1",
+      invoiceId: "inv-1",
       amount: 96.75,
-      method: 'credit_card',
-      reference: 'TXN-2026-0001',
-      paidAt: new Date('2026-03-15'),
+      method: "credit_card",
+      reference: "TXN-2026-0001",
+      paidAt: new Date("2026-03-15"),
       metadata: {},
       createdAt: new Date(),
     },
@@ -97,46 +97,46 @@ const mockInvoice: Invoice = {
   updatedAt: new Date(),
 };
 
-describe('PDF Generator', () => {
-  describe('generateInvoicePDF', () => {
-    it('should generate PDF buffer for invoice', async () => {
+describe("PDF Generator", () => {
+  describe("generateInvoicePDF", () => {
+    it("should generate PDF buffer for invoice", async () => {
       const buffer = await generateInvoicePDF(mockInvoice);
 
       expect(buffer).toBeInstanceOf(Buffer);
       expect(buffer.length).toBeGreaterThan(0);
     });
 
-    it('should generate valid PDF document', async () => {
+    it("should generate valid PDF document", async () => {
       const buffer = await generateInvoicePDF(mockInvoice);
 
       // PDF files start with %PDF
-      const pdfHeader = buffer.toString('utf8', 0, 4);
-      expect(pdfHeader).toBe('%PDF');
+      const pdfHeader = buffer.toString("utf8", 0, 4);
+      expect(pdfHeader).toBe("%PDF");
     });
 
-    it('should generate PDF with custom company options', async () => {
+    it("should generate PDF with custom company options", async () => {
       const buffer = await generateInvoicePDF(mockInvoice, {
-        companyName: 'Acme Logistics',
-        companyEmail: 'billing@acme.com',
-        companyPhone: '+1 (555) 999-8888',
+        companyName: "Acme Logistics",
+        companyEmail: "billing@acme.com",
+        companyPhone: "+1 (555) 999-8888",
       });
 
       expect(buffer).toBeInstanceOf(Buffer);
       expect(buffer.length).toBeGreaterThan(0);
-      expect(buffer.toString('utf8', 0, 4)).toBe('%PDF');
+      expect(buffer.toString("utf8", 0, 4)).toBe("%PDF");
     });
 
-    it('should include invoice number in PDF', async () => {
+    it("should include invoice number in PDF", async () => {
       const buffer = await generateInvoicePDF(mockInvoice);
-      const pdfText = buffer.toString('utf8');
+      const pdfText = buffer.toString("utf8");
 
       // Check that invoice number is referenced (encoded in PDF)
       expect(pdfText.length).toBeGreaterThan(500);
     });
 
-    it('should generate different PDFs for different invoices', async () => {
-      const invoice1 = { ...mockInvoice, invoiceNumber: 'INV-2026-00001' };
-      const invoice2 = { ...mockInvoice, invoiceNumber: 'INV-2026-00002' };
+    it("should generate different PDFs for different invoices", async () => {
+      const invoice1 = { ...mockInvoice, invoiceNumber: "INV-2026-00001" };
+      const invoice2 = { ...mockInvoice, invoiceNumber: "INV-2026-00002" };
 
       const buffer1 = await generateInvoicePDF(invoice1);
       const buffer2 = await generateInvoicePDF(invoice2);
@@ -145,10 +145,10 @@ describe('PDF Generator', () => {
       expect(buffer1.toString()).not.toBe(buffer2.toString());
     });
 
-    it('should handle invoice without payments', async () => {
+    it("should handle invoice without payments", async () => {
       const unpaidInvoice = {
         ...mockInvoice,
-        status: 'finalized' as const,
+        status: "finalized" as const,
         paidAt: undefined,
         payments: [],
       };
@@ -159,7 +159,7 @@ describe('PDF Generator', () => {
       expect(buffer.length).toBeGreaterThan(0);
     });
 
-    it('should handle invoice without discounts', async () => {
+    it("should handle invoice without discounts", async () => {
       const invoiceNoDicount = {
         ...mockInvoice,
         discountTotal: 0,
@@ -173,7 +173,7 @@ describe('PDF Generator', () => {
       expect(buffer.length).toBeGreaterThan(0);
     });
 
-    it('should handle invoice without taxes', async () => {
+    it("should handle invoice without taxes", async () => {
       const invoiceNoTax = {
         ...mockInvoice,
         taxTotal: 0,
@@ -187,10 +187,10 @@ describe('PDF Generator', () => {
       expect(buffer.length).toBeGreaterThan(0);
     });
 
-    it('should handle invoice with many line items', async () => {
+    it("should handle invoice with many line items", async () => {
       const manyItems = Array.from({ length: 20 }, (_, i) => ({
         id: `li-${i}`,
-        invoiceId: 'inv-1',
+        invoiceId: "inv-1",
         description: `Line Item ${i + 1}`,
         quantity: 1,
         unitPrice: 10.0 + i,
@@ -210,8 +210,8 @@ describe('PDF Generator', () => {
       expect(buffer.length).toBeGreaterThan(0);
     });
 
-    it('should handle invoice with long notes', async () => {
-      const longNotes = 'This is a very long invoice note. '.repeat(20);
+    it("should handle invoice with long notes", async () => {
+      const longNotes = "This is a very long invoice note. ".repeat(20);
       const invoiceWithNotes = {
         ...mockInvoice,
         notes: longNotes,
@@ -223,8 +223,15 @@ describe('PDF Generator', () => {
       expect(buffer.length).toBeGreaterThan(0);
     });
 
-    it('should handle different invoice statuses', async () => {
-      const statuses = ['draft', 'finalized', 'sent', 'paid', 'overdue', 'voided'] as const;
+    it("should handle different invoice statuses", async () => {
+      const statuses = [
+        "draft",
+        "finalized",
+        "sent",
+        "paid",
+        "overdue",
+        "voided",
+      ] as const;
 
       for (const status of statuses) {
         const invoice = { ...mockInvoice, status };
@@ -235,7 +242,7 @@ describe('PDF Generator', () => {
       }
     });
 
-    it('should generate consistent PDF size for same invoice', async () => {
+    it("should generate consistent PDF size for same invoice", async () => {
       const buffer1 = await generateInvoicePDF(mockInvoice);
       const buffer2 = await generateInvoicePDF(mockInvoice);
 
@@ -243,13 +250,13 @@ describe('PDF Generator', () => {
       expect(Math.abs(buffer1.length - buffer2.length)).toBeLessThan(100);
     });
 
-    it('should handle special characters in descriptions', async () => {
+    it("should handle special characters in descriptions", async () => {
       const specialInvoice = {
         ...mockInvoice,
         lineItems: [
           {
             ...mockInvoice.lineItems![0],
-            description: 'Delivery with special chars: & < > " \'',
+            description: "Delivery with special chars: & < > \" '",
           },
         ],
       };
@@ -261,31 +268,31 @@ describe('PDF Generator', () => {
     });
   });
 
-  describe('PDF content validation', () => {
-    it('should generate A4 sized PDF', async () => {
+  describe("PDF content validation", () => {
+    it("should generate A4 sized PDF", async () => {
       const buffer = await generateInvoicePDF(mockInvoice);
 
       // A4 media box should be present in PDF content
-      const pdfText = buffer.toString('utf8', 0, Math.min(5000, buffer.length));
+      const pdfText = buffer.toString("utf8", 0, Math.min(5000, buffer.length));
       // PDF includes media box dimensions for A4 (595 x 842 points typically)
       expect(pdfText.length).toBeGreaterThan(0);
     });
 
-    it('should include company name in PDF', async () => {
+    it("should include company name in PDF", async () => {
       const customInvoice = { ...mockInvoice };
       const buffer = await generateInvoicePDF(customInvoice, {
-        companyName: 'TestCompany123',
+        companyName: "TestCompany123",
       });
 
       expect(buffer).toBeInstanceOf(Buffer);
       expect(buffer.length).toBeGreaterThan(0);
     });
 
-    it('should generate multiple page PDFs for invoices with many items', async () => {
+    it("should generate multiple page PDFs for invoices with many items", async () => {
       // Create invoice with enough items to potentially span multiple pages
       const manyItems = Array.from({ length: 50 }, (_, i) => ({
         id: `li-${i}`,
-        invoiceId: 'inv-1',
+        invoiceId: "inv-1",
         description: `Item ${i + 1}`,
         quantity: 1,
         unitPrice: 5.0,

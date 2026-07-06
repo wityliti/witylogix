@@ -42,22 +42,23 @@ notifications/delivery-log, notifications/log, notifications/preferences, pos/tr
 
 ## Cumulative Redesign Progress
 
-| Sprint | Pages Redesigned | Running Total |
-|--------|-----------------|---------------|
-| 9.5 | 6 (home, orders, dispatch, drivers, returns, fleet) | 6 |
-| 9.6 | 12 (analytics, demand, supply-chain, freight, billing, invoices, field-service, healthcare, pos, esignatures, notifications, shipments) | 18 |
-| 9.7 | 67 (orders/*, routes/*, fleet/*, shipping/*, tracking/*, delivery/*, finance/*, crm/*, partners/*, eld/*, misc) | 85 |
-| 9.8 | 99 (integrations/*, settings/*, admin/*, design-system/*, activity/*, remaining sub-pages) | **180** |
+| Sprint | Pages Redesigned                                                                                                                        | Running Total |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| 9.5    | 6 (home, orders, dispatch, drivers, returns, fleet)                                                                                     | 6             |
+| 9.6    | 12 (analytics, demand, supply-chain, freight, billing, invoices, field-service, healthcare, pos, esignatures, notifications, shipments) | 18            |
+| 9.7    | 67 (orders/_, routes/_, fleet/_, shipping/_, tracking/_, delivery/_, finance/_, crm/_, partners/_, eld/_, misc)                         | 85            |
+| 9.8    | 99 (integrations/_, settings/_, admin/_, design-system/_, activity/\*, remaining sub-pages)                                             | **180**       |
 
 ## Metrics
 
-| Metric | Before | After |
-|--------|--------|-------|
-| Pages redesigned (total) | 85 | **180 (100%)** |
-| Pages remaining | 95 | **0** |
-| Files modified this sprint | 0 | 94 |
+| Metric                     | Before | After          |
+| -------------------------- | ------ | -------------- |
+| Pages redesigned (total)   | 85     | **180 (100%)** |
+| Pages remaining            | 95     | **0**          |
+| Files modified this sprint | 0      | 94             |
 
 ## Design System (Locked)
+
 - Page: `#0a0a0f` | Cards: `#12121a` | Hover: `#1a1a2e` | Borders: `#1e1e2e`
 - Text: white / gray-300 / gray-400
 - Accents: blue-500 / emerald-500 / amber-500 / red-500
@@ -65,6 +66,7 @@ notifications/delivery-log, notifications/log, notifications/preferences, pos/tr
 - Button variants: primary / secondary / ghost / danger
 
 ## Verification
+
 - No secrets detected
 - No escaped directory bug
 - No .bak files

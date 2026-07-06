@@ -21,7 +21,7 @@ export interface CapacityImbalance {
   zoneId: string;
   demandGap: number; // actual - capacity (positive = shortage)
   demandGapPercent: number; // (actual - capacity) / capacity
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   currentCapacity: number; // current drivers/slots
   currentDemand: number; // actual current demand
   requiredCapacity: number; // capacity needed to meet demand + buffer
@@ -61,11 +61,17 @@ export interface RebalancingPlan {
     projectedCostImpact: number; // dollars (negative = savings)
     affectedZones: string[];
     estimatedImplementationTimeMinutes: number;
-    riskLevel: 'low' | 'medium' | 'high'; // based on move magnitude
+    riskLevel: "low" | "medium" | "high"; // based on move magnitude
   };
 
   // Status tracking
-  status: 'draft' | 'pending_approval' | 'approved' | 'executing' | 'completed' | 'rolled_back';
+  status:
+    | "draft"
+    | "pending_approval"
+    | "approved"
+    | "executing"
+    | "completed"
+    | "rolled_back";
   executedAt?: Date;
   completedAt?: Date;
   rolledBackAt?: Date;
@@ -184,7 +190,9 @@ export class AutoRebalancer {
    * Detect imbalances in a set of zones
    * Compare actual demand vs capacity
    */
-  detectImbalance(zones: Array<{ zoneId: string; demand: number; capacity: number }>): CapacityImbalance[] {
+  detectImbalance(
+    zones: Array<{ zoneId: string; demand: number; capacity: number }>,
+  ): CapacityImbalance[] {
     const imbalances: CapacityImbalance[] = [];
 
     for (const zone of zones) {
@@ -197,20 +205,23 @@ export class AutoRebalancer {
       }
 
       // Determine severity based on utilization ratio (demand/capacity)
-      let severity: CapacityImbalance['severity'];
-      const utilizationRatio = zone.capacity > 0 ? zone.demand / zone.capacity : 0;
+      let severity: CapacityImbalance["severity"];
+      const utilizationRatio =
+        zone.capacity > 0 ? zone.demand / zone.capacity : 0;
       if (utilizationRatio > 1 + this.config.criticalGapPercent / 100) {
-        severity = 'critical'; // e.g., > 150% utilization
+        severity = "critical"; // e.g., > 150% utilization
       } else if (utilizationRatio > 1) {
-        severity = 'high'; // Over capacity (100-150%)
+        severity = "high"; // Over capacity (100-150%)
       } else if (utilizationRatio > 0.7) {
-        severity = 'medium'; // Near capacity (70-100%)
+        severity = "medium"; // Near capacity (70-100%)
       } else {
-        severity = 'low'; // Under-utilized (< 70%)
+        severity = "low"; // Under-utilized (< 70%)
       }
 
       // Calculate required capacity
-      const requiredCapacity = Math.ceil(zone.demand * (1 + this.config.safetyBuffer));
+      const requiredCapacity = Math.ceil(
+        zone.demand * (1 + this.config.safetyBuffer),
+      );
       const capacityShortage = Math.max(0, requiredCapacity - zone.capacity);
 
       imbalances.push({
@@ -222,7 +233,11 @@ export class AutoRebalancer {
         currentDemand: zone.demand,
         requiredCapacity,
         capacityShortage: Math.ceil(capacityShortage / 3), // assume 3 deliveries per driver
-        recommendation: this.generateRecommendation(zone, gap, requiredCapacity),
+        recommendation: this.generateRecommendation(
+          zone,
+          gap,
+          requiredCapacity,
+        ),
         detectedAt: new Date(),
       });
     }
@@ -236,15 +251,19 @@ export class AutoRebalancer {
    */
   suggestRebalancing(
     imbalances: CapacityImbalance[],
-    allZones: Map<string, number> // zoneId -> current capacity
+    allZones: Map<string, number>, // zoneId -> current capacity
   ): RebalancingPlan | null {
     if (imbalances.length === 0) {
       return null;
     }
 
     // Identify shortage zones (need drivers) and surplus zones (can spare drivers)
-    const shortageZones = imbalances.filter((i) => i.demandGap > 0).sort((a, b) => b.demandGap - a.demandGap);
-    const surplusZones = imbalances.filter((i) => i.demandGap < 0).sort((a, b) => a.demandGap - b.demandGap);
+    const shortageZones = imbalances
+      .filter((i) => i.demandGap > 0)
+      .sort((a, b) => b.demandGap - a.demandGap);
+    const surplusZones = imbalances
+      .filter((i) => i.demandGap < 0)
+      .sort((a, b) => a.demandGap - b.demandGap);
 
     if (shortageZones.length === 0 || surplusZones.length === 0) {
       // Can't rebalance if all zones have same problem
@@ -261,19 +280,25 @@ export class AutoRebalancer {
         if (remainingNeeded <= 0) break;
 
         const currentCapacity = allZones.get(surplus.zoneId) || 0;
-        const minRetention = Math.ceil(currentCapacity * this.config.minCapacityRetention);
+        const minRetention = Math.ceil(
+          currentCapacity * this.config.minCapacityRetention,
+        );
         const availableToMove = Math.max(0, currentCapacity - minRetention);
 
         if (availableToMove === 0) continue;
 
-        const toMove = Math.min(remainingNeeded, availableToMove, this.config.maxDriversToMove);
+        const toMove = Math.min(
+          remainingNeeded,
+          availableToMove,
+          this.config.maxDriversToMove,
+        );
 
         if (toMove >= this.config.minDriverMove) {
           moves.push({
             fromZoneId: surplus.zoneId,
             toZoneId: shortage.zoneId,
             driverCount: toMove,
-            reason: `Move from ${shortage.demandGapPercent > 0 ? 'high' : 'low'} demand zone`,
+            reason: `Move from ${shortage.demandGapPercent > 0 ? "high" : "low"} demand zone`,
           });
 
           remainingNeeded -= toMove;
@@ -299,21 +324,24 @@ export class AutoRebalancer {
    * Execute a rebalancing plan
    * Apply driver redistribution (with optional auto-approval)
    */
-  executeRebalancing(plan: RebalancingPlan, autoApprove: boolean = false): RebalancingPlan {
+  executeRebalancing(
+    plan: RebalancingPlan,
+    autoApprove: boolean = false,
+  ): RebalancingPlan {
     // Store in pending plans for tracking
     this.pendingPlans.set(plan.id, plan);
 
     const needsApproval = plan.requiresApproval && !autoApprove;
 
     if (needsApproval) {
-      plan.status = 'pending_approval';
+      plan.status = "pending_approval";
       return plan;
     }
 
     // Mark as approved
-    plan.status = 'approved';
+    plan.status = "approved";
     plan.approvedAt = new Date();
-    plan.approvedBy = autoApprove ? 'system' : 'manual';
+    plan.approvedBy = autoApprove ? "system" : "manual";
 
     // Record in history synchronously
     plan.executedAt = new Date();
@@ -325,7 +353,8 @@ export class AutoRebalancer {
       completedAt: plan.completedAt,
       moves: plan.moves,
       actualOutcome: {
-        actualWaitTimeReduction: plan.impactEstimate.projectedWaitTimeReduction * 0.9,
+        actualWaitTimeReduction:
+          plan.impactEstimate.projectedWaitTimeReduction * 0.9,
         actualCostImpact: plan.impactEstimate.projectedCostImpact,
         zonesImproved: plan.impactEstimate.affectedZones,
         zonesDisrupted: [],
@@ -347,7 +376,7 @@ export class AutoRebalancer {
       return false;
     }
 
-    plan.status = 'rolled_back';
+    plan.status = "rolled_back";
     plan.rolledBackAt = new Date();
     plan.rollbackReason = reason;
 
@@ -359,27 +388,33 @@ export class AutoRebalancer {
    */
   approvePlan(planId: string, userId?: string): boolean {
     const plan = this.pendingPlans.get(planId);
-    if (!plan || plan.status !== 'pending_approval') {
+    if (!plan || plan.status !== "pending_approval") {
       return false;
     }
 
-    return this.executeRebalancing(plan, false).status === 'approved';
+    return this.executeRebalancing(plan, false).status === "approved";
   }
 
   /**
    * Get pending approval plans
    */
   getPendingApprovals(): RebalancingPlan[] {
-    return Array.from(this.pendingPlans.values()).filter((p) => p.status === 'pending_approval');
+    return Array.from(this.pendingPlans.values()).filter(
+      (p) => p.status === "pending_approval",
+    );
   }
 
   /**
    * Get rebalancing history
    */
   getRebalancingHistory(days?: number): RebalancingHistory[] {
-    const cutoffTime = days ? new Date(Date.now() - days * 24 * 60 * 60 * 1000) : new Date(0);
+    const cutoffTime = days
+      ? new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+      : new Date(0);
 
-    return Array.from(this.history.values()).filter((h) => h.executedAt > cutoffTime);
+    return Array.from(this.history.values()).filter(
+      (h) => h.executedAt > cutoffTime,
+    );
   }
 
   /**
@@ -399,7 +434,9 @@ export class AutoRebalancer {
       totalPlansCreated: this.planCounter,
       executedPlans: history.length,
       successfulPlans: history.filter((h) => h.success).length,
-      rolledBackPlans: Array.from(this.pendingPlans.values()).filter((p) => p.status === 'rolled_back').length,
+      rolledBackPlans: Array.from(this.pendingPlans.values()).filter(
+        (p) => p.status === "rolled_back",
+      ).length,
       pendingApprovals: pending.length,
     };
   }
@@ -422,7 +459,7 @@ export class AutoRebalancer {
   private generateRecommendation(
     zone: { zoneId: string; capacity: number; demand: number },
     gap: number,
-    requiredCapacity: number
+    requiredCapacity: number,
   ): string {
     const capacityNeeded = Math.ceil(requiredCapacity - zone.capacity);
     if (gap > 0) {
@@ -438,7 +475,7 @@ export class AutoRebalancer {
   private createRebalancingPlan(
     moves: DriverMove[],
     imbalances: CapacityImbalance[],
-    allZones: Map<string, number>
+    allZones: Map<string, number>,
   ): RebalancingPlan {
     this.planCounter++;
 
@@ -451,7 +488,8 @@ export class AutoRebalancer {
       affectedZones.add(move.toZoneId);
 
       // Cost: moving fee + driver relocation
-      totalCostImpact -= move.driverCount * this.config.rebalancingCostPerDriver; // Cost of moving
+      totalCostImpact -=
+        move.driverCount * this.config.rebalancingCostPerDriver; // Cost of moving
     }
 
     // Estimate wait time reduction
@@ -460,7 +498,11 @@ export class AutoRebalancer {
 
     const isAutomatic =
       this.config.autoApproveHighPriority &&
-      imbalances.some((i) => Math.abs(i.demandGapPercent) * 100 > this.config.autoApprovalThresholdPercent);
+      imbalances.some(
+        (i) =>
+          Math.abs(i.demandGapPercent) * 100 >
+          this.config.autoApprovalThresholdPercent,
+      );
 
     const plan: RebalancingPlan = {
       id: `plan-${Date.now()}-${this.planCounter}`,
@@ -469,13 +511,14 @@ export class AutoRebalancer {
       moves,
       isAutomatic,
       requiresApproval: !isAutomatic,
-      status: 'draft',
+      status: "draft",
       impactEstimate: {
         projectedWaitTimeReduction,
         projectedCostImpact: totalCostImpact,
         affectedZones: Array.from(affectedZones),
         estimatedImplementationTimeMinutes: 15,
-        riskLevel: moves.length > 3 ? 'high' : moves.length > 1 ? 'medium' : 'low',
+        riskLevel:
+          moves.length > 3 ? "high" : moves.length > 1 ? "medium" : "low",
       },
     };
 

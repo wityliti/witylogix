@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import type { FastifyRequest, FastifyReply } from "fastify";
 
 /**
  * Delivery Events Route Tests — WIT-127
@@ -19,18 +19,18 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 // Valid UUIDs required by batchDeliveryEventsSchema (deliveryId: z.string().uuid())
-const DEFAULT_DELIVERY_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
-const DELIVERY_ID_1 = 'b2c3d4e5-f6a7-8901-bcde-f12345678901';
-const DELIVERY_ID_2 = 'c3d4e5f6-a7b8-9012-cdef-123456789012';
+const DEFAULT_DELIVERY_ID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
+const DELIVERY_ID_1 = "b2c3d4e5-f6a7-8901-bcde-f12345678901";
+const DELIVERY_ID_2 = "c3d4e5f6-a7b8-9012-cdef-123456789012";
 
 function makeEvent(overrides: Record<string, unknown> = {}) {
   return {
     id: `evt-${Math.random().toString(36).slice(2)}`,
-    eventType: 'picked_up',
+    eventType: "picked_up",
     deliveryId: DEFAULT_DELIVERY_ID,
     payload: {},
     deviceCapturedAt: new Date().toISOString(),
-    deviceTimezone: 'America/New_York',
+    deviceTimezone: "America/New_York",
     gpsLat: 40.7128,
     gpsLng: -74.006,
     ...overrides,
@@ -40,35 +40,35 @@ function makeEvent(overrides: Record<string, unknown> = {}) {
 function makeMockShipment(overrides: Record<string, unknown> = {}) {
   return {
     id: DEFAULT_DELIVERY_ID,
-    shopId: 'shop-123',
-    status: 'READY_FOR_PICKUP',
+    shopId: "shop-123",
+    status: "READY_FOR_PICKUP",
     ...overrides,
   };
 }
 
 // ── Inline state machine unit tests ──────────────────────────────────────────
 
-describe('Delivery State Machine — unit', () => {
-  const TERMINAL = new Set(['DELIVERED', 'FAILED']);
+describe("Delivery State Machine — unit", () => {
+  const TERMINAL = new Set(["DELIVERED", "FAILED"]);
 
   const VALID_TRANSITIONS: Record<string, Set<string>> = {
-    PICKED_UP: new Set(['IN_TRANSIT']),
-    IN_TRANSIT: new Set(['OUT_FOR_DELIVERY']),
-    OUT_FOR_DELIVERY: new Set(['DELIVERED', 'FAILED']),
+    PICKED_UP: new Set(["IN_TRANSIT"]),
+    IN_TRANSIT: new Set(["OUT_FOR_DELIVERY"]),
+    OUT_FOR_DELIVERY: new Set(["DELIVERED", "FAILED"]),
     DELIVERED: new Set(),
     FAILED: new Set(),
-    PENDING: new Set(['PICKED_UP']),
-    PROCESSING: new Set(['PICKED_UP']),
-    READY_FOR_PICKUP: new Set(['PICKED_UP']),
-    ASSIGNED: new Set(['PICKED_UP']),
+    PENDING: new Set(["PICKED_UP"]),
+    PROCESSING: new Set(["PICKED_UP"]),
+    READY_FOR_PICKUP: new Set(["PICKED_UP"]),
+    ASSIGNED: new Set(["PICKED_UP"]),
   };
 
   const EVENT_MAP: Record<string, string> = {
-    picked_up: 'PICKED_UP',
-    in_transit: 'IN_TRANSIT',
-    out_for_delivery: 'OUT_FOR_DELIVERY',
-    delivered: 'DELIVERED',
-    failed_delivery: 'FAILED',
+    picked_up: "PICKED_UP",
+    in_transit: "IN_TRANSIT",
+    out_for_delivery: "OUT_FOR_DELIVERY",
+    delivered: "DELIVERED",
+    failed_delivery: "FAILED",
   };
 
   function canTransition(from: string, eventType: string): boolean {
@@ -77,52 +77,52 @@ describe('Delivery State Machine — unit', () => {
     return VALID_TRANSITIONS[from]?.has(target) ?? false;
   }
 
-  it('allows picked_up from READY_FOR_PICKUP', () => {
-    expect(canTransition('READY_FOR_PICKUP', 'picked_up')).toBe(true);
+  it("allows picked_up from READY_FOR_PICKUP", () => {
+    expect(canTransition("READY_FOR_PICKUP", "picked_up")).toBe(true);
   });
 
-  it('allows picked_up from PENDING', () => {
-    expect(canTransition('PENDING', 'picked_up')).toBe(true);
+  it("allows picked_up from PENDING", () => {
+    expect(canTransition("PENDING", "picked_up")).toBe(true);
   });
 
-  it('allows in_transit from PICKED_UP', () => {
-    expect(canTransition('PICKED_UP', 'in_transit')).toBe(true);
+  it("allows in_transit from PICKED_UP", () => {
+    expect(canTransition("PICKED_UP", "in_transit")).toBe(true);
   });
 
-  it('allows out_for_delivery from IN_TRANSIT', () => {
-    expect(canTransition('IN_TRANSIT', 'out_for_delivery')).toBe(true);
+  it("allows out_for_delivery from IN_TRANSIT", () => {
+    expect(canTransition("IN_TRANSIT", "out_for_delivery")).toBe(true);
   });
 
-  it('allows delivered from OUT_FOR_DELIVERY', () => {
-    expect(canTransition('OUT_FOR_DELIVERY', 'delivered')).toBe(true);
+  it("allows delivered from OUT_FOR_DELIVERY", () => {
+    expect(canTransition("OUT_FOR_DELIVERY", "delivered")).toBe(true);
   });
 
-  it('allows failed_delivery from OUT_FOR_DELIVERY', () => {
-    expect(canTransition('OUT_FOR_DELIVERY', 'failed_delivery')).toBe(true);
+  it("allows failed_delivery from OUT_FOR_DELIVERY", () => {
+    expect(canTransition("OUT_FOR_DELIVERY", "failed_delivery")).toBe(true);
   });
 
-  it('blocks delivered from PICKED_UP (skips steps)', () => {
-    expect(canTransition('PICKED_UP', 'delivered')).toBe(false);
+  it("blocks delivered from PICKED_UP (skips steps)", () => {
+    expect(canTransition("PICKED_UP", "delivered")).toBe(false);
   });
 
-  it('blocks in_transit from PENDING (skips picked_up)', () => {
-    expect(canTransition('PENDING', 'in_transit')).toBe(false);
+  it("blocks in_transit from PENDING (skips picked_up)", () => {
+    expect(canTransition("PENDING", "in_transit")).toBe(false);
   });
 
-  it('blocks any event when status is DELIVERED (terminal)', () => {
-    expect(canTransition('DELIVERED', 'failed_delivery')).toBe(false);
-    expect(canTransition('DELIVERED', 'in_transit')).toBe(false);
+  it("blocks any event when status is DELIVERED (terminal)", () => {
+    expect(canTransition("DELIVERED", "failed_delivery")).toBe(false);
+    expect(canTransition("DELIVERED", "in_transit")).toBe(false);
   });
 
-  it('blocks any event when status is FAILED (terminal)', () => {
-    expect(canTransition('FAILED', 'delivered')).toBe(false);
-    expect(canTransition('FAILED', 'picked_up')).toBe(false);
+  it("blocks any event when status is FAILED (terminal)", () => {
+    expect(canTransition("FAILED", "delivered")).toBe(false);
+    expect(canTransition("FAILED", "picked_up")).toBe(false);
   });
 });
 
 // ── Route integration tests ───────────────────────────────────────────────────
 
-describe('POST /api/v4/deliveries/events/batch', () => {
+describe("POST /api/v4/deliveries/events/batch", () => {
   let mockRequest: any;
   let mockReply: any;
   let mockDb: any;
@@ -146,9 +146,9 @@ describe('POST /api/v4/deliveries/events/batch', () => {
 
     mockRequest = {
       body: {},
-      shopId: 'shop-123',
-      tenantId: 'shop-123',
-      auth: { role: 'DRIVER', driverId: 'driver-1' },
+      shopId: "shop-123",
+      tenantId: "shop-123",
+      auth: { role: "DRIVER", driverId: "driver-1" },
       tenantDb: mockDb,
       log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
     };
@@ -165,8 +165,8 @@ describe('POST /api/v4/deliveries/events/batch', () => {
 
   // ── Happy path ────────────────────────────────────────────
 
-  it('accepts a single valid picked_up event and returns 207', async () => {
-    const event = makeEvent({ eventType: 'picked_up' });
+  it("accepts a single valid picked_up event and returns 207", async () => {
+    const event = makeEvent({ eventType: "picked_up" });
     mockRequest.body = { events: [event] };
 
     mockDb.shipment.findMany.mockResolvedValue([makeMockShipment()]);
@@ -178,19 +178,40 @@ describe('POST /api/v4/deliveries/events/batch', () => {
     const result = await simulateBatchHandler(mockRequest);
 
     expect(result.results).toHaveLength(1);
-    expect(result.results[0]).toMatchObject({ id: event.id, status: 'accepted' });
+    expect(result.results[0]).toMatchObject({
+      id: event.id,
+      status: "accepted",
+    });
   });
 
-  it('processes a full delivery lifecycle in order', async () => {
+  it("processes a full delivery lifecycle in order", async () => {
     const events = [
-      makeEvent({ id: 'e1', eventType: 'picked_up', deviceCapturedAt: new Date(1000).toISOString() }),
-      makeEvent({ id: 'e2', eventType: 'in_transit', deviceCapturedAt: new Date(2000).toISOString() }),
-      makeEvent({ id: 'e3', eventType: 'out_for_delivery', deviceCapturedAt: new Date(3000).toISOString() }),
-      makeEvent({ id: 'e4', eventType: 'delivered', deviceCapturedAt: new Date(4000).toISOString() }),
+      makeEvent({
+        id: "e1",
+        eventType: "picked_up",
+        deviceCapturedAt: new Date(1000).toISOString(),
+      }),
+      makeEvent({
+        id: "e2",
+        eventType: "in_transit",
+        deviceCapturedAt: new Date(2000).toISOString(),
+      }),
+      makeEvent({
+        id: "e3",
+        eventType: "out_for_delivery",
+        deviceCapturedAt: new Date(3000).toISOString(),
+      }),
+      makeEvent({
+        id: "e4",
+        eventType: "delivered",
+        deviceCapturedAt: new Date(4000).toISOString(),
+      }),
     ];
     mockRequest.body = { events };
 
-    mockDb.shipment.findMany.mockResolvedValue([makeMockShipment({ status: 'READY_FOR_PICKUP' })]);
+    mockDb.shipment.findMany.mockResolvedValue([
+      makeMockShipment({ status: "READY_FOR_PICKUP" }),
+    ]);
     mockDb.deliveryEvent.findMany.mockResolvedValue([]);
     mockDb.deliveryEvent.create.mockResolvedValue({});
     mockDb.shipment.update.mockResolvedValue({});
@@ -198,13 +219,15 @@ describe('POST /api/v4/deliveries/events/batch', () => {
     const result = await simulateBatchHandler(mockRequest);
 
     expect(result.results).toHaveLength(4);
-    expect(result.results.every((r: any) => r.status === 'accepted')).toBe(true);
+    expect(result.results.every((r: any) => r.status === "accepted")).toBe(
+      true,
+    );
   });
 
   // ── Idempotency ───────────────────────────────────────────
 
-  it('returns accepted for duplicate event ids without re-processing', async () => {
-    const event = makeEvent({ eventType: 'picked_up' });
+  it("returns accepted for duplicate event ids without re-processing", async () => {
+    const event = makeEvent({ eventType: "picked_up" });
     mockRequest.body = { events: [event] };
 
     mockDb.shipment.findMany.mockResolvedValue([makeMockShipment()]);
@@ -213,68 +236,79 @@ describe('POST /api/v4/deliveries/events/batch', () => {
 
     const result = await simulateBatchHandler(mockRequest);
 
-    expect(result.results[0]).toMatchObject({ id: event.id, status: 'accepted' });
+    expect(result.results[0]).toMatchObject({
+      id: event.id,
+      status: "accepted",
+    });
     // Should not attempt to persist
     expect(mockDb.$transaction).not.toHaveBeenCalled();
   });
 
   // ── Terminal state conflict ───────────────────────────────
 
-  it('returns conflict with currentDeliveryStatus when delivery is DELIVERED', async () => {
-    const event = makeEvent({ eventType: 'in_transit' });
+  it("returns conflict with currentDeliveryStatus when delivery is DELIVERED", async () => {
+    const event = makeEvent({ eventType: "in_transit" });
     mockRequest.body = { events: [event] };
 
-    mockDb.shipment.findMany.mockResolvedValue([makeMockShipment({ status: 'DELIVERED' })]);
+    mockDb.shipment.findMany.mockResolvedValue([
+      makeMockShipment({ status: "DELIVERED" }),
+    ]);
     mockDb.deliveryEvent.findMany.mockResolvedValue([]);
 
     const result = await simulateBatchHandler(mockRequest);
 
     expect(result.results[0]).toMatchObject({
       id: event.id,
-      status: 'conflict',
-      currentDeliveryStatus: 'delivered',
-      message: expect.stringContaining('terminal'),
+      status: "conflict",
+      currentDeliveryStatus: "delivered",
+      message: expect.stringContaining("terminal"),
     });
   });
 
-  it('returns conflict when delivery is FAILED', async () => {
-    const event = makeEvent({ eventType: 'delivered' });
+  it("returns conflict when delivery is FAILED", async () => {
+    const event = makeEvent({ eventType: "delivered" });
     mockRequest.body = { events: [event] };
 
-    mockDb.shipment.findMany.mockResolvedValue([makeMockShipment({ status: 'FAILED' })]);
+    mockDb.shipment.findMany.mockResolvedValue([
+      makeMockShipment({ status: "FAILED" }),
+    ]);
     mockDb.deliveryEvent.findMany.mockResolvedValue([]);
 
     const result = await simulateBatchHandler(mockRequest);
 
     expect(result.results[0]).toMatchObject({
       id: event.id,
-      status: 'conflict',
-      currentDeliveryStatus: 'failed_delivery',
+      status: "conflict",
+      currentDeliveryStatus: "failed_delivery",
     });
   });
 
   // ── Invalid transition ────────────────────────────────────
 
-  it('returns conflict for invalid transition (skipping steps)', async () => {
-    const event = makeEvent({ eventType: 'delivered' }); // from PICKED_UP — must go in_transit first
+  it("returns conflict for invalid transition (skipping steps)", async () => {
+    const event = makeEvent({ eventType: "delivered" }); // from PICKED_UP — must go in_transit first
     mockRequest.body = { events: [event] };
 
-    mockDb.shipment.findMany.mockResolvedValue([makeMockShipment({ status: 'PICKED_UP' })]);
+    mockDb.shipment.findMany.mockResolvedValue([
+      makeMockShipment({ status: "PICKED_UP" }),
+    ]);
     mockDb.deliveryEvent.findMany.mockResolvedValue([]);
 
     const result = await simulateBatchHandler(mockRequest);
 
     expect(result.results[0]).toMatchObject({
       id: event.id,
-      status: 'conflict',
-      currentDeliveryStatus: 'picked_up',
+      status: "conflict",
+      currentDeliveryStatus: "picked_up",
     });
   });
 
   // ── Unknown delivery ──────────────────────────────────────
 
-  it('returns error for unknown deliveryId', async () => {
-    const event = makeEvent({ deliveryId: 'd4e5f6a7-b8c9-0123-defa-234567890123' }); // valid UUID not in DB
+  it("returns error for unknown deliveryId", async () => {
+    const event = makeEvent({
+      deliveryId: "d4e5f6a7-b8c9-0123-defa-234567890123",
+    }); // valid UUID not in DB
     mockRequest.body = { events: [event] };
 
     mockDb.shipment.findMany.mockResolvedValue([]); // nothing found
@@ -284,21 +318,29 @@ describe('POST /api/v4/deliveries/events/batch', () => {
 
     expect(result.results[0]).toMatchObject({
       id: event.id,
-      status: 'error',
-      message: expect.stringContaining('not found'),
+      status: "error",
+      message: expect.stringContaining("not found"),
     });
   });
 
   // ── Multi-delivery batch ──────────────────────────────────
 
-  it('processes two independent deliveries in the same batch', async () => {
-    const e1 = makeEvent({ id: 'e1', eventType: 'picked_up', deliveryId: DELIVERY_ID_1 });
-    const e2 = makeEvent({ id: 'e2', eventType: 'picked_up', deliveryId: DELIVERY_ID_2 });
+  it("processes two independent deliveries in the same batch", async () => {
+    const e1 = makeEvent({
+      id: "e1",
+      eventType: "picked_up",
+      deliveryId: DELIVERY_ID_1,
+    });
+    const e2 = makeEvent({
+      id: "e2",
+      eventType: "picked_up",
+      deliveryId: DELIVERY_ID_2,
+    });
     mockRequest.body = { events: [e1, e2] };
 
     mockDb.shipment.findMany.mockResolvedValue([
-      { id: DELIVERY_ID_1, shopId: 'shop-123', status: 'READY_FOR_PICKUP' },
-      { id: DELIVERY_ID_2, shopId: 'shop-123', status: 'PENDING' },
+      { id: DELIVERY_ID_1, shopId: "shop-123", status: "READY_FOR_PICKUP" },
+      { id: DELIVERY_ID_2, shopId: "shop-123", status: "PENDING" },
     ]);
     mockDb.deliveryEvent.findMany.mockResolvedValue([]);
     mockDb.deliveryEvent.create.mockResolvedValue({});
@@ -307,20 +349,32 @@ describe('POST /api/v4/deliveries/events/batch', () => {
     const result = await simulateBatchHandler(mockRequest);
 
     expect(result.results).toHaveLength(2);
-    expect(result.results.every((r: any) => r.status === 'accepted')).toBe(true);
+    expect(result.results.every((r: any) => r.status === "accepted")).toBe(
+      true,
+    );
   });
 
   // ── Out-of-order batch sorting ────────────────────────────
 
-  it('processes events sorted by deviceCapturedAt even if submitted out of order', async () => {
-    const later = makeEvent({ id: 'e-later', eventType: 'in_transit', deliveryId: DELIVERY_ID_1, deviceCapturedAt: new Date(2000).toISOString() });
-    const earlier = makeEvent({ id: 'e-earlier', eventType: 'picked_up', deliveryId: DELIVERY_ID_1, deviceCapturedAt: new Date(1000).toISOString() });
+  it("processes events sorted by deviceCapturedAt even if submitted out of order", async () => {
+    const later = makeEvent({
+      id: "e-later",
+      eventType: "in_transit",
+      deliveryId: DELIVERY_ID_1,
+      deviceCapturedAt: new Date(2000).toISOString(),
+    });
+    const earlier = makeEvent({
+      id: "e-earlier",
+      eventType: "picked_up",
+      deliveryId: DELIVERY_ID_1,
+      deviceCapturedAt: new Date(1000).toISOString(),
+    });
 
     // Submitted out of order
     mockRequest.body = { events: [later, earlier] };
 
     mockDb.shipment.findMany.mockResolvedValue([
-      { id: DELIVERY_ID_1, shopId: 'shop-123', status: 'READY_FOR_PICKUP' },
+      { id: DELIVERY_ID_1, shopId: "shop-123", status: "READY_FOR_PICKUP" },
     ]);
     mockDb.deliveryEvent.findMany.mockResolvedValue([]);
     mockDb.deliveryEvent.create.mockResolvedValue({});
@@ -329,33 +383,46 @@ describe('POST /api/v4/deliveries/events/batch', () => {
     const result = await simulateBatchHandler(mockRequest);
 
     // Both should be accepted — earlier picked_up runs first, then in_transit
-    expect(result.results.find((r: any) => r.id === 'e-earlier')).toMatchObject({ status: 'accepted' });
-    expect(result.results.find((r: any) => r.id === 'e-later')).toMatchObject({ status: 'accepted' });
+    expect(result.results.find((r: any) => r.id === "e-earlier")).toMatchObject(
+      { status: "accepted" },
+    );
+    expect(result.results.find((r: any) => r.id === "e-later")).toMatchObject({
+      status: "accepted",
+    });
   });
 
   // ── Input validation ──────────────────────────────────────
 
-  it('returns 400 when events array is missing', async () => {
+  it("returns 400 when events array is missing", async () => {
     mockRequest.body = {};
 
     const reply = { ...mockReply };
     let sentStatus = 0;
     let sentBody: any;
-    reply.status = vi.fn().mockImplementation((s: number) => { sentStatus = s; return reply; });
-    reply.send = vi.fn().mockImplementation((b: any) => { sentBody = b; return reply; });
+    reply.status = vi.fn().mockImplementation((s: number) => {
+      sentStatus = s;
+      return reply;
+    });
+    reply.send = vi.fn().mockImplementation((b: any) => {
+      sentBody = b;
+      return reply;
+    });
 
     await simulateBatchHandler({ ...mockRequest }, reply);
 
     expect(sentStatus).toBe(400);
-    expect(sentBody.error).toBe('Validation error');
+    expect(sentBody.error).toBe("Validation error");
   });
 
-  it('returns 400 when eventType is invalid', async () => {
-    mockRequest.body = { events: [makeEvent({ eventType: 'teleported' })] };
+  it("returns 400 when eventType is invalid", async () => {
+    mockRequest.body = { events: [makeEvent({ eventType: "teleported" })] };
 
     const reply = { ...mockReply };
     let sentStatus = 0;
-    reply.status = vi.fn().mockImplementation((s: number) => { sentStatus = s; return reply; });
+    reply.status = vi.fn().mockImplementation((s: number) => {
+      sentStatus = s;
+      return reply;
+    });
     reply.send = vi.fn().mockReturnThis();
 
     await simulateBatchHandler({ ...mockRequest }, reply);
@@ -369,50 +436,58 @@ describe('POST /api/v4/deliveries/events/batch', () => {
 // Fastify instance. The actual server test (app integration) should cover
 // the HTTP layer; these tests focus on business logic correctness.
 
-const TERMINAL_STATUSES = new Set(['DELIVERED', 'FAILED']);
+const TERMINAL_STATUSES = new Set(["DELIVERED", "FAILED"]);
 
 const VALID_TRANSITIONS: Record<string, Set<string>> = {
-  PICKED_UP: new Set(['IN_TRANSIT']),
-  IN_TRANSIT: new Set(['OUT_FOR_DELIVERY']),
-  OUT_FOR_DELIVERY: new Set(['DELIVERED', 'FAILED']),
+  PICKED_UP: new Set(["IN_TRANSIT"]),
+  IN_TRANSIT: new Set(["OUT_FOR_DELIVERY"]),
+  OUT_FOR_DELIVERY: new Set(["DELIVERED", "FAILED"]),
   DELIVERED: new Set(),
   FAILED: new Set(),
-  PENDING: new Set(['PICKED_UP']),
-  PROCESSING: new Set(['PICKED_UP']),
-  READY_FOR_PICKUP: new Set(['PICKED_UP']),
-  ASSIGNED: new Set(['PICKED_UP']),
+  PENDING: new Set(["PICKED_UP"]),
+  PROCESSING: new Set(["PICKED_UP"]),
+  READY_FOR_PICKUP: new Set(["PICKED_UP"]),
+  ASSIGNED: new Set(["PICKED_UP"]),
 };
 
 const EVENT_TYPE_TO_STATUS: Record<string, string> = {
-  picked_up: 'PICKED_UP',
-  in_transit: 'IN_TRANSIT',
-  out_for_delivery: 'OUT_FOR_DELIVERY',
-  delivered: 'DELIVERED',
-  failed_delivery: 'FAILED',
+  picked_up: "PICKED_UP",
+  in_transit: "IN_TRANSIT",
+  out_for_delivery: "OUT_FOR_DELIVERY",
+  delivered: "DELIVERED",
+  failed_delivery: "FAILED",
 };
 
 const STATUS_TO_CLIENT: Record<string, string> = {
-  PENDING: 'pending',
-  PROCESSING: 'processing',
-  READY_FOR_PICKUP: 'ready_for_pickup',
-  PICKED_UP: 'picked_up',
-  IN_TRANSIT: 'in_transit',
-  OUT_FOR_DELIVERY: 'out_for_delivery',
-  ARRIVED: 'arrived',
-  DELIVERED: 'delivered',
-  FAILED: 'failed_delivery',
-  RETURNED: 'returned',
-  CANCELLED: 'cancelled',
+  PENDING: "pending",
+  PROCESSING: "processing",
+  READY_FOR_PICKUP: "ready_for_pickup",
+  PICKED_UP: "picked_up",
+  IN_TRANSIT: "in_transit",
+  OUT_FOR_DELIVERY: "out_for_delivery",
+  ARRIVED: "arrived",
+  DELIVERED: "delivered",
+  FAILED: "failed_delivery",
+  RETURNED: "returned",
+  CANCELLED: "cancelled",
 };
 
-import { batchDeliveryEventsSchema } from '@witylogix/validators';
+import { batchDeliveryEventsSchema } from "@witylogix/validators";
 
-async function simulateBatchHandler(request: any, reply: any = null): Promise<any> {
-  const replyObj = reply ?? { status: vi.fn().mockReturnThis(), send: vi.fn().mockReturnThis() };
+async function simulateBatchHandler(
+  request: any,
+  reply: any = null,
+): Promise<any> {
+  const replyObj = reply ?? {
+    status: vi.fn().mockReturnThis(),
+    send: vi.fn().mockReturnThis(),
+  };
 
   const parsed = batchDeliveryEventsSchema.safeParse(request.body);
   if (!parsed.success) {
-    replyObj.status(400).send({ error: 'Validation error', details: parsed.error.flatten() });
+    replyObj
+      .status(400)
+      .send({ error: "Validation error", details: parsed.error.flatten() });
     return;
   }
 
@@ -421,7 +496,9 @@ async function simulateBatchHandler(request: any, reply: any = null): Promise<an
   const db: any = request.tenantDb;
 
   const sorted = [...events].sort(
-    (a, b) => new Date(a.deviceCapturedAt).getTime() - new Date(b.deviceCapturedAt).getTime(),
+    (a, b) =>
+      new Date(a.deviceCapturedAt).getTime() -
+      new Date(b.deviceCapturedAt).getTime(),
   );
 
   const deliveryIds = [...new Set(sorted.map((e) => e.deliveryId))];
@@ -448,13 +525,17 @@ async function simulateBatchHandler(request: any, reply: any = null): Promise<an
 
   for (const event of sorted) {
     if (existingIds.has(event.id)) {
-      results.push({ id: event.id, status: 'accepted' });
+      results.push({ id: event.id, status: "accepted" });
       continue;
     }
 
     const shipment = shipmentMap.get(event.deliveryId);
     if (!shipment) {
-      results.push({ id: event.id, status: 'error', message: `Delivery ${event.deliveryId} not found` });
+      results.push({
+        id: event.id,
+        status: "error",
+        message: `Delivery ${event.deliveryId} not found`,
+      });
       continue;
     }
 
@@ -464,9 +545,10 @@ async function simulateBatchHandler(request: any, reply: any = null): Promise<an
     if (TERMINAL_STATUSES.has(currentStatus)) {
       results.push({
         id: event.id,
-        status: 'conflict',
-        currentDeliveryStatus: STATUS_TO_CLIENT[currentStatus] ?? currentStatus.toLowerCase(),
-        message: 'Delivery is already in terminal state',
+        status: "conflict",
+        currentDeliveryStatus:
+          STATUS_TO_CLIENT[currentStatus] ?? currentStatus.toLowerCase(),
+        message: "Delivery is already in terminal state",
       });
       continue;
     }
@@ -475,8 +557,9 @@ async function simulateBatchHandler(request: any, reply: any = null): Promise<an
     if (!allowed || !allowed.has(targetStatus)) {
       results.push({
         id: event.id,
-        status: 'conflict',
-        currentDeliveryStatus: STATUS_TO_CLIENT[currentStatus] ?? currentStatus.toLowerCase(),
+        status: "conflict",
+        currentDeliveryStatus:
+          STATUS_TO_CLIENT[currentStatus] ?? currentStatus.toLowerCase(),
         message: `Invalid transition from ${STATUS_TO_CLIENT[currentStatus] ?? currentStatus} via ${event.eventType}`,
       });
       continue;
@@ -500,14 +583,18 @@ async function simulateBatchHandler(request: any, reply: any = null): Promise<an
         where: { id: event.deliveryId },
         data: {
           status: targetStatus,
-          ...(targetStatus === 'PICKED_UP' ? { pickedUpAt: new Date(event.deviceCapturedAt) } : {}),
-          ...(targetStatus === 'DELIVERED' ? { actualDelivery: new Date(event.deviceCapturedAt) } : {}),
+          ...(targetStatus === "PICKED_UP"
+            ? { pickedUpAt: new Date(event.deviceCapturedAt) }
+            : {}),
+          ...(targetStatus === "DELIVERED"
+            ? { actualDelivery: new Date(event.deviceCapturedAt) }
+            : {}),
         },
       }),
     ]);
 
     runningState.set(event.deliveryId, targetStatus);
-    results.push({ id: event.id, status: 'accepted' });
+    results.push({ id: event.id, status: "accepted" });
   }
 
   return { results };

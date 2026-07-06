@@ -15,14 +15,17 @@
 ### Library Files (3 files)
 
 #### 1. `/lib/offline-queue.ts` (335 lines)
+
 **Purpose**: Request queuing and offline replay system
 
 **Key Classes/Interfaces**:
+
 - `OfflineQueue` - Main service class
 - `QueuedOperation` - Operation data structure
 - `QueueStatus` - Status reporting interface
 
 **Capabilities**:
+
 - Queue API requests when offline
 - Automatic retry with configurable max attempts
 - localStorage-based persistence
@@ -33,6 +36,7 @@
 - Clear completed operations
 
 **Exports**:
+
 - `offlineQueue` (singleton instance)
 - `QueuedOperation` (interface)
 - `QueueStatus` (interface)
@@ -41,15 +45,18 @@
 ---
 
 #### 2. `/lib/push-handler.ts` (404 lines)
+
 **Purpose**: Push notification handling with routing and deep linking
 
 **Key Classes/Interfaces**:
+
 - `PushNotificationHandler` - Main service class
 - `PushPayload` - Notification data
 - `LocalNotificationHistory` - History record
 - `NotificationType` - Type union for 6 notification types
 
 **Notification Types Supported**:
+
 1. `NEW_ASSIGNMENT` → `/routes/{routeId}`
 2. `ROUTE_UPDATE` → `/routes/{routeId}`
 3. `DELIVERY_REMINDER` → `/delivery/{shipmentId}`
@@ -58,6 +65,7 @@
 6. `EMERGENCY` → `/emergency`
 
 **Capabilities**:
+
 - Request notification permission
 - Get FCM token
 - Display local notifications
@@ -69,6 +77,7 @@
 - Service worker integration
 
 **Exports**:
+
 - `pushHandler` (singleton instance)
 - `PushPayload` (interface)
 - `LocalNotificationHistory` (interface)
@@ -78,15 +87,18 @@
 ---
 
 #### 3. `/lib/location-service.ts` (369 lines)
+
 **Purpose**: GPS tracking, geofencing, and location management
 
 **Key Classes/Interfaces**:
+
 - `LocationService` - Main service class
 - `LocationCoordinate` - Position data
 - `GeofenceArea` - Geofence definition
 - `TrackingStats` - Statistics object
 
 **Capabilities**:
+
 - Continuous GPS tracking
 - Single position capture
 - Batch upload to server
@@ -98,6 +110,7 @@
 - localStorage persistence
 
 **Exports**:
+
 - `locationService` (singleton instance)
 - `LocationCoordinate` (interface)
 - `GeofenceArea` (interface)
@@ -109,9 +122,11 @@
 ### Hook Files (1 file)
 
 #### 4. `/hooks/useOfflineSync.ts` (105 lines)
+
 **Purpose**: React hook for offline queue state management
 
 **Hook State**:
+
 ```typescript
 OfflineSyncState {
   isOnline: boolean
@@ -124,11 +139,13 @@ OfflineSyncState {
 ```
 
 **Hook Actions**:
+
 - `syncNow()` - Manual sync trigger
 - `retryFailed()` - Retry failed operations
 - `clearCompleted()` - Remove completed ops
 
 **Features**:
+
 - Automatic subscription to queue changes
 - Online/offline event listeners
 - Auto-sync on reconnect
@@ -139,11 +156,13 @@ OfflineSyncState {
 ### Component Files (3 files)
 
 #### 5. `/components/OfflineIndicator.tsx` (127 lines)
+
 **Purpose**: Visual status indicator for offline state and queue
 
 **Props**: None (uses useOfflineSync hook)
 
 **Features**:
+
 - Fixed top status bar
 - Online/offline status display
 - Pending operation count
@@ -154,6 +173,7 @@ OfflineSyncState {
 - Slide-down and pulse animations
 
 **Styling**:
+
 - Fixed position (z-index: 1000)
 - Responsive flexbox layout
 - Inline CSS with animations
@@ -162,9 +182,11 @@ OfflineSyncState {
 ---
 
 #### 6. `/components/DeliveryProofCapture.tsx` (419 lines)
+
 **Purpose**: Proof of delivery capture with photo, signature, and notes
 
 **Props**:
+
 ```typescript
 DeliveryProofCaptureProps {
   shipmentId: string
@@ -175,6 +197,7 @@ DeliveryProofCaptureProps {
 ```
 
 **Captured Data**:
+
 - Photo (Base64 encoded)
 - Signature (Canvas drawing)
 - Recipient name
@@ -183,6 +206,7 @@ DeliveryProofCaptureProps {
 - Timestamp
 
 **Features**:
+
 - Camera/file input for photos
 - Canvas-based signature pad
 - Recipient name input
@@ -196,9 +220,11 @@ DeliveryProofCaptureProps {
 ---
 
 #### 7. `/components/RouteNavigator.tsx` (392 lines)
+
 **Purpose**: Turn-by-turn route navigation and stop management
 
 **Props**:
+
 ```typescript
 RouteNavigatorProps {
   stops: DeliveryStop[]
@@ -211,6 +237,7 @@ RouteNavigatorProps {
 ```
 
 **Stop Data Structure**:
+
 ```typescript
 DeliveryStop {
   id: string
@@ -227,6 +254,7 @@ DeliveryStop {
 ```
 
 **Features**:
+
 - Stop list with order and details
 - Progress bar (completed/total)
 - ETA calculation per stop
@@ -243,7 +271,9 @@ DeliveryStop {
 ### Documentation Files (1 file)
 
 #### 8. `/OFFLINE_FEATURES.md` (660+ lines)
+
 **Comprehensive documentation covering**:
+
 - Architecture overview
 - Detailed file descriptions with code examples
 - Integration guide
@@ -258,13 +288,13 @@ DeliveryStop {
 
 ## Feature Matrix
 
-| Feature | Service | Component | Hook |
-|---------|---------|-----------|------|
-| **Offline Support** | offline-queue | DeliveryProofCapture, RouteNavigator | useOfflineSync |
-| **Push Notifications** | push-handler | — | — |
-| **GPS Tracking** | location-service | RouteNavigator, DeliveryProofCapture | — |
-| **UI Status** | — | OfflineIndicator | useOfflineSync |
-| **React Integration** | — | All components | useOfflineSync |
+| Feature                | Service          | Component                            | Hook           |
+| ---------------------- | ---------------- | ------------------------------------ | -------------- |
+| **Offline Support**    | offline-queue    | DeliveryProofCapture, RouteNavigator | useOfflineSync |
+| **Push Notifications** | push-handler     | —                                    | —              |
+| **GPS Tracking**       | location-service | RouteNavigator, DeliveryProofCapture | —              |
+| **UI Status**          | —                | OfflineIndicator                     | useOfflineSync |
+| **React Integration**  | —                | All components                       | useOfflineSync |
 
 ---
 
@@ -293,6 +323,7 @@ App Layer
 ## Data Flow Diagrams
 
 ### Offline Sync Flow
+
 ```
 User Action → Enqueue Operation → Check Online Status
                 ↓
@@ -302,6 +333,7 @@ User Action → Enqueue Operation → Check Online Status
 ```
 
 ### Push Notification Flow
+
 ```
 Server → Service Worker → handleIncomingPush() → Route by Type
     ↓
@@ -311,6 +343,7 @@ Store History → Trigger Deep Link Navigation
 ```
 
 ### Location Tracking Flow
+
 ```
 startTracking() → Watch Geolocation → On Update → Store Locally
     ↓
@@ -324,6 +357,7 @@ On Reconnect → batchUploadLocations() → Server
 ## Usage Examples
 
 ### 1. Initialize App with Offline Support
+
 ```typescript
 import OfflineIndicator from './components/OfflineIndicator';
 import { offlineQueue } from './lib/offline-queue';
@@ -349,6 +383,7 @@ function App() {
 ```
 
 ### 2. Submit Delivery Proof
+
 ```typescript
 <DeliveryProofCapture
   shipmentId="S12345"
@@ -364,6 +399,7 @@ function App() {
 ```
 
 ### 3. Display Route with Navigation
+
 ```typescript
 const [stops, setStops] = useState<DeliveryStop[]>([...]);
 
@@ -386,8 +422,9 @@ const [stops, setStops] = useState<DeliveryStop[]>([...]);
 ```
 
 ### 4. Track Location
+
 ```typescript
-import { locationService } from './lib/location-service';
+import { locationService } from "./lib/location-service";
 
 useEffect(() => {
   locationService.startTracking(15000);
@@ -404,17 +441,18 @@ useEffect(() => {
 ```
 
 ### 5. Register for Push Notifications
+
 ```typescript
-import { pushHandler } from './lib/push-handler';
+import { pushHandler } from "./lib/push-handler";
 
 useEffect(() => {
   pushHandler.registerForPush().then((token) => {
-    console.log('FCM Token:', token);
+    console.log("FCM Token:", token);
     // Send to backend
   });
 
   const unsub = pushHandler.subscribe((payload) => {
-    console.log('Notification:', payload.type, payload.title);
+    console.log("Notification:", payload.type, payload.title);
   });
 
   return () => unsub();
@@ -426,6 +464,7 @@ useEffect(() => {
 ## Key Technical Details
 
 ### Offline Queue
+
 - **Storage**: localStorage (JSON serialization)
 - **Max Retries**: 3 (configurable)
 - **Retry Delay**: 2 seconds between attempts
@@ -434,12 +473,14 @@ useEffect(() => {
 - **Operation Limit**: Unlimited (but localStorage ~5-10MB cap)
 
 ### Push Notifications
+
 - **History Size**: Max 50 recent notifications
 - **Badge Limit**: Prevents excessive updates
 - **Deep Link Support**: 6 notification types mapped to routes
 - **Fallback**: localStorage for badge count
 
 ### Location Service
+
 - **Tracking Interval**: 10 seconds default (configurable)
 - **Accuracy**: High accuracy mode enabled
 - **Max Locations**: 1000 stored locally
@@ -447,6 +488,7 @@ useEffect(() => {
 - **Upload**: Batch API endpoint `/api/locations/batch`
 
 ### React Hooks
+
 - **Event Listeners**: Proper cleanup on unmount
 - **Auto-sync**: Triggered on online event
 - **State Updates**: Queue change subscriptions
@@ -495,27 +537,29 @@ useEffect(() => {
 
 ## Statistics
 
-| Metric | Count |
-|--------|-------|
-| Files Created | 7 |
-| Total Lines of Code | 2,151 |
-| Library Classes | 3 |
-| React Components | 3 |
-| Custom Hooks | 1 |
-| TypeScript Interfaces | 12+ |
-| Supported Notification Types | 6 |
-| API Endpoints | 3+ |
-| Browser APIs Used | 8+ |
+| Metric                       | Count |
+| ---------------------------- | ----- |
+| Files Created                | 7     |
+| Total Lines of Code          | 2,151 |
+| Library Classes              | 3     |
+| React Components             | 3     |
+| Custom Hooks                 | 1     |
+| TypeScript Interfaces        | 12+   |
+| Supported Notification Types | 6     |
+| API Endpoints                | 3+    |
+| Browser APIs Used            | 8+    |
 
 ---
 
 ## Dependencies
 
-**External**: 
+**External**:
+
 - React 19
 - TypeScript
 
 **Browser APIs Used**:
+
 - Geolocation API
 - localStorage
 - Notifications API
@@ -543,6 +587,7 @@ useEffect(() => {
 ## Support
 
 For implementation questions or issues:
+
 1. Check `OFFLINE_FEATURES.md` for detailed docs
 2. Review code comments and JSDoc
 3. Look at usage examples in Integration Guide

@@ -21,15 +21,21 @@ import type { AuthContext } from "../types/fastify.js";
 export type { AuthContext };
 
 function base64UrlToBuffer(segment: string): Buffer {
-  const pad = segment.length % 4 === 0 ? "" : "=".repeat(4 - (segment.length % 4));
-  return Buffer.from(segment.replace(/-/g, "+").replace(/_/g, "/") + pad, "base64");
+  const pad =
+    segment.length % 4 === 0 ? "" : "=".repeat(4 - (segment.length % 4));
+  return Buffer.from(
+    segment.replace(/-/g, "+").replace(/_/g, "/") + pad,
+    "base64",
+  );
 }
 
 /**
  * Shopify embedded admin sends an App Bridge session token (JWT, HS256, secret = SHOPIFY_API_SECRET).
  * The Shopify app forwards it as Bearer when calling this API. Dashboard/driver JWTs use JWT_SECRET instead.
  */
-async function tryAuthFromShopifySessionToken(token: string): Promise<AuthContext | null> {
+async function tryAuthFromShopifySessionToken(
+  token: string,
+): Promise<AuthContext | null> {
   const config = getConfig();
   if (!config.SHOPIFY_API_SECRET || config.SHOPIFY_API_SECRET.length < 8) {
     return null;
@@ -43,7 +49,9 @@ async function tryAuthFromShopifySessionToken(token: string): Promise<AuthContex
   const [headerB64, payloadB64, sigB64] = parts;
   let header: { alg?: string };
   try {
-    header = JSON.parse(base64UrlToBuffer(headerB64).toString("utf8")) as { alg?: string };
+    header = JSON.parse(base64UrlToBuffer(headerB64).toString("utf8")) as {
+      alg?: string;
+    };
   } catch {
     return null;
   }
@@ -60,13 +68,24 @@ async function tryAuthFromShopifySessionToken(token: string): Promise<AuthContex
   } catch {
     return null;
   }
-  if (sigBuf.length !== expectedSig.length || !timingSafeEqual(sigBuf, expectedSig)) {
+  if (
+    sigBuf.length !== expectedSig.length ||
+    !timingSafeEqual(sigBuf, expectedSig)
+  ) {
     return null;
   }
 
-  let payload: { dest?: string; aud?: string; exp?: number; nbf?: number; sub?: string };
+  let payload: {
+    dest?: string;
+    aud?: string;
+    exp?: number;
+    nbf?: number;
+    sub?: string;
+  };
   try {
-    payload = JSON.parse(base64UrlToBuffer(payloadB64).toString("utf8")) as typeof payload;
+    payload = JSON.parse(
+      base64UrlToBuffer(payloadB64).toString("utf8"),
+    ) as typeof payload;
   } catch {
     return null;
   }
@@ -79,7 +98,11 @@ async function tryAuthFromShopifySessionToken(token: string): Promise<AuthContex
     return null;
   }
 
-  if (config.SHOPIFY_API_KEY && payload.aud && payload.aud !== config.SHOPIFY_API_KEY) {
+  if (
+    config.SHOPIFY_API_KEY &&
+    payload.aud &&
+    payload.aud !== config.SHOPIFY_API_KEY
+  ) {
     return null;
   }
 
@@ -155,9 +178,13 @@ export async function requireAuth(
     // If this is an impersonation token, verify the session hasn't been revoked
     if (jwtPayload.impersonatedBy && jwtPayload.jti) {
       const redis = getRedis();
-      const sessionExists = await redis.exists(`${IMPERSONATION_SESSION_PREFIX}${jwtPayload.jti}`);
+      const sessionExists = await redis.exists(
+        `${IMPERSONATION_SESSION_PREFIX}${jwtPayload.jti}`,
+      );
       if (!sessionExists) {
-        throw new UnauthorizedError("Impersonation session has been revoked or expired");
+        throw new UnauthorizedError(
+          "Impersonation session has been revoked or expired",
+        );
       }
     }
 
@@ -204,7 +231,9 @@ export function requireRole(...allowedRoles: AuthContext["role"][]) {
 
 // ─── Org Role Check ─────────────────────────────────────────
 
-export function requireOrgRole(...allowedOrgRoles: NonNullable<AuthContext["orgRole"]>[]) {
+export function requireOrgRole(
+  ...allowedOrgRoles: NonNullable<AuthContext["orgRole"]>[]
+) {
   return async function (
     request: FastifyRequest,
     reply: FastifyReply,
@@ -213,7 +242,10 @@ export function requireOrgRole(...allowedOrgRoles: NonNullable<AuthContext["orgR
       throw new ForbiddenError("Organization context required");
     }
 
-    if (!request.auth.orgRole || !allowedOrgRoles.includes(request.auth.orgRole)) {
+    if (
+      !request.auth.orgRole ||
+      !allowedOrgRoles.includes(request.auth.orgRole)
+    ) {
       throw new ForbiddenError(
         `Org role '${request.auth.orgRole || "none"}' does not have access. Required: ${allowedOrgRoles.join(", ")}`,
       );
@@ -341,7 +373,9 @@ export async function verifyCarrierRequest(
 
   const shopDomain = (request.query as any)?.shop;
   if (!shopDomain) {
-    throw new UnauthorizedError("Missing shop parameter in carrier service request");
+    throw new UnauthorizedError(
+      "Missing shop parameter in carrier service request",
+    );
   }
 
   const shop = await prisma.shop.findUnique({

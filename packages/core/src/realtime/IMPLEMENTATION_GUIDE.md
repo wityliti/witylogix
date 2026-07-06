@@ -42,17 +42,21 @@ Events flow automatically from the event bus to rooms. No additional setup neede
 // - driver.location_updated → org:{orgId} + driver:{driverId}
 // - alert.* → admin + org:{orgId} + shop:{shopId}
 
-await eventBus.emit("order.created", {
-  orderId: "order_123",
-  shopId: "shop_456",
-  customerId: "cust_789",
-  totalAmount: 99.99,
-  currency: "USD",
-  createdAt: new Date().toISOString(),
-}, {
-  tenantId: "shop_456",
-  correlationId: "req_uuid",
-});
+await eventBus.emit(
+  "order.created",
+  {
+    orderId: "order_123",
+    shopId: "shop_456",
+    customerId: "cust_789",
+    totalAmount: 99.99,
+    currency: "USD",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    tenantId: "shop_456",
+    correlationId: "req_uuid",
+  },
+);
 ```
 
 ### 3. Connect Client (React)
@@ -337,13 +341,14 @@ const realtime = useRealtime(
     maxReconnectAttempts: 10, // Retry 10 times
     initialBackoffMs: 500, // Start with 500ms backoff
     maxBackoffMs: 60000, // Cap at 60s
-  }
+  },
 );
 ```
 
 ## Performance Tips
 
 1. **Debounce handlers**: High-frequency events like location updates
+
    ```typescript
    import { debounce } from "lodash-es";
 
@@ -355,6 +360,7 @@ const realtime = useRealtime(
    ```
 
 2. **Unsubscribe from unused rooms**:
+
    ```typescript
    const realtime = useRealtime(`org:${orgId}`, {}, { token });
 
@@ -365,11 +371,12 @@ const realtime = useRealtime(
    ```
 
 3. **Limit buffer sizes**: Process and discard old events
+
    ```typescript
    const [orders, setOrders] = useState([]);
 
    realtime.onEvent((event) => {
-     setOrders(prev => [event.data, ...prev].slice(0, 50));
+     setOrders((prev) => [event.data, ...prev].slice(0, 50));
    });
    ```
 
@@ -379,20 +386,20 @@ const realtime = useRealtime(
    useRealtime(
      `shop:${shopId}`,
      { eventTypes: ["alert.sla_breach"], minSeverity: "critical" },
-     { token }
+     { token },
    );
    ```
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| "Missing auth token" | Ensure token is passed to useRealtime config |
-| "Unauthorized room access" | Verify user's org matches room org |
-| Connection timeout | Check network, increase `maxBackoffMs` |
-| High memory usage | Reduce event buffer by processing less data |
-| Events out of order | Use `event.seq` to sort/reorder client-side |
-| Metrics not updating | Verify event bus emits to correct shopId |
+| Issue                      | Solution                                     |
+| -------------------------- | -------------------------------------------- |
+| "Missing auth token"       | Ensure token is passed to useRealtime config |
+| "Unauthorized room access" | Verify user's org matches room org           |
+| Connection timeout         | Check network, increase `maxBackoffMs`       |
+| High memory usage          | Reduce event buffer by processing less data  |
+| Events out of order        | Use `event.seq` to sort/reorder client-side  |
+| Metrics not updating       | Verify event bus emits to correct shopId     |
 
 ## API Reference
 

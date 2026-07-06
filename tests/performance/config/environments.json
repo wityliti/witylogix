@@ -19,9 +19,7 @@
       "email": "dev@example.com",
       "password": "DevPassword123!"
     },
-    "webhookEndpoints": [
-      "http://localhost:4000/webhooks"
-    ],
+    "webhookEndpoints": ["http://localhost:4000/webhooks"],
     "description": "Local development environment - minimal load"
   },
   "staging": {

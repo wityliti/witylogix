@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useApiQuery } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Link2, FileX } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { useApiQuery } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Link2, FileX } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface ReconciliationData {
   bankTransactions: Array<{
@@ -17,7 +17,7 @@ interface ReconciliationData {
     date: string;
     description: string;
     amount: number;
-    status: 'matched' | 'unmatched' | 'partial';
+    status: "matched" | "unmatched" | "partial";
     confidence?: number;
   }>;
   internalRecords: Array<{
@@ -25,7 +25,7 @@ interface ReconciliationData {
     date: string;
     description: string;
     amount: number;
-    status: 'matched' | 'unmatched' | 'partial';
+    status: "matched" | "unmatched" | "partial";
   }>;
   unmatchedCount: number;
   discrepancyTotal: number;
@@ -36,7 +36,7 @@ export default function ReconciliationPage() {
   const router = useRouter();
 
   const { data, loading, error } = useApiQuery<ReconciliationData>(
-    '/api/v4/payments/reconciliation'
+    "/api/v4/payments/reconciliation",
   );
 
   if (loading) return <LoadingSkeleton />;
@@ -49,9 +49,12 @@ export default function ReconciliationPage() {
     return (
       <div className="flex flex-col min-h-screen bg-wl-bg-root items-center justify-center gap-4 p-6">
         <Link2 className="w-12 h-12 text-wl-text-tertiary" />
-        <h2 className="text-xl font-semibold text-wl-text-primary">No transactions to reconcile</h2>
+        <h2 className="text-xl font-semibold text-wl-text-primary">
+          No transactions to reconcile
+        </h2>
         <p className="text-wl-text-secondary text-sm text-center max-w-sm">
-          Bank and internal records will appear here once payment data is available.
+          Bank and internal records will appear here once payment data is
+          available.
         </p>
         <Button variant="primary" size="md" onClick={() => router.refresh()}>
           Refresh
@@ -66,8 +69,12 @@ export default function ReconciliationPage() {
         <div className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-wl-text-primary">Reconciliation</h1>
-              <p className="text-sm text-wl-text-secondary mt-1">Match bank transactions with records</p>
+              <h1 className="text-2xl font-bold text-wl-text-primary">
+                Reconciliation
+              </h1>
+              <p className="text-sm text-wl-text-secondary mt-1">
+                Match bank transactions with records
+              </p>
             </div>
           </div>
 
@@ -75,10 +82,10 @@ export default function ReconciliationPage() {
             <button
               onClick={() => setShowUnmatched(true)}
               className={cn(
-                'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                "px-4 py-2 rounded-md text-sm font-medium transition-colors",
                 showUnmatched
-                  ? 'bg-wl-primary-500 text-wl-text-inverse'
-                  : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-text-primary'
+                  ? "bg-wl-primary-500 text-wl-text-inverse"
+                  : "bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-text-primary",
               )}
             >
               Unmatched ({data?.unmatchedCount || 0})
@@ -86,10 +93,10 @@ export default function ReconciliationPage() {
             <button
               onClick={() => setShowUnmatched(false)}
               className={cn(
-                'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                "px-4 py-2 rounded-md text-sm font-medium transition-colors",
                 !showUnmatched
-                  ? 'bg-wl-primary-500 text-wl-text-inverse'
-                  : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-text-primary'
+                  ? "bg-wl-primary-500 text-wl-text-inverse"
+                  : "bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-text-primary",
               )}
             >
               All Transactions
@@ -101,37 +108,76 @@ export default function ReconciliationPage() {
       <div className="flex-1 overflow-auto p-6">
         <div className="space-y-6 max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className={cn("p-4 bg-wl-bg-surface border border-wl-border-default")}>
-              <p className="text-xs font-medium text-wl-text-secondary uppercase">Unmatched</p>
-              <p className="text-2xl font-bold text-red-500 mt-2">{data?.unmatchedCount || 0}</p>
+            <Card
+              className={cn(
+                "p-4 bg-wl-bg-surface border border-wl-border-default",
+              )}
+            >
+              <p className="text-xs font-medium text-wl-text-secondary uppercase">
+                Unmatched
+              </p>
+              <p className="text-2xl font-bold text-red-500 mt-2">
+                {data?.unmatchedCount || 0}
+              </p>
               <p className="text-xs text-wl-text-tertiary mt-2">Transactions</p>
             </Card>
-            <Card className={cn("p-4 bg-wl-bg-surface border border-wl-border-default")}>
-              <p className="text-xs font-medium text-wl-text-secondary uppercase">Discrepancy Total</p>
+            <Card
+              className={cn(
+                "p-4 bg-wl-bg-surface border border-wl-border-default",
+              )}
+            >
+              <p className="text-xs font-medium text-wl-text-secondary uppercase">
+                Discrepancy Total
+              </p>
               <p className="text-2xl font-bold text-amber-500 mt-2">
                 ${(data?.discrepancyTotal || 0).toLocaleString()}
               </p>
               <p className="text-xs text-wl-text-tertiary mt-2">Variance</p>
             </Card>
-            <Card className={cn("p-4 bg-wl-bg-surface border border-wl-border-default")}>
-              <p className="text-xs font-medium text-wl-text-secondary uppercase">Match Rate</p>
+            <Card
+              className={cn(
+                "p-4 bg-wl-bg-surface border border-wl-border-default",
+              )}
+            >
+              <p className="text-xs font-medium text-wl-text-secondary uppercase">
+                Match Rate
+              </p>
               <p className="text-2xl font-bold text-wl-text-primary mt-2">
-                {bankTx.length > 0 ? Math.round(((bankTx.length - (data?.unmatchedCount || 0)) / bankTx.length) * 100) : 0}%
+                {bankTx.length > 0
+                  ? Math.round(
+                      ((bankTx.length - (data?.unmatchedCount || 0)) /
+                        bankTx.length) *
+                        100,
+                    )
+                  : 0}
+                %
               </p>
               <p className="text-xs text-wl-text-tertiary mt-2">Success</p>
             </Card>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden")}>
-              <h2 className="text-lg font-semibold text-wl-text-primary mb-4">Bank Transactions</h2>
+            <Card
+              className={cn(
+                "p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden",
+              )}
+            >
+              <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
+                Bank Transactions
+              </h2>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-wl-border-default">
-                      <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Date</th>
-                      <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Amount</th>
-                      <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">Status</th>
+                      <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">
+                        Date
+                      </th>
+                      <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">
+                        Amount
+                      </th>
+                      <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">
+                        Status
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -139,36 +185,65 @@ export default function ReconciliationPage() {
                       <tr>
                         <td colSpan={3} className="px-4 py-10 text-center">
                           <FileX className="w-8 h-8 text-wl-text-tertiary mx-auto mb-2" />
-                          <p className="text-sm text-wl-text-secondary">No bank transactions</p>
+                          <p className="text-sm text-wl-text-secondary">
+                            No bank transactions
+                          </p>
                         </td>
                       </tr>
-                    ) : bankTx.map((tx) => (
-                      <tr key={tx.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
-                        <td className="px-4 py-3 text-wl-text-secondary">{new Date(tx.date).toLocaleDateString()}</td>
-                        <td className="text-right px-4 py-3 font-medium text-wl-text-primary">
-                          ${tx.amount.toLocaleString()}
-                        </td>
-                        <td className="text-center px-4 py-3">
-                          <Badge variant={tx.status === 'matched' ? 'success' : tx.status === 'partial' ? 'warning' : 'danger'}>
-                            {tx.status}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))}
+                    ) : (
+                      bankTx.map((tx) => (
+                        <tr
+                          key={tx.id}
+                          className="border-b border-wl-border-default hover:bg-wl-bg-elevated"
+                        >
+                          <td className="px-4 py-3 text-wl-text-secondary">
+                            {new Date(tx.date).toLocaleDateString()}
+                          </td>
+                          <td className="text-right px-4 py-3 font-medium text-wl-text-primary">
+                            ${tx.amount.toLocaleString()}
+                          </td>
+                          <td className="text-center px-4 py-3">
+                            <Badge
+                              variant={
+                                tx.status === "matched"
+                                  ? "success"
+                                  : tx.status === "partial"
+                                    ? "warning"
+                                    : "danger"
+                              }
+                            >
+                              {tx.status}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
             </Card>
 
-            <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden")}>
-              <h2 className="text-lg font-semibold text-wl-text-primary mb-4">Internal Records</h2>
+            <Card
+              className={cn(
+                "p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden",
+              )}
+            >
+              <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
+                Internal Records
+              </h2>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-wl-border-default">
-                      <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Date</th>
-                      <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Amount</th>
-                      <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">Status</th>
+                      <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">
+                        Date
+                      </th>
+                      <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">
+                        Amount
+                      </th>
+                      <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">
+                        Status
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -176,22 +251,39 @@ export default function ReconciliationPage() {
                       <tr>
                         <td colSpan={3} className="px-4 py-10 text-center">
                           <FileX className="w-8 h-8 text-wl-text-tertiary mx-auto mb-2" />
-                          <p className="text-sm text-wl-text-secondary">No internal records</p>
+                          <p className="text-sm text-wl-text-secondary">
+                            No internal records
+                          </p>
                         </td>
                       </tr>
-                    ) : internalRecs.map((rec) => (
-                      <tr key={rec.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
-                        <td className="px-4 py-3 text-wl-text-secondary">{new Date(rec.date).toLocaleDateString()}</td>
-                        <td className="text-right px-4 py-3 font-medium text-wl-text-primary">
-                          ${rec.amount.toLocaleString()}
-                        </td>
-                        <td className="text-center px-4 py-3">
-                          <Badge variant={rec.status === 'matched' ? 'success' : rec.status === 'partial' ? 'warning' : 'danger'}>
-                            {rec.status}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))}
+                    ) : (
+                      internalRecs.map((rec) => (
+                        <tr
+                          key={rec.id}
+                          className="border-b border-wl-border-default hover:bg-wl-bg-elevated"
+                        >
+                          <td className="px-4 py-3 text-wl-text-secondary">
+                            {new Date(rec.date).toLocaleDateString()}
+                          </td>
+                          <td className="text-right px-4 py-3 font-medium text-wl-text-primary">
+                            ${rec.amount.toLocaleString()}
+                          </td>
+                          <td className="text-center px-4 py-3">
+                            <Badge
+                              variant={
+                                rec.status === "matched"
+                                  ? "success"
+                                  : rec.status === "partial"
+                                    ? "warning"
+                                    : "danger"
+                              }
+                            >
+                              {rec.status}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

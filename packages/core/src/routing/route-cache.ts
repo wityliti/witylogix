@@ -15,7 +15,7 @@
  * - Autocomplete: 1 hour (suggestions change less frequently)
  */
 
-import { createHash } from 'crypto';
+import { createHash } from "crypto";
 
 export interface CacheStats {
   hits: number;
@@ -62,16 +62,16 @@ export class RouteCache {
     origin: { lat: number; lng: number },
     destination: { lat: number; lng: number },
     waypoints?: Array<{ lat: number; lng: number }>,
-    options?: Record<string, any>
+    options?: Record<string, any>,
   ): string {
     const parts = [
       `${origin.lat},${origin.lng}`,
       `${destination.lat},${destination.lng}`,
-      waypoints?.map((w) => `${w.lat},${w.lng}`).join(';') || '',
+      waypoints?.map((w) => `${w.lat},${w.lng}`).join(";") || "",
       JSON.stringify(options || {}),
     ];
 
-    const hash = createHash('sha256').update(parts.join('|')).digest('hex');
+    const hash = createHash("sha256").update(parts.join("|")).digest("hex");
     return `route:${hash}`;
   }
 
@@ -79,17 +79,23 @@ export class RouteCache {
    * Generate cache key for geocoding
    */
   generateGeocodeKey(address: string, provider: string): string {
-    const hash = createHash('sha256').update(`${address}:${provider}`).digest('hex');
+    const hash = createHash("sha256")
+      .update(`${address}:${provider}`)
+      .digest("hex");
     return `geocode:${hash}`;
   }
 
   /**
    * Generate cache key for reverse geocoding
    */
-  generateReverseGeocodeKey(lat: number, lng: number, provider: string): string {
-    const hash = createHash('sha256')
+  generateReverseGeocodeKey(
+    lat: number,
+    lng: number,
+    provider: string,
+  ): string {
+    const hash = createHash("sha256")
       .update(`${lat},${lng}:${provider}`)
-      .digest('hex');
+      .digest("hex");
     return `reverse_geocode:${hash}`;
   }
 
@@ -97,7 +103,9 @@ export class RouteCache {
    * Generate cache key for autocomplete
    */
   generateAutocompleteKey(input: string, provider: string): string {
-    const hash = createHash('sha256').update(`${input}:${provider}`).digest('hex');
+    const hash = createHash("sha256")
+      .update(`${input}:${provider}`)
+      .digest("hex");
     return `autocomplete:${hash}`;
   }
 
@@ -108,7 +116,8 @@ export class RouteCache {
     // Try local cache first
     const localEntry = this.localCache.get(key);
     if (localEntry) {
-      const isExpired = Date.now() - localEntry.timestamp > localEntry.ttl * 1000;
+      const isExpired =
+        Date.now() - localEntry.timestamp > localEntry.ttl * 1000;
       if (!isExpired) {
         this.stats.hits++;
         return localEntry.data as T;
@@ -129,7 +138,7 @@ export class RouteCache {
           return entry.data as T;
         }
       } catch (error) {
-        console.error('Redis get error:', error);
+        console.error("Redis get error:", error);
       }
     }
 
@@ -144,7 +153,7 @@ export class RouteCache {
     key: string,
     value: T,
     ttlSeconds: number,
-    provider: string
+    provider: string,
   ): Promise<void> {
     const entry: CacheEntry<T> = {
       data: value,
@@ -161,7 +170,7 @@ export class RouteCache {
       try {
         await this.redisClient.setex(key, ttlSeconds, JSON.stringify(entry));
       } catch (error) {
-        console.error('Redis set error:', error);
+        console.error("Redis set error:", error);
       }
     }
   }
@@ -173,7 +182,7 @@ export class RouteCache {
     key: string,
     value: T,
     ttlSeconds: number,
-    provider: string
+    provider: string,
   ): void {
     // Evict oldest entry if at capacity
     if (this.localCache.size >= this.localCacheMaxSize) {
@@ -215,7 +224,7 @@ export class RouteCache {
           await this.redisClient.del(...providerKeys);
         }
       } catch (error) {
-        console.error('Redis invalidate provider error:', error);
+        console.error("Redis invalidate provider error:", error);
       }
     }
   }
@@ -224,13 +233,16 @@ export class RouteCache {
    * Invalidate cache entries for a geographic region
    * (simplified: in production would use geohashing or spatial indexing)
    */
-  async invalidateRegion(
-    bbox: { minLat: number; maxLat: number; minLng: number; maxLng: number }
-  ): Promise<void> {
+  async invalidateRegion(bbox: {
+    minLat: number;
+    maxLat: number;
+    minLng: number;
+    maxLng: number;
+  }): Promise<void> {
     // Invalidate local cache entries within bounding box
     const keysToDelete = Array.from(this.localCache.keys()).filter((key) => {
       // In production, would parse coordinates from cache entry
-      return key.startsWith('route:') || key.startsWith('geocode:');
+      return key.startsWith("route:") || key.startsWith("geocode:");
     });
 
     keysToDelete.forEach((key) => this.localCache.delete(key));
@@ -238,12 +250,12 @@ export class RouteCache {
     if (this.redisClient) {
       try {
         // Would use geospatial Redis commands in production
-        const keys = await this.redisClient.keys('route:*');
+        const keys = await this.redisClient.keys("route:*");
         if (keys.length > 0) {
           await this.redisClient.del(...keys.slice(0, 100)); // Limit deletion
         }
       } catch (error) {
-        console.error('Redis invalidate region error:', error);
+        console.error("Redis invalidate region error:", error);
       }
     }
   }
@@ -257,15 +269,15 @@ export class RouteCache {
 
     if (this.redisClient) {
       try {
-        const keys = await this.redisClient.keys('route:*');
-        const keys2 = await this.redisClient.keys('geocode:*');
-        const keys3 = await this.redisClient.keys('autocomplete:*');
+        const keys = await this.redisClient.keys("route:*");
+        const keys2 = await this.redisClient.keys("geocode:*");
+        const keys3 = await this.redisClient.keys("autocomplete:*");
         const allKeys = [...keys, ...keys2, ...keys3];
         if (allKeys.length > 0) {
           await this.redisClient.del(...allKeys);
         }
       } catch (error) {
-        console.error('Redis flush error:', error);
+        console.error("Redis flush error:", error);
       }
     }
   }

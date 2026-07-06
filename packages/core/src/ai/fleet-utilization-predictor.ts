@@ -129,31 +129,40 @@ export class UtilizationAnalyzer {
   /**
    * Identify utilization patterns and anomalies
    */
-  analyzePatterns(
-    metrics: UtilizationMetrics[]
-  ): Array<{
+  analyzePatterns(metrics: UtilizationMetrics[]): Array<{
     vehicleId: string;
-    pattern: "highly_utilized" | "well_utilized" | "underutilized" | "severely_underutilized";
+    pattern:
+      | "highly_utilized"
+      | "well_utilized"
+      | "underutilized"
+      | "severely_underutilized";
     utilizationPercent: number;
     recommendation: string;
   }> {
     return metrics.map((m) => {
       const util = m.utilizationPercent;
-      let pattern: "highly_utilized" | "well_utilized" | "underutilized" | "severely_underutilized";
+      let pattern:
+        | "highly_utilized"
+        | "well_utilized"
+        | "underutilized"
+        | "severely_underutilized";
       let recommendation = "";
 
       if (util >= 85) {
         pattern = "highly_utilized";
-        recommendation = "Consider adding vehicle to this category; capacity near limit";
+        recommendation =
+          "Consider adding vehicle to this category; capacity near limit";
       } else if (util >= 70) {
         pattern = "well_utilized";
         recommendation = "Optimal utilization; continue current usage patterns";
       } else if (util >= 50) {
         pattern = "underutilized";
-        recommendation = "Opportunity to consolidate routes or increase assignments";
+        recommendation =
+          "Opportunity to consolidate routes or increase assignments";
       } else {
         pattern = "severely_underutilized";
-        recommendation = "Vehicle may be redundant; consider reassignment or removal";
+        recommendation =
+          "Vehicle may be redundant; consider reassignment or removal";
       }
 
       return {
@@ -170,7 +179,7 @@ export class UtilizationAnalyzer {
    */
   costPerDelivery(
     monthlyOperatingCost: number,
-    monthlyDeliveries: number
+    monthlyDeliveries: number,
   ): number {
     return monthlyDeliveries > 0 ? monthlyOperatingCost / monthlyDeliveries : 0;
   }
@@ -213,7 +222,7 @@ export class DemandForecaster {
   forecastDemand(
     date: Date,
     baselineDailyDeliveries: number,
-    historicalTrend: number = 1.05 // 5% annual growth
+    historicalTrend: number = 1.05, // 5% annual growth
   ): DemandForecast {
     const dayOfWeek = date.toLocaleDateString("en-US", { weekday: "long" });
     const month = date.getMonth();
@@ -235,9 +244,17 @@ export class DemandForecaster {
     const weatherFactor = 0.98; // Slight degradation for weather uncertainty
 
     const combinedFactor =
-      seasonalFactor * weekdayFactor * trendFactor * eventFactor * weatherFactor;
-    const forecastedDeliveries = Math.round(baselineDailyDeliveries * combinedFactor);
-    const vehiclesRequired = Math.ceil(forecastedDeliveries / AVG_DELIVERIES_PER_VEHICLE_DAY);
+      seasonalFactor *
+      weekdayFactor *
+      trendFactor *
+      eventFactor *
+      weatherFactor;
+    const forecastedDeliveries = Math.round(
+      baselineDailyDeliveries * combinedFactor,
+    );
+    const vehiclesRequired = Math.ceil(
+      forecastedDeliveries / AVG_DELIVERIES_PER_VEHICLE_DAY,
+    );
 
     return {
       date,
@@ -260,14 +277,16 @@ export class DemandForecaster {
   forecastPeriod(
     startDate: Date,
     days: number,
-    baselineDailyDeliveries: number
+    baselineDailyDeliveries: number,
   ): DemandForecast[] {
     const forecasts: DemandForecast[] = [];
 
     for (let i = 0; i < days; i++) {
       const forecastDate = new Date(startDate);
       forecastDate.setDate(forecastDate.getDate() + i);
-      forecasts.push(this.forecastDemand(forecastDate, baselineDailyDeliveries));
+      forecasts.push(
+        this.forecastDemand(forecastDate, baselineDailyDeliveries),
+      );
     }
 
     return forecasts;
@@ -284,18 +303,18 @@ export class RightSizingRecommender {
     currentFleetSize: number,
     peakDeliveryDays: number,
     avgDeliveryDays: number,
-    onTimeTarget: number = 0.95
+    onTimeTarget: number = 0.95,
   ): RightSizingRecommendation {
     const peakCapacityRequired = Math.ceil(
-      (peakDeliveryDays / AVG_DELIVERIES_PER_VEHICLE_DAY) * (1 / onTimeTarget)
+      (peakDeliveryDays / AVG_DELIVERIES_PER_VEHICLE_DAY) * (1 / onTimeTarget),
     );
     const avgCapacityRequired = Math.ceil(
-      avgDeliveryDays / AVG_DELIVERIES_PER_VEHICLE_DAY
+      avgDeliveryDays / AVG_DELIVERIES_PER_VEHICLE_DAY,
     );
 
     // Optimal fleet operates at 75-85% average utilization
     const optimalFleetSize = Math.ceil(
-      avgCapacityRequired / (TARGET_UTILIZATION_PERCENT / 100)
+      avgCapacityRequired / (TARGET_UTILIZATION_PERCENT / 100),
     );
 
     let scenario: "oversized" | "optimized" | "undersized";
@@ -303,8 +322,11 @@ export class RightSizingRecommender {
 
     if (currentFleetSize > peakCapacityRequired * 1.2) {
       scenario = "oversized";
-      recommendation = `Fleet is ${Math.round((currentFleetSize - optimalFleetSize) / optimalFleetSize * 100)}% oversized. Consider removing ${currentFleetSize - optimalFleetSize} vehicles or exploring lease options for peak periods.`;
-    } else if (currentFleetSize >= optimalFleetSize && currentFleetSize <= peakCapacityRequired) {
+      recommendation = `Fleet is ${Math.round(((currentFleetSize - optimalFleetSize) / optimalFleetSize) * 100)}% oversized. Consider removing ${currentFleetSize - optimalFleetSize} vehicles or exploring lease options for peak periods.`;
+    } else if (
+      currentFleetSize >= optimalFleetSize &&
+      currentFleetSize <= peakCapacityRequired
+    ) {
       scenario = "optimized";
       recommendation = `Fleet size is optimized for current demand patterns.`;
     } else {
@@ -341,13 +363,19 @@ export class VehicleRotationPlanner {
    * Create rotation plan to balance mileage across fleet
    */
   planRotation(
-    vehicles: Array<{ vehicleId: string; vehicleNumber: string; currentMileage: number }>,
+    vehicles: Array<{
+      vehicleId: string;
+      vehicleNumber: string;
+      currentMileage: number;
+    }>,
     targetMonthlyMileage: number,
-    monthsAhead: number
+    monthsAhead: number,
   ): VehicleRotationPlan {
     const assignments = vehicles.map((v) => {
-      const projectedMileage = v.currentMileage + targetMonthlyMileage * monthsAhead;
-      const mileageDifference = projectedMileage - targetMonthlyMileage * monthsAhead;
+      const projectedMileage =
+        v.currentMileage + targetMonthlyMileage * monthsAhead;
+      const mileageDifference =
+        projectedMileage - targetMonthlyMileage * monthsAhead;
 
       let rotationAction: "maintain" | "increase_usage" | "decrease_usage";
       if (Math.abs(mileageDifference) < targetMonthlyMileage * 0.1) {
@@ -373,14 +401,14 @@ export class VehicleRotationPlanner {
     const meanMileage = mileages.reduce((a, b) => a + b, 0) / mileages.length;
     const mileageStandardDeviation = Math.sqrt(
       mileages.reduce((sum, m) => sum + Math.pow(m - meanMileage, 2), 0) /
-        mileages.length
+        mileages.length,
     );
 
     // Balance score: lower SD = higher score (0-100)
     const maxSD = targetMonthlyMileage * monthsAhead * 0.5; // Worst case
     const balanceScore = Math.max(
       0,
-      Math.round((1 - mileageStandardDeviation / maxSD) * 100)
+      Math.round((1 - mileageStandardDeviation / maxSD) * 100),
     );
 
     return {
@@ -404,11 +432,12 @@ export class ReplacementForecaster {
     currentMileage: number,
     purchaseDate: Date,
     depreciationRate: number = ANNUAL_DEPRECIATION_RATE,
-    purchasePrice: number = VEHICLE_REPLACEMENT_COST
+    purchasePrice: number = VEHICLE_REPLACEMENT_COST,
   ): ReplacementForecast {
     const currentDate = new Date();
     const ageYears =
-      (currentDate.getTime() - purchaseDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+      (currentDate.getTime() - purchaseDate.getTime()) /
+      (365.25 * 24 * 60 * 60 * 1000);
     const monthlyMileage = currentMileage / (ageYears * 12 || 1);
 
     // Residual value degradation
@@ -420,8 +449,7 @@ export class ReplacementForecaster {
 
     // Maintenance cost increases with mileage
     const maintenanceCostMonthly =
-      MAINTENANCE_COST_BASE_ANNUAL / 12 +
-      (currentMileage / 100000) * 150;
+      MAINTENANCE_COST_BASE_ANNUAL / 12 + (currentMileage / 100000) * 150;
 
     // Fuel cost estimate
     const avgMpg = 18;
@@ -451,10 +479,11 @@ export class ReplacementForecaster {
 
     const estimatedReplacementDate = new Date();
     estimatedReplacementDate.setMonth(
-      estimatedReplacementDate.getMonth() + (recommendation === "accelerate_replacement" ? 3 : 12)
+      estimatedReplacementDate.getMonth() +
+        (recommendation === "accelerate_replacement" ? 3 : 12),
     );
 
-    const tco = (monthlyTco * 60) - residualValue; // 5-year window
+    const tco = monthlyTco * 60 - residualValue; // 5-year window
 
     return {
       vehicleId,
@@ -481,22 +510,28 @@ export class CapacityPlanner {
   planCapacity(
     avgDailyDeliveries: number,
     peakDailyDeliveries: number,
-    currentFleetSize: number
+    currentFleetSize: number,
   ): CapacityPlan {
     const avgCapacityRequired = Math.ceil(
-      avgDailyDeliveries / AVG_DELIVERIES_PER_VEHICLE_DAY
+      avgDailyDeliveries / AVG_DELIVERIES_PER_VEHICLE_DAY,
     );
     const peakCapacityRequired = Math.ceil(
-      peakDailyDeliveries / AVG_DELIVERIES_PER_VEHICLE_DAY
+      peakDailyDeliveries / AVG_DELIVERIES_PER_VEHICLE_DAY,
     );
 
-    const surgeCapacityNeeded = Math.max(0, peakCapacityRequired - currentFleetSize);
+    const surgeCapacityNeeded = Math.max(
+      0,
+      peakCapacityRequired - currentFleetSize,
+    );
     const utilizationPercent = Math.round(
-      (avgCapacityRequired / currentFleetSize) * 100
+      (avgCapacityRequired / currentFleetSize) * 100,
     );
 
-    let surgeStrategy: "internal_flex" | "contract_labor" | "leasing" | "mixed" =
-      "internal_flex";
+    let surgeStrategy:
+      | "internal_flex"
+      | "contract_labor"
+      | "leasing"
+      | "mixed" = "internal_flex";
     let internalFlexCapacity = 0;
     let recommendedLeaseSize = 0;
     let recommendedContractLabor = 0;

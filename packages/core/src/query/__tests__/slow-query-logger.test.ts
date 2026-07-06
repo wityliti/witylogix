@@ -229,14 +229,11 @@ describe("SlowQueryLogger", () => {
     });
 
     it("should handle various parameter types", () => {
-      logger.logQuery("SELECT * FROM test", [
-        123,
-        "string",
-        true,
-        { obj: "value" },
-        null,
-        undefined,
-      ], 100);
+      logger.logQuery(
+        "SELECT * FROM test",
+        [123, "string", true, { obj: "value" }, null, undefined],
+        100,
+      );
 
       const slowest = logger.getTopSlowest(1);
       expect(slowest[0].params.length).toBe(6);

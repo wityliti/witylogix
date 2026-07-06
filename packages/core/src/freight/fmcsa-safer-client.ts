@@ -130,7 +130,7 @@ export class FMCSASaferClient {
    * Look up carrier by DOT number, MC number, or company name
    */
   async lookupCarrier(
-    request: CarrierLookupRequest
+    request: CarrierLookupRequest,
   ): Promise<CarrierCensus | null> {
     const cacheKey = this.getCacheKey("census", request);
     const cached = this.cache.get<CarrierCensus>(cacheKey);
@@ -176,7 +176,7 @@ export class FMCSASaferClient {
    * Get inspection history for carrier
    */
   async getInspectionHistory(
-    query: SafetyInspectionQuery
+    query: SafetyInspectionQuery,
   ): Promise<InspectionRecord[]> {
     const cacheKey = this.getCacheKey("inspections", query);
     const cached = this.cache.get<InspectionRecord[]>(cacheKey);
@@ -239,7 +239,9 @@ export class FMCSASaferClient {
   /**
    * Check operating authority status
    */
-  async getOperatingAuthority(dotNumber: string): Promise<OperatingAuthority | null> {
+  async getOperatingAuthority(
+    dotNumber: string,
+  ): Promise<OperatingAuthority | null> {
     const cacheKey = this.getCacheKey("authority", { dotNumber });
     const cached = this.cache.get<OperatingAuthority>(cacheKey);
     if (cached) return cached;
@@ -261,7 +263,9 @@ export class FMCSASaferClient {
   /**
    * Get census data (fleet size, driver count, mileage)
    */
-  async getCensusData(dotNumber: string): Promise<Partial<CarrierCensus> | null> {
+  async getCensusData(
+    dotNumber: string,
+  ): Promise<Partial<CarrierCensus> | null> {
     const cacheKey = this.getCacheKey("census-full", { dotNumber });
     const cached = this.cache.get<Partial<CarrierCensus>>(cacheKey);
     if (cached) return cached;
@@ -283,9 +287,7 @@ export class FMCSASaferClient {
   /**
    * Perform comprehensive carrier profile audit
    */
-  async performCarrierAudit(
-    dotNumber: string
-  ): Promise<{
+  async performCarrierAudit(dotNumber: string): Promise<{
     safetyRating: SafetyRating | null;
     insurance: InsuranceInfo | null;
     authority: OperatingAuthority | null;
@@ -344,7 +346,7 @@ export class FMCSASaferClient {
   }
 
   private async fetchCarrierData(
-    request: CarrierLookupRequest
+    request: CarrierLookupRequest,
   ): Promise<CarrierCensus | null> {
     // Mock implementation - in production would call actual FMCSA API
     const dotNumber = request.dotNumber || "1234567";
@@ -398,7 +400,9 @@ export class FMCSASaferClient {
     };
   }
 
-  private async fetchSafetyRating(dotNumber: string): Promise<SafetyRating | null> {
+  private async fetchSafetyRating(
+    dotNumber: string,
+  ): Promise<SafetyRating | null> {
     // Mock implementation
     return {
       dotNumber,
@@ -419,7 +423,7 @@ export class FMCSASaferClient {
   }
 
   private async fetchInspectionRecords(
-    query: SafetyInspectionQuery
+    query: SafetyInspectionQuery,
   ): Promise<InspectionRecord[]> {
     // Mock implementation
     return [
@@ -443,7 +447,9 @@ export class FMCSASaferClient {
     ];
   }
 
-  private async fetchCrashRecords(query: CrashDataQuery): Promise<CrashRecord[]> {
+  private async fetchCrashRecords(
+    query: CrashDataQuery,
+  ): Promise<CrashRecord[]> {
     // Mock implementation
     return [
       {
@@ -458,10 +464,16 @@ export class FMCSASaferClient {
     ];
   }
 
-  private async fetchInsuranceInfo(dotNumber: string): Promise<InsuranceInfo | null> {
+  private async fetchInsuranceInfo(
+    dotNumber: string,
+  ): Promise<InsuranceInfo | null> {
     // Mock implementation
     const today = new Date();
-    const expiryDate = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
+    const expiryDate = new Date(
+      today.getFullYear() + 1,
+      today.getMonth(),
+      today.getDate(),
+    );
 
     return {
       bipd: {
@@ -485,7 +497,9 @@ export class FMCSASaferClient {
     };
   }
 
-  private async fetchOperatingAuthority(dotNumber: string): Promise<OperatingAuthority | null> {
+  private async fetchOperatingAuthority(
+    dotNumber: string,
+  ): Promise<OperatingAuthority | null> {
     // Mock implementation
     return {
       status: "active",
@@ -497,7 +511,9 @@ export class FMCSASaferClient {
     };
   }
 
-  private async fetchCensusData(dotNumber: string): Promise<Partial<CarrierCensus> | null> {
+  private async fetchCensusData(
+    dotNumber: string,
+  ): Promise<Partial<CarrierCensus> | null> {
     // Mock implementation
     return {
       fleetSize: 50,
@@ -539,7 +555,7 @@ export class FMCSASaferClient {
 
     if (
       data.recentInspections.some((insp) =>
-        insp.violations.some((v) => v.severity === "critical")
+        insp.violations.some((v) => v.severity === "critical"),
       )
     ) {
       issues.push("Critical violations found in recent inspections");
@@ -553,7 +569,7 @@ export class FMCSASaferClient {
  * Factory function for creating FMCSA SAFER client
  */
 export function createFMCSASaferClient(
-  config: FMCSASaferConfig
+  config: FMCSASaferConfig,
 ): FMCSASaferClient {
   return new FMCSASaferClient(config);
 }

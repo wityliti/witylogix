@@ -7,10 +7,10 @@
  *   GET    /api/ai/slots/top           Get single top recommended slot
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { z } from 'zod';
-import { requireAuth, requireRole } from '../../middleware/auth.js';
-import { tenantContext } from '../../middleware/tenant.js';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { z } from "zod";
+import { requireAuth, requireRole } from "../../middleware/auth.js";
+import { tenantContext } from "../../middleware/tenant.js";
 import {
   slotRecommender,
   demandPredictor,
@@ -18,20 +18,26 @@ import {
   type TimeSlot,
   type DriverShift,
   type ZoneCoverage,
-} from '@witylogix/core/ai-slots';
+} from "@witylogix/core/ai-slots";
 
 // ─── Zod Schemas ────────────────────────────────────────────
 
 const recommendSlotsQuerySchema = z.object({
   customerId: z.string().uuid(),
   zoneId: z.string().uuid(),
-  date: z.string().datetime().transform((s) => new Date(s)),
+  date: z
+    .string()
+    .datetime()
+    .transform((s) => new Date(s)),
   maxSlots: z.coerce.number().int().min(1).max(10).default(5),
 });
 
 const demandForecastQuerySchema = z.object({
   zoneId: z.string().uuid(),
-  date: z.string().datetime().transform((s) => new Date(s)),
+  date: z
+    .string()
+    .datetime()
+    .transform((s) => new Date(s)),
   hour: z.coerce.number().int().min(0).max(23).optional(),
 });
 
@@ -41,15 +47,15 @@ export default async function aiSlotRoutes(
   fastify: FastifyInstance,
 ): Promise<void> {
   // All routes require authentication + tenant context
-  fastify.addHook('preHandler', requireAuth);
-  fastify.addHook('preHandler', tenantContext);
+  fastify.addHook("preHandler", requireAuth);
+  fastify.addHook("preHandler", tenantContext);
 
   // NOTE: Time slots are loaded lazily when needed in route handlers
 
   // ── GET /api/ai/slots/recommend — Recommend slots ────────
 
   fastify.get<{ Querystring: z.infer<typeof recommendSlotsQuerySchema> }>(
-    '/recommend',
+    "/recommend",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const query = recommendSlotsQuerySchema.parse(request.query);
       const shopId = request.shopId;
@@ -92,9 +98,9 @@ export default async function aiSlotRoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error recommending slots:');
+        fastify.log.error({ err: error }, "Error recommending slots:");
         return reply.status(500).send({
-          error: 'Failed to generate slot recommendations',
+          error: "Failed to generate slot recommendations",
         });
       }
     },
@@ -103,7 +109,7 @@ export default async function aiSlotRoutes(
   // ── GET /api/ai/slots/top — Get top recommendation ────────
 
   fastify.get<{ Querystring: z.infer<typeof recommendSlotsQuerySchema> }>(
-    '/top',
+    "/top",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const query = recommendSlotsQuerySchema.parse(request.query);
       const shopId = request.shopId;
@@ -139,7 +145,7 @@ export default async function aiSlotRoutes(
 
         if (!top) {
           return reply.status(404).send({
-            error: 'No available slots found',
+            error: "No available slots found",
           });
         }
 
@@ -148,9 +154,9 @@ export default async function aiSlotRoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error getting top slot:');
+        fastify.log.error({ err: error }, "Error getting top slot:");
         return reply.status(500).send({
-          error: 'Failed to get top slot recommendation',
+          error: "Failed to get top slot recommendation",
         });
       }
     },
@@ -159,7 +165,7 @@ export default async function aiSlotRoutes(
   // ── GET /api/ai/demand — Demand forecast ────────────────────
 
   fastify.get<{ Querystring: z.infer<typeof demandForecastQuerySchema> }>(
-    '/demand',
+    "/demand",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const query = demandForecastQuerySchema.parse(request.query);
 
@@ -194,9 +200,9 @@ export default async function aiSlotRoutes(
           });
         }
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error predicting demand:');
+        fastify.log.error({ err: error }, "Error predicting demand:");
         return reply.status(500).send({
-          error: 'Failed to predict demand',
+          error: "Failed to predict demand",
         });
       }
     },
@@ -205,7 +211,7 @@ export default async function aiSlotRoutes(
   // ── GET /api/ai/demand/peak — Peak hours analysis ────────────
 
   fastify.get<{ Querystring: { zoneId: string } }>(
-    '/demand/peak',
+    "/demand/peak",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { zoneId } = request.query as { zoneId: string };
 
@@ -217,10 +223,7 @@ export default async function aiSlotRoutes(
         let maxDemand = 0;
 
         for (let hour = 0; hour < 24; hour++) {
-          const pattern = demandPredictor.getHistoricalPattern(
-            zoneId,
-            0,
-          );
+          const pattern = demandPredictor.getHistoricalPattern(zoneId, 0);
           const demand = pattern.hourlyAverages[hour] || 0;
 
           if (demand > maxDemand) {
@@ -237,9 +240,9 @@ export default async function aiSlotRoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error analyzing peak hours:');
+        fastify.log.error({ err: error }, "Error analyzing peak hours:");
         return reply.status(500).send({
-          error: 'Failed to analyze peak hours',
+          error: "Failed to analyze peak hours",
         });
       }
     },

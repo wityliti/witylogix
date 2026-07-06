@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ChevronDown, MapPin, Package, User, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  ChevronDown,
+  MapPin,
+  Package,
+  User,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import type { LocationInfo } from "@witylogix/core/integrations/couriers";
@@ -44,19 +52,28 @@ interface TimelineStep {
 }
 
 export function DeliveryTimeline({ delivery }: DeliveryTimelineProps) {
-  const [expandedStep, setExpandedStep] = useState<DeliveryEvent["type"] | null>(null);
+  const [expandedStep, setExpandedStep] = useState<
+    DeliveryEvent["type"] | null
+  >(null);
 
   // Build timeline steps
   const steps = useMemo<TimelineStep[]>(() => {
     const eventMap = new Map(delivery.timeline.map((e) => [e.type, e]));
 
-    const statusOrder: DeliveryEvent["type"][] = ["requested", "assigned", "pickup", "in_transit", "delivered"];
+    const statusOrder: DeliveryEvent["type"][] = [
+      "requested",
+      "assigned",
+      "pickup",
+      "in_transit",
+      "delivered",
+    ];
     const builtSteps: TimelineStep[] = [];
 
     statusOrder.forEach((type) => {
       const event = eventMap.get(type);
       const isCompleted = !!event;
-      const isCurrent = delivery.timeline[delivery.timeline.length - 1]?.type === type;
+      const isCurrent =
+        delivery.timeline[delivery.timeline.length - 1]?.type === type;
 
       builtSteps.push({
         type,
@@ -101,13 +118,20 @@ export function DeliveryTimeline({ delivery }: DeliveryTimelineProps) {
       {/* Delivery Status Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h4 className="font-semibold text-wl-text-primary text-sm">Delivery Progress</h4>
+          <h4 className="font-semibold text-wl-text-primary text-sm">
+            Delivery Progress
+          </h4>
           {delivery.estimatedDeliveryTime && (
-            <p className={cn(
-              "text-xs mt-1",
-              isOverdue ? "text-wl-danger-400 font-medium" : "text-wl-text-secondary"
-            )}>
-              {isOverdue ? "⚠ Overdue" : "ETA"}: {formatTime(delivery.estimatedDeliveryTime)}
+            <p
+              className={cn(
+                "text-xs mt-1",
+                isOverdue
+                  ? "text-wl-danger-400 font-medium"
+                  : "text-wl-text-secondary",
+              )}
+            >
+              {isOverdue ? "⚠ Overdue" : "ETA"}:{" "}
+              {formatTime(delivery.estimatedDeliveryTime)}
             </p>
           )}
         </div>
@@ -129,13 +153,11 @@ export function DeliveryTimeline({ delivery }: DeliveryTimelineProps) {
             <div key={step.type}>
               {/* Timeline Item */}
               <div
-                onClick={() =>
-                  setExpandedStep(isExpanded ? null : step.type)
-                }
+                onClick={() => setExpandedStep(isExpanded ? null : step.type)}
                 className={cn(
                   "flex gap-3 cursor-pointer p-2 rounded-lg transition-colors",
                   step.isCurrent && "bg-wl-primary-500/10",
-                  isExpanded && "bg-wl-bg-overlay"
+                  isExpanded && "bg-wl-bg-overlay",
                 )}
               >
                 {/* Timeline Indicator */}
@@ -146,8 +168,8 @@ export function DeliveryTimeline({ delivery }: DeliveryTimelineProps) {
                       step.isCompleted
                         ? "bg-wl-success-400 text-wl-bg-primary"
                         : step.isCurrent
-                        ? "bg-wl-primary-500 text-wl-text-inverse ring-2 ring-wl-primary-400 animate-pulse"
-                        : "bg-wl-bg-overlay border border-wl-border-default text-wl-text-tertiary"
+                          ? "bg-wl-primary-500 text-wl-text-inverse ring-2 ring-wl-primary-400 animate-pulse"
+                          : "bg-wl-bg-overlay border border-wl-border-default text-wl-text-tertiary",
                     )}
                   >
                     {step.isCompleted ? (
@@ -160,7 +182,9 @@ export function DeliveryTimeline({ delivery }: DeliveryTimelineProps) {
                     <div
                       className={cn(
                         "w-0.5 h-6 mt-2",
-                        nextStepCompleted ? "bg-wl-success-400" : "bg-wl-border-subtle"
+                        nextStepCompleted
+                          ? "bg-wl-success-400"
+                          : "bg-wl-border-subtle",
                       )}
                     />
                   )}
@@ -170,10 +194,14 @@ export function DeliveryTimeline({ delivery }: DeliveryTimelineProps) {
                 <div className="flex-1 min-w-0 py-1">
                   <div className="flex items-center justify-between gap-2">
                     <div>
-                      <p className={cn(
-                        "text-sm font-medium",
-                        step.isCompleted ? "text-wl-text-primary" : "text-wl-text-secondary"
-                      )}>
+                      <p
+                        className={cn(
+                          "text-sm font-medium",
+                          step.isCompleted
+                            ? "text-wl-text-primary"
+                            : "text-wl-text-secondary",
+                        )}
+                      >
                         {step.label}
                       </p>
                       {step.timestamp && (
@@ -191,7 +219,7 @@ export function DeliveryTimeline({ delivery }: DeliveryTimelineProps) {
                       <ChevronDown
                         className={cn(
                           "w-4 h-4 text-wl-text-tertiary flex-shrink-0 transition-transform",
-                          isExpanded && "rotate-180"
+                          isExpanded && "rotate-180",
                         )}
                       />
                     )}
@@ -206,14 +234,21 @@ export function DeliveryTimeline({ delivery }: DeliveryTimelineProps) {
                     <div className="flex gap-2 text-xs text-wl-text-secondary">
                       <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-medium text-wl-text-primary">{step.location.name || "Location"}</p>
-                        <p className="line-clamp-2">{step.location.address || `${step.location.latitude}, ${step.location.longitude}`}</p>
+                        <p className="font-medium text-wl-text-primary">
+                          {step.location.name || "Location"}
+                        </p>
+                        <p className="line-clamp-2">
+                          {step.location.address ||
+                            `${step.location.latitude}, ${step.location.longitude}`}
+                        </p>
                       </div>
                     </div>
                   )}
                   {step.notes && (
                     <div className="text-xs text-wl-text-secondary pt-2 border-t border-wl-border-subtle">
-                      <p className="font-medium text-wl-text-primary mb-1">Notes</p>
+                      <p className="font-medium text-wl-text-primary mb-1">
+                        Notes
+                      </p>
                       <p>{step.notes}</p>
                     </div>
                   )}
@@ -232,8 +267,7 @@ export function DeliveryTimeline({ delivery }: DeliveryTimelineProps) {
             <p className="font-medium">Delivery overdue</p>
             <p className="text-wl-danger-400/80 mt-0.5">
               {delivery.estimatedDeliveryTime &&
-                `Was due ${formatRelativeTime(delivery.estimatedDeliveryTime)} ago`
-              }
+                `Was due ${formatRelativeTime(delivery.estimatedDeliveryTime)} ago`}
             </p>
           </div>
         </div>
@@ -264,13 +298,20 @@ function formatTime(date: Date): string {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const dateObj = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-  const time = date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  const time = date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   if (dateObj.getTime() === today.getTime()) {
     return time;
   }
 
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + " " + time;
+  return (
+    date.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +
+    " " +
+    time
+  );
 }
 
 function formatRelativeTime(date: Date): string {

@@ -59,7 +59,7 @@ describe("DAT Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(oauthToken), { status: 200 })
+        new Response(JSON.stringify(oauthToken), { status: 200 }),
       );
 
       expect(oauthToken.access_token).toMatch(/^dat_oauth_token_/);
@@ -72,7 +72,7 @@ describe("DAT Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(refreshResponse), { status: 200 })
+        new Response(JSON.stringify(refreshResponse), { status: 200 }),
       );
 
       expect(refreshResponse.access_token).toBeDefined();
@@ -92,7 +92,7 @@ describe("DAT Adapter Integration", () => {
 
     it("should post load to DAT", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockLoad), { status: 201 })
+        new Response(JSON.stringify(mockLoad), { status: 201 }),
       );
 
       expect(mockLoad.origin).toBe("Los Angeles, CA");
@@ -102,7 +102,10 @@ describe("DAT Adapter Integration", () => {
     it("should include pickup and delivery requirements", async () => {
       const loadDetails = {
         ...mockLoad,
-        pickupTimewindow: { earliest: Date.now(), latest: Date.now() + 3600000 },
+        pickupTimewindow: {
+          earliest: Date.now(),
+          latest: Date.now() + 3600000,
+        },
         deliveryTimewindow: {
           earliest: Date.now() + 259200000,
           latest: Date.now() + 345600000,
@@ -111,7 +114,7 @@ describe("DAT Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(loadDetails), { status: 201 })
+        new Response(JSON.stringify(loadDetails), { status: 201 }),
       );
 
       expect(loadDetails.specialRequirements).toContain("refrigerated");
@@ -125,7 +128,7 @@ describe("DAT Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(loadsList), { status: 200 })
+        new Response(JSON.stringify(loadsList), { status: 200 }),
       );
 
       expect(loadsList.loads).toHaveLength(1);
@@ -140,7 +143,7 @@ describe("DAT Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(updatedLoad), { status: 200 })
+        new Response(JSON.stringify(updatedLoad), { status: 200 }),
       );
 
       expect(updatedLoad.status).toBe("booked");
@@ -168,7 +171,7 @@ describe("DAT Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(searchResults), { status: 200 })
+        new Response(JSON.stringify(searchResults), { status: 200 }),
       );
 
       expect(searchResults.loads).toHaveLength(1);
@@ -185,7 +188,7 @@ describe("DAT Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(filteredSearch), { status: 200 })
+        new Response(JSON.stringify(filteredSearch), { status: 200 }),
       );
 
       expect(filteredSearch.matchingLoads).toBeGreaterThan(0);
@@ -199,7 +202,7 @@ describe("DAT Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(radiusSearch), { status: 200 })
+        new Response(JSON.stringify(radiusSearch), { status: 200 }),
       );
 
       expect(radiusSearch.loadsFound).toBeGreaterThan(0);
@@ -217,7 +220,7 @@ describe("DAT Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(rateHistory), { status: 200 })
+        new Response(JSON.stringify(rateHistory), { status: 200 }),
       );
 
       expect(rateHistory.rateData).toHaveLength(2);
@@ -233,7 +236,7 @@ describe("DAT Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(rateTrend), { status: 200 })
+        new Response(JSON.stringify(rateTrend), { status: 200 }),
       );
 
       expect(rateTrend.trendDirection).toBe("up");
@@ -250,7 +253,7 @@ describe("DAT Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(carrierComparison), { status: 200 })
+        new Response(JSON.stringify(carrierComparison), { status: 200 }),
       );
 
       expect(carrierComparison.quotes).toHaveLength(3);
@@ -268,7 +271,7 @@ describe("DAT Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(matches), { status: 200 })
+        new Response(JSON.stringify(matches), { status: 200 }),
       );
 
       expect(matches.matchedCarriers).toHaveLength(2);
@@ -286,7 +289,7 @@ describe("DAT Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(eligibility), { status: 200 })
+        new Response(JSON.stringify(eligibility), { status: 200 }),
       );
 
       expect(eligibility.eligibleCarriers).toBeGreaterThan(0);
@@ -316,7 +319,7 @@ describe("Truckstop Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(oauthToken), { status: 200 })
+        new Response(JSON.stringify(oauthToken), { status: 200 }),
       );
 
       expect(oauthToken.access_token).toMatch(/^truckstop_oauth_/);
@@ -336,7 +339,7 @@ describe("Truckstop Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(load), { status: 201 })
+        new Response(JSON.stringify(load), { status: 201 }),
       );
 
       expect(load.weight).toBe(25000);
@@ -356,7 +359,7 @@ describe("Truckstop Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(loadSearch), { status: 200 })
+        new Response(JSON.stringify(loadSearch), { status: 200 }),
       );
 
       expect(loadSearch.totalFound).toBeGreaterThan(0);
@@ -372,7 +375,7 @@ describe("Truckstop Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(booking), { status: 200 })
+        new Response(JSON.stringify(booking), { status: 200 }),
       );
 
       expect(booking.status).toBe("booked");
@@ -389,7 +392,7 @@ describe("Truckstop Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(registration), { status: 201 })
+        new Response(JSON.stringify(registration), { status: 201 }),
       );
 
       expect(registration.status).toBe("in_progress");
@@ -404,7 +407,7 @@ describe("Truckstop Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(verification), { status: 200 })
+        new Response(JSON.stringify(verification), { status: 200 }),
       );
 
       expect(verification.verified).toBe(true);
@@ -419,7 +422,7 @@ describe("Truckstop Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(status), { status: 200 })
+        new Response(JSON.stringify(status), { status: 200 }),
       );
 
       expect(status.completionPercent).toBeLessThanOrEqual(100);
@@ -439,7 +442,7 @@ describe("Truckstop Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(safetyScore), { status: 200 })
+        new Response(JSON.stringify(safetyScore), { status: 200 }),
       );
 
       expect(safetyScore.safetyScore).toBeGreaterThan(85);
@@ -456,7 +459,7 @@ describe("Truckstop Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(scoreHistory), { status: 200 })
+        new Response(JSON.stringify(scoreHistory), { status: 200 }),
       );
 
       expect(scoreHistory.history).toHaveLength(3);
@@ -472,7 +475,7 @@ describe("Truckstop Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(alert), { status: 200 })
+        new Response(JSON.stringify(alert), { status: 200 }),
       );
 
       expect(alert.currentScore).toBeLessThan(alert.previousScore);
@@ -502,7 +505,7 @@ describe("123Loadboard Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authResponse), { status: 200 })
+        new Response(JSON.stringify(authResponse), { status: 200 }),
       );
 
       expect(authResponse.isValid).toBe(true);
@@ -522,7 +525,7 @@ describe("123Loadboard Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(load), { status: 201 })
+        new Response(JSON.stringify(load), { status: 201 }),
       );
 
       expect(load.rate).toBe(1800);
@@ -542,7 +545,7 @@ describe("123Loadboard Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(search), { status: 200 })
+        new Response(JSON.stringify(search), { status: 200 }),
       );
 
       expect(search.total).toBeGreaterThan(0);
@@ -562,7 +565,7 @@ describe("123Loadboard Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(truckPostings), { status: 200 })
+        new Response(JSON.stringify(truckPostings), { status: 200 }),
       );
 
       expect(truckPostings.postings).toHaveLength(1);
@@ -583,7 +586,7 @@ describe("123Loadboard Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(truckPost), { status: 201 })
+        new Response(JSON.stringify(truckPost), { status: 201 }),
       );
 
       expect(truckPost.capacity).toBe(25000);
@@ -597,7 +600,7 @@ describe("123Loadboard Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(statusUpdate), { status: 200 })
+        new Response(JSON.stringify(statusUpdate), { status: 200 }),
       );
 
       expect(statusUpdate.status).toBe("loaded");
@@ -615,7 +618,7 @@ describe("123Loadboard Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(creditReport), { status: 200 })
+        new Response(JSON.stringify(creditReport), { status: 200 }),
       );
 
       expect(creditReport.creditScore).toBeGreaterThan(700);
@@ -630,7 +633,7 @@ describe("123Loadboard Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(review), { status: 201 })
+        new Response(JSON.stringify(review), { status: 201 }),
       );
 
       expect(review.status).toBe("in_progress");
@@ -647,7 +650,7 @@ describe("123Loadboard Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mileage), { status: 200 })
+        new Response(JSON.stringify(mileage), { status: 200 }),
       );
 
       expect(mileage.mileage).toBe(650);
@@ -661,7 +664,7 @@ describe("123Loadboard Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(optimization), { status: 200 })
+        new Response(JSON.stringify(optimization), { status: 200 }),
       );
 
       expect(optimization.mileageSaving).toBeGreaterThan(0);
@@ -690,7 +693,7 @@ describe("Direct Freight Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authResponse), { status: 200 })
+        new Response(JSON.stringify(authResponse), { status: 200 }),
       );
 
       expect(authResponse.sessionToken).toBeDefined();
@@ -710,7 +713,7 @@ describe("Direct Freight Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(load), { status: 201 })
+        new Response(JSON.stringify(load), { status: 201 }),
       );
 
       expect(load.origin).toBe("Dallas, TX");
@@ -723,7 +726,7 @@ describe("Direct Freight Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(freightSearch), { status: 200 })
+        new Response(JSON.stringify(freightSearch), { status: 200 }),
       );
 
       expect(freightSearch.matchingLoads).toBeGreaterThan(0);
@@ -741,7 +744,7 @@ describe("Direct Freight Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(estimate), { status: 200 })
+        new Response(JSON.stringify(estimate), { status: 200 }),
       );
 
       expect(estimate.rate).toBeGreaterThan(0);
@@ -765,7 +768,7 @@ describe("Direct Freight Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(quotes), { status: 200 })
+        new Response(JSON.stringify(quotes), { status: 200 }),
       );
 
       expect(quotes.quotes).toHaveLength(2);
@@ -783,7 +786,7 @@ describe("Direct Freight Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(carrierSearch), { status: 200 })
+        new Response(JSON.stringify(carrierSearch), { status: 200 }),
       );
 
       expect(carrierSearch.qualifiedCarriers).toBeGreaterThan(0);
@@ -798,7 +801,7 @@ describe("Direct Freight Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(carrier), { status: 200 })
+        new Response(JSON.stringify(carrier), { status: 200 }),
       );
 
       expect(carrier.safetyRating).toBeGreaterThan(85);
@@ -833,7 +836,7 @@ describe("Freight Board Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(aggregatedSearch), { status: 200 })
+        new Response(JSON.stringify(aggregatedSearch), { status: 200 }),
       );
 
       expect(aggregatedSearch.totalUnique).toBeGreaterThan(100);
@@ -864,11 +867,11 @@ describe("Freight Board Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(rankedLoads), { status: 200 })
+        new Response(JSON.stringify(rankedLoads), { status: 200 }),
       );
 
       expect(rankedLoads.loads[0].rate).toBeLessThanOrEqual(
-        rankedLoads.loads[1].rate
+        rankedLoads.loads[1].rate,
       );
     });
 
@@ -885,7 +888,7 @@ describe("Freight Board Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(filteredAggregation), { status: 200 })
+        new Response(JSON.stringify(filteredAggregation), { status: 200 }),
       );
 
       expect(filteredAggregation.matchingLoads).toBeGreaterThan(0);
@@ -908,10 +911,12 @@ describe("Freight Board Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(rateComparison), { status: 200 })
+        new Response(JSON.stringify(rateComparison), { status: 200 }),
       );
 
-      expect(rateComparison.lowestRate).toBeLessThanOrEqual(rateComparison.avgRate);
+      expect(rateComparison.lowestRate).toBeLessThanOrEqual(
+        rateComparison.avgRate,
+      );
     });
 
     it("should identify best market opportunities", async () => {
@@ -927,7 +932,7 @@ describe("Freight Board Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(opportunities), { status: 200 })
+        new Response(JSON.stringify(opportunities), { status: 200 }),
       );
 
       expect(opportunities.opportunities).toHaveLength(1);
@@ -953,12 +958,12 @@ describe("Freight Board Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(duplicateDetection), { status: 200 })
+        new Response(JSON.stringify(duplicateDetection), { status: 200 }),
       );
 
       expect(duplicateDetection.duplicatesFound).toBeGreaterThan(0);
       expect(duplicateDetection.uniqueLoads).toBeLessThan(
-        duplicateDetection.analyzedLoads
+        duplicateDetection.analyzedLoads,
       );
     });
 
@@ -970,11 +975,11 @@ describe("Freight Board Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(consolidation), { status: 200 })
+        new Response(JSON.stringify(consolidation), { status: 200 }),
       );
 
       expect(consolidation.consolidatedMatches).toBeLessThan(
-        consolidation.originalMatches
+        consolidation.originalMatches,
       );
     });
 
@@ -987,10 +992,12 @@ describe("Freight Board Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(rateFiltering), { status: 200 })
+        new Response(JSON.stringify(rateFiltering), { status: 200 }),
       );
 
-      expect(rateFiltering.filteredLoads).toBeLessThan(rateFiltering.originalLoads);
+      expect(rateFiltering.filteredLoads).toBeLessThan(
+        rateFiltering.originalLoads,
+      );
     });
   });
 
@@ -999,7 +1006,7 @@ describe("Freight Board Aggregator Integration", () => {
       mockFetch.mockResolvedValueOnce(
         new Response(JSON.stringify({ error: "Board unavailable" }), {
           status: 503,
-        })
+        }),
       );
 
       mockFetch.mockResolvedValueOnce(
@@ -1009,8 +1016,8 @@ describe("Freight Board Aggregator Integration", () => {
             failoverBoard: "truckstop",
             loadsRetrieved: 50,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       expect(mockFetch).toBeDefined();
@@ -1028,7 +1035,7 @@ describe("Freight Board Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(failoverResult), { status: 200 })
+        new Response(JSON.stringify(failoverResult), { status: 200 }),
       );
 
       expect(failoverResult.seamlessFailover).toBe(true);
@@ -1043,7 +1050,7 @@ describe("Freight Board Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(recovery), { status: 200 })
+        new Response(JSON.stringify(recovery), { status: 200 }),
       );
 
       expect(recovery.recoverySuccessful).toBe(true);
@@ -1062,7 +1069,7 @@ describe("Freight Board Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(boardRecommendation), { status: 200 })
+        new Response(JSON.stringify(boardRecommendation), { status: 200 }),
       );
 
       expect(boardRecommendation.recommendations).toHaveLength(3);
@@ -1080,7 +1087,7 @@ describe("Freight Board Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(multiPostResult), { status: 201 })
+        new Response(JSON.stringify(multiPostResult), { status: 201 }),
       );
 
       expect(multiPostResult.postings).toHaveLength(3);

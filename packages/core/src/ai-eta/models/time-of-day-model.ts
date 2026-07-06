@@ -9,7 +9,11 @@
  * Regular hours: normal
  */
 
-import type { TimeInterval, HistoricalRoute, ModelPrediction } from '../types.js';
+import type {
+  TimeInterval,
+  HistoricalRoute,
+  ModelPrediction,
+} from "../types.js";
 
 export class TimeOfDayModel {
   /**
@@ -72,10 +76,7 @@ export class TimeOfDayModel {
   /**
    * Predict ETA for a departure time
    */
-  predict(
-    baseTimeMinutes: number,
-    departureTime: Date,
-  ): ModelPrediction {
+  predict(baseTimeMinutes: number, departureTime: Date): ModelPrediction {
     const hour = departureTime.getHours();
     const multiplier = this.multipliersByHour.get(hour) ?? 1.0;
 
@@ -92,18 +93,14 @@ export class TimeOfDayModel {
     const stdDev = expectedMinutes * 0.15;
 
     return {
-      modelName: 'TimeOfDayModel',
+      modelName: "TimeOfDayModel",
       prediction: {
         low: new Date(
-          departureTime.getTime() +
-            (expectedMinutes - stdDev * 1.96) * 60000,
+          departureTime.getTime() + (expectedMinutes - stdDev * 1.96) * 60000,
         ),
-        expected: new Date(
-          departureTime.getTime() + expectedMinutes * 60000,
-        ),
+        expected: new Date(departureTime.getTime() + expectedMinutes * 60000),
         high: new Date(
-          departureTime.getTime() +
-            (expectedMinutes + stdDev * 1.96) * 60000,
+          departureTime.getTime() + (expectedMinutes + stdDev * 1.96) * 60000,
         ),
       },
       confidence,
@@ -132,9 +129,7 @@ export class TimeOfDayModel {
 
       const hour = route.hourOfDay;
       const duration =
-        (route.actualArrival.getTime() -
-          route.departureTime.getTime()) /
-        60000; // Convert to minutes
+        (route.actualArrival.getTime() - route.departureTime.getTime()) / 60000; // Convert to minutes
 
       if (!hourDurations.has(hour)) {
         hourDurations.set(hour, []);
@@ -146,14 +141,14 @@ export class TimeOfDayModel {
     this.multipliersByHour.clear();
 
     hourDurations.forEach((durations, hour) => {
-      const avgDuration = durations.reduce((a, b) => a + b, 0) / durations.length;
+      const avgDuration =
+        durations.reduce((a, b) => a + b, 0) / durations.length;
       const baselineHour = 12; // Noon as baseline
 
       const baselineDurations = hourDurations.get(baselineHour) || [];
       const baselineAvg =
         baselineDurations.reduce((a, b) => a + b, 0) /
-          baselineDurations.length ||
-        20;
+          baselineDurations.length || 20;
 
       const multiplier = avgDuration / baselineAvg;
 
@@ -167,10 +162,7 @@ export class TimeOfDayModel {
     // Fill missing hours with defaults
     for (let hour = 0; hour < 24; hour++) {
       if (!this.multipliersByHour.has(hour)) {
-        this.multipliersByHour.set(
-          hour,
-          this.DEFAULT_MULTIPLIERS[hour]!,
-        );
+        this.multipliersByHour.set(hour, this.DEFAULT_MULTIPLIERS[hour]!);
       }
     }
   }
@@ -242,9 +234,7 @@ export class TimeOfDayModel {
       const predictedDuration = baseDuration * multiplier;
 
       const actualDuration =
-        (route.actualArrival.getTime() -
-          route.departureTime.getTime()) /
-        60000;
+        (route.actualArrival.getTime() - route.departureTime.getTime()) / 60000;
 
       const error = Math.abs(predictedDuration - actualDuration);
 

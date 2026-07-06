@@ -13,7 +13,10 @@
  * No external ML libraries - simple weighted algorithms with deterministic results.
  */
 
-import { type NotificationChannel, type NotificationCategory } from "../notifications/notification-types.js";
+import {
+  type NotificationChannel,
+  type NotificationCategory,
+} from "../notifications/notification-types.js";
 
 // ─── TYPES ─────────────────────────────────────────────────────────────────
 
@@ -184,7 +187,7 @@ export class UserActivityTracker {
     category: NotificationCategory,
     timezone: string,
     sentAt: Date,
-    openedAt: Date
+    openedAt: Date,
   ): void {
     const key = `${userId}:${channel}`;
     let userActivities = this.activities.get(key);
@@ -223,7 +226,8 @@ export class UserActivityTracker {
 
     const responseTimeMs = openedAt.getTime() - sentAt.getTime();
     activity.averageResponseTimeMs =
-      (activity.averageResponseTimeMs * (activity.totalNotificationsOpened - 1) +
+      (activity.averageResponseTimeMs *
+        (activity.totalNotificationsOpened - 1) +
         responseTimeMs) /
       activity.totalNotificationsOpened;
 
@@ -238,7 +242,8 @@ export class UserActivityTracker {
     const catPerf = activity.categoryPerformance[category];
     catPerf.openCount++;
     catPerf.averageResponseTimeMs =
-      (catPerf.averageResponseTimeMs * (catPerf.openCount - 1) + responseTimeMs) /
+      (catPerf.averageResponseTimeMs * (catPerf.openCount - 1) +
+        responseTimeMs) /
       catPerf.openCount;
 
     // Update day-of-week activity
@@ -247,7 +252,7 @@ export class UserActivityTracker {
     const dayActivity = activity.dayOfWeekActivity[dayOfWeek];
     if (dayActivity) {
       dayActivity.hourlyOpenRates[hour] =
-        (dayActivity.hourlyOpenRates[hour] * 0.7 + 1.0 * 0.3);
+        dayActivity.hourlyOpenRates[hour] * 0.7 + 1.0 * 0.3;
     }
 
     activity.lastUpdated = new Date();
@@ -259,7 +264,7 @@ export class UserActivityTracker {
     category: NotificationCategory,
     timezone: string,
     sentAt: Date,
-    clickedAt: Date
+    clickedAt: Date,
   ): void {
     const key = `${userId}:${channel}`;
     let userActivities = this.activities.get(key);
@@ -298,7 +303,8 @@ export class UserActivityTracker {
 
     const responseTimeMs = clickedAt.getTime() - sentAt.getTime();
     activity.averageResponseTimeMs =
-      (activity.averageResponseTimeMs * (activity.totalNotificationsClicked - 1) +
+      (activity.averageResponseTimeMs *
+        (activity.totalNotificationsClicked - 1) +
         responseTimeMs) /
       activity.totalNotificationsClicked;
 
@@ -313,7 +319,8 @@ export class UserActivityTracker {
     const catPerf = activity.categoryPerformance[category];
     catPerf.clickCount++;
     catPerf.averageResponseTimeMs =
-      (catPerf.averageResponseTimeMs * (catPerf.clickCount - 1) + responseTimeMs) /
+      (catPerf.averageResponseTimeMs * (catPerf.clickCount - 1) +
+        responseTimeMs) /
       catPerf.clickCount;
 
     // Update day-of-week activity
@@ -322,9 +329,10 @@ export class UserActivityTracker {
     const dayActivity = activity.dayOfWeekActivity[dayOfWeek];
     if (dayActivity) {
       dayActivity.hourlyClickRates[hour] =
-        (dayActivity.hourlyClickRates[hour] * 0.7 + 1.0 * 0.3);
+        dayActivity.hourlyClickRates[hour] * 0.7 + 1.0 * 0.3;
       dayActivity.hourlyAverageResponseTimeMs[hour] =
-        (dayActivity.hourlyAverageResponseTimeMs[hour] * 0.7 + responseTimeMs * 0.3);
+        dayActivity.hourlyAverageResponseTimeMs[hour] * 0.7 +
+        responseTimeMs * 0.3;
     }
 
     activity.lastUpdated = new Date();
@@ -334,7 +342,7 @@ export class UserActivityTracker {
     userId: string,
     channel: NotificationChannel,
     category: NotificationCategory,
-    timezone: string
+    timezone: string,
   ): void {
     const key = `${userId}:${channel}`;
     let userActivities = this.activities.get(key);
@@ -372,7 +380,10 @@ export class UserActivityTracker {
     activity.lastUpdated = new Date();
   }
 
-  getActivity(userId: string, channel: NotificationChannel): UserActivity | null {
+  getActivity(
+    userId: string,
+    channel: NotificationChannel,
+  ): UserActivity | null {
     const key = `${userId}:${channel}`;
     const activities = this.activities.get(key);
     return activities?.[0] ?? null;
@@ -401,7 +412,7 @@ export class EngagementScorer {
   scoreEngagement(
     userId: string,
     channel: NotificationChannel,
-    category: NotificationCategory
+    category: NotificationCategory,
   ): EngagementScore {
     const activity = this.tracker.getActivity(userId, channel);
     const now = new Date();
@@ -431,29 +442,40 @@ export class EngagementScorer {
     }
 
     const openRatePercent =
-      (activity.totalNotificationsOpened / Math.max(activity.totalNotificationsSent, 1)) * 100;
+      (activity.totalNotificationsOpened /
+        Math.max(activity.totalNotificationsSent, 1)) *
+      100;
     const clickRatePercent =
-      (activity.totalNotificationsClicked / Math.max(activity.totalNotificationsOpened, 1)) * 100;
+      (activity.totalNotificationsClicked /
+        Math.max(activity.totalNotificationsOpened, 1)) *
+      100;
 
     // Response time factor: faster response = higher score (inverse relationship)
     // 5 min response → ~0.5, 30 min → ~0.25, instant → ~1.0
     const avgRespTimeMinutes = activity.averageResponseTimeMs / 60000;
-    const responseTimeFactor = Math.max(0, Math.min(1, 1 / (1 + avgRespTimeMinutes / 10)));
+    const responseTimeFactor = Math.max(
+      0,
+      Math.min(1, 1 / (1 + avgRespTimeMinutes / 10)),
+    );
 
     // Category affinity: how well this category performs
     const catPerf = activity.categoryPerformance[category];
     const categoryAffinityScore = catPerf
-      ? (catPerf.openCount / Math.max(activity.totalNotificationsOpened, 1)) * 100
+      ? (catPerf.openCount / Math.max(activity.totalNotificationsOpened, 1)) *
+        100
       : 0;
 
     // Channel affinity: overall performance on this channel
     const channelAffinityScore = Math.min(100, openRatePercent);
 
     // Consistency: based on variance in day-of-week performance
-    const hourlyRates = activity.dayOfWeekActivity.flatMap((d) => d.hourlyOpenRates);
+    const hourlyRates = activity.dayOfWeekActivity.flatMap(
+      (d) => d.hourlyOpenRates,
+    );
     const mean = hourlyRates.reduce((a, b) => a + b, 0) / hourlyRates.length;
     const variance =
-      hourlyRates.reduce((sum, rate) => sum + Math.pow(rate - mean, 2), 0) / hourlyRates.length;
+      hourlyRates.reduce((sum, rate) => sum + Math.pow(rate - mean, 2), 0) /
+      hourlyRates.length;
     const consistency = Math.max(0, 100 - Math.sqrt(variance) * 100);
 
     // Data volume factor: more interactions = more reliable/engaged channel
@@ -462,7 +484,11 @@ export class EngagementScorer {
     // Weighted overall score
     const overallScore = Math.min(
       100,
-      openRatePercent * 0.25 + clickRatePercent * 0.2 + responseTimeFactor * 20 + consistency * 0.15 + dataVolumeFactor * 0.2
+      openRatePercent * 0.25 +
+        clickRatePercent * 0.2 +
+        responseTimeFactor * 20 +
+        consistency * 0.15 +
+        dataVolumeFactor * 0.2,
     );
 
     return {
@@ -502,7 +528,7 @@ export class OptimalTimePredictor {
     userId: string,
     channel: NotificationChannel,
     category: NotificationCategory,
-    recipientTimezone: string
+    recipientTimezone: string,
   ): SendTimeRecommendation {
     const activity = this.tracker.getActivity(userId, channel);
     const now = new Date();
@@ -519,12 +545,20 @@ export class OptimalTimePredictor {
         engagementScore: new EngagementScorer(this.tracker).scoreEngagement(
           userId,
           channel,
-          category
+          category,
         ),
         reasoning: {
           bestChannels: [{ channel, engagementScore: 50 }],
           bestHours: [{ hour: 9, openRate: 0.5, clickRate: 0.3 }],
-          dayOfWeekFactors: { 0: 1.0, 1: 1.1, 2: 1.1, 3: 1.1, 4: 1.1, 5: 0.9, 6: 0.8 },
+          dayOfWeekFactors: {
+            0: 1.0,
+            1: 1.1,
+            2: 1.1,
+            3: 1.1,
+            4: 1.1,
+            5: 0.9,
+            6: 0.8,
+          },
         },
         calculatedAt: now,
       };
@@ -546,7 +580,8 @@ export class OptimalTimePredictor {
     const bestHour = bestHours[0].hour;
 
     // Calculate confidence based on data freshness and sample size
-    const daysSinceUpdate = (now.getTime() - activity.lastUpdated.getTime()) / (1000 * 60 * 60 * 24);
+    const daysSinceUpdate =
+      (now.getTime() - activity.lastUpdated.getTime()) / (1000 * 60 * 60 * 24);
     const recencyFactor = Math.max(0, 100 - daysSinceUpdate * 2);
     const sampleFactor = Math.min(100, activity.totalNotificationsSent * 20);
     const confidence = Math.max(20, (recencyFactor + sampleFactor) / 2);
@@ -555,10 +590,13 @@ export class OptimalTimePredictor {
     const dayOfWeekFactors: Record<number, number> = {};
     for (let d = 0; d < 7; d++) {
       const avgRate =
-        activity.dayOfWeekActivity[d].hourlyOpenRates.reduce((a, b) => a + b) / 24;
+        activity.dayOfWeekActivity[d].hourlyOpenRates.reduce((a, b) => a + b) /
+        24;
       const baselineRate =
-        activity.dayOfWeekActivity.reduce((sum, day) => sum + day.hourlyOpenRates[bestHour], 0) /
-        7;
+        activity.dayOfWeekActivity.reduce(
+          (sum, day) => sum + day.hourlyOpenRates[bestHour],
+          0,
+        ) / 7;
       dayOfWeekFactors[d] = baselineRate > 0 ? avgRate / baselineRate : 1.0;
     }
 
@@ -573,17 +611,15 @@ export class OptimalTimePredictor {
       engagementScore: new EngagementScorer(this.tracker).scoreEngagement(
         userId,
         channel,
-        category
+        category,
       ),
       reasoning: {
         bestChannels: [{ channel, engagementScore: 75 }],
-        bestHours: bestHours
-          .slice(0, 3)
-          .map((h) => ({
-            hour: h.hour,
-            openRate: dayActivity.hourlyOpenRates[h.hour],
-            clickRate: dayActivity.hourlyClickRates[h.hour],
-          })),
+        bestHours: bestHours.slice(0, 3).map((h) => ({
+          hour: h.hour,
+          openRate: dayActivity.hourlyOpenRates[h.hour],
+          clickRate: dayActivity.hourlyClickRates[h.hour],
+        })),
         dayOfWeekFactors,
       },
       calculatedAt: now,
@@ -605,7 +641,7 @@ export class ChannelPreferenceLearner {
   learnChannelPreference(
     userId: string,
     category: NotificationCategory,
-    channels: NotificationChannel[]
+    channels: NotificationChannel[],
   ): ChannelPreference {
     const channelScores = channels.map((ch) => {
       const score = this.scorer.scoreEngagement(userId, ch, category);
@@ -656,18 +692,24 @@ export class SendTimeOptimizer {
     userId: string,
     category: NotificationCategory,
     recipientTimezone: string,
-    availableChannels: NotificationChannel[]
+    availableChannels: NotificationChannel[],
   ): SendTimeRecommendation {
     // Learn channel preference
     const channelPref = this.channelLearner.learnChannelPreference(
       userId,
       category,
-      availableChannels
+      availableChannels,
     );
-    const bestChannel = channelPref.channelRanking[0]?.channel ?? availableChannels[0];
+    const bestChannel =
+      channelPref.channelRanking[0]?.channel ?? availableChannels[0];
 
     // Get optimal time for best channel
-    return this.timePredictor.predictOptimalTime(userId, bestChannel, category, recipientTimezone);
+    return this.timePredictor.predictOptimalTime(
+      userId,
+      bestChannel,
+      category,
+      recipientTimezone,
+    );
   }
 
   recordOutcome(outcome: NotificationOutcome): void {
@@ -678,7 +720,7 @@ export class SendTimeOptimizer {
         outcome.category,
         "UTC",
         outcome.sentAt,
-        outcome.openedAt
+        outcome.openedAt,
       );
     }
     if (outcome.clickedAt) {
@@ -688,11 +730,16 @@ export class SendTimeOptimizer {
         outcome.category,
         "UTC",
         outcome.sentAt,
-        outcome.clickedAt
+        outcome.clickedAt,
       );
     }
     if (!outcome.openedAt && !outcome.clickedAt) {
-      this.activityTracker.recordSent(outcome.userId, outcome.channel, outcome.category, "UTC");
+      this.activityTracker.recordSent(
+        outcome.userId,
+        outcome.channel,
+        outcome.category,
+        "UTC",
+      );
     }
   }
 
@@ -722,21 +769,25 @@ export class BatchOptimizer {
     recipientIds: Array<{ userId: string; timezone: string }>,
     category: NotificationCategory,
     availableChannels: NotificationChannel[],
-    sendWindowMinutesFromNow: number = 60
+    sendWindowMinutesFromNow: number = 60,
   ): BatchSendSchedule {
     const now = new Date();
-    const windowEnd = new Date(now.getTime() + sendWindowMinutesFromNow * 60 * 1000);
+    const windowEnd = new Date(
+      now.getTime() + sendWindowMinutesFromNow * 60 * 1000,
+    );
 
     const recommendations = recipientIds.map((recipient) => {
       const timeRec = this.optimizer.optimizeSendTime(
         recipient.userId,
         category,
         recipient.timezone,
-        availableChannels
+        availableChannels,
       );
 
       // Convert local recommendation to UTC and place within window
-      const recommendedTime = new Date(now.getTime() + Math.random() * sendWindowMinutesFromNow * 60 * 1000);
+      const recommendedTime = new Date(
+        now.getTime() + Math.random() * sendWindowMinutesFromNow * 60 * 1000,
+      );
 
       return {
         userId: recipient.userId,
@@ -748,12 +799,17 @@ export class BatchOptimizer {
 
     // Sort by time to stagger
     recommendations.sort(
-      (a, b) => a.recommendedTimestampUTC.getTime() - b.recommendedTimestampUTC.getTime()
+      (a, b) =>
+        a.recommendedTimestampUTC.getTime() -
+        b.recommendedTimestampUTC.getTime(),
     );
 
     // Calculate staggering interval
     const totalDurationMs = windowEnd.getTime() - now.getTime();
-    const staggeringIntervalMs = Math.max(100, Math.floor(totalDurationMs / recipientIds.length));
+    const staggeringIntervalMs = Math.max(
+      100,
+      Math.floor(totalDurationMs / recipientIds.length),
+    );
 
     // Calculate peak hours for reasoning
     const peakHours = Array.from({ length: 24 }, (_, h) => ({
@@ -762,7 +818,9 @@ export class BatchOptimizer {
       estimatedRecipients: Math.floor(recipientIds.length / 24),
     }));
 
-    peakHours.sort((a, b) => b.expectedEngagementRate - a.expectedEngagementRate);
+    peakHours.sort(
+      (a, b) => b.expectedEngagementRate - a.expectedEngagementRate,
+    );
 
     // Channel distribution
     const channelDistribution: Record<NotificationChannel, number> = {} as any;
@@ -792,6 +850,8 @@ export function createSmartNotificationTimer(): SendTimeOptimizer {
   return new SendTimeOptimizer();
 }
 
-export function createBatchOptimizer(optimizer: SendTimeOptimizer): BatchOptimizer {
+export function createBatchOptimizer(
+  optimizer: SendTimeOptimizer,
+): BatchOptimizer {
   return new BatchOptimizer(optimizer);
 }

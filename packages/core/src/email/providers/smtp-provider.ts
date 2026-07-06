@@ -4,8 +4,14 @@
  * To be implemented with actual SMTP library (nodemailer, etc.)
  */
 
-import type { EmailProvider, EmailMessage, EmailResult, EmailConfig, EmailProviderType } from '../types.js';
-import { EmailStatus } from '../types.js';
+import type {
+  EmailProvider,
+  EmailMessage,
+  EmailResult,
+  EmailConfig,
+  EmailProviderType,
+} from "../types.js";
+import { EmailStatus } from "../types.js";
 
 /**
  * SMTP Transport interface for email delivery
@@ -22,7 +28,7 @@ export interface SmtpTransport {
  * libraries like nodemailer or similar SMTP clients.
  */
 export class SmtpEmailProvider implements EmailProvider {
-  private provider: EmailProviderType = 'smtp';
+  private provider: EmailProviderType = "smtp";
   private config: EmailConfig;
   private transport: SmtpTransport | null = null;
 
@@ -30,7 +36,7 @@ export class SmtpEmailProvider implements EmailProvider {
     this.config = config;
 
     if (!this.isConfigured()) {
-      throw new Error('SMTP provider requires host and port configuration');
+      throw new Error("SMTP provider requires host and port configuration");
     }
   }
 
@@ -39,7 +45,7 @@ export class SmtpEmailProvider implements EmailProvider {
 
     try {
       if (!this.transport) {
-        throw new Error('SMTP transport not initialized');
+        throw new Error("SMTP transport not initialized");
       }
 
       await this.transport.connect();
@@ -53,7 +59,8 @@ export class SmtpEmailProvider implements EmailProvider {
         timestamp,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       return {
         id: this.generateMessageId(),
         status: EmailStatus.FAILED,

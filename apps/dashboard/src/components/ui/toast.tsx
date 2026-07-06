@@ -1,6 +1,13 @@
 "use client";
 
-import React, { type ReactNode, createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, {
+  type ReactNode,
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import { cn } from "../../lib/utils";
 
 type ToastType = "success" | "error" | "warning" | "info";
@@ -96,11 +103,7 @@ function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
   return (
     <div className="fixed bottom-4 right-4 z-100 flex flex-col gap-3 pointer-events-none">
       {toasts.map((toast) => (
-        <ToastItem
-          key={toast.id}
-          toast={toast}
-          onRemove={onRemove}
-        />
+        <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
       ))}
     </div>
   );
@@ -149,23 +152,18 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
           "flex flex-col bg-wl-bg-elevated rounded-lg p-4 min-w-80 max-w-96",
           "shadow-lg pointer-events-auto toast-slide-in",
           "border",
-          styles.border
+          styles.border,
         )}
       >
         {/* Header */}
-        <div
-          className={cn(
-            "flex items-start gap-3",
-            toast.message && "mb-2"
-          )}
-        >
+        <div className={cn("flex items-start gap-3", toast.message && "mb-2")}>
           {/* Icon */}
           <div
             className={cn(
               "flex items-center justify-center w-6 h-6 rounded-full",
               "flex-shrink-0 text-sm font-bold",
               styles.bg,
-              styles.text
+              styles.text,
             )}
           >
             {styles.icon}
@@ -190,7 +188,7 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
               "flex items-center justify-center w-6 h-6 flex-shrink-0",
               "bg-transparent border-none text-wl-text-tertiary cursor-pointer",
               "transition-colors duration-fast ease-default",
-              "hover:text-wl-text-secondary"
+              "hover:text-wl-text-secondary",
             )}
           >
             <svg
@@ -212,7 +210,7 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
           <div
             className={cn(
               "h-full transition-all",
-              styles.border.replace("border-", "bg-")
+              styles.border.replace("border-", "bg-"),
             )}
             style={{ width: `${progress}%` }}
           />

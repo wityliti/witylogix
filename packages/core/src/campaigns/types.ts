@@ -7,35 +7,35 @@
  * Campaign types supported
  */
 export enum CampaignType {
-  EMAIL = 'email',
-  SMS = 'sms',
-  WHATSAPP = 'whatsapp',
-  PUSH = 'push',
-  MULTI_CHANNEL = 'multi_channel',
+  EMAIL = "email",
+  SMS = "sms",
+  WHATSAPP = "whatsapp",
+  PUSH = "push",
+  MULTI_CHANNEL = "multi_channel",
 }
 
 /**
  * Campaign status lifecycle
  */
 export enum CampaignStatus {
-  DRAFT = 'draft',
-  SCHEDULED = 'scheduled',
-  ACTIVE = 'active',
-  PAUSED = 'paused',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
-  FAILED = 'failed',
+  DRAFT = "draft",
+  SCHEDULED = "scheduled",
+  ACTIVE = "active",
+  PAUSED = "paused",
+  COMPLETED = "completed",
+  CANCELLED = "cancelled",
+  FAILED = "failed",
 }
 
 /**
  * Frequency for recurring campaigns
  */
 export enum CampaignFrequency {
-  ONE_TIME = 'one_time',
-  DAILY = 'daily',
-  WEEKLY = 'weekly',
-  MONTHLY = 'monthly',
-  CUSTOM = 'custom',
+  ONE_TIME = "one_time",
+  DAILY = "daily",
+  WEEKLY = "weekly",
+  MONTHLY = "monthly",
+  CUSTOM = "custom",
 }
 
 /**
@@ -104,20 +104,20 @@ export interface SegmentRule {
   field: string;
   /** Operator: equals, contains, gt, lt, in, between */
   operator:
-    | 'equals'
-    | 'contains'
-    | 'gt'
-    | 'lt'
-    | 'gte'
-    | 'lte'
-    | 'in'
-    | 'between'
-    | 'startsWith'
-    | 'endsWith';
+    | "equals"
+    | "contains"
+    | "gt"
+    | "lt"
+    | "gte"
+    | "lte"
+    | "in"
+    | "between"
+    | "startsWith"
+    | "endsWith";
   /** Value(s) to match against */
   value: string | number | string[] | number[];
   /** Logical operator for combining rules: AND, OR */
-  logic?: 'AND' | 'OR';
+  logic?: "AND" | "OR";
 }
 
 /**
@@ -126,16 +126,16 @@ export interface SegmentRule {
 export interface AudienceFilter {
   /** Filter type */
   type:
-    | 'location'
-    | 'status'
-    | 'tag'
-    | 'custom_field'
-    | 'subscription_status'
-    | 'engagement';
+    | "location"
+    | "status"
+    | "tag"
+    | "custom_field"
+    | "subscription_status"
+    | "engagement";
   /** Filter value */
   value: string;
   /** Optional operator */
-  operator?: 'equals' | 'contains' | 'in' | 'not_equals';
+  operator?: "equals" | "contains" | "in" | "not_equals";
 }
 
 /**
@@ -310,7 +310,7 @@ export interface CampaignExecutionResult {
   /** Execution end time */
   endTime?: number;
   /** Execution status */
-  status: 'queued' | 'in_progress' | 'completed' | 'failed';
+  status: "queued" | "in_progress" | "completed" | "failed";
   /** Error message if failed */
   error?: string;
 }
@@ -345,14 +345,14 @@ export interface CampaignAnalyticsEvent {
   campaignId: string;
   /** Event type: sent, delivered, opened, clicked, bounced, etc. */
   eventType:
-    | 'sent'
-    | 'delivered'
-    | 'opened'
-    | 'clicked'
-    | 'bounced'
-    | 'unsubscribed'
-    | 'complained'
-    | 'failed';
+    | "sent"
+    | "delivered"
+    | "opened"
+    | "clicked"
+    | "bounced"
+    | "unsubscribed"
+    | "complained"
+    | "failed";
   /** Recipient identifier */
   recipient: string;
   /** Message ID */

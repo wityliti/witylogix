@@ -40,7 +40,7 @@ export class TwilioClient {
 
     if (!this.accountSid || !this.authToken) {
       throw new Error(
-        "Twilio adapter requires apiKey (Account SID) and apiSecret (Auth Token)"
+        "Twilio adapter requires apiKey (Account SID) and apiSecret (Auth Token)",
       );
     }
   }
@@ -59,7 +59,7 @@ export class TwilioClient {
   private async request<T>(
     method: string,
     endpoint: string,
-    body?: Record<string, unknown>
+    body?: Record<string, unknown>,
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers: Record<string, string> = {
@@ -88,7 +88,8 @@ export class TwilioClient {
     if (!response.ok) {
       const error = data as Record<string, unknown>;
       const errorCode = (error.code as number) || response.status;
-      const errorMessage = (error.message as string | undefined) || response.statusText;
+      const errorMessage =
+        (error.message as string | undefined) || response.statusText;
       throw new TwilioError(errorMessage, errorCode, data);
     }
 
@@ -116,15 +117,11 @@ export class TwilioClient {
         status: string;
         error_code?: number;
         error_message?: string;
-      }>(
-        "POST",
-        `/Accounts/${this.accountSid}/Messages.json`,
-        body
-      );
+      }>("POST", `/Accounts/${this.accountSid}/Messages.json`, body);
 
       if (response.error_code) {
         throw new Error(
-          `Twilio SMS error ${response.error_code}: ${response.error_message}`
+          `Twilio SMS error ${response.error_code}: ${response.error_message}`,
         );
       }
 
@@ -147,7 +144,7 @@ export class TwilioClient {
     to: string,
     from: string,
     body: string,
-    mediaUrls: string[]
+    mediaUrls: string[],
   ): Promise<{ sid: string; status: string }> {
     try {
       const requestBody = {
@@ -165,18 +162,10 @@ export class TwilioClient {
         sid: string;
         status: string;
         error_code?: number;
-      }>(
-        "POST",
-        `/Accounts/${this.accountSid}/Messages.json`,
-        requestBody
-      );
+      }>("POST", `/Accounts/${this.accountSid}/Messages.json`, requestBody);
 
       if (response.error_code) {
-        throw new TwilioError(
-          "MMS send failed",
-          response.error_code,
-          response
-        );
+        throw new TwilioError("MMS send failed", response.error_code, response);
       }
 
       return {
@@ -198,7 +187,7 @@ export class TwilioClient {
     to: string,
     from: string,
     templateName: string,
-    parameters?: Array<{ type: string; text?: string }>
+    parameters?: Array<{ type: string; text?: string }>,
   ): Promise<{ sid: string; status: string }> {
     try {
       const body: Record<string, unknown> = {
@@ -218,17 +207,13 @@ export class TwilioClient {
         sid: string;
         status: string;
         error_code?: number;
-      }>(
-        "POST",
-        `/Accounts/${this.accountSid}/Messages.json`,
-        body
-      );
+      }>("POST", `/Accounts/${this.accountSid}/Messages.json`, body);
 
       if (response.error_code) {
         throw new TwilioError(
           "WhatsApp template send failed",
           response.error_code,
-          response
+          response,
         );
       }
 
@@ -250,28 +235,24 @@ export class TwilioClient {
   async sendWhatsAppMessage(
     to: string,
     from: string,
-    body: string
+    body: string,
   ): Promise<{ sid: string; status: string }> {
     try {
       const response = await this.request<{
         sid: string;
         status: string;
         error_code?: number;
-      }>(
-        "POST",
-        `/Accounts/${this.accountSid}/Messages.json`,
-        {
-          From: from,
-          To: to,
-          Body: body,
-        }
-      );
+      }>("POST", `/Accounts/${this.accountSid}/Messages.json`, {
+        From: from,
+        To: to,
+        Body: body,
+      });
 
       if (response.error_code) {
         throw new TwilioError(
           "WhatsApp message send failed",
           response.error_code,
-          response
+          response,
         );
       }
 
@@ -293,7 +274,7 @@ export class TwilioClient {
   async createVerification(
     phoneNumber: string,
     channel: "sms" | "call" | "whatsapp" = "sms",
-    serviceSid?: string
+    serviceSid?: string,
   ): Promise<{
     sid: string;
     status: string;
@@ -305,20 +286,16 @@ export class TwilioClient {
         status: string;
         phone_number: string;
         error_code?: number;
-      }>(
-        "POST",
-        `/Services/${serviceSid || "default"}/Verifications`,
-        {
-          To: phoneNumber,
-          Channel: channel,
-        }
-      );
+      }>("POST", `/Services/${serviceSid || "default"}/Verifications`, {
+        To: phoneNumber,
+        Channel: channel,
+      });
 
       if (response.error_code) {
         throw new TwilioError(
           "Verification creation failed",
           response.error_code,
-          response
+          response,
         );
       }
 
@@ -341,26 +318,22 @@ export class TwilioClient {
   async checkVerification(
     phoneNumber: string,
     code: string,
-    serviceSid?: string
+    serviceSid?: string,
   ): Promise<{ status: string; valid: boolean }> {
     try {
       const response = await this.request<{
         status: string;
         error_code?: number;
-      }>(
-        "POST",
-        `/Services/${serviceSid || "default"}/VerificationCheck`,
-        {
-          To: phoneNumber,
-          Code: code,
-        }
-      );
+      }>("POST", `/Services/${serviceSid || "default"}/VerificationCheck`, {
+        To: phoneNumber,
+        Code: code,
+      });
 
       if (response.error_code) {
         throw new TwilioError(
           "Verification check failed",
           response.error_code,
-          response
+          response,
         );
       }
 
@@ -382,7 +355,7 @@ export class TwilioClient {
   validateWebhookRequest(
     url: string,
     params: Record<string, string>,
-    signature: string
+    signature: string,
   ): boolean {
     try {
       const crypto = require("crypto");
@@ -434,13 +407,13 @@ export class TwilioClient {
   /**
    * List phone numbers.
    */
-  async listPhoneNumbers(
-    limit = 20
-  ): Promise<Array<{
-    phoneNumber: string;
-    friendlyName: string;
-    capabilities: string[];
-  }>> {
+  async listPhoneNumbers(limit = 20): Promise<
+    Array<{
+      phoneNumber: string;
+      friendlyName: string;
+      capabilities: string[];
+    }>
+  > {
     try {
       const response = await this.request<{
         incoming_phone_numbers?: Array<{
@@ -450,14 +423,14 @@ export class TwilioClient {
         }>;
       }>(
         "GET",
-        `/Accounts/${this.accountSid}/IncomingPhoneNumbers.json?Limit=${limit}`
+        `/Accounts/${this.accountSid}/IncomingPhoneNumbers.json?Limit=${limit}`,
       );
 
       return (response.incoming_phone_numbers || []).map((num) => ({
         phoneNumber: num.phone_number,
         friendlyName: num.friendly_name,
         capabilities: Object.keys(num.capabilities).filter(
-          (k) => num.capabilities[k]
+          (k) => num.capabilities[k],
         ),
       }));
     } catch (error) {
@@ -480,14 +453,14 @@ export class TwilioClient {
         capabilities: Record<string, boolean>;
       }>(
         "GET",
-        `/Accounts/${this.accountSid}/IncomingPhoneNumbers/${phoneNumberSid}.json`
+        `/Accounts/${this.accountSid}/IncomingPhoneNumbers/${phoneNumberSid}.json`,
       );
 
       return {
         phoneNumber: response.phone_number,
         friendlyName: response.friendly_name,
         capabilities: Object.keys(response.capabilities).filter(
-          (k) => response.capabilities[k]
+          (k) => response.capabilities[k],
         ),
       };
     } catch (error) {
@@ -502,7 +475,7 @@ export class TwilioClient {
     phoneNumberSid: string,
     smsUrl?: string,
     voiceUrl?: string,
-    statusCallbackUrl?: string
+    statusCallbackUrl?: string,
   ): Promise<void> {
     try {
       const body: Record<string, unknown> = {};
@@ -514,7 +487,7 @@ export class TwilioClient {
       await this.request<void>(
         "POST",
         `/Accounts/${this.accountSid}/IncomingPhoneNumbers/${phoneNumberSid}.json`,
-        body
+        body,
       );
     } catch (error) {
       throw new Error(`Twilio update phone number webhooks failed: ${error}`);
@@ -536,10 +509,7 @@ export class TwilioClient {
         status: string;
         from: string;
         to: string;
-      }>(
-        "GET",
-        `/Accounts/${this.accountSid}/Messages/${messageSid}.json`
-      );
+      }>("GET", `/Accounts/${this.accountSid}/Messages/${messageSid}.json`);
 
       return {
         sid: response.sid,
@@ -560,7 +530,7 @@ export class TwilioError extends Error {
   constructor(
     message: string,
     public code: number,
-    public details: unknown
+    public details: unknown,
   ) {
     super(message);
     this.name = "TwilioError";

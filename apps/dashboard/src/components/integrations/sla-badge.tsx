@@ -75,7 +75,9 @@ export function SLABadge({
 
   const statusColor = getStatusColor();
   const difference = (actualPercent - targetPercent).toFixed(2);
-  const differenceLabel = difference.startsWith("-") ? difference : `+${difference}`;
+  const differenceLabel = difference.startsWith("-")
+    ? difference
+    : `+${difference}`;
 
   return (
     <div className={cn("w-full", className)}>
@@ -93,12 +95,17 @@ export function SLABadge({
         >
           {/* Main SLA display */}
           <div className="flex items-baseline gap-1">
-            <span className="text-sm font-bold">{actualPercent.toFixed(2)}%</span>
+            <span className="text-sm font-bold">
+              {actualPercent.toFixed(2)}%
+            </span>
             <span className="text-xs opacity-75">/ {targetPercent}%</span>
           </div>
 
           {/* Separator */}
-          <div className="w-px h-4" style={{ backgroundColor: `${statusColor}40` }} />
+          <div
+            className="w-px h-4"
+            style={{ backgroundColor: `${statusColor}40` }}
+          />
 
           {/* Status and trend */}
           <div className="flex items-center gap-1">
@@ -138,9 +145,7 @@ export function SLABadge({
               </div>
               <div className="text-xs text-wl-text-secondary mt-1">
                 Difference:{" "}
-                <span style={{ color: statusColor }}>
-                  {differenceLabel}%
-                </span>
+                <span style={{ color: statusColor }}>{differenceLabel}%</span>
               </div>
             </div>
 
@@ -211,7 +216,7 @@ export function SLABadge({
                         ? "bg-wl-danger-500"
                         : errorRatePercent > 1
                           ? "bg-wl-warning-500"
-                          : "bg-wl-success-500"
+                          : "bg-wl-success-500",
                     )}
                     style={{
                       width: `${Math.min((errorRatePercent / 10) * 100, 100)}%`,
@@ -223,10 +228,7 @@ export function SLABadge({
 
             {/* Trend */}
             <div className="flex items-center gap-2 p-2 rounded bg-wl-surface-hover">
-              <span
-                className="text-lg"
-                style={{ color: getTrendColor() }}
-              >
+              <span className="text-lg" style={{ color: getTrendColor() }}>
                 {getTrendIcon()}
               </span>
               <span className="text-xs text-wl-text-secondary">

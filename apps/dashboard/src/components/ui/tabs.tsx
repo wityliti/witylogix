@@ -25,7 +25,7 @@ interface TabsProps {
   defaultValue?: string;
   value?: string;
   onValueChange?: (value: string) => void;
-  children?: import('react').ReactNode;
+  children?: import("react").ReactNode;
 }
 
 export function Tabs({
@@ -51,10 +51,7 @@ export function Tabs({
   }
   if (variant === "pills") {
     return (
-      <div
-        className={cn("flex gap-2 flex-wrap", className)}
-        style={style}
-      >
+      <div className={cn("flex gap-2 flex-wrap", className)} style={style}>
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
@@ -68,10 +65,12 @@ export function Tabs({
                 size === "md" && "px-4 py-2 text-sm",
                 isActive
                   ? "border-wl-primary-500 bg-wl-primary-500/20 text-wl-primary-400"
-                  : "border-wl-border-default text-wl-text-secondary hover:border-wl-border-subtle hover:text-wl-text-primary"
+                  : "border-wl-border-default text-wl-text-secondary hover:border-wl-border-subtle hover:text-wl-text-primary",
               )}
             >
-              {tab.icon && <span className="flex items-center">{tab.icon}</span>}
+              {tab.icon && (
+                <span className="flex items-center">{tab.icon}</span>
+              )}
               <span>{tab.label}</span>
               {tab.count !== undefined && (
                 <span className="text-xs font-semibold text-wl-text-tertiary ml-1">
@@ -103,10 +102,12 @@ export function Tabs({
                   size === "md" && "px-0 py-3 text-sm",
                   isActive
                     ? "font-semibold text-wl-text-primary border-b-2 border-wl-primary-500 -mb-px"
-                    : "font-medium text-wl-text-secondary hover:text-wl-text-primary"
+                    : "font-medium text-wl-text-secondary hover:text-wl-text-primary",
                 )}
               >
-                {tab.icon && <span className="flex items-center">{tab.icon}</span>}
+                {tab.icon && (
+                  <span className="flex items-center">{tab.icon}</span>
+                )}
                 <span>{tab.label}</span>
                 {tab.count !== undefined && (
                   <span className="text-xs font-semibold text-wl-text-tertiary ml-1">
@@ -126,7 +127,7 @@ export function Tabs({
     <div
       className={cn(
         "inline-flex gap-1 p-1 bg-wl-bg-surface rounded-lg",
-        className
+        className,
       )}
       style={style}
     >
@@ -144,7 +145,7 @@ export function Tabs({
               size === "md" && "px-4 py-2 text-sm",
               isActive
                 ? "bg-wl-bg-elevated font-semibold text-wl-text-primary"
-                : "bg-transparent font-medium text-wl-text-secondary hover:text-wl-text-primary"
+                : "bg-transparent font-medium text-wl-text-secondary hover:text-wl-text-primary",
             )}
           >
             {tab.icon && <span className="flex items-center">{tab.icon}</span>}
@@ -183,10 +184,20 @@ interface TabsContentProps {
 }
 
 export function TabsList({ children, className }: TabsListProps) {
-  return <div className={cn("flex gap-1 border-b border-wl-border-subtle", className)}>{children}</div>;
+  return (
+    <div
+      className={cn("flex gap-1 border-b border-wl-border-subtle", className)}
+    >
+      {children}
+    </div>
+  );
 }
 
-export function TabsTrigger({ children, className, onClick }: TabsTriggerProps) {
+export function TabsTrigger({
+  children,
+  className,
+  onClick,
+}: TabsTriggerProps) {
   return (
     <button
       type="button"
@@ -195,7 +206,7 @@ export function TabsTrigger({ children, className, onClick }: TabsTriggerProps) 
         "px-4 py-2 text-sm font-medium text-wl-text-secondary",
         "hover:text-wl-text-primary border-b-2 border-transparent",
         "transition-colors duration-fast",
-        className
+        className,
       )}
     >
       {children}

@@ -29,13 +29,13 @@ describe("WebhookDispatcher", () => {
       const response = await dispatcher.dispatch(
         "https://example.com/webhook",
         payload,
-        secret
+        secret,
       );
 
       expect(response.success).toBe(true);
       expect(response.statusCode).toBe(200);
       expect(response.duration).toBeGreaterThanOrEqual(0);
-      expect((global.fetch as any)).toHaveBeenCalledOnce();
+      expect(global.fetch as any).toHaveBeenCalledOnce();
     });
 
     it("should fail on non-2xx status code", async () => {
@@ -50,7 +50,7 @@ describe("WebhookDispatcher", () => {
       const response = await dispatcher.dispatch(
         "https://example.com/webhook",
         payload,
-        secret
+        secret,
       );
 
       expect(response.success).toBe(false);
@@ -61,14 +61,12 @@ describe("WebhookDispatcher", () => {
       const payload = { event: "order.created" };
       const secret = "test_secret";
 
-      (global.fetch as any).mockRejectedValueOnce(
-        new Error("Network error")
-      );
+      (global.fetch as any).mockRejectedValueOnce(new Error("Network error"));
 
       const response = await dispatcher.dispatch(
         "https://example.com/webhook",
         payload,
-        secret
+        secret,
       );
 
       expect(response.success).toBe(false);
@@ -82,7 +80,7 @@ describe("WebhookDispatcher", () => {
       const response = await dispatcher.dispatch(
         "ftp://example.com/webhook",
         payload,
-        secret
+        secret,
       );
 
       expect(response.success).toBe(false);
@@ -98,7 +96,7 @@ describe("WebhookDispatcher", () => {
       const response = await dispatcher.dispatch(
         "https://example.com/webhook",
         largePayload,
-        secret
+        secret,
       );
 
       expect(response.success).toBe(false);
@@ -119,7 +117,7 @@ describe("WebhookDispatcher", () => {
         "https://example.com/webhook",
         payload,
         secret,
-        { customHeaders }
+        { customHeaders },
       );
 
       const callArgs = (global.fetch as any).mock.calls[0];
@@ -136,11 +134,7 @@ describe("WebhookDispatcher", () => {
         ok: true,
       });
 
-      await dispatcher.dispatch(
-        "https://example.com/webhook",
-        payload,
-        secret
-      );
+      await dispatcher.dispatch("https://example.com/webhook", payload, secret);
 
       const callArgs = (global.fetch as any).mock.calls[0];
       const headers = callArgs[1].headers;
@@ -173,7 +167,7 @@ describe("WebhookDispatcher", () => {
       expect(responses).toHaveLength(2);
       expect(responses[0].success).toBe(true);
       expect(responses[1].success).toBe(true);
-      expect((global.fetch as any)).toHaveBeenCalledTimes(2);
+      expect(global.fetch as any).toHaveBeenCalledTimes(2);
     });
 
     it("should handle partial failures in batch", async () => {
@@ -209,7 +203,7 @@ describe("WebhookDispatcher", () => {
       const signature = dispatcher.constructor.verifySignature(
         payload,
         payload,
-        secret
+        secret,
       );
       // Note: this is testing the static method differently
       // In real usage, this would be for receiver verification
@@ -223,7 +217,7 @@ describe("WebhookDispatcher", () => {
       const isValid = WebhookDispatcher.verifySignature(
         payload,
         invalidSignature,
-        secret
+        secret,
       );
 
       expect(isValid).toBe(false);
@@ -260,18 +254,20 @@ describe("WebhookDispatcher", () => {
           return new Promise((_, reject) => {
             if (options?.signal) {
               options.signal.addEventListener("abort", () => {
-                reject(new DOMException("The operation was aborted.", "AbortError"));
+                reject(
+                  new DOMException("The operation was aborted.", "AbortError"),
+                );
               });
             }
           });
-        }
+        },
       );
 
       const response = await dispatcher.dispatch(
         "https://slow.example.com/webhook",
         payload,
         secret,
-        { timeout: 100 } // 100ms timeout
+        { timeout: 100 }, // 100ms timeout
       );
 
       expect(response.success).toBe(false);

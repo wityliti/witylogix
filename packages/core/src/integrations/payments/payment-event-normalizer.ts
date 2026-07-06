@@ -12,7 +12,7 @@ import type {
   Refund,
   Dispute,
   CurrencyConversion,
-} from './payment-sdk-types';
+} from "./payment-sdk-types";
 
 /**
  * Event deduplication key cache
@@ -43,29 +43,31 @@ export class PaymentEventNormalizer {
 
   // Standard currency conversion rates (would be fetched from API in production)
   private static readonly CONVERSION_RATES: Record<string, number> = {
-    'USD_EUR': 0.92,
-    'USD_GBP': 0.79,
-    'USD_JPY': 149.5,
-    'EUR_USD': 1.087,
-    'GBP_USD': 1.266,
-    'JPY_USD': 0.0067,
+    USD_EUR: 0.92,
+    USD_GBP: 0.79,
+    USD_JPY: 149.5,
+    EUR_USD: 1.087,
+    GBP_USD: 1.266,
+    JPY_USD: 0.0067,
   };
 
   /**
    * Normalize a Stripe webhook event
    */
-  normalizeStripeEvent(event: Record<string, any>): WitylogixPaymentEvent | null {
+  normalizeStripeEvent(
+    event: Record<string, any>,
+  ): WitylogixPaymentEvent | null {
     if (!this.isValidStripeEvent(event)) {
       return null;
     }
 
     // Check for duplicates
-    if (this.isDuplicate(event.id, 'stripe')) {
+    if (this.isDuplicate(event.id, "stripe")) {
       return null;
     }
 
     // Mark as processed
-    this.recordEventProcessing(event.id, 'stripe');
+    this.recordEventProcessing(event.id, "stripe");
 
     const normalized = this.mapStripeEvent(event);
 
@@ -75,18 +77,20 @@ export class PaymentEventNormalizer {
   /**
    * Normalize a PayPal webhook event
    */
-  normalizePayPalEvent(event: Record<string, any>): WitylogixPaymentEvent | null {
+  normalizePayPalEvent(
+    event: Record<string, any>,
+  ): WitylogixPaymentEvent | null {
     if (!this.isValidPayPalEvent(event)) {
       return null;
     }
 
     // Check for duplicates
-    if (this.isDuplicate(event.id, 'paypal')) {
+    if (this.isDuplicate(event.id, "paypal")) {
       return null;
     }
 
     // Mark as processed
-    this.recordEventProcessing(event.id, 'paypal');
+    this.recordEventProcessing(event.id, "paypal");
 
     const normalized = this.mapPayPalEvent(event);
 
@@ -99,7 +103,7 @@ export class PaymentEventNormalizer {
   convertCurrency(
     amount: number,
     fromCurrency: string,
-    toCurrency: string
+    toCurrency: string,
   ): CurrencyConversion | null {
     if (fromCurrency === toCurrency) {
       return {
@@ -127,7 +131,8 @@ export class PaymentEventNormalizer {
 
       if (!rate) {
         // Try reverse rate
-        const reverseRate = PaymentEventNormalizer.CONVERSION_RATES[reverseRateKey];
+        const reverseRate =
+          PaymentEventNormalizer.CONVERSION_RATES[reverseRateKey];
         if (reverseRate) {
           rate = 1 / reverseRate;
         }
@@ -161,12 +166,12 @@ export class PaymentEventNormalizer {
    * Normalize dispute/chargeback event
    */
   normalizeDisputeEvent(
-    provider: 'stripe' | 'paypal',
-    dispute: Record<string, any>
+    provider: "stripe" | "paypal",
+    dispute: Record<string, any>,
   ): Dispute | null {
-    if (provider === 'stripe') {
+    if (provider === "stripe") {
       return this.mapStripeDispute(dispute);
-    } else if (provider === 'paypal') {
+    } else if (provider === "paypal") {
       return this.mapPayPalDispute(dispute);
     }
 
@@ -177,14 +182,24 @@ export class PaymentEventNormalizer {
    * Validate Stripe event structure
    */
   private isValidStripeEvent(event: Record<string, any>): boolean {
-    return !!(event.id && event.type && event.created && (event.data?.object || event.data?.previous_attributes));
+    return !!(
+      event.id &&
+      event.type &&
+      event.created &&
+      (event.data?.object || event.data?.previous_attributes)
+    );
   }
 
   /**
    * Validate PayPal event structure
    */
   private isValidPayPalEvent(event: Record<string, any>): boolean {
-    return !!(event.id && event.event_type && event.create_time && event.resource);
+    return !!(
+      event.id &&
+      event.event_type &&
+      event.create_time &&
+      event.resource
+    );
   }
 
   /**
@@ -222,67 +237,69 @@ export class PaymentEventNormalizer {
   /**
    * Map Stripe event to unified format
    */
-  private mapStripeEvent(event: Record<string, any>): WitylogixPaymentEvent | null {
+  private mapStripeEvent(
+    event: Record<string, any>,
+  ): WitylogixPaymentEvent | null {
     const eventTypeMap: Record<string, any> = {
-      'payment_intent.succeeded': {
-        type: 'payment.completed',
-        resourceType: 'payment_intent',
+      "payment_intent.succeeded": {
+        type: "payment.completed",
+        resourceType: "payment_intent",
       },
-      'payment_intent.payment_failed': {
-        type: 'payment.failed',
-        resourceType: 'payment_intent',
+      "payment_intent.payment_failed": {
+        type: "payment.failed",
+        resourceType: "payment_intent",
       },
-      'charge.refunded': {
-        type: 'refund.completed',
-        resourceType: 'refund',
+      "charge.refunded": {
+        type: "refund.completed",
+        resourceType: "refund",
       },
-      'charge.dispute.created': {
-        type: 'dispute.opened',
-        resourceType: 'dispute',
+      "charge.dispute.created": {
+        type: "dispute.opened",
+        resourceType: "dispute",
       },
-      'charge.dispute.closed': {
-        type: 'dispute.closed',
-        resourceType: 'dispute',
+      "charge.dispute.closed": {
+        type: "dispute.closed",
+        resourceType: "dispute",
       },
-      'invoice.created': {
-        type: 'invoice.created',
-        resourceType: 'invoice',
+      "invoice.created": {
+        type: "invoice.created",
+        resourceType: "invoice",
       },
-      'invoice.paid': {
-        type: 'invoice.paid',
-        resourceType: 'invoice',
+      "invoice.paid": {
+        type: "invoice.paid",
+        resourceType: "invoice",
       },
-      'invoice.payment_failed': {
-        type: 'invoice.payment_failed',
-        resourceType: 'invoice',
+      "invoice.payment_failed": {
+        type: "invoice.payment_failed",
+        resourceType: "invoice",
       },
-      'invoice.voided': {
-        type: 'invoice.voided',
-        resourceType: 'invoice',
+      "invoice.voided": {
+        type: "invoice.voided",
+        resourceType: "invoice",
       },
-      'invoice.marked_uncollectible': {
-        type: 'invoice.marked_uncollectible',
-        resourceType: 'invoice',
+      "invoice.marked_uncollectible": {
+        type: "invoice.marked_uncollectible",
+        resourceType: "invoice",
       },
-      'customer.subscription.created': {
-        type: 'subscription.created',
-        resourceType: 'subscription',
+      "customer.subscription.created": {
+        type: "subscription.created",
+        resourceType: "subscription",
       },
-      'customer.subscription.updated': {
-        type: 'subscription.updated',
-        resourceType: 'subscription',
+      "customer.subscription.updated": {
+        type: "subscription.updated",
+        resourceType: "subscription",
       },
-      'customer.subscription.deleted': {
-        type: 'subscription.canceled',
-        resourceType: 'subscription',
+      "customer.subscription.deleted": {
+        type: "subscription.canceled",
+        resourceType: "subscription",
       },
-      'customer.subscription.trial_will_end': {
-        type: 'subscription.updated',
-        resourceType: 'subscription',
+      "customer.subscription.trial_will_end": {
+        type: "subscription.updated",
+        resourceType: "subscription",
       },
-      'checkout.session.completed': {
-        type: 'checkout.completed',
-        resourceType: 'checkout_session',
+      "checkout.session.completed": {
+        type: "checkout.completed",
+        resourceType: "checkout_session",
       },
     };
 
@@ -294,11 +311,11 @@ export class PaymentEventNormalizer {
     return {
       id: `${event.id}-${Date.now()}`,
       timestamp: new Date(event.created * 1000),
-      provider: 'stripe',
+      provider: "stripe",
       externalEventId: event.id,
       type: mapping.type,
       resourceType: mapping.resourceType,
-      resourceId: event.data?.object?.id || '',
+      resourceId: event.data?.object?.id || "",
       data: this.extractStripeEventData(event.data?.object),
       rawEvent: event,
       verified: true,
@@ -309,47 +326,49 @@ export class PaymentEventNormalizer {
   /**
    * Map PayPal event to unified format
    */
-  private mapPayPalEvent(event: Record<string, any>): WitylogixPaymentEvent | null {
+  private mapPayPalEvent(
+    event: Record<string, any>,
+  ): WitylogixPaymentEvent | null {
     const eventTypeMap: Record<string, any> = {
-      'PAYMENT.CAPTURE.COMPLETED': {
-        type: 'payment.completed',
-        resourceType: 'payment_intent',
+      "PAYMENT.CAPTURE.COMPLETED": {
+        type: "payment.completed",
+        resourceType: "payment_intent",
       },
-      'PAYMENT.CAPTURE.DENIED': {
-        type: 'payment.failed',
-        resourceType: 'payment_intent',
+      "PAYMENT.CAPTURE.DENIED": {
+        type: "payment.failed",
+        resourceType: "payment_intent",
       },
-      'PAYMENT.CAPTURE.REFUNDED': {
-        type: 'refund.completed',
-        resourceType: 'refund',
+      "PAYMENT.CAPTURE.REFUNDED": {
+        type: "refund.completed",
+        resourceType: "refund",
       },
-      'CHECKOUT.ORDER.COMPLETED': {
-        type: 'checkout.completed',
-        resourceType: 'checkout_session',
+      "CHECKOUT.ORDER.COMPLETED": {
+        type: "checkout.completed",
+        resourceType: "checkout_session",
       },
-      'CHECKOUT.ORDER.APPROVED': {
-        type: 'payment.completed',
-        resourceType: 'payment_intent',
+      "CHECKOUT.ORDER.APPROVED": {
+        type: "payment.completed",
+        resourceType: "payment_intent",
       },
-      'BILLING.SUBSCRIPTION.CREATED': {
-        type: 'subscription.created',
-        resourceType: 'subscription',
+      "BILLING.SUBSCRIPTION.CREATED": {
+        type: "subscription.created",
+        resourceType: "subscription",
       },
-      'BILLING.SUBSCRIPTION.UPDATED': {
-        type: 'subscription.updated',
-        resourceType: 'subscription',
+      "BILLING.SUBSCRIPTION.UPDATED": {
+        type: "subscription.updated",
+        resourceType: "subscription",
       },
-      'BILLING.SUBSCRIPTION.CANCELLED': {
-        type: 'subscription.canceled',
-        resourceType: 'subscription',
+      "BILLING.SUBSCRIPTION.CANCELLED": {
+        type: "subscription.canceled",
+        resourceType: "subscription",
       },
-      'BILLING.SUBSCRIPTION.SUSPENDED': {
-        type: 'subscription.paused',
-        resourceType: 'subscription',
+      "BILLING.SUBSCRIPTION.SUSPENDED": {
+        type: "subscription.paused",
+        resourceType: "subscription",
       },
-      'BILLING.SUBSCRIPTION.REACTIVATED': {
-        type: 'subscription.resumed',
-        resourceType: 'subscription',
+      "BILLING.SUBSCRIPTION.REACTIVATED": {
+        type: "subscription.resumed",
+        resourceType: "subscription",
       },
     };
 
@@ -361,11 +380,11 @@ export class PaymentEventNormalizer {
     return {
       id: `${event.id}-${Date.now()}`,
       timestamp: new Date(event.create_time),
-      provider: 'paypal',
+      provider: "paypal",
       externalEventId: event.id,
       type: mapping.type,
       resourceType: mapping.resourceType,
-      resourceId: event.resource?.id || '',
+      resourceId: event.resource?.id || "",
       data: this.extractPayPalEventData(event.resource),
       rawEvent: event,
       verified: true,
@@ -376,10 +395,12 @@ export class PaymentEventNormalizer {
   /**
    * Extract data from Stripe event object
    */
-  private extractStripeEventData(object: Record<string, any>): Record<string, any> {
+  private extractStripeEventData(
+    object: Record<string, any>,
+  ): Record<string, any> {
     const data: Record<string, any> = {};
 
-    if (object?.object === 'payment_intent') {
+    if (object?.object === "payment_intent") {
       data.paymentIntent = {
         id: object.id,
         externalId: object.id,
@@ -387,7 +408,7 @@ export class PaymentEventNormalizer {
         currency: object.currency,
         status: object.status,
       };
-    } else if (object?.object === 'invoice') {
+    } else if (object?.object === "invoice") {
       data.invoice = {
         id: object.id,
         externalId: object.id,
@@ -395,7 +416,7 @@ export class PaymentEventNormalizer {
         currency: object.currency,
         status: object.status,
       };
-    } else if (object?.object === 'charge') {
+    } else if (object?.object === "charge") {
       data.payment = {
         id: object.id,
         externalId: object.id,
@@ -403,7 +424,7 @@ export class PaymentEventNormalizer {
         currency: object.currency,
         status: object.status,
       };
-    } else if (object?.object === 'dispute') {
+    } else if (object?.object === "dispute") {
       data.dispute = {
         id: object.id,
         externalId: object.id,
@@ -411,7 +432,7 @@ export class PaymentEventNormalizer {
         reason: object.reason,
         status: object.status,
       };
-    } else if (object?.object === 'subscription') {
+    } else if (object?.object === "subscription") {
       data.subscription = {
         id: object.id,
         externalId: object.id,
@@ -426,21 +447,28 @@ export class PaymentEventNormalizer {
   /**
    * Extract data from PayPal event resource
    */
-  private extractPayPalEventData(resource: Record<string, any>): Record<string, any> {
+  private extractPayPalEventData(
+    resource: Record<string, any>,
+  ): Record<string, any> {
     const data: Record<string, any> = {};
 
     if (resource?.id) {
       const resourceType = resource.status || resource.state;
 
-      if (resourceType?.includes('PAYMENT') || resourceType?.includes('CAPTURE')) {
+      if (
+        resourceType?.includes("PAYMENT") ||
+        resourceType?.includes("CAPTURE")
+      ) {
         data.payment = {
           id: resource.id,
           externalId: resource.id,
-          amount: resource.amount?.value ? Math.round(parseFloat(resource.amount.value) * 100) : 0,
-          currency: resource.amount?.currency_code || 'USD',
+          amount: resource.amount?.value
+            ? Math.round(parseFloat(resource.amount.value) * 100)
+            : 0,
+          currency: resource.amount?.currency_code || "USD",
           status: resource.status || resource.state,
         };
-      } else if (resourceType?.includes('SUBSCRIPTION')) {
+      } else if (resourceType?.includes("SUBSCRIPTION")) {
         data.subscription = {
           id: resource.id,
           externalId: resource.id,
@@ -461,50 +489,55 @@ export class PaymentEventNormalizer {
     }
 
     const statusMap: Record<string, any> = {
-      warning_opened: 'warning_opened',
-      warning_under_review: 'warning_under_review',
-      warning_won: 'warning_won',
-      warning_lost: 'warning_lost',
-      opened: 'opened',
-      under_review: 'under_review',
-      charge_refunded: 'charge_refunded',
-      won: 'won',
-      lost: 'lost',
+      warning_opened: "warning_opened",
+      warning_under_review: "warning_under_review",
+      warning_won: "warning_won",
+      warning_lost: "warning_lost",
+      opened: "opened",
+      under_review: "under_review",
+      charge_refunded: "charge_refunded",
+      won: "won",
+      lost: "lost",
     };
 
     const reasonMap: Record<string, any> = {
-      bank_account_closed: 'bank_account_closed',
-      bank_cannot_process: 'bank_cannot_process',
-      check_returned: 'check_returned',
-      credit_not_processed: 'credit_not_processed',
-      customer_initiated_transfer_reversal: 'customer_initiated_transfer_reversal',
-      duplicate: 'duplicate',
-      fraudulent: 'fraudulent',
-      general: 'general',
-      improper_account_info: 'improper_account_info',
-      insufficient_funds: 'insufficient_funds',
-      product_unacceptable: 'product_unacceptable',
-      product_not_received: 'product_not_received',
-      unauthorised: 'unauthorised',
-      unrecognized_transaction: 'unrecognized_transaction',
+      bank_account_closed: "bank_account_closed",
+      bank_cannot_process: "bank_cannot_process",
+      check_returned: "check_returned",
+      credit_not_processed: "credit_not_processed",
+      customer_initiated_transfer_reversal:
+        "customer_initiated_transfer_reversal",
+      duplicate: "duplicate",
+      fraudulent: "fraudulent",
+      general: "general",
+      improper_account_info: "improper_account_info",
+      insufficient_funds: "insufficient_funds",
+      product_unacceptable: "product_unacceptable",
+      product_not_received: "product_not_received",
+      unauthorised: "unauthorised",
+      unrecognized_transaction: "unrecognized_transaction",
     };
 
     return {
       id: dispute.id,
       externalId: dispute.id,
-      provider: 'stripe',
-      chargeId: dispute.charge || '',
+      provider: "stripe",
+      chargeId: dispute.charge || "",
       amount: dispute.amount,
       currency: dispute.currency.toUpperCase(),
-      status: statusMap[dispute.status] || 'opened',
-      reason: reasonMap[dispute.reason] || 'general',
+      status: statusMap[dispute.status] || "opened",
+      reason: reasonMap[dispute.reason] || "general",
       metadata: dispute.metadata || {},
       description: dispute.reason,
       createdAt: new Date(dispute.created * 1000),
       updatedAt: new Date(dispute.updated * 1000),
       openedAt: new Date(dispute.created * 1000),
-      closedAt: dispute.evidence_due_by ? new Date(dispute.evidence_due_by * 1000) : undefined,
-      dueDate: dispute.evidence_due_by ? new Date(dispute.evidence_due_by * 1000) : undefined,
+      closedAt: dispute.evidence_due_by
+        ? new Date(dispute.evidence_due_by * 1000)
+        : undefined,
+      dueDate: dispute.evidence_due_by
+        ? new Date(dispute.evidence_due_by * 1000)
+        : undefined,
     };
   }
 
@@ -517,30 +550,32 @@ export class PaymentEventNormalizer {
     }
 
     const statusMap: Record<string, any> = {
-      OPENED: 'opened',
-      UNDER_REVIEW: 'under_review',
-      RESOLVED: 'charge_refunded',
-      APPEALED: 'under_review',
-      ESCALATED: 'under_review',
+      OPENED: "opened",
+      UNDER_REVIEW: "under_review",
+      RESOLVED: "charge_refunded",
+      APPEALED: "under_review",
+      ESCALATED: "under_review",
     };
 
     return {
       id: dispute.id,
       externalId: dispute.id,
-      provider: 'paypal',
-      chargeId: dispute.transaction_id || '',
+      provider: "paypal",
+      chargeId: dispute.transaction_id || "",
       amount: dispute.disputed_amount
         ? Math.round(parseFloat(dispute.disputed_amount.value) * 100)
         : 0,
-      currency: dispute.disputed_amount?.currency_code || 'USD',
-      status: statusMap[dispute.status] || 'opened',
-      reason: 'general',
+      currency: dispute.disputed_amount?.currency_code || "USD",
+      status: statusMap[dispute.status] || "opened",
+      reason: "general",
       metadata: {},
       createdAt: new Date(dispute.create_time),
       updatedAt: new Date(dispute.update_time),
       openedAt: new Date(dispute.create_time),
       closedAt: dispute.close_time ? new Date(dispute.close_time) : undefined,
-      dueDate: dispute.response_due_date ? new Date(dispute.response_due_date) : undefined,
+      dueDate: dispute.response_due_date
+        ? new Date(dispute.response_due_date)
+        : undefined,
     };
   }
 

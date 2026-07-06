@@ -159,10 +159,19 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
   "subscribe:shop": (shopId: string, callback?: (ack: boolean) => void) => void;
-  "unsubscribe:shop": (shopId: string, callback?: (ack: boolean) => void) => void;
-  "subscribe:shipment": (shipmentId: string, callback?: (ack: boolean) => void) => void;
-  "subscribe:driver": (driverId: string, callback?: (ack: boolean) => void) => void;
-  "ping": (callback?: (ack: boolean) => void) => void;
+  "unsubscribe:shop": (
+    shopId: string,
+    callback?: (ack: boolean) => void,
+  ) => void;
+  "subscribe:shipment": (
+    shipmentId: string,
+    callback?: (ack: boolean) => void,
+  ) => void;
+  "subscribe:driver": (
+    driverId: string,
+    callback?: (ack: boolean) => void,
+  ) => void;
+  ping: (callback?: (ack: boolean) => void) => void;
 }
 
 export interface SocketAuthPayload {
@@ -187,7 +196,8 @@ interface ConnectionStats {
 
 // ─── Singleton Instance ─────────────────────────────────────
 
-let ioServer: IOServer<ClientToServerEvents, ServerToClientEvents> | null = null;
+let ioServer: IOServer<ClientToServerEvents, ServerToClientEvents> | null =
+  null;
 let connectionStats: ConnectionStats = {
   totalConnections: 0,
   connectionsPerShop: {},
@@ -292,107 +302,16 @@ export async function setupSocketServer(
 
   // ─── Connection Handling ────────────────────────────────────
 
-  ioServer.on("connection", (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
-    const auth = (socket.data as SocketData).auth;
-    const shopId = auth.shopId;
+  ioServer.on(
+    "connection",
+    (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
+      const auth = (socket.data as SocketData).auth;
+      const shopId = auth.shopId;
 
-    // Track connection
-    connectionStats.totalConnections++;
-    connectionStats.connectionsPerShop[shopId] = (connectionStats.connectionsPerShop[shopId] || 0) + 1;
-    connectionStats.lastUpdated = new Date().toISOString();
-
-    logger.info(
-      {
-        socketId: socket.id,
-        userId: auth.sub,
-        shopId,
-        totalConnections: connectionStats.totalConnections,
-      },
-      "Socket connected",
-    );
-
-    // ─── Subscription: Shop ──────────────────────────────────
-
-    socket.on("subscribe:shop", (targetShopId, callback) => {
-      // Only allow subscribing to own shop
-      if (targetShopId !== shopId) {
-        logger.warn(
-          { socketId: socket.id, userId: auth.sub, targetShopId },
-          "Subscription denied: unauthorized shop",
-        );
-        if (callback) callback(false);
-        return;
-      }
-
-      const socketData = socket.data as SocketData;
-      socketData.subscribedShops.add(targetShopId);
-      socket.join(`shop:${targetShopId}`);
-
-      logger.debug({ socketId: socket.id, shopId: targetShopId }, "Subscribed to shop");
-
-      if (callback) callback(true);
-    });
-
-    // ─── Unsubscription: Shop ───────────────────────────────
-
-    socket.on("unsubscribe:shop", (targetShopId, callback) => {
-      if (targetShopId !== shopId) {
-        if (callback) callback(false);
-        return;
-      }
-
-      const socketData = socket.data as SocketData;
-      socketData.subscribedShops.delete(targetShopId);
-      socket.leave(`shop:${targetShopId}`);
-
-      logger.debug({ socketId: socket.id, shopId: targetShopId }, "Unsubscribed from shop");
-
-      if (callback) callback(true);
-    });
-
-    // ─── Subscription: Shipment ──────────────────────────────
-
-    socket.on("subscribe:shipment", (shipmentId, callback) => {
-      const socketData = socket.data as SocketData;
-      socketData.subscribedShipments.add(shipmentId);
-      socket.join(`shipment:${shipmentId}`);
-
-      logger.debug({ socketId: socket.id, shipmentId }, "Subscribed to shipment");
-
-      if (callback) callback(true);
-    });
-
-    // ─── Subscription: Driver ────────────────────────────────
-
-    socket.on("subscribe:driver", (driverId, callback) => {
-      const socketData = socket.data as SocketData;
-      socketData.subscribedDrivers.add(driverId);
-      socket.join(`driver:${driverId}`);
-
-      logger.debug({ socketId: socket.id, driverId }, "Subscribed to driver");
-
-      if (callback) callback(true);
-    });
-
-    // ─── Heartbeat: Ping/Pong ───────────────────────────────
-
-    socket.on("ping", (callback) => {
-      logger.debug({ socketId: socket.id }, "Ping received");
-      if (callback) callback(true);
-    });
-
-    // ─── Disconnection ──────────────────────────────────────
-
-    socket.on("disconnect", (reason) => {
-      const socketData = socket.data as SocketData;
-
-      connectionStats.totalConnections--;
-      if (connectionStats.connectionsPerShop[shopId]) {
-        connectionStats.connectionsPerShop[shopId]--;
-        if (connectionStats.connectionsPerShop[shopId] <= 0) {
-          delete connectionStats.connectionsPerShop[shopId];
-        }
-      }
+      // Track connection
+      connectionStats.totalConnections++;
+      connectionStats.connectionsPerShop[shopId] =
+        (connectionStats.connectionsPerShop[shopId] || 0) + 1;
       connectionStats.lastUpdated = new Date().toISOString();
 
       logger.info(
@@ -400,22 +319,126 @@ export async function setupSocketServer(
           socketId: socket.id,
           userId: auth.sub,
           shopId,
-          reason,
           totalConnections: connectionStats.totalConnections,
         },
-        "Socket disconnected",
+        "Socket connected",
       );
-    });
 
-    // ─── Error Handler ──────────────────────────────────────
+      // ─── Subscription: Shop ──────────────────────────────────
 
-    socket.on("error", (error) => {
-      logger.error(
-        { socketId: socket.id, userId: auth.sub, error },
-        "Socket error",
-      );
-    });
-  });
+      socket.on("subscribe:shop", (targetShopId, callback) => {
+        // Only allow subscribing to own shop
+        if (targetShopId !== shopId) {
+          logger.warn(
+            { socketId: socket.id, userId: auth.sub, targetShopId },
+            "Subscription denied: unauthorized shop",
+          );
+          if (callback) callback(false);
+          return;
+        }
+
+        const socketData = socket.data as SocketData;
+        socketData.subscribedShops.add(targetShopId);
+        socket.join(`shop:${targetShopId}`);
+
+        logger.debug(
+          { socketId: socket.id, shopId: targetShopId },
+          "Subscribed to shop",
+        );
+
+        if (callback) callback(true);
+      });
+
+      // ─── Unsubscription: Shop ───────────────────────────────
+
+      socket.on("unsubscribe:shop", (targetShopId, callback) => {
+        if (targetShopId !== shopId) {
+          if (callback) callback(false);
+          return;
+        }
+
+        const socketData = socket.data as SocketData;
+        socketData.subscribedShops.delete(targetShopId);
+        socket.leave(`shop:${targetShopId}`);
+
+        logger.debug(
+          { socketId: socket.id, shopId: targetShopId },
+          "Unsubscribed from shop",
+        );
+
+        if (callback) callback(true);
+      });
+
+      // ─── Subscription: Shipment ──────────────────────────────
+
+      socket.on("subscribe:shipment", (shipmentId, callback) => {
+        const socketData = socket.data as SocketData;
+        socketData.subscribedShipments.add(shipmentId);
+        socket.join(`shipment:${shipmentId}`);
+
+        logger.debug(
+          { socketId: socket.id, shipmentId },
+          "Subscribed to shipment",
+        );
+
+        if (callback) callback(true);
+      });
+
+      // ─── Subscription: Driver ────────────────────────────────
+
+      socket.on("subscribe:driver", (driverId, callback) => {
+        const socketData = socket.data as SocketData;
+        socketData.subscribedDrivers.add(driverId);
+        socket.join(`driver:${driverId}`);
+
+        logger.debug({ socketId: socket.id, driverId }, "Subscribed to driver");
+
+        if (callback) callback(true);
+      });
+
+      // ─── Heartbeat: Ping/Pong ───────────────────────────────
+
+      socket.on("ping", (callback) => {
+        logger.debug({ socketId: socket.id }, "Ping received");
+        if (callback) callback(true);
+      });
+
+      // ─── Disconnection ──────────────────────────────────────
+
+      socket.on("disconnect", (reason) => {
+        const socketData = socket.data as SocketData;
+
+        connectionStats.totalConnections--;
+        if (connectionStats.connectionsPerShop[shopId]) {
+          connectionStats.connectionsPerShop[shopId]--;
+          if (connectionStats.connectionsPerShop[shopId] <= 0) {
+            delete connectionStats.connectionsPerShop[shopId];
+          }
+        }
+        connectionStats.lastUpdated = new Date().toISOString();
+
+        logger.info(
+          {
+            socketId: socket.id,
+            userId: auth.sub,
+            shopId,
+            reason,
+            totalConnections: connectionStats.totalConnections,
+          },
+          "Socket disconnected",
+        );
+      });
+
+      // ─── Error Handler ──────────────────────────────────────
+
+      socket.on("error", (error) => {
+        logger.error(
+          { socketId: socket.id, userId: auth.sub, error },
+          "Socket error",
+        );
+      });
+    },
+  );
 
   logger.info(
     {
@@ -430,9 +453,14 @@ export async function setupSocketServer(
 
 // ─── Get Socket Server Instance ──────────────────────────────
 
-export function getSocketInstance(): IOServer<ClientToServerEvents, ServerToClientEvents> {
+export function getSocketInstance(): IOServer<
+  ClientToServerEvents,
+  ServerToClientEvents
+> {
   if (!ioServer) {
-    throw new Error("Socket.io server not initialized. Call setupSocketServer() first.");
+    throw new Error(
+      "Socket.io server not initialized. Call setupSocketServer() first.",
+    );
   }
   return ioServer;
 }

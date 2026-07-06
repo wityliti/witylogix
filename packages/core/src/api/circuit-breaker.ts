@@ -49,7 +49,11 @@ interface CircuitBreakerMetrics {
 }
 
 interface CircuitBreakerEvent {
-  type: "state-change" | "request-rejected" | "half-open-success" | "half-open-failure";
+  type:
+    | "state-change"
+    | "request-rejected"
+    | "half-open-success"
+    | "half-open-failure";
   provider: string;
   state?: CircuitBreakerState;
   timestamp: number;
@@ -104,7 +108,7 @@ export class CircuitBreaker {
         timestamp: Date.now(),
       });
       throw new Error(
-        "CircuitBreaker is OPEN: circuit_breaker_open for " + this.provider
+        "CircuitBreaker is OPEN: circuit_breaker_open for " + this.provider,
       );
     }
 
@@ -117,7 +121,8 @@ export class CircuitBreaker {
           timestamp: Date.now(),
         });
         throw new Error(
-          "CircuitBreaker is HALF_OPEN with max probes reached: " + this.provider
+          "CircuitBreaker is HALF_OPEN with max probes reached: " +
+            this.provider,
         );
       }
       this.metrics.halfOpenRequests++;
@@ -269,7 +274,7 @@ export class CircuitBreaker {
     const windowStart = now - this.windowMs;
 
     const recentRequests = this.requestHistory.filter(
-      (req) => req.timestamp > windowStart
+      (req) => req.timestamp > windowStart,
     );
 
     if (recentRequests.length === 0) return 0;
@@ -286,7 +291,7 @@ export class CircuitBreaker {
     const windowStart = now - this.windowMs;
 
     this.requestHistory = this.requestHistory.filter(
-      (req) => req.timestamp > windowStart
+      (req) => req.timestamp > windowStart,
     );
 
     // Keep only last 1000 requests
@@ -365,4 +370,8 @@ export class CircuitBreaker {
   }
 }
 
-export type { CircuitBreakerState, CircuitBreakerConfig, CircuitBreakerMetrics };
+export type {
+  CircuitBreakerState,
+  CircuitBreakerConfig,
+  CircuitBreakerMetrics,
+};

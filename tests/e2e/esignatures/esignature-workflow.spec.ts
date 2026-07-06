@@ -13,22 +13,22 @@
  * ~150 lines, 8 tests
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page } from "@playwright/test";
 
-test.describe('E-Signature Workflow', () => {
+test.describe("E-Signature Workflow", () => {
   let page: Page;
 
   test.beforeEach(async ({ browser }) => {
     page = await browser.newPage();
     // Navigate to application
-    await page.goto('/');
+    await page.goto("/");
 
     // Login if required
     const loginButton = await page.$('[data-testid="login-button"]');
     if (loginButton) {
       await loginButton.click();
-      await page.fill('[data-testid="email-input"]', 'admin@test.com');
-      await page.fill('[data-testid="password-input"]', 'admin123');
+      await page.fill('[data-testid="email-input"]', "admin@test.com");
+      await page.fill('[data-testid="password-input"]', "admin123");
       await page.click('[data-testid="submit-button"]');
       await page.waitForNavigation();
     }
@@ -38,7 +38,7 @@ test.describe('E-Signature Workflow', () => {
     await page.close();
   });
 
-  test('should navigate to esignatures section', async () => {
+  test("should navigate to esignatures section", async () => {
     // Click on esignatures menu
     await page.click('[data-testid="menu-esignatures"]');
     await page.waitForURL(/.*esignatures.*/);
@@ -48,7 +48,7 @@ test.describe('E-Signature Workflow', () => {
     expect(heading).toBeTruthy();
   });
 
-  test('should create new envelope', async () => {
+  test("should create new envelope", async () => {
     // Navigate to esignatures
     await page.click('[data-testid="menu-esignatures"]');
     await page.waitForURL(/.*esignatures.*/);
@@ -61,8 +61,11 @@ test.describe('E-Signature Workflow', () => {
     await page.waitForURL(/.*envelope.*create.*/);
 
     // Fill envelope details
-    await page.fill('[data-testid="envelope-subject"]', 'Contract Review');
-    await page.fill('[data-testid="envelope-message"]', 'Please review and sign this contract');
+    await page.fill('[data-testid="envelope-subject"]', "Contract Review");
+    await page.fill(
+      '[data-testid="envelope-message"]',
+      "Please review and sign this contract",
+    );
 
     // Upload document
     const fileInput = await page.$('input[type="file"]');
@@ -77,33 +80,38 @@ test.describe('E-Signature Workflow', () => {
     expect(successMessage).toBeTruthy();
   });
 
-  test('should add signers to envelope', async () => {
+  test("should add signers to envelope", async () => {
     // Create envelope (setup)
     await page.click('[data-testid="menu-esignatures"]');
     await page.click('[data-testid="create-envelope-button"]');
-    await page.fill('[data-testid="envelope-subject"]', 'Multi-Signer Doc');
-    await page.fill('[data-testid="envelope-message"]', 'Multiple signatures needed');
+    await page.fill('[data-testid="envelope-subject"]', "Multi-Signer Doc");
+    await page.fill(
+      '[data-testid="envelope-message"]',
+      "Multiple signatures needed",
+    );
 
     // Add first signer
     await page.click('[data-testid="add-signer-button"]');
-    await page.fill('[data-testid="signer-email-1"]', 'signer1@example.com');
-    await page.fill('[data-testid="signer-name-1"]', 'John Signer');
+    await page.fill('[data-testid="signer-email-1"]', "signer1@example.com");
+    await page.fill('[data-testid="signer-name-1"]', "John Signer");
 
     // Add second signer
     await page.click('[data-testid="add-signer-button"]');
-    await page.fill('[data-testid="signer-email-2"]', 'signer2@example.com');
-    await page.fill('[data-testid="signer-name-2"]', 'Jane Signer');
+    await page.fill('[data-testid="signer-email-2"]', "signer2@example.com");
+    await page.fill('[data-testid="signer-name-2"]', "Jane Signer");
 
     // Save envelope
     await page.click('[data-testid="save-envelope-button"]');
 
     // Verify signers added
     const signersList = await page.locator('[data-testid="signers-list"]');
-    const signerCount = await signersList.locator('[data-testid="signer-item"]').count();
+    const signerCount = await signersList
+      .locator('[data-testid="signer-item"]')
+      .count();
     expect(signerCount).toBeGreaterThanOrEqual(2);
   });
 
-  test('should place signature fields on document', async () => {
+  test("should place signature fields on document", async () => {
     // Navigate to envelope that's being edited
     await page.click('[data-testid="menu-esignatures"]');
     await page.click('[data-testid="create-envelope-button"]');
@@ -135,15 +143,15 @@ test.describe('E-Signature Workflow', () => {
     expect(fields).toBeGreaterThan(0);
   });
 
-  test('should send envelope for signing', async () => {
+  test("should send envelope for signing", async () => {
     // Create and prepare envelope
     await page.click('[data-testid="menu-esignatures"]');
     await page.click('[data-testid="create-envelope-button"]');
-    await page.fill('[data-testid="envelope-subject"]', 'Ready to Sign');
+    await page.fill('[data-testid="envelope-subject"]', "Ready to Sign");
 
     // Add signer
     await page.click('[data-testid="add-signer-button"]');
-    await page.fill('[data-testid="signer-email-1"]', 'signer@example.com');
+    await page.fill('[data-testid="signer-email-1"]', "signer@example.com");
 
     // Click send button
     const sendButton = await page.$('[data-testid="send-envelope-button"]');
@@ -154,16 +162,20 @@ test.describe('E-Signature Workflow', () => {
     // Wait for confirmation
     await page.waitForSelector('[data-testid="envelope-sent-confirmation"]');
 
-    const confirmation = await page.$('[data-testid="envelope-sent-confirmation"]');
+    const confirmation = await page.$(
+      '[data-testid="envelope-sent-confirmation"]',
+    );
     expect(confirmation).toBeTruthy();
   });
 
-  test('should verify envelope status tracking', async () => {
+  test("should verify envelope status tracking", async () => {
     // Navigate to esignatures
     await page.click('[data-testid="menu-esignatures"]');
 
     // Look for sent envelope
-    const envelopeRow = await page.locator('[data-testid="envelope-row"]').first();
+    const envelopeRow = await page
+      .locator('[data-testid="envelope-row"]')
+      .first();
     expect(envelopeRow).toBeTruthy();
 
     // Click to view details
@@ -175,17 +187,23 @@ test.describe('E-Signature Workflow', () => {
     expect(statusBadge).toBeTruthy();
 
     const statusText = await statusBadge?.textContent();
-    expect(['sent', 'pending', 'in progress']).toContain(statusText?.toLowerCase());
+    expect(["sent", "pending", "in progress"]).toContain(
+      statusText?.toLowerCase(),
+    );
   });
 
-  test('should display recipient signing status', async () => {
+  test("should display recipient signing status", async () => {
     // Open envelope details
     await page.click('[data-testid="menu-esignatures"]');
-    const envelopeRow = await page.locator('[data-testid="envelope-row"]').first();
+    const envelopeRow = await page
+      .locator('[data-testid="envelope-row"]')
+      .first();
     await envelopeRow.click();
 
     // View recipients section
-    const recipientsSection = await page.$('[data-testid="recipients-section"]');
+    const recipientsSection = await page.$(
+      '[data-testid="recipients-section"]',
+    );
     expect(recipientsSection).toBeTruthy();
 
     // Verify recipient status display
@@ -199,7 +217,7 @@ test.describe('E-Signature Workflow', () => {
     }
   });
 
-  test('should show completion certificate', async () => {
+  test("should show completion certificate", async () => {
     // Navigate to completed envelope
     await page.click('[data-testid="menu-esignatures"]');
 
@@ -211,17 +229,23 @@ test.describe('E-Signature Workflow', () => {
     }
 
     // Open completed envelope
-    const completedEnvelope = await page.locator('[data-testid="envelope-row"]').first();
+    const completedEnvelope = await page
+      .locator('[data-testid="envelope-row"]')
+      .first();
     if (completedEnvelope) {
       await completedEnvelope.click();
 
       // Look for certificate
-      const certificateButton = await page.$('[data-testid="download-certificate-button"]');
+      const certificateButton = await page.$(
+        '[data-testid="download-certificate-button"]',
+      );
       if (certificateButton) {
         expect(certificateButton).toBeTruthy();
 
         // Verify certificate details shown
-        const certificateInfo = await page.$('[data-testid="certificate-info"]');
+        const certificateInfo = await page.$(
+          '[data-testid="certificate-info"]',
+        );
         expect(certificateInfo).toBeTruthy();
       }
     }

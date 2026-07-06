@@ -41,7 +41,7 @@ describe("InventorySyncEngine", () => {
         quantity,
         StockAdjustmentReason.MANUAL,
         "Initial stock",
-        "user_123"
+        "user_123",
       );
 
       expect(adjustment.sku).toBe(sku);
@@ -64,7 +64,7 @@ describe("InventorySyncEngine", () => {
         100,
         StockAdjustmentReason.MANUAL,
         undefined,
-        "user_123"
+        "user_123",
       );
 
       engine.adjustStock(
@@ -73,7 +73,7 @@ describe("InventorySyncEngine", () => {
         50,
         StockAdjustmentReason.MANUAL,
         undefined,
-        "user_123"
+        "user_123",
       );
 
       const level = engine.getStockLevel(sku, warehouseId);
@@ -89,7 +89,7 @@ describe("InventorySyncEngine", () => {
         100,
         StockAdjustmentReason.MANUAL,
         undefined,
-        "user_123"
+        "user_123",
       );
       engine.adjustStock(
         sku,
@@ -97,7 +97,7 @@ describe("InventorySyncEngine", () => {
         50,
         StockAdjustmentReason.MANUAL,
         undefined,
-        "user_123"
+        "user_123",
       );
 
       const total = engine.getTotalAvailableStock(sku);
@@ -114,7 +114,7 @@ describe("InventorySyncEngine", () => {
         100,
         StockAdjustmentReason.MANUAL,
         undefined,
-        "user_123"
+        "user_123",
       );
 
       engine.adjustStock(
@@ -123,7 +123,7 @@ describe("InventorySyncEngine", () => {
         -150,
         StockAdjustmentReason.MANUAL,
         undefined,
-        "user_123"
+        "user_123",
       );
 
       const level = engine.getStockLevel(sku, warehouseId);
@@ -139,7 +139,7 @@ describe("InventorySyncEngine", () => {
         100,
         StockAdjustmentReason.MANUAL,
         undefined,
-        "user_123"
+        "user_123",
       );
     });
 
@@ -148,7 +148,7 @@ describe("InventorySyncEngine", () => {
         "ORDER-001",
         "SKU-001",
         50,
-        "WH-001"
+        "WH-001",
       );
 
       expect(reservation.status).toBe(ReservationStatus.ACTIVE);
@@ -171,7 +171,7 @@ describe("InventorySyncEngine", () => {
         "ORDER-001",
         "SKU-001",
         50,
-        "WH-001"
+        "WH-001",
       );
 
       engine.releaseReservation(reservation.reservationId);
@@ -186,7 +186,7 @@ describe("InventorySyncEngine", () => {
         "ORDER-001",
         "SKU-001",
         50,
-        "WH-001"
+        "WH-001",
       );
 
       engine.confirmReservation(reservation.reservationId);
@@ -210,12 +210,12 @@ describe("InventorySyncEngine", () => {
         "ORDER-001",
         "SKU-001",
         50,
-        "WH-001"
+        "WH-001",
       );
 
       // Manually set expiration to past
       (reservation as any).expiresAt = new Date(
-        Date.now() - 1000
+        Date.now() - 1000,
       ).toISOString();
 
       engine.processExpiredReservations();
@@ -234,7 +234,7 @@ describe("InventorySyncEngine", () => {
         50,
         StockAdjustmentReason.SALE,
         "Sold 2 units",
-        "user_123"
+        "user_123",
       );
 
       expect(adjustment.reason).toBe(StockAdjustmentReason.SALE);
@@ -246,20 +246,15 @@ describe("InventorySyncEngine", () => {
         "SKU-001",
         "WH-001",
         100,
-        StockAdjustmentReason.MANUAL
+        StockAdjustmentReason.MANUAL,
       );
       engine.adjustStock(
         "SKU-001",
         "WH-001",
         -10,
-        StockAdjustmentReason.DAMAGE
+        StockAdjustmentReason.DAMAGE,
       );
-      engine.adjustStock(
-        "SKU-001",
-        "WH-001",
-        5,
-        StockAdjustmentReason.RETURN
-      );
+      engine.adjustStock("SKU-001", "WH-001", 5, StockAdjustmentReason.RETURN);
 
       const level = engine.getStockLevel("SKU-001", "WH-001");
       expect(level?.available).toBe(95);
@@ -313,7 +308,7 @@ describe("StockReconciler", () => {
     const discrepancy = reconciler.detectDiscrepancies(
       platformCounts,
       "SKU-001",
-      "WH-001"
+      "WH-001",
     );
 
     expect(discrepancy).toBeDefined();
@@ -329,7 +324,7 @@ describe("StockReconciler", () => {
     const discrepancy = reconciler.detectDiscrepancies(
       platformCounts,
       "SKU-001",
-      "WH-001"
+      "WH-001",
     );
 
     expect(discrepancy).toBeNull();
@@ -344,7 +339,7 @@ describe("StockReconciler", () => {
     const discrepancy = reconciler.detectDiscrepancies(
       platformCounts,
       "SKU-001",
-      "WH-001"
+      "WH-001",
     );
 
     expect(discrepancy?.average).toBe(75);
@@ -448,7 +443,7 @@ describe("OverSellProtection", () => {
       stockLevels,
       "SKU-001",
       "WH-001",
-      50
+      50,
     );
     expect(canReserve).toBe(true);
   });
@@ -476,7 +471,7 @@ describe("OverSellProtection", () => {
       stockLevels,
       "SKU-001",
       "WH-001",
-      100
+      100,
     );
     expect(canReserve).toBe(false);
   });
@@ -507,7 +502,7 @@ describe("SyncConflictHandler", () => {
 
     const resolved = handler.resolveConflict(
       discrepancy,
-      StockConflictStrategy.HIGHEST
+      StockConflictStrategy.HIGHEST,
     );
     expect(resolved).toBe(100);
   });
@@ -530,7 +525,7 @@ describe("SyncConflictHandler", () => {
 
     const resolved = handler.resolveConflict(
       discrepancy,
-      StockConflictStrategy.LOWEST
+      StockConflictStrategy.LOWEST,
     );
     expect(resolved).toBe(50);
   });
@@ -553,7 +548,7 @@ describe("SyncConflictHandler", () => {
 
     const resolved = handler.resolveConflict(
       discrepancy,
-      StockConflictStrategy.AVERAGE
+      StockConflictStrategy.AVERAGE,
     );
     expect(resolved).toBe(75);
   });

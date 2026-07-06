@@ -25,57 +25,173 @@ type RouteSpec = {
 
 const ROUTES: RouteSpec[] = [
   // ─── Core list pages ───────────────────────────────────────
-  { name: "home", path: "/home", expectText: /orders|drivers|routes|home/i, minButtons: 1 },
-  { name: "orders", path: "/orders", expectText: /order|delivery|shipment/i, minButtons: 1 },
-  { name: "drivers", path: "/drivers", expectText: /driver|fleet|vehicle/i, minButtons: 1 },
-  { name: "customers", path: "/customers", expectText: /customer/i, minButtons: 1 },
-  { name: "shipments", path: "/shipments", expectText: /shipment|tracking|label/i },
-  { name: "zones", path: "/zones", expectText: /zone|area|region/i, minButtons: 1 },
-  { name: "time-slots", path: "/time-slots", expectText: /time|slot|schedule/i },
+  {
+    name: "home",
+    path: "/home",
+    expectText: /orders|drivers|routes|home/i,
+    minButtons: 1,
+  },
+  {
+    name: "orders",
+    path: "/orders",
+    expectText: /order|delivery|shipment/i,
+    minButtons: 1,
+  },
+  {
+    name: "drivers",
+    path: "/drivers",
+    expectText: /driver|fleet|vehicle/i,
+    minButtons: 1,
+  },
+  {
+    name: "customers",
+    path: "/customers",
+    expectText: /customer/i,
+    minButtons: 1,
+  },
+  {
+    name: "shipments",
+    path: "/shipments",
+    expectText: /shipment|tracking|label/i,
+  },
+  {
+    name: "zones",
+    path: "/zones",
+    expectText: /zone|area|region/i,
+    minButtons: 1,
+  },
+  {
+    name: "time-slots",
+    path: "/time-slots",
+    expectText: /time|slot|schedule/i,
+  },
   { name: "products", path: "/products", expectText: /product|sku|catalog/i },
   { name: "stores", path: "/stores", expectText: /store|shop|location/i },
-  { name: "calendar", path: "/calendar", expectText: /calendar|schedule|event/i },
+  {
+    name: "calendar",
+    path: "/calendar",
+    expectText: /calendar|schedule|event/i,
+  },
 
   // ─── Create pages ──────────────────────────────────────────
-  { name: "drivers-create", path: "/drivers/create", expectText: /add driver|name|phone/i, minButtons: 2 },
-  { name: "customers-create", path: "/customers/create", expectText: /add customer|email/i, minButtons: 2 },
-  { name: "zones-create", path: "/zones/create", expectText: /create zone|base rate/i, minButtons: 2 },
-  { name: "orders-create", path: "/orders/create", expectText: /order|customer|item/i },
+  {
+    name: "drivers-create",
+    path: "/drivers/create",
+    expectText: /add driver|name|phone/i,
+    minButtons: 2,
+  },
+  {
+    name: "customers-create",
+    path: "/customers/create",
+    expectText: /add customer|email/i,
+    minButtons: 2,
+  },
+  {
+    name: "zones-create",
+    path: "/zones/create",
+    expectText: /create zone|base rate/i,
+    minButtons: 2,
+  },
+  {
+    name: "orders-create",
+    path: "/orders/create",
+    expectText: /order|customer|item/i,
+  },
 
   // ─── Analytics / tracking ──────────────────────────────────
-  { name: "analytics", path: "/analytics", expectText: /analytic|dashboard|metric|chart/i },
+  {
+    name: "analytics",
+    path: "/analytics",
+    expectText: /analytic|dashboard|metric|chart/i,
+  },
   { name: "activity", path: "/activity" },
   { name: "tracking", path: "/tracking", expectText: /track|shipment|live/i },
-  { name: "tracking-live", path: "/tracking/live", expectText: /live|map|driver/i },
+  {
+    name: "tracking-live",
+    path: "/tracking/live",
+    expectText: /live|map|driver/i,
+  },
 
   // ─── Operations ────────────────────────────────────────────
-  { name: "dispatch", path: "/dispatch", expectText: /dispatch|driver|assign/i },
+  {
+    name: "dispatch",
+    path: "/dispatch",
+    expectText: /dispatch|driver|assign/i,
+  },
   { name: "routes", path: "/routes", expectText: /route|stop|driver/i },
-  { name: "field-service", path: "/field-service", expectText: /field|service|job|technician/i },
+  {
+    name: "field-service",
+    path: "/field-service",
+    expectText: /field|service|job|technician/i,
+  },
   { name: "field-service-jobs", path: "/field-service/jobs" },
   { name: "field-service-dispatch", path: "/field-service/dispatch" },
 
   // ─── Supply chain / shipping ───────────────────────────────
-  { name: "supply-chain", path: "/supply-chain", expectText: /supply|chain|inventory|order/i },
+  {
+    name: "supply-chain",
+    path: "/supply-chain",
+    expectText: /supply|chain|inventory|order/i,
+  },
   { name: "supply-chain-inventory", path: "/supply-chain/inventory" },
   { name: "supply-chain-orders", path: "/supply-chain/orders" },
-  { name: "shipping-profiles", path: "/shipping-profiles", expectText: /shipping|profile|rate/i },
-  { name: "shipping-labels", path: "/shipping/labels", expectText: /label|shipping|carrier/i },
+  {
+    name: "shipping-profiles",
+    path: "/shipping-profiles",
+    expectText: /shipping|profile|rate/i,
+  },
+  {
+    name: "shipping-labels",
+    path: "/shipping/labels",
+    expectText: /label|shipping|carrier/i,
+  },
 
   // ─── eSignatures / Payments ────────────────────────────────
-  { name: "esignatures", path: "/esignatures", expectText: /sign|envelope|template/i },
-  { name: "payments", path: "/payments", expectText: /payment|invoice|charge/i },
+  {
+    name: "esignatures",
+    path: "/esignatures",
+    expectText: /sign|envelope|template/i,
+  },
+  {
+    name: "payments",
+    path: "/payments",
+    expectText: /payment|invoice|charge/i,
+  },
 
   // ─── Settings ──────────────────────────────────────────────
-  { name: "settings-general", path: "/settings/general", expectText: /setting|general|preference/i },
-  { name: "settings-team", path: "/settings/team", expectText: /team|member|invite/i },
-  { name: "settings-profile", path: "/settings/profile", expectText: /profile|name|email/i },
-  { name: "settings-billing", path: "/settings/billing", expectText: /billing|plan|subscription/i },
-  { name: "settings-carriers", path: "/settings/carriers", expectText: /carrier|shipping|rate/i },
+  {
+    name: "settings-general",
+    path: "/settings/general",
+    expectText: /setting|general|preference/i,
+  },
+  {
+    name: "settings-team",
+    path: "/settings/team",
+    expectText: /team|member|invite/i,
+  },
+  {
+    name: "settings-profile",
+    path: "/settings/profile",
+    expectText: /profile|name|email/i,
+  },
+  {
+    name: "settings-billing",
+    path: "/settings/billing",
+    expectText: /billing|plan|subscription/i,
+  },
+  {
+    name: "settings-carriers",
+    path: "/settings/carriers",
+    expectText: /carrier|shipping|rate/i,
+  },
   { name: "settings-notifications", path: "/settings/notifications" },
   { name: "settings-webhooks", path: "/settings/webhooks" },
   { name: "settings-api-keys", path: "/settings/api-keys" },
-  { name: "settings-organization", path: "/settings/organization", expectText: /organization|name/i },
+  {
+    name: "settings-organization",
+    path: "/settings/organization",
+    expectText: /organization|name/i,
+  },
 ];
 
 async function countActionableButtons(page: Page): Promise<number> {
@@ -95,15 +211,22 @@ async function countActionableButtons(page: Page): Promise<number> {
 }
 
 async function assertNoAppError(page: Page) {
-  const bodyText = (await page.locator("body").textContent({ timeout: 10000 })) ?? "";
-  expect(bodyText, "page rendered Application error").not.toContain("Application error");
-  expect(bodyText, "page rendered Internal Server Error").not.toContain("Internal Server Error");
+  const bodyText =
+    (await page.locator("body").textContent({ timeout: 10000 })) ?? "";
+  expect(bodyText, "page rendered Application error").not.toContain(
+    "Application error",
+  );
+  expect(bodyText, "page rendered Internal Server Error").not.toContain(
+    "Internal Server Error",
+  );
   expect(bodyText, "page rendered 500").not.toMatch(/^500$/);
 }
 
 test.describe("Tier 1 smoke — dashboard routes", () => {
   for (const route of ROUTES) {
-    test(`${route.name} loads and has actionable buttons`, async ({ authedPage }, testInfo) => {
+    test(`${route.name} loads and has actionable buttons`, async ({
+      authedPage,
+    }, testInfo) => {
       const page = authedPage;
 
       const response = await page.goto(route.path, {
@@ -113,7 +236,10 @@ test.describe("Tier 1 smoke — dashboard routes", () => {
 
       // Not every route returns 200 (some are SSR with redirects); accept any 2xx/3xx.
       const status = response?.status() ?? 0;
-      expect(status, `unexpected status ${status} for ${route.path}`).toBeLessThan(400);
+      expect(
+        status,
+        `unexpected status ${status} for ${route.path}`,
+      ).toBeLessThan(400);
 
       // Let client-side rendering settle.
       await page

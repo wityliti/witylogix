@@ -42,7 +42,7 @@ class CircuitBreaker {
   constructor(
     private readonly failureThreshold: number = 5,
     private readonly successThreshold: number = 2,
-    private readonly resetTimeout: number = 60000
+    private readonly resetTimeout: number = 60000,
   ) {}
 
   async execute<T>(fn: () => Promise<T>): Promise<T> {
@@ -52,7 +52,7 @@ class CircuitBreaker {
         this.successCount = 0;
       } else {
         throw new Error(
-          `Circuit breaker is OPEN. Retry after ${this.resetTimeout}ms`
+          `Circuit breaker is OPEN. Retry after ${this.resetTimeout}ms`,
         );
       }
     }
@@ -95,7 +95,7 @@ class RateLimiter {
 
   constructor(
     private readonly tokensPerSecond: number,
-    private readonly maxTokens: number = tokensPerSecond
+    private readonly maxTokens: number = tokensPerSecond,
   ) {
     this.tokens = maxTokens;
   }
@@ -105,7 +105,7 @@ class RateLimiter {
     const timePassed = (now - this.lastRefillTime) / 1000;
     this.tokens = Math.min(
       this.maxTokens,
-      this.tokens + timePassed * this.tokensPerSecond
+      this.tokens + timePassed * this.tokensPerSecond,
     );
     this.lastRefillTime = now;
 
@@ -144,7 +144,7 @@ export abstract class ELDAdapter implements ELDAdapterInterface {
   abstract getDriverLogs(
     driverId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<ELDDriverLog[]>;
 
   abstract getDutyStatus(driverId: string): Promise<ELDDutyStatus>;
@@ -152,12 +152,12 @@ export abstract class ELDAdapter implements ELDAdapterInterface {
   abstract setDutyStatus(
     driverId: string,
     status: DutyStatus,
-    location?: { latitude: number; longitude: number }
+    location?: { latitude: number; longitude: number },
   ): Promise<ELDDutyStatus>;
 
   abstract getViolations(
     driverId: string,
-    days?: number
+    days?: number,
   ): Promise<ELDViolation[]>;
 
   abstract getVehicle(vehicleId: string): Promise<ELDVehicle>;
@@ -177,11 +177,12 @@ export abstract class ELDAdapter implements ELDAdapterInterface {
   /**
    * Get HOS summary for a driver on a specific date.
    */
-  async getHOSSummary(
-    driverId: string,
-    date: Date
-  ): Promise<HOSSummary> {
-    const logs = await this.getDriverLogs(driverId, date, new Date(date.getTime() + 86400000));
+  async getHOSSummary(driverId: string, date: Date): Promise<HOSSummary> {
+    const logs = await this.getDriverLogs(
+      driverId,
+      date,
+      new Date(date.getTime() + 86400000),
+    );
 
     const daily = this.calculateDaily(logs);
     const window8 = this.calculate8DayWindow(driverId, date);
@@ -194,7 +195,10 @@ export abstract class ELDAdapter implements ELDAdapterInterface {
       hours60: window8.hours60,
       hours70: window8.hours70,
       availableDriving: Math.max(0, 11 - daily.drivingHours),
-      availableOnDuty: Math.max(0, 14 - (daily.drivingHours + daily.onDutyHours)),
+      availableOnDuty: Math.max(
+        0,
+        14 - (daily.drivingHours + daily.onDutyHours),
+      ),
       violations: this.detectViolations(daily, window8),
     };
   }
@@ -244,7 +248,7 @@ export abstract class ELDAdapter implements ELDAdapterInterface {
    */
   protected calculate8DayWindow(
     driverId: string,
-    endDate: Date
+    endDate: Date,
   ): HOS8DayWindow {
     const startDate = new Date(endDate.getTime() - 7 * 86400000);
 
@@ -263,7 +267,7 @@ export abstract class ELDAdapter implements ELDAdapterInterface {
    */
   protected detectViolations(
     daily: HOSDailyRecord,
-    window8: HOS8DayWindow
+    window8: HOS8DayWindow,
   ): ViolationType[] {
     const violations: ViolationType[] = [];
 
@@ -300,17 +304,53 @@ export abstract class ELDAdapter implements ELDAdapterInterface {
    */
   protected validateDutyTransition(
     fromStatus: DutyStatus,
-    toStatus: DutyStatus
+    toStatus: DutyStatus,
   ): boolean {
     // All transitions are allowed by FMCSA
     // Driver can transition to any status from any status
     const validTransitions: Record<DutyStatus, DutyStatus[]> = {
-      driving: ["on-duty", "off-duty", "sleeper-berth", "personal-conveyance", "yard-move"],
-      "on-duty": ["driving", "off-duty", "sleeper-berth", "personal-conveyance", "yard-move"],
-      "sleeper-berth": ["driving", "on-duty", "off-duty", "personal-conveyance", "yard-move"],
-      "off-duty": ["driving", "on-duty", "sleeper-berth", "personal-conveyance", "yard-move"],
-      "personal-conveyance": ["driving", "on-duty", "sleeper-berth", "off-duty", "yard-move"],
-      "yard-move": ["driving", "on-duty", "sleeper-berth", "off-duty", "personal-conveyance"],
+      driving: [
+        "on-duty",
+        "off-duty",
+        "sleeper-berth",
+        "personal-conveyance",
+        "yard-move",
+      ],
+      "on-duty": [
+        "driving",
+        "off-duty",
+        "sleeper-berth",
+        "personal-conveyance",
+        "yard-move",
+      ],
+      "sleeper-berth": [
+        "driving",
+        "on-duty",
+        "off-duty",
+        "personal-conveyance",
+        "yard-move",
+      ],
+      "off-duty": [
+        "driving",
+        "on-duty",
+        "sleeper-berth",
+        "personal-conveyance",
+        "yard-move",
+      ],
+      "personal-conveyance": [
+        "driving",
+        "on-duty",
+        "sleeper-berth",
+        "off-duty",
+        "yard-move",
+      ],
+      "yard-move": [
+        "driving",
+        "on-duty",
+        "sleeper-berth",
+        "off-duty",
+        "personal-conveyance",
+      ],
     };
 
     return validTransitions[fromStatus]?.includes(toStatus) ?? false;
@@ -321,7 +361,7 @@ export abstract class ELDAdapter implements ELDAdapterInterface {
    */
   protected async executeWithRetry<T>(
     fn: () => Promise<T>,
-    maxRetries: number = 3
+    maxRetries: number = 3,
   ): Promise<T> {
     await this.rateLimiter.acquire();
 

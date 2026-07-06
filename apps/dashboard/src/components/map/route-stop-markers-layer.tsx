@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useEffect, useCallback } from 'react';
-import maplibregl, { type LngLatBoundsLike } from 'maplibre-gl';
-import { useWLMap } from './wl-map-context';
-import type { Map as MapLibreMap } from 'maplibre-gl';
+import { useEffect, useCallback } from "react";
+import maplibregl, { type LngLatBoundsLike } from "maplibre-gl";
+import { useWLMap } from "./wl-map-context";
+import type { Map as MapLibreMap } from "maplibre-gl";
 
 export type StopMarkerStatus =
-  | 'PENDING'
-  | 'EN_ROUTE'
-  | 'ARRIVED'
-  | 'COMPLETED'
-  | 'SKIPPED'
-  | 'FAILED';
+  | "PENDING"
+  | "EN_ROUTE"
+  | "ARRIVED"
+  | "COMPLETED"
+  | "SKIPPED"
+  | "FAILED";
 
 export interface StopMarker {
   id: string;
@@ -39,19 +39,22 @@ export interface RouteStopMarkersLayerProps {
 }
 
 const STATUS_COLORS: Record<StopMarkerStatus, string> = {
-  PENDING: '#6b7280',
-  EN_ROUTE: '#f59e0b',
-  ARRIVED: '#3b82f6',
-  COMPLETED: '#10b981',
-  SKIPPED: '#9ca3af',
-  FAILED: '#ef4444',
+  PENDING: "#6b7280",
+  EN_ROUTE: "#f59e0b",
+  ARRIVED: "#3b82f6",
+  COMPLETED: "#10b981",
+  SKIPPED: "#9ca3af",
+  FAILED: "#ef4444",
 };
 
 /** Creates an SVG data URI for a numbered stop marker */
-function createMarkerElement(sequence: number, status: StopMarkerStatus): HTMLElement {
-  const color = STATUS_COLORS[status] ?? '#6b7280';
-  const el = document.createElement('div');
-  el.style.cssText = 'cursor: pointer; user-select: none;';
+function createMarkerElement(
+  sequence: number,
+  status: StopMarkerStatus,
+): HTMLElement {
+  const color = STATUS_COLORS[status] ?? "#6b7280";
+  const el = document.createElement("div");
+  el.style.cssText = "cursor: pointer; user-select: none;";
 
   const size = 28;
   el.innerHTML = `
@@ -67,19 +70,19 @@ function createMarkerElement(sequence: number, status: StopMarkerStatus): HTMLEl
 
 /** Builds HTML for a stop popup */
 function buildPopupHTML(stop: StopMarker): string {
-  const color = STATUS_COLORS[stop.status] ?? '#6b7280';
+  const color = STATUS_COLORS[stop.status] ?? "#6b7280";
   return `
     <div style="font-family: system-ui, sans-serif; min-width: 180px; max-width: 240px;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
         <div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></div>
         <strong style="font-size:13px;color:#111;">Stop #${stop.sequence}</strong>
         <span style="margin-left:auto;font-size:11px;color:${color};font-weight:600;text-transform:uppercase;">
-          ${stop.status.replace('_', ' ')}
+          ${stop.status.replace("_", " ")}
         </span>
       </div>
-      ${stop.customerName ? `<p style="margin:0 0 4px;font-size:12px;color:#374151;font-weight:500;">${stop.customerName}</p>` : ''}
-      ${stop.address ? `<p style="margin:0 0 4px;font-size:11px;color:#6b7280;">${stop.address}</p>` : ''}
-      ${stop.eta ? `<p style="margin:0;font-size:11px;color:#6b7280;">ETA: ${stop.eta}</p>` : ''}
+      ${stop.customerName ? `<p style="margin:0 0 4px;font-size:12px;color:#374151;font-weight:500;">${stop.customerName}</p>` : ""}
+      ${stop.address ? `<p style="margin:0 0 4px;font-size:11px;color:#6b7280;">${stop.address}</p>` : ""}
+      ${stop.eta ? `<p style="margin:0;font-size:11px;color:#6b7280;">ETA: ${stop.eta}</p>` : ""}
     </div>
   `;
 }
@@ -96,12 +99,15 @@ export function RouteStopMarkersLayer({
     (m: MapLibreMap, currentStops: StopMarker[]) => {
       // Remove all existing route-stop markers
       type MarkerLike = { remove: () => void };
-      const existingMarkers = (m as MapLibreMap & { _routeStopMarkers?: MarkerLike[] })
-        ._routeStopMarkers ?? [];
+      const existingMarkers =
+        (m as MapLibreMap & { _routeStopMarkers?: MarkerLike[] })
+          ._routeStopMarkers ?? [];
       existingMarkers.forEach((marker: MarkerLike) => marker.remove());
 
       if (currentStops.length === 0) {
-        (m as MapLibreMap & { _routeStopMarkers?: MarkerLike[] })._routeStopMarkers = [];
+        (
+          m as MapLibreMap & { _routeStopMarkers?: MarkerLike[] }
+        )._routeStopMarkers = [];
         return;
       }
 
@@ -112,23 +118,24 @@ export function RouteStopMarkersLayer({
           closeButton: false,
           closeOnClick: true,
           offset: [0, -30],
-          className: 'route-stop-popup',
+          className: "route-stop-popup",
         }).setHTML(buildPopupHTML(stop));
 
-        const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+        const marker = new maplibregl.Marker({ element: el, anchor: "bottom" })
           .setLngLat([stop.lng, stop.lat])
           .setPopup(popup)
           .addTo(m);
 
-        el.addEventListener('click', () => {
+        el.addEventListener("click", () => {
           onStopClick?.(stop);
         });
 
         return marker;
       });
 
-      (m as MapLibreMap & { _routeStopMarkers?: MarkerLike[] })._routeStopMarkers =
-        markers;
+      (
+        m as MapLibreMap & { _routeStopMarkers?: MarkerLike[] }
+      )._routeStopMarkers = markers;
 
       if (fitBounds && currentStops.length >= 1) {
         const lngs = currentStops.map((s) => s.lng);
@@ -147,7 +154,7 @@ export function RouteStopMarkersLayer({
   useEffect(() => {
     const setup = () => addMarkers(map, stops);
     if (map.isStyleLoaded()) setup();
-    else map.on('load', setup);
+    else map.on("load", setup);
 
     return () => {
       type MarkerLike = { remove: () => void };

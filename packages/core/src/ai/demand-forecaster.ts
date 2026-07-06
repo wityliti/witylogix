@@ -37,7 +37,7 @@ export interface SeasonalPattern {
 export interface TrendInfo {
   slope: number; // units per day
   acceleration: number; // units per day^2
-  direction: 'increasing' | 'decreasing' | 'stable';
+  direction: "increasing" | "decreasing" | "stable";
   strength: number; // 0-1, how confident the trend is
 }
 
@@ -79,14 +79,14 @@ export interface ReorderSuggestion {
   reorderPoint: number; // min stock before reorder
   safetyStock: number; // buffer stock
   recommendedReorderDate: Date;
-  urgency: 'low' | 'normal' | 'high' | 'critical';
+  urgency: "low" | "normal" | "high" | "critical";
   daysUntilStockout: number;
   leadTimeInDays: number;
 }
 
 export interface ExternalFactor {
   date: Date;
-  type: 'holiday' | 'promotion' | 'weather_event' | 'supply_disruption';
+  type: "holiday" | "promotion" | "weather_event" | "supply_disruption";
   impactMultiplier: number; // demand multiplier
   duration?: number; // days
   confidence?: number; // 0-1, how confident this will affect demand
@@ -105,7 +105,9 @@ export class TimeSeriesAnalyzer {
     const quantities = data.map((d) => d.quantity);
     const mean = quantities.reduce((a, b) => a + b, 0) / quantities.length;
     const deviations = quantities.map((q) => Math.abs(q - mean));
-    const mad = deviations.sort((a, b) => a - b)[Math.floor(deviations.length / 2)];
+    const mad = deviations.sort((a, b) => a - b)[
+      Math.floor(deviations.length / 2)
+    ];
 
     const anomalies: number[] = [];
     for (let i = 0; i < quantities.length; i++) {
@@ -188,9 +190,15 @@ export class SeasonalDecomposer {
     }
 
     // Calculate strength of each pattern (variance from 1.0)
-    const weeklyStrength = this.calculatePatternStrength(Array.from(weeklyPattern.values()));
-    const monthlyStrength = this.calculatePatternStrength(Array.from(monthlyPattern.values()));
-    const yearlyStrength = this.calculatePatternStrength(Array.from(yearlyPattern.values()));
+    const weeklyStrength = this.calculatePatternStrength(
+      Array.from(weeklyPattern.values()),
+    );
+    const monthlyStrength = this.calculatePatternStrength(
+      Array.from(monthlyPattern.values()),
+    );
+    const yearlyStrength = this.calculatePatternStrength(
+      Array.from(yearlyPattern.values()),
+    );
 
     return {
       weeklyPattern,
@@ -209,7 +217,9 @@ export class SeasonalDecomposer {
     if (multipliers.length === 0) return 0;
 
     const mean = multipliers.reduce((a, b) => a + b, 0) / multipliers.length;
-    const variance = multipliers.reduce((sum, m) => sum + Math.pow(m - mean, 2), 0) / multipliers.length;
+    const variance =
+      multipliers.reduce((sum, m) => sum + Math.pow(m - mean, 2), 0) /
+      multipliers.length;
     const stdDev = Math.sqrt(variance);
 
     // Strength is proportional to coefficient of variation
@@ -228,7 +238,7 @@ export class TrendDetector {
       return {
         slope: 0,
         acceleration: 0,
-        direction: 'stable',
+        direction: "stable",
         strength: 0,
       };
     }
@@ -256,8 +266,10 @@ export class TrendDetector {
     const firstHalf = data.slice(0, mid);
     const secondHalf = data.slice(mid);
 
-    const firstAvg = firstHalf.reduce((a, b) => a + b.quantity, 0) / firstHalf.length;
-    const secondAvg = secondHalf.reduce((a, b) => a + b.quantity, 0) / secondHalf.length;
+    const firstAvg =
+      firstHalf.reduce((a, b) => a + b.quantity, 0) / firstHalf.length;
+    const secondAvg =
+      secondHalf.reduce((a, b) => a + b.quantity, 0) / secondHalf.length;
     const acceleration = (secondAvg - firstAvg) / (firstHalf.length + 1);
 
     // Calculate trend strength (R-squared)
@@ -277,7 +289,8 @@ export class TrendDetector {
     return {
       slope,
       acceleration,
-      direction: slope > 0.5 ? 'increasing' : slope < -0.5 ? 'decreasing' : 'stable',
+      direction:
+        slope > 0.5 ? "increasing" : slope < -0.5 ? "decreasing" : "stable",
       strength: Math.max(0, Math.min(1, strength)),
     };
   }
@@ -292,7 +305,7 @@ export class SKUClusterer {
    */
   clusterSKUs(
     skuDataMap: Map<string, SalesDataPoint[]>,
-    skuProperties: Map<string, { price: number; category: string }>
+    skuProperties: Map<string, { price: number; category: string }>,
   ): SKUCluster[] {
     const clusters: SKUCluster[] = [];
     const used = new Set<string>();
@@ -330,10 +343,12 @@ export class SKUClusterer {
         const repData = skuDataMap.get(representative) ?? [];
         const seasonality = decomposer.extractSeasonality(repData);
 
-        let seasonalityType = 'none';
-        if (seasonality.weeklyStrength > 0.2) seasonalityType = 'weekly';
-        if (seasonality.monthlyStrength > seasonality.weeklyStrength) seasonalityType = 'monthly';
-        if (seasonality.yearlyStrength > seasonality.monthlyStrength) seasonalityType = 'yearly';
+        let seasonalityType = "none";
+        if (seasonality.weeklyStrength > 0.2) seasonalityType = "weekly";
+        if (seasonality.monthlyStrength > seasonality.weeklyStrength)
+          seasonalityType = "monthly";
+        if (seasonality.yearlyStrength > seasonality.monthlyStrength)
+          seasonalityType = "yearly";
 
         clusters.push({
           clusterId: `cluster_${clusterId++}`,
@@ -341,7 +356,11 @@ export class SKUClusterer {
           representativeSKU: representative,
           clusterName: `${category}_${priceRange}`,
           properties: {
-            avgPrice: clusterSkus.reduce((sum, skuId) => sum + (skuProperties.get(skuId)?.price ?? 0), 0) / clusterSkus.length,
+            avgPrice:
+              clusterSkus.reduce(
+                (sum, skuId) => sum + (skuProperties.get(skuId)?.price ?? 0),
+                0,
+              ) / clusterSkus.length,
             category,
             seasonalityPattern: seasonalityType,
           },
@@ -355,10 +374,10 @@ export class SKUClusterer {
   }
 
   private getPriceRange(price: number): string {
-    if (price < 10) return 'budget';
-    if (price < 50) return 'mid';
-    if (price < 200) return 'premium';
-    return 'luxury';
+    if (price < 10) return "budget";
+    if (price < 50) return "mid";
+    if (price < 200) return "premium";
+    return "luxury";
   }
 }
 
@@ -382,7 +401,7 @@ export class DemandPredictor {
     skuId: string,
     historicalData: SalesDataPoint[],
     forecastDate: Date,
-    externalFactors: ExternalFactor[] = []
+    externalFactors: ExternalFactor[] = [],
   ): DemandForecast {
     if (historicalData.length === 0) {
       return {
@@ -390,7 +409,7 @@ export class DemandPredictor {
         forecastedDemand: 0,
         confidence: 0,
         confidenceInterval: { lower: 0, upper: 0 },
-        trend: { slope: 0, acceleration: 0, direction: 'stable', strength: 0 },
+        trend: { slope: 0, acceleration: 0, direction: "stable", strength: 0 },
         seasonalInfluence: 0,
         forecastedDate: forecastDate,
         bases: {
@@ -407,11 +426,15 @@ export class DemandPredictor {
     if (cleanData.length < 2) cleanData.push(...historicalData);
 
     // Calculate baseline (mean demand)
-    const baseline = cleanData.reduce((a, b) => a + b.quantity, 0) / cleanData.length;
+    const baseline =
+      cleanData.reduce((a, b) => a + b.quantity, 0) / cleanData.length;
 
     // Detect trend
     const trend = this.trendDetector.detectTrend(cleanData);
-    const daysSinceLastData = (forecastDate.getTime() - cleanData[cleanData.length - 1].date.getTime()) / (1000 * 60 * 60 * 24);
+    const daysSinceLastData =
+      (forecastDate.getTime() -
+        cleanData[cleanData.length - 1].date.getTime()) /
+      (1000 * 60 * 60 * 24);
     const trendAdjustment = trend.slope * daysSinceLastData;
 
     // Extract seasonality
@@ -421,42 +444,73 @@ export class DemandPredictor {
     const month = forecastDate.getMonth() + 1;
 
     let seasonalMultiplier = 1;
-    if (seasonality.weeklyStrength > 0.1 && seasonality.weeklyPattern.has(dow)) {
+    if (
+      seasonality.weeklyStrength > 0.1 &&
+      seasonality.weeklyPattern.has(dow)
+    ) {
       seasonalMultiplier *= seasonality.weeklyPattern.get(dow)!;
     }
-    if (seasonality.monthlyStrength > 0.1 && seasonality.monthlyPattern.has(dom)) {
+    if (
+      seasonality.monthlyStrength > 0.1 &&
+      seasonality.monthlyPattern.has(dom)
+    ) {
       seasonalMultiplier *= seasonality.monthlyPattern.get(dom)!;
     }
-    if (seasonality.yearlyStrength > 0.1 && seasonality.yearlyPattern.has(month)) {
+    if (
+      seasonality.yearlyStrength > 0.1 &&
+      seasonality.yearlyPattern.has(month)
+    ) {
       seasonalMultiplier *= seasonality.yearlyPattern.get(month)!;
     }
 
     const seasonalAdjustment = (seasonalMultiplier - 1) * baseline;
-    const maxSeasonalInfluence = Math.max(seasonality.weeklyStrength, seasonality.monthlyStrength, seasonality.yearlyStrength);
+    const maxSeasonalInfluence = Math.max(
+      seasonality.weeklyStrength,
+      seasonality.monthlyStrength,
+      seasonality.yearlyStrength,
+    );
 
     // Apply external factors
     let externalAdjustment = 0;
     for (const factor of externalFactors) {
       const factorDate = new Date(factor.date);
-      const daysUntil = (forecastDate.getTime() - factorDate.getTime()) / (1000 * 60 * 60 * 24);
+      const daysUntil =
+        (forecastDate.getTime() - factorDate.getTime()) / (1000 * 60 * 60 * 24);
       const duration = factor.duration ?? 1;
 
       // Only apply if factor is relevant to forecast date
-      if (daysUntil >= 0 && daysUntil < duration && (factor.confidence ?? 1) > 0.5) {
-        externalAdjustment += (factor.impactMultiplier - 1) * baseline * (factor.confidence ?? 1);
+      if (
+        daysUntil >= 0 &&
+        daysUntil < duration &&
+        (factor.confidence ?? 1) > 0.5
+      ) {
+        externalAdjustment +=
+          (factor.impactMultiplier - 1) * baseline * (factor.confidence ?? 1);
       }
     }
 
     // Combine all factors
-    const forecast = baseline + trendAdjustment + seasonalAdjustment + externalAdjustment;
+    const forecast =
+      baseline + trendAdjustment + seasonalAdjustment + externalAdjustment;
 
     // Calculate confidence based on data recency and trend strength
-    const daysInHistory = (cleanData[cleanData.length - 1].date.getTime() - cleanData[0].date.getTime()) / (1000 * 60 * 60 * 24) + 1;
+    const daysInHistory =
+      (cleanData[cleanData.length - 1].date.getTime() -
+        cleanData[0].date.getTime()) /
+        (1000 * 60 * 60 * 24) +
+      1;
     const recencyFactor = Math.max(0, 1 - daysSinceLastData / daysInHistory);
-    const confidence = (0.5 + 0.5 * (trend.strength * 0.5 + recencyFactor * 0.5)) * Math.max(0.3, 1 - externalFactors.length * 0.1);
+    const confidence =
+      (0.5 + 0.5 * (trend.strength * 0.5 + recencyFactor * 0.5)) *
+      Math.max(0.3, 1 - externalFactors.length * 0.1);
 
     // Calculate confidence interval (95% band around forecast)
-    const stdDev = Math.sqrt(cleanData.reduce((sum, d) => sum + Math.pow(d.quantity - baseline, 2), 0) / cleanData.length);
+    const stdDev = Math.sqrt(
+      cleanData.reduce(
+        (sum, d) => sum + Math.pow(d.quantity - baseline, 2),
+        0,
+      ) / cleanData.length,
+    );
     const margin = 1.96 * stdDev * (1 - confidence);
 
     return {
@@ -491,39 +545,49 @@ export class ReorderSuggester {
     currentStock: number,
     averageDailyDemand: number,
     leadTimeInDays: number,
-    stockoutBuffer: number = 7 // days to prevent stockout
+    stockoutBuffer: number = 7, // days to prevent stockout
   ): ReorderSuggestion {
     // Calculate lead time demand
     const leadTimeDemand = averageDailyDemand * leadTimeInDays;
 
     // Safety stock = avg demand * (lead time + buffer) * std deviation factor
-    const safetyStock = Math.ceil(averageDailyDemand * (leadTimeInDays + stockoutBuffer) * 0.3);
+    const safetyStock = Math.ceil(
+      averageDailyDemand * (leadTimeInDays + stockoutBuffer) * 0.3,
+    );
 
     // Reorder point = lead time demand + safety stock
     const reorderPoint = Math.ceil(leadTimeDemand + safetyStock);
 
     // Days until stockout (if we don't reorder)
-    const daysUntilStockout = averageDailyDemand > 0 ? Math.floor(currentStock / averageDailyDemand) : 365;
+    const daysUntilStockout =
+      averageDailyDemand > 0
+        ? Math.floor(currentStock / averageDailyDemand)
+        : 365;
 
     // Suggested reorder quantity (economic order quantity approximation)
     // Reorder enough to cover lead time + safety stock + some buffer
-    const suggestedQuantity = Math.ceil(leadTimeDemand + safetyStock + averageDailyDemand * 7);
+    const suggestedQuantity = Math.ceil(
+      leadTimeDemand + safetyStock + averageDailyDemand * 7,
+    );
 
     // Urgency based on days until stockout
-    let urgency: 'low' | 'normal' | 'high' | 'critical' = 'normal';
+    let urgency: "low" | "normal" | "high" | "critical" = "normal";
     if (daysUntilStockout < leadTimeInDays) {
-      urgency = 'critical';
+      urgency = "critical";
     } else if (daysUntilStockout < leadTimeInDays + 3) {
-      urgency = 'high';
+      urgency = "high";
     } else if (daysUntilStockout < leadTimeInDays + 7) {
-      urgency = 'normal';
+      urgency = "normal";
     } else {
-      urgency = 'low';
+      urgency = "low";
     }
 
     // Recommended reorder date (lead time before stockout)
     const recommendedDate = new Date();
-    recommendedDate.setDate(recommendedDate.getDate() + Math.max(0, daysUntilStockout - leadTimeInDays));
+    recommendedDate.setDate(
+      recommendedDate.getDate() +
+        Math.max(0, daysUntilStockout - leadTimeInDays),
+    );
 
     return {
       skuId,
@@ -559,7 +623,7 @@ export class DemandForecasterService {
   forecastMultipleDays(
     skuId: string,
     historicalData: SalesDataPoint[],
-    daysAhead: number = 30
+    daysAhead: number = 30,
   ): DemandForecast[] {
     const forecasts: DemandForecast[] = [];
 
@@ -567,7 +631,12 @@ export class DemandForecasterService {
       const forecastDate = new Date();
       forecastDate.setDate(forecastDate.getDate() + i);
 
-      const forecast = this.predictor.predictDemand(skuId, historicalData, forecastDate, this.externalFactors);
+      const forecast = this.predictor.predictDemand(
+        skuId,
+        historicalData,
+        forecastDate,
+        this.externalFactors,
+      );
       forecasts.push(forecast);
     }
 
@@ -581,14 +650,21 @@ export class DemandForecasterService {
     skuId: string,
     currentStock: number,
     historicalData: SalesDataPoint[],
-    leadTimeInDays: number
+    leadTimeInDays: number,
   ): ReorderSuggestion {
     // Calculate average daily demand
-    const avgDailyDemand = historicalData.length > 0
-      ? historicalData.reduce((a, b) => a + b.quantity, 0) / historicalData.length
-      : 0;
+    const avgDailyDemand =
+      historicalData.length > 0
+        ? historicalData.reduce((a, b) => a + b.quantity, 0) /
+          historicalData.length
+        : 0;
 
-    return this.reorderSuggester.suggestReorder(skuId, currentStock, avgDailyDemand, leadTimeInDays);
+    return this.reorderSuggester.suggestReorder(
+      skuId,
+      currentStock,
+      avgDailyDemand,
+      leadTimeInDays,
+    );
   }
 
   /**
@@ -603,7 +679,7 @@ export class DemandForecasterService {
    */
   clusterSKUs(
     skuDataMap: Map<string, SalesDataPoint[]>,
-    skuProperties: Map<string, { price: number; category: string }>
+    skuProperties: Map<string, { price: number; category: string }>,
   ): SKUCluster[] {
     return this.clusterer.clusterSKUs(skuDataMap, skuProperties);
   }

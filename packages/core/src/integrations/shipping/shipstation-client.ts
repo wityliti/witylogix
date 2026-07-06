@@ -192,7 +192,7 @@ export class ShipStationClient extends ShippingAdapter {
       await this.getCarriers();
     } catch (error: unknown) {
       throw new Error(
-        `Failed to validate ShipStation credentials: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to validate ShipStation credentials: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -237,11 +237,11 @@ export class ShipStationClient extends ShippingAdapter {
       {
         headers: { Authorization: this.authHeader },
         body: payload,
-      }
+      },
     );
 
     return (response.rates || []).map((rate: ShipStationRate) =>
-      this.normalizeRate(rate)
+      this.normalizeRate(rate),
     );
   }
 
@@ -250,7 +250,7 @@ export class ShipStationClient extends ShippingAdapter {
    */
   async createShipment(
     request: ShipmentRequest,
-    rateId: string
+    rateId: string,
   ): Promise<ShipmentLabel> {
     const payload = {
       carrierCode: undefined,
@@ -278,21 +278,23 @@ export class ShipStationClient extends ShippingAdapter {
             insuredValue: request.insureValue / 100,
           }
         : undefined,
-      internationalOptions: this.shouldUseInternational(request.from, request.to)
+      internationalOptions: this.shouldUseInternational(
+        request.from,
+        request.to,
+      )
         ? {
             contents: "MERCHANDISE",
           }
         : undefined,
     };
 
-    const response = await this.request<{ shipmentId: number; labelId: number }>(
-      "POST",
-      `${this.baseUrl}/shipments/createlabel`,
-      {
-        headers: { Authorization: this.authHeader },
-        body: payload,
-      }
-    );
+    const response = await this.request<{
+      shipmentId: number;
+      labelId: number;
+    }>("POST", `${this.baseUrl}/shipments/createlabel`, {
+      headers: { Authorization: this.authHeader },
+      body: payload,
+    });
 
     // Fetch the label details
     return this.getLabel(String(response.labelId));
@@ -307,7 +309,7 @@ export class ShipStationClient extends ShippingAdapter {
       `${this.baseUrl}/labels/${labelId}`,
       {
         headers: { Authorization: this.authHeader },
-      }
+      },
     );
 
     return this.normalizeLabel(response);
@@ -340,7 +342,7 @@ export class ShipStationClient extends ShippingAdapter {
         `${this.baseUrl}/labels/${labelId}`,
         {
           headers: { Authorization: this.authHeader },
-        }
+        },
       );
       return true;
     } catch {
@@ -352,7 +354,7 @@ export class ShipStationClient extends ShippingAdapter {
    * Validate an address.
    */
   async validateAddress(
-    address: ShippingAddress
+    address: ShippingAddress,
   ): Promise<AddressValidationResult> {
     const normalized = this.AddressNormalizer.normalize(address);
 
@@ -363,7 +365,7 @@ export class ShipStationClient extends ShippingAdapter {
         {
           headers: { Authorization: this.authHeader },
           body: this.addressToShipStation(normalized),
-        }
+        },
       );
 
       return {
@@ -393,7 +395,7 @@ export class ShipStationClient extends ShippingAdapter {
       `${this.baseUrl}/carriers`,
       {
         headers: { Authorization: this.authHeader },
-      }
+      },
     );
 
     return response.carriers || [];
@@ -403,7 +405,7 @@ export class ShipStationClient extends ShippingAdapter {
    * Get services for a carrier.
    */
   private async getCarrierServices(
-    carrierCode: string
+    carrierCode: string,
   ): Promise<ShipStationService[]> {
     const response = await this.request<{ services: ShipStationService[] }>(
       "GET",
@@ -411,7 +413,7 @@ export class ShipStationClient extends ShippingAdapter {
       {
         headers: { Authorization: this.authHeader },
         query: { carrierCode },
-      }
+      },
     );
 
     return response.services || [];
@@ -521,7 +523,7 @@ export class ShipStationClient extends ShippingAdapter {
    */
   private shouldUseInternational(
     from: ShippingAddress,
-    to: ShippingAddress
+    to: ShippingAddress,
   ): boolean {
     return from.country !== to.country;
   }
@@ -532,7 +534,7 @@ export class ShipStationClient extends ShippingAdapter {
    */
   public parseWebhook(
     payload: unknown,
-    headers: Record<string, string>
+    headers: Record<string, string>,
   ): ShippingWebhookEvent | null {
     if (typeof payload !== "object" || payload === null) {
       return null;

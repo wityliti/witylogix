@@ -1,6 +1,6 @@
-import pc from 'picocolors';
-import { NoConfigError, withProvider } from '@witylogix/bench-core';
-import type { Context, Provider } from '@witylogix/bench-core';
+import pc from "picocolors";
+import { NoConfigError, withProvider } from "@witylogix/bench-core";
+import type { Context, Provider } from "@witylogix/bench-core";
 
 export interface GlobalOpts {
   json: boolean;

@@ -313,7 +313,9 @@ export class HealthDashboard {
   /**
    * Check external service integrations
    */
-  private async checkExternalServices(): Promise<Record<string, ExternalServiceHealth>> {
+  private async checkExternalServices(): Promise<
+    Record<string, ExternalServiceHealth>
+  > {
     const services: Record<string, ExternalServiceHealth> = {};
 
     const externalServices = [
@@ -389,9 +391,7 @@ export class HealthDashboard {
   private calculateUptime(): UptimeMetrics {
     const uptimeMs = Date.now() - this.startTime.getTime();
     const errorRate =
-      this.requestCount > 0
-        ? (this.errorCount / this.requestCount) * 100
-        : 0;
+      this.requestCount > 0 ? (this.errorCount / this.requestCount) * 100 : 0;
 
     return {
       uptime: uptimeMs,
@@ -415,12 +415,15 @@ export const healthDashboardPlugin = async (
   /**
    * GET /health - Basic health check (no auth)
    */
-  fastify.get("/health", async (request: FastifyRequest, reply: FastifyReply) => {
-    return {
-      status: "ok",
-      timestamp: new Date().toISOString(),
-    };
-  });
+  fastify.get(
+    "/health",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      return {
+        status: "ok",
+        timestamp: new Date().toISOString(),
+      };
+    },
+  );
 
   /**
    * GET /health/detailed - Detailed health status with metrics
@@ -461,13 +464,16 @@ export const healthDashboardPlugin = async (
   /**
    * GET /version - API version info
    */
-  fastify.get("/version", async (request: FastifyRequest, reply: FastifyReply) => {
-    return {
-      version: process.env.API_VERSION || "1.0.0",
-      buildDate: process.env.BUILD_DATE || new Date().toISOString(),
-      environment: process.env.NODE_ENV || "development",
-    };
-  });
+  fastify.get(
+    "/version",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      return {
+        version: process.env.API_VERSION || "1.0.0",
+        buildDate: process.env.BUILD_DATE || new Date().toISOString(),
+        environment: process.env.NODE_ENV || "development",
+      };
+    },
+  );
 };
 
 // ─── HEALTH CHECK MIDDLEWARE ────────────────────────────────────

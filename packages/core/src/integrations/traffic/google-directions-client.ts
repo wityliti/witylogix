@@ -18,7 +18,7 @@ import type {
   TravelMode,
   Coordinate,
   RateLimitInfo,
-} from './types.js';
+} from "./types.js";
 
 interface CacheEntry {
   data: unknown;
@@ -36,7 +36,7 @@ interface RateLimitState {
  */
 export class GoogleDirectionsClient {
   private apiKey: string;
-  private baseUrl = 'https://maps.googleapis.com/maps/api';
+  private baseUrl = "https://maps.googleapis.com/maps/api";
   private rateLimit: number; // requests per second
   private cache: Map<string, CacheEntry>;
   private rateLimitState: RateLimitState;
@@ -48,7 +48,7 @@ export class GoogleDirectionsClient {
 
   constructor(apiKey: string, rateLimit: number = 50) {
     if (!apiKey || apiKey.trim().length === 0) {
-      throw new Error('Google Directions API key is required');
+      throw new Error("Google Directions API key is required");
     }
     this.apiKey = apiKey;
     this.rateLimit = rateLimit;
@@ -169,7 +169,12 @@ export class GoogleDirectionsClient {
     const originLoc = this.normalizeCoordinate(origin);
     const destLoc = this.normalizeCoordinate(destination);
 
-    const cacheKey = this.getCacheKey('directions', originLoc, destLoc, options || {});
+    const cacheKey = this.getCacheKey(
+      "directions",
+      originLoc,
+      destLoc,
+      options || {},
+    );
     const cached = this.getFromCache(cacheKey);
     if (cached) {
       return cached as DirectionsResult;
@@ -182,41 +187,44 @@ export class GoogleDirectionsClient {
       key: this.apiKey,
       origin: this.formatLocation(originLoc),
       destination: this.formatLocation(destLoc),
-      mode: options?.travelMode || 'driving',
+      mode: options?.travelMode || "driving",
     });
 
     if (options?.waypoints && options.waypoints.length > 0) {
       const waypoints = options.waypoints
         .map((w) => this.formatLocation(this.normalizeCoordinate(w)))
-        .join('|');
-      params.append('waypoints', waypoints);
+        .join("|");
+      params.append("waypoints", waypoints);
     }
 
     if (options?.alternatives) {
-      params.append('alternatives', 'true');
+      params.append("alternatives", "true");
     }
 
     if (options?.avoidTolls) {
-      params.append('avoid', 'tolls');
+      params.append("avoid", "tolls");
     } else if (options?.avoidHighways) {
-      params.append('avoid', 'highways');
+      params.append("avoid", "highways");
     } else if (options?.avoidFerries) {
-      params.append('avoid', 'ferries');
+      params.append("avoid", "ferries");
     }
 
     if (options?.departureTime) {
-      params.append('departure_time', Math.floor(options.departureTime.getTime() / 1000).toString());
+      params.append(
+        "departure_time",
+        Math.floor(options.departureTime.getTime() / 1000).toString(),
+      );
     }
 
     if (options?.language) {
-      params.append('language', options.language);
+      params.append("language", options.language);
     }
 
     if (options?.region) {
-      params.append('region', options.region);
+      params.append("region", options.region);
     }
 
-    params.append('traffic_model', 'best_guess');
+    params.append("traffic_model", "best_guess");
 
     try {
       // INTEGRATION: Make actual HTTP call to Google Directions API
@@ -224,13 +232,17 @@ export class GoogleDirectionsClient {
       const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
 
       if (!response.ok) {
-        throw new Error(`Google Directions API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Google Directions API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as DirectionsResult;
 
-      if (data.status !== 'OK') {
-        throw new Error(`Google Directions API returned status: ${data.status}`);
+      if (data.status !== "OK") {
+        throw new Error(
+          `Google Directions API returned status: ${data.status}`,
+        );
       }
 
       // Cache for 5 minutes (static routes don't change)
@@ -238,7 +250,9 @@ export class GoogleDirectionsClient {
 
       return data;
     } catch (error) {
-      throw new Error(`Failed to get route from Google Directions: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get route from Google Directions: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -277,12 +291,13 @@ export class GoogleDirectionsClient {
     });
 
     if (!result.routes || result.routes.length === 0) {
-      throw new Error('No routes found');
+      throw new Error("No routes found");
     }
 
     const leg = result.routes[0].legs[0];
     const duration = leg.duration.value; // seconds
-    const durationInTraffic = leg.duration_in_traffic?.value || leg.duration.value;
+    const durationInTraffic =
+      leg.duration_in_traffic?.value || leg.duration.value;
     const trafficDelay = durationInTraffic - duration;
 
     const response = {
@@ -317,12 +332,12 @@ export class GoogleDirectionsClient {
     },
   ): Promise<DistanceMatrixResult> {
     if (origins.length === 0 || destinations.length === 0) {
-      throw new Error('Origins and destinations are required');
+      throw new Error("Origins and destinations are required");
     }
 
     // Google API limits to 25 origins and 25 destinations per request
     if (origins.length > 25 || destinations.length > 25) {
-      throw new Error('Maximum 25 origins and 25 destinations allowed');
+      throw new Error("Maximum 25 origins and 25 destinations allowed");
     }
 
     const originLocs = origins.map((o) => this.normalizeCoordinate(o));
@@ -339,26 +354,29 @@ export class GoogleDirectionsClient {
 
     const params = new URLSearchParams({
       key: this.apiKey,
-      origins: originLocs.map((o) => this.formatLocation(o)).join('|'),
-      destinations: destLocs.map((d) => this.formatLocation(d)).join('|'),
-      mode: options?.travelMode || 'driving',
+      origins: originLocs.map((o) => this.formatLocation(o)).join("|"),
+      destinations: destLocs.map((d) => this.formatLocation(d)).join("|"),
+      mode: options?.travelMode || "driving",
     });
 
     if (options?.departureTime) {
-      params.append('departure_time', Math.floor(options.departureTime.getTime() / 1000).toString());
+      params.append(
+        "departure_time",
+        Math.floor(options.departureTime.getTime() / 1000).toString(),
+      );
     }
 
     if (options?.avoidTolls) {
-      params.append('avoid', 'tolls');
+      params.append("avoid", "tolls");
     } else if (options?.avoidHighways) {
-      params.append('avoid', 'highways');
+      params.append("avoid", "highways");
     }
 
     if (options?.language) {
-      params.append('language', options.language);
+      params.append("language", options.language);
     }
 
-    params.append('traffic_model', 'best_guess');
+    params.append("traffic_model", "best_guess");
 
     try {
       // INTEGRATION: Make actual HTTP call to Google Distance Matrix API
@@ -366,7 +384,9 @@ export class GoogleDirectionsClient {
       const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
 
       if (!response.ok) {
-        throw new Error(`Google Distance Matrix API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Google Distance Matrix API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as {
@@ -381,8 +401,10 @@ export class GoogleDirectionsClient {
         status: string;
       };
 
-      if (data.status !== 'OK') {
-        throw new Error(`Google Distance Matrix API returned status: ${data.status}`);
+      if (data.status !== "OK") {
+        throw new Error(
+          `Google Distance Matrix API returned status: ${data.status}`,
+        );
       }
 
       const result: DistanceMatrixResult = {
@@ -392,8 +414,14 @@ export class GoogleDirectionsClient {
           elements: row.elements.map((el) => ({
             distance_km: el.distance.value / 1000,
             duration_min: el.duration.value / 60,
-            duration_in_traffic_min: el.duration_in_traffic ? el.duration_in_traffic.value / 60 : undefined,
-            status: el.status as 'OK' | 'NOT_FOUND' | 'ZERO_RESULTS' | 'MAX_ROUTE_LENGTH_EXCEEDED',
+            duration_in_traffic_min: el.duration_in_traffic
+              ? el.duration_in_traffic.value / 60
+              : undefined,
+            status: el.status as
+              | "OK"
+              | "NOT_FOUND"
+              | "ZERO_RESULTS"
+              | "MAX_ROUTE_LENGTH_EXCEEDED",
           })),
         })),
       };
@@ -403,7 +431,9 @@ export class GoogleDirectionsClient {
 
       return result;
     } catch (error) {
-      throw new Error(`Failed to get distance matrix from Google: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get distance matrix from Google: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -459,10 +489,10 @@ export class GoogleDirectionsClient {
     try {
       // INTEGRATION: Make a simple test call to verify API availability
       const result = await this.getRoute(
-        { lat: 40.7128, lng: -74.0060 }, // NYC
+        { lat: 40.7128, lng: -74.006 }, // NYC
         { lat: 34.0522, lng: -118.2437 }, // LA
       );
-      return result.status === 'OK' && result.routes.length > 0;
+      return result.status === "OK" && result.routes.length > 0;
     } catch {
       return false;
     }

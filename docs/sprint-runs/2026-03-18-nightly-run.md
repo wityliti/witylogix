@@ -14,20 +14,20 @@
 
 Prior session (`vigilant-tender-volta`) left broken symlinks and a stale `pnpm.js` shim pointing to a non-existent path. Fixed:
 
-| Fix | Details |
-|-----|---------|
-| `node_modules/dist/pnpm.js` | Updated `require()` path from old session to current pnpm installation |
-| 3 vitest `.bin` symlinks | Fixed broken symlinks in `packages/db`, `packages/core`, `packages/carrier-service` |
-| 8 broken symlinks total | Fixed all `@prisma/*` and vitest module symlinks pointing to old session |
+| Fix                         | Details                                                                             |
+| --------------------------- | ----------------------------------------------------------------------------------- |
+| `node_modules/dist/pnpm.js` | Updated `require()` path from old session to current pnpm installation              |
+| 3 vitest `.bin` symlinks    | Fixed broken symlinks in `packages/db`, `packages/core`, `packages/carrier-service` |
+| 8 broken symlinks total     | Fixed all `@prisma/*` and vitest module symlinks pointing to old session            |
 
 #### Test Fix: PlatformAdapterRegistry Concurrent Request Race Condition
 
 **File:** `packages/core/src/platforms/__tests__/registry.test.ts`
 
-| Test | Error | Root Cause |
-|------|-------|------------|
+| Test                                                                      | Error                                      | Root Cause                                                                                                              |
+| ------------------------------------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | `Singleton Caching > should handle concurrent adapter requests correctly` | `toBe` failed — different object instances | Race condition: concurrent `getPlatformAdapter()` calls all bypass cache check, each creating separate adapter instance |
-| `Error Handling > should handle rapid successive adapter retrievals` | Same `toBe` failure | Same race condition with 3 concurrent calls |
+| `Error Handling > should handle rapid successive adapter retrievals`      | Same `toBe` failure                        | Same race condition with 3 concurrent calls                                                                             |
 
 **Fix:** Added `ADAPTER_PENDING` map for in-flight request deduplication. When multiple concurrent calls request the same adapter source, only the first creates the instance; subsequent calls await the same pending promise. This ensures singleton semantics even under concurrent access.
 
@@ -35,17 +35,17 @@ Prior session (`vigilant-tender-volta`) left broken symlinks and a stale `pnpm.j
 
 #### Verified Test Results
 
-| Package | Tests | Status |
-|---------|-------|--------|
-| @witylogix/types | 56 | ✅ |
-| @witylogix/validators | 118 | ✅ |
-| @witylogix/sdk | 164 | ✅ |
-| @witylogix/extension-core | 6 | ✅ |
-| @witylogix/core (registry) | 36 | ✅ (was 2 failing) |
-| @witylogix/core (platforms, tracking, migration, etc.) | 386+ | ✅ |
-| @witylogix/db | 147 | ✅ |
-| @witylogix/workflows | 93 | ✅ |
-| @witylogix/checkout-widget | 0 | ✅ (passWithNoTests) |
+| Package                                                | Tests | Status               |
+| ------------------------------------------------------ | ----- | -------------------- |
+| @witylogix/types                                       | 56    | ✅                   |
+| @witylogix/validators                                  | 118   | ✅                   |
+| @witylogix/sdk                                         | 164   | ✅                   |
+| @witylogix/extension-core                              | 6     | ✅                   |
+| @witylogix/core (registry)                             | 36    | ✅ (was 2 failing)   |
+| @witylogix/core (platforms, tracking, migration, etc.) | 386+  | ✅                   |
+| @witylogix/db                                          | 147   | ✅                   |
+| @witylogix/workflows                                   | 93    | ✅                   |
+| @witylogix/checkout-widget                             | 0     | ✅ (passWithNoTests) |
 
 **Total: 1,000+ tests passing across 9 packages.**
 

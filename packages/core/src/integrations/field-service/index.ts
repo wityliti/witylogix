@@ -52,19 +52,19 @@ export type {
   RateLimitInfo,
   PaginationParams,
   PaginatedResult,
-} from './types.js';
+} from "./types.js";
 
 // ─── BASE ADAPTER ───────────────────────────────────────────────────────────
 
-export { AbstractFieldServiceAdapter } from './field-service-adapter.js';
+export { AbstractFieldServiceAdapter } from "./field-service-adapter.js";
 
 // ─── PROVIDER CLIENTS ────────────────────────────────────────────────────────
 
-export { ServiceTitanClient } from './servicetitan-client.js';
-export { JobberClient } from './jobber-client.js';
-export { HouseCallProClient } from './housecall-pro-client.js';
-export { FieldEdgeClient } from './fieldedge-client.js';
+export { ServiceTitanClient } from "./servicetitan-client.js";
+export { JobberClient } from "./jobber-client.js";
+export { HouseCallProClient } from "./housecall-pro-client.js";
+export { FieldEdgeClient } from "./fieldedge-client.js";
 
 // ─── DISPATCH ENGINE ────────────────────────────────────────────────────────
 
-export { FieldServiceDispatcher } from './field-service-dispatcher.js';
+export { FieldServiceDispatcher } from "./field-service-dispatcher.js";

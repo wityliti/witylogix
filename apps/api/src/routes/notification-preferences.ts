@@ -15,11 +15,25 @@ import { tenantContext } from "../middleware/tenant.js";
 
 // ─── Default preferences ──────────────────────────────────────────────────
 
-const CHANNELS = ["EMAIL", "SMS", "WHATSAPP", "PUSH", "WEBHOOK", "SLACK"] as const;
-const CATEGORIES = ["ORDERS", "DELIVERIES", "DRIVERS", "PAYMENTS", "SYSTEM", "ALERTS"] as const;
+const CHANNELS = [
+  "EMAIL",
+  "SMS",
+  "WHATSAPP",
+  "PUSH",
+  "WEBHOOK",
+  "SLACK",
+] as const;
+const CATEGORIES = [
+  "ORDERS",
+  "DELIVERIES",
+  "DRIVERS",
+  "PAYMENTS",
+  "SYSTEM",
+  "ALERTS",
+] as const;
 
-type NotificationChannel = typeof CHANNELS[number];
-type NotificationCategory = typeof CATEGORIES[number];
+type NotificationChannel = (typeof CHANNELS)[number];
+type NotificationCategory = (typeof CATEGORIES)[number];
 
 interface ChannelPreference {
   channel: NotificationChannel;
@@ -89,14 +103,20 @@ function getPreferences(settings: unknown): NotificationPreferences {
       Array.isArray(raw.channelMatrix) && raw.channelMatrix.length > 0
         ? raw.channelMatrix
         : DEFAULT_PREFERENCES.channelMatrix,
-    quietHours: { ...DEFAULT_PREFERENCES.quietHours, ...(raw.quietHours ?? {}) },
-    digestSettings: { ...DEFAULT_PREFERENCES.digestSettings, ...(raw.digestSettings ?? {}) },
+    quietHours: {
+      ...DEFAULT_PREFERENCES.quietHours,
+      ...(raw.quietHours ?? {}),
+    },
+    digestSettings: {
+      ...DEFAULT_PREFERENCES.digestSettings,
+      ...(raw.digestSettings ?? {}),
+    },
   };
 }
 
 function mergePreferences(
   existing: NotificationPreferences,
-  patch: Partial<NotificationPreferences>
+  patch: Partial<NotificationPreferences>,
 ): NotificationPreferences {
   return {
     channelMatrix: patch.channelMatrix ?? existing.channelMatrix,
@@ -111,7 +131,9 @@ function mergePreferences(
 
 // ─── Route Plugin ─────────────────────────────────────────────────────────
 
-export default async function notificationPreferencesRoutes(app: FastifyInstance) {
+export default async function notificationPreferencesRoutes(
+  app: FastifyInstance,
+) {
   app.addHook("preHandler", requireAuth);
   app.addHook("preHandler", tenantContext);
 
@@ -126,7 +148,9 @@ export default async function notificationPreferencesRoutes(app: FastifyInstance
       return reply.send({ data: getPreferences(shop?.settings) });
     } catch (err) {
       request.log.error(err, "Failed to fetch notification preferences");
-      return reply.status(500).send({ error: "Failed to fetch notification preferences" });
+      return reply
+        .status(500)
+        .send({ error: "Failed to fetch notification preferences" });
     }
   });
 
@@ -157,7 +181,9 @@ export default async function notificationPreferencesRoutes(app: FastifyInstance
       return reply.send({ data: updated });
     } catch (err) {
       request.log.error(err, "Failed to update notification preferences");
-      return reply.status(500).send({ error: "Failed to update notification preferences" });
+      return reply
+        .status(500)
+        .send({ error: "Failed to update notification preferences" });
     }
   });
 
@@ -180,9 +206,7 @@ export default async function notificationPreferencesRoutes(app: FastifyInstance
             channel: channel as "EMAIL" | "SMS" | "WHATSAPP" | "PUSH",
             eventType: "test",
             recipient:
-              channel === "EMAIL"
-                ? "test@example.com"
-                : "+10000000000",
+              channel === "EMAIL" ? "test@example.com" : "+10000000000",
             status: "SENT",
             sentAt: new Date(),
           },
@@ -202,10 +226,15 @@ export default async function notificationPreferencesRoutes(app: FastifyInstance
         });
       }
 
-      return reply.send({ success: true, message: `Test ${channel} notification sent successfully` });
+      return reply.send({
+        success: true,
+        message: `Test ${channel} notification sent successfully`,
+      });
     } catch (err) {
       request.log.error(err, "Failed to send test notification");
-      return reply.status(500).send({ error: "Failed to send test notification" });
+      return reply
+        .status(500)
+        .send({ error: "Failed to send test notification" });
     }
   });
 

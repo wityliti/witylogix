@@ -82,7 +82,7 @@ const MetricCard = ({ data }: { data: MetricData }) => (
     <p
       className={cn(
         "text-sm font-semibold",
-        data.trendUp ? "text-wl-success-400" : "text-wl-danger-400"
+        data.trendUp ? "text-wl-success-400" : "text-wl-danger-400",
       )}
     >
       {data.change}
@@ -99,7 +99,10 @@ const LineChart = ({ data }: { data: ChartPoint[] }) => {
           <div key={idx} className="flex-1 flex flex-col items-center gap-1">
             <div
               className="w-full bg-gradient-to-t from-wl-primary-500 to-wl-primary-400 rounded-t transition-all hover:opacity-80"
-              style={{ height: `${(point.value / maxValue) * 100}%`, minHeight: "4px" }}
+              style={{
+                height: `${(point.value / maxValue) * 100}%`,
+                minHeight: "4px",
+              }}
             />
             <p className="text-xs text-wl-text-tertiary">{point.label}</p>
           </div>
@@ -116,7 +119,9 @@ const BarChart = ({ data }: { data: ChartPoint[] }) => {
       {data.map((point, idx) => (
         <div key={idx}>
           <div className="flex items-center justify-between mb-1">
-            <p className="text-xs font-medium text-wl-text-primary">{point.label}</p>
+            <p className="text-xs font-medium text-wl-text-primary">
+              {point.label}
+            </p>
             <p className="text-xs text-wl-text-tertiary">{point.value}</p>
           </div>
           <div className="w-full h-2 bg-wl-bg-overlay rounded-full overflow-hidden">
@@ -136,22 +141,23 @@ const PieChart = ({ data }: { data: PieSlice[] }) => {
   return (
     <div className="p-4 flex items-center gap-6">
       <div className="relative w-32 h-32 flex-shrink-0">
-        <svg viewBox="0 0 120 120" className="w-full h-full" style={{ transform: "rotate(-90deg)" }}>
-          {data.reduce(
-            (acc, item, idx) => {
-              const percentage = item.value / total;
-              const circumference = 2 * Math.PI * 45;
-              const strokeDashoffset = circumference * (1 - percentage);
-              const rotation = data
-                .slice(0, idx)
-                .reduce((s, d) => s + (d.value / total) * 360, 0);
-              return (
-                acc +
-                `<circle cx="60" cy="60" r="45" fill="none" stroke="var(--${item.color})" strokeWidth="10" strokeDasharray="${circumference}" strokeDashoffset="${strokeDashoffset}" style="transform: rotate(${rotation}deg); transform-origin: 60px 60px;" />`
-              );
-            },
-            ""
-          )}
+        <svg
+          viewBox="0 0 120 120"
+          className="w-full h-full"
+          style={{ transform: "rotate(-90deg)" }}
+        >
+          {data.reduce((acc, item, idx) => {
+            const percentage = item.value / total;
+            const circumference = 2 * Math.PI * 45;
+            const strokeDashoffset = circumference * (1 - percentage);
+            const rotation = data
+              .slice(0, idx)
+              .reduce((s, d) => s + (d.value / total) * 360, 0);
+            return (
+              acc +
+              `<circle cx="60" cy="60" r="45" fill="none" stroke="var(--${item.color})" strokeWidth="10" strokeDasharray="${circumference}" strokeDashoffset="${strokeDashoffset}" style="transform: rotate(${rotation}deg); transform-origin: 60px 60px;" />`
+            );
+          }, "")}
         </svg>
         <p className="absolute inset-0 flex items-center justify-center text-sm font-bold text-wl-text-primary">
           {total}
@@ -162,7 +168,9 @@ const PieChart = ({ data }: { data: PieSlice[] }) => {
           <div key={idx} className="flex items-center gap-2 text-xs">
             <div className={`w-2 h-2 rounded-full bg-${item.color}`} />
             <span className="text-wl-text-secondary">{item.label}</span>
-            <span className="ml-auto font-semibold text-wl-text-primary">{item.value}</span>
+            <span className="ml-auto font-semibold text-wl-text-primary">
+              {item.value}
+            </span>
           </div>
         ))}
       </div>
@@ -180,7 +188,9 @@ const DataTable = ({ data }: { data: TableRow[] }) => (
         >
           <p className="text-sm font-medium text-wl-text-primary">{row.name}</p>
           <div className="text-right">
-            <p className="text-sm font-bold text-wl-text-primary">{row.value}</p>
+            <p className="text-sm font-bold text-wl-text-primary">
+              {row.value}
+            </p>
             <p className="text-xs text-wl-text-tertiary">{row.trend}</p>
           </div>
         </div>
@@ -207,15 +217,35 @@ const AnalyticsWidget = ({
   const renderContent = () => {
     switch (config.mode) {
       case "metric":
-        return data?.metric ? <MetricCard data={data.metric} /> : <EmptyState />;
+        return data?.metric ? (
+          <MetricCard data={data.metric} />
+        ) : (
+          <EmptyState />
+        );
       case "line-chart":
-        return data?.chart?.length ? <LineChart data={data.chart} /> : <EmptyState />;
+        return data?.chart?.length ? (
+          <LineChart data={data.chart} />
+        ) : (
+          <EmptyState />
+        );
       case "bar-chart":
-        return data?.chart?.length ? <BarChart data={data.chart} /> : <EmptyState />;
+        return data?.chart?.length ? (
+          <BarChart data={data.chart} />
+        ) : (
+          <EmptyState />
+        );
       case "pie-chart":
-        return data?.pie?.length ? <PieChart data={data.pie} /> : <EmptyState />;
+        return data?.pie?.length ? (
+          <PieChart data={data.pie} />
+        ) : (
+          <EmptyState />
+        );
       case "table":
-        return data?.table?.length ? <DataTable data={data.table} /> : <EmptyState />;
+        return data?.table?.length ? (
+          <DataTable data={data.table} />
+        ) : (
+          <EmptyState />
+        );
       default:
         return <EmptyState />;
     }
@@ -227,7 +257,9 @@ const AnalyticsWidget = ({
         <div className="flex items-center gap-2">
           <GripVerticalIcon className="w-4 h-4 text-wl-text-tertiary cursor-grab" />
           <div>
-            <h4 className="text-sm font-semibold text-wl-text-primary">{config.title}</h4>
+            <h4 className="text-sm font-semibold text-wl-text-primary">
+              {config.title}
+            </h4>
             <p className="text-xs text-wl-text-tertiary">{config.dataSource}</p>
           </div>
         </div>

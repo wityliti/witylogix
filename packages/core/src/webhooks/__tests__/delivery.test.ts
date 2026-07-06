@@ -16,7 +16,9 @@ import {
 // Mock fetch globally
 global.fetch = vi.fn();
 
-const createMockSubscription = (url = "https://example.com/webhook"): WebhookSubscription => ({
+const createMockSubscription = (
+  url = "https://example.com/webhook",
+): WebhookSubscription => ({
   id: "sub_123",
   shopId: "shop_456",
   url,
@@ -41,7 +43,7 @@ const createMockPayload = (): WebhookPayload => ({
 
 const createMockAttempt = (
   status = "pending",
-  attempt = 1
+  attempt = 1,
 ): WebhookDeliveryAttempt => ({
   id: "attempt_123",
   webhookId: "wh_123",
@@ -367,10 +369,10 @@ describe("Webhook Delivery", () => {
 
         // Allow 1 second tolerance for test execution time
         expect(next.scheduledAt.getTime()).toBeLessThanOrEqual(
-          expectedTime + 1000
+          expectedTime + 1000,
         );
         expect(next.scheduledAt.getTime()).toBeGreaterThanOrEqual(
-          expectedTime - 1000
+          expectedTime - 1000,
         );
       }
     });

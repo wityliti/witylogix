@@ -79,7 +79,7 @@ export class SendbirdClient extends MessagingAdapter {
       await this.makeRequest("GET", "/applications");
     } catch (error) {
       throw new Error(
-        `Sendbird validation failed: ${error instanceof Error ? error.message : String(error)}`
+        `Sendbird validation failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -100,7 +100,9 @@ export class SendbirdClient extends MessagingAdapter {
    */
   async sendPush(notification: PushNotification): Promise<SendResult> {
     return this.executeWithProtections(async () => {
-      const to = Array.isArray(notification.to) ? notification.to : [notification.to];
+      const to = Array.isArray(notification.to)
+        ? notification.to
+        : [notification.to];
 
       const payload = {
         target_user_ids: to,
@@ -111,10 +113,11 @@ export class SendbirdClient extends MessagingAdapter {
         ...(notification.badge && { badge: notification.badge }),
       };
 
-      const response = (await this.makeRequest("POST", "/push/send", payload)) as Record<
-        string,
-        unknown
-      >;
+      const response = (await this.makeRequest(
+        "POST",
+        "/push/send",
+        payload,
+      )) as Record<string, unknown>;
 
       if (response.success) {
         return {
@@ -148,7 +151,7 @@ export class SendbirdClient extends MessagingAdapter {
       const response = (await this.makeRequest(
         "POST",
         `/users/${message.targetUserId}/messages`,
-        payload
+        payload,
       )) as Record<string, unknown>;
 
       if (response.message_id) {
@@ -172,7 +175,11 @@ export class SendbirdClient extends MessagingAdapter {
   /**
    * Create or update a user.
    */
-  async upsertUser(userId: string, nickname: string, profileUrl?: string): Promise<SendbirdUser> {
+  async upsertUser(
+    userId: string,
+    nickname: string,
+    profileUrl?: string,
+  ): Promise<SendbirdUser> {
     return this.executeWithProtections(async () => {
       const payload = {
         user_id: userId,
@@ -180,10 +187,11 @@ export class SendbirdClient extends MessagingAdapter {
         ...(profileUrl && { profile_url: profileUrl }),
       };
 
-      const response = (await this.makeRequest("PUT", `/users/${userId}`, payload)) as Record<
-        string,
-        unknown
-      >;
+      const response = (await this.makeRequest(
+        "PUT",
+        `/users/${userId}`,
+        payload,
+      )) as Record<string, unknown>;
 
       return {
         userId: String(response.user_id),
@@ -199,7 +207,10 @@ export class SendbirdClient extends MessagingAdapter {
    */
   async getUser(userId: string): Promise<SendbirdUser> {
     return this.executeWithProtections(async () => {
-      const response = (await this.makeRequest("GET", `/users/${userId}`)) as Record<string, unknown>;
+      const response = (await this.makeRequest(
+        "GET",
+        `/users/${userId}`,
+      )) as Record<string, unknown>;
 
       return {
         userId: String(response.user_id),
@@ -214,7 +225,10 @@ export class SendbirdClient extends MessagingAdapter {
   /**
    * Update user metadata.
    */
-  async updateUserMetadata(userId: string, metadata: Record<string, unknown>): Promise<void> {
+  async updateUserMetadata(
+    userId: string,
+    metadata: Record<string, unknown>,
+  ): Promise<void> {
     return this.executeWithProtections(async () => {
       const payload = { metadata };
       await this.makeRequest("PUT", `/users/${userId}/metadata`, payload);
@@ -237,7 +251,7 @@ export class SendbirdClient extends MessagingAdapter {
   async createGroupChannel(
     name: string,
     memberUserIds: string[],
-    isDistinct?: boolean
+    isDistinct?: boolean,
   ): Promise<SendbirdChannel> {
     return this.executeWithProtections(async () => {
       const payload = {
@@ -247,10 +261,11 @@ export class SendbirdClient extends MessagingAdapter {
         is_public: false,
       };
 
-      const response = (await this.makeRequest("POST", "/group_channels", payload)) as Record<
-        string,
-        unknown
-      >;
+      const response = (await this.makeRequest(
+        "POST",
+        "/group_channels",
+        payload,
+      )) as Record<string, unknown>;
 
       return {
         channelUrl: String(response.channel_url),
@@ -268,10 +283,10 @@ export class SendbirdClient extends MessagingAdapter {
    */
   async getGroupChannel(channelUrl: string): Promise<SendbirdChannel> {
     return this.executeWithProtections(async () => {
-      const response = (await this.makeRequest("GET", `/group_channels/${channelUrl}`)) as Record<
-        string,
-        unknown
-      >;
+      const response = (await this.makeRequest(
+        "GET",
+        `/group_channels/${channelUrl}`,
+      )) as Record<string, unknown>;
 
       return {
         channelUrl: String(response.channel_url),
@@ -287,10 +302,17 @@ export class SendbirdClient extends MessagingAdapter {
   /**
    * Invite users to a group channel.
    */
-  async inviteToGroupChannel(channelUrl: string, userIds: string[]): Promise<void> {
+  async inviteToGroupChannel(
+    channelUrl: string,
+    userIds: string[],
+  ): Promise<void> {
     return this.executeWithProtections(async () => {
       const payload = { user_ids: userIds };
-      await this.makeRequest("PUT", `/group_channels/${channelUrl}/invite`, payload);
+      await this.makeRequest(
+        "PUT",
+        `/group_channels/${channelUrl}/invite`,
+        payload,
+      );
     });
   }
 
@@ -300,7 +322,11 @@ export class SendbirdClient extends MessagingAdapter {
   async leaveGroupChannel(channelUrl: string, userId: string): Promise<void> {
     return this.executeWithProtections(async () => {
       const payload = { user_id: userId };
-      await this.makeRequest("PUT", `/group_channels/${channelUrl}/leave`, payload);
+      await this.makeRequest(
+        "PUT",
+        `/group_channels/${channelUrl}/leave`,
+        payload,
+      );
     });
   }
 
@@ -331,7 +357,7 @@ export class SendbirdClient extends MessagingAdapter {
     channelUrl: string,
     userId: string,
     messageText: string,
-    customType?: string
+    customType?: string,
   ): Promise<SendbirdMessage> {
     return this.executeWithProtections(async () => {
       const payload = {
@@ -344,14 +370,16 @@ export class SendbirdClient extends MessagingAdapter {
       const response = (await this.makeRequest(
         "POST",
         `/group_channels/${channelUrl}/messages`,
-        payload
+        payload,
       )) as Record<string, unknown>;
 
       return {
         messageId: Number(response.message_id || 0),
         type: "MESG",
         message: String(response.message),
-        userId: String((response.user as Record<string, unknown> | undefined)?.user_id),
+        userId: String(
+          (response.user as Record<string, unknown> | undefined)?.user_id,
+        ),
         createdAt: new Date(Number(response.created_at || 0) * 1000),
       };
     });
@@ -363,7 +391,7 @@ export class SendbirdClient extends MessagingAdapter {
   async updateMessage(
     channelUrl: string,
     messageId: number,
-    messageText: string
+    messageText: string,
   ): Promise<SendbirdMessage> {
     return this.executeWithProtections(async () => {
       const payload = { message: messageText };
@@ -371,14 +399,16 @@ export class SendbirdClient extends MessagingAdapter {
       const response = (await this.makeRequest(
         "PUT",
         `/group_channels/${channelUrl}/messages/${messageId}`,
-        payload
+        payload,
       )) as Record<string, unknown>;
 
       return {
         messageId: Number(response.message_id || 0),
         type: "MESG",
         message: String(response.message),
-        userId: String((response.user as Record<string, unknown> | undefined)?.user_id),
+        userId: String(
+          (response.user as Record<string, unknown> | undefined)?.user_id,
+        ),
         createdAt: new Date(Number(response.created_at || 0) * 1000),
       };
     });
@@ -389,7 +419,10 @@ export class SendbirdClient extends MessagingAdapter {
    */
   async deleteMessage(channelUrl: string, messageId: number): Promise<void> {
     return this.executeWithProtections(async () => {
-      await this.makeRequest("DELETE", `/group_channels/${channelUrl}/messages/${messageId}`);
+      await this.makeRequest(
+        "DELETE",
+        `/group_channels/${channelUrl}/messages/${messageId}`,
+      );
     });
   }
 
@@ -400,14 +433,14 @@ export class SendbirdClient extends MessagingAdapter {
     channelUrl: string,
     messageId: number,
     emoji: string,
-    userId: string
+    userId: string,
   ): Promise<void> {
     return this.executeWithProtections(async () => {
       const payload = { user_id: userId };
       await this.makeRequest(
         "POST",
         `/group_channels/${channelUrl}/messages/${messageId}/reactions?reaction=${encodeURIComponent(emoji)}`,
-        payload
+        payload,
       );
     });
   }
@@ -415,13 +448,21 @@ export class SendbirdClient extends MessagingAdapter {
   /**
    * Ban a user from a channel.
    */
-  async banUser(channelUrl: string, userId: string, secondsDuration?: number): Promise<void> {
+  async banUser(
+    channelUrl: string,
+    userId: string,
+    secondsDuration?: number,
+  ): Promise<void> {
     return this.executeWithProtections(async () => {
       const payload: Record<string, unknown> = { user_id: userId };
       if (secondsDuration) {
         payload.seconds = secondsDuration;
       }
-      await this.makeRequest("POST", `/group_channels/${channelUrl}/ban`, payload);
+      await this.makeRequest(
+        "POST",
+        `/group_channels/${channelUrl}/ban`,
+        payload,
+      );
     });
   }
 
@@ -430,20 +471,31 @@ export class SendbirdClient extends MessagingAdapter {
    */
   async unbanUser(channelUrl: string, userId: string): Promise<void> {
     return this.executeWithProtections(async () => {
-      await this.makeRequest("DELETE", `/group_channels/${channelUrl}/ban/${userId}`);
+      await this.makeRequest(
+        "DELETE",
+        `/group_channels/${channelUrl}/ban/${userId}`,
+      );
     });
   }
 
   /**
    * Mute a user in a channel.
    */
-  async muteUser(channelUrl: string, userId: string, secondsDuration?: number): Promise<void> {
+  async muteUser(
+    channelUrl: string,
+    userId: string,
+    secondsDuration?: number,
+  ): Promise<void> {
     return this.executeWithProtections(async () => {
       const payload: Record<string, unknown> = { user_id: userId };
       if (secondsDuration) {
         payload.seconds = secondsDuration;
       }
-      await this.makeRequest("POST", `/group_channels/${channelUrl}/mute`, payload);
+      await this.makeRequest(
+        "POST",
+        `/group_channels/${channelUrl}/mute`,
+        payload,
+      );
     });
   }
 
@@ -452,7 +504,10 @@ export class SendbirdClient extends MessagingAdapter {
    */
   async unmuteUser(channelUrl: string, userId: string): Promise<void> {
     return this.executeWithProtections(async () => {
-      await this.makeRequest("DELETE", `/group_channels/${channelUrl}/mute/${userId}`);
+      await this.makeRequest(
+        "DELETE",
+        `/group_channels/${channelUrl}/mute/${userId}`,
+      );
     });
   }
 
@@ -462,7 +517,11 @@ export class SendbirdClient extends MessagingAdapter {
   async enablePushNotifications(userId: string): Promise<void> {
     return this.executeWithProtections(async () => {
       const payload = { push_enabled: true };
-      await this.makeRequest("PUT", `/users/${userId}/push_preferences`, payload);
+      await this.makeRequest(
+        "PUT",
+        `/users/${userId}/push_preferences`,
+        payload,
+      );
     });
   }
 
@@ -472,7 +531,11 @@ export class SendbirdClient extends MessagingAdapter {
   async disablePushNotifications(userId: string): Promise<void> {
     return this.executeWithProtections(async () => {
       const payload = { push_enabled: false };
-      await this.makeRequest("PUT", `/users/${userId}/push_preferences`, payload);
+      await this.makeRequest(
+        "PUT",
+        `/users/${userId}/push_preferences`,
+        payload,
+      );
     });
   }
 
@@ -482,7 +545,7 @@ export class SendbirdClient extends MessagingAdapter {
   async createAnnouncement(
     announcementTitle: string,
     announcementContent: string,
-    targetChannelUrls?: string[]
+    targetChannelUrls?: string[],
   ): Promise<SendResult> {
     return this.executeWithProtections(async () => {
       const payload = {
@@ -491,10 +554,11 @@ export class SendbirdClient extends MessagingAdapter {
         ...(targetChannelUrls && { target_channel_urls: targetChannelUrls }),
       };
 
-      const response = (await this.makeRequest("POST", "/announcements", payload)) as Record<
-        string,
-        unknown
-      >;
+      const response = (await this.makeRequest(
+        "POST",
+        "/announcements",
+        payload,
+      )) as Record<string, unknown>;
 
       if (response.id) {
         return {
@@ -520,7 +584,9 @@ export class SendbirdClient extends MessagingAdapter {
     const receipt = payload.receipt;
     this.trackDelivery(receipt.messageId, receipt.status);
 
-    console.log(`Sendbird webhook: ${payload.eventType} for message ${receipt.messageId}`);
+    console.log(
+      `Sendbird webhook: ${payload.eventType} for message ${receipt.messageId}`,
+    );
   }
 
   /**
@@ -529,7 +595,7 @@ export class SendbirdClient extends MessagingAdapter {
   private async makeRequest(
     method: string,
     path: string,
-    body?: Record<string, unknown>
+    body?: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
     const baseUrl = this.baseUrl.replace("{region}", this.region);
     const url = new URL(path, baseUrl);
@@ -551,7 +617,9 @@ export class SendbirdClient extends MessagingAdapter {
     const response = await fetch(url.toString(), options);
 
     if (!response.ok) {
-      throw new Error(`Sendbird API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Sendbird API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     const contentType = response.headers.get("content-type");

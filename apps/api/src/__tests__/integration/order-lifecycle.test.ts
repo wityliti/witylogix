@@ -154,7 +154,8 @@ interface OrganizationResponse {
 }
 
 // Test data generators
-const generateId = (prefix: string = "test") => `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+const generateId = (prefix: string = "test") =>
+  `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
 describe("Order Lifecycle Integration Tests", () => {
   let mockPrisma: any;
@@ -540,7 +541,13 @@ describe("Order Lifecycle Integration Tests", () => {
       const timestamps: Record<string, string> = {};
 
       // Simulate state changes with timestamps
-      const states = ["PENDING", "ACCEPTED", "ASSIGNED", "OUT_FOR_DELIVERY", "DELIVERED"];
+      const states = [
+        "PENDING",
+        "ACCEPTED",
+        "ASSIGNED",
+        "OUT_FOR_DELIVERY",
+        "DELIVERED",
+      ];
 
       for (const state of states) {
         const timestamp = new Date().toISOString();
@@ -703,21 +710,21 @@ describe("Order Lifecycle Integration Tests", () => {
 
       // Attempt to cancel
       const isCancellable = !["DELIVERED", "FAILED", "RETURNED"].includes(
-        deliveredOrder.status
+        deliveredOrder.status,
       );
 
       expect(isCancellable).toBe(false);
 
       // Should throw error or return failure
       mockPrisma.order.update.mockRejectedValue(
-        new Error("Cannot cancel delivered order")
+        new Error("Cannot cancel delivered order"),
       );
 
       await expect(
         mockPrisma.order.update({
           where: { id: orderId },
           data: { status: "CANCELLED" },
-        })
+        }),
       ).rejects.toThrow("Cannot cancel delivered order");
     });
   });
@@ -757,16 +764,46 @@ describe("Order Lifecycle Integration Tests", () => {
       // Create orders in each shop
       const ordersPerShop: Record<string, any[]> = {
         [shop1Id]: [
-          { id: generateId("order"), shopId: shop1Id, status: "DELIVERED", totalPrice: 100 },
-          { id: generateId("order"), shopId: shop1Id, status: "OUT_FOR_DELIVERY", totalPrice: 150 },
+          {
+            id: generateId("order"),
+            shopId: shop1Id,
+            status: "DELIVERED",
+            totalPrice: 100,
+          },
+          {
+            id: generateId("order"),
+            shopId: shop1Id,
+            status: "OUT_FOR_DELIVERY",
+            totalPrice: 150,
+          },
         ],
         [shop2Id]: [
-          { id: generateId("order"), shopId: shop2Id, status: "DELIVERED", totalPrice: 200 },
-          { id: generateId("order"), shopId: shop2Id, status: "PENDING", totalPrice: 175 },
-          { id: generateId("order"), shopId: shop2Id, status: "ASSIGNED", totalPrice: 225 },
+          {
+            id: generateId("order"),
+            shopId: shop2Id,
+            status: "DELIVERED",
+            totalPrice: 200,
+          },
+          {
+            id: generateId("order"),
+            shopId: shop2Id,
+            status: "PENDING",
+            totalPrice: 175,
+          },
+          {
+            id: generateId("order"),
+            shopId: shop2Id,
+            status: "ASSIGNED",
+            totalPrice: 225,
+          },
         ],
         [shop3Id]: [
-          { id: generateId("order"), shopId: shop3Id, status: "OUT_FOR_DELIVERY", totalPrice: 300 },
+          {
+            id: generateId("order"),
+            shopId: shop3Id,
+            status: "OUT_FOR_DELIVERY",
+            totalPrice: 300,
+          },
         ],
       };
 
@@ -786,7 +823,7 @@ describe("Order Lifecycle Integration Tests", () => {
           acc[order.status] = (acc[order.status] || 0) + 1;
           return acc;
         },
-        {}
+        {},
       );
 
       expect(statusCounts["DELIVERED"]).toBe(2);
@@ -797,7 +834,7 @@ describe("Order Lifecycle Integration Tests", () => {
       // Calculate aggregate revenue
       const totalRevenue = aggregatedOrders.reduce(
         (sum: number, order: any) => sum + order.totalPrice,
-        0
+        0,
       );
 
       expect(totalRevenue).toBe(1150);
@@ -818,7 +855,9 @@ describe("Order Lifecycle Integration Tests", () => {
         },
         {
           id: generateId("order"),
-          createdAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(
+            now.getTime() - 3 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
           status: "DELIVERED",
         },
         {
@@ -836,9 +875,8 @@ describe("Order Lifecycle Integration Tests", () => {
       // Query for orders in last 7 days
       mockPrisma.order.findMany.mockResolvedValue(
         ordersWithDates.filter(
-          (o) =>
-            new Date(o.createdAt).getTime() >= sevenDaysAgo.getTime()
-        )
+          (o) => new Date(o.createdAt).getTime() >= sevenDaysAgo.getTime(),
+        ),
       );
 
       const recentOrders = await mockPrisma.order.findMany({
@@ -852,9 +890,8 @@ describe("Order Lifecycle Integration Tests", () => {
       // Query for orders in last 30 days
       mockPrisma.order.findMany.mockResolvedValue(
         ordersWithDates.filter(
-          (o) =>
-            new Date(o.createdAt).getTime() >= thirtyDaysAgo.getTime()
-        )
+          (o) => new Date(o.createdAt).getTime() >= thirtyDaysAgo.getTime(),
+        ),
       );
 
       const monthOrders = await mockPrisma.order.findMany({
@@ -967,14 +1004,16 @@ describe("Order Lifecycle Integration Tests", () => {
       });
 
       const existing = await mockPrisma.order.findUnique({
-        where: { shopId_externalOrderId: { shopId, externalOrderId: externalId } },
+        where: {
+          shopId_externalOrderId: { shopId, externalOrderId: externalId },
+        },
       });
 
       expect(existing).toBeDefined();
 
       // Attempting to create duplicate should fail
       mockPrisma.order.create.mockRejectedValue(
-        new Error("Unique constraint failed")
+        new Error("Unique constraint failed"),
       );
 
       await expect(
@@ -983,7 +1022,7 @@ describe("Order Lifecycle Integration Tests", () => {
             shopId: shopId,
             externalOrderId: externalId,
           },
-        })
+        }),
       ).rejects.toThrow("Unique constraint failed");
     });
   });
@@ -1020,9 +1059,7 @@ describe("Order Lifecycle Integration Tests", () => {
       const orderIds = Array.from({ length: 10 }, () => generateId("order"));
 
       // Mock transaction
-      mockPrisma.$transaction.mockResolvedValue([
-        { success: true, count: 10 },
-      ]);
+      mockPrisma.$transaction.mockResolvedValue([{ success: true, count: 10 }]);
 
       const result = await mockPrisma.$transaction([
         mockPrisma.order.updateMany({

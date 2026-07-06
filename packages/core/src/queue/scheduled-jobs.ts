@@ -1,5 +1,5 @@
-import { Queue } from 'bullmq';
-import cronParser from 'cron-parser';
+import { Queue } from "bullmq";
+import cronParser from "cron-parser";
 
 export interface ScheduledJobDef {
   id: string;
@@ -14,7 +14,7 @@ export interface ScheduledJobDef {
 export interface JobExecutionHistory {
   timestamp: Date;
   duration: number;
-  status: 'success' | 'failed';
+  status: "success" | "failed";
   error?: string;
 }
 
@@ -27,62 +27,62 @@ export interface ScheduledJobStatus {
   lastRuns: JobExecutionHistory[];
 }
 
-const JOB_DEFINITIONS: Record<string, Omit<ScheduledJobDef, 'enabled'>> = {
-  'daily-usage-aggregation': {
-    id: 'daily-usage-aggregation',
-    name: 'Daily Usage Aggregation',
-    pattern: '0 2 * * *', // 2 AM daily
-    queue: 'analytics',
-    data: { type: 'daily-rollup' },
+const JOB_DEFINITIONS: Record<string, Omit<ScheduledJobDef, "enabled">> = {
+  "daily-usage-aggregation": {
+    id: "daily-usage-aggregation",
+    name: "Daily Usage Aggregation",
+    pattern: "0 2 * * *", // 2 AM daily
+    queue: "analytics",
+    data: { type: "daily-rollup" },
   },
-  'hourly-health-check': {
-    id: 'hourly-health-check',
-    name: 'Hourly Health Check',
-    pattern: '0 * * * *', // Every hour
-    queue: 'system',
-    data: { type: 'health-check' },
+  "hourly-health-check": {
+    id: "hourly-health-check",
+    name: "Hourly Health Check",
+    pattern: "0 * * * *", // Every hour
+    queue: "system",
+    data: { type: "health-check" },
   },
-  'nightly-cleanup': {
-    id: 'nightly-cleanup',
-    name: 'Nightly Cleanup',
-    pattern: '0 3 * * *', // 3 AM daily
-    queue: 'maintenance',
-    data: { type: 'cleanup' },
+  "nightly-cleanup": {
+    id: "nightly-cleanup",
+    name: "Nightly Cleanup",
+    pattern: "0 3 * * *", // 3 AM daily
+    queue: "maintenance",
+    data: { type: "cleanup" },
   },
-  'weekly-report': {
-    id: 'weekly-report',
-    name: 'Weekly Report Generation',
-    pattern: '0 1 * * 1', // 1 AM Mondays
-    queue: 'reporting',
-    data: { type: 'weekly-report' },
+  "weekly-report": {
+    id: "weekly-report",
+    name: "Weekly Report Generation",
+    pattern: "0 1 * * 1", // 1 AM Mondays
+    queue: "reporting",
+    data: { type: "weekly-report" },
   },
-  'invoice-generation': {
-    id: 'invoice-generation',
-    name: 'Invoice Generation',
-    pattern: '0 0 1 * *', // 1st of month at midnight
-    queue: 'billing',
-    data: { type: 'invoice-gen' },
+  "invoice-generation": {
+    id: "invoice-generation",
+    name: "Invoice Generation",
+    pattern: "0 0 1 * *", // 1st of month at midnight
+    queue: "billing",
+    data: { type: "invoice-gen" },
   },
-  'integration-health-poll': {
-    id: 'integration-health-poll',
-    name: 'Integration Health Poll',
-    pattern: '*/15 * * * *', // Every 15 minutes
-    queue: 'integrations',
-    data: { type: 'health-poll' },
+  "integration-health-poll": {
+    id: "integration-health-poll",
+    name: "Integration Health Poll",
+    pattern: "*/15 * * * *", // Every 15 minutes
+    queue: "integrations",
+    data: { type: "health-poll" },
   },
-  'analytics-rollup': {
-    id: 'analytics-rollup',
-    name: 'Analytics Rollup',
-    pattern: '0 4 * * *', // 4 AM daily
-    queue: 'analytics',
-    data: { type: 'rollup' },
+  "analytics-rollup": {
+    id: "analytics-rollup",
+    name: "Analytics Rollup",
+    pattern: "0 4 * * *", // 4 AM daily
+    queue: "analytics",
+    data: { type: "rollup" },
   },
-  'backup-trigger': {
-    id: 'backup-trigger',
-    name: 'Backup Trigger',
-    pattern: '0 22 * * *', // 10 PM daily
-    queue: 'system',
-    data: { type: 'backup' },
+  "backup-trigger": {
+    id: "backup-trigger",
+    name: "Backup Trigger",
+    pattern: "0 22 * * *", // 10 PM daily
+    queue: "system",
+    data: { type: "backup" },
   },
 };
 
@@ -97,7 +97,7 @@ export class ScheduledJobsManager {
     }
 
     // Initialize all job definitions
-    Object.values(JOB_DEFINITIONS).forEach(def => {
+    Object.values(JOB_DEFINITIONS).forEach((def) => {
       this.jobs.set(def.id, { ...def, enabled: true });
       this.executionHistory.set(def.id, []);
     });
@@ -135,16 +135,12 @@ export class ScheduledJobsManager {
       const nextRun = this.calculateNextRunTime(pattern);
 
       // Register as repeatable job
-      const jobKey = await queue.add(
-        def.id,
-        def.data || {},
-        {
-          repeat: {
-            pattern: pattern,
-          },
-          jobId: `${def.id}-repeating`,
-        }
-      );
+      const jobKey = await queue.add(def.id, def.data || {}, {
+        repeat: {
+          pattern: pattern,
+        },
+        jobId: `${def.id}-repeating`,
+      });
 
       // Update stored definition
       def.pattern = pattern;
@@ -190,7 +186,9 @@ export class ScheduledJobsManager {
     if (queue) {
       try {
         const repeatableJobs = await queue.getRepeatableJobs();
-        const jobToRemove = repeatableJobs.find(j => j.id === `${jobId}-repeating`);
+        const jobToRemove = repeatableJobs.find(
+          (j) => j.id === `${jobId}-repeating`,
+        );
         if (jobToRemove) {
           await queue.removeRepeatableByKey(jobToRemove.key);
         }
@@ -202,7 +200,12 @@ export class ScheduledJobsManager {
     return true;
   }
 
-  recordExecution(jobId: string, duration: number, status: 'success' | 'failed', error?: string): void {
+  recordExecution(
+    jobId: string,
+    duration: number,
+    status: "success" | "failed",
+    error?: string,
+  ): void {
     const history = this.executionHistory.get(jobId) || [];
 
     history.push({
@@ -242,10 +245,15 @@ export class ScheduledJobsManager {
   }
 
   getAllJobsStatus(): ScheduledJobStatus[] {
-    return Array.from(this.jobs.keys()).map(jobId => this.getJobStatus(jobId)!);
+    return Array.from(this.jobs.keys()).map(
+      (jobId) => this.getJobStatus(jobId)!,
+    );
   }
 
-  getExecutionHistory(jobId: string, limit: number = 10): JobExecutionHistory[] {
+  getExecutionHistory(
+    jobId: string,
+    limit: number = 10,
+  ): JobExecutionHistory[] {
     const history = this.executionHistory.get(jobId) || [];
     return history.slice(-limit);
   }
@@ -253,13 +261,16 @@ export class ScheduledJobsManager {
   initializeAllJobs(): void {
     // Auto-register all job definitions with their default patterns
     Object.entries(JOB_DEFINITIONS).forEach(([jobId, def]) => {
-      this.registerJob(jobId, def.pattern).catch(error => {
+      this.registerJob(jobId, def.pattern).catch((error) => {
         console.error(`Failed to register job ${jobId}:`, error);
       });
     });
   }
 }
 
-export function getJobDefinitions(): Record<string, Omit<ScheduledJobDef, 'enabled'>> {
+export function getJobDefinitions(): Record<
+  string,
+  Omit<ScheduledJobDef, "enabled">
+> {
   return JOB_DEFINITIONS;
 }

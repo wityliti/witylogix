@@ -20,7 +20,7 @@ export interface TimeSeriesDataPoint {
 }
 
 export interface TrendAnalysis {
-  direction: 'increasing' | 'decreasing' | 'stable';
+  direction: "increasing" | "decreasing" | "stable";
   slope: number; // units per day
   strength: number; // 0-1
   changePointDate?: Date;
@@ -40,8 +40,8 @@ export interface Anomaly {
   expectedRange: { min: number; max: number };
   zScore: number;
   anomalyScore: number; // 0-1
-  type: 'point' | 'contextual' | 'collective';
-  severity: 'low' | 'medium' | 'high';
+  type: "point" | "contextual" | "collective";
+  severity: "low" | "medium" | "high";
   explanation: string;
 }
 
@@ -65,7 +65,7 @@ export interface Forecast {
 export interface Alert {
   alertId: string;
   timestamp: Date;
-  severity: 'info' | 'warning' | 'critical';
+  severity: "info" | "warning" | "critical";
   message: string;
   suggestedActions: string[];
   relatedAnomalies: string[];
@@ -85,27 +85,36 @@ export class TimeSeriesAnalyzer {
   analyzeTrend(data: TimeSeriesDataPoint[]): TrendAnalysis {
     if (data.length < 2) {
       return {
-        direction: 'stable',
+        direction: "stable",
         slope: 0,
         strength: 0,
         acceleration: 0,
       };
     }
 
-    const sorted = [...data].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    const sorted = [...data].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+    );
     const values = sorted.map((d) => d.value);
     const timeDeltas = sorted.map((d, i) => {
       if (i === 0) return 0;
-      return (d.timestamp.getTime() - sorted[i - 1].timestamp.getTime()) / (1000 * 86400);
+      return (
+        (d.timestamp.getTime() - sorted[i - 1].timestamp.getTime()) /
+        (1000 * 86400)
+      );
     });
 
     const { slope, intercept } = this.linearRegression(values);
     const acceleration = this.calculateAcceleration(values);
 
     const trend = values[values.length - 1] - values[0];
-    const direction = trend > 0 ? 'increasing' : trend < 0 ? 'decreasing' : 'stable';
+    const direction =
+      trend > 0 ? "increasing" : trend < 0 ? "decreasing" : "stable";
 
-    const strength = Math.min(1, Math.abs(slope) / Math.max(...values.map(Math.abs), 1));
+    const strength = Math.min(
+      1,
+      Math.abs(slope) / Math.max(...values.map(Math.abs), 1),
+    );
 
     let changePointDate: Date | undefined;
     const changePoints = this.detectChangePoints(sorted);
@@ -124,10 +133,17 @@ export class TimeSeriesAnalyzer {
 
   analyzeSeasonality(data: TimeSeriesDataPoint[]): SeasonalityInfo {
     if (data.length < 30) {
-      return { hasSeasonality: false, period: 0, strength: 0, pattern: new Map() };
+      return {
+        hasSeasonality: false,
+        period: 0,
+        strength: 0,
+        pattern: new Map(),
+      };
     }
 
-    const sorted = [...data].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    const sorted = [...data].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+    );
     const values = sorted.map((d) => d.value);
 
     const periods = [7, 14, 30, 365]; // Daily, weekly, monthly, yearly
@@ -176,7 +192,10 @@ export class TimeSeriesAnalyzer {
     return totalVariance > 0 ? Math.sqrt(seasonalVariance / totalVariance) : 0;
   }
 
-  private extractSeasonalPattern(values: number[], period: number): Map<number, number> {
+  private extractSeasonalPattern(
+    values: number[],
+    period: number,
+  ): Map<number, number> {
     const pattern = new Map<number, number>();
     const means: number[] = [];
 
@@ -200,7 +219,9 @@ export class TimeSeriesAnalyzer {
 
   detectChangePoints(data: TimeSeriesDataPoint[]): TimeSeriesDataPoint[] {
     const values = data.map((d) => d.value);
-    const sorted = [...data].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    const sorted = [...data].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+    );
 
     const changePoints: TimeSeriesDataPoint[] = [];
     const windowSize = Math.max(3, Math.floor(values.length / 10));
@@ -227,7 +248,10 @@ export class TimeSeriesAnalyzer {
     return values.map((v, i) => v - (intercept + slope * i));
   }
 
-  private linearRegression(values: number[]): { slope: number; intercept: number } {
+  private linearRegression(values: number[]): {
+    slope: number;
+    intercept: number;
+  } {
     const n = values.length;
     const xMean = (n - 1) / 2;
     const yMean = values.reduce((a, b) => a + b, 0) / n;
@@ -259,7 +283,9 @@ export class TimeSeriesAnalyzer {
       diffs2.push(diffs1[i] - diffs1[i - 1]);
     }
 
-    return diffs2.length > 0 ? diffs2.reduce((a, b) => a + b) / diffs2.length : 0;
+    return diffs2.length > 0
+      ? diffs2.reduce((a, b) => a + b) / diffs2.length
+      : 0;
   }
 
   private calculateVariance(values: number[]): number {
@@ -272,20 +298,25 @@ export class TimeSeriesAnalyzer {
 // ─── ANOMALY DETECTOR ───────────────────────────────────────────────────────
 
 export class AnomalyDetector {
-  detectAnomalies(data: TimeSeriesDataPoint[], method: 'zscore' | 'iqr' | 'isolation' = 'zscore'): Anomaly[] {
-    const sorted = [...data].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  detectAnomalies(
+    data: TimeSeriesDataPoint[],
+    method: "zscore" | "iqr" | "isolation" = "zscore",
+  ): Anomaly[] {
+    const sorted = [...data].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+    );
     const values = sorted.map((d) => d.value);
 
     let anomalies: Anomaly[] = [];
 
     switch (method) {
-      case 'zscore':
+      case "zscore":
         anomalies = this.detectZScoreAnomalies(sorted, values);
         break;
-      case 'iqr':
+      case "iqr":
         anomalies = this.detectIQRAnomalies(sorted, values);
         break;
-      case 'isolation':
+      case "isolation":
         anomalies = this.detectIsolationAnomalies(sorted, values);
         break;
     }
@@ -293,9 +324,14 @@ export class AnomalyDetector {
     return anomalies;
   }
 
-  private detectZScoreAnomalies(data: TimeSeriesDataPoint[], values: number[]): Anomaly[] {
+  private detectZScoreAnomalies(
+    data: TimeSeriesDataPoint[],
+    values: number[],
+  ): Anomaly[] {
     const mean = values.reduce((a, b) => a + b) / values.length;
-    const std = Math.sqrt(values.reduce((sq, n) => sq + (n - mean) ** 2, 0) / values.length);
+    const std = Math.sqrt(
+      values.reduce((sq, n) => sq + (n - mean) ** 2, 0) / values.length,
+    );
 
     const anomalies: Anomaly[] = [];
 
@@ -309,8 +345,8 @@ export class AnomalyDetector {
           expectedRange: { min: mean - 3 * std, max: mean + 3 * std },
           zScore,
           anomalyScore: Math.min(1, Math.abs(zScore) / 5),
-          type: 'point',
-          severity: Math.abs(zScore) > 4 ? 'high' : 'medium',
+          type: "point",
+          severity: Math.abs(zScore) > 4 ? "high" : "medium",
           explanation: `Value ${value} is ${Math.abs(zScore).toFixed(1)} standard deviations from mean`,
         });
       }
@@ -319,7 +355,10 @@ export class AnomalyDetector {
     return anomalies;
   }
 
-  private detectIQRAnomalies(data: TimeSeriesDataPoint[], values: number[]): Anomaly[] {
+  private detectIQRAnomalies(
+    data: TimeSeriesDataPoint[],
+    values: number[],
+  ): Anomaly[] {
     const sorted = [...values].sort((a, b) => a - b);
     const q1 = sorted[Math.floor(sorted.length * 0.25)];
     const q3 = sorted[Math.floor(sorted.length * 0.75)];
@@ -332,7 +371,11 @@ export class AnomalyDetector {
 
     values.forEach((value, i) => {
       if (value < lowerBound || value > upperBound) {
-        const anomalyScore = Math.min(1, Math.abs(value - (value < lowerBound ? lowerBound : upperBound)) / (iqr || 1));
+        const anomalyScore = Math.min(
+          1,
+          Math.abs(value - (value < lowerBound ? lowerBound : upperBound)) /
+            (iqr || 1),
+        );
 
         anomalies.push({
           timestamp: data[i].timestamp,
@@ -340,8 +383,8 @@ export class AnomalyDetector {
           expectedRange: { min: lowerBound, max: upperBound },
           zScore: 0,
           anomalyScore,
-          type: 'point',
-          severity: anomalyScore > 0.7 ? 'high' : 'medium',
+          type: "point",
+          severity: anomalyScore > 0.7 ? "high" : "medium",
           explanation: `Value ${value} outside IQR bounds [${lowerBound.toFixed(0)}, ${upperBound.toFixed(0)}]`,
         });
       }
@@ -350,16 +393,24 @@ export class AnomalyDetector {
     return anomalies;
   }
 
-  private detectIsolationAnomalies(data: TimeSeriesDataPoint[], values: number[]): Anomaly[] {
+  private detectIsolationAnomalies(
+    data: TimeSeriesDataPoint[],
+    values: number[],
+  ): Anomaly[] {
     const mean = values.reduce((a, b) => a + b) / values.length;
-    const std = Math.sqrt(values.reduce((sq, n) => sq + (n - mean) ** 2, 0) / values.length);
+    const std = Math.sqrt(
+      values.reduce((sq, n) => sq + (n - mean) ** 2, 0) / values.length,
+    );
 
     const anomalies: Anomaly[] = [];
     const threshold = mean + 2.5 * std;
 
     values.forEach((value, i) => {
       const distance = Math.abs(value - mean);
-      const anomalyScore = Math.min(1, distance / Math.max(threshold - mean, 1));
+      const anomalyScore = Math.min(
+        1,
+        distance / Math.max(threshold - mean, 1),
+      );
 
       if (anomalyScore > 0.6) {
         anomalies.push({
@@ -368,8 +419,9 @@ export class AnomalyDetector {
           expectedRange: { min: mean - 2.5 * std, max: mean + 2.5 * std },
           zScore: std === 0 ? 0 : (value - mean) / std,
           anomalyScore,
-          type: distance > threshold ? 'point' : 'contextual',
-          severity: anomalyScore > 0.8 ? 'high' : anomalyScore > 0.7 ? 'medium' : 'low',
+          type: distance > threshold ? "point" : "contextual",
+          severity:
+            anomalyScore > 0.8 ? "high" : anomalyScore > 0.7 ? "medium" : "low",
           explanation: `Isolated value detected: ${value}`,
         });
       }
@@ -383,7 +435,9 @@ export class AnomalyDetector {
 
 export class PatternRecognizer {
   findPatterns(data: TimeSeriesDataPoint[]): RecurringPattern[] {
-    const sorted = [...data].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    const sorted = [...data].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+    );
     const patterns: RecurringPattern[] = [];
 
     // Detect daily patterns
@@ -401,7 +455,10 @@ export class PatternRecognizer {
     return patterns.filter((p) => p.strength > 0.4);
   }
 
-  private detectPeriodPattern(data: TimeSeriesDataPoint[], periodDays: number): RecurringPattern | null {
+  private detectPeriodPattern(
+    data: TimeSeriesDataPoint[],
+    periodDays: number,
+  ): RecurringPattern | null {
     const values = data.map((d) => d.value);
     const strength = this.calculatePatternStrength(values, periodDays);
 
@@ -413,7 +470,9 @@ export class PatternRecognizer {
     }
 
     const lastDate = data[data.length - 1].timestamp;
-    const nextOccurrence = new Date(lastDate.getTime() + periodDays * 24 * 60 * 60 * 1000);
+    const nextOccurrence = new Date(
+      lastDate.getTime() + periodDays * 24 * 60 * 60 * 1000,
+    );
 
     return {
       patternId: `pattern_${periodDays}d_${Date.now()}`,
@@ -431,12 +490,14 @@ export class PatternRecognizer {
     for (let lag = period; lag < values.length / 2; lag += period) {
       const correlation = this.calculateCorrelation(
         values.slice(0, values.length - lag),
-        values.slice(lag)
+        values.slice(lag),
       );
       correlations.push(Math.abs(correlation));
     }
 
-    return correlations.length > 0 ? correlations.reduce((a, b) => a + b) / correlations.length : 0;
+    return correlations.length > 0
+      ? correlations.reduce((a, b) => a + b) / correlations.length
+      : 0;
   }
 
   private calculateCorrelation(x: number[], y: number[]): number {
@@ -465,7 +526,9 @@ export class PatternRecognizer {
 
 export class ForecastEngine {
   forecast(data: TimeSeriesDataPoint[], daysAhead: number = 7): Forecast[] {
-    const sorted = [...data].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    const sorted = [...data].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+    );
     const values = sorted.map((d) => d.value);
 
     const forecasts: Forecast[] = [];
@@ -480,7 +543,10 @@ export class ForecastEngine {
       const predictedValue = smoothed[smoothed.length - 1] + trend * i;
 
       const std = Math.sqrt(
-        values.reduce((sq, v) => sq + (v - smoothed[smoothed.length - 1]) ** 2, 0) / values.length
+        values.reduce(
+          (sq, v) => sq + (v - smoothed[smoothed.length - 1]) ** 2,
+          0,
+        ) / values.length,
       );
 
       forecasts.push({
@@ -491,14 +557,17 @@ export class ForecastEngine {
           upper: predictedValue + 1.96 * std,
         },
         confidence: Math.max(0.5, 1 - i / (daysAhead * 2)),
-        method: 'exponential_smoothing',
+        method: "exponential_smoothing",
       });
     }
 
     return forecasts;
   }
 
-  private exponentialSmoothing(values: number[], alpha: number = 0.3): number[] {
+  private exponentialSmoothing(
+    values: number[],
+    alpha: number = 0.3,
+  ): number[] {
     const smoothed: number[] = [values[0]];
 
     for (let i = 1; i < values.length; i++) {
@@ -540,32 +609,35 @@ export class AlertGenerator {
   generateAlerts(
     anomalies: Anomaly[],
     forecasts: Forecast[],
-    thresholds: { warning: number; critical: number } = { warning: 80, critical: 95 }
+    thresholds: { warning: number; critical: number } = {
+      warning: 80,
+      critical: 95,
+    },
   ): Alert[] {
     const alerts: Alert[] = [];
 
     // Threshold-based alerts
     anomalies.forEach((anomaly) => {
-      if (anomaly.severity === 'high') {
+      if (anomaly.severity === "high") {
         alerts.push({
           alertId: `alert_${Date.now()}_${Math.random()}`,
           timestamp: anomaly.timestamp,
-          severity: 'critical',
+          severity: "critical",
           message: `Critical anomaly detected: ${anomaly.explanation}`,
           suggestedActions: [
-            'Investigate root cause',
-            'Check data source',
-            'Review recent changes',
+            "Investigate root cause",
+            "Check data source",
+            "Review recent changes",
           ],
           relatedAnomalies: [],
         });
-      } else if (anomaly.severity === 'medium') {
+      } else if (anomaly.severity === "medium") {
         alerts.push({
           alertId: `alert_${Date.now()}_${Math.random()}`,
           timestamp: anomaly.timestamp,
-          severity: 'warning',
+          severity: "warning",
           message: `Anomaly detected: ${anomaly.explanation}`,
-          suggestedActions: ['Monitor closely', 'Check related metrics'],
+          suggestedActions: ["Monitor closely", "Check related metrics"],
           relatedAnomalies: [],
         });
       }
@@ -573,15 +645,17 @@ export class AlertGenerator {
 
     // Rate-of-change alerts
     if (forecasts.length > 1) {
-      const changeRate = (forecasts[1].predictedValue - forecasts[0].predictedValue) / forecasts[0].predictedValue;
+      const changeRate =
+        (forecasts[1].predictedValue - forecasts[0].predictedValue) /
+        forecasts[0].predictedValue;
 
       if (Math.abs(changeRate) > 0.3) {
         alerts.push({
           alertId: `alert_roc_${Date.now()}`,
           timestamp: new Date(),
-          severity: Math.abs(changeRate) > 0.5 ? 'critical' : 'warning',
+          severity: Math.abs(changeRate) > 0.5 ? "critical" : "warning",
           message: `Rapid change detected: ${(changeRate * 100).toFixed(1)}% change expected`,
-          suggestedActions: ['Review forecast', 'Check for external factors'],
+          suggestedActions: ["Review forecast", "Check for external factors"],
           relatedAnomalies: [],
         });
       }
@@ -596,14 +670,23 @@ export class AlertGenerator {
 export class RootCauseAnalyzer {
   analyze(
     anomalies: Anomaly[],
-    dimensionalData: Record<string, TimeSeriesDataPoint[]>
+    dimensionalData: Record<string, TimeSeriesDataPoint[]>,
   ): RootCauseAnalysis {
     const primaryAnomaly = anomalies[0];
-    const affectedDimensions = this.identifyAffectedDimensions(primaryAnomaly, dimensionalData);
-    const contributionFactors = this.calculateContributions(affectedDimensions, dimensionalData);
+    const affectedDimensions = this.identifyAffectedDimensions(
+      primaryAnomaly,
+      dimensionalData,
+    );
+    const contributionFactors = this.calculateContributions(
+      affectedDimensions,
+      dimensionalData,
+    );
 
     return {
-      primaryCause: this.inferPrimaryCause(affectedDimensions, contributionFactors),
+      primaryCause: this.inferPrimaryCause(
+        affectedDimensions,
+        contributionFactors,
+      ),
       contributionFactors,
       affectedDimensions,
       timelineOfEvents: this.buildTimeline(anomalies),
@@ -613,14 +696,16 @@ export class RootCauseAnalyzer {
 
   private identifyAffectedDimensions(
     anomaly: Anomaly,
-    dimensionalData: Record<string, TimeSeriesDataPoint[]>
+    dimensionalData: Record<string, TimeSeriesDataPoint[]>,
   ): string[] {
     const affected: string[] = [];
 
     Object.entries(dimensionalData).forEach(([dimension, data]) => {
       const anomalyCount = data.filter(
-        (d) => d.timestamp.getTime() === anomaly.timestamp.getTime() &&
-        (d.value > anomaly.expectedRange.max || d.value < anomaly.expectedRange.min)
+        (d) =>
+          d.timestamp.getTime() === anomaly.timestamp.getTime() &&
+          (d.value > anomaly.expectedRange.max ||
+            d.value < anomaly.expectedRange.min),
       ).length;
 
       if (anomalyCount > 0) {
@@ -633,7 +718,7 @@ export class RootCauseAnalyzer {
 
   private calculateContributions(
     dimensions: string[],
-    dimensionalData: Record<string, TimeSeriesDataPoint[]>
+    dimensionalData: Record<string, TimeSeriesDataPoint[]>,
   ): Array<{ factor: string; contribution: number }> {
     const contributions: Array<{ factor: string; contribution: number }> = [];
 
@@ -653,22 +738,24 @@ export class RootCauseAnalyzer {
 
   private inferPrimaryCause(
     dimensions: string[],
-    factors: Array<{ factor: string; contribution: number }>
+    factors: Array<{ factor: string; contribution: number }>,
   ): string {
-    if (factors.length === 0) return 'Unknown cause';
+    if (factors.length === 0) return "Unknown cause";
     return `Primary cause likely in ${factors[0].factor} dimension`;
   }
 
   private buildTimeline(anomalies: Anomaly[]): string[] {
-    return anomalies.map((a) => `${a.timestamp.toISOString()}: ${a.explanation}`);
+    return anomalies.map(
+      (a) => `${a.timestamp.toISOString()}: ${a.explanation}`,
+    );
   }
 
   private generateRecommendations(dimensions: string[]): string[] {
     return [
       `Investigate ${dimensions[0]} dimension`,
-      'Review data quality and sources',
-      'Check for external factors or events',
-      'Consider correlation with other metrics',
+      "Review data quality and sources",
+      "Check for external factors or events",
+      "Consider correlation with other metrics",
     ];
   }
 }
@@ -701,7 +788,7 @@ export function createAnomalyDetector() {
     } {
       const trend = analyzer.analyzeTrend(data);
       const seasonality = analyzer.analyzeSeasonality(data);
-      const anomalies = detector.detectAnomalies(data, 'zscore');
+      const anomalies = detector.detectAnomalies(data, "zscore");
       const patterns = recognizer.findPatterns(data);
       const forecasts = forecastEngine.forecast(data, 7);
       const alerts = alertGenerator.generateAlerts(anomalies, forecasts);

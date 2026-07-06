@@ -46,9 +46,17 @@ interface SyncEvent {
   details: string;
 }
 
-const CRM_SLUGS = new Set(["salesforce", "hubspot", "zoho", "pipedrive", "ms-dynamics"]);
+const CRM_SLUGS = new Set([
+  "salesforce",
+  "hubspot",
+  "zoho",
+  "pipedrive",
+  "ms-dynamics",
+]);
 
-function getStatusColor(status: string): "success" | "warning" | "danger" | "info" {
+function getStatusColor(
+  status: string,
+): "success" | "warning" | "danger" | "info" {
   switch (status) {
     case "HEALTHY":
     case "connected":
@@ -92,12 +100,18 @@ function formatRelativeDate(dateString: string | null | undefined): string {
 export default function CrmDashboardPage() {
   // All hooks MUST be called before any conditional returns
   const router = useRouter();
-  const { data: integrationsData, loading, error, refetch } = useApiQuery<IntegrationsResponse>(
-    "/api/v4/integrations"
-  );
+  const {
+    data: integrationsData,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<IntegrationsResponse>("/api/v4/integrations");
   const crmIntegrations = useMemo(
-    () => (integrationsData?.integrations ?? []).filter((i) => CRM_SLUGS.has(i.slug)),
-    [integrationsData]
+    () =>
+      (integrationsData?.integrations ?? []).filter((i) =>
+        CRM_SLUGS.has(i.slug),
+      ),
+    [integrationsData],
   );
 
   const syncEvents = useMemo<SyncEvent[]>(
@@ -107,17 +121,22 @@ export default function CrmDashboardPage() {
         .map((i) => ({
           id: `${i.slug}-last-sync`,
           timestamp: i.lastSyncAt!,
-          type: 'sync',
-          direction: 'in' as const,
-          status: i.healthStatus === 'UNHEALTHY' ? ('failed' as const) : ('success' as const),
+          type: "sync",
+          direction: "in" as const,
+          status:
+            i.healthStatus === "UNHEALTHY"
+              ? ("failed" as const)
+              : ("success" as const),
           recordsAffected: 0,
           details: `${i.name} last sync`,
         })),
-    [crmIntegrations]
+    [crmIntegrations],
   );
 
   const aggregateStats = useMemo(() => {
-    const active = crmIntegrations.filter((i) => i.isEnabled && i.healthStatus !== "UNHEALTHY").length;
+    const active = crmIntegrations.filter(
+      (i) => i.isEnabled && i.healthStatus !== "UNHEALTHY",
+    ).length;
     const failedSyncs = syncEvents.filter((e) => e.status === "failed").length;
     return {
       totalConnections: crmIntegrations.length,
@@ -131,7 +150,7 @@ export default function CrmDashboardPage() {
     (slug: string) => {
       router.push(`/dashboard/crm/connect?crm=${slug}`);
     },
-    [router]
+    [router],
   );
 
   if (loading) return <TableSkeleton rows={6} columns={4} />;
@@ -143,7 +162,10 @@ export default function CrmDashboardPage() {
         title="CRM Integrations"
         subtitle="Manage your connected CRM platforms and sync activity"
         actions={
-          <Button variant="primary" onClick={() => router.push("/dashboard/crm/connect")}>
+          <Button
+            variant="primary"
+            onClick={() => router.push("/dashboard/crm/connect")}
+          >
             Add Integration
           </Button>
         }
@@ -176,7 +198,10 @@ export default function CrmDashboardPage() {
               value={aggregateStats.failedSyncs}
               change={
                 aggregateStats.failedSyncs > 0
-                  ? { value: -aggregateStats.failedSyncs, label: "need attention" }
+                  ? {
+                      value: -aggregateStats.failedSyncs,
+                      label: "need attention",
+                    }
                   : undefined
               }
               accentColor="var(--wl-danger-400)"
@@ -192,7 +217,9 @@ export default function CrmDashboardPage() {
             <CardContent>
               {crmIntegrations.length === 0 ? (
                 <div className="py-12 text-center">
-                  <p className="text-wl-text-secondary mb-4">No CRM platforms connected yet</p>
+                  <p className="text-wl-text-secondary mb-4">
+                    No CRM platforms connected yet
+                  </p>
                   <Button onClick={() => router.push("/dashboard/crm/connect")}>
                     Add your first integration
                   </Button>
@@ -206,9 +233,14 @@ export default function CrmDashboardPage() {
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div>
-                          <h4 className="text-base font-semibold text-wl-text-primary">{crm.name}</h4>
+                          <h4 className="text-base font-semibold text-wl-text-primary">
+                            {crm.name}
+                          </h4>
                           <Badge
-                            variant={getStatusColor(crm.healthStatus ?? (crm.isEnabled ? "connected" : "error"))}
+                            variant={getStatusColor(
+                              crm.healthStatus ??
+                                (crm.isEnabled ? "connected" : "error"),
+                            )}
                             className="mt-2"
                           >
                             {crm.isEnabled
@@ -229,13 +261,17 @@ export default function CrmDashboardPage() {
 
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p className="text-wl-text-secondary mb-1">Installed</p>
+                          <p className="text-wl-text-secondary mb-1">
+                            Installed
+                          </p>
                           <p className="text-sm text-wl-text-secondary">
                             {new Date(crm.installedAt).toLocaleDateString()}
                           </p>
                         </div>
                         <div>
-                          <p className="text-wl-text-secondary mb-1">Last Sync</p>
+                          <p className="text-wl-text-secondary mb-1">
+                            Last Sync
+                          </p>
                           <p className="text-sm text-wl-text-secondary">
                             {formatRelativeDate(crm.lastSyncAt)}
                           </p>
@@ -262,7 +298,8 @@ export default function CrmDashboardPage() {
             <CardContent>
               {syncEvents.length === 0 ? (
                 <p className="text-wl-text-secondary text-sm py-4 text-center">
-                  No sync events yet. Activity will appear here once your CRM integrations sync.
+                  No sync events yet. Activity will appear here once your CRM
+                  integrations sync.
                 </p>
               ) : (
                 <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -273,15 +310,22 @@ export default function CrmDashboardPage() {
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <Badge variant={getEventStatusColor(event.status)}>{event.status}</Badge>
+                          <Badge variant={getEventStatusColor(event.status)}>
+                            {event.status}
+                          </Badge>
                           <span className="text-sm font-medium text-wl-text-primary capitalize">
                             {event.type}
                           </span>
-                          <span className="text-xs text-wl-text-secondary">({event.direction.toUpperCase()})</span>
+                          <span className="text-xs text-wl-text-secondary">
+                            ({event.direction.toUpperCase()})
+                          </span>
                         </div>
-                        <p className="text-sm text-wl-text-secondary">{event.details}</p>
+                        <p className="text-sm text-wl-text-secondary">
+                          {event.details}
+                        </p>
                         <p className="text-xs text-wl-text-secondary mt-1">
-                          {formatRelativeDate(event.timestamp)} · {event.recordsAffected} record
+                          {formatRelativeDate(event.timestamp)} ·{" "}
+                          {event.recordsAffected} record
                           {event.recordsAffected !== 1 ? "s" : ""}
                         </p>
                       </div>

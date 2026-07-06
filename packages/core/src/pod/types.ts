@@ -11,9 +11,14 @@
 
 // ─── POD METHODS ─────────────────────────────────────────────────
 
-export type PODMethod = 'photo' | 'signature' | 'qr_scan' | 'barcode' | 'manual_confirm';
+export type PODMethod =
+  | "photo"
+  | "signature"
+  | "qr_scan"
+  | "barcode"
+  | "manual_confirm";
 
-export type PODStatus = 'pending' | 'verified' | 'rejected' | 'failed';
+export type PODStatus = "pending" | "verified" | "rejected" | "failed";
 
 // ─── PHOTO POD ───────────────────────────────────────────────────
 
@@ -28,7 +33,7 @@ export interface GeoLocation {
 export interface PhotoMetadata {
   width: number;
   height: number;
-  format: 'jpeg' | 'png';
+  format: "jpeg" | "png";
   size: number;
   capturedAt: Date;
   deviceInfo?: string;
@@ -40,7 +45,7 @@ export interface PhotoMetadata {
 export interface PhotoPOD {
   id: string;
   deliveryId: string;
-  method: 'photo';
+  method: "photo";
   imageUrl: string;
   thumbnailUrl: string;
   imageKey: string;
@@ -55,7 +60,7 @@ export interface PhotoPOD {
 export interface SignaturePOD {
   id: string;
   deliveryId: string;
-  method: 'signature';
+  method: "signature";
   signerName: string;
   signatureDataUrl: string; // Base64 encoded SVG path data or image
   signatureKey: string;
@@ -84,7 +89,7 @@ export interface BarcodeVerification {
 export interface QRCodePOD {
   id: string;
   deliveryId: string;
-  method: 'qr_scan';
+  method: "qr_scan";
   scannedData: string;
   decodedInfo?: Record<string, any>;
   scannedAt: Date;
@@ -96,7 +101,7 @@ export interface QRCodePOD {
 export interface BarcodePOD {
   id: string;
   deliveryId: string;
-  method: 'barcode';
+  method: "barcode";
   scannedBarcode: string;
   barcodeFormat?: string;
   scannedAt: Date;
@@ -110,7 +115,7 @@ export interface BarcodePOD {
 export interface ManualConfirmationPOD {
   id: string;
   deliveryId: string;
-  method: 'manual_confirm';
+  method: "manual_confirm";
   confirmedBy: string;
   notes?: string;
   confirmedAt: Date;
@@ -120,7 +125,12 @@ export interface ManualConfirmationPOD {
 
 // ─── UNIFIED POD RECORD ──────────────────────────────────────────
 
-export type PODRecord = PhotoPOD | SignaturePOD | QRCodePOD | BarcodePOD | ManualConfirmationPOD;
+export type PODRecord =
+  | PhotoPOD
+  | SignaturePOD
+  | QRCodePOD
+  | BarcodePOD
+  | ManualConfirmationPOD;
 
 export interface PODResult {
   success: boolean;
@@ -140,26 +150,26 @@ export interface VerificationResult {
 // ─── DELIVERY TIMELINE ───────────────────────────────────────────
 
 export type TimelineEvent =
-  | 'CREATED'
-  | 'CONFIRMED'
-  | 'PICKED_UP'
-  | 'OUT_FOR_DELIVERY'
-  | 'ARRIVED'
-  | 'DELIVERED'
-  | 'FAILED'
-  | 'RESCHEDULED'
-  | 'RETURNED';
+  | "CREATED"
+  | "CONFIRMED"
+  | "PICKED_UP"
+  | "OUT_FOR_DELIVERY"
+  | "ARRIVED"
+  | "DELIVERED"
+  | "FAILED"
+  | "RESCHEDULED"
+  | "RETURNED";
 
 export type DeliveryStatus =
-  | 'pending'
-  | 'confirmed'
-  | 'picked_up'
-  | 'out_for_delivery'
-  | 'arrived'
-  | 'delivered'
-  | 'failed'
-  | 'rescheduled'
-  | 'returned';
+  | "pending"
+  | "confirmed"
+  | "picked_up"
+  | "out_for_delivery"
+  | "arrived"
+  | "delivered"
+  | "failed"
+  | "rescheduled"
+  | "returned";
 
 export interface TimelineAttachments {
   photoUrl?: string;
@@ -202,7 +212,7 @@ export interface StorageAdapter {
   upload(
     key: string,
     buffer: Buffer,
-    contentType: string
+    contentType: string,
   ): Promise<{
     url: string;
     key: string;
@@ -230,7 +240,7 @@ export interface StorageAdapter {
 }
 
 export interface StorageConfig {
-  type: 'local' | 's3' | 'r2';
+  type: "local" | "s3" | "r2";
   local?: {
     basePath: string;
     baseUrl: string;

@@ -11,7 +11,7 @@
  * Performance target: p95 single recalculation ≤ 500ms (typical: <5ms).
  */
 
-import { LightGBMResidualModel } from '../ai-eta/lightgbm-residual-model.js';
+import { LightGBMResidualModel } from "../ai-eta/lightgbm-residual-model.js";
 import type {
   DriverLocationUpdate,
   ActiveDelivery,
@@ -20,7 +20,7 @@ import type {
   NotificationTrigger,
   NotificationChannel,
   ETARecalculatorConfig,
-} from './types.js';
+} from "./types.js";
 
 // ─── Constants ────────────────────────────────────────────────────────────
 
@@ -57,7 +57,8 @@ export class ETARecalculator {
 
   constructor(config: ETARecalculatorConfig) {
     this.onNotify = config.onNotify;
-    this.deltaThreshold = config.deltaThresholdMinutes ?? DEFAULT_DELTA_THRESHOLD_MINUTES;
+    this.deltaThreshold =
+      config.deltaThresholdMinutes ?? DEFAULT_DELTA_THRESHOLD_MINUTES;
     this.defaultSpeed = config.defaultSpeedKmh ?? DEFAULT_SPEED_KMH;
 
     // Initialize the residual model (can be pre-trained via trainResidualModel)
@@ -86,7 +87,9 @@ export class ETARecalculator {
 
     // 2. Base ETA from speed (use default if speed is 0 or falsy)
     const effectiveSpeedKmh =
-      update.speedKmh && update.speedKmh > 0 ? update.speedKmh : this.defaultSpeed;
+      update.speedKmh && update.speedKmh > 0
+        ? update.speedKmh
+        : this.defaultSpeed;
     const baseEtaMinutes = (distanceRemainingKm / effectiveSpeedKmh) * 60;
 
     // 3. LightGBM residual correction
@@ -98,7 +101,7 @@ export class ETARecalculator {
       dayOfWeek,
       numStopsRemaining: delivery.numStopsRemaining ?? 1,
       driverSpeedKmh: effectiveSpeedKmh,
-      zoneType: delivery.zoneType ?? 'urban',
+      zoneType: delivery.zoneType ?? "urban",
     });
 
     const newEtaMinutes = Math.max(0, baseEtaMinutes + residual);
@@ -135,9 +138,9 @@ export class ETARecalculator {
       Math.abs(etaDeltaMinutes) > this.deltaThreshold;
 
     if (shouldNotify) {
-      const channels: NotificationChannel[] = ['sms'];
+      const channels: NotificationChannel[] = ["sms"];
       if (delivery.customerPushToken) {
-        channels.push('push');
+        channels.push("push");
       }
 
       const trigger: NotificationTrigger = {
@@ -184,19 +187,19 @@ export class ETARecalculator {
    * Call this periodically (e.g. every 1000 deliveries) to keep the model accurate.
    */
   trainResidualModel(
-    points: import('../ai-eta/lightgbm-residual-model.js').TrainingPoint[],
+    points: import("../ai-eta/lightgbm-residual-model.js").TrainingPoint[],
   ): void {
     this.residualModel.fit(points);
   }
 
   /** Export the residual model state for persistence in Redis/DB. */
-  exportModelState(): import('../ai-eta/lightgbm-residual-model.js').ModelState {
+  exportModelState(): import("../ai-eta/lightgbm-residual-model.js").ModelState {
     return this.residualModel.exportState();
   }
 
   /** Restore the residual model from a previously exported state. */
   importModelState(
-    state: import('../ai-eta/lightgbm-residual-model.js').ModelState,
+    state: import("../ai-eta/lightgbm-residual-model.js").ModelState,
   ): void {
     this.residualModel.importState(state);
   }

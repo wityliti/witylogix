@@ -2,7 +2,13 @@
 
 import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { Badge, Button, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui";
+import {
+  Badge,
+  Button,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui";
 import type { Invoice, InvoiceStatus } from "./types";
 
 interface InvoiceTableProps {
@@ -91,7 +97,11 @@ export function InvoiceTable({
     let aVal: any = a[sortConfig.key as keyof Invoice];
     let bVal: any = b[sortConfig.key as keyof Invoice];
 
-    if (sortConfig.key === "amount" || sortConfig.key === "dueDate" || sortConfig.key === "issueDate") {
+    if (
+      sortConfig.key === "amount" ||
+      sortConfig.key === "dueDate" ||
+      sortConfig.key === "issueDate"
+    ) {
       aVal = typeof aVal === "string" ? new Date(aVal).getTime() : aVal;
       bVal = typeof bVal === "string" ? new Date(bVal).getTime() : bVal;
     }
@@ -118,7 +128,9 @@ export function InvoiceTable({
           />
         </svg>
         <p className="text-wl-text-secondary font-medium">No invoices yet</p>
-        <p className="text-wl-text-tertiary text-sm mt-1">Create your first invoice to get started</p>
+        <p className="text-wl-text-tertiary text-sm mt-1">
+          Create your first invoice to get started
+        </p>
       </div>
     );
   }
@@ -128,10 +140,15 @@ export function InvoiceTable({
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-3 px-4 py-3 bg-wl-primary-500/10 border border-wl-primary-500/20 rounded-lg">
           <span className="text-sm text-wl-text-secondary">
-            {selectedIds.size} invoice{selectedIds.size !== 1 ? "s" : ""} selected
+            {selectedIds.size} invoice{selectedIds.size !== 1 ? "s" : ""}{" "}
+            selected
           </span>
           <div className="flex gap-2 ml-auto">
-            <Button size="sm" variant="secondary" onClick={() => setSelectedIds(new Set())}>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setSelectedIds(new Set())}
+            >
               Deselect
             </Button>
           </div>
@@ -145,7 +162,9 @@ export function InvoiceTable({
               <th className="px-4 py-3 text-left">
                 <input
                   type="checkbox"
-                  checked={selectedIds.size === invoices.length && invoices.length > 0}
+                  checked={
+                    selectedIds.size === invoices.length && invoices.length > 0
+                  }
                   onChange={handleSelectAll}
                   className="w-4 h-4 rounded cursor-pointer"
                   aria-label="Select all invoices"
@@ -165,7 +184,7 @@ export function InvoiceTable({
                   className={cn(
                     "px-4 py-3 text-xs font-semibold uppercase tracking-wider",
                     "text-wl-text-secondary transition-colors duration-fast",
-                    "cursor-pointer hover:text-wl-text-primary"
+                    "cursor-pointer hover:text-wl-text-primary",
                   )}
                   style={{ userSelect: "none" }}
                 >
@@ -199,7 +218,7 @@ export function InvoiceTable({
                 className={cn(
                   "border-b border-wl-border-subtle transition-colors duration-fast",
                   index % 2 === 1 && "bg-wl-bg-surface",
-                  selectedIds.has(invoice.id) && "bg-wl-primary-500/10"
+                  selectedIds.has(invoice.id) && "bg-wl-primary-500/10",
                 )}
               >
                 <td className="px-4 py-3">
@@ -244,7 +263,12 @@ export function InvoiceTable({
                                 onClick={() => onSend(invoice.id)}
                                 title="Send invoice"
                               >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
                                   <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
@@ -267,7 +291,12 @@ export function InvoiceTable({
                                 onClick={() => onMarkPaid(invoice.id)}
                                 title="Mark as paid"
                               >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
                                   <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
@@ -292,7 +321,12 @@ export function InvoiceTable({
                             onClick={() => onDownload(invoice.id)}
                             title="Download PDF"
                           >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
                               <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -315,7 +349,12 @@ export function InvoiceTable({
                             onClick={() => onEdit(invoice.id)}
                             title="Edit invoice"
                           >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
                               <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -338,7 +377,12 @@ export function InvoiceTable({
                             onClick={() => onDelete(invoice.id)}
                             title="Delete invoice"
                           >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
                               <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"

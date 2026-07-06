@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { IntegrationsMarquee } from './components/integrations-marquee';
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { IntegrationsMarquee } from "./components/integrations-marquee";
 
 const terminalLines = [
-  { text: '$ npx create-witylogix my-store', type: 'command' },
-  { text: '', type: 'blank' },
-  { text: 'Initializing Witylogix delivery logistics...', type: 'info' },
-  { text: 'Installing dependencies', type: 'info' },
-  { text: '  + @witylogix/core', type: 'success' },
-  { text: '  + @witylogix/api', type: 'success' },
-  { text: '  + @witylogix/tracking', type: 'success' },
-  { text: '  + @witylogix/webhooks', type: 'success' },
-  { text: '', type: 'blank' },
-  { text: 'Integrations detected:', type: 'info' },
-  { text: '  ✓ Shopify', type: 'success' },
-  { text: '  ✓ WooCommerce', type: 'success' },
-  { text: '', type: 'blank' },
-  { text: 'Setup complete.', type: 'highlight' },
-  { text: '', type: 'blank' },
-  { text: 'Ready at http://localhost:8000', type: 'highlight' },
+  { text: "$ npx create-witylogix my-store", type: "command" },
+  { text: "", type: "blank" },
+  { text: "Initializing Witylogix delivery logistics...", type: "info" },
+  { text: "Installing dependencies", type: "info" },
+  { text: "  + @witylogix/core", type: "success" },
+  { text: "  + @witylogix/api", type: "success" },
+  { text: "  + @witylogix/tracking", type: "success" },
+  { text: "  + @witylogix/webhooks", type: "success" },
+  { text: "", type: "blank" },
+  { text: "Integrations detected:", type: "info" },
+  { text: "  ✓ Shopify", type: "success" },
+  { text: "  ✓ WooCommerce", type: "success" },
+  { text: "", type: "blank" },
+  { text: "Setup complete.", type: "highlight" },
+  { text: "", type: "blank" },
+  { text: "Ready at http://localhost:8000", type: "highlight" },
 ];
 
 function Terminal() {
@@ -48,19 +48,27 @@ function Terminal() {
         <div className="terminal-dot bg-[#ff5f57]" />
         <div className="terminal-dot bg-[#febc2e]" />
         <div className="terminal-dot bg-[#28c840]" />
-        <span className="ml-auto text-[11px] font-mono text-sand-dim">terminal</span>
+        <span className="ml-auto text-[11px] font-mono text-sand-dim">
+          terminal
+        </span>
       </div>
       <div className="terminal-body">
         {lines.map((line, idx) => (
-          <div key={idx} className="animate-fade-in" style={{ animationDelay: `${idx * 40}ms` }}>
-            {line.type === 'blank' ? (
+          <div
+            key={idx}
+            className="animate-fade-in"
+            style={{ animationDelay: `${idx * 40}ms` }}
+          >
+            {line.type === "blank" ? (
               <div className="h-4" />
-            ) : line.type === 'command' ? (
+            ) : line.type === "command" ? (
               <span className="text-teal font-medium">{line.text}</span>
-            ) : line.type === 'success' ? (
+            ) : line.type === "success" ? (
               <span className="text-teal-light">{line.text}</span>
-            ) : line.type === 'highlight' ? (
-              <span className="text-coral-light font-semibold">{line.text}</span>
+            ) : line.type === "highlight" ? (
+              <span className="text-coral-light font-semibold">
+                {line.text}
+              </span>
             ) : (
               <span className="text-sand-dim">{line.text}</span>
             )}
@@ -80,61 +88,129 @@ function Terminal() {
 const features = [
   {
     icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <rect x="2" y="3" width="20" height="14" rx="2" />
-        <path d="M8 21h8" /><path d="M12 17v4" />
-        <path d="M7 8l3 3-3 3" /><path d="M13 14h4" />
+        <path d="M8 21h8" />
+        <path d="M12 17v4" />
+        <path d="M7 8l3 3-3 3" />
+        <path d="M13 14h4" />
       </svg>
     ),
-    title: 'Multi-Platform SDK',
-    description: 'Type-safe SDKs for Shopify, WooCommerce, Magento, and custom storefronts. One API, every platform.',
+    title: "Multi-Platform SDK",
+    description:
+      "Type-safe SDKs for Shopify, WooCommerce, Magento, and custom storefronts. One API, every platform.",
   },
   {
     icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <circle cx="12" cy="12" r="10" />
         <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
         <path d="M2 12h20" />
       </svg>
     ),
-    title: 'Real-Time Tracking',
-    description: 'Live GPS tracking, delivery confirmations, and push notifications. WebSocket-powered instant updates.',
+    title: "Real-Time Tracking",
+    description:
+      "Live GPS tracking, delivery confirmations, and push notifications. WebSocket-powered instant updates.",
   },
   {
     icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
         <path d="M9 12l2 2 4-4" />
       </svg>
     ),
-    title: 'Self-Hosted & Secure',
-    description: 'Full data sovereignty. Deploy on-premises or private cloud. Zero vendor lock-in, complete control.',
+    title: "Self-Hosted & Secure",
+    description:
+      "Full data sovereignty. Deploy on-premises or private cloud. Zero vendor lock-in, complete control.",
   },
   {
     icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
       </svg>
     ),
-    title: 'AI Route Optimization',
-    description: 'ML-powered route planning, dynamic dispatch, and smart delivery windows that reduce costs 30%.',
+    title: "AI Route Optimization",
+    description:
+      "ML-powered route planning, dynamic dispatch, and smart delivery windows that reduce costs 30%.",
   },
 ];
 
 const stats = [
-  { value: '73', label: 'API Endpoints' },
-  { value: '180+', label: 'Test Suites' },
-  { value: '4', label: 'Platform SDKs' },
-  { value: '<50ms', label: 'Avg. Latency' },
+  { value: "73", label: "API Endpoints" },
+  { value: "180+", label: "Test Suites" },
+  { value: "4", label: "Platform SDKs" },
+  { value: "<50ms", label: "Avg. Latency" },
 ];
 
 const quickLinks = [
-  { title: 'Getting Started', href: '/docs/getting-started', description: 'Install, configure, and ship your first delivery in minutes.' },
-  { title: 'API Reference', href: '/docs/api', description: 'Complete REST API documentation with request/response examples.' },
-  { title: 'Architecture', href: '/docs/architecture', description: 'System design, data models, and deployment topology.' },
-  { title: 'Guides', href: '/docs/guides/platform-adapters', description: 'Platform integrations, webhooks, billing, and workflows.' },
-  { title: 'Components', href: '/docs/components', description: 'Pre-built UI components for tracking pages and dashboards.' },
-  { title: 'Self-Hosting', href: '/docs/self-hosting', description: 'Docker deployment, environment variables, and production config.' },
+  {
+    title: "Getting Started",
+    href: "/docs/getting-started",
+    description: "Install, configure, and ship your first delivery in minutes.",
+  },
+  {
+    title: "API Reference",
+    href: "/docs/api",
+    description:
+      "Complete REST API documentation with request/response examples.",
+  },
+  {
+    title: "Architecture",
+    href: "/docs/architecture",
+    description: "System design, data models, and deployment topology.",
+  },
+  {
+    title: "Guides",
+    href: "/docs/guides/platform-adapters",
+    description: "Platform integrations, webhooks, billing, and workflows.",
+  },
+  {
+    title: "Components",
+    href: "/docs/components",
+    description: "Pre-built UI components for tracking pages and dashboards.",
+  },
+  {
+    title: "Self-Hosting",
+    href: "/docs/self-hosting",
+    description:
+      "Docker deployment, environment variables, and production config.",
+  },
 ];
 
 export default function HomePage() {
@@ -144,13 +220,34 @@ export default function HomePage() {
       <nav className="sticky top-0 z-50 border-b border-forge-border/60 bg-forge-bg/80 backdrop-blur-xl">
         <div className="mx-auto max-w-6xl flex items-center justify-between px-5 sm:px-6 lg:px-8 h-14">
           <Link href="/" className="flex items-center gap-2.5">
-            <img src="/logo.svg" alt="Witylogix" className="h-7 w-7 rounded-md" />
-            <span className="font-display font-bold text-sand tracking-tight">Witylogix</span>
+            <img
+              src="/logo.svg"
+              alt="Witylogix"
+              className="h-7 w-7 rounded-md"
+            />
+            <span className="font-display font-bold text-sand tracking-tight">
+              Witylogix
+            </span>
           </Link>
           <div className="flex items-center gap-6">
-            <Link href="/docs/getting-started" className="text-sm text-sand-muted hover:text-sand transition-colors">Docs</Link>
-            <Link href="/docs/api" className="text-sm text-sand-muted hover:text-sand transition-colors">API</Link>
-            <Link href="https://github.com/wityliti/witylogix" className="text-sm text-sand-muted hover:text-sand transition-colors">GitHub</Link>
+            <Link
+              href="/docs/getting-started"
+              className="text-sm text-sand-muted hover:text-sand transition-colors"
+            >
+              Docs
+            </Link>
+            <Link
+              href="/docs/api"
+              className="text-sm text-sand-muted hover:text-sand transition-colors"
+            >
+              API
+            </Link>
+            <Link
+              href="https://github.com/wityliti/witylogix"
+              className="text-sm text-sand-muted hover:text-sand transition-colors"
+            >
+              GitHub
+            </Link>
           </div>
         </div>
       </nav>
@@ -170,25 +267,40 @@ export default function HomePage() {
               <div className="animate-fade-up">
                 <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-teal/20 bg-teal/[0.06] px-4 py-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-teal animate-glow-pulse" />
-                  <span className="text-xs font-medium text-teal-light tracking-wide">Open Source Delivery Logistics</span>
+                  <span className="text-xs font-medium text-teal-light tracking-wide">
+                    Open Source Delivery Logistics
+                  </span>
                 </div>
                 <h1 className="font-display">
                   <span className="block text-sand">Ship Faster.</span>
-                  <span className="block text-gradient-brand">Track Everything.</span>
+                  <span className="block text-gradient-brand">
+                    Track Everything.
+                  </span>
                   <span className="block text-sand">Own Your Stack.</span>
                 </h1>
               </div>
 
               <p className="animate-fade-up stagger-1 text-lg text-sand-muted leading-relaxed max-w-lg">
                 The open-source delivery logistics platform for e-commerce.
-                Multi-platform integrations, real-time tracking, and complete self-hosting.
+                Multi-platform integrations, real-time tracking, and complete
+                self-hosting.
               </p>
 
               <div className="animate-fade-up stagger-2 flex flex-col sm:flex-row gap-4">
                 <Link href="/docs/getting-started" className="btn-primary">
                   Get Started
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14" /><path d="M12 5l7 7-7 7" />
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M5 12h14" />
+                    <path d="M12 5l7 7-7 7" />
                   </svg>
                 </Link>
                 <Link href="/docs/api" className="btn-ghost">
@@ -223,7 +335,8 @@ export default function HomePage() {
           <div className="text-center mb-16 animate-fade-up">
             <h2 className="font-display text-sand mb-4">Built for Scale</h2>
             <p className="text-sand-muted text-lg max-w-xl mx-auto">
-              Enterprise-grade features designed for developers who ship fast and demand reliability.
+              Enterprise-grade features designed for developers who ship fast
+              and demand reliability.
             </p>
           </div>
 
@@ -236,8 +349,12 @@ export default function HomePage() {
                 <div className="feature-icon mb-5 text-teal transition-transform duration-300 group-hover:scale-110">
                   {f.icon}
                 </div>
-                <h3 className="font-display text-lg text-sand mb-2">{f.title}</h3>
-                <p className="text-sm text-sand-muted leading-relaxed">{f.description}</p>
+                <h3 className="font-display text-lg text-sand mb-2">
+                  {f.title}
+                </h3>
+                <p className="text-sm text-sand-muted leading-relaxed">
+                  {f.description}
+                </p>
               </div>
             ))}
           </div>
@@ -249,16 +366,30 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl px-5 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
             <div>
-              <h3 className="font-display text-xl text-sand">Works With Your Stack</h3>
-              <p className="text-sm text-sand-dim mt-1">Pre-built integrations for the tools you already use.</p>
+              <h3 className="font-display text-xl text-sand">
+                Works With Your Stack
+              </h3>
+              <p className="text-sm text-sand-dim mt-1">
+                Pre-built integrations for the tools you already use.
+              </p>
             </div>
             <Link
               href="/docs/integrations"
               className="inline-flex items-center gap-2 text-sm font-medium text-teal hover:text-teal-light transition-colors flex-shrink-0"
             >
               View all integrations
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14" /><path d="M12 5l7 7-7 7" />
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14" />
+                <path d="M12 5l7 7-7 7" />
               </svg>
             </Link>
           </div>
@@ -272,7 +403,8 @@ export default function HomePage() {
           <div className="text-center mb-16 animate-fade-up">
             <h2 className="font-display text-sand mb-4">Explore the Docs</h2>
             <p className="text-sand-muted text-lg max-w-xl mx-auto">
-              Jump straight to what you need. Every section is designed to get you shipping faster.
+              Jump straight to what you need. Every section is designed to get
+              you shipping faster.
             </p>
           </div>
 
@@ -285,13 +417,27 @@ export default function HomePage() {
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="h-2 w-2 rounded-full bg-teal/60 group-hover:bg-teal transition-colors" />
-                  <h3 className="font-display text-base text-sand group-hover:text-teal transition-colors">{link.title}</h3>
+                  <h3 className="font-display text-base text-sand group-hover:text-teal transition-colors">
+                    {link.title}
+                  </h3>
                 </div>
-                <p className="text-sm text-sand-dim leading-relaxed">{link.description}</p>
+                <p className="text-sm text-sand-dim leading-relaxed">
+                  {link.description}
+                </p>
                 <div className="mt-4 flex items-center gap-1.5 text-xs font-medium text-teal opacity-0 translate-x-[-8px] transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
                   Read more
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14" /><path d="M12 5l7 7-7 7" />
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M5 12h14" />
+                    <path d="M12 5l7 7-7 7" />
                   </svg>
                 </div>
               </Link>
@@ -306,16 +452,30 @@ export default function HomePage() {
           <div className="animate-fade-up">
             <h2 className="font-display text-sand mb-4">Ready to Ship?</h2>
             <p className="text-sand-muted text-lg mb-10">
-              Get started in minutes. Comprehensive docs, type-safe SDKs, and a community that helps you move fast.
+              Get started in minutes. Comprehensive docs, type-safe SDKs, and a
+              community that helps you move fast.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/docs/getting-started" className="btn-coral">
                 Start Building
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14" /><path d="M12 5l7 7-7 7" />
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14" />
+                  <path d="M12 5l7 7-7 7" />
                 </svg>
               </Link>
-              <Link href="https://github.com/wityliti/witylogix" className="btn-ghost">
+              <Link
+                href="https://github.com/wityliti/witylogix"
+                className="btn-ghost"
+              >
                 View on GitHub
               </Link>
             </div>
@@ -327,12 +487,25 @@ export default function HomePage() {
       <footer className="relative z-10 border-t border-forge-border py-10">
         <div className="mx-auto max-w-6xl px-5 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <img src="/logo.svg" alt="Witylogix" className="h-6 w-6 rounded-md" />
-            <span className="font-display text-sm font-semibold text-sand">Witylogix</span>
+            <img
+              src="/logo.svg"
+              alt="Witylogix"
+              className="h-6 w-6 rounded-md"
+            />
+            <span className="font-display text-sm font-semibold text-sand">
+              Witylogix
+            </span>
           </div>
           <p className="text-xs text-sand-dim">
-            Open-source delivery logistics for e-commerce. A{' '}
-            <a href="https://wityliti.io" target="_blank" rel="noopener noreferrer" className="text-teal hover:text-teal-light transition-colors">wityliti.io</a>{' '}
+            Open-source delivery logistics for e-commerce. A{" "}
+            <a
+              href="https://wityliti.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal hover:text-teal-light transition-colors"
+            >
+              wityliti.io
+            </a>{" "}
             product.
           </p>
         </div>

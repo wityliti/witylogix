@@ -1,18 +1,18 @@
-import type { Command } from 'commander';
-import pc from 'picocolors';
+import type { Command } from "commander";
+import pc from "picocolors";
 import {
   buildContext,
   tenants,
   BenchApiRequestError,
   NoConfigError,
-} from '@witylogix/bench-core';
+} from "@witylogix/bench-core";
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]{1,62}$/;
 
 function parseKv(arr: string[]): Record<string, string> {
   const out: Record<string, string> = {};
   for (const s of arr) {
-    const i = s.indexOf('=');
+    const i = s.indexOf("=");
     if (i < 0) continue;
     out[s.slice(0, i)] = s.slice(i + 1);
   }
@@ -21,24 +21,25 @@ function parseKv(arr: string[]): Record<string, string> {
 
 export function registerNewTenantCommand(program: Command): void {
   program
-    .command('new-tenant <slug>')
-    .description('Provision a tenant in the running installation (Managed plan)')
-    .requiredOption('--owner-email <email>', 'owner email address')
-    .requiredOption('--owner-name <name>', 'owner full name (quoted if multiple words)')
-    .option(
-      '--plan <plan>',
-      'plan tier: starter | pro | enterprise',
-      'starter',
+    .command("new-tenant <slug>")
+    .description(
+      "Provision a tenant in the running installation (Managed plan)",
     )
+    .requiredOption("--owner-email <email>", "owner email address")
+    .requiredOption(
+      "--owner-name <name>",
+      "owner full name (quoted if multiple words)",
+    )
+    .option("--plan <plan>", "plan tier: starter | pro | enterprise", "starter")
     .option(
-      '--feature <kv>',
-      'feature flag k=v (repeatable)',
+      "--feature <kv>",
+      "feature flag k=v (repeatable)",
       (v: string, acc: string[] = []) => [...acc, v],
       [] as string[],
     )
     .option(
-      '--limit <kv>',
-      'limit k=v (repeatable)',
+      "--limit <kv>",
+      "limit k=v (repeatable)",
       (v: string, acc: string[] = []) => [...acc, v],
       [] as string[],
     )
@@ -48,7 +49,7 @@ export function registerNewTenantCommand(program: Command): void {
         opts: {
           ownerEmail: string;
           ownerName: string;
-          plan: 'starter' | 'pro' | 'enterprise';
+          plan: "starter" | "pro" | "enterprise";
           feature: string[];
           limit: string[];
         },
@@ -88,8 +89,8 @@ export function registerNewTenantCommand(program: Command): void {
                 pc.dim(`  tenantId:  ${result.tenantId}`),
                 pc.dim(`  subdomain: ${result.subdomain}`),
                 pc.dim(`  owner:     ${result.ownerEmail}`),
-                '',
-              ].join('\n'),
+                "",
+              ].join("\n"),
             );
           }
           process.exit(0);

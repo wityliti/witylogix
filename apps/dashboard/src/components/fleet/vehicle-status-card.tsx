@@ -73,7 +73,7 @@ const VehicleStatusCard = forwardRef<HTMLDivElement, VehicleStatusCardProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const statusInfo = statusConfig[status];
     const lastUpdateTime = new Date(lastUpdate);
@@ -85,7 +85,7 @@ const VehicleStatusCard = forwardRef<HTMLDivElement, VehicleStatusCardProps>(
         className={cn(
           "flex flex-col gap-4 hover:shadow-lg transition-shadow",
           onCardClick && "cursor-pointer",
-          className
+          className,
         )}
         onClick={() => onCardClick?.(id)}
         {...props}
@@ -96,9 +96,7 @@ const VehicleStatusCard = forwardRef<HTMLDivElement, VehicleStatusCardProps>(
             <h3 className="text-sm font-semibold text-wl-text-primary truncate">
               {name}
             </h3>
-            <p className="text-xs text-wl-text-secondary font-mono">
-              {plate}
-            </p>
+            <p className="text-xs text-wl-text-secondary font-mono">{plate}</p>
           </div>
           <Badge variant={statusInfo.badge} dot={statusInfo.dot}>
             {statusInfo.label}
@@ -116,9 +114,7 @@ const VehicleStatusCard = forwardRef<HTMLDivElement, VehicleStatusCardProps>(
         <div className="flex items-start gap-2 p-3 rounded-md bg-wl-bg-surface">
           <MapPin className="w-4 h-4 text-wl-primary-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-wl-text-primary truncate">
-              {address}
-            </p>
+            <p className="text-xs text-wl-text-primary truncate">{address}</p>
             <p className="text-xs text-wl-text-secondary font-mono">
               {latitude.toFixed(4)}°, {longitude.toFixed(4)}°
             </p>
@@ -150,7 +146,7 @@ const VehicleStatusCard = forwardRef<HTMLDivElement, VehicleStatusCardProps>(
                       ? "bg-wl-success-400"
                       : fuelLevel > 25
                         ? "bg-wl-warning-400"
-                        : "bg-wl-danger-400"
+                        : "bg-wl-danger-400",
                   )}
                   style={{ width: `${fuelLevel}%` }}
                 />
@@ -176,7 +172,7 @@ const VehicleStatusCard = forwardRef<HTMLDivElement, VehicleStatusCardProps>(
         </div>
       </Card>
     );
-  }
+  },
 );
 
 VehicleStatusCard.displayName = "VehicleStatusCard";

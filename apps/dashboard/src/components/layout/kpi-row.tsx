@@ -54,7 +54,7 @@ const iconToneClass: Record<KpiTone, string> = {
   info: "text-wl-info-400",
 };
 
-export function KpiCard ({
+export function KpiCard({
   label,
   value,
   tone = "default",
@@ -70,7 +70,7 @@ export function KpiCard ({
     accentToneClass[tone],
     href &&
       "transition-colors hover:border-wl-border-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wl-primary-500",
-    className
+    className,
   );
 
   const body = (
@@ -90,21 +90,24 @@ export function KpiCard ({
         className={cn(
           "mt-2 text-3xl font-semibold leading-tight tracking-tight",
           valueToneClass[tone],
-          isLoading && "opacity-50"
+          isLoading && "opacity-50",
         )}
       >
         {isLoading ? "—" : value}
       </div>
 
-      {hint && (
-        <p className="mt-1 text-xs text-wl-text-tertiary">{hint}</p>
-      )}
+      {hint && <p className="mt-1 text-xs text-wl-text-tertiary">{hint}</p>}
     </>
   );
 
   if (href) {
     return (
-      <Link href={href} className={baseClass} aria-label={label} role="listitem">
+      <Link
+        href={href}
+        className={baseClass}
+        aria-label={label}
+        role="listitem"
+      >
         {body}
       </Link>
     );
@@ -122,14 +125,14 @@ export interface KpiRowProps {
   className?: string;
 }
 
-export function KpiRow ({ children, className }: KpiRowProps) {
+export function KpiRow({ children, className }: KpiRowProps) {
   return (
     <div
       role="list"
       aria-label="Key metrics"
       className={cn(
         "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4",
-        className
+        className,
       )}
     >
       {children}

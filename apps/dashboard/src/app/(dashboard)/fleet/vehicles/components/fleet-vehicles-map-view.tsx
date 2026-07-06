@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { WLMap } from '@/components/map/wl-map';
+import { useState } from "react";
+import { WLMap } from "@/components/map/wl-map";
 import {
   VehicleMarkerLayer,
   type VehicleMapMarker,
   type VehicleMapStatus,
-} from '@/components/map/vehicle-marker-layer';
-import { useFitBounds } from '@/components/map/use-fit-bounds';
-import { useWLMap } from '@/components/map/wl-map-context';
-import { cn } from '@/lib/utils';
-import { Truck, Gauge, Fuel } from 'lucide-react';
+} from "@/components/map/vehicle-marker-layer";
+import { useFitBounds } from "@/components/map/use-fit-bounds";
+import { useWLMap } from "@/components/map/wl-map-context";
+import { cn } from "@/lib/utils";
+import { Truck, Gauge, Fuel } from "lucide-react";
 
 interface FleetVehicle {
   id: string;
@@ -34,20 +34,24 @@ interface FleetVehiclesMapViewProps {
   vehicles: FleetVehicle[];
 }
 
-const STATUS_LEGEND: { status: VehicleMapStatus; color: string; label: string }[] = [
-  { status: 'ACTIVE', color: '#10b981', label: 'Active' },
-  { status: 'IDLE', color: '#f59e0b', label: 'Idle' },
-  { status: 'MAINTENANCE', color: '#3b82f6', label: 'Maintenance' },
-  { status: 'OFFLINE', color: '#6b7280', label: 'Offline' },
+const STATUS_LEGEND: {
+  status: VehicleMapStatus;
+  color: string;
+  label: string;
+}[] = [
+  { status: "ACTIVE", color: "#10b981", label: "Active" },
+  { status: "IDLE", color: "#f59e0b", label: "Idle" },
+  { status: "MAINTENANCE", color: "#3b82f6", label: "Maintenance" },
+  { status: "OFFLINE", color: "#6b7280", label: "Offline" },
 ];
 
 function normaliseStatus(s: string): VehicleMapStatus {
   const upper = s.toUpperCase();
-  if (upper === 'ACTIVE') return 'ACTIVE';
-  if (upper === 'IDLE') return 'IDLE';
-  if (upper === 'MAINTENANCE') return 'MAINTENANCE';
-  if (upper === 'INACTIVE') return 'INACTIVE';
-  return 'OFFLINE';
+  if (upper === "ACTIVE") return "ACTIVE";
+  if (upper === "IDLE") return "IDLE";
+  if (upper === "MAINTENANCE") return "MAINTENANCE";
+  if (upper === "INACTIVE") return "INACTIVE";
+  return "OFFLINE";
 }
 
 function MapLayers({
@@ -72,7 +76,9 @@ function MapLayers({
   );
 }
 
-export default function FleetVehiclesMapView({ vehicles }: FleetVehiclesMapViewProps) {
+export default function FleetVehiclesMapView({
+  vehicles,
+}: FleetVehiclesMapViewProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const markers: VehicleMapMarker[] = vehicles
@@ -81,7 +87,7 @@ export default function FleetVehiclesMapView({ vehicles }: FleetVehiclesMapViewP
       id: v.id,
       name:
         v.name ||
-        [v.year, v.make, v.model].filter(Boolean).join(' ') ||
+        [v.year, v.make, v.model].filter(Boolean).join(" ") ||
         v.licensePlate ||
         v.id,
       licensePlate: v.licensePlate,
@@ -99,15 +105,21 @@ export default function FleetVehiclesMapView({ vehicles }: FleetVehiclesMapViewP
   const withoutGps = vehicles.length - withGps;
 
   return (
-    <div className="relative w-full rounded-xl overflow-hidden border border-wl-border-default" style={{ height: 560 }}>
+    <div
+      className="relative w-full rounded-xl overflow-hidden border border-wl-border-default"
+      style={{ height: 560 }}
+    >
       {markers.length === 0 ? (
         <div className="w-full h-full bg-wl-bg-elevated flex flex-col items-center justify-center gap-3">
           <div className="w-12 h-12 rounded-full bg-wl-bg-overlay flex items-center justify-center">
             <Truck className="w-6 h-6 text-wl-text-tertiary" />
           </div>
-          <p className="text-sm font-medium text-wl-text-secondary">No GPS data</p>
+          <p className="text-sm font-medium text-wl-text-secondary">
+            No GPS data
+          </p>
           <p className="text-xs text-wl-text-tertiary text-center max-w-xs">
-            Vehicles must have an active telematics provider with a recent position fix to appear on the map.
+            Vehicles must have an active telematics provider with a recent
+            position fix to appear on the map.
           </p>
         </div>
       ) : (
@@ -147,7 +159,9 @@ export default function FleetVehiclesMapView({ vehicles }: FleetVehiclesMapViewP
           </p>
           <p className="text-xs text-white/35">vehicles with GPS</p>
           {withoutGps > 0 && (
-            <p className="text-xs text-amber-400/70">{withoutGps} no position</p>
+            <p className="text-xs text-amber-400/70">
+              {withoutGps} no position
+            </p>
           )}
         </div>
       )}
@@ -168,10 +182,16 @@ export default function FleetVehiclesMapView({ vehicles }: FleetVehiclesMapViewP
             </div>
             <div>
               <p className="text-sm font-semibold text-wl-text-primary leading-tight">
-                {selected.name || [selected.year, selected.make, selected.model].filter(Boolean).join(' ') || '—'}
+                {selected.name ||
+                  [selected.year, selected.make, selected.model]
+                    .filter(Boolean)
+                    .join(" ") ||
+                  "—"}
               </p>
               {selected.licensePlate && (
-                <p className="text-xs font-mono text-wl-text-tertiary">{selected.licensePlate}</p>
+                <p className="text-xs font-mono text-wl-text-tertiary">
+                  {selected.licensePlate}
+                </p>
               )}
             </div>
           </div>
@@ -191,12 +211,12 @@ export default function FleetVehiclesMapView({ vehicles }: FleetVehiclesMapViewP
                   <span className="text-wl-text-tertiary">Fuel</span>
                   <span
                     className={cn(
-                      'ml-auto font-mono font-medium',
+                      "ml-auto font-mono font-medium",
                       Number(selected.lastFuelLevel) > 50
-                        ? 'text-wl-success-400'
+                        ? "text-wl-success-400"
                         : Number(selected.lastFuelLevel) > 25
-                          ? 'text-wl-warning-400'
-                          : 'text-wl-danger-400',
+                          ? "text-wl-warning-400"
+                          : "text-wl-danger-400",
                     )}
                   >
                     {Math.round(Number(selected.lastFuelLevel))}%
@@ -204,11 +224,14 @@ export default function FleetVehiclesMapView({ vehicles }: FleetVehiclesMapViewP
                 </div>
               )}
               <p className="text-xs text-wl-text-tertiary">
-                Updated{' '}
-                {new Date(selected.lastPosition.timestamp).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
+                Updated{" "}
+                {new Date(selected.lastPosition.timestamp).toLocaleTimeString(
+                  [],
+                  {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  },
+                )}
               </p>
             </div>
           )}

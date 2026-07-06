@@ -25,13 +25,13 @@ import type {
   EnsembleState,
   CalibrationResult,
   PredictionContext,
-} from './types.js';
-import { TimeOfDayModel } from './models/time-of-day-model.js';
-import { DistanceDecayModel } from './models/distance-decay-model.js';
-import { HistoricalDeliveryModel } from './models/historical-delivery-model.js';
-import { TrafficModel } from './models/traffic-model.js';
-import { WeatherModel } from './models/weather-model.js';
-import { GBDTModel } from './models/gbdt-model.js';
+} from "./types.js";
+import { TimeOfDayModel } from "./models/time-of-day-model.js";
+import { DistanceDecayModel } from "./models/distance-decay-model.js";
+import { HistoricalDeliveryModel } from "./models/historical-delivery-model.js";
+import { TrafficModel } from "./models/traffic-model.js";
+import { WeatherModel } from "./models/weather-model.js";
+import { GBDTModel } from "./models/gbdt-model.js";
 
 export class EnsemblePredictor {
   private timeOfDayModel: TimeOfDayModel;
@@ -60,9 +60,9 @@ export class EnsemblePredictor {
     this.modelWeights = {
       timeOfDay: 0.15,
       distanceDecay: 0.15,
-      historicalSimilarity: 0.20,
+      historicalSimilarity: 0.2,
       traffic: 0.15,
-      weather: 0.10,
+      weather: 0.1,
       gbdt: 0.25,
     };
 
@@ -88,7 +88,7 @@ export class EnsemblePredictor {
 
     // After training, boost GBDT weight if it trained successfully
     if (this.gbdtModel.trained) {
-      this.modelWeights.gbdt = 0.30;
+      this.modelWeights.gbdt = 0.3;
       // Proportionally reduce others
       this.normalizeWeights();
     }
@@ -123,10 +123,14 @@ export class EnsemblePredictor {
   ): boolean {
     const durations = predictions.map((p) => p.predicted_duration_minutes);
     const mean = durations.reduce((a, b) => a + b, 0) / durations.length;
-    const variance = durations.reduce((sum, val) => sum + (val - mean) ** 2, 0) / durations.length;
+    const variance =
+      durations.reduce((sum, val) => sum + (val - mean) ** 2, 0) /
+      durations.length;
     const stdDev = Math.sqrt(variance);
 
-    const zScore = Math.abs(targetPrediction.predicted_duration_minutes - mean) / (stdDev || 1);
+    const zScore =
+      Math.abs(targetPrediction.predicted_duration_minutes - mean) /
+      (stdDev || 1);
     return zScore > threshold;
   }
 
@@ -156,7 +160,10 @@ export class EnsemblePredictor {
     predictions.push(gbdtPred);
 
     // Get weights for this context
-    const weights = this.getWeightsForContext(features.zone_type, features.hour);
+    const weights = this.getWeightsForContext(
+      features.zone_type,
+      features.hour,
+    );
 
     // Detect outliers
     const outliers = new Set<string>();
@@ -180,13 +187,16 @@ export class EnsemblePredictor {
 
       // Confidence-weighted contribution
       const confidenceWeight = modelWeight * pred.confidence;
-      totalWeightedDuration += pred.predicted_duration_minutes * confidenceWeight;
+      totalWeightedDuration +=
+        pred.predicted_duration_minutes * confidenceWeight;
       totalConfidenceWeight += confidenceWeight;
       usedPredictions.push(pred);
     }
 
     const predictedDuration =
-      totalConfidenceWeight > 0 ? totalWeightedDuration / totalConfidenceWeight : 30;
+      totalConfidenceWeight > 0
+        ? totalWeightedDuration / totalConfidenceWeight
+        : 30;
 
     // Calculate confidence from model agreement and confidence scores
     const confidence = this.calculateEnsembleConfidence(usedPredictions);
@@ -202,7 +212,8 @@ export class EnsemblePredictor {
     const p10Index = Math.floor(lowerBounds.length * 0.1);
     const p90Index = Math.floor(upperBounds.length * 0.9);
 
-    const lowerBound = lowerBounds[p10Index] || Math.max(5, predictedDuration - 10);
+    const lowerBound =
+      lowerBounds[p10Index] || Math.max(5, predictedDuration - 10);
     const upperBound = upperBounds[p90Index] || predictedDuration + 10;
 
     // Get median prediction
@@ -210,10 +221,11 @@ export class EnsemblePredictor {
       .map((p) => p.predicted_duration_minutes)
       .sort((a, b) => a - b);
     const p50Duration =
-      sortedDurations[Math.floor(sortedDurations.length / 2)] || predictedDuration;
+      sortedDurations[Math.floor(sortedDurations.length / 2)] ||
+      predictedDuration;
 
     // Find dominant model (highest weighted contribution)
-    let dominantModel = 'ensemble';
+    let dominantModel = "ensemble";
     let maxContribution = 0;
 
     for (const pred of usedPredictions) {
@@ -236,7 +248,7 @@ export class EnsemblePredictor {
       p50_minutes: Math.round(p50Duration * 10) / 10,
       model_predictions: usedPredictions,
       dominant_model: dominantModel,
-      ensemble_method: 'weighted',
+      ensemble_method: "weighted",
       feature_vector: features,
       generated_at: new Date(),
     };
@@ -247,17 +259,17 @@ export class EnsemblePredictor {
    */
   private getModelWeight(modelName: string, weights: ModelWeights): number {
     switch (modelName) {
-      case 'time-of-day':
+      case "time-of-day":
         return weights.timeOfDay;
-      case 'distance-decay':
+      case "distance-decay":
         return weights.distanceDecay;
-      case 'historical-similarity':
+      case "historical-similarity":
         return weights.historicalSimilarity;
-      case 'traffic-aware':
+      case "traffic-aware":
         return weights.traffic;
-      case 'weather-impact':
+      case "weather-impact":
         return weights.weather;
-      case 'gbdt':
+      case "gbdt":
         return (weights as any).gbdt ?? 0.25;
       default:
         return 0.15;
@@ -271,12 +283,16 @@ export class EnsemblePredictor {
     if (predictions.length === 0) return 0.3;
 
     // Base confidence is average of model confidences
-    const avgConfidence = predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length;
+    const avgConfidence =
+      predictions.reduce((sum, p) => sum + p.confidence, 0) /
+      predictions.length;
 
     // Reduce confidence if models disagree significantly
     const durations = predictions.map((p) => p.predicted_duration_minutes);
     const mean = durations.reduce((a, b) => a + b, 0) / durations.length;
-    const variance = durations.reduce((sum, val) => sum + (val - mean) ** 2, 0) / durations.length;
+    const variance =
+      durations.reduce((sum, val) => sum + (val - mean) ** 2, 0) /
+      durations.length;
     const stdDev = Math.sqrt(variance);
     const coefficientOfVariation = stdDev / (mean || 1);
 
@@ -297,7 +313,9 @@ export class EnsemblePredictor {
     actualDuration: number,
   ): void {
     // Calculate errors for each model
-    const errors = predictions.map((p) => Math.abs(p.predicted_duration_minutes - actualDuration));
+    const errors = predictions.map((p) =>
+      Math.abs(p.predicted_duration_minutes - actualDuration),
+    );
     const maxError = Math.max(...errors);
 
     // Normalize errors to [0, 1] range for weight adjustment
@@ -308,11 +326,11 @@ export class EnsemblePredictor {
 
     // Map prediction order to model names
     const modelOrder = [
-      'time-of-day',
-      'distance-decay',
-      'historical-similarity',
-      'traffic-aware',
-      'weather-impact',
+      "time-of-day",
+      "distance-decay",
+      "historical-similarity",
+      "traffic-aware",
+      "weather-impact",
     ];
 
     for (let i = 0; i < predictions.length && i < modelOrder.length; i++) {
@@ -324,9 +342,13 @@ export class EnsemblePredictor {
 
       // Update weights using EMA
       const currentWeight = this.getModelWeight(modelName, this.modelWeights);
-      const newWeight = currentWeight * (1 - learningRate) + errorFactor * learningRate;
+      const newWeight =
+        currentWeight * (1 - learningRate) + errorFactor * learningRate;
 
-      this.updateModelWeight(modelName, Math.max(0.05, Math.min(0.4, newWeight)));
+      this.updateModelWeight(
+        modelName,
+        Math.max(0.05, Math.min(0.4, newWeight)),
+      );
     }
 
     // Normalize weights to sum to 1
@@ -334,7 +356,9 @@ export class EnsemblePredictor {
 
     // Update zone-specific weights if we have enough data for this zone
     const zoneKey = features.zone_type;
-    const zoneWeights = this.zoneSpecificWeights.get(zoneKey) || { ...this.modelWeights };
+    const zoneWeights = this.zoneSpecificWeights.get(zoneKey) || {
+      ...this.modelWeights,
+    };
     // TODO: Update zone weights similarly if we collect enough samples per zone
 
     this.lastCalibration = new Date();
@@ -345,19 +369,19 @@ export class EnsemblePredictor {
    */
   private updateModelWeight(modelName: string, newWeight: number): void {
     switch (modelName) {
-      case 'time-of-day':
+      case "time-of-day":
         this.modelWeights.timeOfDay = newWeight;
         break;
-      case 'distance-decay':
+      case "distance-decay":
         this.modelWeights.distanceDecay = newWeight;
         break;
-      case 'historical-similarity':
+      case "historical-similarity":
         this.modelWeights.historicalSimilarity = newWeight;
         break;
-      case 'traffic-aware':
+      case "traffic-aware":
         this.modelWeights.traffic = newWeight;
         break;
-      case 'weather-impact':
+      case "weather-impact":
         this.modelWeights.weather = newWeight;
         break;
     }
@@ -392,7 +416,7 @@ export class EnsemblePredictor {
   calibrate(predictions: number[], actuals: number[]): CalibrationResult {
     if (predictions.length !== actuals.length || predictions.length === 0) {
       return {
-        model_name: 'ensemble',
+        model_name: "ensemble",
         bias_correction_factor: 1.0,
         scale_correction_factor: 1.0,
         confidence_calibration: {},
@@ -401,7 +425,8 @@ export class EnsemblePredictor {
     }
 
     // Compute mean prediction and actual
-    const meanPred = predictions.reduce((a, b) => a + b, 0) / predictions.length;
+    const meanPred =
+      predictions.reduce((a, b) => a + b, 0) / predictions.length;
     const meanActual = actuals.reduce((a, b) => a + b, 0) / actuals.length;
 
     // Compute scale factor (regression slope)
@@ -419,14 +444,14 @@ export class EnsemblePredictor {
     const biasFactor = meanActual / (meanPred || 1);
 
     const result: CalibrationResult = {
-      model_name: 'ensemble',
+      model_name: "ensemble",
       bias_correction_factor: biasFactor,
       scale_correction_factor: scaleFactor,
       confidence_calibration: {},
       applied_at: new Date(),
     };
 
-    this.calibrations.set('global', result);
+    this.calibrations.set("global", result);
     return result;
   }
 
@@ -439,8 +464,12 @@ export class EnsemblePredictor {
       calibration_data: Object.fromEntries(this.calibrations.entries()),
       outlier_models: this.outlierModels,
       last_calibration: this.lastCalibration,
-      zone_specific_weights: Object.fromEntries(this.zoneSpecificWeights.entries()),
-      time_specific_weights: Object.fromEntries(this.hourSpecificWeights.entries()),
+      zone_specific_weights: Object.fromEntries(
+        this.zoneSpecificWeights.entries(),
+      ),
+      time_specific_weights: Object.fromEntries(
+        this.hourSpecificWeights.entries(),
+      ),
       sub_models: {
         timeOfDay: this.timeOfDayModel.getState(),
         distanceDecay: this.distanceDecayModel.getState(),
@@ -507,8 +536,14 @@ export class EnsemblePredictor {
 
     const models = [
       { model: this.timeOfDayModel, weight: this.modelWeights.timeOfDay },
-      { model: this.distanceDecayModel, weight: this.modelWeights.distanceDecay },
-      { model: this.historicalModel, weight: this.modelWeights.historicalSimilarity },
+      {
+        model: this.distanceDecayModel,
+        weight: this.modelWeights.distanceDecay,
+      },
+      {
+        model: this.historicalModel,
+        weight: this.modelWeights.historicalSimilarity,
+      },
       { model: this.trafficModel, weight: this.modelWeights.traffic },
       { model: this.weatherModel, weight: this.modelWeights.weather },
       { model: this.gbdtModel, weight: this.modelWeights.gbdt ?? 0.25 },

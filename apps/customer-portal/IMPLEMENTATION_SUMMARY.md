@@ -1,12 +1,14 @@
 # Customer Self-Service Portal - Implementation Summary
 
 ## Overview
+
 A modern, mobile-first Next.js 14 customer portal for Witylogix's last-mile delivery platform. This is a FIRST-MOVER feature—only Route4Me has a customer portal among all competitors.
 
 ## Tech Stack
+
 - **Framework:** Next.js 14 with App Router
 - **Language:** TypeScript (strict mode)
-- **Styling:** Tailwind CSS v3.4 with --wl-* CSS variables and dark theme support
+- **Styling:** Tailwind CSS v3.4 with --wl-\* CSS variables and dark theme support
 - **UI Library:** Lucide React for icons
 - **State Management:** React hooks
 - **Responsiveness:** Mobile-first design, fully responsive on all breakpoints
@@ -57,6 +59,7 @@ apps/customer-portal/
 ## Key Features
 
 ### 1. Dashboard (/)
+
 - Welcome message with active delivery count
 - Quick stats cards (Active Orders, Delivered, Total Spent)
 - Upcoming deliveries section with real-time ETAs
@@ -64,6 +67,7 @@ apps/customer-portal/
 - Mobile-optimized grid layout
 
 ### 2. Orders (/orders)
+
 - Filterable order list with status badges
 - Multi-field search (order number, address, items)
 - Sortable by date (newest/oldest)
@@ -71,6 +75,7 @@ apps/customer-portal/
 - Status badges: Pending, Confirmed, Out for Delivery, Delivered, Cancelled
 
 ### 3. Order Detail (/orders/[id])
+
 - Delivery timeline with status steps
 - Driver information card with contact actions
 - Order summary with items breakdown
@@ -79,6 +84,7 @@ apps/customer-portal/
 - Rating prompt for delivered orders
 
 ### 4. Reschedule Flow (/orders/[id]/reschedule)
+
 - Multi-step form with progress bar
 - Step 1: Date selection with 7-day availability
 - Step 2: Time slot selector
@@ -87,6 +93,7 @@ apps/customer-portal/
 - Fully validated navigation
 
 ### 5. Rating & Feedback (/orders/[id]/rate)
+
 - Driver rating (1-5 stars)
 - Experience rating (1-5 stars)
 - Optional text feedback
@@ -94,6 +101,7 @@ apps/customer-portal/
 - Success confirmation with rating summary
 
 ### 6. Live Tracking (/track)
+
 - Real-time driver position with animated marker
 - Route visualization on map
 - ETA countdown with precise arrival time
@@ -103,6 +111,7 @@ apps/customer-portal/
 - Location refresh button
 
 ### 7. Preferences (/preferences)
+
 - **Safe Place Instructions:** Dropdown + custom notes
 - **Access Codes:** Gate code & building entry fields
 - **Preferred Delivery Times:** Day-based time range selector
@@ -111,6 +120,7 @@ apps/customer-portal/
 - Save with success confirmation
 
 ### 8. Support (/support)
+
 - Quick contact options (Email, Phone, Chat)
 - Categorized FAQ system (All, Delivery, Account, Payment, Contact)
 - Expandable FAQ items with detailed answers
@@ -121,6 +131,7 @@ apps/customer-portal/
 ## Components
 
 ### Shared Components
+
 1. **Header** - Top navigation with notifications, profile avatar, mobile menu toggle
 2. **SidebarNav** - Navigation menu with active state indication, mobile overlay support
 3. **DeliveryTimeline** - Visual timeline showing order status steps with timestamps
@@ -146,20 +157,23 @@ apps/customer-portal/
 ## Design System Integration
 
 ### Color Palette (CSS Variables)
+
 - **Background:** wl-bg-root, wl-bg-surface, wl-bg-elevated, wl-bg-overlay, wl-bg-sidebar
 - **Neutral:** wl-neutral-50 through wl-neutral-900
 - **Primary:** wl-primary-50 through wl-primary-900 (brand orange)
-- **Status:** wl-success-*, wl-warning-*, wl-danger-*, wl-info-*
+- **Status:** wl-success-_, wl-warning-_, wl-danger-_, wl-info-_
 - **Text:** wl-text-primary, wl-text-secondary, wl-text-tertiary, wl-text-inverse
 - **Border:** wl-border-subtle, wl-border-default, wl-border-strong, wl-border-focus
 
 ### Spacing, Typography, Animations
+
 - Consistent spacing scale via CSS variables
 - Responsive typography with font-size variables
 - Pre-defined shadows, border-radius, and durations
 - Smooth animations: fade-in, slide-in, scale-in, pulse-glow
 
 ## Accessibility Features
+
 - WCAG 2.1 AA compliant
 - Semantic HTML structure
 - Proper ARIA labels on interactive elements
@@ -169,6 +183,7 @@ apps/customer-portal/
 - Mobile touch-friendly button sizes (44px minimum)
 
 ## Mobile Responsiveness
+
 - Mobile-first approach throughout
 - Hidden sidebar on mobile, toggle-able with menu button
 - Responsive grid layouts (1 column mobile → 2-3 columns on tablet/desktop)
@@ -177,11 +192,13 @@ apps/customer-portal/
 - Tested breakpoints: sm (640px), lg (1024px)
 
 ## Mock Data
+
 - Full mock data for orders, drivers, tracking, and preferences
 - Realistic data scenarios for all user journeys
 - Proper type compliance throughout
 
 ## Features Not Yet Integrated
+
 - Backend API integration (placeholder routes configured)
 - Authentication/authorization
 - Real map rendering (placeholder maps included)
@@ -213,12 +230,14 @@ pnpm lint
 ```
 
 ## Configuration Notes
+
 - Next.js rewrites API calls to `http://localhost:8000/api/:path*`
 - TypeScript strict mode enabled
-- Tailwind CSS configured with custom --wl-* variables
+- Tailwind CSS configured with custom --wl-\* variables
 - Mobile viewport optimization enabled
 
 ## Code Quality
+
 - Full TypeScript strict mode
 - Consistent code patterns using cn() utility
 - Proper React hook usage with no anti-patterns
@@ -226,6 +245,7 @@ pnpm lint
 - Clean, readable code with proper separation of concerns
 
 ## Next Steps for Integration
+
 1. Connect to actual API endpoints (replace mock data)
 2. Implement authentication/authorization
 3. Integrate real map services (Google Maps, Mapbox, etc.)
@@ -236,7 +256,8 @@ pnpm lint
 8. Set up monitoring and error logging
 
 ## Assets & Brand
-- Uses Witylogix design system (--wl-* CSS variables)
+
+- Uses Witylogix design system (--wl-\* CSS variables)
 - Logo "W" in primary color on sidebar
 - Dark theme support built-in
 - Consistent branding throughout

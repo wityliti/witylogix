@@ -29,7 +29,13 @@ export interface OrderWebhookJob {
     total_tax: string;
     total_weight: number;
     financial_status: "authorized" | "pending" | "paid" | "refunded" | "voided";
-    fulfillment_status: "fulfilled" | "partial" | "unshipped" | "unfinished" | "scheduled" | null;
+    fulfillment_status:
+      | "fulfilled"
+      | "partial"
+      | "unshipped"
+      | "unfinished"
+      | "scheduled"
+      | null;
     line_items: Array<{
       id: string;
       product_id: string;

@@ -10,11 +10,15 @@
  * All endpoints include request validation (Zod), confidence scores, and detailed explanations
  */
 
-import { z } from 'zod';
-import type { FreightLoad, Lane } from '../freight/freight-types.js';
-import { FreightMatcher, type MatchingResult } from './freight-matcher.js';
-import { RateForecaster, type RatePrediction } from './rate-forecaster.js';
-import { ComplianceRiskScorer, type DriverRiskScore, type CarrierRiskScore } from './compliance-risk-scorer.js';
+import { z } from "zod";
+import type { FreightLoad, Lane } from "../freight/freight-types.js";
+import { FreightMatcher, type MatchingResult } from "./freight-matcher.js";
+import { RateForecaster, type RatePrediction } from "./rate-forecaster.js";
+import {
+  ComplianceRiskScorer,
+  type DriverRiskScore,
+  type CarrierRiskScore,
+} from "./compliance-risk-scorer.js";
 
 // ─── VALIDATION SCHEMAS ──────────────────────────────────────────────────
 
@@ -34,7 +38,10 @@ const BundleRequestSchema = z.object({
 
 const RateForecastRequestSchema = z.object({
   laneId: z.string(),
-  horizon: z.enum(['next_week', 'next_month', 'next_quarter']).optional().default('next_month'),
+  horizon: z
+    .enum(["next_week", "next_month", "next_quarter"])
+    .optional()
+    .default("next_month"),
 });
 
 const BudgetProjectionRequestSchema = z.object({
@@ -58,8 +65,13 @@ const CompliancePredictRequestSchema = z.object({
 
 const AlertConfigSchema = z.object({
   laneId: z.string(),
-  alertTypes: z.array(z.enum(['spike', 'capacity_crunch', 'market_shift', 'contract_gap'])),
-  severity: z.enum(['critical', 'warning', 'info']).optional().default('warning'),
+  alertTypes: z.array(
+    z.enum(["spike", "capacity_crunch", "market_shift", "contract_gap"]),
+  ),
+  severity: z
+    .enum(["critical", "warning", "info"])
+    .optional()
+    .default("warning"),
   enabled: z.boolean().optional().default(true),
 });
 
@@ -108,7 +120,7 @@ export class FreightIntelligenceAPI {
     load: FreightLoad,
     lane: Lane,
     carrierPool: any[],
-    query: Record<string, unknown>
+    query: Record<string, unknown>,
   ): Promise<APIResponse<MatchingResult>> {
     const requestId = this.generateRequestId();
 
@@ -136,7 +148,7 @@ export class FreightIntelligenceAPI {
         success: true,
         data: result,
         confidence: Math.round(
-          (result.recommendations[0]?.totalScore ?? 0) > 80 ? 95 : 75
+          (result.recommendations[0]?.totalScore ?? 0) > 80 ? 95 : 75,
         ),
         explanation: result.notes,
         timestamp: new Date(),
@@ -155,7 +167,7 @@ export class FreightIntelligenceAPI {
     loadIds: string[],
     loads: FreightLoad[],
     laneIds: string[],
-    lanes: Lane[]
+    lanes: Lane[],
   ): Promise<APIResponse<any>> {
     const requestId = this.generateRequestId();
 
@@ -192,7 +204,11 @@ export class FreightIntelligenceAPI {
    * GET /freight/rates/forecast/:laneId
    * Rate prediction for lane
    */
-  async forecastRate(laneId: string, lane: Lane, query: Record<string, unknown>): Promise<APIResponse<RatePrediction>> {
+  async forecastRate(
+    laneId: string,
+    lane: Lane,
+    query: Record<string, unknown>,
+  ): Promise<APIResponse<RatePrediction>> {
     const requestId = this.generateRequestId();
 
     try {
@@ -201,7 +217,11 @@ export class FreightIntelligenceAPI {
         ...query,
       });
 
-      const prediction = await this.forecaster.predictRate(laneId, lane, validated.horizon);
+      const prediction = await this.forecaster.predictRate(
+        laneId,
+        lane,
+        validated.horizon,
+      );
 
       return {
         success: true,
@@ -255,7 +275,7 @@ export class FreightIntelligenceAPI {
    */
   async projectBudget(
     lanes: Lane[],
-    query: Record<string, unknown>
+    query: Record<string, unknown>,
   ): Promise<APIResponse<any>> {
     const requestId = this.generateRequestId();
 
@@ -286,7 +306,7 @@ export class FreightIntelligenceAPI {
    */
   async getDriverRiskScore(
     driverId: string,
-    driver: any
+    driver: any,
   ): Promise<APIResponse<DriverRiskScore>> {
     const requestId = this.generateRequestId();
 
@@ -316,14 +336,18 @@ export class FreightIntelligenceAPI {
     carrierId: string,
     carrier: any,
     safetyRating: any,
-    metrics: any
+    metrics: any,
   ): Promise<APIResponse<CarrierRiskScore>> {
     const requestId = this.generateRequestId();
 
     try {
       CarrierRiskRequestSchema.parse({ carrierId });
 
-      const score = await this.complianceScorer.scoreCarrier(carrier, safetyRating, metrics);
+      const score = await this.complianceScorer.scoreCarrier(
+        carrier,
+        safetyRating,
+        metrics,
+      );
 
       return {
         success: true,
@@ -354,15 +378,16 @@ export class FreightIntelligenceAPI {
         criticalDrivers: 3,
         warningDrivers: 12,
         safeDrivers: 85,
-        complianceStatus: 'caution',
+        complianceStatus: "caution",
         topRisks: [
-          'HOS compliance issues detected in 3 drivers',
-          'Carrier safety rating degraded last quarter',
-          'Vehicle maintenance deficiencies in 5 units',
+          "HOS compliance issues detected in 3 drivers",
+          "Carrier safety rating degraded last quarter",
+          "Vehicle maintenance deficiencies in 5 units",
         ],
       },
       confidence: 75,
-      explanation: 'Fleet shows moderate compliance risk. 3 drivers require immediate intervention.',
+      explanation:
+        "Fleet shows moderate compliance risk. 3 drivers require immediate intervention.",
       timestamp: new Date(),
       requestId,
     };
@@ -372,7 +397,10 @@ export class FreightIntelligenceAPI {
    * POST /freight/compliance/predict
    * Violation prediction
    */
-  async predictViolation(driverId: string, driver: any): Promise<APIResponse<any>> {
+  async predictViolation(
+    driverId: string,
+    driver: any,
+  ): Promise<APIResponse<any>> {
     const requestId = this.generateRequestId();
 
     try {
@@ -386,10 +414,10 @@ export class FreightIntelligenceAPI {
           data: {
             driverId,
             prediction: null,
-            status: 'compliant',
+            status: "compliant",
           },
           confidence: 95,
-          explanation: 'Driver is currently in compliance with HOS regulations',
+          explanation: "Driver is currently in compliance with HOS regulations",
           timestamp: new Date(),
           requestId,
         };
@@ -414,11 +442,14 @@ export class FreightIntelligenceAPI {
    */
   async getAuditReadiness(
     entityId: string,
-    entityType: 'driver' | 'carrier' | 'fleet'
+    entityType: "driver" | "carrier" | "fleet",
   ): Promise<APIResponse<any>> {
     const requestId = this.generateRequestId();
 
-    const readiness = this.complianceScorer.generateAuditReadiness(entityId, entityType);
+    const readiness = this.complianceScorer.generateAuditReadiness(
+      entityId,
+      entityType,
+    );
 
     return {
       success: true,
@@ -451,13 +482,14 @@ export class FreightIntelligenceAPI {
           utilizationRate: 33,
         },
         recommendations: [
-          'Increase backhaul matching frequency',
-          'Expand carrier network in destination region',
-          'Implement load consolidation strategy',
+          "Increase backhaul matching frequency",
+          "Expand carrier network in destination region",
+          "Implement load consolidation strategy",
         ],
       },
       confidence: 70,
-      explanation: 'Deadhead miles represent 35% of total lane volume. Potential to save ~$12,000/month with improved backhaul matching.',
+      explanation:
+        "Deadhead miles represent 35% of total lane volume. Potential to save ~$12,000/month with improved backhaul matching.",
       timestamp: new Date(),
       requestId,
     };
@@ -467,7 +499,10 @@ export class FreightIntelligenceAPI {
    * POST /freight/alerts/configure
    * Set up AI-driven alerts
    */
-  async configureAlerts(laneId: string, config: Record<string, unknown>): Promise<APIResponse<any>> {
+  async configureAlerts(
+    laneId: string,
+    config: Record<string, unknown>,
+  ): Promise<APIResponse<any>> {
     const requestId = this.generateRequestId();
 
     try {
@@ -483,11 +518,11 @@ export class FreightIntelligenceAPI {
         data: {
           laneId,
           config: validated,
-          status: 'active',
+          status: "active",
           createdAt: new Date(),
         },
         confidence: 100,
-        explanation: `Alert configuration saved for lane ${laneId}. Monitoring for: ${validated.alertTypes.join(', ')}`,
+        explanation: `Alert configuration saved for lane ${laneId}. Monitoring for: ${validated.alertTypes.join(", ")}`,
         timestamp: new Date(),
         requestId,
       };
@@ -506,11 +541,11 @@ export class FreightIntelligenceAPI {
     const alerts: any[] = [];
 
     // In real implementation, would query database for active alerts
-    const rateSpike = this.forecaster.detectRateSpike('lane-123', 2.45);
+    const rateSpike = this.forecaster.detectRateSpike("lane-123", 2.45);
     if (rateSpike) {
       alerts.push({
         id: `alert_${Date.now()}`,
-        type: 'spike',
+        type: "spike",
         severity: rateSpike.severity,
         message: `Rate spike detected: +${rateSpike.spikePercent.toFixed(1)}%`,
         createdAt: new Date(),
@@ -544,7 +579,7 @@ export class FreightIntelligenceAPI {
         dismissed: true,
       },
       confidence: 100,
-      explanation: 'Alert dismissed',
+      explanation: "Alert dismissed",
       timestamp: new Date(),
       requestId,
     };
@@ -552,7 +587,10 @@ export class FreightIntelligenceAPI {
 
   // ─── HELPER METHODS ──────────────────────────────────────────────────
 
-  private calculateBundleCompatibility(loads: FreightLoad[], lanes: Lane[]): number {
+  private calculateBundleCompatibility(
+    loads: FreightLoad[],
+    lanes: Lane[],
+  ): number {
     if (loads.length < 2) return 0;
 
     // Score based on:
@@ -583,12 +621,13 @@ export class FreightIntelligenceAPI {
   }
 
   private formatError(requestId: string, error: unknown): ErrorResponse {
-    const message = error instanceof Error ? error.message : 'Unknown error occurred';
+    const message =
+      error instanceof Error ? error.message : "Unknown error occurred";
 
     return {
       success: false,
       error: {
-        code: 'FREIGHT_INTELLIGENCE_ERROR',
+        code: "FREIGHT_INTELLIGENCE_ERROR",
         message,
         details: error instanceof Error ? { stack: error.stack } : undefined,
       },
@@ -602,7 +641,9 @@ export class FreightIntelligenceAPI {
 
 interface AlertConfig {
   laneId: string;
-  alertTypes: Array<'spike' | 'capacity_crunch' | 'market_shift' | 'contract_gap'>;
-  severity: 'critical' | 'warning' | 'info';
+  alertTypes: Array<
+    "spike" | "capacity_crunch" | "market_shift" | "contract_gap"
+  >;
+  severity: "critical" | "warning" | "info";
   enabled: boolean;
 }

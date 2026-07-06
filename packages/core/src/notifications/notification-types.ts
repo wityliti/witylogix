@@ -364,7 +364,7 @@ export const BatchNotificationRequestSchema = z.object({
       recipientId: z.string(),
       variables: z.record(z.unknown()).optional(),
       channels: z.array(NotificationChannelSchema).optional(),
-    })
+    }),
   ),
   channels: z.array(NotificationChannelSchema).optional(),
   metadata: z.record(z.unknown()).optional(),

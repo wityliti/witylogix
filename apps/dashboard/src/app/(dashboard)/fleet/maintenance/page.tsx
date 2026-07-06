@@ -1,43 +1,51 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import dynamic from 'next/dynamic';
-import { Header } from '@/components/layout/header';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { cn } from '@/lib/utils';
-import { Plus, AlertTriangle, Calendar, Clock } from 'lucide-react';
-import { useApiList } from '@/hooks/use-api';
+import { useState } from "react";
+import dynamic from "next/dynamic";
+import { Header } from "@/components/layout/header";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { cn } from "@/lib/utils";
+import { Plus, AlertTriangle, Calendar, Clock } from "lucide-react";
+import { useApiList } from "@/hooks/use-api";
 
 const MaintenanceMapView = dynamic(
-  () => import('./components/maintenance-map-view'),
+  () => import("./components/maintenance-map-view"),
   { ssr: false },
 );
 
-const getStatusColor = (status: string): 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary' => {
-  const map: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary'> = {
-    scheduled: 'info',
-    'in-progress': 'warning',
-    completed: 'success',
-    overdue: 'danger',
+const getStatusColor = (
+  status: string,
+): "default" | "success" | "warning" | "danger" | "info" | "primary" => {
+  const map: Record<
+    string,
+    "default" | "success" | "warning" | "danger" | "info" | "primary"
+  > = {
+    scheduled: "info",
+    "in-progress": "warning",
+    completed: "success",
+    overdue: "danger",
   };
-  return map[status] || 'default';
+  return map[status] || "default";
 };
 
 const formatDate = (dateStr: string): string => {
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 };
 
 const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
 };
 
 interface MaintenanceRecord {
@@ -54,30 +62,42 @@ interface MaintenanceRecord {
 
 export default function MaintenancePage() {
   const pageSize = 10;
-  const [viewMode, setViewMode] = useState<'calendar' | 'list' | 'map'>('list');
+  const [viewMode, setViewMode] = useState<"calendar" | "list" | "map">("list");
   const [currentPage, setCurrentPage] = useState(1);
-  const { items: allMaintenance, loading, error, refetch } = useApiList<MaintenanceRecord>('/api/v4/fleet/maintenance');
+  const {
+    items: allMaintenance,
+    loading,
+    error,
+    refetch,
+  } = useApiList<MaintenanceRecord>("/api/v4/fleet/maintenance");
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const filteredMaintenance = [...allMaintenance].sort((a, b) => {
-    if (a.status === 'overdue' && b.status !== 'overdue') return -1;
-    if (a.status !== 'overdue' && b.status === 'overdue') return 1;
-    return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
+    if (a.status === "overdue" && b.status !== "overdue") return -1;
+    if (a.status !== "overdue" && b.status === "overdue") return 1;
+    return (
+      new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime()
+    );
   });
 
-  const paginatedMaintenance = filteredMaintenance.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paginatedMaintenance = filteredMaintenance.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
   const totalPages = Math.ceil(filteredMaintenance.length / pageSize);
 
   const statusCounts = {
-    overdue: allMaintenance.filter((m) => m.status === 'overdue').length,
-    scheduled: allMaintenance.filter((m) => m.status === 'scheduled').length,
-    inProgress: allMaintenance.filter((m) => m.status === 'in-progress').length,
-    completed: allMaintenance.filter((m) => m.status === 'completed').length,
+    overdue: allMaintenance.filter((m) => m.status === "overdue").length,
+    scheduled: allMaintenance.filter((m) => m.status === "scheduled").length,
+    inProgress: allMaintenance.filter((m) => m.status === "in-progress").length,
+    completed: allMaintenance.filter((m) => m.status === "completed").length,
   };
 
-  const overdueMaintenance = allMaintenance.filter((m) => m.status === 'overdue');
+  const overdueMaintenance = allMaintenance.filter(
+    (m) => m.status === "overdue",
+  );
 
   return (
     <>
@@ -98,7 +118,9 @@ export default function MaintenancePage() {
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="pt-4">
               <div className="text-center">
-                <p className="text-3xl font-bold text-white">{statusCounts.scheduled}</p>
+                <p className="text-3xl font-bold text-white">
+                  {statusCounts.scheduled}
+                </p>
                 <p className="text-xs text-wl-text-secondary mt-1">Scheduled</p>
               </div>
             </CardContent>
@@ -106,15 +128,21 @@ export default function MaintenancePage() {
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="pt-4">
               <div className="text-center">
-                <p className="text-3xl font-bold text-amber-400">{statusCounts.inProgress}</p>
-                <p className="text-xs text-wl-text-secondary mt-1">In Progress</p>
+                <p className="text-3xl font-bold text-amber-400">
+                  {statusCounts.inProgress}
+                </p>
+                <p className="text-xs text-wl-text-secondary mt-1">
+                  In Progress
+                </p>
               </div>
             </CardContent>
           </Card>
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="pt-4">
               <div className="text-center">
-                <p className="text-3xl font-bold text-emerald-400">{statusCounts.completed}</p>
+                <p className="text-3xl font-bold text-emerald-400">
+                  {statusCounts.completed}
+                </p>
                 <p className="text-xs text-wl-text-secondary mt-1">Completed</p>
               </div>
             </CardContent>
@@ -122,7 +150,9 @@ export default function MaintenancePage() {
           <Card className="bg-wl-bg-surface border border-red-500/30">
             <CardContent className="pt-4">
               <div className="text-center">
-                <p className="text-3xl font-bold text-red-400">{statusCounts.overdue}</p>
+                <p className="text-3xl font-bold text-red-400">
+                  {statusCounts.overdue}
+                </p>
                 <p className="text-xs text-wl-text-secondary mt-1">Overdue</p>
               </div>
             </CardContent>
@@ -141,10 +171,18 @@ export default function MaintenancePage() {
             <CardContent>
               <div className="space-y-2">
                 {overdueMaintenance.slice(0, 3).map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 bg-red-500/10 rounded-md border border-wl-border-default">
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between p-3 bg-red-500/10 rounded-md border border-wl-border-default"
+                  >
                     <div>
-                      <p className="text-sm font-medium text-white">{item.type.replace('-', ' ').toUpperCase()}</p>
-                      <p className="text-xs text-wl-text-secondary">{item.vehicleName} • Due {formatDate(item.scheduledDate)}</p>
+                      <p className="text-sm font-medium text-white">
+                        {item.type.replace("-", " ").toUpperCase()}
+                      </p>
+                      <p className="text-xs text-wl-text-secondary">
+                        {item.vehicleName} • Due{" "}
+                        {formatDate(item.scheduledDate)}
+                      </p>
                     </div>
                     <Button variant="danger" size="sm">
                       Action
@@ -161,34 +199,34 @@ export default function MaintenancePage() {
           <CardContent className="pt-4">
             <div className="flex gap-1 mr-auto">
               <button
-                onClick={() => setViewMode('list')}
+                onClick={() => setViewMode("list")}
                 className={cn(
-                  'px-3 py-2 text-xs font-medium rounded-md transition-colors',
-                  viewMode === 'list'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-white',
+                  "px-3 py-2 text-xs font-medium rounded-md transition-colors",
+                  viewMode === "list"
+                    ? "bg-blue-500 text-white"
+                    : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white",
                 )}
               >
                 List View
               </button>
               <button
-                onClick={() => setViewMode('calendar')}
+                onClick={() => setViewMode("calendar")}
                 className={cn(
-                  'px-3 py-2 text-xs font-medium rounded-md transition-colors',
-                  viewMode === 'calendar'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-white',
+                  "px-3 py-2 text-xs font-medium rounded-md transition-colors",
+                  viewMode === "calendar"
+                    ? "bg-blue-500 text-white"
+                    : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white",
                 )}
               >
                 Calendar
               </button>
               <button
-                onClick={() => setViewMode('map')}
+                onClick={() => setViewMode("map")}
                 className={cn(
-                  'px-3 py-2 text-xs font-medium rounded-md transition-colors',
-                  viewMode === 'map'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-white',
+                  "px-3 py-2 text-xs font-medium rounded-md transition-colors",
+                  viewMode === "map"
+                    ? "bg-blue-500 text-white"
+                    : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white",
                 )}
               >
                 Map
@@ -197,7 +235,7 @@ export default function MaintenancePage() {
           </CardContent>
         </Card>
 
-        {viewMode === 'list' ? (
+        {viewMode === "list" ? (
           <>
             {/* Maintenance List */}
             <Card className="overflow-hidden p-0 bg-wl-bg-surface border border-wl-border-default">
@@ -205,24 +243,58 @@ export default function MaintenancePage() {
                 <table className="w-full border-collapse text-sm">
                   <thead>
                     <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
-                      <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Type</th>
-                      <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Vehicle</th>
-                      <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Scheduled</th>
-                      <th className="p-3 px-4 text-right font-semibold text-wl-text-secondary">Cost</th>
-                      <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Vendor</th>
-                      <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Status</th>
+                      <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
+                        Type
+                      </th>
+                      <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
+                        Vehicle
+                      </th>
+                      <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
+                        Scheduled
+                      </th>
+                      <th className="p-3 px-4 text-right font-semibold text-wl-text-secondary">
+                        Cost
+                      </th>
+                      <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
+                        Vendor
+                      </th>
+                      <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
+                        Status
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {paginatedMaintenance.map((item, idx) => (
-                      <tr key={item.id} className={cn('border-b border-wl-border-default transition-colors hover:bg-wl-bg-elevated', idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-sunken')}>
-                        <td className="p-3 px-4 text-white font-semibold capitalize">{item.type.replace('-', ' ')}</td>
-                        <td className="p-3 px-4 text-wl-text-secondary text-xs">{item.vehicleName}</td>
-                        <td className="p-3 px-4 text-center text-wl-text-secondary text-xs">{formatDate(item.scheduledDate)}</td>
-                        <td className="p-3 px-4 text-right text-white font-medium">{formatCurrency(item.actualCost || item.estimatedCost)}</td>
-                        <td className="p-3 px-4 text-center text-wl-text-secondary text-xs">{item.vendor}</td>
+                      <tr
+                        key={item.id}
+                        className={cn(
+                          "border-b border-wl-border-default transition-colors hover:bg-wl-bg-elevated",
+                          idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-sunken",
+                        )}
+                      >
+                        <td className="p-3 px-4 text-white font-semibold capitalize">
+                          {item.type.replace("-", " ")}
+                        </td>
+                        <td className="p-3 px-4 text-wl-text-secondary text-xs">
+                          {item.vehicleName}
+                        </td>
+                        <td className="p-3 px-4 text-center text-wl-text-secondary text-xs">
+                          {formatDate(item.scheduledDate)}
+                        </td>
+                        <td className="p-3 px-4 text-right text-white font-medium">
+                          {formatCurrency(
+                            item.actualCost || item.estimatedCost,
+                          )}
+                        </td>
+                        <td className="p-3 px-4 text-center text-wl-text-secondary text-xs">
+                          {item.vendor}
+                        </td>
                         <td className="p-3 px-4 text-center">
-                          <Badge variant={getStatusColor(item.status)}>{item.status === 'in-progress' ? 'In Progress' : item.status}</Badge>
+                          <Badge variant={getStatusColor(item.status)}>
+                            {item.status === "in-progress"
+                              ? "In Progress"
+                              : item.status}
+                          </Badge>
                         </td>
                       </tr>
                     ))}
@@ -233,8 +305,13 @@ export default function MaintenancePage() {
               {/* Pagination */}
               <div className="flex items-center justify-between p-4 border-t border-wl-border-default bg-wl-bg-elevated text-sm text-wl-text-secondary">
                 <div>
-                  Showing {paginatedMaintenance.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{' '}
-                  {Math.min(currentPage * pageSize, filteredMaintenance.length)} of {filteredMaintenance.length}
+                  Showing{" "}
+                  {paginatedMaintenance.length > 0
+                    ? (currentPage - 1) * pageSize + 1
+                    : 0}{" "}
+                  to{" "}
+                  {Math.min(currentPage * pageSize, filteredMaintenance.length)}{" "}
+                  of {filteredMaintenance.length}
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -251,7 +328,9 @@ export default function MaintenancePage() {
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    onClick={() =>
+                      setCurrentPage(Math.min(totalPages, currentPage + 1))
+                    }
                     disabled={currentPage === totalPages}
                   >
                     Next
@@ -265,18 +344,31 @@ export default function MaintenancePage() {
             {/* Calendar View */}
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-sm text-white">Maintenance Calendar</CardTitle>
+                <CardTitle className="text-sm text-white">
+                  Maintenance Calendar
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {filteredMaintenance.slice(0, 5).map((item) => (
-                    <div key={item.id} className="p-4 bg-wl-bg-elevated rounded-md border-l-4 border-blue-500">
+                    <div
+                      key={item.id}
+                      className="p-4 bg-wl-bg-elevated rounded-md border-l-4 border-blue-500"
+                    >
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="text-sm font-semibold text-white">{item.type.replace('-', ' ').toUpperCase()}</p>
-                          <p className="text-xs text-wl-text-secondary mt-1">{item.vehicleName}</p>
+                          <p className="text-sm font-semibold text-white">
+                            {item.type.replace("-", " ").toUpperCase()}
+                          </p>
+                          <p className="text-xs text-wl-text-secondary mt-1">
+                            {item.vehicleName}
+                          </p>
                         </div>
-                        <Badge variant={getStatusColor(item.status)}>{item.status === 'in-progress' ? 'In Progress' : item.status}</Badge>
+                        <Badge variant={getStatusColor(item.status)}>
+                          {item.status === "in-progress"
+                            ? "In Progress"
+                            : item.status}
+                        </Badge>
                       </div>
                     </div>
                   ))}
@@ -286,7 +378,7 @@ export default function MaintenancePage() {
           </>
         )}
 
-        {viewMode === 'map' && (
+        {viewMode === "map" && (
           <div className="h-[600px]">
             <MaintenanceMapView maintenance={allMaintenance} />
           </div>

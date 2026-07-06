@@ -2,7 +2,7 @@
  * Inventory Manager - Barrel Export
  */
 
-export { InventoryManager, inventoryManager } from './manager';
+export { InventoryManager, inventoryManager } from "./manager";
 export type {
   InventoryLevel,
   StockMovement,
@@ -16,4 +16,4 @@ export type {
   CollectionData,
   LowStockAlertOptions,
   MovementType,
-} from './types';
+} from "./types";

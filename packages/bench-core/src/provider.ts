@@ -15,7 +15,7 @@ import type {
   ProvisionResult,
   RestoreResult,
   StatusReport,
-} from './types.js';
+} from "./types.js";
 
 export interface Provider {
   readonly id: string;
@@ -49,7 +49,7 @@ export interface Provider {
 export class ProviderNotImplementedError extends Error {
   constructor(provider: string, op: string) {
     super(`Provider "${provider}" does not implement operation "${op}".`);
-    this.name = 'ProviderNotImplementedError';
+    this.name = "ProviderNotImplementedError";
   }
 }
 
@@ -66,7 +66,7 @@ export async function resolveProvider(id: string): Promise<Provider> {
   const factory = providerRegistry.get(id);
   if (!factory) {
     throw new Error(
-      `Provider "${id}" is not registered. Available providers: ${[...providerRegistry.keys()].join(', ') || '(none)'}`,
+      `Provider "${id}" is not registered. Available providers: ${[...providerRegistry.keys()].join(", ") || "(none)"}`,
     );
   }
   return factory();

@@ -42,6 +42,7 @@ Horizontal timeline showing delivery stops throughout the day with visual capaci
 ```
 
 **Props**:
+
 - `stops: DeliveryStop[]` - Array of delivery stops with timing
 - `routeColor: string` - Hex color for route visualization
 - `startHour?: number` - Timeline start hour (default: 8)
@@ -49,6 +50,7 @@ Horizontal timeline showing delivery stops throughout the day with visual capaci
 - `className?: string` - Additional CSS classes
 
 **Features**:
+
 - Hour markers (8am-7pm with configurable range)
 - Colored bar segments per stop
 - Hover tooltip with stop details
@@ -74,6 +76,7 @@ Circular avatar component with driver photo, initials fallback, status ring, and
 ```
 
 **Props**:
+
 - `name: string` - Driver full name
 - `photoUrl?: string` - URL to driver photo
 - `status?: DriverStatus` - "active" | "idle" | "offline"
@@ -82,6 +85,7 @@ Circular avatar component with driver photo, initials fallback, status ring, and
 - `className?: string` - Additional CSS classes
 
 **Features**:
+
 - Photo or initials fallback
 - Status ring with pulse animation (green=active, yellow=idle, gray=offline)
 - Vehicle type emoji overlay
@@ -106,6 +110,7 @@ Numbered circular marker for map display with sequence number, status, and pulse
 ```
 
 **Props**:
+
 - `number: number` - Sequence number (1, 2, 3...)
 - `color: string` - Route color (hex)
 - `isNext?: boolean` - Highlight next delivery
@@ -114,6 +119,7 @@ Numbered circular marker for map display with sequence number, status, and pulse
 - `className?: string` - Additional CSS classes
 
 **Features**:
+
 - Numbered or checkmark display
 - White border with shadow
 - Pulse animation for next delivery
@@ -137,6 +143,7 @@ Compact badge displaying route statistics: stops, distance, estimated time.
 ```
 
 **Props**:
+
 - `stops: number` - Number of delivery stops
 - `distance: number` - Total distance
 - `estimatedTime: string` - Estimated delivery time
@@ -145,6 +152,7 @@ Compact badge displaying route statistics: stops, distance, estimated time.
 - `className?: string` - Additional CSS classes
 
 **Features**:
+
 - Horizontal layout with dividers
 - Icon indicators (📍 stops, 📏 distance, ⏱️ time)
 - Rounded pill shape with elevation
@@ -167,6 +175,7 @@ Comprehensive filter/search component for dispatch management with search, statu
 ```
 
 **Props**:
+
 - `onSearchChange?: (search: string) => void`
 - `onStatusChange?: (status: OrderStatus) => void`
 - `onSortChange?: (sort: SortOption) => void`
@@ -174,11 +183,13 @@ Comprehensive filter/search component for dispatch management with search, statu
 - `className?: string` - Additional CSS classes
 
 **Types**:
+
 - `OrderStatus`: "all" | "pending" | "in-transit" | "delivered"
 - `SortOption`: "time" | "distance" | "priority"
 - `ViewMode`: "map" | "list" | "timeline"
 
 **Features**:
+
 - Search by order ID, customer name, address
 - Dropdown filters for status
 - Sort options with icons
@@ -209,6 +220,7 @@ Single calendar day cell with availability indicator, slots left counter, and se
 ```
 
 **Props**:
+
 - `date: number` - Day of month (1-31)
 - `status?: AvailabilityStatus` - "available" | "limited" | "full" | "unavailable"
 - `slotsLeft?: number` - Number of remaining slots
@@ -219,9 +231,11 @@ Single calendar day cell with availability indicator, slots left counter, and se
 - `className?: string` - Additional CSS classes
 
 **Types**:
+
 - `AvailabilityStatus`: "available" (green) | "limited" (yellow) | "full" (gray) | "unavailable" (disabled)
 
 **Features**:
+
 - Availability dot indicator (colored)
 - Slots left micro-text
 - Selected state with accent border
@@ -253,6 +267,7 @@ Individual time slot with capacity bar, price, and state-specific styling.
 ```
 
 **Props**:
+
 - `timeSlot: TimeSlot` - Slot data with times and capacity
 - `state?: SlotState` - "available" | "few-left" | "full" | "selected"
 - `cutoffTime?: string` - Cutoff time for ordering
@@ -262,6 +277,7 @@ Individual time slot with capacity bar, price, and state-specific styling.
 - `className?: string` - Additional CSS classes
 
 **Features**:
+
 - Time range display (formatted)
 - Capacity bar with fill percentage
 - Available slots count
@@ -292,6 +308,7 @@ Radio-button style card for selecting delivery method with icon, description, pr
 ```
 
 **Props**:
+
 - `method: DeliveryMethod` - Delivery method details
 - `isSelected?: boolean` - Selection state
 - `isDisabled?: boolean` - Disabled state
@@ -300,6 +317,7 @@ Radio-button style card for selecting delivery method with icon, description, pr
 - `className?: string` - Additional CSS classes
 
 **Features**:
+
 - Icon, name, and description
 - Estimated time and price display
 - Radio button selection indicator
@@ -325,6 +343,7 @@ Miniature SVG-based zone map showing delivery zone polygon and customer location
 ```
 
 **Props**:
+
 - `zoneName: string` - Zone identifier
 - `zoneColor?: string` - Zone color (hex, default: "#3b82f6")
 - `isInZone?: boolean` - Whether customer is in zone
@@ -334,6 +353,7 @@ Miniature SVG-based zone map showing delivery zone polygon and customer location
 - `className?: string` - Additional CSS classes
 
 **Features**:
+
 - SVG-rendered zone polygon
 - Customer location marker (red pin)
 - Glow effect around marker
@@ -363,6 +383,7 @@ Autocomplete suggestion item with address text, zone indicator, and deliverabili
 ```
 
 **Props**:
+
 - `address: string` - Street address
 - `city: string` - City name
 - `state: string` - State/Province
@@ -374,6 +395,7 @@ Autocomplete suggestion item with address text, zone indicator, and deliverabili
 - `className?: string` - Additional CSS classes
 
 **Features**:
+
 - Address with matched text highlighting
 - City, state, zip on secondary line
 - Zone badge
@@ -418,6 +440,7 @@ Vertical or horizontal timeline showing delivery status steps with icons, timest
 ```
 
 **Props**:
+
 - `steps: TimelineStep[]` - Array of timeline steps
 - `currentStep?: number` - Currently active step index
 - `orientation?: TimelineOrientation` - "vertical" (default) | "horizontal"
@@ -425,10 +448,12 @@ Vertical or horizontal timeline showing delivery status steps with icons, timest
 - `className?: string` - Additional CSS classes
 
 **Types**:
+
 - `TimelineStepStatus`: "completed" | "active" | "pending"
 - `TimelineOrientation`: "vertical" | "horizontal"
 
 **Features**:
+
 - Connected dots with status colors
 - Auto-filled connection line up to current step
 - Horizontal layout with progress bar
@@ -456,6 +481,7 @@ Animated counter card displaying a metric with trend indicator.
 ```
 
 **Props**:
+
 - `value: number` - Metric value to display
 - `label: string` - Metric label
 - `trend?: { value: number; label: string }` - Trend data
@@ -466,6 +492,7 @@ Animated counter card displaying a metric with trend indicator.
 - `className?: string` - Additional CSS classes
 
 **Features**:
+
 - Animated counter from 0 to target value
 - 1-second animation duration
 - Trend indicator with ↑/↓ arrow
@@ -493,15 +520,18 @@ Route color legend with toggleable route visibility on map.
 ```
 
 **Props**:
+
 - `routes: RouteColor[]` - Array of route colors and driver names
 - `onToggleRoute?: (routeId: string, isVisible: boolean) => void` - Toggle handler
 - `compact?: boolean` - Compact mode (horizontal badges vs list)
 - `className?: string` - Additional CSS classes
 
 **Types**:
+
 - `RouteColor`: { id, color, driverName, isVisible? }
 
 **Features**:
+
 - Two layout modes: compact (badges) and full (list)
 - Color swatch with ring indicator when active
 - Eye icon for visibility toggle
@@ -514,6 +544,7 @@ Route color legend with toggleable route visibility on map.
 ## Installation & Usage
 
 ### Dispatch Components
+
 ```typescript
 import {
   RouteTimelineBar,
@@ -525,6 +556,7 @@ import {
 ```
 
 ### Checkout Components
+
 ```typescript
 import {
   CalendarDay,
@@ -536,12 +568,9 @@ import {
 ```
 
 ### Shared UI Components
+
 ```typescript
-import {
-  StatusTimeline,
-  MetricCard,
-  ColorLegend,
-} from "@/components/ui";
+import { StatusTimeline, MetricCard, ColorLegend } from "@/components/ui";
 ```
 
 ---
@@ -551,6 +580,7 @@ import {
 All components use **Witylogix CSS Variables**:
 
 ### Color Tokens
+
 - Primary: `--wl-primary-*` (500, 600, 700)
 - Success: `--wl-success-*` (400, 500, 600)
 - Warning: `--wl-warning-*` (500, 600)
@@ -558,16 +588,19 @@ All components use **Witylogix CSS Variables**:
 - Neutral: `--wl-neutral-*` (300, 400, 500)
 
 ### Semantic Tokens
+
 - Background: `--wl-bg-primary`, `--wl-bg-secondary`, `--wl-bg-elevated`
 - Border: `--wl-border-default`, `--wl-border-subtle`, `--wl-border-strong`
 - Text: `--wl-text-primary`, `--wl-text-secondary`, `--wl-text-tertiary`
 
 ### Dark Mode
+
 All components have full dark mode support via Tailwind dark: prefix.
 
 Example:
+
 ```tsx
-className="bg-wl-bg-primary dark:bg-wl-bg-elevated"
+className = "bg-wl-bg-primary dark:bg-wl-bg-elevated";
 ```
 
 ---
@@ -575,6 +608,7 @@ className="bg-wl-bg-primary dark:bg-wl-bg-elevated"
 ## Accessibility
 
 All components include:
+
 - ARIA labels and roles
 - Keyboard navigation support
 - Focus management
@@ -595,6 +629,7 @@ All components include:
 ## Files Checklist
 
 ### Dispatch Components ✓
+
 - [x] route-timeline-bar.tsx
 - [x] driver-avatar.tsx
 - [x] stop-marker.tsx
@@ -603,6 +638,7 @@ All components include:
 - [x] index.ts (barrel export)
 
 ### Checkout Components ✓
+
 - [x] calendar-day.tsx
 - [x] time-slot-card.tsx
 - [x] delivery-method-card.tsx
@@ -612,6 +648,7 @@ All components include:
 - [x] index.ts (barrel export)
 
 ### Shared UI Components ✓
+
 - [x] status-timeline.tsx
 - [x] metric-card.tsx
 - [x] color-legend.tsx
@@ -622,6 +659,7 @@ All components include:
 ## Technical Details
 
 ### Dependencies
+
 - React 18+
 - Tailwind CSS 3.4
 - clsx 2.0 (for cn utility)
@@ -629,11 +667,13 @@ All components include:
 - lucide-react (for icons)
 
 ### Build & Export
+
 - **Dashboard**: Uses Next.js with TypeScript
 - **Checkout Widget**: Standalone package with tsup build
 - All components are fully typed with exported interfaces
 
 ### Performance
+
 - CSS-based animations (no heavy libraries)
 - Optimized renders with proper memoization
 - No unnecessary re-renders with proper dependency tracking

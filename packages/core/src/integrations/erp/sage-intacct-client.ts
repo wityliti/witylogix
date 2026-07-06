@@ -4,7 +4,12 @@
  * Web Services authentication
  */
 
-import type { ERPJournalEntry, ERPInvoice, ERPPayment, ERPConnection } from './types.js';
+import type {
+  ERPJournalEntry,
+  ERPInvoice,
+  ERPPayment,
+  ERPConnection,
+} from "./types.js";
 
 /**
  * Sage Intacct API Client
@@ -12,7 +17,7 @@ import type { ERPJournalEntry, ERPInvoice, ERPPayment, ERPConnection } from './t
 export class SageIntacctClient {
   private senderId: string;
   private senderPassword: string;
-  private apiUrl: string = 'https://api.intacct.com/ia/xml/xmlgw.phtml';
+  private apiUrl: string = "https://api.intacct.com/ia/xml/xmlgw.phtml";
   private connection: ERPConnection;
 
   /**
@@ -22,7 +27,7 @@ export class SageIntacctClient {
     this.connection = connection;
     const { username, password } = connection.credentials;
     if (!username || !password) {
-      throw new Error('Missing Sage Intacct credentials: username, password');
+      throw new Error("Missing Sage Intacct credentials: username, password");
     }
     this.senderId = username;
     this.senderPassword = password;
@@ -33,7 +38,7 @@ export class SageIntacctClient {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      await this.readList('AGLACCOUNTS', 1);
+      await this.readList("AGLACCOUNTS", 1);
       return true;
     } catch {
       return false;
@@ -55,16 +60,16 @@ export class SageIntacctClient {
         </control>
         <operation>
           <authentication>
-            <sessionid>${this.connection.credentials.accessToken || ''}</sessionid>
+            <sessionid>${this.connection.credentials.accessToken || ""}</sessionid>
           </authentication>
           <content>${xmlBody}</content>
         </operation>
       </request>`;
 
     const response = await fetch(this.apiUrl, {
-      method: 'POST',
+      method: "POST",
       body: xml,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       signal: AbortSignal.timeout(30000),
     });
 
@@ -96,17 +101,17 @@ export class SageIntacctClient {
         <ACCOUNTNO>${line.accountCode}</ACCOUNTNO>
         <DEBIT_AMOUNT>${line.debitAmount || 0}</DEBIT_AMOUNT>
         <CREDIT_AMOUNT>${line.creditAmount || 0}</CREDIT_AMOUNT>
-        <DESCRIPTION>${line.description || ''}</DESCRIPTION>
+        <DESCRIPTION>${line.description || ""}</DESCRIPTION>
       `,
       )
-      .join('');
+      .join("");
 
     const xmlBody = `
       <GLBATCH>
-        <DATECREATED>${entry.transactionDate.toISOString().split('T')[0]}</DATECREATED>
+        <DATECREATED>${entry.transactionDate.toISOString().split("T")[0]}</DATECREATED>
         <GLENTRIES>${lines}</GLENTRIES>
-        <DESCRIPTION>${entry.description || ''}</DESCRIPTION>
-        <REFERENCE_NUMBER>${entry.referenceNumber || ''}</REFERENCE_NUMBER>
+        <DESCRIPTION>${entry.description || ""}</DESCRIPTION>
+        <REFERENCE_NUMBER>${entry.referenceNumber || ""}</REFERENCE_NUMBER>
       </GLBATCH>
     `;
 
@@ -116,7 +121,7 @@ export class SageIntacctClient {
       externalId: result.GLBATCH_ID,
       referenceNumber: result.REFERENCE_NUMBER,
       transactionDate: entry.transactionDate,
-      status: 'posted',
+      status: "posted",
       lines: [],
     };
   }
@@ -137,13 +142,13 @@ export class SageIntacctClient {
         </APLINEITEM>
       `,
       )
-      .join('');
+      .join("");
 
     const xmlBody = `
       <APBILL>
         <VENDORID>${bill.customerId}</VENDORID>
-        <BILL_DATE>${bill.invoiceDate.toISOString().split('T')[0]}</BILL_DATE>
-        <DUE_DATE>${bill.dueDate.toISOString().split('T')[0]}</DUE_DATE>
+        <BILL_DATE>${bill.invoiceDate.toISOString().split("T")[0]}</BILL_DATE>
+        <DUE_DATE>${bill.dueDate.toISOString().split("T")[0]}</DUE_DATE>
         <BILL_NUMBER>${bill.invoiceNumber}</BILL_NUMBER>
         <ITEMS>${items}</ITEMS>
         <TOTAL>${bill.total}</TOTAL>
@@ -159,7 +164,7 @@ export class SageIntacctClient {
       dueDate: bill.dueDate,
       customerId: bill.customerId,
       total: bill.total,
-      status: 'draft',
+      status: "draft",
       lineItems: [],
     };
   }
@@ -180,13 +185,13 @@ export class SageIntacctClient {
         </ARLINEITEM>
       `,
       )
-      .join('');
+      .join("");
 
     const xmlBody = `
       <ARINVOICE>
         <CUSTOMERID>${invoice.customerId}</CUSTOMERID>
-        <INVOICE_DATE>${invoice.invoiceDate.toISOString().split('T')[0]}</INVOICE_DATE>
-        <DUE_DATE>${invoice.dueDate.toISOString().split('T')[0]}</DUE_DATE>
+        <INVOICE_DATE>${invoice.invoiceDate.toISOString().split("T")[0]}</INVOICE_DATE>
+        <DUE_DATE>${invoice.dueDate.toISOString().split("T")[0]}</DUE_DATE>
         <INVOICE_NUMBER>${invoice.invoiceNumber}</INVOICE_NUMBER>
         <ITEMS>${items}</ITEMS>
         <TOTAL>${invoice.total}</TOTAL>
@@ -202,7 +207,7 @@ export class SageIntacctClient {
       dueDate: invoice.dueDate,
       customerId: invoice.customerId,
       total: invoice.total,
-      status: 'draft',
+      status: "draft",
       lineItems: [],
     };
   }
@@ -215,7 +220,7 @@ export class SageIntacctClient {
       <ARPAYMENT>
         <ARINVOICE_ID>${invoice.id}</ARINVOICE_ID>
         <PAYMENT_AMOUNT>${payment.amount}</PAYMENT_AMOUNT>
-        <PAYMENT_DATE>${payment.paymentDate.toISOString().split('T')[0]}</PAYMENT_DATE>
+        <PAYMENT_DATE>${payment.paymentDate.toISOString().split("T")[0]}</PAYMENT_DATE>
         <PAYMENT_METHOD>${payment.paymentMethod}</PAYMENT_METHOD>
       </ARPAYMENT>
     `;
@@ -242,27 +247,27 @@ export class SageIntacctClient {
    * List chart of accounts
    */
   async listAccounts(): Promise<any[]> {
-    return this.readList('AGLACCOUNTS');
+    return this.readList("AGLACCOUNTS");
   }
 
   /**
    * List customers
    */
   async listCustomers(): Promise<any[]> {
-    return this.readList('ARCUSTOMERS');
+    return this.readList("ARCUSTOMERS");
   }
 
   /**
    * List vendors
    */
   async listVendors(): Promise<any[]> {
-    return this.readList('APVENDORS');
+    return this.readList("APVENDORS");
   }
 
   /**
    * List projects
    */
   async listProjects(): Promise<any[]> {
-    return this.readList('PROJECTS');
+    return this.readList("PROJECTS");
   }
 }

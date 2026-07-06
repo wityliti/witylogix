@@ -1,16 +1,20 @@
-'use client';
+"use client";
 /**
  * DriverLocationMap — single-driver live map for the driver detail page.
  * Shows the driver's current GPS position + active delivery pins.
  * SSR-disabled via dynamic import in drivers/[id]/page.tsx.
  */
 
-import { MapPin } from 'lucide-react';
-import { WLMap } from '@/components/map/wl-map';
-import { DriverLayer, type DriverMarker, type DriverStatus } from '@/components/map/driver-layer';
-import { PinLayer, type Pin, type PinStatus } from '@/components/map/pin-layer';
-import { useFitBounds } from '@/components/map/use-fit-bounds';
-import { useWLMap } from '@/components/map/wl-map-context';
+import { MapPin } from "lucide-react";
+import { WLMap } from "@/components/map/wl-map";
+import {
+  DriverLayer,
+  type DriverMarker,
+  type DriverStatus,
+} from "@/components/map/driver-layer";
+import { PinLayer, type Pin, type PinStatus } from "@/components/map/pin-layer";
+import { useFitBounds } from "@/components/map/use-fit-bounds";
+import { useWLMap } from "@/components/map/wl-map-context";
 
 export interface ActiveOrderPin {
   id: string;
@@ -35,25 +39,25 @@ export interface DriverLocationMapProps {
 }
 
 const ORDER_STATUS_PIN: Record<string, PinStatus> = {
-  ASSIGNED: 'assigned',
-  PICKED_UP: 'in_transit',
-  OUT_FOR_DELIVERY: 'in_transit',
-  ARRIVED: 'in_transit',
+  ASSIGNED: "assigned",
+  PICKED_UP: "in_transit",
+  OUT_FOR_DELIVERY: "in_transit",
+  ARRIVED: "in_transit",
 };
 
 const DRIVER_STATUS: Record<string, DriverStatus> = {
-  AVAILABLE: 'available',
-  ON_ROUTE: 'busy',
-  ON_BREAK: 'break',
-  OFFLINE: 'offline',
-  available: 'available',
-  busy: 'busy',
-  break: 'break',
-  offline: 'offline',
+  AVAILABLE: "available",
+  ON_ROUTE: "busy",
+  ON_BREAK: "break",
+  OFFLINE: "offline",
+  available: "available",
+  busy: "busy",
+  break: "break",
+  offline: "offline",
 };
 
 function normaliseDriverStatus(s: string): DriverStatus {
-  return DRIVER_STATUS[s] ?? 'offline';
+  return DRIVER_STATUS[s] ?? "offline";
 }
 
 function InnerLayers({
@@ -65,7 +69,8 @@ function InnerLayers({
 }) {
   const map = useWLMap();
   const coords: { lat: number; lng: number }[] = [];
-  if (driverMarker) coords.push({ lat: driverMarker.lat, lng: driverMarker.lng });
+  if (driverMarker)
+    coords.push({ lat: driverMarker.lat, lng: driverMarker.lng });
   deliveryPins.forEach((p) => coords.push({ lat: p.lat, lng: p.lng }));
   useFitBounds(map, coords, 80);
 
@@ -118,7 +123,7 @@ export default function DriverLocationMap({
       id: o.id,
       lat: o.deliveryLocation!.latitude as number,
       lng: o.deliveryLocation!.longitude as number,
-      status: ORDER_STATUS_PIN[o.status] ?? 'open',
+      status: ORDER_STATUS_PIN[o.status] ?? "open",
       label: o.customerName ?? o.externalOrderNumber ?? undefined,
     }));
 
@@ -131,10 +136,12 @@ export default function DriverLocationMap({
           <MapPin className="w-6 h-6 text-wl-text-tertiary" />
         </div>
         <div className="text-center max-w-xs">
-          <p className="text-sm font-medium text-wl-text-secondary">No location data</p>
+          <p className="text-sm font-medium text-wl-text-secondary">
+            No location data
+          </p>
           <p className="text-xs text-wl-text-tertiary mt-1">
-            Driver position is reported from the mobile app. Ask the driver to enable location
-            sharing.
+            Driver position is reported from the mobile app. Ask the driver to
+            enable location sharing.
           </p>
         </div>
       </div>
@@ -144,7 +151,11 @@ export default function DriverLocationMap({
   return (
     <div className="relative h-[480px] rounded-xl overflow-hidden border border-wl-border-default">
       <WLMap
-        center={hasLocation ? [currentLng as number, currentLat as number] : DEFAULT_CENTER}
+        center={
+          hasLocation
+            ? [currentLng as number, currentLat as number]
+            : DEFAULT_CENTER
+        }
         zoom={13}
         className="w-full h-full"
       >
@@ -156,19 +167,25 @@ export default function DriverLocationMap({
         {driverMarker && (
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-            <span className="text-xs text-wl-text-secondary">Driver position</span>
+            <span className="text-xs text-wl-text-secondary">
+              Driver position
+            </span>
           </div>
         )}
-        {deliveryPins.some((p) => p.status === 'assigned') && (
+        {deliveryPins.some((p) => p.status === "assigned") && (
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-            <span className="text-xs text-wl-text-secondary">Assigned delivery</span>
+            <span className="text-xs text-wl-text-secondary">
+              Assigned delivery
+            </span>
           </div>
         )}
-        {deliveryPins.some((p) => p.status === 'in_transit') && (
+        {deliveryPins.some((p) => p.status === "in_transit") && (
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full bg-blue-400" />
-            <span className="text-xs text-wl-text-secondary">In-transit delivery</span>
+            <span className="text-xs text-wl-text-secondary">
+              In-transit delivery
+            </span>
           </div>
         )}
       </div>
@@ -176,7 +193,8 @@ export default function DriverLocationMap({
       {/* Stats badge */}
       <div className="absolute top-4 right-4 bg-wl-bg-surface/90 backdrop-blur-sm border border-wl-border-default rounded-lg px-3 py-1.5 z-10">
         <span className="text-xs font-semibold text-wl-text-secondary">
-          {deliveryPins.length} stop{deliveryPins.length !== 1 ? 's' : ''} on map
+          {deliveryPins.length} stop{deliveryPins.length !== 1 ? "s" : ""} on
+          map
         </span>
       </div>
     </div>

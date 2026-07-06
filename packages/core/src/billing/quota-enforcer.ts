@@ -5,7 +5,7 @@
  * Provides Fastify middleware for request-level quota checks.
  */
 
-import { PrismaClient } from '@witylogix/db';
+import { PrismaClient } from "@witylogix/db";
 
 // ─── LOCAL TYPE DEFINITIONS ─────────────────────────────────────────
 // Local BillingSubscription type
@@ -13,7 +13,7 @@ interface BillingSubscription {
   id: string;
   shopId: string;
   planId: string;
-  status: 'trialing' | 'active' | 'cancelled' | 'expired';
+  status: "trialing" | "active" | "cancelled" | "expired";
   currentPeriodStart: Date;
   currentPeriodEnd: Date;
   trialEnd?: Date | null;
@@ -34,11 +34,11 @@ export const WARNING_THRESHOLD = 0.8; // 80% usage triggers warning
 export const HARD_LIMIT = 1.0; // 100% usage blocks operations
 
 export type QuotaResource =
-  | 'orders'
-  | 'shipments'
-  | 'api_calls'
-  | 'storage'
-  | 'drivers';
+  | "orders"
+  | "shipments"
+  | "api_calls"
+  | "storage"
+  | "drivers";
 
 // ─── ERROR CLASSES ──────────────────────────────────────────────────
 
@@ -48,17 +48,15 @@ export class QuotaExceededError extends Error {
     public current: number,
     public limit: number,
   ) {
-    super(
-      `Quota exceeded for ${resource}: ${current}/${limit}`,
-    );
-    this.name = 'QuotaExceededError';
+    super(`Quota exceeded for ${resource}: ${current}/${limit}`);
+    this.name = "QuotaExceededError";
   }
 }
 
 export class SubscriptionNotFoundError extends Error {
   constructor(shopId: string) {
     super(`No active subscription found for shop: ${shopId}`);
-    this.name = 'SubscriptionNotFoundError';
+    this.name = "SubscriptionNotFoundError";
   }
 }
 
@@ -78,7 +76,7 @@ export interface QuotaUsageSummary {
 }
 
 export interface QuotaEvent {
-  type: 'warning' | 'exceeded' | 'reset';
+  type: "warning" | "exceeded" | "reset";
   resource: QuotaResource;
   shopId: string;
   current: number;
@@ -118,13 +116,14 @@ export class QuotaEnforcer {
 
     const usage = await this.getCurrentUsage(subscription.id, resource);
     const percentage = limit > 0 ? usage / limit : 0;
-    const isWarning = percentage >= WARNING_THRESHOLD && percentage < HARD_LIMIT;
+    const isWarning =
+      percentage >= WARNING_THRESHOLD && percentage < HARD_LIMIT;
     const isExceeded = percentage >= HARD_LIMIT;
 
     // Emit events for warnings and exceeded quotas
     if (isWarning) {
       this.emitEvent({
-        type: 'warning',
+        type: "warning",
         resource,
         shopId,
         current: usage,
@@ -134,7 +133,7 @@ export class QuotaEnforcer {
       });
     } else if (isExceeded) {
       this.emitEvent({
-        type: 'exceeded',
+        type: "exceeded",
         resource,
         shopId,
         current: usage,
@@ -182,13 +181,17 @@ export class QuotaEnforcer {
     }
 
     // Increment
-    const updatedUsage = await this.doIncrement(subscription.id, resource, amount);
+    const updatedUsage = await this.doIncrement(
+      subscription.id,
+      resource,
+      amount,
+    );
 
     // Check if we've crossed warning threshold
     const percentage = updatedUsage / limit;
     if (percentage >= WARNING_THRESHOLD && percentage < HARD_LIMIT) {
       this.emitEvent({
-        type: 'warning',
+        type: "warning",
         resource,
         shopId,
         current: updatedUsage,
@@ -219,8 +222,8 @@ export class QuotaEnforcer {
     });
 
     this.emitEvent({
-      type: 'reset',
-      resource: 'orders', // dummy resource
+      type: "reset",
+      resource: "orders", // dummy resource
       shopId,
       current: 0,
       limit: 0,
@@ -235,11 +238,11 @@ export class QuotaEnforcer {
   async getUsageSummary(shopId: string): Promise<QuotaUsageSummary> {
     const summary: QuotaUsageSummary = {};
     const resources: QuotaResource[] = [
-      'orders',
-      'shipments',
-      'api_calls',
-      'storage',
-      'drivers',
+      "orders",
+      "shipments",
+      "api_calls",
+      "storage",
+      "drivers",
     ];
 
     for (const resource of resources) {
@@ -261,7 +264,7 @@ export class QuotaEnforcer {
       const shopId = (request as any).shopId;
 
       if (!shopId) {
-        return reply.code(401).send({ error: 'Unauthorized: no shop context' });
+        return reply.code(401).send({ error: "Unauthorized: no shop context" });
       }
 
       try {
@@ -270,7 +273,7 @@ export class QuotaEnforcer {
           const quota = await this.checkQuota(shopId, resource);
           if (!quota.allowed) {
             return reply.code(429).send({
-              error: 'Quota exceeded',
+              error: "Quota exceeded",
               resource,
               current: quota.current,
               limit: quota.limit,
@@ -281,7 +284,7 @@ export class QuotaEnforcer {
       } catch (error) {
         if (error instanceof SubscriptionNotFoundError) {
           return reply.code(402).send({
-            error: 'Payment Required: no active subscription',
+            error: "Payment Required: no active subscription",
           });
         }
         throw error;
@@ -291,19 +294,29 @@ export class QuotaEnforcer {
 
   // ─── PRIVATE HELPERS ────────────────────────────────────────────
 
-  private async getActiveSubscription(shopId: string): Promise<BillingSubscription> {
-    const subscription = await (this.prisma as any).billingSubscription.findUnique({
+  private async getActiveSubscription(
+    shopId: string,
+  ): Promise<BillingSubscription> {
+    const subscription = await (
+      this.prisma as any
+    ).billingSubscription.findUnique({
       where: { shopId },
     });
 
-    if (!subscription || subscription.status === 'cancelled' || subscription.status === 'expired') {
+    if (
+      !subscription ||
+      subscription.status === "cancelled" ||
+      subscription.status === "expired"
+    ) {
       throw new SubscriptionNotFoundError(shopId);
     }
 
     return subscription;
   }
 
-  private parseLimits(subscription: BillingSubscription): Record<string, number | null> {
+  private parseLimits(
+    subscription: BillingSubscription,
+  ): Record<string, number | null> {
     // Get plan limits from subscription via plan relation
     // This is a simplified version; in production would need to fetch plan
     const limitsJson = (subscription as any).plan?.limits;
@@ -319,7 +332,8 @@ export class QuotaEnforcer {
     }
 
     try {
-      const limits = typeof limitsJson === 'string' ? JSON.parse(limitsJson) : limitsJson;
+      const limits =
+        typeof limitsJson === "string" ? JSON.parse(limitsJson) : limitsJson;
       return {
         orders: limits.orders ?? null,
         shipments: limits.shipments ?? null,

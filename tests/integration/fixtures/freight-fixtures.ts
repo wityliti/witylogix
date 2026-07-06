@@ -417,7 +417,9 @@ export interface MockInvoice {
   invoicedBy: string;
 }
 
-export function createMockInvoice(overrides?: Partial<MockInvoice>): MockInvoice {
+export function createMockInvoice(
+  overrides?: Partial<MockInvoice>,
+): MockInvoice {
   const load = createMockLoad();
   const baseInvoice: MockInvoice = {
     invoiceId: `inv_${Math.random().toString(36).substr(2, 9)}`,

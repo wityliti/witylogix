@@ -8,7 +8,7 @@
  */
 export namespace ToastV2 {
   export interface Config {
-    environment: 'sandbox' | 'production';
+    environment: "sandbox" | "production";
     clientId: string;
     clientSecret: string;
     restaurantGuid?: string;
@@ -26,7 +26,7 @@ export namespace ToastV2 {
   export interface Check {
     guid: string;
     checkNumber: string;
-    status: 'open' | 'closed' | 'voided';
+    status: "open" | "closed" | "voided";
     locationGuid: string;
     tab: {
       lineItems: CheckLineItem[];
@@ -101,13 +101,13 @@ export namespace ToastV2 {
   export interface Discount {
     guid?: string;
     name: string;
-    type: 'FIXED' | 'PERCENTAGE';
+    type: "FIXED" | "PERCENTAGE";
     amount: number;
   }
 
   export interface Payment {
     guid: string;
-    type: 'CASH' | 'CARD' | 'CHECK' | 'GIFT_CARD' | 'THIRD_PARTY_DELIVERY';
+    type: "CASH" | "CARD" | "CHECK" | "GIFT_CARD" | "THIRD_PARTY_DELIVERY";
     amount: number;
     tip?: number;
     cardPresent: boolean;
@@ -133,7 +133,7 @@ export namespace ToastV2 {
     locationGuid: string;
     startTime: number;
     endTime?: number;
-    status: 'open' | 'closed';
+    status: "open" | "closed";
     createdTime: number;
   }
 
@@ -188,7 +188,7 @@ export namespace ToastV2 {
  */
 export namespace SquareV2 {
   export interface Config {
-    environment: 'sandbox' | 'production';
+    environment: "sandbox" | "production";
     accessToken: string;
     locationId?: string;
   }
@@ -209,7 +209,7 @@ export namespace SquareV2 {
     totalAmount?: Money;
     createdAt: string;
     updatedAt: string;
-    state?: 'OPEN' | 'COMPLETED' | 'CANCELED';
+    state?: "OPEN" | "COMPLETED" | "CANCELED";
   }
 
   export interface OrderLineItem {
@@ -217,7 +217,7 @@ export namespace SquareV2 {
     name: string;
     quantity: string;
     catalogObjectId?: string;
-    itemType: 'ITEM' | 'CUSTOM_AMOUNT';
+    itemType: "ITEM" | "CUSTOM_AMOUNT";
     note?: string;
     basePriceMoney?: Money;
     grossSalesMoney?: Money;
@@ -241,20 +241,20 @@ export namespace SquareV2 {
     uid?: string;
     catalogObjectId?: string;
     name?: string;
-    type?: 'ADDITIVE' | 'INCLUSIVE';
+    type?: "ADDITIVE" | "INCLUSIVE";
     percentage?: string;
     appliedMoney?: Money;
-    scope?: 'ORDER' | 'LINE_ITEM';
+    scope?: "ORDER" | "LINE_ITEM";
   }
 
   export interface OrderDiscount {
     uid?: string;
     catalogObjectId?: string;
     name?: string;
-    type?: 'FIXED_PERCENTAGE' | 'FIXED_AMOUNT';
+    type?: "FIXED_PERCENTAGE" | "FIXED_AMOUNT";
     percentage?: string;
     amountMoney?: Money;
-    scope?: 'ORDER' | 'LINE_ITEM';
+    scope?: "ORDER" | "LINE_ITEM";
     appliedMoney?: Money;
   }
 
@@ -273,7 +273,7 @@ export namespace SquareV2 {
   export interface ServiceCharge {
     uid?: string;
     name?: string;
-    type?: 'AUTO_GRATUITY' | 'CUSTOM';
+    type?: "AUTO_GRATUITY" | "CUSTOM";
     percentage?: string;
     amountMoney?: Money;
     appliedMoney?: Money;
@@ -289,7 +289,7 @@ export namespace SquareV2 {
     receiptNumber?: string;
     receiptUrl?: string;
     createdAt?: string;
-    status?: 'COMPLETED' | 'PENDING' | 'FAILED' | 'CANCELED';
+    status?: "COMPLETED" | "PENDING" | "FAILED" | "CANCELED";
   }
 
   export interface Money {
@@ -298,7 +298,23 @@ export namespace SquareV2 {
   }
 
   export interface CatalogObject {
-    type: 'ITEM' | 'IMAGE' | 'CATEGORY' | 'TAX' | 'DISCOUNT' | 'MODIFIER' | 'MODIFIER_LIST' | 'PRICING_RULE' | 'PRODUCT_SET' | 'TIME_PERIOD' | 'MEASUREMENT_UNIT' | 'SUBSCRIPTION_PLAN' | 'ITEM_OPTION' | 'ITEM_OPTION_VAL' | 'CUSTOM_ATTRIBUTE_DEFINITION' | 'QUICK_AMOUNT_SETTINGS';
+    type:
+      | "ITEM"
+      | "IMAGE"
+      | "CATEGORY"
+      | "TAX"
+      | "DISCOUNT"
+      | "MODIFIER"
+      | "MODIFIER_LIST"
+      | "PRICING_RULE"
+      | "PRODUCT_SET"
+      | "TIME_PERIOD"
+      | "MEASUREMENT_UNIT"
+      | "SUBSCRIPTION_PLAN"
+      | "ITEM_OPTION"
+      | "ITEM_OPTION_VAL"
+      | "CUSTOM_ATTRIBUTE_DEFINITION"
+      | "QUICK_AMOUNT_SETTINGS";
     id: string;
     itemData?: CatalogItem;
     categoryData?: CatalogCategory;
@@ -323,7 +339,7 @@ export namespace SquareV2 {
     taxIds?: string[];
     modifierListIds?: string[];
     variations?: CatalogItemVariation[];
-    productType?: 'REGULAR' | 'APPOINTMENTS_SERVICE';
+    productType?: "REGULAR" | "APPOINTMENTS_SERVICE";
     skipModifierScreen?: boolean;
     itemOptions?: ItemOptionForItem[];
   }
@@ -334,11 +350,11 @@ export namespace SquareV2 {
     sku?: string;
     upc?: string;
     ordinal?: number;
-    pricingType?: 'FIXED_PRICING' | 'VARIABLE_PRICING';
+    pricingType?: "FIXED_PRICING" | "VARIABLE_PRICING";
     priceMoney?: Money;
     locationOverrides?: ItemVariationLocationOverrides[];
     trackInventory?: boolean;
-    inventoryAlertType?: 'NONE' | 'LOW_QUANTITY';
+    inventoryAlertType?: "NONE" | "LOW_QUANTITY";
     inventoryAlertThreshold?: number;
     userData?: string;
     serviceDuration?: number;
@@ -349,10 +365,10 @@ export namespace SquareV2 {
 
   export interface ItemVariationLocationOverrides {
     locationId: string;
-    pricingType?: 'FIXED_PRICING' | 'VARIABLE_PRICING';
+    pricingType?: "FIXED_PRICING" | "VARIABLE_PRICING";
     priceMoney?: Money;
     trackInventory?: boolean;
-    inventoryAlertType?: 'NONE' | 'LOW_QUANTITY';
+    inventoryAlertType?: "NONE" | "LOW_QUANTITY";
     inventoryAlertThreshold?: number;
   }
 
@@ -372,8 +388,8 @@ export namespace SquareV2 {
 
   export interface CatalogTax {
     name?: string;
-    calculationPhase?: 'TAX_PHASE' | 'SUBTOTAL_PHASE';
-    inclusionType: 'ADDITIVE' | 'INCLUSIVE';
+    calculationPhase?: "TAX_PHASE" | "SUBTOTAL_PHASE";
+    inclusionType: "ADDITIVE" | "INCLUSIVE";
     percentage?: string;
     appliesToCustomAmounts?: boolean;
     enabled?: boolean;
@@ -381,12 +397,12 @@ export namespace SquareV2 {
 
   export interface CatalogDiscount {
     name?: string;
-    discountType: 'FIXED_PERCENTAGE' | 'FIXED_AMOUNT';
+    discountType: "FIXED_PERCENTAGE" | "FIXED_AMOUNT";
     percentage?: string;
     amountMoney?: Money;
     pinRequired?: boolean;
     labelColor?: string;
-    modifyTaxBasis?: 'DO_NOT_MODIFY_TAX_BASIS' | 'MODIFY_TAX_BASIS';
+    modifyTaxBasis?: "DO_NOT_MODIFY_TAX_BASIS" | "MODIFY_TAX_BASIS";
     appliesToCustomAmounts?: boolean;
     enabled?: boolean;
   }
@@ -404,8 +420,15 @@ export namespace SquareV2 {
 
   export interface InventoryCount {
     catalogObjectId: string;
-    catalogObjectType?: 'ITEM_VARIATION';
-    state?: 'IN_STOCK' | 'SOLD' | 'RETURNED' | 'RESERVED_FOR_SALE' | 'SUPPORTED_BY_NEWER_VERSION' | 'DEPRECATED_BY_NEWER_VERSION' | 'ABSENT';
+    catalogObjectType?: "ITEM_VARIATION";
+    state?:
+      | "IN_STOCK"
+      | "SOLD"
+      | "RETURNED"
+      | "RESERVED_FOR_SALE"
+      | "SUPPORTED_BY_NEWER_VERSION"
+      | "DEPRECATED_BY_NEWER_VERSION"
+      | "ABSENT";
     locationId: string;
     quantity?: string;
     calculatedAt?: string;
@@ -428,7 +451,7 @@ export namespace SquareV2 {
   export interface InventoryTransfer {
     id?: string;
     referenceId?: string;
-    state?: 'PENDING' | 'COMPLETED' | 'CANCELED';
+    state?: "PENDING" | "COMPLETED" | "CANCELED";
     fromLocationId: string;
     toLocationId: string;
     catalogObjectId: string;
@@ -440,7 +463,23 @@ export namespace SquareV2 {
 
   export interface Customer {
     id: string;
-    creationSource?: 'APPOINTMENTS' | 'CHECKOUT' | 'DIRECTORY' | 'EGIFTING' | 'EMAIL_MARKETING' | 'FEEDBACK' | 'IMPORT' | 'INVOICES' | 'LOYALTY' | 'MARKETING' | 'ONLINE_STORE' | 'PHONE' | 'SQUARE_PAYROLL' | 'TERMINAL' | 'THIRD_PARTY' | 'OTHER';
+    creationSource?:
+      | "APPOINTMENTS"
+      | "CHECKOUT"
+      | "DIRECTORY"
+      | "EGIFTING"
+      | "EMAIL_MARKETING"
+      | "FEEDBACK"
+      | "IMPORT"
+      | "INVOICES"
+      | "LOYALTY"
+      | "MARKETING"
+      | "ONLINE_STORE"
+      | "PHONE"
+      | "SQUARE_PAYROLL"
+      | "TERMINAL"
+      | "THIRD_PARTY"
+      | "OTHER";
     givenName?: string;
     familyName?: string;
     nickname?: string;
@@ -478,7 +517,10 @@ export namespace SquareV2 {
     booleanValue?: boolean;
     numberValue?: string;
     selectionValue?: string;
-    visibility?: 'VISIBILITY_READ_WRITE_VALUES' | 'VISIBILITY_READ_ONLY' | 'VISIBILITY_HIDDEN';
+    visibility?:
+      | "VISIBILITY_READ_WRITE_VALUES"
+      | "VISIBILITY_READ_ONLY"
+      | "VISIBILITY_HIDDEN";
   }
 
   export interface Card {
@@ -500,7 +542,7 @@ export namespace SquareV2 {
     id: string;
     referenceId?: string;
     isOwner?: boolean;
-    status?: 'ACTIVE' | 'INACTIVE';
+    status?: "ACTIVE" | "INACTIVE";
     givenName?: string;
     familyName?: string;
     emailAddress?: string;
@@ -526,7 +568,7 @@ export namespace SquareV2 {
 
   export interface WorkweekConfig {
     id?: string;
-    startOfWeek?: 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT' | 'SUN';
+    startOfWeek?: "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
     startOfDayLocalTime?: string;
     version?: number;
     createdAt?: string;
@@ -542,7 +584,7 @@ export namespace SquareV2 {
     endAt?: string;
     wage?: ShiftWage;
     breaks?: Break[];
-    status?: 'OPEN' | 'CLOSED';
+    status?: "OPEN" | "CLOSED";
     version?: number;
     createdAt?: string;
     updatedAt?: string;
@@ -567,7 +609,7 @@ export namespace SquareV2 {
     address?: Address;
     timezone?: string;
     capabilities?: string[];
-    status?: 'ACTIVE' | 'INACTIVE';
+    status?: "ACTIVE" | "INACTIVE";
     createdAt?: string;
     updatedAt?: string;
     phoneNumber?: string;
@@ -582,7 +624,7 @@ export namespace SquareV2 {
   }
 
   export interface BusinessHoursPeriod {
-    dayOfWeek?: 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT' | 'SUN';
+    dayOfWeek?: "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
     startLocalTime?: string;
     endLocalTime?: string;
   }
@@ -601,7 +643,7 @@ export namespace SquareV2 {
  */
 export namespace Clover {
   export interface Config {
-    environment: 'sandbox' | 'production';
+    environment: "sandbox" | "production";
     merchantId: string;
     accessToken: string;
     apiKey?: string;
@@ -616,7 +658,7 @@ export namespace Clover {
     serviceCharge?: number;
     payments: Payment[];
     refunds: Refund[];
-    state: 'open' | 'locked' | 'closed';
+    state: "open" | "locked" | "closed";
     note?: string;
     createdTime: number;
     updatedTime?: number;
@@ -831,7 +873,7 @@ export namespace Clover {
  */
 export namespace Lightspeed {
   export interface Config {
-    environment: 'sandbox' | 'production';
+    environment: "sandbox" | "production";
     accountId: string;
     accessToken: string;
     refreshToken?: string;
@@ -842,7 +884,7 @@ export namespace Lightspeed {
     customerID?: number;
     employeeID?: number;
     registerID?: number;
-    saleStatus: 'CURRENT' | 'DELETED' | 'ARCHIVED';
+    saleStatus: "CURRENT" | "DELETED" | "ARCHIVED";
     timezoneID?: number;
     total: number;
     subtotal?: number;
@@ -876,7 +918,7 @@ export namespace Lightspeed {
 
   export interface Item {
     itemID: number;
-    itemType: 'item' | 'variant' | 'modifier';
+    itemType: "item" | "variant" | "modifier";
     title: string;
     description?: string;
     sku?: string;
@@ -958,7 +1000,7 @@ export namespace Lightspeed {
     toLocationID: number;
     itemID: number;
     quantity: number;
-    status: 'pending' | 'received' | 'canceled';
+    status: "pending" | "received" | "canceled";
     createdDate: string;
   }
 

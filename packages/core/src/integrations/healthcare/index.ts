@@ -5,7 +5,12 @@
  * HL7 v2 support, consent management, audit logging
  */
 
-export { HealthcareAdapter, RateLimiter, CircuitBreaker, RetryHandler } from "./healthcare-adapter.js";
+export {
+  HealthcareAdapter,
+  RateLimiter,
+  CircuitBreaker,
+  RetryHandler,
+} from "./healthcare-adapter.js";
 
 export {
   type HealthcareConfig,

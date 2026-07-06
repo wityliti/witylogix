@@ -102,11 +102,7 @@ describe("RequestFingerprinter", () => {
         acceptLanguage: "en-US",
       };
 
-      const result = await fingerprinter.detectAnomalies(
-        attrs,
-        "user-123",
-        50
-      );
+      const result = await fingerprinter.detectAnomalies(attrs, "user-123", 50);
 
       expect(result.reasons.some((r) => r.type === "NEW_DEVICE")).toBe(true);
     });
@@ -142,7 +138,9 @@ describe("RequestFingerprinter", () => {
       await fingerprinter.detectAnomalies(attrs1, userId);
       const result = await fingerprinter.detectAnomalies(attrs2, userId);
 
-      expect(result.reasons.some((r) => r.type === "RAPID_IP_CHANGE")).toBe(true);
+      expect(result.reasons.some((r) => r.type === "RAPID_IP_CHANGE")).toBe(
+        true,
+      );
     });
 
     it("should provide appropriate action based on score", async () => {
@@ -176,7 +174,7 @@ describe("RequestFingerprinter", () => {
     it("should return 0 for unknown fingerprints", () => {
       const similarity = fingerprinter.comparFingerprints(
         "unknown1",
-        "unknown2"
+        "unknown2",
       );
       expect(similarity).toBe(0);
     });
@@ -246,11 +244,7 @@ describe("RequestFingerprinter", () => {
         acceptLanguage: "en-US",
       };
 
-      const result = await fingerprinter.detectAnomalies(
-        attrs,
-        "user-123",
-        50
-      );
+      const result = await fingerprinter.detectAnomalies(attrs, "user-123", 50);
 
       expect(result.score).toBeGreaterThanOrEqual(0);
       expect(result.score).toBeLessThanOrEqual(100);
@@ -266,7 +260,7 @@ describe("RequestFingerprinter", () => {
       const result = await fingerprinter.detectAnomalies(
         attrs,
         "user-123",
-        0 // Very low threshold to trigger multiple anomalies
+        0, // Very low threshold to trigger multiple anomalies
       );
 
       expect(result.score).toBeLessThanOrEqual(100);
@@ -281,10 +275,7 @@ describe("RequestFingerprinter", () => {
         acceptLanguage: "en-US",
       };
 
-      const fp = await fingerprinter.generateFingerprint(
-        attrs,
-        "user-123"
-      );
+      const fp = await fingerprinter.generateFingerprint(attrs, "user-123");
 
       expect(fp.userId).toBe("user-123");
     });
@@ -297,10 +288,7 @@ describe("RequestFingerprinter", () => {
       };
 
       const fp1 = await fingerprinter.generateFingerprint(attrs);
-      const fp2 = await fingerprinter.generateFingerprint(
-        attrs,
-        "user-123"
-      );
+      const fp2 = await fingerprinter.generateFingerprint(attrs, "user-123");
 
       expect(fp2.userId).toBe("user-123");
     });

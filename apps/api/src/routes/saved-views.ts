@@ -133,7 +133,9 @@ async function savedViewsRoutes(fastify: FastifyInstance): Promise<void> {
         tableName: body.tableName,
         filters: body.filters ? JSON.stringify(body.filters) : null,
         sortConfig: body.sortConfig ? JSON.stringify(body.sortConfig) : null,
-        columnVisibility: body.columnVisibility ? JSON.stringify(body.columnVisibility) : null,
+        columnVisibility: body.columnVisibility
+          ? JSON.stringify(body.columnVisibility)
+          : null,
         isShared: body.isShared,
         isDefault: false,
       },
@@ -150,7 +152,9 @@ async function savedViewsRoutes(fastify: FastifyInstance): Promise<void> {
         ...view,
         filters: view.filters ? JSON.parse(view.filters) : null,
         sortConfig: view.sortConfig ? JSON.parse(view.sortConfig) : null,
-        columnVisibility: view.columnVisibility ? JSON.parse(view.columnVisibility) : null,
+        columnVisibility: view.columnVisibility
+          ? JSON.parse(view.columnVisibility)
+          : null,
       },
     };
   });
@@ -184,7 +188,9 @@ async function savedViewsRoutes(fastify: FastifyInstance): Promise<void> {
       ...view,
       filters: view.filters ? JSON.parse(view.filters) : null,
       sortConfig: view.sortConfig ? JSON.parse(view.sortConfig) : null,
-      columnVisibility: view.columnVisibility ? JSON.parse(view.columnVisibility) : null,
+      columnVisibility: view.columnVisibility
+        ? JSON.parse(view.columnVisibility)
+        : null,
     }));
 
     return {
@@ -224,7 +230,9 @@ async function savedViewsRoutes(fastify: FastifyInstance): Promise<void> {
         ...view,
         filters: view.filters ? JSON.parse(view.filters) : null,
         sortConfig: view.sortConfig ? JSON.parse(view.sortConfig) : null,
-        columnVisibility: view.columnVisibility ? JSON.parse(view.columnVisibility) : null,
+        columnVisibility: view.columnVisibility
+          ? JSON.parse(view.columnVisibility)
+          : null,
       },
     };
   });
@@ -256,8 +264,12 @@ async function savedViewsRoutes(fastify: FastifyInstance): Promise<void> {
       data: {
         name: body.name,
         filters: body.filters ? JSON.stringify(body.filters) : undefined,
-        sortConfig: body.sortConfig ? JSON.stringify(body.sortConfig) : undefined,
-        columnVisibility: body.columnVisibility ? JSON.stringify(body.columnVisibility) : undefined,
+        sortConfig: body.sortConfig
+          ? JSON.stringify(body.sortConfig)
+          : undefined,
+        columnVisibility: body.columnVisibility
+          ? JSON.stringify(body.columnVisibility)
+          : undefined,
         isShared: body.isShared,
         updatedAt: new Date(),
       },
@@ -273,44 +285,49 @@ async function savedViewsRoutes(fastify: FastifyInstance): Promise<void> {
         ...updated,
         filters: updated.filters ? JSON.parse(updated.filters) : null,
         sortConfig: updated.sortConfig ? JSON.parse(updated.sortConfig) : null,
-        columnVisibility: updated.columnVisibility ? JSON.parse(updated.columnVisibility) : null,
+        columnVisibility: updated.columnVisibility
+          ? JSON.parse(updated.columnVisibility)
+          : null,
       },
     };
   });
 
   // ── DELETE /:id ──────────────────────────────────────────────
 
-  fastify.delete("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
+  fastify.delete(
+    "/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { id } = request.params as { id: string };
 
-    const view = await (request.tenantDb as any).savedView.findUnique({
-      where: { id },
-    });
+      const view = await (request.tenantDb as any).savedView.findUnique({
+        where: { id },
+      });
 
-    if (!view) {
-      throw new NotFoundError("Saved view", id);
-    }
+      if (!view) {
+        throw new NotFoundError("Saved view", id);
+      }
 
-    if (view.shopId !== request.shopId) {
-      throw new ForbiddenError("Cannot delete view from another shop");
-    }
+      if (view.shopId !== request.shopId) {
+        throw new ForbiddenError("Cannot delete view from another shop");
+      }
 
-    if (view.userId !== request.auth.userId) {
-      throw new ForbiddenError("Cannot delete view from another user");
-    }
+      if (view.userId !== request.auth.userId) {
+        throw new ForbiddenError("Cannot delete view from another user");
+      }
 
-    await (request.tenantDb as any).savedView.delete({
-      where: { id },
-    });
+      await (request.tenantDb as any).savedView.delete({
+        where: { id },
+      });
 
-    fastify.log.info(
-      { shopId: request.shopId, userId: request.auth.userId, viewId: id },
-      "Saved view deleted",
-    );
+      fastify.log.info(
+        { shopId: request.shopId, userId: request.auth.userId, viewId: id },
+        "Saved view deleted",
+      );
 
-    reply.status(204);
-    return;
-  });
+      reply.status(204);
+      return;
+    },
+  );
 
   // ── POST /:id/duplicate ──────────────────────────────────────
 
@@ -346,7 +363,11 @@ async function savedViewsRoutes(fastify: FastifyInstance): Promise<void> {
       });
 
       fastify.log.info(
-        { shopId: request.shopId, userId: request.auth.userId, viewId: duplicated.id },
+        {
+          shopId: request.shopId,
+          userId: request.auth.userId,
+          viewId: duplicated.id,
+        },
         "Saved view duplicated",
       );
 
@@ -355,8 +376,12 @@ async function savedViewsRoutes(fastify: FastifyInstance): Promise<void> {
         data: {
           ...duplicated,
           filters: duplicated.filters ? JSON.parse(duplicated.filters) : null,
-          sortConfig: duplicated.sortConfig ? JSON.parse(duplicated.sortConfig) : null,
-          columnVisibility: duplicated.columnVisibility ? JSON.parse(duplicated.columnVisibility) : null,
+          sortConfig: duplicated.sortConfig
+            ? JSON.parse(duplicated.sortConfig)
+            : null,
+          columnVisibility: duplicated.columnVisibility
+            ? JSON.parse(duplicated.columnVisibility)
+            : null,
         },
       };
     },
@@ -387,7 +412,11 @@ async function savedViewsRoutes(fastify: FastifyInstance): Promise<void> {
 
       // Unset previous default
       await (request.tenantDb as any).savedView.updateMany({
-        where: { userId: request.auth.userId, tableName: view.tableName, isDefault: true },
+        where: {
+          userId: request.auth.userId,
+          tableName: view.tableName,
+          isDefault: true,
+        },
         data: { isDefault: false },
       });
 

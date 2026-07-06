@@ -1,27 +1,30 @@
 /**
  * Warehouse Management Module
- * 
+ *
  * Implements warehouse capacity tracking, routing optimization, and coverage analysis.
  */
 
-import type { 
-  Location, 
-  LocationWithDistance, 
-  Coordinates, 
-  WarehouseCapacity, 
+import type {
+  Location,
+  LocationWithDistance,
+  Coordinates,
+  WarehouseCapacity,
   CoverageArea,
-  WarehouseAssignment 
-} from './types';
-import { calculateDistance } from './geo-fence';
+  WarehouseAssignment,
+} from "./types";
+import { calculateDistance } from "./geo-fence";
 
 /**
  * Calculate warehouse capacity metrics
- * 
+ *
  * @param location Location with capacity info
  * @param activeShipments Number of active shipments
  * @returns WarehouseCapacity metrics
  */
-export function calculateCapacity(location: Location, activeShipments: number): WarehouseCapacity {
+export function calculateCapacity(
+  location: Location,
+  activeShipments: number,
+): WarehouseCapacity {
   if (!location.capacity) {
     return {
       totalSlots: 0,
@@ -33,9 +36,9 @@ export function calculateCapacity(location: Location, activeShipments: number): 
 
   const usedSlots = Math.min(activeShipments, location.capacity.totalSlots);
   const available = Math.max(0, location.capacity.totalSlots - usedSlots);
-  const utilizationPercent = 
-    location.capacity.totalSlots > 0 
-      ? (usedSlots / location.capacity.totalSlots) * 100 
+  const utilizationPercent =
+    location.capacity.totalSlots > 0
+      ? (usedSlots / location.capacity.totalSlots) * 100
       : 0;
 
   return {
@@ -48,14 +51,14 @@ export function calculateCapacity(location: Location, activeShipments: number): 
 
 /**
  * Find the nearest warehouse to a given location
- * 
+ *
  * @param coordinates Target coordinates
  * @param warehouses Array of warehouse locations
  * @returns Nearest warehouse with calculated distance, or null if no warehouses
  */
 export function findNearestWarehouse(
   coordinates: Coordinates,
-  warehouses: Location[]
+  warehouses: Location[],
 ): (Location & { distance: number }) | null {
   if (warehouses.length === 0) {
     return null;
@@ -82,7 +85,7 @@ export function findNearestWarehouse(
 
 /**
  * Find all warehouses within a specified distance
- * 
+ *
  * @param coordinates Center coordinates
  * @param maxDistanceKm Maximum distance in kilometers
  * @param warehouses Array of warehouse locations
@@ -91,7 +94,7 @@ export function findNearestWarehouse(
 export function findWarehousesInRange(
   coordinates: Coordinates,
   maxDistanceKm: number,
-  warehouses: Location[]
+  warehouses: Location[],
 ): LocationWithDistance[] {
   const maxDistanceMeters = maxDistanceKm * 1000;
   const results: LocationWithDistance[] = [];
@@ -115,14 +118,14 @@ export function findWarehousesInRange(
 
 /**
  * Sort locations by distance from origin
- * 
+ *
  * @param origin Origin coordinates
  * @param locations Array of locations to sort
  * @returns Sorted array of locations with distances
  */
 export function sortByDistance(
   origin: Coordinates,
-  locations: Location[]
+  locations: Location[],
 ): LocationWithDistance[] {
   const results = locations.map((location) => ({
     ...location,
@@ -136,7 +139,7 @@ export function sortByDistance(
 
 /**
  * Calculate total coverage area of warehouses and identify gaps
- * 
+ *
  * @param warehouses Array of warehouse locations
  * @returns Coverage analysis with total area and gap points
  */
@@ -165,7 +168,7 @@ export function calculateCoverageArea(warehouses: Location[]): CoverageArea {
   // Calculate area in square kilometers (simplified using degree approximation)
   const latDiff = maxLat - minLat;
   const lngDiff = maxLng - minLng;
-  
+
   // Approximate: 1 degree of latitude = 111.32 km, longitude varies by latitude
   const avgLat = (minLat + maxLat) / 2;
   const latKm = latDiff * 111.32;
@@ -187,7 +190,8 @@ export function calculateCoverageArea(warehouses: Location[]): CoverageArea {
 
       for (const warehouse of warehouses) {
         const distance = calculateDistance(point, warehouse.coordinates);
-        if (distance < 5000) { // Less than 5km
+        if (distance < 5000) {
+          // Less than 5km
           nearWarehouse = true;
           break;
         }
@@ -208,22 +212,26 @@ export function calculateCoverageArea(warehouses: Location[]): CoverageArea {
 
 /**
  * Assign an order to the nearest warehouse with available capacity
- * 
+ *
  * @param order Order with delivery address coordinates
  * @param warehouses Array of available warehouses
  * @returns Warehouse assignment with distance
  */
 export function assignToNearestWarehouse(
   order: { deliveryAddress: Coordinates },
-  warehouses: Location[]
+  warehouses: Location[],
 ): WarehouseAssignment {
-  const inRangeWarehouses = findWarehousesInRange(order.deliveryAddress, 100, warehouses);
+  const inRangeWarehouses = findWarehousesInRange(
+    order.deliveryAddress,
+    100,
+    warehouses,
+  );
 
   if (inRangeWarehouses.length === 0) {
     // If no warehouses in range, find the absolute nearest
     const nearest = findNearestWarehouse(order.deliveryAddress, warehouses);
     if (!nearest) {
-      throw new Error('No warehouses available for assignment');
+      throw new Error("No warehouses available for assignment");
     }
 
     return {
@@ -246,7 +254,7 @@ export function assignToNearestWarehouse(
 /**
  * Estimate delivery time based on distance
  * Assumes average speed of 30 km/h for delivery routes
- * 
+ *
  * @param distanceKm Distance in kilometers
  * @returns Estimated time in minutes
  */
@@ -265,7 +273,7 @@ function degreesToRadians(degrees: number): number {
 
 /**
  * Get warehouse statistics summary
- * 
+ *
  * @param warehouses Array of warehouse locations
  * @returns Summary statistics
  */
@@ -276,8 +284,14 @@ export function getWarehouseStats(warehouses: Location[]): {
   avgUtilization: number;
 } {
   const activeWarehouses = warehouses.filter((w) => w.isActive);
-  const totalCapacity = warehouses.reduce((sum, w) => sum + (w.capacity?.totalSlots || 0), 0);
-  const totalUsed = warehouses.reduce((sum, w) => sum + (w.capacity?.usedSlots || 0), 0);
+  const totalCapacity = warehouses.reduce(
+    (sum, w) => sum + (w.capacity?.totalSlots || 0),
+    0,
+  );
+  const totalUsed = warehouses.reduce(
+    (sum, w) => sum + (w.capacity?.usedSlots || 0),
+    0,
+  );
 
   return {
     total: warehouses.length,

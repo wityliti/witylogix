@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  type ReactNode,
-  type CSSProperties,
-  useRef,
-  useState,
-} from "react";
+import { type ReactNode, type CSSProperties, useRef, useState } from "react";
 import { cn } from "../../lib/utils";
 
 type TooltipPosition = "top" | "bottom" | "left" | "right";
@@ -66,9 +61,11 @@ export function Tooltip({
 
   const arrowPositions: Record<TooltipPosition, string> = {
     top: "bottom-[-4px] left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-wl-bg-elevated",
-    bottom: "top-[-4px] left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-wl-bg-elevated",
+    bottom:
+      "top-[-4px] left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-wl-bg-elevated",
     left: "right-[-4px] top-1/2 -translate-y-1/2 border-t-4 border-b-4 border-l-4 border-t-transparent border-b-transparent border-l-wl-bg-elevated",
-    right: "left-[-4px] top-1/2 -translate-y-1/2 border-t-4 border-b-4 border-r-4 border-t-transparent border-b-transparent border-r-wl-bg-elevated",
+    right:
+      "left-[-4px] top-1/2 -translate-y-1/2 border-t-4 border-b-4 border-r-4 border-t-transparent border-b-transparent border-r-wl-bg-elevated",
   };
 
   return (
@@ -89,7 +86,7 @@ export function Tooltip({
             "bg-wl-bg-elevated text-wl-text-primary",
             "border border-wl-border-default shadow-lg",
             "whitespace-nowrap pointer-events-none",
-            positionClasses[position]
+            positionClasses[position],
           )}
           style={{
             position: "fixed",
@@ -108,10 +105,7 @@ export function Tooltip({
           {tooltipContent}
 
           <div
-            className={cn(
-              "absolute w-0 h-0",
-              arrowPositions[position]
-            )}
+            className={cn("absolute w-0 h-0", arrowPositions[position])}
             style={{
               borderWidth: "4px",
             }}

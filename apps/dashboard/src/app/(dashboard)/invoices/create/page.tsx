@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import {
-  ChevronLeft,
-  Plus,
-  Trash2,
-  Eye,
-  Check,
-} from "lucide-react";
+import { ChevronLeft, Plus, Trash2, Eye, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -15,11 +9,17 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
-import { api } from '@/lib/api';
-import { useApiList } from '@/hooks/use-api';
-import { useToast } from '@/components/ui/toast';
+import { api } from "@/lib/api";
+import { useApiList } from "@/hooks/use-api";
+import { useToast } from "@/components/ui/toast";
 
-type BillingRuleType = "per-delivery" | "per-mile" | "per-hour" | "flat-rate" | "tiered" | "subscription";
+type BillingRuleType =
+  | "per-delivery"
+  | "per-mile"
+  | "per-hour"
+  | "flat-rate"
+  | "tiered"
+  | "subscription";
 
 interface Customer {
   id: string;
@@ -39,35 +39,41 @@ interface LineItem {
 }
 
 function normalizeCustomer(raw: Record<string, unknown>): Customer {
-  const firstName = String(raw.firstName || '');
-  const lastName = String(raw.lastName || '');
+  const firstName = String(raw.firstName || "");
+  const lastName = String(raw.lastName || "");
   return {
     id: String(raw.id),
-    name: [firstName, lastName].filter(Boolean).join(' ') || String(raw.email || raw.id),
+    name:
+      [firstName, lastName].filter(Boolean).join(" ") ||
+      String(raw.email || raw.id),
     firstName,
     lastName,
-    email: String(raw.email || ''),
-    address: String(raw.addressLine1 || raw.address || ''),
+    email: String(raw.email || ""),
+    address: String(raw.addressLine1 || raw.address || ""),
   };
 }
 
 export default function CreateInvoicePage() {
   const router = useRouter();
   const { addToast } = useToast();
-  const { items: rawCustomers, loading: customersLoading } = useApiList<Record<string, unknown>>('/api/v4/customers', { limit: 100 });
-  const realCustomers = useMemo(() => rawCustomers.map(normalizeCustomer), [rawCustomers]);
+  const { items: rawCustomers, loading: customersLoading } = useApiList<
+    Record<string, unknown>
+  >("/api/v4/customers", { limit: 100 });
+  const realCustomers = useMemo(
+    () => rawCustomers.map(normalizeCustomer),
+    [rawCustomers],
+  );
 
   // Form state
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
-    null
+    null,
   );
   const [customerSearch, setCustomerSearch] = useState("");
   const [billingStartDate, setBillingStartDate] = useState("");
   const [billingEndDate, setBillingEndDate] = useState("");
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
-  const [billingRuleType, setBillingRuleType] = useState<BillingRuleType>(
-    "per-delivery"
-  );
+  const [billingRuleType, setBillingRuleType] =
+    useState<BillingRuleType>("per-delivery");
   const [dueDate, setDueDate] = useState("");
   const [dueDatePreset, setDueDatePreset] = useState("net-30");
   const [notes, setNotes] = useState("");
@@ -86,7 +92,7 @@ export default function CreateInvoicePage() {
     return realCustomers.filter(
       (c) =>
         c.name.toLowerCase().includes(search) ||
-        c.email.toLowerCase().includes(search)
+        c.email.toLowerCase().includes(search),
     );
   }, [customerSearch, realCustomers]);
 
@@ -109,30 +115,27 @@ export default function CreateInvoicePage() {
   }, [subtotal, discountAmount, taxAmount]);
 
   // Handle due date preset
-  const handleDueDatePreset = useCallback(
-    (preset: string) => {
-      setDueDatePreset(preset);
-      const today = new Date();
-      let daysToAdd = 30;
+  const handleDueDatePreset = useCallback((preset: string) => {
+    setDueDatePreset(preset);
+    const today = new Date();
+    let daysToAdd = 30;
 
-      switch (preset) {
-        case "net-30":
-          daysToAdd = 30;
-          break;
-        case "net-60":
-          daysToAdd = 60;
-          break;
-        case "net-90":
-          daysToAdd = 90;
-          break;
-      }
+    switch (preset) {
+      case "net-30":
+        daysToAdd = 30;
+        break;
+      case "net-60":
+        daysToAdd = 60;
+        break;
+      case "net-90":
+        daysToAdd = 90;
+        break;
+    }
 
-      const newDate = new Date(today);
-      newDate.setDate(newDate.getDate() + daysToAdd);
-      setDueDate(newDate.toISOString().split("T")[0]);
-    },
-    []
-  );
+    const newDate = new Date(today);
+    newDate.setDate(newDate.getDate() + daysToAdd);
+    setDueDate(newDate.toISOString().split("T")[0]);
+  }, []);
 
   // Line items management
   const addLineItem = useCallback(() => {
@@ -150,18 +153,18 @@ export default function CreateInvoicePage() {
     (id: string) => {
       setLineItems(lineItems.filter((item) => item.id !== id));
     },
-    [lineItems]
+    [lineItems],
   );
 
   const updateLineItem = useCallback(
     (id: string, field: keyof LineItem, value: string | number) => {
       setLineItems(
         lineItems.map((item) =>
-          item.id === id ? { ...item, [field]: value } : item
-        )
+          item.id === id ? { ...item, [field]: value } : item,
+        ),
       );
     },
-    [lineItems]
+    [lineItems],
   );
 
   const handleSelectCustomer = useCallback((customer: Customer) => {
@@ -175,44 +178,60 @@ export default function CreateInvoicePage() {
     setIsSavingDraft(true);
     try {
       const payload = {
-        status: 'draft' as const,
+        status: "draft" as const,
         customerId: selectedCustomer?.id,
-        manualLineItems: lineItems.map(({ description, quantity, rate, taxable }) => ({
-          description,
-          quantity,
-          unitPrice: rate,
-          taxable,
-        })),
+        manualLineItems: lineItems.map(
+          ({ description, quantity, rate, taxable }) => ({
+            description,
+            quantity,
+            unitPrice: rate,
+            taxable,
+          }),
+        ),
         dueDate: dueDate || undefined,
         notes: notes || undefined,
         terms: terms || undefined,
-        taxRate: parseFloat(taxRate || '0'),
-        discountPercentage: parseFloat(discountPercentage || '0'),
+        taxRate: parseFloat(taxRate || "0"),
+        discountPercentage: parseFloat(discountPercentage || "0"),
       };
-      await api.post('/api/v4/invoices', payload);
+      await api.post("/api/v4/invoices", payload);
       addToast({
-        type: 'success',
-        title: 'Draft saved',
-        message: 'Your invoice draft has been saved.',
+        type: "success",
+        title: "Draft saved",
+        message: "Your invoice draft has been saved.",
       });
-      router.push('/dashboard/invoices');
+      router.push("/dashboard/invoices");
     } catch (err) {
       addToast({
-        type: 'error',
-        title: 'Failed to save draft',
-        message: err instanceof Error ? err.message : 'Could not save the draft. Please try again.',
+        type: "error",
+        title: "Failed to save draft",
+        message:
+          err instanceof Error
+            ? err.message
+            : "Could not save the draft. Please try again.",
       });
     } finally {
       setIsSavingDraft(false);
     }
-  }, [selectedCustomer, lineItems, dueDate, notes, terms, taxRate, discountPercentage, isSavingDraft, addToast, router]);
+  }, [
+    selectedCustomer,
+    lineItems,
+    dueDate,
+    notes,
+    terms,
+    taxRate,
+    discountPercentage,
+    isSavingDraft,
+    addToast,
+    router,
+  ]);
 
   const handleSendInvoice = useCallback(async () => {
     if (!selectedCustomer || lineItems.length === 0) {
       addToast({
-        type: 'error',
-        title: 'Cannot create invoice',
-        message: 'Please select a customer and add at least one line item.',
+        type: "error",
+        title: "Cannot create invoice",
+        message: "Please select a customer and add at least one line item.",
       });
       return;
     }
@@ -220,37 +239,53 @@ export default function CreateInvoicePage() {
     setIsSending(true);
     try {
       const payload = {
-        status: 'sent' as const,
+        status: "sent" as const,
         customerId: selectedCustomer.id,
-        manualLineItems: lineItems.map(({ description, quantity, rate, taxable }) => ({
-          description,
-          quantity,
-          unitPrice: rate,
-          taxable,
-        })),
+        manualLineItems: lineItems.map(
+          ({ description, quantity, rate, taxable }) => ({
+            description,
+            quantity,
+            unitPrice: rate,
+            taxable,
+          }),
+        ),
         dueDate: dueDate || undefined,
         notes: notes || undefined,
         terms: terms || undefined,
-        taxRate: parseFloat(taxRate || '0'),
-        discountPercentage: parseFloat(discountPercentage || '0'),
+        taxRate: parseFloat(taxRate || "0"),
+        discountPercentage: parseFloat(discountPercentage || "0"),
       };
-      await api.post('/api/v4/invoices', payload);
+      await api.post("/api/v4/invoices", payload);
       addToast({
-        type: 'success',
-        title: 'Invoice created',
-        message: 'The invoice has been created and sent.',
+        type: "success",
+        title: "Invoice created",
+        message: "The invoice has been created and sent.",
       });
-      router.push('/dashboard/invoices');
+      router.push("/dashboard/invoices");
     } catch (err) {
       addToast({
-        type: 'error',
-        title: 'Failed to create invoice',
-        message: err instanceof Error ? err.message : 'Could not create the invoice. Please try again.',
+        type: "error",
+        title: "Failed to create invoice",
+        message:
+          err instanceof Error
+            ? err.message
+            : "Could not create the invoice. Please try again.",
       });
     } finally {
       setIsSending(false);
     }
-  }, [selectedCustomer, lineItems, dueDate, notes, terms, taxRate, discountPercentage, isSending, addToast, router]);
+  }, [
+    selectedCustomer,
+    lineItems,
+    dueDate,
+    notes,
+    terms,
+    taxRate,
+    discountPercentage,
+    isSending,
+    addToast,
+    router,
+  ]);
 
   return (
     <div className="flex flex-col gap-6 p-6 bg-wl-bg-root min-h-screen">
@@ -262,9 +297,7 @@ export default function CreateInvoicePage() {
             Back
           </Button>
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold text-white">
-              Create Invoice
-            </h1>
+            <h1 className="text-3xl font-bold text-white">Create Invoice</h1>
             <p className="text-wl-text-secondary">
               Create and send a new invoice to your customer
             </p>
@@ -272,16 +305,30 @@ export default function CreateInvoicePage() {
         </div>
 
         <div className="flex gap-2">
-          <Button variant="secondary" size="lg" onClick={() => setShowPreview(true)}>
+          <Button
+            variant="secondary"
+            size="lg"
+            onClick={() => setShowPreview(true)}
+          >
             <Eye className="w-4 h-4" />
             Preview
           </Button>
-          <Button variant="secondary" size="lg" onClick={handleSaveDraft} disabled={isSavingDraft || isSending}>
-            {isSavingDraft ? 'Saving...' : 'Save Draft'}
+          <Button
+            variant="secondary"
+            size="lg"
+            onClick={handleSaveDraft}
+            disabled={isSavingDraft || isSending}
+          >
+            {isSavingDraft ? "Saving..." : "Save Draft"}
           </Button>
-          <Button variant="primary" size="lg" onClick={handleSendInvoice} disabled={isSending || isSavingDraft}>
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handleSendInvoice}
+            disabled={isSending || isSavingDraft}
+          >
             <Check className="w-4 h-4" />
-            {isSending ? 'Creating...' : 'Send'}
+            {isSending ? "Creating..." : "Send"}
           </Button>
         </div>
       </div>
@@ -291,13 +338,19 @@ export default function CreateInvoicePage() {
         {/* Left Column - Form */}
         <div className="col-span-2 space-y-6">
           {/* Customer Selection */}
-          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-            <h2 className="text-lg font-semibold text-white mb-4">
-              Customer
-            </h2>
+          <Card
+            className={cn(
+              "p-6 bg-wl-bg-surface border border-wl-border-default",
+            )}
+          >
+            <h2 className="text-lg font-semibold text-white mb-4">Customer</h2>
 
             {selectedCustomer ? (
-              <div className={cn("flex items-center justify-between p-4 bg-wl-bg-elevated rounded border border-wl-border-default")}>
+              <div
+                className={cn(
+                  "flex items-center justify-between p-4 bg-wl-bg-elevated rounded border border-wl-border-default",
+                )}
+              >
                 <div>
                   <p className="font-semibold text-white">
                     {selectedCustomer.name}
@@ -330,7 +383,11 @@ export default function CreateInvoicePage() {
           </Card>
 
           {/* Billing Dates */}
-          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
+          <Card
+            className={cn(
+              "p-6 bg-wl-bg-surface border border-wl-border-default",
+            )}
+          >
             <h2 className="text-lg font-semibold text-white mb-4">
               Billing Period
             </h2>
@@ -361,13 +418,19 @@ export default function CreateInvoicePage() {
           </Card>
 
           {/* Billing Rule */}
-          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
+          <Card
+            className={cn(
+              "p-6 bg-wl-bg-surface border border-wl-border-default",
+            )}
+          >
             <h2 className="text-lg font-semibold text-white mb-4">
               Billing Rule
             </h2>
             <Select
               value={billingRuleType}
-              onChange={(e) => setBillingRuleType(e.target.value as BillingRuleType)}
+              onChange={(e) =>
+                setBillingRuleType(e.target.value as BillingRuleType)
+              }
               label="Rule Type"
               options={[
                 { value: "per-delivery", label: "Per Delivery" },
@@ -383,8 +446,7 @@ export default function CreateInvoicePage() {
                 "Charge a fixed amount per delivery"}
               {billingRuleType === "per-mile" &&
                 "Charge based on distance traveled"}
-              {billingRuleType === "per-hour" &&
-                "Charge based on time spent"}
+              {billingRuleType === "per-hour" && "Charge based on time spent"}
               {billingRuleType === "flat-rate" &&
                 "Charge a fixed amount regardless of metrics"}
               {billingRuleType === "tiered" &&
@@ -395,11 +457,13 @@ export default function CreateInvoicePage() {
           </Card>
 
           {/* Line Items */}
-          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
+          <Card
+            className={cn(
+              "p-6 bg-wl-bg-surface border border-wl-border-default",
+            )}
+          >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-white">
-                Line Items
-              </h2>
+              <h2 className="text-lg font-semibold text-white">Line Items</h2>
               <Button variant="secondary" size="sm" onClick={addLineItem}>
                 <Plus className="w-4 h-4" />
                 Add Item
@@ -409,11 +473,7 @@ export default function CreateInvoicePage() {
             {lineItems.length === 0 ? (
               <div className="text-center py-8 text-wl-text-secondary">
                 <p className="mb-3">No line items yet</p>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={addLineItem}
-                >
+                <Button variant="secondary" size="sm" onClick={addLineItem}>
                   <Plus className="w-4 h-4" />
                   Add First Item
                 </Button>
@@ -423,7 +483,9 @@ export default function CreateInvoicePage() {
                 {lineItems.map((item) => (
                   <div
                     key={item.id}
-                    className={cn("flex gap-3 p-4 bg-wl-bg-elevated rounded border border-wl-border-default items-end")}
+                    className={cn(
+                      "flex gap-3 p-4 bg-wl-bg-elevated rounded border border-wl-border-default items-end",
+                    )}
                   >
                     <div className="flex-1">
                       <label className="block text-xs font-medium text-wl-text-secondary mb-1">
@@ -433,11 +495,7 @@ export default function CreateInvoicePage() {
                         type="text"
                         value={item.description}
                         onChange={(e) =>
-                          updateLineItem(
-                            item.id,
-                            "description",
-                            e.target.value
-                          )
+                          updateLineItem(item.id, "description", e.target.value)
                         }
                         placeholder="Item description"
                         className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-white"
@@ -457,7 +515,7 @@ export default function CreateInvoicePage() {
                           updateLineItem(
                             item.id,
                             "quantity",
-                            parseFloat(e.target.value)
+                            parseFloat(e.target.value),
                           )
                         }
                         className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-white"
@@ -477,7 +535,7 @@ export default function CreateInvoicePage() {
                           updateLineItem(
                             item.id,
                             "rate",
-                            parseFloat(e.target.value)
+                            parseFloat(e.target.value),
                           )
                         }
                         className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-white"
@@ -507,10 +565,12 @@ export default function CreateInvoicePage() {
           </Card>
 
           {/* Due Date */}
-          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-            <h2 className="text-lg font-semibold text-white mb-4">
-              Due Date
-            </h2>
+          <Card
+            className={cn(
+              "p-6 bg-wl-bg-surface border border-wl-border-default",
+            )}
+          >
+            <h2 className="text-lg font-semibold text-white mb-4">Due Date</h2>
             <div className="space-y-4">
               <div className="flex gap-2">
                 <Button
@@ -553,7 +613,11 @@ export default function CreateInvoicePage() {
           </Card>
 
           {/* Notes & Terms */}
-          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
+          <Card
+            className={cn(
+              "p-6 bg-wl-bg-surface border border-wl-border-default",
+            )}
+          >
             <h2 className="text-lg font-semibold text-white mb-4">
               Notes & Terms
             </h2>
@@ -589,7 +653,11 @@ export default function CreateInvoicePage() {
         {/* Right Column - Summary */}
         <div className="space-y-6">
           {/* Pricing Summary */}
-          <Card className={cn("p-6 sticky top-6 bg-wl-bg-surface border border-wl-border-default")}>
+          <Card
+            className={cn(
+              "p-6 sticky top-6 bg-wl-bg-surface border border-wl-border-default",
+            )}
+          >
             <h2 className="text-lg font-semibold text-white mb-6">
               Invoice Summary
             </h2>
@@ -661,9 +729,7 @@ export default function CreateInvoicePage() {
 
               <div className="border-t-2 border-wl-border-default pt-3">
                 <div className="flex justify-between">
-                  <span className="font-semibold text-white">
-                    Total
-                  </span>
+                  <span className="font-semibold text-white">Total</span>
                   <span className="text-2xl font-bold text-blue-500">
                     ${total.toFixed(2)}
                   </span>
@@ -703,11 +769,11 @@ export default function CreateInvoicePage() {
                   <button
                     key={customer.id}
                     onClick={() => handleSelectCustomer(customer)}
-                    className={cn("w-full text-left p-3 rounded border border-wl-border-default hover:bg-wl-bg-elevated transition-colors")}
+                    className={cn(
+                      "w-full text-left p-3 rounded border border-wl-border-default hover:bg-wl-bg-elevated transition-colors",
+                    )}
                   >
-                    <p className="font-medium text-white">
-                      {customer.name}
-                    </p>
+                    <p className="font-medium text-white">{customer.name}</p>
                     <p className="text-sm text-wl-text-secondary">
                       {customer.email}
                     </p>

@@ -24,6 +24,7 @@ Task("Hooks enhancement", "Deep integrate hooks with CLI lifecycle", "cli-hooks-
 ## CLI Architecture Modernization
 
 ### Current State Analysis
+
 ```
 Current CLI Issues:
 ├── index.ts: 108KB monolithic file
@@ -41,6 +42,7 @@ Target Architecture:
 ```
 
 ### Modular Command Architecture
+
 ```typescript
 // src/cli/core/command-registry.ts
 interface CommandModule {
@@ -102,28 +104,32 @@ export class ModularCommandRegistry {
 ## Command Decomposition Strategy
 
 ### Swarm Commands Module
+
 ```typescript
 // src/cli/commands/swarm/swarm.command.ts
 @Command({
-  name: 'swarm',
-  description: 'Swarm coordination and management',
-  category: 'orchestration'
+  name: "swarm",
+  description: "Swarm coordination and management",
+  category: "orchestration",
 })
 export class SwarmCommand {
   constructor(
     private swarmCoordinator: UnifiedSwarmCoordinator,
-    private promptService: InteractivePromptService
+    private promptService: InteractivePromptService,
   ) {}
 
-  @SubCommand('init')
-  @Option('--topology', 'Swarm topology (mesh|hierarchical|adaptive)', 'hierarchical')
-  @Option('--agents', 'Number of agents to spawn', 5)
-  @Option('--interactive', 'Interactive agent configuration', false)
+  @SubCommand("init")
+  @Option(
+    "--topology",
+    "Swarm topology (mesh|hierarchical|adaptive)",
+    "hierarchical",
+  )
+  @Option("--agents", "Number of agents to spawn", 5)
+  @Option("--interactive", "Interactive agent configuration", false)
   async init(
-    @Arg('projectName') projectName: string,
-    options: SwarmInitOptions
+    @Arg("projectName") projectName: string,
+    options: SwarmInitOptions,
   ): Promise<CommandResult> {
-
     if (options.interactive) {
       return this.interactiveSwarmInit(projectName);
     }
@@ -131,17 +137,22 @@ export class SwarmCommand {
     return this.quickSwarmInit(projectName, options);
   }
 
-  private async interactiveSwarmInit(projectName: string): Promise<CommandResult> {
+  private async interactiveSwarmInit(
+    projectName: string,
+  ): Promise<CommandResult> {
     console.log(`🚀 Initializing Swarm for ${projectName}`);
 
     // Interactive topology selection
     const topology = await this.promptService.select({
-      message: 'Select swarm topology:',
+      message: "Select swarm topology:",
       choices: [
-        { name: 'Hierarchical (Queen-led coordination)', value: 'hierarchical' },
-        { name: 'Mesh (Peer-to-peer collaboration)', value: 'mesh' },
-        { name: 'Adaptive (Dynamic topology switching)', value: 'adaptive' }
-      ]
+        {
+          name: "Hierarchical (Queen-led coordination)",
+          value: "hierarchical",
+        },
+        { name: "Mesh (Peer-to-peer collaboration)", value: "mesh" },
+        { name: "Adaptive (Dynamic topology switching)", value: "adaptive" },
+      ],
     });
 
     // Agent configuration
@@ -155,34 +166,35 @@ export class SwarmCommand {
       hooks: {
         onAgentSpawn: this.handleAgentSpawn.bind(this),
         onTaskComplete: this.handleTaskComplete.bind(this),
-        onSwarmComplete: this.handleSwarmComplete.bind(this)
-      }
+        onSwarmComplete: this.handleSwarmComplete.bind(this),
+      },
     });
 
     return CommandResult.success({
       message: `✅ Swarm ${projectName} initialized with ${agents.length} agents`,
-      data: { swarmId: swarm.id, topology, agentCount: agents.length }
+      data: { swarmId: swarm.id, topology, agentCount: agents.length },
     });
   }
 
-  @SubCommand('status')
+  @SubCommand("status")
   async status(): Promise<CommandResult> {
     const swarms = await this.swarmCoordinator.listActiveSwarms();
 
     if (swarms.length === 0) {
-      return CommandResult.info('No active swarms found');
+      return CommandResult.info("No active swarms found");
     }
 
     // Interactive swarm selection if multiple
-    const selectedSwarm = swarms.length === 1
-      ? swarms[0]
-      : await this.promptService.select({
-          message: 'Select swarm to inspect:',
-          choices: swarms.map(s => ({
-            name: `${s.name} (${s.agents.length} agents, ${s.topology})`,
-            value: s
-          }))
-        });
+    const selectedSwarm =
+      swarms.length === 1
+        ? swarms[0]
+        : await this.promptService.select({
+            message: "Select swarm to inspect:",
+            choices: swarms.map((s) => ({
+              name: `${s.name} (${s.agents.length} agents, ${s.topology})`,
+              value: s,
+            })),
+          });
 
     return this.displaySwarmStatus(selectedSwarm);
   }
@@ -190,76 +202,86 @@ export class SwarmCommand {
 ```
 
 ### Learning Commands Module
+
 ```typescript
 // src/cli/commands/learning/learning.command.ts
 @Command({
-  name: 'learning',
-  description: 'Learning system management and optimization',
-  category: 'intelligence'
+  name: "learning",
+  description: "Learning system management and optimization",
+  category: "intelligence",
 })
 export class LearningCommand {
   constructor(
     private learningService: IntegratedLearningService,
-    private promptService: InteractivePromptService
+    private promptService: InteractivePromptService,
   ) {}
 
-  @SubCommand('start')
-  @Option('--algorithm', 'RL algorithm to use', 'auto')
-  @Option('--tier', 'Learning tier (basic|standard|advanced)', 'standard')
+  @SubCommand("start")
+  @Option("--algorithm", "RL algorithm to use", "auto")
+  @Option("--tier", "Learning tier (basic|standard|advanced)", "standard")
   async start(options: LearningStartOptions): Promise<CommandResult> {
     // Auto-detect optimal algorithm if not specified
-    if (options.algorithm === 'auto') {
+    if (options.algorithm === "auto") {
       const taskContext = await this.analyzeCurrentContext();
-      options.algorithm = this.learningService.selectOptimalAlgorithm(taskContext);
+      options.algorithm =
+        this.learningService.selectOptimalAlgorithm(taskContext);
 
-      console.log(`🧠 Auto-selected ${options.algorithm} algorithm based on context`);
+      console.log(
+        `🧠 Auto-selected ${options.algorithm} algorithm based on context`,
+      );
     }
 
     const session = await this.learningService.startSession({
       algorithm: options.algorithm,
       tier: options.tier,
-      userId: await this.getCurrentUser()
+      userId: await this.getCurrentUser(),
     });
 
     return CommandResult.success({
       message: `🚀 Learning session started with ${options.algorithm}`,
-      data: { sessionId: session.id, algorithm: options.algorithm, tier: options.tier }
+      data: {
+        sessionId: session.id,
+        algorithm: options.algorithm,
+        tier: options.tier,
+      },
     });
   }
 
-  @SubCommand('feedback')
-  @Arg('reward', 'Reward value (0-1)', 'number')
+  @SubCommand("feedback")
+  @Arg("reward", "Reward value (0-1)", "number")
   async feedback(
-    @Arg('reward') reward: number,
-    @Option('--context', 'Additional context for learning')
-    context?: string
+    @Arg("reward") reward: number,
+    @Option("--context", "Additional context for learning")
+    context?: string,
   ): Promise<CommandResult> {
     const activeSession = await this.learningService.getActiveSession();
     if (!activeSession) {
-      return CommandResult.error('No active learning session found. Start one with `learning start`');
+      return CommandResult.error(
+        "No active learning session found. Start one with `learning start`",
+      );
     }
 
     await this.learningService.submitFeedback({
       sessionId: activeSession.id,
       reward,
       context,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
 
     return CommandResult.success({
       message: `📊 Feedback recorded (reward: ${reward})`,
-      data: { reward, sessionId: activeSession.id }
+      data: { reward, sessionId: activeSession.id },
     });
   }
 
-  @SubCommand('metrics')
+  @SubCommand("metrics")
   async metrics(): Promise<CommandResult> {
     const metrics = await this.learningService.getMetrics();
 
     // Interactive metrics display
     await this.displayInteractiveMetrics(metrics);
 
-    return CommandResult.success('Metrics displayed');
+    return CommandResult.success("Metrics displayed");
   }
 }
 ```
@@ -267,11 +289,12 @@ export class LearningCommand {
 ## Interactive Prompt System
 
 ### Advanced Prompt Service
+
 ```typescript
 // src/cli/services/interactive-prompt.service.ts
 interface PromptOptions {
   message: string;
-  type: 'select' | 'multiselect' | 'input' | 'confirm' | 'progress';
+  type: "select" | "multiselect" | "input" | "confirm" | "progress";
   choices?: PromptChoice[];
   default?: any;
   validate?: (input: any) => boolean | string;
@@ -282,79 +305,85 @@ export class InteractivePromptService {
   private inquirer: any; // Dynamic import for tree-shaking
 
   async select<T>(options: SelectPromptOptions<T>): Promise<T> {
-    const { default: inquirer } = await import('inquirer');
+    const { default: inquirer } = await import("inquirer");
 
-    const result = await inquirer.prompt([{
-      type: 'list',
-      name: 'selection',
-      message: options.message,
-      choices: options.choices,
-      default: options.default
-    }]);
+    const result = await inquirer.prompt([
+      {
+        type: "list",
+        name: "selection",
+        message: options.message,
+        choices: options.choices,
+        default: options.default,
+      },
+    ]);
 
     return result.selection;
   }
 
   async multiSelect<T>(options: MultiSelectPromptOptions<T>): Promise<T[]> {
-    const { default: inquirer } = await import('inquirer');
+    const { default: inquirer } = await import("inquirer");
 
-    const result = await inquirer.prompt([{
-      type: 'checkbox',
-      name: 'selections',
-      message: options.message,
-      choices: options.choices,
-      validate: (input: T[]) => {
-        if (options.minSelections && input.length < options.minSelections) {
-          return `Please select at least ${options.minSelections} options`;
-        }
-        if (options.maxSelections && input.length > options.maxSelections) {
-          return `Please select at most ${options.maxSelections} options`;
-        }
-        return true;
-      }
-    }]);
+    const result = await inquirer.prompt([
+      {
+        type: "checkbox",
+        name: "selections",
+        message: options.message,
+        choices: options.choices,
+        validate: (input: T[]) => {
+          if (options.minSelections && input.length < options.minSelections) {
+            return `Please select at least ${options.minSelections} options`;
+          }
+          if (options.maxSelections && input.length > options.maxSelections) {
+            return `Please select at most ${options.maxSelections} options`;
+          }
+          return true;
+        },
+      },
+    ]);
 
     return result.selections;
   }
 
   async input(options: InputPromptOptions): Promise<string> {
-    const { default: inquirer } = await import('inquirer');
+    const { default: inquirer } = await import("inquirer");
 
-    const result = await inquirer.prompt([{
-      type: 'input',
-      name: 'input',
-      message: options.message,
-      default: options.default,
-      validate: options.validate,
-      transformer: options.transform
-    }]);
+    const result = await inquirer.prompt([
+      {
+        type: "input",
+        name: "input",
+        message: options.message,
+        default: options.default,
+        validate: options.validate,
+        transformer: options.transform,
+      },
+    ]);
 
     return result.input;
   }
 
   async progressTask<T>(
     task: ProgressTask<T>,
-    options: ProgressOptions
+    options: ProgressOptions,
   ): Promise<T> {
-    const { default: cliProgress } = await import('cli-progress');
+    const { default: cliProgress } = await import("cli-progress");
 
     const progressBar = new cliProgress.SingleBar({
       format: `${options.title} |{bar}| {percentage}% | {status}`,
-      barCompleteChar: '█',
-      barIncompleteChar: '░',
-      hideCursor: true
+      barCompleteChar: "█",
+      barIncompleteChar: "░",
+      hideCursor: true,
     });
 
-    progressBar.start(100, 0, { status: 'Starting...' });
+    progressBar.start(100, 0, { status: "Starting..." });
 
     try {
       const result = await task({
         updateProgress: (percent: number, status?: string) => {
-          progressBar.update(percent, { status: status || 'Processing...' });
-        }
+          progressBar.update(percent, { status: status || "Processing..." });
+        },
       });
 
-      progressBar.update(100, { status: 'Complete!' });
+      progressBar.update(100, { status: "Complete!" });
       progressBar.stop();
 
       return result;
@@ -366,16 +395,16 @@ export class InteractivePromptService {
 
   async confirmWithDetails(
     message: string,
-    details: ConfirmationDetails
+    details: ConfirmationDetails,
   ): Promise<boolean> {
-    console.log('\n' + chalk.bold(message));
-    console.log(chalk.gray('Details:'));
+    console.log("\n" + chalk.bold(message));
+    console.log(chalk.gray("Details:"));
 
     for (const [key, value] of Object.entries(details)) {
       console.log(chalk.gray(`  ${key}: ${value}`));
     }
 
-    return this.confirm('\nProceed?');
+    return this.confirm("\nProceed?");
   }
 }
 ```
@@ -383,10 +412,16 @@ export class InteractivePromptService {
 ## Enhanced Hooks Integration
 
 ### Deep CLI Hooks Integration
+
 ```typescript
 // src/cli/hooks/cli-hooks-manager.ts
 interface CLIHookEvent {
-  type: 'command_start' | 'command_end' | 'command_error' | 'agent_spawn' | 'task_complete';
+  type:
+    | "command_start"
+    | "command_end"
+    | "command_error"
+    | "agent_spawn"
+    | "task_complete";
   command: string;
   args: string[];
   context: ExecutionContext;
@@ -404,20 +439,20 @@ export class CLIHooksManager {
 
   private setupDefaultHooks(): void {
     // Learning integration hooks
-    this.registerHook('command_start', async (event: CLIHookEvent) => {
+    this.registerHook("command_start", async (event: CLIHookEvent) => {
       await this.learningIntegration.recordCommandStart(event);
     });
 
-    this.registerHook('command_end', async (event: CLIHookEvent) => {
+    this.registerHook("command_end", async (event: CLIHookEvent) => {
       await this.learningIntegration.recordCommandSuccess(event);
     });
 
-    this.registerHook('command_error', async (event: CLIHookEvent) => {
+    this.registerHook("command_error", async (event: CLIHookEvent) => {
       await this.learningIntegration.recordCommandError(event);
     });
 
     // Intelligent suggestions
-    this.registerHook('command_start', async (event: CLIHookEvent) => {
+    this.registerHook("command_start", async (event: CLIHookEvent) => {
       const suggestions = await this.generateIntelligentSuggestions(event);
       if (suggestions.length > 0) {
         this.displaySuggestions(suggestions);
@@ -425,7 +460,7 @@ export class CLIHooksManager {
     });
 
     // Performance monitoring
-    this.registerHook('command_end', async (event: CLIHookEvent) => {
+    this.registerHook("command_end", async (event: CLIHookEvent) => {
       await this.recordPerformanceMetrics(event);
     });
   }
@@ -433,31 +468,35 @@ export class CLIHooksManager {
   async executeHooks(type: string, event: CLIHookEvent): Promise<void> {
     const handlers = this.hooks.get(type) || [];
 
-    await Promise.all(handlers.map(handler =>
-      this.executeHookSafely(handler, event)
-    ));
+    await Promise.all(
+      handlers.map((handler) => this.executeHookSafely(handler, event)),
+    );
   }
 
-  private async generateIntelligentSuggestions(event: CLIHookEvent): Promise<Suggestion[]> {
+  private async generateIntelligentSuggestions(
+    event: CLIHookEvent,
+  ): Promise<Suggestion[]> {
     const context = await this.learningIntegration.getExecutionContext(event);
-    const patterns = await this.learningIntegration.findSimilarPatterns(context);
+    const patterns =
+      await this.learningIntegration.findSimilarPatterns(context);
 
-    return patterns.map(pattern => ({
-      type: 'optimization',
+    return patterns.map((pattern) => ({
+      type: "optimization",
       message: `Based on similar executions, consider: ${pattern.suggestion}`,
-      confidence: pattern.confidence
+      confidence: pattern.confidence,
     }));
   }
 }
 ```
 
 ### Learning Integration
+
 ```typescript
 // src/cli/hooks/learning-hooks-integration.ts
 export class LearningHooksIntegration {
   constructor(
     private agenticFlowHooks: AgenticFlowHooksClient,
-    private agentDBLearning: AgentDBLearningClient
+    private agentDBLearning: AgentDBLearningClient,
   ) {}
 
   async recordCommandStart(event: CLIHookEvent): Promise<void> {
@@ -466,15 +505,15 @@ export class LearningHooksIntegration {
       sessionId: event.context.sessionId,
       command: event.command,
       args: event.args,
-      context: event.context
+      context: event.context,
     });
 
     // Record experience in AgentDB
     await this.agentDBLearning.recordExperience({
-      type: 'command_execution',
+      type: "command_execution",
       state: this.encodeCommandState(event),
       action: event.command,
-      timestamp: event.timestamp
+      timestamp: event.timestamp,
     });
   }
 
@@ -487,7 +526,7 @@ export class LearningHooksIntegration {
       sessionId: event.context.sessionId,
       success: true,
       reward,
-      verdict: 'positive'
+      verdict: "positive",
     });
 
     // Submit feedback to learning system
@@ -495,7 +534,7 @@ export class LearningHooksIntegration {
       sessionId: event.context.learningSessionId,
       reward,
       success: true,
-      latencyMs: executionTime
+      latencyMs: executionTime,
     });
 
     // Store successful pattern
@@ -503,7 +542,7 @@ export class LearningHooksIntegration {
       await this.agenticFlowHooks.storePattern({
         pattern: event.command,
         solution: event.context.result,
-        confidence: reward
+        confidence: reward,
       });
     }
   }
@@ -517,8 +556,8 @@ export class LearningHooksIntegration {
       sessionId: event.context.sessionId,
       success: false,
       reward,
-      verdict: 'negative',
-      error: event.context.error
+      verdict: "negative",
+      error: event.context.error,
     });
 
     // Learn from failure
@@ -527,11 +566,15 @@ export class LearningHooksIntegration {
       reward,
       success: false,
       latencyMs: executionTime,
-      error: event.context.error
+      error: event.context.error,
     });
   }
 
-  private calculateReward(event: CLIHookEvent, executionTime: number, success: boolean): number {
+  private calculateReward(
+    event: CLIHookEvent,
+    executionTime: number,
+    success: boolean,
+  ): number {
     if (!success) return 0;
 
     // Base reward for success
@@ -555,6 +598,7 @@ export class LearningHooksIntegration {
 ## Intelligent Workflow Automation
 
 ### Workflow Orchestrator
+
 ```typescript
 // src/cli/workflows/workflow-orchestrator.ts
 interface WorkflowStep {
@@ -569,7 +613,7 @@ interface WorkflowStep {
 export class WorkflowOrchestrator {
   constructor(
     private commandRegistry: ModularCommandRegistry,
-    private promptService: InteractivePromptService
+    private promptService: InteractivePromptService,
   ) {}
 
   async executeWorkflow(workflow: Workflow): Promise<WorkflowResult> {
@@ -579,7 +623,7 @@ export class WorkflowOrchestrator {
     await this.displayWorkflowOverview(workflow);
 
     const confirmed = await this.promptService.confirm(
-      'Execute this workflow?'
+      "Execute this workflow?",
     );
 
     if (!confirmed) {
@@ -600,7 +644,7 @@ export class WorkflowOrchestrator {
 
         return WorkflowResult.success(context.getResults());
       },
-      { title: `Workflow: ${workflow.name}` }
+      { title: `Workflow: ${workflow.name}` },
     );
   }
 
@@ -609,34 +653,42 @@ export class WorkflowOrchestrator {
     const patterns = await this.findWorkflowPatterns(intent);
 
     if (patterns.length === 0) {
-      throw new Error('Could not generate workflow for intent');
+      throw new Error("Could not generate workflow for intent");
     }
 
     // Select best pattern or let user choose
-    const selectedPattern = patterns.length === 1
-      ? patterns[0]
-      : await this.promptService.select({
-          message: 'Select workflow template:',
-          choices: patterns.map(p => ({
-            name: `${p.name} (${p.confidence}% match)`,
-            value: p
-          }))
-        });
+    const selectedPattern =
+      patterns.length === 1
+        ? patterns[0]
+        : await this.promptService.select({
+            message: "Select workflow template:",
+            choices: patterns.map((p) => ({
+              name: `${p.name} (${p.confidence}% match)`,
+              value: p,
+            })),
+          });
 
     return this.customizeWorkflow(selectedPattern, intent);
   }
 
-  private async executeStep(step: WorkflowStep, context: WorkflowExecutionContext): Promise<void> {
+  private async executeStep(
+    step: WorkflowStep,
+    context: WorkflowExecutionContext,
+  ): Promise<void> {
     // Check conditions
     if (step.condition && !this.evaluateCondition(step.condition, context)) {
-      context.skipStep(step.id, 'Condition not met');
+      context.skipStep(step.id, "Condition not met");
       return;
     }
 
     // Check dependencies
-    const missingDeps = step.dependsOn.filter(dep => !context.isStepCompleted(dep));
+    const missingDeps = step.dependsOn.filter(
+      (dep) => !context.isStepCompleted(dep),
+    );
     if (missingDeps.length > 0) {
-      throw new WorkflowError(`Step ${step.id} has unmet dependencies: ${missingDeps.join(', ')}`);
+      throw new WorkflowError(
+        `Step ${step.id} has unmet dependencies: ${missingDeps.join(", ")}`,
+      );
     }
 
     // Execute with retry policy
@@ -645,7 +697,10 @@ export class WorkflowOrchestrator {
 
     for (let attempt = 1; attempt <= retryPolicy.maxAttempts; attempt++) {
       try {
-        const result = await this.commandRegistry.executeCommand(step.command, step.args);
+        const result = await this.commandRegistry.executeCommand(
+          step.command,
+          step.args,
+        );
         context.completeStep(step.id, result);
         return;
       } catch (error) {
@@ -657,7 +712,9 @@ export class WorkflowOrchestrator {
       }
     }
 
-    throw new WorkflowError(`Step ${step.id} failed after ${retryPolicy.maxAttempts} attempts: ${lastError?.message}`);
+    throw new WorkflowError(
+      `Step ${step.id} failed after ${retryPolicy.maxAttempts} attempts: ${lastError?.message}`,
+    );
   }
 }
 ```
@@ -665,6 +722,7 @@ export class WorkflowOrchestrator {
 ## Performance Optimization
 
 ### Command Performance Monitoring
+
 ```typescript
 // src/cli/performance/command-performance.ts
 export class CommandPerformanceMonitor {
@@ -672,7 +730,7 @@ export class CommandPerformanceMonitor {
 
   async measureCommand<T>(
     commandName: string,
-    executor: () => Promise<T>
+    executor: () => Promise<T>,
   ): Promise<T> {
     const start = performance.now();
     const memBefore = process.memoryUsage();
@@ -685,7 +743,7 @@ export class CommandPerformanceMonitor {
       this.recordMetrics(commandName, {
         executionTime: end - start,
         memoryDelta: memAfter.heapUsed - memBefore.heapUsed,
-        success: true
+        success: true,
       });
 
       return result;
@@ -696,14 +754,17 @@ export class CommandPerformanceMonitor {
         executionTime: end - start,
         memoryDelta: 0,
         success: false,
-        error: error as Error
+        error: error as Error,
       });
 
       throw error;
     }
   }
 
-  private recordMetrics(command: string, measurement: PerformanceMeasurement): void {
+  private recordMetrics(
+    command: string,
+    measurement: PerformanceMeasurement,
+  ): void {
     if (!this.metrics.has(command)) {
       this.metrics.set(command, new CommandMetrics(command));
     }
@@ -712,8 +773,11 @@ export class CommandPerformanceMonitor {
     metrics.addMeasurement(measurement);
 
     // Alert if performance degrades
-    if (metrics.getP95ExecutionTime() > 5000) { // 5 seconds
-      console.warn(`⚠️  Command '${command}' is performing slowly (P95: ${metrics.getP95ExecutionTime()}ms)`);
+    if (metrics.getP95ExecutionTime() > 5000) {
+      // 5 seconds
+      console.warn(
+        `⚠️  Command '${command}' is performing slowly (P95: ${metrics.getP95ExecutionTime()}ms)`,
+      );
     }
   }
 
@@ -730,7 +794,7 @@ export class CommandPerformanceMonitor {
       avgExecutionTime: metrics.getAverageExecutionTime(),
       p95ExecutionTime: metrics.getP95ExecutionTime(),
       avgMemoryUsage: metrics.getAverageMemoryUsage(),
-      recommendations: this.generateRecommendations(metrics)
+      recommendations: this.generateRecommendations(metrics),
     };
   }
 }
@@ -739,75 +803,76 @@ export class CommandPerformanceMonitor {
 ## Smart Auto-completion
 
 ### Intelligent Command Completion
+
 ```typescript
 // src/cli/completion/intelligent-completion.ts
 export class IntelligentCompletion {
   constructor(
     private learningService: LearningService,
-    private commandRegistry: ModularCommandRegistry
+    private commandRegistry: ModularCommandRegistry,
   ) {}
 
   async generateCompletions(
     partial: string,
-    context: CompletionContext
+    context: CompletionContext,
   ): Promise<Completion[]> {
     const completions: Completion[] = [];
 
     // 1. Exact command matches
     const exactMatches = this.commandRegistry.findCommandsByPrefix(partial);
-    completions.push(...exactMatches.map(cmd => ({
-      value: cmd.name,
-      description: cmd.description,
-      type: 'command',
-      confidence: 1.0
-    })));
+    completions.push(
+      ...exactMatches.map((cmd) => ({
+        value: cmd.name,
+        description: cmd.description,
+        type: "command",
+        confidence: 1.0,
+      })),
+    );
 
     // 2. Learning-based suggestions
     const learnedSuggestions = await this.learningService.suggestCommands(
       partial,
-      context
+      context,
     );
     completions.push(...learnedSuggestions);
 
     // 3. Context-aware suggestions
     const contextualSuggestions = await this.generateContextualSuggestions(
       partial,
-      context
+      context,
     );
     completions.push(...contextualSuggestions);
 
     // Sort by confidence and relevance
-    return completions
-      .sort((a, b) => b.confidence - a.confidence)
-      .slice(0, 10); // Top 10 suggestions
+    return completions.sort((a, b) => b.confidence - a.confidence).slice(0, 10); // Top 10 suggestions
   }
 
   private async generateContextualSuggestions(
     partial: string,
-    context: CompletionContext
+    context: CompletionContext,
   ): Promise<Completion[]> {
     const suggestions: Completion[] = [];
 
     // If in git repository, suggest git-related commands
     if (context.isGitRepository) {
-      if (partial.startsWith('git')) {
+      if (partial.startsWith("git")) {
         suggestions.push({
-          value: 'git commit',
-          description: 'Create git commit with generated message',
-          type: 'workflow',
-          confidence: 0.8
+          value: "git commit",
+          description: "Create git commit with generated message",
+          type: "workflow",
+          confidence: 0.8,
         });
       }
     }
 
     // If package.json exists, suggest npm commands
     if (context.hasPackageJson) {
-      if (partial.startsWith('npm') || partial.startsWith('swarm')) {
+      if (partial.startsWith("npm") || partial.startsWith("swarm")) {
         suggestions.push({
-          value: 'swarm init',
-          description: 'Initialize swarm for this project',
-          type: 'workflow',
-          confidence: 0.9
+          value: "swarm init",
+          description: "Initialize swarm for this project",
+          type: "workflow",
+          confidence: 0.9,
         });
       }
     }
@@ -820,6 +885,7 @@ export class IntelligentCompletion {
 ## Success Metrics
 
 ### CLI Performance Targets
+
 - [ ] **Command Response**: <200ms average command execution time
 - [ ] **File Decomposition**: index.ts (108KB) → <10KB per command module
 - [ ] **Interactive UX**: Smart prompts with context awareness
@@ -828,21 +894,22 @@ export class IntelligentCompletion {
 - [ ] **Auto-completion**: >90% accuracy for command suggestions
 
 ### User Experience Improvements
+
 ```typescript
 const cliImprovements = {
   before: {
-    commandResponse: '~500ms',
-    interactivity: 'Basic command parsing',
-    workflows: 'Manual command chaining',
-    suggestions: 'Static help text'
+    commandResponse: "~500ms",
+    interactivity: "Basic command parsing",
+    workflows: "Manual command chaining",
+    suggestions: "Static help text",
   },
 
   after: {
-    commandResponse: '<200ms with caching',
-    interactivity: 'Smart context-aware prompts',
-    workflows: 'Automated multi-step execution',
-    suggestions: 'Learning-based intelligent completion'
-  }
+    commandResponse: "<200ms with caching",
+    interactivity: "Smart context-aware prompts",
+    workflows: "Automated multi-step execution",
+    suggestions: "Learning-based intelligent completion",
+  },
 };
 ```
 
@@ -856,6 +923,7 @@ const cliImprovements = {
 ## Usage Examples
 
 ### Complete CLI Modernization
+
 ```bash
 # Full CLI modernization implementation
 Task("CLI modernization implementation",
@@ -864,6 +932,7 @@ Task("CLI modernization implementation",
 ```
 
 ### Interactive Command Enhancement
+
 ```bash
 # Enhanced interactive commands
 claude-flow swarm init --interactive

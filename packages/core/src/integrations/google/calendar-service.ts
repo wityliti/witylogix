@@ -3,13 +3,13 @@
  * Handles OAuth2 flow and calendar event management for order tracking
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 import type {
   CalendarEvent,
   CalendarSyncResult,
   OAuth2Config,
   OAuth2Token,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Validation schemas
@@ -21,27 +21,40 @@ const CalendarEventSchema = z.object({
   startTime: z.string().datetime(),
   endTime: z.string().datetime(),
   location: z.string().optional(),
-  status: z.enum(['confirmed', 'tentative', 'cancelled']),
-  organizer: z.object({
-    email: z.string().email(),
-    displayName: z.string().optional(),
-  }).optional(),
-  attendees: z.array(z.object({
-    email: z.string().email(),
-    displayName: z.string().optional(),
-    responseStatus: z.enum(['accepted', 'declined', 'tentative', 'needsAction']),
-  })).optional(),
-  extendedProperties: z.object({
-    shared: z.record(z.string()).optional(),
-    private: z.record(z.string()).optional(),
-  }).optional(),
+  status: z.enum(["confirmed", "tentative", "cancelled"]),
+  organizer: z
+    .object({
+      email: z.string().email(),
+      displayName: z.string().optional(),
+    })
+    .optional(),
+  attendees: z
+    .array(
+      z.object({
+        email: z.string().email(),
+        displayName: z.string().optional(),
+        responseStatus: z.enum([
+          "accepted",
+          "declined",
+          "tentative",
+          "needsAction",
+        ]),
+      }),
+    )
+    .optional(),
+  extendedProperties: z
+    .object({
+      shared: z.record(z.string()).optional(),
+      private: z.record(z.string()).optional(),
+    })
+    .optional(),
 });
 
 const OAuth2TokenSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string().optional(),
   expiresAt: z.number(),
-  tokenType: z.enum(['Bearer']),
+  tokenType: z.enum(["Bearer"]),
 });
 
 /**
@@ -50,12 +63,12 @@ const OAuth2TokenSchema = z.object({
 export class GoogleCalendarService {
   private config: OAuth2Config;
   private token: OAuth2Token | null = null;
-  private calendarId: string = 'primary';
-  private apiUrl = 'https://www.googleapis.com/calendar/v3';
+  private calendarId: string = "primary";
+  private apiUrl = "https://www.googleapis.com/calendar/v3";
 
   constructor(config: OAuth2Config) {
     if (!config.clientId || !config.clientSecret) {
-      throw new Error('OAuth2 configuration is incomplete');
+      throw new Error("OAuth2 configuration is incomplete");
     }
     this.config = config;
   }
@@ -81,11 +94,11 @@ export class GoogleCalendarService {
     const params = new URLSearchParams({
       client_id: this.config.clientId,
       redirect_uri: this.config.redirectUri,
-      response_type: 'code',
-      scope: this.config.scopes.join(' '),
+      response_type: "code",
+      scope: this.config.scopes.join(" "),
       state,
-      access_type: 'offline',
-      prompt: 'consent',
+      access_type: "offline",
+      prompt: "consent",
     });
 
     return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
@@ -95,16 +108,16 @@ export class GoogleCalendarService {
    * Exchange authorization code for tokens
    */
   async exchangeCodeForToken(code: string): Promise<OAuth2Token> {
-    const response = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
+    const response = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
         client_id: this.config.clientId,
         client_secret: this.config.clientSecret,
         code,
-        grant_type: 'authorization_code',
+        grant_type: "authorization_code",
         redirect_uri: this.config.redirectUri,
       }).toString(),
     });
@@ -113,13 +126,17 @@ export class GoogleCalendarService {
       throw new Error(`Token exchange failed: ${response.statusText}`);
     }
 
-    const data = (await response.json()) as { access_token: string; refresh_token?: string; expires_in: number };
+    const data = (await response.json()) as {
+      access_token: string;
+      refresh_token?: string;
+      expires_in: number;
+    };
 
     const token: OAuth2Token = {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
-      expiresAt: Date.now() + (data.expires_in * 1000),
-      tokenType: 'Bearer',
+      expiresAt: Date.now() + data.expires_in * 1000,
+      tokenType: "Bearer",
     };
 
     this.token = OAuth2TokenSchema.parse(token);
@@ -131,19 +148,19 @@ export class GoogleCalendarService {
    */
   async refreshAccessToken(): Promise<OAuth2Token> {
     if (!this.token?.refreshToken) {
-      throw new Error('No refresh token available');
+      throw new Error("No refresh token available");
     }
 
-    const response = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
+    const response = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
         client_id: this.config.clientId,
         client_secret: this.config.clientSecret,
         refresh_token: this.token.refreshToken,
-        grant_type: 'refresh_token',
+        grant_type: "refresh_token",
       }).toString(),
     });
 
@@ -151,13 +168,17 @@ export class GoogleCalendarService {
       throw new Error(`Token refresh failed: ${response.statusText}`);
     }
 
-    const data = (await response.json()) as { access_token: string; refresh_token?: string; expires_in: number };
+    const data = (await response.json()) as {
+      access_token: string;
+      refresh_token?: string;
+      expires_in: number;
+    };
 
     const newToken: OAuth2Token = {
       accessToken: data.access_token,
       refreshToken: data.refresh_token || this.token.refreshToken,
-      expiresAt: Date.now() + (data.expires_in * 1000),
-      tokenType: 'Bearer',
+      expiresAt: Date.now() + data.expires_in * 1000,
+      tokenType: "Bearer",
     };
 
     this.token = OAuth2TokenSchema.parse(newToken);
@@ -169,7 +190,7 @@ export class GoogleCalendarService {
    */
   private async ensureValidToken(): Promise<void> {
     if (!this.token) {
-      throw new Error('No token set. Please authenticate first.');
+      throw new Error("No token set. Please authenticate first.");
     }
 
     if (Date.now() >= this.token.expiresAt) {
@@ -183,19 +204,19 @@ export class GoogleCalendarService {
   private async request<T>(
     endpoint: string,
     options: RequestInit = {},
-    schema?: z.ZodSchema
+    schema?: z.ZodSchema,
   ): Promise<T> {
     await this.ensureValidToken();
 
     if (!this.token) {
-      throw new Error('No token available');
+      throw new Error("No token available");
     }
 
     const url = `${this.apiUrl}${endpoint}`;
     const headers: Record<string, string> = {
-      'Authorization': `Bearer ${this.token.accessToken}`,
-      'Content-Type': 'application/json',
-      ...options.headers as Record<string, string>,
+      Authorization: `Bearer ${this.token.accessToken}`,
+      "Content-Type": "application/json",
+      ...(options.headers as Record<string, string>),
     };
 
     const response = await fetch(url, {
@@ -205,7 +226,9 @@ export class GoogleCalendarService {
 
     if (!response.ok) {
       const error = await response.text();
-      throw new Error(`Calendar API Error [${response.status}]: ${error || response.statusText}`);
+      throw new Error(
+        `Calendar API Error [${response.status}]: ${error || response.statusText}`,
+      );
     }
 
     const data: unknown = await response.json();
@@ -214,8 +237,8 @@ export class GoogleCalendarService {
       try {
         return schema.parse(data) as T;
       } catch (validationError) {
-        console.error('Validation error:', validationError);
-        throw new Error('Invalid response format from Calendar API');
+        console.error("Validation error:", validationError);
+        throw new Error("Invalid response format from Calendar API");
       }
     }
 
@@ -241,14 +264,14 @@ export class GoogleCalendarService {
 
     const event = {
       summary: `Delivery - ${orderData.customerName}`,
-      description: `Order ID: ${orderData.orderId}\nAddress: ${orderData.deliveryAddress}${orderData.phoneNumber ? `\nPhone: ${orderData.phoneNumber}` : ''}${orderData.notes ? `\nNotes: ${orderData.notes}` : ''}`,
+      description: `Order ID: ${orderData.orderId}\nAddress: ${orderData.deliveryAddress}${orderData.phoneNumber ? `\nPhone: ${orderData.phoneNumber}` : ""}${orderData.notes ? `\nNotes: ${orderData.notes}` : ""}`,
       start: { dateTime: startDateTime.toISOString() },
       end: { dateTime: endDateTime.toISOString() },
       location: orderData.deliveryAddress,
       extendedProperties: {
         private: {
           orderId: orderData.orderId,
-          locationId: orderData.locationId || '',
+          locationId: orderData.locationId || "",
         },
       },
     };
@@ -256,9 +279,9 @@ export class GoogleCalendarService {
     const response = await this.request<any>(
       `/calendars/${this.calendarId}/events`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(event),
-      }
+      },
     );
 
     return this.parseCalendarEvent(response);
@@ -267,16 +290,19 @@ export class GoogleCalendarService {
   /**
    * Update a calendar event
    */
-  async updateOrderEvent(eventId: string, updates: Partial<{
-    summary: string;
-    description: string;
-    startTime: string;
-    endTime: string;
-    location: string;
-  }>): Promise<CalendarEvent> {
+  async updateOrderEvent(
+    eventId: string,
+    updates: Partial<{
+      summary: string;
+      description: string;
+      startTime: string;
+      endTime: string;
+      location: string;
+    }>,
+  ): Promise<CalendarEvent> {
     // First, get the current event
     const currentEvent = await this.request<any>(
-      `/calendars/${this.calendarId}/events/${eventId}`
+      `/calendars/${this.calendarId}/events/${eventId}`,
     );
 
     // Prepare update
@@ -288,7 +314,9 @@ export class GoogleCalendarService {
     };
 
     if (updates.startTime) {
-      updatedEvent.start = { dateTime: new Date(updates.startTime).toISOString() };
+      updatedEvent.start = {
+        dateTime: new Date(updates.startTime).toISOString(),
+      };
     }
 
     if (updates.endTime) {
@@ -298,9 +326,9 @@ export class GoogleCalendarService {
     const response = await this.request<any>(
       `/calendars/${this.calendarId}/events/${eventId}`,
       {
-        method: 'PUT',
+        method: "PUT",
         body: JSON.stringify(updatedEvent),
-      }
+      },
     );
 
     return this.parseCalendarEvent(response);
@@ -310,12 +338,9 @@ export class GoogleCalendarService {
    * Delete a calendar event
    */
   async deleteOrderEvent(eventId: string): Promise<void> {
-    await this.request(
-      `/calendars/${this.calendarId}/events/${eventId}`,
-      {
-        method: 'DELETE',
-      }
-    );
+    await this.request(`/calendars/${this.calendarId}/events/${eventId}`, {
+      method: "DELETE",
+    });
   }
 
   /**
@@ -331,7 +356,7 @@ export class GoogleCalendarService {
       pickupTime: string;
       phoneNumber?: string;
       notes?: string;
-    }>
+    }>,
   ): Promise<CalendarSyncResult> {
     const result: CalendarSyncResult = {
       synced: 0,
@@ -344,7 +369,7 @@ export class GoogleCalendarService {
       try {
         // Check if event already exists
         const existingEvents = await this.request<any>(
-          `/calendars/${this.calendarId}/events?q=${encodeURIComponent(order.id)}`
+          `/calendars/${this.calendarId}/events?q=${encodeURIComponent(order.id)}`,
         );
 
         if (existingEvents.items?.length > 0) {
@@ -372,7 +397,7 @@ export class GoogleCalendarService {
         result.failed++;
         result.errors.push({
           orderId: order.id,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         });
       }
     }
@@ -416,6 +441,8 @@ export class GoogleCalendarService {
 /**
  * Create Google Calendar service instance
  */
-export function createGoogleCalendarService(config: OAuth2Config): GoogleCalendarService {
+export function createGoogleCalendarService(
+  config: OAuth2Config,
+): GoogleCalendarService {
   return new GoogleCalendarService(config);
 }

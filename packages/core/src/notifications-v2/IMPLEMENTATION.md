@@ -39,12 +39,14 @@ apps/api/src/routes/
 **Responsibility**: Main orchestration service that coordinates all components.
 
 **Key Methods**:
+
 - `send(request)` - Send single notification
 - `sendBulk(requests)` - Send multiple notifications
 - `getHistory(customerId, limit)` - Retrieve notification history
 - `getDeliveryStatus(notificationId)` - Get delivery status
 
 **Flow**:
+
 ```
 send() {
   1. Validate request
@@ -66,12 +68,14 @@ send() {
 **Responsibility**: Render channel-specific templates with variable interpolation.
 
 **Design**:
+
 - Static template definitions per event type
 - Per-channel variants (HTML for email, text for SMS, etc.)
 - Simple variable interpolation with `{{variable}}` syntax
 - Graceful handling of missing variables
 
 **Template Structure**:
+
 ```typescript
 TEMPLATES: {
   event_type: {
@@ -84,6 +88,7 @@ TEMPLATES: {
 ```
 
 **Variable Interpolation**:
+
 - Email: Full HTML + plain text
 - SMS: Plain text with length limit
 - WhatsApp: Template parameters array
@@ -94,12 +99,14 @@ TEMPLATES: {
 **Responsibility**: Manage customer notification preferences.
 
 **Design**:
+
 - Per-customer preferences storage
 - Per-channel enable/disable
 - Per-event-type granular control
 - Default preferences for new customers
 
 **Default Preferences**:
+
 ```
 Email:    All events enabled
 SMS:      All except delivery_arriving, delivered
@@ -114,12 +121,14 @@ Push:     Real-time events (out for delivery, arriving, etc.)
 **Responsibility**: Prevent notification abuse.
 
 **Design**:
+
 - Per-customer, per-channel rate limits
 - 24-hour rolling window
 - Configurable limits
 - Automatic window reset
 
 **Default Limits**:
+
 ```
 SMS:      10 messages/day
 WhatsApp: 5 messages/day
@@ -134,12 +143,14 @@ Push:     Unlimited
 **Responsibility**: Generate tracking short URLs.
 
 **Design**:
+
 - In-memory URL mapping
 - 90-day expiration
 - Click tracking
 - Deduplication (reuse if URL already shortened)
 
 **Flow**:
+
 ```
 shortenUrl(originalUrl) {
   1. Validate URL format
@@ -155,18 +166,21 @@ shortenUrl(originalUrl) {
 **Responsibility**: Manage outbound webhooks for delivery events.
 
 **Design**:
+
 - Register/unregister webhooks
 - Event filtering per webhook
 - HMAC signature generation
 - Retry handling (future)
 
 **Webhook Events**:
+
 - `delivery.scheduled`
 - `delivery.out_for_delivery`
 - `delivery.delivered`
 - `delivery.failed`
 
 **Signature Verification**:
+
 ```typescript
 header: X-Webhook-Signature: sha256=<hmac>
 
@@ -181,24 +195,28 @@ verifySignature(payload, signature, secret) {
 ### 7. Channels
 
 #### EmailChannel
+
 - Nodemailer/SES integration
 - HTML + plain text
 - Branded templates with Witylogix logo
 - Attachment support
 
 #### SMSChannel
+
 - Twilio integration
 - 160 character limit (auto-split)
 - E.164 phone formatting
 - Routific-pattern messages
 
 #### WhatsAppChannel
+
 - Meta Business Cloud API
 - Approved templates only
 - Template parameters
 - Media support (map, driver photo)
 
 #### PushChannel
+
 - Web Push protocol
 - VAPID key management
 - Interactive actions
@@ -207,6 +225,7 @@ verifySignature(payload, signature, secret) {
 ## Data Models
 
 ### NotificationRequest
+
 ```typescript
 {
   customerId: string;
@@ -227,6 +246,7 @@ verifySignature(payload, signature, secret) {
 ```
 
 ### SendResult
+
 ```typescript
 {
   success: boolean;
@@ -239,6 +259,7 @@ verifySignature(payload, signature, secret) {
 ```
 
 ### NotificationRecord (History)
+
 ```typescript
 {
   id: string;
@@ -289,18 +310,22 @@ GET    /api/notifications/templates/:eventType
 ## Error Handling
 
 ### Validation Errors
+
 - 400 Bad Request
 - Zod validation errors returned
 
 ### Not Found Errors
+
 - 404 Not Found
 - Resource not found
 
 ### Server Errors
+
 - 500 Internal Server Error
 - Error message returned
 
 ### Channel-Level Errors
+
 - Returned in SendResult
 - Not thrown (graceful degradation)
 - Multiple channels can fail independently
@@ -308,6 +333,7 @@ GET    /api/notifications/templates/:eventType
 ## Rate Limiting Strategy
 
 ### Implementation
+
 ```typescript
 Key: `${customerId}:${channel}`
 Entry: {
@@ -331,6 +357,7 @@ recordSend() {
 ```
 
 ### Configuration
+
 ```typescript
 {
   maxSmsPerDay: 10,
@@ -357,6 +384,7 @@ For each registered webhook:
 ```
 
 ### Webhook Payload
+
 ```typescript
 {
   event: WebhookEventType,
@@ -372,6 +400,7 @@ For each registered webhook:
 ```
 
 ### Signature Header
+
 ```
 X-Webhook-Signature: sha256=<hmac-hex>
 X-Webhook-Event: delivery.scheduled
@@ -381,6 +410,7 @@ X-Webhook-ID: webhook_123
 ## URL Shortening Logic
 
 ### Code Generation
+
 ```typescript
 - Length: 8 characters
 - Charset: hex (0-9, a-f)
@@ -389,6 +419,7 @@ X-Webhook-ID: webhook_123
 ```
 
 ### Storage
+
 ```typescript
 code -> {
   code,
@@ -401,6 +432,7 @@ code -> {
 ```
 
 ### Expiration
+
 - Default: 90 days
 - Automatic cleanup on access
 - Periodic cleanup task (future)
@@ -408,6 +440,7 @@ code -> {
 ## Testing Strategy
 
 ### Unit Tests
+
 - Template engine rendering
 - Variable interpolation
 - Rate limiting logic
@@ -415,6 +448,7 @@ code -> {
 - URL shortening
 
 ### Integration Tests
+
 - Complete notification workflow
 - Multi-channel sending
 - Preference respect
@@ -422,6 +456,7 @@ code -> {
 - History tracking
 
 ### Test Coverage
+
 - Happy path scenarios
 - Error cases
 - Edge cases (missing variables, invalid inputs)
@@ -430,6 +465,7 @@ code -> {
 ## Production Deployment
 
 ### Database Migration
+
 ```typescript
 // Replace in-memory Maps with Prisma
 
@@ -477,44 +513,46 @@ model Webhook {
 ```
 
 ### Provider Integration
+
 ```typescript
 // Email: SendGrid
-const sgMail = require('@sendgrid/mail');
+const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 await sgMail.send(emailContent);
 
 // SMS: Twilio
-const twilio = require('twilio');
+const twilio = require("twilio");
 const client = twilio(accountSid, authToken);
 await client.messages.create({
   body,
   from: process.env.SMS_FROM,
-  to
+  to,
 });
 
 // WhatsApp: Meta
 const response = await fetch(
   `https://graph.instagram.com/v18.0/${phoneNumberId}/messages`,
   {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify(payload)
-  }
+    body: JSON.stringify(payload),
+  },
 );
 
 // Push: web-push
-import webpush from 'web-push';
+import webpush from "web-push";
 webpush.setVapidDetails(subject, publicKey, privateKey);
 await webpush.sendNotification(subscription, payload);
 ```
 
 ### Distributed Rate Limiting
+
 ```typescript
 // Redis backend
-import Redis from 'ioredis';
+import Redis from "ioredis";
 
 class RedisRateLimiter {
   async canSend(customerId, channel) {
@@ -532,11 +570,12 @@ class RedisRateLimiter {
 ```
 
 ### Message Queue
+
 ```typescript
 // Redis-based job queue
-import Bull from 'bull';
+import Bull from "bull";
 
-const notificationQueue = new Bull('notifications');
+const notificationQueue = new Bull("notifications");
 
 notificationQueue.process(async (job) => {
   const result = await service.send(job.data);
@@ -547,22 +586,23 @@ notificationQueue.process(async (job) => {
 notificationQueue.add(notificationRequest, {
   attempts: 3,
   backoff: {
-    type: 'exponential',
-    delay: 1000
-  }
+    type: "exponential",
+    delay: 1000,
+  },
 });
 ```
 
 ### Monitoring
+
 ```typescript
 // Prometheus metrics
-- notifications_sent_total
-- notifications_failed_total
-- notifications_by_channel
-- rate_limit_exceeded_total
-- webhook_deliveries_total
-- webhook_delivery_failures_total
-- url_shortener_clicks_total
+-notifications_sent_total -
+  notifications_failed_total -
+  notifications_by_channel -
+  rate_limit_exceeded_total -
+  webhook_deliveries_total -
+  webhook_delivery_failures_total -
+  url_shortener_clicks_total;
 ```
 
 ## Performance Considerations
@@ -605,6 +645,7 @@ notificationQueue.add(notificationRequest, {
 ## Maintenance
 
 ### Monitoring Checklist
+
 - [ ] Webhook delivery success rate
 - [ ] Average send latency
 - [ ] Rate limit hit frequency
@@ -612,6 +653,7 @@ notificationQueue.add(notificationRequest, {
 - [ ] URL shortener performance
 
 ### Regular Tasks
+
 - [ ] Clean up expired shortened URLs
 - [ ] Archive old notification history
 - [ ] Review webhook failure logs
@@ -621,22 +663,26 @@ notificationQueue.add(notificationRequest, {
 ## Migration Path
 
 ### Phase 1: MVP (Current)
+
 - In-memory storage
 - Mock implementations
 - API ready for testing
 
 ### Phase 2: Production
+
 - Database persistence
 - Real provider integrations
 - Distributed rate limiting
 
 ### Phase 3: Advanced
+
 - Message queue
 - Analytics
 - A/B testing
 - Multi-language
 
 ### Phase 4: Scale
+
 - Global provider coverage
 - Advanced analytics
 - Customer segmentation

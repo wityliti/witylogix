@@ -13,8 +13,8 @@ import type {
   SyncEntityType,
   PaginationParams,
   PaginatedResult,
-} from './types.js';
-import { AbstractERPAdapter } from './erp-adapter.js';
+} from "./types.js";
+import { AbstractERPAdapter } from "./erp-adapter.js";
 
 // ─── DYNAMICS365-SPECIFIC TYPES ────────────────────────────────────────────
 
@@ -23,7 +23,7 @@ export interface Dynamics365Config {
   clientId: string; // Azure AD App Registration ID
   clientSecret: string;
   redirectUri: string;
-  environment?: 'sandbox' | 'production';
+  environment?: "sandbox" | "production";
   timeout?: number;
   maxRetries?: number;
 }
@@ -64,15 +64,15 @@ export class Dynamics365Client extends AbstractERPAdapter {
   private companyId?: string;
 
   constructor(connection: ERPConnection, config: Dynamics365Config) {
-    super('dynamics365', connection);
+    super("dynamics365", connection);
     this.config = {
       timeout: 30000,
       maxRetries: 3,
-      environment: 'production',
+      environment: "production",
       ...config,
     };
 
-    const env = this.config.environment === 'sandbox' ? 'sandbox' : '';
+    const env = this.config.environment === "sandbox" ? "sandbox" : "";
     this.apiBaseUrl = `https://api.businesscentral.dynamics.com/v2.0/${env}/companies`;
     this.authBaseUrl = `https://login.microsoftonline.com/${this.config.tenantId}/oauth2/v2.0`;
     this.companyId = connection.credentials.companyId;
@@ -84,8 +84,8 @@ export class Dynamics365Client extends AbstractERPAdapter {
   getAuthorizationUrl(state?: string): string {
     const params = new URLSearchParams({
       client_id: this.config.clientId,
-      response_type: 'code',
-      scope: 'https://api.businesscentral.dynamics.com/.default',
+      response_type: "code",
+      scope: "https://api.businesscentral.dynamics.com/.default",
       redirect_uri: this.config.redirectUri,
       state: state || this.generateRandomString(32),
     });
@@ -104,7 +104,7 @@ export class Dynamics365Client extends AbstractERPAdapter {
       access_token: `d365_at_${Date.now()}`,
       refresh_token: `d365_rt_${Date.now()}`,
       expires_in: 3600,
-      token_type: 'Bearer',
+      token_type: "Bearer",
     };
 
     this.connection.credentials.accessToken = mockResponse.access_token;
@@ -135,7 +135,7 @@ export class Dynamics365Client extends AbstractERPAdapter {
    */
   async getCompanies(): Promise<Dynamics365Company[]> {
     return this.executeWithRateLimit(async () => {
-      const response = await this.oDataGet('/companies');
+      const response = await this.oDataGet("/companies");
       return response.value.map((company: any) => ({
         id: company.id,
         name: company.name,
@@ -174,7 +174,8 @@ export class Dynamics365Client extends AbstractERPAdapter {
    */
   async createCustomer(customer: ERPCustomer): Promise<ERPCustomer> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
       const d365Payload = this.mapCustomerToD365(customer);
       const response = await this.oDataPost(
@@ -195,7 +196,8 @@ export class Dynamics365Client extends AbstractERPAdapter {
    */
   async getCustomer(customerId: string): Promise<ERPCustomer> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
       const response = await this.oDataGet(
         `/companies('${this.companyId}')/customers('${customerId}')`,
@@ -207,9 +209,13 @@ export class Dynamics365Client extends AbstractERPAdapter {
   /**
    * Update customer
    */
-  async updateCustomer(customerId: string, customer: Partial<ERPCustomer>): Promise<ERPCustomer> {
+  async updateCustomer(
+    customerId: string,
+    customer: Partial<ERPCustomer>,
+  ): Promise<ERPCustomer> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
       const d365Payload = this.mapCustomerToD365(customer as ERPCustomer);
       await this.oDataPatch(
@@ -228,7 +234,8 @@ export class Dynamics365Client extends AbstractERPAdapter {
     pagination?: PaginationParams,
   ): Promise<PaginatedResult<ERPCustomer>> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
       const skip = pagination?.skip || 0;
       const limit = pagination?.limit || 100;
@@ -242,7 +249,7 @@ export class Dynamics365Client extends AbstractERPAdapter {
 
       return {
         items: response.value.map((c: any) => this.mapCustomerFromD365(c)),
-        total: response['@odata.count'] || response.value.length,
+        total: response["@odata.count"] || response.value.length,
         hasMore: response.value.length === limit,
         nextOffset: skip + limit,
       };
@@ -256,7 +263,8 @@ export class Dynamics365Client extends AbstractERPAdapter {
    */
   async createSalesOrder(order: ERPOrder): Promise<ERPOrder> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
       const d365Payload = this.mapOrderToD365(order);
       const response = await this.oDataPost(
@@ -278,7 +286,8 @@ export class Dynamics365Client extends AbstractERPAdapter {
    */
   async getSalesOrder(orderId: string): Promise<ERPOrder> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
       const response = await this.oDataGet(
         `/companies('${this.companyId}')/salesOrders('${orderId}')?$expand=salesOrderLines`,
@@ -292,7 +301,8 @@ export class Dynamics365Client extends AbstractERPAdapter {
    */
   async postSalesOrder(orderId: string): Promise<{ invoiceId: string }> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
       // In Dynamics, posting a sales order creates a sales invoice
       const order = await this.getSalesOrder(orderId);
@@ -303,11 +313,11 @@ export class Dynamics365Client extends AbstractERPAdapter {
         dueDate: order.dueDate || new Date(),
         lineItems: order.lineItems,
         total: order.total,
-        status: 'draft',
+        status: "draft",
       };
 
       const response = await this.createInvoice(invoice);
-      return { invoiceId: response.id || '' };
+      return { invoiceId: response.id || "" };
     });
   }
 
@@ -316,11 +326,15 @@ export class Dynamics365Client extends AbstractERPAdapter {
    */
   async shipSalesOrder(orderId: string): Promise<void> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
-      await this.oDataPatch(`/companies('${this.companyId}')/salesOrders('${orderId}')`, {
-        status: 'shipped',
-      });
+      await this.oDataPatch(
+        `/companies('${this.companyId}')/salesOrders('${orderId}')`,
+        {
+          status: "shipped",
+        },
+      );
     });
   }
 
@@ -331,10 +345,11 @@ export class Dynamics365Client extends AbstractERPAdapter {
    */
   async createInvoice(invoice: ERPInvoice): Promise<ERPInvoice> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
       const endpoint =
-        invoice.invoiceType === 'purchase'
+        invoice.invoiceType === "purchase"
           ? `/companies('${this.companyId}')/purchaseInvoices`
           : `/companies('${this.companyId}')/salesInvoices`;
 
@@ -353,16 +368,21 @@ export class Dynamics365Client extends AbstractERPAdapter {
   /**
    * Get invoice
    */
-  async getInvoice(invoiceId: string, isPurchase: boolean = false): Promise<ERPInvoice> {
+  async getInvoice(
+    invoiceId: string,
+    isPurchase: boolean = false,
+  ): Promise<ERPInvoice> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
-      const endpoint =
-        isPurchase
-          ? `/companies('${this.companyId}')/purchaseInvoices('${invoiceId}')`
-          : `/companies('${this.companyId}')/salesInvoices('${invoiceId}')`;
+      const endpoint = isPurchase
+        ? `/companies('${this.companyId}')/purchaseInvoices('${invoiceId}')`
+        : `/companies('${this.companyId}')/salesInvoices('${invoiceId}')`;
 
-      const response = await this.oDataGet(`${endpoint}?$expand=salesInvoiceLines`);
+      const response = await this.oDataGet(
+        `${endpoint}?$expand=salesInvoiceLines`,
+      );
       return this.mapInvoiceFromD365(response);
     });
   }
@@ -372,11 +392,12 @@ export class Dynamics365Client extends AbstractERPAdapter {
    */
   async postInvoice(invoiceId: string): Promise<void> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
       await this.oDataPatch(
         `/companies('${this.companyId}')/salesInvoices('${invoiceId}')`,
-        { status: 'posted' },
+        { status: "posted" },
       );
     });
   }
@@ -386,11 +407,12 @@ export class Dynamics365Client extends AbstractERPAdapter {
    */
   async createCreditMemo(invoice: ERPInvoice): Promise<ERPInvoice> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
       const d365Payload = this.mapInvoiceToD365({
         ...invoice,
-        invoiceType: 'credit_memo',
+        invoiceType: "credit_memo",
       });
 
       const response = await this.oDataPost(
@@ -402,7 +424,7 @@ export class Dynamics365Client extends AbstractERPAdapter {
         ...invoice,
         id: response.id,
         externalId: response.number,
-        invoiceType: 'credit_memo',
+        invoiceType: "credit_memo",
       };
     });
   }
@@ -414,7 +436,8 @@ export class Dynamics365Client extends AbstractERPAdapter {
    */
   async createItem(item: ERPProduct): Promise<ERPProduct> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
       const d365Payload = this.mapItemToD365(item);
       const response = await this.oDataPost(
@@ -435,9 +458,12 @@ export class Dynamics365Client extends AbstractERPAdapter {
    */
   async getItem(itemId: string): Promise<ERPProduct> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
-      const response = await this.oDataGet(`/companies('${this.companyId}')/items('${itemId}')`);
+      const response = await this.oDataGet(
+        `/companies('${this.companyId}')/items('${itemId}')`,
+      );
       return this.mapItemFromD365(response);
     });
   }
@@ -445,12 +471,19 @@ export class Dynamics365Client extends AbstractERPAdapter {
   /**
    * Update item
    */
-  async updateItem(itemId: string, item: Partial<ERPProduct>): Promise<ERPProduct> {
+  async updateItem(
+    itemId: string,
+    item: Partial<ERPProduct>,
+  ): Promise<ERPProduct> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
       const d365Payload = this.mapItemToD365(item as ERPProduct);
-      await this.oDataPatch(`/companies('${this.companyId}')/items('${itemId}')`, d365Payload);
+      await this.oDataPatch(
+        `/companies('${this.companyId}')/items('${itemId}')`,
+        d365Payload,
+      );
       return this.getItem(itemId);
     });
   }
@@ -463,7 +496,8 @@ export class Dynamics365Client extends AbstractERPAdapter {
     pagination?: PaginationParams,
   ): Promise<PaginatedResult<ERPProduct>> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
       const skip = pagination?.skip || 0;
       const limit = pagination?.limit || 100;
@@ -477,7 +511,7 @@ export class Dynamics365Client extends AbstractERPAdapter {
 
       return {
         items: response.value.map((i: any) => this.mapItemFromD365(i)),
-        total: response['@odata.count'] || response.value.length,
+        total: response["@odata.count"] || response.value.length,
         hasMore: response.value.length === limit,
         nextOffset: skip + limit,
       };
@@ -493,7 +527,8 @@ export class Dynamics365Client extends AbstractERPAdapter {
     pagination?: PaginationParams,
   ): Promise<PaginatedResult<{ code: string; name: string }>> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
       const skip = pagination?.skip || 0;
       const limit = pagination?.limit || 100;
@@ -507,7 +542,7 @@ export class Dynamics365Client extends AbstractERPAdapter {
           code: acc.number,
           name: acc.displayName,
         })),
-        total: response['@odata.count'] || response.value.length,
+        total: response["@odata.count"] || response.value.length,
         hasMore: response.value.length === limit,
         nextOffset: skip + limit,
       };
@@ -517,9 +552,12 @@ export class Dynamics365Client extends AbstractERPAdapter {
   /**
    * Post journal entry
    */
-  async postJournalEntry(data: Record<string, any>): Promise<{ journalId: string }> {
+  async postJournalEntry(
+    data: Record<string, any>,
+  ): Promise<{ journalId: string }> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
       const response = await this.oDataPost(
         `/companies('${this.companyId}')/journalLines`,
@@ -540,7 +578,8 @@ export class Dynamics365Client extends AbstractERPAdapter {
     pagination?: PaginationParams,
   ): Promise<PaginatedResult<{ code: string; name: string }>> {
     return this.executeWithRateLimit(async () => {
-      if (!this.companyId) throw this.createError('Company ID not set', 'MISSING_COMPANY_ID');
+      if (!this.companyId)
+        throw this.createError("Company ID not set", "MISSING_COMPANY_ID");
 
       const skip = pagination?.skip || 0;
       const limit = pagination?.limit || 100;
@@ -554,7 +593,7 @@ export class Dynamics365Client extends AbstractERPAdapter {
           code: dim.code,
           name: dim.displayName,
         })),
-        total: response['@odata.count'] || response.value.length,
+        total: response["@odata.count"] || response.value.length,
         hasMore: response.value.length === limit,
         nextOffset: skip + limit,
       };
@@ -569,12 +608,12 @@ export class Dynamics365Client extends AbstractERPAdapter {
   private buildODataUrl(basePath: string, options: D365QueryOptions): string {
     const params = new URLSearchParams();
 
-    if (options.$filter) params.append('$filter', options.$filter);
-    if (options.$select) params.append('$select', options.$select.join(','));
-    if (options.$expand) params.append('$expand', options.$expand.join(','));
-    if (options.$orderby) params.append('$orderby', options.$orderby);
-    if (options.$skip) params.append('$skip', String(options.$skip));
-    if (options.$top) params.append('$top', String(options.$top));
+    if (options.$filter) params.append("$filter", options.$filter);
+    if (options.$select) params.append("$select", options.$select.join(","));
+    if (options.$expand) params.append("$expand", options.$expand.join(","));
+    if (options.$orderby) params.append("$orderby", options.$orderby);
+    if (options.$skip) params.append("$skip", String(options.$skip));
+    if (options.$top) params.append("$top", String(options.$top));
 
     return params.toString() ? `${basePath}?${params}` : basePath;
   }
@@ -582,22 +621,29 @@ export class Dynamics365Client extends AbstractERPAdapter {
   /**
    * OData GET request
    */
-  protected async oDataGet(path: string, headers?: Record<string, string>): Promise<any> {
+  protected async oDataGet(
+    path: string,
+    headers?: Record<string, string>,
+  ): Promise<any> {
     const url = `${this.apiBaseUrl}${path}`;
     const accessToken = await this.getAccessToken();
 
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...headers,
       },
       signal: AbortSignal.timeout(this.config.timeout!),
     });
 
     if (!response.ok) {
-      throw this.createError(`OData GET failed: ${response.statusText}`, 'ODATA_ERROR', response.status >= 500);
+      throw this.createError(
+        `OData GET failed: ${response.statusText}`,
+        "ODATA_ERROR",
+        response.status >= 500,
+      );
     }
 
     return response.json();
@@ -606,15 +652,19 @@ export class Dynamics365Client extends AbstractERPAdapter {
   /**
    * OData POST request
    */
-  protected async oDataPost(path: string, body: any, headers?: Record<string, string>): Promise<any> {
+  protected async oDataPost(
+    path: string,
+    body: any,
+    headers?: Record<string, string>,
+  ): Promise<any> {
     const url = `${this.apiBaseUrl}${path}`;
     const accessToken = await this.getAccessToken();
 
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...headers,
       },
       body: JSON.stringify(body),
@@ -622,7 +672,11 @@ export class Dynamics365Client extends AbstractERPAdapter {
     });
 
     if (!response.ok) {
-      throw this.createError(`OData POST failed: ${response.statusText}`, 'ODATA_ERROR', response.status >= 500);
+      throw this.createError(
+        `OData POST failed: ${response.statusText}`,
+        "ODATA_ERROR",
+        response.status >= 500,
+      );
     }
 
     return response.json();
@@ -631,15 +685,19 @@ export class Dynamics365Client extends AbstractERPAdapter {
   /**
    * OData PATCH request
    */
-  protected async oDataPatch(path: string, body: any, headers?: Record<string, string>): Promise<any> {
+  protected async oDataPatch(
+    path: string,
+    body: any,
+    headers?: Record<string, string>,
+  ): Promise<any> {
     const url = `${this.apiBaseUrl}${path}`;
     const accessToken = await this.getAccessToken();
 
     const response = await fetch(url, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...headers,
       },
       body: JSON.stringify(body),
@@ -647,7 +705,11 @@ export class Dynamics365Client extends AbstractERPAdapter {
     });
 
     if (!response.ok) {
-      throw this.createError(`OData PATCH failed: ${response.statusText}`, 'ODATA_ERROR', response.status >= 500);
+      throw this.createError(
+        `OData PATCH failed: ${response.statusText}`,
+        "ODATA_ERROR",
+        response.status >= 500,
+      );
     }
 
     return response.json();
@@ -688,8 +750,8 @@ export class Dynamics365Client extends AbstractERPAdapter {
   private mapOrderToD365(order: ERPOrder): Record<string, any> {
     return {
       customerNumber: order.customerId,
-      orderDate: order.orderDate.toISOString().split('T')[0],
-      requestedDeliveryDate: order.dueDate?.toISOString().split('T')[0],
+      orderDate: order.orderDate.toISOString().split("T")[0],
+      requestedDeliveryDate: order.dueDate?.toISOString().split("T")[0],
       salesOrderLines: order.lineItems.map((line) => ({
         itemNumber: line.itemCode,
         description: line.itemName,
@@ -708,7 +770,9 @@ export class Dynamics365Client extends AbstractERPAdapter {
       customerId: o.customerNumber,
       customerName: o.customerName,
       orderDate: new Date(o.orderDate),
-      dueDate: o.requestedDeliveryDate ? new Date(o.requestedDeliveryDate) : undefined,
+      dueDate: o.requestedDeliveryDate
+        ? new Date(o.requestedDeliveryDate)
+        : undefined,
       status: o.status,
       lineItems: o.salesOrderLines || [],
       total: o.totalAmountIncludingTax,
@@ -718,8 +782,8 @@ export class Dynamics365Client extends AbstractERPAdapter {
   private mapInvoiceToD365(invoice: ERPInvoice): Record<string, any> {
     return {
       customerNumber: invoice.customerId,
-      invoiceDate: invoice.invoiceDate.toISOString().split('T')[0],
-      dueDate: invoice.dueDate.toISOString().split('T')[0],
+      invoiceDate: invoice.invoiceDate.toISOString().split("T")[0],
+      dueDate: invoice.dueDate.toISOString().split("T")[0],
       salesInvoiceLines: invoice.lineItems.map((line) => ({
         itemNumber: line.itemCode,
         description: line.itemName,
@@ -766,11 +830,11 @@ export class Dynamics365Client extends AbstractERPAdapter {
       unit: i.baseUnitOfMeasure,
       unitPrice: i.unitPrice,
       cost: i.standardCost,
-      status: 'active',
+      status: "active",
     };
   }
 
   private generateRandomString(length: number): string {
-    return Array.from({ length }, () => Math.random().toString(36)[2]).join('');
+    return Array.from({ length }, () => Math.random().toString(36)[2]).join("");
   }
 }

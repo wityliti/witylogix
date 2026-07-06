@@ -56,7 +56,7 @@ export function RevenueChart({
 
   // Calculate scales
   const maxValue = Math.max(
-    ...data.map((d) => Math.max(d.invoiced, d.collected, d.outstanding))
+    ...data.map((d) => Math.max(d.invoiced, d.collected, d.outstanding)),
   );
   const yScale = chartHeight / maxValue;
   const xScale = chartWidth / (data.length - 1 || 1);
@@ -77,7 +77,7 @@ export function RevenueChart({
       }
       setTooltipData(data[index]);
     },
-    [data]
+    [data],
   );
 
   const handleMouseLeave = useCallback(() => {
@@ -209,7 +209,13 @@ export function RevenueChart({
               {/* Outstanding */}
               <g>
                 <rect
-                  x={x - barGroupWidth / 2 + barSpacing + barWidth * 2 + barSpacing * 2}
+                  x={
+                    x -
+                    barGroupWidth / 2 +
+                    barSpacing +
+                    barWidth * 2 +
+                    barSpacing * 2
+                  }
                   y={outstandingY}
                   width={barWidth}
                   height={outstandingHeight}
@@ -249,16 +255,31 @@ export function RevenueChart({
               </p>
               <div className="space-y-1 text-xs">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "var(--wl-primary-500)" }} />
-                  <span className="text-wl-text-secondary">Invoiced: {formatCurrency(tooltipData.invoiced)}</span>
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: "var(--wl-primary-500)" }}
+                  />
+                  <span className="text-wl-text-secondary">
+                    Invoiced: {formatCurrency(tooltipData.invoiced)}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "var(--wl-success-500)" }} />
-                  <span className="text-wl-text-secondary">Collected: {formatCurrency(tooltipData.collected)}</span>
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: "var(--wl-success-500)" }}
+                  />
+                  <span className="text-wl-text-secondary">
+                    Collected: {formatCurrency(tooltipData.collected)}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "var(--wl-warning-500)" }} />
-                  <span className="text-wl-text-secondary">Outstanding: {formatCurrency(tooltipData.outstanding)}</span>
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: "var(--wl-warning-500)" }}
+                  />
+                  <span className="text-wl-text-secondary">
+                    Outstanding: {formatCurrency(tooltipData.outstanding)}
+                  </span>
                 </div>
               </div>
             </div>

@@ -91,7 +91,7 @@ describe("Push Notifications System", () => {
               title: "Order Updated",
             }),
             token: "device_token_123",
-          })
+          }),
         );
       });
 
@@ -105,11 +105,11 @@ describe("Push Notifications System", () => {
         };
 
         mockFCMClient.send.mockRejectedValueOnce(
-          new Error("Invalid registration token")
+          new Error("Invalid registration token"),
         );
 
         await expect(mockFCMClient.send(message)).rejects.toThrow(
-          "Invalid registration token"
+          "Invalid registration token",
         );
       });
 
@@ -136,7 +136,7 @@ describe("Push Notifications System", () => {
             data: expect.objectContaining({
               promoCode: "SAVE20",
             }),
-          })
+          }),
         );
       });
     });
@@ -148,21 +148,13 @@ describe("Push Notifications System", () => {
             title: "System Alert",
             body: "Maintenance scheduled",
           },
-          tokens: [
-            "token_1",
-            "token_2",
-            "token_3",
-          ],
+          tokens: ["token_1", "token_2", "token_3"],
         };
 
         mockFCMClient.sendMulticast.mockResolvedValueOnce({
           successCount: 3,
           failureCount: 0,
-          responses: [
-            { success: true },
-            { success: true },
-            { success: true },
-          ],
+          responses: [{ success: true }, { success: true }, { success: true }],
         });
 
         const result = await mockFCMClient.sendMulticast(message);
@@ -177,11 +169,7 @@ describe("Push Notifications System", () => {
             title: "Update",
             body: "New features available",
           },
-          tokens: [
-            "valid_token_1",
-            "invalid_token_2",
-            "valid_token_3",
-          ],
+          tokens: ["valid_token_1", "invalid_token_2", "valid_token_3"],
         };
 
         mockFCMClient.sendMulticast.mockResolvedValueOnce({
@@ -287,7 +275,9 @@ describe("Push Notifications System", () => {
           },
         ]);
 
-        const result = await mockExpoClient.sendPushNotificationsAsync([message]);
+        const result = await mockExpoClient.sendPushNotificationsAsync([
+          message,
+        ]);
 
         expect(result[0].status).toBe("ok");
       });
@@ -328,9 +318,8 @@ describe("Push Notifications System", () => {
           { id: "id_3", status: "ok" },
         ]);
 
-        const results = await mockExpoClient.sendPushNotificationsAsync(
-          messages
-        );
+        const results =
+          await mockExpoClient.sendPushNotificationsAsync(messages);
 
         expect(results).toHaveLength(3);
         expect(results.every((r) => r.status === "ok")).toBe(true);
@@ -355,9 +344,8 @@ describe("Push Notifications System", () => {
           { id: "id_2", status: "error", message: "Invalid token" },
         ]);
 
-        const results = await mockExpoClient.sendPushNotificationsAsync(
-          messages
-        );
+        const results =
+          await mockExpoClient.sendPushNotificationsAsync(messages);
 
         expect(results[0].status).toBe("ok");
         expect(results[1].status).toBe("error");
@@ -396,7 +384,8 @@ describe("Push Notifications System", () => {
         provider: "fcm",
         credentials: {
           projectId: "tenant-custom-project",
-          privateKey: "-----BEGIN PRIVATE KEY-----\ncustom_key\n-----END PRIVATE KEY-----",
+          privateKey:
+            "-----BEGIN PRIVATE KEY-----\ncustom_key\n-----END PRIVATE KEY-----",
         },
       });
 
@@ -595,7 +584,7 @@ describe("Push Notifications System", () => {
       expect(mockPrisma.pushNotification.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: notifId },
-        })
+        }),
       );
     });
   });
@@ -609,14 +598,14 @@ describe("Push Notifications System", () => {
 
       // First attempt fails
       mockFCMClient.send.mockRejectedValueOnce(
-        new Error("Service unavailable")
+        new Error("Service unavailable"),
       );
 
       // Second attempt succeeds
       mockFCMClient.send.mockResolvedValueOnce("fcm_msg_id_retry");
 
       await expect(mockFCMClient.send(message)).rejects.toThrow(
-        "Service unavailable"
+        "Service unavailable",
       );
 
       const retryResult = await mockFCMClient.send(message);
@@ -625,14 +614,14 @@ describe("Push Notifications System", () => {
 
     it("should handle rate limiting gracefully", async () => {
       mockFCMClient.send.mockRejectedValueOnce(
-        new Error("Quota exceeded for quota metric")
+        new Error("Quota exceeded for quota metric"),
       );
 
       await expect(
         mockFCMClient.send({
           notification: { title: "Test", body: "Test" },
           token: "device_token",
-        })
+        }),
       ).rejects.toThrow("Quota exceeded");
     });
 
@@ -645,18 +634,17 @@ describe("Push Notifications System", () => {
 
       // Filter invalid tokens
       const validMessages = messages.filter((m) =>
-        m.to.match(/^ExponentPushToken\[.+\]$/)
+        m.to.match(/^ExponentPushToken\[.+\]$/),
       );
 
       expect(validMessages).toHaveLength(2);
 
       mockExpoClient.sendPushNotificationsAsync.mockResolvedValueOnce(
-        validMessages.map(() => ({ status: "ok" }))
+        validMessages.map(() => ({ status: "ok" })),
       );
 
-      const results = await mockExpoClient.sendPushNotificationsAsync(
-        validMessages
-      );
+      const results =
+        await mockExpoClient.sendPushNotificationsAsync(validMessages);
 
       expect(results).toHaveLength(2);
     });
@@ -681,9 +669,7 @@ describe("Push Notifications System", () => {
       const startTime = Date.now();
 
       await Promise.all(
-        notificationBatches.map((batch) =>
-          mockFCMClient.sendMulticast(batch)
-        )
+        notificationBatches.map((batch) => mockFCMClient.sendMulticast(batch)),
       );
 
       const duration = Date.now() - startTime;

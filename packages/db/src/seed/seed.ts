@@ -107,8 +107,8 @@ async function main() {
               notificationPrefs: { email: true, sms: true, push: true },
             },
           },
-        })
-      )
+        }),
+      ),
     );
 
     log(colors.green, "✓", `Created ${orgs.length} organizations`);
@@ -145,7 +145,9 @@ async function main() {
     const users = await Promise.all(
       usersData.map((userData) =>
         db.user.upsert({
-          where: { email: `${generateEmailPrefix(userData.name)}@witylogix.test` },
+          where: {
+            email: `${generateEmailPrefix(userData.name)}@witylogix.test`,
+          },
           update: {},
           create: {
             email: `${generateEmailPrefix(userData.name)}@witylogix.test`,
@@ -156,8 +158,8 @@ async function main() {
             settings: { language: "en", theme: "light" },
             metadata: { role: userData.role },
           },
-        })
-      )
+        }),
+      ),
     );
 
     log(colors.green, "✓", `Created ${users.length} users`);
@@ -190,8 +192,8 @@ async function main() {
               mfaVerified: true,
               mfaVerifiedAt: new Date(),
             },
-          })
-        )
+          }),
+        ),
       );
       log(colors.green, "✓", `Created ${sessions.length} auth sessions`);
     }
@@ -256,8 +258,8 @@ async function main() {
             provisionedAt: new Date(),
             isActive: true,
           },
-        })
-      )
+        }),
+      ),
     );
 
     log(colors.green, "✓", `Created ${workspaces.length} workspaces`);
@@ -281,8 +283,8 @@ async function main() {
             dateFormat: "MM/DD/YYYY",
             locale: "en-US",
           },
-        })
-      )
+        }),
+      ),
     );
 
     log(colors.green, "✓", `Created workspace settings`);
@@ -315,8 +317,8 @@ async function main() {
             completedAt: new Date(),
             isActive: false,
           },
-        })
-      )
+        }),
+      ),
     );
 
     log(colors.green, "✓", `Created onboarding records`);
@@ -344,13 +346,21 @@ async function main() {
             limits: {
               requestsPerDay: org.planTier === "ENTERPRISE" ? 1000000 : 10000,
               storageGb:
-                org.planTier === "ENTERPRISE" ? 1000 : org.planTier === "GROWTH" ? 100 : 10,
+                org.planTier === "ENTERPRISE"
+                  ? 1000
+                  : org.planTier === "GROWTH"
+                    ? 100
+                    : 10,
               usersLimit:
-                org.planTier === "ENTERPRISE" ? 999 : org.planTier === "GROWTH" ? 50 : 5,
+                org.planTier === "ENTERPRISE"
+                  ? 999
+                  : org.planTier === "GROWTH"
+                    ? 50
+                    : 5,
             },
           },
-        })
-      )
+        }),
+      ),
     );
 
     log(colors.green, "✓", `Created ${tenantConfigs.length} tenant configs`);
@@ -432,7 +442,13 @@ async function main() {
     // ────────────────────────────────────────────────────────────────────────
     log(colors.blue, "○", "Creating Orders...");
 
-    const orderStatuses = ["PENDING", "CONFIRMED", "IN_TRANSIT", "DELIVERED", "CANCELLED"];
+    const orderStatuses = [
+      "PENDING",
+      "CONFIRMED",
+      "IN_TRANSIT",
+      "DELIVERED",
+      "CANCELLED",
+    ];
     let orderCount = 0;
 
     for (let i = 1; i <= 50; i++) {
@@ -449,7 +465,8 @@ async function main() {
             create: {
               shopId: shop.id,
               externalOrderId: `ORD-${Date.now()}-${i}`,
-              status: orderStatuses[Math.floor(Math.random() * orderStatuses.length)],
+              status:
+                orderStatuses[Math.floor(Math.random() * orderStatuses.length)],
               recipientName: `Customer ${i}`,
               recipientEmail: `customer${i}@example.com`,
               recipientPhone: `555-${String(1000 + i).padStart(4, "0")}`,
@@ -464,7 +481,10 @@ async function main() {
               ],
               totalAmount: parseFloat((Math.random() * 500 + 50).toFixed(2)),
               currency: "USD",
-              metadata: { source: "api", priority: Math.random() > 0.7 ? "high" : "normal" },
+              metadata: {
+                source: "api",
+                priority: Math.random() > 0.7 ? "high" : "normal",
+              },
             },
           });
           orderCount++;
@@ -517,7 +537,9 @@ async function main() {
                 saturday: Math.random() > 0.5,
                 sunday: false,
               },
-              metadata: { experience_years: Math.floor(Math.random() * 20) + 1 },
+              metadata: {
+                experience_years: Math.floor(Math.random() * 20) + 1,
+              },
             },
           });
           driverCount++;
@@ -599,7 +621,9 @@ async function main() {
               name: zoneData[i].name,
               polygon: {
                 type: "Polygon",
-                coordinates: [zoneData[i].coordinates.map((c) => [c.lng, c.lat])],
+                coordinates: [
+                  zoneData[i].coordinates.map((c) => [c.lng, c.lat]),
+                ],
               },
               deliveryDays: ["MON", "TUE", "WED", "THU", "FRI"],
               cutoffTime: "17:00",
@@ -686,7 +710,7 @@ ${colors.bright}Test Credentials:${colors.reset}
     log(
       colors.red,
       "✗",
-      `Seed failed: ${error instanceof Error ? error.message : String(error)}`
+      `Seed failed: ${error instanceof Error ? error.message : String(error)}`,
     );
     if (error instanceof Error) console.error(error.stack);
     process.exit(1);

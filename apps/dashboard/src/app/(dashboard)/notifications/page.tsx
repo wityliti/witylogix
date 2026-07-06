@@ -94,9 +94,7 @@ export default function NotificationsPage() {
   }, [notifications, activeTab, selectedCategory]);
 
   // Calculate counts
-  const readCount = notifications.filter(
-    (n) => n.status === "READ"
-  ).length;
+  const readCount = notifications.filter((n) => n.status === "READ").length;
   const allCount = notifications.length;
 
   // Tab configuration
@@ -121,9 +119,7 @@ export default function NotificationsPage() {
     if (selectedNotifications.size === filteredNotifications.length) {
       setSelectedNotifications(new Set());
     } else {
-      setSelectedNotifications(
-        new Set(filteredNotifications.map((n) => n.id))
-      );
+      setSelectedNotifications(new Set(filteredNotifications.map((n) => n.id)));
     }
   }, [filteredNotifications, selectedNotifications]);
 
@@ -167,13 +163,19 @@ export default function NotificationsPage() {
           subtitle="Manage and view all your notifications"
           actions={
             <Link href="/notifications/preferences">
-              <Button variant="secondary" size="sm">Preferences</Button>
+              <Button variant="secondary" size="sm">
+                Preferences
+              </Button>
             </Link>
           }
         />
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <ErrorState
-            message={error instanceof Error ? error.message : "Failed to load notifications"}
+            message={
+              error instanceof Error
+                ? error.message
+                : "Failed to load notifications"
+            }
             onRetry={() => window.location.reload()}
           />
         </main>
@@ -228,9 +230,12 @@ export default function NotificationsPage() {
       {view === "coverage" && (
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-4">
-            <h2 className="text-lg font-semibold text-wl-text-primary">Notification Coverage Map</h2>
+            <h2 className="text-lg font-semibold text-wl-text-primary">
+              Notification Coverage Map
+            </h2>
             <p className="text-sm text-wl-text-secondary mt-0.5">
-              Geographic heatmap of where notifications were sent, based on delivery addresses of associated orders.
+              Geographic heatmap of where notifications were sent, based on
+              delivery addresses of associated orders.
             </p>
           </div>
           <NotificationsCoverageMap />
@@ -238,299 +243,288 @@ export default function NotificationsPage() {
       )}
 
       {view === "inbox" && (
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-6">
-          {/* Tab Navigation */}
-          <Tabs
-            tabs={tabs as any}
-            activeTab={activeTab}
-            onChange={(id) => setActiveTab(id as typeof activeTab)}
-            variant="pills"
-            size="md"
-          />
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="space-y-6">
+            {/* Tab Navigation */}
+            <Tabs
+              tabs={tabs as any}
+              activeTab={activeTab}
+              onChange={(id) => setActiveTab(id as typeof activeTab)}
+              variant="pills"
+              size="md"
+            />
 
-          {/* Category Filters */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={cn(
-                  "px-3 py-1 rounded-full text-sm font-medium",
-                  "transition-colors duration-200",
-                  "border cursor-pointer",
-                  selectedCategory === cat.id
-                    ? "border-blue-500 bg-blue-500/20 text-blue-400"
-                    : "border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong"
-                )}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Bulk Actions Bar */}
-          {selectedNotifications.size > 0 && (
-            <Card className={cn("border-blue-500/30 bg-blue-500/5")}>
-              <CardContent className="flex items-center justify-between py-3">
-                <span className="text-sm text-wl-text-secondary">
-                  {selectedNotifications.size} selected
-                </span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleBulkMarkAsRead}
-                  >
-                    <Check className="w-4 h-4 mr-1" />
-                    Mark as Read
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={handleBulkDelete}
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    Delete
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Notifications List */}
-          <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
-            <CardContent className="p-0">
-              {filteredNotifications.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <Bell className="w-12 h-12 text-wl-text-secondary mb-3" />
-                  <p className="text-wl-text-secondary">
-                    No notifications to display
-                  </p>
-                </div>
-              ) : (
-                <div className="divide-y divide-wl-border-default">
-                  {/* Header Row */}
-                  <div className="flex items-center gap-4 px-6 py-3 bg-wl-bg-elevated border-b border-wl-border-default">
-                    <Checkbox
-                      checked={
-                        selectedNotifications.size ===
-                        filteredNotifications.length
-                      }
-                      onChange={handleSelectAll}
-                    />
-                    <span className="flex-1 text-xs font-semibold uppercase text-wl-text-secondary tracking-wide">
-                      Message
-                    </span>
-                    <span className="w-24 text-xs font-semibold uppercase text-wl-text-secondary tracking-wide">
-                      Channel
-                    </span>
-                    <span className="w-24 text-xs font-semibold uppercase text-wl-text-secondary tracking-wide">
-                      Time
-                    </span>
-                  </div>
-
-                  {/* Notification Rows */}
-                  {filteredNotifications.map((notif) => {
-                    const isExpanded = expandedId === notif.id;
-                    const isSelected = selectedNotifications.has(notif.id);
-
-                    return (
-                      <div key={notif.id}>
-                        <div
-                          className={cn(
-                            "flex items-center gap-4 px-6 py-4",
-                            "hover:bg-wl-bg-elevated cursor-pointer transition-colors",
-                            isSelected && "bg-wl-bg-elevated",
-                            notif.status === "UNREAD" &&
-                              "bg-blue-500/5 border-l-2 border-blue-500"
-                          )}
-                        >
-                          <Checkbox
-                            checked={isSelected}
-                            onChange={() =>
-                              handleToggleNotification(notif.id)
-                            }
-                          />
-
-                          {/* Read/Unread Indicator */}
-                          <div className="flex-shrink-0 w-2 h-2">
-                            {notif.status === "UNREAD" && (
-                              <div className="w-2 h-2 rounded-full bg-blue-500" />
-                            )}
-                          </div>
-
-                          {/* Channel Icon */}
-                          <div className="flex-shrink-0">
-                            {getChannelIcon(notif.channel)}
-                          </div>
-
-                          {/* Message Content */}
-                          <div
-                            className="flex-1 cursor-pointer"
-                            onClick={() =>
-                              setExpandedId(
-                                isExpanded ? null : notif.id
-                              )
-                            }
-                          >
-                            <div className="font-medium text-white">
-                              {notif.title}
-                            </div>
-                            <div className="text-sm text-wl-text-secondary truncate">
-                              {notif.message}
-                            </div>
-                          </div>
-
-                          {/* Category Badge */}
-                          <div className="w-24">
-                            <Badge
-                              variant="info"
-                              className="text-xs"
-                            >
-                              {notif.category}
-                            </Badge>
-                          </div>
-
-                          {/* Timestamp */}
-                          <div className="w-24 text-sm text-wl-text-tertiary text-right">
-                            {formatTime(notif.timestamp)}
-                          </div>
-
-                          {/* Expand Icon */}
-                          <ChevronDown
-                            className={cn(
-                              "w-4 h-4 text-wl-text-tertiary transition-transform",
-                              isExpanded && "rotate-180"
-                            )}
-                          />
-                        </div>
-
-                        {/* Expanded Details */}
-                        {isExpanded && (
-                          <div className="bg-wl-bg-elevated px-6 py-4 border-t border-wl-border-default">
-                            <div className="space-y-4">
-                              <div>
-                                <h4 className="text-sm font-semibold text-white mb-2">
-                                  Details
-                                </h4>
-                                <p className="text-sm text-wl-text-secondary">
-                                  {notif.message}
-                                </p>
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold">
-                                    Status
-                                  </p>
-                                  <Badge
-                                    variant={
-                                      notif.status === "UNREAD"
-                                        ? "warning"
-                                        : "success"
-                                    }
-                                  >
-                                    {notif.status}
-                                  </Badge>
-                                </div>
-                                <div>
-                                  <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold">
-                                    Timestamp
-                                  </p>
-                                  <p className="text-sm text-wl-text-secondary">
-                                    {new Date(
-                                      notif.timestamp
-                                    ).toLocaleString()}
-                                  </p>
-                                </div>
-                              </div>
-
-                              {notif.actionUrl && (
-                                <div className="pt-2 border-t border-wl-border-default">
-                                  <Link href={notif.actionUrl}>
-                                    <Button variant="primary" size="sm">
-                                      View Details
-                                    </Button>
-                                  </Link>
-                                </div>
-                              )}
-
-                              <div className="flex gap-2 pt-2 border-t border-wl-border-default">
-                                {notif.status === "UNREAD" ? (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() =>
-                                      markAsRead(notif.id)
-                                    }
-                                  >
-                                    Mark as Read
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() =>
-                                      markAsUnread(notif.id)
-                                    }
-                                  >
-                                    Mark as Unread
-                                  </Button>
-                                )}
-                                <Button
-                                  variant="danger"
-                                  size="sm"
-                                  onClick={() =>
-                                    deleteNotification(notif.id)
-                                  }
-                                >
-                                  Delete
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Load More */}
-          {hasMore && (
-            <div className="flex justify-center">
-              <Button
-                variant="secondary"
-                onClick={handleLoadMore}
-                disabled={isLoadingMore || isLoading}
-              >
-                {isLoadingMore ? "Loading..." : "Load More"}
-              </Button>
+            {/* Category Filters */}
+            <div className="flex flex-wrap gap-2">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-sm font-medium",
+                    "transition-colors duration-200",
+                    "border cursor-pointer",
+                    selectedCategory === cat.id
+                      ? "border-blue-500 bg-blue-500/20 text-blue-400"
+                      : "border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong",
+                  )}
+                >
+                  {cat.label}
+                </button>
+              ))}
             </div>
-          )}
 
-          {/* Loading Skeletons */}
-          {isLoading && (
-            <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
-              <CardContent className="space-y-3 py-6">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex gap-4">
-                    <Skeleton className="w-5 h-5 rounded" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-1/3" />
-                      <Skeleton className="h-3 w-2/3" />
-                    </div>
-                    <Skeleton className="w-16 h-4" />
+            {/* Bulk Actions Bar */}
+            {selectedNotifications.size > 0 && (
+              <Card className={cn("border-blue-500/30 bg-blue-500/5")}>
+                <CardContent className="flex items-center justify-between py-3">
+                  <span className="text-sm text-wl-text-secondary">
+                    {selectedNotifications.size} selected
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleBulkMarkAsRead}
+                    >
+                      <Check className="w-4 h-4 mr-1" />
+                      Mark as Read
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={handleBulkDelete}
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Delete
+                    </Button>
                   </div>
-                ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Notifications List */}
+            <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
+              <CardContent className="p-0">
+                {filteredNotifications.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <Bell className="w-12 h-12 text-wl-text-secondary mb-3" />
+                    <p className="text-wl-text-secondary">
+                      No notifications to display
+                    </p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-wl-border-default">
+                    {/* Header Row */}
+                    <div className="flex items-center gap-4 px-6 py-3 bg-wl-bg-elevated border-b border-wl-border-default">
+                      <Checkbox
+                        checked={
+                          selectedNotifications.size ===
+                          filteredNotifications.length
+                        }
+                        onChange={handleSelectAll}
+                      />
+                      <span className="flex-1 text-xs font-semibold uppercase text-wl-text-secondary tracking-wide">
+                        Message
+                      </span>
+                      <span className="w-24 text-xs font-semibold uppercase text-wl-text-secondary tracking-wide">
+                        Channel
+                      </span>
+                      <span className="w-24 text-xs font-semibold uppercase text-wl-text-secondary tracking-wide">
+                        Time
+                      </span>
+                    </div>
+
+                    {/* Notification Rows */}
+                    {filteredNotifications.map((notif) => {
+                      const isExpanded = expandedId === notif.id;
+                      const isSelected = selectedNotifications.has(notif.id);
+
+                      return (
+                        <div key={notif.id}>
+                          <div
+                            className={cn(
+                              "flex items-center gap-4 px-6 py-4",
+                              "hover:bg-wl-bg-elevated cursor-pointer transition-colors",
+                              isSelected && "bg-wl-bg-elevated",
+                              notif.status === "UNREAD" &&
+                                "bg-blue-500/5 border-l-2 border-blue-500",
+                            )}
+                          >
+                            <Checkbox
+                              checked={isSelected}
+                              onChange={() =>
+                                handleToggleNotification(notif.id)
+                              }
+                            />
+
+                            {/* Read/Unread Indicator */}
+                            <div className="flex-shrink-0 w-2 h-2">
+                              {notif.status === "UNREAD" && (
+                                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                              )}
+                            </div>
+
+                            {/* Channel Icon */}
+                            <div className="flex-shrink-0">
+                              {getChannelIcon(notif.channel)}
+                            </div>
+
+                            {/* Message Content */}
+                            <div
+                              className="flex-1 cursor-pointer"
+                              onClick={() =>
+                                setExpandedId(isExpanded ? null : notif.id)
+                              }
+                            >
+                              <div className="font-medium text-white">
+                                {notif.title}
+                              </div>
+                              <div className="text-sm text-wl-text-secondary truncate">
+                                {notif.message}
+                              </div>
+                            </div>
+
+                            {/* Category Badge */}
+                            <div className="w-24">
+                              <Badge variant="info" className="text-xs">
+                                {notif.category}
+                              </Badge>
+                            </div>
+
+                            {/* Timestamp */}
+                            <div className="w-24 text-sm text-wl-text-tertiary text-right">
+                              {formatTime(notif.timestamp)}
+                            </div>
+
+                            {/* Expand Icon */}
+                            <ChevronDown
+                              className={cn(
+                                "w-4 h-4 text-wl-text-tertiary transition-transform",
+                                isExpanded && "rotate-180",
+                              )}
+                            />
+                          </div>
+
+                          {/* Expanded Details */}
+                          {isExpanded && (
+                            <div className="bg-wl-bg-elevated px-6 py-4 border-t border-wl-border-default">
+                              <div className="space-y-4">
+                                <div>
+                                  <h4 className="text-sm font-semibold text-white mb-2">
+                                    Details
+                                  </h4>
+                                  <p className="text-sm text-wl-text-secondary">
+                                    {notif.message}
+                                  </p>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold">
+                                      Status
+                                    </p>
+                                    <Badge
+                                      variant={
+                                        notif.status === "UNREAD"
+                                          ? "warning"
+                                          : "success"
+                                      }
+                                    >
+                                      {notif.status}
+                                    </Badge>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold">
+                                      Timestamp
+                                    </p>
+                                    <p className="text-sm text-wl-text-secondary">
+                                      {new Date(
+                                        notif.timestamp,
+                                      ).toLocaleString()}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {notif.actionUrl && (
+                                  <div className="pt-2 border-t border-wl-border-default">
+                                    <Link href={notif.actionUrl}>
+                                      <Button variant="primary" size="sm">
+                                        View Details
+                                      </Button>
+                                    </Link>
+                                  </div>
+                                )}
+
+                                <div className="flex gap-2 pt-2 border-t border-wl-border-default">
+                                  {notif.status === "UNREAD" ? (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => markAsRead(notif.id)}
+                                    >
+                                      Mark as Read
+                                    </Button>
+                                  ) : (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => markAsUnread(notif.id)}
+                                    >
+                                      Mark as Unread
+                                    </Button>
+                                  )}
+                                  <Button
+                                    variant="danger"
+                                    size="sm"
+                                    onClick={() => deleteNotification(notif.id)}
+                                  >
+                                    Delete
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
-          )}
-        </div>
-      </main>
+
+            {/* Load More */}
+            {hasMore && (
+              <div className="flex justify-center">
+                <Button
+                  variant="secondary"
+                  onClick={handleLoadMore}
+                  disabled={isLoadingMore || isLoading}
+                >
+                  {isLoadingMore ? "Loading..." : "Load More"}
+                </Button>
+              </div>
+            )}
+
+            {/* Loading Skeletons */}
+            {isLoading && (
+              <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
+                <CardContent className="space-y-3 py-6">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex gap-4">
+                      <Skeleton className="w-5 h-5 rounded" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-1/3" />
+                        <Skeleton className="h-3 w-2/3" />
+                      </div>
+                      <Skeleton className="w-16 h-4" />
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </main>
       )}
     </div>
   );

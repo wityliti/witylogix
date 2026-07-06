@@ -46,7 +46,10 @@ export class MagentoWebhookConsumer extends QueueConsumer {
   private eventBus?: TypedEventBus<WitylogixEvents>;
   private adapter = new MagentoAdapter();
 
-  constructor(config: ConsumerConfig, eventBus?: TypedEventBus<WitylogixEvents>) {
+  constructor(
+    config: ConsumerConfig,
+    eventBus?: TypedEventBus<WitylogixEvents>,
+  ) {
     super(config);
     this.eventBus = eventBus;
   }
@@ -87,15 +90,10 @@ export class MagentoWebhookConsumer extends QueueConsumer {
 
     // Basic validation of required fields
     if (!data.shopId) {
-      throw new QueueValidationError(
-        "Webhook missing required field: shopId",
-      );
+      throw new QueueValidationError("Webhook missing required field: shopId");
     }
 
-    if (
-      job.type === "order_webhook" &&
-      !(job as any).data.externalOrderId
-    ) {
+    if (job.type === "order_webhook" && !(job as any).data.externalOrderId) {
       throw new QueueValidationError(
         "Order webhook missing required field: externalOrderId",
       );
@@ -148,7 +146,12 @@ export class MagentoWebhookConsumer extends QueueConsumer {
         return await this.processCustomerWebhook(
           job as {
             type: "customer_webhook";
-            data: { source: string; shopId: string; externalCustomerId: string; payload: any };
+            data: {
+              source: string;
+              shopId: string;
+              externalCustomerId: string;
+              payload: any;
+            };
           },
           metadata,
         );
@@ -163,10 +166,7 @@ export class MagentoWebhookConsumer extends QueueConsumer {
         );
       }
 
-      if (
-        error instanceof Error &&
-        error.message.includes("database")
-      ) {
+      if (error instanceof Error && error.message.includes("database")) {
         throw new QueueTransientError(
           `Database error processing webhook: ${error.message}`,
           { jobId, cause: error.message },
@@ -201,7 +201,9 @@ export class MagentoWebhookConsumer extends QueueConsumer {
       );
 
       // Step 1: Map Magento order data using adapter
-      const mappedOrder = this.adapter.mapOrder(payload as unknown as MagentoOrder);
+      const mappedOrder = this.adapter.mapOrder(
+        payload as unknown as MagentoOrder,
+      );
 
       // Step 2: Upsert order in database with source='MAGENTO'
       await this.upsertOrder(shopId, mappedOrder);
@@ -273,7 +275,9 @@ export class MagentoWebhookConsumer extends QueueConsumer {
         case "create":
         case "update":
           if (!payload) {
-            throw new QueueValidationError("Payload required for create/update");
+            throw new QueueValidationError(
+              "Payload required for create/update",
+            );
           }
           // Map Magento product data using adapter
           const mappedProduct = this.adapter.mapProduct(
@@ -323,7 +327,12 @@ export class MagentoWebhookConsumer extends QueueConsumer {
   private async processCustomerWebhook(
     job: {
       type: "customer_webhook";
-      data: { source: string; shopId: string; externalCustomerId: string; payload: any };
+      data: {
+        source: string;
+        shopId: string;
+        externalCustomerId: string;
+        payload: any;
+      };
     },
     metadata: QueueJobMetadata,
   ): Promise<JobProcessingResult> {
@@ -533,7 +542,9 @@ export class MagentoWebhookConsumer extends QueueConsumer {
       );
 
       if (!this.eventBus) {
-        console.warn("[MagentoWebhookConsumer] EventBus not initialized, skipping event emission");
+        console.warn(
+          "[MagentoWebhookConsumer] EventBus not initialized, skipping event emission",
+        );
         return;
       }
 
@@ -548,7 +559,7 @@ export class MagentoWebhookConsumer extends QueueConsumer {
           currency: order.currency,
           createdAt: order.createdAt.toISOString(),
         },
-        { tenantId: shopId }
+        { tenantId: shopId },
       );
 
       await this.simulateAsyncOperation(20);
@@ -578,7 +589,9 @@ export class MagentoWebhookConsumer extends QueueConsumer {
       );
 
       if (!this.eventBus) {
-        console.warn("[MagentoWebhookConsumer] EventBus not initialized, skipping notification");
+        console.warn(
+          "[MagentoWebhookConsumer] EventBus not initialized, skipping notification",
+        );
         return;
       }
 
@@ -590,7 +603,7 @@ export class MagentoWebhookConsumer extends QueueConsumer {
           shopId,
           confirmedAt: new Date().toISOString(),
         },
-        { tenantId: shopId }
+        { tenantId: shopId },
       );
 
       await this.simulateAsyncOperation(25);
@@ -608,10 +621,7 @@ export class MagentoWebhookConsumer extends QueueConsumer {
    * @param shopId Shop identifier
    * @param product Mapped product from adapter
    */
-  private async syncProductData(
-    shopId: string,
-    product: any,
-  ): Promise<void> {
+  private async syncProductData(shopId: string, product: any): Promise<void> {
     try {
       console.log(
         `[MagentoWebhookConsumer] Syncing product data for ${product.title}`,
@@ -689,7 +699,10 @@ export class MagentoWebhookConsumer extends QueueConsumer {
     } catch (error) {
       throw new QueueTransientError(
         `Failed to update variant inventory: ${error instanceof Error ? error.message : String(error)}`,
-        { productId: product.externalProductId, variantCount: product.variants.length },
+        {
+          productId: product.externalProductId,
+          variantCount: product.variants.length,
+        },
       );
     }
   }
@@ -705,9 +718,7 @@ export class MagentoWebhookConsumer extends QueueConsumer {
     productId: string,
   ): Promise<void> {
     try {
-      console.log(
-        `[MagentoWebhookConsumer] Deleting product ${productId}`,
-      );
+      console.log(`[MagentoWebhookConsumer] Deleting product ${productId}`);
 
       // Soft delete product
       await (dbPrisma as any).product.update({
@@ -737,12 +748,12 @@ export class MagentoWebhookConsumer extends QueueConsumer {
     action: string,
   ): Promise<void> {
     try {
-      console.log(
-        `[MagentoWebhookConsumer] Emitting product event: ${action}`,
-      );
+      console.log(`[MagentoWebhookConsumer] Emitting product event: ${action}`);
 
       if (!this.eventBus) {
-        console.warn("[MagentoWebhookConsumer] EventBus not initialized, skipping event emission");
+        console.warn(
+          "[MagentoWebhookConsumer] EventBus not initialized, skipping event emission",
+        );
         return;
       }
 
@@ -755,7 +766,7 @@ export class MagentoWebhookConsumer extends QueueConsumer {
             shopId,
             createdAt: new Date().toISOString(),
           },
-          { tenantId: shopId }
+          { tenantId: shopId },
         );
       } else if (action === "update") {
         await this.eventBus.emit(
@@ -765,7 +776,7 @@ export class MagentoWebhookConsumer extends QueueConsumer {
             shopId,
             updatedAt: new Date().toISOString(),
           },
-          { tenantId: shopId }
+          { tenantId: shopId },
         );
       } else if (action === "delete") {
         await this.eventBus.emit(
@@ -775,7 +786,7 @@ export class MagentoWebhookConsumer extends QueueConsumer {
             shopId,
             deletedAt: new Date().toISOString(),
           },
-          { tenantId: shopId }
+          { tenantId: shopId },
         );
       }
 
@@ -804,7 +815,9 @@ export class MagentoWebhookConsumer extends QueueConsumer {
       );
 
       if (!this.eventBus) {
-        console.warn("[MagentoWebhookConsumer] EventBus not initialized, skipping event emission");
+        console.warn(
+          "[MagentoWebhookConsumer] EventBus not initialized, skipping event emission",
+        );
         return;
       }
 
@@ -816,7 +829,7 @@ export class MagentoWebhookConsumer extends QueueConsumer {
           shopId,
           createdAt: new Date().toISOString(),
         },
-        { tenantId: shopId }
+        { tenantId: shopId },
       );
 
       await this.simulateAsyncOperation(15);

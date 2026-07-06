@@ -18,7 +18,10 @@ export function IntegrationStatusRow({
 }: IntegrationStatusRowProps) {
   const [expanded, setExpanded] = useState(false);
 
-  const statusColor: Record<ConnectionStatus, "success" | "default" | "danger" | "info"> = {
+  const statusColor: Record<
+    ConnectionStatus,
+    "success" | "default" | "danger" | "info"
+  > = {
     connected: "success",
     disconnected: "default",
     error: "danger",
@@ -67,7 +70,12 @@ export function IntegrationStatusRow({
         );
       default:
         return (
-          <svg {...iconProps} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <svg
+            {...iconProps}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
             <circle cx="12" cy="12" r="10" strokeWidth="2" />
             <path d="M12 6v6m0 0v6" strokeWidth="2" strokeLinecap="round" />
           </svg>
@@ -99,13 +107,14 @@ export function IntegrationStatusRow({
       className={cn(
         "border border-wl-border-subtle rounded-lg bg-wl-bg-surface transition-all duration-base",
         expanded && "shadow-md",
-        className
+        className,
       )}
     >
       {/* Main row */}
-      <div className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-wl-bg-elevated/50"
-        onClick={() => setExpanded(!expanded)}>
-
+      <div
+        className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-wl-bg-elevated/50"
+        onClick={() => setExpanded(!expanded)}
+      >
         {/* Provider icon and name */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="text-wl-text-secondary flex-shrink-0">
@@ -146,8 +155,8 @@ export function IntegrationStatusRow({
                   data.successRate >= 0.95
                     ? "bg-green-500"
                     : data.successRate >= 0.8
-                    ? "bg-yellow-500"
-                    : "bg-red-500"
+                      ? "bg-yellow-500"
+                      : "bg-red-500",
                 )}
                 style={{ width: `${data.successRate * 100}%` }}
               />
@@ -174,13 +183,10 @@ export function IntegrationStatusRow({
             viewBox="0 0 16 16"
             className={cn(
               "text-wl-text-tertiary transition-transform duration-200",
-              expanded && "transform rotate-180"
+              expanded && "transform rotate-180",
             )}
           >
-            <path
-              fill="currentColor"
-              d="M8 12L2 6h12l-6 6z"
-            />
+            <path fill="currentColor" d="M8 12L2 6h12l-6 6z" />
           </svg>
         </div>
       </div>

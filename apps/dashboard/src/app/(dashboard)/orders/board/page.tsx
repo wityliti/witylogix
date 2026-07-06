@@ -1,21 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useMemo } from 'react';
-import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
-import { KanbanColumn, OrderStatus } from '@/components/orders/kanban-column';
-import {
-  Search,
-  Users,
-  RefreshCw,
-} from 'lucide-react';
+import { useState, useCallback, useMemo } from "react";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiList } from "@/hooks/use-api";
+import { KanbanColumn, OrderStatus } from "@/components/orders/kanban-column";
+import { Search, Users, RefreshCw } from "lucide-react";
 
 interface Order {
   id: string;
@@ -43,22 +39,42 @@ const COLUMN_CONFIG: { status: OrderStatus; title: string }[] = [
 ];
 
 export default function OrderBoardPage() {
-  const { items: apiOrders, loading, error, refetch } = useApiList<Order>('/api/v4/orders?view=board');
-  const [localOrderOverrides, setLocalOrderOverrides] = useState<Record<string, OrderStatus>>({});
-  const orders = useMemo(() => apiOrders.map((o) => localOrderOverrides[o.id] ? { ...o, status: localOrderOverrides[o.id] } : o), [apiOrders, localOrderOverrides]);
-  const setOrders = useCallback((updater: (prev: Order[]) => Order[]) => {
-    const updated = updater(orders);
-    const overrides: Record<string, OrderStatus> = {};
-    updated.forEach((o, i) => { if (o.status !== apiOrders[i]?.status) overrides[o.id] = o.status; });
-    setLocalOrderOverrides(overrides);
-  }, [orders, apiOrders]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const {
+    items: apiOrders,
+    loading,
+    error,
+    refetch,
+  } = useApiList<Order>("/api/v4/orders?view=board");
+  const [localOrderOverrides, setLocalOrderOverrides] = useState<
+    Record<string, OrderStatus>
+  >({});
+  const orders = useMemo(
+    () =>
+      apiOrders.map((o) =>
+        localOrderOverrides[o.id]
+          ? { ...o, status: localOrderOverrides[o.id] }
+          : o,
+      ),
+    [apiOrders, localOrderOverrides],
+  );
+  const setOrders = useCallback(
+    (updater: (prev: Order[]) => Order[]) => {
+      const updated = updater(orders);
+      const overrides: Record<string, OrderStatus> = {};
+      updated.forEach((o, i) => {
+        if (o.status !== apiOrders[i]?.status) overrides[o.id] = o.status;
+      });
+      setLocalOrderOverrides(overrides);
+    },
+    [orders, apiOrders],
+  );
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [collapsedColumns, setCollapsedColumns] = useState<Set<OrderStatus>>(
-    new Set(['FAILED', 'CANCELLED'])
+    new Set(["FAILED", "CANCELLED"]),
   );
-  const [sortBy, setSortBy] = useState<'time' | 'priority'>('time');
+  const [sortBy, setSortBy] = useState<"time" | "priority">("time");
 
   // Get unique drivers for filter
   const drivers = useMemo(() => {
@@ -117,31 +133,26 @@ export default function OrderBoardPage() {
       e.preventDefault();
 
       try {
-        const data = JSON.parse(
-          e.dataTransfer.getData("application/json")
-        ) as {
+        const data = JSON.parse(e.dataTransfer.getData("application/json")) as {
           id: string;
           sourceStatus: OrderStatus;
         };
 
         setOrders((prev) =>
           prev.map((order) =>
-            order.id === data.id ? { ...order, status: targetStatus } : order
-          )
+            order.id === data.id ? { ...order, status: targetStatus } : order,
+          ),
         );
       } catch (error) {
         console.error("Drop error:", error);
       }
     },
-    []
+    [],
   );
 
-  const handleDragLeave = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-    },
-    []
-  );
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  }, []);
 
   const toggleColumnCollapse = (status: OrderStatus) => {
     setCollapsedColumns((prev) => {
@@ -156,14 +167,21 @@ export default function OrderBoardPage() {
   };
 
   const totalOrders = filteredOrders.length;
-  const totalValue = filteredOrders.reduce((sum, order) => sum + order.value, 0);
+  const totalValue = filteredOrders.reduce(
+    (sum, order) => sum + order.value,
+    0,
+  );
 
   if (loading && orders.length === 0) return <LoadingSkeleton />;
-  if (error && orders.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
+  if (error && orders.length === 0)
+    return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <>
-      <Header title="Order Kanban Board" subtitle="Manage orders with drag and drop" />
+      <Header
+        title="Order Kanban Board"
+        subtitle="Manage orders with drag and drop"
+      />
 
       <div className="flex flex-col gap-4 px-6 py-4">
         {/* Top Bar: Filters & Controls */}
@@ -200,14 +218,12 @@ export default function OrderBoardPage() {
                   <Users className="w-4 h-4 text-wl-text-tertiary" />
                   <select
                     value={selectedDriver || ""}
-                    onChange={(e) =>
-                      setSelectedDriver(e.target.value || null)
-                    }
+                    onChange={(e) => setSelectedDriver(e.target.value || null)}
                     className={cn(
                       "px-3 py-2 rounded-md text-sm",
                       "bg-wl-bg-overlay border border-wl-border-default",
                       "text-wl-text-primary",
-                      "focus:outline-none focus:border-wl-border-strong"
+                      "focus:outline-none focus:border-wl-border-strong",
                     )}
                   >
                     <option value="">All Drivers</option>
@@ -238,10 +254,7 @@ export default function OrderBoardPage() {
                   className="flex items-center gap-2"
                 >
                   <RefreshCw
-                    className={cn(
-                      "w-4 h-4",
-                      autoRefresh && "animate-spin"
-                    )}
+                    className={cn("w-4 h-4", autoRefresh && "animate-spin")}
                   />
                   {autoRefresh ? "Refreshing" : "Refresh"}
                 </Button>

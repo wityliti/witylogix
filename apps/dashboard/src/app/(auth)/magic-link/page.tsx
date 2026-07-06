@@ -3,7 +3,13 @@
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Loader2, CheckCircle2, AlertCircle, ArrowRight, Zap } from "lucide-react";
+import {
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  ArrowRight,
+  Zap,
+} from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
@@ -11,7 +17,9 @@ function MagicLinkPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [status, setStatus] = useState<"validating" | "success" | "error" | "expired">("validating");
+  const [status, setStatus] = useState<
+    "validating" | "success" | "error" | "expired"
+  >("validating");
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
 
@@ -27,13 +35,16 @@ function MagicLinkPageInner() {
 
       try {
         // Validate magic link
-        const validateResponse = await fetch(`${API_URL}/auth/validate-magic-link`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+        const validateResponse = await fetch(
+          `${API_URL}/auth/validate-magic-link`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ token }),
           },
-          body: JSON.stringify({ token }),
-        });
+        );
 
         if (!validateResponse.ok) {
           const data = await validateResponse.json().catch(() => ({}));
@@ -51,13 +62,16 @@ function MagicLinkPageInner() {
         setEmail(validateData.email);
 
         // Consume magic link and authenticate
-        const consumeResponse = await fetch(`${API_URL}/auth/consume-magic-link`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+        const consumeResponse = await fetch(
+          `${API_URL}/auth/consume-magic-link`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ token }),
           },
-          body: JSON.stringify({ token }),
-        });
+        );
 
         if (!consumeResponse.ok) {
           const data = await consumeResponse.json().catch(() => ({}));
@@ -82,7 +96,8 @@ function MagicLinkPageInner() {
         }, 2000);
       } catch (err) {
         setStatus("error");
-        const errorMessage = err instanceof Error ? err.message : "Authentication failed";
+        const errorMessage =
+          err instanceof Error ? err.message : "Authentication failed";
         setError(errorMessage);
       }
     };
@@ -131,7 +146,8 @@ function MagicLinkPageInner() {
             href="/"
             className="py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all"
             style={{
-              background: "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
+              background:
+                "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
               boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
             }}
           >
@@ -157,7 +173,8 @@ function MagicLinkPageInner() {
             Link expired or already used
           </h2>
           <p className="text-sm text-wl-text-tertiary leading-relaxed">
-            {error || "This magic link has expired or has already been used. Please request a new one."}
+            {error ||
+              "This magic link has expired or has already been used. Please request a new one."}
           </p>
         </div>
 
@@ -165,7 +182,8 @@ function MagicLinkPageInner() {
           href="/login?type=magic-link"
           className="py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all"
           style={{
-            background: "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
+            background:
+              "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
             boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
           }}
         >
@@ -197,7 +215,8 @@ function MagicLinkPageInner() {
           Authentication failed
         </h2>
         <p className="text-sm text-wl-text-tertiary leading-relaxed">
-          {error || "There was an error authenticating your magic link. Please try again."}
+          {error ||
+            "There was an error authenticating your magic link. Please try again."}
         </p>
       </div>
 
@@ -206,7 +225,8 @@ function MagicLinkPageInner() {
           href="/login"
           className="py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all"
           style={{
-            background: "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
+            background:
+              "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
             boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
           }}
         >
@@ -228,7 +248,17 @@ function MagicLinkPageInner() {
 
 export default function MagicLinkPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen bg-wl-bg"><Loader2 size={32} className="animate-spin" style={{ color: "var(--wl-primary, #6C63FF)" }} /></div>}>
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen bg-wl-bg">
+          <Loader2
+            size={32}
+            className="animate-spin"
+            style={{ color: "var(--wl-primary, #6C63FF)" }}
+          />
+        </div>
+      }
+    >
       <MagicLinkPageInner />
     </Suspense>
   );

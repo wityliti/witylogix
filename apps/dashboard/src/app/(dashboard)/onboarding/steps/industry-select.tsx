@@ -78,7 +78,9 @@ const industries: {
 ];
 
 export function IndustrySelect({ data, onSelect }: IndustrySelectProps) {
-  const [customOpen, setCustomOpen] = useState(data.industry === Industry.CUSTOM);
+  const [customOpen, setCustomOpen] = useState(
+    data.industry === Industry.CUSTOM,
+  );
   const [customValue, setCustomValue] = useState(data.industryCustom || "");
 
   const handleSelectIndustry = (industry: Industry) => {
@@ -119,7 +121,7 @@ export function IndustrySelect({ data, onSelect }: IndustrySelectProps) {
                 "flex flex-col items-start gap-3 cursor-pointer group",
                 isSelected
                   ? "border-wl-primary-500 bg-wl-primary-500/10 shadow-lg"
-                  : "border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong hover:bg-wl-bg-overlay"
+                  : "border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong hover:bg-wl-bg-overlay",
               )}
             >
               {/* Checkmark */}
@@ -133,7 +135,7 @@ export function IndustrySelect({ data, onSelect }: IndustrySelectProps) {
               <div
                 className={cn(
                   "w-10 h-10 rounded-lg flex items-center justify-center text-wl-text-inverse",
-                  `bg-gradient-to-br ${industry.color}`
+                  `bg-gradient-to-br ${industry.color}`,
                 )}
               >
                 {industry.icon}
@@ -155,7 +157,7 @@ export function IndustrySelect({ data, onSelect }: IndustrySelectProps) {
             "flex flex-col items-start gap-3 cursor-pointer group",
             customOpen || data.industry === Industry.CUSTOM
               ? "border-wl-primary-500 bg-wl-primary-500/10"
-              : "border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong hover:bg-wl-bg-overlay"
+              : "border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong hover:bg-wl-bg-overlay",
           )}
         >
           {(customOpen || data.industry === Industry.CUSTOM) && (
@@ -196,7 +198,7 @@ export function IndustrySelect({ data, onSelect }: IndustrySelectProps) {
                 "bg-wl-bg-surface border border-wl-border-default",
                 "text-wl-text-primary placeholder:text-wl-text-tertiary",
                 "focus:border-wl-primary-500 focus:outline-none",
-                "transition-all duration-200"
+                "transition-all duration-200",
               )}
             />
             <button
@@ -205,7 +207,7 @@ export function IndustrySelect({ data, onSelect }: IndustrySelectProps) {
               className={cn(
                 "px-4 py-2 rounded-lg text-sm font-semibold transition-all",
                 "bg-wl-primary-500 text-wl-text-inverse",
-                "hover:bg-wl-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                "hover:bg-wl-primary-600 disabled:opacity-50 disabled:cursor-not-allowed",
               )}
             >
               Save
@@ -227,7 +229,8 @@ export function IndustrySelect({ data, onSelect }: IndustrySelectProps) {
       {data.industry === Industry.CUSTOM && data.industryCustom && (
         <div className="p-4 rounded-lg bg-wl-success-500/10 border border-wl-success-400/30 animate-in fade-in">
           <p className="text-sm text-wl-text-primary m-0">
-            <span className="font-semibold">Selected:</span> {data.industryCustom}
+            <span className="font-semibold">Selected:</span>{" "}
+            {data.industryCustom}
           </p>
         </div>
       )}

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Grid, ChevronRight } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Grid, ChevronRight } from "lucide-react";
 
 export function CategoryMapping() {
   return (
@@ -16,19 +16,19 @@ export function CategoryMapping() {
         <div className="space-y-4">
           {[
             {
-              shopify: 'Electronics > Computers',
-              woo: 'Technology > Laptops',
-              amazon: 'Computers & Accessories',
+              shopify: "Electronics > Computers",
+              woo: "Technology > Laptops",
+              amazon: "Computers & Accessories",
             },
             {
-              shopify: 'Clothing > T-Shirts',
+              shopify: "Clothing > T-Shirts",
               woo: "Apparel > Men's Shirts",
-              amazon: 'Clothing, Shoes & Jewelry',
+              amazon: "Clothing, Shoes & Jewelry",
             },
             {
-              shopify: 'Home > Kitchen',
-              woo: 'Home & Garden > Kitchen',
-              amazon: 'Home, Kitchen & Dining',
+              shopify: "Home > Kitchen",
+              woo: "Home & Garden > Kitchen",
+              amazon: "Home, Kitchen & Dining",
             },
           ].map((mapping, idx) => (
             <div

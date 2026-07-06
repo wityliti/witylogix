@@ -287,17 +287,17 @@ describe("Smart Suggestions", () => {
   describe("Snooze Functionality", () => {
     it("should snooze a suggestion", async () => {
       await expect(
-        suggestions.snooze("sugg_123", "tenant_1", "user_1", 30)
+        suggestions.snooze("sugg_123", "tenant_1", "user_1", 30),
       ).resolves.not.toThrow();
     });
 
     it("should support different snooze durations", async () => {
       await expect(
-        suggestions.snooze("sugg_123", "tenant_1", "user_1", 60)
+        suggestions.snooze("sugg_123", "tenant_1", "user_1", 60),
       ).resolves.not.toThrow();
 
       await expect(
-        suggestions.snooze("sugg_124", "tenant_1", "user_1", 480)
+        suggestions.snooze("sugg_124", "tenant_1", "user_1", 480),
       ).resolves.not.toThrow();
     });
   });
@@ -307,13 +307,13 @@ describe("Smart Suggestions", () => {
   describe("Interaction Tracking", () => {
     it("should track suggestion click", async () => {
       await expect(
-        suggestions.trackInteraction("sugg_123", "tenant_1", "user_1", false)
+        suggestions.trackInteraction("sugg_123", "tenant_1", "user_1", false),
       ).resolves.not.toThrow();
     });
 
     it("should track action taken", async () => {
       await expect(
-        suggestions.trackInteraction("sugg_123", "tenant_1", "user_1", true)
+        suggestions.trackInteraction("sugg_123", "tenant_1", "user_1", true),
       ).resolves.not.toThrow();
     });
   });

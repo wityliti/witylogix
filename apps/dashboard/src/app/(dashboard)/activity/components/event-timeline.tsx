@@ -41,7 +41,7 @@ const formatRelativeTime = (date: Date): string => {
 
 // Helper to group events by date
 const groupEventsByDate = (
-  events: ActivityEvent[]
+  events: ActivityEvent[],
 ): Record<string, ActivityEvent[]> => {
   const groups: Record<string, ActivityEvent[]> = {};
 
@@ -137,7 +137,8 @@ export function EventTimeline({
             {groupedEvents[date].map((event, index) => {
               const isSelected = selectedEventId === event.id;
               const isExpanded = expandedEventId === event.id;
-              const isNew = new Date(event.timestamp).getTime() > Date.now() - 30000;
+              const isNew =
+                new Date(event.timestamp).getTime() > Date.now() - 30000;
 
               return (
                 <div key={event.id} className="relative pl-16">
@@ -147,13 +148,15 @@ export function EventTimeline({
                       "absolute -left-2.5 top-3 w-5 h-5 rounded-full",
                       "border-2 bg-wl-bg-primary transition-all duration-300",
                       "flex items-center justify-center",
-                      isNew && "animate-pulse"
+                      isNew && "animate-pulse",
                     )}
                     style={{
                       borderColor: isSelected
                         ? "var(--wl-primary-500)"
                         : "var(--wl-border-subtle)",
-                      backgroundColor: isSelected ? "var(--wl-bg-elevated)" : undefined,
+                      backgroundColor: isSelected
+                        ? "var(--wl-bg-elevated)"
+                        : undefined,
                       boxShadow: isSelected
                         ? "0 0 0 3px var(--wl-primary-500/10)"
                         : "none",
@@ -162,7 +165,9 @@ export function EventTimeline({
                     <div
                       className={cn(
                         "w-2 h-2 rounded-full transition-all duration-300",
-                        isSelected || isNew ? "bg-wl-primary-500" : "bg-wl-border-default"
+                        isSelected || isNew
+                          ? "bg-wl-primary-500"
+                          : "bg-wl-border-default",
                       )}
                     />
                   </div>
@@ -174,7 +179,7 @@ export function EventTimeline({
                       "cursor-pointer transition-all duration-300",
                       isSelected
                         ? "ring-2 ring-wl-primary-500 ring-offset-2 ring-offset-wl-bg-primary"
-                        : ""
+                        : "",
                     )}
                     onClick={() => {
                       onSelectEvent(event.id);
@@ -186,9 +191,7 @@ export function EventTimeline({
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-start gap-3 flex-1 min-w-0">
                           {/* Icon */}
-                          <div
-                            className="mt-0.5 text-wl-text-secondary flex-shrink-0"
-                          >
+                          <div className="mt-0.5 text-wl-text-secondary flex-shrink-0">
                             {getEventIcon(event.type)}
                           </div>
 
@@ -249,8 +252,9 @@ export function EventTimeline({
                             Details
                           </p>
                           <div className="space-y-1 bg-wl-bg-surface rounded-md p-2">
-                            {Object.entries(event.metadata).slice(0, 3).map(
-                              ([key, value]) => (
+                            {Object.entries(event.metadata)
+                              .slice(0, 3)
+                              .map(([key, value]) => (
                                 <div key={key} className="text-xs">
                                   <span className="text-wl-text-tertiary">
                                     {key}:
@@ -259,8 +263,7 @@ export function EventTimeline({
                                     {String(value)}
                                   </span>
                                 </div>
-                              )
-                            )}
+                              ))}
                           </div>
                         </div>
                       )}
@@ -270,24 +273,25 @@ export function EventTimeline({
                         <p className="text-xs text-wl-text-tertiary">
                           {formatRelativeTime(new Date(event.timestamp))}
                         </p>
-                        {event.metadata && Object.keys(event.metadata).length > 0 && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setExpandedEventId(
-                                isExpanded ? null : event.id
-                              );
-                            }}
-                            className="text-wl-text-tertiary hover:text-wl-text-primary transition-colors p-1"
-                          >
-                            <ChevronDown
-                              className={cn(
-                                "w-4 h-4 transition-transform duration-300",
-                                isExpanded && "rotate-180"
-                              )}
-                            />
-                          </button>
-                        )}
+                        {event.metadata &&
+                          Object.keys(event.metadata).length > 0 && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedEventId(
+                                  isExpanded ? null : event.id,
+                                );
+                              }}
+                              className="text-wl-text-tertiary hover:text-wl-text-primary transition-colors p-1"
+                            >
+                              <ChevronDown
+                                className={cn(
+                                  "w-4 h-4 transition-transform duration-300",
+                                  isExpanded && "rotate-180",
+                                )}
+                              />
+                            </button>
+                          )}
                       </div>
                     </CardContent>
                   </Card>

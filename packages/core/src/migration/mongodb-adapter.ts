@@ -33,7 +33,7 @@ export class MongoDBAdapter {
   async connect(): Promise<void> {
     try {
       // Dynamically import mongodb to avoid compile-time dependency
-      const { MongoClient } = await import('mongodb');
+      const { MongoClient } = await import("mongodb");
       const client = new MongoClient(this.mongoUri, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
@@ -44,7 +44,7 @@ export class MongoDBAdapter {
       await client.connect();
       this.connection = client;
       this.db = client.db();
-      console.log('[MongoDB] Connected successfully');
+      console.log("[MongoDB] Connected successfully");
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       throw new Error(`[MongoDB] Connection failed: ${msg}`);
@@ -59,7 +59,7 @@ export class MongoDBAdapter {
       await this.connection.close();
       this.connection = null;
       this.db = null;
-      console.log('[MongoDB] Disconnected');
+      console.log("[MongoDB] Disconnected");
     }
   }
 
@@ -68,7 +68,7 @@ export class MongoDBAdapter {
    */
   getCollection(name: string): any {
     if (!this.db) {
-      throw new Error('[MongoDB] Not connected');
+      throw new Error("[MongoDB] Not connected");
     }
     return this.db.collection(name);
   }
@@ -79,7 +79,7 @@ export class MongoDBAdapter {
   async *query(
     collectionName: string,
     filter: Record<string, any> = {},
-    options: any = {}
+    options: any = {},
   ): AsyncIterableIterator<any> {
     const collection = this.getCollection(collectionName);
     const cursor = collection.find(filter, {
@@ -101,7 +101,7 @@ export class MongoDBAdapter {
    */
   async count(
     collectionName: string,
-    filter: Record<string, any> = {}
+    filter: Record<string, any> = {},
   ): Promise<number> {
     const collection = this.getCollection(collectionName);
     return await collection.countDocuments(filter);
@@ -112,7 +112,7 @@ export class MongoDBAdapter {
    */
   async findOne(
     collectionName: string,
-    filter: Record<string, any>
+    filter: Record<string, any>,
   ): Promise<any | null> {
     const collection = this.getCollection(collectionName);
     const doc = await collection.findOne(filter);
@@ -126,7 +126,7 @@ export class MongoDBAdapter {
   async *batchRead(
     collectionName: string,
     batchSize: number = 100,
-    filter: Record<string, any> = {}
+    filter: Record<string, any> = {},
   ): AsyncIterableIterator<any[]> {
     const collection = this.getCollection(collectionName);
     const cursor = collection.find(filter, { batchSize });
@@ -182,7 +182,7 @@ export class MongoDBAdapter {
       return null;
     }
 
-    if (typeof doc !== 'object') {
+    if (typeof doc !== "object") {
       return doc;
     }
 
@@ -193,7 +193,7 @@ export class MongoDBAdapter {
     // Handle MongoDB ObjectId
     if (doc._id) {
       const idValue = this.convertObjectId(doc._id);
-      if (typeof idValue === 'string') {
+      if (typeof idValue === "string") {
         doc.id = idValue;
       }
       // Keep original _id field for reference
@@ -210,13 +210,13 @@ export class MongoDBAdapter {
       } else if (value instanceof Date) {
         // Convert Date to ISO string
         converted[key] = value.toISOString();
-      } else if (typeof value === 'object') {
+      } else if (typeof value === "object") {
         // Recursively convert nested objects
         if (this.isMongoDBObjectId(value)) {
           converted[key] = this.convertObjectId(value);
         } else if (Array.isArray(value)) {
           converted[key] = value.map((item) =>
-            typeof item === 'object' ? this.convertDocument(item) : item
+            typeof item === "object" ? this.convertDocument(item) : item,
           );
         } else {
           converted[key] = this.convertDocument(value);
@@ -238,22 +238,22 @@ export class MongoDBAdapter {
     }
 
     // Handle native MongoDB ObjectId
-    if (id.toString && typeof id.toString === 'function') {
+    if (id.toString && typeof id.toString === "function") {
       return id.toString();
     }
 
     // Handle string representation
-    if (typeof id === 'string') {
+    if (typeof id === "string") {
       return id;
     }
 
     // Handle { $oid: "..." } format
-    if (typeof id === 'object' && id.$oid) {
+    if (typeof id === "object" && id.$oid) {
       return id.$oid;
     }
 
     // Handle { _id: "..." } format
-    if (typeof id === 'object' && id._id) {
+    if (typeof id === "object" && id._id) {
       return this.convertObjectId(id._id);
     }
 
@@ -264,12 +264,12 @@ export class MongoDBAdapter {
    * Check if value is a MongoDB ObjectId
    */
   private isMongoDBObjectId(value: any): boolean {
-    if (!value || typeof value !== 'object') {
+    if (!value || typeof value !== "object") {
       return false;
     }
 
     // Check for native ObjectId
-    if (value.constructor?.name === 'ObjectId') {
+    if (value.constructor?.name === "ObjectId") {
       return true;
     }
 
@@ -286,7 +286,7 @@ export class MongoDBAdapter {
    */
   async listCollections(): Promise<string[]> {
     if (!this.db) {
-      throw new Error('[MongoDB] Not connected');
+      throw new Error("[MongoDB] Not connected");
     }
     const collections = await this.db.listCollections().toArray();
     return collections.map((c: any) => c.name);

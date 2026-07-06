@@ -168,7 +168,7 @@ export class HOSRulesEngine {
       adverseWeatherApplied?: boolean;
       sixteenHourExceptionUsed?: boolean;
       daysInPeriod?: number;
-    }
+    },
   ): ComplianceResult {
     const ruleSet = this.ruleSets.get(ruleSetId);
     if (!ruleSet) {
@@ -186,14 +186,14 @@ export class HOSRulesEngine {
     const dailyViolations = this.detectDailyViolations(
       logEntries,
       ruleSet,
-      advancedOptions
+      advancedOptions,
     );
     violations.push(...dailyViolations);
 
     const cycleViolations = this.detectCycleViolations(
       logEntries,
       ruleSet,
-      advancedOptions
+      advancedOptions,
     );
     violations.push(...cycleViolations);
 
@@ -204,7 +204,7 @@ export class HOSRulesEngine {
     const complianceScore = this.calculateComplianceScore(
       violations,
       hosClock,
-      ruleSet
+      ruleSet,
     );
 
     // Calculate trend
@@ -217,13 +217,14 @@ export class HOSRulesEngine {
     const projection = HOSCalculator.projectAvailability(
       logEntries,
       1,
-      ruleSet.cycleRule
+      ruleSet.cycleRule,
     );
 
     return {
       driverId,
       asOf: now,
-      isCompliant: violations.filter((v) => v.severity === "CRITICAL").length === 0,
+      isCompliant:
+        violations.filter((v) => v.severity === "CRITICAL").length === 0,
       violations,
       hosClock,
       projectionMaxDrivableHours: projection.maxDrivable / 60,
@@ -240,7 +241,7 @@ export class HOSRulesEngine {
   private detectDailyViolations(
     logs: LogEntry[],
     ruleSet: RuleSet,
-    options?: { shortHaulApplied?: boolean; adverseWeatherApplied?: boolean }
+    options?: { shortHaulApplied?: boolean; adverseWeatherApplied?: boolean },
   ): HOSViolation[] {
     const violations: HOSViolation[] = [];
     if (logs.length === 0) return violations;
@@ -250,7 +251,7 @@ export class HOSRulesEngine {
     const vehicleId = logs[0].vehicleId;
 
     const sortedLogs = [...logs].sort(
-      (a, b) => a.startTime.getTime() - b.startTime.getTime()
+      (a, b) => a.startTime.getTime() - b.startTime.getTime(),
     );
 
     // 11-hour driving limit
@@ -313,10 +314,7 @@ export class HOSRulesEngine {
 
     // 30-minute break requirement
     const breakStatus = HOSCalculator.calculateBreakRequired(logs);
-    if (
-      breakStatus.required &&
-      breakStatus.minutesSinceBreak > 8 * 60
-    ) {
+    if (breakStatus.required && breakStatus.minutesSinceBreak > 8 * 60) {
       violations.push({
         id: `vio_${Date.now()}_break`,
         accountId,
@@ -346,7 +344,7 @@ export class HOSRulesEngine {
   private detectCycleViolations(
     logs: LogEntry[],
     ruleSet: RuleSet,
-    options?: any
+    options?: any,
   ): HOSViolation[] {
     const violations: HOSViolation[] = [];
     if (logs.length === 0) return violations;
@@ -357,7 +355,7 @@ export class HOSRulesEngine {
 
     const cycleRemaining = HOSCalculator.calculateCycleRemaining(
       logs,
-      ruleSet.cycleRule
+      ruleSet.cycleRule,
     );
     const drivingMinutes8Day =
       ruleSet.cycleRule.maxDrivingHours * 60 - cycleRemaining;
@@ -399,7 +397,7 @@ export class HOSRulesEngine {
    */
   private detectBreakViolations(
     logs: LogEntry[],
-    ruleSet: RuleSet
+    ruleSet: RuleSet,
   ): HOSViolation[] {
     const violations: HOSViolation[] = [];
     if (logs.length === 0) return violations;
@@ -409,8 +407,7 @@ export class HOSRulesEngine {
     if (
       breakStatus.required &&
       !breakStatus.breakCompleted &&
-      breakStatus.minutesSinceBreak >
-        ruleSet.breakRequiredAfterMinutes
+      breakStatus.minutesSinceBreak > ruleSet.breakRequiredAfterMinutes
     ) {
       const driverId = logs[0].driverId;
       const accountId = logs[0].accountId;
@@ -445,19 +442,19 @@ export class HOSRulesEngine {
   private calculateComplianceScore(
     violations: HOSViolation[],
     hosClock: HOSClock,
-    ruleSet: RuleSet
+    ruleSet: RuleSet,
   ): number {
     let score = 100;
 
     // Deduct for critical violations
     const criticalCount = violations.filter(
-      (v) => v.severity === "CRITICAL"
+      (v) => v.severity === "CRITICAL",
     ).length;
     score -= criticalCount * 25;
 
     // Deduct for warnings
     const warningCount = violations.filter(
-      (v) => v.severity === "WARNING"
+      (v) => v.severity === "WARNING",
     ).length;
     score -= warningCount * 10;
 
@@ -479,22 +476,17 @@ export class HOSRulesEngine {
    */
   private calculateTrend(
     driverId: string,
-    currentViolations: HOSViolation[]
+    currentViolations: HOSViolation[],
   ): "IMPROVING" | "STABLE" | "DETERIORATING" {
     const history = this.violationHistory.get(driverId) || [];
     const recentViolations = history.filter(
-      (v) =>
-        Date.now() - v.createdAt.getTime() < 30 * 24 * 60 * 60 * 1000
+      (v) => Date.now() - v.createdAt.getTime() < 30 * 24 * 60 * 60 * 1000,
     ); // 30 days
 
-    if (
-      currentViolations.length < recentViolations.length * 0.8
-    ) {
+    if (currentViolations.length < recentViolations.length * 0.8) {
       return "IMPROVING";
     }
-    if (
-      currentViolations.length > recentViolations.length * 1.2
-    ) {
+    if (currentViolations.length > recentViolations.length * 1.2) {
       return "DETERIORATING";
     }
 
@@ -554,7 +546,7 @@ export class HOSRulesEngine {
     const projection = HOSCalculator.projectAvailability(
       logs,
       hours,
-      ruleSet.cycleRule
+      ruleSet.cycleRule,
     );
 
     return projection.canDrive;
@@ -570,7 +562,7 @@ export class HOSRulesEngine {
     const projection = HOSCalculator.projectAvailability(
       logs,
       1,
-      ruleSet.cycleRule
+      ruleSet.cycleRule,
     );
 
     return projection.maxDrivable / 60;
@@ -593,7 +585,7 @@ export class RuleEvaluator {
   evaluate(
     logEntries: LogEntry[],
     ruleSetId: string,
-    advancedOptions?: any
+    advancedOptions?: any,
   ): ComplianceResult {
     return this.engine.evaluate(logEntries, ruleSetId, advancedOptions);
   }
@@ -610,7 +602,7 @@ export class RuleEvaluator {
    */
   validateCompliance(
     logs: LogEntry[],
-    ruleSetId: string
+    ruleSetId: string,
   ): {
     compliant: boolean;
     violations: HOSViolation[];

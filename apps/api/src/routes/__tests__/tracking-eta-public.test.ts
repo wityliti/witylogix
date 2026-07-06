@@ -143,7 +143,7 @@ describe("GET /api/v4/tracking/track/:trackingCode/eta (WIT-310)", () => {
           destination: destLoc,
           distanceKm: expect.any(Number),
           departureTime: expect.any(Date),
-        })
+        }),
       );
     });
 
@@ -178,7 +178,7 @@ describe("GET /api/v4/tracking/track/:trackingCode/eta (WIT-310)", () => {
         `eta:public:${TRACKING_CODE}`,
         expect.any(String),
         "EX",
-        60
+        60,
       );
     });
   });
@@ -234,7 +234,9 @@ describe("GET /api/v4/tracking/track/:trackingCode/eta (WIT-310)", () => {
 
   describe("tracking code not found", () => {
     it("returns 404 when tracking code is not in DB", async () => {
-      (prisma.order.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      (prisma.order.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
+        null,
+      );
 
       const response = await app.inject({
         method: "GET",

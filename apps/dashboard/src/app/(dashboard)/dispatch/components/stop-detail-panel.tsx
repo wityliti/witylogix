@@ -1,6 +1,13 @@
 "use client";
 
-import { X, MapPin, Phone, Clock, AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  X,
+  MapPin,
+  Phone,
+  Clock,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +22,10 @@ interface StopDetailPanelProps {
   onPrioritize?: (stopId: string) => void;
 }
 
-const STATUS_BADGE_VARIANT: Record<StopStatus, "default" | "info" | "success" | "warning" | "danger"> = {
+const STATUS_BADGE_VARIANT: Record<
+  StopStatus,
+  "default" | "info" | "success" | "warning" | "danger"
+> = {
   pending: "info",
   en_route: "warning",
   arrived: "warning",
@@ -125,14 +135,13 @@ export function StopDetailPanel({
           <div className="flex gap-3">
             <MapPin className="w-4 h-4 text-wl-text-tertiary flex-shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="text-sm text-wl-text-primary">
-                {stop.address}
-              </p>
+              <p className="text-sm text-wl-text-primary">{stop.address}</p>
               <p className="text-xs text-wl-text-secondary">
                 {stop.city}, {stop.postalCode}
               </p>
               <p className="text-xs text-wl-text-tertiary">
-                Lat: {stop.latitude.toFixed(4)}, Lng: {stop.longitude.toFixed(4)}
+                Lat: {stop.latitude.toFixed(4)}, Lng:{" "}
+                {stop.longitude.toFixed(4)}
               </p>
             </div>
           </div>
@@ -146,21 +155,28 @@ export function StopDetailPanel({
           <div className="space-y-2 text-sm">
             {stop.timeWindowStart && stop.timeWindowEnd && (
               <div>
-                <p className="text-xs text-wl-text-secondary mb-1">Time Window</p>
+                <p className="text-xs text-wl-text-secondary mb-1">
+                  Time Window
+                </p>
                 <p className="text-wl-text-primary">
-                  {formatTime(stop.timeWindowStart)} - {formatTime(stop.timeWindowEnd)}
+                  {formatTime(stop.timeWindowStart)} -{" "}
+                  {formatTime(stop.timeWindowEnd)}
                 </p>
               </div>
             )}
             <div>
-              <p className="text-xs text-wl-text-secondary mb-1">Est. Arrival</p>
+              <p className="text-xs text-wl-text-secondary mb-1">
+                Est. Arrival
+              </p>
               <p className="text-wl-text-primary">
                 {formatTime(stop.estimatedArrival)}
               </p>
             </div>
             {stop.actualArrival && (
               <div>
-                <p className="text-xs text-wl-text-secondary mb-1">Actual Arrival</p>
+                <p className="text-xs text-wl-text-secondary mb-1">
+                  Actual Arrival
+                </p>
                 <p className="text-wl-success-400">
                   {formatTime(stop.actualArrival)}
                 </p>

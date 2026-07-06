@@ -26,13 +26,22 @@ import { z } from "zod";
 import { prisma } from "@witylogix/db";
 import { requireAuth, requireOrgRole } from "../middleware/auth.js";
 import { tenantContext, orgContext } from "../middleware/tenant.js";
-import { NotFoundError, ValidationError, ForbiddenError, ConflictError } from "../lib/errors.js";
+import {
+  NotFoundError,
+  ValidationError,
+  ForbiddenError,
+  ConflictError,
+} from "../lib/errors.js";
 
 // ─── Schemas ────────────────────────────────────────────────
 
 const createOrgSchema = z.object({
   name: z.string().min(1).max(200),
-  slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens"),
+  slug: z
+    .string()
+    .min(2)
+    .max(50)
+    .regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens"),
   email: z.string().email().optional(),
 });
 
@@ -70,7 +79,9 @@ async function orgsRoutes(fastify: FastifyInstance): Promise<void> {
     const body = createOrgSchema.parse(request.body);
 
     if (!request.auth.shopId) {
-      throw new ValidationError("Must be authenticated with a shop to create an org");
+      throw new ValidationError(
+        "Must be authenticated with a shop to create an org",
+      );
     }
 
     // Check slug uniqueness
@@ -78,7 +89,9 @@ async function orgsRoutes(fastify: FastifyInstance): Promise<void> {
       where: { slug: body.slug },
     });
     if (existingOrg) {
-      throw new ConflictError(`Organization slug '${body.slug}' is already taken`);
+      throw new ConflictError(
+        `Organization slug '${body.slug}' is already taken`,
+      );
     }
 
     // Check if shop already belongs to an org
@@ -136,7 +149,14 @@ async function orgsRoutes(fastify: FastifyInstance): Promise<void> {
     const org = await prisma.organization.findUnique({
       where: { id: request.auth.orgId },
       include: {
-        _count: { select: { shops: true, orgMembers: true, drivers: true, deliveryZones: true } },
+        _count: {
+          select: {
+            shops: true,
+            orgMembers: true,
+            drivers: true,
+            deliveryZones: true,
+          },
+        },
       },
     });
 
@@ -157,7 +177,10 @@ async function orgsRoutes(fastify: FastifyInstance): Promise<void> {
         where: { id: request.auth.orgId! },
         select: { settings: true },
       });
-      data.settings = { ...(current?.settings as any || {}), ...body.settings };
+      data.settings = {
+        ...((current?.settings as any) || {}),
+        ...body.settings,
+      };
     }
 
     const org = await prisma.organization.update({
@@ -170,255 +193,300 @@ async function orgsRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── LIST SHOPS IN ORG ─────────────────────────────────────
 
-  fastify.get("/me/shops", async (request: FastifyRequest, reply: FastifyReply) => {
-    if (!request.auth.orgId) {
-      return { data: [] };
-    }
+  fastify.get(
+    "/me/shops",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      if (!request.auth.orgId) {
+        return { data: [] };
+      }
 
-    const shops = await prisma.shop.findMany({
-      where: { orgId: request.auth.orgId, isActive: true },
-      select: {
-        id: true,
-        name: true,
-        shopifyDomain: true,
-        currency: true,
-        timezone: true,
-        isActive: true,
-        installedAt: true,
-        _count: { select: { orders: true, drivers: true } },
-      },
-      orderBy: { name: "asc" },
-    });
+      const shops = await prisma.shop.findMany({
+        where: { orgId: request.auth.orgId, isActive: true },
+        select: {
+          id: true,
+          name: true,
+          shopifyDomain: true,
+          currency: true,
+          timezone: true,
+          isActive: true,
+          installedAt: true,
+          _count: { select: { orders: true, drivers: true } },
+        },
+        orderBy: { name: "asc" },
+      });
 
-    return { data: shops };
-  });
+      return { data: shops };
+    },
+  );
 
   // ── LINK SHOP TO ORG ──────────────────────────────────────
 
-  fastify.post("/me/shops", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireOrgRole("OWNER", "ADMIN")(request, reply);
+  fastify.post(
+    "/me/shops",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireOrgRole("OWNER", "ADMIN")(request, reply);
 
-    const { shopId } = linkShopSchema.parse(request.body);
+      const { shopId } = linkShopSchema.parse(request.body);
 
-    const shop = await prisma.shop.findUnique({
-      where: { id: shopId },
-      select: { id: true, orgId: true, isActive: true },
-    });
+      const shop = await prisma.shop.findUnique({
+        where: { id: shopId },
+        select: { id: true, orgId: true, isActive: true },
+      });
 
-    if (!shop) throw new NotFoundError("Shop", shopId);
-    if (!shop.isActive) throw new ValidationError("Cannot link an inactive shop");
-    if (shop.orgId) throw new ConflictError("This shop already belongs to an organization");
+      if (!shop) throw new NotFoundError("Shop", shopId);
+      if (!shop.isActive)
+        throw new ValidationError("Cannot link an inactive shop");
+      if (shop.orgId)
+        throw new ConflictError("This shop already belongs to an organization");
 
-    await prisma.shop.update({
-      where: { id: shopId },
-      data: { orgId: request.auth.orgId! },
-    });
+      await prisma.shop.update({
+        where: { id: shopId },
+        data: { orgId: request.auth.orgId! },
+      });
 
-    return { data: { message: "Shop linked to organization", shopId } };
-  });
+      return { data: { message: "Shop linked to organization", shopId } };
+    },
+  );
 
   // ── UNLINK SHOP FROM ORG ──────────────────────────────────
 
-  fastify.delete("/me/shops/:shopId", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireOrgRole("OWNER")(request, reply);
+  fastify.delete(
+    "/me/shops/:shopId",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireOrgRole("OWNER")(request, reply);
 
-    const { shopId } = request.params as { shopId: string };
+      const { shopId } = request.params as { shopId: string };
 
-    const shop = await prisma.shop.findUnique({
-      where: { id: shopId },
-      select: { id: true, orgId: true },
-    });
+      const shop = await prisma.shop.findUnique({
+        where: { id: shopId },
+        select: { id: true, orgId: true },
+      });
 
-    if (!shop) throw new NotFoundError("Shop", shopId);
-    if (shop.orgId !== request.auth.orgId) {
-      throw new ForbiddenError("This shop does not belong to your organization");
-    }
+      if (!shop) throw new NotFoundError("Shop", shopId);
+      if (shop.orgId !== request.auth.orgId) {
+        throw new ForbiddenError(
+          "This shop does not belong to your organization",
+        );
+      }
 
-    await prisma.shop.update({
-      where: { id: shopId },
-      data: { orgId: null },
-    });
+      await prisma.shop.update({
+        where: { id: shopId },
+        data: { orgId: null },
+      });
 
-    return { data: { message: "Shop unlinked from organization", shopId } };
-  });
+      return { data: { message: "Shop unlinked from organization", shopId } };
+    },
+  );
 
   // ── LIST ORG MEMBERS ──────────────────────────────────────
 
-  fastify.get("/me/members", async (request: FastifyRequest, reply: FastifyReply) => {
-    if (!request.auth.orgId) {
-      return { data: [] };
-    }
+  fastify.get(
+    "/me/members",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      if (!request.auth.orgId) {
+        return { data: [] };
+      }
 
-    const members = await prisma.orgMember.findMany({
-      where: { orgId: request.auth.orgId },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true, shopId: true },
+      const members = await prisma.orgMember.findMany({
+        where: { orgId: request.auth.orgId },
+        include: {
+          user: {
+            select: { id: true, name: true, email: true, shopId: true },
+          },
         },
-      },
-      orderBy: { createdAt: "asc" },
-    });
+        orderBy: { createdAt: "asc" },
+      });
 
-    return { data: members };
-  });
+      return { data: members };
+    },
+  );
 
   // ── INVITE MEMBER ─────────────────────────────────────────
 
-  fastify.post("/me/members", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireOrgRole("OWNER", "ADMIN")(request, reply);
+  fastify.post(
+    "/me/members",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireOrgRole("OWNER", "ADMIN")(request, reply);
 
-    const body = inviteMemberSchema.parse(request.body);
+      const body = inviteMemberSchema.parse(request.body);
 
-    // Verify user exists
-    const user = await prisma.user.findUnique({
-      where: { id: body.userId },
-      select: { id: true },
-    });
-    if (!user) throw new NotFoundError("User", body.userId);
+      // Verify user exists
+      const user = await prisma.user.findUnique({
+        where: { id: body.userId },
+        select: { id: true },
+      });
+      if (!user) throw new NotFoundError("User", body.userId);
 
-    // Check for existing membership
-    const existing = await prisma.orgMember.findUnique({
-      where: { orgId_userId: { orgId: request.auth.orgId!, userId: body.userId } },
-    });
-    if (existing) throw new ConflictError("User is already a member of this organization");
+      // Check for existing membership
+      const existing = await prisma.orgMember.findUnique({
+        where: {
+          orgId_userId: { orgId: request.auth.orgId!, userId: body.userId },
+        },
+      });
+      if (existing)
+        throw new ConflictError(
+          "User is already a member of this organization",
+        );
 
-    // Only OWNER can create other OWNERs
-    if (body.role === "OWNER" && request.auth.orgRole !== "OWNER") {
-      throw new ForbiddenError("Only organization owners can create other owners");
-    }
+      // Only OWNER can create other OWNERs
+      if (body.role === "OWNER" && request.auth.orgRole !== "OWNER") {
+        throw new ForbiddenError(
+          "Only organization owners can create other owners",
+        );
+      }
 
-    const member = await prisma.orgMember.create({
-      data: {
-        orgId: request.auth.orgId!,
-        userId: body.userId,
-        role: body.role,
-        shopIds: body.shopIds,
-      },
-    });
+      const member = await prisma.orgMember.create({
+        data: {
+          orgId: request.auth.orgId!,
+          userId: body.userId,
+          role: body.role,
+          shopIds: body.shopIds,
+        },
+      });
 
-    reply.status(201);
-    return { data: member };
-  });
+      reply.status(201);
+      return { data: member };
+    },
+  );
 
   // ── UPDATE MEMBER ─────────────────────────────────────────
 
-  fastify.patch("/me/members/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireOrgRole("OWNER", "ADMIN")(request, reply);
+  fastify.patch(
+    "/me/members/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireOrgRole("OWNER", "ADMIN")(request, reply);
 
-    const { id } = request.params as { id: string };
-    const body = updateMemberSchema.parse(request.body);
+      const { id } = request.params as { id: string };
+      const body = updateMemberSchema.parse(request.body);
 
-    const member = await prisma.orgMember.findFirst({
-      where: { id, orgId: request.auth.orgId! },
-    });
-    if (!member) throw new NotFoundError("OrgMember", id);
+      const member = await prisma.orgMember.findFirst({
+        where: { id, orgId: request.auth.orgId! },
+      });
+      if (!member) throw new NotFoundError("OrgMember", id);
 
-    // Prevent non-owners from changing owner role
-    if (body.role === "OWNER" && request.auth.orgRole !== "OWNER") {
-      throw new ForbiddenError("Only owners can assign the OWNER role");
-    }
-    if (member.role === "OWNER" && request.auth.orgRole !== "OWNER") {
-      throw new ForbiddenError("Only owners can modify other owners");
-    }
+      // Prevent non-owners from changing owner role
+      if (body.role === "OWNER" && request.auth.orgRole !== "OWNER") {
+        throw new ForbiddenError("Only owners can assign the OWNER role");
+      }
+      if (member.role === "OWNER" && request.auth.orgRole !== "OWNER") {
+        throw new ForbiddenError("Only owners can modify other owners");
+      }
 
-    const updated = await prisma.orgMember.update({
-      where: { id },
-      data: body,
-    });
+      const updated = await prisma.orgMember.update({
+        where: { id },
+        data: body,
+      });
 
-    return { data: updated };
-  });
+      return { data: updated };
+    },
+  );
 
   // ── REMOVE MEMBER ─────────────────────────────────────────
 
-  fastify.delete("/me/members/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireOrgRole("OWNER")(request, reply);
+  fastify.delete(
+    "/me/members/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireOrgRole("OWNER")(request, reply);
 
-    const { id } = request.params as { id: string };
+      const { id } = request.params as { id: string };
 
-    const member = await prisma.orgMember.findFirst({
-      where: { id, orgId: request.auth.orgId! },
-    });
-    if (!member) throw new NotFoundError("OrgMember", id);
-
-    // Prevent removing yourself if you're the last owner
-    if (member.userId === request.auth.userId) {
-      const ownerCount = await prisma.orgMember.count({
-        where: { orgId: request.auth.orgId!, role: "OWNER", isActive: true },
+      const member = await prisma.orgMember.findFirst({
+        where: { id, orgId: request.auth.orgId! },
       });
-      if (ownerCount <= 1) {
-        throw new ValidationError("Cannot remove the last owner. Transfer ownership first.");
-      }
-    }
+      if (!member) throw new NotFoundError("OrgMember", id);
 
-    await prisma.orgMember.delete({ where: { id } });
-    return { data: { message: "Member removed from organization" } };
-  });
+      // Prevent removing yourself if you're the last owner
+      if (member.userId === request.auth.userId) {
+        const ownerCount = await prisma.orgMember.count({
+          where: { orgId: request.auth.orgId!, role: "OWNER", isActive: true },
+        });
+        if (ownerCount <= 1) {
+          throw new ValidationError(
+            "Cannot remove the last owner. Transfer ownership first.",
+          );
+        }
+      }
+
+      await prisma.orgMember.delete({ where: { id } });
+      return { data: { message: "Member removed from organization" } };
+    },
+  );
 
   // ── CROSS-SHOP STATS ──────────────────────────────────────
 
-  fastify.get("/me/stats", async (request: FastifyRequest, reply: FastifyReply) => {
-    if (!request.auth.orgId) {
-      return { data: null };
-    }
+  fastify.get(
+    "/me/stats",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      if (!request.auth.orgId) {
+        return { data: null };
+      }
 
-    // Get all shop IDs in the org
-    const shops = await prisma.shop.findMany({
-      where: { orgId: request.auth.orgId, isActive: true },
-      select: { id: true, name: true },
-    });
+      // Get all shop IDs in the org
+      const shops = await prisma.shop.findMany({
+        where: { orgId: request.auth.orgId, isActive: true },
+        select: { id: true, name: true },
+      });
 
-    const shopIds = shops.map((s) => s.id);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+      const shopIds = shops.map((s) => s.id);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const [totalOrders, todayOrders, inTransit, activeDrivers] = await Promise.all([
-      prisma.order.count({ where: { shopId: { in: shopIds } } }),
-      prisma.order.count({
-        where: { shopId: { in: shopIds }, createdAt: { gte: today, lt: tomorrow } },
-      }),
-      prisma.order.count({
-        where: {
-          shopId: { in: shopIds },
-          status: { in: ["PICKED_UP", "OUT_FOR_DELIVERY", "ARRIVED"] },
+      const [totalOrders, todayOrders, inTransit, activeDrivers] =
+        await Promise.all([
+          prisma.order.count({ where: { shopId: { in: shopIds } } }),
+          prisma.order.count({
+            where: {
+              shopId: { in: shopIds },
+              createdAt: { gte: today, lt: tomorrow },
+            },
+          }),
+          prisma.order.count({
+            where: {
+              shopId: { in: shopIds },
+              status: { in: ["PICKED_UP", "OUT_FOR_DELIVERY", "ARRIVED"] },
+            },
+          }),
+          prisma.driver.count({
+            where: {
+              OR: [{ orgId: request.auth.orgId }, { shopId: { in: shopIds } }],
+              status: { in: ["AVAILABLE", "ON_ROUTE"] },
+              isActive: true,
+            },
+          }),
+        ]);
+
+      // Per-shop breakdown
+      const perShop = await Promise.all(
+        shops.map(async (shop) => {
+          const orderCount = await prisma.order.count({
+            where: { shopId: shop.id },
+          });
+          const todayCount = await prisma.order.count({
+            where: { shopId: shop.id, createdAt: { gte: today, lt: tomorrow } },
+          });
+          return {
+            shopId: shop.id,
+            name: shop.name,
+            totalOrders: orderCount,
+            todayOrders: todayCount,
+          };
+        }),
+      );
+
+      return {
+        data: {
+          shopCount: shops.length,
+          totalOrders,
+          todayOrders,
+          inTransit,
+          activeDrivers,
+          perShop,
         },
-      }),
-      prisma.driver.count({
-        where: {
-          OR: [
-            { orgId: request.auth.orgId },
-            { shopId: { in: shopIds } },
-          ],
-          status: { in: ["AVAILABLE", "ON_ROUTE"] },
-          isActive: true,
-        },
-      }),
-    ]);
-
-    // Per-shop breakdown
-    const perShop = await Promise.all(
-      shops.map(async (shop) => {
-        const orderCount = await prisma.order.count({ where: { shopId: shop.id } });
-        const todayCount = await prisma.order.count({
-          where: { shopId: shop.id, createdAt: { gte: today, lt: tomorrow } },
-        });
-        return { shopId: shop.id, name: shop.name, totalOrders: orderCount, todayOrders: todayCount };
-      }),
-    );
-
-    return {
-      data: {
-        shopCount: shops.length,
-        totalOrders,
-        todayOrders,
-        inTransit,
-        activeDrivers,
-        perShop,
-      },
-    };
-  });
+      };
+    },
+  );
 }
 
 export default orgsRoutes;

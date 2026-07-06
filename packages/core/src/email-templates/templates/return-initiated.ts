@@ -2,9 +2,9 @@
  * Return Initiated Email Template
  */
 
-import { ReturnEmailData } from '../types';
-import { baseLayout } from './base-layout';
-import { renderTemplate } from '../template-engine';
+import { ReturnEmailData } from "../types";
+import { baseLayout } from "./base-layout";
+import { renderTemplate } from "../template-engine";
 
 export function returnInitiatedTemplate(data: ReturnEmailData): string {
   const content = `
@@ -116,7 +116,7 @@ export function returnInitiatedTemplate(data: ReturnEmailData): string {
 
   const html = baseLayout({
     storeName: data.storeName,
-    storeUrl: '',
+    storeUrl: "",
     supportEmail: data.supportEmail,
     content,
   });

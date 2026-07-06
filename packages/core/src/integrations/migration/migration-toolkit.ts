@@ -40,7 +40,10 @@ export class ProviderSwapEngine {
    * @param targetProvider Target provider slug
    * @returns Provider mapping configuration
    */
-  defineMapping(sourceProvider: string, targetProvider: string): ProviderMapping {
+  defineMapping(
+    sourceProvider: string,
+    targetProvider: string,
+  ): ProviderMapping {
     return {
       migrationId: this.generateId(),
       sourceProvider,
@@ -57,7 +60,10 @@ export class ProviderSwapEngine {
    * @param targetProvider Target provider slug
    * @returns Compatibility result
    */
-  validateCompatibility(sourceProvider: string, targetProvider: string): {
+  validateCompatibility(
+    sourceProvider: string,
+    targetProvider: string,
+  ): {
     compatible: boolean;
     missingCapabilities: string[];
     warnings: string[];
@@ -67,7 +73,7 @@ export class ProviderSwapEngine {
     const targetCapabilities = this.getProviderCapabilities(targetProvider);
 
     const missingCapabilities = sourceCapabilities.filter(
-      (cap) => !targetCapabilities.includes(cap)
+      (cap) => !targetCapabilities.includes(cap),
     );
 
     return {
@@ -85,7 +91,7 @@ export class ProviderSwapEngine {
    */
   checkPrerequisites(
     mapping: ProviderMapping,
-    targetCredentials: Record<string, unknown>
+    targetCredentials: Record<string, unknown>,
   ): {
     valid: boolean;
     errors: string[];
@@ -99,7 +105,9 @@ export class ProviderSwapEngine {
 
     // Validate credentials are valid (basic check)
     if (targetCredentials) {
-      const requiredFields = this.getRequiredCredentialFields(mapping.targetProvider);
+      const requiredFields = this.getRequiredCredentialFields(
+        mapping.targetProvider,
+      );
       for (const field of requiredFields) {
         if (!targetCredentials[field]) {
           errors.push(`Missing required credential field: ${field}`);
@@ -121,7 +129,7 @@ export class ProviderSwapEngine {
    */
   async executeCutover(
     mapping: ProviderMapping,
-    snapshot: RollbackSnapshot
+    snapshot: RollbackSnapshot,
   ): Promise<{
     success: boolean;
     errors: string[];
@@ -138,7 +146,9 @@ export class ProviderSwapEngine {
       await this.switchTraffic(mapping.sourceProvider, mapping.targetProvider);
 
       // Step 4: Verify routing is correct
-      const verificationPassed = await this.verifyRouting(mapping.targetProvider);
+      const verificationPassed = await this.verifyRouting(
+        mapping.targetProvider,
+      );
 
       // Step 5: Resume traffic
       await this.resumeTraffic(mapping.targetProvider);
@@ -160,13 +170,7 @@ export class ProviderSwapEngine {
   private getProviderCapabilities(provider: string): string[] {
     // In real implementation, fetch from provider registry
     const capabilities: Record<string, string[]> = {
-      stripe: [
-        "payments",
-        "subscriptions",
-        "disputes",
-        "refunds",
-        "webhooks",
-      ],
+      stripe: ["payments", "subscriptions", "disputes", "refunds", "webhooks"],
       paypal: ["payments", "subscriptions", "disputes", "refunds", "webhooks"],
       square: ["payments", "inventory", "appointments", "webhooks"],
     };
@@ -175,14 +179,11 @@ export class ProviderSwapEngine {
 
   private getCompatibilityWarnings(
     sourceProvider: string,
-    targetProvider: string
+    targetProvider: string,
   ): string[] {
     // In real implementation, compile known compatibility issues
     const warnings: string[] = [];
-    if (
-      sourceProvider === "stripe" &&
-      targetProvider === "paypal"
-    ) {
+    if (sourceProvider === "stripe" && targetProvider === "paypal") {
       warnings.push("Subscription syntax differs between providers");
       warnings.push("Dispute handling has different workflows");
     }
@@ -209,7 +210,7 @@ export class ProviderSwapEngine {
 
   private async switchTraffic(
     sourceProvider: string,
-    targetProvider: string
+    targetProvider: string,
   ): Promise<void> {
     // In real implementation, atomically switch traffic routing
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -248,7 +249,7 @@ export class DataMapperService {
     sourceField: string,
     targetField: string,
     sourceType: string,
-    targetType: string
+    targetType: string,
   ): FieldMapping {
     return {
       sourceField,
@@ -268,7 +269,7 @@ export class DataMapperService {
    */
   addTransform(
     mapping: FieldMapping,
-    transform: TransformFunction
+    transform: TransformFunction,
   ): FieldMapping {
     return { ...mapping, transform };
   }
@@ -281,7 +282,7 @@ export class DataMapperService {
    */
   addValidation(
     mapping: FieldMapping,
-    validate: (value: unknown) => boolean
+    validate: (value: unknown) => boolean,
   ): FieldMapping {
     return { ...mapping, validate };
   }
@@ -296,19 +297,17 @@ export class DataMapperService {
   generateDataMapper(
     migrationId: string,
     mapping: ProviderMapping,
-    fieldMappings: FieldMapping[]
+    fieldMappings: FieldMapping[],
   ): DataMapper {
     const sourceFields = new Set(fieldMappings.map((f) => f.sourceField));
     const targetFields = new Set(fieldMappings.map((f) => f.targetField));
 
     // In real implementation, get all fields from schema
     const allSourceFields = this.getAllSourceFields(mapping.sourceProvider);
-    const unmappedFields = allSourceFields.filter(
-      (f) => !sourceFields.has(f)
-    );
+    const unmappedFields = allSourceFields.filter((f) => !sourceFields.has(f));
 
     const typeMismatches = fieldMappings.filter(
-      (f) => f.sourceType !== f.targetType && !f.transform
+      (f) => f.sourceType !== f.targetType && !f.transform,
     );
 
     return {
@@ -333,7 +332,7 @@ export class DataMapperService {
    */
   validateSchema(
     mapper: DataMapper,
-    sourceData: Record<string, unknown>
+    sourceData: Record<string, unknown>,
   ): {
     valid: boolean;
     errors: string[];
@@ -342,12 +341,9 @@ export class DataMapperService {
 
     // Validate all required mappings exist in source
     for (const fieldMapping of mapper.fieldMappings) {
-      if (
-        fieldMapping.required &&
-        !(fieldMapping.sourceField in sourceData)
-      ) {
+      if (fieldMapping.required && !(fieldMapping.sourceField in sourceData)) {
         errors.push(
-          `Required field missing in source: ${fieldMapping.sourceField}`
+          `Required field missing in source: ${fieldMapping.sourceField}`,
         );
       }
 
@@ -356,7 +352,7 @@ export class DataMapperService {
         const value = sourceData[fieldMapping.sourceField];
         if (!fieldMapping.validate(value)) {
           errors.push(
-            `Field validation failed: ${fieldMapping.sourceField} = ${value}`
+            `Field validation failed: ${fieldMapping.sourceField} = ${value}`,
           );
         }
       }
@@ -375,13 +371,18 @@ export class DataMapperService {
    */
   generateDiff(mapper: DataMapper): {
     unmappedFields: string[];
-    typeConflicts: Array<{ field: string; sourceType: string; targetType: string }>;
+    typeConflicts: Array<{
+      field: string;
+      sourceType: string;
+      targetType: string;
+    }>;
     summary: string;
   } {
     return {
       unmappedFields: mapper.unmappedFields,
       typeConflicts: mapper.typeMismatches,
-      summary: `${mapper.fieldMappings.length} fields mapped, ` +
+      summary:
+        `${mapper.fieldMappings.length} fields mapped, ` +
         `${mapper.unmappedFields.length} unmapped, ` +
         `${mapper.typeMismatches.length} type conflicts`,
     };
@@ -418,7 +419,7 @@ export class ShadowModeRunner {
     requestId: string,
     sourceExecutor: () => Promise<unknown>,
     targetExecutor: () => Promise<unknown>,
-    config: ShadowModeConfig
+    config: ShadowModeConfig,
   ): Promise<ShadowComparison> {
     const timestamp = new Date();
     const sourceStart = Date.now();
@@ -429,17 +430,21 @@ export class ShadowModeRunner {
     const targetResponse = await targetExecutor();
     const targetLatency = Date.now() - targetStart;
 
-    const structuralDiff = this.compareStructure(sourceResponse, targetResponse);
+    const structuralDiff = this.compareStructure(
+      sourceResponse,
+      targetResponse,
+    );
     const valueDiffs = this.compareValues(sourceResponse, targetResponse);
     const matchRate = this.calculateMatchRate(
       sourceResponse,
       targetResponse,
-      valueDiffs
+      valueDiffs,
     );
 
     const passed =
       matchRate >= config.acceptableMatchRate &&
-      Math.abs(sourceLatency - targetLatency) <= config.acceptableLatencyDeltaMs;
+      Math.abs(sourceLatency - targetLatency) <=
+        config.acceptableLatencyDeltaMs;
 
     const comparison: ShadowComparison = {
       requestId,
@@ -469,17 +474,14 @@ export class ShadowModeRunner {
       id: string;
       sourceExecutor: () => Promise<unknown>;
       targetExecutor: () => Promise<unknown>;
-    }>
+    }>,
   ): Promise<ShadowComparison[]> {
     const startTime = Date.now();
     let requestCount = 0;
 
     for await (const request of requestStream) {
       // Check duration limit
-      if (
-        config.durationMs &&
-        Date.now() - startTime > config.durationMs
-      ) {
+      if (config.durationMs && Date.now() - startTime > config.durationMs) {
         break;
       }
 
@@ -497,7 +499,7 @@ export class ShadowModeRunner {
         request.id,
         request.sourceExecutor,
         request.targetExecutor,
-        config
+        config,
       );
       requestCount++;
     }
@@ -541,9 +543,12 @@ export class ShadowModeRunner {
 
     const criticalDifferences: string[] = [];
     for (const comparison of this.comparisons) {
-      if (!comparison.passed && comparison.structuralDiff.missingFields.length > 0) {
+      if (
+        !comparison.passed &&
+        comparison.structuralDiff.missingFields.length > 0
+      ) {
         criticalDifferences.push(
-          `Missing fields: ${comparison.structuralDiff.missingFields.join(", ")}`
+          `Missing fields: ${comparison.structuralDiff.missingFields.join(", ")}`,
         );
       }
     }
@@ -565,22 +570,19 @@ export class ShadowModeRunner {
     this.comparisons = [];
   }
 
-  private compareStructure(
-    source: unknown,
-    target: unknown
-  ): StructuralDiff {
+  private compareStructure(source: unknown, target: unknown): StructuralDiff {
     const sourceKeys = new Set(
-      source && typeof source === "object" ? Object.keys(source) : []
+      source && typeof source === "object" ? Object.keys(source) : [],
     );
     const targetKeys = new Set(
-      target && typeof target === "object" ? Object.keys(target) : []
+      target && typeof target === "object" ? Object.keys(target) : [],
     );
 
     const missingFields = Array.from(sourceKeys).filter(
-      (k) => !targetKeys.has(k)
+      (k) => !targetKeys.has(k),
     );
     const extraFields = Array.from(targetKeys).filter(
-      (k) => !sourceKeys.has(k)
+      (k) => !sourceKeys.has(k),
     );
 
     const typeConflicts: Array<{
@@ -609,10 +611,7 @@ export class ShadowModeRunner {
     };
   }
 
-  private compareValues(
-    source: unknown,
-    target: unknown
-  ): ValueDiff[] {
+  private compareValues(source: unknown, target: unknown): ValueDiff[] {
     const diffs: ValueDiff[] = [];
     if (
       !source ||
@@ -644,7 +643,7 @@ export class ShadowModeRunner {
   private calculateMatchRate(
     source: unknown,
     target: unknown,
-    diffs: ValueDiff[]
+    diffs: ValueDiff[],
   ): number {
     if (!source || typeof source !== "object") return 100;
     const totalFields = Object.keys(source).length;
@@ -672,7 +671,7 @@ export class RollbackManager {
     migrationId: string,
     providerState: Record<string, unknown>,
     credentials: Record<string, unknown>,
-    routingConfig: Record<string, unknown>
+    routingConfig: Record<string, unknown>,
   ): RollbackSnapshot {
     const snapshot: RollbackSnapshot = {
       snapshotId: this.generateId(),
@@ -698,7 +697,7 @@ export class RollbackManager {
    */
   async executeRollback(
     snapshot: RollbackSnapshot,
-    sourceProvider: string
+    sourceProvider: string,
   ): Promise<RollbackResult> {
     try {
       // Step 1: Pause traffic
@@ -748,12 +747,12 @@ export class RollbackManager {
   async executePartialRollback(
     snapshot: RollbackSnapshot,
     sourceProvider: string,
-    endpoints: string[]
+    endpoints: string[],
   ): Promise<RollbackResult> {
     try {
       const filteredRouting = this.filterRouting(
         snapshot.routingConfig,
-        endpoints
+        endpoints,
       );
       await this.restoreRouting(filteredRouting);
 
@@ -786,13 +785,13 @@ export class RollbackManager {
   }
 
   private async restoreProviderState(
-    state: Record<string, unknown>
+    state: Record<string, unknown>,
   ): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
   private async restoreRouting(
-    routing: Record<string, unknown>
+    routing: Record<string, unknown>,
   ): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
@@ -808,7 +807,7 @@ export class RollbackManager {
 
   private filterRouting(
     routing: Record<string, unknown>,
-    endpoints: string[]
+    endpoints: string[],
   ): Record<string, unknown> {
     const filtered: Record<string, unknown> = {};
     for (const endpoint of endpoints) {
@@ -838,7 +837,7 @@ export class MigrationValidator {
    */
   async validatePreMigration(
     sourceProvider: string,
-    targetProvider: string
+    targetProvider: string,
   ): Promise<PreMigrationValidation> {
     return {
       sourceConnectivity: await this.checkConnectivity(sourceProvider),
@@ -859,7 +858,7 @@ export class MigrationValidator {
    */
   async validateDuringMigration(
     sourceProvider: string,
-    targetProvider: string
+    targetProvider: string,
   ): Promise<DuringMigrationValidation> {
     const sourceMetrics = await this.collectMetrics(sourceProvider);
     const targetMetrics = await this.collectMetrics(targetProvider);
@@ -884,7 +883,7 @@ export class MigrationValidator {
    * @returns Validation result
    */
   async validatePostMigration(
-    targetProvider: string
+    targetProvider: string,
   ): Promise<PostMigrationValidation> {
     return {
       allEndpointsFunctional: await this.checkAllEndpoints(targetProvider),
@@ -908,7 +907,7 @@ export class MigrationValidator {
     migrationId: string,
     preMigration: PreMigrationValidation,
     duringMigration?: DuringMigrationValidation,
-    postMigration?: PostMigrationValidation
+    postMigration?: PostMigrationValidation,
   ): ValidationResult {
     const passed =
       preMigration.errors.length === 0 &&
@@ -947,7 +946,10 @@ export class MigrationValidator {
     avgLatency: number;
   }> {
     await new Promise((resolve) => setTimeout(resolve, 50));
-    return { errorRate: Math.random() * 2, avgLatency: 100 + Math.random() * 50 };
+    return {
+      errorRate: Math.random() * 2,
+      avgLatency: 100 + Math.random() * 50,
+    };
   }
 
   private async checkAllEndpoints(provider: string): Promise<boolean> {
@@ -996,7 +998,7 @@ export class MigrationTracker {
    */
   initializeTracker(
     migrationId: string,
-    providerMapping: ProviderMapping
+    providerMapping: ProviderMapping,
   ): MigrationTrackerShape {
     const tracker: MigrationTrackerShape = {
       migrationId,
@@ -1035,7 +1037,10 @@ export class MigrationTracker {
    * @param status New migration status
    * @param details Event details
    */
-  transitionStatus(status: MigrationStatus, details?: Record<string, unknown>): void {
+  transitionStatus(
+    status: MigrationStatus,
+    details?: Record<string, unknown>,
+  ): void {
     if (!this.tracker) return;
 
     this.tracker.status = status;
@@ -1055,7 +1060,7 @@ export class MigrationTracker {
    */
   recordEvent(
     type: MigrationEvent["type"],
-    details: Record<string, unknown>
+    details: Record<string, unknown>,
   ): void {
     if (!this.tracker) return;
 
@@ -1126,22 +1131,26 @@ export class MigrationTracker {
           ? {
               totalComparisons: this.tracker.shadowComparisons.length,
               passingComparisons: this.tracker.shadowComparisons.filter(
-                (c) => c.passed
+                (c) => c.passed,
               ).length,
               avgMatchRate:
-                this.tracker.shadowComparisons.reduce((s, c) => s + c.matchRate, 0) /
-                this.tracker.shadowComparisons.length,
+                this.tracker.shadowComparisons.reduce(
+                  (s, c) => s + c.matchRate,
+                  0,
+                ) / this.tracker.shadowComparisons.length,
               criticalDifferences: this.extractCriticalDifferences(
-                this.tracker.shadowComparisons
+                this.tracker.shadowComparisons,
               ),
             }
           : undefined,
       validationSummary: {
         preValidationPassed: this.tracker.validationResults[0]?.passed || false,
-        duringValidationPassed: this.tracker.validationResults[1]?.passed || false,
-        postValidationPassed: this.tracker.validationResults[2]?.passed || false,
+        duringValidationPassed:
+          this.tracker.validationResults[1]?.passed || false,
+        postValidationPassed:
+          this.tracker.validationResults[2]?.passed || false,
         issues: this.tracker.validationResults.flatMap(
-          (v) => v.preMigration.errors
+          (v) => v.preMigration.errors,
         ),
       },
       recommendations: this.generateRecommendations(this.tracker),
@@ -1151,11 +1160,15 @@ export class MigrationTracker {
     return report;
   }
 
-  private extractCriticalDifferences(comparisons: ShadowComparison[]): string[] {
+  private extractCriticalDifferences(
+    comparisons: ShadowComparison[],
+  ): string[] {
     const issues: Set<string> = new Set();
     for (const comp of comparisons) {
       if (comp.structuralDiff.missingFields.length > 0) {
-        issues.add(`Missing fields: ${comp.structuralDiff.missingFields.join(", ")}`);
+        issues.add(
+          `Missing fields: ${comp.structuralDiff.missingFields.join(", ")}`,
+        );
       }
     }
     return Array.from(issues);
@@ -1173,11 +1186,15 @@ export class MigrationTracker {
     }
 
     if (tracker.validationResults.some((v) => !v.passed)) {
-      recommendations.push("Address validation issues before proceeding to production");
+      recommendations.push(
+        "Address validation issues before proceeding to production",
+      );
     }
 
     if (recommendations.length === 0) {
-      recommendations.push("Migration completed successfully - monitor for 24 hours");
+      recommendations.push(
+        "Migration completed successfully - monitor for 24 hours",
+      );
     }
 
     return recommendations;

@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import { WLMap } from '@/components/map/wl-map';
-import { PinLayer, type Pin, type PinStatus } from '@/components/map/pin-layer';
-import { useWLMap } from '@/components/map/wl-map-context';
-import { useFitBounds } from '@/components/map/use-fit-bounds';
-import { MapPin } from 'lucide-react';
+import { useMemo } from "react";
+import { WLMap } from "@/components/map/wl-map";
+import { PinLayer, type Pin, type PinStatus } from "@/components/map/pin-layer";
+import { useWLMap } from "@/components/map/wl-map-context";
+import { useFitBounds } from "@/components/map/use-fit-bounds";
+import { MapPin } from "lucide-react";
 
-type LocationType = 'WAREHOUSE' | 'STORE' | 'HUB' | 'DEPOT' | 'PICKUP_POINT';
-type LocationStatus = 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE';
+type LocationType = "WAREHOUSE" | "STORE" | "HUB" | "DEPOT" | "PICKUP_POINT";
+type LocationStatus = "ACTIVE" | "INACTIVE" | "MAINTENANCE";
 
 export interface MapLocation {
   id: string;
@@ -27,17 +27,17 @@ export interface MapLocation {
  * INACTIVE    → open       (blue   — dormant)
  */
 function toPinStatus(s: LocationStatus): PinStatus {
-  if (s === 'ACTIVE') return 'assigned';
-  if (s === 'MAINTENANCE') return 'delayed';
-  return 'open';
+  if (s === "ACTIVE") return "assigned";
+  if (s === "MAINTENANCE") return "delayed";
+  return "open";
 }
 
 const TYPE_LABEL: Record<LocationType, string> = {
-  WAREHOUSE: 'Warehouse',
-  STORE: 'Store',
-  HUB: 'Hub',
-  DEPOT: 'Depot',
-  PICKUP_POINT: 'Pickup',
+  WAREHOUSE: "Warehouse",
+  STORE: "Store",
+  HUB: "Hub",
+  DEPOT: "Depot",
+  PICKUP_POINT: "Pickup",
 };
 
 interface FitControllerProps {
@@ -103,7 +103,7 @@ export function LocationsOverviewMap({ locations }: LocationsOverviewMapProps) {
 
       {/* Count badge */}
       <div className="absolute top-3 left-3 bg-wl-bg-surface/90 border border-wl-border-default rounded-md px-2.5 py-1 text-xs text-wl-text-secondary backdrop-blur-sm">
-        {withCoords.length} location{withCoords.length !== 1 ? 's' : ''} mapped
+        {withCoords.length} location{withCoords.length !== 1 ? "s" : ""} mapped
       </div>
 
       {/* Status legend */}
@@ -125,12 +125,19 @@ export function LocationsOverviewMap({ locations }: LocationsOverviewMapProps) {
       {/* Type breakdown */}
       {Object.keys(typeCounts).length > 0 && (
         <div className="absolute bottom-3 right-3 bg-wl-bg-surface/90 border border-wl-border-default rounded-lg px-3 py-2 backdrop-blur-sm text-xs space-y-1">
-          {(Object.entries(typeCounts) as [LocationType, number][]).map(([type, count]) => (
-            <div key={type} className="flex items-center justify-between gap-4">
-              <span className="text-wl-text-secondary">{TYPE_LABEL[type]}</span>
-              <span className="text-wl-text-primary font-mono">{count}</span>
-            </div>
-          ))}
+          {(Object.entries(typeCounts) as [LocationType, number][]).map(
+            ([type, count]) => (
+              <div
+                key={type}
+                className="flex items-center justify-between gap-4"
+              >
+                <span className="text-wl-text-secondary">
+                  {TYPE_LABEL[type]}
+                </span>
+                <span className="text-wl-text-primary font-mono">{count}</span>
+              </div>
+            ),
+          )}
         </div>
       )}
     </div>

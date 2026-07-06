@@ -62,388 +62,432 @@ async function billingSubscriptionsRoutes(
 
   // ── POST /subscribe ──────────────────────────────────────────
 
-  fastify.post("/subscribe", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+  fastify.post(
+    "/subscribe",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
-    const body = subscribeSchema.parse(request.body);
-    const { planId, paymentMethodId } = body;
+      const body = subscribeSchema.parse(request.body);
+      const { planId, paymentMethodId } = body;
 
-    // Check if subscription already exists
-    const existing = await (request.tenantDb as any).subscription.findFirst({
-      where: { shopId: request.shopId },
-    });
+      // Check if subscription already exists
+      const existing = await (request.tenantDb as any).subscription.findFirst({
+        where: { shopId: request.shopId },
+      });
 
-    if (existing && existing.status === "ACTIVE") {
-      throw new ConflictError("Shop already has an active subscription");
-    }
+      if (existing && existing.status === "ACTIVE") {
+        throw new ConflictError("Shop already has an active subscription");
+      }
 
-    // If downgrading from existing, validate transition
-    if (existing && existing.planTier !== "FREE") {
+      // If downgrading from existing, validate transition
+      if (existing && existing.planTier !== "FREE") {
+        const planHierarchy: Record<string, number> = {
+          FREE: 0,
+          STARTER: 1,
+          GROWTH: 2,
+          ENTERPRISE: 3,
+        };
+        if (planHierarchy[planId] < planHierarchy[existing.planTier]) {
+          throw new ValidationError(
+            `Cannot directly downgrade from ${existing.planTier} to ${planId}. Use downgrade endpoint instead.`,
+          );
+        }
+      }
+
+      // Create subscription
+      const subscription = await (request.tenantDb as any).subscription.create({
+        data: {
+          shopId: request.shopId,
+          planTier: planId as any,
+          status: "ACTIVE",
+          billingCycleStart: new Date(),
+          billingCycleEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+          paymentMethodId,
+          isAutoRenew: true,
+        },
+        include: {
+          plan: true,
+        },
+      });
+
+      fastify.log.info(
+        { shopId: request.shopId, planId, subscriptionId: subscription.id },
+        "Subscription created",
+      );
+
+      reply.status(201);
+      return { data: subscription };
+    },
+  );
+
+  // ── GET /current ─────────────────────────────────────────────
+
+  fastify.get(
+    "/current",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const subscription = await (
+        request.tenantDb as any
+      ).subscription.findFirst({
+        where: { shopId: request.shopId },
+        include: {
+          plan: true,
+          invoices: {
+            orderBy: { createdAt: "desc" },
+            take: 5,
+          },
+        },
+      });
+
+      if (!subscription) {
+        throw new NotFoundError("Subscription for shop", request.shopId);
+      }
+
+      // Get usage summary
+      const usageSummary = await (request.tenantDb as any).usageEvent.groupBy({
+        by: ["eventType"],
+        where: { shopId: request.shopId },
+        _count: true,
+      });
+
+      return {
+        data: {
+          subscription,
+          usage: usageSummary,
+          isExpiringSoon:
+            subscription.billingCycleEnd &&
+            new Date(subscription.billingCycleEnd).getTime() - Date.now() <
+              7 * 24 * 60 * 60 * 1000,
+        },
+      };
+    },
+  );
+
+  // ── PUT /upgrade ─────────────────────────────────────────────
+
+  fastify.put(
+    "/upgrade",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+
+      const body = upgradeSchema.parse(request.body);
+      const { newPlanId } = body;
+
+      const subscription = await (
+        request.tenantDb as any
+      ).subscription.findFirst({
+        where: { shopId: request.shopId },
+      });
+
+      if (!subscription) {
+        throw new NotFoundError("Subscription for shop", request.shopId);
+      }
+
+      if (subscription.status !== "ACTIVE") {
+        throw new ConflictError("Cannot upgrade inactive subscription");
+      }
+
+      // Validate upgrade path
       const planHierarchy: Record<string, number> = {
         FREE: 0,
         STARTER: 1,
         GROWTH: 2,
         ENTERPRISE: 3,
       };
-      if (planHierarchy[planId] < planHierarchy[existing.planTier]) {
+      if (planHierarchy[newPlanId] <= planHierarchy[subscription.planTier]) {
         throw new ValidationError(
-          `Cannot directly downgrade from ${existing.planTier} to ${planId}. Use downgrade endpoint instead.`,
+          `Cannot upgrade from ${subscription.planTier} to ${newPlanId}. Use downgrade endpoint to change to a lower tier.`,
         );
       }
-    }
 
-    // Create subscription
-    const subscription = await (request.tenantDb as any).subscription.create({
-      data: {
-        shopId: request.shopId,
-        planTier: planId as any,
-        status: "ACTIVE",
-        billingCycleStart: new Date(),
-        billingCycleEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-        paymentMethodId,
-        isAutoRenew: true,
-      },
-      include: {
-        plan: true,
-      },
-    });
-
-    fastify.log.info(
-      { shopId: request.shopId, planId, subscriptionId: subscription.id },
-      "Subscription created",
-    );
-
-    reply.status(201);
-    return { data: subscription };
-  });
-
-  // ── GET /current ─────────────────────────────────────────────
-
-  fastify.get("/current", async (request: FastifyRequest, reply: FastifyReply) => {
-    const subscription = await (request.tenantDb as any).subscription.findFirst({
-      where: { shopId: request.shopId },
-      include: {
-        plan: true,
-        invoices: {
-          orderBy: { createdAt: "desc" },
-          take: 5,
-        },
-      },
-    });
-
-    if (!subscription) {
-      throw new NotFoundError("Subscription for shop", request.shopId);
-    }
-
-    // Get usage summary
-    const usageSummary = await (request.tenantDb as any).usageEvent.groupBy({
-      by: ["eventType"],
-      where: { shopId: request.shopId },
-      _count: true,
-    });
-
-    return {
-      data: {
-        subscription,
-        usage: usageSummary,
-        isExpiringSoon:
-          subscription.billingCycleEnd &&
-          new Date(subscription.billingCycleEnd).getTime() - Date.now() <
-            7 * 24 * 60 * 60 * 1000,
-      },
-    };
-  });
-
-  // ── PUT /upgrade ─────────────────────────────────────────────
-
-  fastify.put("/upgrade", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
-
-    const body = upgradeSchema.parse(request.body);
-    const { newPlanId } = body;
-
-    const subscription = await (request.tenantDb as any).subscription.findFirst({
-      where: { shopId: request.shopId },
-    });
-
-    if (!subscription) {
-      throw new NotFoundError("Subscription for shop", request.shopId);
-    }
-
-    if (subscription.status !== "ACTIVE") {
-      throw new ConflictError("Cannot upgrade inactive subscription");
-    }
-
-    // Validate upgrade path
-    const planHierarchy: Record<string, number> = {
-      FREE: 0,
-      STARTER: 1,
-      GROWTH: 2,
-      ENTERPRISE: 3,
-    };
-    if (planHierarchy[newPlanId] <= planHierarchy[subscription.planTier]) {
-      throw new ValidationError(
-        `Cannot upgrade from ${subscription.planTier} to ${newPlanId}. Use downgrade endpoint to change to a lower tier.`,
+      // Calculate proration credit (simplified)
+      const daysRemaining = Math.ceil(
+        (subscription.billingCycleEnd!.getTime() - Date.now()) /
+          (1000 * 60 * 60 * 24),
       );
-    }
+      const prorationCredit = (daysRemaining / 30) * 100; // Simplified calculation
 
-    // Calculate proration credit (simplified)
-    const daysRemaining = Math.ceil(
-      (subscription.billingCycleEnd!.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-    );
-    const prorationCredit = (daysRemaining / 30) * 100; // Simplified calculation
+      const updated = await (request.tenantDb as any).subscription.update({
+        where: { id: subscription.id },
+        data: {
+          planTier: newPlanId as any,
+          lastPlanChange: new Date(),
+        },
+        include: { plan: true },
+      });
 
-    const updated = await (request.tenantDb as any).subscription.update({
-      where: { id: subscription.id },
-      data: {
-        planTier: newPlanId as any,
-        lastPlanChange: new Date(),
-      },
-      include: { plan: true },
-    });
+      fastify.log.info(
+        {
+          shopId: request.shopId,
+          fromPlan: subscription.planTier,
+          toPlan: newPlanId,
+          prorationCredit,
+        },
+        "Subscription upgraded",
+      );
 
-    fastify.log.info(
-      {
-        shopId: request.shopId,
-        fromPlan: subscription.planTier,
-        toPlan: newPlanId,
-        prorationCredit,
-      },
-      "Subscription upgraded",
-    );
-
-    return {
-      data: {
-        subscription: updated,
-        prorationCredit,
-        message: `Upgraded to ${newPlanId}. Proration credit: $${prorationCredit.toFixed(2)}`,
-      },
-    };
-  });
+      return {
+        data: {
+          subscription: updated,
+          prorationCredit,
+          message: `Upgraded to ${newPlanId}. Proration credit: $${prorationCredit.toFixed(2)}`,
+        },
+      };
+    },
+  );
 
   // ── PUT /downgrade ───────────────────────────────────────────
 
-  fastify.put("/downgrade", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+  fastify.put(
+    "/downgrade",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
-    const body = downgradeSchema.parse(request.body);
-    const { newPlanId } = body;
+      const body = downgradeSchema.parse(request.body);
+      const { newPlanId } = body;
 
-    const subscription = await (request.tenantDb as any).subscription.findFirst({
-      where: { shopId: request.shopId },
-    });
+      const subscription = await (
+        request.tenantDb as any
+      ).subscription.findFirst({
+        where: { shopId: request.shopId },
+      });
 
-    if (!subscription) {
-      throw new NotFoundError("Subscription for shop", request.shopId);
-    }
+      if (!subscription) {
+        throw new NotFoundError("Subscription for shop", request.shopId);
+      }
 
-    if (subscription.status !== "ACTIVE") {
-      throw new ConflictError("Cannot downgrade inactive subscription");
-    }
+      if (subscription.status !== "ACTIVE") {
+        throw new ConflictError("Cannot downgrade inactive subscription");
+      }
 
-    // Validate downgrade path
-    const planHierarchy: Record<string, number> = {
-      FREE: 0,
-      STARTER: 1,
-      GROWTH: 2,
-      ENTERPRISE: 3,
-    };
-    if (planHierarchy[newPlanId] >= planHierarchy[subscription.planTier]) {
-      throw new ValidationError(
-        `Cannot downgrade from ${subscription.planTier} to ${newPlanId}. Use upgrade endpoint to move to higher tier.`,
+      // Validate downgrade path
+      const planHierarchy: Record<string, number> = {
+        FREE: 0,
+        STARTER: 1,
+        GROWTH: 2,
+        ENTERPRISE: 3,
+      };
+      if (planHierarchy[newPlanId] >= planHierarchy[subscription.planTier]) {
+        throw new ValidationError(
+          `Cannot downgrade from ${subscription.planTier} to ${newPlanId}. Use upgrade endpoint to move to higher tier.`,
+        );
+      }
+
+      const updated = await (request.tenantDb as any).subscription.update({
+        where: { id: subscription.id },
+        data: {
+          planTier: newPlanId as any,
+          lastPlanChange: new Date(),
+        },
+        include: { plan: true },
+      });
+
+      fastify.log.info(
+        {
+          shopId: request.shopId,
+          fromPlan: subscription.planTier,
+          toPlan: newPlanId,
+        },
+        "Subscription downgraded",
       );
-    }
 
-    const updated = await (request.tenantDb as any).subscription.update({
-      where: { id: subscription.id },
-      data: {
-        planTier: newPlanId as any,
-        lastPlanChange: new Date(),
-      },
-      include: { plan: true },
-    });
-
-    fastify.log.info(
-      {
-        shopId: request.shopId,
-        fromPlan: subscription.planTier,
-        toPlan: newPlanId,
-      },
-      "Subscription downgraded",
-    );
-
-    return {
-      data: {
-        subscription: updated,
-        message: `Downgraded to ${newPlanId}. Changes take effect on next billing cycle.`,
-      },
-    };
-  });
+      return {
+        data: {
+          subscription: updated,
+          message: `Downgraded to ${newPlanId}. Changes take effect on next billing cycle.`,
+        },
+      };
+    },
+  );
 
   // ── POST /cancel ─────────────────────────────────────────────
 
-  fastify.post("/cancel", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+  fastify.post(
+    "/cancel",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
-    const body = cancelSchema.parse(request.body);
-    const { immediate } = body;
+      const body = cancelSchema.parse(request.body);
+      const { immediate } = body;
 
-    const subscription = await (request.tenantDb as any).subscription.findFirst({
-      where: { shopId: request.shopId },
-    });
+      const subscription = await (
+        request.tenantDb as any
+      ).subscription.findFirst({
+        where: { shopId: request.shopId },
+      });
 
-    if (!subscription) {
-      throw new NotFoundError("Subscription for shop", request.shopId);
-    }
+      if (!subscription) {
+        throw new NotFoundError("Subscription for shop", request.shopId);
+      }
 
-    if (subscription.status === "CANCELLED") {
-      throw new ConflictError("Subscription is already cancelled");
-    }
+      if (subscription.status === "CANCELLED") {
+        throw new ConflictError("Subscription is already cancelled");
+      }
 
-    const updated = await (request.tenantDb as any).subscription.update({
-      where: { id: subscription.id },
-      data: {
-        status: "CANCELLED",
-        cancelledAt: new Date(),
-        cancelEffectiveDate: immediate ? new Date() : subscription.billingCycleEnd,
-      },
-    });
+      const updated = await (request.tenantDb as any).subscription.update({
+        where: { id: subscription.id },
+        data: {
+          status: "CANCELLED",
+          cancelledAt: new Date(),
+          cancelEffectiveDate: immediate
+            ? new Date()
+            : subscription.billingCycleEnd,
+        },
+      });
 
-    fastify.log.info(
-      {
-        shopId: request.shopId,
-        immediate,
-        effectiveDate: updated.cancelEffectiveDate,
-      },
-      "Subscription cancelled",
-    );
+      fastify.log.info(
+        {
+          shopId: request.shopId,
+          immediate,
+          effectiveDate: updated.cancelEffectiveDate,
+        },
+        "Subscription cancelled",
+      );
 
-    reply.status(200);
-    return {
-      data: updated,
-      message: immediate
-        ? "Subscription cancelled immediately"
-        : "Subscription scheduled for cancellation at end of billing cycle",
-    };
-  });
+      reply.status(200);
+      return {
+        data: updated,
+        message: immediate
+          ? "Subscription cancelled immediately"
+          : "Subscription scheduled for cancellation at end of billing cycle",
+      };
+    },
+  );
 
   // ── GET /plans ───────────────────────────────────────────────
 
-  fastify.get("/plans", async (request: FastifyRequest, reply: FastifyReply) => {
-    const plans = await (request.tenantDb as any).plan.findMany({
-      orderBy: { tier: "asc" },
-    });
+  fastify.get(
+    "/plans",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const plans = await (request.tenantDb as any).plan.findMany({
+        orderBy: { tier: "asc" },
+      });
 
-    return {
-      data: plans,
-      total: plans.length,
-    };
-  });
+      return {
+        data: plans,
+        total: plans.length,
+      };
+    },
+  );
 
   // ── GET /invoices ────────────────────────────────────────────
 
-  fastify.get("/invoices", async (request: FastifyRequest, reply: FastifyReply) => {
-    const query = paginationSchema.parse(request.query);
-    const { page, limit } = query;
+  fastify.get(
+    "/invoices",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const query = paginationSchema.parse(request.query);
+      const { page, limit } = query;
 
-    const [invoices, total] = await Promise.all([
-      (request.tenantDb as any).invoice.findMany({
-        where: { shopId: request.shopId },
-        orderBy: { createdAt: "desc" },
-        skip: (page - 1) * limit,
-        take: limit,
-        include: {
-          subscription: { select: { planTier: true } },
+      const [invoices, total] = await Promise.all([
+        (request.tenantDb as any).invoice.findMany({
+          where: { shopId: request.shopId },
+          orderBy: { createdAt: "desc" },
+          skip: (page - 1) * limit,
+          take: limit,
+          include: {
+            subscription: { select: { planTier: true } },
+          },
+        }),
+        (request.tenantDb as any).invoice.count({
+          where: { shopId: request.shopId },
+        }),
+      ]);
+
+      return {
+        data: invoices,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
         },
-      }),
-      (request.tenantDb as any).invoice.count({
-        where: { shopId: request.shopId },
-      }),
-    ]);
-
-    return {
-      data: invoices,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-  });
+      };
+    },
+  );
 
   // ── GET /invoices/:id ────────────────────────────────────────
 
-  fastify.get("/invoices/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
+  fastify.get(
+    "/invoices/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { id } = request.params as { id: string };
 
-    const invoice = await (request.tenantDb as any).invoice.findUnique({
-      where: { id },
-      include: {
-        subscription: true,
-        lineItems: true,
-        payments: true,
-      },
-    });
+      const invoice = await (request.tenantDb as any).invoice.findUnique({
+        where: { id },
+        include: {
+          subscription: true,
+          lineItems: true,
+          payments: true,
+        },
+      });
 
-    if (!invoice) {
-      throw new NotFoundError("Invoice", id);
-    }
+      if (!invoice) {
+        throw new NotFoundError("Invoice", id);
+      }
 
-    if (invoice.shopId !== request.shopId) {
-      throw new ForbiddenError("Cannot access invoice from another shop");
-    }
+      if (invoice.shopId !== request.shopId) {
+        throw new ForbiddenError("Cannot access invoice from another shop");
+      }
 
-    return { data: invoice };
-  });
+      return { data: invoice };
+    },
+  );
 
   // ── GET /usage ───────────────────────────────────────────────
 
-  fastify.get("/usage", async (request: FastifyRequest, reply: FastifyReply) => {
-    const last30Days = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  fastify.get(
+    "/usage",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const last30Days = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-    const usageBreakdown = await (request.tenantDb as any).usageEvent.groupBy({
-      by: ["eventType"],
-      where: {
-        shopId: request.shopId,
-        createdAt: { gte: last30Days },
-      },
-      _count: true,
-    });
-
-    // Get subscription limits
-    const subscription = await (request.tenantDb as any).subscription.findFirst({
-      where: { shopId: request.shopId },
-      include: { plan: true },
-    });
-
-    if (!subscription) {
-      throw new NotFoundError("Subscription for shop", request.shopId);
-    }
-
-    const usagePercentages = usageBreakdown.map((item: any) => ({
-      eventType: item.eventType,
-      count: item._count,
-      limit: (subscription.plan as any)[`${item.eventType}_limit`] || null,
-      percentage:
-        (subscription.plan as any)[`${item.eventType}_limit`] > 0
-          ? Math.round(
-              (item._count / (subscription.plan as any)[`${item.eventType}_limit`]) * 100,
-            )
-          : 0,
-    }));
-
-    return {
-      data: {
-        billingPeriod: {
-          start: subscription.billingCycleStart,
-          end: subscription.billingCycleEnd,
+      const usageBreakdown = await (request.tenantDb as any).usageEvent.groupBy(
+        {
+          by: ["eventType"],
+          where: {
+            shopId: request.shopId,
+            createdAt: { gte: last30Days },
+          },
+          _count: true,
         },
-        usage: usagePercentages,
-        isOverLimit: usagePercentages.some((u: any) => u.percentage > 100),
-      },
-    };
-  });
+      );
+
+      // Get subscription limits
+      const subscription = await (
+        request.tenantDb as any
+      ).subscription.findFirst({
+        where: { shopId: request.shopId },
+        include: { plan: true },
+      });
+
+      if (!subscription) {
+        throw new NotFoundError("Subscription for shop", request.shopId);
+      }
+
+      const usagePercentages = usageBreakdown.map((item: any) => ({
+        eventType: item.eventType,
+        count: item._count,
+        limit: (subscription.plan as any)[`${item.eventType}_limit`] || null,
+        percentage:
+          (subscription.plan as any)[`${item.eventType}_limit`] > 0
+            ? Math.round(
+                (item._count /
+                  (subscription.plan as any)[`${item.eventType}_limit`]) *
+                  100,
+              )
+            : 0,
+      }));
+
+      return {
+        data: {
+          billingPeriod: {
+            start: subscription.billingCycleStart,
+            end: subscription.billingCycleEnd,
+          },
+          usage: usagePercentages,
+          isOverLimit: usagePercentages.some((u: any) => u.percentage > 100),
+        },
+      };
+    },
+  );
 
   // ── POST /invoices/:id/pay ───────────────────────────────────
 
@@ -463,7 +507,9 @@ async function billingSubscriptionsRoutes(
       }
 
       if (invoice.shopId !== request.shopId) {
-        throw new ForbiddenError("Cannot process payment for invoice from another shop");
+        throw new ForbiddenError(
+          "Cannot process payment for invoice from another shop",
+        );
       }
 
       if (invoice.status === "PAID") {

@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 /* ═══════════════════════════════════════════════════════════
    AUTH CONTEXT & PROVIDER
@@ -21,7 +27,11 @@ export interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
+  login: (
+    email: string,
+    password: string,
+    rememberMe?: boolean,
+  ) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   refreshToken: () => Promise<void>;
@@ -55,9 +65,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         // Read token from httpOnly cookie (via document.cookie)
         const cookieToken = document.cookie
-          .split('; ')
-          .find(c => c.startsWith('auth-token='))
-          ?.split('=')[1];
+          .split("; ")
+          .find((c) => c.startsWith("auth-token="))
+          ?.split("=")[1];
 
         const storedUser = localStorage.getItem("authUser");
 
@@ -105,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (newToken) {
           setToken(newToken);
-          document.cookie = `auth-token=${newToken}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax${window.location.protocol === 'https:' ? '; secure' : ''}`;
+          document.cookie = `auth-token=${newToken}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax${window.location.protocol === "https:" ? "; secure" : ""}`;
         }
         if (newRefreshToken) {
           localStorage.setItem("refreshToken", newRefreshToken);
@@ -120,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       if (retryCount < 2) {
         const delay = Math.pow(2, retryCount) * 1000;
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
         return refreshTokenFn(refreshTokenValue, retryCount + 1);
       }
       throw error;
@@ -140,7 +150,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({
           email,
           password,
-          shopDomain: process.env.NEXT_PUBLIC_SHOP_DOMAIN || "demo.witylogix.io",
+          shopDomain:
+            process.env.NEXT_PUBLIC_SHOP_DOMAIN || "demo.witylogix.io",
         }),
         credentials: "include",
         signal: controller.signal,
@@ -150,7 +161,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.message || `Login failed: ${response.status}`;
+        const errorMessage =
+          errorData.message || `Login failed: ${response.status}`;
 
         if (response.status === 401) {
           throw new Error("Invalid email or password");
@@ -185,7 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Fallback: also set cookie in case backend doesn't set httpOnly
       if (data.token) {
-        document.cookie = `auth-token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax${window.location.protocol === 'https:' ? '; secure' : ''}`;
+        document.cookie = `auth-token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax${window.location.protocol === "https:" ? "; secure" : ""}`;
       }
 
       if (rememberMe) {
@@ -197,7 +209,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
-        throw new Error("Login request timed out. Please check that the API server is running.");
+        throw new Error(
+          "Login request timed out. Please check that the API server is running.",
+        );
       }
       throw error;
     }
@@ -218,11 +232,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const errorData = await response.json().catch(() => ({}));
 
         if (response.status === 400) {
-          throw new Error(errorData.message || errorData.error || "Invalid registration data");
+          throw new Error(
+            errorData.message || errorData.error || "Invalid registration data",
+          );
         } else if (response.status === 409) {
           throw new Error(errorData.error || "Email already registered");
         } else {
-          throw new Error(errorData.message || errorData.error || `Registration failed: ${response.status}`);
+          throw new Error(
+            errorData.message ||
+              errorData.error ||
+              `Registration failed: ${response.status}`,
+          );
         }
       }
 
@@ -248,7 +268,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Fallback: also set cookie in case backend doesn't set httpOnly
       if (responseData.token) {
-        document.cookie = `auth-token=${responseData.token}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax${window.location.protocol === 'https:' ? '; secure' : ''}`;
+        document.cookie = `auth-token=${responseData.token}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax${window.location.protocol === "https:" ? "; secure" : ""}`;
       }
     } catch (error) {
       throw error;
@@ -268,7 +288,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("rememberedEmail");
 
     // Clear auth cookie
-    document.cookie = "auth-token=; path=/; max-age=0; samesite=lax${window.location.protocol === 'https:' ? '; secure' : ''}";
+    document.cookie =
+      "auth-token=; path=/; max-age=0; samesite=lax${window.location.protocol === 'https:' ? '; secure' : ''}";
 
     // Notify backend of logout
     if (token) {

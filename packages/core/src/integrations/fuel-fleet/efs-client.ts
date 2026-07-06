@@ -147,14 +147,17 @@ export class EFSClient extends FuelFleetAdapter {
     try {
       const response = await this.retryHandler.execute(
         () =>
-          nodeFetch(new URL("/api/v1/auth/token", this.config.baseUrl).toString(), {
-            method: "POST",
-            headers: {
-              "X-API-Token": this.config.token!,
-              "Content-Type": "application/json",
+          nodeFetch(
+            new URL("/api/v1/auth/token", this.config.baseUrl).toString(),
+            {
+              method: "POST",
+              headers: {
+                "X-API-Token": this.config.token!,
+                "Content-Type": "application/json",
+              },
             },
-          }),
-        "EFS authentication"
+          ),
+        "EFS authentication",
       );
 
       if (!response.ok) {
@@ -170,7 +173,7 @@ export class EFSClient extends FuelFleetAdapter {
     } catch (error) {
       this.circuitBreaker.recordFailure();
       throw new Error(
-        `EFS authentication error: ${error instanceof Error ? error.message : String(error)}`
+        `EFS authentication error: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -187,7 +190,7 @@ export class EFSClient extends FuelFleetAdapter {
   private async apiRequest<T>(
     endpoint: string,
     method: string = "GET",
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     await this.preRequestCheck();
 
@@ -206,7 +209,7 @@ export class EFSClient extends FuelFleetAdapter {
             },
             body: body ? JSON.stringify(body) : undefined,
           }),
-        `EFS ${method} ${endpoint}`
+        `EFS ${method} ${endpoint}`,
       )) as Response;
 
       if (!response.ok) {
@@ -245,7 +248,7 @@ export class EFSClient extends FuelFleetAdapter {
         vehicleId: cardData.vehicleId,
         dailyLimit: cardData.dailyLimit,
         monthlyLimit: cardData.monthlyLimit,
-      }
+      },
     );
 
     return this.mapEFSCardToFuelCard(response);
@@ -261,7 +264,7 @@ export class EFSClient extends FuelFleetAdapter {
     const response = await this.apiRequest<EFSCardResponse>(
       `/api/v1/cards/${cardId}/activate`,
       "POST",
-      {}
+      {},
     );
 
     return this.mapEFSCardToFuelCard(response);
@@ -277,7 +280,7 @@ export class EFSClient extends FuelFleetAdapter {
     const response = await this.apiRequest<EFSCardResponse>(
       `/api/v1/cards/${cardId}/suspend`,
       "POST",
-      {}
+      {},
     );
 
     return this.mapEFSCardToFuelCard(response);
@@ -293,7 +296,7 @@ export class EFSClient extends FuelFleetAdapter {
     const response = await this.apiRequest<EFSCardResponse>(
       `/api/v1/cards/${cardId}/close`,
       "POST",
-      {}
+      {},
     );
 
     return this.mapEFSCardToFuelCard(response);
@@ -307,7 +310,7 @@ export class EFSClient extends FuelFleetAdapter {
    */
   async getCard(cardId: string): Promise<FuelCard> {
     const response = await this.apiRequest<EFSCardResponse>(
-      `/api/v1/cards/${cardId}`
+      `/api/v1/cards/${cardId}`,
     );
 
     return this.mapEFSCardToFuelCard(response);
@@ -322,7 +325,7 @@ export class EFSClient extends FuelFleetAdapter {
    */
   async getTransactions(
     cardId: string,
-    criteria?: Record<string, unknown>
+    criteria?: Record<string, unknown>,
   ): Promise<FuelTransaction[]> {
     const params = new URLSearchParams();
 
@@ -338,7 +341,7 @@ export class EFSClient extends FuelFleetAdapter {
     const responses = await this.apiRequest<EFSTransactionResponse[]>(endpoint);
 
     return responses.map((response) =>
-      this.mapEFSTransactionToFuelTransaction(response)
+      this.mapEFSTransactionToFuelTransaction(response),
     );
   }
 
@@ -350,7 +353,7 @@ export class EFSClient extends FuelFleetAdapter {
    */
   async getTransaction(transactionId: string): Promise<FuelTransaction> {
     const response = await this.apiRequest<EFSTransactionResponse>(
-      `/api/v1/transactions/${transactionId}`
+      `/api/v1/transactions/${transactionId}`,
     );
 
     return this.mapEFSTransactionToFuelTransaction(response);
@@ -363,11 +366,7 @@ export class EFSClient extends FuelFleetAdapter {
    * @returns Created/updated policy
    */
   async setPolicy(policy: Partial<FuelPolicy>): Promise<FuelPolicy> {
-    const response = await this.apiRequest(
-      "/api/v1/policies",
-      "POST",
-      policy
-    );
+    const response = await this.apiRequest("/api/v1/policies", "POST", policy);
 
     return response as FuelPolicy;
   }
@@ -379,9 +378,7 @@ export class EFSClient extends FuelFleetAdapter {
    * @returns Policy data
    */
   async getPolicy(policyId: string): Promise<FuelPolicy> {
-    const response = await this.apiRequest(
-      `/api/v1/policies/${policyId}`
-    );
+    const response = await this.apiRequest(`/api/v1/policies/${policyId}`);
 
     return response as FuelPolicy;
   }
@@ -392,7 +389,9 @@ export class EFSClient extends FuelFleetAdapter {
    * @param criteria - Filter criteria
    * @returns Array of station locations
    */
-  async listStations(criteria?: Record<string, unknown>): Promise<StationLocation[]> {
+  async listStations(
+    criteria?: Record<string, unknown>,
+  ): Promise<StationLocation[]> {
     const params = new URLSearchParams();
 
     if (criteria) {
@@ -432,7 +431,7 @@ export class EFSClient extends FuelFleetAdapter {
    */
   async detectFraud(cardId: string): Promise<FraudAlert[]> {
     const response = await this.apiRequest<FraudAlert[]>(
-      `/api/v1/cards/${cardId}/fraud-alerts`
+      `/api/v1/cards/${cardId}/fraud-alerts`,
     );
 
     return response;
@@ -444,11 +443,13 @@ export class EFSClient extends FuelFleetAdapter {
    * @param assignment - Assignment data
    * @returns Created assignment
    */
-  async assignCard(assignment: Partial<CardAssignment>): Promise<CardAssignment> {
+  async assignCard(
+    assignment: Partial<CardAssignment>,
+  ): Promise<CardAssignment> {
     const response = await this.apiRequest(
       "/api/v1/assignments",
       "POST",
-      assignment
+      assignment,
     );
 
     return response as CardAssignment;
@@ -475,12 +476,10 @@ export class EFSClient extends FuelFleetAdapter {
    * @param limit - Limit configuration
    * @returns Created/updated limit
    */
-  async setPurchaseLimit(limit: Partial<PurchaseLimit>): Promise<PurchaseLimit> {
-    const response = await this.apiRequest(
-      "/api/v1/limits",
-      "POST",
-      limit
-    );
+  async setPurchaseLimit(
+    limit: Partial<PurchaseLimit>,
+  ): Promise<PurchaseLimit> {
+    const response = await this.apiRequest("/api/v1/limits", "POST", limit);
 
     return response as PurchaseLimit;
   }
@@ -493,7 +492,7 @@ export class EFSClient extends FuelFleetAdapter {
    */
   async getPurchaseLimits(cardId: string): Promise<PurchaseLimit[]> {
     const limits = await this.apiRequest<PurchaseLimit[]>(
-      `/api/v1/cards/${cardId}/limits`
+      `/api/v1/cards/${cardId}/limits`,
     );
 
     return limits;
@@ -508,12 +507,12 @@ export class EFSClient extends FuelFleetAdapter {
    */
   async setLocationRestrictions(
     cardId: string,
-    restrictions: Record<string, unknown>
+    restrictions: Record<string, unknown>,
   ): Promise<FuelCard> {
     const response = await this.apiRequest<EFSCardResponse>(
       `/api/v1/cards/${cardId}/location-restrictions`,
       "POST",
-      restrictions
+      restrictions,
     );
 
     return this.mapEFSCardToFuelCard(response);
@@ -530,7 +529,7 @@ export class EFSClient extends FuelFleetAdapter {
     const response = await this.apiRequest<MoneyCode>(
       `/api/v1/cards/${cardId}/money-codes`,
       "POST",
-      { amount }
+      { amount },
     );
 
     return response;
@@ -546,7 +545,7 @@ export class EFSClient extends FuelFleetAdapter {
     const response = await this.apiRequest<MoneyCode>(
       `/api/v1/money-codes/${code}/redeem`,
       "POST",
-      {}
+      {},
     );
 
     return response;
@@ -560,7 +559,7 @@ export class EFSClient extends FuelFleetAdapter {
    */
   async getMoneyCode(code: string): Promise<MoneyCode> {
     const response = await this.apiRequest<MoneyCode>(
-      `/api/v1/money-codes/${code}`
+      `/api/v1/money-codes/${code}`,
     );
 
     return response;
@@ -598,7 +597,7 @@ export class EFSClient extends FuelFleetAdapter {
    * @returns FuelTransaction object
    */
   private mapEFSTransactionToFuelTransaction(
-    response: EFSTransactionResponse
+    response: EFSTransactionResponse,
   ): FuelTransaction {
     return {
       transactionId: response.txnId,

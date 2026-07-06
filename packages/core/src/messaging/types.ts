@@ -14,21 +14,21 @@
  * Message delivery channels.
  */
 export enum MessageChannel {
-  EMAIL = 'email',
-  SMS = 'sms',
-  WHATSAPP = 'whatsapp',
-  PUSH = 'push',
-  IN_APP = 'in_app',
+  EMAIL = "email",
+  SMS = "sms",
+  WHATSAPP = "whatsapp",
+  PUSH = "push",
+  IN_APP = "in_app",
 }
 
 /**
  * Message priority for routing and retry logic.
  */
 export enum MessagePriority {
-  LOW = 'low',
-  NORMAL = 'normal',
-  HIGH = 'high',
-  URGENT = 'urgent',
+  LOW = "low",
+  NORMAL = "normal",
+  HIGH = "high",
+  URGENT = "urgent",
 }
 
 /**
@@ -37,14 +37,14 @@ export enum MessagePriority {
  * sent → delivered/bounced/opened/clicked
  */
 export enum DeliveryStatus {
-  QUEUED = 'queued',
-  SENDING = 'sending',
-  SENT = 'sent',
-  DELIVERED = 'delivered',
-  FAILED = 'failed',
-  BOUNCED = 'bounced',
-  OPENED = 'opened',
-  CLICKED = 'clicked',
+  QUEUED = "queued",
+  SENDING = "sending",
+  SENT = "sent",
+  DELIVERED = "delivered",
+  FAILED = "failed",
+  BOUNCED = "bounced",
+  OPENED = "opened",
+  CLICKED = "clicked",
 }
 
 /**
@@ -166,7 +166,7 @@ export class MessagingError extends Error {
     public retryable: boolean = false,
   ) {
     super(message);
-    this.name = 'MessagingError';
+    this.name = "MessagingError";
     Object.setPrototypeOf(this, MessagingError.prototype);
   }
 }
@@ -177,12 +177,12 @@ export class MessagingError extends Error {
 export class InvalidRecipientError extends MessagingError {
   constructor(channel: MessageChannel, recipient: string, message: string) {
     super(
-      'INVALID_RECIPIENT',
+      "INVALID_RECIPIENT",
       `Invalid recipient "${recipient}" for ${channel}: ${message}`,
       channel,
       false,
     );
-    this.name = 'InvalidRecipientError';
+    this.name = "InvalidRecipientError";
     Object.setPrototypeOf(this, InvalidRecipientError.prototype);
   }
 }
@@ -196,8 +196,8 @@ export class RateLimitError extends MessagingError {
     message: string,
     public resetAfter?: number,
   ) {
-    super('RATE_LIMIT', message, channel, true);
-    this.name = 'RateLimitError';
+    super("RATE_LIMIT", message, channel, true);
+    this.name = "RateLimitError";
     Object.setPrototypeOf(this, RateLimitError.prototype);
   }
 }
@@ -208,12 +208,12 @@ export class RateLimitError extends MessagingError {
 export class AuthenticationError extends MessagingError {
   constructor(channel: MessageChannel, provider: string, message: string) {
     super(
-      'AUTH_ERROR',
+      "AUTH_ERROR",
       `Authentication failed for ${provider} (${channel}): ${message}`,
       channel,
       false,
     );
-    this.name = 'AuthenticationError';
+    this.name = "AuthenticationError";
     Object.setPrototypeOf(this, AuthenticationError.prototype);
   }
 }
@@ -223,8 +223,13 @@ export class AuthenticationError extends MessagingError {
  */
 export class ConfigurationError extends MessagingError {
   constructor(channel: MessageChannel, message: string) {
-    super('CONFIG_ERROR', `Configuration error for ${channel}: ${message}`, channel, false);
-    this.name = 'ConfigurationError';
+    super(
+      "CONFIG_ERROR",
+      `Configuration error for ${channel}: ${message}`,
+      channel,
+      false,
+    );
+    this.name = "ConfigurationError";
     Object.setPrototypeOf(this, ConfigurationError.prototype);
   }
 }

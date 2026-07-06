@@ -54,7 +54,7 @@ export async function generateApiKey(
     expiresAt?: Date;
     permissions?: Record<string, boolean>;
     rateLimit?: number;
-  }
+  },
 ): Promise<ApiKeyResponse> {
   // Generate random bytes
   const randomPart = randomBytes(KEY_RANDOM_BYTES).toString("base64url");
@@ -72,7 +72,9 @@ export async function generateApiKey(
       orgId,
       name,
       keyHash,
-      prefix: prefix + randomPart.slice(0, KEY_PREFIX_LENGTH - KEY_LIVE_PREFIX.length),
+      prefix:
+        prefix +
+        randomPart.slice(0, KEY_PREFIX_LENGTH - KEY_LIVE_PREFIX.length),
       scopes,
       permissions: options?.permissions || {},
       rateLimit: options?.rateLimit || 100,
@@ -109,10 +111,13 @@ export async function generateApiKey(
  * @returns Validation result with orgId and scopes if valid
  */
 export async function validateApiKey(
-  rawKey: string
+  rawKey: string,
 ): Promise<ApiKeyValidationResult> {
   // Check format
-  if (!rawKey.startsWith(KEY_LIVE_PREFIX) && !rawKey.startsWith(KEY_TEST_PREFIX)) {
+  if (
+    !rawKey.startsWith(KEY_LIVE_PREFIX) &&
+    !rawKey.startsWith(KEY_TEST_PREFIX)
+  ) {
     return {
       valid: false,
       reason: "INVALID",
@@ -196,7 +201,7 @@ export async function rotateApiKey(keyId: string): Promise<ApiKeyResponse> {
       expiresAt: oldKey.expiresAt || undefined,
       permissions: (oldKey.permissions as any) || {},
       rateLimit: oldKey.rateLimit,
-    }
+    },
   );
 
   // Deactivate old key
@@ -249,9 +254,7 @@ export async function reactivateApiKey(keyId: string): Promise<void> {
  * @param orgId - Organization ID
  * @returns List of API keys (no secrets)
  */
-export async function listApiKeys(
-  orgId: string
-): Promise<
+export async function listApiKeys(orgId: string): Promise<
   Array<{
     id: string;
     name: string;
@@ -298,7 +301,7 @@ export async function listApiKeys(
  */
 export async function updateApiKeyScopes(
   keyId: string,
-  scopes: ApiKeyScope[]
+  scopes: ApiKeyScope[],
 ): Promise<void> {
   await prisma.apiKey.update({
     where: { id: keyId },
@@ -316,7 +319,7 @@ export async function updateApiKeyScopes(
  */
 export async function updateApiKeyRateLimit(
   keyId: string,
-  rateLimit: number
+  rateLimit: number,
 ): Promise<void> {
   await prisma.apiKey.update({
     where: { id: keyId },
@@ -336,7 +339,7 @@ export async function updateApiKeyRateLimit(
  */
 export async function updateApiKeyExpiration(
   keyId: string,
-  expiresAt: Date | null
+  expiresAt: Date | null,
 ): Promise<void> {
   await prisma.apiKey.update({
     where: { id: keyId },
@@ -356,7 +359,7 @@ export async function updateApiKeyExpiration(
  */
 export async function recordApiKeyUsage(
   keyId: string,
-  ipAddress: string
+  ipAddress: string,
 ): Promise<void> {
   await prisma.apiKey.update({
     where: { id: keyId },
@@ -394,7 +397,7 @@ export async function deleteApiKey(keyId: string): Promise<void> {
  */
 export async function checkApiKeyQuota(
   orgId: string,
-  planMaxKeys: number
+  planMaxKeys: number,
 ): Promise<boolean> {
   const activeKeyCount = await prisma.apiKey.count({
     where: { orgId, isActive: true },
@@ -413,7 +416,7 @@ export async function checkApiKeyQuota(
 async function hashKey(key: string): Promise<string> {
   const hash = await crypto.subtle.digest(
     "SHA-256",
-    new TextEncoder().encode(key)
+    new TextEncoder().encode(key),
   );
   return Buffer.from(hash).toString("hex");
 }

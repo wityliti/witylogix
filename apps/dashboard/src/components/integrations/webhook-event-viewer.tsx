@@ -37,14 +37,16 @@ export function WebhookEventViewer({
 }: WebhookEventViewerProps) {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState<WebhookStatus | "all">("all");
+  const [filterStatus, setFilterStatus] = useState<WebhookStatus | "all">(
+    "all",
+  );
   const [filterEventType, setFilterEventType] = useState<string>("all");
   const [copiedPayloadId, setCopiedPayloadId] = useState<string | null>(null);
 
   // Get unique event types and statuses
   const eventTypes = useMemo(
     () => Array.from(new Set(events.map((e) => e.eventType))),
-    [events]
+    [events],
   );
 
   // Filter events
@@ -52,12 +54,12 @@ export function WebhookEventViewer({
     return events.filter(
       (event) =>
         (filterStatus === "all" || event.status === filterStatus) &&
-        (filterEventType === "all" || event.eventType === filterEventType)
+        (filterEventType === "all" || event.eventType === filterEventType),
     );
   }, [events, filterStatus, filterEventType]);
 
   const getStatusConfig = (
-    status: WebhookStatus
+    status: WebhookStatus,
   ): { color: string; bgColor: string; icon: string; label: string } => {
     switch (status) {
       case "delivered":
@@ -106,11 +108,13 @@ export function WebhookEventViewer({
             </label>
             <select
               value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value as WebhookStatus | "all")}
+              onChange={(e) =>
+                setFilterStatus(e.target.value as WebhookStatus | "all")
+              }
               className={cn(
                 "w-full px-3 py-2 rounded border text-sm",
                 "bg-wl-bg-default text-wl-text-primary",
-                "border-wl-border-subtle focus:border-wl-primary-500 focus:outline-none"
+                "border-wl-border-subtle focus:border-wl-primary-500 focus:outline-none",
               )}
             >
               <option value="all">All Statuses</option>
@@ -131,7 +135,7 @@ export function WebhookEventViewer({
               className={cn(
                 "w-full px-3 py-2 rounded border text-sm",
                 "bg-wl-bg-default text-wl-text-primary",
-                "border-wl-border-subtle focus:border-wl-primary-500 focus:outline-none"
+                "border-wl-border-subtle focus:border-wl-primary-500 focus:outline-none",
               )}
             >
               <option value="all">All Event Types</option>
@@ -169,7 +173,8 @@ export function WebhookEventViewer({
                   className={cn(
                     "w-full px-4 py-3 text-left transition-colors",
                     "hover:bg-wl-surface-hover",
-                    isExpanded && "bg-wl-surface-hover border-b border-wl-border-subtle"
+                    isExpanded &&
+                      "bg-wl-surface-hover border-b border-wl-border-subtle",
                   )}
                 >
                   <div className="flex items-center gap-3">
@@ -177,7 +182,7 @@ export function WebhookEventViewer({
                     <div
                       className={cn(
                         "w-5 h-5 flex items-center justify-center transition-transform",
-                        isExpanded && "rotate-90"
+                        isExpanded && "rotate-90",
                       )}
                     >
                       <svg
@@ -197,7 +202,7 @@ export function WebhookEventViewer({
                     <div
                       className={cn(
                         "w-2 h-2 rounded-full",
-                        statusConfig.bgColor
+                        statusConfig.bgColor,
                       )}
                     />
 
@@ -216,7 +221,7 @@ export function WebhookEventViewer({
                       className={cn(
                         "px-2 py-1 rounded text-xs font-medium whitespace-nowrap",
                         statusConfig.bgColor,
-                        statusConfig.color
+                        statusConfig.color,
                       )}
                     >
                       {statusConfig.icon} {statusConfig.label}
@@ -241,17 +246,18 @@ export function WebhookEventViewer({
                           </h4>
                           <button
                             onClick={() =>
-                              copyToClipboard(formatJson(event.payload), event.id)
+                              copyToClipboard(
+                                formatJson(event.payload),
+                                event.id,
+                              )
                             }
                             className={cn(
                               "px-2 py-1 rounded text-xs transition-colors",
                               "text-wl-text-secondary hover:text-wl-text-primary",
-                              "bg-wl-surface-hover hover:bg-wl-border-subtle"
+                              "bg-wl-surface-hover hover:bg-wl-border-subtle",
                             )}
                           >
-                            {copiedPayloadId === event.id
-                              ? "Copied!"
-                              : "Copy"}
+                            {copiedPayloadId === event.id ? "Copied!" : "Copy"}
                           </button>
                         </div>
                         <pre
@@ -259,7 +265,7 @@ export function WebhookEventViewer({
                             "p-3 rounded text-xs overflow-x-auto",
                             "bg-wl-bg-default text-wl-text-secondary",
                             "border border-wl-border-subtle",
-                            "font-mono"
+                            "font-mono",
                           )}
                         >
                           <code>{formatJson(event.payload)}</code>
@@ -268,26 +274,35 @@ export function WebhookEventViewer({
                     )}
 
                     {/* Request headers section */}
-                    {event.requestHeaders && Object.keys(event.requestHeaders).length > 0 && (
-                      <div className="p-4 border-b border-wl-border-subtle">
-                        <h4 className="font-semibold text-sm text-wl-text-primary mb-2">
-                          Request Headers
-                        </h4>
-                        <div className="space-y-1">
-                          {Object.entries(event.requestHeaders).map(([key, value]) => (
-                            <div key={key} className="text-xs text-wl-text-secondary">
-                              <span className="font-mono font-semibold text-wl-text-primary">
-                                {key}:
-                              </span>{" "}
-                              <span className="font-mono">{String(value).substring(0, 50)}...</span>
-                            </div>
-                          ))}
+                    {event.requestHeaders &&
+                      Object.keys(event.requestHeaders).length > 0 && (
+                        <div className="p-4 border-b border-wl-border-subtle">
+                          <h4 className="font-semibold text-sm text-wl-text-primary mb-2">
+                            Request Headers
+                          </h4>
+                          <div className="space-y-1">
+                            {Object.entries(event.requestHeaders).map(
+                              ([key, value]) => (
+                                <div
+                                  key={key}
+                                  className="text-xs text-wl-text-secondary"
+                                >
+                                  <span className="font-mono font-semibold text-wl-text-primary">
+                                    {key}:
+                                  </span>{" "}
+                                  <span className="font-mono">
+                                    {String(value).substring(0, 50)}...
+                                  </span>
+                                </div>
+                              ),
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     {/* Response section */}
-                    {(event.responseStatus !== undefined || event.errorMessage) && (
+                    {(event.responseStatus !== undefined ||
+                      event.errorMessage) && (
                       <div className="p-4 border-b border-wl-border-subtle">
                         <div className="grid grid-cols-2 gap-4 mb-3">
                           {event.responseStatus !== undefined && (
@@ -295,12 +310,15 @@ export function WebhookEventViewer({
                               <div className="text-xs text-wl-text-secondary mb-1">
                                 Response Status
                               </div>
-                              <div className={cn(
-                                "text-sm font-semibold",
-                                event.responseStatus >= 200 && event.responseStatus < 300
-                                  ? "text-green-600 dark:text-green-400"
-                                  : "text-red-600 dark:text-red-400"
-                              )}>
+                              <div
+                                className={cn(
+                                  "text-sm font-semibold",
+                                  event.responseStatus >= 200 &&
+                                    event.responseStatus < 300
+                                    ? "text-green-600 dark:text-green-400"
+                                    : "text-red-600 dark:text-red-400",
+                                )}
+                              >
                                 {event.responseStatus}
                               </div>
                             </div>
@@ -321,7 +339,7 @@ export function WebhookEventViewer({
                             className={cn(
                               "p-2 rounded text-xs",
                               "bg-wl-danger-100 text-wl-danger-700",
-                              "dark:bg-wl-danger-900/30 dark:text-wl-danger-300"
+                              "dark:bg-wl-danger-900/30 dark:text-wl-danger-300",
                             )}
                           >
                             {event.errorMessage}
@@ -338,7 +356,7 @@ export function WebhookEventViewer({
                           className={cn(
                             "flex-1 px-3 py-2 rounded text-sm font-medium transition-colors",
                             "bg-wl-primary-100 text-wl-primary-700 hover:bg-wl-primary-200",
-                            "dark:bg-wl-primary-900/30 dark:text-wl-primary-300 dark:hover:bg-wl-primary-900/50"
+                            "dark:bg-wl-primary-900/30 dark:text-wl-primary-300 dark:hover:bg-wl-primary-900/50",
                           )}
                         >
                           Replay Event
@@ -355,13 +373,13 @@ export function WebhookEventViewer({
                               provider: event.provider,
                               payload: event.payload,
                             }),
-                            event.id
+                            event.id,
                           )
                         }
                         className={cn(
                           "flex-1 px-3 py-2 rounded text-sm font-medium transition-colors",
                           "bg-wl-surface-hover text-wl-text-primary hover:bg-wl-border-subtle",
-                          "dark:bg-wl-surface-hover dark:hover:bg-wl-border-default"
+                          "dark:bg-wl-surface-hover dark:hover:bg-wl-border-default",
                         )}
                       >
                         Copy All

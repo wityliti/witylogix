@@ -9,8 +9,8 @@
  * - Traffic provider service (orchestration layer)
  */
 
-export * from './types.js';
-export { GoogleDirectionsClient } from './google-directions-client.js';
-export { TomTomTrafficClient } from './tomtom-traffic-client.js';
-export { TrafficNormalizer } from './traffic-normalizer.js';
-export { TrafficProvider } from './traffic-provider.js';
+export * from "./types.js";
+export { GoogleDirectionsClient } from "./google-directions-client.js";
+export { TomTomTrafficClient } from "./tomtom-traffic-client.js";
+export { TrafficNormalizer } from "./traffic-normalizer.js";
+export { TrafficProvider } from "./traffic-provider.js";

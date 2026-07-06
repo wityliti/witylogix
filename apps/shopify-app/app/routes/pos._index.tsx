@@ -27,7 +27,8 @@ import {
   Card,
   Button,
   Badge,
-  Tabs, IndexTable,
+  Tabs,
+  IndexTable,
   BlockStack,
   InlineStack,
   Text,
@@ -37,7 +38,8 @@ import {
   Banner,
   Toast,
   Select,
-  Checkbox, } from "@shopify/polaris";
+  Checkbox,
+} from "@shopify/polaris";
 import { Link } from "react-router";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -92,7 +94,7 @@ const MOCK_ORDERS: POSOrder[] = [
     customer: { name: "Sarah Johnson", phone: "(555) 234-5678" },
     type: "IN_STORE_PICKUP",
     itemsCount: 2,
-    total: 89.50,
+    total: 89.5,
     status: "READY",
     createdAt: "2026-03-07T09:45:00Z",
   },
@@ -112,7 +114,7 @@ const MOCK_ORDERS: POSOrder[] = [
     customer: { name: "Emily Davis", phone: "(555) 456-7890" },
     type: "LOCAL_DELIVERY",
     itemsCount: 1,
-    total: 45.00,
+    total: 45.0,
     status: "PENDING",
     createdAt: "2026-03-07T14:20:00Z",
   },
@@ -142,7 +144,7 @@ const MOCK_ORDERS: POSOrder[] = [
     customer: { name: "Robert Taylor", phone: "(555) 789-0123" },
     type: "LOCAL_DELIVERY",
     itemsCount: 3,
-    total: 124.50,
+    total: 124.5,
     status: "DELIVERED",
     createdAt: "2026-03-06T11:45:00Z",
   },
@@ -241,11 +243,14 @@ export default function POSIndex() {
     setToastActive(true);
   };
 
-  const handleOrderStatusChange = (orderId: string, newStatus: POSOrder["status"]) => {
+  const handleOrderStatusChange = (
+    orderId: string,
+    newStatus: POSOrder["status"],
+  ) => {
     setOrders((prev) =>
       prev.map((order) =>
-        order.id === orderId ? { ...order, status: newStatus } : order
-      )
+        order.id === orderId ? { ...order, status: newStatus } : order,
+      ),
     );
   };
 
@@ -266,7 +271,7 @@ export default function POSIndex() {
   };
 
   const getTypeColor = (
-    type: "LOCAL_DELIVERY" | "IN_STORE_PICKUP" | "CURBSIDE"
+    type: "LOCAL_DELIVERY" | "IN_STORE_PICKUP" | "CURBSIDE",
   ) => {
     switch (type) {
       case "LOCAL_DELIVERY":
@@ -281,7 +286,7 @@ export default function POSIndex() {
   };
 
   const getTypeLabel = (
-    type: "LOCAL_DELIVERY" | "IN_STORE_PICKUP" | "CURBSIDE"
+    type: "LOCAL_DELIVERY" | "IN_STORE_PICKUP" | "CURBSIDE",
   ) => {
     switch (type) {
       case "LOCAL_DELIVERY":
@@ -296,7 +301,7 @@ export default function POSIndex() {
   };
 
   const getStatusTone = (
-    status: "PENDING" | "CONFIRMED" | "READY" | "PICKED_UP" | "DELIVERED"
+    status: "PENDING" | "CONFIRMED" | "READY" | "PICKED_UP" | "DELIVERED",
   ) => {
     switch (status) {
       case "PENDING":
@@ -354,28 +359,24 @@ export default function POSIndex() {
       selected={selectedOrders.includes(order.id)}
       onSelectionChange={(selected: boolean) => {
         setSelectedOrders((prev) =>
-          selected
-            ? [...prev, order.id]
-            : prev.filter((id) => id !== order.id)
+          selected ? [...prev, order.id] : prev.filter((id) => id !== order.id),
         );
       }}
     >
-        <IndexTable.Cell>{order.orderNumber}</IndexTable.Cell>
-        <IndexTable.Cell>{order.customer.name}</IndexTable.Cell>
-        <IndexTable.Cell>
+      <IndexTable.Cell>{order.orderNumber}</IndexTable.Cell>
+      <IndexTable.Cell>{order.customer.name}</IndexTable.Cell>
+      <IndexTable.Cell>
         <Badge tone={getTypeColor(order.type)}>
           {getTypeLabel(order.type)}
         </Badge>
       </IndexTable.Cell>
-        <IndexTable.Cell>{order.itemsCount}</IndexTable.Cell>
-        <IndexTable.Cell>${Number(order.total).toFixed(2)}</IndexTable.Cell>
-        <IndexTable.Cell>
-        <Badge tone={getStatusTone(order.status)}>
-          {order.status}
-        </Badge>
+      <IndexTable.Cell>{order.itemsCount}</IndexTable.Cell>
+      <IndexTable.Cell>${Number(order.total).toFixed(2)}</IndexTable.Cell>
+      <IndexTable.Cell>
+        <Badge tone={getStatusTone(order.status)}>{order.status}</Badge>
       </IndexTable.Cell>
-        <IndexTable.Cell>{formatDate(order.createdAt)}</IndexTable.Cell>
-        <IndexTable.Cell>
+      <IndexTable.Cell>{formatDate(order.createdAt)}</IndexTable.Cell>
+      <IndexTable.Cell>
         <Link to={`/pos/${order.id}`} style={{ textDecoration: "none" }}>
           <Button variant="plain">View</Button>
         </Link>
@@ -395,12 +396,22 @@ export default function POSIndex() {
           </Button>
         </InlineStack>
       )}
-      <Card>        <IndexTable
+      <Card>
+        {" "}
+        <IndexTable
           resourceName={{ singular: "order", plural: "orders" }}
           itemCount={orders.length}
-          selectedItemsCount={selectedOrders.length === orders.length ? "All" : selectedOrders.length}
+          selectedItemsCount={
+            selectedOrders.length === orders.length
+              ? "All"
+              : selectedOrders.length
+          }
           onSelectAll={() =>
-            setSelectedOrders(selectedOrders.length === orders.length ? [] : orders.map((o) => o.id))
+            setSelectedOrders(
+              selectedOrders.length === orders.length
+                ? []
+                : orders.map((o) => o.id),
+            )
           }
           headings={[
             { title: "Order ID" },
@@ -518,9 +529,7 @@ export default function POSIndex() {
                 <Text as="h3" variant="bodyMd" fontWeight="bold">
                   {form.name}
                 </Text>
-                {form.isDefault && (
-                  <Badge tone="new">Default</Badge>
-                )}
+                {form.isDefault && <Badge tone="new">Default</Badge>}
               </InlineStack>
 
               <BlockStack gap="200">
@@ -618,7 +627,8 @@ export default function POSIndex() {
               value="shopify_pos"
               onChange={() => {}}
             />
-            <TextField autoComplete="off"
+            <TextField
+              autoComplete="off"
               label="Location Name"
               placeholder="e.g., Main Store"
               value=""

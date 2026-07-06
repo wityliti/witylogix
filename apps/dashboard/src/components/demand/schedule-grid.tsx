@@ -19,7 +19,10 @@ export function ScheduleGrid({
 
   // Organize data by driver and time slot
   const { drivers, timeSlots, slotMap, zoneColors } = useMemo(() => {
-    const driverMap = new Map<string, { name: string; slots: Map<number, DriverScheduleSlot> }>();
+    const driverMap = new Map<
+      string,
+      { name: string; slots: Map<number, DriverScheduleSlot> }
+    >();
 
     // Group slots by driver
     slots.forEach((slot) => {
@@ -31,7 +34,8 @@ export function ScheduleGrid({
       }
 
       const timeSlotIndex = Math.floor(
-        new Date(slot.timeSlot).getHours() * 2 + new Date(slot.timeSlot).getMinutes() / 30
+        new Date(slot.timeSlot).getHours() * 2 +
+          new Date(slot.timeSlot).getMinutes() / 30,
       );
       const driver = driverMap.get(slot.driverId)!;
       driver.slots.set(timeSlotIndex, slot);
@@ -52,14 +56,14 @@ export function ScheduleGrid({
     // Generate unique colors for zones
     const uniqueZones = new Set(slots.map((s) => s.zoneId).filter(Boolean));
     const colors = [
-      "rgb(59, 130, 246)",   // Blue
-      "rgb(34, 197, 94)",    // Green
-      "rgb(234, 179, 8)",    // Yellow
-      "rgb(239, 68, 68)",    // Red
-      "rgb(168, 85, 247)",   // Purple
-      "rgb(236, 72, 153)",   // Pink
-      "rgb(14, 165, 233)",   // Sky
-      "rgb(249, 115, 22)",   // Orange
+      "rgb(59, 130, 246)", // Blue
+      "rgb(34, 197, 94)", // Green
+      "rgb(234, 179, 8)", // Yellow
+      "rgb(239, 68, 68)", // Red
+      "rgb(168, 85, 247)", // Purple
+      "rgb(236, 72, 153)", // Pink
+      "rgb(14, 165, 233)", // Sky
+      "rgb(249, 115, 22)", // Orange
     ];
 
     const zoneColorMap = new Map<string, string>();
@@ -98,9 +102,15 @@ export function ScheduleGrid({
   const handleSlotHover = useCallback(
     (slot: DriverScheduleSlot | null, event?: React.MouseEvent) => {
       if (slot) {
-        setHoveredSlotId(getSlotKey(slot.driverId, Math.floor(
-          new Date(slot.timeSlot).getHours() * 2 + new Date(slot.timeSlot).getMinutes() / 30
-        )));
+        setHoveredSlotId(
+          getSlotKey(
+            slot.driverId,
+            Math.floor(
+              new Date(slot.timeSlot).getHours() * 2 +
+                new Date(slot.timeSlot).getMinutes() / 30,
+            ),
+          ),
+        );
         if (event) {
           setTooltipPos({ x: event.clientX, y: event.clientY });
         }
@@ -108,14 +118,14 @@ export function ScheduleGrid({
         setHoveredSlotId(null);
       }
     },
-    []
+    [],
   );
 
   const handleSlotClick = useCallback(
     (slot: DriverScheduleSlot) => {
       onSlotClick?.(slot);
     },
-    [onSlotClick]
+    [onSlotClick],
   );
 
   return (
@@ -292,12 +302,15 @@ export function ScheduleGrid({
                   className="w-4 h-4 rounded"
                   style={{ backgroundColor: color, opacity: 0.6 }}
                 />
-                <span className="text-xs text-wl-text-tertiary">{zone || "Unassigned"}</span>
+                <span className="text-xs text-wl-text-tertiary">
+                  {zone || "Unassigned"}
+                </span>
               </div>
             ))}
           </div>
           <p className="text-xs text-wl-text-tertiary mt-2">
-            Cells show zone assignment and utilization rate. Empty slots (-) are available.
+            Cells show zone assignment and utilization rate. Empty slots (-) are
+            available.
           </p>
         </div>
 
@@ -312,9 +325,16 @@ export function ScheduleGrid({
             }}
           >
             {slots.map((slot) => {
-              if (getSlotKey(slot.driverId, Math.floor(
-                new Date(slot.timeSlot).getHours() * 2 + new Date(slot.timeSlot).getMinutes() / 30
-              )) !== hoveredSlotId) return null;
+              if (
+                getSlotKey(
+                  slot.driverId,
+                  Math.floor(
+                    new Date(slot.timeSlot).getHours() * 2 +
+                      new Date(slot.timeSlot).getMinutes() / 30,
+                  ),
+                ) !== hoveredSlotId
+              )
+                return null;
 
               return (
                 <div key={getSlotKey(slot.driverId, 0)}>

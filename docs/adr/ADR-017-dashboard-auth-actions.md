@@ -24,6 +24,7 @@ The dashboard uses Next.js 15 server actions (`"use server"`) but the three core
 - `forgotPasswordAction(formData)` — TODO: Implement password reset
 
 The **backend API is production-ready** (Fastify routes in `apps/api/src/routes/auth.ts`):
+
 - `POST /login` — returns `{ accessToken, refreshToken, expiresIn, user, shop }`
 - `POST /register` — (implied by context) creates user and auto-logs in
 - `POST /forgot-password` — sends reset email via notification queue
@@ -81,45 +82,48 @@ Implement three server actions (`loginAction`, `registerAction`, `forgotPassword
 ### 1. **Validation-First Approach**
 
 Use zod schemas to validate form input before making API calls. This provides:
+
 - Early error detection (fail fast)
 - Field-level error messages for UX
 - Type safety (parsed data is typed)
 
 ```typescript
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  shopDomain: z.string().min(1, 'Shop domain is required'),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  shopDomain: z.string().min(1, "Shop domain is required"),
 });
 ```
 
 ### 2. **Structured API Responses**
 
 All actions return a consistent shape:
+
 ```typescript
 type ActionResponse = {
   success: boolean;
-  error?: string;                    // General error message
-  fieldErrors?: Record<string, string>;  // Field-level validation errors
-  redirectUrl?: string;              // Where to redirect after success
+  error?: string; // General error message
+  fieldErrors?: Record<string, string>; // Field-level validation errors
+  redirectUrl?: string; // Where to redirect after success
 };
 ```
 
 ### 3. **Token Management via httpOnly Cookies**
 
 On successful login/register:
+
 - Extract `accessToken` and `refreshToken` from API response
 - Store both in httpOnly cookies (set via `cookies().set()`)
 - No token in localStorage (secure-only approach)
 - Cookies auto-sent on subsequent API calls
 
 ```typescript
-const { cookies } = await import('next/headers');
+const { cookies } = await import("next/headers");
 const cookieStore = await cookies();
-cookieStore.set('accessToken', accessToken, {
+cookieStore.set("accessToken", accessToken, {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax',
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax",
   maxAge: 3600, // 1 hour
 });
 ```
@@ -127,6 +131,7 @@ cookieStore.set('accessToken', accessToken, {
 ### 4. **Network Error Handling**
 
 Handle common failure scenarios:
+
 - Network timeout → graceful error message
 - API validation errors (400) → field-level feedback
 - Unauthorized (401) → "Invalid credentials" message
@@ -135,14 +140,16 @@ Handle common failure scenarios:
 ### 5. **Post-Success Redirect**
 
 After token storage, redirect to dashboard:
+
 ```typescript
-const { redirect } = await import('next/navigation');
-redirect('/dashboard');
+const { redirect } = await import("next/navigation");
+redirect("/dashboard");
 ```
 
 ### 6. **BYOK Auth Provider Compatibility**
 
 The implementation is agnostic to auth provider. When BYOK is enabled (from Sprint 3.3):
+
 - Backend handles provider routing (Auth0, Cognito, OIDC, local)
 - Dashboard just calls the same `/auth/login` endpoint
 - Token formats may differ but are handled by backend JWT
@@ -154,13 +161,13 @@ The implementation is agnostic to auth provider. When BYOK is enabled (from Spri
 
 **Approach:** Every auth endpoint duplicates user lookup, password hashing, token generation in the server action itself.
 
-| Dimension | Assessment |
-|-----------|-----------|
-| Coupling | Tight — dashboard code duplicates API logic |
+| Dimension   | Assessment                                                 |
+| ----------- | ---------------------------------------------------------- |
+| Coupling    | Tight — dashboard code duplicates API logic                |
 | Maintenance | Poor — changes to auth logic require updates in two places |
-| Testing | Difficult — can't test auth logic without API mocking |
-| Security | Risk — password hashing logic exposed on frontend |
-| Scalability | Bad — driver app would duplicate again |
+| Testing     | Difficult — can't test auth logic without API mocking      |
+| Security    | Risk — password hashing logic exposed on frontend          |
+| Scalability | Bad — driver app would duplicate again                     |
 
 **Why rejected:** Violates DRY; API already has production-grade auth. Dashboard should delegate to it.
 
@@ -168,13 +175,13 @@ The implementation is agnostic to auth provider. When BYOK is enabled (from Spri
 
 **Approach:** Replace custom server actions with NextAuth.js, which provides pre-built session management, OAuth adapters, and database integration.
 
-| Dimension | Assessment |
-|-----------|-----------|
-| Dependency | Adds 60+ KB library; requires session database table |
-| Provider support | Excellent — built-in OAuth2, OIDC, SAML providers |
-| Token management | Opaque sessions (database-backed) not JWT-friendly |
-| API integration | Awkward — NextAuth has its own auth flow, doesn't call existing API |
-| Multi-tenant support | Designed for single-tenant SaaS; Witylogix is multi-tenant |
+| Dimension            | Assessment                                                          |
+| -------------------- | ------------------------------------------------------------------- |
+| Dependency           | Adds 60+ KB library; requires session database table                |
+| Provider support     | Excellent — built-in OAuth2, OIDC, SAML providers                   |
+| Token management     | Opaque sessions (database-backed) not JWT-friendly                  |
+| API integration      | Awkward — NextAuth has its own auth flow, doesn't call existing API |
+| Multi-tenant support | Designed for single-tenant SaaS; Witylogix is multi-tenant          |
 
 **Why rejected:** NextAuth is opinionated toward its own session model (not our JWT/refresh token pattern). Our Fastify API already handles multi-tenant auth correctly; NextAuth would duplicate that logic.
 
@@ -182,15 +189,16 @@ The implementation is agnostic to auth provider. When BYOK is enabled (from Spri
 
 **Approach:** Server actions validate input, call Fastify API, manage cookies, redirect. Backend owns all auth logic (password hashing, token generation, role mapping).
 
-| Dimension | Assessment |
-|-----------|-----------|
-| Coupling | Loose — dashboard delegates to API |
-| Maintenance | Good — single source of truth (API) |
-| Testing | Easy — mock API responses in tests |
-| Security | Good — sensitive logic stays on backend |
+| Dimension    | Assessment                                                  |
+| ------------ | ----------------------------------------------------------- |
+| Coupling     | Loose — dashboard delegates to API                          |
+| Maintenance  | Good — single source of truth (API)                         |
+| Testing      | Easy — mock API responses in tests                          |
+| Security     | Good — sensitive logic stays on backend                     |
 | BYOK support | Perfect — API handles provider routing, dashboard unchanged |
 
 **Pros:**
+
 - Reuses production API that's already tested
 - Works with any auth provider (local, OAuth2, OIDC)
 - Token management follows Next.js best practices (httpOnly cookies)
@@ -198,6 +206,7 @@ The implementation is agnostic to auth provider. When BYOK is enabled (from Spri
 - Easy to add refresh logic later
 
 **Cons:**
+
 - Requires network call for every auth action (but that's correct — no local validation of passwords)
 - Field-level errors must be parsed from API response schema
 
@@ -241,9 +250,7 @@ apps/dashboard/src/lib/
 #### `loginAction(formData: FormData)`
 
 ```typescript
-export async function loginAction(
-  formData: FormData
-): Promise<{
+export async function loginAction(formData: FormData): Promise<{
   success: boolean;
   error?: string;
   fieldErrors?: Record<string, string>;
@@ -265,9 +272,7 @@ export async function loginAction(
 #### `registerAction(formData: FormData)`
 
 ```typescript
-export async function registerAction(
-  formData: FormData
-): Promise<{
+export async function registerAction(formData: FormData): Promise<{
   success: boolean;
   error?: string;
   fieldErrors?: Record<string, string>;
@@ -288,9 +293,7 @@ export async function registerAction(
 #### `forgotPasswordAction(formData: FormData)`
 
 ```typescript
-export async function forgotPasswordAction(
-  formData: FormData
-): Promise<{
+export async function forgotPasswordAction(formData: FormData): Promise<{
   success: boolean;
   error?: string;
 }> {
@@ -307,21 +310,23 @@ export async function forgotPasswordAction(
 
 ```typescript
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be 8+ characters'),
-  shopDomain: z.string().min(1, 'Shop domain required'),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be 8+ characters"),
+  shopDomain: z.string().min(1, "Shop domain required"),
 });
 
 const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be 2+ characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be 8+ characters'),
-  agreeTerms: z.literal(true, { errorMap: () => ({ message: 'You must agree to terms' }) }),
+  name: z.string().min(2, "Name must be 2+ characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be 8+ characters"),
+  agreeTerms: z.literal(true, {
+    errorMap: () => ({ message: "You must agree to terms" }),
+  }),
 });
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  shopDomain: z.string().min(1, 'Shop domain required'),
+  email: z.string().email("Invalid email address"),
+  shopDomain: z.string().min(1, "Shop domain required"),
 });
 ```
 
@@ -349,11 +354,11 @@ Server Action Handler
 ### Unit Tests (Jest)
 
 ```typescript
-describe('loginAction', () => {
-  it('returns fieldErrors for invalid email', async () => {
+describe("loginAction", () => {
+  it("returns fieldErrors for invalid email", async () => {
     const formData = new FormData();
-    formData.append('email', 'invalid');
-    formData.append('password', 'validpass123');
+    formData.append("email", "invalid");
+    formData.append("password", "validpass123");
 
     const result = await loginAction(formData);
 
@@ -361,27 +366,27 @@ describe('loginAction', () => {
     expect(result.fieldErrors?.email).toMatch(/Invalid email/);
   });
 
-  it('calls API with correct payload', async () => {
+  it("calls API with correct payload", async () => {
     const mockFetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
-        data: { accessToken: 'jwt...', refreshToken: 'refresh...' }
-      })
+        data: { accessToken: "jwt...", refreshToken: "refresh..." },
+      }),
     });
 
     // Replace global fetch
     global.fetch = mockFetch;
 
     const formData = new FormData();
-    formData.append('email', 'user@example.com');
-    formData.append('password', 'validpass123');
+    formData.append("email", "user@example.com");
+    formData.append("password", "validpass123");
 
     // Expect redirect to be called
     await loginAction(formData);
 
     expect(mockFetch).toHaveBeenCalledWith(
-      'http://api:3000/api/v4/auth/login',
-      expect.objectContaining({ method: 'POST' })
+      "http://api:3000/api/v4/auth/login",
+      expect.objectContaining({ method: "POST" }),
     );
   });
 });
@@ -390,6 +395,7 @@ describe('loginAction', () => {
 ### Integration Tests (API + Action)
 
 Use test containers to run a real Fastify API instance and verify:
+
 - Login with valid credentials
 - Login with invalid password
 - Register with existing email
@@ -399,14 +405,14 @@ Use test containers to run a real Fastify API instance and verify:
 
 Track these metrics to validate the implementation:
 
-| Metric | Target | Rationale |
-|--------|--------|-----------|
-| Login success rate | > 99% | Measure auth reliability |
-| Avg login latency | < 300ms p95 | API call latency (includes DB) |
-| Failed login attempts per user | < 10 per hour | Detect brute-force attacks |
-| Password reset completion rate | > 70% | Users finish the flow |
-| Register success rate | > 95% | Account creation reliability |
-| Field validation error rate | < 5% of submissions | Form UX quality |
+| Metric                         | Target              | Rationale                      |
+| ------------------------------ | ------------------- | ------------------------------ |
+| Login success rate             | > 99%               | Measure auth reliability       |
+| Avg login latency              | < 300ms p95         | API call latency (includes DB) |
+| Failed login attempts per user | < 10 per hour       | Detect brute-force attacks     |
+| Password reset completion rate | > 70%               | Users finish the flow          |
+| Register success rate          | > 95%               | Account creation reliability   |
+| Field validation error rate    | < 5% of submissions | Form UX quality                |
 
 ## Related Decisions
 
@@ -417,16 +423,19 @@ Track these metrics to validate the implementation:
 ## Migration Path
 
 ### Phase 1 (Now — Sprint 3.8)
+
 - Implement three server actions with zod validation
 - Replace TODO stubs
 - Add unit tests for validation and error handling
 
 ### Phase 2 (Sprint 4.0)
+
 - Add refresh token rotation logic (call `/auth/refresh` before token expiry)
 - Implement logout action
 - Add "Remember me" cookie persistence
 
 ### Phase 3 (Sprint 4.1+)
+
 - Multi-provider login page (if provider selection added to API)
 - Session management dashboard (view active sessions, revoke tokens)
 - MFA support (if providers require second factor)

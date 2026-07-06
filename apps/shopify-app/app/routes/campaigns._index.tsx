@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import {
   Page,
   Layout,
@@ -13,13 +13,13 @@ import {
   InlineStack,
   BlockStack,
   Text,
-} from '@shopify/polaris';
+} from "@shopify/polaris";
 
 interface Campaign {
   id: string;
   name: string;
-  type: 'email' | 'sms' | 'whatsapp';
-  status: 'draft' | 'scheduled' | 'active' | 'completed' | 'paused';
+  type: "email" | "sms" | "whatsapp";
+  status: "draft" | "scheduled" | "active" | "completed" | "paused";
   createdAt: string;
   sentAt?: string;
   sent: number;
@@ -34,20 +34,20 @@ export default function CampaignsIndex() {
   const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
 
   useEffect(() => {
     setLoading(true);
     const mockCampaigns: Campaign[] = [
       {
-        id: '1',
-        name: 'Spring Sale 2026',
-        type: 'email',
-        status: 'completed',
-        createdAt: '2026-02-15T10:30:00Z',
-        sentAt: '2026-03-01T08:00:00Z',
+        id: "1",
+        name: "Spring Sale 2026",
+        type: "email",
+        status: "completed",
+        createdAt: "2026-02-15T10:30:00Z",
+        sentAt: "2026-03-01T08:00:00Z",
         sent: 8542,
         delivered: 8420,
         opened: 3156,
@@ -56,11 +56,11 @@ export default function CampaignsIndex() {
         audienceSize: 9200,
       },
       {
-        id: '2',
-        name: 'Abandoned Cart Recovery',
-        type: 'email',
-        status: 'active',
-        createdAt: '2026-02-20T14:20:00Z',
+        id: "2",
+        name: "Abandoned Cart Recovery",
+        type: "email",
+        status: "active",
+        createdAt: "2026-02-20T14:20:00Z",
         sent: 2150,
         delivered: 2100,
         opened: 630,
@@ -69,11 +69,11 @@ export default function CampaignsIndex() {
         audienceSize: 5400,
       },
       {
-        id: '3',
-        name: 'Winter Collection Launch',
-        type: 'sms',
-        status: 'scheduled',
-        createdAt: '2026-02-25T09:15:00Z',
+        id: "3",
+        name: "Winter Collection Launch",
+        type: "sms",
+        status: "scheduled",
+        createdAt: "2026-02-25T09:15:00Z",
         sent: 0,
         delivered: 0,
         opened: 0,
@@ -82,11 +82,11 @@ export default function CampaignsIndex() {
         audienceSize: 3200,
       },
       {
-        id: '4',
-        name: 'Customer Anniversary',
-        type: 'whatsapp',
-        status: 'draft',
-        createdAt: '2026-03-04T16:45:00Z',
+        id: "4",
+        name: "Customer Anniversary",
+        type: "whatsapp",
+        status: "draft",
+        createdAt: "2026-03-04T16:45:00Z",
         sent: 0,
         delivered: 0,
         opened: 0,
@@ -103,36 +103,54 @@ export default function CampaignsIndex() {
   }, []);
 
   const filteredCampaigns = campaigns.filter((campaign) => {
-    const matchesSearch = campaign.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'all' || campaign.type === filterType;
-    const matchesStatus = filterStatus === 'all' || campaign.status === filterStatus;
+    const matchesSearch = campaign.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesType = filterType === "all" || campaign.type === filterType;
+    const matchesStatus =
+      filterStatus === "all" || campaign.status === filterStatus;
     return matchesSearch && matchesType && matchesStatus;
   });
 
   const resourceName = {
-    singular: 'campaign',
-    plural: 'campaigns',
+    singular: "campaign",
+    plural: "campaigns",
   };
 
-  const getStatusTone = (status: string): 'success' | 'warning' | 'critical' | 'info' => {
+  const getStatusTone = (
+    status: string,
+  ): "success" | "warning" | "critical" | "info" => {
     switch (status) {
-      case 'draft':
-        return 'info';
-      case 'scheduled':
-        return 'warning';
-      case 'active':
-        return 'success';
-      case 'completed':
-        return 'success';
-      case 'paused':
-        return 'critical';
+      case "draft":
+        return "info";
+      case "scheduled":
+        return "warning";
+      case "active":
+        return "success";
+      case "completed":
+        return "success";
+      case "paused":
+        return "critical";
       default:
-        return 'info';
+        return "info";
     }
   };
 
   const rowMarkup = filteredCampaigns.map(
-    ({ id, name, type, status, sent, delivered, opened, clicked, audienceSize }, index) => (
+    (
+      {
+        id,
+        name,
+        type,
+        status,
+        sent,
+        delivered,
+        opened,
+        clicked,
+        audienceSize,
+      },
+      index,
+    ) => (
       <IndexTable.Row
         id={id}
         key={id}
@@ -145,40 +163,28 @@ export default function CampaignsIndex() {
           </Text>
         </IndexTable.Cell>
         <IndexTable.Cell>
-          <Badge tone="info">
-            {type.toUpperCase()}
-          </Badge>
+          <Badge tone="info">{type.toUpperCase()}</Badge>
         </IndexTable.Cell>
         <IndexTable.Cell>
           <Badge tone={getStatusTone(status)}>
             {status.charAt(0).toUpperCase() + status.slice(1)}
           </Badge>
         </IndexTable.Cell>
-        <IndexTable.Cell>
-          {sent.toString()}
-        </IndexTable.Cell>
-        <IndexTable.Cell>
-          {delivered.toString()}
-        </IndexTable.Cell>
-        <IndexTable.Cell>
-          {opened.toString()}
-        </IndexTable.Cell>
-        <IndexTable.Cell>
-          {clicked.toString()}
-        </IndexTable.Cell>
-        <IndexTable.Cell>
-          {audienceSize.toLocaleString()}
-        </IndexTable.Cell>
+        <IndexTable.Cell>{sent.toString()}</IndexTable.Cell>
+        <IndexTable.Cell>{delivered.toString()}</IndexTable.Cell>
+        <IndexTable.Cell>{opened.toString()}</IndexTable.Cell>
+        <IndexTable.Cell>{clicked.toString()}</IndexTable.Cell>
+        <IndexTable.Cell>{audienceSize.toLocaleString()}</IndexTable.Cell>
       </IndexTable.Row>
-    )
+    ),
   );
 
   return (
     <Page
       title="Campaigns"
       primaryAction={{
-        content: 'Create Campaign',
-        onAction: () => navigate('/app/campaigns/new'),
+        content: "Create Campaign",
+        onAction: () => navigate("/app/campaigns/new"),
       }}
     >
       <Layout>
@@ -193,15 +199,15 @@ export default function CampaignsIndex() {
                   onChange={setSearchTerm}
                   autoComplete="off"
                   clearButton
-                  onClearButtonClick={() => setSearchTerm('')}
+                  onClearButtonClick={() => setSearchTerm("")}
                 />
                 <Select
                   label="Type"
                   options={[
-                    { label: 'All Types', value: 'all' },
-                    { label: 'Email', value: 'email' },
-                    { label: 'SMS', value: 'sms' },
-                    { label: 'WhatsApp', value: 'whatsapp' },
+                    { label: "All Types", value: "all" },
+                    { label: "Email", value: "email" },
+                    { label: "SMS", value: "sms" },
+                    { label: "WhatsApp", value: "whatsapp" },
                   ]}
                   value={filterType}
                   onChange={setFilterType}
@@ -209,12 +215,12 @@ export default function CampaignsIndex() {
                 <Select
                   label="Status"
                   options={[
-                    { label: 'All Statuses', value: 'all' },
-                    { label: 'Draft', value: 'draft' },
-                    { label: 'Scheduled', value: 'scheduled' },
-                    { label: 'Active', value: 'active' },
-                    { label: 'Completed', value: 'completed' },
-                    { label: 'Paused', value: 'paused' },
+                    { label: "All Statuses", value: "all" },
+                    { label: "Draft", value: "draft" },
+                    { label: "Scheduled", value: "scheduled" },
+                    { label: "Active", value: "active" },
+                    { label: "Completed", value: "completed" },
+                    { label: "Paused", value: "paused" },
                   ]}
                   value={filterStatus}
                   onChange={setFilterStatus}
@@ -243,14 +249,14 @@ export default function CampaignsIndex() {
                 resourceName={resourceName}
                 itemCount={filteredCampaigns.length}
                 headings={[
-                  { title: 'Name' },
-                  { title: 'Type' },
-                  { title: 'Status' },
-                  { title: 'Sent' },
-                  { title: 'Delivered' },
-                  { title: 'Opened' },
-                  { title: 'Clicked' },
-                  { title: 'Audience' },
+                  { title: "Name" },
+                  { title: "Type" },
+                  { title: "Status" },
+                  { title: "Sent" },
+                  { title: "Delivered" },
+                  { title: "Opened" },
+                  { title: "Clicked" },
+                  { title: "Audience" },
                 ]}
                 selectable={false}
               >

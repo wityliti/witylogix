@@ -11,7 +11,7 @@
  * - Content access management
  */
 
-import { AnalyticsAdapter } from './analytics-adapter.js';
+import { AnalyticsAdapter } from "./analytics-adapter.js";
 import type {
   AnalyticsConfig,
   QueryDefinition,
@@ -26,7 +26,7 @@ import type {
   DataSource,
   DataType,
   FilterDefinition,
-} from './types.js';
+} from "./types.js";
 
 interface LookerLook {
   id: string;
@@ -102,7 +102,7 @@ interface LookerScheduledPlan {
 }
 
 interface LookerScheduledPlanDestination {
-  type: 'email' | 's3' | 'webhook';
+  type: "email" | "s3" | "webhook";
   address?: string;
   parameters?: Record<string, unknown>;
 }
@@ -125,7 +125,7 @@ interface LookerUser {
  * Supports OAuth2 client credentials authentication.
  */
 export class LookerClient extends AnalyticsAdapter {
-  private accessToken: string = '';
+  private accessToken: string = "";
   private tokenExpiresAt: number = 0;
 
   constructor(config: AnalyticsConfig) {
@@ -141,28 +141,27 @@ export class LookerClient extends AnalyticsAdapter {
       return this.accessToken;
     }
 
-    const clientId: string = this.config.credentials.clientId || '';
-    const clientSecret: string = this.config.credentials.clientSecret || '';
+    const clientId: string = this.config.credentials.clientId || "";
+    const clientSecret: string = this.config.credentials.clientSecret || "";
 
     if (!clientId || !clientSecret) {
-      throw new Error('Looker authentication requires clientId and clientSecret');
+      throw new Error(
+        "Looker authentication requires clientId and clientSecret",
+      );
     }
 
     try {
       const body = new URLSearchParams();
-      body.append('client_id', clientId);
-      body.append('client_secret', clientSecret);
+      body.append("client_id", clientId);
+      body.append("client_secret", clientSecret);
 
-      const response: Response = await fetch(
-        `${this.config.apiUrl}/login`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body,
-        }
-      );
+      const response: Response = await fetch(`${this.config.apiUrl}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body,
+      });
 
       if (!response.ok) {
         throw new Error(`Looker authentication failed: ${response.statusText}`);
@@ -175,7 +174,7 @@ export class LookerClient extends AnalyticsAdapter {
       return this.accessToken;
     } catch (error: unknown) {
       throw new Error(
-        `Looker authentication error: ${error instanceof Error ? error.message : String(error)}`
+        `Looker authentication error: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -188,10 +187,10 @@ export class LookerClient extends AnalyticsAdapter {
     const token: string = await this.authenticate();
 
     const response: Response = await fetch(`${this.config.apiUrl}/looks`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
       },
     });
 
@@ -223,13 +222,16 @@ export class LookerClient extends AnalyticsAdapter {
   async getLook(lookId: string): Promise<LookerLook> {
     const token: string = await this.authenticate();
 
-    const response: Response = await fetch(`${this.config.apiUrl}/looks/${lookId}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
+    const response: Response = await fetch(
+      `${this.config.apiUrl}/looks/${lookId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`Failed to fetch look: ${response.statusText}`);
@@ -254,7 +256,9 @@ export class LookerClient extends AnalyticsAdapter {
    * @param look Look definition
    * @returns Created look
    */
-  async createLook(look: Omit<LookerLook, 'id' | 'created_at' | 'updated_at'>): Promise<LookerLook> {
+  async createLook(
+    look: Omit<LookerLook, "id" | "created_at" | "updated_at">,
+  ): Promise<LookerLook> {
     const token: string = await this.authenticate();
 
     const body = {
@@ -266,10 +270,10 @@ export class LookerClient extends AnalyticsAdapter {
     };
 
     const response: Response = await fetch(`${this.config.apiUrl}/looks`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
     });
@@ -298,10 +302,10 @@ export class LookerClient extends AnalyticsAdapter {
     const token: string = await this.authenticate();
 
     const response: Response = await fetch(`${this.config.apiUrl}/dashboards`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
       },
     });
 
@@ -327,18 +331,20 @@ export class LookerClient extends AnalyticsAdapter {
    * @param dashboardId Dashboard identifier
    * @returns Dashboard definition
    */
-  private async _fetchLookerDashboard(dashboardId: string): Promise<LookerDashboard> {
+  private async _fetchLookerDashboard(
+    dashboardId: string,
+  ): Promise<LookerDashboard> {
     const token: string = await this.authenticate();
 
     const response: Response = await fetch(
       `${this.config.apiUrl}/dashboards/${dashboardId}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -362,18 +368,21 @@ export class LookerClient extends AnalyticsAdapter {
    * @param exploreName Explore name
    * @returns Explore metadata
    */
-  async getExplore(modelName: string, exploreName: string): Promise<LookerExplore> {
+  async getExplore(
+    modelName: string,
+    exploreName: string,
+  ): Promise<LookerExplore> {
     const token: string = await this.authenticate();
 
     const response: Response = await fetch(
       `${this.config.apiUrl}/models/${modelName}/explores/${exploreName}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -411,14 +420,14 @@ export class LookerClient extends AnalyticsAdapter {
       measures: query.measures,
       filters: query.filters || {},
       limit: query.limit || 500,
-      result_format: 'json',
+      result_format: "json",
     };
 
     const response: Response = await fetch(`${this.config.apiUrl}/queries`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
     });
@@ -434,12 +443,12 @@ export class LookerClient extends AnalyticsAdapter {
     const resultResponse: Response = await fetch(
       `${this.config.apiUrl}/queries/${queryId}/run/json`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!resultResponse.ok) {
@@ -453,7 +462,7 @@ export class LookerClient extends AnalyticsAdapter {
       data: Array.isArray(results) ? results : [],
       fields: query.dimensions.concat(query.measures).map((field: string) => ({
         name: field,
-        type: 'string' as const,
+        type: "string" as const,
       })),
     };
   }
@@ -464,7 +473,7 @@ export class LookerClient extends AnalyticsAdapter {
    * @returns Created scheduled plan
    */
   async createScheduledPlan(
-    plan: Omit<LookerScheduledPlan, 'id'>
+    plan: Omit<LookerScheduledPlan, "id">,
   ): Promise<LookerScheduledPlan> {
     const token: string = await this.authenticate();
 
@@ -478,17 +487,22 @@ export class LookerClient extends AnalyticsAdapter {
       scheduled_plan_destination: plan.scheduled_plan_destination,
     };
 
-    const response: Response = await fetch(`${this.config.apiUrl}/scheduled_plans`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+    const response: Response = await fetch(
+      `${this.config.apiUrl}/scheduled_plans`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    });
+    );
 
     if (!response.ok) {
-      throw new Error(`Failed to create scheduled plan: ${response.statusText}`);
+      throw new Error(
+        `Failed to create scheduled plan: ${response.statusText}`,
+      );
     }
 
     const data: any = await response.json();
@@ -506,22 +520,26 @@ export class LookerClient extends AnalyticsAdapter {
    * @param limit Number of events to return
    * @returns Activity events
    */
-  async getSystemActivity(limit: number = 100): Promise<Array<Record<string, unknown>>> {
+  async getSystemActivity(
+    limit: number = 100,
+  ): Promise<Array<Record<string, unknown>>> {
     const token: string = await this.authenticate();
 
     const response: Response = await fetch(
       `${this.config.apiUrl}/system_activity?limit=${limit}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch system activity: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch system activity: ${response.statusText}`,
+      );
     }
 
     const data: any = await response.json();
@@ -535,10 +553,10 @@ export class LookerClient extends AnalyticsAdapter {
     const token: string = await this.authenticate();
 
     const response: Response = await fetch(`${this.config.apiUrl}/models`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
       },
     });
 
@@ -551,7 +569,7 @@ export class LookerClient extends AnalyticsAdapter {
       data?.map((model: any) => ({
         id: model.name,
         name: model.name,
-        type: 'model',
+        type: "model",
         tableName: model.name,
         archived: false,
         fields: [],
@@ -562,13 +580,15 @@ export class LookerClient extends AnalyticsAdapter {
   /**
    * Protected method: Execute query implementation for Looker.
    */
-  protected async _executeQueryImpl(query: QueryDefinition): Promise<QueryResult> {
+  protected async _executeQueryImpl(
+    query: QueryDefinition,
+  ): Promise<QueryResult> {
     const lookerQuery: LookerQuery = {
       id: query.id,
-      model: query.dataSource.split('.')[0] || 'default',
-      explore: query.dataSource.split('.')[1] || 'main',
-      dimensions: query.fields.filter((f: string) => !f.includes('_count')),
-      measures: query.fields.filter((f: string) => f.includes('_count')),
+      model: query.dataSource.split(".")[0] || "default",
+      explore: query.dataSource.split(".")[1] || "main",
+      dimensions: query.fields.filter((f: string) => !f.includes("_count")),
+      measures: query.fields.filter((f: string) => f.includes("_count")),
       limit: query.limit || 500,
     };
 
@@ -588,7 +608,7 @@ export class LookerClient extends AnalyticsAdapter {
    * Protected method: Create dashboard implementation for Looker.
    */
   protected async _createDashboardImpl(
-    dashboard: DashboardDefinition
+    dashboard: DashboardDefinition,
   ): Promise<DashboardDefinition> {
     const token: string = await this.authenticate();
 
@@ -599,10 +619,10 @@ export class LookerClient extends AnalyticsAdapter {
     };
 
     const response: Response = await fetch(`${this.config.apiUrl}/dashboards`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
     });
@@ -619,8 +639,11 @@ export class LookerClient extends AnalyticsAdapter {
   /**
    * Protected method: Get dashboard implementation for Looker.
    */
-  protected async _getDashboardImpl(dashboardId: string): Promise<DashboardDefinition> {
-    const lookerDashboard: LookerDashboard = await this._fetchLookerDashboard(dashboardId);
+  protected async _getDashboardImpl(
+    dashboardId: string,
+  ): Promise<DashboardDefinition> {
+    const lookerDashboard: LookerDashboard =
+      await this._fetchLookerDashboard(dashboardId);
 
     return {
       id: lookerDashboard.id,
@@ -637,7 +660,7 @@ export class LookerClient extends AnalyticsAdapter {
    */
   protected async _updateDashboardImpl(
     dashboardId: string,
-    updates: Partial<DashboardDefinition>
+    updates: Partial<DashboardDefinition>,
   ): Promise<DashboardDefinition> {
     const token: string = await this.authenticate();
 
@@ -649,13 +672,13 @@ export class LookerClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/dashboards/${dashboardId}`,
       {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -674,11 +697,11 @@ export class LookerClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/dashboards/${dashboardId}`,
       {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -694,22 +717,22 @@ export class LookerClient extends AnalyticsAdapter {
     userId: string,
     _scopes: EmbedScope[],
     _rlsRules?: RLSRule[],
-    expiryMinutes: number = 60
+    expiryMinutes: number = 60,
   ): Promise<EmbedToken> {
     const token: string = await this.authenticate();
 
     const body = {
-      namespace: 'embed',
-      type: 'look',
+      namespace: "embed",
+      type: "look",
       id: entityId,
       user: userId,
     };
 
     const response: Response = await fetch(`${this.config.apiUrl}/embed/urls`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
     });
@@ -724,9 +747,9 @@ export class LookerClient extends AnalyticsAdapter {
       id: `looker-token-${Date.now()}`,
       token: data.url,
       entityId,
-      entityType: 'look',
+      entityType: "look",
       userId,
-      scopes: ['view'],
+      scopes: ["view"],
       expiresAt: new Date(Date.now() + expiryMinutes * 60 * 1000),
       createdAt: new Date(),
       embedUrl: data.url,
@@ -739,18 +762,18 @@ export class LookerClient extends AnalyticsAdapter {
   protected async _exportDashboardImpl(
     entityId: string,
     format: AnalyticsExportFormat,
-    _filters?: FilterDefinition[]
+    _filters?: FilterDefinition[],
   ): Promise<ExportResult> {
     const token: string = await this.authenticate();
 
     const response: Response = await fetch(
       `${this.config.apiUrl}/dashboards/${entityId}/export/${format}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -763,7 +786,7 @@ export class LookerClient extends AnalyticsAdapter {
       jobId: `export-${Date.now()}`,
       format,
       fileSizeBytes: buffer.length,
-      status: 'completed',
+      status: "completed",
       completedAt: new Date(),
     };
   }
@@ -776,9 +799,9 @@ export class LookerClient extends AnalyticsAdapter {
       const token: string = await this.authenticate();
 
       const response: Response = await fetch(`${this.config.apiUrl}/looks`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -788,7 +811,8 @@ export class LookerClient extends AnalyticsAdapter {
         responseTimeMs: 0,
       };
     } catch (error: unknown) {
-      const message: string = error instanceof Error ? error.message : String(error);
+      const message: string =
+        error instanceof Error ? error.message : String(error);
       return {
         healthy: false,
         authenticated: false,

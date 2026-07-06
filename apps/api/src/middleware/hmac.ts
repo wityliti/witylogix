@@ -1,53 +1,56 @@
-import crypto from 'crypto';
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import crypto from "crypto";
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 
 /**
  * Creates a Shopify HMAC verification middleware
  * Uses timing-safe comparison to prevent timing attacks
- * 
+ *
  * @param secret - Shopify API secret key from app config
  * @returns Fastify preHandler hook for HMAC verification
  */
 export function verifyShopifyHmac(secret: string) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
-    const hmacHeader = request.headers['x-shopify-hmac-sha256'];
+    const hmacHeader = request.headers["x-shopify-hmac-sha256"];
     const rawBody = request.rawBody;
 
     // Validate required headers and body
-    if (!hmacHeader || typeof hmacHeader !== 'string') {
+    if (!hmacHeader || typeof hmacHeader !== "string") {
       reply.code(401).send({
-        error: 'Unauthorized',
-        message: 'Missing X-Shopify-Hmac-SHA256 header',
+        error: "Unauthorized",
+        message: "Missing X-Shopify-Hmac-SHA256 header",
       });
       return;
     }
 
     if (!rawBody) {
       reply.code(400).send({
-        error: 'Bad Request',
-        message: 'Request body is empty',
+        error: "Bad Request",
+        message: "Request body is empty",
       });
       return;
     }
 
     // Compute HMAC-SHA256 of the raw request body
-    const bodyStr = typeof rawBody === 'string' ? rawBody : (rawBody as Buffer).toString('utf-8');
+    const bodyStr =
+      typeof rawBody === "string"
+        ? rawBody
+        : (rawBody as Buffer).toString("utf-8");
     const computed = crypto
-      .createHmac('sha256', secret)
-      .update(bodyStr, 'utf-8')
-      .digest('base64');
+      .createHmac("sha256", secret)
+      .update(bodyStr, "utf-8")
+      .digest("base64");
 
     // Timing-safe comparison to prevent timing attacks
-    const expectedBuffer = Buffer.from(computed, 'utf-8');
-    const actualBuffer = Buffer.from(hmacHeader, 'utf-8');
+    const expectedBuffer = Buffer.from(computed, "utf-8");
+    const actualBuffer = Buffer.from(hmacHeader, "utf-8");
 
     if (
       expectedBuffer.length !== actualBuffer.length ||
       !crypto.timingSafeEqual(expectedBuffer, actualBuffer)
     ) {
       reply.code(401).send({
-        error: 'Unauthorized',
-        message: 'Invalid HMAC signature',
+        error: "Unauthorized",
+        message: "Invalid HMAC signature",
       });
       return;
     }
@@ -57,7 +60,7 @@ export function verifyShopifyHmac(secret: string) {
 /**
  * Alternative HMAC verification function (for manual validation)
  * Returns true if HMAC is valid, false otherwise
- * 
+ *
  * @param rawBody - Raw request body as string or buffer
  * @param hmacHeader - X-Shopify-Hmac-SHA256 header value
  * @param secret - Shopify API secret key
@@ -66,17 +69,18 @@ export function verifyShopifyHmac(secret: string) {
 export function validateShopifyHmac(
   rawBody: string | Buffer,
   hmacHeader: string,
-  secret: string
+  secret: string,
 ): boolean {
-  const bodyString = typeof rawBody === 'string' ? rawBody : rawBody.toString('utf-8');
-  
-  const computed = crypto
-    .createHmac('sha256', secret)
-    .update(bodyString, 'utf-8')
-    .digest('base64');
+  const bodyString =
+    typeof rawBody === "string" ? rawBody : rawBody.toString("utf-8");
 
-  const expectedBuffer = Buffer.from(computed, 'utf-8');
-  const actualBuffer = Buffer.from(hmacHeader, 'utf-8');
+  const computed = crypto
+    .createHmac("sha256", secret)
+    .update(bodyString, "utf-8")
+    .digest("base64");
+
+  const expectedBuffer = Buffer.from(computed, "utf-8");
+  const actualBuffer = Buffer.from(hmacHeader, "utf-8");
 
   if (expectedBuffer.length !== actualBuffer.length) {
     return false;
@@ -103,15 +107,15 @@ export function validateWooCommerceHmac(
   secret: string,
 ): boolean {
   const bodyStr =
-    typeof rawBody === 'string' ? rawBody : rawBody.toString('utf-8');
+    typeof rawBody === "string" ? rawBody : rawBody.toString("utf-8");
 
   const computed = crypto
-    .createHmac('sha256', secret)
-    .update(bodyStr, 'utf-8')
-    .digest('base64');
+    .createHmac("sha256", secret)
+    .update(bodyStr, "utf-8")
+    .digest("base64");
 
-  const expectedBuffer = Buffer.from(computed, 'utf-8');
-  const actualBuffer = Buffer.from(signature, 'utf-8');
+  const expectedBuffer = Buffer.from(computed, "utf-8");
+  const actualBuffer = Buffer.from(signature, "utf-8");
 
   if (expectedBuffer.length !== actualBuffer.length) {
     return false;
@@ -133,22 +137,27 @@ export function validateWooCommerceHmac(
  * @param fastify - Fastify instance (needs fastify.db access)
  */
 export function verifyWooCommerceHmac(fastify: FastifyInstance) {
-  return async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
-    const signature = request.headers['x-wc-webhook-signature'];
-    const siteUrl = request.headers['x-wc-webhook-source'] as string | undefined;
+  return async (
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ): Promise<void> => {
+    const signature = request.headers["x-wc-webhook-signature"];
+    const siteUrl = request.headers["x-wc-webhook-source"] as
+      | string
+      | undefined;
 
-    if (!signature || typeof signature !== 'string') {
+    if (!signature || typeof signature !== "string") {
       reply.code(401).send({
-        error: 'Unauthorized',
-        message: 'Missing X-WC-Webhook-Signature header',
+        error: "Unauthorized",
+        message: "Missing X-WC-Webhook-Signature header",
       });
       return;
     }
 
     const db = (fastify as any).db;
     if (!db) {
-      fastify.log.error('verifyWooCommerceHmac: DB not available');
-      reply.code(500).send({ error: 'Internal Server Error' });
+      fastify.log.error("verifyWooCommerceHmac: DB not available");
+      reply.code(500).send({ error: "Internal Server Error" });
       return;
     }
 
@@ -163,22 +172,30 @@ export function verifyWooCommerceHmac(fastify: FastifyInstance) {
       : null;
 
     if (!shop?.woocommerceWebhookSecret) {
-      fastify.log.warn({ siteUrl }, 'WooCommerce webhook: unknown shop or missing secret');
+      fastify.log.warn(
+        { siteUrl },
+        "WooCommerce webhook: unknown shop or missing secret",
+      );
       reply.code(401).send({
-        error: 'Unauthorized',
-        message: 'Unknown shop or webhook secret not configured',
+        error: "Unauthorized",
+        message: "Unknown shop or webhook secret not configured",
       });
       return;
     }
 
-    const rawBody = (request as any).rawBody ?? JSON.stringify(request.body ?? '');
-    const isValid = validateWooCommerceHmac(rawBody, signature, shop.woocommerceWebhookSecret);
+    const rawBody =
+      (request as any).rawBody ?? JSON.stringify(request.body ?? "");
+    const isValid = validateWooCommerceHmac(
+      rawBody,
+      signature,
+      shop.woocommerceWebhookSecret,
+    );
 
     if (!isValid) {
-      fastify.log.warn({ siteUrl }, 'WooCommerce webhook signature mismatch');
+      fastify.log.warn({ siteUrl }, "WooCommerce webhook signature mismatch");
       reply.code(401).send({
-        error: 'Unauthorized',
-        message: 'Invalid webhook signature',
+        error: "Unauthorized",
+        message: "Invalid webhook signature",
       });
     }
   };

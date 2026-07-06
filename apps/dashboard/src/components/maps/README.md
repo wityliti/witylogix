@@ -9,7 +9,7 @@ Complete suite of Google Maps components for the Witylogix delivery management p
 Context provider that lazy-loads the Google Maps JavaScript API and makes it available to all child components.
 
 ```tsx
-import { GoogleMapsProvider } from '@/components/maps';
+import { GoogleMapsProvider } from "@/components/maps";
 
 export default function App() {
   return (
@@ -21,11 +21,13 @@ export default function App() {
 ```
 
 **Props:**
+
 - `apiKey` (string): Google Maps API key
 - `libraries` (array): Additional Google Maps libraries to load (`'places'`, `'drawing'`, `'visualization'`, `'geometry'`)
 - `children` (ReactNode): Child components
 
 **Hook:**
+
 ```tsx
 const { isLoaded, isLoadingScript, google, error } = useGoogleMaps();
 ```
@@ -37,7 +39,7 @@ const { isLoaded, isLoadingScript, google, error } = useGoogleMaps();
 Google Places Autocomplete input with keyboard navigation and place details.
 
 ```tsx
-import { AddressAutocomplete } from '@/components/maps';
+import { AddressAutocomplete } from "@/components/maps";
 
 export default function CheckoutForm() {
   const handleAddressSelect = (place) => {
@@ -49,7 +51,7 @@ export default function CheckoutForm() {
     <AddressAutocomplete
       onSelect={handleAddressSelect}
       placeholder="Enter delivery address"
-      countryFilter={['US']}
+      countryFilter={["US"]}
       debounceMs={300}
     />
   );
@@ -57,6 +59,7 @@ export default function CheckoutForm() {
 ```
 
 **Features:**
+
 - Debounced search (configurable)
 - Keyboard navigation (arrow keys, Enter to select, Escape to close)
 - Place details retrieval (address components, coordinates, viewport)
@@ -65,6 +68,7 @@ export default function CheckoutForm() {
 - Selected address display with coordinates
 
 **Props:**
+
 - `onSelect` (function): Callback when place is selected
 - `onInputChange` (function): Called on input change
 - `defaultValue` (string): Default input value
@@ -81,7 +85,7 @@ export default function CheckoutForm() {
 Interactive Google Maps editor for creating and managing delivery zones with drawing tools.
 
 ```tsx
-import { ZoneMapEditor } from '@/components/maps';
+import { ZoneMapEditor } from "@/components/maps";
 
 export default function ZonesManagement() {
   const [zones, setZones] = useState([]);
@@ -90,7 +94,7 @@ export default function ZonesManagement() {
     <ZoneMapEditor
       zones={zones}
       onZonesChange={setZones}
-      onZoneSelect={(zoneId) => console.log('Selected:', zoneId)}
+      onZoneSelect={(zoneId) => console.log("Selected:", zoneId)}
       defaultCenter={{ lat: 37.7749, lng: -122.4194 }}
       defaultZoom={12}
     />
@@ -99,6 +103,7 @@ export default function ZonesManagement() {
 ```
 
 **Features:**
+
 - Draw polygons and rectangles
 - Edit existing zones (drag vertices)
 - Color picker with 12 presets
@@ -110,6 +115,7 @@ export default function ZonesManagement() {
 - Rate per zone configuration
 
 **Props:**
+
 - `zones` (MapZone[]): Array of zones
 - `onZonesChange` (function): Callback when zones change
 - `onZoneSelect` (function): Called when zone is selected
@@ -125,31 +131,35 @@ export default function ZonesManagement() {
 Display delivery routes with stops, markers, and polylines.
 
 ```tsx
-import { RouteMapViewer } from '@/components/maps';
+import { RouteMapViewer } from "@/components/maps";
 
 export default function RoutePage() {
   const route = {
-    id: 'route-123',
-    driverId: 'driver-456',
+    id: "route-123",
+    driverId: "driver-456",
     stops: [
       {
-        id: 'stop-1',
+        id: "stop-1",
         sequenceNumber: 1,
-        address: '123 Main St',
+        address: "123 Main St",
         latitude: 37.7749,
         longitude: -122.4194,
-        customerName: 'John Doe',
-        status: 'completed',
+        customerName: "John Doe",
+        status: "completed",
       },
       // More stops...
     ],
-    currentLocation: { lat: 37.775, lng: -122.419, timestamp: new Date().toISOString() },
+    currentLocation: {
+      lat: 37.775,
+      lng: -122.419,
+      timestamp: new Date().toISOString(),
+    },
   };
 
   return (
     <RouteMapViewer
       route={route}
-      onStopClick={(stop) => console.log('Stop clicked:', stop)}
+      onStopClick={(stop) => console.log("Stop clicked:", stop)}
       showActualRoute={true}
     />
   );
@@ -157,6 +167,7 @@ export default function RoutePage() {
 ```
 
 **Features:**
+
 - Display planned and actual routes
 - Numbered stop markers with status colors
 - Current driver location marker
@@ -167,6 +178,7 @@ export default function RoutePage() {
 - Status badges for each stop
 
 **Props:**
+
 - `route` (DeliveryRoute): Route object
 - `onStopClick` (function): Called when stop marker is clicked
 - `showActualRoute` (boolean): Show actual GPS trace (default: false)
@@ -180,7 +192,7 @@ export default function RoutePage() {
 Visualize delivery density and patterns with Google Maps heatmap layer.
 
 ```tsx
-import { DeliveryHeatmap } from '@/components/maps';
+import { DeliveryHeatmap } from "@/components/maps";
 
 export default function HeatmapPage() {
   const [dataPoints, setDataPoints] = useState([]);
@@ -189,8 +201,11 @@ export default function HeatmapPage() {
     <DeliveryHeatmap
       dataPoints={dataPoints}
       mode="count"
-      timeRange={{ start: new Date().toISOString(), end: new Date().toISOString() }}
-      onTimeRangeChange={(range) => console.log('Time range:', range)}
+      timeRange={{
+        start: new Date().toISOString(),
+        end: new Date().toISOString(),
+      }}
+      onTimeRangeChange={(range) => console.log("Time range:", range)}
       showStats={true}
     />
   );
@@ -198,6 +213,7 @@ export default function HeatmapPage() {
 ```
 
 **Features:**
+
 - Heatmap layer visualization
 - Multiple modes: delivery count, delivery time, failed deliveries
 - Time range selector (today, this week, this month, custom)
@@ -207,6 +223,7 @@ export default function HeatmapPage() {
 - Cluster analysis
 
 **Props:**
+
 - `dataPoints` (HeatmapDataPoint[]): Array of delivery points
 - `mode` (string): 'count' | 'time' | 'failures'
 - `timeRange` (object): `{ start: ISO string, end: ISO string }`
@@ -221,7 +238,7 @@ export default function HeatmapPage() {
 Search for places near a map center with category filtering.
 
 ```tsx
-import { PlaceSearch } from '@/components/maps';
+import { PlaceSearch } from "@/components/maps";
 
 export default function SearchPage() {
   const handleSelectResult = (place) => {
@@ -242,6 +259,7 @@ export default function SearchPage() {
 ```
 
 **Features:**
+
 - Text search with Google Places
 - Category filtering (addresses, establishments, geocodes)
 - Distance calculation from map center
@@ -251,6 +269,7 @@ export default function SearchPage() {
 - Result limit (10 results)
 
 **Props:**
+
 - `onResultSelect` (function): Called when place is selected
 - `categoryFilter` (string): Filter type
 - `mapCenter` (object): Center for distance calculation
@@ -279,7 +298,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here
 
 ```tsx
 // app/layout.tsx
-import { GoogleMapsProvider } from '@/components/maps';
+import { GoogleMapsProvider } from "@/components/maps";
 
 export default function RootLayout({ children }) {
   return (
@@ -287,7 +306,7 @@ export default function RootLayout({ children }) {
       <body>
         <GoogleMapsProvider
           apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
-          libraries={['places', 'drawing', 'visualization', 'geometry']}
+          libraries={["places", "drawing", "visualization", "geometry"]}
         >
           {children}
         </GoogleMapsProvider>
@@ -310,7 +329,7 @@ import type {
   RouteStop,
   PlaceDetails,
   MapsSettings,
-} from '@/components/maps';
+} from "@/components/maps";
 ```
 
 ---
@@ -318,6 +337,7 @@ import type {
 ## Styling
 
 All components use:
+
 - **Tailwind CSS v3.4** for styling
 - **CSS Variables** (`--wl-*`) for theme colors
 - **Dark theme** by default
@@ -328,10 +348,7 @@ All components use:
 Override default styles:
 
 ```tsx
-<AddressAutocomplete
-  onSelect={handleSelect}
-  className="w-full max-w-md"
-/>
+<AddressAutocomplete onSelect={handleSelect} className="w-full max-w-md" />
 ```
 
 ---
@@ -345,6 +362,7 @@ Configure API key and feature toggles at:
 ```
 
 Features:
+
 - API key configuration with validation
 - Connection testing
 - Default map center and zoom
@@ -357,6 +375,7 @@ Features:
 ## Testing
 
 Test files include:
+
 - `address-autocomplete.test.tsx` - Input, predictions, keyboard nav
 - `zone-map-editor.test.tsx` - Zone CRUD, import/export, undo/redo
 
@@ -392,6 +411,7 @@ npm run test
 ### API Key Not Working
 
 Ensure:
+
 - Key has Maps JavaScript API enabled
 - Key is not restricted by IP/domain
 - Key is for the correct Google Cloud project

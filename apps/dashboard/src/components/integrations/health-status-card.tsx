@@ -97,7 +97,7 @@ export function HealthStatusCard({
   const sparklinePoints = healthHistory
     .map(
       (value, idx) =>
-        `${idx * pointSpacing},${sparklineHeight - (value / 100) * sparklineHeight}`
+        `${idx * pointSpacing},${sparklineHeight - (value / 100) * sparklineHeight}`,
     )
     .join(" ");
 
@@ -165,7 +165,9 @@ export function HealthStatusCard({
             </div>
           </div>
           <div>
-            <div className="text-xs text-wl-text-secondary mb-1">Last Check</div>
+            <div className="text-xs text-wl-text-secondary mb-1">
+              Last Check
+            </div>
             <div className="text-sm font-medium text-wl-text-primary">
               {formatTime(lastCheckTime)}
             </div>
@@ -174,7 +176,9 @@ export function HealthStatusCard({
 
         {/* Mini sparkline */}
         <div className="mb-4">
-          <div className="text-xs text-wl-text-secondary mb-2">24h Health History</div>
+          <div className="text-xs text-wl-text-secondary mb-2">
+            24h Health History
+          </div>
           <svg
             width={sparklineWidth}
             height={sparklineHeight}
@@ -220,7 +224,9 @@ export function HealthStatusCard({
                   <div className="text-sm font-semibold text-wl-text-primary">
                     {latencyP95}ms
                   </div>
-                  <div className="text-xs text-wl-text-secondary">response time</div>
+                  <div className="text-xs text-wl-text-secondary">
+                    response time
+                  </div>
                 </div>
               </div>
             )}

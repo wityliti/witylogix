@@ -4,8 +4,8 @@
  * ~400 lines
  */
 
-import http from 'http';
-import { URL } from 'url';
+import http from "http";
+import { URL } from "url";
 import {
   APIKeyValidator,
   OAuth2Server,
@@ -13,7 +13,7 @@ import {
   BearerTokenValidator,
   JWTHandler,
   HMACSignatureGenerator,
-} from './auth-simulators';
+} from "./auth-simulators";
 
 // ───────────────────────────────────────────────────────────────────────────
 // TYPES
@@ -31,7 +31,7 @@ export interface MockRequest {
 export interface ProviderConfig {
   port: number;
   basePath?: string;
-  authType?: 'api-key' | 'oauth2' | 'basic' | 'bearer' | 'jwt' | 'none';
+  authType?: "api-key" | "oauth2" | "basic" | "bearer" | "jwt" | "none";
   rpmLimit?: number;
   responseDelay?: number;
   errorRate?: number;
@@ -62,8 +62,8 @@ export class MockProviderServer {
 
   constructor(config: ProviderConfig) {
     this.config = {
-      basePath: '/api/v1',
-      authType: 'none',
+      basePath: "/api/v1",
+      authType: "none",
       rpmLimit: 1000,
       responseDelay: 0,
       errorRate: 0,
@@ -80,7 +80,7 @@ export class MockProviderServer {
       this.server = http.createServer((req, res) => {
         this.handleRequest(req, res).catch(() => {
           res.writeHead(500);
-          res.end(JSON.stringify({ error: 'Internal server error' }));
+          res.end(JSON.stringify({ error: "Internal server error" }));
         });
       });
 
@@ -89,7 +89,7 @@ export class MockProviderServer {
         resolve();
       });
 
-      this.server.on('error', reject);
+      this.server.on("error", reject);
     });
   }
 
@@ -170,7 +170,7 @@ export class MockProviderServer {
    */
   setJWTAuth(secret: string): void {
     this.jwtHandler = new JWTHandler({
-      algorithm: 'HS256',
+      algorithm: "HS256",
       secret,
       expirySeconds: 3600,
     });
@@ -210,21 +210,26 @@ export class MockProviderServer {
   /**
    * Main request handler
    */
-  private async handleRequest(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
-    const url = new URL(req.url || '/', `http://localhost:${this.config.port}`);
+  private async handleRequest(
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
+  ): Promise<void> {
+    const url = new URL(req.url || "/", `http://localhost:${this.config.port}`);
     const path = url.pathname;
     const query = Object.fromEntries(url.searchParams);
-    const method = req.method || 'GET';
+    const method = req.method || "GET";
     const headers: Record<string, string> = {};
 
     // Normalize headers to lowercase
     for (const [key, value] of Object.entries(req.headers)) {
-      headers[key.toLowerCase()] = Array.isArray(value) ? value[0] : value || '';
+      headers[key.toLowerCase()] = Array.isArray(value)
+        ? value[0]
+        : value || "";
     }
 
     // Collect body
-    let body = '';
-    if (method !== 'GET' && method !== 'HEAD') {
+    let body = "";
+    if (method !== "GET" && method !== "HEAD") {
       body = await this.readBody(req);
     }
 
@@ -240,47 +245,52 @@ export class MockProviderServer {
     this.recordedRequests.push(mockReq);
 
     // Check rate limiting
-    const clientIp = req.socket.remoteAddress || 'unknown';
+    const clientIp = req.socket.remoteAddress || "unknown";
     if (!this.checkRateLimit(clientIp)) {
-      res.writeHead(429, { 'Retry-After': '60' });
-      res.end(JSON.stringify({ error: 'Rate limit exceeded' }));
+      res.writeHead(429, { "Retry-After": "60" });
+      res.end(JSON.stringify({ error: "Rate limit exceeded" }));
       return;
     }
 
     // Check authentication
-    if (this.config.authType !== 'none') {
+    if (this.config.authType !== "none") {
       if (!this.validateAuth(headers, query)) {
-        res.writeHead(401, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Unauthorized' }));
+        res.writeHead(401, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Unauthorized" }));
         return;
       }
     }
 
     // Simulate error rate
     if (this.config.errorRate > 0 && Math.random() < this.config.errorRate) {
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Internal server error' }));
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Internal server error" }));
       return;
     }
 
     // Apply response delay
     if (this.config.responseDelay > 0) {
-      await new Promise((resolve) => setTimeout(resolve, this.config.responseDelay));
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.config.responseDelay),
+      );
     }
 
     // Handle OAuth2 endpoints
-    if (this.oauth2Server && this.handleOAuth2Endpoints(path, method, query, body, res)) {
+    if (
+      this.oauth2Server &&
+      this.handleOAuth2Endpoints(path, method, query, body, res)
+    ) {
       return;
     }
 
     // Return fixture or 404
     const fixture = this.getFixture(path);
     if (fixture) {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(fixture));
     } else {
-      res.writeHead(404, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Not found' }));
+      res.writeHead(404, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Not found" }));
     }
   }
 
@@ -312,19 +322,29 @@ export class MockProviderServer {
   /**
    * Validate authentication based on configured type
    */
-  private validateAuth(headers: Record<string, string>, query: Record<string, string>): boolean {
+  private validateAuth(
+    headers: Record<string, string>,
+    query: Record<string, string>,
+  ): boolean {
     switch (this.config.authType) {
-      case 'api-key':
+      case "api-key":
         return this.apiKeyValidator?.validate(headers, query) ?? false;
-      case 'basic':
-        return this.basicAuthValidator?.validateFromHeader(headers['authorization']) ?? false;
-      case 'bearer':
-        return this.bearerValidator?.validateFromHeader(headers['authorization']) ?? false;
-      case 'jwt':
+      case "basic":
+        return (
+          this.basicAuthValidator?.validateFromHeader(
+            headers["authorization"],
+          ) ?? false
+        );
+      case "bearer":
+        return (
+          this.bearerValidator?.validateFromHeader(headers["authorization"]) ??
+          false
+        );
+      case "jwt":
         if (!this.jwtHandler) return false;
-        const token = this.extractBearerToken(headers['authorization']);
+        const token = this.extractBearerToken(headers["authorization"]);
         return token ? this.jwtHandler.verify(token) !== null : false;
-      case 'oauth2':
+      case "oauth2":
         return true; // OAuth2 tokens validated separately
       default:
         return true;
@@ -339,21 +359,23 @@ export class MockProviderServer {
     method: string,
     query: Record<string, string>,
     body: string,
-    res: http.ServerResponse
+    res: http.ServerResponse,
   ): boolean {
     if (!this.oauth2Server) return false;
 
     const basePath = this.config.basePath;
 
     // GET /authorize
-    if (path === `${basePath}/oauth/authorize` && method === 'GET') {
+    if (path === `${basePath}/oauth/authorize` && method === "GET") {
       const code = this.oauth2Server.generateAuthCode(
-        query.redirect_uri || '',
-        query.scope
+        query.redirect_uri || "",
+        query.scope,
       );
-      const redirectUri = new URL(query.redirect_uri || 'http://localhost/callback');
-      redirectUri.searchParams.set('code', code);
-      redirectUri.searchParams.set('state', query.state || '');
+      const redirectUri = new URL(
+        query.redirect_uri || "http://localhost/callback",
+      );
+      redirectUri.searchParams.set("code", code);
+      redirectUri.searchParams.set("state", query.state || "");
 
       res.writeHead(302, { Location: redirectUri.toString() });
       res.end();
@@ -361,49 +383,49 @@ export class MockProviderServer {
     }
 
     // POST /token
-    if (path === `${basePath}/oauth/token` && method === 'POST') {
-      const bodyObj = JSON.parse(body || '{}');
+    if (path === `${basePath}/oauth/token` && method === "POST") {
+      const bodyObj = JSON.parse(body || "{}");
       const grantType = bodyObj.grant_type;
 
-      if (grantType === 'authorization_code') {
+      if (grantType === "authorization_code") {
         const token = this.oauth2Server.exchangeAuthCode(
           bodyObj.code,
           bodyObj.client_id,
           bodyObj.client_secret,
-          bodyObj.redirect_uri
+          bodyObj.redirect_uri,
         );
 
         if (token) {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.writeHead(200, { "Content-Type": "application/json" });
           res.end(JSON.stringify(token));
         } else {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'invalid_grant' }));
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "invalid_grant" }));
         }
-      } else if (grantType === 'refresh_token') {
+      } else if (grantType === "refresh_token") {
         const token = this.oauth2Server.refreshAccessToken(
           bodyObj.refresh_token,
           bodyObj.client_id,
-          bodyObj.client_secret
+          bodyObj.client_secret,
         );
 
         if (token) {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.writeHead(200, { "Content-Type": "application/json" });
           res.end(JSON.stringify(token));
         } else {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'invalid_grant' }));
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "invalid_grant" }));
         }
       } else {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'unsupported_grant_type' }));
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "unsupported_grant_type" }));
       }
       return true;
     }
 
     // POST /revoke
-    if (path === `${basePath}/oauth/revoke` && method === 'POST') {
-      const bodyObj = JSON.parse(body || '{}');
+    if (path === `${basePath}/oauth/revoke` && method === "POST") {
+      const bodyObj = JSON.parse(body || "{}");
       this.oauth2Server.revokeToken(bodyObj.token);
       res.writeHead(200);
       res.end();
@@ -417,7 +439,9 @@ export class MockProviderServer {
    * Get response fixture for path
    */
   private getFixture(path: string): Record<string, any> | null {
-    const cleanPath = path.startsWith(this.config.basePath) ? path.slice(this.config.basePath.length) : path;
+    const cleanPath = path.startsWith(this.config.basePath)
+      ? path.slice(this.config.basePath.length)
+      : path;
     return this.config.fixtures[cleanPath] || null;
   }
 
@@ -426,11 +450,11 @@ export class MockProviderServer {
    */
   private readBody(req: http.IncomingMessage): Promise<string> {
     return new Promise((resolve) => {
-      let body = '';
-      req.on('data', (chunk) => {
+      let body = "";
+      req.on("data", (chunk) => {
         body += chunk.toString();
       });
-      req.on('end', () => {
+      req.on("end", () => {
         resolve(body);
       });
     });
@@ -440,7 +464,7 @@ export class MockProviderServer {
    * Extract bearer token from Authorization header
    */
   private extractBearerToken(authHeader?: string): string | null {
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return null;
     }
     return authHeader.slice(7);

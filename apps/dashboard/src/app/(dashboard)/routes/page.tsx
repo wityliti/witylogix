@@ -1,16 +1,19 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { Plus, Copy, Edit2, Trash2, Send, MoreVertical } from 'lucide-react';
-import Link from 'next/link';
-import { Header } from '@/components/layout/header';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { LoadingSkeleton, TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
+import { useState, useMemo } from "react";
+import { Plus, Copy, Edit2, Trash2, Send, MoreVertical } from "lucide-react";
+import Link from "next/link";
+import { Header } from "@/components/layout/header";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import {
+  LoadingSkeleton,
+  TableSkeleton,
+} from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiList } from "@/hooks/use-api";
 
 interface RouteItem {
   id: string;
@@ -20,7 +23,7 @@ interface RouteItem {
   totalDuration: number;
   assignedDriver?: string | null;
   driverId?: string | null;
-  status: 'draft' | 'scheduled' | 'active' | 'completed' | 'cancelled';
+  status: "draft" | "scheduled" | "active" | "completed" | "cancelled";
   rawStatus?: string;
   lastUsed: string;
   isTemplate: boolean;
@@ -28,49 +31,57 @@ interface RouteItem {
   date: string;
 }
 
-
 const statusVariant = (
-  s: string
-): 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary' => {
+  s: string,
+): "default" | "success" | "warning" | "danger" | "info" | "primary" => {
   const map: Record<
     string,
-    'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary'
+    "default" | "success" | "warning" | "danger" | "info" | "primary"
   > = {
-    draft: 'default',
-    scheduled: 'info',
-    active: 'success',
-    completed: 'primary',
-    cancelled: 'danger',
+    draft: "default",
+    scheduled: "info",
+    active: "success",
+    completed: "primary",
+    cancelled: "danger",
   };
-  return map[s] ?? 'default';
+  return map[s] ?? "default";
 };
 
 const statusLabel = (s: string): string => {
   const map: Record<string, string> = {
-    draft: 'Draft',
-    scheduled: 'Scheduled',
-    active: 'Active',
-    completed: 'Completed',
-    cancelled: 'Cancelled',
+    draft: "Draft",
+    scheduled: "Scheduled",
+    active: "Active",
+    completed: "Completed",
+    cancelled: "Cancelled",
   };
   return map[s] ?? s;
 };
 
 export default function RoutesPage() {
-  const { items: routes, loading, error, refetch } = useApiList<RouteItem>('/api/v4/routes');
-  const [filter, setFilter] = useState<'all' | 'active' | 'templates' | 'completed'>('all');
-  const [search, setSearch] = useState('');
+  const {
+    items: routes,
+    loading,
+    error,
+    refetch,
+  } = useApiList<RouteItem>("/api/v4/routes");
+  const [filter, setFilter] = useState<
+    "all" | "active" | "templates" | "completed"
+  >("all");
+  const [search, setSearch] = useState("");
 
   // Filter routes
   const filtered = useMemo(() => {
     let result = routes;
 
-    if (filter === 'active') {
-      result = result.filter((r) => r.status === 'active' || r.status === 'scheduled');
-    } else if (filter === 'templates') {
+    if (filter === "active") {
+      result = result.filter(
+        (r) => r.status === "active" || r.status === "scheduled",
+      );
+    } else if (filter === "templates") {
       result = result.filter((r) => r.isTemplate);
-    } else if (filter === 'completed') {
-      result = result.filter((r) => r.status === 'completed');
+    } else if (filter === "completed") {
+      result = result.filter((r) => r.status === "completed");
     }
 
     if (search) {
@@ -78,7 +89,7 @@ export default function RoutesPage() {
       result = result.filter(
         (r) =>
           r.name.toLowerCase().includes(q) ||
-          r.assignedDriver?.toLowerCase().includes(q)
+          r.assignedDriver?.toLowerCase().includes(q),
       );
     }
 
@@ -89,16 +100,17 @@ export default function RoutesPage() {
   const stats = useMemo(() => {
     const total = routes.length;
     const active = routes.filter(
-      (r) => r.status === 'active' || r.status === 'scheduled'
+      (r) => r.status === "active" || r.status === "scheduled",
     ).length;
     const templates = routes.filter((r) => r.isTemplate).length;
-    const completed = routes.filter((r) => r.status === 'completed').length;
-    const cancelled = routes.filter((r) => r.status === 'cancelled').length;
+    const completed = routes.filter((r) => r.status === "completed").length;
+    const cancelled = routes.filter((r) => r.status === "cancelled").length;
     return { total, active, templates, completed, cancelled };
   }, [routes]);
 
   if (loading && routes.length === 0) return <LoadingSkeleton />;
-  if (error && routes.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
+  if (error && routes.length === 0)
+    return <ErrorState message={error.message} onRetry={refetch} />;
 
   const formatDuration = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);
@@ -130,28 +142,36 @@ export default function RoutesPage() {
             <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
               Total Routes
             </div>
-            <div className="text-3xl font-bold text-blue-500">{stats.total}</div>
+            <div className="text-3xl font-bold text-blue-500">
+              {stats.total}
+            </div>
           </Card>
 
           <Card className="p-4 bg-wl-bg-surface border border-wl-border-default">
             <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
               Active Now
             </div>
-            <div className="text-3xl font-bold text-emerald-500">{stats.active}</div>
+            <div className="text-3xl font-bold text-emerald-500">
+              {stats.active}
+            </div>
           </Card>
 
           <Card className="p-4 bg-wl-bg-surface border border-wl-border-default">
             <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
               Templates
             </div>
-            <div className="text-3xl font-bold text-blue-400">{stats.templates}</div>
+            <div className="text-3xl font-bold text-blue-400">
+              {stats.templates}
+            </div>
           </Card>
 
           <Card className="p-4 bg-wl-bg-surface border border-wl-border-default">
             <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
               Completed
             </div>
-            <div className="text-3xl font-bold text-amber-500">{stats.completed}</div>
+            <div className="text-3xl font-bold text-amber-500">
+              {stats.completed}
+            </div>
           </Card>
         </div>
 
@@ -165,30 +185,32 @@ export default function RoutesPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className={cn(
-                'w-full px-4 py-2 rounded-md text-sm',
-                'bg-wl-bg-surface text-wl-text-primary',
-                'border border-wl-border-default',
-                'placeholder:text-wl-text-tertiary',
-                'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
-                'transition-colors',
+                "w-full px-4 py-2 rounded-md text-sm",
+                "bg-wl-bg-surface text-wl-text-primary",
+                "border border-wl-border-default",
+                "placeholder:text-wl-text-tertiary",
+                "focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500",
+                "transition-colors",
               )}
             />
           </div>
 
           {/* Filter Tabs */}
           <div className="flex gap-2 flex-wrap">
-            {(['all', 'active', 'templates', 'completed'] as const).map((f) => (
+            {(["all", "active", "templates", "completed"] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
                 className={cn(
-                  'px-4 py-2 rounded-md text-sm font-medium transition-colors border',
+                  "px-4 py-2 rounded-md text-sm font-medium transition-colors border",
                   filter === f
-                    ? 'bg-blue-500 text-white border-blue-500'
-                    : 'bg-transparent text-wl-text-secondary border-wl-border-default hover:border-wl-border-strong'
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "bg-transparent text-wl-text-secondary border-wl-border-default hover:border-wl-border-strong",
                 )}
               >
-                {f === 'all' ? 'All Routes' : f.charAt(0).toUpperCase() + f.slice(1)}
+                {f === "all"
+                  ? "All Routes"
+                  : f.charAt(0).toUpperCase() + f.slice(1)}
               </button>
             ))}
           </div>
@@ -259,7 +281,7 @@ export default function RoutesPage() {
                         {formatDuration(route.totalDuration)}
                       </td>
                       <td className="px-6 py-4 text-wl-neutral-300">
-                        {route.assignedDriver ?? '—'}
+                        {route.assignedDriver ?? "—"}
                       </td>
                       <td className="px-6 py-4">
                         <Badge variant={statusVariant(route.status)}>
@@ -271,9 +293,11 @@ export default function RoutesPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
-                          {route.status === 'draft' && (
+                          {route.status === "draft" && (
                             <>
-                              <Link href={`/routes/plan?templateId=${route.id}`}>
+                              <Link
+                                href={`/routes/plan?templateId=${route.id}`}
+                              >
                                 <Button variant="ghost" size="sm">
                                   <Edit2 className="w-4 h-4" />
                                 </Button>
@@ -283,8 +307,8 @@ export default function RoutesPage() {
                               </Button>
                             </>
                           )}
-                          {(route.status === 'active' ||
-                            route.status === 'scheduled') && (
+                          {(route.status === "active" ||
+                            route.status === "scheduled") && (
                             <Button variant="ghost" size="sm">
                               <Send className="w-4 h-4" />
                             </Button>
@@ -308,8 +332,8 @@ export default function RoutesPage() {
             </div>
             <div className="text-sm text-wl-text-secondary mb-6">
               {search
-                ? 'Try adjusting your search criteria'
-                : 'Start by creating a new route'}
+                ? "Try adjusting your search criteria"
+                : "Start by creating a new route"}
             </div>
             {!search && (
               <Link href="/routes/plan">

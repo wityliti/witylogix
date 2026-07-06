@@ -1,7 +1,14 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import { useApiList, useApiQuery, useApiMutation, ApiFilters, UseApiListResult, UseApiQueryResult } from './use-api';
+import { useMemo } from "react";
+import {
+  useApiList,
+  useApiQuery,
+  useApiMutation,
+  ApiFilters,
+  UseApiListResult,
+  UseApiQueryResult,
+} from "./use-api";
 
 // ─── TYPES ──────────────────────────────────────────────────────────
 
@@ -10,12 +17,12 @@ export interface InventoryItem {
   sku: string;
   name: string;
   category: string;
-  abcClass: 'A' | 'B' | 'C';
+  abcClass: "A" | "B" | "C";
   quantity: number;
   reorderPoint: number;
   safetyStock: number;
   unitCost: number;
-  status: 'in-stock' | 'low-stock' | 'out-of-stock';
+  status: "in-stock" | "low-stock" | "out-of-stock";
   warehouse: string;
   lastRestockDate: string;
 }
@@ -23,21 +30,21 @@ export interface InventoryItem {
 export interface Order {
   id: string;
   orderNumber: string;
-  status: 'received' | 'picked' | 'packed' | 'shipped' | 'delivered';
+  status: "received" | "picked" | "packed" | "shipped" | "delivered";
   customer: string;
   items: number;
   total: number;
   createdDate: string;
   dueDate: string;
   warehouse: string;
-  priority: 'standard' | 'expedited' | 'backorder';
+  priority: "standard" | "expedited" | "backorder";
 }
 
 export interface FulfillmentItem {
   orderId: string;
   orderNumber: string;
   itemCount: number;
-  status: 'received' | 'picked' | 'packed' | 'shipped' | 'delivered';
+  status: "received" | "picked" | "packed" | "shipped" | "delivered";
   startTime: string;
   estCompletionTime: string;
   warehouse: string;
@@ -79,7 +86,7 @@ export interface ReorderAlert {
   suggestedOrder: number;
   vendor: string;
   leadTime: number;
-  urgency: 'critical' | 'high' | 'medium' | 'low';
+  urgency: "critical" | "high" | "medium" | "low";
 }
 
 export interface StockGauge {
@@ -89,25 +96,34 @@ export interface StockGauge {
   minimum: number;
   maximum: number;
   percentageFilled: number;
-  status: 'critical' | 'warning' | 'optimal' | 'overstock';
+  status: "critical" | "warning" | "optimal" | "overstock";
 }
 
-export function useInventory(filters?: ApiFilters): UseApiListResult<InventoryItem> {
-  return useApiList<InventoryItem>('/api/v4/supply-chain/inventory', filters);
+export function useInventory(
+  filters?: ApiFilters,
+): UseApiListResult<InventoryItem> {
+  return useApiList<InventoryItem>("/api/v4/supply-chain/inventory", filters);
 }
 
-export function useInventoryItem(id: string | null): UseApiQueryResult<InventoryItem> {
-  return useApiQuery<InventoryItem>(id ? `/api/v4/supply-chain/inventory/${id}` : null);
+export function useInventoryItem(
+  id: string | null,
+): UseApiQueryResult<InventoryItem> {
+  return useApiQuery<InventoryItem>(
+    id ? `/api/v4/supply-chain/inventory/${id}` : null,
+  );
 }
 
 export function useOrdersList(filters?: ApiFilters): UseApiListResult<Order> {
-  return useApiList<Order>('/api/v4/supply-chain/orders', filters);
+  return useApiList<Order>("/api/v4/supply-chain/orders", filters);
 }
 
 /** Rich composite hook used by supply-chain orders page */
 export function useOrders(filters?: ApiFilters) {
-  const listResult = useApiList<Order>('/api/v4/supply-chain/orders', filters);
-  const updateMutation = useApiMutation<Order>('PATCH', '/api/v4/supply-chain/orders/:id/status');
+  const listResult = useApiList<Order>("/api/v4/supply-chain/orders", filters);
+  const updateMutation = useApiMutation<Order>(
+    "PATCH",
+    "/api/v4/supply-chain/orders/:id/status",
+  );
 
   return {
     orders: listResult.items,
@@ -128,16 +144,30 @@ export function useOrderDetail(id: string | null): UseApiQueryResult<Order> {
   return useApiQuery<Order>(id ? `/api/v4/supply-chain/orders/${id}` : null);
 }
 
-export function useFulfillmentList(filters?: ApiFilters): UseApiListResult<FulfillmentItem> {
-  return useApiList<FulfillmentItem>('/api/v4/supply-chain/fulfillment', filters);
+export function useFulfillmentList(
+  filters?: ApiFilters,
+): UseApiListResult<FulfillmentItem> {
+  return useApiList<FulfillmentItem>(
+    "/api/v4/supply-chain/fulfillment",
+    filters,
+  );
 }
 
 /** Rich composite hook that adds pipelineStats computed from items */
 export function useFulfillment(filters?: ApiFilters) {
-  const listResult = useApiList<FulfillmentItem>('/api/v4/supply-chain/fulfillment', filters);
+  const listResult = useApiList<FulfillmentItem>(
+    "/api/v4/supply-chain/fulfillment",
+    filters,
+  );
 
   const pipelineStats = useMemo(() => {
-    const counts = { received: 0, picked: 0, packed: 0, shipped: 0, delivered: 0 };
+    const counts = {
+      received: 0,
+      picked: 0,
+      packed: 0,
+      shipped: 0,
+      delivered: 0,
+    };
     for (const item of listResult.items) {
       if (item.status in counts) counts[item.status as keyof typeof counts]++;
     }
@@ -154,22 +184,36 @@ export function useFulfillment(filters?: ApiFilters) {
   };
 }
 
-export function useDemandPlanning(filters?: ApiFilters): UseApiListResult<DemandForecast> {
-  return useApiList<DemandForecast>('/api/v4/supply-chain/demand-planning', filters);
+export function useDemandPlanning(
+  filters?: ApiFilters,
+): UseApiListResult<DemandForecast> {
+  return useApiList<DemandForecast>(
+    "/api/v4/supply-chain/demand-planning",
+    filters,
+  );
 }
 
-export function useWarehouseOpsList(filters?: ApiFilters): UseApiListResult<WarehouseUtilization> {
-  return useApiList<WarehouseUtilization>('/api/v4/supply-chain/warehouses', filters);
+export function useWarehouseOpsList(
+  filters?: ApiFilters,
+): UseApiListResult<WarehouseUtilization> {
+  return useApiList<WarehouseUtilization>(
+    "/api/v4/supply-chain/warehouses",
+    filters,
+  );
 }
 
 /** Rich composite hook that adds warehouses alias and highestUtilization computed property */
 export function useWarehouseOps(filters?: ApiFilters) {
-  const listResult = useApiList<WarehouseUtilization>('/api/v4/supply-chain/warehouses', filters);
+  const listResult = useApiList<WarehouseUtilization>(
+    "/api/v4/supply-chain/warehouses",
+    filters,
+  );
 
   const highestUtilization = useMemo(() => {
-    if (listResult.items.length === 0) return { name: 'N/A', utilizationPercentage: 0 };
+    if (listResult.items.length === 0)
+      return { name: "N/A", utilizationPercentage: 0 };
     return listResult.items.reduce((max, wh) =>
-      wh.utilizationPercentage > max.utilizationPercentage ? wh : max
+      wh.utilizationPercentage > max.utilizationPercentage ? wh : max,
     );
   }, [listResult.items]);
 
@@ -183,10 +227,17 @@ export function useWarehouseOps(filters?: ApiFilters) {
   };
 }
 
-export function useReorderAlerts(filters?: ApiFilters): UseApiListResult<ReorderAlert> {
-  return useApiList<ReorderAlert>('/api/v4/supply-chain/reorder-alerts', filters);
+export function useReorderAlerts(
+  filters?: ApiFilters,
+): UseApiListResult<ReorderAlert> {
+  return useApiList<ReorderAlert>(
+    "/api/v4/supply-chain/reorder-alerts",
+    filters,
+  );
 }
 
-export function useStockGauges(filters?: ApiFilters): UseApiListResult<StockGauge> {
-  return useApiList<StockGauge>('/api/v4/supply-chain/stock-gauges', filters);
+export function useStockGauges(
+  filters?: ApiFilters,
+): UseApiListResult<StockGauge> {
+  return useApiList<StockGauge>("/api/v4/supply-chain/stock-gauges", filters);
 }

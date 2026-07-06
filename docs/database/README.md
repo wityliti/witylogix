@@ -5,16 +5,19 @@ Welcome to the Witylogix database documentation. This directory contains compreh
 ## Quick Start
 
 ### For New Team Members
+
 1. Start with **[SCHEMA.md](SCHEMA.md)** - Understand the overall structure and key entities
 2. Review **[ER_DIAGRAM.md](ER_DIAGRAM.md)** - Visualize relationships between models
 3. Reference **[DATA_DICTIONARY.md](DATA_DICTIONARY.md)** - Learn enum values and field conventions
 
 ### For Database Administration
+
 1. Read **[MIGRATIONS.md](MIGRATIONS.md)** - Learn how to create and manage migrations
 2. Check migration history: `pnpm prisma migrate status`
 3. Follow the expand-contract pattern for schema changes
 
 ### For Application Development
+
 1. Check **[DATA_DICTIONARY.md](DATA_DICTIONARY.md)** for field types and constraints
 2. Review relevant models in **[SCHEMA.md](SCHEMA.md)** by category
 3. Use Prisma types generated from schema: `pnpm prisma generate`
@@ -24,6 +27,7 @@ Welcome to the Witylogix database documentation. This directory contains compreh
 ## Document Overview
 
 ### 📋 [SCHEMA.md](SCHEMA.md) (~1160 lines)
+
 **Complete schema documentation with detailed model definitions**
 
 - **Overview:** PostgreSQL 16, Prisma 6, PostGIS, ~55+ models
@@ -39,6 +43,7 @@ Welcome to the Witylogix database documentation. This directory contains compreh
 - **Multi-Tenant Config:** ApiKey, UsageRecord, UsageSummary, WebhookSecret
 
 Each model includes:
+
 - Table name and mapping
 - Complete column definitions (type, nullable, default, description)
 - Indexes and constraints
@@ -47,6 +52,7 @@ Each model includes:
 - Enum values
 
 ### 📊 [ER_DIAGRAM.md](ER_DIAGRAM.md) (~586 lines)
+
 **Mermaid entity relationship diagrams**
 
 - **Diagram 1:** Core tenant hierarchy (Organization → Shop → User)
@@ -58,6 +64,7 @@ Each model includes:
 - **Diagram 7:** Onboarding & Tenant Configuration
 
 Additional sections:
+
 - Key relationship patterns (org-level vs shop-level)
 - Soft deletion patterns
 - Immutable records
@@ -65,6 +72,7 @@ Additional sections:
 - RLS boundaries
 
 ### 🔄 [MIGRATIONS.md](MIGRATIONS.md) (~591 lines)
+
 **Database migration strategies and procedures**
 
 - **Overview:** Prisma + SQL migrations, expand-contract pattern
@@ -78,6 +86,7 @@ Additional sections:
 - **Common Scenarios:** Add field, create enum, backfill data, refactor relationships
 
 ### 📚 [DATA_DICTIONARY.md](DATA_DICTIONARY.md) (~800 lines)
+
 **Field-level data dictionary and conventions**
 
 - **Enums & Status Values:** All enum types with workflows
@@ -106,28 +115,33 @@ Additional sections:
 ## Key Architecture Decisions
 
 ### Multi-Tenancy Model
+
 - **Organization** (optional): Groups multiple shops together
 - **Shop**: Primary RLS boundary; always the tenant root for Shopify
 - **Single-shop merchants:** Don't need org; shop operates independently
 - **Multi-shop merchants:** Create org, link shops, share drivers/zones across shops
 
 ### RLS (Row-Level Security)
+
 - **Shop-level** (primary): `app.current_shop_id` context variable
 - **Organization-level** (secondary): `app.current_org_id` context variable
 - **Hybrid:** Some tables support both contexts (org-level entities with shop access)
 
 ### Soft Deletion
+
 - Uses `is_active` boolean flag (most tables) or explicit `deleted_at` timestamp
 - Queries must filter: `WHERE is_active = true`
 - Enables audit trails and compliance retention periods
 
 ### Expand-Contract Pattern
+
 - **Phase 1:** Add new columns/tables with defaults (no breaking changes)
 - **Phase 2:** Migrate/backfill data in background jobs
 - **Phase 3:** Remove old columns after verification (contract)
 - Ensures zero-downtime deployments and safe rollbacks
 
 ### Enum-Based Status Tracking
+
 - All status fields use PostgreSQL enums (e.g., OrderStatus, ShipmentStatus)
 - Guarantees data integrity (no invalid statuses)
 - Clear state machines documented in DATA_DICTIONARY.md
@@ -277,13 +291,16 @@ pnpm prisma migrate status
 ## Performance & Monitoring
 
 ### Key Indexes
+
 All critical queries use indexed columns:
+
 - Shop isolation: `(shop_id)`
 - Status filtering: `(shop_id, status, created_at DESC)`
 - Date ranges: `(created_at DESC)`
 - Unique lookups: `(tracking_token)`, `(shopify_domain)`
 
 ### Query Performance
+
 ```bash
 # Enable query logging
 psql $DATABASE_URL << 'EOF'
@@ -294,7 +311,9 @@ EOF
 ```
 
 ### Slow Migrations
+
 Long-running migrations (>5 min) can lock tables. Use `CONCURRENTLY` for indexes:
+
 ```sql
 CREATE INDEX CONCURRENTLY idx_orders_status ON orders(status);
 ```

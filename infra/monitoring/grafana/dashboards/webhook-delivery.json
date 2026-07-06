@@ -16,14 +16,14 @@
           "type": "query",
           "datasource": "Prometheus",
           "query": "label_values(webhook_delivery_total, environment)",
-          "current": {"value": "production", "text": "production"}
+          "current": { "value": "production", "text": "production" }
         },
         {
           "name": "event_type",
           "type": "query",
           "datasource": "Prometheus",
           "query": "label_values(webhook_delivery_total{environment=\"$environment\"}, event_type)",
-          "current": {"value": "all", "text": "All"},
+          "current": { "value": "all", "text": "All" },
           "multi": true
         }
       ]
@@ -40,8 +40,8 @@
             "legendFormat": "Events/sec"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
-        "yaxes": [{"label": "events/sec"}]
+        "gridPos": { "h": 8, "w": 6, "x": 0, "y": 0 },
+        "yaxes": [{ "label": "events/sec" }]
       },
       {
         "id": 2,
@@ -58,7 +58,7 @@
             "legendFormat": "Failed"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0}
+        "gridPos": { "h": 8, "w": 6, "x": 6, "y": 0 }
       },
       {
         "id": 3,
@@ -71,8 +71,8 @@
             "legendFormat": "Avg Delivery Time"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
-        "yaxes": [{"label": "ms"}]
+        "gridPos": { "h": 8, "w": 6, "x": 12, "y": 0 },
+        "yaxes": [{ "label": "ms" }]
       },
       {
         "id": 4,
@@ -84,8 +84,8 @@
             "expr": "100 * (sum(rate(webhook_retry_total{environment=\"$environment\",event_type=~\"$event_type\"}[1m])) / sum(rate(webhook_delivery_total{environment=\"$environment\",event_type=~\"$event_type\"}[1m])))"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
-        "options": {"colorMode": "value"}
+        "gridPos": { "h": 8, "w": 6, "x": 18, "y": 0 },
+        "options": { "colorMode": "value" }
       },
       {
         "id": 5,
@@ -97,8 +97,8 @@
             "expr": "sum(webhook_dlq_size{environment=\"$environment\"})"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 8},
-        "options": {"colorMode": "background"}
+        "gridPos": { "h": 8, "w": 6, "x": 0, "y": 8 },
+        "options": { "colorMode": "background" }
       },
       {
         "id": 6,
@@ -111,7 +111,7 @@
             "format": "table"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 8}
+        "gridPos": { "h": 8, "w": 6, "x": 6, "y": 8 }
       },
       {
         "id": 7,
@@ -124,7 +124,7 @@
             "legendFormat": "{{event_type}}"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 8}
+        "gridPos": { "h": 8, "w": 6, "x": 12, "y": 8 }
       },
       {
         "id": 8,
@@ -137,7 +137,7 @@
             "format": "table"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 8}
+        "gridPos": { "h": 8, "w": 6, "x": 18, "y": 8 }
       },
       {
         "id": 9,
@@ -150,8 +150,8 @@
             "legendFormat": "P95 Latency"
           }
         ],
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
-        "yaxes": [{"label": "ms"}]
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+        "yaxes": [{ "label": "ms" }]
       },
       {
         "id": 10,
@@ -164,7 +164,7 @@
             "legendFormat": "{{status_code}}"
           }
         ],
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 }
       }
     ]
   }

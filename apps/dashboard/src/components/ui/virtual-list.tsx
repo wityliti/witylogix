@@ -52,7 +52,7 @@ export function VirtualList<T>({
       if (typeof itemHeight === "number") return itemHeight;
       return itemHeight(index, items[index]);
     },
-    [itemHeight, items]
+    [itemHeight, items],
   );
 
   const cumulativeHeights = useMemo(() => {
@@ -94,31 +94,34 @@ export function VirtualList<T>({
 
   const { startIdx, endIdx } = useMemo(
     () => getVisibleRange(),
-    [getVisibleRange]
+    [getVisibleRange],
   );
 
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.currentTarget;
-    setScrollTop(target.scrollTop);
-    scrollPositionRef.current = target.scrollTop;
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const target = e.currentTarget;
+      setScrollTop(target.scrollTop);
+      scrollPositionRef.current = target.scrollTop;
 
-    // Infinite scroll check
-    if (
-      target.scrollTop + target.clientHeight >=
-      target.scrollHeight - 200
-    ) {
-      onLoadMore?.();
-    }
-  }, [onLoadMore]);
+      // Infinite scroll check
+      if (target.scrollTop + target.clientHeight >= target.scrollHeight - 200) {
+        onLoadMore?.();
+      }
+    },
+    [onLoadMore],
+  );
 
-  const scrollToIndex = useCallback((index: number) => {
-    if (containerRef.current && index < items.length) {
-      const targetScroll = cumulativeHeights[index];
-      containerRef.current.scrollTop = targetScroll;
-      scrollPositionRef.current = targetScroll;
-      onScrollToIndex?.(index);
-    }
-  }, [items.length, cumulativeHeights, onScrollToIndex]);
+  const scrollToIndex = useCallback(
+    (index: number) => {
+      if (containerRef.current && index < items.length) {
+        const targetScroll = cumulativeHeights[index];
+        containerRef.current.scrollTop = targetScroll;
+        scrollPositionRef.current = targetScroll;
+        onScrollToIndex?.(index);
+      }
+    },
+    [items.length, cumulativeHeights, onScrollToIndex],
+  );
 
   useEffect(() => {
     const container = containerRef.current;
@@ -143,7 +146,7 @@ export function VirtualList<T>({
       className={cn(
         "overflow-y-auto overflow-x-hidden border border-wl-border-subtle rounded-lg",
         "bg-wl-bg-elevated",
-        className
+        className,
       )}
       style={{
         height: typeof height === "number" ? `${height}px` : height,

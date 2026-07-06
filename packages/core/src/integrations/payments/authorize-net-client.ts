@@ -3,14 +3,26 @@
  * Implements Authorize.Net API for transactions, customer profiles, recurring billing, and fraud detection
  */
 
-import { type PaymentTransaction, type PaymentMethod, type PaymentRefund, type PaymentDispute, type PaymentWebhookEvent, type PaymentMethodDetails, type CustomerData, type PaymentOptions, type RefundReason, type DisputeFilters, type TransactionStatus } from './types';
-import { PaymentAdapter } from './payment-adapter';
+import {
+  type PaymentTransaction,
+  type PaymentMethod,
+  type PaymentRefund,
+  type PaymentDispute,
+  type PaymentWebhookEvent,
+  type PaymentMethodDetails,
+  type CustomerData,
+  type PaymentOptions,
+  type RefundReason,
+  type DisputeFilters,
+  type TransactionStatus,
+} from "./types";
+import { PaymentAdapter } from "./payment-adapter";
 
 /**
  * Authorize.Net configuration
  */
 interface AuthorizeNetConfig {
-  environment: 'sandbox' | 'production';
+  environment: "sandbox" | "production";
   apiLoginId: string;
   transactionKey: string;
   publicKey?: string;
@@ -37,7 +49,7 @@ interface AuthorizeNetCustomerProfile {
  * Authorize.Net response
  */
 interface AuthorizeNetResponse {
-  resultCode: 'Ok' | 'Error';
+  resultCode: "Ok" | "Error";
   messages: Array<{ code: string; text: string }>;
   transactionResponse?: any;
   customerProfileId?: string;
@@ -59,12 +71,12 @@ export class AuthorizeNetClient extends PaymentAdapter {
   private apiUrl: string;
 
   constructor(config: AuthorizeNetConfig) {
-    super('authorize-net');
+    super("authorize-net");
     this.config = config;
     this.apiUrl =
-      config.environment === 'production'
-        ? 'https://api.authorize.net/xml/v1/request.api'
-        : 'https://apitest.authorize.net/xml/v1/request.api';
+      config.environment === "production"
+        ? "https://api.authorize.net/xml/v1/request.api"
+        : "https://apitest.authorize.net/xml/v1/request.api";
   }
 
   /**
@@ -74,14 +86,16 @@ export class AuthorizeNetClient extends PaymentAdapter {
     amount: number,
     currency: string,
     paymentMethodId: string,
-    options?: PaymentOptions
+    options?: PaymentOptions,
   ): Promise<PaymentTransaction> {
-    const idempotencyKey = options?.idempotencyKey || this.generateIdempotencyKey({
-      amount,
-      currency,
-      paymentMethodId,
-      timestamp: Date.now(),
-    });
+    const idempotencyKey =
+      options?.idempotencyKey ||
+      this.generateIdempotencyKey({
+        amount,
+        currency,
+        paymentMethodId,
+        timestamp: Date.now(),
+      });
 
     return this.executeWithIdempotency(idempotencyKey, async () => {
       const payload = {
@@ -92,12 +106,12 @@ export class AuthorizeNetClient extends PaymentAdapter {
           },
           refId: idempotencyKey,
           transactionRequest: {
-            transactionType: 'authCaptureTransaction',
+            transactionType: "authCaptureTransaction",
             amount: this.formatAmount(amount).toString(),
             currencyCode: currency,
             payment: {
               opaqueData: {
-                dataDescriptor: 'COMMON.APPLE.INAPP.PAYMENT',
+                dataDescriptor: "COMMON.APPLE.INAPP.PAYMENT",
                 dataValue: paymentMethodId,
               },
             },
@@ -129,29 +143,34 @@ export class AuthorizeNetClient extends PaymentAdapter {
                 }
               : undefined,
             userFields: options?.metadata
-              ? Object.entries(options.metadata).map(([name, value]) => ({ name, value: String(value) }))
+              ? Object.entries(options.metadata).map(([name, value]) => ({
+                  name,
+                  value: String(value),
+                }))
               : [],
             processingOptions: {
               isStoredCredential: !options?.skipTokenization,
               skipFraudDetection: false,
             },
             subsequentAuthInformation: {
-              originalNetworkTransId: '',
-              originalAuthAmount: '',
-              reason: 'resubmission',
+              originalNetworkTransId: "",
+              originalAuthAmount: "",
+              reason: "resubmission",
             },
             authorizationIndicatorType: {
-              authorizationIndicator: 'pre',
+              authorizationIndicator: "pre",
             },
-            customerIP: '',
+            customerIP: "",
           },
         },
       };
 
       const response = await this.makeRequest(payload);
 
-      if (response.resultCode !== 'Ok') {
-        const errorMsg = response.messages?.map((m: any) => m.text).join(', ') || 'Unknown error';
+      if (response.resultCode !== "Ok") {
+        const errorMsg =
+          response.messages?.map((m: any) => m.text).join(", ") ||
+          "Unknown error";
         throw new Error(`Authorize.Net charge failed: ${errorMsg}`);
       }
 
@@ -166,15 +185,17 @@ export class AuthorizeNetClient extends PaymentAdapter {
     amount: number,
     currency: string,
     paymentMethodId: string,
-    options?: PaymentOptions
+    options?: PaymentOptions,
   ): Promise<PaymentTransaction> {
-    const idempotencyKey = options?.idempotencyKey || this.generateIdempotencyKey({
-      amount,
-      currency,
-      paymentMethodId,
-      authorize: true,
-      timestamp: Date.now(),
-    });
+    const idempotencyKey =
+      options?.idempotencyKey ||
+      this.generateIdempotencyKey({
+        amount,
+        currency,
+        paymentMethodId,
+        authorize: true,
+        timestamp: Date.now(),
+      });
 
     return this.executeWithIdempotency(idempotencyKey, async () => {
       const payload = {
@@ -185,12 +206,12 @@ export class AuthorizeNetClient extends PaymentAdapter {
           },
           refId: idempotencyKey,
           transactionRequest: {
-            transactionType: 'authOnlyTransaction',
+            transactionType: "authOnlyTransaction",
             amount: this.formatAmount(amount).toString(),
             currencyCode: currency,
             payment: {
               opaqueData: {
-                dataDescriptor: 'COMMON.APPLE.INAPP.PAYMENT',
+                dataDescriptor: "COMMON.APPLE.INAPP.PAYMENT",
                 dataValue: paymentMethodId,
               },
             },
@@ -213,8 +234,10 @@ export class AuthorizeNetClient extends PaymentAdapter {
 
       const response = await this.makeRequest(payload);
 
-      if (response.resultCode !== 'Ok') {
-        const errorMsg = response.messages?.map((m: any) => m.text).join(', ') || 'Unknown error';
+      if (response.resultCode !== "Ok") {
+        const errorMsg =
+          response.messages?.map((m: any) => m.text).join(", ") ||
+          "Unknown error";
         throw new Error(`Authorize.Net authorization failed: ${errorMsg}`);
       }
 
@@ -225,7 +248,10 @@ export class AuthorizeNetClient extends PaymentAdapter {
   /**
    * Capture previously authorized transaction
    */
-  async capture(transactionId: string, amount?: number): Promise<PaymentTransaction> {
+  async capture(
+    transactionId: string,
+    amount?: number,
+  ): Promise<PaymentTransaction> {
     return this.executeWithRetries(async () => {
       const payload = {
         createTransactionRequest: {
@@ -235,7 +261,7 @@ export class AuthorizeNetClient extends PaymentAdapter {
           },
           refId: `capture-${transactionId}-${Date.now()}`,
           transactionRequest: {
-            transactionType: 'priorAuthCaptureTransaction',
+            transactionType: "priorAuthCaptureTransaction",
             refTransId: transactionId,
             amount: amount ? this.formatAmount(amount).toString() : undefined,
           },
@@ -244,8 +270,10 @@ export class AuthorizeNetClient extends PaymentAdapter {
 
       const response = await this.makeRequest(payload);
 
-      if (response.resultCode !== 'Ok') {
-        const errorMsg = response.messages?.map((m: any) => m.text).join(', ') || 'Unknown error';
+      if (response.resultCode !== "Ok") {
+        const errorMsg =
+          response.messages?.map((m: any) => m.text).join(", ") ||
+          "Unknown error";
         throw new Error(`Authorize.Net capture failed: ${errorMsg}`);
       }
 
@@ -266,7 +294,7 @@ export class AuthorizeNetClient extends PaymentAdapter {
           },
           refId: `void-${transactionId}-${Date.now()}`,
           transactionRequest: {
-            transactionType: 'voidTransaction',
+            transactionType: "voidTransaction",
             refTransId: transactionId,
           },
         },
@@ -274,8 +302,10 @@ export class AuthorizeNetClient extends PaymentAdapter {
 
       const response = await this.makeRequest(payload);
 
-      if (response.resultCode !== 'Ok') {
-        const errorMsg = response.messages?.map((m: any) => m.text).join(', ') || 'Unknown error';
+      if (response.resultCode !== "Ok") {
+        const errorMsg =
+          response.messages?.map((m: any) => m.text).join(", ") ||
+          "Unknown error";
         throw new Error(`Authorize.Net void failed: ${errorMsg}`);
       }
 
@@ -289,7 +319,7 @@ export class AuthorizeNetClient extends PaymentAdapter {
   async refund(
     transactionId: string,
     amount?: number,
-    reason?: RefundReason
+    reason?: RefundReason,
   ): Promise<PaymentRefund> {
     return this.executeWithRetries(async () => {
       const payload = {
@@ -300,7 +330,7 @@ export class AuthorizeNetClient extends PaymentAdapter {
           },
           refId: `refund-${transactionId}-${Date.now()}`,
           transactionRequest: {
-            transactionType: 'refundTransaction',
+            transactionType: "refundTransaction",
             refTransId: transactionId,
             amount: amount ? this.formatAmount(amount).toString() : undefined,
           },
@@ -309,20 +339,22 @@ export class AuthorizeNetClient extends PaymentAdapter {
 
       const response = await this.makeRequest(payload);
 
-      if (response.resultCode !== 'Ok') {
-        const errorMsg = response.messages?.map((m: any) => m.text).join(', ') || 'Unknown error';
+      if (response.resultCode !== "Ok") {
+        const errorMsg =
+          response.messages?.map((m: any) => m.text).join(", ") ||
+          "Unknown error";
         throw new Error(`Authorize.Net refund failed: ${errorMsg}`);
       }
 
       return {
         id: response.transactionResponse?.transId,
         externalId: response.transactionResponse?.transId,
-        providerId: 'authorize-net',
+        providerId: "authorize-net",
         transactionId,
         amount: amount ? this.formatAmountToCents(amount) : 0,
-        currency: 'USD',
-        status: 'completed',
-        reason: reason || 'other',
+        currency: "USD",
+        status: "completed",
+        reason: reason || "other",
         createdAt: new Date(),
         updatedAt: new Date(),
         processedAt: new Date(),
@@ -333,7 +365,9 @@ export class AuthorizeNetClient extends PaymentAdapter {
   /**
    * Create customer vault (Customer Information Manager)
    */
-  async createCustomer(customerData: CustomerData): Promise<{ id: string; externalId: string }> {
+  async createCustomer(
+    customerData: CustomerData,
+  ): Promise<{ id: string; externalId: string }> {
     return this.executeWithRetries(async () => {
       const payload = {
         createCustomerProfileRequest: {
@@ -346,22 +380,24 @@ export class AuthorizeNetClient extends PaymentAdapter {
             description: customerData.email,
             email: customerData.email,
             phoneNumber: customerData.phone,
-            faxNumber: '',
-            taxId: '',
-            type: 'individual',
+            faxNumber: "",
+            taxId: "",
+            type: "individual",
           },
-          validationMode: 'liveMode',
+          validationMode: "liveMode",
         },
       };
 
       const response = await this.makeRequest(payload);
 
-      if (response.resultCode !== 'Ok') {
-        const errorMsg = response.messages?.map((m: any) => m.text).join(', ') || 'Unknown error';
+      if (response.resultCode !== "Ok") {
+        const errorMsg =
+          response.messages?.map((m: any) => m.text).join(", ") ||
+          "Unknown error";
         throw new Error(`Authorize.Net customer creation failed: ${errorMsg}`);
       }
 
-      const profileId = response.customerProfileId ?? '';
+      const profileId = response.customerProfileId ?? "";
       return {
         id: profileId,
         externalId: profileId,
@@ -372,7 +408,10 @@ export class AuthorizeNetClient extends PaymentAdapter {
   /**
    * Update customer information
    */
-  async updateCustomer(customerId: string, data: Partial<CustomerData>): Promise<void> {
+  async updateCustomer(
+    customerId: string,
+    data: Partial<CustomerData>,
+  ): Promise<void> {
     return this.executeWithRetries(async () => {
       const payload = {
         updateCustomerProfileRequest: {
@@ -385,14 +424,16 @@ export class AuthorizeNetClient extends PaymentAdapter {
             email: data.email,
             phoneNumber: data.phone,
           },
-          validationMode: 'liveMode',
+          validationMode: "liveMode",
         },
       };
 
       const response = await this.makeRequest(payload);
 
-      if (response.resultCode !== 'Ok') {
-        const errorMsg = response.messages?.map((m: any) => m.text).join(', ') || 'Unknown error';
+      if (response.resultCode !== "Ok") {
+        const errorMsg =
+          response.messages?.map((m: any) => m.text).join(", ") ||
+          "Unknown error";
         throw new Error(`Authorize.Net customer update failed: ${errorMsg}`);
       }
     });
@@ -403,7 +444,7 @@ export class AuthorizeNetClient extends PaymentAdapter {
    */
   async createPaymentMethod(
     details: PaymentMethodDetails,
-    customerId?: string
+    customerId?: string,
   ): Promise<PaymentMethod> {
     return this.executeWithRetries(async () => {
       const payload: any = {
@@ -415,8 +456,8 @@ export class AuthorizeNetClient extends PaymentAdapter {
           customerProfileId: customerId,
           paymentProfile: {
             billTo: {
-              firstName: details.cardholderName?.split(' ')[0] || '',
-              lastName: details.cardholderName?.split(' ')[1] || '',
+              firstName: details.cardholderName?.split(" ")[0] || "",
+              lastName: details.cardholderName?.split(" ")[1] || "",
               address: details.billingAddress?.street1,
               city: details.billingAddress?.city,
               state: details.billingAddress?.state,
@@ -429,31 +470,35 @@ export class AuthorizeNetClient extends PaymentAdapter {
                 expirationDate: details.cardExpiry, // YYYY-MM
               },
             },
-            customerType: 'individual',
+            customerType: "individual",
           },
-          validationMode: 'liveMode',
+          validationMode: "liveMode",
         },
       };
 
       const response = await this.makeRequest(payload);
 
-      if (response.resultCode !== 'Ok') {
-        const errorMsg = response.messages?.map((m: any) => m.text).join(', ') || 'Unknown error';
-        throw new Error(`Authorize.Net payment method creation failed: ${errorMsg}`);
+      if (response.resultCode !== "Ok") {
+        const errorMsg =
+          response.messages?.map((m: any) => m.text).join(", ") ||
+          "Unknown error";
+        throw new Error(
+          `Authorize.Net payment method creation failed: ${errorMsg}`,
+        );
       }
 
-      const paymentProfileId = response.customerPaymentProfileId ?? '';
+      const paymentProfileId = response.customerPaymentProfileId ?? "";
       return {
         id: paymentProfileId,
         externalId: paymentProfileId,
-        providerId: 'authorize-net',
-        type: 'card',
+        providerId: "authorize-net",
+        type: "card",
         customerId,
         cardDetails: {
-          brand: 'visa',
-          lastFour: details.cardNumber?.slice(-4) || '',
-          expiryMonth: parseInt(details.cardExpiry?.split('-')[1] || '01'),
-          expiryYear: parseInt(details.cardExpiry?.split('-')[0] || '2025'),
+          brand: "visa",
+          lastFour: details.cardNumber?.slice(-4) || "",
+          expiryMonth: parseInt(details.cardExpiry?.split("-")[1] || "01"),
+          expiryYear: parseInt(details.cardExpiry?.split("-")[0] || "2025"),
           cardholderName: details.cardholderName,
         },
         isDefault: false,
@@ -470,7 +515,9 @@ export class AuthorizeNetClient extends PaymentAdapter {
   async deletePaymentMethod(paymentMethodId: string): Promise<void> {
     return this.executeWithRetries(async () => {
       // Authorize.Net requires customer profile ID
-      throw new Error('Authorize.Net deletePaymentMethod requires customerProfileId');
+      throw new Error(
+        "Authorize.Net deletePaymentMethod requires customerProfileId",
+      );
     });
   }
 
@@ -478,7 +525,9 @@ export class AuthorizeNetClient extends PaymentAdapter {
    * Get payment method
    */
   async getPaymentMethod(paymentMethodId: string): Promise<PaymentMethod> {
-    throw new Error('Authorize.Net getPaymentMethod not supported without customerProfileId');
+    throw new Error(
+      "Authorize.Net getPaymentMethod not supported without customerProfileId",
+    );
   }
 
   /**
@@ -498,22 +547,30 @@ export class AuthorizeNetClient extends PaymentAdapter {
 
       const response = await this.makeRequest(payload);
 
-      if (response.resultCode !== 'Ok') {
-        const errorMsg = response.messages?.map((m: any) => m.text).join(', ') || 'Unknown error';
-        throw new Error(`Authorize.Net payment methods list failed: ${errorMsg}`);
+      if (response.resultCode !== "Ok") {
+        const errorMsg =
+          response.messages?.map((m: any) => m.text).join(", ") ||
+          "Unknown error";
+        throw new Error(
+          `Authorize.Net payment methods list failed: ${errorMsg}`,
+        );
       }
 
       return (response.profile?.paymentProfiles || []).map((pp: any) => ({
         id: pp.customerPaymentProfileId,
         externalId: pp.customerPaymentProfileId,
-        providerId: 'authorize-net',
-        type: 'card',
+        providerId: "authorize-net",
+        type: "card",
         customerId,
         cardDetails: {
-          brand: 'visa',
-          lastFour: pp.payment?.creditCard?.cardNumber?.slice(-4) || '',
-          expiryMonth: parseInt(pp.payment?.creditCard?.expirationDate?.split('-')[1] || '01'),
-          expiryYear: parseInt(pp.payment?.creditCard?.expirationDate?.split('-')[0] || '2025'),
+          brand: "visa",
+          lastFour: pp.payment?.creditCard?.cardNumber?.slice(-4) || "",
+          expiryMonth: parseInt(
+            pp.payment?.creditCard?.expirationDate?.split("-")[1] || "01",
+          ),
+          expiryYear: parseInt(
+            pp.payment?.creditCard?.expirationDate?.split("-")[0] || "2025",
+          ),
         },
         isDefault: pp.defaultPaymentProfile,
         isDeleted: false,
@@ -540,8 +597,10 @@ export class AuthorizeNetClient extends PaymentAdapter {
 
       const response = await this.makeRequest(payload);
 
-      if (response.resultCode !== 'Ok') {
-        const errorMsg = response.messages?.map((m: any) => m.text).join(', ') || 'Unknown error';
+      if (response.resultCode !== "Ok") {
+        const errorMsg =
+          response.messages?.map((m: any) => m.text).join(", ") ||
+          "Unknown error";
         throw new Error(`Authorize.Net transaction lookup failed: ${errorMsg}`);
       }
 
@@ -557,7 +616,7 @@ export class AuthorizeNetClient extends PaymentAdapter {
     amount: number,
     intervalDays: number,
     totalOccurrences: number,
-    options?: Record<string, any>
+    options?: Record<string, any>,
   ): Promise<{ id: string; externalId: string }> {
     return this.executeWithRetries(async () => {
       const payload = {
@@ -572,14 +631,14 @@ export class AuthorizeNetClient extends PaymentAdapter {
             paymentSchedule: {
               interval: {
                 length: intervalDays,
-                unit: 'days',
+                unit: "days",
               },
-              startDate: new Date().toISOString().split('T')[0],
+              startDate: new Date().toISOString().split("T")[0],
               totalOccurrences: totalOccurrences,
               trialOccurrences: 0,
             },
             amount: this.formatAmount(amount).toString(),
-            trialAmount: '0.00',
+            trialAmount: "0.00",
             payment: {
               creditCard: {
                 cardNumber: options?.cardNumber,
@@ -615,12 +674,16 @@ export class AuthorizeNetClient extends PaymentAdapter {
 
       const response = await this.makeRequest(payload);
 
-      if (response.resultCode !== 'Ok') {
-        const errorMsg = response.messages?.map((m: any) => m.text).join(', ') || 'Unknown error';
-        throw new Error(`Authorize.Net recurring billing creation failed: ${errorMsg}`);
+      if (response.resultCode !== "Ok") {
+        const errorMsg =
+          response.messages?.map((m: any) => m.text).join(", ") ||
+          "Unknown error";
+        throw new Error(
+          `Authorize.Net recurring billing creation failed: ${errorMsg}`,
+        );
       }
 
-      const subscriptionId = response.subscriptionId ?? '';
+      const subscriptionId = response.subscriptionId ?? "";
       return {
         id: subscriptionId,
         externalId: subscriptionId,
@@ -632,39 +695,46 @@ export class AuthorizeNetClient extends PaymentAdapter {
    * Verify webhook signature
    */
   verifyWebhookSignature(payload: string, signature: string): boolean {
-    return this.verifyHmacSignature(payload, signature, this.config.signatureKey);
+    return this.verifyHmacSignature(
+      payload,
+      signature,
+      this.config.signatureKey,
+    );
   }
 
   /**
    * Parse webhook payload
    */
-  parseWebhookPayload(payload: Record<string, any>): PaymentWebhookEvent | null {
+  parseWebhookPayload(
+    payload: Record<string, any>,
+  ): PaymentWebhookEvent | null {
     const eventTypes: Record<string, string> = {
-      'net.authorize.payment.authcapture.created': 'captured',
-      'net.authorize.payment.capture.created': 'captured',
-      'net.authorize.payment.void.created': 'voided',
-      'net.authorize.payment.refund.created': 'refunded',
-      'net.authorize.payment.fraud.approved': 'fraud_approved',
-      'net.authorize.payment.fraud.declined': 'fraud_declined',
-      'net.authorize.payment.dispute.created': 'dispute_opened',
-      'net.authorize.payment.dispute.resolved': 'dispute_resolved',
-      'net.authorize.customer.subscription.created': 'subscription_created',
-      'net.authorize.customer.subscription.updated': 'subscription_updated',
-      'net.authorize.customer.subscription.expiring': 'subscription_expiring',
-      'net.authorize.customer.subscription.suspended': 'subscription_suspended',
-      'net.authorize.customer.subscription.terminated': 'subscription_terminated',
+      "net.authorize.payment.authcapture.created": "captured",
+      "net.authorize.payment.capture.created": "captured",
+      "net.authorize.payment.void.created": "voided",
+      "net.authorize.payment.refund.created": "refunded",
+      "net.authorize.payment.fraud.approved": "fraud_approved",
+      "net.authorize.payment.fraud.declined": "fraud_declined",
+      "net.authorize.payment.dispute.created": "dispute_opened",
+      "net.authorize.payment.dispute.resolved": "dispute_resolved",
+      "net.authorize.customer.subscription.created": "subscription_created",
+      "net.authorize.customer.subscription.updated": "subscription_updated",
+      "net.authorize.customer.subscription.expiring": "subscription_expiring",
+      "net.authorize.customer.subscription.suspended": "subscription_suspended",
+      "net.authorize.customer.subscription.terminated":
+        "subscription_terminated",
     };
 
-    const eventType = payload.eventType || 'unknown';
+    const eventType = payload.eventType || "unknown";
     const mappedType = eventTypes[eventType] || eventType;
 
     return {
       id: payload.eventId || `authnet-${Date.now()}`,
-      providerId: 'authorize-net',
-      provider: 'authorize-net',
+      providerId: "authorize-net",
+      provider: "authorize-net",
       eventType: mappedType,
       resourceType: this.mapAuthorizeNetResourceType(eventType),
-      resourceId: payload.payload?.id || payload.transactionId || '',
+      resourceId: payload.payload?.id || payload.transactionId || "",
       data: payload,
       timestamp: new Date(payload.eventDate || Date.now()),
       verified: true,
@@ -675,15 +745,20 @@ export class AuthorizeNetClient extends PaymentAdapter {
   /**
    * Submit dispute evidence
    */
-  async submitDisputeEvidence(disputeId: string, evidence: any[]): Promise<void> {
-    throw new Error('Authorize.Net dispute evidence submission not directly supported');
+  async submitDisputeEvidence(
+    disputeId: string,
+    evidence: any[],
+  ): Promise<void> {
+    throw new Error(
+      "Authorize.Net dispute evidence submission not directly supported",
+    );
   }
 
   /**
    * Get dispute
    */
   async getDispute(disputeId: string): Promise<PaymentDispute> {
-    throw new Error('Authorize.Net getDispute not supported');
+    throw new Error("Authorize.Net getDispute not supported");
   }
 
   /**
@@ -696,20 +771,25 @@ export class AuthorizeNetClient extends PaymentAdapter {
   /**
    * Make HTTP request to Authorize.Net API
    */
-  private async makeRequest(payload: Record<string, any>): Promise<AuthorizeNetResponse> {
+  private async makeRequest(
+    payload: Record<string, any>,
+  ): Promise<AuthorizeNetResponse> {
     try {
       const response = await fetch(this.apiUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'User-Agent': 'Witylogix-Payment-Gateway/1.0',
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "User-Agent": "Witylogix-Payment-Gateway/1.0",
         },
         body: JSON.stringify(payload),
       });
 
       const raw = (await response.json()) as {
-        messages?: { resultCode?: string; message?: Array<{ code: string; text: string }> };
+        messages?: {
+          resultCode?: string;
+          message?: Array<{ code: string; text: string }>;
+        };
         transactionResponse?: unknown;
         customerProfileId?: string;
         customerPaymentProfileId?: string;
@@ -720,7 +800,9 @@ export class AuthorizeNetClient extends PaymentAdapter {
       };
 
       return {
-        resultCode: (raw.messages?.resultCode as 'Ok' | 'Error') ?? (response.ok ? 'Ok' : 'Error'),
+        resultCode:
+          (raw.messages?.resultCode as "Ok" | "Error") ??
+          (response.ok ? "Ok" : "Error"),
         messages: raw.messages?.message ?? [],
         transactionResponse: raw.transactionResponse,
         customerProfileId: raw.customerProfileId,
@@ -742,35 +824,38 @@ export class AuthorizeNetClient extends PaymentAdapter {
     // Authorize.Net response codes: 1=approved, 2=declined, 3=error, 4=held for review
     // TransactionStatus does not include 'declined' or 'held'; map to nearest equivalents.
     const statusMap: Record<string, TransactionStatus> = {
-      1: 'authorized',
-      2: 'failed',    // declined → failed (nearest equivalent)
-      3: 'failed',
-      4: 'authorized', // held for review → authorized (funds reserved, not yet captured)
-      captureOnlyTransaction: 'captured',
-      authOnlyTransaction: 'authorized',
-      authCaptureTransaction: 'captured',
-      voidTransaction: 'voided',
-      refundTransaction: 'refunded',
-      priorAuthCaptureTransaction: 'captured',
+      1: "authorized",
+      2: "failed", // declined → failed (nearest equivalent)
+      3: "failed",
+      4: "authorized", // held for review → authorized (funds reserved, not yet captured)
+      captureOnlyTransaction: "captured",
+      authOnlyTransaction: "authorized",
+      authCaptureTransaction: "captured",
+      voidTransaction: "voided",
+      refundTransaction: "refunded",
+      priorAuthCaptureTransaction: "captured",
     };
 
     return {
       id: tr.transId || tr.refId,
       externalId: tr.transId,
-      providerId: 'authorize-net',
+      providerId: "authorize-net",
       amount: this.formatAmountToCents(parseFloat(tr.amount)),
-      currency: 'USD',
-      status: statusMap[tr.responseCode] || statusMap[tr.transactionType] || 'pending',
-      paymentMethodId: tr.payment?.creditCard?.cardNumber?.slice(-4) || '',
+      currency: "USD",
+      status:
+        statusMap[tr.responseCode] ||
+        statusMap[tr.transactionType] ||
+        "pending",
+      paymentMethodId: tr.payment?.creditCard?.cardNumber?.slice(-4) || "",
       description: tr.description,
       authorizationCode: tr.authCode,
       avs: {
-        code: tr.avsResultCode || '',
-        message: tr.avsResultCode || '',
+        code: tr.avsResultCode || "",
+        message: tr.avsResultCode || "",
       },
       cvv: {
-        code: tr.cvvResultCode || '',
-        message: tr.cvvResultCode || '',
+        code: tr.cvvResultCode || "",
+        message: tr.cvvResultCode || "",
       },
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -781,11 +866,11 @@ export class AuthorizeNetClient extends PaymentAdapter {
    * Map Authorize.Net resource type
    */
   private mapAuthorizeNetResourceType(
-    eventType: string
-  ): 'transaction' | 'payment_method' | 'dispute' | 'refund' | 'subscription' {
-    if (eventType.includes('subscription')) return 'subscription';
-    if (eventType.includes('dispute')) return 'dispute';
-    if (eventType.includes('fraud')) return 'transaction';
-    return 'transaction';
+    eventType: string,
+  ): "transaction" | "payment_method" | "dispute" | "refund" | "subscription" {
+    if (eventType.includes("subscription")) return "subscription";
+    if (eventType.includes("dispute")) return "dispute";
+    if (eventType.includes("fraud")) return "transaction";
+    return "transaction";
   }
 }

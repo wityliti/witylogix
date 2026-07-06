@@ -259,9 +259,10 @@ export function generateHTML(label: LabelData, options: LabelOptions): string {
 /**
  * Get label dimensions in pixels for rendering
  */
-function getLabelDimensions(
-  size: "4x6" | "6x4" | "4x8" | "8.5x11"
-): { width: number; height: number } {
+function getLabelDimensions(size: "4x6" | "6x4" | "4x8" | "8.5x11"): {
+  width: number;
+  height: number;
+} {
   const dpi = 96; // Screen DPI
 
   const dimensions: Record<string, { width: number; height: number }> = {

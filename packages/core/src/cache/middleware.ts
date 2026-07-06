@@ -3,9 +3,9 @@
  * Provides response caching, invalidation, and rate limiting
  */
 
-import { CacheClient } from './client';
-import { RateLimitConfig } from './types';
-import { RateLimitStrategy } from './strategies';
+import { CacheClient } from "./client";
+import { RateLimitConfig } from "./types";
+import { RateLimitStrategy } from "./strategies";
 
 /**
  * Options for response caching middleware
@@ -41,28 +41,30 @@ export interface InvalidateOnMutationOptions {
  */
 export function cacheResponse(
   cache: CacheClient,
-  options: CacheResponseOptions = {}
+  options: CacheResponseOptions = {},
 ) {
   return async (request: any, reply: any) => {
     // Only cache GET requests
-    if (request.method !== 'GET') {
+    if (request.method !== "GET") {
       return;
     }
 
     // Check exclusions
-    if (options.exclude && options.exclude.some((regex) => regex.test(request.url))) {
+    if (
+      options.exclude &&
+      options.exclude.some((regex) => regex.test(request.url))
+    ) {
       return;
     }
 
     // Generate cache key
     const cacheKey =
-      options.key?.(request) ||
-      `http:${request.method}:${request.url}`;
+      options.key?.(request) || `http:${request.method}:${request.url}`;
 
     // Try to get from cache
     const cached = await cache.get(cacheKey);
     if (cached) {
-      reply.header('X-Cache-Hit', 'true');
+      reply.header("X-Cache-Hit", "true");
       return reply.send(cached);
     }
 
@@ -77,7 +79,7 @@ export function cacheResponse(
         await cache.set(cacheKey, payload, ttl);
       }
 
-      reply.header('X-Cache-Hit', 'false');
+      reply.header("X-Cache-Hit", "false");
       return originalSend(payload);
     };
   };
@@ -91,17 +93,19 @@ export function cacheResponse(
  */
 export function invalidateOnMutation(
   cache: CacheClient,
-  options: InvalidateOnMutationOptions
+  options: InvalidateOnMutationOptions,
 ) {
   return async (request: any, reply: any) => {
     // Only apply to mutation methods
-    const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method);
+    const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(
+      request.method,
+    );
     if (!isMutation) {
       return;
     }
 
     // Set up reply hook to invalidate after response
-    reply.addHook('onSend', async (request: any, reply: any) => {
+    reply.addHook("onSend", async (request: any, reply: any) => {
       const statusCode = reply.statusCode || 200;
 
       // Only invalidate on success
@@ -144,15 +148,15 @@ export interface RateLimitMiddlewareConfig extends RateLimitConfig {
  */
 export function rateLimitMiddleware(
   cache: CacheClient,
-  config: RateLimitMiddlewareConfig
+  config: RateLimitMiddlewareConfig,
 ) {
   return async (request: any, reply: any) => {
     // Extract identifier (IP by default)
     const identifier =
       config.extractIdentifier?.(request) ||
       request.ip ||
-      request.headers['x-forwarded-for'] ||
-      'unknown';
+      request.headers["x-forwarded-for"] ||
+      "unknown";
 
     // Create rate limit key
     const key = config.namespace
@@ -169,7 +173,9 @@ export function rateLimitMiddleware(
       const remaining = await cache.increment(key, 0);
       if (remaining === 1) {
         // This was the first increment, set expiration
-        const multi = (cache as any).redis.multi?.() || { expire: async () => {} };
+        const multi = (cache as any).redis.multi?.() || {
+          expire: async () => {},
+        };
         await (multi as any).expire(key, config.windowSeconds);
         await (multi as any).exec?.();
       }
@@ -178,17 +184,26 @@ export function rateLimitMiddleware(
     // Check if exceeded limit
     if (current > config.maxRequests) {
       const statusCode = config.statusCode || 429;
-      const message = config.message || 'Too many requests';
-      reply.header('X-RateLimit-Limit', config.maxRequests);
-      reply.header('X-RateLimit-Remaining', Math.max(0, config.maxRequests - current));
-      reply.header('Retry-After', config.windowSeconds);
+      const message = config.message || "Too many requests";
+      reply.header("X-RateLimit-Limit", config.maxRequests);
+      reply.header(
+        "X-RateLimit-Remaining",
+        Math.max(0, config.maxRequests - current),
+      );
+      reply.header("Retry-After", config.windowSeconds);
       return reply.code(statusCode).send({ error: message });
     }
 
     // Add rate limit headers
-    reply.header('X-RateLimit-Limit', config.maxRequests);
-    reply.header('X-RateLimit-Remaining', Math.max(0, config.maxRequests - current));
-    reply.header('X-RateLimit-Reset', Math.floor(Date.now() / 1000) + config.windowSeconds);
+    reply.header("X-RateLimit-Limit", config.maxRequests);
+    reply.header(
+      "X-RateLimit-Remaining",
+      Math.max(0, config.maxRequests - current),
+    );
+    reply.header(
+      "X-RateLimit-Reset",
+      Math.floor(Date.now() / 1000) + config.windowSeconds,
+    );
   };
 }
 
@@ -213,10 +228,10 @@ export interface CacheTenantDataOptions {
 export function cacheTenantData(
   cache: CacheClient,
   entityType: string,
-  options: CacheTenantDataOptions = {}
+  options: CacheTenantDataOptions = {},
 ) {
   return async (request: any, reply: any) => {
-    if (request.method !== 'GET') {
+    if (request.method !== "GET") {
       return;
     }
 
@@ -237,7 +252,7 @@ export function cacheTenantData(
     // Try to get from cache
     const cached = await cache.get(cacheKey);
     if (cached) {
-      reply.header('X-Tenant-Cache', 'hit');
+      reply.header("X-Tenant-Cache", "hit");
       return reply.send(cached);
     }
 
@@ -252,7 +267,7 @@ export function cacheTenantData(
         await cache.set(cacheKey, payload, ttl, tags);
       }
 
-      reply.header('X-Tenant-Cache', 'miss');
+      reply.header("X-Tenant-Cache", "miss");
       return originalSend(payload);
     };
   };

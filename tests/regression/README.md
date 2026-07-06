@@ -56,20 +56,26 @@ Nightly regression tests execute automatically and report results to Slack on fa
 Tests are organized by category and tagged with decorators:
 
 ### @smoke
+
 Basic smoke tests validating critical paths work:
+
 - Quick execution (<5 min)
 - Core functionality only
 - Use in pre-release validation
 
 ### @regression
+
 Full regression test suite:
+
 - Complete path coverage
 - Data consistency checks
 - Edge cases and error scenarios
 - Runs nightly in CI
 
 ### @critical
+
 Tests for business-critical flows:
+
 - Order lifecycle
 - Payment processing
 - Driver registration
@@ -77,7 +83,9 @@ Tests for business-critical flows:
 - Integration activation
 
 ### @visual
+
 Visual regression tests:
+
 - Screenshot comparison
 - Responsive design validation
 - Baseline management
@@ -88,33 +96,33 @@ Visual regression tests:
 Each regression test file follows this pattern:
 
 ```typescript
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test.describe('Feature Name', () => {
+test.describe("Feature Name", () => {
   let pageName: PageClass;
 
   test.beforeEach(({ page }) => {
     pageName = new PageClass(page);
   });
 
-  test('@regression should validate scenario', async ({ page }) => {
+  test("@regression should validate scenario", async ({ page }) => {
     // Setup test data
-    test.step('Setup', async () => {
+    test.step("Setup", async () => {
       // Initialize data
     });
 
     // Execute test flow
-    test.step('Execute', async () => {
+    test.step("Execute", async () => {
       // Perform actions
     });
 
     // Assert expectations
-    test.step('Assert', async () => {
+    test.step("Assert", async () => {
       expect(result).toBe(expected);
     });
 
     // Cleanup
-    test.step('Cleanup', async () => {
+    test.step("Cleanup", async () => {
       // Remove test data
     });
   });
@@ -124,7 +132,9 @@ test.describe('Feature Name', () => {
 ## Test Files
 
 ### critical-paths.spec.ts
+
 Tests complete end-to-end workflows:
+
 - Order lifecycle: create → edit → assign → deliver → complete → archive
 - Driver lifecycle: register → verify → activate → assign → complete → rate
 - Delivery lifecycle: assign → pickup → transit → deliver → POD → confirm
@@ -132,7 +142,9 @@ Tests complete end-to-end workflows:
 - Integration lifecycle: install → configure → test → activate → usage → deactivate
 
 ### auth-regression.spec.ts
+
 Tests authentication and authorization:
+
 - Login with valid/invalid credentials
 - Token refresh before/after expiry
 - MFA enrollment and verification
@@ -143,7 +155,9 @@ Tests authentication and authorization:
 - Role-based access control (RBAC)
 
 ### api-regression.spec.ts
+
 Tests API contracts and consistency:
+
 - CRUD operations on all endpoints
 - Pagination (cursor, offset)
 - Filter combinations and edge cases
@@ -153,7 +167,9 @@ Tests API contracts and consistency:
 - Content-Type enforcement
 
 ### visual/visual-regression.spec.ts
+
 Tests UI consistency across changes:
+
 - Dashboard home page
 - Orders list and detail
 - Driver list
@@ -164,9 +180,11 @@ Tests UI consistency across changes:
 ## Adding New Tests
 
 ### 1. Create Test File
+
 Add new test file to `tests/regression/` with `.spec.ts` extension.
 
 ### 2. Use Page Objects
+
 Create reusable page objects in `page-objects/` directory:
 
 ```typescript
@@ -174,7 +192,7 @@ export class MyPage {
   constructor(private page: Page) {}
 
   async navigateTo() {
-    await this.page.goto('/path');
+    await this.page.goto("/path");
   }
 
   async performAction() {
@@ -184,34 +202,37 @@ export class MyPage {
 ```
 
 ### 3. Organize with Test Steps
+
 Use `test.step()` for logical grouping and better reporting:
 
 ```typescript
-test('scenario', async ({ page }) => {
-  test.step('Setup data', async () => {
+test("scenario", async ({ page }) => {
+  test.step("Setup data", async () => {
     // Setup
   });
 
-  test.step('Execute action', async () => {
+  test.step("Execute action", async () => {
     // Action
   });
 
-  test.step('Verify result', async () => {
+  test.step("Verify result", async () => {
     // Assertion
   });
 });
 ```
 
 ### 4. Tag Tests Appropriately
+
 Use tags to categorize tests:
 
 ```typescript
-test('@regression @critical should validate critical flow', async () => {
+test("@regression @critical should validate critical flow", async () => {
   // Test
 });
 ```
 
 ### 5. Add to CI
+
 Tag tests in `grep` patterns in `.github/workflows/regression.yml` if filtering needed.
 
 ## Baseline Management
@@ -239,6 +260,7 @@ Push to GitHub with `[update-baselines]` in commit message to update visual base
 ## Configuration
 
 See `playwright.regression.config.ts` for:
+
 - Browser configuration (Chromium, Firefox, WebKit)
 - Timeout settings (30s per test, 5s per assertion)
 - Parallel workers (4 for sharding)
@@ -248,21 +270,25 @@ See `playwright.regression.config.ts` for:
 ## Troubleshooting
 
 ### Tests Timeout
+
 - Check if services are running (API, web server)
 - Increase timeout in playwright.regression.config.ts
 - Check for network issues or slow tests
 
 ### Flaky Tests
+
 - Add retry logic with `test.setTimeout()`
 - Use explicit waits instead of sleeps
 - Check for timing-dependent test data
 
 ### Visual Baseline Mismatches
+
 - Review screenshot diffs in HTML report
 - Update baselines if changes are intentional
 - Check viewport sizes match expected values
 
 ### API Test Failures
+
 - Verify database is seeded correctly
 - Check API is accessible and responding
 - Review error messages in test output
@@ -270,6 +296,7 @@ See `playwright.regression.config.ts` for:
 ## Performance
 
 Target regression test execution times:
+
 - **Critical paths**: <5 min
 - **Full suite**: <30 min
 - **Visual tests**: <10 min
@@ -279,6 +306,7 @@ Tests run in parallel (4 workers) to optimize execution time.
 ## CI/CD Integration
 
 Regression tests integrate with:
+
 - **Pull Requests**: Manual trigger via CI workflow
 - **Nightly Schedule**: Automatic 2:00 AM UTC daily
 - **Release Pipeline**: Pre-release validation

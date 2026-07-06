@@ -5,37 +5,39 @@
  * Covers: route calculation, traffic flow, incidents, caching, and rate limiting.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { TomTomTrafficClient } from '../tomtom-traffic-client.js';
-import type { TomTomRoute } from '../types.js';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { TomTomTrafficClient } from "../tomtom-traffic-client.js";
+import type { TomTomRoute } from "../types.js";
 
-describe('TomTomTrafficClient', () => {
+describe("TomTomTrafficClient", () => {
   let client: TomTomTrafficClient;
 
   beforeEach(() => {
-    client = new TomTomTrafficClient('test-api-key-12345', 30);
+    client = new TomTomTrafficClient("test-api-key-12345", 30);
     vi.clearAllMocks();
   });
 
-  describe('initialization', () => {
-    it('should throw error if API key is missing', () => {
-      expect(() => new TomTomTrafficClient('', 30)).toThrow('TomTom API key is required');
+  describe("initialization", () => {
+    it("should throw error if API key is missing", () => {
+      expect(() => new TomTomTrafficClient("", 30)).toThrow(
+        "TomTom API key is required",
+      );
     });
 
-    it('should initialize with provided rate limit', () => {
-      const testClient = new TomTomTrafficClient('key', 50);
+    it("should initialize with provided rate limit", () => {
+      const testClient = new TomTomTrafficClient("key", 50);
       expect(testClient).toBeDefined();
     });
 
-    it('should use default rate limit if not provided', () => {
-      const testClient = new TomTomTrafficClient('key');
+    it("should use default rate limit if not provided", () => {
+      const testClient = new TomTomTrafficClient("key");
       expect(testClient).toBeDefined();
     });
   });
 
-  describe('coordinate normalization', () => {
-    it('should normalize array coordinates to LatLng', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+  describe("coordinate normalization", () => {
+    it("should normalize array coordinates to LatLng", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             routes: [
@@ -45,8 +47,8 @@ describe('TomTomTrafficClient', () => {
                   travelTimeInSeconds: 300,
                   trafficDelayInSeconds: 120,
                   trafficLengthInMeters: 5000,
-                  departureTime: '2024-01-01T10:00:00Z',
-                  arrivalTime: '2024-01-01T10:07:00Z',
+                  departureTime: "2024-01-01T10:00:00Z",
+                  arrivalTime: "2024-01-01T10:07:00Z",
                 },
                 legs: [
                   {
@@ -68,14 +70,17 @@ describe('TomTomTrafficClient', () => {
         ),
       );
 
-      const result = await client.getRoute([40.7128, -74.006], [40.7589, -73.9851]);
+      const result = await client.getRoute(
+        [40.7128, -74.006],
+        [40.7589, -73.9851],
+      );
       expect(result.summary).toBeDefined();
     });
   });
 
-  describe('getRoute', () => {
-    it('should fetch and return route successfully', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+  describe("getRoute", () => {
+    it("should fetch and return route successfully", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             routes: [
@@ -85,8 +90,8 @@ describe('TomTomTrafficClient', () => {
                   travelTimeInSeconds: 300,
                   trafficDelayInSeconds: 120,
                   trafficLengthInMeters: 5000,
-                  departureTime: '2024-01-01T10:00:00Z',
-                  arrivalTime: '2024-01-01T10:07:00Z',
+                  departureTime: "2024-01-01T10:00:00Z",
+                  arrivalTime: "2024-01-01T10:07:00Z",
                 },
                 legs: [
                   {
@@ -117,8 +122,8 @@ describe('TomTomTrafficClient', () => {
       expect(result.summary.lengthInMeters).toBe(5000);
     });
 
-    it('should handle route options correctly', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+    it("should handle route options correctly", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             routes: [
@@ -128,8 +133,8 @@ describe('TomTomTrafficClient', () => {
                   travelTimeInSeconds: 300,
                   trafficDelayInSeconds: 120,
                   trafficLengthInMeters: 5000,
-                  departureTime: '2024-01-01T10:00:00Z',
-                  arrivalTime: '2024-01-01T10:07:00Z',
+                  departureTime: "2024-01-01T10:00:00Z",
+                  arrivalTime: "2024-01-01T10:07:00Z",
                 },
                 legs: [
                   {
@@ -156,15 +161,15 @@ describe('TomTomTrafficClient', () => {
         { lat: 40.7589, lng: -73.9851 },
         {
           alternatives: true,
-          trafficModel: 'real_time',
+          trafficModel: "real_time",
         },
       );
 
       expect(result.summary).toBeDefined();
     });
 
-    it('should throw error on API failure', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+    it("should throw error on API failure", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(JSON.stringify({ routes: [] })),
       );
 
@@ -176,8 +181,8 @@ describe('TomTomTrafficClient', () => {
       ).rejects.toThrow();
     });
 
-    it('should cache routes for 5 minutes', async () => {
-      const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue(
+    it("should cache routes for 5 minutes", async () => {
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(
           JSON.stringify({
             routes: [
@@ -187,8 +192,8 @@ describe('TomTomTrafficClient', () => {
                   travelTimeInSeconds: 300,
                   trafficDelayInSeconds: 120,
                   trafficLengthInMeters: 5000,
-                  departureTime: '2024-01-01T10:00:00Z',
-                  arrivalTime: '2024-01-01T10:07:00Z',
+                  departureTime: "2024-01-01T10:00:00Z",
+                  arrivalTime: "2024-01-01T10:07:00Z",
                 },
                 legs: [
                   {
@@ -220,14 +225,14 @@ describe('TomTomTrafficClient', () => {
     });
   });
 
-  describe('getTrafficFlow', () => {
-    it('should fetch traffic flow data', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+  describe("getTrafficFlow", () => {
+    it("should fetch traffic flow data", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             flowSegmentData: [
               {
-                frc: 'FRC0',
+                frc: "FRC0",
                 currentFlow: {
                   speed: 60,
                   speedUncapped: 60,
@@ -250,13 +255,13 @@ describe('TomTomTrafficClient', () => {
       expect(result.timestamp).toBeDefined();
     });
 
-    it('should cache traffic flow for 2 minutes', async () => {
-      const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue(
+    it("should cache traffic flow for 2 minutes", async () => {
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(
           JSON.stringify({
             flowSegmentData: [
               {
-                frc: 'FRC0',
+                frc: "FRC0",
                 currentFlow: {
                   speed: 60,
                   speedUncapped: 60,
@@ -269,7 +274,10 @@ describe('TomTomTrafficClient', () => {
         ),
       );
 
-      const bbox = { ne: { lat: 40.8, lng: -73.9 }, sw: { lat: 40.7, lng: -74.1 } };
+      const bbox = {
+        ne: { lat: 40.8, lng: -73.9 },
+        sw: { lat: 40.7, lng: -74.1 },
+      };
 
       await client.getTrafficFlow(bbox);
       await client.getTrafficFlow(bbox);
@@ -277,8 +285,8 @@ describe('TomTomTrafficClient', () => {
       expect(fetchSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('should handle empty flow segment data', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+    it("should handle empty flow segment data", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(JSON.stringify({})),
       );
 
@@ -291,23 +299,23 @@ describe('TomTomTrafficClient', () => {
     });
   });
 
-  describe('getTrafficIncidents', () => {
-    it('should fetch traffic incidents', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+  describe("getTrafficIncidents", () => {
+    it("should fetch traffic incidents", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             incidents: [
               {
-                id: 'incident-1',
-                type: 'ACCIDENT',
+                id: "incident-1",
+                type: "ACCIDENT",
                 geometry: {
-                  type: 'Point',
+                  type: "Point",
                   coordinates: [[-74.006, 40.7128]],
                 },
-                startTime: '2024-01-01T10:00:00Z',
+                startTime: "2024-01-01T10:00:00Z",
                 delaySeconds: 300,
-                description: 'Traffic accident',
-                affectedRoads: [{ name: 'Main Street' }],
+                description: "Traffic accident",
+                affectedRoads: [{ name: "Main Street" }],
               },
             ],
           }),
@@ -320,40 +328,40 @@ describe('TomTomTrafficClient', () => {
       });
 
       expect(result).toHaveLength(1);
-      expect(result[0].type).toBe('accident');
+      expect(result[0].type).toBe("accident");
     });
 
-    it('should map incident types correctly', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+    it("should map incident types correctly", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             incidents: [
               {
-                id: 'incident-1',
-                type: 'CONSTRUCTION',
+                id: "incident-1",
+                type: "CONSTRUCTION",
                 geometry: {
-                  type: 'Point',
+                  type: "Point",
                   coordinates: [[-74.006, 40.7128]],
                 },
-                startTime: '2024-01-01T10:00:00Z',
+                startTime: "2024-01-01T10:00:00Z",
               },
               {
-                id: 'incident-2',
-                type: 'CONGESTION',
+                id: "incident-2",
+                type: "CONGESTION",
                 geometry: {
-                  type: 'Point',
+                  type: "Point",
                   coordinates: [[-74.006, 40.7128]],
                 },
-                startTime: '2024-01-01T10:00:00Z',
+                startTime: "2024-01-01T10:00:00Z",
               },
               {
-                id: 'incident-3',
-                type: 'CLOSED_ROAD',
+                id: "incident-3",
+                type: "CLOSED_ROAD",
                 geometry: {
-                  type: 'Point',
+                  type: "Point",
                   coordinates: [[-74.006, 40.7128]],
                 },
-                startTime: '2024-01-01T10:00:00Z',
+                startTime: "2024-01-01T10:00:00Z",
               },
             ],
           }),
@@ -365,34 +373,34 @@ describe('TomTomTrafficClient', () => {
         sw: { lat: 40.7, lng: -74.1 },
       });
 
-      expect(result[0].type).toBe('construction');
-      expect(result[1].type).toBe('congestion');
-      expect(result[2].type).toBe('road_closure');
+      expect(result[0].type).toBe("construction");
+      expect(result[1].type).toBe("congestion");
+      expect(result[2].type).toBe("road_closure");
     });
 
-    it('should calculate incident severity from delay', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+    it("should calculate incident severity from delay", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             incidents: [
               {
-                id: 'incident-1',
-                type: 'ACCIDENT',
+                id: "incident-1",
+                type: "ACCIDENT",
                 geometry: {
-                  type: 'Point',
+                  type: "Point",
                   coordinates: [[-74.006, 40.7128]],
                 },
-                startTime: '2024-01-01T10:00:00Z',
+                startTime: "2024-01-01T10:00:00Z",
                 delaySeconds: 600, // 10 minutes
               },
               {
-                id: 'incident-2',
-                type: 'ACCIDENT',
+                id: "incident-2",
+                type: "ACCIDENT",
                 geometry: {
-                  type: 'Point',
+                  type: "Point",
                   coordinates: [[-74.006, 40.7128]],
                 },
-                startTime: '2024-01-01T10:00:00Z',
+                startTime: "2024-01-01T10:00:00Z",
                 delaySeconds: 30, // 30 seconds
               },
             ],
@@ -405,30 +413,33 @@ describe('TomTomTrafficClient', () => {
         sw: { lat: 40.7, lng: -74.1 },
       });
 
-      expect(result[0].severity).toBe('severe');
-      expect(result[1].severity).toBe('minor');
+      expect(result[0].severity).toBe("severe");
+      expect(result[1].severity).toBe("minor");
     });
 
-    it('should cache incidents for 2 minutes', async () => {
-      const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue(
+    it("should cache incidents for 2 minutes", async () => {
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(
           JSON.stringify({
             incidents: [
               {
-                id: 'incident-1',
-                type: 'ACCIDENT',
+                id: "incident-1",
+                type: "ACCIDENT",
                 geometry: {
-                  type: 'Point',
+                  type: "Point",
                   coordinates: [[-74.006, 40.7128]],
                 },
-                startTime: '2024-01-01T10:00:00Z',
+                startTime: "2024-01-01T10:00:00Z",
               },
             ],
           }),
         ),
       );
 
-      const bbox = { ne: { lat: 40.8, lng: -73.9 }, sw: { lat: 40.7, lng: -74.1 } };
+      const bbox = {
+        ne: { lat: 40.8, lng: -73.9 },
+        sw: { lat: 40.7, lng: -74.1 },
+      };
 
       await client.getTrafficIncidents(bbox);
       await client.getTrafficIncidents(bbox);
@@ -437,9 +448,9 @@ describe('TomTomTrafficClient', () => {
     });
   });
 
-  describe('cache statistics', () => {
-    it('should track cache hits and misses', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValue(
+  describe("cache statistics", () => {
+    it("should track cache hits and misses", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(
           JSON.stringify({
             routes: [
@@ -449,8 +460,8 @@ describe('TomTomTrafficClient', () => {
                   travelTimeInSeconds: 300,
                   trafficDelayInSeconds: 120,
                   trafficLengthInMeters: 5000,
-                  departureTime: '2024-01-01T10:00:00Z',
-                  arrivalTime: '2024-01-01T10:07:00Z',
+                  departureTime: "2024-01-01T10:00:00Z",
+                  arrivalTime: "2024-01-01T10:07:00Z",
                 },
                 legs: [
                   {
@@ -483,9 +494,9 @@ describe('TomTomTrafficClient', () => {
     });
   });
 
-  describe('clear cache', () => {
-    it('should clear all cached entries', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValue(
+  describe("clear cache", () => {
+    it("should clear all cached entries", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(
           JSON.stringify({
             routes: [
@@ -495,8 +506,8 @@ describe('TomTomTrafficClient', () => {
                   travelTimeInSeconds: 300,
                   trafficDelayInSeconds: 120,
                   trafficLengthInMeters: 5000,
-                  departureTime: '2024-01-01T10:00:00Z',
-                  arrivalTime: '2024-01-01T10:07:00Z',
+                  departureTime: "2024-01-01T10:00:00Z",
+                  arrivalTime: "2024-01-01T10:07:00Z",
                 },
                 legs: [
                   {
@@ -518,7 +529,10 @@ describe('TomTomTrafficClient', () => {
         ),
       );
 
-      await client.getRoute({ lat: 40.7128, lng: -74.006 }, { lat: 40.7589, lng: -73.9851 });
+      await client.getRoute(
+        { lat: 40.7128, lng: -74.006 },
+        { lat: 40.7589, lng: -73.9851 },
+      );
 
       client.clearCache();
       const stats = client.getCacheStats();
@@ -527,9 +541,9 @@ describe('TomTomTrafficClient', () => {
     });
   });
 
-  describe('health check', () => {
-    it('should return true on successful health check', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+  describe("health check", () => {
+    it("should return true on successful health check", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             routes: [
@@ -539,8 +553,8 @@ describe('TomTomTrafficClient', () => {
                   travelTimeInSeconds: 300,
                   trafficDelayInSeconds: 120,
                   trafficLengthInMeters: 5000,
-                  departureTime: '2024-01-01T10:00:00Z',
-                  arrivalTime: '2024-01-01T10:07:00Z',
+                  departureTime: "2024-01-01T10:00:00Z",
+                  arrivalTime: "2024-01-01T10:07:00Z",
                 },
                 legs: [
                   {
@@ -566,8 +580,10 @@ describe('TomTomTrafficClient', () => {
       expect(healthy).toBe(true);
     });
 
-    it('should return false on failed health check', async () => {
-      vi.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('Network error'));
+    it("should return false on failed health check", async () => {
+      vi.spyOn(global, "fetch").mockRejectedValueOnce(
+        new Error("Network error"),
+      );
 
       const healthy = await client.healthCheck();
       expect(healthy).toBe(false);

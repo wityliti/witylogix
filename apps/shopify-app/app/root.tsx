@@ -97,10 +97,7 @@ type PolarisRouterLinkProps = Omit<
 };
 
 const PolarisRouterLink = forwardRef<HTMLAnchorElement, PolarisRouterLinkProps>(
-  function PolarisRouterLink(
-    { url, external, children, ...rest },
-    ref,
-  ) {
+  function PolarisRouterLink({ url, external, children, ...rest }, ref) {
     if (external) {
       return (
         <a href={url} ref={ref} {...rest}>
@@ -274,7 +271,9 @@ export default function App() {
         />
         <ShopifyAppBridgeProvider embedded apiKey={apiKey}>
           <AppProvider i18n={enTranslations} linkComponent={PolarisRouterLink}>
-            <Frame navigation={<AppNavigation currentPath={location.pathname} />}>
+            <Frame
+              navigation={<AppNavigation currentPath={location.pathname} />}
+            >
               {isLoading && <Loading />}
               <Outlet />
             </Frame>
@@ -324,7 +323,7 @@ export function ErrorBoundary() {
     message =
       error.status === 404
         ? "The page you're looking for doesn't exist."
-        : error.data?.message ?? message;
+        : (error.data?.message ?? message);
   } else if (error instanceof Error) {
     message = error.message;
   }

@@ -3,7 +3,7 @@
  * Handles all communication with the Witylogix backend
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // Type definitions
 export interface SlotAvailability {
@@ -12,7 +12,7 @@ export interface SlotAvailability {
   startTime: string; // HH:MM
   endTime: string; // HH:MM
   label: string;
-  timeGroup: 'morning' | 'afternoon' | 'evening';
+  timeGroup: "morning" | "afternoon" | "evening";
   capacity: number;
   reserved: number;
   price: number; // In cents
@@ -50,7 +50,7 @@ const SlotAvailabilitySchema = z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}$/),
   endTime: z.string().regex(/^\d{2}:\d{2}$/),
   label: z.string(),
-  timeGroup: z.enum(['morning', 'afternoon', 'evening']),
+  timeGroup: z.enum(["morning", "afternoon", "evening"]),
   capacity: z.number().int().positive(),
   reserved: z.number().int().nonnegative(),
   price: z.number().int().nonnegative(),
@@ -88,10 +88,10 @@ export class WitylogixAPI {
   private apiUrl: string;
   private apiKey: string;
   private shopDomain: string;
-  private sessionToken: string = '';
+  private sessionToken: string = "";
 
   constructor(apiUrl: string, apiKey: string, shopDomain: string) {
-    this.apiUrl = apiUrl.replace(/\/$/, ''); // Remove trailing slash
+    this.apiUrl = apiUrl.replace(/\/$/, ""); // Remove trailing slash
     this.apiKey = apiKey;
     this.shopDomain = shopDomain;
   }
@@ -104,7 +104,7 @@ export class WitylogixAPI {
       return this.sessionToken;
     }
 
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const token = (window as any).__SHOPIFY_SESSION_TOKEN__;
       if (token) {
         this.sessionToken = token;
@@ -112,7 +112,7 @@ export class WitylogixAPI {
       }
     }
 
-    return '';
+    return "";
   }
 
   /**
@@ -121,20 +121,20 @@ export class WitylogixAPI {
   private async request<T>(
     endpoint: string,
     options: RequestInit = {},
-    schema?: z.ZodSchema
+    schema?: z.ZodSchema,
   ): Promise<T> {
     const token = await this.getSessionToken();
     const url = `${this.apiUrl}${endpoint}`;
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'X-API-Key': this.apiKey,
-      'X-Shop-Domain': this.shopDomain,
-      ...options.headers as Record<string, string>,
+      "Content-Type": "application/json",
+      "X-API-Key": this.apiKey,
+      "X-Shop-Domain": this.shopDomain,
+      ...(options.headers as Record<string, string>),
     };
 
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      headers["Authorization"] = `Bearer ${token}`;
     }
 
     const response = await fetch(url, {
@@ -144,7 +144,9 @@ export class WitylogixAPI {
 
     if (!response.ok) {
       const error = await response.text();
-      throw new Error(`API Error [${response.status}]: ${error || response.statusText}`);
+      throw new Error(
+        `API Error [${response.status}]: ${error || response.statusText}`,
+      );
     }
 
     const data = await response.json();
@@ -153,8 +155,8 @@ export class WitylogixAPI {
       try {
         return schema.parse(data);
       } catch (validationError) {
-        console.error('Validation error:', validationError);
-        throw new Error('Invalid response format from API');
+        console.error("Validation error:", validationError);
+        throw new Error("Invalid response format from API");
       }
     }
 
@@ -164,9 +166,12 @@ export class WitylogixAPI {
   /**
    * Fetch available delivery slots for a specific date
    */
-  async fetchSlots(date: string, shopDomain?: string): Promise<SlotAvailability[]> {
+  async fetchSlots(
+    date: string,
+    shopDomain?: string,
+  ): Promise<SlotAvailability[]> {
     if (!date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      throw new Error('Invalid date format. Expected YYYY-MM-DD');
+      throw new Error("Invalid date format. Expected YYYY-MM-DD");
     }
 
     const domain = shopDomain || this.shopDomain;
@@ -175,7 +180,9 @@ export class WitylogixAPI {
     const response = await this.request<{ slots: unknown[] }>(endpoint);
 
     // Validate each slot
-    const validatedSlots = z.array(SlotAvailabilitySchema).parse(response.slots);
+    const validatedSlots = z
+      .array(SlotAvailabilitySchema)
+      .parse(response.slots);
     return validatedSlots;
   }
 
@@ -184,7 +191,7 @@ export class WitylogixAPI {
    */
   async fetchRates(zipcode: string, shopDomain?: string): Promise<ZoneRate> {
     if (!zipcode || zipcode.length < 3) {
-      throw new Error('Invalid zipcode');
+      throw new Error("Invalid zipcode");
     }
 
     const domain = shopDomain || this.shopDomain;
@@ -199,7 +206,7 @@ export class WitylogixAPI {
    */
   async reserveSlot(slotId: string, cartId: string): Promise<Reservation> {
     if (!slotId || !cartId) {
-      throw new Error('Missing required parameters: slotId and cartId');
+      throw new Error("Missing required parameters: slotId and cartId");
     }
 
     const endpoint = `/api/checkout/reserve`;
@@ -207,14 +214,14 @@ export class WitylogixAPI {
     const response = await this.request<Reservation>(
       endpoint,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({
           slotId,
           cartId,
           shopDomain: this.shopDomain,
         }),
       },
-      ReservationSchema
+      ReservationSchema,
     );
 
     return response;
@@ -225,7 +232,7 @@ export class WitylogixAPI {
    */
   async geocodeAddress(address: string): Promise<GeocodingResult> {
     if (!address || address.trim().length < 5) {
-      throw new Error('Address is too short or empty');
+      throw new Error("Address is too short or empty");
     }
 
     const endpoint = `/api/checkout/geocode?address=${encodeURIComponent(address)}`;
@@ -233,7 +240,7 @@ export class WitylogixAPI {
     const response = await this.request<GeocodingResult>(
       endpoint,
       {},
-      GeocodingResultSchema
+      GeocodingResultSchema,
     );
 
     return response;
@@ -258,7 +265,7 @@ export class WitylogixAPI {
    */
   async checkServiceAvailability(zipcode: string): Promise<boolean> {
     if (!zipcode) {
-      throw new Error('Zipcode is required');
+      throw new Error("Zipcode is required");
     }
 
     const endpoint = `/api/checkout/availability?zipcode=${encodeURIComponent(zipcode)}`;
@@ -271,14 +278,17 @@ export class WitylogixAPI {
 /**
  * Initialize API client from shop metafields
  */
-export async function initializeAPIClient(shopDomain: string): Promise<WitylogixAPI> {
+export async function initializeAPIClient(
+  shopDomain: string,
+): Promise<WitylogixAPI> {
   // In production, these would come from shop metafields
   // For now, get from environment variables
-  const apiUrl = process.env.VITE_WITYLOGIX_API_URL || 'https://api.witylogix.app';
-  const apiKey = process.env.VITE_WITYLOGIX_API_KEY || '';
+  const apiUrl =
+    process.env.VITE_WITYLOGIX_API_URL || "https://api.witylogix.app";
+  const apiKey = process.env.VITE_WITYLOGIX_API_KEY || "";
 
   if (!apiKey) {
-    throw new Error('Witylogix API key not configured');
+    throw new Error("Witylogix API key not configured");
   }
 
   return new WitylogixAPI(apiUrl, apiKey, shopDomain);

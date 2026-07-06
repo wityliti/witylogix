@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from "react";
 import {
   Search,
   Plus,
@@ -9,22 +9,22 @@ import {
   CheckCircle,
   FilterX,
   Eye,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Select } from '@/components/ui/select';
-import { Table } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
-import { api } from '@/lib/api';
-import { useToast } from '@/components/ui/toast';
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Select } from "@/components/ui/select";
+import { Table } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiList } from "@/hooks/use-api";
+import { api } from "@/lib/api";
+import { useToast } from "@/components/ui/toast";
 
-type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled";
 
 interface Invoice {
   id: string;
@@ -42,21 +42,21 @@ interface Invoice {
 }
 
 const getStatusBadgeVariant = (
-  status: InvoiceStatus
-): 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary' => {
+  status: InvoiceStatus,
+): "default" | "success" | "warning" | "danger" | "info" | "primary" => {
   switch (status) {
-    case 'paid':
-      return 'success';
-    case 'sent':
-      return 'info';
-    case 'draft':
-      return 'default';
-    case 'overdue':
-      return 'danger';
-    case 'cancelled':
-      return 'warning';
+    case "paid":
+      return "success";
+    case "sent":
+      return "info";
+    case "draft":
+      return "default";
+    case "overdue":
+      return "danger";
+    case "cancelled":
+      return "warning";
     default:
-      return 'default';
+      return "default";
   }
 };
 
@@ -66,18 +66,27 @@ const getStatusLabel = (status: InvoiceStatus): string => {
 
 export default function InvoicesPage() {
   const router = useRouter();
-  const { items: invoices, loading, error, refetch } = useApiList<Invoice>('/api/v4/invoices');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<InvoiceStatus | ''>('');
-  const [selectedCustomer, setSelectedCustomer] = useState('');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-  const [amountMin, setAmountMin] = useState('');
-  const [amountMax, setAmountMax] = useState('');
-  const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status' | 'due'>('date');
+  const {
+    items: invoices,
+    loading,
+    error,
+    refetch,
+  } = useApiList<Invoice>("/api/v4/invoices");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState<InvoiceStatus | "">("");
+  const [selectedCustomer, setSelectedCustomer] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [amountMin, setAmountMin] = useState("");
+  const [amountMax, setAmountMax] = useState("");
+  const [sortBy, setSortBy] = useState<"date" | "amount" | "status" | "due">(
+    "date",
+  );
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(new Set());
+  const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(
+    new Set(),
+  );
   const [isSending, setIsSending] = useState(false);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
   const { addToast } = useToast();
@@ -96,7 +105,7 @@ export default function InvoicesPage() {
       result = result.filter(
         (i) =>
           i.number.toLowerCase().includes(query) ||
-          i.customerName.toLowerCase().includes(query)
+          i.customerName.toLowerCase().includes(query),
       );
     }
 
@@ -110,12 +119,16 @@ export default function InvoicesPage() {
 
     if (dateFrom) {
       const fromDate = new Date(dateFrom);
-      result = result.filter((i) => i.sentDate && new Date(i.sentDate) >= fromDate);
+      result = result.filter(
+        (i) => i.sentDate && new Date(i.sentDate) >= fromDate,
+      );
     }
 
     if (dateTo) {
       const toDate = new Date(dateTo);
-      result = result.filter((i) => i.sentDate && new Date(i.sentDate) <= toDate);
+      result = result.filter(
+        (i) => i.sentDate && new Date(i.sentDate) <= toDate,
+      );
     }
 
     if (amountMin) {
@@ -130,23 +143,39 @@ export default function InvoicesPage() {
 
     // Sort
     const sorted = [...result];
-    if (sortBy === 'date') {
-      sorted.sort((a, b) => (b.sentDate ? new Date(b.sentDate).getTime() : 0) - (a.sentDate ? new Date(a.sentDate).getTime() : 0));
-    } else if (sortBy === 'amount') {
+    if (sortBy === "date") {
+      sorted.sort(
+        (a, b) =>
+          (b.sentDate ? new Date(b.sentDate).getTime() : 0) -
+          (a.sentDate ? new Date(a.sentDate).getTime() : 0),
+      );
+    } else if (sortBy === "amount") {
       sorted.sort((a, b) => b.amount - a.amount);
-    } else if (sortBy === 'status') {
+    } else if (sortBy === "status") {
       sorted.sort((a, b) => a.status.localeCompare(b.status));
-    } else if (sortBy === 'due') {
-      sorted.sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
+    } else if (sortBy === "due") {
+      sorted.sort(
+        (a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime(),
+      );
     }
 
     return sorted;
-  }, [invoices, searchQuery, selectedStatus, selectedCustomer, dateFrom, dateTo, amountMin, amountMax, sortBy]);
+  }, [
+    invoices,
+    searchQuery,
+    selectedStatus,
+    selectedCustomer,
+    dateFrom,
+    dateTo,
+    amountMin,
+    amountMax,
+    sortBy,
+  ]);
 
   // Calculate summary stats
   const stats = useMemo(() => {
-    const paidInvoices = invoices.filter((i) => i.status === 'paid');
-    const overdueInvoices = invoices.filter((i) => i.status === 'overdue');
+    const paidInvoices = invoices.filter((i) => i.status === "paid");
+    const overdueInvoices = invoices.filter((i) => i.status === "overdue");
     const thisMonth = invoices.filter((i) => {
       const now = new Date();
       return (
@@ -156,9 +185,9 @@ export default function InvoicesPage() {
       );
     });
 
-    const totalOutstanding = invoices.filter(
-      (i) => i.status === 'sent' || i.status === 'draft'
-    ).reduce((sum, i) => sum + i.amount, 0);
+    const totalOutstanding = invoices
+      .filter((i) => i.status === "sent" || i.status === "draft")
+      .reduce((sum, i) => sum + i.amount, 0);
 
     const totalOverdue = overdueInvoices.reduce((sum, i) => sum + i.amount, 0);
     const paidThisMonth = thisMonth.reduce((sum, i) => sum + i.amount, 0);
@@ -166,9 +195,12 @@ export default function InvoicesPage() {
     const avgDaysToPay =
       paidInvoices.length > 0
         ? paidInvoices.reduce((sum, i) => {
-            const days = i.paidDate && i.sentDate
-              ? (new Date(i.paidDate).getTime() - new Date(i.sentDate).getTime()) / (1000 * 60 * 60 * 24)
-              : 0;
+            const days =
+              i.paidDate && i.sentDate
+                ? (new Date(i.paidDate).getTime() -
+                    new Date(i.sentDate).getTime()) /
+                  (1000 * 60 * 60 * 24)
+                : 0;
             return sum + days;
           }, 0) / paidInvoices.length
         : 0;
@@ -185,15 +217,18 @@ export default function InvoicesPage() {
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginatedInvoices = filtered.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
 
-  const handleViewInvoice = useCallback((id: string) => {
-    router.push(`/invoices/${id}`);
-  }, [router]);
+  const handleViewInvoice = useCallback(
+    (id: string) => {
+      router.push(`/invoices/${id}`);
+    },
+    [router],
+  );
 
   const handleCreateInvoice = useCallback(() => {
-    router.push('/invoices/create');
+    router.push("/invoices/create");
   }, [router]);
 
   const handleSelectInvoice = useCallback(
@@ -206,16 +241,14 @@ export default function InvoicesPage() {
       }
       setSelectedInvoices(newSelected);
     },
-    [selectedInvoices]
+    [selectedInvoices],
   );
 
   const handleSelectAll = useCallback(() => {
     if (selectedInvoices.size === paginatedInvoices.length) {
       setSelectedInvoices(new Set());
     } else {
-      setSelectedInvoices(
-        new Set(paginatedInvoices.map((i) => i.id))
-      );
+      setSelectedInvoices(new Set(paginatedInvoices.map((i) => i.id)));
     }
   }, [paginatedInvoices, selectedInvoices]);
 
@@ -223,21 +256,24 @@ export default function InvoicesPage() {
     if (selectedInvoices.size === 0 || isSending) return;
     setIsSending(true);
     try {
-      await api.post('/api/v4/invoices/bulk-send', {
+      await api.post("/api/v4/invoices/bulk-send", {
         ids: Array.from(selectedInvoices),
       });
       addToast({
-        type: 'success',
-        title: 'Invoices sent',
-        message: `${selectedInvoices.size} invoice${selectedInvoices.size !== 1 ? 's' : ''} sent successfully.`,
+        type: "success",
+        title: "Invoices sent",
+        message: `${selectedInvoices.size} invoice${selectedInvoices.size !== 1 ? "s" : ""} sent successfully.`,
       });
       setSelectedInvoices(new Set());
       await refetch();
     } catch (err) {
       addToast({
-        type: 'error',
-        title: 'Send failed',
-        message: err instanceof Error ? err.message : 'Failed to send invoices. Please try again.',
+        type: "error",
+        title: "Send failed",
+        message:
+          err instanceof Error
+            ? err.message
+            : "Failed to send invoices. Please try again.",
       });
     } finally {
       setIsSending(false);
@@ -248,21 +284,24 @@ export default function InvoicesPage() {
     if (selectedInvoices.size === 0 || isMarkingPaid) return;
     setIsMarkingPaid(true);
     try {
-      await api.post('/api/v4/invoices/bulk-mark-paid', {
+      await api.post("/api/v4/invoices/bulk-mark-paid", {
         ids: Array.from(selectedInvoices),
       });
       addToast({
-        type: 'success',
-        title: 'Invoices marked as paid',
-        message: `${selectedInvoices.size} invoice${selectedInvoices.size !== 1 ? 's' : ''} marked as paid.`,
+        type: "success",
+        title: "Invoices marked as paid",
+        message: `${selectedInvoices.size} invoice${selectedInvoices.size !== 1 ? "s" : ""} marked as paid.`,
       });
       setSelectedInvoices(new Set());
       await refetch();
     } catch (err) {
       addToast({
-        type: 'error',
-        title: 'Mark paid failed',
-        message: err instanceof Error ? err.message : 'Failed to mark invoices as paid. Please try again.',
+        type: "error",
+        title: "Mark paid failed",
+        message:
+          err instanceof Error
+            ? err.message
+            : "Failed to mark invoices as paid. Please try again.",
       });
     } finally {
       setIsMarkingPaid(false);
@@ -315,12 +354,12 @@ export default function InvoicesPage() {
 
   const hasActiveFilters = Boolean(
     searchQuery ||
-      selectedStatus ||
-      selectedCustomer ||
-      dateFrom ||
-      dateTo ||
-      amountMin ||
-      amountMax
+    selectedStatus ||
+    selectedCustomer ||
+    dateFrom ||
+    dateTo ||
+    amountMin ||
+    amountMax,
   );
 
   if (loading) return <LoadingSkeleton />;
@@ -332,7 +371,9 @@ export default function InvoicesPage() {
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold text-white">Invoices</h1>
-          <p className="text-wl-text-secondary">Manage and track your invoices</p>
+          <p className="text-wl-text-secondary">
+            Manage and track your invoices
+          </p>
         </div>
         <Button variant="primary" onClick={handleCreateInvoice}>
           <Plus className="w-4 h-4 mr-2" />
@@ -344,26 +385,42 @@ export default function InvoicesPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-wl-text-secondary mb-2">Total Outstanding</p>
-            <p className="text-3xl font-bold text-white">${stats.totalOutstanding.toFixed(2)}</p>
+            <p className="text-sm font-medium text-wl-text-secondary mb-2">
+              Total Outstanding
+            </p>
+            <p className="text-3xl font-bold text-white">
+              ${stats.totalOutstanding.toFixed(2)}
+            </p>
           </CardContent>
         </Card>
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-wl-text-secondary mb-2">Total Overdue</p>
-            <p className="text-3xl font-bold text-red-400">${stats.totalOverdue.toFixed(2)}</p>
+            <p className="text-sm font-medium text-wl-text-secondary mb-2">
+              Total Overdue
+            </p>
+            <p className="text-3xl font-bold text-red-400">
+              ${stats.totalOverdue.toFixed(2)}
+            </p>
           </CardContent>
         </Card>
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-wl-text-secondary mb-2">Paid This Month</p>
-            <p className="text-3xl font-bold text-emerald-400">${stats.paidThisMonth.toFixed(2)}</p>
+            <p className="text-sm font-medium text-wl-text-secondary mb-2">
+              Paid This Month
+            </p>
+            <p className="text-3xl font-bold text-emerald-400">
+              ${stats.paidThisMonth.toFixed(2)}
+            </p>
           </CardContent>
         </Card>
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-wl-text-secondary mb-2">Avg Days to Pay</p>
-            <p className="text-3xl font-bold text-blue-400">{stats.avgDaysToPay} days</p>
+            <p className="text-sm font-medium text-wl-text-secondary mb-2">
+              Avg Days to Pay
+            </p>
+            <p className="text-3xl font-bold text-blue-400">
+              {stats.avgDaysToPay} days
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -371,15 +428,27 @@ export default function InvoicesPage() {
       {/* Bulk Actions */}
       {selectedInvoices.size > 0 && (
         <Card className="bg-wl-bg-surface border-wl-border-default flex items-center justify-between gap-4 p-4">
-          <span className="text-sm font-medium text-white">{selectedInvoices.size} selected</span>
+          <span className="text-sm font-medium text-white">
+            {selectedInvoices.size} selected
+          </span>
           <div className="flex gap-2">
-            <Button variant="secondary" size="sm" onClick={handleBulkSend} disabled={isSending}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleBulkSend}
+              disabled={isSending}
+            >
               <Send className="w-4 h-4 mr-2" />
-              {isSending ? 'Sending…' : 'Send'}
+              {isSending ? "Sending…" : "Send"}
             </Button>
-            <Button variant="secondary" size="sm" onClick={handleBulkMarkPaid} disabled={isMarkingPaid}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleBulkMarkPaid}
+              disabled={isMarkingPaid}
+            >
               <CheckCircle className="w-4 h-4 mr-2" />
-              {isMarkingPaid ? 'Marking…' : 'Mark Paid'}
+              {isMarkingPaid ? "Marking…" : "Mark Paid"}
             </Button>
           </div>
         </Card>
@@ -412,11 +481,11 @@ export default function InvoicesPage() {
               className="w-40 bg-wl-bg-elevated border-wl-border-default text-white"
             >
               <option value="">All Status</option>
-              <option value='draft'>Draft</option>
-              <option value='sent'>Sent</option>
-              <option value='paid'>Paid</option>
-              <option value='overdue'>Overdue</option>
-              <option value='cancelled'>Cancelled</option>
+              <option value="draft">Draft</option>
+              <option value="sent">Sent</option>
+              <option value="paid">Paid</option>
+              <option value="overdue">Overdue</option>
+              <option value="cancelled">Cancelled</option>
             </Select>
 
             <Select
@@ -444,10 +513,10 @@ export default function InvoicesPage() {
               label="Sort By"
               className="w-32 bg-wl-bg-elevated border-wl-border-default text-white"
             >
-              <option value='date'>Date</option>
-              <option value='amount'>Amount</option>
-              <option value='status'>Status</option>
-              <option value='due'>Due Date</option>
+              <option value="date">Date</option>
+              <option value="amount">Amount</option>
+              <option value="status">Status</option>
+              <option value="due">Due Date</option>
             </Select>
 
             <Button variant="secondary" size="sm" onClick={handleExportCSV}>
@@ -471,7 +540,9 @@ export default function InvoicesPage() {
           {/* Additional Filters */}
           <div className="flex gap-3 flex-wrap items-end border-t border-wl-border-default pt-4 mt-4">
             <div className="flex gap-2 items-end">
-              <label className="text-xs font-semibold uppercase text-wl-text-secondary">Date Range</label>
+              <label className="text-xs font-semibold uppercase text-wl-text-secondary">
+                Date Range
+              </label>
               <input
                 type="date"
                 value={dateFrom}
@@ -494,7 +565,9 @@ export default function InvoicesPage() {
             </div>
 
             <div className="flex gap-2 items-end">
-              <label className="text-xs font-semibold uppercase text-wl-text-secondary">Amount</label>
+              <label className="text-xs font-semibold uppercase text-wl-text-secondary">
+                Amount
+              </label>
               <input
                 type="number"
                 placeholder="Min"
@@ -526,8 +599,12 @@ export default function InvoicesPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default flex flex-col items-center justify-center gap-4 py-16">
           <Search className="w-12 h-12 text-wl-text-tertiary" />
           <div className="flex flex-col items-center gap-2">
-            <h3 className="text-lg font-semibold text-wl-neutral-300">No invoices found</h3>
-            <p className="text-sm text-wl-text-tertiary">Try adjusting your search or filters</p>
+            <h3 className="text-lg font-semibold text-wl-neutral-300">
+              No invoices found
+            </h3>
+            <p className="text-sm text-wl-text-tertiary">
+              Try adjusting your search or filters
+            </p>
           </div>
         </Card>
       ) : (
@@ -540,7 +617,10 @@ export default function InvoicesPage() {
                   header: (
                     <input
                       type="checkbox"
-                      checked={selectedInvoices.size === paginatedInvoices.length && paginatedInvoices.length > 0}
+                      checked={
+                        selectedInvoices.size === paginatedInvoices.length &&
+                        paginatedInvoices.length > 0
+                      }
                       onChange={handleSelectAll}
                       className="w-4 h-4 rounded border-wl-border-default bg-wl-bg-elevated"
                     />
@@ -571,7 +651,11 @@ export default function InvoicesPage() {
                   header: "Customer",
                   sortable: true,
                   width: 180,
-                  render: (item: Invoice) => <span className="text-wl-neutral-300">{item.customerName}</span>,
+                  render: (item: Invoice) => (
+                    <span className="text-wl-neutral-300">
+                      {item.customerName}
+                    </span>
+                  ),
                 },
                 {
                   key: "amount",
@@ -611,7 +695,9 @@ export default function InvoicesPage() {
                   header: "Sent Date",
                   render: (item: Invoice) => (
                     <div className="text-sm text-wl-text-secondary">
-                      {item.sentDate ? new Date(item.sentDate).toLocaleDateString() : '-'}
+                      {item.sentDate
+                        ? new Date(item.sentDate).toLocaleDateString()
+                        : "-"}
                     </div>
                   ),
                   width: 110,
@@ -642,7 +728,8 @@ export default function InvoicesPage() {
             <div className="flex items-center gap-3">
               <span className="text-sm text-wl-text-secondary">
                 Showing {(currentPage - 1) * pageSize + 1}-
-                {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length}
+                {Math.min(currentPage * pageSize, filtered.length)} of{" "}
+                {filtered.length}
               </span>
               <Select
                 value={pageSize.toString()}
@@ -684,7 +771,9 @@ export default function InvoicesPage() {
                     </Button>
                   );
                 })}
-                {totalPages > 5 && <span className="text-wl-text-tertiary">...</span>}
+                {totalPages > 5 && (
+                  <span className="text-wl-text-tertiary">...</span>
+                )}
               </div>
               <Button
                 variant="secondary"

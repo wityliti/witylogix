@@ -1,14 +1,31 @@
-'use client';
+"use client";
 
-import { useApiList, useApiQuery, useApiMutation, ApiFilters, UseApiQueryResult, UseApiListResult, UseApiMutationResult } from './use-api';
+import {
+  useApiList,
+  useApiQuery,
+  useApiMutation,
+  ApiFilters,
+  UseApiQueryResult,
+  UseApiListResult,
+  UseApiMutationResult,
+} from "./use-api";
 
 // Types
-export type DutyStatus = 'OFF_DUTY' | 'SLEEPER' | 'DRIVING' | 'ON_DUTY';
-export type ViolationType = 'HOURS_EXCEEDED' | 'NO_BREAK' | 'FATIGUE' | 'FALSIFIED' | 'LOGGED_EDIT';
-export type DefectSeverity = 'CRITICAL' | 'MAJOR' | 'MINOR';
-export type DefectStatus = 'REPORTED' | 'ACKNOWLEDGED' | 'REPAIRED' | 'CERTIFIED';
-export type InspectionType = 'PRE_TRIP' | 'POST_TRIP';
-export type InspectionStatus = 'PASSED' | 'FAILED';
+export type DutyStatus = "OFF_DUTY" | "SLEEPER" | "DRIVING" | "ON_DUTY";
+export type ViolationType =
+  | "HOURS_EXCEEDED"
+  | "NO_BREAK"
+  | "FATIGUE"
+  | "FALSIFIED"
+  | "LOGGED_EDIT";
+export type DefectSeverity = "CRITICAL" | "MAJOR" | "MINOR";
+export type DefectStatus =
+  | "REPORTED"
+  | "ACKNOWLEDGED"
+  | "REPAIRED"
+  | "CERTIFIED";
+export type InspectionType = "PRE_TRIP" | "POST_TRIP";
+export type InspectionStatus = "PASSED" | "FAILED";
 
 export interface DriverHOS {
   driverId: string;
@@ -18,7 +35,7 @@ export interface DriverHOS {
   onDutyWindowRemaining: number;
   cycleHours: number;
   cycleHoursUsed: number;
-  breakStatus: 'TAKEN' | 'REQUIRED' | 'NOT_REQUIRED';
+  breakStatus: "TAKEN" | "REQUIRED" | "NOT_REQUIRED";
   breakTimeRemaining: number;
   lastStatusChange: string;
   personalConveyance: boolean;
@@ -30,7 +47,7 @@ export interface HosViolation {
   driverId: string;
   driverName: string;
   type: ViolationType;
-  severity: 'CRITICAL' | 'WARNING' | 'INFO';
+  severity: "CRITICAL" | "WARNING" | "INFO";
   timestamp: string;
   duration: number;
   resolvedAt?: string;
@@ -67,7 +84,7 @@ export interface DvirInspection {
   inspectionDate: string;
   items: {
     name: string;
-    status: 'PASS' | 'FAIL' | 'N/A';
+    status: "PASS" | "FAIL" | "N/A";
     notes?: string;
   }[];
   defects: DvirDefect[];
@@ -79,7 +96,7 @@ export interface EldEvent {
   id: string;
   driverId: string;
   driverName: string;
-  type: 'STATUS_CHANGE' | 'VIOLATION' | 'EDIT_REQUEST' | 'DVIR_COMPLETION';
+  type: "STATUS_CHANGE" | "VIOLATION" | "EDIT_REQUEST" | "DVIR_COMPLETION";
   timestamp: string;
   description: string;
   data?: Record<string, unknown>;
@@ -95,7 +112,11 @@ export interface FleetCompliance {
   criticalDefects: number;
 }
 
-export type DriverComplianceStatus = 'COMPLIANT' | 'WARNING' | 'VIOLATION' | 'OFFLINE';
+export type DriverComplianceStatus =
+  | "COMPLIANT"
+  | "WARNING"
+  | "VIOLATION"
+  | "OFFLINE";
 
 export interface DriverStatusInfo {
   driverId: string;
@@ -103,7 +124,7 @@ export interface DriverStatusInfo {
   status: DriverComplianceStatus;
   currentDuty: DutyStatus;
   drivingRemaining: number;
-  breakStatus: 'TAKEN' | 'REQUIRED' | 'NOT_REQUIRED';
+  breakStatus: "TAKEN" | "REQUIRED" | "NOT_REQUIRED";
   violations: number;
   lastUpdate: string;
 }
@@ -121,52 +142,78 @@ export interface DvirInspectionSummary {
 }
 
 // Hooks
-export const useDriverHOS = (driverId: string | null): UseApiQueryResult<DriverHOS> => {
-  return useApiQuery<DriverHOS>(driverId ? `/api/v4/eld/drivers/${driverId}/hos` : null);
+export const useDriverHOS = (
+  driverId: string | null,
+): UseApiQueryResult<DriverHOS> => {
+  return useApiQuery<DriverHOS>(
+    driverId ? `/api/v4/eld/drivers/${driverId}/hos` : null,
+  );
 };
 
-export const useViolations = (filters?: ApiFilters): UseApiListResult<HosViolation> => {
-  return useApiList<HosViolation>('/api/v4/eld/violations', filters);
+export const useViolations = (
+  filters?: ApiFilters,
+): UseApiListResult<HosViolation> => {
+  return useApiList<HosViolation>("/api/v4/eld/violations", filters);
 };
 
-export const useDVIRDefects = (filters?: ApiFilters): UseApiListResult<DvirDefect> => {
-  return useApiList<DvirDefect>('/api/v4/eld/defects', filters);
+export const useDVIRDefects = (
+  filters?: ApiFilters,
+): UseApiListResult<DvirDefect> => {
+  return useApiList<DvirDefect>("/api/v4/eld/defects", filters);
 };
 
-export const useDvirInspection = (id: string | null): UseApiQueryResult<DvirInspection> => {
-  return useApiQuery<DvirInspection>(id ? `/api/v4/eld/inspections/${id}` : null);
+export const useDvirInspection = (
+  id: string | null,
+): UseApiQueryResult<DvirInspection> => {
+  return useApiQuery<DvirInspection>(
+    id ? `/api/v4/eld/inspections/${id}` : null,
+  );
 };
 
 export const useCreateDvirDefect = (): UseApiMutationResult<DvirDefect> => {
-  return useApiMutation<DvirDefect>('POST', '/api/v4/eld/defects');
+  return useApiMutation<DvirDefect>("POST", "/api/v4/eld/defects");
 };
 
-export const useUpdateDvirDefectStatus = (id: string): UseApiMutationResult<DvirDefect> => {
-  return useApiMutation<DvirDefect>('PATCH', `/api/v4/eld/defects/${id}/status`);
+export const useUpdateDvirDefectStatus = (
+  id: string,
+): UseApiMutationResult<DvirDefect> => {
+  return useApiMutation<DvirDefect>(
+    "PATCH",
+    `/api/v4/eld/defects/${id}/status`,
+  );
 };
 
-export const useELDEvents = (filters?: ApiFilters): UseApiListResult<EldEvent> => {
-  return useApiList<EldEvent>('/api/v4/eld/events', filters);
+export const useELDEvents = (
+  filters?: ApiFilters,
+): UseApiListResult<EldEvent> => {
+  return useApiList<EldEvent>("/api/v4/eld/events", filters);
 };
 
 export const useFleetCompliance = (): UseApiQueryResult<FleetCompliance> => {
-  return useApiQuery<FleetCompliance>('/api/v4/eld/compliance');
+  return useApiQuery<FleetCompliance>("/api/v4/eld/compliance");
 };
 
-export const useELDDriverStatus = (filters?: ApiFilters): UseApiListResult<DriverStatusInfo> => {
-  return useApiList<DriverStatusInfo>('/api/v4/eld/drivers', filters);
+export const useELDDriverStatus = (
+  filters?: ApiFilters,
+): UseApiListResult<DriverStatusInfo> => {
+  return useApiList<DriverStatusInfo>("/api/v4/eld/drivers", filters);
 };
 
-export const useDvirInspections = (filters?: ApiFilters): UseApiListResult<DvirInspectionSummary> => {
-  return useApiList<DvirInspectionSummary>('/api/v4/eld/dvir', filters);
+export const useDvirInspections = (
+  filters?: ApiFilters,
+): UseApiListResult<DvirInspectionSummary> => {
+  return useApiList<DvirInspectionSummary>("/api/v4/eld/dvir", filters);
 };
 
 /**
  * Combined DVIR hook that provides defects list with update capability
  */
 export const useDVIR = () => {
-  const defectsResult = useApiList<DvirDefect>('/api/v4/eld/defects');
-  const updateMutation = useApiMutation<DvirDefect>('PATCH', '/api/v4/eld/defects/status');
+  const defectsResult = useApiList<DvirDefect>("/api/v4/eld/defects");
+  const updateMutation = useApiMutation<DvirDefect>(
+    "PATCH",
+    "/api/v4/eld/defects/status",
+  );
 
   return {
     defects: defectsResult.items,

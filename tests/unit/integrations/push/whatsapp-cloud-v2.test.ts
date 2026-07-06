@@ -47,10 +47,7 @@ describe("WhatsAppClient", () => {
         }),
       });
 
-      const response = await client.sendText(
-        "+1234567890",
-        "Hello, World!"
-      );
+      const response = await client.sendText("+1234567890", "Hello, World!");
 
       expect(response.success).toBe(true);
       expect(response.messageId).toBe("msg-123");
@@ -68,7 +65,7 @@ describe("WhatsAppClient", () => {
       const response = await client.sendText(
         "+1234567890",
         "Check this out: https://example.com",
-        true
+        true,
       );
 
       expect(response.success).toBe(true);
@@ -85,10 +82,7 @@ describe("WhatsAppClient", () => {
         }),
       });
 
-      const response = await client.sendText(
-        "invalid",
-        "Test message"
-      );
+      const response = await client.sendText("invalid", "Test message");
 
       expect(response.success).toBe(false);
       expect(response.error).toBeDefined();
@@ -108,7 +102,7 @@ describe("WhatsAppClient", () => {
         "+1234567890",
         "image",
         "image-media-id-123",
-        "Check this image"
+        "Check this image",
       );
 
       expect(response.success).toBe(true);
@@ -127,7 +121,7 @@ describe("WhatsAppClient", () => {
         "+1234567890",
         "video",
         "video-media-id-456",
-        "Check this video"
+        "Check this video",
       );
 
       expect(response.success).toBe(true);
@@ -145,7 +139,7 @@ describe("WhatsAppClient", () => {
         "+1234567890",
         "document",
         "doc-media-id-789",
-        "document.pdf"
+        "document.pdf",
       );
 
       expect(response.success).toBe(true);
@@ -164,7 +158,7 @@ describe("WhatsAppClient", () => {
         40.7128,
         -74.006,
         "Times Square",
-        "New York, NY"
+        "New York, NY",
       );
 
       expect(response.success).toBe(true);
@@ -180,19 +174,16 @@ describe("WhatsAppClient", () => {
         }),
       });
 
-      const response = await client.sendInteractive(
-        "+1234567890",
-        {
-          type: "button",
-          body: { text: "Choose an option" },
-          action: {
-            buttons: [
-              { type: "reply", reply: { id: "1", title: "Option 1" } },
-              { type: "reply", reply: { id: "2", title: "Option 2" } },
-            ],
-          },
-        }
-      );
+      const response = await client.sendInteractive("+1234567890", {
+        type: "button",
+        body: { text: "Choose an option" },
+        action: {
+          buttons: [
+            { type: "reply", reply: { id: "1", title: "Option 1" } },
+            { type: "reply", reply: { id: "2", title: "Option 2" } },
+          ],
+        },
+      });
 
       expect(response.success).toBe(true);
     });
@@ -205,23 +196,20 @@ describe("WhatsAppClient", () => {
         }),
       });
 
-      const response = await client.sendInteractive(
-        "+1234567890",
-        {
-          type: "list",
-          body: { text: "Choose from list" },
-          action: {
-            sections: [
-              {
-                rows: [
-                  { id: "row1", title: "Item 1" },
-                  { id: "row2", title: "Item 2" },
-                ],
-              },
-            ],
-          },
-        }
-      );
+      const response = await client.sendInteractive("+1234567890", {
+        type: "list",
+        body: { text: "Choose from list" },
+        action: {
+          sections: [
+            {
+              rows: [
+                { id: "row1", title: "Item 1" },
+                { id: "row2", title: "Item 2" },
+              ],
+            },
+          ],
+        },
+      });
 
       expect(response.success).toBe(true);
     });
@@ -239,7 +227,7 @@ describe("WhatsAppClient", () => {
       const response = await client.sendTemplate(
         "+1234567890",
         "hello_world",
-        "en_US"
+        "en_US",
       );
 
       expect(response.success).toBe(true);
@@ -260,7 +248,7 @@ describe("WhatsAppClient", () => {
         [
           { type: "text", text: "Order #12345" },
           { type: "text", text: "$99.99" },
-        ]
+        ],
       );
 
       expect(response.success).toBe(true);
@@ -284,7 +272,7 @@ describe("WhatsAppClient", () => {
             type: "body",
             text: "Hello {{1}}!",
           },
-        ]
+        ],
       );
 
       expect(template.id).toBe("template-123");
@@ -320,7 +308,7 @@ describe("WhatsAppClient", () => {
       });
 
       await expect(
-        client.deleteTemplate("template-123")
+        client.deleteTemplate("template-123"),
       ).resolves.not.toThrow();
     });
   });
@@ -339,7 +327,7 @@ describe("WhatsAppClient", () => {
         "image",
         "test.jpg",
         "image/jpeg",
-        mockBuffer
+        mockBuffer,
       );
 
       expect(result.id).toBe("media-upload-123");
@@ -382,7 +370,7 @@ describe("WhatsAppClient", () => {
       const response = await client.sendReaction(
         "+1234567890",
         "original-msg-123",
-        "👍"
+        "👍",
       );
 
       expect(response.success).toBe(true);
@@ -396,9 +384,7 @@ describe("WhatsAppClient", () => {
         json: async () => ({}),
       });
 
-      await expect(
-        client.markAsRead("msg-123")
-      ).resolves.not.toThrow();
+      await expect(client.markAsRead("msg-123")).resolves.not.toThrow();
     });
   });
 
@@ -487,7 +473,7 @@ describe("WhatsAppClient", () => {
       const isValid = client.verifyWebhook(
         "token",
         "challenge",
-        "invalid-signature"
+        "invalid-signature",
       );
       expect(isValid).toBe(false);
     });
@@ -501,7 +487,9 @@ describe("WhatsAppClient", () => {
             changes: [
               {
                 field: "messages",
-                value: { messages: [{ from: "1234567890", text: { body: "Hello" } }] },
+                value: {
+                  messages: [{ from: "1234567890", text: { body: "Hello" } }],
+                },
               },
             ],
           },
@@ -539,9 +527,9 @@ describe("WhatsAppClient", () => {
       }
 
       // 81st should fail
-      await expect(client.sendText("+12345678901", "Message 81")).rejects.toThrow(
-        "Rate limit exceeded: 80 messages per second"
-      );
+      await expect(
+        client.sendText("+12345678901", "Message 81"),
+      ).rejects.toThrow("Rate limit exceeded: 80 messages per second");
     });
   });
 
@@ -555,9 +543,9 @@ describe("WhatsAppClient", () => {
         }),
       });
 
-      await expect(
-        client.sendText("+1234567890", "Test")
-      ).rejects.not.toThrow(WhatsAppError);
+      await expect(client.sendText("+1234567890", "Test")).rejects.not.toThrow(
+        WhatsAppError,
+      );
     });
 
     it("should classify rate limit errors", async () => {

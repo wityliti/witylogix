@@ -61,26 +61,37 @@ interface Campaign {
 const typeVariant = (
   t: CampaignType,
 ): "success" | "warning" | "danger" | "info" | "primary" | "default" =>
-  ({ EMAIL: "info", SMS: "success", WHATSAPP: "primary", PUSH: "warning" } as const)[t] ?? "default";
+  (
+    ({
+      EMAIL: "info",
+      SMS: "success",
+      WHATSAPP: "primary",
+      PUSH: "warning",
+    }) as const
+  )[t] ?? "default";
 
 const statusVariant = (
   s: CampaignStatus,
 ): "success" | "warning" | "danger" | "info" | "primary" | "default" =>
-  ({
-    DRAFT: "default",
-    SCHEDULED: "info",
-    SENDING: "warning",
-    PAUSED: "danger",
-    COMPLETED: "success",
-  } as const)[s] ?? "default";
+  (
+    ({
+      DRAFT: "default",
+      SCHEDULED: "info",
+      SENDING: "warning",
+      PAUSED: "danger",
+      COMPLETED: "success",
+    }) as const
+  )[s] ?? "default";
 
 const typeIcon = (t: CampaignType) =>
-  ({
-    EMAIL: <Mail size={14} />,
-    SMS: <MessageSquare size={14} />,
-    WHATSAPP: <MessageCircle size={14} />,
-    PUSH: <Bell size={14} />,
-  } as const)[t];
+  (
+    ({
+      EMAIL: <Mail size={14} />,
+      SMS: <MessageSquare size={14} />,
+      WHATSAPP: <MessageCircle size={14} />,
+      PUSH: <Bell size={14} />,
+    }) as const
+  )[t];
 
 // ── Create Campaign Modal ─────────────────────────────────────
 
@@ -227,9 +238,8 @@ function CreateCampaignModal({
 
 export default function CampaignsPage() {
   const router = useRouter();
-  const { items, loading, error, refetch } = useApiList<Campaign>(
-    "/api/v4/campaigns",
-  );
+  const { items, loading, error, refetch } =
+    useApiList<Campaign>("/api/v4/campaigns");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [filterType, setFilterType] = useState<CampaignType | "ALL">("ALL");
@@ -238,7 +248,9 @@ export default function CampaignsPage() {
   );
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [pendingDeleteCampaignId, setPendingDeleteCampaignId] = useState<string | null>(null);
+  const [pendingDeleteCampaignId, setPendingDeleteCampaignId] = useState<
+    string | null
+  >(null);
 
   const filteredCampaigns = useMemo(
     () =>
@@ -368,9 +380,7 @@ export default function CampaignsPage() {
                   <select
                     value={filterStatus}
                     onChange={(e) =>
-                      setFilterStatus(
-                        e.target.value as CampaignStatus | "ALL",
-                      )
+                      setFilterStatus(e.target.value as CampaignStatus | "ALL")
                     }
                     className="w-full px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary text-sm"
                   >
@@ -559,15 +569,18 @@ export default function CampaignsPage() {
                                     runAction(
                                       campaign.id,
                                       () =>
-                                        api.post(
-                                          `/api/v4/campaigns`,
-                                          { name: `${campaign.name} (copy)`, type: campaign.type },
-                                        ),
+                                        api.post(`/api/v4/campaigns`, {
+                                          name: `${campaign.name} (copy)`,
+                                          type: campaign.type,
+                                        }),
                                       e,
                                     )
                                   }
                                 >
-                                  <Copy size={13} className="text-wl-text-tertiary" />
+                                  <Copy
+                                    size={13}
+                                    className="text-wl-text-tertiary"
+                                  />
                                 </Button>
                                 {campaign.status === "SENDING" && (
                                   <Button
@@ -588,7 +601,10 @@ export default function CampaignsPage() {
                                       )
                                     }
                                   >
-                                    <Pause size={13} className="text-wl-warning-400" />
+                                    <Pause
+                                      size={13}
+                                      className="text-wl-warning-400"
+                                    />
                                   </Button>
                                 )}
                                 {campaign.status === "PAUSED" && (
@@ -610,15 +626,21 @@ export default function CampaignsPage() {
                                       )
                                     }
                                   >
-                                    <Play size={13} className="text-wl-success-400" />
+                                    <Play
+                                      size={13}
+                                      className="text-wl-success-400"
+                                    />
                                   </Button>
                                 )}
-                                {campaign.status === "DRAFT" && (
-                                  pendingDeleteCampaignId === campaign.id ? (
+                                {campaign.status === "DRAFT" &&
+                                  (pendingDeleteCampaignId === campaign.id ? (
                                     <div className="flex items-center gap-1">
                                       <button
                                         className="text-xs px-1.5 py-0.5 rounded text-wl-text-secondary hover:text-wl-text-primary border border-wl-border-default"
-                                        onClick={(e) => { e.stopPropagation(); setPendingDeleteCampaignId(null); }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setPendingDeleteCampaignId(null);
+                                        }}
                                       >
                                         Cancel
                                       </button>
@@ -627,9 +649,15 @@ export default function CampaignsPage() {
                                         disabled={actionLoading === campaign.id}
                                         onClick={(e) => {
                                           setPendingDeleteCampaignId(null);
-                                          runAction(campaign.id, async () => {
-                                            await api.delete(`/api/v4/campaigns/${campaign.id}`);
-                                          }, e);
+                                          runAction(
+                                            campaign.id,
+                                            async () => {
+                                              await api.delete(
+                                                `/api/v4/campaigns/${campaign.id}`,
+                                              );
+                                            },
+                                            e,
+                                          );
                                         }}
                                       >
                                         Delete
@@ -642,12 +670,17 @@ export default function CampaignsPage() {
                                       className="p-1.5"
                                       title="Delete"
                                       disabled={actionLoading === campaign.id}
-                                      onClick={(e) => { e.stopPropagation(); setPendingDeleteCampaignId(campaign.id); }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setPendingDeleteCampaignId(campaign.id);
+                                      }}
                                     >
-                                      <Trash2 size={13} className="text-wl-danger-400" />
+                                      <Trash2
+                                        size={13}
+                                        className="text-wl-danger-400"
+                                      />
                                     </Button>
-                                  )
-                                )}
+                                  ))}
                               </div>
                             </td>
                           </tr>

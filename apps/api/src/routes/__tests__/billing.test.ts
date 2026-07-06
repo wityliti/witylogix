@@ -220,7 +220,11 @@ describe("Billing Routes", () => {
 
       const now = new Date();
       const billingPeriodStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const billingPeriodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      const billingPeriodEnd = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0,
+      );
 
       expect(billingPeriodStart).toBeTruthy();
       expect(billingPeriodEnd > billingPeriodStart).toBe(true);
@@ -275,7 +279,7 @@ describe("Billing Routes", () => {
         planTier: "STARTER",
       });
       mockTenantDb.subscription.upsert.mockResolvedValue(
-        generateTestSubscription()
+        generateTestSubscription(),
       );
       mockTenantDb.activityLog.create.mockResolvedValue({});
 
@@ -335,7 +339,7 @@ describe("Billing Routes", () => {
       const daysRemaining = Math.ceil(
         (new Date(now.getFullYear(), now.getMonth() + 1, 0).getTime() -
           now.getTime()) /
-          (1000 * 60 * 60 * 24)
+          (1000 * 60 * 60 * 24),
       );
 
       expect(daysRemaining).toBeGreaterThan(0);
@@ -346,7 +350,7 @@ describe("Billing Routes", () => {
       const shop = generateTestShop();
       mockTenantDb.shop.findUnique.mockResolvedValue(shop);
       mockTenantDb.subscription.upsert.mockResolvedValue(
-        generateTestSubscription({ planTier: "GROWTH" })
+        generateTestSubscription({ planTier: "GROWTH" }),
       );
 
       mockRequest.body = { planId: "GROWTH" };
@@ -616,9 +620,13 @@ describe("Billing Routes", () => {
 
     it("should include days remaining in billing period", async () => {
       const now = new Date("2026-04-15T12:00:00");
-      const billingPeriodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      const billingPeriodEnd = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0,
+      );
       const daysRemaining = Math.ceil(
-        (billingPeriodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+        (billingPeriodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
       );
 
       expect(daysRemaining).toBeGreaterThan(0);
@@ -779,7 +787,10 @@ describe("Billing Routes", () => {
         createdAt: new Date("2026-03-09"),
       });
 
-      mockTenantDb.paymentTransaction.findMany.mockResolvedValue([later, earlier]);
+      mockTenantDb.paymentTransaction.findMany.mockResolvedValue([
+        later,
+        earlier,
+      ]);
 
       const invoices = await mockTenantDb.paymentTransaction.findMany({
         where: { shopId: "shop-789" },

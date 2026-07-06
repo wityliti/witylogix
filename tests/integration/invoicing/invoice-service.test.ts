@@ -41,7 +41,7 @@ class InvoiceService {
     "US-NY": 0.08,
     "US-TX": 0.0625,
     "CA-ON": 0.13,
-    "GB-ENG": 0.20,
+    "GB-ENG": 0.2,
   };
 
   createInvoice(
@@ -49,7 +49,7 @@ class InvoiceService {
     customerEmail: string,
     orderId: string,
     lineItems: InvoiceLineItem[],
-    jurisdiction: string
+    jurisdiction: string,
   ): InvoiceData {
     const invoiceNumber = `INV-${++this.invoiceNumberSequence}`;
 
@@ -81,22 +81,25 @@ class InvoiceService {
   }
 
   calculateSubtotal(lineItems: InvoiceLineItem[]): number {
-    return Math.round(
-      lineItems.reduce(
-        (sum, item) => sum + item.quantity * item.unitPrice,
-        0
-      ) * 100
-    ) / 100;
+    return (
+      Math.round(
+        lineItems.reduce(
+          (sum, item) => sum + item.quantity * item.unitPrice,
+          0,
+        ) * 100,
+      ) / 100
+    );
   }
 
   applyDiscount(
     invoiceNumber: string,
     amount: number,
-    type: "fixed" | "percentage"
+    type: "fixed" | "percentage",
   ): InvoiceData {
     const invoice = this.invoices.get(invoiceNumber);
     if (!invoice) throw new Error("Invoice not found");
-    if (invoice.status !== "draft") throw new Error("Can only discount draft invoices");
+    if (invoice.status !== "draft")
+      throw new Error("Can only discount draft invoices");
 
     const discountAmount =
       type === "percentage" ? (invoice.subtotal * amount) / 100 : amount;
@@ -110,7 +113,8 @@ class InvoiceService {
   finalizeInvoice(invoiceNumber: string): InvoiceData {
     const invoice = this.invoices.get(invoiceNumber);
     if (!invoice) throw new Error("Invoice not found");
-    if (invoice.status !== "draft") throw new Error("Invoice already finalized");
+    if (invoice.status !== "draft")
+      throw new Error("Invoice already finalized");
 
     invoice.status = "finalized";
     invoice.finalizedAt = new Date();
@@ -131,7 +135,8 @@ class InvoiceService {
   recordPayment(invoiceNumber: string, amount: number): InvoiceData {
     const invoice = this.invoices.get(invoiceNumber);
     if (!invoice) throw new Error("Invoice not found");
-    if (invoice.status !== "finalized") throw new Error("Can only pay finalized invoices");
+    if (invoice.status !== "finalized")
+      throw new Error("Can only pay finalized invoices");
 
     invoice.paidAmount = (invoice.paidAmount || 0) + amount;
 
@@ -153,7 +158,7 @@ class InvoiceService {
 
   calculateWithTiers(
     baseAmount: number,
-    tier: "economy" | "standard" | "premium"
+    tier: "economy" | "standard" | "premium",
   ): number {
     const tierMultipliers: Record<string, number> = {
       economy: 1.0,
@@ -167,7 +172,7 @@ class InvoiceService {
   calculateWithSurcharge(
     baseAmount: number,
     surchargeType: "fuel" | "peak" | "weight",
-    percentage: number
+    percentage: number,
   ): number {
     return Math.round(baseAmount * (1 + percentage / 100) * 100) / 100;
   }
@@ -200,7 +205,7 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         lineItems,
-        "US-CA"
+        "US-CA",
       );
 
       expect(invoice.customerId).toBe("cust_123");
@@ -216,7 +221,7 @@ describe("InvoiceService", () => {
         "customer1@example.com",
         "order_1",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       const invoice2 = service.createInvoice(
@@ -224,7 +229,7 @@ describe("InvoiceService", () => {
         "customer2@example.com",
         "order_2",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       expect(invoice1.invoiceNumber).not.toBe(invoice2.invoiceNumber);
@@ -245,12 +250,12 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       const dueTime = invoice.dueDate.getTime();
       const expectedTime = new Date(
-        Date.now() + 30 * 24 * 60 * 60 * 1000
+        Date.now() + 30 * 24 * 60 * 60 * 1000,
       ).getTime();
 
       expect(Math.abs(dueTime - expectedTime)).toBeLessThan(1000);
@@ -262,7 +267,7 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       expect(invoice.status).toBe("draft");
@@ -306,7 +311,7 @@ describe("InvoiceService", () => {
       const withSurcharge = service.calculateWithSurcharge(
         baseAmount,
         "fuel",
-        10
+        10,
       );
 
       expect(withSurcharge).toBe(110);
@@ -317,7 +322,7 @@ describe("InvoiceService", () => {
       const withSurcharge = service.calculateWithSurcharge(
         baseAmount,
         "peak",
-        25
+        25,
       );
 
       expect(withSurcharge).toBe(125);
@@ -328,7 +333,7 @@ describe("InvoiceService", () => {
       const withSurcharge = service.calculateWithSurcharge(
         baseAmount,
         "weight",
-        15
+        15,
       );
 
       expect(withSurcharge).toBe(115);
@@ -355,7 +360,7 @@ describe("InvoiceService", () => {
           { description: "Service 1", quantity: 1, unitPrice: 100 },
           { description: "Service 2", quantity: 1, unitPrice: 50 },
         ],
-        "US-CA"
+        "US-CA",
       );
 
       const originalTotal = invoice.total;
@@ -371,7 +376,7 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       const subtotal = invoice.subtotal;
@@ -387,7 +392,7 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       service.applyDiscount(invoice.invoiceNumber, 200, "fixed");
@@ -402,13 +407,13 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       service.finalizeInvoice(invoice.invoiceNumber);
 
       expect(() =>
-        service.applyDiscount(invoice.invoiceNumber, 10, "fixed")
+        service.applyDiscount(invoice.invoiceNumber, 10, "fixed"),
       ).toThrow();
     });
   });
@@ -450,7 +455,7 @@ describe("InvoiceService", () => {
         "customer1@example.com",
         "order_1",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       const invoice2 = service.createInvoice(
@@ -458,7 +463,7 @@ describe("InvoiceService", () => {
         "customer2@example.com",
         "order_2",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "GB-ENG"
+        "GB-ENG",
       );
 
       expect(invoice1.tax).toBe(7.25);
@@ -473,7 +478,7 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       const finalized = service.finalizeInvoice(invoice.invoiceNumber);
@@ -488,7 +493,7 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       service.finalizeInvoice(invoice.invoiceNumber);
@@ -502,7 +507,7 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       const voided = service.voidInvoice(invoice.invoiceNumber);
@@ -516,7 +521,7 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       service.finalizeInvoice(invoice.invoiceNumber);
@@ -531,7 +536,7 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       service.finalizeInvoice(invoice.invoiceNumber);
@@ -548,13 +553,13 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       service.finalizeInvoice(invoice.invoiceNumber);
       const updated = service.recordPayment(
         invoice.invoiceNumber,
-        invoice.total
+        invoice.total,
       );
 
       expect(updated.paidAmount).toBe(invoice.total);
@@ -567,7 +572,7 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       service.finalizeInvoice(invoice.invoiceNumber);
@@ -584,7 +589,7 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       expect(() => service.recordPayment(invoice.invoiceNumber, 50)).toThrow();
@@ -596,7 +601,7 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [{ description: "Service", quantity: 1, unitPrice: 100 }],
-        "US-CA"
+        "US-CA",
       );
 
       service.finalizeInvoice(invoice.invoiceNumber);
@@ -616,7 +621,7 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [{ description: "Service", quantity: 3, unitPrice: 33.33 }],
-        "US-CA"
+        "US-CA",
       );
 
       expect(invoice.subtotal).toBe(99.99);
@@ -632,7 +637,7 @@ describe("InvoiceService", () => {
           { description: "Paid Service", quantity: 1, unitPrice: 100 },
           { description: "Free Item", quantity: 1, unitPrice: 0 },
         ],
-        "US-CA"
+        "US-CA",
       );
 
       expect(invoice.subtotal).toBe(100);
@@ -644,7 +649,7 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [{ description: "Bulk Item", quantity: 1000, unitPrice: 0.99 }],
-        "US-CA"
+        "US-CA",
       );
 
       expect(invoice.subtotal).toBe(990);
@@ -656,10 +661,20 @@ describe("InvoiceService", () => {
         "john@example.com",
         "order_456",
         [
-          { description: "Taxable Service", quantity: 1, unitPrice: 100, taxable: true },
-          { description: "Non-Taxable Item", quantity: 1, unitPrice: 50, taxable: false },
+          {
+            description: "Taxable Service",
+            quantity: 1,
+            unitPrice: 100,
+            taxable: true,
+          },
+          {
+            description: "Non-Taxable Item",
+            quantity: 1,
+            unitPrice: 50,
+            taxable: false,
+          },
         ],
-        "US-CA"
+        "US-CA",
       );
 
       // Only $100 should be taxed

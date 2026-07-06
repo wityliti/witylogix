@@ -2,7 +2,14 @@
 
 import { useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { Search, Plus, Grid2x2, List, Filter, Map as MapIcon } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Grid2x2,
+  List,
+  Filter,
+  Map as MapIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -19,7 +26,10 @@ import {
 } from "@/components/partners";
 import type { CoveragePartner } from "@/components/map/partner-coverage-layer";
 
-const PartnersMapView = dynamic(() => import("./components/partners-map-view"), { ssr: false });
+const PartnersMapView = dynamic(
+  () => import("./components/partners-map-view"),
+  { ssr: false },
+);
 
 interface InstalledIntegration {
   slug: string;
@@ -65,23 +75,36 @@ interface Partner {
   serviceAreas: string[];
 }
 
-const ROUTING_SLUGS = new Set(["onfleet", "stuart", "uber-direct", "lalamove", "doordash-drive"]);
+const ROUTING_SLUGS = new Set([
+  "onfleet",
+  "stuart",
+  "uber-direct",
+  "lalamove",
+  "doordash-drive",
+]);
 
 function healthToSuccessRate(healthStatus: string | null): number {
   switch (healthStatus) {
-    case "HEALTHY": return 100;
-    case "DEGRADED": return 75;
-    case "UNHEALTHY": case "ERROR": return 50;
-    default: return 0;
+    case "HEALTHY":
+      return 100;
+    case "DEGRADED":
+      return 75;
+    case "UNHEALTHY":
+    case "ERROR":
+      return 50;
+    default:
+      return 0;
   }
 }
 
 function integrationToPartner(
   i: InstalledIntegration,
-  statsByProvider: Map<string, PartnerStat>
+  statsByProvider: Map<string, PartnerStat>,
 ): Partner {
   const cfg = (i.config ?? {}) as Record<string, unknown>;
-  const stat = statsByProvider.get(i.slug) ?? statsByProvider.get(i.slug.replace(/-/g, "_"));
+  const stat =
+    statsByProvider.get(i.slug) ??
+    statsByProvider.get(i.slug.replace(/-/g, "_"));
   return {
     id: i.slug,
     name: i.name,
@@ -92,12 +115,15 @@ function integrationToPartner(
         : "active"
       : ("inactive" as PartnerStatus),
     logoUrl: i.logoUrl,
-    averageDeliveryTime: typeof cfg.maxDeliveryTime === "number" ? cfg.maxDeliveryTime : 30,
+    averageDeliveryTime:
+      typeof cfg.maxDeliveryTime === "number" ? cfg.maxDeliveryTime : 30,
     successRate: stat?.successRate ?? healthToSuccessRate(i.healthStatus),
     activeDeliveries: stat?.activeDeliveries ?? 0,
     rating: typeof cfg.rating === "number" ? cfg.rating : 0,
     totalRatings: typeof cfg.totalRatings === "number" ? cfg.totalRatings : 0,
-    serviceAreas: Array.isArray(cfg.serviceAreas) ? (cfg.serviceAreas as string[]) : [],
+    serviceAreas: Array.isArray(cfg.serviceAreas)
+      ? (cfg.serviceAreas as string[])
+      : [],
   };
 }
 
@@ -118,10 +144,8 @@ export default function PartnersPage() {
     refetch,
   } = useApiQuery<IntegrationsResponse>("/api/v4/integrations");
 
-  const {
-    data: partnerStatsData,
-    loading: statsLoading,
-  } = useApiQuery<PartnerStatsResponse>("/api/v4/couriers/partner-stats");
+  const { data: partnerStatsData, loading: statsLoading } =
+    useApiQuery<PartnerStatsResponse>("/api/v4/couriers/partner-stats");
 
   const statsByProvider = useMemo<Map<string, PartnerStat>>(() => {
     const map = new Map<string, PartnerStat>();
@@ -143,7 +167,7 @@ export default function PartnersPage() {
 
     if (searchQuery) {
       result = result.filter((p) =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 
@@ -168,15 +192,23 @@ export default function PartnersPage() {
       filtered.map((p) => ({
         id: p.id,
         name: p.name,
-        status: p.status === "active" ? "active" : p.status === "inactive" ? "inactive" : "pending",
+        status:
+          p.status === "active"
+            ? "active"
+            : p.status === "inactive"
+              ? "inactive"
+              : "pending",
         serviceAreas: p.serviceAreas,
       })),
-    [filtered]
+    [filtered],
   );
 
   const stats = useMemo(() => {
     const active = partners.filter((p) => p.status === "active").length;
-    const totalDeliveries = partners.reduce((sum, p) => sum + p.activeDeliveries, 0);
+    const totalDeliveries = partners.reduce(
+      (sum, p) => sum + p.activeDeliveries,
+      0,
+    );
     const avgSuccessRate =
       partners.length > 0
         ? partners.reduce((sum, p) => sum + p.successRate, 0) / partners.length
@@ -191,25 +223,27 @@ export default function PartnersPage() {
 
   const handleViewDetails = useCallback(
     (id: string) => router.push(`/dashboard/partners/${id}`),
-    [router]
+    [router],
   );
   const handleConfigure = useCallback(
     (id: string) => router.push(`/dashboard/partners/${id}?tab=settings`),
-    [router]
+    [router],
   );
   const handleAddPartner = useCallback(
     () => router.push("/dashboard/partners/onboard"),
-    [router]
+    [router],
   );
   const handleCompare = useCallback(
     () => router.push("/dashboard/partners/compare"),
-    [router]
+    [router],
   );
 
   const loading = integrationsLoading || statsLoading;
 
-  if (loading && !integrationsData) return <TableSkeleton rows={10} columns={6} />;
-  if (integrationsError) return <ErrorState message={integrationsError.message} onRetry={refetch} />;
+  if (loading && !integrationsData)
+    return <TableSkeleton rows={10} columns={6} />;
+  if (integrationsError)
+    return <ErrorState message={integrationsError.message} onRetry={refetch} />;
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -217,7 +251,9 @@ export default function PartnersPage() {
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold text-white">Courier Partners</h1>
-          <p className="text-wl-text-secondary">Manage and monitor your delivery partners</p>
+          <p className="text-wl-text-secondary">
+            Manage and monitor your delivery partners
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="secondary" size="lg" onClick={handleCompare}>
@@ -255,7 +291,9 @@ export default function PartnersPage() {
         <div className="flex gap-3 items-center">
           <select
             value={selectedStatus as string}
-            onChange={(e) => setSelectedStatus((e.target.value as PartnerStatus) || "")}
+            onChange={(e) =>
+              setSelectedStatus((e.target.value as PartnerStatus) || "")
+            }
             className="px-3 py-2 bg-wl-bg-surface border border-wl-border-default rounded-md text-white text-sm cursor-pointer focus:outline-none"
             aria-label="Filter by status"
           >
@@ -284,7 +322,7 @@ export default function PartnersPage() {
                 "p-1.5 rounded transition-colors",
                 viewMode === "grid"
                   ? "bg-blue-500/20 text-blue-400"
-                  : "text-wl-text-secondary hover:text-white"
+                  : "text-wl-text-secondary hover:text-white",
               )}
               title="Grid view"
             >
@@ -296,7 +334,7 @@ export default function PartnersPage() {
                 "p-1.5 rounded transition-colors",
                 viewMode === "list"
                   ? "bg-blue-500/20 text-blue-400"
-                  : "text-wl-text-secondary hover:text-white"
+                  : "text-wl-text-secondary hover:text-white",
               )}
               title="List view"
             >
@@ -308,7 +346,7 @@ export default function PartnersPage() {
                 "p-1.5 rounded transition-colors",
                 viewMode === "map"
                   ? "bg-blue-500/20 text-blue-400"
-                  : "text-wl-text-secondary hover:text-white"
+                  : "text-wl-text-secondary hover:text-white",
               )}
               title="Map view"
             >
@@ -335,7 +373,9 @@ export default function PartnersPage() {
             <Card className="flex flex-col items-center justify-center gap-4 py-16">
               <Filter className="w-12 h-12 text-wl-text-tertiary" />
               <div className="flex flex-col items-center gap-2">
-                <h3 className="text-lg font-semibold text-white">No partners found</h3>
+                <h3 className="text-lg font-semibold text-white">
+                  No partners found
+                </h3>
                 <p className="text-sm text-wl-text-secondary">
                   {partners.length === 0
                     ? "Add a courier partner to get started"
@@ -363,7 +403,10 @@ export default function PartnersPage() {
           ) : (
             <div className="space-y-3">
               {filtered.map((partner) => (
-                <Card key={partner.id} className="flex items-center justify-between gap-4 p-4">
+                <Card
+                  key={partner.id}
+                  className="flex items-center justify-between gap-4 p-4"
+                >
                   <div className="flex items-center gap-4 flex-1">
                     {partner.logoUrl ? (
                       <div className="w-12 h-12 rounded-md bg-wl-bg-surface flex items-center justify-center">
@@ -379,18 +422,31 @@ export default function PartnersPage() {
                       </div>
                     )}
                     <div className="flex-1">
-                      <h3 className="font-semibold text-white">{partner.name}</h3>
+                      <h3 className="font-semibold text-white">
+                        {partner.name}
+                      </h3>
                       <p className="text-sm text-wl-text-secondary">
-                        {partner.activeDeliveries} active deliveries · {partner.successRate}% success
-                        rate{partner.rating > 0 ? ` · ${partner.rating.toFixed(1)}★` : ""}
+                        {partner.activeDeliveries} active deliveries ·{" "}
+                        {partner.successRate}% success rate
+                        {partner.rating > 0
+                          ? ` · ${partner.rating.toFixed(1)}★`
+                          : ""}
                       </p>
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="secondary" size="sm" onClick={() => handleViewDetails(partner.id)}>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleViewDetails(partner.id)}
+                    >
                       Details
                     </Button>
-                    <Button variant="primary" size="sm" onClick={() => handleConfigure(partner.id)}>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => handleConfigure(partner.id)}
+                    >
                       Configure
                     </Button>
                   </div>

@@ -23,7 +23,7 @@ import type {
   MapsProvider,
   MapsAdapterConfig,
   MapsHealthStatus,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Rate limiter implementation
@@ -75,7 +75,7 @@ class TokenBucketRateLimiter {
  * Circuit breaker implementation
  */
 class CircuitBreaker {
-  private state: 'closed' | 'open' | 'half_open' = 'closed';
+  private state: "closed" | "open" | "half_open" = "closed";
   private failureCount = 0;
   private failureThreshold: number;
   private resetTimeout: number;
@@ -86,35 +86,38 @@ class CircuitBreaker {
     this.resetTimeout = resetTimeout;
   }
 
-  getState(): 'closed' | 'open' | 'half_open' {
-    if (this.state === 'open' && Date.now() - this.lastFailureTime > this.resetTimeout) {
-      this.state = 'half_open';
+  getState(): "closed" | "open" | "half_open" {
+    if (
+      this.state === "open" &&
+      Date.now() - this.lastFailureTime > this.resetTimeout
+    ) {
+      this.state = "half_open";
     }
     return this.state;
   }
 
   recordSuccess(): void {
     this.failureCount = 0;
-    this.state = 'closed';
+    this.state = "closed";
   }
 
   recordFailure(): void {
     this.failureCount++;
     this.lastFailureTime = Date.now();
     if (this.failureCount >= this.failureThreshold) {
-      this.state = 'open';
+      this.state = "open";
     }
   }
 
   async call<T>(fn: () => Promise<T>): Promise<T> {
     const currentState = this.getState();
-    if (currentState === 'open') {
-      throw new Error('Circuit breaker is open');
+    if (currentState === "open") {
+      throw new Error("Circuit breaker is open");
     }
 
     try {
       const result = await fn();
-      if (currentState === 'half_open') {
+      if (currentState === "half_open") {
         this.recordSuccess();
       }
       return result;
@@ -211,12 +214,12 @@ export abstract class MapsAdapter implements MapsProvider {
 
   constructor(config: MapsAdapterConfig) {
     if (!config.apiKey) {
-      throw new Error('API key is required');
+      throw new Error("API key is required");
     }
 
     this.apiKey = config.apiKey;
     this.apiSecret = config.apiSecret;
-    this.baseUrl = config.baseUrl || 'https://api.example.com';
+    this.baseUrl = config.baseUrl || "https://api.example.com";
     this.rateLimit = config.rateLimit || 50;
     this.cacheTtl = config.cacheTtl || 300000; // 5 minutes
     this.timeout = config.timeout || 30000; // 30 seconds
@@ -238,7 +241,9 @@ export abstract class MapsAdapter implements MapsProvider {
   /**
    * Normalize coordinate to LatLng format
    */
-  protected normalizeCoordinate(coord: [number, number] | { lat: number; lng: number }): { lat: number; lng: number } {
+  protected normalizeCoordinate(
+    coord: [number, number] | { lat: number; lng: number },
+  ): { lat: number; lng: number } {
     if (Array.isArray(coord)) {
       return { lat: coord[0], lng: coord[1] };
     }
@@ -273,17 +278,23 @@ export abstract class MapsAdapter implements MapsProvider {
   /**
    * Abstract method - must be implemented by subclasses
    */
-  abstract reverseGeocode(request: ReverseGeocodeRequest): Promise<ReverseGeocodeResponse>;
+  abstract reverseGeocode(
+    request: ReverseGeocodeRequest,
+  ): Promise<ReverseGeocodeResponse>;
 
   /**
    * Abstract method - must be implemented by subclasses
    */
-  abstract autosuggest(request: AutosuggestRequest): Promise<AutosuggestResponse>;
+  abstract autosuggest(
+    request: AutosuggestRequest,
+  ): Promise<AutosuggestResponse>;
 
   /**
    * Abstract method - must be implemented by subclasses
    */
-  abstract placeSearch(request: PlaceSearchRequest): Promise<PlaceSearchResponse>;
+  abstract placeSearch(
+    request: PlaceSearchRequest,
+  ): Promise<PlaceSearchResponse>;
 
   /**
    * Abstract method - must be implemented by subclasses
@@ -303,22 +314,22 @@ export abstract class MapsAdapter implements MapsProvider {
     try {
       // Try a simple request to check service availability
       await this.circuitBreaker.call(async () => {
-        await this.geocode({ address: 'New York' });
+        await this.geocode({ address: "New York" });
       });
 
       return {
-        status: 'healthy',
+        status: "healthy",
         timestamp: new Date(),
         lastCheck: new Date(),
         responseTime: Date.now() - startTime,
       };
     } catch (error) {
       return {
-        status: 'unhealthy',
+        status: "unhealthy",
         timestamp: new Date(),
         lastCheck: new Date(),
         responseTime: Date.now() - startTime,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -327,7 +338,8 @@ export abstract class MapsAdapter implements MapsProvider {
    * Get metrics
    */
   getMetrics() {
-    const avgResponseTime = this.totalRequests > 0 ? this.totalResponseTime / this.totalRequests : 0;
+    const avgResponseTime =
+      this.totalRequests > 0 ? this.totalResponseTime / this.totalRequests : 0;
     const cacheTotal = this.cacheHits + this.cacheMisses;
     const cacheHitRate = cacheTotal > 0 ? this.cacheHits / cacheTotal : 0;
 
@@ -336,7 +348,10 @@ export abstract class MapsAdapter implements MapsProvider {
       successfulRequests: this.successfulRequests,
       failedRequests: this.failedRequests,
       averageResponseTime: avgResponseTime,
-      successRate: this.totalRequests > 0 ? this.successfulRequests / this.totalRequests : 0,
+      successRate:
+        this.totalRequests > 0
+          ? this.successfulRequests / this.totalRequests
+          : 0,
       cacheHits: this.cacheHits,
       cacheMisses: this.cacheMisses,
       cacheHitRate,

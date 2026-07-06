@@ -148,7 +148,7 @@ describe("ApiVersionManager", () => {
       manager.deprecateVersion(
         "v1",
         new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-        "v2"
+        "v2",
       );
 
       expect(manager.isDeprecated("v1")).toBe(true);
@@ -157,7 +157,7 @@ describe("ApiVersionManager", () => {
     it("should generate deprecation warning header", () => {
       const info = manager.getDeprecationInfo("v3");
 
-      expect(info.warningHeader).toContain("rel=\"sunset\"");
+      expect(info.warningHeader).toContain('rel="sunset"');
     });
   });
 
@@ -217,7 +217,7 @@ describe("ApiVersionManager", () => {
       manager.registerVersion(
         "v5",
         { version: "v5", deprecated: false },
-        (data: any) => ({ ...data, v5: true })
+        (data: any) => ({ ...data, v5: true }),
       );
 
       const transformed = manager.transformResponse("v5", { id: 1 });
@@ -257,7 +257,7 @@ describe("ApiVersionManager", () => {
     it("should track deprecation dates", () => {
       manager.deprecateVersion(
         "v2",
-        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       );
 
       const versions = manager.getAllVersions();

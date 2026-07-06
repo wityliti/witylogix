@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
-import dynamic from 'next/dynamic';
-import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
-import { MapPin } from 'lucide-react';
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import dynamic from "next/dynamic";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiList } from "@/hooks/use-api";
+import { MapPin } from "lucide-react";
 
 const ShipmentLocationMap = dynamic(
-  () => import('@/components/shipments/shipment-location-map'),
+  () => import("@/components/shipments/shipment-location-map"),
   {
     ssr: false,
     loading: () => (
@@ -45,21 +45,21 @@ interface ShipmentDetail {
 
 const statusVariant = (
   status: string,
-): 'success' | 'warning' | 'danger' | 'info' | 'primary' | 'default' => {
+): "success" | "warning" | "danger" | "info" | "primary" | "default" => {
   const map: Record<
     string,
-    'success' | 'warning' | 'danger' | 'info' | 'primary' | 'default'
+    "success" | "warning" | "danger" | "info" | "primary" | "default"
   > = {
-    DELIVERED: 'success',
-    OUT_FOR_DELIVERY: 'info',
-    ARRIVED: 'info',
-    IN_TRANSIT: 'primary',
-    PICKED_UP: 'primary',
-    FAILED: 'danger',
-    RETURNED: 'danger',
-    CANCELLED: 'default',
+    DELIVERED: "success",
+    OUT_FOR_DELIVERY: "info",
+    ARRIVED: "info",
+    IN_TRANSIT: "primary",
+    PICKED_UP: "primary",
+    FAILED: "danger",
+    RETURNED: "danger",
+    CANCELLED: "default",
   };
-  return map[status] || 'warning';
+  return map[status] || "warning";
 };
 
 export default function TrackingDetailPage() {
@@ -108,7 +108,7 @@ export default function TrackingDetailPage() {
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="flex flex-col items-center justify-center h-64 gap-4">
               <p className="text-wl-text-secondary">
-                No shipment found with tracking number{' '}
+                No shipment found with tracking number{" "}
                 <span className="font-mono text-white">{trackingNumber}</span>
               </p>
               <Link href="/shipping/tracking">
@@ -140,26 +140,37 @@ export default function TrackingDetailPage() {
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-wl-text-secondary">Current Status</p>
-                <Badge variant={statusVariant(shipment.status)} className="mt-1">
-                  {shipment.status.replace(/_/g, ' ')}
+                <Badge
+                  variant={statusVariant(shipment.status)}
+                  className="mt-1"
+                >
+                  {shipment.status.replace(/_/g, " ")}
                 </Badge>
               </div>
               <div>
                 <p className="text-sm text-wl-text-secondary">Carrier</p>
-                <p className="text-white font-medium mt-1">{shipment.carrier ?? '—'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-wl-text-secondary">Last Known Location</p>
                 <p className="text-white font-medium mt-1">
-                  {[shipment.city, shipment.province].filter(Boolean).join(', ') || '—'}
+                  {shipment.carrier ?? "—"}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-wl-text-secondary">Estimated Delivery</p>
+                <p className="text-sm text-wl-text-secondary">
+                  Last Known Location
+                </p>
+                <p className="text-white font-medium mt-1">
+                  {[shipment.city, shipment.province]
+                    .filter(Boolean)
+                    .join(", ") || "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-wl-text-secondary">
+                  Estimated Delivery
+                </p>
                 <p className="text-white font-medium mt-1">
                   {shipment.estimatedArrival
                     ? new Date(shipment.estimatedArrival).toLocaleDateString()
-                    : 'TBD'}
+                    : "TBD"}
                 </p>
               </div>
               {shipment.actualDelivery && (
@@ -193,8 +204,8 @@ export default function TrackingDetailPage() {
           </CardHeader>
           <CardContent className="p-0">
             {shipment.deliveryLocation &&
-            typeof shipment.deliveryLocation.lat === 'number' &&
-            typeof shipment.deliveryLocation.lng === 'number' ? (
+            typeof shipment.deliveryLocation.lat === "number" &&
+            typeof shipment.deliveryLocation.lng === "number" ? (
               <div className="h-64 rounded-b-xl overflow-hidden">
                 <ShipmentLocationMap
                   shipmentId={shipment.id}
@@ -207,9 +218,14 @@ export default function TrackingDetailPage() {
             ) : (
               <div className="h-48 flex flex-col items-center justify-center gap-2 text-wl-text-secondary px-4 pb-6">
                 <MapPin className="w-7 h-7 opacity-30" />
-                <p className="text-sm font-medium text-wl-text-primary">No location data</p>
+                <p className="text-sm font-medium text-wl-text-primary">
+                  No location data
+                </p>
                 <p className="text-xs text-center">
-                  {[shipment.city, shipment.province].filter(Boolean).join(', ') || 'Delivery coordinates not available for this shipment.'}
+                  {[shipment.city, shipment.province]
+                    .filter(Boolean)
+                    .join(", ") ||
+                    "Delivery coordinates not available for this shipment."}
                 </p>
               </div>
             )}
@@ -234,10 +250,12 @@ export default function TrackingDetailPage() {
                     </div>
                     <div className="pb-4">
                       <p className="text-sm font-medium text-white">
-                        {log.action.replace(/_/g, ' ')}
+                        {log.action.replace(/_/g, " ")}
                       </p>
                       <p className="text-xs text-wl-text-secondary mt-1">
-                        {[shipment.city, shipment.province].filter(Boolean).join(', ') || '—'}
+                        {[shipment.city, shipment.province]
+                          .filter(Boolean)
+                          .join(", ") || "—"}
                       </p>
                       <p className="text-xs text-wl-text-tertiary mt-1">
                         {new Date(log.timestamp).toLocaleString()}

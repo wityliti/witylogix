@@ -157,7 +157,7 @@ const preferenceManager = new CustomerPreferenceManager();
 // ─── PREDICTIVE MAINTENANCE ENDPOINTS ───────────────────────────────────────
 
 export async function predictMaintenanceNeeds(
-  req: PredictiveMaintenanceRequest
+  req: PredictiveMaintenanceRequest,
 ): Promise<ApiResponse<VehicleHealthReport>> {
   try {
     // This would normally fetch real vehicle data from database
@@ -191,7 +191,7 @@ export async function predictMaintenanceNeeds(
 }
 
 export async function getPriorityMaintenanceList(
-  req: MaintenancePriorityRequest
+  req: MaintenancePriorityRequest,
 ): Promise<ApiResponse<MaintenanceAlert[]>> {
   try {
     const alerts: MaintenanceAlert[] = [
@@ -200,7 +200,8 @@ export async function getPriorityMaintenanceList(
         vehicleNumber: "VH-42",
         componentType: "brakes",
         severity: "critical",
-        message: "Vehicle #42 brake pads at 15% remaining, schedule within 2 weeks",
+        message:
+          "Vehicle #42 brake pads at 15% remaining, schedule within 2 weeks",
         recommendedAction: "IMMEDIATE: Schedule replacement within 24-48 hours",
         schedulingDeadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
         estimatedCost: 800,
@@ -225,7 +226,7 @@ export async function getPriorityMaintenanceList(
 // ─── FUEL EFFICIENCY ENDPOINTS ──────────────────────────────────────────────
 
 export async function getFuelEfficiencyAnalysis(
-  req: FuelEfficiencyRequest
+  req: FuelEfficiencyRequest,
 ): Promise<ApiResponse<DriverBehaviorScore>> {
   try {
     const score: DriverBehaviorScore = {
@@ -259,14 +260,16 @@ export async function getFuelEfficiencyAnalysis(
   }
 }
 
-export async function getDriverRanking(
-  req: DriverRankingRequest
-): Promise<ApiResponse<Array<{
-  driverId: string;
-  driverName: string;
-  score: number;
-  rank: number;
-}>>> {
+export async function getDriverRanking(req: DriverRankingRequest): Promise<
+  ApiResponse<
+    Array<{
+      driverId: string;
+      driverName: string;
+      score: number;
+      rank: number;
+    }>
+  >
+> {
   try {
     const ranking = [
       { driverId: "drv-001", driverName: "John Smith", score: 92, rank: 1 },
@@ -289,7 +292,7 @@ export async function getDriverRanking(
 }
 
 export async function optimizeRouteForFuel(
-  req: RouteOptimizeRequest
+  req: RouteOptimizeRequest,
 ): Promise<ApiResponse<FuelOptimizedRoute>> {
   try {
     const originalRoute = [
@@ -307,7 +310,7 @@ export async function optimizeRouteForFuel(
     const optimized = routeOptimizer.optimizeRoute(
       originalRoute,
       req.currentMpg,
-      1.5
+      1.5,
     );
 
     return {
@@ -327,19 +330,22 @@ export async function optimizeRouteForFuel(
 // ─── FLEET UTILIZATION ENDPOINTS ────────────────────────────────────────────
 
 export async function getUtilizationAnalysis(
-  req: UtilizationAnalysisRequest
-): Promise<ApiResponse<{
-  fleetSize: number;
-  averageUtilization: number;
-  underutilizedVehicles: number;
-  recommendation: string;
-}>> {
+  req: UtilizationAnalysisRequest,
+): Promise<
+  ApiResponse<{
+    fleetSize: number;
+    averageUtilization: number;
+    underutilizedVehicles: number;
+    recommendation: string;
+  }>
+> {
   try {
     const analysis = {
       fleetSize: req.fleetSize,
       averageUtilization: 72,
       underutilizedVehicles: 3,
-      recommendation: "Fleet is well-balanced; monitor underutilized vehicles for consolidation opportunities",
+      recommendation:
+        "Fleet is well-balanced; monitor underutilized vehicles for consolidation opportunities",
     };
 
     return {
@@ -357,13 +363,13 @@ export async function getUtilizationAnalysis(
 }
 
 export async function getRightSizingRecommendation(
-  req: RightSizeRequest
+  req: RightSizeRequest,
 ): Promise<ApiResponse<RightSizingRecommendation>> {
   try {
     const recommendation = rightSizingRecommender.recommend(
       req.currentFleetSize,
       req.peakDeliveryDays,
-      req.avgDeliveryDays
+      req.avgDeliveryDays,
     );
 
     return {
@@ -380,19 +386,23 @@ export async function getRightSizingRecommendation(
   }
 }
 
-export async function getReplacementForecast(
-  vehicleIds: string[]
-): Promise<ApiResponse<Array<{
-  vehicleId: string;
-  vehicleNumber: string;
-  estimatedReplacementDate: Date;
-  recommendation: string;
-}>>> {
+export async function getReplacementForecast(vehicleIds: string[]): Promise<
+  ApiResponse<
+    Array<{
+      vehicleId: string;
+      vehicleNumber: string;
+      estimatedReplacementDate: Date;
+      recommendation: string;
+    }>
+  >
+> {
   try {
     const forecasts = vehicleIds.map((id) => ({
       vehicleId: id,
       vehicleNumber: `V-${id.slice(0, 4).toUpperCase()}`,
-      estimatedReplacementDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      estimatedReplacementDate: new Date(
+        Date.now() + 365 * 24 * 60 * 60 * 1000,
+      ),
       recommendation: "keep",
     }));
 
@@ -415,13 +425,17 @@ export async function getReplacementForecast(
 export async function assignJobsToTechnicians(
   req: DispatchAssignmentRequest,
   jobs: ServiceJob[],
-  technicians: Technician[]
-): Promise<ApiResponse<Array<{
-  jobId: string;
-  technicianId: string;
-  technicianName: string;
-  matchScore: number;
-}>>> {
+  technicians: Technician[],
+): Promise<
+  ApiResponse<
+    Array<{
+      jobId: string;
+      technicianId: string;
+      technicianName: string;
+      matchScore: number;
+    }>
+  >
+> {
   try {
     const assignments = req.jobIds.map((jobId, index) => {
       const techId = req.technicianIds[index % req.technicianIds.length];
@@ -450,15 +464,17 @@ export async function assignJobsToTechnicians(
 }
 
 export async function getTechnicianPerformance(
-  req: TechnicianPerformanceRequest
-): Promise<ApiResponse<{
-  technicianId: string;
-  technicianName: string;
-  avgCompletionTime: number;
-  successRate: number;
-  customerRating: number;
-  recommendation: string;
-}>> {
+  req: TechnicianPerformanceRequest,
+): Promise<
+  ApiResponse<{
+    technicianId: string;
+    technicianName: string;
+    avgCompletionTime: number;
+    successRate: number;
+    customerRating: number;
+    recommendation: string;
+  }>
+> {
   try {
     const performance = {
       technicianId: req.technicianId,
@@ -466,7 +482,8 @@ export async function getTechnicianPerformance(
       avgCompletionTime: 180,
       successRate: 0.96,
       customerRating: 4.7,
-      recommendation: "Top performer; assign complex jobs to maximize efficiency",
+      recommendation:
+        "Top performer; assign complex jobs to maximize efficiency",
     };
 
     return {
@@ -483,14 +500,14 @@ export async function getTechnicianPerformance(
   }
 }
 
-export async function optimizeSchedule(
-  req: ScheduleOptimizeRequest
-): Promise<ApiResponse<{
-  totalTravelTime: number;
-  totalIdleTime: number;
-  averageUtilization: number;
-  qualityScore: number;
-}>> {
+export async function optimizeSchedule(req: ScheduleOptimizeRequest): Promise<
+  ApiResponse<{
+    totalTravelTime: number;
+    totalIdleTime: number;
+    averageUtilization: number;
+    qualityScore: number;
+  }>
+> {
   try {
     const optimization = {
       totalTravelTime: 240,

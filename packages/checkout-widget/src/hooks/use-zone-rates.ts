@@ -3,8 +3,8 @@
  * Fetches and manages zone-based delivery rates
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import type { ZoneRate, RateRequest } from '../types';
+import { useState, useCallback, useEffect } from "react";
+import type { ZoneRate, RateRequest } from "../types";
 
 interface UseZoneRatesState {
   data: ZoneRate | null;
@@ -21,7 +21,7 @@ export const useZoneRates = (
   zoneId: string,
   orderValue: number,
   options: UseZoneRatesOptions,
-  weight?: number
+  weight?: number,
 ) => {
   const [state, setState] = useState<UseZoneRatesState>({
     data: null,
@@ -42,13 +42,13 @@ export const useZoneRates = (
         zoneId,
         orderValue,
         estimatedWeight: weight,
-        deliveryMethod: 'standard', // Could be parameterized
+        deliveryMethod: "standard", // Could be parameterized
       };
 
       const response = await fetch(`${options.apiBaseUrl}/api/rates`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(request),
       });
@@ -62,7 +62,7 @@ export const useZoneRates = (
     } catch (error) {
       setState((prev) => ({
         ...prev,
-        error: error instanceof Error ? error : new Error('Unknown error'),
+        error: error instanceof Error ? error : new Error("Unknown error"),
         isLoading: false,
       }));
     }
@@ -85,7 +85,7 @@ export const useBatchZoneRates = (
   zoneIds: string[],
   orderValue: number,
   options: UseZoneRatesOptions,
-  weight?: number
+  weight?: number,
 ) => {
   const [state, setState] = useState<{
     data: Map<string, ZoneRate>;
@@ -107,9 +107,9 @@ export const useBatchZoneRates = (
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       const response = await fetch(`${options.apiBaseUrl}/api/rates/batch`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           zoneIds,
@@ -129,7 +129,7 @@ export const useBatchZoneRates = (
     } catch (error) {
       setState((prev) => ({
         ...prev,
-        error: error instanceof Error ? error : new Error('Unknown error'),
+        error: error instanceof Error ? error : new Error("Unknown error"),
         isLoading: false,
       }));
     }

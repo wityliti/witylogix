@@ -170,7 +170,10 @@ export class SolidProtocolClient {
     }
 
     const contentType = response.headers.get("content-type");
-    if (contentType?.includes("application/ld+json") || contentType?.includes("text/turtle")) {
+    if (
+      contentType?.includes("application/ld+json") ||
+      contentType?.includes("text/turtle")
+    ) {
       return response.text();
     }
 
@@ -180,7 +183,11 @@ export class SolidProtocolClient {
   /**
    * Write resource to Solid pod.
    */
-  async writePodResource(resourcePath: string, content: string | any, format: "json" | "turtle" = "json"): Promise<void> {
+  async writePodResource(
+    resourcePath: string,
+    content: string | any,
+    format: "json" | "turtle" = "json",
+  ): Promise<void> {
     if (!this.accessToken) {
       throw new Error("Not authenticated");
     }
@@ -192,7 +199,8 @@ export class SolidProtocolClient {
       method: "PUT",
       headers: {
         Authorization: `DPoP ${this.accessToken}`,
-        "Content-Type": format === "turtle" ? "text/turtle" : "application/ld+json",
+        "Content-Type":
+          format === "turtle" ? "text/turtle" : "application/ld+json",
       },
       body: typeof content === "string" ? content : JSON.stringify(content),
     });
@@ -238,7 +246,11 @@ export class SolidProtocolClient {
   /**
    * Grant access to a resource.
    */
-  async grantAccess(resourcePath: string, agentWebId: string, modes: Array<"Read" | "Write" | "Control">) {
+  async grantAccess(
+    resourcePath: string,
+    agentWebId: string,
+    modes: Array<"Read" | "Write" | "Control">,
+  ) {
     const acl = await this.getResourceACL(resourcePath);
 
     const newAuth = {
@@ -262,7 +274,9 @@ export class SolidProtocolClient {
   async revokeAccess(resourcePath: string, agentWebId: string): Promise<void> {
     const acl = await this.getResourceACL(resourcePath);
 
-    acl.authorization = acl.authorization.filter((auth) => auth.acl.agent !== agentWebId);
+    acl.authorization = acl.authorization.filter(
+      (auth) => auth.acl.agent !== agentWebId,
+    );
 
     const aclPath = `${resourcePath}.acl`;
     await this.writePodResource(aclPath, acl);
@@ -292,7 +306,10 @@ export class SolidProtocolClient {
   /**
    * Generate Turtle RDF from JSON-LD.
    */
-  generateRDFTurtle(data: any, baseUri: string = "https://example.org/"): string {
+  generateRDFTurtle(
+    data: any,
+    baseUri: string = "https://example.org/",
+  ): string {
     // INTEGRATION: Convert JSON-LD to Turtle
     let turtle = "@prefix : <" + baseUri + "> .\n";
     turtle += "@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n\n";
@@ -309,10 +326,13 @@ export class SolidProtocolClient {
   async createSignatureCredential(
     documentId: string,
     signatureValue: string,
-    issuedAt: string
+    issuedAt: string,
   ): Promise<any> {
     const credential = {
-      "@context": ["https://www.w3.org/2018/credentials/v1", "https://www.w3.org/2018/credentials/examples/v1"],
+      "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://www.w3.org/2018/credentials/examples/v1",
+      ],
       id: `urn:credential:${documentId}`,
       type: ["VerifiableCredential", "DocumentSignature"],
       issuer: this.webId,
@@ -375,7 +395,7 @@ export class SolidProtocolClient {
     recipientWebId: string,
     datasetUri: string,
     purposes: string[],
-    expiresAt?: string
+    expiresAt?: string,
   ): Promise<any> {
     const grant = {
       "@context": "https://www.w3.org/ns/solid/vc",
@@ -416,7 +436,10 @@ export class SolidProtocolClient {
   /**
    * Create envelope in Solid pod.
    */
-  async createEnvelope(document: Document, signingFields: SigningField[]): Promise<Envelope> {
+  async createEnvelope(
+    document: Document,
+    signingFields: SigningField[],
+  ): Promise<Envelope> {
     const envelope: SolidEnvelope = {
       id: `envelope-${Date.now()}`,
       name: document.name,
@@ -454,8 +477,13 @@ export class SolidProtocolClient {
   /**
    * Update envelope status.
    */
-  async updateEnvelopeStatus(envelopeId: string, status: EnvelopeStatus): Promise<Envelope> {
-    const envelope = (await this.getPodResource(`/envelopes/${envelopeId}.json`)) as SolidEnvelope;
+  async updateEnvelopeStatus(
+    envelopeId: string,
+    status: EnvelopeStatus,
+  ): Promise<Envelope> {
+    const envelope = (await this.getPodResource(
+      `/envelopes/${envelopeId}.json`,
+    )) as SolidEnvelope;
     envelope.status = status;
     envelope.updatedAt = new Date().toISOString();
 
@@ -472,9 +500,11 @@ export class SolidProtocolClient {
     envelopeId: string,
     signingFieldId: string,
     signatureData: string,
-    signedByWebId: string
+    signedByWebId: string,
   ): Promise<void> {
-    const envelope = (await this.getPodResource(`/envelopes/${envelopeId}.json`)) as SolidEnvelope;
+    const envelope = (await this.getPodResource(
+      `/envelopes/${envelopeId}.json`,
+    )) as SolidEnvelope;
 
     const signature = {
       fieldId: signingFieldId,
@@ -490,8 +520,11 @@ export class SolidProtocolClient {
     envelope.signatures.push(signature);
 
     // Check if all required fields are signed
-    const allFieldsSigned = (envelope.signingFields ?? []).every((field: SigningField) =>
-      envelope.signatures?.some((sig: { fieldId: string }) => sig.fieldId === field.id)
+    const allFieldsSigned = (envelope.signingFields ?? []).every(
+      (field: SigningField) =>
+        envelope.signatures?.some(
+          (sig: { fieldId: string }) => sig.fieldId === field.id,
+        ),
     );
 
     if (allFieldsSigned) {
@@ -520,7 +553,11 @@ export class SolidProtocolClient {
   /**
    * Share envelope with another WebID.
    */
-  async shareEnvelope(envelopeId: string, recipientWebId: string, modes: Array<"Read" | "Write"> = ["Read"]): Promise<void> {
+  async shareEnvelope(
+    envelopeId: string,
+    recipientWebId: string,
+    modes: Array<"Read" | "Write"> = ["Read"],
+  ): Promise<void> {
     const envelopePath = `/envelopes/${envelopeId}.json`;
     await this.grantAccess(envelopePath, recipientWebId, modes as any);
   }
@@ -541,7 +578,10 @@ export class SolidProtocolClient {
   /**
    * Send notification to recipient's inbox.
    */
-  async sendNotification(recipientWebId: string, message: string): Promise<void> {
+  async sendNotification(
+    recipientWebId: string,
+    message: string,
+  ): Promise<void> {
     const recipientProfile = await this.getWebIDProfile(recipientWebId);
 
     if (!recipientProfile.inbox) {

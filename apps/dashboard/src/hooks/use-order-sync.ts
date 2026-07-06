@@ -12,7 +12,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 
-export type SyncPlatform = "shopify" | "woocommerce" | "bigcommerce" | "magento" | "etsy" | "ebay" | "square" | "amazon";
+export type SyncPlatform =
+  | "shopify"
+  | "woocommerce"
+  | "bigcommerce"
+  | "magento"
+  | "etsy"
+  | "ebay"
+  | "square"
+  | "amazon";
 export type SyncHealthStatus = "healthy" | "warning" | "error";
 
 export interface SyncJob {
@@ -54,7 +62,10 @@ export interface SyncMetrics {
   failedOrders: number;
   activeConflicts: number;
   lastSyncTimestamp: string;
-  platformStats: Record<SyncPlatform, { synced: number; failed: number; pending: number }>;
+  platformStats: Record<
+    SyncPlatform,
+    { synced: number; failed: number; pending: number }
+  >;
 }
 
 export interface UseSyncStatusConfig {
@@ -84,8 +95,15 @@ export interface UseConflictsReturn {
   conflicts: SyncConflict[];
   isLoading: boolean;
   error?: string;
-  resolveConflict: (conflictId: string, resolveAction: "external" | "internal" | "skip", manualValue?: string) => Promise<void>;
-  bulkResolveByType: (field: string, resolveAction: "external" | "internal") => Promise<void>;
+  resolveConflict: (
+    conflictId: string,
+    resolveAction: "external" | "internal" | "skip",
+    manualValue?: string,
+  ) => Promise<void>;
+  bulkResolveByType: (
+    field: string,
+    resolveAction: "external" | "internal",
+  ) => Promise<void>;
   revalidate: () => Promise<void>;
 }
 
@@ -99,7 +117,9 @@ export interface UseSyncMetricsReturn {
 /**
  * Hook for polling sync status across platforms
  */
-export function useSyncStatus(config?: UseSyncStatusConfig): UseSyncStatusReturn {
+export function useSyncStatus(
+  config?: UseSyncStatusConfig,
+): UseSyncStatusReturn {
   const pollIntervalMs = config?.pollInterval ?? 30000;
   const cacheDurationMs = config?.cacheDuration ?? 5000;
   const enablePolling = config?.enablePolling ?? true;
@@ -112,56 +132,70 @@ export function useSyncStatus(config?: UseSyncStatusConfig): UseSyncStatusReturn
   const pollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cacheTimeRef = useRef<number>(0);
 
-  const fetchStatus = useCallback(async (skipCache = false) => {
-    const now = Date.now();
-    if (!skipCache && now - cacheTimeRef.current < cacheDurationMs) {
-      return;
-    }
+  const fetchStatus = useCallback(
+    async (skipCache = false) => {
+      const now = Date.now();
+      if (!skipCache && now - cacheTimeRef.current < cacheDurationMs) {
+        return;
+      }
 
-    try {
-      setIsLoading(true);
-      setError(undefined);
+      try {
+        setIsLoading(true);
+        setError(undefined);
 
-      const data = await api.get<{ platformHealth: PlatformHealth[]; recentSyncJobs: SyncJob[] }>("/api/v4/orders/sync/status");
-      setPlatformHealth(data.platformHealth || []);
-      setRecentSyncJobs(data.recentSyncJobs || []);
-      cacheTimeRef.current = now;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error occurred";
-      setError(message);
-      console.error("[useSyncStatus] Fetch error:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [cacheDurationMs]);
+        const data = await api.get<{
+          platformHealth: PlatformHealth[];
+          recentSyncJobs: SyncJob[];
+        }>("/api/v4/orders/sync/status");
+        setPlatformHealth(data.platformHealth || []);
+        setRecentSyncJobs(data.recentSyncJobs || []);
+        cacheTimeRef.current = now;
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Unknown error occurred";
+        setError(message);
+        console.error("[useSyncStatus] Fetch error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [cacheDurationMs],
+  );
 
   const revalidate = useCallback(async () => {
     await fetchStatus(true);
   }, [fetchStatus]);
 
-  const triggerSync = useCallback(async (platform: SyncPlatform) => {
-    try {
-      setError(undefined);
-      await api.post("/api/v4/orders/sync/trigger", { platform });
-      setTimeout(() => revalidate(), 1000);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Sync trigger failed";
-      setError(message);
-      throw err;
-    }
-  }, [revalidate]);
+  const triggerSync = useCallback(
+    async (platform: SyncPlatform) => {
+      try {
+        setError(undefined);
+        await api.post("/api/v4/orders/sync/trigger", { platform });
+        setTimeout(() => revalidate(), 1000);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Sync trigger failed";
+        setError(message);
+        throw err;
+      }
+    },
+    [revalidate],
+  );
 
-  const retryFailedSync = useCallback(async (jobId: string) => {
-    try {
-      setError(undefined);
-      await api.post(`/api/v4/orders/sync/jobs/${jobId}/retry`);
-      setTimeout(() => revalidate(), 1000);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Retry failed";
-      setError(message);
-      throw err;
-    }
-  }, [revalidate]);
+  const retryFailedSync = useCallback(
+    async (jobId: string) => {
+      try {
+        setError(undefined);
+        await api.post(`/api/v4/orders/sync/jobs/${jobId}/retry`);
+        setTimeout(() => revalidate(), 1000);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Retry failed";
+        setError(message);
+        throw err;
+      }
+    },
+    [revalidate],
+  );
 
   useEffect(() => {
     if (!enablePolling) return;
@@ -210,7 +244,8 @@ export function useSyncTrigger(): UseSyncTriggerReturn {
       setError(undefined);
       await api.post("/api/v4/orders/sync/trigger", { platform });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Sync trigger failed";
+      const message =
+        err instanceof Error ? err.message : "Sync trigger failed";
       setError(message);
       throw err;
     } finally {
@@ -245,11 +280,14 @@ export function useConflicts(): UseConflictsReturn {
       setIsLoading(true);
       setError(undefined);
 
-      const data = await api.get<{ conflicts: SyncConflict[] }>("/api/v4/orders/conflicts");
+      const data = await api.get<{ conflicts: SyncConflict[] }>(
+        "/api/v4/orders/conflicts",
+      );
       setConflicts(data.conflicts || []);
       cacheTimeRef.current = now;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error occurred";
+      const message =
+        err instanceof Error ? err.message : "Unknown error occurred";
       setError(message);
       console.error("[useConflicts] Fetch error:", err);
     } finally {
@@ -258,33 +296,45 @@ export function useConflicts(): UseConflictsReturn {
   }, []);
 
   const resolveConflict = useCallback(
-    async (conflictId: string, resolveAction: "external" | "internal" | "skip", manualValue?: string) => {
+    async (
+      conflictId: string,
+      resolveAction: "external" | "internal" | "skip",
+      manualValue?: string,
+    ) => {
       try {
         setError(undefined);
-        await api.post(`/api/v4/orders/conflicts/${conflictId}/resolve`, { action: resolveAction, value: manualValue });
+        await api.post(`/api/v4/orders/conflicts/${conflictId}/resolve`, {
+          action: resolveAction,
+          value: manualValue,
+        });
         setConflicts((prev) => prev.filter((c) => c.id !== conflictId));
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Resolution failed";
+        const message =
+          err instanceof Error ? err.message : "Resolution failed";
         setError(message);
         throw err;
       }
     },
-    []
+    [],
   );
 
   const bulkResolveByType = useCallback(
     async (field: string, resolveAction: "external" | "internal") => {
       try {
         setError(undefined);
-        await api.post("/api/v4/orders/conflicts/bulk-resolve", { field, action: resolveAction });
+        await api.post("/api/v4/orders/conflicts/bulk-resolve", {
+          field,
+          action: resolveAction,
+        });
         await fetchConflicts(true);
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Bulk resolution failed";
+        const message =
+          err instanceof Error ? err.message : "Bulk resolution failed";
         setError(message);
         throw err;
       }
     },
-    [fetchConflicts]
+    [fetchConflicts],
   );
 
   const revalidate = useCallback(async () => {
@@ -325,11 +375,14 @@ export function useSyncMetrics(): UseSyncMetricsReturn {
       setIsLoading(true);
       setError(undefined);
 
-      const data = await api.get<{ metrics: SyncMetrics | null }>("/api/v4/orders/sync/metrics");
+      const data = await api.get<{ metrics: SyncMetrics | null }>(
+        "/api/v4/orders/sync/metrics",
+      );
       setMetrics(data.metrics || null);
       cacheTimeRef.current = now;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error occurred";
+      const message =
+        err instanceof Error ? err.message : "Unknown error occurred";
       setError(message);
       console.error("[useSyncMetrics] Fetch error:", err);
     } finally {

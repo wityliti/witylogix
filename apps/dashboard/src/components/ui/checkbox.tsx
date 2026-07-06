@@ -4,7 +4,10 @@ import React, { forwardRef, InputHTMLAttributes, ReactNode } from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
+export interface CheckboxProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "type"
+> {
   label?: ReactNode;
   error?: boolean;
   errorMessage?: string;
@@ -26,13 +29,14 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
       onChange,
       ...props
     },
-    ref
+    ref,
   ) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       onChange?.(e);
       onCheckedChange?.(e.target.checked);
     };
-    const checkboxId = id || `checkbox-${Math.random().toString(36).substr(2, 9)}`;
+    const checkboxId =
+      id || `checkbox-${Math.random().toString(36).substr(2, 9)}`;
 
     return (
       <div className={cn("flex flex-col gap-1.5", className)}>
@@ -52,7 +56,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
                   ? "border-wl-primary-500 bg-wl-primary-500"
                   : "border-wl-border-default bg-wl-bg-surface",
               "group-hover:border-wl-primary-400",
-              disabled && "opacity-50 cursor-not-allowed"
+              disabled && "opacity-50 cursor-not-allowed",
             )}
           >
             <input
@@ -76,7 +80,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             <span
               className={cn(
                 "text-sm font-medium",
-                error ? "text-wl-danger-400" : "text-wl-text-primary"
+                error ? "text-wl-danger-400" : "text-wl-text-primary",
               )}
             >
               {label}
@@ -90,7 +94,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 Checkbox.displayName = "Checkbox";

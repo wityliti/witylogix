@@ -1,34 +1,59 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiQuery, useApiList } from '@/hooks/use-api';
-import { TrendingUp, Clock, CheckCircle2, Users, AlertCircle } from 'lucide-react';
+import { useState, useMemo } from "react";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiQuery, useApiList } from "@/hooks/use-api";
+import {
+  TrendingUp,
+  Clock,
+  CheckCircle2,
+  Users,
+  AlertCircle,
+} from "lucide-react";
 
-type WorkOrderStatus = 'created' | 'scheduled' | 'dispatched' | 'in_progress' | 'completed' | 'cancelled';
+type WorkOrderStatus =
+  | "created"
+  | "scheduled"
+  | "dispatched"
+  | "in_progress"
+  | "completed"
+  | "cancelled";
 
-const statusVariant = (status: WorkOrderStatus): 'success' | 'warning' | 'info' | 'primary' | 'default' => {
-  const map: Record<WorkOrderStatus, 'success' | 'warning' | 'info' | 'primary' | 'default'> = {
-    created: 'default',
-    scheduled: 'info',
-    dispatched: 'info',
-    in_progress: 'warning',
-    completed: 'success',
-    cancelled: 'default',
+const statusVariant = (
+  status: WorkOrderStatus,
+): "success" | "warning" | "info" | "primary" | "default" => {
+  const map: Record<
+    WorkOrderStatus,
+    "success" | "warning" | "info" | "primary" | "default"
+  > = {
+    created: "default",
+    scheduled: "info",
+    dispatched: "info",
+    in_progress: "warning",
+    completed: "success",
+    cancelled: "default",
   };
   return map[status];
 };
 
-const priorityVariant = (priority: string): 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary' => {
-  const m: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary'> = {
-    low: 'default', medium: 'info', high: 'warning', urgent: 'danger',
+const priorityVariant = (
+  priority: string,
+): "default" | "success" | "warning" | "danger" | "info" | "primary" => {
+  const m: Record<
+    string,
+    "default" | "success" | "warning" | "danger" | "info" | "primary"
+  > = {
+    low: "default",
+    medium: "info",
+    high: "warning",
+    urgent: "danger",
   };
-  return m[priority] ?? 'default';
+  return m[priority] ?? "default";
 };
 
 interface FsStats {
@@ -66,12 +91,24 @@ interface Job {
 }
 
 export default function FieldServicePage() {
-  const { data: stats, loading: statsLoading, error: statsError, refetch: refetchStats } =
-    useApiQuery<FsStats>('/api/v4/field-service/stats');
-  const { data: scheduleData, loading: schedLoading, error: schedError, refetch: refetchSched } =
-    useApiQuery<ScheduleItem[]>('/api/v4/field-service/schedule');
-  const { items: allJobs, loading: jobsLoading, error: jobsError, refetch: refetchJobs } =
-    useApiList<Job>('/api/v4/field-service/jobs');
+  const {
+    data: stats,
+    loading: statsLoading,
+    error: statsError,
+    refetch: refetchStats,
+  } = useApiQuery<FsStats>("/api/v4/field-service/stats");
+  const {
+    data: scheduleData,
+    loading: schedLoading,
+    error: schedError,
+    refetch: refetchSched,
+  } = useApiQuery<ScheduleItem[]>("/api/v4/field-service/schedule");
+  const {
+    items: allJobs,
+    loading: jobsLoading,
+    error: jobsError,
+    refetch: refetchJobs,
+  } = useApiList<Job>("/api/v4/field-service/jobs");
 
   const [selectedTech, setSelectedTech] = useState<string | null>(null);
 
@@ -81,32 +118,50 @@ export default function FieldServicePage() {
   const schedule = scheduleData ?? [];
 
   const filteredSchedule = useMemo(
-    () => (selectedTech ? schedule.filter((s) => s.technicianId === selectedTech) : schedule),
-    [schedule, selectedTech]
+    () =>
+      selectedTech
+        ? schedule.filter((s) => s.technicianId === selectedTech)
+        : schedule,
+    [schedule, selectedTech],
   );
 
   const jobQueue = useMemo(
-    () => allJobs.filter((o) => ['created', 'scheduled'].includes(o.status)).slice(0, 5),
-    [allJobs]
+    () =>
+      allJobs
+        .filter((o) => ["created", "scheduled"].includes(o.status))
+        .slice(0, 5),
+    [allJobs],
   );
 
   const recentCompletions = useMemo(
-    () => allJobs.filter((o) => o.status === 'completed').slice(0, 8),
-    [allJobs]
+    () => allJobs.filter((o) => o.status === "completed").slice(0, 8),
+    [allJobs],
   );
 
   if (loading) return <LoadingSkeleton />;
   if (anyError) {
     return (
       <ErrorState
-        message={(statsError ?? schedError ?? jobsError)?.message ?? 'Failed to load field service data'}
-        onRetry={() => { refetchStats(); refetchSched(); refetchJobs(); }}
+        message={
+          (statsError ?? schedError ?? jobsError)?.message ??
+          "Failed to load field service data"
+        }
+        onRetry={() => {
+          refetchStats();
+          refetchSched();
+          refetchJobs();
+        }}
       />
     );
   }
 
   const technicians = Array.from(
-    new Map(schedule.map((s) => [s.technicianId, { id: s.technicianId, name: s.technicianName }])).values()
+    new Map(
+      schedule.map((s) => [
+        s.technicianId,
+        { id: s.technicianId, name: s.technicianName },
+      ]),
+    ).values(),
   ).filter((t) => t.id);
 
   const overview = {
@@ -136,9 +191,15 @@ export default function FieldServicePage() {
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-medium text-wl-text-secondary mb-2">Active Jobs</p>
-                  <p className="text-3xl font-bold text-white">{overview.activeJobs}</p>
-                  <p className="text-xs text-wl-text-secondary mt-2">in progress now</p>
+                  <p className="text-sm font-medium text-wl-text-secondary mb-2">
+                    Active Jobs
+                  </p>
+                  <p className="text-3xl font-bold text-white">
+                    {overview.activeJobs}
+                  </p>
+                  <p className="text-xs text-wl-text-secondary mt-2">
+                    in progress now
+                  </p>
                 </div>
                 <TrendingUp className="w-8 h-8 text-blue-500/30" />
               </div>
@@ -149,9 +210,15 @@ export default function FieldServicePage() {
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-medium text-wl-text-secondary mb-2">In Field</p>
-                  <p className="text-3xl font-bold text-white">{overview.techniciansInField}</p>
-                  <p className="text-xs text-wl-text-secondary mt-2">dispatched technicians</p>
+                  <p className="text-sm font-medium text-wl-text-secondary mb-2">
+                    In Field
+                  </p>
+                  <p className="text-3xl font-bold text-white">
+                    {overview.techniciansInField}
+                  </p>
+                  <p className="text-xs text-wl-text-secondary mt-2">
+                    dispatched technicians
+                  </p>
                 </div>
                 <Users className="w-8 h-8 text-cyan-500/30" />
               </div>
@@ -162,9 +229,15 @@ export default function FieldServicePage() {
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-medium text-wl-text-secondary mb-2">Completion Rate</p>
-                  <p className="text-3xl font-bold text-white">{overview.completionRate}%</p>
-                  <p className="text-xs text-wl-text-secondary mt-2">last 30 days</p>
+                  <p className="text-sm font-medium text-wl-text-secondary mb-2">
+                    Completion Rate
+                  </p>
+                  <p className="text-3xl font-bold text-white">
+                    {overview.completionRate}%
+                  </p>
+                  <p className="text-xs text-wl-text-secondary mt-2">
+                    last 30 days
+                  </p>
                 </div>
                 <CheckCircle2 className="w-8 h-8 text-emerald-500/30" />
               </div>
@@ -175,9 +248,15 @@ export default function FieldServicePage() {
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-medium text-wl-text-secondary mb-2">Completed Today</p>
-                  <p className="text-3xl font-bold text-white">{overview.completedToday}</p>
-                  <p className="text-xs text-wl-text-secondary mt-2">jobs finished</p>
+                  <p className="text-sm font-medium text-wl-text-secondary mb-2">
+                    Completed Today
+                  </p>
+                  <p className="text-3xl font-bold text-white">
+                    {overview.completedToday}
+                  </p>
+                  <p className="text-xs text-wl-text-secondary mt-2">
+                    jobs finished
+                  </p>
                 </div>
                 <Clock className="w-8 h-8 text-amber-500/30" />
               </div>
@@ -191,22 +270,32 @@ export default function FieldServicePage() {
             <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle className="text-white">Today&apos;s Schedule</CardTitle>
+                  <CardTitle className="text-white">
+                    Today&apos;s Schedule
+                  </CardTitle>
                   <select
-                    value={selectedTech ?? 'all'}
-                    onChange={(e) => setSelectedTech(e.target.value === 'all' ? null : e.target.value)}
+                    value={selectedTech ?? "all"}
+                    onChange={(e) =>
+                      setSelectedTech(
+                        e.target.value === "all" ? null : e.target.value,
+                      )
+                    }
                     className="px-3 py-2 text-xs rounded border border-wl-border-default bg-wl-bg-elevated text-wl-neutral-300 focus:outline-none focus:border-blue-500/50"
                   >
                     <option value="all">All Technicians</option>
                     {technicians.map((t) => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
                     ))}
                   </select>
                 </div>
               </CardHeader>
               <CardContent>
                 {filteredSchedule.length === 0 ? (
-                  <div className="text-center py-12 text-wl-text-tertiary">No scheduled jobs for today</div>
+                  <div className="text-center py-12 text-wl-text-tertiary">
+                    No scheduled jobs for today
+                  </div>
                 ) : (
                   <div className="space-y-3">
                     {filteredSchedule.map((item) => (
@@ -215,19 +304,30 @@ export default function FieldServicePage() {
                         className="flex items-center gap-4 p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default hover:border-blue-500/30 transition-colors"
                       >
                         <div className="w-24 flex-shrink-0">
-                          <div className="text-sm font-semibold text-blue-400">{item.startTime}</div>
-                          <div className="text-xs text-wl-text-tertiary">{item.endTime}</div>
+                          <div className="text-sm font-semibold text-blue-400">
+                            {item.startTime}
+                          </div>
+                          <div className="text-xs text-wl-text-tertiary">
+                            {item.endTime}
+                          </div>
                         </div>
                         <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-semibold text-white">{item.jobNumber}</div>
+                          <div className="text-sm font-semibold text-white">
+                            {item.jobNumber}
+                          </div>
                           <div className="text-xs text-wl-text-secondary mt-0.5">
                             {item.customerName} · {item.location}
                           </div>
-                          <div className="text-xs text-wl-text-tertiary mt-0.5">Tech: {item.technicianName}</div>
+                          <div className="text-xs text-wl-text-tertiary mt-0.5">
+                            Tech: {item.technicianName}
+                          </div>
                         </div>
-                        <Badge variant={statusVariant(item.status)} className="flex-shrink-0">
-                          {item.status.replace(/_/g, ' ')}
+                        <Badge
+                          variant={statusVariant(item.status)}
+                          className="flex-shrink-0"
+                        >
+                          {item.status.replace(/_/g, " ")}
                         </Badge>
                       </div>
                     ))}
@@ -244,8 +344,12 @@ export default function FieldServicePage() {
             <CardContent className="space-y-5">
               <div>
                 <div className="flex justify-between items-baseline mb-3">
-                  <span className="text-sm font-medium text-wl-text-secondary">On-Time %</span>
-                  <span className="text-2xl font-bold text-emerald-400">{slaMetrics.onTimePercentage}%</span>
+                  <span className="text-sm font-medium text-wl-text-secondary">
+                    On-Time %
+                  </span>
+                  <span className="text-2xl font-bold text-emerald-400">
+                    {slaMetrics.onTimePercentage}%
+                  </span>
                 </div>
                 <div className="w-full bg-wl-bg-elevated rounded-full h-2.5 overflow-hidden">
                   <div
@@ -256,9 +360,15 @@ export default function FieldServicePage() {
               </div>
               <div className="h-px bg-wl-border-default" />
               <div>
-                <div className="text-sm text-wl-text-secondary mb-2">Overdue Jobs</div>
-                <div className="text-3xl font-bold text-red-400">{slaMetrics.overdueCount}</div>
-                <div className="text-xs text-wl-text-tertiary mt-1">of {slaMetrics.totalJobs} total</div>
+                <div className="text-sm text-wl-text-secondary mb-2">
+                  Overdue Jobs
+                </div>
+                <div className="text-3xl font-bold text-red-400">
+                  {slaMetrics.overdueCount}
+                </div>
+                <div className="text-xs text-wl-text-tertiary mt-1">
+                  of {slaMetrics.totalJobs} total
+                </div>
               </div>
               <div className="h-px bg-wl-border-default" />
               <Button variant="secondary" size="sm" className="w-full">
@@ -273,13 +383,17 @@ export default function FieldServicePage() {
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <div className="flex justify-between items-center">
-                <CardTitle className="text-white">Job Queue (Unassigned)</CardTitle>
+                <CardTitle className="text-white">
+                  Job Queue (Unassigned)
+                </CardTitle>
                 <Badge variant="warning">{jobQueue.length}</Badge>
               </div>
             </CardHeader>
             <CardContent>
               {jobQueue.length === 0 ? (
-                <div className="text-center py-12 text-wl-text-tertiary">All jobs assigned ✓</div>
+                <div className="text-center py-12 text-wl-text-tertiary">
+                  All jobs assigned ✓
+                </div>
               ) : (
                 <div className="space-y-3">
                   {jobQueue.map((job) => (
@@ -289,19 +403,32 @@ export default function FieldServicePage() {
                     >
                       <div className="flex justify-between items-start gap-2 mb-2">
                         <div>
-                          <div className="text-sm font-semibold text-white">{job.jobNumber}</div>
-                          <div className="text-xs text-wl-text-secondary">{job.customerName}</div>
+                          <div className="text-sm font-semibold text-white">
+                            {job.jobNumber}
+                          </div>
+                          <div className="text-xs text-wl-text-secondary">
+                            {job.customerName}
+                          </div>
                         </div>
                         <Badge variant={priorityVariant(job.priority)}>
-                          {job.priority.charAt(0).toUpperCase() + job.priority.slice(1)}
+                          {job.priority.charAt(0).toUpperCase() +
+                            job.priority.slice(1)}
                         </Badge>
                       </div>
                       <div className="text-xs text-wl-text-tertiary mb-4">
-                        {job.serviceType.replace(/_/g, ' ')} · {job.location}
+                        {job.serviceType.replace(/_/g, " ")} · {job.location}
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="secondary" size="sm" className="flex-1">Auto-Assign</Button>
-                        <Button variant="primary" size="sm" className="flex-1">Assign</Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="flex-1"
+                        >
+                          Auto-Assign
+                        </Button>
+                        <Button variant="primary" size="sm" className="flex-1">
+                          Assign
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -316,7 +443,9 @@ export default function FieldServicePage() {
             </CardHeader>
             <CardContent>
               {recentCompletions.length === 0 ? (
-                <div className="text-center py-12 text-wl-text-tertiary">No completions yet today</div>
+                <div className="text-center py-12 text-wl-text-tertiary">
+                  No completions yet today
+                </div>
               ) : (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
                   {recentCompletions.map((job) => (
@@ -326,12 +455,17 @@ export default function FieldServicePage() {
                     >
                       <div className="flex justify-between items-start gap-2 mb-1">
                         <div>
-                          <div className="text-sm font-semibold text-emerald-400">✓ {job.jobNumber}</div>
-                          <div className="text-xs text-wl-text-secondary">{job.customerName}</div>
+                          <div className="text-sm font-semibold text-emerald-400">
+                            ✓ {job.jobNumber}
+                          </div>
+                          <div className="text-xs text-wl-text-secondary">
+                            {job.customerName}
+                          </div>
                         </div>
                       </div>
                       <div className="text-xs text-wl-text-tertiary mt-2">
-                        {job.serviceType.replace(/_/g, ' ')} · {job.assignedTechName ?? 'Unassigned'}
+                        {job.serviceType.replace(/_/g, " ")} ·{" "}
+                        {job.assignedTechName ?? "Unassigned"}
                       </div>
                     </div>
                   ))}

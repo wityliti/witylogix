@@ -23,7 +23,7 @@ import type {
   MatrixRequest,
   MatrixResponse,
   RoutingAdapterConfig,
-} from './types.js';
+} from "./types.js";
 
 export interface Route4MeAddress {
   route_id?: string;
@@ -76,7 +76,7 @@ interface Route4MeOptimizationRequest {
   share_service?: number; // 0 or 1
   route_time?: number; // Unix timestamp for arrival time
   optimize?: string; // 'Distance', 'Time', 'TimeWithTraffic'
-  distance_unit?: 'mi' | 'km';
+  distance_unit?: "mi" | "km";
   directions?: number; // 0 or 1
   addresses: Route4MeAddress[];
   vehicles: Route4MeVehicle[];
@@ -147,7 +147,7 @@ class TokenBucketRateLimiter {
  * Circuit breaker implementation
  */
 class CircuitBreaker {
-  private state: 'closed' | 'open' | 'half_open' = 'closed';
+  private state: "closed" | "open" | "half_open" = "closed";
   private failureCount = 0;
   private failureThreshold: number;
   private resetTimeout: number;
@@ -158,35 +158,38 @@ class CircuitBreaker {
     this.resetTimeout = resetTimeout;
   }
 
-  getState(): 'closed' | 'open' | 'half_open' {
-    if (this.state === 'open' && Date.now() - this.lastFailureTime > this.resetTimeout) {
-      this.state = 'half_open';
+  getState(): "closed" | "open" | "half_open" {
+    if (
+      this.state === "open" &&
+      Date.now() - this.lastFailureTime > this.resetTimeout
+    ) {
+      this.state = "half_open";
     }
     return this.state;
   }
 
   recordSuccess(): void {
     this.failureCount = 0;
-    this.state = 'closed';
+    this.state = "closed";
   }
 
   recordFailure(): void {
     this.failureCount++;
     this.lastFailureTime = Date.now();
     if (this.failureCount >= this.failureThreshold) {
-      this.state = 'open';
+      this.state = "open";
     }
   }
 
   async call<T>(fn: () => Promise<T>): Promise<T> {
     const currentState = this.getState();
-    if (currentState === 'open') {
-      throw new Error('Circuit breaker is open');
+    if (currentState === "open") {
+      throw new Error("Circuit breaker is open");
     }
 
     try {
       const result = await fn();
-      if (currentState === 'half_open') {
+      if (currentState === "half_open") {
         this.recordSuccess();
       }
       return result;
@@ -202,7 +205,7 @@ class CircuitBreaker {
  */
 export class Route4MeClient {
   private apiKey: string;
-  private baseUrl = 'https://api.route4me.com';
+  private baseUrl = "https://api.route4me.com";
   private rateLimit: number;
   private timeout: number;
 
@@ -217,7 +220,7 @@ export class Route4MeClient {
 
   constructor(config: RoutingAdapterConfig) {
     if (!config.apiKey) {
-      throw new Error('Route4Me API key is required');
+      throw new Error("Route4Me API key is required");
     }
 
     this.apiKey = config.apiKey;
@@ -232,7 +235,10 @@ export class Route4MeClient {
   /**
    * Fetch with timeout using AbortController
    */
-  private async fetchWithTimeout(url: string, init?: RequestInit): Promise<Response> {
+  private async fetchWithTimeout(
+    url: string,
+    init?: RequestInit,
+  ): Promise<Response> {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), this.timeout);
     try {
@@ -245,7 +251,9 @@ export class Route4MeClient {
   /**
    * Normalize coordinate to LatLng format
    */
-  private normalizeCoordinate(coord: [number, number] | { lat: number; lng: number }): { lat: number; lng: number } {
+  private normalizeCoordinate(
+    coord: [number, number] | { lat: number; lng: number },
+  ): { lat: number; lng: number } {
     if (Array.isArray(coord)) {
       return { lat: coord[0], lng: coord[1] };
     }
@@ -275,14 +283,18 @@ export class Route4MeClient {
       });
 
       const vehicles: Route4MeVehicle[] = request.vehicles.map((vehicle) => {
-        const startCoord = vehicle.start_location ? this.normalizeCoordinate(vehicle.start_location) : { lat: 0, lng: 0 };
+        const startCoord = vehicle.start_location
+          ? this.normalizeCoordinate(vehicle.start_location)
+          : { lat: 0, lng: 0 };
         return {
           vehicle_alias: vehicle.id || `Vehicle ${Math.random()}`,
           capacity: vehicle.capacity,
-          max_distance_km: vehicle.max_distance_m ? vehicle.max_distance_m / 1000 : undefined,
+          max_distance_km: vehicle.max_distance_m
+            ? vehicle.max_distance_m / 1000
+            : undefined,
           max_stop_count: undefined,
           start_address: {
-            address: 'Start',
+            address: "Start",
             lat: startCoord.lat,
             lng: startCoord.lng,
             is_depot: true,
@@ -296,34 +308,41 @@ export class Route4MeClient {
 
       const payload: Route4MeOptimizationRequest = {
         algorithm: 3, // Advanced dynamic
-        optimize: 'Time',
-        distance_unit: 'km',
+        optimize: "Time",
+        distance_unit: "km",
         directions: 1,
         addresses,
         vehicles,
       };
 
       const response = await this.circuitBreaker.call(async () => {
-        return this.fetchWithTimeout(`${this.baseUrl}/api.v4/optimization_problem.php?${params.toString()}`, {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
+        return this.fetchWithTimeout(
+          `${this.baseUrl}/api.v4/optimization_problem.php?${params.toString()}`,
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
           },
-          body: JSON.stringify(payload),
-        });
+        );
       });
 
       if (!response.ok) {
-        throw new Error(`Route4Me Optimization API error: ${response.statusText}`);
+        throw new Error(
+          `Route4Me Optimization API error: ${response.statusText}`,
+        );
       }
 
-      const data = await response.json() as Route4MeOptimizationResult;
+      const data = (await response.json()) as Route4MeOptimizationResult;
 
       const routes = (data.routes || []).map((route) => ({
-        vehicle: request.vehicles.findIndex((v) => v.id === route.vehicle_alias),
+        vehicle: request.vehicles.findIndex(
+          (v) => v.id === route.vehicle_alias,
+        ),
         steps: route.addresses.map((addr) => ({
-          type: (addr.is_depot ? 'start' : 'job') as 'start' | 'job' | 'end',
+          type: (addr.is_depot ? "start" : "job") as "start" | "job" | "end",
           location: { lat: addr.lat, lng: addr.lng },
           arrival_time: 0,
           departure_time: 0,
@@ -336,7 +355,7 @@ export class Route4MeClient {
       }));
 
       const responseObj: OptimizationResponse = {
-        code: routes.length > 0 ? 'OK' : 'ERROR',
+        code: routes.length > 0 ? "OK" : "ERROR",
         summary: {
           distance_m: (data.total_distance || 0) * 1000,
           duration_s: data.total_time || 0,
@@ -345,8 +364,8 @@ export class Route4MeClient {
         },
         routes,
         unassigned: (data.unrouted || []).map((job) => ({
-          id: job.address_id || '',
-          reason: 'Unable to assign',
+          id: job.address_id || "",
+          reason: "Unable to assign",
         })),
       };
 
@@ -375,21 +394,26 @@ export class Route4MeClient {
       });
 
       const response = await this.circuitBreaker.call(async () => {
-        return this.fetchWithTimeout(`${this.baseUrl}/api.v4/address.php?${params.toString()}`, {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
+        return this.fetchWithTimeout(
+          `${this.baseUrl}/api.v4/address.php?${params.toString()}`,
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(address),
           },
-          body: JSON.stringify(address),
-        });
+        );
       });
 
       if (!response.ok) {
-        throw new Error(`Route4Me Add Address API error: ${response.statusText}`);
+        throw new Error(
+          `Route4Me Add Address API error: ${response.statusText}`,
+        );
       }
 
-      const data = await response.json() as Route4MeAddress;
+      const data = (await response.json()) as Route4MeAddress;
       this.successfulRequests++;
       this.totalResponseTime += Date.now() - startTime;
 
@@ -421,17 +445,22 @@ export class Route4MeClient {
       });
 
       const response = await this.circuitBreaker.call(async () => {
-        return this.fetchWithTimeout(`${this.baseUrl}/api.v4/route.php?${params.toString()}`, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' },
-        });
+        return this.fetchWithTimeout(
+          `${this.baseUrl}/api.v4/route.php?${params.toString()}`,
+          {
+            method: "GET",
+            headers: { Accept: "application/json" },
+          },
+        );
       });
 
       if (!response.ok) {
-        throw new Error(`Route4Me Route Tracking API error: ${response.statusText}`);
+        throw new Error(
+          `Route4Me Route Tracking API error: ${response.statusText}`,
+        );
       }
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         route_id: string;
         vehicle_lat: number;
         vehicle_lng: number;
@@ -452,7 +481,9 @@ export class Route4MeClient {
   /**
    * Create territory
    */
-  async createTerritory(territory: Route4MeTerritory): Promise<Route4MeTerritory> {
+  async createTerritory(
+    territory: Route4MeTerritory,
+  ): Promise<Route4MeTerritory> {
     const startTime = Date.now();
     try {
       this.totalRequests++;
@@ -463,21 +494,26 @@ export class Route4MeClient {
       });
 
       const response = await this.circuitBreaker.call(async () => {
-        return this.fetchWithTimeout(`${this.baseUrl}/api.v4/territory.php?${params.toString()}`, {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
+        return this.fetchWithTimeout(
+          `${this.baseUrl}/api.v4/territory.php?${params.toString()}`,
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(territory),
           },
-          body: JSON.stringify(territory),
-        });
+        );
       });
 
       if (!response.ok) {
-        throw new Error(`Route4Me Create Territory API error: ${response.statusText}`);
+        throw new Error(
+          `Route4Me Create Territory API error: ${response.statusText}`,
+        );
       }
 
-      const data = await response.json() as Route4MeTerritory;
+      const data = (await response.json()) as Route4MeTerritory;
       this.successfulRequests++;
       this.totalResponseTime += Date.now() - startTime;
 
@@ -504,17 +540,22 @@ export class Route4MeClient {
       });
 
       const response = await this.circuitBreaker.call(async () => {
-        return this.fetchWithTimeout(`${this.baseUrl}/api.v4/activity_feed.php?${params.toString()}`, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' },
-        });
+        return this.fetchWithTimeout(
+          `${this.baseUrl}/api.v4/activity_feed.php?${params.toString()}`,
+          {
+            method: "GET",
+            headers: { Accept: "application/json" },
+          },
+        );
       });
 
       if (!response.ok) {
-        throw new Error(`Route4Me Activity Feed API error: ${response.statusText}`);
+        throw new Error(
+          `Route4Me Activity Feed API error: ${response.statusText}`,
+        );
       }
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         data?: Array<{
           activity_id: string;
           route_id: string;
@@ -545,14 +586,18 @@ export class Route4MeClient {
    * Get metrics
    */
   getMetrics() {
-    const avgResponseTime = this.totalRequests > 0 ? this.totalResponseTime / this.totalRequests : 0;
+    const avgResponseTime =
+      this.totalRequests > 0 ? this.totalResponseTime / this.totalRequests : 0;
 
     return {
       totalRequests: this.totalRequests,
       successfulRequests: this.successfulRequests,
       failedRequests: this.failedRequests,
       averageResponseTime: avgResponseTime,
-      successRate: this.totalRequests > 0 ? this.successfulRequests / this.totalRequests : 0,
+      successRate:
+        this.totalRequests > 0
+          ? this.successfulRequests / this.totalRequests
+          : 0,
     };
   }
 

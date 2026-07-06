@@ -16,12 +16,17 @@
  * Used as feature input for ML models.
  */
 
-import type { Coordinates } from '../ai-eta/types.js';
+import type { Coordinates } from "../ai-eta/types.js";
 
 /**
  * Traffic zone type
  */
-export type TrafficZoneType = 'urban-core' | 'suburban' | 'rural' | 'highway-corridor' | 'industrial';
+export type TrafficZoneType =
+  | "urban-core"
+  | "suburban"
+  | "rural"
+  | "highway-corridor"
+  | "industrial";
 
 /**
  * Zone definition
@@ -50,7 +55,7 @@ export interface ZoneMetrics {
   peakHours: number[]; // 0-23 hours when traffic is highest
   averageDeliveryTime: number; // minutes
   deliveryTimeVariance: number; // standard deviation
-  congestionLevel: 'low' | 'medium' | 'high' | 'very_high';
+  congestionLevel: "low" | "medium" | "high" | "very_high";
   sampleSize: number; // number of historical deliveries
   lastUpdated: Date;
 }
@@ -127,7 +132,10 @@ export class TrafficZoneClassifier {
   /**
    * Calculate point-in-polygon test using ray casting algorithm
    */
-  private isPointInPolygon(point: Coordinates, polygon: Array<[number, number]>): boolean {
+  private isPointInPolygon(
+    point: Coordinates,
+    polygon: Array<[number, number]>,
+  ): boolean {
     let inside = false;
     const x = point.lng;
     const y = point.lat;
@@ -149,7 +157,10 @@ export class TrafficZoneClassifier {
   /**
    * Check if point is in bounding box
    */
-  private isPointInBounds(point: Coordinates, bounds: TrafficZone['bounds']): boolean {
+  private isPointInBounds(
+    point: Coordinates,
+    bounds: TrafficZone["bounds"],
+  ): boolean {
     return (
       point.lat >= bounds.minLat &&
       point.lat <= bounds.maxLat &&
@@ -177,7 +188,7 @@ export class TrafficZoneClassifier {
           zoneId: zone.id,
           zoneType: zone.type,
           confidence: 0.95,
-          reasoning: 'Point is within zone polygon boundary',
+          reasoning: "Point is within zone polygon boundary",
         };
       }
     }
@@ -213,7 +224,7 @@ export class TrafficZoneClassifier {
     }
 
     if (!bestZone) {
-      throw new Error('No zones configured for classification');
+      throw new Error("No zones configured for classification");
     }
 
     return {
@@ -227,7 +238,7 @@ export class TrafficZoneClassifier {
   /**
    * Calculate bounding box diagonal distance in km
    */
-  private boundingBoxDiagonal(bounds: TrafficZone['bounds']): number {
+  private boundingBoxDiagonal(bounds: TrafficZone["bounds"]): number {
     const ne: Coordinates = { lat: bounds.maxLat, lng: bounds.maxLng };
     const sw: Coordinates = { lat: bounds.minLat, lng: bounds.minLng };
     return this.haversineDistance(ne, sw);
@@ -293,7 +304,7 @@ export class TrafficZoneClassifier {
         peakHours: [],
         averageDeliveryTime: 30,
         deliveryTimeVariance: 10,
-        congestionLevel: 'medium',
+        congestionLevel: "medium",
         sampleSize: 0,
         lastUpdated: new Date(),
       };
@@ -301,10 +312,13 @@ export class TrafficZoneClassifier {
 
     // Calculate average delivery time
     const deliveryTimes = data.map((d) => d.deliveryTimeMin);
-    const avgDeliveryTime = deliveryTimes.reduce((a, b) => a + b) / deliveryTimes.length;
+    const avgDeliveryTime =
+      deliveryTimes.reduce((a, b) => a + b) / deliveryTimes.length;
     const deliveryTimeVariance = Math.sqrt(
-      deliveryTimes.reduce((sum, val) => sum + Math.pow(val - avgDeliveryTime, 2), 0) /
-        deliveryTimes.length,
+      deliveryTimes.reduce(
+        (sum, val) => sum + Math.pow(val - avgDeliveryTime, 2),
+        0,
+      ) / deliveryTimes.length,
     );
 
     // Find peak hours
@@ -317,34 +331,42 @@ export class TrafficZoneClassifier {
       hourlyData.get(hour)!.push(datum.deliveryTimeMin);
     }
 
-    const hourlyAverages = Array.from(hourlyData.entries()).map(([hour, times]) => ({
-      hour,
-      avg: times.reduce((a, b) => a + b) / times.length,
-    }));
+    const hourlyAverages = Array.from(hourlyData.entries()).map(
+      ([hour, times]) => ({
+        hour,
+        avg: times.reduce((a, b) => a + b) / times.length,
+      }),
+    );
 
     // Peak hours are those with delivery time > mean + 1 std dev
     const peakThreshold = avgDeliveryTime + deliveryTimeVariance;
-    const peakHours = hourlyAverages.filter((h) => h.avg > peakThreshold).map((h) => h.hour);
+    const peakHours = hourlyAverages
+      .filter((h) => h.avg > peakThreshold)
+      .map((h) => h.hour);
 
     // Calculate congestion level based on variance
-    let congestionLevel: 'low' | 'medium' | 'high' | 'very_high';
+    let congestionLevel: "low" | "medium" | "high" | "very_high";
     const varianceRatio = deliveryTimeVariance / avgDeliveryTime;
     if (varianceRatio < 0.15) {
-      congestionLevel = 'low';
-    } else if (varianceRatio < 0.30) {
-      congestionLevel = 'medium';
-    } else if (varianceRatio < 0.50) {
-      congestionLevel = 'high';
+      congestionLevel = "low";
+    } else if (varianceRatio < 0.3) {
+      congestionLevel = "medium";
+    } else if (varianceRatio < 0.5) {
+      congestionLevel = "high";
     } else {
-      congestionLevel = 'very_high';
+      congestionLevel = "very_high";
     }
 
     // Calculate average speed (assuming some distance data)
-    const avgSpeed = data.length > 0
-      ? data
-          .filter((d) => d.distance)
-          .reduce((sum, d) => sum + (d.distance! / (d.deliveryTimeMin / 60)), 0) / Math.max(1, data.filter((d) => d.distance).length)
-      : 40;
+    const avgSpeed =
+      data.length > 0
+        ? data
+            .filter((d) => d.distance)
+            .reduce(
+              (sum, d) => sum + d.distance! / (d.deliveryTimeMin / 60),
+              0,
+            ) / Math.max(1, data.filter((d) => d.distance).length)
+        : 40;
 
     return {
       averageSpeed: avgSpeed,
@@ -362,30 +384,31 @@ export class TrafficZoneClassifier {
    * Detect zone type based on characteristics
    */
   detectZoneType(metrics: ZoneMetrics): TrafficZoneType {
-    const varianceRatio = metrics.deliveryTimeVariance / metrics.averageDeliveryTime;
+    const varianceRatio =
+      metrics.deliveryTimeVariance / metrics.averageDeliveryTime;
 
     // Urban-core: high variance, slow average speed
     if (varianceRatio > 0.35 && metrics.averageSpeed < 30) {
-      return 'urban-core';
+      return "urban-core";
     }
 
     // Highway: low variance, high speed
     if (varianceRatio < 0.2 && metrics.averageSpeed > 70) {
-      return 'highway-corridor';
+      return "highway-corridor";
     }
 
     // Industrial: medium variance, medium speed
     if (metrics.averageSpeed < 50 && metrics.peakHours.length > 0) {
-      return 'industrial';
+      return "industrial";
     }
 
     // Suburban: medium variance, medium speed
     if (varianceRatio < 0.35 && metrics.averageSpeed > 40) {
-      return 'suburban';
+      return "suburban";
     }
 
     // Rural: low variance, medium-high speed
-    return 'rural';
+    return "rural";
   }
 
   /**

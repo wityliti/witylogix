@@ -2,9 +2,14 @@
  * Invoicing & Payment Component Types
  */
 
-export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'void';
-export type PaymentStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'refunded';
-export type BillingRule = 'flat' | 'hourly' | 'tiered' | 'usage';
+export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "void";
+export type PaymentStatus =
+  | "pending"
+  | "processing"
+  | "completed"
+  | "failed"
+  | "refunded";
+export type BillingRule = "flat" | "hourly" | "tiered" | "usage";
 
 export interface LineItem {
   id: string;
@@ -35,7 +40,7 @@ export interface Payment {
   invoiceId: string;
   amount: number;
   status: PaymentStatus;
-  method: 'card' | 'bank' | 'cash' | 'check';
+  method: "card" | "bank" | "cash" | "check";
   referenceNumber: string;
   processedAt: string;
   completedAt?: string;
@@ -73,7 +78,7 @@ export interface DeliveryETA {
   estimatedMinutes: number;
   confidenceInterval: { low: number; high: number };
   mlModelContribution: Array<{ model: string; contribution: number }>;
-  trafficCondition: 'clear' | 'moderate' | 'heavy';
-  weatherImpact: 'none' | 'minor' | 'major';
+  trafficCondition: "clear" | "moderate" | "heavy";
+  weatherImpact: "none" | "minor" | "major";
   historicalAccuracy: number;
 }

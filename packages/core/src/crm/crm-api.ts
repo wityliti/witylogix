@@ -242,7 +242,12 @@ export class CrmApiHandler {
     filters: ContactFilters = {},
     pagination: PaginationParams = {},
   ): Promise<PaginatedResponse<UnifiedContact>> {
-    const { page = 1, limit = 20, sortBy = "createdAt", sortDirection = "desc" } = pagination;
+    const {
+      page = 1,
+      limit = 20,
+      sortBy = "createdAt",
+      sortDirection = "desc",
+    } = pagination;
 
     // Validate pagination
     if (page < 1) {
@@ -303,7 +308,9 @@ export class CrmApiHandler {
    * @param contact - Contact data
    * @returns Created contact with ID
    */
-  async createContact(contact: Omit<UnifiedContact, "contactId" | "createdAt" | "updatedAt">): Promise<UnifiedContact> {
+  async createContact(
+    contact: Omit<UnifiedContact, "contactId" | "createdAt" | "updatedAt">,
+  ): Promise<UnifiedContact> {
     // Validate required fields
     if (!contact.email || !contact.firstName) {
       throw new Error("Email and firstName are required");
@@ -321,7 +328,10 @@ export class CrmApiHandler {
    * @param updates - Partial contact updates
    * @returns Updated contact
    */
-  async updateContact(contactId: string, updates: Partial<UnifiedContact>): Promise<UnifiedContact> {
+  async updateContact(
+    contactId: string,
+    updates: Partial<UnifiedContact>,
+  ): Promise<UnifiedContact> {
     if (!contactId) {
       throw new Error("Contact ID is required");
     }
@@ -338,7 +348,12 @@ export class CrmApiHandler {
     filters: DealFilters = {},
     pagination: PaginationParams = {},
   ): Promise<PaginatedResponse<UnifiedDeal>> {
-    const { page = 1, limit = 20, sortBy = "createdAt", sortDirection = "desc" } = pagination;
+    const {
+      page = 1,
+      limit = 20,
+      sortBy = "createdAt",
+      sortDirection = "desc",
+    } = pagination;
 
     if (page < 1) {
       throw new Error("Page must be >= 1");
@@ -365,7 +380,12 @@ export class CrmApiHandler {
     filters: CompanyFilters = {},
     pagination: PaginationParams = {},
   ): Promise<PaginatedResponse<UnifiedCompany>> {
-    const { page = 1, limit = 20, sortBy = "createdAt", sortDirection = "desc" } = pagination;
+    const {
+      page = 1,
+      limit = 20,
+      sortBy = "createdAt",
+      sortDirection = "desc",
+    } = pagination;
 
     if (page < 1) {
       throw new Error("Page must be >= 1");
@@ -391,14 +411,19 @@ export class CrmApiHandler {
    * @param request - Trigger request parameters
    * @returns Sync job details
    */
-  async triggerSync(request: TriggerSyncRequest): Promise<SyncTriggeredResponse> {
+  async triggerSync(
+    request: TriggerSyncRequest,
+  ): Promise<SyncTriggeredResponse> {
     // Validate direction
     if (!["INBOUND", "OUTBOUND", "BIDIRECTIONAL"].includes(request.direction)) {
       throw new Error("Invalid sync direction");
     }
 
     // Validate batch size if provided
-    if (request.batchSize && (request.batchSize < 1 || request.batchSize > 10000)) {
+    if (
+      request.batchSize &&
+      (request.batchSize < 1 || request.batchSize > 10000)
+    ) {
       throw new Error("Batch size must be between 1 and 10000");
     }
 
@@ -435,7 +460,9 @@ export class CrmApiHandler {
    * @param pagination - Pagination parameters
    * @returns Paginated conflicts
    */
-  async getConflicts(pagination: PaginationParams = {}): Promise<PaginatedResponse<ConflictRecord>> {
+  async getConflicts(
+    pagination: PaginationParams = {},
+  ): Promise<PaginatedResponse<ConflictRecord>> {
     const { page = 1, limit = 20 } = pagination;
 
     if (page < 1) {
@@ -463,7 +490,10 @@ export class CrmApiHandler {
    * @param request - Resolution request
    * @returns Resolved conflict
    */
-  async resolveConflict(conflictId: string, request: ResolveConflictRequest): Promise<ConflictRecord> {
+  async resolveConflict(
+    conflictId: string,
+    request: ResolveConflictRequest,
+  ): Promise<ConflictRecord> {
     if (!conflictId) {
       throw new Error("Conflict ID is required");
     }
@@ -497,7 +527,10 @@ export class CrmApiHandler {
    * @param request - Update request
    * @returns Updated mapping
    */
-  async updateMappings(mappingId: string, request: UpdateMappingsRequest): Promise<FieldMapping> {
+  async updateMappings(
+    mappingId: string,
+    request: UpdateMappingsRequest,
+  ): Promise<FieldMapping> {
     if (!mappingId) {
       throw new Error("Mapping ID is required");
     }
@@ -534,7 +567,9 @@ export class CrmApiHandler {
    * @param resolution - Resolution to apply to all
    * @returns Number of conflicts resolved
    */
-  async bulkResolveConflicts(resolution: "INTERNAL" | "EXTERNAL"): Promise<{ resolved: number }> {
+  async bulkResolveConflicts(
+    resolution: "INTERNAL" | "EXTERNAL",
+  ): Promise<{ resolved: number }> {
     if (!["INTERNAL", "EXTERNAL"].includes(resolution)) {
       throw new Error("Invalid resolution value");
     }
@@ -592,7 +627,10 @@ export interface HttpResponse<T> {
 /**
  * Helper to build success response
  */
-export function buildSuccessResponse<T>(statusCode: number, data: T): HttpResponse<T> {
+export function buildSuccessResponse<T>(
+  statusCode: number,
+  data: T,
+): HttpResponse<T> {
   return {
     statusCode,
     headers: {
@@ -605,7 +643,11 @@ export function buildSuccessResponse<T>(statusCode: number, data: T): HttpRespon
 /**
  * Helper to build error response
  */
-export function buildErrorResponse(statusCode: number, message: string, code?: string): HttpResponse<{
+export function buildErrorResponse(
+  statusCode: number,
+  message: string,
+  code?: string,
+): HttpResponse<{
   error: string;
   code?: string;
   timestamp: string;

@@ -38,7 +38,7 @@ export class WebhookEventEmitter {
     eventType: string,
     data: Record<string, any>,
     source: string = "platform",
-    correlationId?: string
+    correlationId?: string,
   ): Promise<string[]> {
     const event: WebhookEvent = {
       id: uuidv4(),
@@ -86,14 +86,14 @@ export class WebhookEventEmitter {
   async emitOrderCreated(
     tenantId: string,
     order: Record<string, any>,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<string[]> {
     return this.emit(
       tenantId,
       "order.created",
       order,
       "order-service",
-      correlationId
+      correlationId,
     );
   }
 
@@ -103,14 +103,14 @@ export class WebhookEventEmitter {
   async emitOrderUpdated(
     tenantId: string,
     order: Record<string, any>,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<string[]> {
     return this.emit(
       tenantId,
       "order.updated",
       order,
       "order-service",
-      correlationId
+      correlationId,
     );
   }
 
@@ -120,14 +120,14 @@ export class WebhookEventEmitter {
   async emitOrderCancelled(
     tenantId: string,
     order: Record<string, any>,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<string[]> {
     return this.emit(
       tenantId,
       "order.cancelled",
       order,
       "order-service",
-      correlationId
+      correlationId,
     );
   }
 
@@ -137,14 +137,14 @@ export class WebhookEventEmitter {
   async emitShipmentCreated(
     tenantId: string,
     shipment: Record<string, any>,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<string[]> {
     return this.emit(
       tenantId,
       "shipment.created",
       shipment,
       "shipment-service",
-      correlationId
+      correlationId,
     );
   }
 
@@ -156,14 +156,14 @@ export class WebhookEventEmitter {
     shipment: Record<string, any>,
     previousStatus: string,
     newStatus: string,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<string[]> {
     return this.emit(
       tenantId,
       "shipment.status_changed",
       { ...shipment, previousStatus, newStatus },
       "shipment-service",
-      correlationId
+      correlationId,
     );
   }
 
@@ -173,14 +173,14 @@ export class WebhookEventEmitter {
   async emitShipmentDelivered(
     tenantId: string,
     shipment: Record<string, any>,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<string[]> {
     return this.emit(
       tenantId,
       "shipment.delivered",
       shipment,
       "shipment-service",
-      correlationId
+      correlationId,
     );
   }
 
@@ -191,14 +191,14 @@ export class WebhookEventEmitter {
     tenantId: string,
     shipment: Record<string, any>,
     reason: string,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<string[]> {
     return this.emit(
       tenantId,
       "shipment.failed",
       { ...shipment, failureReason: reason },
       "shipment-service",
-      correlationId
+      correlationId,
     );
   }
 
@@ -208,14 +208,14 @@ export class WebhookEventEmitter {
   async emitDriverAssigned(
     tenantId: string,
     assignment: Record<string, any>,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<string[]> {
     return this.emit(
       tenantId,
       "driver.assigned",
       assignment,
       "dispatch-service",
-      correlationId
+      correlationId,
     );
   }
 
@@ -225,14 +225,14 @@ export class WebhookEventEmitter {
   async emitDriverLocationUpdated(
     tenantId: string,
     location: Record<string, any>,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<string[]> {
     return this.emit(
       tenantId,
       "driver.location_updated",
       location,
       "location-service",
-      correlationId
+      correlationId,
     );
   }
 
@@ -242,14 +242,14 @@ export class WebhookEventEmitter {
   async emitRouteOptimized(
     tenantId: string,
     route: Record<string, any>,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<string[]> {
     return this.emit(
       tenantId,
       "route.optimized",
       route,
       "route-service",
-      correlationId
+      correlationId,
     );
   }
 
@@ -259,14 +259,14 @@ export class WebhookEventEmitter {
   async emitRouteCompleted(
     tenantId: string,
     route: Record<string, any>,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<string[]> {
     return this.emit(
       tenantId,
       "route.completed",
       route,
       "route-service",
-      correlationId
+      correlationId,
     );
   }
 
@@ -276,14 +276,14 @@ export class WebhookEventEmitter {
   async emitPaymentCompleted(
     tenantId: string,
     payment: Record<string, any>,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<string[]> {
     return this.emit(
       tenantId,
       "payment.completed",
       payment,
       "payment-service",
-      correlationId
+      correlationId,
     );
   }
 
@@ -293,14 +293,14 @@ export class WebhookEventEmitter {
   async emitPaymentRefunded(
     tenantId: string,
     payment: Record<string, any>,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<string[]> {
     return this.emit(
       tenantId,
       "payment.refunded",
       payment,
       "payment-service",
-      correlationId
+      correlationId,
     );
   }
 }
@@ -315,11 +315,10 @@ let emitterInstance: WebhookEventEmitter | null = null;
  */
 export function getWebhookEventEmitter(
   prisma: any,
-  webhookManager?: WebhookManager
+  webhookManager?: WebhookManager,
 ): WebhookEventEmitter {
   if (!emitterInstance) {
-    const manager =
-      webhookManager || getWebhookManager(prisma);
+    const manager = webhookManager || getWebhookManager(prisma);
     emitterInstance = new WebhookEventEmitter(manager, prisma);
   }
   return emitterInstance;

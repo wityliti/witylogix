@@ -26,18 +26,21 @@
  * - Deprioritization score (0-1, higher = worse health)
  */
 
-import type { RouteRequest, RouteResponse } from '../integrations/routing/types.js';
-import { RouteCache } from './route-cache.js';
+import type {
+  RouteRequest,
+  RouteResponse,
+} from "../integrations/routing/types.js";
+import { RouteCache } from "./route-cache.js";
 
 export type RoutingProvider =
-  | 'google-routes'
-  | 'mapbox-directions'
-  | 'here-routing'
-  | 'valhalla'
-  | 'vroom'
-  | 'route4me'
-  | 'optimoroute'
-  | 'routific';
+  | "google-routes"
+  | "mapbox-directions"
+  | "here-routing"
+  | "valhalla"
+  | "vroom"
+  | "route4me"
+  | "optimoroute"
+  | "routific";
 
 export interface RoutingResult {
   distance: number; // meters
@@ -88,7 +91,7 @@ export interface ProviderMetrics {
   p95Latency: number;
   p99Latency: number;
   lastFailureTime?: number;
-  circuitBreakerState: 'closed' | 'open' | 'half-open';
+  circuitBreakerState: "closed" | "open" | "half-open";
   healthScore: number; // 0-1, higher = healthier
   deprioritizationScore: number; // 0-1, higher = worse
   lastCheckTime: number;
@@ -149,7 +152,7 @@ export class RoutingOrchestrator {
         p50Latency: 0,
         p95Latency: 0,
         p99Latency: 0,
-        circuitBreakerState: 'closed',
+        circuitBreakerState: "closed",
         healthScore: 1.0,
         deprioritizationScore: 0,
         lastCheckTime: Date.now(),
@@ -164,18 +167,26 @@ export class RoutingOrchestrator {
     origin: { lat: number; lng: number },
     destination: { lat: number; lng: number },
     waypoints?: Array<{ lat: number; lng: number }>,
-    options?: Record<string, any>
+    options?: Record<string, any>,
   ): Promise<RoutingResult> {
     this.stats.totalRequests++;
 
     // Generate cache key
-    const cacheKey = this.cache.generateRouteKey(origin, destination, waypoints, options);
+    const cacheKey = this.cache.generateRouteKey(
+      origin,
+      destination,
+      waypoints,
+      options,
+    );
 
     // Check request deduplication
     const dedupKey = cacheKey;
     if (this.deduplicationMap.has(dedupKey)) {
       const pending = this.deduplicationMap.get(dedupKey)!;
-      if (Date.now() - pending.timestamp < (this.config.requestDeduplicationMs || 1000)) {
+      if (
+        Date.now() - pending.timestamp <
+        (this.config.requestDeduplicationMs || 1000)
+      ) {
         return pending.promise;
       }
     }
@@ -196,7 +207,7 @@ export class RoutingOrchestrator {
       destination,
       waypoints,
       options,
-      cacheKey
+      cacheKey,
     );
 
     // Store for deduplication
@@ -221,7 +232,7 @@ export class RoutingOrchestrator {
     destination: { lat: number; lng: number },
     waypoints?: Array<{ lat: number; lng: number }>,
     options?: Record<string, any>,
-    cacheKey?: string
+    cacheKey?: string,
   ): Promise<RoutingResult> {
     const sortedProviders = this.getSortedProviders();
     const errors: Map<RoutingProvider, Error> = new Map();
@@ -250,7 +261,7 @@ export class RoutingOrchestrator {
             cacheKey,
             result,
             this.config.cacheTtlSeconds || 300,
-            providerConfig.name
+            providerConfig.name,
           );
         }
 
@@ -276,7 +287,7 @@ export class RoutingOrchestrator {
     // All providers failed
     const failoverChain = Array.from(errors.entries())
       .map(([provider, error]) => `${provider}: ${error.message}`)
-      .join(' → ');
+      .join(" → ");
 
     throw new Error(`All routing providers failed. Chain: ${failoverChain}`);
   }
@@ -292,7 +303,7 @@ export class RoutingOrchestrator {
       destination: { lat: number; lng: number };
       waypoints?: Array<{ lat: number; lng: number }>;
       options?: Record<string, any>;
-    }
+    },
   ): Promise<RoutingResult> {
     // Placeholder implementation
     // In production, would dispatch to actual provider clients (Google, Mapbox, HERE, etc.)
@@ -300,7 +311,7 @@ export class RoutingOrchestrator {
     return {
       distance: 5000,
       duration: 300,
-      polyline: 'mock_polyline',
+      polyline: "mock_polyline",
       provider: config.name,
       cached: false,
       latencyMs: 100,
@@ -318,8 +329,10 @@ export class RoutingOrchestrator {
         const aMetrics = this.providerMetrics.get(a.name)!;
         const bMetrics = this.providerMetrics.get(b.name)!;
 
-        const aHealth = aMetrics.healthScore * (1 - aMetrics.deprioritizationScore);
-        const bHealth = bMetrics.healthScore * (1 - bMetrics.deprioritizationScore);
+        const aHealth =
+          aMetrics.healthScore * (1 - aMetrics.deprioritizationScore);
+        const bHealth =
+          bMetrics.healthScore * (1 - bMetrics.deprioritizationScore);
 
         if (aHealth !== bHealth) {
           return bHealth - aHealth;
@@ -332,7 +345,10 @@ export class RoutingOrchestrator {
   /**
    * Record successful provider call
    */
-  private recordProviderSuccess(provider: RoutingProvider, latencyMs: number): void {
+  private recordProviderSuccess(
+    provider: RoutingProvider,
+    latencyMs: number,
+  ): void {
     const metrics = this.providerMetrics.get(provider)!;
     metrics.totalRequests++;
     metrics.successfulRequests++;
@@ -346,14 +362,17 @@ export class RoutingOrchestrator {
 
     // Improve health score on success
     metrics.healthScore = Math.min(1.0, metrics.healthScore + 0.1);
-    metrics.deprioritizationScore = Math.max(0, metrics.deprioritizationScore - 0.05);
+    metrics.deprioritizationScore = Math.max(
+      0,
+      metrics.deprioritizationScore - 0.05,
+    );
 
     // Check if should close circuit breaker
     if (
-      metrics.circuitBreakerState === 'half-open' &&
+      metrics.circuitBreakerState === "half-open" &&
       metrics.successRate > 0.8
     ) {
-      metrics.circuitBreakerState = 'closed';
+      metrics.circuitBreakerState = "closed";
     }
 
     metrics.lastCheckTime = Date.now();
@@ -362,7 +381,10 @@ export class RoutingOrchestrator {
   /**
    * Record failed provider call
    */
-  private recordProviderFailure(provider: RoutingProvider, latencyMs: number): void {
+  private recordProviderFailure(
+    provider: RoutingProvider,
+    latencyMs: number,
+  ): void {
     const metrics = this.providerMetrics.get(provider)!;
     metrics.totalRequests++;
     metrics.failedRequests++;
@@ -373,16 +395,19 @@ export class RoutingOrchestrator {
 
     // Degrade health score on failure
     metrics.healthScore = Math.max(0, metrics.healthScore - 0.2);
-    metrics.deprioritizationScore = Math.min(1.0, metrics.deprioritizationScore + 0.15);
+    metrics.deprioritizationScore = Math.min(
+      1.0,
+      metrics.deprioritizationScore + 0.15,
+    );
 
     // Open circuit breaker if too many failures
     if (metrics.failedRequests > 5 && metrics.successRate < 0.5) {
-      metrics.circuitBreakerState = 'open';
+      metrics.circuitBreakerState = "open";
 
       // Schedule half-open check
       setTimeout(() => {
-        if (metrics.circuitBreakerState === 'open') {
-          metrics.circuitBreakerState = 'half-open';
+        if (metrics.circuitBreakerState === "open") {
+          metrics.circuitBreakerState = "half-open";
         }
       }, 60000); // 1 minute timeout
     }
@@ -419,7 +444,8 @@ export class RoutingOrchestrator {
       totalCacheMisses: this.stats.totalCacheMisses,
       cacheHitRate:
         this.stats.totalCacheHits + this.stats.totalCacheMisses > 0
-          ? this.stats.totalCacheHits / (this.stats.totalCacheHits + this.stats.totalCacheMisses)
+          ? this.stats.totalCacheHits /
+            (this.stats.totalCacheHits + this.stats.totalCacheMisses)
           : 0,
       providers: new Map(this.providerMetrics),
       averageLatencyMs: this.calculateAverageLatency(),
@@ -452,13 +478,13 @@ export class RoutingOrchestrator {
     const status = new Map<RoutingProvider, string>();
 
     this.providerMetrics.forEach((metrics, provider) => {
-      let health = 'healthy';
-      if (metrics.circuitBreakerState === 'open') {
-        health = 'unhealthy';
-      } else if (metrics.circuitBreakerState === 'half-open') {
-        health = 'degraded';
+      let health = "healthy";
+      if (metrics.circuitBreakerState === "open") {
+        health = "unhealthy";
+      } else if (metrics.circuitBreakerState === "half-open") {
+        health = "degraded";
       } else if (metrics.successRate < 0.9) {
-        health = 'degraded';
+        health = "degraded";
       }
 
       status.set(provider, health);
@@ -487,7 +513,7 @@ export class RoutingOrchestrator {
       metrics.p50Latency = 0;
       metrics.p95Latency = 0;
       metrics.p99Latency = 0;
-      metrics.circuitBreakerState = 'closed';
+      metrics.circuitBreakerState = "closed";
       metrics.healthScore = 1.0;
       metrics.deprioritizationScore = 0;
     });

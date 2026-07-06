@@ -58,8 +58,14 @@ export class FuelAnalyzer {
       };
     }
 
-    const totalGallons = transactions.reduce((sum: number, t: any) => sum + t.gallons, 0);
-    const totalCost = transactions.reduce((sum: number, t: any) => sum + t.totalCost, 0);
+    const totalGallons = transactions.reduce(
+      (sum: number, t: any) => sum + t.gallons,
+      0,
+    );
+    const totalCost = transactions.reduce(
+      (sum: number, t: any) => sum + t.totalCost,
+      0,
+    );
     const avgPricePerGallon = totalCost / totalGallons;
 
     // Calculate MPG from odometer readings
@@ -74,18 +80,24 @@ export class FuelAnalyzer {
     const prevEndDate = new Date(endDate);
     prevEndDate.setMonth(prevEndDate.getMonth() - 1);
 
-    const prevTransactions = await (this.prisma as any).fuelTransaction.findMany({
+    const prevTransactions = await (
+      this.prisma as any
+    ).fuelTransaction.findMany({
       where: {
         vehicleId,
         date: { gte: prevStartDate, lte: prevEndDate },
       },
     });
 
-    const prevGallons = prevTransactions.reduce((sum: number, t: any) => sum + t.gallons, 0);
-    const prevMiles = prevTransactions.length > 0
-      ? (prevTransactions[prevTransactions.length - 1].odometerReading -
-          prevTransactions[0].odometerReading)
-      : 0;
+    const prevGallons = prevTransactions.reduce(
+      (sum: number, t: any) => sum + t.gallons,
+      0,
+    );
+    const prevMiles =
+      prevTransactions.length > 0
+        ? prevTransactions[prevTransactions.length - 1].odometerReading -
+          prevTransactions[0].odometerReading
+        : 0;
     const prevMpg = prevMiles > 0 ? prevMiles / prevGallons : 0;
 
     const trendComparison = prevMpg > 0 ? ((mpg - prevMpg) / prevMpg) * 100 : 0;
@@ -104,7 +116,11 @@ export class FuelAnalyzer {
   /**
    * Track fuel consumption by driver
    */
-  async analyzeByDriver(driverId: string, startDate: Date, endDate: Date): Promise<{
+  async analyzeByDriver(
+    driverId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{
     driverId: string;
     totalGallons: number;
     totalCost: number;
@@ -118,8 +134,14 @@ export class FuelAnalyzer {
       },
     });
 
-    const totalGallons = transactions.reduce((sum: number, t: any) => sum + t.gallons, 0);
-    const totalCost = transactions.reduce((sum: number, t: any) => sum + t.totalCost, 0);
+    const totalGallons = transactions.reduce(
+      (sum: number, t: any) => sum + t.gallons,
+      0,
+    );
+    const totalCost = transactions.reduce(
+      (sum: number, t: any) => sum + t.totalCost,
+      0,
+    );
     const totalMiles = transactions.reduce(
       (sum: number, t: any) => sum + (t.odometerReading || 0),
       0,
@@ -140,7 +162,10 @@ export class FuelAnalyzer {
   /**
    * Get MPG trends
    */
-  async getMPGTrends(vehicleId: string, months: number = 6): Promise<
+  async getMPGTrends(
+    vehicleId: string,
+    months: number = 6,
+  ): Promise<
     Array<{
       month: string;
       mpg: number;
@@ -156,7 +181,11 @@ export class FuelAnalyzer {
       const startDate = new Date(date.getFullYear(), date.getMonth(), 1);
       const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
-      const analysis = await this.analyzeFuelConsumption(vehicleId, startDate, endDate);
+      const analysis = await this.analyzeFuelConsumption(
+        vehicleId,
+        startDate,
+        endDate,
+      );
 
       trends.push({
         month: startDate.toISOString().substring(0, 7),
@@ -182,7 +211,11 @@ export class FuelAnalyzer {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const analysis = await this.analyzeFuelConsumption(vehicleId, thirtyDaysAgo, new Date());
+    const analysis = await this.analyzeFuelConsumption(
+      vehicleId,
+      thirtyDaysAgo,
+      new Date(),
+    );
 
     // Target MPG varies by vehicle type (using average sedan: 25 MPG)
     const targetMpg = 25;
@@ -191,7 +224,8 @@ export class FuelAnalyzer {
 
     let recommendation = "Fuel consumption is optimal";
     if (efficiencyGap > 5) {
-      recommendation = "Critical: Schedule immediate maintenance and driver coaching";
+      recommendation =
+        "Critical: Schedule immediate maintenance and driver coaching";
     } else if (efficiencyGap > 2) {
       recommendation = "Consider driver training and maintenance review";
     }
@@ -281,7 +315,8 @@ export class IdleReductionMonitor {
       vehicleId: "vehicle-123",
       alertType: "EXCESSIVE_IDLING",
       severity: "MEDIUM",
-      message: "Vehicle idle time exceeded 2 hours today. Turn off engine when stopped.",
+      message:
+        "Vehicle idle time exceeded 2 hours today. Turn off engine when stopped.",
       potentialSavings: 5.5,
     });
 
@@ -311,12 +346,10 @@ export class IdleReductionMonitor {
 
     // Placeholder calculations
     const averageIdlePercentage = 12.5;
-    const topIdlers = vehicles
-      .slice(0, 5)
-      .map((v: any, i: number) => ({
-        vehicleId: v.id,
-        idlePercentage: 15 + i * 2,
-      }));
+    const topIdlers = vehicles.slice(0, 5).map((v: any, i: number) => ({
+      vehicleId: v.id,
+      idlePercentage: 15 + i * 2,
+    }));
 
     const totalFleetIdleCost = 2500;
     const recommendation =
@@ -364,7 +397,8 @@ export class RouteFuelCorrelator {
       totalFuelCost: baseCost * trips,
       averageCostPerMile: 0.85,
       numberOfTrips: trips,
-      recommendedOptimization: "Consider consolidating stops to reduce total distance",
+      recommendedOptimization:
+        "Consider consolidating stops to reduce total distance",
     };
   }
 
@@ -426,9 +460,10 @@ export class RouteFuelCorrelator {
     const rangeRemaining = fuelLevel * fuelEfficiency;
 
     return {
-      recommendation: rangeRemaining > distance * 1.2
-        ? "Continue to destination, refuel there for better price"
-        : "Refuel at next available cheaper station",
+      recommendation:
+        rangeRemaining > distance * 1.2
+          ? "Continue to destination, refuel there for better price"
+          : "Refuel at next available cheaper station",
       refuelNow: rangeRemaining < distance * 1.5,
       bestStopLocation: "Chevron #456 (2 miles ahead)",
       estimatedSavings: 12.3,
@@ -461,7 +496,9 @@ export class FuelCardReconciler {
     discrepancies: number;
     reconciliationRate: number;
   }> {
-    const cardTransactions = await (this.prisma as any).fuelTransaction.findMany({
+    const cardTransactions = await (
+      this.prisma as any
+    ).fuelTransaction.findMany({
       where: {
         fuelCardId,
         date: { gte: startDate, lte: endDate },
@@ -515,7 +552,8 @@ export class FuelCardReconciler {
           t.location?.longitude || 0,
         );
 
-        const timeDiff = (t.date.getTime() - prevT.date.getTime()) / (1000 * 60 * 60); // hours
+        const timeDiff =
+          (t.date.getTime() - prevT.date.getTime()) / (1000 * 60 * 60); // hours
         const speed = distance / timeDiff;
 
         if (speed > 100) {
@@ -535,7 +573,7 @@ export class FuelCardReconciler {
         where: { id: vehicleId },
       });
 
-      if (vehicle && t.gallons > vehicle.fuelCapacity || false) {
+      if ((vehicle && t.gallons > vehicle.fuelCapacity) || false) {
         // Assuming fuelCapacity exists
         anomalies.push({
           transactionId: t.id,
@@ -571,20 +609,25 @@ export class FuelCardReconciler {
     recommendation: string;
   }> {
     const anomalies = await this.detectAnomalies(vehicleId);
-    const highSeverityCount = anomalies.filter((a) => a.severity === "HIGH").length;
+    const highSeverityCount = anomalies.filter(
+      (a) => a.severity === "HIGH",
+    ).length;
 
-    const fraudScore = Math.min(100, anomalies.reduce((sum, a) => sum + a.suspiciousScore, 0) / 10);
+    const fraudScore = Math.min(
+      100,
+      anomalies.reduce((sum, a) => sum + a.suspiciousScore, 0) / 10,
+    );
     const flagged = fraudScore > 50 || highSeverityCount > 2;
 
-    const riskFactors = [
-      ...new Set(anomalies.map((a) => a.anomalyType)),
-    ];
+    const riskFactors = [...new Set(anomalies.map((a) => a.anomalyType))];
 
     let recommendation = "Normal activity";
     if (fraudScore > 70) {
-      recommendation = "ALERT: Investigate immediately. Possible fraud detected.";
+      recommendation =
+        "ALERT: Investigate immediately. Possible fraud detected.";
     } else if (fraudScore > 50) {
-      recommendation = "Review transactions. Potential irregularities detected.";
+      recommendation =
+        "Review transactions. Potential irregularities detected.";
     }
 
     return {
@@ -595,7 +638,12 @@ export class FuelCardReconciler {
     };
   }
 
-  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  private calculateDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number {
     // Simplified distance calculation (in miles)
     const R = 3959; // Earth's radius in miles
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -676,10 +724,14 @@ export class FuelBudgetForecaster {
       vehicles.map((v: any) => this.forecastMonthlySpend(v.id, forecastMonths)),
     );
 
-    const projectedSpend = forecasts.reduce((sum, f) => sum + f.projectedFuel, 0);
+    const projectedSpend = forecasts.reduce(
+      (sum, f) => sum + f.projectedFuel,
+      0,
+    );
     const budgetedSpend = 50000; // Placeholder annual budget = ~4166/month
 
-    const variance = ((projectedSpend - budgetedSpend / 12) / (budgetedSpend / 12)) * 100;
+    const variance =
+      ((projectedSpend - budgetedSpend / 12) / (budgetedSpend / 12)) * 100;
 
     return {
       projectedSpend: Math.round(projectedSpend * 100) / 100,

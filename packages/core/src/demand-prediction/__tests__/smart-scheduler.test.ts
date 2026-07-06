@@ -4,17 +4,17 @@
  * Tests for slot capacity recommendations, driver allocation, and schedule optimization
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { SmartScheduler } from '../smart-scheduler';
-import type { DemandPrediction } from '../types';
+import { describe, it, expect, beforeEach } from "vitest";
+import { SmartScheduler } from "../smart-scheduler";
+import type { DemandPrediction } from "../types";
 
-describe('Smart Scheduler', () => {
+describe("Smart Scheduler", () => {
   let scheduler: SmartScheduler;
   let testPredictions: DemandPrediction[];
 
   beforeEach(() => {
     scheduler = new SmartScheduler({
-      optimization_target: 'balanced',
+      optimization_target: "balanced",
       min_service_level: 0.95,
       max_utilization: 0.85,
       driver_cost_per_hour: 25,
@@ -25,7 +25,7 @@ describe('Smart Scheduler', () => {
     const date = new Date();
     testPredictions = [
       {
-        zoneId: 'zone-downtown',
+        zoneId: "zone-downtown",
         targetPeriod: date,
         predictions: Array.from({ length: 24 }, (_, h) => {
           // High demand during business hours
@@ -37,17 +37,17 @@ describe('Smart Scheduler', () => {
         upper_bound: Array(24).fill(0),
         p50: Array(24).fill(0),
         model_predictions: [],
-        dominant_model: 'seasonal',
+        dominant_model: "seasonal",
         explanation: {
-          primary_factors: ['High business density'],
+          primary_factors: ["High business density"],
           model_contributions: {},
-          confidence_rationale: 'High confidence forecast',
+          confidence_rationale: "High confidence forecast",
           anomalies_detected: [],
         },
         generated_at: new Date(),
       },
       {
-        zoneId: 'zone-suburbs',
+        zoneId: "zone-suburbs",
         targetPeriod: date,
         predictions: Array.from({ length: 24 }, (_, h) => {
           // Steady demand
@@ -59,11 +59,11 @@ describe('Smart Scheduler', () => {
         upper_bound: Array(24).fill(0),
         p50: Array(24).fill(0),
         model_predictions: [],
-        dominant_model: 'regression',
+        dominant_model: "regression",
         explanation: {
-          primary_factors: ['Residential area'],
+          primary_factors: ["Residential area"],
           model_contributions: {},
-          confidence_rationale: 'Moderate confidence',
+          confidence_rationale: "Moderate confidence",
           anomalies_detected: [],
         },
         generated_at: new Date(),
@@ -71,39 +71,41 @@ describe('Smart Scheduler', () => {
     ];
   });
 
-  describe('Scheduler initialization', () => {
-    it('should initialize with default config', () => {
+  describe("Scheduler initialization", () => {
+    it("should initialize with default config", () => {
       const s = new SmartScheduler();
       expect(s).toBeDefined();
     });
 
-    it('should accept custom config', () => {
+    it("should accept custom config", () => {
       const s = new SmartScheduler({
-        min_service_level: 0.90,
-        max_utilization: 0.80,
+        min_service_level: 0.9,
+        max_utilization: 0.8,
       });
       expect(s).toBeDefined();
     });
   });
 
-  describe('Slot capacity recommendations', () => {
-    it('should recommend slot capacities', () => {
+  describe("Slot capacity recommendations", () => {
+    it("should recommend slot capacities", () => {
       const slots = scheduler.recommendSlotCapacity(testPredictions[0], 4);
 
       expect(slots).toHaveLength(4);
       expect(slots.every((s) => s.recommendedCapacity > 0)).toBe(true);
     });
 
-    it('should have valid slot boundaries', () => {
+    it("should have valid slot boundaries", () => {
       const slots = scheduler.recommendSlotCapacity(testPredictions[0], 4);
 
       for (let i = 0; i < slots.length; i++) {
-        expect(slots[i].startTime.getTime()).toBeLessThan(slots[i].endTime.getTime());
+        expect(slots[i].startTime.getTime()).toBeLessThan(
+          slots[i].endTime.getTime(),
+        );
         expect(slots[i].date).toEqual(testPredictions[0].targetPeriod);
       }
     });
 
-    it('should apply safety margin', () => {
+    it("should apply safety margin", () => {
       const slots = scheduler.recommendSlotCapacity(testPredictions[0], 4);
 
       // Check that capacity > predicted demand
@@ -114,7 +116,7 @@ describe('Smart Scheduler', () => {
       }
     });
 
-    it('should have reasonable utilization rates', () => {
+    it("should have reasonable utilization rates", () => {
       const slots = scheduler.recommendSlotCapacity(testPredictions[0], 4);
 
       for (const slot of slots) {
@@ -123,7 +125,7 @@ describe('Smart Scheduler', () => {
       }
     });
 
-    it('should generate reasoning for recommendations', () => {
+    it("should generate reasoning for recommendations", () => {
       const slots = scheduler.recommendSlotCapacity(testPredictions[0], 4);
 
       for (const slot of slots) {
@@ -132,7 +134,7 @@ describe('Smart Scheduler', () => {
       }
     });
 
-    it('should handle different slot counts', () => {
+    it("should handle different slot counts", () => {
       const slots2 = scheduler.recommendSlotCapacity(testPredictions[0], 2);
       const slots8 = scheduler.recommendSlotCapacity(testPredictions[0], 8);
 
@@ -141,16 +143,22 @@ describe('Smart Scheduler', () => {
     });
   });
 
-  describe('Driver allocation suggestions', () => {
-    it('should suggest driver allocations', () => {
-      const allocations = scheduler.suggestDriverAllocation(testPredictions, new Date());
+  describe("Driver allocation suggestions", () => {
+    it("should suggest driver allocations", () => {
+      const allocations = scheduler.suggestDriverAllocation(
+        testPredictions,
+        new Date(),
+      );
 
       expect(allocations.length).toBe(testPredictions.length);
       expect(allocations.every((a) => a.total_drivers > 0)).toBe(true);
     });
 
-    it('should allocate drivers hourly', () => {
-      const allocations = scheduler.suggestDriverAllocation(testPredictions, new Date());
+    it("should allocate drivers hourly", () => {
+      const allocations = scheduler.suggestDriverAllocation(
+        testPredictions,
+        new Date(),
+      );
 
       for (const alloc of allocations) {
         expect(Object.keys(alloc.hourly_counts).length).toBeGreaterThan(0);
@@ -162,8 +170,11 @@ describe('Smart Scheduler', () => {
       }
     });
 
-    it('should identify peak hours', () => {
-      const allocations = scheduler.suggestDriverAllocation(testPredictions, new Date());
+    it("should identify peak hours", () => {
+      const allocations = scheduler.suggestDriverAllocation(
+        testPredictions,
+        new Date(),
+      );
 
       for (const alloc of allocations) {
         expect(alloc.peak_hour).toBeGreaterThanOrEqual(0);
@@ -172,11 +183,14 @@ describe('Smart Scheduler', () => {
       }
     });
 
-    it('should allocate more drivers during peak demand', () => {
-      const allocations = scheduler.suggestDriverAllocation(testPredictions, new Date());
+    it("should allocate more drivers during peak demand", () => {
+      const allocations = scheduler.suggestDriverAllocation(
+        testPredictions,
+        new Date(),
+      );
 
       // Downtown zone should have peak allocation during business hours
-      const downtown = allocations.find((a) => a.zoneId === 'zone-downtown');
+      const downtown = allocations.find((a) => a.zoneId === "zone-downtown");
       if (downtown) {
         expect(downtown.peak_hour).toBeGreaterThanOrEqual(8);
         expect(downtown.peak_hour).toBeLessThanOrEqual(18);
@@ -184,13 +198,13 @@ describe('Smart Scheduler', () => {
     });
   });
 
-  describe('Schedule optimization', () => {
-    it('should optimize driver assignments', () => {
+  describe("Schedule optimization", () => {
+    it("should optimize driver assignments", () => {
       const predictionMap = new Map(testPredictions.map((p) => [p.zoneId, p]));
 
       const optimized = scheduler.optimizeSchedule(
         50, // 50 total drivers
-        ['zone-downtown', 'zone-suburbs'],
+        ["zone-downtown", "zone-suburbs"],
         predictionMap,
         new Date(),
       );
@@ -201,12 +215,12 @@ describe('Smart Scheduler', () => {
       expect(optimized.expectedServiceLevel).toBeLessThanOrEqual(1);
     });
 
-    it('should distribute drivers based on demand', () => {
+    it("should distribute drivers based on demand", () => {
       const predictionMap = new Map(testPredictions.map((p) => [p.zoneId, p]));
 
       const optimized = scheduler.optimizeSchedule(
         100,
-        ['zone-downtown', 'zone-suburbs'],
+        ["zone-downtown", "zone-suburbs"],
         predictionMap,
         new Date(),
       );
@@ -216,19 +230,19 @@ describe('Smart Scheduler', () => {
       let suburbsTotal = 0;
 
       for (let h = 0; h < 24; h++) {
-        downtownTotal += optimized.assignments['zone-downtown'][h];
-        suburbsTotal += optimized.assignments['zone-suburbs'][h];
+        downtownTotal += optimized.assignments["zone-downtown"][h];
+        suburbsTotal += optimized.assignments["zone-suburbs"][h];
       }
 
       expect(downtownTotal).toBeGreaterThan(suburbsTotal);
     });
 
-    it('should calculate realistic costs', () => {
+    it("should calculate realistic costs", () => {
       const predictionMap = new Map(testPredictions.map((p) => [p.zoneId, p]));
 
       const optimized = scheduler.optimizeSchedule(
         50,
-        ['zone-downtown', 'zone-suburbs'],
+        ["zone-downtown", "zone-suburbs"],
         predictionMap,
         new Date(),
       );
@@ -238,67 +252,62 @@ describe('Smart Scheduler', () => {
       expect(optimized.totalCost).toBe(expectedCost);
     });
 
-    it('should handle single zone', () => {
-      const predictionMap = new Map([
-        ['zone-downtown', testPredictions[0]],
-      ]);
+    it("should handle single zone", () => {
+      const predictionMap = new Map([["zone-downtown", testPredictions[0]]]);
 
       const optimized = scheduler.optimizeSchedule(
         30,
-        ['zone-downtown'],
+        ["zone-downtown"],
         predictionMap,
         new Date(),
       );
 
-      expect(optimized.assignments['zone-downtown']).toBeDefined();
+      expect(optimized.assignments["zone-downtown"]).toBeDefined();
       expect(optimized.expectedServiceLevel).toBeGreaterThan(0);
     });
   });
 
-  describe('Capacity gap detection', () => {
-    it('should detect understaffed periods', () => {
+  describe("Capacity gap detection", () => {
+    it("should detect understaffed periods", () => {
       const allocations = {
-        'zone-downtown': {
+        "zone-downtown": {
           12: 5, // Only 5 drivers, 25 capacity, but demand ~110
           13: 5,
         },
-        'zone-suburbs': {},
-      };
-
-      const gaps = scheduler.detectCapacityGaps(
-        testPredictions,
-        allocations,
-      );
-
-      const understaffed = gaps.filter((g) => g.type === 'understaffed');
-      expect(understaffed.length).toBeGreaterThan(0);
-    });
-
-    it('should detect overstaffed periods', () => {
-      const allocations = {
-        'zone-downtown': {
-          2: 50, // 250 capacity for ~30 demand
-          3: 50,
-        },
-        'zone-suburbs': {},
+        "zone-suburbs": {},
       };
 
       const gaps = scheduler.detectCapacityGaps(testPredictions, allocations);
-      const overstaffed = gaps.filter((g) => g.type === 'overstaffed');
+
+      const understaffed = gaps.filter((g) => g.type === "understaffed");
+      expect(understaffed.length).toBeGreaterThan(0);
+    });
+
+    it("should detect overstaffed periods", () => {
+      const allocations = {
+        "zone-downtown": {
+          2: 50, // 250 capacity for ~30 demand
+          3: 50,
+        },
+        "zone-suburbs": {},
+      };
+
+      const gaps = scheduler.detectCapacityGaps(testPredictions, allocations);
+      const overstaffed = gaps.filter((g) => g.type === "overstaffed");
 
       expect(overstaffed.length).toBeGreaterThan(0);
     });
 
-    it('should report reasonable gap sizes', () => {
+    it("should report reasonable gap sizes", () => {
       const allocations = {
-        'zone-downtown': Array.from({ length: 24 }, (_, h) => [h, 10]),
+        "zone-downtown": Array.from({ length: 24 }, (_, h) => [h, 10]),
       };
 
       const gapsObj: Record<string, Record<number, number>> = {
-        'zone-downtown': {},
+        "zone-downtown": {},
       };
-      allocations['zone-downtown'].forEach(([h, drivers]: any) => {
-        gapsObj['zone-downtown'][h] = drivers;
+      allocations["zone-downtown"].forEach(([h, drivers]: any) => {
+        gapsObj["zone-downtown"][h] = drivers;
       });
 
       const gaps = scheduler.detectCapacityGaps(testPredictions, gapsObj);
@@ -310,10 +319,10 @@ describe('Smart Scheduler', () => {
       }
     });
 
-    it('should generate actionable recommendations', () => {
+    it("should generate actionable recommendations", () => {
       const allocations = {
-        'zone-downtown': { 12: 2, 13: 2 },
-        'zone-suburbs': { 10: 5 },
+        "zone-downtown": { 12: 2, 13: 2 },
+        "zone-suburbs": { 10: 5 },
       };
 
       const gaps = scheduler.detectCapacityGaps(testPredictions, allocations);
@@ -325,8 +334,8 @@ describe('Smart Scheduler', () => {
     });
   });
 
-  describe('Schedule report generation', () => {
-    it('should generate comprehensive report', () => {
+  describe("Schedule report generation", () => {
+    it("should generate comprehensive report", () => {
       const report = scheduler.generateScheduleReport(testPredictions);
 
       expect(report).toBeDefined();
@@ -337,25 +346,25 @@ describe('Smart Scheduler', () => {
       expect(report.recommendations).toBeDefined();
     });
 
-    it('should calculate service level', () => {
+    it("should calculate service level", () => {
       const report = scheduler.generateScheduleReport(testPredictions);
 
       expect(report.estimated_service_level).toBeGreaterThan(0);
       expect(report.estimated_service_level).toBeLessThanOrEqual(1);
     });
 
-    it('should provide actionable recommendations', () => {
+    it("should provide actionable recommendations", () => {
       const report = scheduler.generateScheduleReport(testPredictions);
 
       if (report.estimated_service_level < 0.95) {
         const serviceWarning = report.recommendations.some((r) =>
-          r.includes('Service level'),
+          r.includes("Service level"),
         );
         expect(serviceWarning).toBe(true);
       }
     });
 
-    it('should report capacity issues', () => {
+    it("should report capacity issues", () => {
       // Create scenario with capacity issues
       const tightPredictions = [
         {
@@ -366,31 +375,31 @@ describe('Smart Scheduler', () => {
 
       const report = scheduler.generateScheduleReport(tightPredictions);
 
-      const capacityAlert = report.recommendations.some((r) =>
-        r.includes('capacity') || r.includes('driver'),
+      const capacityAlert = report.recommendations.some(
+        (r) => r.includes("capacity") || r.includes("driver"),
       );
       expect(capacityAlert || report.capacity_gaps.length > 0).toBe(true);
     });
   });
 
-  describe('What-if analysis', () => {
-    it('should analyze scenarios', () => {
+  describe("What-if analysis", () => {
+    it("should analyze scenarios", () => {
       const scenario = {
-        name: 'Add 10 drivers',
+        name: "Add 10 drivers",
         changes: { additional_drivers: 10 },
       };
 
       const analysis = scheduler.analyzeWhatIf(testPredictions, scenario);
 
-      expect(analysis.scenario_name).toBe('Add 10 drivers');
+      expect(analysis.scenario_name).toBe("Add 10 drivers");
       expect(analysis.changes).toBeDefined();
       expect(analysis.expected_orders).toBeGreaterThan(0);
       expect(analysis.service_level).toBeGreaterThan(0);
     });
 
-    it('should show cost impact', () => {
+    it("should show cost impact", () => {
       const scenario = {
-        name: 'Increase demand by 20%',
+        name: "Increase demand by 20%",
         changes: { demand_multiplier: 1.2 },
       };
 
@@ -400,10 +409,10 @@ describe('Smart Scheduler', () => {
       expect(analysis.recommendation).toBeTruthy();
     });
 
-    it('should compare against baseline', () => {
+    it("should compare against baseline", () => {
       const scenario = {
-        name: 'Optimize staffing',
-        changes: { optimization: 'lean' },
+        name: "Optimize staffing",
+        changes: { optimization: "lean" },
       };
 
       const analysis = scheduler.analyzeWhatIf(testPredictions, scenario);
@@ -412,22 +421,22 @@ describe('Smart Scheduler', () => {
       expect(analysis.estimated_cost).toBeGreaterThan(0);
     });
 
-    it('should identify high-impact zones', () => {
+    it("should identify high-impact zones", () => {
       const scenario = {
-        name: 'Peak demand scenario',
+        name: "Peak demand scenario",
         changes: { demand_multiplier: 1.5 },
       };
 
       const analysis = scheduler.analyzeWhatIf(testPredictions, scenario);
 
       expect(analysis.impact_zones.length).toBeGreaterThan(0);
-      expect(analysis.impact_zones).toContain('zone-downtown');
+      expect(analysis.impact_zones).toContain("zone-downtown");
     });
   });
 
-  describe('Current capacity tracking', () => {
-    it('should set and use current capacity', () => {
-      scheduler.setCurrentCapacity('zone-downtown', {
+  describe("Current capacity tracking", () => {
+    it("should set and use current capacity", () => {
+      scheduler.setCurrentCapacity("zone-downtown", {
         0: 10,
         1: 10,
         12: 20,
@@ -440,8 +449,8 @@ describe('Smart Scheduler', () => {
     });
   });
 
-  describe('Real-world scenarios', () => {
-    it('should handle surge demand', () => {
+  describe("Real-world scenarios", () => {
+    it("should handle surge demand", () => {
       const surgePrediction: DemandPrediction = {
         ...testPredictions[0],
         predictions: Array.from({ length: 24 }, (_, h) => {
@@ -455,7 +464,7 @@ describe('Smart Scheduler', () => {
       expect(slots.some((s) => s.recommendedCapacity > 100)).toBe(true);
     });
 
-    it('should handle slow demand day', () => {
+    it("should handle slow demand day", () => {
       const slowPrediction: DemandPrediction = {
         ...testPredictions[0],
         predictions: Array(24).fill(20), // Uniformly low
@@ -466,15 +475,22 @@ describe('Smart Scheduler', () => {
       expect(slots.every((s) => s.recommendedCapacity < 30)).toBe(true);
     });
 
-    it('should handle multi-zone optimization', () => {
-      const zones = ['zone-downtown', 'zone-suburbs', 'zone-residential'];
+    it("should handle multi-zone optimization", () => {
+      const zones = ["zone-downtown", "zone-suburbs", "zone-residential"];
       const predictionMap = new Map(testPredictions.map((p) => [p.zoneId, p]));
 
-      const optimized = scheduler.optimizeSchedule(100, zones, predictionMap, new Date());
+      const optimized = scheduler.optimizeSchedule(
+        100,
+        zones,
+        predictionMap,
+        new Date(),
+      );
 
       for (const zone of zones) {
         if (zone in optimized.assignments) {
-          expect(Object.keys(optimized.assignments[zone]).length).toBeGreaterThan(0);
+          expect(
+            Object.keys(optimized.assignments[zone]).length,
+          ).toBeGreaterThan(0);
         }
       }
     });

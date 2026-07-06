@@ -4,7 +4,7 @@
  * Tracks all data access, exports, modifications, and consent changes
  */
 
-import { AuditEntry } from './types';
+import { AuditEntry } from "./types";
 
 /**
  * Compliance Audit Logger
@@ -30,11 +30,11 @@ export class ComplianceAuditLogger {
     resourceType: string,
     resourceId: string,
     fields?: string[],
-    metadata?: { ipAddress?: string; userAgent?: string }
+    metadata?: { ipAddress?: string; userAgent?: string },
   ): AuditEntry {
     const entry: AuditEntry = {
-      id: this.generateId('access'),
-      action: 'access',
+      id: this.generateId("access"),
+      action: "access",
       actor,
       timestamp: new Date(),
       details: {
@@ -44,7 +44,7 @@ export class ComplianceAuditLogger {
       },
       ipAddress: metadata?.ipAddress,
       userAgent: metadata?.userAgent,
-      status: 'success',
+      status: "success",
     };
 
     this.auditLog.push(entry);
@@ -66,21 +66,21 @@ export class ComplianceAuditLogger {
     actor: string,
     dataSubjectId: string,
     fields: string[],
-    metadata?: { ipAddress?: string; userAgent?: string; exportId?: string }
+    metadata?: { ipAddress?: string; userAgent?: string; exportId?: string },
   ): AuditEntry {
     const entry: AuditEntry = {
-      id: this.generateId('export'),
-      action: 'export',
+      id: this.generateId("export"),
+      action: "export",
       actor,
       timestamp: new Date(),
       details: {
-        resourceType: 'user_data',
+        resourceType: "user_data",
         resourceId: dataSubjectId,
         fields,
       },
       ipAddress: metadata?.ipAddress,
       userAgent: metadata?.userAgent,
-      status: 'success',
+      status: "success",
     };
 
     this.auditLog.push(entry);
@@ -102,21 +102,21 @@ export class ComplianceAuditLogger {
     actor: string,
     dataSubjectId: string,
     scope: string,
-    metadata?: { ipAddress?: string; userAgent?: string; reason?: string }
+    metadata?: { ipAddress?: string; userAgent?: string; reason?: string },
   ): AuditEntry {
     const entry: AuditEntry = {
-      id: this.generateId('deletion'),
-      action: 'deletion',
+      id: this.generateId("deletion"),
+      action: "deletion",
       actor,
       timestamp: new Date(),
       details: {
-        resourceType: 'user_account',
+        resourceType: "user_account",
         resourceId: dataSubjectId,
         scope: [scope],
       },
       ipAddress: metadata?.ipAddress,
       userAgent: metadata?.userAgent,
-      status: 'success',
+      status: "success",
       reason: metadata?.reason,
     };
 
@@ -139,21 +139,25 @@ export class ComplianceAuditLogger {
     actor: string,
     dataSubjectId: string,
     fields: string[],
-    metadata?: { ipAddress?: string; userAgent?: string; oldValues?: Record<string, unknown> }
+    metadata?: {
+      ipAddress?: string;
+      userAgent?: string;
+      oldValues?: Record<string, unknown>;
+    },
   ): AuditEntry {
     const entry: AuditEntry = {
-      id: this.generateId('modification'),
-      action: 'modification',
+      id: this.generateId("modification"),
+      action: "modification",
       actor,
       timestamp: new Date(),
       details: {
-        resourceType: 'user_data',
+        resourceType: "user_data",
         resourceId: dataSubjectId,
         fields,
       },
       ipAddress: metadata?.ipAddress,
       userAgent: metadata?.userAgent,
-      status: 'success',
+      status: "success",
     };
 
     this.auditLog.push(entry);
@@ -174,22 +178,22 @@ export class ComplianceAuditLogger {
   logConsentChange(
     dataSubjectId: string,
     purpose: string,
-    newStatus: 'granted' | 'revoked',
-    metadata?: { ipAddress?: string; userAgent?: string; source?: string }
+    newStatus: "granted" | "revoked",
+    metadata?: { ipAddress?: string; userAgent?: string; source?: string },
   ): AuditEntry {
     const entry: AuditEntry = {
-      id: this.generateId('consent_change'),
-      action: 'consent_change',
+      id: this.generateId("consent_change"),
+      action: "consent_change",
       actor: dataSubjectId,
       timestamp: new Date(),
       details: {
-        resourceType: 'consent',
+        resourceType: "consent",
         resourceId: `${dataSubjectId}_${purpose}`,
         scope: [purpose],
       },
       ipAddress: metadata?.ipAddress,
       userAgent: metadata?.userAgent,
-      status: 'success',
+      status: "success",
       reason: `Consent ${newStatus} for ${purpose}`,
     };
 
@@ -212,11 +216,11 @@ export class ComplianceAuditLogger {
     actor: string,
     entityType: string,
     recordCount: number,
-    metadata?: { ipAddress?: string; strategy?: string }
+    metadata?: { ipAddress?: string; strategy?: string },
   ): AuditEntry {
     const entry: AuditEntry = {
-      id: this.generateId('anonymization'),
-      action: 'anonymization',
+      id: this.generateId("anonymization"),
+      action: "anonymization",
       actor,
       timestamp: new Date(),
       details: {
@@ -225,8 +229,8 @@ export class ComplianceAuditLogger {
         scope: [`${recordCount} records`],
       },
       ipAddress: metadata?.ipAddress,
-      status: 'success',
-      reason: `Anonymized ${recordCount} ${entityType} records using ${metadata?.strategy || 'unknown'} strategy`,
+      status: "success",
+      reason: `Anonymized ${recordCount} ${entityType} records using ${metadata?.strategy || "unknown"} strategy`,
     };
 
     this.auditLog.push(entry);
@@ -247,11 +251,11 @@ export class ComplianceAuditLogger {
     endDate: Date,
     filters?: {
       actor?: string;
-      action?: AuditEntry['action'];
+      action?: AuditEntry["action"];
       resourceType?: string;
-    }
+    },
   ): AuditEntry[] {
-    return this.auditLog.filter(entry => {
+    return this.auditLog.filter((entry) => {
       const timeMatch =
         entry.timestamp >= startDate && entry.timestamp <= endDate;
       const actorMatch = !filters?.actor || entry.actor === filters.actor;
@@ -303,13 +307,13 @@ export class ComplianceAuditLogger {
         (report.entriesByActor[entry.actor] || 0) + 1;
 
       // Categorize entries
-      if (entry.action === 'access') {
+      if (entry.action === "access") {
         report.accessLog.push(entry);
-      } else if (entry.action === 'deletion') {
+      } else if (entry.action === "deletion") {
         report.deletionLog.push(entry);
-      } else if (entry.action === 'consent_change') {
+      } else if (entry.action === "consent_change") {
         report.consentLog.push(entry);
-      } else if (entry.action === 'export') {
+      } else if (entry.action === "export") {
         report.exportLog.push(entry);
       }
     }
@@ -332,10 +336,10 @@ export class ComplianceAuditLogger {
    */
   getDataSubjectAuditTrail(dataSubjectId: string): AuditEntry[] {
     return this.auditLog.filter(
-      entry =>
+      (entry) =>
         entry.details.resourceId === dataSubjectId ||
         entry.actor === dataSubjectId ||
-        entry.details.scope?.includes(dataSubjectId)
+        entry.details.scope?.includes(dataSubjectId),
     );
   }
 

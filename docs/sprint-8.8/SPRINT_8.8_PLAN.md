@@ -18,15 +18,15 @@
 
 ## Agent Assignments
 
-| Agent | Role | Deliverables | Skills Applied |
-|-------|------|-------------|----------------|
-| AR (CTO) | E-Signature Workflow Engine | envelope-engine-v2, template-manager, signing-ceremony, audit-trail, esignature-api | backend-patterns, security-review |
-| DM (Frontend) | E-Signature & Healthcare Dashboard | esignatures pages, healthcare pages, hooks | frontend-patterns |
-| NK (Frontend Lead) | Analytics & Supply Chain Dashboard | analytics pages, supply-chain pages, hooks | frontend-patterns |
-| RG (Backend Lead) | DocuSign v2 + Adobe Sign v2 + PandaDoc v2 SDKs | 3 e-signature v2 SDKs | api-design, security-review |
-| SP (Full-stack) | Epic FHIR v2 + Cerner FHIR v2 + Allscripts v2 SDKs | 3 healthcare v2 SDKs | backend-patterns, security-review |
-| VS (Component Dev) | E-Sig/Healthcare/Analytics/SC UI Components | 8+ specialized components | frontend-patterns |
-| PK (Sr. Backend) | Healthcare Interop Engine + Supply Chain Engine | FHIR engine, HL7 parser, SC orchestrator | backend-patterns |
-| KS (QA Lead) | Test Suites | integration + E2E tests + fixtures | e2e-testing, tdd-workflow |
-| AM (Integration) | Tableau v2 + PowerBI v2 + Manhattan v2 + Blue Yonder v2 SDKs | 4 v2 SDKs | api-design, security-review |
-| ZR (AI Engineer) | AI Document/Clinical/Analytics/Supply Intelligence | 4 AI modules + API | backend-patterns |
+| Agent              | Role                                                         | Deliverables                                                                        | Skills Applied                    |
+| ------------------ | ------------------------------------------------------------ | ----------------------------------------------------------------------------------- | --------------------------------- |
+| AR (CTO)           | E-Signature Workflow Engine                                  | envelope-engine-v2, template-manager, signing-ceremony, audit-trail, esignature-api | backend-patterns, security-review |
+| DM (Frontend)      | E-Signature & Healthcare Dashboard                           | esignatures pages, healthcare pages, hooks                                          | frontend-patterns                 |
+| NK (Frontend Lead) | Analytics & Supply Chain Dashboard                           | analytics pages, supply-chain pages, hooks                                          | frontend-patterns                 |
+| RG (Backend Lead)  | DocuSign v2 + Adobe Sign v2 + PandaDoc v2 SDKs               | 3 e-signature v2 SDKs                                                               | api-design, security-review       |
+| SP (Full-stack)    | Epic FHIR v2 + Cerner FHIR v2 + Allscripts v2 SDKs           | 3 healthcare v2 SDKs                                                                | backend-patterns, security-review |
+| VS (Component Dev) | E-Sig/Healthcare/Analytics/SC UI Components                  | 8+ specialized components                                                           | frontend-patterns                 |
+| PK (Sr. Backend)   | Healthcare Interop Engine + Supply Chain Engine              | FHIR engine, HL7 parser, SC orchestrator                                            | backend-patterns                  |
+| KS (QA Lead)       | Test Suites                                                  | integration + E2E tests + fixtures                                                  | e2e-testing, tdd-workflow         |
+| AM (Integration)   | Tableau v2 + PowerBI v2 + Manhattan v2 + Blue Yonder v2 SDKs | 4 v2 SDKs                                                                           | api-design, security-review       |
+| ZR (AI Engineer)   | AI Document/Clinical/Analytics/Supply Intelligence           | 4 AI modules + API                                                                  | backend-patterns                  |

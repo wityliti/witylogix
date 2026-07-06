@@ -1,20 +1,20 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode } from "react";
 interface User {
-    id: string;
-    phone: string;
-    name: string;
-    email?: string;
+  id: string;
+  phone: string;
+  name: string;
+  email?: string;
 }
 interface AuthContextType {
-    isAuthenticated: boolean;
-    user: User | null;
-    isLoading: boolean;
-    login: (phone: string, password: string) => Promise<void>;
-    logout: () => Promise<void>;
-    checkAuth: () => Promise<void>;
+  isAuthenticated: boolean;
+  user: User | null;
+  isLoading: boolean;
+  login: (phone: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  checkAuth: () => Promise<void>;
 }
 export declare const AuthProvider: React.FC<{
-    children: ReactNode;
+  children: ReactNode;
 }>;
 export declare const useAuth: () => AuthContextType;
 export {};

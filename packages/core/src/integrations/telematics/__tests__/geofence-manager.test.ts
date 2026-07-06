@@ -3,7 +3,11 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { GeofenceManager, type CircleGeofence, type PolygonGeofence } from "../geofence-manager.js";
+import {
+  GeofenceManager,
+  type CircleGeofence,
+  type PolygonGeofence,
+} from "../geofence-manager.js";
 import type { WitylogixVehiclePosition } from "../telematics-types.js";
 
 describe("GeofenceManager", () => {
@@ -15,7 +19,12 @@ describe("GeofenceManager", () => {
 
   describe("Circle Geofence CRUD", () => {
     it("should add a circle geofence", () => {
-      const geofence = manager.addCircleGeofence("zone-1", "Warehouse", { lat: 40.7128, lng: -74.006 }, 500);
+      const geofence = manager.addCircleGeofence(
+        "zone-1",
+        "Warehouse",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+      );
 
       expect(geofence).toBeDefined();
       expect(geofence.name).toBe("Warehouse");
@@ -24,7 +33,12 @@ describe("GeofenceManager", () => {
     });
 
     it("should get a geofence by ID", () => {
-      manager.addCircleGeofence("zone-1", "Warehouse", { lat: 40.7128, lng: -74.006 }, 500);
+      manager.addCircleGeofence(
+        "zone-1",
+        "Warehouse",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+      );
 
       const geofence = manager.getGeofence("zone-1");
 
@@ -33,8 +47,18 @@ describe("GeofenceManager", () => {
     });
 
     it("should get all geofences", () => {
-      manager.addCircleGeofence("zone-1", "Warehouse", { lat: 40.7128, lng: -74.006 }, 500);
-      manager.addCircleGeofence("zone-2", "Depot", { lat: 40.7614, lng: -73.9776 }, 300);
+      manager.addCircleGeofence(
+        "zone-1",
+        "Warehouse",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+      );
+      manager.addCircleGeofence(
+        "zone-2",
+        "Depot",
+        { lat: 40.7614, lng: -73.9776 },
+        300,
+      );
 
       const geofences = manager.getAllGeofences();
 
@@ -42,7 +66,12 @@ describe("GeofenceManager", () => {
     });
 
     it("should update a geofence", () => {
-      manager.addCircleGeofence("zone-1", "Warehouse", { lat: 40.7128, lng: -74.006 }, 500);
+      manager.addCircleGeofence(
+        "zone-1",
+        "Warehouse",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+      );
 
       manager.updateGeofence("zone-1", { name: "Main Warehouse", radius: 600 });
       const updated = manager.getGeofence("zone-1");
@@ -52,7 +81,12 @@ describe("GeofenceManager", () => {
     });
 
     it("should remove a geofence", () => {
-      manager.addCircleGeofence("zone-1", "Warehouse", { lat: 40.7128, lng: -74.006 }, 500);
+      manager.addCircleGeofence(
+        "zone-1",
+        "Warehouse",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+      );
 
       const removed = manager.removeGeofence("zone-1");
 
@@ -69,7 +103,11 @@ describe("GeofenceManager", () => {
         { lat: 40.6895, lng: -73.8699 },
       ];
 
-      const geofence = manager.addPolygonGeofence("zone-1", "Service Area", points);
+      const geofence = manager.addPolygonGeofence(
+        "zone-1",
+        "Service Area",
+        points,
+      );
 
       expect(geofence).toBeDefined();
       expect(geofence.type).toBe("polygon");
@@ -82,13 +120,20 @@ describe("GeofenceManager", () => {
         { lat: 40.7614, lng: -73.9776 },
       ];
 
-      expect(() => manager.addPolygonGeofence("zone-1", "Invalid", points)).toThrow();
+      expect(() =>
+        manager.addPolygonGeofence("zone-1", "Invalid", points),
+      ).toThrow();
     });
   });
 
   describe("Point-in-Geofence Detection", () => {
     it("should detect point inside circle", () => {
-      manager.addCircleGeofence("zone-1", "Warehouse", { lat: 40.7128, lng: -74.006 }, 500);
+      manager.addCircleGeofence(
+        "zone-1",
+        "Warehouse",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+      );
 
       // Very close to center (within 500m)
       const inside = manager.isPointInGeofence(40.7128, -74.006, "zone-1");
@@ -98,7 +143,12 @@ describe("GeofenceManager", () => {
     });
 
     it("should detect point outside circle", () => {
-      manager.addCircleGeofence("zone-1", "Warehouse", { lat: 40.7128, lng: -74.006 }, 500);
+      manager.addCircleGeofence(
+        "zone-1",
+        "Warehouse",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+      );
 
       // Far away point (NYC to LA is ~4000km)
       const outside = manager.isPointInGeofence(34.0522, -118.2437, "zone-1");
@@ -122,8 +172,18 @@ describe("GeofenceManager", () => {
     });
 
     it("should find all geofences containing a point", () => {
-      manager.addCircleGeofence("zone-1", "Large Area", { lat: 40.7128, lng: -74.006 }, 2000);
-      manager.addCircleGeofence("zone-2", "Small Area", { lat: 40.7128, lng: -74.006 }, 500);
+      manager.addCircleGeofence(
+        "zone-1",
+        "Large Area",
+        { lat: 40.7128, lng: -74.006 },
+        2000,
+      );
+      manager.addCircleGeofence(
+        "zone-2",
+        "Small Area",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+      );
 
       const geofences = manager.getGeofencesContainingPoint(40.7128, -74.006);
 
@@ -133,7 +193,12 @@ describe("GeofenceManager", () => {
 
   describe("Geofence Events", () => {
     it("should detect geofence entry", () => {
-      manager.addCircleGeofence("zone-1", "Warehouse", { lat: 40.7128, lng: -74.006 }, 500);
+      manager.addCircleGeofence(
+        "zone-1",
+        "Warehouse",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+      );
 
       const position: WitylogixVehiclePosition = {
         vehicleId: "vehicle-1",
@@ -154,7 +219,12 @@ describe("GeofenceManager", () => {
     });
 
     it("should detect geofence exit", () => {
-      manager.addCircleGeofence("zone-1", "Warehouse", { lat: 40.7128, lng: -74.006 }, 500);
+      manager.addCircleGeofence(
+        "zone-1",
+        "Warehouse",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+      );
 
       // First enter
       const entryPos: WitylogixVehiclePosition = {
@@ -189,7 +259,12 @@ describe("GeofenceManager", () => {
     });
 
     it("should track dwell time in geofence", () => {
-      manager.addCircleGeofence("zone-1", "Warehouse", { lat: 40.7128, lng: -74.006 }, 500);
+      manager.addCircleGeofence(
+        "zone-1",
+        "Warehouse",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+      );
 
       const startTime = new Date();
       const pos: WitylogixVehiclePosition = {
@@ -226,8 +301,18 @@ describe("GeofenceManager", () => {
 
   describe("Batch Operations", () => {
     it("should batch check positions against geofences", () => {
-      manager.addCircleGeofence("zone-1", "Warehouse", { lat: 40.7128, lng: -74.006 }, 500);
-      manager.addCircleGeofence("zone-2", "Depot", { lat: 40.7614, lng: -73.9776 }, 300);
+      manager.addCircleGeofence(
+        "zone-1",
+        "Warehouse",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+      );
+      manager.addCircleGeofence(
+        "zone-2",
+        "Depot",
+        { lat: 40.7614, lng: -73.9776 },
+        300,
+      );
 
       const positions: WitylogixVehiclePosition[] = [
         {
@@ -261,11 +346,20 @@ describe("GeofenceManager", () => {
 
   describe("Tags and Filtering", () => {
     it("should filter geofences by tag", () => {
-      manager.addCircleGeofence("zone-1", "Warehouse", { lat: 40.7128, lng: -74.006 }, 500, [
-        "high-priority",
-        "shipping",
-      ]);
-      manager.addCircleGeofence("zone-2", "Depot", { lat: 40.7614, lng: -73.9776 }, 300, ["low-priority"]);
+      manager.addCircleGeofence(
+        "zone-1",
+        "Warehouse",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+        ["high-priority", "shipping"],
+      );
+      manager.addCircleGeofence(
+        "zone-2",
+        "Depot",
+        { lat: 40.7614, lng: -73.9776 },
+        300,
+        ["low-priority"],
+      );
 
       const filtered = manager.getGeofencesByTag("high-priority");
 
@@ -276,7 +370,12 @@ describe("GeofenceManager", () => {
 
   describe("GeoJSON Import/Export", () => {
     it("should export geofences as GeoJSON", () => {
-      manager.addCircleGeofence("zone-1", "Warehouse", { lat: 40.7128, lng: -74.006 }, 500);
+      manager.addCircleGeofence(
+        "zone-1",
+        "Warehouse",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+      );
       manager.addPolygonGeofence("zone-2", "Area", [
         { lat: 40.7, lng: -74.0 },
         { lat: 40.72, lng: -74.0 },
@@ -316,8 +415,18 @@ describe("GeofenceManager", () => {
 
   describe("State Management", () => {
     it("should clear all geofences", () => {
-      manager.addCircleGeofence("zone-1", "Warehouse", { lat: 40.7128, lng: -74.006 }, 500);
-      manager.addCircleGeofence("zone-2", "Depot", { lat: 40.7614, lng: -73.9776 }, 300);
+      manager.addCircleGeofence(
+        "zone-1",
+        "Warehouse",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+      );
+      manager.addCircleGeofence(
+        "zone-2",
+        "Depot",
+        { lat: 40.7614, lng: -73.9776 },
+        300,
+      );
 
       manager.clearAllGeofences();
 
@@ -325,7 +434,12 @@ describe("GeofenceManager", () => {
     });
 
     it("should reset vehicle state", () => {
-      manager.addCircleGeofence("zone-1", "Warehouse", { lat: 40.7128, lng: -74.006 }, 500);
+      manager.addCircleGeofence(
+        "zone-1",
+        "Warehouse",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+      );
 
       const pos: WitylogixVehiclePosition = {
         vehicleId: "vehicle-1",
@@ -350,10 +464,20 @@ describe("GeofenceManager", () => {
     it("should count geofences", () => {
       expect(manager.getGeofenceCount()).toBe(0);
 
-      manager.addCircleGeofence("zone-1", "Warehouse", { lat: 40.7128, lng: -74.006 }, 500);
+      manager.addCircleGeofence(
+        "zone-1",
+        "Warehouse",
+        { lat: 40.7128, lng: -74.006 },
+        500,
+      );
       expect(manager.getGeofenceCount()).toBe(1);
 
-      manager.addCircleGeofence("zone-2", "Depot", { lat: 40.7614, lng: -73.9776 }, 300);
+      manager.addCircleGeofence(
+        "zone-2",
+        "Depot",
+        { lat: 40.7614, lng: -73.9776 },
+        300,
+      );
       expect(manager.getGeofenceCount()).toBe(2);
     });
   });

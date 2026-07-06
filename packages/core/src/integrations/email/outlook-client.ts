@@ -68,10 +68,10 @@ export class OutlookClient extends EmailAdapter {
           grant_type: "refresh_token",
           scope: "Mail.Send Mail.ReadWrite",
         }).toString(),
-      }
+      },
     );
 
-    const data = await response.json() as {
+    const data = (await response.json()) as {
       access_token: string;
       expires_in: number;
     };
@@ -87,7 +87,7 @@ export class OutlookClient extends EmailAdapter {
   private async request<T>(
     method: string,
     endpoint: string,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     const token = await this.ensureAccessToken();
     const url = `${this.baseUrl}${endpoint}`;
@@ -107,12 +107,12 @@ export class OutlookClient extends EmailAdapter {
     }
 
     const response = await fetch(url, options);
-    const data = await response.json() as T;
+    const data = (await response.json()) as T;
 
     if (!response.ok) {
       const error = data as Record<string, unknown>;
       throw new Error(
-        `Graph API error: ${(error as Record<string, unknown>).message || response.statusText}`
+        `Graph API error: ${(error as Record<string, unknown>).message || response.statusText}`,
       );
     }
 
@@ -143,8 +143,17 @@ export class OutlookClient extends EmailAdapter {
 
       return this.retryHandler.execute(async () => {
         const toRecipients = Array.isArray(message.to)
-          ? message.to.map((r) => ({ emailAddress: { address: r.email, name: r.name } }))
-          : [{ emailAddress: { address: message.to.email, name: message.to.name } }];
+          ? message.to.map((r) => ({
+              emailAddress: { address: r.email, name: r.name },
+            }))
+          : [
+              {
+                emailAddress: {
+                  address: message.to.email,
+                  name: message.to.name,
+                },
+              },
+            ];
 
         const sendRequest = {
           message: {
@@ -161,18 +170,32 @@ export class OutlookClient extends EmailAdapter {
             },
             toRecipients,
             ccRecipients: message.cc
-              ? (Array.isArray(message.cc)
-                  ? message.cc.map((r) => ({
-                      emailAddress: { address: r.email, name: r.name },
-                    }))
-                  : [{ emailAddress: { address: message.cc.email, name: message.cc.name } }])
+              ? Array.isArray(message.cc)
+                ? message.cc.map((r) => ({
+                    emailAddress: { address: r.email, name: r.name },
+                  }))
+                : [
+                    {
+                      emailAddress: {
+                        address: message.cc.email,
+                        name: message.cc.name,
+                      },
+                    },
+                  ]
               : undefined,
             bccRecipients: message.bcc
-              ? (Array.isArray(message.bcc)
-                  ? message.bcc.map((r) => ({
-                      emailAddress: { address: r.email, name: r.name },
-                    }))
-                  : [{ emailAddress: { address: message.bcc.email, name: message.bcc.name } }])
+              ? Array.isArray(message.bcc)
+                ? message.bcc.map((r) => ({
+                    emailAddress: { address: r.email, name: r.name },
+                  }))
+                : [
+                    {
+                      emailAddress: {
+                        address: message.bcc.email,
+                        name: message.bcc.name,
+                      },
+                    },
+                  ]
               : undefined,
             replyTo: message.replyTo
               ? [{ emailAddress: { address: message.replyTo } }]
@@ -301,7 +324,7 @@ export class OutlookClient extends EmailAdapter {
    * Validate an email address.
    */
   async validateEmail(
-    email: string
+    email: string,
   ): Promise<{ email: string; valid: boolean; reason?: string }> {
     return this.circuitBreaker.execute(async () => {
       const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -325,7 +348,7 @@ export class OutlookClient extends EmailAdapter {
       }>(
         "GET",
         `/me/messages?$filter=${encodeURIComponent(filter)}&$select=id`,
-        undefined
+        undefined,
       );
 
       const count = response.value.length;
@@ -444,7 +467,7 @@ export class OutlookClient extends EmailAdapter {
   async validateConfig(): Promise<void> {
     if (!this.clientId || !this.clientSecret || !this.refreshToken) {
       throw new Error(
-        "Outlook adapter requires OAuth2 credentials (clientId, clientSecret, refreshToken)"
+        "Outlook adapter requires OAuth2 credentials (clientId, clientSecret, refreshToken)",
       );
     }
 
@@ -452,7 +475,7 @@ export class OutlookClient extends EmailAdapter {
       await this.ensureAccessToken();
     } catch (error) {
       throw new Error(
-        `Outlook validation failed: ${error instanceof Error ? error.message : String(error)}`
+        `Outlook validation failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }

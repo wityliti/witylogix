@@ -62,7 +62,9 @@ export class OnfleetClient extends CourierAdapter {
     try {
       await this.request("GET", "/tasks", { query: { limit: 1 } });
     } catch (error) {
-      throw new Error(`Failed to validate Onfleet credentials: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to validate Onfleet credentials: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -102,7 +104,9 @@ export class OnfleetClient extends CourierAdapter {
       quoteId: undefined,
       price: (estimate.dropoffEstimate?.duration || 0) * 0.5, // Mock pricing: use duration as proxy
       currency: "USD",
-      estimatedMinutes: Math.ceil((estimate.dropoffEstimate?.duration || 0) / 60),
+      estimatedMinutes: Math.ceil(
+        (estimate.dropoffEstimate?.duration || 0) / 60,
+      ),
       distanceKm: (estimate.distance || 0) / 1000,
       provider: this.provider,
       rawResponse: estimate as unknown as Record<string, unknown>,
@@ -113,7 +117,9 @@ export class OnfleetClient extends CourierAdapter {
    * Create a delivery with Onfleet.
    * Uses POST /tasks to create a new task with pickup and dropoff.
    */
-  async createDelivery(request: CreateDeliveryRequest): Promise<CourierDelivery> {
+  async createDelivery(
+    request: CreateDeliveryRequest,
+  ): Promise<CourierDelivery> {
     const recipients = request.recipient
       ? [
           {
@@ -128,7 +134,9 @@ export class OnfleetClient extends CourierAdapter {
     const payload = {
       destination: {
         address: {
-          unparsed: request.dropoff.address || `${request.dropoff.latitude},${request.dropoff.longitude}`,
+          unparsed:
+            request.dropoff.address ||
+            `${request.dropoff.latitude},${request.dropoff.longitude}`,
         },
         location: {
           latitude: request.dropoff.latitude,
@@ -142,7 +150,9 @@ export class OnfleetClient extends CourierAdapter {
       pickupTask: request.pickup
         ? {
             address: {
-              unparsed: request.pickup.address || `${request.pickup.latitude},${request.pickup.longitude}`,
+              unparsed:
+                request.pickup.address ||
+                `${request.pickup.latitude},${request.pickup.longitude}`,
             },
             location: {
               latitude: request.pickup.latitude,
@@ -171,7 +181,9 @@ export class OnfleetClient extends CourierAdapter {
       trackingUrl: `https://onfleet.com/task/${task.id}`,
       driverName: task.worker?.name,
       driverPhone: task.worker?.phone,
-      estimatedMinutes: Math.ceil((task.estimatedCompletionTime || 0) / 60 / 1000),
+      estimatedMinutes: Math.ceil(
+        (task.estimatedCompletionTime || 0) / 60 / 1000,
+      ),
       rawResponse: task as unknown as Record<string, unknown>,
     };
   }
@@ -182,7 +194,10 @@ export class OnfleetClient extends CourierAdapter {
    */
   async getDeliveryStatus(deliveryId: string): Promise<CourierStatus> {
     // INTEGRATION: Actual HTTP call to Onfleet API
-    const task = (await this.request("GET", `/tasks/${deliveryId}`)) as OnfleetTask;
+    const task = (await this.request(
+      "GET",
+      `/tasks/${deliveryId}`,
+    )) as OnfleetTask;
 
     const driverLocation = task.worker?.location
       ? {
@@ -202,7 +217,9 @@ export class OnfleetClient extends CourierAdapter {
       estimatedArrivalAt: task.estimatedCompletionTime
         ? new Date(task.estimatedCompletionTime)
         : undefined,
-      deliveredAt: task.completionTime ? new Date(task.completionTime) : undefined,
+      deliveredAt: task.completionTime
+        ? new Date(task.completionTime)
+        : undefined,
       rawResponse: task as unknown as Record<string, unknown>,
     };
   }
@@ -226,14 +243,20 @@ export class OnfleetClient extends CourierAdapter {
   async getDriverLocation(deliveryId: string): Promise<DriverPosition> {
     // First get the task to find the worker
     // INTEGRATION: Actual HTTP call to Onfleet API
-    const task = (await this.request("GET", `/tasks/${deliveryId}`)) as OnfleetTask;
+    const task = (await this.request(
+      "GET",
+      `/tasks/${deliveryId}`,
+    )) as OnfleetTask;
 
     if (!task.worker || !task.worker.location) {
       throw new Error(`No driver assigned to delivery ${deliveryId}`);
     }
 
     // INTEGRATION: Actual HTTP call to Onfleet API
-    const workerLocation = (await this.request("GET", `/workers/${task.worker.id}/location`)) as OnfleetWorkerLocation;
+    const workerLocation = (await this.request(
+      "GET",
+      `/workers/${task.worker.id}/location`,
+    )) as OnfleetWorkerLocation;
 
     return {
       latitude: workerLocation.latitude,
@@ -249,7 +272,10 @@ export class OnfleetClient extends CourierAdapter {
    */
   async listWebhooks(): Promise<WebhookInfo[]> {
     // INTEGRATION: Actual HTTP call to Onfleet API
-    const response = (await this.request("GET", "/webhooks")) as OnfleetWebhook[];
+    const response = (await this.request(
+      "GET",
+      "/webhooks",
+    )) as OnfleetWebhook[];
 
     return response.map((webhook) => ({
       id: webhook.id,
@@ -264,7 +290,9 @@ export class OnfleetClient extends CourierAdapter {
    * Register a webhook with Onfleet.
    * Uses POST /webhooks to create a new webhook subscription.
    */
-  async registerWebhook(registration: WebhookRegistration): Promise<WebhookInfo> {
+  async registerWebhook(
+    registration: WebhookRegistration,
+  ): Promise<WebhookInfo> {
     const payload = {
       url: registration.url,
       events: this.mapToOnfleetEvents(registration.events),
@@ -308,7 +336,9 @@ export class OnfleetClient extends CourierAdapter {
     const now = Date.now();
     const timeSinceLastRequest = now - this.lastRequestTime;
     if (timeSinceLastRequest < this.rateLimitDelay) {
-      await new Promise((resolve) => setTimeout(resolve, this.rateLimitDelay - timeSinceLastRequest));
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.rateLimitDelay - timeSinceLastRequest),
+      );
     }
     this.lastRequestTime = Date.now();
 
@@ -407,7 +437,9 @@ export class OnfleetClient extends CourierAdapter {
       [WebhookEvent.DRIVER_LOCATION_UPDATED]: 84, // Worker location update
     };
 
-    return events.map((event) => eventMap[event] || 0).filter((code) => code !== 0);
+    return events
+      .map((event) => eventMap[event] || 0)
+      .filter((code) => code !== 0);
   }
 }
 

@@ -161,7 +161,10 @@ registry.register({
   eventType: "order.created",
   workflowName: "createDeliveryOrder",
   onExecute: async (ctx) => {
-    console.log("Creating delivery for Shopify order", ctx.entity.externalOrderNumber);
+    console.log(
+      "Creating delivery for Shopify order",
+      ctx.entity.externalOrderNumber,
+    );
   },
 });
 
@@ -176,10 +179,7 @@ registry.register({
 
 // Webhook handler
 app.post("/webhooks/shopify", async (request, reply) => {
-  const result = await bridge.handleWebhook(
-    request.body,
-    request.headers,
-  );
+  const result = await bridge.handleWebhook(request.body, request.headers);
 
   if (!result.success) {
     return { error: result.error };
@@ -192,7 +192,8 @@ app.post("/webhooks/shopify", async (request, reply) => {
   for (const match of matches) {
     await match.execute({
       timeout: 30000,
-      onSuccess: () => logger.info(`Trigger succeeded for ${match.trigger.workflowName}`),
+      onSuccess: () =>
+        logger.info(`Trigger succeeded for ${match.trigger.workflowName}`),
       onError: (err) => logger.error(`Trigger failed: ${err.message}`),
     });
   }
@@ -228,7 +229,9 @@ io.on("connection", (socket) => {
       console.log("Workflow started", payload.workflowName);
     },
     onStepCompleted: (payload) => {
-      console.log(`Step ${payload.stepName} completed in ${payload.durationMs}ms`);
+      console.log(
+        `Step ${payload.stepName} completed in ${payload.durationMs}ms`,
+      );
     },
     onCompleted: (payload) => {
       console.log("Workflow completed with output", payload.output);

@@ -78,9 +78,7 @@ export {
 
 // ─── Provider Registry ────────────────────────────────────────
 
-export type {
-  ProviderHealthRecord,
-} from "./provider-registry.js";
+export type { ProviderHealthRecord } from "./provider-registry.js";
 
 export {
   TenantProviderRegistry,
@@ -176,7 +174,11 @@ export function emitNotificationMeterEvent(
 /** Maps channel to deployer env var names for credential resolution. */
 const DEPLOYER_ENV_MAP: Record<
   NotificationChannel,
-  { providerEnv: string; defaultProvider: string; credentialEnvs: Record<string, string[]> }
+  {
+    providerEnv: string;
+    defaultProvider: string;
+    credentialEnvs: Record<string, string[]>;
+  }
 > = {
   email: {
     providerEnv: "EMAIL_PROVIDER",
@@ -184,7 +186,11 @@ const DEPLOYER_ENV_MAP: Record<
     credentialEnvs: {
       sendgrid: ["SENDGRID_API_KEY"],
       mailgun: ["MAILGUN_API_KEY", "MAILGUN_DOMAIN"],
-      aws_ses: ["AWS_SES_ACCESS_KEY_ID", "AWS_SES_SECRET_ACCESS_KEY", "AWS_SES_REGION"],
+      aws_ses: [
+        "AWS_SES_ACCESS_KEY_ID",
+        "AWS_SES_SECRET_ACCESS_KEY",
+        "AWS_SES_REGION",
+      ],
       postmark: ["POSTMARK_SERVER_TOKEN"],
       resend: ["RESEND_API_KEY"],
       smtp: ["SMTP_HOST", "SMTP_PORT", "SMTP_USERNAME", "SMTP_PASSWORD"],
@@ -194,9 +200,17 @@ const DEPLOYER_ENV_MAP: Record<
     providerEnv: "SMS_PROVIDER",
     defaultProvider: "twilio",
     credentialEnvs: {
-      twilio: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_PHONE_NUMBER"],
+      twilio: [
+        "TWILIO_ACCOUNT_SID",
+        "TWILIO_AUTH_TOKEN",
+        "TWILIO_PHONE_NUMBER",
+      ],
       vonage: ["VONAGE_API_KEY", "VONAGE_API_SECRET"],
-      aws_sns: ["AWS_SNS_ACCESS_KEY_ID", "AWS_SNS_SECRET_ACCESS_KEY", "AWS_SNS_REGION"],
+      aws_sns: [
+        "AWS_SNS_ACCESS_KEY_ID",
+        "AWS_SNS_SECRET_ACCESS_KEY",
+        "AWS_SNS_REGION",
+      ],
       messagebird: ["MESSAGEBIRD_API_KEY"],
       plivo: ["PLIVO_AUTH_ID", "PLIVO_AUTH_TOKEN"],
     },
@@ -214,7 +228,11 @@ const DEPLOYER_ENV_MAP: Record<
     providerEnv: "PUSH_PROVIDER",
     defaultProvider: "firebase",
     credentialEnvs: {
-      firebase: ["FIREBASE_PROJECT_ID", "FIREBASE_PRIVATE_KEY", "FIREBASE_CLIENT_EMAIL"],
+      firebase: [
+        "FIREBASE_PROJECT_ID",
+        "FIREBASE_PRIVATE_KEY",
+        "FIREBASE_CLIENT_EMAIL",
+      ],
       onesignal: ["ONESIGNAL_APP_ID", "ONESIGNAL_REST_API_KEY"],
       expo_push: [],
     },
@@ -364,7 +382,7 @@ export {
 
 // ─── NOTIFICATION ORCHESTRATOR v2 ──────────────────────────────────────
 
-export type { } from "./notification-orchestrator-v2.js";
+export type {} from "./notification-orchestrator-v2.js";
 
 export {
   ChannelRouter,

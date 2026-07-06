@@ -159,8 +159,8 @@ export function getWCWebhookQueue(): Queue {
       defaultJobOptions: {
         attempts: 5,
         backoff: { type: "exponential", delay: 2000 },
-        removeOnComplete: { age: 86400 },   // 24 h
-        removeOnFail: { age: 604800 },      // 7 days — acts as DLQ
+        removeOnComplete: { age: 86400 }, // 24 h
+        removeOnFail: { age: 604800 }, // 7 days — acts as DLQ
       },
     });
   }
@@ -240,9 +240,7 @@ export function registerWorker(worker: Worker): void {
 
 export async function shutdownQueues(): Promise<void> {
   // Close all workers first (drain in-flight jobs)
-  await Promise.allSettled(
-    activeWorkers.map((w) => w.close()),
-  );
+  await Promise.allSettled(activeWorkers.map((w) => w.close()));
 
   // Close queues
   await Promise.allSettled([

@@ -71,7 +71,10 @@ describe("SendGridClient", () => {
 
       const result = await client.send({
         from: "sender@example.com",
-        to: { email: "recipient@example.com", variables: { firstName: "John" } },
+        to: {
+          email: "recipient@example.com",
+          variables: { firstName: "John" },
+        },
         templateId: "d-template-id-123",
       });
 
@@ -280,11 +283,9 @@ describe("SendGridClient", () => {
         json: async () => ({}),
       });
 
-      await client.addContact(
-        "john@example.com",
-        "John Doe",
-        { customerId: "123" }
-      );
+      await client.addContact("john@example.com", "John Doe", {
+        customerId: "123",
+      });
 
       expect(mockFetch).toHaveBeenCalled();
     });
@@ -379,7 +380,7 @@ describe("SendGridClient", () => {
         ]),
         "fake-signature",
         "1000000",
-        "test-secret"
+        "test-secret",
       );
 
       // Note: Signature verification will fail in test, so result may be null
@@ -391,7 +392,7 @@ describe("SendGridClient", () => {
         JSON.stringify([{ event: "delivered", email: "test@example.com" }]),
         "invalid-signature",
         "1000000",
-        "test-secret"
+        "test-secret",
       );
 
       expect(event).toBeNull();
@@ -449,7 +450,7 @@ describe("SendGridClient", () => {
           to: { email: "invalid" },
           subject: "Test",
           htmlBody: "Test",
-        })
+        }),
       ).rejects.toThrow();
     });
 
@@ -464,7 +465,7 @@ describe("SendGridClient", () => {
           to: tooManyRecipients,
           subject: "Test",
           htmlBody: "Test",
-        })
+        }),
       ).rejects.toThrow("Exceeded maximum 1000 recipients");
     });
   });

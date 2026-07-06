@@ -1,18 +1,18 @@
-import { authService } from './auth';
+import { authService } from "./auth";
 import {
   getPendingEvents,
   markEventSynced,
   markEventError,
   OfflineEvent,
-} from './offline-event-service';
-import { connectivityMonitor } from './connectivity-monitor';
+} from "./offline-event-service";
+import { connectivityMonitor } from "./connectivity-monitor";
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 const BATCH_ENDPOINT = `${API_BASE}/api/deliveries/events/batch`;
 const MAX_RETRIES = 5;
 const BASE_BACKOFF_MS = 1000;
 
-export type SyncStatus = 'idle' | 'syncing' | 'done' | 'error';
+export type SyncStatus = "idle" | "syncing" | "done" | "error";
 
 type SyncListener = (state: SyncState) => void;
 
@@ -28,7 +28,7 @@ class SyncManager {
   private lastSyncAt: number | null = null;
   private listeners: Set<SyncListener> = new Set();
   private state: SyncState = {
-    status: 'idle',
+    status: "idle",
     pendingCount: 0,
     lastSyncAt: null,
     errorEvents: [],
@@ -54,13 +54,17 @@ class SyncManager {
   async flush(): Promise<void> {
     if (this.syncInProgress || !connectivityMonitor.isCurrentlyOnline()) return;
     this.syncInProgress = true;
-    this.emit({ status: 'syncing' });
+    this.emit({ status: "syncing" });
 
     try {
       const pending = await getPendingEvents();
       if (pending.length === 0) {
         this.lastSyncAt = Date.now();
-        this.emit({ status: 'done', pendingCount: 0, lastSyncAt: this.lastSyncAt });
+        this.emit({
+          status: "done",
+          pendingCount: 0,
+          lastSyncAt: this.lastSyncAt,
+        });
         return;
       }
 
@@ -78,12 +82,12 @@ class SyncManager {
       this.lastSyncAt = Date.now();
       const remaining = await this.countPending();
       this.emit({
-        status: remaining === 0 ? 'done' : 'error',
+        status: remaining === 0 ? "done" : "error",
         pendingCount: remaining,
         lastSyncAt: this.lastSyncAt,
       });
     } catch (err) {
-      this.emit({ status: 'error' });
+      this.emit({ status: "error" });
     } finally {
       this.syncInProgress = false;
     }
@@ -94,7 +98,7 @@ class SyncManager {
 
     const token = await authService.getToken();
     const headers: HeadersInit = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
 
@@ -114,7 +118,7 @@ class SyncManager {
     while (attempt < MAX_RETRIES) {
       try {
         const response = await fetch(BATCH_ENDPOINT, {
-          method: 'POST',
+          method: "POST",
           headers,
           body: JSON.stringify({ events: body }),
         });
@@ -123,7 +127,10 @@ class SyncManager {
           throw new Error(`HTTP ${response.status}`);
         }
 
-        const result = await response.json() as { succeeded: string[]; failed: Array<{ id: string; error: string }> };
+        const result = (await response.json()) as {
+          succeeded: string[];
+          failed: Array<{ id: string; error: string }>;
+        };
 
         for (const id of result.succeeded ?? []) {
           await markEventSynced(id);

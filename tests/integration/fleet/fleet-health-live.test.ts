@@ -38,12 +38,22 @@ function makePosition(externalId: string, staleMins = 5): NormalizedPosition {
   };
 }
 
-function makeDiagnostic(externalId: string, hasFault: boolean): NormalizedDiagnostic {
+function makeDiagnostic(
+  externalId: string,
+  hasFault: boolean,
+): NormalizedDiagnostic {
   return {
     externalVehicleId: externalId,
     engineRunning: true,
     faultCodes: hasFault
-      ? [{ code: "P0101", description: "MAF Sensor", severity: "WARNING", system: "ENGINE" }]
+      ? [
+          {
+            code: "P0101",
+            description: "MAF Sensor",
+            severity: "WARNING",
+            system: "ENGINE",
+          },
+        ]
       : [],
     timestamp: new Date(),
   };
@@ -87,7 +97,9 @@ class TestTelematicsAdapter implements ITelematicsAdapter {
     return pos;
   }
 
-  async getVehicleDiagnostics(vehicleId: string): Promise<NormalizedDiagnostic> {
+  async getVehicleDiagnostics(
+    vehicleId: string,
+  ): Promise<NormalizedDiagnostic> {
     const diag = this.diagnostics.get(vehicleId);
     if (!diag) throw new Error(`No diagnostics for ${vehicleId}`);
     return diag;
@@ -109,7 +121,10 @@ class TestTelematicsAdapter implements ITelematicsAdapter {
     };
   }
 
-  async subscribeToEvents(_webhookUrl: string, _eventTypes: string[]): Promise<string> {
+  async subscribeToEvents(
+    _webhookUrl: string,
+    _eventTypes: string[],
+  ): Promise<string> {
     return "webhook-test-id";
   }
 
@@ -126,11 +141,23 @@ describe("TelematicsAggregator fleet health (live integration)", () => {
   it("returns 100% connectivity for a fully online fleet", async () => {
     const aggregator = new TelematicsAggregator();
 
-    const vehicles = [makeVehicle("v1", "Truck 1"), makeVehicle("v2", "Truck 2")];
-    const stale = new Map([["v1", 5], ["v2", 5]]); // fresh positions
-    const faults = new Map<string, boolean>([["v1", false], ["v2", false]]);
+    const vehicles = [
+      makeVehicle("v1", "Truck 1"),
+      makeVehicle("v2", "Truck 2"),
+    ];
+    const stale = new Map([
+      ["v1", 5],
+      ["v2", 5],
+    ]); // fresh positions
+    const faults = new Map<string, boolean>([
+      ["v1", false],
+      ["v2", false],
+    ]);
 
-    aggregator.registerProvider("samsara", new TestTelematicsAdapter(vehicles, stale, faults));
+    aggregator.registerProvider(
+      "samsara",
+      new TestTelematicsAdapter(vehicles, stale, faults),
+    );
 
     const health = await aggregator.getFleetHealthScore();
 
@@ -147,10 +174,21 @@ describe("TelematicsAggregator fleet health (live integration)", () => {
       makeVehicle("v2", "Truck 2"),
       makeVehicle("v3", "Truck 3"),
     ];
-    const stale = new Map([["v1", 5], ["v2", 5], ["v3", 5]]);
-    const faults = new Map([["v1", true], ["v2", false], ["v3", false]]);
+    const stale = new Map([
+      ["v1", 5],
+      ["v2", 5],
+      ["v3", 5],
+    ]);
+    const faults = new Map([
+      ["v1", true],
+      ["v2", false],
+      ["v3", false],
+    ]);
 
-    aggregator.registerProvider("geotab", new TestTelematicsAdapter(vehicles, stale, faults));
+    aggregator.registerProvider(
+      "geotab",
+      new TestTelematicsAdapter(vehicles, stale, faults),
+    );
 
     const health = await aggregator.getFleetHealthScore();
 
@@ -161,11 +199,20 @@ describe("TelematicsAggregator fleet health (live integration)", () => {
   it("aggregates data from multiple providers", async () => {
     const aggregator = new TelematicsAggregator();
 
-    const samsaraVehicles = [makeVehicle("s1", "Samsara Truck 1"), makeVehicle("s2", "Samsara Truck 2")];
+    const samsaraVehicles = [
+      makeVehicle("s1", "Samsara Truck 1"),
+      makeVehicle("s2", "Samsara Truck 2"),
+    ];
     const geotabVehicles = [makeVehicle("g1", "Geotab Truck 1")];
 
-    aggregator.registerProvider("samsara", new TestTelematicsAdapter(samsaraVehicles));
-    aggregator.registerProvider("geotab", new TestTelematicsAdapter(geotabVehicles));
+    aggregator.registerProvider(
+      "samsara",
+      new TestTelematicsAdapter(samsaraVehicles),
+    );
+    aggregator.registerProvider(
+      "geotab",
+      new TestTelematicsAdapter(geotabVehicles),
+    );
 
     const fleet = await aggregator.getUnifiedFleet();
     // 3 unique vehicles (2 from Samsara + 1 from Geotab, different IDs so no dedup)
@@ -185,7 +232,10 @@ describe("TelematicsAggregator fleet health (live integration)", () => {
 
   it("reports provider health status", async () => {
     const aggregator = new TelematicsAggregator();
-    aggregator.registerProvider("samsara", new TestTelematicsAdapter([makeVehicle("v1", "T1")]));
+    aggregator.registerProvider(
+      "samsara",
+      new TestTelematicsAdapter([makeVehicle("v1", "T1")]),
+    );
 
     const status = await aggregator.getProviderStatus();
 
@@ -218,10 +268,17 @@ describe("Fleet health score properties", () => {
   it("overall score is bounded between 0 and 100", async () => {
     const aggregator = new TelematicsAggregator();
 
-    const vehicles = Array.from({ length: 5 }, (_, i) => makeVehicle(`v${i}`, `Truck ${i}`));
-    const faults = new Map(vehicles.map((v, i) => [v.externalVehicleId, i % 2 === 0]));
+    const vehicles = Array.from({ length: 5 }, (_, i) =>
+      makeVehicle(`v${i}`, `Truck ${i}`),
+    );
+    const faults = new Map(
+      vehicles.map((v, i) => [v.externalVehicleId, i % 2 === 0]),
+    );
 
-    aggregator.registerProvider("test", new TestTelematicsAdapter(vehicles, new Map(), faults));
+    aggregator.registerProvider(
+      "test",
+      new TestTelematicsAdapter(vehicles, new Map(), faults),
+    );
 
     const health = await aggregator.getFleetHealthScore();
 

@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useApiList, useApiMutation } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Header } from '@/components/layout/header';
+import { useState } from "react";
+import { useApiList, useApiMutation } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Header } from "@/components/layout/header";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
   CardDescription,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableHeader,
@@ -21,9 +21,9 @@ import {
   TableHead,
   TableBody,
   TableCell,
-} from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import {
   Edit,
   Trash2,
@@ -33,15 +33,22 @@ import {
   AlertCircle,
   Clock,
   Eye,
-} from 'lucide-react';
+} from "lucide-react";
 
-type TemplateCategory = 'UTILITY' | 'MARKETING' | 'AUTHENTICATION';
-type TemplateStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
-type ComponentType = 'HEADER' | 'BODY' | 'FOOTER' | 'BUTTONS';
-type ComponentSubType = 'text' | 'image' | 'video' | 'document' | 'quick_reply' | 'url' | 'phone';
+type TemplateCategory = "UTILITY" | "MARKETING" | "AUTHENTICATION";
+type TemplateStatus = "PENDING" | "APPROVED" | "REJECTED";
+type ComponentType = "HEADER" | "BODY" | "FOOTER" | "BUTTONS";
+type ComponentSubType =
+  | "text"
+  | "image"
+  | "video"
+  | "document"
+  | "quick_reply"
+  | "url"
+  | "phone";
 
 interface WhatsAppButton {
-  type: 'quick_reply' | 'url' | 'phone';
+  type: "quick_reply" | "url" | "phone";
   text: string;
   value: string;
 }
@@ -105,7 +112,7 @@ const TemplateModal = ({
 }: TemplateModalProps) => {
   const [name, setName] = useState(template?.name || "");
   const [category, setCategory] = useState<TemplateCategory>(
-    template?.category || "UTILITY"
+    template?.category || "UTILITY",
   );
 
   if (!isOpen) return null;
@@ -169,9 +176,20 @@ const TemplateModal = ({
 };
 
 export default function WhatsAppPage() {
-  const { items: templates, loading, error, refetch } = useApiList<WhatsAppTemplate>('/api/v4/notifications/whatsapp-templates');
-  const { execute: deleteTemplate } = useApiMutation('DELETE', '/api/v4/notifications/whatsapp-templates/:id');
-  const { execute: syncTemplates } = useApiMutation('POST', '/api/v4/notifications/whatsapp-templates/sync');
+  const {
+    items: templates,
+    loading,
+    error,
+    refetch,
+  } = useApiList<WhatsAppTemplate>("/api/v4/notifications/whatsapp-templates");
+  const { execute: deleteTemplate } = useApiMutation(
+    "DELETE",
+    "/api/v4/notifications/whatsapp-templates/:id",
+  );
+  const { execute: syncTemplates } = useApiMutation(
+    "POST",
+    "/api/v4/notifications/whatsapp-templates/sync",
+  );
 
   const [selectedTemplate, setSelectedTemplate] = useState<WhatsAppTemplate>();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -214,21 +232,21 @@ export default function WhatsAppPage() {
                   Filter by Category
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {(["all", "UTILITY", "MARKETING", "AUTHENTICATION"] as const).map(
-                    (category) => (
-                      <button
-                        key={category}
-                        className={cn(
-                          "px-3 py-2 rounded-lg text-sm font-medium transition-all",
-                          category === "all"
-                            ? "bg-blue-500 text-white"
-                            : "bg-wl-bg-elevated text-white hover:bg-wl-bg-overlay"
-                        )}
-                      >
-                        {category === "all" ? "All" : category}
-                      </button>
-                    )
-                  )}
+                  {(
+                    ["all", "UTILITY", "MARKETING", "AUTHENTICATION"] as const
+                  ).map((category) => (
+                    <button
+                      key={category}
+                      className={cn(
+                        "px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                        category === "all"
+                          ? "bg-blue-500 text-white"
+                          : "bg-wl-bg-elevated text-white hover:bg-wl-bg-overlay",
+                      )}
+                    >
+                      {category === "all" ? "All" : category}
+                    </button>
+                  ))}
                 </div>
               </div>
               <div className="flex gap-2">
@@ -237,7 +255,9 @@ export default function WhatsAppPage() {
                   onClick={handleSync}
                   disabled={syncing}
                 >
-                  <Sync className={cn("w-4 h-4 mr-2", syncing && "animate-spin")} />
+                  <Sync
+                    className={cn("w-4 h-4 mr-2", syncing && "animate-spin")}
+                  />
                   {syncing ? "Syncing..." : "Sync with Meta"}
                 </Button>
                 <Button
@@ -262,9 +282,7 @@ export default function WhatsAppPage() {
               {TEMPLATES.length} Template
               {TEMPLATES.length !== 1 ? "s" : ""}
             </CardTitle>
-            <CardDescription>
-              All WhatsApp templates
-            </CardDescription>
+            <CardDescription>All WhatsApp templates</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -316,7 +334,7 @@ export default function WhatsAppPage() {
                                 template.status === "PENDING" &&
                                   "text-amber-500",
                                 template.status === "REJECTED" &&
-                                  "text-red-500"
+                                  "text-red-500",
                               )}
                             >
                               {template.status}
@@ -381,11 +399,16 @@ export default function WhatsAppPage() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {TEMPLATES.map((template) => (
-              <Card key={template.id} className="border border-wl-border-default bg-wl-bg-surface">
+              <Card
+                key={template.id}
+                className="border border-wl-border-default bg-wl-bg-surface"
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <CardTitle className="text-base">{template.name}</CardTitle>
+                      <CardTitle className="text-base">
+                        {template.name}
+                      </CardTitle>
                       <CardDescription>
                         Category: {template.category}
                       </CardDescription>

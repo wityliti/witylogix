@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { useEffect, useState } from "react";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface GlobalErrorProps {
   error: Error & { digest?: string };
@@ -22,7 +22,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
   useEffect(() => {
     setIsClient(true);
     // Log error for monitoring/reporting
-    console.error('Global error boundary caught:', {
+    console.error("Global error boundary caught:", {
       message: error.message,
       digest: error.digest,
       stack: error.stack,
@@ -34,19 +34,19 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
     return null;
   }
 
-  const isDev = process.env.NODE_ENV === 'development';
+  const isDev = process.env.NODE_ENV === "development";
 
   return (
     <html lang="en">
       <body className="wl-noise">
-        <div className={cn('flex min-h-screen bg-wl-bg-root')}>
-          <main className={cn('flex-1 min-h-screen')}>
+        <div className={cn("flex min-h-screen bg-wl-bg-root")}>
+          <main className={cn("flex-1 min-h-screen")}>
             <div className="flex items-center justify-center min-h-screen p-4">
               <div
                 className={cn(
-                  'w-full max-w-md rounded-lg border border-white/10',
-                  'bg-wl-bg-elevated p-8',
-                  'shadow-lg backdrop-blur-sm'
+                  "w-full max-w-md rounded-lg border border-white/10",
+                  "bg-wl-bg-elevated p-8",
+                  "shadow-lg backdrop-blur-sm",
                 )}
               >
                 {/* Error header */}
@@ -65,7 +65,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 {/* Error message */}
                 <div className="mb-6 p-4 rounded-md bg-red-900/20 border border-red-500/30">
                   <p className="text-sm text-white mb-2 break-words">
-                    {error.message || 'An unexpected error occurred'}
+                    {error.message || "An unexpected error occurred"}
                   </p>
                   {error.digest && (
                     <p className="text-xs text-wl-text-secondary font-mono">
@@ -80,14 +80,16 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                     <button
                       onClick={() => setShowDetails(!showDetails)}
                       className={cn(
-                        'w-full flex items-center justify-between',
-                        'px-3 py-2 rounded-md text-sm font-medium',
-                        'text-wl-neutral-300 bg-white/5 hover:bg-white/10',
-                        'border border-white/10 transition-colors'
+                        "w-full flex items-center justify-between",
+                        "px-3 py-2 rounded-md text-sm font-medium",
+                        "text-wl-neutral-300 bg-white/5 hover:bg-white/10",
+                        "border border-white/10 transition-colors",
                       )}
                     >
                       <span>Error Details</span>
-                      <span className={cn('text-xs', showDetails && 'rotate-180')}>
+                      <span
+                        className={cn("text-xs", showDetails && "rotate-180")}
+                      >
                         ▼
                       </span>
                     </button>
@@ -95,9 +97,9 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                     {showDetails && (
                       <div
                         className={cn(
-                          'p-3 rounded-md max-h-48 overflow-auto',
-                          'bg-red-900/10 border border-red-500/30',
-                          'font-mono text-xs text-wl-text-secondary'
+                          "p-3 rounded-md max-h-48 overflow-auto",
+                          "bg-red-900/10 border border-red-500/30",
+                          "font-mono text-xs text-wl-text-secondary",
                         )}
                       >
                         {error.stack && (
@@ -122,7 +124,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                     Try again
                   </Button>
                   <Button
-                    onClick={() => (window.location.href = '/')}
+                    onClick={() => (window.location.href = "/")}
                     variant="secondary"
                     size="md"
                     className="w-full"
@@ -134,7 +136,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
 
                 {/* Support info */}
                 <p className="text-xs text-wl-text-tertiary text-center mt-4">
-                  If this persists, contact{' '}
+                  If this persists, contact{" "}
                   <a
                     href="mailto:support@witylogix.com"
                     className="text-blue-400 hover:text-blue-300"

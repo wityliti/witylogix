@@ -176,17 +176,20 @@ export function renderTemplate(
           // Replace {{this.property}} with item.property
           if (typeof item === "object" && item !== null) {
             Object.entries(item).forEach(([key, val]) => {
-              const regex = new RegExp(
-                `\\{\\{this\\.${key}\\}\\}`,
-                "g",
-              );
+              const regex = new RegExp(`\\{\\{this\\.${key}\\}\\}`, "g");
               itemContent = itemContent.replace(regex, String(val));
             });
           }
           // Replace {{@index}} and {{@first}} and {{@last}}
           itemContent = itemContent.replace(/\{\{@index\}\}/g, String(index));
-          itemContent = itemContent.replace(/\{\{@first\}\}/g, index === 0 ? "true" : "");
-          itemContent = itemContent.replace(/\{\{@last\}\}/g, index === value.length - 1 ? "true" : "");
+          itemContent = itemContent.replace(
+            /\{\{@first\}\}/g,
+            index === 0 ? "true" : "",
+          );
+          itemContent = itemContent.replace(
+            /\{\{@last\}\}/g,
+            index === value.length - 1 ? "true" : "",
+          );
           return itemContent;
         })
         .join("");
@@ -194,20 +197,17 @@ export function renderTemplate(
   );
 
   // Process raw HTML (triple braces): {{{rawHtml}}}
-  html = html.replace(
-    /\{\{\{(\w+(?:\.\w+)*)\}\}\}/g,
-    (match, varPath) => {
-      const value = getNestedValue(variables, varPath);
-      usedVariables.add(varPath);
+  html = html.replace(/\{\{\{(\w+(?:\.\w+)*)\}\}\}/g, (match, varPath) => {
+    const value = getNestedValue(variables, varPath);
+    usedVariables.add(varPath);
 
-      if (value === undefined) {
-        errors.push(`Undefined variable: ${varPath}`);
-        return "";
-      }
+    if (value === undefined) {
+      errors.push(`Undefined variable: ${varPath}`);
+      return "";
+    }
 
-      return String(value);
-    },
-  );
+    return String(value);
+  });
 
   // Process helpers with pipes: {{formatCurrency amount}}
   html = html.replace(
@@ -226,24 +226,21 @@ export function renderTemplate(
   );
 
   // Process simple variables: {{variableName}}
-  html = html.replace(
-    /\{\{(\w+(?:\.\w+)*)\}\}/g,
-    (match, varPath) => {
-      const value = getNestedValue(variables, varPath);
-      usedVariables.add(varPath);
+  html = html.replace(/\{\{(\w+(?:\.\w+)*)\}\}/g, (match, varPath) => {
+    const value = getNestedValue(variables, varPath);
+    usedVariables.add(varPath);
 
-      if (value === undefined) {
-        errors.push(`Undefined variable: ${varPath}`);
-        return "";
-      }
+    if (value === undefined) {
+      errors.push(`Undefined variable: ${varPath}`);
+      return "";
+    }
 
-      if (typeof value === "object") {
-        return escapeHtml(JSON.stringify(value));
-      }
+    if (typeof value === "object") {
+      return escapeHtml(JSON.stringify(value));
+    }
 
-      return escapeHtml(String(value));
-    },
-  );
+    return escapeHtml(String(value));
+  });
 
   // Create text version (no HTML tags)
   const text = html.replace(/<[^>]*>/g, "");
@@ -277,8 +274,7 @@ export function extractTemplateVariables(template: string): TemplateVariable[] {
   }
 
   // Check if variables are in optional blocks
-  const optionalIfRegex =
-    /\{\{#if\s+(\w+(?:\.\w+)*)\}\}[\s\S]*?\{\{\/if\}\}/g;
+  const optionalIfRegex = /\{\{#if\s+(\w+(?:\.\w+)*)\}\}[\s\S]*?\{\{\/if\}\}/g;
   while ((match = optionalIfRegex.exec(template)) !== null) {
     const varPath = match[1];
     if (variables.has(varPath)) {

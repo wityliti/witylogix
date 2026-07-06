@@ -75,7 +75,10 @@ export class ClerkProvider implements BaseAuthProvider {
   async handleCallback(callbackData: CallbackData): Promise<AuthResult> {
     // For Clerk, the "code" field contains the session JWT
     if (!callbackData.code) {
-      throw new InvalidCredentialsError("clerk", "Clerk session token is required");
+      throw new InvalidCredentialsError(
+        "clerk",
+        "Clerk session token is required",
+      );
     }
 
     try {
@@ -86,7 +89,9 @@ export class ClerkProvider implements BaseAuthProvider {
       const userInfo = await this.fetchClerkUserInfo(payload.sub);
 
       // Map Clerk roles to Witylogix roles
-      const roles = this.mapRolesToWitylogix(userInfo.publicMetadata?.roles || []);
+      const roles = this.mapRolesToWitylogix(
+        userInfo.publicMetadata?.roles || [],
+      );
 
       return {
         externalUserId: payload.sub,
@@ -102,7 +107,10 @@ export class ClerkProvider implements BaseAuthProvider {
         },
       };
     } catch (error) {
-      throw new ProviderUnavailableError("clerk", `Clerk authentication failed: ${String(error)}`);
+      throw new ProviderUnavailableError(
+        "clerk",
+        `Clerk authentication failed: ${String(error)}`,
+      );
     }
   }
 
@@ -132,7 +140,10 @@ export class ClerkProvider implements BaseAuthProvider {
    * Revoke a Clerk session.
    * Calls Clerk Backend API to delete the session.
    */
-  async revokeSession(accessToken: string, refreshToken?: string): Promise<void> {
+  async revokeSession(
+    accessToken: string,
+    refreshToken?: string,
+  ): Promise<void> {
     try {
       // In production: DELETE /sessions/{sessionId}
       // Headers: Authorization: Bearer {secretKey}
@@ -159,7 +170,9 @@ export class ClerkProvider implements BaseAuthProvider {
       name: `${userInfo.firstName || ""} ${userInfo.lastName || ""}`.trim(),
       picture: userInfo.profileImageUrl,
       roles: userInfo.publicMetadata?.roles || [],
-      emailVerified: userInfo.emailAddresses?.some((e: any) => e.id === userInfo.primaryEmailAddressId),
+      emailVerified: userInfo.emailAddresses?.some(
+        (e: any) => e.id === userInfo.primaryEmailAddressId,
+      ),
     };
   }
 
@@ -167,8 +180,14 @@ export class ClerkProvider implements BaseAuthProvider {
    * Get authorization URL — not applicable for Clerk.
    * Clerk handles auth on the frontend.
    */
-  async getAuthorizationUrl(redirectUri: string, state: string): Promise<AuthorizationUrl> {
-    throw new ConfigurationError("clerk", "Clerk uses frontend-driven authentication");
+  async getAuthorizationUrl(
+    redirectUri: string,
+    state: string,
+  ): Promise<AuthorizationUrl> {
+    throw new ConfigurationError(
+      "clerk",
+      "Clerk uses frontend-driven authentication",
+    );
   }
 
   /**
@@ -186,7 +205,10 @@ export class ClerkProvider implements BaseAuthProvider {
       // In production: verify that secretKey is valid by making a test request
       // GET /users (with minimal limit) using secretKey auth
     } catch (error) {
-      throw new ConfigurationError("clerk", `Invalid Clerk credentials: ${String(error)}`);
+      throw new ConfigurationError(
+        "clerk",
+        `Invalid Clerk credentials: ${String(error)}`,
+      );
     }
   }
 
@@ -219,7 +241,9 @@ export class ClerkProvider implements BaseAuthProvider {
    * Validate a Clerk session JWT.
    * In production: verify signature using Clerk's public key.
    */
-  private async validateClerkSession(sessionJwt: string): Promise<Record<string, any>> {
+  private async validateClerkSession(
+    sessionJwt: string,
+  ): Promise<Record<string, any>> {
     try {
       // Decode JWT (structure: header.payload.signature)
       const parts = sessionJwt.split(".");

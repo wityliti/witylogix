@@ -111,7 +111,7 @@ describe("Analytics Routes", () => {
       await analyticsRoutes(fastify);
 
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/overview"
+        (call) => call[0] === "/overview",
       )?.[1];
 
       expect(handler).toBeDefined();
@@ -132,7 +132,7 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/overview"
+        (call) => call[0] === "/overview",
       )?.[1];
 
       // Handler should complete without throwing; zoneId is accepted by the schema
@@ -182,7 +182,7 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/overview"
+        (call) => call[0] === "/overview",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -196,7 +196,7 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/overview"
+        (call) => call[0] === "/overview",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -211,11 +211,11 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/overview"
+        (call) => call[0] === "/overview",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
 
@@ -225,7 +225,7 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/overview"
+        (call) => call[0] === "/overview",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -254,11 +254,13 @@ describe("Analytics Routes", () => {
         },
       ];
 
-      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(shipments);
+      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(
+        shipments,
+      );
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/delivery-trends"
+        (call) => call[0] === "/delivery-trends",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -288,11 +290,13 @@ describe("Analytics Routes", () => {
         },
       ];
 
-      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(shipments);
+      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(
+        shipments,
+      );
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/delivery-trends"
+        (call) => call[0] === "/delivery-trends",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -307,7 +311,7 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/delivery-trends"
+        (call) => call[0] === "/delivery-trends",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -340,11 +344,13 @@ describe("Analytics Routes", () => {
         },
       ];
 
-      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(shipments);
+      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(
+        shipments,
+      );
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/delivery-trends"
+        (call) => call[0] === "/delivery-trends",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -372,16 +378,20 @@ describe("Analytics Routes", () => {
         },
       ];
 
-      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(shipments);
+      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(
+        shipments,
+      );
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/delivery-trends"
+        (call) => call[0] === "/delivery-trends",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
 
-      expect(new Date(result.data[0].date).getTime()).toBeLessThanOrEqual(new Date(result.data[1].date).getTime());
+      expect(new Date(result.data[0].date).getTime()).toBeLessThanOrEqual(
+        new Date(result.data[1].date).getTime(),
+      );
     });
 
     it("should throw ValidationError on invalid granularity", async () => {
@@ -389,11 +399,11 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/delivery-trends"
+        (call) => call[0] === "/delivery-trends",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
   });
@@ -441,7 +451,7 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/driver-performance"
+        (call) => call[0] === "/driver-performance",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -463,7 +473,7 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/driver-performance"
+        (call) => call[0] === "/driver-performance",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -485,7 +495,7 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/driver-performance"
+        (call) => call[0] === "/driver-performance",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -509,11 +519,13 @@ describe("Analytics Routes", () => {
         },
       ];
 
-      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(shipments);
+      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(
+        shipments,
+      );
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/driver-performance"
+        (call) => call[0] === "/driver-performance",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -545,11 +557,13 @@ describe("Analytics Routes", () => {
         },
       ];
 
-      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(shipments);
+      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(
+        shipments,
+      );
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/driver-performance"
+        (call) => call[0] === "/driver-performance",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -562,11 +576,11 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/driver-performance"
+        (call) => call[0] === "/driver-performance",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
 
@@ -575,11 +589,11 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/driver-performance"
+        (call) => call[0] === "/driver-performance",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
   });
@@ -593,17 +607,43 @@ describe("Analytics Routes", () => {
 
       // Production batches all zone shipments in a single query, grouped by locationId
       const allShipments = [
-        { id: "s1", locationId: "z1", status: "DELIVERED", deliveryDate: new Date("2026-02-07"), actualDelivery: new Date("2026-02-07"), shippingCost: 50, pickedUpAt: null },
-        { id: "s2", locationId: "z1", status: "DELIVERED", deliveryDate: new Date("2026-02-08"), actualDelivery: new Date("2026-02-08"), shippingCost: 60, pickedUpAt: null },
-        { id: "s3", locationId: "z2", status: "DELIVERED", deliveryDate: new Date("2026-02-07"), actualDelivery: new Date("2026-02-07"), shippingCost: 40, pickedUpAt: null },
+        {
+          id: "s1",
+          locationId: "z1",
+          status: "DELIVERED",
+          deliveryDate: new Date("2026-02-07"),
+          actualDelivery: new Date("2026-02-07"),
+          shippingCost: 50,
+          pickedUpAt: null,
+        },
+        {
+          id: "s2",
+          locationId: "z1",
+          status: "DELIVERED",
+          deliveryDate: new Date("2026-02-08"),
+          actualDelivery: new Date("2026-02-08"),
+          shippingCost: 60,
+          pickedUpAt: null,
+        },
+        {
+          id: "s3",
+          locationId: "z2",
+          status: "DELIVERED",
+          deliveryDate: new Date("2026-02-07"),
+          actualDelivery: new Date("2026-02-07"),
+          shippingCost: 40,
+          pickedUpAt: null,
+        },
       ];
 
       (mockRequest.tenantDb as any).location.findMany.mockResolvedValue(zones);
-      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(allShipments);
+      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(
+        allShipments,
+      );
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/zone-performance"
+        (call) => call[0] === "/zone-performance",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -633,7 +673,7 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/zone-performance"
+        (call) => call[0] === "/zone-performance",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -651,7 +691,7 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/zone-performance"
+        (call) => call[0] === "/zone-performance",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -667,12 +707,20 @@ describe("Analytics Routes", () => {
 
       // Only z1 has shipments; z2 has none → should be excluded from result
       (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue([
-        { id: "s1", locationId: "z1", status: "DELIVERED", deliveryDate: new Date("2026-02-07"), actualDelivery: new Date("2026-02-07"), shippingCost: 50, pickedUpAt: null },
+        {
+          id: "s1",
+          locationId: "z1",
+          status: "DELIVERED",
+          deliveryDate: new Date("2026-02-07"),
+          actualDelivery: new Date("2026-02-07"),
+          shippingCost: 50,
+          pickedUpAt: null,
+        },
       ]);
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/zone-performance"
+        (call) => call[0] === "/zone-performance",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -697,11 +745,13 @@ describe("Analytics Routes", () => {
         },
       ];
 
-      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(shipments);
+      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(
+        shipments,
+      );
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/zone-performance"
+        (call) => call[0] === "/zone-performance",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -713,16 +763,30 @@ describe("Analytics Routes", () => {
   describe("GET /cost-breakdown", () => {
     it("should return detailed cost breakdown", async () => {
       const shipments = [
-        { id: "s1", status: "DELIVERED", shippingCost: 100, createdAt: new Date("2026-02-07") },
-        { id: "s2", status: "DELIVERED", shippingCost: 200, createdAt: new Date("2026-02-08") },
+        {
+          id: "s1",
+          status: "DELIVERED",
+          shippingCost: 100,
+          createdAt: new Date("2026-02-07"),
+        },
+        {
+          id: "s2",
+          status: "DELIVERED",
+          shippingCost: 200,
+          createdAt: new Date("2026-02-08"),
+        },
       ];
 
-      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(shipments);
-      (mockRequest.tenantDb as any).paymentTransaction.findMany.mockResolvedValue([]);
+      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(
+        shipments,
+      );
+      (
+        mockRequest.tenantDb as any
+      ).paymentTransaction.findMany.mockResolvedValue([]);
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/cost-breakdown"
+        (call) => call[0] === "/cost-breakdown",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -738,15 +802,24 @@ describe("Analytics Routes", () => {
 
     it("should calculate cost percentages correctly", async () => {
       const shipments = [
-        { id: "s1", status: "DELIVERED", shippingCost: 100, createdAt: new Date("2026-02-07") },
+        {
+          id: "s1",
+          status: "DELIVERED",
+          shippingCost: 100,
+          createdAt: new Date("2026-02-07"),
+        },
       ];
 
-      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(shipments);
-      (mockRequest.tenantDb as any).paymentTransaction.findMany.mockResolvedValue([]);
+      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(
+        shipments,
+      );
+      (
+        mockRequest.tenantDb as any
+      ).paymentTransaction.findMany.mockResolvedValue([]);
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/cost-breakdown"
+        (call) => call[0] === "/cost-breakdown",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -759,17 +832,36 @@ describe("Analytics Routes", () => {
 
     it("should generate daily cost trend", async () => {
       const shipments = [
-        { id: "s1", status: "DELIVERED", shippingCost: 100, createdAt: new Date("2026-02-07") },
-        { id: "s2", status: "DELIVERED", shippingCost: 150, createdAt: new Date("2026-02-07") },
-        { id: "s3", status: "DELIVERED", shippingCost: 50, createdAt: new Date("2026-02-08") },
+        {
+          id: "s1",
+          status: "DELIVERED",
+          shippingCost: 100,
+          createdAt: new Date("2026-02-07"),
+        },
+        {
+          id: "s2",
+          status: "DELIVERED",
+          shippingCost: 150,
+          createdAt: new Date("2026-02-07"),
+        },
+        {
+          id: "s3",
+          status: "DELIVERED",
+          shippingCost: 50,
+          createdAt: new Date("2026-02-08"),
+        },
       ];
 
-      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(shipments);
-      (mockRequest.tenantDb as any).paymentTransaction.findMany.mockResolvedValue([]);
+      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(
+        shipments,
+      );
+      (
+        mockRequest.tenantDb as any
+      ).paymentTransaction.findMany.mockResolvedValue([]);
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/cost-breakdown"
+        (call) => call[0] === "/cost-breakdown",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -781,23 +873,37 @@ describe("Analytics Routes", () => {
 
     it("should sort cost trend chronologically", async () => {
       const shipments = [
-        { id: "s1", status: "DELIVERED", shippingCost: 50, createdAt: new Date("2026-02-10") },
-        { id: "s2", status: "DELIVERED", shippingCost: 100, createdAt: new Date("2026-02-07") },
+        {
+          id: "s1",
+          status: "DELIVERED",
+          shippingCost: 50,
+          createdAt: new Date("2026-02-10"),
+        },
+        {
+          id: "s2",
+          status: "DELIVERED",
+          shippingCost: 100,
+          createdAt: new Date("2026-02-07"),
+        },
       ];
 
-      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(shipments);
-      (mockRequest.tenantDb as any).paymentTransaction.findMany.mockResolvedValue([]);
+      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(
+        shipments,
+      );
+      (
+        mockRequest.tenantDb as any
+      ).paymentTransaction.findMany.mockResolvedValue([]);
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/cost-breakdown"
+        (call) => call[0] === "/cost-breakdown",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
 
       expect(
         new Date(result.data.costTrend[0].date).getTime() <=
-          new Date(result.data.costTrend[1].date).getTime()
+          new Date(result.data.costTrend[1].date).getTime(),
       ).toBe(true);
     });
   });
@@ -819,68 +925,66 @@ describe("Analytics Routes", () => {
         },
       ];
 
-      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(shipments);
+      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(
+        shipments,
+      );
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/export"
+        (call) => call[0] === "/export",
       )?.[1];
 
       await handler(mockRequest, mockReply);
 
       expect(mockReply.header).toHaveBeenCalledWith(
         "Content-Type",
-        "text/csv; charset=utf-8"
+        "text/csv; charset=utf-8",
       );
       expect(mockReply.header).toHaveBeenCalledWith(
         "Content-Disposition",
-        'attachment; filename="deliveries_export.csv"'
+        'attachment; filename="deliveries_export.csv"',
       );
     });
 
     it("should export drivers as CSV", async () => {
       mockRequest.query = { type: "drivers" };
 
-      const drivers = [
-        { id: "d1", name: "Driver One", rating: 4.5 },
-      ];
+      const drivers = [{ id: "d1", name: "Driver One", rating: 4.5 }];
 
       (mockRequest.tenantDb as any).driver.findMany.mockResolvedValue(drivers);
       (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue([]);
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/export"
+        (call) => call[0] === "/export",
       )?.[1];
 
       await handler(mockRequest, mockReply);
 
       expect(mockReply.header).toHaveBeenCalledWith(
         "Content-Disposition",
-        'attachment; filename="drivers_export.csv"'
+        'attachment; filename="drivers_export.csv"',
       );
     });
 
     it("should export zones as CSV", async () => {
       mockRequest.query = { type: "zones" };
 
-      const zones = [
-        { id: "z1", name: "Zone One" },
-      ];
+      const zones = [{ id: "z1", name: "Zone One" }];
 
       (mockRequest.tenantDb as any).location.findMany.mockResolvedValue(zones);
       (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue([]);
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/export"
+        (call) => call[0] === "/export",
       )?.[1];
 
       await handler(mockRequest, mockReply);
 
       expect(mockReply.header).toHaveBeenCalledWith(
         "Content-Disposition",
-        'attachment; filename="zones_export.csv"'
+        'attachment; filename="zones_export.csv"',
       );
     });
 
@@ -900,11 +1004,13 @@ describe("Analytics Routes", () => {
         },
       ];
 
-      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(shipments);
+      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(
+        shipments,
+      );
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/export"
+        (call) => call[0] === "/export",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -927,19 +1033,23 @@ describe("Analytics Routes", () => {
         location: { name: "Zone One" },
       }));
 
-      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(shipments);
+      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(
+        shipments,
+      );
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/export"
+        (call) => call[0] === "/export",
       )?.[1];
 
       await handler(mockRequest, mockReply);
 
-      expect((mockRequest.tenantDb as any).shipment.findMany).toHaveBeenCalledWith(
+      expect(
+        (mockRequest.tenantDb as any).shipment.findMany,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           take: 10000,
-        })
+        }),
       );
     });
 
@@ -948,11 +1058,11 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/export"
+        (call) => call[0] === "/export",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
 
@@ -963,7 +1073,7 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/export"
+        (call) => call[0] === "/export",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -980,28 +1090,25 @@ describe("Analytics Routes", () => {
 
       expect(fastify.get).toHaveBeenCalledWith(
         "/overview",
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(fastify.get).toHaveBeenCalledWith(
         "/delivery-trends",
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(fastify.get).toHaveBeenCalledWith(
         "/driver-performance",
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(fastify.get).toHaveBeenCalledWith(
         "/zone-performance",
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(fastify.get).toHaveBeenCalledWith(
         "/cost-breakdown",
-        expect.any(Function)
+        expect.any(Function),
       );
-      expect(fastify.get).toHaveBeenCalledWith(
-        "/export",
-        expect.any(Function)
-      );
+      expect(fastify.get).toHaveBeenCalledWith("/export", expect.any(Function));
     });
 
     it("should add auth and tenant context hooks", async () => {
@@ -1009,7 +1116,7 @@ describe("Analytics Routes", () => {
 
       expect(fastify.addHook).toHaveBeenCalledWith(
         "preHandler",
-        expect.any(Function)
+        expect.any(Function),
       );
     });
   });
@@ -1017,12 +1124,12 @@ describe("Analytics Routes", () => {
   describe("Error Handling", () => {
     it("should handle Prisma query errors gracefully", async () => {
       (mockRequest.tenantDb as any).order.findMany.mockRejectedValue(
-        new Error("Database connection error")
+        new Error("Database connection error"),
       );
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/overview"
+        (call) => call[0] === "/overview",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow();
@@ -1030,14 +1137,17 @@ describe("Analytics Routes", () => {
 
     it("should throw ValidationError for invalid date range", async () => {
       // Use valid ISO datetime strings (reversed range is accepted — no order validation)
-      mockRequest.query = { dateFrom: "2026-02-10T00:00:00.000Z", dateTo: "2026-02-07T00:00:00.000Z" };
+      mockRequest.query = {
+        dateFrom: "2026-02-10T00:00:00.000Z",
+        dateTo: "2026-02-07T00:00:00.000Z",
+      };
 
       (mockRequest.tenantDb as any).order.findMany.mockResolvedValue([]);
       (mockRequest.tenantDb as any).driver.count.mockResolvedValue(0);
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/overview"
+        (call) => call[0] === "/overview",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -1050,9 +1160,39 @@ describe("Analytics Routes", () => {
     it("should calculate revenue from completed payments only", async () => {
       // Revenue in /overview is derived from delivered orders' totalPrice
       const orders = [
-        { id: "o1", status: "DELIVERED", totalPrice: 100, deliveryDate: new Date("2026-02-07"), actualDelivery: new Date("2026-02-07"), createdAt: new Date("2026-02-07"), city: null, driverId: null, driver: null },
-        { id: "o2", status: "DELIVERED", totalPrice: 200, deliveryDate: new Date("2026-02-08"), actualDelivery: new Date("2026-02-08"), createdAt: new Date("2026-02-08"), city: null, driverId: null, driver: null },
-        { id: "o3", status: "PENDING", totalPrice: 300, deliveryDate: null, actualDelivery: null, createdAt: new Date("2026-02-09"), city: null, driverId: null, driver: null },
+        {
+          id: "o1",
+          status: "DELIVERED",
+          totalPrice: 100,
+          deliveryDate: new Date("2026-02-07"),
+          actualDelivery: new Date("2026-02-07"),
+          createdAt: new Date("2026-02-07"),
+          city: null,
+          driverId: null,
+          driver: null,
+        },
+        {
+          id: "o2",
+          status: "DELIVERED",
+          totalPrice: 200,
+          deliveryDate: new Date("2026-02-08"),
+          actualDelivery: new Date("2026-02-08"),
+          createdAt: new Date("2026-02-08"),
+          city: null,
+          driverId: null,
+          driver: null,
+        },
+        {
+          id: "o3",
+          status: "PENDING",
+          totalPrice: 300,
+          deliveryDate: null,
+          actualDelivery: null,
+          createdAt: new Date("2026-02-09"),
+          city: null,
+          driverId: null,
+          driver: null,
+        },
       ];
 
       (mockRequest.tenantDb as any).order.findMany.mockResolvedValue(orders);
@@ -1060,7 +1200,7 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/overview"
+        (call) => call[0] === "/overview",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -1089,7 +1229,7 @@ describe("Analytics Routes", () => {
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/overview"
+        (call) => call[0] === "/overview",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -1099,15 +1239,24 @@ describe("Analytics Routes", () => {
 
     it("should round monetary values to 2 decimals", async () => {
       const shipments = [
-        { id: "s1", status: "DELIVERED", shippingCost: 33.333, createdAt: new Date("2026-02-07") },
+        {
+          id: "s1",
+          status: "DELIVERED",
+          shippingCost: 33.333,
+          createdAt: new Date("2026-02-07"),
+        },
       ];
 
-      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(shipments);
-      (mockRequest.tenantDb as any).paymentTransaction.findMany.mockResolvedValue([]);
+      (mockRequest.tenantDb as any).shipment.findMany.mockResolvedValue(
+        shipments,
+      );
+      (
+        mockRequest.tenantDb as any
+      ).paymentTransaction.findMany.mockResolvedValue([]);
 
       await analyticsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/cost-breakdown"
+        (call) => call[0] === "/cost-breakdown",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);

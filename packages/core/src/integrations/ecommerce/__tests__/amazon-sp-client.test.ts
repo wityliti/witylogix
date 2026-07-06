@@ -385,7 +385,9 @@ describe("AmazonSPClient", () => {
           }),
         });
 
-      const order = await client.updateOrder("AMZ-123", { notes: "Acknowledged" });
+      const order = await client.updateOrder("AMZ-123", {
+        notes: "Acknowledged",
+      });
       expect(order).toBeDefined();
     });
   });

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Eye, Code } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { CodeBlock } from './code-block';
+import { useState } from "react";
+import { Eye, Code } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { CodeBlock } from "./code-block";
 
 interface PreviewSectionProps {
   title: string;
@@ -23,9 +23,7 @@ export function PreviewSection({
   return (
     <div className="space-y-3">
       <div>
-        <h4 className="text-sm font-semibold text-white mb-1">
-          {title}
-        </h4>
+        <h4 className="text-sm font-semibold text-white mb-1">{title}</h4>
         <p className="text-xs text-wl-text-secondary">{description}</p>
       </div>
 

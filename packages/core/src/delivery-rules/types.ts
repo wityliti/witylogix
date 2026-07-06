@@ -7,50 +7,50 @@
  * Supported comparison operators for rule conditions
  */
 export type ConditionOperator =
-  | 'eq'       // Equal
-  | 'neq'      // Not equal
-  | 'gt'       // Greater than
-  | 'gte'      // Greater than or equal
-  | 'lt'       // Less than
-  | 'lte'      // Less than or equal
-  | 'in'       // In array
-  | 'notIn'    // Not in array
-  | 'between'  // Between two values
-  | 'contains' // String contains
-  | 'startsWith' // String starts with
-  | 'endsWith'; // String ends with
+  | "eq" // Equal
+  | "neq" // Not equal
+  | "gt" // Greater than
+  | "gte" // Greater than or equal
+  | "lt" // Less than
+  | "lte" // Less than or equal
+  | "in" // In array
+  | "notIn" // Not in array
+  | "between" // Between two values
+  | "contains" // String contains
+  | "startsWith" // String starts with
+  | "endsWith"; // String ends with
 
 /**
  * A condition that must be evaluated
  */
 export interface DeliveryRuleCondition {
-  field: string;           // Path to field (dot notation: 'order.weight')
+  field: string; // Path to field (dot notation: 'order.weight')
   operator: ConditionOperator;
-  value: unknown;          // Value to compare against
+  value: unknown; // Value to compare against
 }
 
 /**
  * Types of actions that can be applied when a rule matches
  */
 export type ActionType =
-  | 'SET_RATE'
-  | 'BLOCK'
-  | 'APPLY_DISCOUNT'
-  | 'SET_TIME_SLOT'
-  | 'ADD_FEE'
-  | 'REQUIRE_SIGNATURE'
-  | 'MARK_FRAGILE';
+  | "SET_RATE"
+  | "BLOCK"
+  | "APPLY_DISCOUNT"
+  | "SET_TIME_SLOT"
+  | "ADD_FEE"
+  | "REQUIRE_SIGNATURE"
+  | "MARK_FRAGILE";
 
 /**
  * Parameters for different action types
  */
 export interface ActionParams {
-  rate?: number;           // For SET_RATE
-  discount?: number;       // For APPLY_DISCOUNT
-  fee?: number;           // For ADD_FEE
+  rate?: number; // For SET_RATE
+  discount?: number; // For APPLY_DISCOUNT
+  fee?: number; // For ADD_FEE
   timeSlots?: TimeSlot[]; // For SET_TIME_SLOT
-  reason?: string;        // For BLOCK
-  riskLevel?: 'low' | 'medium' | 'high'; // For MARK_FRAGILE
+  reason?: string; // For BLOCK
+  riskLevel?: "low" | "medium" | "high"; // For MARK_FRAGILE
 }
 
 /**
@@ -59,15 +59,15 @@ export interface ActionParams {
 export interface DeliveryRuleAction {
   type: ActionType;
   params: ActionParams;
-  priority?: number;      // Execution order for multiple actions
+  priority?: number; // Execution order for multiple actions
 }
 
 /**
  * Available time slot for delivery
  */
 export interface TimeSlot {
-  startTime: string;      // HH:mm format
-  endTime: string;        // HH:mm format
+  startTime: string; // HH:mm format
+  endTime: string; // HH:mm format
   available: boolean;
   maxOrders?: number;
 }
@@ -141,7 +141,7 @@ export interface ZoneContext {
   id?: string;
   name?: string;
   region?: string;
-  serviceType?: 'LOCAL' | 'STANDARD' | 'PICKUP';
+  serviceType?: "LOCAL" | "STANDARD" | "PICKUP";
 }
 
 /**
@@ -169,7 +169,7 @@ export interface RuleResult {
   isFragile?: boolean;
   message?: string;
   appliedRuleIds?: string[];
-  riskLevel?: 'low' | 'medium' | 'high';
+  riskLevel?: "low" | "medium" | "high";
 }
 
 /**
@@ -179,7 +179,7 @@ export interface DeliveryRuleData {
   id: string;
   shopId: string;
   name: string;
-  type: 'LOCAL' | 'PICKUP' | 'STANDARD';
+  type: "LOCAL" | "PICKUP" | "STANDARD";
   conditions: DeliveryRuleCondition[];
   actions: DeliveryRuleAction[];
   priority: number;
@@ -191,7 +191,10 @@ export interface DeliveryRuleData {
 /**
  * Evaluation mode for multiple matching rules
  */
-export type RuleEvaluationMode = 'first-match' | 'all-match' | 'highest-priority';
+export type RuleEvaluationMode =
+  | "first-match"
+  | "all-match"
+  | "highest-priority";
 
 /**
  * Options for rule evaluation

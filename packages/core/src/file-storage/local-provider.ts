@@ -2,7 +2,7 @@
 
 /**
  * Local File Storage Provider
- * 
+ *
  * File system-based implementation for development and self-hosted deployments.
  * Mirrors the FileStorageProvider interface used by S3FileStorage.
  */
@@ -16,15 +16,15 @@ import {
   readdirSync,
   statSync,
   rmSync,
-} from 'fs';
-import { join, basename, relative } from 'path';
-import { Readable } from 'stream';
+} from "fs";
+import { join, basename, relative } from "path";
+import { Readable } from "stream";
 import {
   FileStorageProvider,
   FileMetadata,
   UploadOptions,
   ListFilesResult,
-} from './types';
+} from "./types";
 
 export interface LocalProviderConfig {
   basePath: string;
@@ -43,7 +43,7 @@ export class LocalFileStorage implements FileStorageProvider {
   constructor(config: LocalProviderConfig) {
     this.basePath = config.basePath;
     this.baseUrl = config.baseUrl;
-    this.tenantId = config.tenantId || 'default';
+    this.tenantId = config.tenantId || "default";
 
     // Ensure base directory exists
     if (!existsSync(this.basePath)) {
@@ -59,7 +59,7 @@ export class LocalFileStorage implements FileStorageProvider {
     const filePath = join(tenantPath, key);
 
     // Ensure we don't escape the tenant directory
-    const normalized = filePath.split('..').join('').replace(/\\/g, '/');
+    const normalized = filePath.split("..").join("").replace(/\\/g, "/");
     return normalized;
   }
 
@@ -76,10 +76,10 @@ export class LocalFileStorage implements FileStorageProvider {
   async upload(
     key: string,
     data: Buffer | Readable,
-    options?: UploadOptions
+    options?: UploadOptions,
   ): Promise<FileMetadata> {
     const filePath = this.buildPath(key);
-    const dir = filePath.substring(0, filePath.lastIndexOf('/'));
+    const dir = filePath.substring(0, filePath.lastIndexOf("/"));
 
     // Create directory structure
     if (!existsSync(dir)) {
@@ -93,15 +93,15 @@ export class LocalFileStorage implements FileStorageProvider {
           const stream = createWriteStream(filePath);
           stream.write(data);
           stream.end();
-          stream.on('finish', resolve);
-          stream.on('error', reject);
+          stream.on("finish", resolve);
+          stream.on("error", reject);
         });
       } else {
         await new Promise<void>((resolve, reject) => {
           const writeStream = createWriteStream(filePath);
           data.pipe(writeStream);
-          writeStream.on('finish', resolve);
-          writeStream.on('error', reject);
+          writeStream.on("finish", resolve);
+          writeStream.on("error", reject);
         });
       }
 
@@ -117,7 +117,9 @@ export class LocalFileStorage implements FileStorageProvider {
         lastModified: stats.mtime,
       };
     } catch (error) {
-      throw new Error(`Failed to upload file: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to upload file: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -136,18 +138,20 @@ export class LocalFileStorage implements FileStorageProvider {
         const chunks: Buffer[] = [];
         const stream = createReadStream(filePath);
 
-        stream.on('data', (chunk: Buffer) => {
+        stream.on("data", (chunk: Buffer) => {
           chunks.push(chunk);
         });
 
-        stream.on('end', () => {
+        stream.on("end", () => {
           resolve(Buffer.concat(chunks));
         });
 
-        stream.on('error', reject);
+        stream.on("error", reject);
       });
     } catch (error) {
-      throw new Error(`Failed to download file: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to download file: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -161,7 +165,9 @@ export class LocalFileStorage implements FileStorageProvider {
       try {
         unlinkSync(filePath);
       } catch (error) {
-        throw new Error(`Failed to delete file: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Failed to delete file: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
   }
@@ -180,7 +186,7 @@ export class LocalFileStorage implements FileStorageProvider {
     // For local storage, just append a fake token parameter
     const url = this.buildUrl(key);
     const expiresAt = Date.now() + expiresIn * 1000;
-    const token = Buffer.from(`${expiresAt}:local`).toString('base64');
+    const token = Buffer.from(`${expiresAt}:local`).toString("base64");
     return `${url}?token=${token}`;
   }
 
@@ -201,9 +207,7 @@ export class LocalFileStorage implements FileStorageProvider {
 
       for (const entry of entries) {
         const fullPath = join(searchPath, entry.name);
-        const relativePath = prefix
-          ? `${prefix}/${entry.name}`
-          : entry.name;
+        const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
 
         if (entry.isFile()) {
           const stats = statSync(fullPath);
@@ -224,7 +228,9 @@ export class LocalFileStorage implements FileStorageProvider {
 
       return { files };
     } catch (error) {
-      throw new Error(`Failed to list files: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to list files: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -240,34 +246,34 @@ export class LocalFileStorage implements FileStorageProvider {
    * Detect MIME type from filename
    */
   private detectContentType(filename: string): string {
-    const ext = filename.split('.').pop()?.toLowerCase() || '';
+    const ext = filename.split(".").pop()?.toLowerCase() || "";
     const mimeTypes: Record<string, string> = {
-      pdf: 'application/pdf',
-      txt: 'text/plain',
-      html: 'text/html',
-      css: 'text/css',
-      js: 'application/javascript',
-      json: 'application/json',
-      xml: 'application/xml',
-      csv: 'text/csv',
-      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      xls: 'application/vnd.ms-excel',
-      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      doc: 'application/msword',
-      png: 'image/png',
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      gif: 'image/gif',
-      svg: 'image/svg+xml',
-      webp: 'image/webp',
-      mp4: 'video/mp4',
-      webm: 'video/webm',
-      mp3: 'audio/mpeg',
-      wav: 'audio/wav',
-      zip: 'application/zip',
-      gz: 'application/gzip',
+      pdf: "application/pdf",
+      txt: "text/plain",
+      html: "text/html",
+      css: "text/css",
+      js: "application/javascript",
+      json: "application/json",
+      xml: "application/xml",
+      csv: "text/csv",
+      xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      xls: "application/vnd.ms-excel",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      doc: "application/msword",
+      png: "image/png",
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      gif: "image/gif",
+      svg: "image/svg+xml",
+      webp: "image/webp",
+      mp4: "video/mp4",
+      webm: "video/webm",
+      mp3: "audio/mpeg",
+      wav: "audio/wav",
+      zip: "application/zip",
+      gz: "application/gzip",
     };
 
-    return mimeTypes[ext] || 'application/octet-stream';
+    return mimeTypes[ext] || "application/octet-stream";
   }
 }

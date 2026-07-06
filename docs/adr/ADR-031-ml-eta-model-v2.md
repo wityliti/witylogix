@@ -3,7 +3,7 @@
 **Status**: Accepted  
 **Date**: 2026-04-05  
 **Authors**: Zara Rahman (AI/ML Engineer)  
-**Decision Drivers**: ETA prediction accuracy, slot demand planning, competitive parity with Route4Me/Routific, open-source contribution viability  
+**Decision Drivers**: ETA prediction accuracy, slot demand planning, competitive parity with Route4Me/Routific, open-source contribution viability
 
 ---
 
@@ -77,13 +77,13 @@ DemandPredictor
 
 ## Alternatives Considered
 
-| Option | Why Rejected |
-|--------|--------------|
-| TensorFlow.js GBDT | Adds 120MB dependency, not viable for self-hosted Docker images |
-| Python microservice (scikit-learn) | Requires separate service, deployment complexity, latency overhead |
-| ONNX runtime | Binary model files can't be edited by community contributors |
-| ARIMA for slot demand | Doesn't capture weekly seasonality as cleanly as Holt-Winters; requires more data |
-| Prophet | Node.js bindings are fragile; Python-only first-class support |
+| Option                             | Why Rejected                                                                      |
+| ---------------------------------- | --------------------------------------------------------------------------------- |
+| TensorFlow.js GBDT                 | Adds 120MB dependency, not viable for self-hosted Docker images                   |
+| Python microservice (scikit-learn) | Requires separate service, deployment complexity, latency overhead                |
+| ONNX runtime                       | Binary model files can't be edited by community contributors                      |
+| ARIMA for slot demand              | Doesn't capture weekly seasonality as cleanly as Holt-Winters; requires more data |
+| Prophet                            | Node.js bindings are fragile; Python-only first-class support                     |
 
 ---
 
@@ -107,15 +107,15 @@ DemandPredictor
 
 ## Implementation
 
-| Component | Location |
-|-----------|----------|
-| GBDT model | `packages/core/src/ai-eta-v2/models/gbdt-model.ts` |
-| Ensemble integration | `packages/core/src/ai-eta-v2/ensemble.ts` |
-| Holt-Winters model | `packages/core/src/ai-slots/holt-winters.ts` |
-| Demand predictor (updated) | `packages/core/src/ai-slots/demand-predictor.ts` |
-| Prisma schema | `packages/db/prisma/schema/67-eta-logs.prisma` |
-| API routes | `apps/api/src/routes/ai/eta-v2.ts`, `apps/api/src/routes/ai/slots.ts` |
-| Tests | `src/ai-eta-v2/__tests__/gbdt-model.test.ts`, `src/ai-slots/__tests__/holt-winters.test.ts` |
+| Component                  | Location                                                                                    |
+| -------------------------- | ------------------------------------------------------------------------------------------- |
+| GBDT model                 | `packages/core/src/ai-eta-v2/models/gbdt-model.ts`                                          |
+| Ensemble integration       | `packages/core/src/ai-eta-v2/ensemble.ts`                                                   |
+| Holt-Winters model         | `packages/core/src/ai-slots/holt-winters.ts`                                                |
+| Demand predictor (updated) | `packages/core/src/ai-slots/demand-predictor.ts`                                            |
+| Prisma schema              | `packages/db/prisma/schema/67-eta-logs.prisma`                                              |
+| API routes                 | `apps/api/src/routes/ai/eta-v2.ts`, `apps/api/src/routes/ai/slots.ts`                       |
+| Tests                      | `src/ai-eta-v2/__tests__/gbdt-model.test.ts`, `src/ai-slots/__tests__/holt-winters.test.ts` |
 
 ---
 

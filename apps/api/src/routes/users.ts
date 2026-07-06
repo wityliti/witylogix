@@ -86,7 +86,10 @@ async function hashPassword(password: string): Promise<string> {
   return `${salt}:${hash.toString("hex")}`;
 }
 
-async function verifyPassword(password: string, stored: string): Promise<boolean> {
+async function verifyPassword(
+  password: string,
+  stored: string,
+): Promise<boolean> {
   const { scrypt } = await import("crypto");
   const { promisify } = await import("util");
   const scryptAsync = promisify(scrypt);
@@ -199,7 +202,9 @@ async function usersRoutes(fastify: FastifyInstance): Promise<void> {
 
     // Only SUPER_ADMIN can create SUPER_ADMIN users
     if (body.role === "SUPER_ADMIN" && request.auth.role !== "SUPER_ADMIN") {
-      throw new ForbiddenError("Only SUPER_ADMIN can create other SUPER_ADMIN users");
+      throw new ForbiddenError(
+        "Only SUPER_ADMIN can create other SUPER_ADMIN users",
+      );
     }
 
     // Ensure the actor can manage the target role
@@ -217,7 +222,9 @@ async function usersRoutes(fastify: FastifyInstance): Promise<void> {
     });
 
     if (existing) {
-      throw new ConflictError(`A user with email '${body.email}' already exists in this shop`);
+      throw new ConflictError(
+        `A user with email '${body.email}' already exists in this shop`,
+      );
     }
 
     const hashedPassword = await hashPassword(body.password);
@@ -247,16 +254,18 @@ async function usersRoutes(fastify: FastifyInstance): Promise<void> {
     });
 
     if (shop?.orgId) {
-      await prisma.orgMember.create({
-        data: {
-          orgId: shop.orgId,
-          userId: user.id,
-          role: "MEMBER",
-          shopIds: [request.auth.shopId],
-        },
-      }).catch(() => {
-        // Silently fail if already a member (edge case)
-      });
+      await prisma.orgMember
+        .create({
+          data: {
+            orgId: shop.orgId,
+            userId: user.id,
+            role: "MEMBER",
+            shopIds: [request.auth.shopId],
+          },
+        })
+        .catch(() => {
+          // Silently fail if already a member (edge case)
+        });
     }
 
     // Send welcome/invite email via notification queue
@@ -266,19 +275,19 @@ async function usersRoutes(fastify: FastifyInstance): Promise<void> {
         select: { name: true },
       });
 
-      const notificationQueue = (context.notificationQueue as any);
+      const notificationQueue = context.notificationQueue as any;
       if (notificationQueue) {
-        await notificationQueue.add('send-notification', {
-          channel: 'EMAIL',
-          templateId: 'welcome-email',
+        await notificationQueue.add("send-notification", {
+          channel: "EMAIL",
+          templateId: "welcome-email",
           to: user.email,
-          variables: { name: user.name, shopName: shop?.name || 'Your Shop' },
+          variables: { name: user.name, shopName: shop?.name || "Your Shop" },
           shopId: request.auth.shopId,
         });
       }
     } catch (emailError) {
       // Log but don't fail the user creation if notification queue is unavailable
-      console.warn('Failed to queue welcome email:', emailError);
+      console.warn("Failed to queue welcome email:", emailError);
     }
 
     reply.status(201);
@@ -287,59 +296,189 @@ async function usersRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── UPDATE USER ─────────────────────────────────────────────
 
-  fastify.patch("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+  fastify.patch(
+    "/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
-    const { id } = request.params as { id: string };
-    const body = updateUserSchema.parse(request.body);
+      const { id } = request.params as { id: string };
+      const body = updateUserSchema.parse(request.body);
 
-    const user = await prisma.user.findFirst({
-      where: { id, shopId: request.auth.shopId },
-      select: { id: true, role: true, isActive: true },
-    });
+      const user = await prisma.user.findFirst({
+        where: { id, shopId: request.auth.shopId },
+        select: { id: true, role: true, isActive: true },
+      });
 
-    if (!user) throw new NotFoundError("User", id);
+      if (!user) throw new NotFoundError("User", id);
 
-    // Cannot modify users with higher role
-    if (!canManageRole(request.auth.role, user.role)) {
-      throw new ForbiddenError(
-        `Your role (${request.auth.role}) cannot modify users with role ${user.role}`,
-      );
-    }
-
-    // Role escalation checks
-    if (body.role) {
-      if (body.role === "SUPER_ADMIN" && request.auth.role !== "SUPER_ADMIN") {
-        throw new ForbiddenError("Only SUPER_ADMIN can assign the SUPER_ADMIN role");
-      }
-
-      if (!canManageRole(request.auth.role, body.role)) {
+      // Cannot modify users with higher role
+      if (!canManageRole(request.auth.role, user.role)) {
         throw new ForbiddenError(
-          `Your role (${request.auth.role}) cannot assign role ${body.role}`,
+          `Your role (${request.auth.role}) cannot modify users with role ${user.role}`,
         );
       }
-    }
 
-    // Check email uniqueness if changing email
-    if (body.email) {
-      const existing = await prisma.user.findUnique({
-        where: {
-          shopId_email: { shopId: request.auth.shopId, email: body.email },
+      // Role escalation checks
+      if (body.role) {
+        if (
+          body.role === "SUPER_ADMIN" &&
+          request.auth.role !== "SUPER_ADMIN"
+        ) {
+          throw new ForbiddenError(
+            "Only SUPER_ADMIN can assign the SUPER_ADMIN role",
+          );
+        }
+
+        if (!canManageRole(request.auth.role, body.role)) {
+          throw new ForbiddenError(
+            `Your role (${request.auth.role}) cannot assign role ${body.role}`,
+          );
+        }
+      }
+
+      // Check email uniqueness if changing email
+      if (body.email) {
+        const existing = await prisma.user.findUnique({
+          where: {
+            shopId_email: { shopId: request.auth.shopId, email: body.email },
+          },
+        });
+        if (existing && existing.id !== id) {
+          throw new ConflictError(
+            `A user with email '${body.email}' already exists in this shop`,
+          );
+        }
+      }
+
+      // Deactivation checks
+      if (body.isActive === false) {
+        // Cannot deactivate yourself
+        if (id === request.auth.userId) {
+          throw new ValidationError("You cannot deactivate your own account");
+        }
+
+        // Cannot deactivate if this is the last active SUPER_ADMIN
+        if (user.role === "SUPER_ADMIN") {
+          const adminCount = await prisma.user.count({
+            where: {
+              shopId: request.auth.shopId,
+              role: "SUPER_ADMIN",
+              isActive: true,
+              id: { not: id },
+            },
+          });
+          if (adminCount === 0) {
+            throw new ValidationError(
+              "Cannot deactivate the last SUPER_ADMIN. Promote another user first.",
+            );
+          }
+        }
+      }
+
+      const updated = await prisma.user.update({
+        where: { id },
+        data: body,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          isActive: true,
+          updatedAt: true,
         },
       });
-      if (existing && existing.id !== id) {
-        throw new ConflictError(`A user with email '${body.email}' already exists in this shop`);
-      }
-    }
 
-    // Deactivation checks
-    if (body.isActive === false) {
+      return { data: updated };
+    },
+  );
+
+  // ── CHANGE PASSWORD ─────────────────────────────────────────
+
+  fastify.patch(
+    "/:id/password",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { id } = request.params as { id: string };
+      const body = changePasswordSchema.parse(request.body);
+
+      const isSelf = id === request.auth.userId;
+      const isAdmin =
+        request.auth.role === "SUPER_ADMIN" || request.auth.role === "ADMIN";
+
+      if (!isSelf && !isAdmin) {
+        throw new ForbiddenError(
+          "You can only change your own password or must be an admin",
+        );
+      }
+
+      const user = await prisma.user.findFirst({
+        where: { id, shopId: request.auth.shopId },
+        select: { id: true, password: true, role: true },
+      });
+
+      if (!user) throw new NotFoundError("User", id);
+
+      // Admins can't change passwords for higher-role users
+      if (!isSelf && !canManageRole(request.auth.role, user.role)) {
+        throw new ForbiddenError(
+          `Your role (${request.auth.role}) cannot change password for ${user.role} users`,
+        );
+      }
+
+      // Self password change requires current password verification
+      if (isSelf) {
+        if (!body.currentPassword) {
+          throw new ValidationError(
+            "Current password is required when changing your own password",
+          );
+        }
+        if (!user.password) {
+          throw new ValidationError("Account does not have a password set");
+        }
+        const valid = await verifyPassword(body.currentPassword, user.password);
+        if (!valid) {
+          throw new ValidationError("Current password is incorrect");
+        }
+      }
+
+      const hashedPassword = await hashPassword(body.password);
+      await prisma.user.update({
+        where: { id },
+        data: { password: hashedPassword },
+      });
+
+      return { data: { message: "Password updated successfully" } };
+    },
+  );
+
+  // ── DEACTIVATE USER (SOFT DELETE) ───────────────────────────
+
+  fastify.delete(
+    "/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+
+      const { id } = request.params as { id: string };
+
+      const user = await prisma.user.findFirst({
+        where: { id, shopId: request.auth.shopId },
+        select: { id: true, role: true, isActive: true },
+      });
+
+      if (!user) throw new NotFoundError("User", id);
+
       // Cannot deactivate yourself
       if (id === request.auth.userId) {
         throw new ValidationError("You cannot deactivate your own account");
       }
 
-      // Cannot deactivate if this is the last active SUPER_ADMIN
+      // Cannot deactivate users with higher role
+      if (!canManageRole(request.auth.role, user.role)) {
+        throw new ForbiddenError(
+          `Your role (${request.auth.role}) cannot deactivate users with role ${user.role}`,
+        );
+      }
+
+      // Cannot deactivate the last SUPER_ADMIN
       if (user.role === "SUPER_ADMIN") {
         const adminCount = await prisma.user.count({
           where: {
@@ -355,131 +494,24 @@ async function usersRoutes(fastify: FastifyInstance): Promise<void> {
           );
         }
       }
-    }
 
-    const updated = await prisma.user.update({
-      where: { id },
-      data: body,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        isActive: true,
-        updatedAt: true,
-      },
-    });
-
-    return { data: updated };
-  });
-
-  // ── CHANGE PASSWORD ─────────────────────────────────────────
-
-  fastify.patch("/:id/password", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
-    const body = changePasswordSchema.parse(request.body);
-
-    const isSelf = id === request.auth.userId;
-    const isAdmin = request.auth.role === "SUPER_ADMIN" || request.auth.role === "ADMIN";
-
-    if (!isSelf && !isAdmin) {
-      throw new ForbiddenError("You can only change your own password or must be an admin");
-    }
-
-    const user = await prisma.user.findFirst({
-      where: { id, shopId: request.auth.shopId },
-      select: { id: true, password: true, role: true },
-    });
-
-    if (!user) throw new NotFoundError("User", id);
-
-    // Admins can't change passwords for higher-role users
-    if (!isSelf && !canManageRole(request.auth.role, user.role)) {
-      throw new ForbiddenError(
-        `Your role (${request.auth.role}) cannot change password for ${user.role} users`,
-      );
-    }
-
-    // Self password change requires current password verification
-    if (isSelf) {
-      if (!body.currentPassword) {
-        throw new ValidationError("Current password is required when changing your own password");
-      }
-      if (!user.password) {
-        throw new ValidationError("Account does not have a password set");
-      }
-      const valid = await verifyPassword(body.currentPassword, user.password);
-      if (!valid) {
-        throw new ValidationError("Current password is incorrect");
-      }
-    }
-
-    const hashedPassword = await hashPassword(body.password);
-    await prisma.user.update({
-      where: { id },
-      data: { password: hashedPassword },
-    });
-
-    return { data: { message: "Password updated successfully" } };
-  });
-
-  // ── DEACTIVATE USER (SOFT DELETE) ───────────────────────────
-
-  fastify.delete("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
-
-    const { id } = request.params as { id: string };
-
-    const user = await prisma.user.findFirst({
-      where: { id, shopId: request.auth.shopId },
-      select: { id: true, role: true, isActive: true },
-    });
-
-    if (!user) throw new NotFoundError("User", id);
-
-    // Cannot deactivate yourself
-    if (id === request.auth.userId) {
-      throw new ValidationError("You cannot deactivate your own account");
-    }
-
-    // Cannot deactivate users with higher role
-    if (!canManageRole(request.auth.role, user.role)) {
-      throw new ForbiddenError(
-        `Your role (${request.auth.role}) cannot deactivate users with role ${user.role}`,
-      );
-    }
-
-    // Cannot deactivate the last SUPER_ADMIN
-    if (user.role === "SUPER_ADMIN") {
-      const adminCount = await prisma.user.count({
-        where: {
-          shopId: request.auth.shopId,
-          role: "SUPER_ADMIN",
-          isActive: true,
-          id: { not: id },
-        },
+      // Soft delete — preserves audit trail
+      await prisma.user.update({
+        where: { id },
+        data: { isActive: false },
       });
-      if (adminCount === 0) {
-        throw new ValidationError(
-          "Cannot deactivate the last SUPER_ADMIN. Promote another user first.",
-        );
-      }
-    }
 
-    // Soft delete — preserves audit trail
-    await prisma.user.update({
-      where: { id },
-      data: { isActive: false },
-    });
-
-    return { data: { message: "User deactivated", userId: id } };
-  });
+      return { data: { message: "User deactivated", userId: id } };
+    },
+  );
 
   // ── GET CURRENT USER PROFILE ────────────────────────────────
 
   fastify.get("/me", async (request: FastifyRequest, reply: FastifyReply) => {
     if (!request.auth.userId) {
-      throw new ForbiddenError("This endpoint is only available for dashboard users");
+      throw new ForbiddenError(
+        "This endpoint is only available for dashboard users",
+      );
     }
 
     const user = await prisma.user.findUnique({

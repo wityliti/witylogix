@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Header } from '@/components/layout/header';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useApiMutation } from '@/hooks/use-api';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Header } from "@/components/layout/header";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useApiMutation } from "@/hooks/use-api";
 
 interface CustomerPayload {
   firstName: string;
@@ -17,20 +17,20 @@ interface CustomerPayload {
 export default function CreateCustomerPage() {
   const router = useRouter();
   const [form, setForm] = useState<CustomerPayload>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
   });
   const [error, setError] = useState<string | null>(null);
 
-  const create = useApiMutation<{ id: string }>('POST', '/api/v4/customers');
+  const create = useApiMutation<{ id: string }>("POST", "/api/v4/customers");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     if (!form.email.trim()) {
-      setError('Email is required');
+      setError("Email is required");
       return;
     }
     try {
@@ -40,9 +40,11 @@ export default function CreateCustomerPage() {
         email: form.email.trim(),
         phone: form.phone.trim() || undefined,
       });
-      router.push('/customers');
+      router.push("/customers");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create customer');
+      setError(
+        err instanceof Error ? err.message : "Failed to create customer",
+      );
     }
   };
 
@@ -57,7 +59,11 @@ export default function CreateCustomerPage() {
         title="Add Customer"
         subtitle="Create a new customer record"
         actions={
-          <Button variant="secondary" size="md" onClick={() => router.push('/customers')}>
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={() => router.push("/customers")}
+          >
             Cancel
           </Button>
         }
@@ -67,65 +73,82 @@ export default function CreateCustomerPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="cust-first" className="block text-sm font-medium text-wl-text-primary mb-1">
+                <label
+                  htmlFor="cust-first"
+                  className="block text-sm font-medium text-wl-text-primary mb-1"
+                >
                   First name
                 </label>
                 <input
                   id="cust-first"
                   type="text"
                   value={form.firstName}
-                  onChange={update('firstName')}
+                  onChange={update("firstName")}
                   className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
                 />
               </div>
               <div>
-                <label htmlFor="cust-last" className="block text-sm font-medium text-wl-text-primary mb-1">
+                <label
+                  htmlFor="cust-last"
+                  className="block text-sm font-medium text-wl-text-primary mb-1"
+                >
                   Last name
                 </label>
                 <input
                   id="cust-last"
                   type="text"
                   value={form.lastName}
-                  onChange={update('lastName')}
+                  onChange={update("lastName")}
                   className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
                 />
               </div>
             </div>
             <div>
-              <label htmlFor="cust-email" className="block text-sm font-medium text-wl-text-primary mb-1">
+              <label
+                htmlFor="cust-email"
+                className="block text-sm font-medium text-wl-text-primary mb-1"
+              >
                 Email <span className="text-red-400">*</span>
               </label>
               <input
                 id="cust-email"
                 type="email"
                 value={form.email}
-                onChange={update('email')}
+                onChange={update("email")}
                 className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
                 required
               />
             </div>
             <div>
-              <label htmlFor="cust-phone" className="block text-sm font-medium text-wl-text-primary mb-1">
+              <label
+                htmlFor="cust-phone"
+                className="block text-sm font-medium text-wl-text-primary mb-1"
+              >
                 Phone
               </label>
               <input
                 id="cust-phone"
                 type="tel"
                 value={form.phone}
-                onChange={update('phone')}
+                onChange={update("phone")}
                 className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
               />
             </div>
             {error && <p className="text-sm text-red-400">{error}</p>}
             <div className="flex gap-3 pt-2">
-              <Button type="submit" variant="primary" size="md" disabled={create.loading}>
-                {create.loading ? 'Creating…' : 'Create customer'}
+              <Button
+                type="submit"
+                variant="primary"
+                size="md"
+                disabled={create.loading}
+              >
+                {create.loading ? "Creating…" : "Create customer"}
               </Button>
               <Button
                 type="button"
                 variant="secondary"
                 size="md"
-                onClick={() => router.push('/customers')}
+                onClick={() => router.push("/customers")}
                 disabled={create.loading}
               >
                 Cancel

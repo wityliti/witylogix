@@ -7,12 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { BadgeVariant } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  ChevronUp,
-  Clock,
-  Package,
-  AlertCircle,
-} from "lucide-react";
+import { ChevronUp, Clock, Package, AlertCircle } from "lucide-react";
 
 interface Order {
   id: string;
@@ -29,7 +24,10 @@ interface LiveOrderFeedProps {
   onOrderClick?: (order: Order) => void;
 }
 
-const statusColors: Record<Order["status"], { badge: BadgeVariant; bg: string }> = {
+const statusColors: Record<
+  Order["status"],
+  { badge: BadgeVariant; bg: string }
+> = {
   pending: { badge: "warning", bg: "bg-wl-warning-bg" },
   assigned: { badge: "info", bg: "bg-wl-info-bg" },
   "in-transit": { badge: "primary", bg: "bg-wl-primary-500/12" },
@@ -56,10 +54,7 @@ function OrderSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div
-          key={i}
-          className="bg-wl-bg-overlay rounded-lg p-4 space-y-2"
-        >
+        <div key={i} className="bg-wl-bg-overlay rounded-lg p-4 space-y-2">
           <div className="flex justify-between">
             <Skeleton className="h-4 w-24 rounded" />
             <Skeleton className="h-4 w-16 rounded" />
@@ -93,7 +88,7 @@ function OrderCard({
         "border border-wl-border-subtle",
         "transition-all duration-fast ease-default",
         "hover:border-wl-border-default hover:shadow-md",
-        onClick && "cursor-pointer"
+        onClick && "cursor-pointer",
       )}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
@@ -141,29 +136,31 @@ const STATUS_NORMALIZE: Record<string, Order["status"]> = {
   CANCELLED: "cancelled",
 };
 
-export function LiveOrderFeed({
-  className,
-  onOrderClick,
-}: LiveOrderFeedProps) {
+export function LiveOrderFeed({ className, onOrderClick }: LiveOrderFeedProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [newOrderCount, setNewOrderCount] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const prevCountRef = useRef(0);
 
-  const { items: rawOrders, loading: isLoading, refetch } =
-    useApiList<any>('/api/v4/orders', { limit: 10 });
+  const {
+    items: rawOrders,
+    loading: isLoading,
+    refetch,
+  } = useApiList<any>("/api/v4/orders", { limit: 10 });
 
-  const orders = useMemo<Order[]>(() =>
-    rawOrders.map((o) => ({
-      id: o.id,
-      customerId: o.customerId ?? o.id,
-      customerName: o.customerName ?? "Unknown",
-      status: STATUS_NORMALIZE[o.status] ?? "pending",
-      createdAt: new Date(o.createdAt),
-      amount: o.totalAmount ?? o.totalPrice ?? 0,
-      itemCount: o.itemCount ?? o.items?.length ?? 0,
-    })),
-  [rawOrders]);
+  const orders = useMemo<Order[]>(
+    () =>
+      rawOrders.map((o) => ({
+        id: o.id,
+        customerId: o.customerId ?? o.id,
+        customerName: o.customerName ?? "Unknown",
+        status: STATUS_NORMALIZE[o.status] ?? "pending",
+        createdAt: new Date(o.createdAt),
+        amount: o.totalAmount ?? o.totalPrice ?? 0,
+        itemCount: o.itemCount ?? o.items?.length ?? 0,
+      })),
+    [rawOrders],
+  );
 
   // Poll for new orders every 30 seconds
   useEffect(() => {
@@ -176,7 +173,9 @@ export function LiveOrderFeed({
   // Notify when new orders arrive
   useEffect(() => {
     if (orders.length > prevCountRef.current && prevCountRef.current > 0) {
-      setNewOrderCount((prev) => (isScrolled ? prev + (orders.length - prevCountRef.current) : 0));
+      setNewOrderCount((prev) =>
+        isScrolled ? prev + (orders.length - prevCountRef.current) : 0,
+      );
     }
     prevCountRef.current = orders.length;
   }, [orders.length, isScrolled]);
@@ -217,7 +216,7 @@ export function LiveOrderFeed({
           className={cn(
             "bg-wl-primary-500/20 border-b border-wl-primary-500/30",
             "px-5 py-3 flex items-center justify-between cursor-pointer",
-            "hover:bg-wl-primary-500/30 transition-colors duration-fast"
+            "hover:bg-wl-primary-500/30 transition-colors duration-fast",
           )}
         >
           <div className="flex items-center gap-2">
@@ -233,7 +232,9 @@ export function LiveOrderFeed({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        onMouseEnter={() => {/* pause handled by real polling */}}
+        onMouseEnter={() => {
+          /* pause handled by real polling */
+        }}
         onMouseLeave={() => {}}
         className="flex-1 overflow-y-auto space-y-2 p-5"
       >
@@ -250,11 +251,7 @@ export function LiveOrderFeed({
           </div>
         ) : (
           orders.map((order) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              onClick={onOrderClick}
-            />
+            <OrderCard key={order.id} order={order} onClick={onOrderClick} />
           ))
         )}
       </div>

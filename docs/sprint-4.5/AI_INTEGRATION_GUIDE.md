@@ -16,13 +16,13 @@ import {
   driverAvailabilityPredictor,
   type TimeSlot,
   type DriverShift,
-} from '@witylogix/core/ai-slots';
+} from "@witylogix/core/ai-slots";
 
 import {
   etaEngine,
   type HistoricalRoute,
   type TrafficZone,
-} from '@witylogix/core/ai-eta';
+} from "@witylogix/core/ai-eta";
 ```
 
 ### Get a Slot Recommendation
@@ -30,9 +30,9 @@ import {
 ```typescript
 // Minimal example - works immediately with no data
 const recommendations = slotRecommender.recommendSlots({
-  customerId: 'cust_123',
-  zoneId: 'zone_456',
-  date: new Date('2026-03-15'),
+  customerId: "cust_123",
+  zoneId: "zone_456",
+  date: new Date("2026-03-15"),
   maxSlots: 5,
 });
 
@@ -156,9 +156,9 @@ import {
   slotRecommender,
   demandPredictor,
   driverAvailabilityPredictor,
-} from '@witylogix/core/ai-slots';
-import { etaEngine } from '@witylogix/core/ai-eta';
-import { db } from '@witylogix/db'; // Your Prisma client
+} from "@witylogix/core/ai-slots";
+import { etaEngine } from "@witylogix/core/ai-eta";
+import { db } from "@witylogix/db"; // Your Prisma client
 
 // Initialize Slot Recommender
 async function initializeSlotRecommender() {
@@ -202,9 +202,9 @@ async function initializeSlotRecommender() {
 
     slotRecommender.setDriverShifts(shifts);
 
-    console.log('✅ Slot Recommender initialized');
+    console.log("✅ Slot Recommender initialized");
   } catch (error) {
-    console.error('❌ Failed to initialize Slot Recommender:', error);
+    console.error("❌ Failed to initialize Slot Recommender:", error);
   }
 }
 
@@ -231,7 +231,7 @@ async function initializeETAEngine() {
     const convertedZones = zones.map((z) => ({
       zoneId: z.zoneId,
       zoneName: z.zoneName,
-      zoneType: z.zoneType as 'urban' | 'suburban' | 'rural',
+      zoneType: z.zoneType as "urban" | "suburban" | "rural",
       center: { lat: z.centerLat, lng: z.centerLng },
       boundingBox: {
         ne: { lat: z.neLat, lng: z.neLng },
@@ -280,17 +280,17 @@ async function initializeETAEngine() {
       actualArrival: new Date(r.actualArrival),
       dayOfWeek: r.dayOfWeek,
       hourOfDay: r.hourOfDay,
-      trafficCondition: r.trafficCondition as 'light' | 'moderate' | 'heavy',
-      zoneType: r.zoneType as 'urban' | 'suburban' | 'rural',
+      trafficCondition: r.trafficCondition as "light" | "moderate" | "heavy",
+      zoneType: r.zoneType as "urban" | "suburban" | "rural",
       driverId: r.driverId,
       success: r.success,
     }));
 
     etaEngine.loadHistoricalData(convertedRoutes);
 
-    console.log('✅ ETA Engine initialized');
+    console.log("✅ ETA Engine initialized");
   } catch (error) {
-    console.error('❌ Failed to initialize ETA Engine:', error);
+    console.error("❌ Failed to initialize ETA Engine:", error);
   }
 }
 
@@ -301,7 +301,7 @@ async function initializeAIEngines() {
 }
 
 // In your Fastify setup
-fastify.addHook('onReady', initializeAIEngines);
+fastify.addHook("onReady", initializeAIEngines);
 ```
 
 ---
@@ -312,7 +312,11 @@ fastify.addHook('onReady', initializeAIEngines);
 
 ```typescript
 // In your order service or API route
-export async function recommendDeliverySlots(customerId: string, zoneId: string, date: Date) {
+export async function recommendDeliverySlots(
+  customerId: string,
+  zoneId: string,
+  date: Date,
+) {
   const recommendations = slotRecommender.recommendSlots({
     customerId,
     zoneId,
@@ -388,7 +392,7 @@ export async function completeDelivery(orderId: string, actualTime: Date) {
       high: new Date(order.metadata.etaPrediction.high),
     },
     confidence: order.metadata.etaPrediction.confidence,
-    modelsConsidered: JSON.parse(order.metadata.etaPrediction.models || '[]'),
+    modelsConsidered: JSON.parse(order.metadata.etaPrediction.models || "[]"),
   };
 
   // This feeds the models to improve future predictions
@@ -399,10 +403,11 @@ export async function completeDelivery(orderId: string, actualTime: Date) {
     where: { id: orderId },
     data: {
       actualDelivery: actualTime,
-      status: 'DELIVERED',
-      estimationError: Math.abs(
-        actualTime.getTime() - prediction.prediction.expected.getTime()
-      ) / 60000, // Minutes
+      status: "DELIVERED",
+      estimationError:
+        Math.abs(
+          actualTime.getTime() - prediction.prediction.expected.getTime(),
+        ) / 60000, // Minutes
     },
   });
 }
@@ -416,13 +421,13 @@ export async function completeDelivery(orderId: string, actualTime: Date) {
 
 ```typescript
 // In your main API setup
-import aiSlotsRoutes from './routes/ai/slots';
-import aiETARoutes from './routes/ai/eta';
+import aiSlotsRoutes from "./routes/ai/slots";
+import aiETARoutes from "./routes/ai/eta";
 
 export async function setupAPIRoutes(fastify: FastifyInstance) {
   // Register AI routes
-  fastify.register(aiSlotsRoutes, { prefix: '/api/ai/slots' });
-  fastify.register(aiETARoutes, { prefix: '/api/ai/eta' });
+  fastify.register(aiSlotsRoutes, { prefix: "/api/ai/slots" });
+  fastify.register(aiETARoutes, { prefix: "/api/ai/eta" });
 
   // ... other routes ...
 }
@@ -432,12 +437,16 @@ export async function setupAPIRoutes(fastify: FastifyInstance) {
 
 ```typescript
 // Frontend code to get slot recommendations
-async function getSlotRecommendations(customerId: string, zoneId: string, date: string) {
+async function getSlotRecommendations(
+  customerId: string,
+  zoneId: string,
+  date: string,
+) {
   const response = await fetch(`/api/ai/slots/recommend`, {
-    method: 'GET',
+    method: "GET",
     headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       customerId,
@@ -452,7 +461,11 @@ async function getSlotRecommendations(customerId: string, zoneId: string, date: 
 }
 
 // Display recommendations to user
-const slots = await getSlotRecommendations('cust_123', 'zone_456', '2026-03-15');
+const slots = await getSlotRecommendations(
+  "cust_123",
+  "zone_456",
+  "2026-03-15",
+);
 slots.forEach((slot) => {
   console.log(`${slot.slotName}: Score ${slot.score} - ${slot.reasoning}`);
 });
@@ -470,7 +483,7 @@ export async function getModelPerformance() {
   const accuracies = etaEngine.getModelAccuracy();
   const stats = etaEngine.getStatistics();
 
-  console.log('Model Performance:');
+  console.log("Model Performance:");
   accuracies.forEach((acc) => {
     console.log(`${acc.modelName}:`);
     console.log(`  MAE: ${acc.meanAbsoluteError.toFixed(2)} minutes`);
@@ -478,7 +491,7 @@ export async function getModelPerformance() {
     console.log(`  Accuracy: ${(acc.accuracy * 100).toFixed(2)}%`);
   });
 
-  console.log('\nEngine Stats:');
+  console.log("\nEngine Stats:");
   console.log(`Average Accuracy: ${(stats.averageAccuracy * 100).toFixed(2)}%`);
   console.log(`Predictions Recorded: ${stats.predictionsRecorded}`);
 }
@@ -501,8 +514,8 @@ curl http://localhost:3000/api/ai/eta/statistics
 
 ```typescript
 // If one model is significantly more accurate, increase its weight
-etaEngine.setModelWeight('HistoricalModel', 0.35); // Increase from 0.25
-etaEngine.setModelWeight('TimeOfDayModel', 0.20); // Decrease from 0.25
+etaEngine.setModelWeight("HistoricalModel", 0.35); // Increase from 0.25
+etaEngine.setModelWeight("TimeOfDayModel", 0.2); // Decrease from 0.25
 ```
 
 ---
@@ -512,6 +525,7 @@ etaEngine.setModelWeight('TimeOfDayModel', 0.20); // Decrease from 0.25
 ### To Improve Models Over Time:
 
 1. **Record All Deliveries**
+
    ```typescript
    await recordActualDelivery(prediction, actualArrivalTime);
    ```
@@ -543,20 +557,20 @@ etaEngine.setModelWeight('TimeOfDayModel', 0.20); // Decrease from 0.25
 // Feed the models actual delivery data
 const historicalData = [
   {
-    orderId: 'order_1',
-    customerId: 'cust_123',
-    zoneId: 'zone_456',
-    slotStartTime: new Date('2026-03-10T09:00:00'),
-    slotEndTime: new Date('2026-03-10T12:00:00'),
-    orderPlacedAt: new Date('2026-03-08T14:30:00'),
-    actualDeliveryTime: new Date('2026-03-10T10:15:00'),
-    estimatedDeliveryTime: new Date('2026-03-10T10:30:00'),
+    orderId: "order_1",
+    customerId: "cust_123",
+    zoneId: "zone_456",
+    slotStartTime: new Date("2026-03-10T09:00:00"),
+    slotEndTime: new Date("2026-03-10T12:00:00"),
+    orderPlacedAt: new Date("2026-03-08T14:30:00"),
+    actualDeliveryTime: new Date("2026-03-10T10:15:00"),
+    estimatedDeliveryTime: new Date("2026-03-10T10:30:00"),
     dayOfWeek: 2,
     hourOfDay: 10,
     distanceKm: 5.2,
     weight: 2.5,
     items: 3,
-    driverId: 'driver_1',
+    driverId: "driver_1",
     success: true,
   },
   // ... more routes
@@ -584,6 +598,7 @@ etaEngine.loadHistoricalData(routes);
 
 **Issue**: Actual delivery time is often far from predicted
 **Solutions**:
+
 1. Check data quality (valid coordinates, times)
 2. Ensure traffic data is being updated
 3. Verify zone type classifications
@@ -623,10 +638,7 @@ const predictions = etaEngine.predictBatch({
 async function recordDeliveriesAsync(deliveries: any[]) {
   for (const delivery of deliveries) {
     // Non-blocking - doesn't wait for response
-    etaEngine.recordActualDelivery(
-      delivery.prediction,
-      delivery.actualTime
-    );
+    etaEngine.recordActualDelivery(delivery.prediction, delivery.actualTime);
   }
 }
 ```
@@ -636,15 +648,21 @@ async function recordDeliveriesAsync(deliveries: any[]) {
 ## 10. Quick Reference
 
 ### Slot Recommender
+
 ```typescript
 // Single recommendation
 const top = slotRecommender.getTopRecommendation({
-  customerId, zoneId, date
+  customerId,
+  zoneId,
+  date,
 });
 
 // Multiple recommendations
 const slots = slotRecommender.recommendSlots({
-  customerId, zoneId, date, maxSlots: 5
+  customerId,
+  zoneId,
+  date,
+  maxSlots: 5,
 });
 
 // Demand forecast
@@ -652,15 +670,23 @@ const forecast = demandPredictor.predictDemand(zoneId, date, hour);
 const dayForecasts = demandPredictor.predictDemandBatch(zoneId, date);
 
 // Driver availability
-const availability = driverAvailabilityPredictor.predictAvailability(date, hour);
-const dayAvailability = driverAvailabilityPredictor.predictDayAvailability(date);
+const availability = driverAvailabilityPredictor.predictAvailability(
+  date,
+  hour,
+);
+const dayAvailability =
+  driverAvailabilityPredictor.predictDayAvailability(date);
 ```
 
 ### ETA Engine
+
 ```typescript
 // Single prediction
 const eta = etaEngine.predictETA({
-  origin, destination, distanceKm, departureTime
+  origin,
+  destination,
+  distanceKm,
+  departureTime,
 });
 
 // Batch predictions
@@ -674,8 +700,8 @@ const accuracies = etaEngine.getModelAccuracy();
 const stats = etaEngine.getStatistics();
 
 // Configuration
-etaEngine.setModelWeight('ModelName', 0.3);
-etaEngine.setModelEnabled('ModelName', true);
+etaEngine.setModelWeight("ModelName", 0.3);
+etaEngine.setModelEnabled("ModelName", true);
 ```
 
 ---

@@ -41,12 +41,12 @@ Week of March 16-22, 2026:
 
 ### Alert Routing
 
-| Severity | Primary Alert | Escalation |
-|----------|--------------|-----------|
-| SEV1 | SMS + Push | Escalate after 5 min |
-| SEV2 | Email + Slack | Escalate after 15 min |
-| SEV3 | Slack | Next business day |
-| SEV4 | Email daily digest | Next sprint |
+| Severity | Primary Alert      | Escalation            |
+| -------- | ------------------ | --------------------- |
+| SEV1     | SMS + Push         | Escalate after 5 min  |
+| SEV2     | Email + Slack      | Escalate after 15 min |
+| SEV3     | Slack              | Next business day     |
+| SEV4     | Email daily digest | Next sprint           |
 
 ## Escalation Procedures
 
@@ -72,11 +72,13 @@ Can you resolve in 15 min?
 ### Escalation Contacts
 
 **VP Engineering**: [Name]
+
 - Phone: [+1-XXX-XXX-XXXX]
 - Email: [vp-eng@witylogix.com]
 - PagerDuty: [Link]
 
 **Engineering Manager**: [Name]
+
 - Phone: [+1-XXX-XXX-XXXX]
 - Email: [eng-mgr@witylogix.com]
 

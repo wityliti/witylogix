@@ -1,1 +1,1 @@
-export * from './tenant.ts';
+export * from "./tenant.ts";

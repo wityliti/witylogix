@@ -24,7 +24,10 @@ const paginationSchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(20),
   search: z.string().optional(),
   locationId: z.string().optional(),
-  status: z.enum(["in-stock", "low-stock", "out-of-stock", "all"]).optional().default("all"),
+  status: z
+    .enum(["in-stock", "low-stock", "out-of-stock", "all"])
+    .optional()
+    .default("all"),
 });
 
 const createItemSchema = z.object({
@@ -52,7 +55,10 @@ const adjustStockSchema = z.object({
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
-function deriveStatus(quantity: number, reorderPoint: number): "in-stock" | "low-stock" | "out-of-stock" {
+function deriveStatus(
+  quantity: number,
+  reorderPoint: number,
+): "in-stock" | "low-stock" | "out-of-stock" {
   if (quantity <= 0) return "out-of-stock";
   if (quantity <= reorderPoint) return "low-stock";
   return "in-stock";
@@ -79,19 +85,33 @@ async function inventoryRoutes(fastify: FastifyInstance): Promise<void> {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { updatedAt: "desc" as const },
-        include: { movements: { take: 5, orderBy: { createdAt: "desc" as const } } },
+        include: {
+          movements: { take: 5, orderBy: { createdAt: "desc" as const } },
+        },
       }),
       (request.tenantDb as any).inventoryItem.count({ where }),
     ]);
 
     // Enrich with product data
-    const productIds = [...new Set(inventoryItems.map((i: any) => i.productId))];
-    const products = productIds.length > 0
-      ? await request.tenantDb.product.findMany({
-          where: { shopId: request.shopId, id: { in: productIds as string[] } },
-          select: { id: true, title: true, productType: true, vendor: true, inventoryQuantity: true },
-        })
-      : [];
+    const productIds = [
+      ...new Set(inventoryItems.map((i: any) => i.productId)),
+    ];
+    const products =
+      productIds.length > 0
+        ? await request.tenantDb.product.findMany({
+            where: {
+              shopId: request.shopId,
+              id: { in: productIds as string[] },
+            },
+            select: {
+              id: true,
+              title: true,
+              productType: true,
+              vendor: true,
+              inventoryQuantity: true,
+            },
+          })
+        : [];
 
     const productMap = new Map(products.map((p) => [p.id, p]));
 
@@ -135,10 +155,13 @@ async function inventoryRoutes(fastify: FastifyInstance): Promise<void> {
 
     const item = await (request.tenantDb as any).inventoryItem.findUnique({
       where: { id },
-      include: { movements: { orderBy: { createdAt: "desc" as const }, take: 20 } },
+      include: {
+        movements: { orderBy: { createdAt: "desc" as const }, take: 20 },
+      },
     });
 
-    if (!item || item.shopId !== request.shopId) throw new NotFoundError("InventoryItem", id);
+    if (!item || item.shopId !== request.shopId)
+      throw new NotFoundError("InventoryItem", id);
 
     const product = await request.tenantDb.product.findFirst({
       where: { shopId: request.shopId, id: item.productId },
@@ -172,176 +195,238 @@ async function inventoryRoutes(fastify: FastifyInstance): Promise<void> {
     });
 
     reply.status(201);
-    return { data: { ...item, status: deriveStatus(item.quantity, item.reorderPoint) } };
+    return {
+      data: { ...item, status: deriveStatus(item.quantity, item.reorderPoint) },
+    };
   });
 
   // ── UPDATE INVENTORY ITEM ─────────────────────────────────────────
 
-  fastify.patch("/:id", async (request: FastifyRequest, _reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
-    const body = updateItemSchema.parse(request.body);
+  fastify.patch(
+    "/:id",
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const { id } = request.params as { id: string };
+      const body = updateItemSchema.parse(request.body);
 
-    const existing = await (request.tenantDb as any).inventoryItem.findUnique({ where: { id } });
-    if (!existing || existing.shopId !== request.shopId) throw new NotFoundError("InventoryItem", id);
+      const existing = await (request.tenantDb as any).inventoryItem.findUnique(
+        { where: { id } },
+      );
+      if (!existing || existing.shopId !== request.shopId)
+        throw new NotFoundError("InventoryItem", id);
 
-    const updated = await (request.tenantDb as any).inventoryItem.update({
-      where: { id },
-      data: body,
-    });
+      const updated = await (request.tenantDb as any).inventoryItem.update({
+        where: { id },
+        data: body,
+      });
 
-    return { data: { ...updated, status: deriveStatus(updated.quantity, updated.reorderPoint) } };
-  });
+      return {
+        data: {
+          ...updated,
+          status: deriveStatus(updated.quantity, updated.reorderPoint),
+        },
+      };
+    },
+  );
 
   // ── ADJUST STOCK ──────────────────────────────────────────────────
 
-  fastify.post("/:id/adjust", async (request: FastifyRequest, _reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
-    const body = adjustStockSchema.parse(request.body);
+  fastify.post(
+    "/:id/adjust",
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const { id } = request.params as { id: string };
+      const body = adjustStockSchema.parse(request.body);
 
-    const existing = await (request.tenantDb as any).inventoryItem.findUnique({ where: { id } });
-    if (!existing || existing.shopId !== request.shopId) throw new NotFoundError("InventoryItem", id);
+      const existing = await (request.tenantDb as any).inventoryItem.findUnique(
+        { where: { id } },
+      );
+      if (!existing || existing.shopId !== request.shopId)
+        throw new NotFoundError("InventoryItem", id);
 
-    const delta = body.type === "SHIP" ? -Math.abs(body.quantity) : Math.abs(body.quantity);
+      const delta =
+        body.type === "SHIP"
+          ? -Math.abs(body.quantity)
+          : Math.abs(body.quantity);
 
-    const [updated, movement] = await (request.tenantDb as any).$transaction([
-      (request.tenantDb as any).inventoryItem.update({
-        where: { id },
-        data: { quantity: { increment: delta } },
-      }),
-      (request.tenantDb as any).inventoryMovement.create({
+      const [updated, movement] = await (request.tenantDb as any).$transaction([
+        (request.tenantDb as any).inventoryItem.update({
+          where: { id },
+          data: { quantity: { increment: delta } },
+        }),
+        (request.tenantDb as any).inventoryMovement.create({
+          data: {
+            itemId: id,
+            type: body.type,
+            quantity: body.quantity,
+            fromLocationId: body.fromLocationId ?? null,
+            toLocationId: body.toLocationId ?? null,
+            reference: body.reference ?? null,
+          },
+        }),
+      ]);
+
+      return {
         data: {
-          itemId: id,
-          type: body.type,
-          quantity: body.quantity,
-          fromLocationId: body.fromLocationId ?? null,
-          toLocationId: body.toLocationId ?? null,
-          reference: body.reference ?? null,
+          item: {
+            ...updated,
+            status: deriveStatus(updated.quantity, updated.reorderPoint),
+          },
+          movement,
         },
-      }),
-    ]);
-
-    return { data: { item: { ...updated, status: deriveStatus(updated.quantity, updated.reorderPoint) }, movement } };
-  });
+      };
+    },
+  );
 
   // ── LIST MOVEMENTS ────────────────────────────────────────────────
 
-  fastify.get("/movements", async (request: FastifyRequest, _reply: FastifyReply) => {
-    const { page = 1, limit = 20 } = request.query as { page?: number; limit?: number };
+  fastify.get(
+    "/movements",
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const { page = 1, limit = 20 } = request.query as {
+        page?: number;
+        limit?: number;
+      };
 
-    // Get all item IDs for this shop first
-    const itemIds = await (request.tenantDb as any).inventoryItem.findMany({
-      where: { shopId: request.shopId },
-      select: { id: true },
-    });
+      // Get all item IDs for this shop first
+      const itemIds = await (request.tenantDb as any).inventoryItem.findMany({
+        where: { shopId: request.shopId },
+        select: { id: true },
+      });
 
-    const ids = itemIds.map((i: any) => i.id);
-    if (ids.length === 0) {
-      return { data: [], pagination: { page, limit, total: 0, totalPages: 0 } };
-    }
+      const ids = itemIds.map((i: any) => i.id);
+      if (ids.length === 0) {
+        return {
+          data: [],
+          pagination: { page, limit, total: 0, totalPages: 0 },
+        };
+      }
 
-    const [movements, total] = await Promise.all([
-      (request.tenantDb as any).inventoryMovement.findMany({
-        where: { itemId: { in: ids } },
-        orderBy: { createdAt: "desc" as const },
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
-      (request.tenantDb as any).inventoryMovement.count({ where: { itemId: { in: ids } } }),
-    ]);
+      const [movements, total] = await Promise.all([
+        (request.tenantDb as any).inventoryMovement.findMany({
+          where: { itemId: { in: ids } },
+          orderBy: { createdAt: "desc" as const },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+        (request.tenantDb as any).inventoryMovement.count({
+          where: { itemId: { in: ids } },
+        }),
+      ]);
 
-    return { data: movements, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } };
-  });
+      return {
+        data: movements,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    },
+  );
 
   // ── WAREHOUSE AGGREGATES (map view) ──────────────────────────────
 
-  fastify.get("/warehouses", async (request: FastifyRequest, _reply: FastifyReply) => {
-    const shopId = request.shopId;
+  fastify.get(
+    "/warehouses",
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const shopId = request.shopId;
 
-    // Aggregate items per locationId
-    const items: Array<{ locationId: string; quantity: number; reorderPoint: number }> =
-      await (request.tenantDb as any).inventoryItem.findMany({
+      // Aggregate items per locationId
+      const items: Array<{
+        locationId: string;
+        quantity: number;
+        reorderPoint: number;
+      }> = await (request.tenantDb as any).inventoryItem.findMany({
         where: { shopId },
         select: { locationId: true, quantity: true, reorderPoint: true },
       });
 
-    if (items.length === 0) return { data: [] };
+      if (items.length === 0) return { data: [] };
 
-    // Group by locationId
-    const groups = new Map<
-      string,
-      { totalQuantity: number; itemCount: number; lowStock: number; outOfStock: number }
-    >();
-    for (const item of items) {
-      const existing = groups.get(item.locationId) ?? {
-        totalQuantity: 0,
-        itemCount: 0,
-        lowStock: 0,
-        outOfStock: 0,
-      };
-      existing.totalQuantity += item.quantity;
-      existing.itemCount++;
-      if (item.quantity <= 0) existing.outOfStock++;
-      else if (item.quantity <= item.reorderPoint) existing.lowStock++;
-      groups.set(item.locationId, existing);
-    }
-
-    const locationIds = Array.from(groups.keys());
-
-    // Fetch locations with lat/lng via raw SQL (Prisma schema uses raw columns)
-    let locations: Array<{
-      id: string;
-      name: string;
-      city: string | null;
-      latitude: string | null;
-      longitude: string | null;
-    }> = [];
-
-    try {
-      locations = await (request.tenantDb as any).$queryRawUnsafe(
-        `SELECT id, name, city, latitude, longitude
-         FROM locations
-         WHERE id = ANY($1::uuid[]) AND shop_id = $2::uuid`,
-        locationIds,
-        shopId
-      );
-    } catch {
-      // Location table may not have rows; return empty
-      return { data: [] };
-    }
-
-    const result = locations
-      .filter(
-        (loc) =>
-          loc.latitude !== null &&
-          loc.longitude !== null &&
-          !isNaN(parseFloat(loc.latitude!)) &&
-          !isNaN(parseFloat(loc.longitude!))
-      )
-      .map((loc) => {
-        const agg = groups.get(loc.id) ?? {
+      // Group by locationId
+      const groups = new Map<
+        string,
+        {
+          totalQuantity: number;
+          itemCount: number;
+          lowStock: number;
+          outOfStock: number;
+        }
+      >();
+      for (const item of items) {
+        const existing = groups.get(item.locationId) ?? {
           totalQuantity: 0,
           itemCount: 0,
           lowStock: 0,
           outOfStock: 0,
         };
-        const utilizationPercentage =
-          agg.itemCount > 0
-            ? Math.round(((agg.lowStock + agg.outOfStock) / agg.itemCount) * 100)
-            : 0;
-        return {
-          id: loc.id,
-          name: loc.name,
-          city: loc.city ?? null,
-          lat: parseFloat(loc.latitude!),
-          lng: parseFloat(loc.longitude!),
-          totalQuantity: agg.totalQuantity,
-          itemCount: agg.itemCount,
-          utilizationPercentage,
-        };
-      });
+        existing.totalQuantity += item.quantity;
+        existing.itemCount++;
+        if (item.quantity <= 0) existing.outOfStock++;
+        else if (item.quantity <= item.reorderPoint) existing.lowStock++;
+        groups.set(item.locationId, existing);
+      }
 
-    return { data: result };
-  });
+      const locationIds = Array.from(groups.keys());
+
+      // Fetch locations with lat/lng via raw SQL (Prisma schema uses raw columns)
+      let locations: Array<{
+        id: string;
+        name: string;
+        city: string | null;
+        latitude: string | null;
+        longitude: string | null;
+      }> = [];
+
+      try {
+        locations = await (request.tenantDb as any).$queryRawUnsafe(
+          `SELECT id, name, city, latitude, longitude
+         FROM locations
+         WHERE id = ANY($1::uuid[]) AND shop_id = $2::uuid`,
+          locationIds,
+          shopId,
+        );
+      } catch {
+        // Location table may not have rows; return empty
+        return { data: [] };
+      }
+
+      const result = locations
+        .filter(
+          (loc) =>
+            loc.latitude !== null &&
+            loc.longitude !== null &&
+            !isNaN(parseFloat(loc.latitude!)) &&
+            !isNaN(parseFloat(loc.longitude!)),
+        )
+        .map((loc) => {
+          const agg = groups.get(loc.id) ?? {
+            totalQuantity: 0,
+            itemCount: 0,
+            lowStock: 0,
+            outOfStock: 0,
+          };
+          const utilizationPercentage =
+            agg.itemCount > 0
+              ? Math.round(
+                  ((agg.lowStock + agg.outOfStock) / agg.itemCount) * 100,
+                )
+              : 0;
+          return {
+            id: loc.id,
+            name: loc.name,
+            city: loc.city ?? null,
+            lat: parseFloat(loc.latitude!),
+            lng: parseFloat(loc.longitude!),
+            totalQuantity: agg.totalQuantity,
+            itemCount: agg.itemCount,
+            utilizationPercentage,
+          };
+        });
+
+      return { data: result };
+    },
+  );
 }
 
 export default inventoryRoutes;

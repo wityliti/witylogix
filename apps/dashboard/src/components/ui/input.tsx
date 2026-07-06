@@ -1,11 +1,20 @@
 "use client";
 
-import { forwardRef, type InputHTMLAttributes, type TextareaHTMLAttributes, type ReactNode, useState } from "react";
+import {
+  forwardRef,
+  type InputHTMLAttributes,
+  type TextareaHTMLAttributes,
+  type ReactNode,
+  useState,
+} from "react";
 import { cn } from "@/lib/utils";
 
 type InputSize = "sm" | "md" | "lg";
 
-interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "size"> {
+interface InputProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "size"
+> {
   label?: string;
   error?: string;
   hint?: string;
@@ -21,17 +30,8 @@ const sizeClasses: Record<InputSize, string> = {
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
   (
-    {
-      className,
-      label,
-      error,
-      hint,
-      icon,
-      size = "md",
-      disabled,
-      ...props
-    },
-    ref
+    { className, label, error, hint, icon, size = "md", disabled, ...props },
+    ref,
   ) => {
     const [isFocused, setIsFocused] = useState(false);
 
@@ -64,7 +64,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               "disabled:opacity-60 disabled:cursor-not-allowed",
               icon && "pl-10",
               sizeClasses[size],
-              className
+              className,
             )}
             disabled={disabled}
             onFocus={() => setIsFocused(true)}
@@ -73,40 +73,28 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           />
         </div>
 
-        {error && (
-          <span className="text-xs text-wl-danger-400">
-            {error}
-          </span>
-        )}
+        {error && <span className="text-xs text-wl-danger-400">{error}</span>}
 
         {hint && !error && (
-          <span className="text-xs text-wl-text-tertiary">
-            {hint}
-          </span>
+          <span className="text-xs text-wl-text-tertiary">{hint}</span>
         )}
       </div>
     );
-  }
+  },
 );
 
 Input.displayName = "Input";
 
-interface TextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "size"> {
+interface TextareaProps extends Omit<
+  TextareaHTMLAttributes<HTMLTextAreaElement>,
+  "size"
+> {
   label?: string;
   error?: string;
 }
 
 const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  (
-    {
-      className,
-      label,
-      error,
-      disabled,
-      ...props
-    },
-    ref
-  ) => {
+  ({ className, label, error, disabled, ...props }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
 
     return (
@@ -131,7 +119,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
                 : "border-wl-border-default focus:border-wl-primary-500",
             "disabled:opacity-60 disabled:cursor-not-allowed",
             "resize-vertical min-h-20",
-            className
+            className,
           )}
           disabled={disabled}
           onFocus={() => setIsFocused(true)}
@@ -139,14 +127,10 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           {...props}
         />
 
-        {error && (
-          <span className="text-xs text-wl-danger-400">
-            {error}
-          </span>
-        )}
+        {error && <span className="text-xs text-wl-danger-400">{error}</span>}
       </div>
     );
-  }
+  },
 );
 
 Textarea.displayName = "Textarea";

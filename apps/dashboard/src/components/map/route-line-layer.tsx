@@ -1,13 +1,13 @@
-'use client';
+"use client";
 /**
  * RouteLineLayer — draws a dashed line from origin to destination on a WLMap.
  * Used on the shipment detail page to visualise the delivery route.
  */
 
-import { useEffect } from 'react';
-import type { GeoJSONSource } from 'maplibre-gl';
-import { useWLMap } from './wl-map-context';
-import { mapTokens } from './resolve-token';
+import { useEffect } from "react";
+import type { GeoJSONSource } from "maplibre-gl";
+import { useWLMap } from "./wl-map-context";
+import { mapTokens } from "./resolve-token";
 
 export interface RoutePoint {
   lng: number;
@@ -19,8 +19,8 @@ export interface RouteLineLayerProps {
   destination: RoutePoint;
 }
 
-const SOURCE_ID = 'route-line';
-const LAYER_LINE = 'route-line-layer';
+const SOURCE_ID = "route-line";
+const LAYER_LINE = "route-line-layer";
 
 export function RouteLineLayer({ origin, destination }: RouteLineLayerProps) {
   const map = useWLMap();
@@ -31,11 +31,11 @@ export function RouteLineLayer({ origin, destination }: RouteLineLayerProps) {
       if (map.getSource(SOURCE_ID)) return;
 
       map.addSource(SOURCE_ID, {
-        type: 'geojson',
+        type: "geojson",
         data: {
-          type: 'Feature',
+          type: "Feature",
           geometry: {
-            type: 'LineString',
+            type: "LineString",
             coordinates: [
               [origin.lng, origin.lat],
               [destination.lng, destination.lat],
@@ -47,23 +47,23 @@ export function RouteLineLayer({ origin, destination }: RouteLineLayerProps) {
 
       map.addLayer({
         id: LAYER_LINE,
-        type: 'line',
+        type: "line",
         source: SOURCE_ID,
         layout: {
-          'line-join': 'round',
-          'line-cap': 'round',
+          "line-join": "round",
+          "line-cap": "round",
         },
         paint: {
-          'line-color': t.strokeSelected,
-          'line-width': 2.5,
-          'line-dasharray': [3, 3],
-          'line-opacity': 0.75,
+          "line-color": t.strokeSelected,
+          "line-width": 2.5,
+          "line-dasharray": [3, 3],
+          "line-opacity": 0.75,
         },
       });
     };
 
     if (map.isStyleLoaded()) setup();
-    else map.on('load', setup);
+    else map.on("load", setup);
 
     return () => {
       if (map.getLayer(LAYER_LINE)) map.removeLayer(LAYER_LINE);
@@ -77,9 +77,9 @@ export function RouteLineLayer({ origin, destination }: RouteLineLayerProps) {
     const src = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
     if (src) {
       src.setData({
-        type: 'Feature',
+        type: "Feature",
         geometry: {
-          type: 'LineString',
+          type: "LineString",
           coordinates: [
             [origin.lng, origin.lat],
             [destination.lng, destination.lat],

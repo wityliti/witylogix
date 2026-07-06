@@ -9,8 +9,8 @@
  * - Maintain return history and policies
  */
 
-import { z } from 'zod';
-import { prisma } from '@witylogix/db';
+import { z } from "zod";
+import { prisma } from "@witylogix/db";
 import type {
   ReturnRequest,
   ReturnStatus,
@@ -20,51 +20,59 @@ import type {
   ProcessRefundInput,
   ItemCondition,
   ReturnItem,
-} from './types.js';
-import { ReturnStatus as RS } from './types.js';
+} from "./types.js";
+import { ReturnStatus as RS } from "./types.js";
 import {
   validateTransition,
   canTransition,
   isTerminalStatus,
   isActive,
-} from './status-machine.js';
+} from "./status-machine.js";
 import {
   calculateRefund,
   adjustForCondition,
   calculateItemRefund,
-} from './refund-calculator.js';
+} from "./refund-calculator.js";
 
 // ─── VALIDATION SCHEMAS ─────────────────────────────────────────
 
-const createReturnSchema = z.object({
-  orderId: z.string().uuid(),
-  customerId: z.string().uuid(),
-  reason: z.string(),
-  reasonDetails: z.string().min(10),
-  items: z.array(
-    z.object({
-      orderItemId: z.string().uuid(),
-      productId: z.string().uuid(),
-      productName: z.string(),
-      quantity: z.number().int().positive(),
-      unitPrice: z.number().nonnegative(),
-      returnReason: z.string(),
-      condition: z.enum(['new', 'opened', 'damaged', 'defective']),
-    })
-  ).min(1),
-}).strict();
+const createReturnSchema = z
+  .object({
+    orderId: z.string().uuid(),
+    customerId: z.string().uuid(),
+    reason: z.string(),
+    reasonDetails: z.string().min(10),
+    items: z
+      .array(
+        z.object({
+          orderItemId: z.string().uuid(),
+          productId: z.string().uuid(),
+          productName: z.string(),
+          quantity: z.number().int().positive(),
+          unitPrice: z.number().nonnegative(),
+          returnReason: z.string(),
+          condition: z.enum(["new", "opened", "damaged", "defective"]),
+        }),
+      )
+      .min(1),
+  })
+  .strict();
 
-const approveReturnSchema = z.object({
-  approvedBy: z.string(),
-  notes: z.string().optional(),
-  shippingLabelUrl: z.string().url().optional(),
-  trackingNumber: z.string().optional(),
-}).strict();
+const approveReturnSchema = z
+  .object({
+    approvedBy: z.string(),
+    notes: z.string().optional(),
+    shippingLabelUrl: z.string().url().optional(),
+    trackingNumber: z.string().optional(),
+  })
+  .strict();
 
-const inspectReturnSchema = z.object({
-  condition: z.enum(['new', 'opened', 'damaged', 'defective']),
-  notes: z.string().optional(),
-}).strict();
+const inspectReturnSchema = z
+  .object({
+    condition: z.enum(["new", "opened", "damaged", "defective"]),
+    notes: z.string().optional(),
+  })
+  .strict();
 
 // ─── RETURN SERVICE ──────────────────────────────────────────────
 
@@ -83,7 +91,7 @@ export class ReturnService {
   async createReturn(
     input: CreateReturnInput,
     tenantId: string,
-    prisma: any
+    prisma: any,
   ): Promise<ReturnRequest> {
     // Validate input
     const validated = createReturnSchema.parse(input);
@@ -99,7 +107,7 @@ export class ReturnService {
     }
 
     if (order.tenantId !== tenantId) {
-      throw new Error('Order does not belong to this tenant');
+      throw new Error("Order does not belong to this tenant");
     }
 
     // Get return policy for tenant
@@ -108,13 +116,11 @@ export class ReturnService {
     // Check return window
     const orderDate = new Date(order.createdAt);
     const daysElapsed = Math.floor(
-      (Date.now() - orderDate.getTime()) / (1000 * 60 * 60 * 24)
+      (Date.now() - orderDate.getTime()) / (1000 * 60 * 60 * 24),
     );
 
     if (daysElapsed > policy.windowDays) {
-      throw new Error(
-        `Return window of ${policy.windowDays} days has expired`
-      );
+      throw new Error(`Return window of ${policy.windowDays} days has expired`);
     }
 
     // Check max returns per order
@@ -127,18 +133,18 @@ export class ReturnService {
 
     if (existingReturns >= policy.maxReturnsPerOrder) {
       throw new Error(
-        `Maximum returns per order (${policy.maxReturnsPerOrder}) reached`
+        `Maximum returns per order (${policy.maxReturnsPerOrder}) reached`,
       );
     }
 
     // Validate items belong to order
     const orderItemIds = order.items.map((item: any) => item.id);
     const invalidItems = validated.items.filter(
-      (item) => !orderItemIds.includes(item.orderItemId)
+      (item) => !orderItemIds.includes(item.orderItemId),
     );
 
     if (invalidItems.length > 0) {
-      throw new Error('Some items do not belong to this order');
+      throw new Error("Some items do not belong to this order");
     }
 
     // Calculate refund amount
@@ -201,7 +207,7 @@ export class ReturnService {
   async approveReturn(
     id: string,
     input: ApproveReturnInput,
-    prisma: any
+    prisma: any,
   ): Promise<ReturnRequest> {
     const validated = approveReturnSchema.parse(input);
 
@@ -245,7 +251,11 @@ export class ReturnService {
    * @param prisma - Prisma client
    * @returns Updated ReturnRequest
    */
-  async rejectReturn(id: string, reason: string, prisma: any): Promise<ReturnRequest> {
+  async rejectReturn(
+    id: string,
+    reason: string,
+    prisma: any,
+  ): Promise<ReturnRequest> {
     const returnRequest = await db.returnRequest.findUnique({
       where: { id },
       include: { items: true },
@@ -354,7 +364,7 @@ export class ReturnService {
     id: string,
     condition: ItemCondition,
     notes?: string,
-    prisma?: any
+    prisma?: any,
   ): Promise<ReturnRequest> {
     const validated = inspectReturnSchema.parse({ condition, notes });
 
@@ -372,7 +382,7 @@ export class ReturnService {
     // Recalculate refund based on condition
     const adjustment = adjustForCondition(
       returnRequest.refundAmount,
-      validated.condition
+      validated.condition,
     );
 
     const updated = await db.returnRequest.update({
@@ -403,7 +413,7 @@ export class ReturnService {
   async processRefund(
     id: string,
     input: ProcessRefundInput,
-    prisma: any
+    prisma: any,
   ): Promise<ReturnRequest> {
     const returnRequest = await db.returnRequest.findUnique({
       where: { id },
@@ -474,7 +484,7 @@ export class ReturnService {
   async getReturn(
     id: string,
     tenantId: string,
-    prisma: any
+    prisma: any,
   ): Promise<ReturnRequest | null> {
     const returnRequest = await db.returnRequest.findUnique({
       where: { id },
@@ -486,7 +496,7 @@ export class ReturnService {
     }
 
     if (returnRequest.tenantId !== tenantId) {
-      throw new Error('Return does not belong to this tenant');
+      throw new Error("Return does not belong to this tenant");
     }
 
     return this.returnRequestToType(returnRequest);
@@ -514,7 +524,7 @@ export class ReturnService {
       skip?: number;
       take?: number;
     },
-    prisma?: any
+    prisma?: any,
   ): Promise<{
     data: ReturnRequest[];
     total: number;
@@ -554,7 +564,7 @@ export class ReturnService {
         include: { items: true },
         skip,
         take,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       }),
       db.returnRequest.count({ where }),
     ]);
@@ -578,7 +588,7 @@ export class ReturnService {
    */
   private async getReturnPolicy(
     tenantId: string,
-    prisma: any
+    prisma: any,
   ): Promise<ReturnPolicy> {
     const policy = await (prisma as any).returnPolicy.findFirst({
       where: { tenantId },

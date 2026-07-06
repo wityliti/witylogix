@@ -27,7 +27,11 @@ export type {
   DispatchResult,
 } from "./types.js";
 
-export { DeliveryStatus, WebhookEvent, type DispatchStrategy } from "./types.js";
+export {
+  DeliveryStatus,
+  WebhookEvent,
+  type DispatchStrategy,
+} from "./types.js";
 
 // ─── Abstract Adapter ────────────────────────────────────────────
 
@@ -41,7 +45,11 @@ export { UberDirectClient } from "./uber-direct-client.js";
 
 // ─── Normalizer & Comparison ────────────────────────────────────
 
-export { CourierNormalizer, QuoteComparator, StatusTracker } from "./courier-normalizer.js";
+export {
+  CourierNormalizer,
+  QuoteComparator,
+  StatusTracker,
+} from "./courier-normalizer.js";
 
 // ─── Dispatcher ──────────────────────────────────────────────────
 
@@ -59,7 +67,12 @@ export type {
   PerformanceReport,
 } from "./partner-performance.js";
 
-export { PartnerPerformance, partnerPerformance, DEFAULT_PERFORMANCE_WEIGHTS, TIER_THRESHOLDS } from "./partner-performance.js";
+export {
+  PartnerPerformance,
+  partnerPerformance,
+  DEFAULT_PERFORMANCE_WEIGHTS,
+  TIER_THRESHOLDS,
+} from "./partner-performance.js";
 
 // ─── Smart Router ───────────────────────────────────────────────
 

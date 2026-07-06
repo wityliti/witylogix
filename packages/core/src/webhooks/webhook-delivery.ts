@@ -19,9 +19,9 @@ const MAX_RETRY_ATTEMPTS = 3;
  * Used for scheduling retries
  */
 const RETRY_INTERVALS_MS = [
-  10 * 1000,        // 10 seconds
-  60 * 1000,        // 1 minute
-  5 * 60 * 1000,    // 5 minutes
+  10 * 1000, // 10 seconds
+  60 * 1000, // 1 minute
+  5 * 60 * 1000, // 5 minutes
 ];
 
 /**
@@ -50,7 +50,7 @@ export class WebhookDeliveryService {
   async deliver(
     endpoint: WebhookEndpoint,
     event: WebhookEvent,
-    delivery: WebhookDelivery
+    delivery: WebhookDelivery,
   ): Promise<{
     success: boolean;
     statusCode?: number;
@@ -90,7 +90,10 @@ export class WebhookDeliveryService {
 
       // Create abort controller with timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), DELIVERY_TIMEOUT_MS);
+      const timeoutId = setTimeout(
+        () => controller.abort(),
+        DELIVERY_TIMEOUT_MS,
+      );
 
       let response: Response;
       let responseBody = "";
@@ -154,17 +157,17 @@ export class WebhookDeliveryService {
    * @param batchSize - Number of deliveries to process
    * @returns Number of deliveries processed
    */
-  async processPendingDeliveries(tenantId: string, batchSize: number = 10): Promise<number> {
+  async processPendingDeliveries(
+    tenantId: string,
+    batchSize: number = 10,
+  ): Promise<number> {
     // Get pending deliveries that are ready to be retried
     const now = new Date();
     const pending = await (this.prisma as any).webhookDelivery.findMany({
       where: {
         tenantId,
         status: "pending",
-        OR: [
-          { nextRetryAt: null },
-          { nextRetryAt: { lte: now } },
-        ],
+        OR: [{ nextRetryAt: null }, { nextRetryAt: { lte: now } }],
       },
       orderBy: { createdAt: "asc" },
       take: batchSize,
@@ -188,11 +191,7 @@ export class WebhookDeliveryService {
         };
 
         // Attempt delivery
-        const result = await this.deliver(
-          delivery.endpoint,
-          event,
-          delivery
-        );
+        const result = await this.deliver(delivery.endpoint, event, delivery);
 
         if (result.success) {
           // Record success
@@ -200,7 +199,7 @@ export class WebhookDeliveryService {
             delivery.id,
             result.statusCode || 200,
             result.durationMs,
-            result.responseBody
+            result.responseBody,
           );
         } else {
           // Record failure
@@ -209,7 +208,7 @@ export class WebhookDeliveryService {
             result.statusCode,
             result.error,
             result.durationMs,
-            result.responseBody
+            result.responseBody,
           );
         }
 
@@ -218,7 +217,7 @@ export class WebhookDeliveryService {
         // Log error and continue with next delivery
         console.error(
           `Failed to process delivery ${delivery.id}:`,
-          error instanceof Error ? error.message : String(error)
+          error instanceof Error ? error.message : String(error),
         );
       }
     }
@@ -247,8 +246,7 @@ export class WebhookDeliveryService {
    */
   shouldRetry(delivery: WebhookDelivery): boolean {
     return (
-      delivery.status === "failed" &&
-      delivery.attempt < delivery.maxAttempts
+      delivery.status === "failed" && delivery.attempt < delivery.maxAttempts
     );
   }
 
@@ -317,10 +315,13 @@ let deliveryServiceInstance: WebhookDeliveryService | null = null;
  */
 export function getWebhookDeliveryService(
   webhookManager: WebhookManager,
-  prisma: any
+  prisma: any,
 ): WebhookDeliveryService {
   if (!deliveryServiceInstance) {
-    deliveryServiceInstance = new WebhookDeliveryService(webhookManager, prisma);
+    deliveryServiceInstance = new WebhookDeliveryService(
+      webhookManager,
+      prisma,
+    );
   }
   return deliveryServiceInstance;
 }
@@ -336,8 +337,13 @@ export function getWebhookDeliveryService(
  */
 export async function deliverWebhook(
   subscription: any,
-  payload: any
-): Promise<{ success: boolean; statusCode?: number; responseTime: number; error?: string }> {
+  payload: any,
+): Promise<{
+  success: boolean;
+  statusCode?: number;
+  responseTime: number;
+  error?: string;
+}> {
   const startTime = Date.now();
   const payloadString = JSON.stringify(payload);
   const signature = signPayload(payloadString, subscription.secret);
@@ -405,8 +411,14 @@ export function scheduleRetry(attempt: any): any {
     };
   }
 
-  const backoffIndex = Math.min(attempt.attempt - 1, RETRY_INTERVALS_MS.length - 1);
-  const backoffDelay = Math.max(0, backoffIndex >= 0 ? RETRY_INTERVALS_MS[backoffIndex] : 0);
+  const backoffIndex = Math.min(
+    attempt.attempt - 1,
+    RETRY_INTERVALS_MS.length - 1,
+  );
+  const backoffDelay = Math.max(
+    0,
+    backoffIndex >= 0 ? RETRY_INTERVALS_MS[backoffIndex] : 0,
+  );
   const nextScheduledAt = new Date(Date.now() + backoffDelay);
 
   return {

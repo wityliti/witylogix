@@ -3,19 +3,19 @@
  * Main entry point for block registration
  */
 
-import { registerBlockType } from '@wordpress/blocks';
-import { useEffect, useState } from '@wordpress/element';
-import metadata from '../../block.json';
-import { DatePicker } from './components/date-picker';
-import { TimeSlots } from './components/time-slots';
-import { RateDisplay } from './components/rate-display';
-import { DeliveryNotes } from './components/delivery-notes';
+import { registerBlockType } from "@wordpress/blocks";
+import { useEffect, useState } from "@wordpress/element";
+import metadata from "../../block.json";
+import { DatePicker } from "./components/date-picker";
+import { TimeSlots } from "./components/time-slots";
+import { RateDisplay } from "./components/rate-display";
+import { DeliveryNotes } from "./components/delivery-notes";
 import {
   createWitylogixAPI,
   type SlotAvailability,
   type ZoneRate,
-} from './api/witylogix-api';
-import './styles/block.css';
+} from "./api/witylogix-api";
+import "./styles/block.css";
 
 /**
  * Block Component Props
@@ -24,7 +24,7 @@ interface BlockProps {
   attributes: {
     apiUrl: string;
     merchantId: string;
-    defaultView: 'calendar' | 'list';
+    defaultView: "calendar" | "list";
     enableDeliveryNotes: boolean;
   };
 }
@@ -34,16 +34,20 @@ interface BlockProps {
  */
 function DeliverySchedulerBlock({ attributes }: BlockProps) {
   const {
-    apiUrl = 'https://api.witylogix.app',
-    merchantId = '',
+    apiUrl = "https://api.witylogix.app",
+    merchantId = "",
     enableDeliveryNotes = true,
   } = attributes;
 
   // State management
-  const [api, setApi] = useState<InstanceType<typeof import('./api/witylogix-api').WitylogixAPI> | null>(null);
+  const [api, setApi] = useState<InstanceType<
+    typeof import("./api/witylogix-api").WitylogixAPI
+  > | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<SlotAvailability | null>(null);
-  const [deliveryNotes, setDeliveryNotes] = useState('');
+  const [selectedSlot, setSelectedSlot] = useState<SlotAvailability | null>(
+    null,
+  );
+  const [deliveryNotes, setDeliveryNotes] = useState("");
   const [slots, setSlots] = useState<SlotAvailability[]>([]);
   const [rate, setRate] = useState<ZoneRate | null>(null);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
@@ -62,9 +66,10 @@ function DeliverySchedulerBlock({ attributes }: BlockProps) {
         setError(null);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to initialize API';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to initialize API";
       setError(errorMessage);
-      console.error('API initialization error:', err);
+      console.error("API initialization error:", err);
     }
   }, [apiUrl, merchantId]);
 
@@ -81,14 +86,18 @@ function DeliverySchedulerBlock({ attributes }: BlockProps) {
       setIsLoadingSlots(true);
       try {
         const zoneId = shippingAddress?.zone || undefined;
-        const availableSlots = await api.fetchAvailableSlots(selectedDate, zoneId);
+        const availableSlots = await api.fetchAvailableSlots(
+          selectedDate,
+          zoneId,
+        );
         setSlots(availableSlots);
         setSelectedSlot(null);
         setError(null);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch slots';
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch slots";
         setError(errorMessage);
-        console.error('Slot fetch error:', err);
+        console.error("Slot fetch error:", err);
         setSlots([]);
       } finally {
         setIsLoadingSlots(false);
@@ -111,18 +120,19 @@ function DeliverySchedulerBlock({ attributes }: BlockProps) {
       setIsLoadingRate(true);
       try {
         const zoneRate = await api.fetchZoneRates({
-          street: shippingAddress.address_1 || '',
-          city: shippingAddress.city || '',
-          state: shippingAddress.state || '',
-          zipcode: shippingAddress.postcode || '',
-          country: shippingAddress.country || 'US',
+          street: shippingAddress.address_1 || "",
+          city: shippingAddress.city || "",
+          state: shippingAddress.state || "",
+          zipcode: shippingAddress.postcode || "",
+          country: shippingAddress.country || "US",
         });
         setRate(zoneRate);
         setError(null);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch rates';
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch rates";
         setError(errorMessage);
-        console.error('Rate fetch error:', err);
+        console.error("Rate fetch error:", err);
         setRate(null);
       } finally {
         setIsLoadingRate(false);
@@ -136,14 +146,20 @@ function DeliverySchedulerBlock({ attributes }: BlockProps) {
    * Listen for shipping address changes
    */
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const handleAddressChange = (event: CustomEvent) => {
         setShippingAddress(event.detail);
       };
 
-      window.addEventListener('witylogix:address-changed', handleAddressChange as EventListener);
+      window.addEventListener(
+        "witylogix:address-changed",
+        handleAddressChange as EventListener,
+      );
       return () => {
-        window.removeEventListener('witylogix:address-changed', handleAddressChange as EventListener);
+        window.removeEventListener(
+          "witylogix:address-changed",
+          handleAddressChange as EventListener,
+        );
       };
     }
   }, []);
@@ -161,13 +177,13 @@ function DeliverySchedulerBlock({ attributes }: BlockProps) {
         notes: deliveryNotes,
       };
 
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         // Store in window for access by WC hooks
         (window as any).__WITYLOGIX_DELIVERY__ = data;
 
         // Trigger event for form processors
         window.dispatchEvent(
-          new CustomEvent('witylogix:selection-changed', { detail: data })
+          new CustomEvent("witylogix:selection-changed", { detail: data }),
         );
       }
     }
@@ -229,7 +245,7 @@ function DeliverySchedulerBlock({ attributes }: BlockProps) {
               <RateDisplay
                 rate={rate}
                 isLoading={isLoadingRate}
-                error={!shippingAddress ? 'Address required' : undefined}
+                error={!shippingAddress ? "Address required" : undefined}
               />
             </div>
 
@@ -267,7 +283,8 @@ function DeliverySchedulerBlock({ attributes }: BlockProps) {
                     <div className="summary-item">
                       <span className="summary-label">Period:</span>
                       <span className="summary-value">
-                        {selectedSlot.timeGroup.charAt(0).toUpperCase() + selectedSlot.timeGroup.slice(1)}
+                        {selectedSlot.timeGroup.charAt(0).toUpperCase() +
+                          selectedSlot.timeGroup.slice(1)}
                       </span>
                     </div>
                   </>

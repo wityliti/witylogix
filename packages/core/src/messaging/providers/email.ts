@@ -4,15 +4,20 @@
  * Supports HTML rendering, variable substitution, and attachments.
  */
 
-import type { Message, MessageTemplate, SendResult, DeliveryStatus } from '../types.js';
+import type {
+  Message,
+  MessageTemplate,
+  SendResult,
+  DeliveryStatus,
+} from "../types.js";
 import {
   MessageChannel,
   DeliveryStatus as DeliveryStatusEnum,
   InvalidRecipientError,
   AuthenticationError,
   ConfigurationError,
-} from '../types.js';
-import { MessageProvider } from './base.js';
+} from "../types.js";
+import { MessageProvider } from "./base.js";
 
 /**
  * Type stubs for nodemailer-like transporter.
@@ -43,13 +48,13 @@ interface EmailAttachment {
  * Email provider implementation.
  */
 export class EmailProvider extends MessageProvider {
-  readonly providerId = 'email';
+  readonly providerId = "email";
 
   private transporter?: EmailTransporter;
 
   constructor(
     private config: {
-      provider: 'sendgrid' | 'smtp' | 'console';
+      provider: "sendgrid" | "smtp" | "console";
       apiKey?: string;
       from: string;
       host?: string;
@@ -88,7 +93,7 @@ export class EmailProvider extends MessageProvider {
         // In production, would call actual transporter
         // For now, simulate async operation
         if (!options.to || !options.subject) {
-          throw new Error('Missing required email fields');
+          throw new Error("Missing required email fields");
         }
         return { messageId: `mock-${Date.now()}` };
       },
@@ -106,20 +111,24 @@ export class EmailProvider extends MessageProvider {
     if (!this.transporter) {
       throw new ConfigurationError(
         MessageChannel.EMAIL,
-        'Email transporter not initialized',
+        "Email transporter not initialized",
       );
     }
 
     // Validate recipient
     if (!message.to) {
-      throw new InvalidRecipientError(MessageChannel.EMAIL, '', 'Recipient address required');
+      throw new InvalidRecipientError(
+        MessageChannel.EMAIL,
+        "",
+        "Recipient address required",
+      );
     }
 
     if (!validateEmail(message.to)) {
       throw new InvalidRecipientError(
         MessageChannel.EMAIL,
         message.to,
-        'Invalid email format',
+        "Invalid email format",
       );
     }
 
@@ -128,7 +137,7 @@ export class EmailProvider extends MessageProvider {
       throw new InvalidRecipientError(
         MessageChannel.EMAIL,
         message.to,
-        'Email subject required',
+        "Email subject required",
       );
     }
 
@@ -144,8 +153,8 @@ export class EmailProvider extends MessageProvider {
         html,
         text: stripHtmlTags(html), // Fallback plain text
         headers: {
-          'X-Message-ID': message.id,
-          'X-Tenant-ID': message.tenantId,
+          "X-Message-ID": message.id,
+          "X-Tenant-ID": message.tenantId,
         },
       });
 
@@ -155,9 +164,10 @@ export class EmailProvider extends MessageProvider {
         status: DeliveryStatusEnum.SENT,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
 
-      if (errorMessage.includes('authentication')) {
+      if (errorMessage.includes("authentication")) {
         throw new AuthenticationError(
           MessageChannel.EMAIL,
           this.config.provider,
@@ -244,12 +254,12 @@ export function validateEmail(email: string): boolean {
  */
 function stripHtmlTags(html: string): string {
   return html
-    .replace(/<[^>]*>/g, '') // Remove HTML tags
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
+    .replace(/<[^>]*>/g, "") // Remove HTML tags
+    .replace(/&nbsp;/g, " ")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#039;/g, "'")
-    .replace(/&amp;/g, '&')
+    .replace(/&amp;/g, "&")
     .trim();
 }

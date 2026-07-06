@@ -140,7 +140,8 @@ export class SyncEngine {
 
       return result;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.failJob(jobId, errorMessage);
       this.updateSyncStatus(platform, "error", errorMessage);
 
@@ -211,7 +212,8 @@ export class SyncEngine {
 
       return result;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.failJob(jobId, errorMessage);
       this.updateSyncStatus(platform, "error", errorMessage);
 
@@ -282,7 +284,8 @@ export class SyncEngine {
 
       return result;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.failJob(jobId, errorMessage);
       this.updateSyncStatus(platform, "error", errorMessage);
 
@@ -322,7 +325,10 @@ export class SyncEngine {
     entityType: string,
     externalVersion: Record<string, unknown>,
     internalVersion: Record<string, unknown>,
-    strategy: "last-write-wins" | "external-wins" | "internal-wins" = "last-write-wins",
+    strategy:
+      | "last-write-wins"
+      | "external-wins"
+      | "internal-wins" = "last-write-wins",
   ): Promise<Record<string, unknown>> {
     switch (strategy) {
       case "external-wins":
@@ -335,10 +341,14 @@ export class SyncEngine {
       default:
         // Compare timestamps
         const externalTime = new Date(
-          (externalVersion as any).updatedAt || (externalVersion as any).updated_at || 0,
+          (externalVersion as any).updatedAt ||
+            (externalVersion as any).updated_at ||
+            0,
         ).getTime();
         const internalTime = new Date(
-          (internalVersion as any).updatedAt || (internalVersion as any).updated_at || 0,
+          (internalVersion as any).updatedAt ||
+            (internalVersion as any).updated_at ||
+            0,
         ).getTime();
 
         return externalTime > internalTime ? externalVersion : internalVersion;
@@ -367,11 +377,18 @@ export class SyncEngine {
    * Get sync statistics
    */
   getSyncStatistics(platform: string): SyncStatistics {
-    const platformJobs = this.syncJobs.filter((job) => job.platform === platform);
-    const completedJobs = platformJobs.filter((job) => job.status === "completed");
+    const platformJobs = this.syncJobs.filter(
+      (job) => job.platform === platform,
+    );
+    const completedJobs = platformJobs.filter(
+      (job) => job.status === "completed",
+    );
     const failedJobs = platformJobs.filter((job) => job.status === "failed");
 
-    const totalDuration = completedJobs.reduce((sum, job) => sum + (job.result?.duration || 0), 0);
+    const totalDuration = completedJobs.reduce(
+      (sum, job) => sum + (job.result?.duration || 0),
+      0,
+    );
     const averageDuration =
       completedJobs.length > 0 ? totalDuration / completedJobs.length : 0;
 

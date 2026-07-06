@@ -26,7 +26,12 @@ export interface RatePackage {
   quantity: number;
 }
 
-export type ServiceLevel = "economy" | "ground" | "express" | "overnight" | "same_day";
+export type ServiceLevel =
+  | "economy"
+  | "ground"
+  | "express"
+  | "overnight"
+  | "same_day";
 
 export interface RateOptions {
   insurance?: boolean;

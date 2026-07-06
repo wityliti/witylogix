@@ -35,12 +35,12 @@ class ApiError extends Error {
  * Get JWT token from cookie
  */
 function getAuthToken(): string | null {
-  if (typeof document === 'undefined') return null;
+  if (typeof document === "undefined") return null;
 
   const token = document.cookie
-    .split('; ')
-    .find(c => c.startsWith('auth-token='))
-    ?.split('=')[1];
+    .split("; ")
+    .find((c) => c.startsWith("auth-token="))
+    ?.split("=")[1];
 
   return token || null;
 }
@@ -54,10 +54,7 @@ function handleUnauthorized(): void {
   // Aggressive clearing causes cascading auth failures across concurrent requests.
 }
 
-async function request<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE}${path}`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -67,17 +64,19 @@ async function request<T>(
   // Attach JWT token from httpOnly cookie
   const token = getAuthToken();
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   // Add timeout if no signal provided
   const controller = !options.signal ? new AbortController() : null;
-  const timeoutId = controller ? setTimeout(() => controller.abort(), 30000) : null;
+  const timeoutId = controller
+    ? setTimeout(() => controller.abort(), 30000)
+    : null;
 
   const res = await fetch(url, {
     ...options,
     headers,
-    credentials: 'include',
+    credentials: "include",
     signal: options.signal ?? controller?.signal,
   });
 
@@ -86,12 +85,16 @@ async function request<T>(
   if (res.status === 401) {
     // Token is invalid or expired
     handleUnauthorized();
-    throw new ApiError(401, 'Unauthorized. Please log in again.');
+    throw new ApiError(401, "Unauthorized. Please log in again.");
   }
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    throw new ApiError(res.status, `API ${res.status}: ${res.statusText}`, body);
+    throw new ApiError(
+      res.status,
+      `API ${res.status}: ${res.statusText}`,
+      body,
+    );
   }
 
   return res.json();
@@ -108,16 +111,18 @@ async function requestBlob(
 
   const token = getAuthToken();
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   const controller = !options.signal ? new AbortController() : null;
-  const timeoutId = controller ? setTimeout(() => controller.abort(), 60000) : null;
+  const timeoutId = controller
+    ? setTimeout(() => controller.abort(), 60000)
+    : null;
 
   const res = await fetch(url, {
     ...options,
     headers,
-    credentials: 'include',
+    credentials: "include",
     signal: options.signal ?? controller?.signal,
   });
 
@@ -125,7 +130,7 @@ async function requestBlob(
 
   if (res.status === 401) {
     handleUnauthorized();
-    throw new ApiError(401, 'Unauthorized. Please log in again.');
+    throw new ApiError(401, "Unauthorized. Please log in again.");
   }
 
   if (!res.ok) {
@@ -138,11 +143,24 @@ async function requestBlob(
 export const api = {
   get: <T>(path: string, options?: RequestInit) => request<T>(path, options),
   post: <T>(path: string, body?: unknown, options?: RequestInit) =>
-    request<T>(path, { method: "POST", body: body ? JSON.stringify(body) : undefined, ...options }),
+    request<T>(path, {
+      method: "POST",
+      body: body ? JSON.stringify(body) : undefined,
+      ...options,
+    }),
   put: <T>(path: string, body?: unknown, options?: RequestInit) =>
-    request<T>(path, { method: "PUT", body: body ? JSON.stringify(body) : undefined, ...options }),
+    request<T>(path, {
+      method: "PUT",
+      body: body ? JSON.stringify(body) : undefined,
+      ...options,
+    }),
   patch: <T>(path: string, body?: unknown, options?: RequestInit) =>
-    request<T>(path, { method: "PATCH", body: body ? JSON.stringify(body) : undefined, ...options }),
-  delete: <T>(path: string, options?: RequestInit) => request<T>(path, { method: "DELETE", ...options }),
+    request<T>(path, {
+      method: "PATCH",
+      body: body ? JSON.stringify(body) : undefined,
+      ...options,
+    }),
+  delete: <T>(path: string, options?: RequestInit) =>
+    request<T>(path, { method: "DELETE", ...options }),
   download: (path: string, options?: RequestInit) => requestBlob(path, options),
 };

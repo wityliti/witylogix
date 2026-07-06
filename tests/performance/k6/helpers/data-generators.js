@@ -57,7 +57,9 @@ export function randomFloat(min, max, decimals = 2) {
  * @returns {string} Random alphanumeric string
  */
 export function randomString(length = 8) {
-  return Math.random().toString(36).substring(2, 2 + length);
+  return Math.random()
+    .toString(36)
+    .substring(2, 2 + length);
 }
 
 // ─── Contact Information Generators ────────────────────────────────────────
@@ -67,7 +69,7 @@ export function randomString(length = 8) {
  * @param {string} domain - Email domain
  * @returns {string} Email address
  */
-export function generateEmail(domain = 'perf-test.local') {
+export function generateEmail(domain = "perf-test.local") {
   const timestamp = Date.now();
   const random = randomString(6);
   return `user.${timestamp}.${random}@${domain}`;
@@ -91,12 +93,40 @@ export function generatePhone(areaCode = null) {
  */
 export function generateName() {
   const firstNames = [
-    'John', 'Jane', 'Michael', 'Sarah', 'David', 'Emma', 'Robert', 'Lisa',
-    'James', 'Jennifer', 'William', 'Mary', 'Richard', 'Patricia', 'Joseph', 'Linda',
+    "John",
+    "Jane",
+    "Michael",
+    "Sarah",
+    "David",
+    "Emma",
+    "Robert",
+    "Lisa",
+    "James",
+    "Jennifer",
+    "William",
+    "Mary",
+    "Richard",
+    "Patricia",
+    "Joseph",
+    "Linda",
   ];
   const lastNames = [
-    'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis',
-    'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas',
+    "Smith",
+    "Johnson",
+    "Williams",
+    "Brown",
+    "Jones",
+    "Garcia",
+    "Miller",
+    "Davis",
+    "Rodriguez",
+    "Martinez",
+    "Hernandez",
+    "Lopez",
+    "Gonzalez",
+    "Wilson",
+    "Anderson",
+    "Thomas",
   ];
 
   const first = randomFromArray(firstNames);
@@ -112,38 +142,74 @@ export function generateName() {
  */
 export function generateAddress() {
   const streets = [
-    'Main Street', 'Oak Avenue', 'Maple Drive', 'Elm Street', 'Pine Road',
-    'Birch Lane', 'Cedar Court', 'Ash Boulevard', 'Walnut Way', 'Spruce Circle',
+    "Main Street",
+    "Oak Avenue",
+    "Maple Drive",
+    "Elm Street",
+    "Pine Road",
+    "Birch Lane",
+    "Cedar Court",
+    "Ash Boulevard",
+    "Walnut Way",
+    "Spruce Circle",
   ];
 
   const cities = [
-    'San Francisco', 'Los Angeles', 'New York', 'Chicago', 'Houston',
-    'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas',
-    'Boston', 'Seattle', 'Denver', 'Austin', 'Portland',
+    "San Francisco",
+    "Los Angeles",
+    "New York",
+    "Chicago",
+    "Houston",
+    "Phoenix",
+    "Philadelphia",
+    "San Antonio",
+    "San Diego",
+    "Dallas",
+    "Boston",
+    "Seattle",
+    "Denver",
+    "Austin",
+    "Portland",
   ];
 
-  const states = ['CA', 'NY', 'TX', 'FL', 'IL', 'PA', 'OH', 'GA', 'NC', 'MI', 'NJ', 'VA', 'WA', 'AZ', 'CO'];
+  const states = [
+    "CA",
+    "NY",
+    "TX",
+    "FL",
+    "IL",
+    "PA",
+    "OH",
+    "GA",
+    "NC",
+    "MI",
+    "NJ",
+    "VA",
+    "WA",
+    "AZ",
+    "CO",
+  ];
 
   const zipCodes = {
-    'CA': ['90001', '94102', '92101', '95014', '91001'],
-    'NY': ['10001', '10002', '10003', '10004', '10005'],
-    'TX': ['75001', '77001', '78201', '78701', '75701'],
-    'FL': ['33101', '33102', '33103', '33104', '33105'],
-    'IL': ['60601', '60602', '60603', '60604', '60605'],
+    CA: ["90001", "94102", "92101", "95014", "91001"],
+    NY: ["10001", "10002", "10003", "10004", "10005"],
+    TX: ["75001", "77001", "78201", "78701", "75701"],
+    FL: ["33101", "33102", "33103", "33104", "33105"],
+    IL: ["60601", "60602", "60603", "60604", "60605"],
   };
 
   const street = randomFromArray(streets);
   const city = randomFromArray(cities);
   const state = randomFromArray(states);
   const streetNumber = randomInt(100, 9999);
-  const zipCode = zipCodes[state]?.[0] || '10001';
+  const zipCode = zipCodes[state]?.[0] || "10001";
 
   return {
     street: `${streetNumber} ${street}`,
     city,
     state,
     postalCode: zipCode,
-    country: 'US',
+    country: "US",
     latitude: randomFloat(24.5, 49.5, 4),
     longitude: randomFloat(-125, -65, 4),
   };
@@ -159,13 +225,13 @@ export function generateAddress() {
  */
 export function generateOrder(customerId, shopId = null) {
   const products = [
-    { name: 'Laptop', baseSku: 'LAPTOP', basePrice: 99900 },
-    { name: 'Monitor', baseSku: 'MON', basePrice: 29900 },
-    { name: 'Keyboard', baseSku: 'KB', basePrice: 8900 },
-    { name: 'Mouse', baseSku: 'MOUSE', basePrice: 2900 },
-    { name: 'Headphones', baseSku: 'HP', basePrice: 12900 },
-    { name: 'Desk', baseSku: 'DESK', basePrice: 39900 },
-    { name: 'Chair', baseSku: 'CHAIR', basePrice: 24900 },
+    { name: "Laptop", baseSku: "LAPTOP", basePrice: 99900 },
+    { name: "Monitor", baseSku: "MON", basePrice: 29900 },
+    { name: "Keyboard", baseSku: "KB", basePrice: 8900 },
+    { name: "Mouse", baseSku: "MOUSE", basePrice: 2900 },
+    { name: "Headphones", baseSku: "HP", basePrice: 12900 },
+    { name: "Desk", baseSku: "DESK", basePrice: 39900 },
+    { name: "Chair", baseSku: "CHAIR", basePrice: 24900 },
   ];
 
   const selectedProduct = randomFromArray(products);
@@ -199,8 +265,8 @@ export function generateOrder(customerId, shopId = null) {
     taxAmount: tax,
     shippingCost,
     totalAmount: total,
-    currency: 'USD',
-    status: 'pending',
+    currency: "USD",
+    status: "pending",
     customerName: generateName(),
     customerEmail: generateEmail(),
     customerPhone: generatePhone(),
@@ -210,7 +276,9 @@ export function generateOrder(customerId, shopId = null) {
     },
     notes: `Order notes ${randomString(8)}`,
     createdAt: new Date().toISOString(),
-    scheduledDeliveryDate: new Date(Date.now() + randomInt(1, 7) * 24 * 60 * 60 * 1000).toISOString(),
+    scheduledDeliveryDate: new Date(
+      Date.now() + randomInt(1, 7) * 24 * 60 * 60 * 1000,
+    ).toISOString(),
   };
 }
 
@@ -236,7 +304,7 @@ export function generateOrders(customerId, count = 5) {
  * @returns {Object} Driver object
  */
 export function generateDriver(shopId) {
-  const vehicleTypes = ['car', 'van', 'truck', 'motorcycle', 'bicycle'];
+  const vehicleTypes = ["car", "van", "truck", "motorcycle", "bicycle"];
   const address = generateAddress();
 
   return {
@@ -246,21 +314,30 @@ export function generateDriver(shopId) {
     email: generateEmail(),
     phone: generatePhone(),
     licenseNumber: `DL${randomString(10).toUpperCase()}`,
-    licenseExpiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+    licenseExpiryDate: new Date(
+      Date.now() + 365 * 24 * 60 * 60 * 1000,
+    ).toISOString(),
     vehicleType: randomFromArray(vehicleTypes),
     vehiclePlate: `${randomString(3).toUpperCase()}${randomInt(1000, 9999)}`,
-    vehicleModel: randomFromArray(['Toyota Camry', 'Honda Civic', 'Ford Transit', 'Chevy Bolt']),
+    vehicleModel: randomFromArray([
+      "Toyota Camry",
+      "Honda Civic",
+      "Ford Transit",
+      "Chevy Bolt",
+    ]),
     currentLocation: {
       latitude: address.latitude,
       longitude: address.longitude,
       updatedAt: new Date().toISOString(),
     },
-    status: randomFromArray(['available', 'busy', 'offline']),
+    status: randomFromArray(["available", "busy", "offline"]),
     rating: randomFloat(3.5, 5.0),
     totalDeliveries: randomInt(50, 500),
     acceptanceRate: randomFloat(0.85, 0.99, 2),
     cancellationRate: randomFloat(0.01, 0.1, 2),
-    createdAt: new Date(Date.now() - randomInt(30, 365) * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(
+      Date.now() - randomInt(30, 365) * 24 * 60 * 60 * 1000,
+    ).toISOString(),
   };
 }
 
@@ -287,12 +364,23 @@ export function generateDrivers(shopId, count = 10) {
  * @returns {Object} Delivery object
  */
 export function generateDelivery(orderId, driverId = null) {
-  const statuses = ['pending', 'assigned', 'picked_up', 'in_transit', 'delivered', 'failed'];
+  const statuses = [
+    "pending",
+    "assigned",
+    "picked_up",
+    "in_transit",
+    "delivered",
+    "failed",
+  ];
   const pickupAddress = generateAddress();
   const deliveryAddress = generateAddress();
 
-  const createdAt = new Date(Date.now() - randomInt(1, 7) * 24 * 60 * 60 * 1000);
-  const estimatedDeliveryTime = new Date(createdAt.getTime() + randomInt(2, 24) * 60 * 60 * 1000);
+  const createdAt = new Date(
+    Date.now() - randomInt(1, 7) * 24 * 60 * 60 * 1000,
+  );
+  const estimatedDeliveryTime = new Date(
+    createdAt.getTime() + randomInt(2, 24) * 60 * 60 * 1000,
+  );
 
   return {
     deliveryId: `del_${Date.now()}_${randomString(6)}`,
@@ -300,18 +388,18 @@ export function generateDelivery(orderId, driverId = null) {
     driverId: driverId || `drv_${randomString(8)}`,
     pickupLocation: {
       ...pickupAddress,
-      name: 'Warehouse A',
+      name: "Warehouse A",
       contactName: generateName(),
       contactPhone: generatePhone(),
     },
     deliveryLocation: {
       ...deliveryAddress,
-      name: 'Customer Location',
+      name: "Customer Location",
       contactName: generateName(),
       contactPhone: generatePhone(),
     },
     status: randomFromArray(statuses),
-    priority: randomFromArray(['standard', 'express', 'next_day']),
+    priority: randomFromArray(["standard", "express", "next_day"]),
     estimatedDistance: randomFloat(5, 100, 1),
     estimatedDuration: randomInt(15, 180),
     estimatedDeliveryTime: estimatedDeliveryTime.toISOString(),
@@ -319,8 +407,14 @@ export function generateDelivery(orderId, driverId = null) {
     attempts: randomInt(1, 3),
     route: {
       waypoints: [
-        { latitude: pickupAddress.latitude, longitude: pickupAddress.longitude },
-        { latitude: deliveryAddress.latitude, longitude: deliveryAddress.longitude },
+        {
+          latitude: pickupAddress.latitude,
+          longitude: pickupAddress.longitude,
+        },
+        {
+          latitude: deliveryAddress.latitude,
+          longitude: deliveryAddress.longitude,
+        },
       ],
       totalDistance: randomFloat(5, 100, 1),
       totalDuration: randomInt(15, 180),
@@ -329,9 +423,9 @@ export function generateDelivery(orderId, driverId = null) {
     trackingUpdates: [
       {
         timestamp: createdAt.toISOString(),
-        status: 'pending',
+        status: "pending",
         location: pickupAddress,
-        message: 'Delivery created',
+        message: "Delivery created",
       },
     ],
     createdAt: createdAt.toISOString(),
@@ -368,7 +462,7 @@ export function generateWebhookEvent(eventType, resourceId, resourceData = {}) {
     eventType,
     timestamp: new Date().toISOString(),
     resourceId,
-    resourceType: eventType.split('.')[0],
+    resourceType: eventType.split(".")[0],
     resourceData,
     attemptNumber: 1,
     retryable: true,
@@ -385,7 +479,12 @@ export function generateWebhookEvent(eventType, resourceId, resourceData = {}) {
  * @param {number} total - Total items
  * @returns {Object} Paginated response
  */
-export function generatePaginatedResponse(items, page = 1, pageSize = 20, total = null) {
+export function generatePaginatedResponse(
+  items,
+  page = 1,
+  pageSize = 20,
+  total = null,
+) {
   return {
     data: items,
     pagination: {
@@ -410,9 +509,17 @@ export function generatePaginatedResponse(items, page = 1, pageSize = 20, total 
  * @param {boolean} hasMore - Has more items
  * @returns {Object} Cursor-paginated response
  */
-export function generateCursorPaginatedResponse(items, cursor = null, limit = 20, hasMore = false) {
+export function generateCursorPaginatedResponse(
+  items,
+  cursor = null,
+  limit = 20,
+  hasMore = false,
+) {
   const lastItem = items[items.length - 1];
-  const nextCursor = hasMore && lastItem ? btoa(JSON.stringify({ id: lastItem.id, timestamp: Date.now() })) : null;
+  const nextCursor =
+    hasMore && lastItem
+      ? btoa(JSON.stringify({ id: lastItem.id, timestamp: Date.now() }))
+      : null;
 
   return {
     data: items,

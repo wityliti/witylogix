@@ -35,12 +35,27 @@ export interface FilterPanelProps {
 // ─── CONSTANTS ──────────────────────────────────────────────────────
 
 const STATUS_OPTIONS: Record<string, string[]> = {
-  orders: ["PENDING", "ACCEPTED", "ASSIGNED", "PICKED_UP", "OUT_FOR_DELIVERY", "DELIVERED", "FAILED", "CANCELLED"],
+  orders: [
+    "PENDING",
+    "ACCEPTED",
+    "ASSIGNED",
+    "PICKED_UP",
+    "OUT_FOR_DELIVERY",
+    "DELIVERED",
+    "FAILED",
+    "CANCELLED",
+  ],
   drivers: ["ACTIVE", "INACTIVE", "ON_DUTY", "OFF_DUTY"],
   deliveries: ["PENDING", "IN_PROGRESS", "COMPLETED", "FAILED"],
 };
 
-const DATE_SHORTCUTS = ["Today", "This Week", "This Month", "Last 30 Days", "Custom"];
+const DATE_SHORTCUTS = [
+  "Today",
+  "This Week",
+  "This Month",
+  "Last 30 Days",
+  "Custom",
+];
 
 // ─── COMPONENT ──────────────────────────────────────────────────────
 
@@ -52,9 +67,13 @@ export function FilterPanel({
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState<Filter[]>([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDateShortcut, setSelectedDateShortcut] = useState<string | null>(null);
+  const [selectedDateShortcut, setSelectedDateShortcut] = useState<
+    string | null
+  >(null);
   const [dateRange, setDateRange] = useState<[string, string]>(["", ""]);
-  const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(new Set());
+  const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(
+    new Set(),
+  );
   const [showSavePreset, setShowSavePreset] = useState(false);
   const [presetName, setPresetName] = useState("");
 
@@ -76,7 +95,7 @@ export function FilterPanel({
         return [...prev, newFilter];
       });
     },
-    []
+    [],
   );
 
   /**
@@ -99,65 +118,108 @@ export function FilterPanel({
   /**
    * Handle status checkbox toggle.
    */
-  const toggleStatus = useCallback((status: string) => {
-    setSelectedStatuses((prev) => {
-      const updated = new Set(prev);
-      if (updated.has(status)) {
-        updated.delete(status);
-      } else {
-        updated.add(status);
-      }
+  const toggleStatus = useCallback(
+    (status: string) => {
+      setSelectedStatuses((prev) => {
+        const updated = new Set(prev);
+        if (updated.has(status)) {
+          updated.delete(status);
+        } else {
+          updated.add(status);
+        }
 
-      if (updated.size > 0) {
-        updateFilter("status", Array.from(updated), "Status", "in");
-      } else {
-        removeFilter("status");
-      }
+        if (updated.size > 0) {
+          updateFilter("status", Array.from(updated), "Status", "in");
+        } else {
+          removeFilter("status");
+        }
 
-      return updated;
-    });
-  }, [updateFilter, removeFilter]);
+        return updated;
+      });
+    },
+    [updateFilter, removeFilter],
+  );
 
   /**
    * Handle date shortcut.
    */
-  const handleDateShortcut = useCallback((shortcut: string) => {
-    setSelectedDateShortcut(shortcut);
-    setShowDatePicker(false);
+  const handleDateShortcut = useCallback(
+    (shortcut: string) => {
+      setSelectedDateShortcut(shortcut);
+      setShowDatePicker(false);
 
-    // Calculate date range based on shortcut
-    const today = new Date();
-    let startDate = new Date();
+      // Calculate date range based on shortcut
+      const today = new Date();
+      let startDate = new Date();
 
-    switch (shortcut) {
-      case "Today":
-        startDate.setHours(0, 0, 0, 0);
-        updateFilter("createdAt", [startDate.toISOString().split("T")[0], today.toISOString().split("T")[0]], "Today", "between");
-        break;
-      case "This Week":
-        startDate.setDate(today.getDate() - today.getDay());
-        updateFilter("createdAt", [startDate.toISOString().split("T")[0], today.toISOString().split("T")[0]], "This Week", "between");
-        break;
-      case "This Month":
-        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-        updateFilter("createdAt", [startDate.toISOString().split("T")[0], today.toISOString().split("T")[0]], "This Month", "between");
-        break;
-      case "Last 30 Days":
-        startDate.setDate(today.getDate() - 30);
-        updateFilter("createdAt", [startDate.toISOString().split("T")[0], today.toISOString().split("T")[0]], "Last 30 Days", "between");
-        break;
-      case "Custom":
-        setShowDatePicker(true);
-        break;
-    }
-  }, [updateFilter]);
+      switch (shortcut) {
+        case "Today":
+          startDate.setHours(0, 0, 0, 0);
+          updateFilter(
+            "createdAt",
+            [
+              startDate.toISOString().split("T")[0],
+              today.toISOString().split("T")[0],
+            ],
+            "Today",
+            "between",
+          );
+          break;
+        case "This Week":
+          startDate.setDate(today.getDate() - today.getDay());
+          updateFilter(
+            "createdAt",
+            [
+              startDate.toISOString().split("T")[0],
+              today.toISOString().split("T")[0],
+            ],
+            "This Week",
+            "between",
+          );
+          break;
+        case "This Month":
+          startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+          updateFilter(
+            "createdAt",
+            [
+              startDate.toISOString().split("T")[0],
+              today.toISOString().split("T")[0],
+            ],
+            "This Month",
+            "between",
+          );
+          break;
+        case "Last 30 Days":
+          startDate.setDate(today.getDate() - 30);
+          updateFilter(
+            "createdAt",
+            [
+              startDate.toISOString().split("T")[0],
+              today.toISOString().split("T")[0],
+            ],
+            "Last 30 Days",
+            "between",
+          );
+          break;
+        case "Custom":
+          setShowDatePicker(true);
+          break;
+      }
+    },
+    [updateFilter],
+  );
 
   /**
    * Apply custom date range.
    */
   const applyCustomDateRange = useCallback(() => {
     if (dateRange[0] && dateRange[1]) {
-      updateFilter("createdAt", dateRange, `${dateRange[0]} to ${dateRange[1]}`, "between");
+      updateFilter(
+        "createdAt",
+        dateRange,
+        `${dateRange[0]} to ${dateRange[1]}`,
+        "between",
+      );
       setShowDatePicker(false);
     }
   }, [dateRange, updateFilter]);
@@ -190,7 +252,7 @@ export function FilterPanel({
           <svg
             className={cn(
               "h-5 w-5 transition-transform",
-              isOpen && "rotate-180"
+              isOpen && "rotate-180",
             )}
             fill="none"
             viewBox="0 0 24 24"
@@ -209,7 +271,9 @@ export function FilterPanel({
       {/* Active Filters Chips */}
       {filters.length > 0 && (
         <div className="border-b border-wl-border-default p-4">
-          <div className="mb-3 text-xs font-semibold text-wl-text-secondary">ACTIVE FILTERS</div>
+          <div className="mb-3 text-xs font-semibold text-wl-text-secondary">
+            ACTIVE FILTERS
+          </div>
           <div className="flex flex-wrap gap-2">
             {filters.map((filter) => (
               <div
@@ -238,7 +302,10 @@ export function FilterPanel({
             <h3 className="mb-3 font-semibold text-white">Status</h3>
             <div className="space-y-2">
               {(STATUS_OPTIONS[entityType] || []).map((status) => (
-                <label key={status} className="flex cursor-pointer items-center gap-2">
+                <label
+                  key={status}
+                  className="flex cursor-pointer items-center gap-2"
+                >
                   <input
                     type="checkbox"
                     checked={selectedStatuses.has(status)}
@@ -263,7 +330,7 @@ export function FilterPanel({
                     "w-full rounded px-3 py-2 text-left text-sm transition-colors",
                     selectedDateShortcut === shortcut
                       ? "bg-blue-600 text-white"
-                      : "bg-wl-bg-elevated text-wl-neutral-300 hover:bg-wl-bg-overlay"
+                      : "bg-wl-bg-elevated text-wl-neutral-300 hover:bg-wl-bg-overlay",
                   )}
                 >
                   {shortcut}
@@ -274,20 +341,28 @@ export function FilterPanel({
             {showDatePicker && (
               <div className="mt-4 space-y-3 rounded bg-wl-bg-elevated p-3">
                 <div>
-                  <label className="block text-xs text-wl-text-secondary">From</label>
+                  <label className="block text-xs text-wl-text-secondary">
+                    From
+                  </label>
                   <input
                     type="date"
                     value={dateRange[0]}
-                    onChange={(e) => setDateRange([e.target.value, dateRange[1]])}
+                    onChange={(e) =>
+                      setDateRange([e.target.value, dateRange[1]])
+                    }
                     className="mt-1 w-full rounded bg-wl-bg-overlay px-2 py-1 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-wl-text-secondary">To</label>
+                  <label className="block text-xs text-wl-text-secondary">
+                    To
+                  </label>
                   <input
                     type="date"
                     value={dateRange[1]}
-                    onChange={(e) => setDateRange([dateRange[0], e.target.value])}
+                    onChange={(e) =>
+                      setDateRange([dateRange[0], e.target.value])
+                    }
                     className="mt-1 w-full rounded bg-wl-bg-overlay px-2 py-1 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -328,7 +403,9 @@ export function FilterPanel({
       {showSavePreset && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4">
           <div className="rounded-lg bg-wl-bg-surface p-6 shadow-xl">
-            <h2 className="mb-4 text-lg font-semibold text-white">Save Filter Preset</h2>
+            <h2 className="mb-4 text-lg font-semibold text-white">
+              Save Filter Preset
+            </h2>
             <input
               type="text"
               placeholder="Preset name..."

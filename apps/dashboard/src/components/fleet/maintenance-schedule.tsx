@@ -83,7 +83,7 @@ const MaintenanceSchedule = forwardRef<
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const sortedItems = useMemo(() => {
       let sorted = [...items];
@@ -92,34 +92,27 @@ const MaintenanceSchedule = forwardRef<
       if (sortBy === "urgency") {
         const urgencyOrder = { overdue: 0, "due-soon": 1, scheduled: 2 };
         sorted.sort((a, b) => {
-          const urgencyDiff =
-            urgencyOrder[a.status] - urgencyOrder[b.status];
+          const urgencyDiff = urgencyOrder[a.status] - urgencyOrder[b.status];
           if (urgencyDiff !== 0) return urgencyDiff;
-          return (
-            new Date(a.dueDate).getTime() -
-            new Date(b.dueDate).getTime()
-          );
+          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
         });
       } else if (sortBy === "date") {
         sorted.sort(
           (a, b) =>
-            new Date(a.dueDate).getTime() -
-            new Date(b.dueDate).getTime()
+            new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
         );
       } else if (sortBy === "vehicle") {
-        sorted.sort((a, b) =>
-          a.vehicleName.localeCompare(b.vehicleName)
-        );
+        sorted.sort((a, b) => a.vehicleName.localeCompare(b.vehicleName));
       }
 
       return maxItems ? sorted.slice(0, maxItems) : sorted;
     }, [items, sortBy, maxItems]);
 
     const overdueCount = sortedItems.filter(
-      (i) => i.status === "overdue"
+      (i) => i.status === "overdue",
     ).length;
     const dueSoonCount = sortedItems.filter(
-      (i) => i.status === "due-soon"
+      (i) => i.status === "due-soon",
     ).length;
 
     return (
@@ -132,14 +125,10 @@ const MaintenanceSchedule = forwardRef<
         {(overdueCount > 0 || dueSoonCount > 0) && (
           <div className="flex gap-2">
             {overdueCount > 0 && (
-              <Badge variant="danger">
-                {overdueCount} Overdue
-              </Badge>
+              <Badge variant="danger">{overdueCount} Overdue</Badge>
             )}
             {dueSoonCount > 0 && (
-              <Badge variant="warning">
-                {dueSoonCount} Due Soon
-              </Badge>
+              <Badge variant="warning">{dueSoonCount} Due Soon</Badge>
             )}
           </div>
         )}
@@ -160,7 +149,8 @@ const MaintenanceSchedule = forwardRef<
               const isMileageBased =
                 item.mileageThreshold != null && item.currentMileage != null;
               const mileageRemaining = isMileageBased
-                ? (item.mileageThreshold as number) - (item.currentMileage as number)
+                ? (item.mileageThreshold as number) -
+                  (item.currentMileage as number)
                 : null;
               const mileageOverdue =
                 mileageRemaining !== null && mileageRemaining < 0;
@@ -171,7 +161,7 @@ const MaintenanceSchedule = forwardRef<
                   className={cn(
                     "p-4 hover:shadow-md transition-shadow",
                     onServiceClick && "cursor-pointer",
-                    priorityConfig[item.priority]
+                    priorityConfig[item.priority],
                   )}
                   onClick={() => onServiceClick?.(item.id)}
                 >
@@ -196,14 +186,11 @@ const MaintenanceSchedule = forwardRef<
                         </span>
                         <span className="text-wl-border-subtle">•</span>
                         <span>
-                          {new Date(item.dueDate).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            }
-                          )}
+                          {new Date(item.dueDate).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
                         </span>
 
                         {isMileageBased && (
@@ -226,14 +213,14 @@ const MaintenanceSchedule = forwardRef<
                               "h-full transition-all",
                               mileageOverdue
                                 ? "bg-wl-danger-400"
-                                : "bg-wl-primary-400"
+                                : "bg-wl-primary-400",
                             )}
                             style={{
                               width: `${Math.min(
                                 (item.currentMileage! /
                                   item.mileageThreshold!) *
                                   100,
-                                100
+                                100,
                               )}%`,
                             }}
                           />
@@ -266,7 +253,7 @@ const MaintenanceSchedule = forwardRef<
         )}
       </div>
     );
-  }
+  },
 );
 
 MaintenanceSchedule.displayName = "MaintenanceSchedule";
@@ -275,7 +262,7 @@ function getDaysUntil(dateStr: string): number {
   const date = new Date(dateStr);
   const now = new Date();
   const diff = Math.floor(
-    (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
   );
   return diff;
 }

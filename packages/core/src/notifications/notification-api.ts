@@ -40,7 +40,8 @@ export const SendNotificationRequestSchema = NotificationRequestSchema;
 /**
  * Send batch notification request
  */
-export const SendBatchNotificationRequestSchema = BatchNotificationRequestSchema;
+export const SendBatchNotificationRequestSchema =
+  BatchNotificationRequestSchema;
 
 /**
  * List notifications query
@@ -221,15 +222,17 @@ export function createNotificationApiHandlers() {
      * Send single or batch notification
      */
     async sendNotification(
-      body: unknown
+      body: unknown,
     ): Promise<ApiResponse<{ messageIds: string[] }>> {
       try {
         // Try batch first
-        const batchValidation = SendBatchNotificationRequestSchema.safeParse(body);
+        const batchValidation =
+          SendBatchNotificationRequestSchema.safeParse(body);
         if (batchValidation.success) {
           const batchRequest = batchValidation.data;
-          const messageIds = batchRequest.recipients.map(() =>
-            `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+          const messageIds = batchRequest.recipients.map(
+            () =>
+              `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           );
           return {
             success: true,
@@ -268,7 +271,7 @@ export function createNotificationApiHandlers() {
      * List notifications with pagination
      */
     async listNotifications(
-      query: unknown
+      query: unknown,
     ): Promise<ApiResponse<PaginatedResponse<NotificationListItem>>> {
       try {
         const validation = ListNotificationsQuerySchema.safeParse(query);
@@ -305,7 +308,7 @@ export function createNotificationApiHandlers() {
      */
     async getNotification(
       id: string,
-      tenantId: string
+      tenantId: string,
     ): Promise<ApiResponse<NotificationDetail>> {
       try {
         const validation = GetNotificationRequestSchema.safeParse({
@@ -339,7 +342,7 @@ export function createNotificationApiHandlers() {
      */
     async markAsRead(
       id: string,
-      tenantId: string
+      tenantId: string,
     ): Promise<ApiResponse<{ success: true }>> {
       try {
         const validation = MarkAsReadRequestSchema.safeParse({
@@ -373,7 +376,7 @@ export function createNotificationApiHandlers() {
      */
     async getPreferences(
       tenantId: string,
-      recipientId: string
+      recipientId: string,
     ): Promise<ApiResponse<RecipientPreferences>> {
       try {
         // In production, fetch from database
@@ -395,7 +398,7 @@ export function createNotificationApiHandlers() {
      * Update recipient preferences
      */
     async updatePreferences(
-      body: unknown
+      body: unknown,
     ): Promise<ApiResponse<RecipientPreferences>> {
       try {
         const validation = UpdatePreferencesRequestSchema.safeParse(body);
@@ -426,7 +429,7 @@ export function createNotificationApiHandlers() {
      * Create notification template
      */
     async createTemplate(
-      body: unknown
+      body: unknown,
     ): Promise<ApiResponse<NotificationTemplate>> {
       try {
         const validation = CreateTemplateRequestSchema.safeParse(body);
@@ -457,7 +460,7 @@ export function createNotificationApiHandlers() {
      * List notification templates
      */
     async listTemplates(
-      query: unknown
+      query: unknown,
     ): Promise<ApiResponse<PaginatedResponse<NotificationTemplate>>> {
       try {
         const validation = ListTemplatesQuerySchema.safeParse(query);
@@ -492,9 +495,7 @@ export function createNotificationApiHandlers() {
      * Handler: GET /api/notifications/analytics
      * Get delivery analytics
      */
-    async getAnalytics(
-      query: unknown
-    ): Promise<ApiResponse<AnalyticsResult>> {
+    async getAnalytics(query: unknown): Promise<ApiResponse<AnalyticsResult>> {
       try {
         const validation = AnalyticsQuerySchema.safeParse(query);
         if (!validation.success) {

@@ -34,8 +34,15 @@ export class CourierNormalizer {
    * @param exchangeRates Exchange rates map (e.g., { "EUR": 1.1 }) for currency conversion
    * @returns Normalized quote with USD pricing
    */
-  static normalizeQuote(quote: CourierQuote, exchangeRates?: Record<string, number>): NormalizedQuote {
-    const priceUsd = this.convertToUsd(quote.price, quote.currency, exchangeRates);
+  static normalizeQuote(
+    quote: CourierQuote,
+    exchangeRates?: Record<string, number>,
+  ): NormalizedQuote {
+    const priceUsd = this.convertToUsd(
+      quote.price,
+      quote.currency,
+      exchangeRates,
+    );
 
     return {
       provider: quote.provider,
@@ -57,8 +64,13 @@ export class CourierNormalizer {
    * @param exchangeRates Exchange rates for currency conversion
    * @returns Array of normalized quotes sorted by price
    */
-  static normalizeQuotes(quotes: CourierQuote[], exchangeRates?: Record<string, number>): NormalizedQuote[] {
-    const normalized = quotes.map((quote) => this.normalizeQuote(quote, exchangeRates));
+  static normalizeQuotes(
+    quotes: CourierQuote[],
+    exchangeRates?: Record<string, number>,
+  ): NormalizedQuote[] {
+    const normalized = quotes.map((quote) =>
+      this.normalizeQuote(quote, exchangeRates),
+    );
 
     // Sort by price (cheapest first)
     return normalized.sort((a, b) => a.priceUsd - b.priceUsd);
@@ -71,7 +83,10 @@ export class CourierNormalizer {
    * @param exchangeRates Exchange rates for currency conversion
    * @returns Cheapest normalized quote or undefined if array empty
    */
-  static getCheapestQuote(quotes: CourierQuote[], exchangeRates?: Record<string, number>): NormalizedQuote | undefined {
+  static getCheapestQuote(
+    quotes: CourierQuote[],
+    exchangeRates?: Record<string, number>,
+  ): NormalizedQuote | undefined {
     const normalized = this.normalizeQuotes(quotes, exchangeRates);
     return normalized[0];
   }
@@ -83,8 +98,13 @@ export class CourierNormalizer {
    * @param exchangeRates Exchange rates for currency conversion
    * @returns Fastest normalized quote or undefined if array empty
    */
-  static getFastestQuote(quotes: CourierQuote[], exchangeRates?: Record<string, number>): NormalizedQuote | undefined {
-    const normalized = quotes.map((quote) => this.normalizeQuote(quote, exchangeRates));
+  static getFastestQuote(
+    quotes: CourierQuote[],
+    exchangeRates?: Record<string, number>,
+  ): NormalizedQuote | undefined {
+    const normalized = quotes.map((quote) =>
+      this.normalizeQuote(quote, exchangeRates),
+    );
     return normalized.reduce((fastest, current) =>
       current.estimatedMinutes < fastest.estimatedMinutes ? current : fastest,
     );
@@ -120,7 +140,10 @@ export class CourierNormalizer {
    * @param providerStatus Original status from provider
    * @returns Normalized status for unified handling
    */
-  static normalizeStatus(status: CourierStatus, providerStatus: string): NormalizedStatus {
+  static normalizeStatus(
+    status: CourierStatus,
+    providerStatus: string,
+  ): NormalizedStatus {
     return {
       deliveryId: status.deliveryId,
       status: status.status,
@@ -159,13 +182,21 @@ export class CourierNormalizer {
     if (status.includes("returned")) {
       return DeliveryStatusEnum.RETURNED;
     }
-    if (status.includes("transit") || status.includes("progress") || status.includes("in_transit")) {
+    if (
+      status.includes("transit") ||
+      status.includes("progress") ||
+      status.includes("in_transit")
+    ) {
       return DeliveryStatusEnum.IN_TRANSIT;
     }
     if (status.includes("pick") || status.includes("picked")) {
       return DeliveryStatusEnum.PICKED_UP;
     }
-    if (status.includes("pending") || status.includes("scheduled") || status.includes("accepted")) {
+    if (
+      status.includes("pending") ||
+      status.includes("scheduled") ||
+      status.includes("accepted")
+    ) {
       return DeliveryStatusEnum.PENDING;
     }
 
@@ -181,7 +212,11 @@ export class CourierNormalizer {
    * @param exchangeRates Map of currency codes to USD exchange rates
    * @returns Price in USD
    */
-  private static convertToUsd(price: number, currency: string, exchangeRates?: Record<string, number>): number {
+  private static convertToUsd(
+    price: number,
+    currency: string,
+    exchangeRates?: Record<string, number>,
+  ): number {
     if (currency === "USD") {
       return price;
     }
@@ -201,7 +236,9 @@ export class CourierNormalizer {
       const rate = defaultRates[currency];
       if (!rate) {
         // If no rate found, return original price (log warning in production)
-        console.warn(`No exchange rate found for ${currency}, returning original price`);
+        console.warn(
+          `No exchange rate found for ${currency}, returning original price`,
+        );
         return price;
       }
 
@@ -272,15 +309,20 @@ export class QuoteComparator {
 
     const cheapest = normalized.length > 0 ? normalized[0] : undefined;
     const fastest = normalized.reduce(
-      (fastest, current) => (current.estimatedMinutes < fastest.estimatedMinutes ? current : fastest),
+      (fastest, current) =>
+        current.estimatedMinutes < fastest.estimatedMinutes ? current : fastest,
       normalized[0],
     );
 
-    const avgPrice = normalized.length > 0 ? normalized.reduce((sum, q) => sum + q.priceUsd, 0) / normalized.length : 0;
+    const avgPrice =
+      normalized.length > 0
+        ? normalized.reduce((sum, q) => sum + q.priceUsd, 0) / normalized.length
+        : 0;
 
     const avgTime =
       normalized.length > 0
-        ? normalized.reduce((sum, q) => sum + q.estimatedMinutes, 0) / normalized.length
+        ? normalized.reduce((sum, q) => sum + q.estimatedMinutes, 0) /
+          normalized.length
         : 0;
 
     return {
@@ -326,8 +368,14 @@ export class QuoteComparator {
 
     // Calculate normalized scores (0-1)
     return normalized.map((quote) => {
-      const priceScore = maxPrice === minPrice ? 0.5 : (quote.priceUsd - minPrice) / (maxPrice - minPrice);
-      const timeScore = maxTime === minTime ? 0.5 : (quote.estimatedMinutes - minTime) / (maxTime - minTime);
+      const priceScore =
+        maxPrice === minPrice
+          ? 0.5
+          : (quote.priceUsd - minPrice) / (maxPrice - minPrice);
+      const timeScore =
+        maxTime === minTime
+          ? 0.5
+          : (quote.estimatedMinutes - minTime) / (maxTime - minTime);
 
       // Lower is better, so invert
       const score = 1 - (priceScore * priceWeight + timeScore * timeWeight);

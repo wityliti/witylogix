@@ -13,7 +13,7 @@ import {
   CalendarRule,
   CutoffRule,
   PrepTime,
-} from './types';
+} from "./types";
 
 // ─── TIME UTILITIES ───────────────────────────────────────────────────────
 
@@ -21,7 +21,7 @@ import {
  * Parse time string in HH:MM format to minutes since midnight
  */
 export function parseTime(timeStr: string): number {
-  const [hours, minutes] = timeStr.split(':').map(Number);
+  const [hours, minutes] = timeStr.split(":").map(Number);
   if (isNaN(hours) || isNaN(minutes)) {
     throw new Error(`Invalid time format: ${timeStr}`);
   }
@@ -34,7 +34,7 @@ export function parseTime(timeStr: string): number {
 export function formatTime(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+  return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
 }
 
 /**
@@ -42,12 +42,20 @@ export function formatTime(minutes: number): string {
  */
 export function getDayOfWeek(date: Date, timezone?: string): number {
   if (timezone) {
-    const formatter = new Intl.DateTimeFormat('en-US', {
+    const formatter = new Intl.DateTimeFormat("en-US", {
       timeZone: timezone,
-      weekday: 'long',
+      weekday: "long",
     });
     const weekdayName = formatter.format(date);
-    const dayIndex = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayIndex = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
     return dayIndex.indexOf(weekdayName);
   }
 
@@ -58,10 +66,10 @@ export function getDayOfWeek(date: Date, timezone?: string): number {
  * Get current time in minutes since midnight for a timezone
  */
 export function getCurrentTimeInZone(timezone: string): number {
-  const formatter = new Intl.DateTimeFormat('en-US', {
+  const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
-    hour: '2-digit',
-    minute: '2-digit',
+    hour: "2-digit",
+    minute: "2-digit",
     hour12: false,
   });
 
@@ -72,41 +80,45 @@ export function getCurrentTimeInZone(timezone: string): number {
 /**
  * Add minutes to a date, respecting timezone
  */
-export function addMinutesInTimezone(date: Date, minutes: number, timezone: string): Date {
+export function addMinutesInTimezone(
+  date: Date,
+  minutes: number,
+  timezone: string,
+): Date {
   // Simple approach: convert to timezone, add minutes, convert back
-  const formatter = new Intl.DateTimeFormat('en-US', {
+  const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
     hour12: false,
   });
 
-  const parts = new Intl.DateTimeFormat('en-US', {
+  const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
     hour12: false,
   }).formatToParts(date);
 
   // Parse the formatted date
-  const dateMap = new Map(parts.map(p => [p.type, p.value]));
+  const dateMap = new Map(parts.map((p) => [p.type, p.value]));
 
   // Create new date with added minutes
   const newDate = new Date(
-    parseInt(dateMap.get('year')!, 10),
-    parseInt(dateMap.get('month')!, 10) - 1,
-    parseInt(dateMap.get('day')!, 10),
-    parseInt(dateMap.get('hour')!, 10),
-    parseInt(dateMap.get('minute')!, 10) + minutes,
-    parseInt(dateMap.get('second')!, 10)
+    parseInt(dateMap.get("year")!, 10),
+    parseInt(dateMap.get("month")!, 10) - 1,
+    parseInt(dateMap.get("day")!, 10),
+    parseInt(dateMap.get("hour")!, 10),
+    parseInt(dateMap.get("minute")!, 10) + minutes,
+    parseInt(dateMap.get("second")!, 10),
   );
 
   return newDate;
@@ -116,11 +128,11 @@ export function addMinutesInTimezone(date: Date, minutes: number, timezone: stri
  * Check if two dates are the same day in a timezone
  */
 export function isSameDay(date1: Date, date2: Date, timezone: string): boolean {
-  const formatter = new Intl.DateTimeFormat('en-US', {
+  const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
   });
 
   return formatter.format(date1) === formatter.format(date2);
@@ -143,16 +155,16 @@ export function isMidnightInTimezone(date: Date, timezone: string): boolean {
 export function isDateBlackedOut(
   date: Date,
   blackoutDates: BlackoutDate[],
-  timezone?: string
+  timezone?: string,
 ): boolean {
   if (!blackoutDates || blackoutDates.length === 0) {
     return false;
   }
 
-  const dateStr = date.toISOString().split('T')[0];
+  const dateStr = date.toISOString().split("T")[0];
   for (const blackout of blackoutDates) {
-    const startStr = blackout.startDate.toISOString().split('T')[0];
-    const endStr = blackout.endDate.toISOString().split('T')[0];
+    const startStr = blackout.startDate.toISOString().split("T")[0];
+    const endStr = blackout.endDate.toISOString().split("T")[0];
     if (dateStr >= startStr && dateStr <= endStr) {
       return true;
     }
@@ -167,7 +179,7 @@ export function isDateBlackedOut(
 export function getNextAvailableDate(
   startDate: Date,
   blackoutDates: BlackoutDate[],
-  maxDaysAhead: number = 30
+  maxDaysAhead: number = 30,
 ): Date | undefined {
   let current = new Date(startDate);
 
@@ -188,12 +200,16 @@ export function getNextAvailableDate(
  */
 export function isCurrentlyOpen(
   operatingHours: OperatingHours,
-  referenceDate?: Date
+  referenceDate?: Date,
 ): boolean {
   const date = referenceDate || new Date();
   const dayOfWeek = getDayOfWeek(date, operatingHours.timezone);
 
-  return isTimeWithinOperatingHours(date, operatingHours, operatingHours.timezone);
+  return isTimeWithinOperatingHours(
+    date,
+    operatingHours,
+    operatingHours.timezone,
+  );
 }
 
 /**
@@ -202,19 +218,20 @@ export function isCurrentlyOpen(
 export function isTimeWithinOperatingHours(
   date: Date,
   operatingHours: OperatingHours,
-  timezone: string
+  timezone: string,
 ): boolean {
   const dayOfWeek = getDayOfWeek(date, timezone);
-  const timeWindow = operatingHours.byDayOfWeek[dayOfWeek as 0 | 1 | 2 | 3 | 4 | 5 | 6];
+  const timeWindow =
+    operatingHours.byDayOfWeek[dayOfWeek as 0 | 1 | 2 | 3 | 4 | 5 | 6];
 
   if (!timeWindow) {
     return false; // No hours defined for this day
   }
 
-  const formatter = new Intl.DateTimeFormat('en-US', {
+  const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
-    hour: '2-digit',
-    minute: '2-digit',
+    hour: "2-digit",
+    minute: "2-digit",
     hour12: false,
   });
   const currentMinutes = parseTime(formatter.format(date));
@@ -229,7 +246,7 @@ export function isTimeWithinOperatingHours(
  */
 export function getOperatingHoursForDay(
   dayOfWeek: number,
-  operatingHours: OperatingHours
+  operatingHours: OperatingHours,
 ): TimeWindow | undefined {
   return operatingHours.byDayOfWeek[dayOfWeek as 0 | 1 | 2 | 3 | 4 | 5 | 6];
 }
@@ -240,10 +257,12 @@ export function getOperatingHoursForDay(
 export function isHoliday(date: Date, operatingHours: OperatingHours): boolean {
   if (!operatingHours.holidays) return false;
 
-  const dateStr = date.toISOString().split('T')[0];
-  const holidayStr = date.toISOString().split('T')[0];
+  const dateStr = date.toISOString().split("T")[0];
+  const holidayStr = date.toISOString().split("T")[0];
 
-  return operatingHours.holidays.some(h => h.date.toISOString().split('T')[0] === dateStr);
+  return operatingHours.holidays.some(
+    (h) => h.date.toISOString().split("T")[0] === dateStr,
+  );
 }
 
 /**
@@ -251,12 +270,14 @@ export function isHoliday(date: Date, operatingHours: OperatingHours): boolean {
  */
 export function getHolidayInfo(
   date: Date,
-  operatingHours: OperatingHours
+  operatingHours: OperatingHours,
 ): (typeof operatingHours.holidays)[0] | undefined {
   if (!operatingHours.holidays) return undefined;
 
-  const dateStr = date.toISOString().split('T')[0];
-  return operatingHours.holidays.find(h => h.date.toISOString().split('T')[0] === dateStr);
+  const dateStr = date.toISOString().split("T")[0];
+  return operatingHours.holidays.find(
+    (h) => h.date.toISOString().split("T")[0] === dateStr,
+  );
 }
 
 // ─── CUTOFF LOGIC ─────────────────────────────────────────────────────────
@@ -268,13 +289,13 @@ export function isCutoffPassed(
   slotStartTime: string,
   cutoffMinutes: number,
   timezone: string,
-  referenceDate?: Date
+  referenceDate?: Date,
 ): boolean {
   const now = referenceDate || new Date();
-  const formatter = new Intl.DateTimeFormat('en-US', {
+  const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
-    hour: '2-digit',
-    minute: '2-digit',
+    hour: "2-digit",
+    minute: "2-digit",
     hour12: false,
   });
   const currentMinutes = parseTime(formatter.format(now));
@@ -291,7 +312,7 @@ export function getMinutesUntilCutoff(
   slotStartTime: string,
   cutoffMinutes: number,
   timezone: string,
-  referenceDate?: Date
+  referenceDate?: Date,
 ): number {
   const now = referenceDate || new Date();
   const currentMinutes = getCurrentTimeInZone(timezone);
@@ -308,7 +329,7 @@ export function getMinutesUntilCutoff(
 export function appliesCutoffRule(
   rule: CutoffRule,
   dayOfWeek: number,
-  currentMinutes: number
+  currentMinutes: number,
 ): boolean {
   // Check if rule applies to this day
   if (rule.daysOfWeek && !rule.daysOfWeek.includes(dayOfWeek)) {
@@ -336,7 +357,7 @@ export function calculateCutoffTime(
   cutoffRules: CutoffRule[],
   dayOfWeek: number,
   timezone: string,
-  referenceDate?: Date
+  referenceDate?: Date,
 ): Date {
   const now = referenceDate || new Date();
   const currentMinutes = getCurrentTimeInZone(timezone);
@@ -363,7 +384,7 @@ export function calculateCutoffTime(
 export function calculateTotalPrepTime(
   baseTime: PrepTime,
   date: Date,
-  timezone: string
+  timezone: string,
 ): number {
   let totalMinutes = baseTime.baseMinutes;
 
@@ -375,15 +396,15 @@ export function calculateTotalPrepTime(
   // Apply conditional time
   for (const conditional of baseTime.conditionalMinutes) {
     switch (conditional.condition) {
-      case 'weekend':
+      case "weekend":
         if (isWeekend) {
           totalMinutes += conditional.additionalMinutes;
         }
         break;
-      case 'holiday':
+      case "holiday":
         // Would need holiday list to properly implement
         break;
-      case 'high_volume':
+      case "high_volume":
         // Would need volume tracking to properly implement
         break;
     }
@@ -401,7 +422,7 @@ export function calculateEarliestDeliveryDate(
   estimatedDays: { min: number; max: number },
   operatingHours: OperatingHours,
   blackoutDates: BlackoutDate[],
-  timezone: string
+  timezone: string,
 ): Date {
   // Start from order date
   let date = new Date(orderDate);
@@ -434,11 +455,11 @@ export function calculateEarliestDeliveryDate(
 export function getAvailableTimeSlots(
   slots: DeliveryTimeSlot[],
   date: Date,
-  timezone: string
+  timezone: string,
 ): DeliveryTimeSlot[] {
   const dayOfWeek = getDayOfWeek(date, timezone);
 
-  return slots.filter(slot => {
+  return slots.filter((slot) => {
     // Check if slot operates on this day
     if (!slot.daysOfWeek.includes(dayOfWeek)) {
       return false;
@@ -466,7 +487,7 @@ export function getNextAvailableSlot(
   startDate: Date,
   blackoutDates: BlackoutDate[],
   timezone: string,
-  maxDaysAhead: number = 14
+  maxDaysAhead: number = 14,
 ): { slot: DeliveryTimeSlot; date: Date } | undefined {
   let current = new Date(startDate);
 
@@ -516,11 +537,11 @@ export function calculateSlotUtilization(slot: DeliveryTimeSlot): number {
 export function getApplicableCalendarRules(
   rules: CalendarRule[],
   date: Date,
-  timezone: string
+  timezone: string,
 ): CalendarRule[] {
   const dayOfWeek = getDayOfWeek(date, timezone);
 
-  return rules.filter(rule => {
+  return rules.filter((rule) => {
     // Check if rule is active
     if (!rule.isActive) return false;
 
@@ -543,14 +564,14 @@ export function getApplicableCalendarRules(
 export function getHighestPriorityRule(
   rules: CalendarRule[],
   date: Date,
-  timezone: string
+  timezone: string,
 ): CalendarRule | undefined {
   const applicable = getApplicableCalendarRules(rules, date, timezone);
 
   if (applicable.length === 0) return undefined;
 
   return applicable.reduce((prev, current) =>
-    current.priority > prev.priority ? current : prev
+    current.priority > prev.priority ? current : prev,
   );
 }
 
@@ -562,7 +583,7 @@ export function getHighestPriorityRule(
 export function isDeliveryAvailable(
   profile: CalendarProfile,
   date: Date,
-  timeSlot?: DeliveryTimeSlot
+  timeSlot?: DeliveryTimeSlot,
 ): { available: boolean; reason?: string } {
   const timezone = profile.operatingHours.timezone;
 
@@ -570,7 +591,7 @@ export function isDeliveryAvailable(
   if (isDateBlackedOut(date, profile.blackoutDates, timezone)) {
     return {
       available: false,
-      reason: 'Date is blacked out',
+      reason: "Date is blacked out",
     };
   }
 
@@ -578,7 +599,7 @@ export function isDeliveryAvailable(
   if (!isTimeWithinOperatingHours(date, profile.operatingHours, timezone)) {
     return {
       available: false,
-      reason: 'Outside operating hours',
+      reason: "Outside operating hours",
     };
   }
 
@@ -589,21 +610,21 @@ export function isDeliveryAvailable(
     if (!timeSlot.daysOfWeek.includes(dayOfWeek)) {
       return {
         available: false,
-        reason: 'Time slot not available on this day',
+        reason: "Time slot not available on this day",
       };
     }
 
     if (!timeSlot.isAvailable) {
       return {
         available: false,
-        reason: 'Time slot is not available',
+        reason: "Time slot is not available",
       };
     }
 
     if (timeSlot.currentUtilization >= timeSlot.maxCapacity) {
       return {
         available: false,
-        reason: 'Time slot is at capacity',
+        reason: "Time slot is at capacity",
       };
     }
 
@@ -625,7 +646,7 @@ export function getAvailabilityCalendar(
   profile: CalendarProfile,
   startDate: Date,
   endDate: Date,
-  timezone: string
+  timezone: string,
 ): Array<{
   date: Date;
   available: boolean;

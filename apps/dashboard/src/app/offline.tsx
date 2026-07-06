@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Cloud, Wifi } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { useEffect, useState } from "react";
+import { Cloud, Wifi } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /**
  * Offline fallback page displayed when network connection is lost
@@ -24,12 +24,12 @@ export default function OfflinePage() {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
@@ -58,8 +58,8 @@ export default function OfflinePage() {
         {/* Animated Cloud/Disconnect SVG */}
         <div
           className={cn(
-            'mb-8 flex justify-center transition-all duration-700',
-            isAnimated ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+            "mb-8 flex justify-center transition-all duration-700",
+            isAnimated ? "opacity-100 scale-100" : "opacity-0 scale-95",
           )}
         >
           <div className="relative w-40 h-40">
@@ -81,12 +81,15 @@ export default function OfflinePage() {
             {/* Disconnect X */}
             <div
               className={cn(
-                'absolute inset-0 flex items-center justify-center transition-opacity duration-500',
-                isAnimated ? 'opacity-100' : 'opacity-0'
+                "absolute inset-0 flex items-center justify-center transition-opacity duration-500",
+                isAnimated ? "opacity-100" : "opacity-0",
               )}
             >
               <div className="flex items-center justify-center w-20 h-20 rounded-full bg-wl-danger-bg/20">
-                <Wifi className="w-10 h-10 text-wl-danger-400" strokeWidth={1.5} />
+                <Wifi
+                  className="w-10 h-10 text-wl-danger-400"
+                  strokeWidth={1.5}
+                />
               </div>
             </div>
           </div>
@@ -95,17 +98,19 @@ export default function OfflinePage() {
         {/* Content */}
         <div
           className={cn(
-            'text-center transition-all duration-700 delay-200',
-            isAnimated ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            "text-center transition-all duration-700 delay-200",
+            isAnimated
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-4",
           )}
         >
           <h1 className="mb-2 text-2xl font-bold text-wl-text-primary">
-            {isOnline ? 'Reconnecting...' : 'You\'re Offline'}
+            {isOnline ? "Reconnecting..." : "You're Offline"}
           </h1>
           <p className="mb-6 text-wl-text-secondary">
             {isOnline
-              ? 'Restoring your connection and syncing data.'
-              : 'Your internet connection appears to be lost. Some features may be limited.'}
+              ? "Restoring your connection and syncing data."
+              : "Your internet connection appears to be lost. Some features may be limited."}
           </p>
 
           {/* Status indicator */}
@@ -113,14 +118,14 @@ export default function OfflinePage() {
             <div className="mb-2 flex items-center justify-center gap-2">
               <div
                 className={cn(
-                  'w-3 h-3 rounded-full transition-all duration-500',
+                  "w-3 h-3 rounded-full transition-all duration-500",
                   isOnline
-                    ? 'bg-wl-success-400 animate-pulse'
-                    : 'bg-wl-danger-400'
+                    ? "bg-wl-success-400 animate-pulse"
+                    : "bg-wl-danger-400",
                 )}
               />
               <span className="text-sm font-medium text-wl-text-secondary">
-                {isOnline ? 'Online' : 'Offline'}
+                {isOnline ? "Online" : "Offline"}
               </span>
             </div>
 
@@ -145,12 +150,12 @@ export default function OfflinePage() {
               onClick={handleRetry}
               className="w-full"
             >
-              {isOnline ? 'Continue' : 'Retry Connection'}
+              {isOnline ? "Continue" : "Retry Connection"}
             </Button>
             <Button
               variant="secondary"
               size="md"
-              onClick={() => (window.location.href = '/')}
+              onClick={() => (window.location.href = "/")}
               className="w-full"
             >
               Go to Dashboard
@@ -160,7 +165,7 @@ export default function OfflinePage() {
 
         {/* Footer */}
         <div className="mt-8 text-center text-xs text-wl-text-tertiary">
-          Having persistent issues?{' '}
+          Having persistent issues?{" "}
           <a
             href="mailto:support@witylogix.com"
             className="text-wl-primary-500 transition-colors hover:text-wl-primary-400"

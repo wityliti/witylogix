@@ -1,11 +1,17 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 /**
  * Campaign Manager Tests
  * Tests campaign lifecycle, audience segmentation, pause/resume, metrics aggregation
  */
 
-type CampaignStatus = 'draft' | 'scheduled' | 'running' | 'paused' | 'completed' | 'cancelled';
+type CampaignStatus =
+  | "draft"
+  | "scheduled"
+  | "running"
+  | "paused"
+  | "completed"
+  | "cancelled";
 
 interface Segment {
   id: string;
@@ -45,7 +51,7 @@ class CampaignManager {
   private campaignIdCounter = 0;
   private segmentIdCounter = 0;
 
-  createSegment(name: string, rules: Segment['rules']): Segment {
+  createSegment(name: string, rules: Segment["rules"]): Segment {
     const segment: Segment = {
       id: `seg_${++this.segmentIdCounter}`,
       name,
@@ -62,7 +68,7 @@ class CampaignManager {
   createCampaign(
     name: string,
     description: string,
-    segmentIds: string[]
+    segmentIds: string[],
   ): Campaign {
     // Validate segments exist
     for (const segmentId of segmentIds) {
@@ -75,7 +81,7 @@ class CampaignManager {
       id: `camp_${++this.campaignIdCounter}`,
       name,
       description,
-      status: 'draft',
+      status: "draft",
       segmentIds,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -102,15 +108,17 @@ class CampaignManager {
       throw new Error(`Campaign ${campaignId} not found`);
     }
 
-    if (campaign.status !== 'draft') {
-      throw new Error(`Cannot schedule campaign with status ${campaign.status}`);
+    if (campaign.status !== "draft") {
+      throw new Error(
+        `Cannot schedule campaign with status ${campaign.status}`,
+      );
     }
 
     if (scheduledFor < new Date()) {
-      throw new Error('Cannot schedule campaign for past time');
+      throw new Error("Cannot schedule campaign for past time");
     }
 
-    campaign.status = 'scheduled';
+    campaign.status = "scheduled";
     campaign.scheduledFor = scheduledFor;
     campaign.updatedAt = new Date();
 
@@ -123,13 +131,11 @@ class CampaignManager {
       throw new Error(`Campaign ${campaignId} not found`);
     }
 
-    if (campaign.status !== 'scheduled' && campaign.status !== 'paused') {
-      throw new Error(
-        `Cannot execute campaign with status ${campaign.status}`
-      );
+    if (campaign.status !== "scheduled" && campaign.status !== "paused") {
+      throw new Error(`Cannot execute campaign with status ${campaign.status}`);
     }
 
-    campaign.status = 'running';
+    campaign.status = "running";
     if (!campaign.startedAt) {
       campaign.startedAt = new Date();
     }
@@ -146,13 +152,11 @@ class CampaignManager {
       throw new Error(`Campaign ${campaignId} not found`);
     }
 
-    if (campaign.status !== 'running') {
-      throw new Error(
-        `Cannot pause campaign with status ${campaign.status}`
-      );
+    if (campaign.status !== "running") {
+      throw new Error(`Cannot pause campaign with status ${campaign.status}`);
     }
 
-    campaign.status = 'paused';
+    campaign.status = "paused";
     campaign.paused = true;
     campaign.pausedAt = new Date();
     campaign.updatedAt = new Date();
@@ -166,13 +170,11 @@ class CampaignManager {
       throw new Error(`Campaign ${campaignId} not found`);
     }
 
-    if (campaign.status !== 'paused') {
-      throw new Error(
-        `Cannot resume campaign with status ${campaign.status}`
-      );
+    if (campaign.status !== "paused") {
+      throw new Error(`Cannot resume campaign with status ${campaign.status}`);
     }
 
-    campaign.status = 'running';
+    campaign.status = "running";
     campaign.paused = false;
     campaign.resumedAt = new Date();
     campaign.updatedAt = new Date();
@@ -186,13 +188,13 @@ class CampaignManager {
       throw new Error(`Campaign ${campaignId} not found`);
     }
 
-    if (campaign.status !== 'running') {
+    if (campaign.status !== "running") {
       throw new Error(
-        `Cannot complete campaign with status ${campaign.status}`
+        `Cannot complete campaign with status ${campaign.status}`,
       );
     }
 
-    campaign.status = 'completed';
+    campaign.status = "completed";
     campaign.endedAt = new Date();
     campaign.updatedAt = new Date();
 
@@ -205,20 +207,21 @@ class CampaignManager {
       throw new Error(`Campaign ${campaignId} not found`);
     }
 
-    if (campaign.status === 'completed' || campaign.status === 'cancelled') {
-      throw new Error(
-        `Cannot cancel campaign with status ${campaign.status}`
-      );
+    if (campaign.status === "completed" || campaign.status === "cancelled") {
+      throw new Error(`Cannot cancel campaign with status ${campaign.status}`);
     }
 
-    campaign.status = 'cancelled';
+    campaign.status = "cancelled";
     campaign.endedAt = new Date();
     campaign.updatedAt = new Date();
 
     return campaign;
   }
 
-  recordMetrics(campaignId: string, metrics: Partial<Campaign['metrics']>): Campaign {
+  recordMetrics(
+    campaignId: string,
+    metrics: Partial<Campaign["metrics"]>,
+  ): Campaign {
     const campaign = this.campaigns.get(campaignId);
     if (!campaign) {
       throw new Error(`Campaign ${campaignId} not found`);
@@ -241,7 +244,7 @@ class CampaignManager {
     return campaign;
   }
 
-  getMetrics(campaignId: string): Campaign['metrics'] | null {
+  getMetrics(campaignId: string): Campaign["metrics"] | null {
     const campaign = this.campaigns.get(campaignId);
     if (!campaign) {
       return null;
@@ -274,211 +277,205 @@ class CampaignManager {
   }
 
   getByCampaignIds(campaignIds: string[]): Campaign[] {
-    return campaignIds.map(id => this.campaigns.get(id)).filter((c) => c !== undefined) as Campaign[];
+    return campaignIds
+      .map((id) => this.campaigns.get(id))
+      .filter((c) => c !== undefined) as Campaign[];
   }
 }
 
-describe('CampaignManager', () => {
+describe("CampaignManager", () => {
   let manager: CampaignManager;
   let segment1: Segment;
   let segment2: Segment;
 
   beforeEach(() => {
     manager = new CampaignManager();
-    segment1 = manager.createSegment('Premium Users', [
-      { field: 'tier', operator: 'eq', value: 'premium' },
+    segment1 = manager.createSegment("Premium Users", [
+      { field: "tier", operator: "eq", value: "premium" },
     ]);
-    segment2 = manager.createSegment('High Value', [
-      { field: 'lifetime_value', operator: 'gte', value: 1000 },
+    segment2 = manager.createSegment("High Value", [
+      { field: "lifetime_value", operator: "gte", value: 1000 },
     ]);
   });
 
-  describe('Campaign Lifecycle', () => {
-    it('should create a campaign in draft status', () => {
+  describe("Campaign Lifecycle", () => {
+    it("should create a campaign in draft status", () => {
       const campaign = manager.createCampaign(
-        'Summer Sale',
-        'End of summer promotion',
-        [segment1.id]
+        "Summer Sale",
+        "End of summer promotion",
+        [segment1.id],
       );
-      expect(campaign.status).toBe('draft');
-      expect(campaign.name).toBe('Summer Sale');
+      expect(campaign.status).toBe("draft");
+      expect(campaign.name).toBe("Summer Sale");
       expect(campaign.segmentIds).toContain(segment1.id);
     });
 
-    it('should schedule a campaign', () => {
+    it("should schedule a campaign", () => {
       const campaign = manager.createCampaign(
-        'Summer Sale',
-        'End of summer promotion',
-        [segment1.id]
+        "Summer Sale",
+        "End of summer promotion",
+        [segment1.id],
       );
       const scheduledTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
       const scheduled = manager.schedule(campaign.id, scheduledTime);
-      expect(scheduled.status).toBe('scheduled');
+      expect(scheduled.status).toBe("scheduled");
       expect(scheduled.scheduledFor).toEqual(scheduledTime);
     });
 
-    it('should execute a scheduled campaign', () => {
-      const campaign = manager.createCampaign(
-        'Summer Sale',
-        'Promotion',
-        [segment1.id]
-      );
+    it("should execute a scheduled campaign", () => {
+      const campaign = manager.createCampaign("Summer Sale", "Promotion", [
+        segment1.id,
+      ]);
       const scheduledTime = new Date(Date.now() + 1000);
       manager.schedule(campaign.id, scheduledTime);
       const executed = manager.execute(campaign.id);
-      expect(executed.status).toBe('running');
+      expect(executed.status).toBe("running");
       expect(executed.startedAt).toBeDefined();
     });
 
-    it('should complete a running campaign', () => {
-      const campaign = manager.createCampaign(
-        'Summer Sale',
-        'Promotion',
-        [segment1.id]
-      );
+    it("should complete a running campaign", () => {
+      const campaign = manager.createCampaign("Summer Sale", "Promotion", [
+        segment1.id,
+      ]);
       const scheduledTime = new Date(Date.now() + 1000);
       manager.schedule(campaign.id, scheduledTime);
       manager.execute(campaign.id);
       const completed = manager.complete(campaign.id);
-      expect(completed.status).toBe('completed');
+      expect(completed.status).toBe("completed");
       expect(completed.endedAt).toBeDefined();
     });
 
-    it('should cancel a draft campaign', () => {
-      const campaign = manager.createCampaign(
-        'Summer Sale',
-        'Promotion',
-        [segment1.id]
-      );
+    it("should cancel a draft campaign", () => {
+      const campaign = manager.createCampaign("Summer Sale", "Promotion", [
+        segment1.id,
+      ]);
       const cancelled = manager.cancel(campaign.id);
-      expect(cancelled.status).toBe('cancelled');
+      expect(cancelled.status).toBe("cancelled");
     });
 
-    it('should not allow scheduling past dates', () => {
-      const campaign = manager.createCampaign(
-        'Summer Sale',
-        'Promotion',
-        [segment1.id]
-      );
+    it("should not allow scheduling past dates", () => {
+      const campaign = manager.createCampaign("Summer Sale", "Promotion", [
+        segment1.id,
+      ]);
       const pastTime = new Date(Date.now() - 1000);
-      expect(() =>
-        manager.schedule(campaign.id, pastTime)
-      ).toThrow('Cannot schedule campaign for past time');
+      expect(() => manager.schedule(campaign.id, pastTime)).toThrow(
+        "Cannot schedule campaign for past time",
+      );
     });
 
-    it('should not allow scheduling non-draft campaigns', () => {
-      const campaign = manager.createCampaign(
-        'Summer Sale',
-        'Promotion',
-        [segment1.id]
-      );
+    it("should not allow scheduling non-draft campaigns", () => {
+      const campaign = manager.createCampaign("Summer Sale", "Promotion", [
+        segment1.id,
+      ]);
       const futureTime = new Date(Date.now() + 60000);
       manager.schedule(campaign.id, futureTime);
-      expect(() =>
-        manager.schedule(campaign.id, futureTime)
-      ).toThrow('Cannot schedule campaign with status scheduled');
+      expect(() => manager.schedule(campaign.id, futureTime)).toThrow(
+        "Cannot schedule campaign with status scheduled",
+      );
     });
   });
 
-  describe('Pause and Resume', () => {
+  describe("Pause and Resume", () => {
     let campaign: Campaign;
 
     beforeEach(() => {
-      campaign = manager.createCampaign('Test Campaign', 'Test', [segment1.id]);
+      campaign = manager.createCampaign("Test Campaign", "Test", [segment1.id]);
       const futureTime = new Date(Date.now() + 1000);
       manager.schedule(campaign.id, futureTime);
       manager.execute(campaign.id);
     });
 
-    it('should pause a running campaign', () => {
+    it("should pause a running campaign", () => {
       const paused = manager.pause(campaign.id);
-      expect(paused.status).toBe('paused');
+      expect(paused.status).toBe("paused");
       expect(paused.paused).toBe(true);
       expect(paused.pausedAt).toBeDefined();
     });
 
-    it('should resume a paused campaign', () => {
+    it("should resume a paused campaign", () => {
       manager.pause(campaign.id);
       const resumed = manager.resume(campaign.id);
-      expect(resumed.status).toBe('running');
+      expect(resumed.status).toBe("running");
       expect(resumed.paused).toBe(false);
       expect(resumed.resumedAt).toBeDefined();
     });
 
-    it('should not pause non-running campaigns', () => {
+    it("should not pause non-running campaigns", () => {
       manager.pause(campaign.id);
-      expect(() =>
-        manager.pause(campaign.id)
-      ).toThrow('Cannot pause campaign with status paused');
+      expect(() => manager.pause(campaign.id)).toThrow(
+        "Cannot pause campaign with status paused",
+      );
     });
 
-    it('should not resume non-paused campaigns', () => {
-      expect(() =>
-        manager.resume(campaign.id)
-      ).toThrow('Cannot resume campaign with status running');
+    it("should not resume non-paused campaigns", () => {
+      expect(() => manager.resume(campaign.id)).toThrow(
+        "Cannot resume campaign with status running",
+      );
     });
   });
 
-  describe('Audience Segmentation', () => {
-    it('should create campaign with multiple segments', () => {
+  describe("Audience Segmentation", () => {
+    it("should create campaign with multiple segments", () => {
       const campaign = manager.createCampaign(
-        'Multi-segment Campaign',
-        'Targets multiple segments',
-        [segment1.id, segment2.id]
+        "Multi-segment Campaign",
+        "Targets multiple segments",
+        [segment1.id, segment2.id],
       );
       expect(campaign.segmentIds).toHaveLength(2);
       expect(campaign.segmentIds).toContain(segment1.id);
       expect(campaign.segmentIds).toContain(segment2.id);
     });
 
-    it('should validate segments exist', () => {
+    it("should validate segments exist", () => {
       expect(() =>
-        manager.createCampaign('Invalid Campaign', 'Has invalid segment', [
-          'seg_invalid',
-        ])
-      ).toThrow('Segment seg_invalid not found');
+        manager.createCampaign("Invalid Campaign", "Has invalid segment", [
+          "seg_invalid",
+        ]),
+      ).toThrow("Segment seg_invalid not found");
     });
 
-    it('should support empty segment list', () => {
+    it("should support empty segment list", () => {
       const campaign = manager.createCampaign(
-        'Empty Segment Campaign',
-        'Test',
-        []
+        "Empty Segment Campaign",
+        "Test",
+        [],
       );
       expect(campaign.segmentIds).toHaveLength(0);
     });
 
-    it('should retrieve segment details', () => {
+    it("should retrieve segment details", () => {
       const retrieved = manager.getSegment(segment1.id);
       expect(retrieved).not.toBeNull();
-      expect(retrieved?.name).toBe('Premium Users');
+      expect(retrieved?.name).toBe("Premium Users");
       expect(retrieved?.rules).toHaveLength(1);
     });
   });
 
-  describe('Metrics Aggregation', () => {
+  describe("Metrics Aggregation", () => {
     let campaign: Campaign;
 
     beforeEach(() => {
-      campaign = manager.createCampaign('Metrics Test', 'Test metrics', [segment1.id]);
+      campaign = manager.createCampaign("Metrics Test", "Test metrics", [
+        segment1.id,
+      ]);
       const futureTime = new Date(Date.now() + 1000);
       manager.schedule(campaign.id, futureTime);
       manager.execute(campaign.id);
     });
 
-    it('should record sent metric', () => {
+    it("should record sent metric", () => {
       manager.recordMetrics(campaign.id, { sent: 1000 });
       const metrics = manager.getMetrics(campaign.id);
       expect(metrics?.sent).toBe(1000);
     });
 
-    it('should record delivered metric', () => {
+    it("should record delivered metric", () => {
       manager.recordMetrics(campaign.id, { sent: 1000, delivered: 950 });
       const metrics = manager.getMetrics(campaign.id);
       expect(metrics?.delivered).toBe(950);
     });
 
-    it('should accumulate metrics', () => {
+    it("should accumulate metrics", () => {
       manager.recordMetrics(campaign.id, { sent: 500, delivered: 490 });
       manager.recordMetrics(campaign.id, { sent: 500, delivered: 480 });
       const metrics = manager.getMetrics(campaign.id);
@@ -486,7 +483,7 @@ describe('CampaignManager', () => {
       expect(metrics?.delivered).toBe(970);
     });
 
-    it('should track clicks', () => {
+    it("should track clicks", () => {
       manager.recordMetrics(campaign.id, {
         sent: 1000,
         delivered: 950,
@@ -496,7 +493,7 @@ describe('CampaignManager', () => {
       expect(metrics?.clicked).toBe(95);
     });
 
-    it('should track bounces', () => {
+    it("should track bounces", () => {
       manager.recordMetrics(campaign.id, {
         sent: 1000,
         bounced: 50,
@@ -505,13 +502,13 @@ describe('CampaignManager', () => {
       expect(metrics?.bounced).toBe(50);
     });
 
-    it('should calculate delivery rate', () => {
+    it("should calculate delivery rate", () => {
       manager.recordMetrics(campaign.id, { sent: 1000, delivered: 950 });
       const stats = manager.calculateMetricsStats(campaign.id);
       expect(stats?.deliveryRate).toBe(95);
     });
 
-    it('should calculate click rate', () => {
+    it("should calculate click rate", () => {
       manager.recordMetrics(campaign.id, {
         sent: 1000,
         delivered: 1000,
@@ -521,80 +518,80 @@ describe('CampaignManager', () => {
       expect(stats?.clickRate).toBe(10);
     });
 
-    it('should calculate bounce rate', () => {
+    it("should calculate bounce rate", () => {
       manager.recordMetrics(campaign.id, { sent: 1000, bounced: 50 });
       const stats = manager.calculateMetricsStats(campaign.id);
       expect(stats?.bounceRate).toBe(5);
     });
 
-    it('should handle zero metrics in calculations', () => {
+    it("should handle zero metrics in calculations", () => {
       const stats = manager.calculateMetricsStats(campaign.id);
       expect(stats?.deliveryRate).toBe(0);
       expect(stats?.clickRate).toBe(0);
       expect(stats?.bounceRate).toBe(0);
     });
 
-    it('should return null metrics for non-existent campaign', () => {
-      const metrics = manager.getMetrics('nonexistent');
+    it("should return null metrics for non-existent campaign", () => {
+      const metrics = manager.getMetrics("nonexistent");
       expect(metrics).toBeNull();
     });
   });
 
-  describe('Campaign Retrieval', () => {
-    it('should get campaign by ID', () => {
-      const campaign = manager.createCampaign('Test', 'Test', [segment1.id]);
+  describe("Campaign Retrieval", () => {
+    it("should get campaign by ID", () => {
+      const campaign = manager.createCampaign("Test", "Test", [segment1.id]);
       const retrieved = manager.getCampaign(campaign.id);
       expect(retrieved).not.toBeNull();
       expect(retrieved?.id).toBe(campaign.id);
     });
 
-    it('should return null for non-existent campaign', () => {
-      const campaign = manager.getCampaign('nonexistent');
+    it("should return null for non-existent campaign", () => {
+      const campaign = manager.getCampaign("nonexistent");
       expect(campaign).toBeNull();
     });
 
-    it('should get multiple campaigns by IDs', () => {
-      const c1 = manager.createCampaign('Campaign 1', 'Test', [segment1.id]);
-      const c2 = manager.createCampaign('Campaign 2', 'Test', [segment1.id]);
-      const c3 = manager.createCampaign('Campaign 3', 'Test', [segment1.id]);
+    it("should get multiple campaigns by IDs", () => {
+      const c1 = manager.createCampaign("Campaign 1", "Test", [segment1.id]);
+      const c2 = manager.createCampaign("Campaign 2", "Test", [segment1.id]);
+      const c3 = manager.createCampaign("Campaign 3", "Test", [segment1.id]);
 
       const retrieved = manager.getByCampaignIds([c1.id, c3.id]);
       expect(retrieved).toHaveLength(2);
-      expect(retrieved.map(c => c.id)).toContain(c1.id);
-      expect(retrieved.map(c => c.id)).toContain(c3.id);
-      expect(retrieved.map(c => c.id)).not.toContain(c2.id);
+      expect(retrieved.map((c) => c.id)).toContain(c1.id);
+      expect(retrieved.map((c) => c.id)).toContain(c3.id);
+      expect(retrieved.map((c) => c.id)).not.toContain(c2.id);
     });
   });
 
-  describe('Edge Cases', () => {
-    it('should prevent completion of already completed campaign', () => {
-      const campaign = manager.createCampaign('Test', 'Test', [segment1.id]);
+  describe("Edge Cases", () => {
+    it("should prevent completion of already completed campaign", () => {
+      const campaign = manager.createCampaign("Test", "Test", [segment1.id]);
       const futureTime = new Date(Date.now() + 1000);
       manager.schedule(campaign.id, futureTime);
       manager.execute(campaign.id);
       manager.complete(campaign.id);
 
-      expect(() =>
-        manager.complete(campaign.id)
-      ).toThrow('Cannot complete campaign with status completed');
+      expect(() => manager.complete(campaign.id)).toThrow(
+        "Cannot complete campaign with status completed",
+      );
     });
 
-    it('should prevent cancellation of completed campaign', () => {
-      const campaign = manager.createCampaign('Test', 'Test', [segment1.id]);
+    it("should prevent cancellation of completed campaign", () => {
+      const campaign = manager.createCampaign("Test", "Test", [segment1.id]);
       const futureTime = new Date(Date.now() + 1000);
       manager.schedule(campaign.id, futureTime);
       manager.execute(campaign.id);
       manager.complete(campaign.id);
 
-      expect(() =>
-        manager.cancel(campaign.id)
-      ).toThrow('Cannot cancel campaign with status completed');
+      expect(() => manager.cancel(campaign.id)).toThrow(
+        "Cannot cancel campaign with status completed",
+      );
     });
 
-    it('should handle campaign not found errors', () => {
-      expect(() =>
-        manager.execute('nonexistent')
-      ).toThrow('Campaign nonexistent not found');
+    it("should handle campaign not found errors", () => {
+      expect(() => manager.execute("nonexistent")).toThrow(
+        "Campaign nonexistent not found",
+      );
     });
   });
 });

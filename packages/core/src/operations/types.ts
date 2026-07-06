@@ -39,6 +39,11 @@ export interface FlowGraph {
 }
 
 export interface FlowValidationError {
-  code: 'INVALID_STAGE' | 'INVALID_TRANSITION' | 'NO_INITIAL' | 'DUPLICATE_KEY' | 'UNKNOWN_TARGET';
+  code:
+    | "INVALID_STAGE"
+    | "INVALID_TRANSITION"
+    | "NO_INITIAL"
+    | "DUPLICATE_KEY"
+    | "UNKNOWN_TARGET";
   message: string;
 }

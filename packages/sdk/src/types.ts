@@ -22,7 +22,13 @@ export interface Order {
   updated_at: string;
 }
 
-export type OrderStatus = 'pending' | 'confirmed' | 'assigned' | 'in_transit' | 'delivered' | 'cancelled';
+export type OrderStatus =
+  | "pending"
+  | "confirmed"
+  | "assigned"
+  | "in_transit"
+  | "delivered"
+  | "cancelled";
 
 export interface OrderItem {
   sku: string;
@@ -51,7 +57,7 @@ export interface Driver {
   updated_at: string;
 }
 
-export type DriverStatus = 'active' | 'inactive' | 'on_leave' | 'suspended';
+export type DriverStatus = "active" | "inactive" | "on_leave" | "suspended";
 
 export interface DriverLocation {
   latitude: number;
@@ -75,7 +81,7 @@ export interface Zone {
   updated_at: string;
 }
 
-export type ZoneStatus = 'active' | 'inactive' | 'maintenance';
+export type ZoneStatus = "active" | "inactive" | "maintenance";
 
 export interface ZoneCheckResult {
   zone_id: string;
@@ -100,7 +106,14 @@ export interface Shipment {
   updated_at: string;
 }
 
-export type ShipmentStatus = 'pending' | 'picked_up' | 'in_transit' | 'out_for_delivery' | 'delivered' | 'failed' | 'returned';
+export type ShipmentStatus =
+  | "pending"
+  | "picked_up"
+  | "in_transit"
+  | "out_for_delivery"
+  | "delivered"
+  | "failed"
+  | "returned";
 
 export interface ShipmentTracking {
   shipment_id: string;
@@ -135,7 +148,7 @@ export interface Dimensions {
   length: number;
   width: number;
   height: number;
-  unit: 'cm' | 'in';
+  unit: "cm" | "in";
 }
 
 export interface TimeSlot {
@@ -152,7 +165,7 @@ export interface ListParams {
   page?: number;
   limit?: number;
   sort_by?: string;
-  sort_order?: 'asc' | 'desc';
+  sort_order?: "asc" | "desc";
   [key: string]: any;
 }
 

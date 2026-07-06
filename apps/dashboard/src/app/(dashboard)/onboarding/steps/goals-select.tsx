@@ -1,7 +1,19 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Check, MapPin, Satellite, Package, Ship, Clipboard, Bell, BarChart3, Calculator, Users, Shield } from "lucide-react";
+import {
+  Check,
+  MapPin,
+  Satellite,
+  Package,
+  Ship,
+  Clipboard,
+  Bell,
+  BarChart3,
+  Calculator,
+  Users,
+  Shield,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { OnboardingData } from "../types";
 import { Goal } from "../types";
@@ -103,7 +115,8 @@ export function GoalsSelect({ data, onToggle }: GoalsSelectProps) {
               What are your primary goals?
             </h2>
             <p className="text-sm text-wl-text-secondary mt-1 m-0">
-              Select all that apply. We'll configure features based on your needs.
+              Select all that apply. We'll configure features based on your
+              needs.
             </p>
           </div>
           {selectedCount > 0 && (
@@ -126,7 +139,7 @@ export function GoalsSelect({ data, onToggle }: GoalsSelectProps) {
                 "flex flex-col items-start gap-3 cursor-pointer group text-left",
                 isSelected
                   ? "border-wl-primary-500 bg-wl-primary-500/10 shadow-lg"
-                  : "border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong hover:bg-wl-bg-overlay"
+                  : "border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong hover:bg-wl-bg-overlay",
               )}
             >
               {/* Checkmark */}
@@ -140,7 +153,7 @@ export function GoalsSelect({ data, onToggle }: GoalsSelectProps) {
               <div
                 className={cn(
                   "w-10 h-10 rounded-lg flex items-center justify-center text-wl-text-inverse",
-                  `bg-gradient-to-br ${goal.color}`
+                  `bg-gradient-to-br ${goal.color}`,
                 )}
               >
                 {goal.icon}

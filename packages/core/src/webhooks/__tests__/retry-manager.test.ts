@@ -187,7 +187,9 @@ describe("RetryManager", () => {
       setTimeout(() => {
         const reset = testManager.attemptCircuitReset("endpoint_1");
         expect(reset).toBe(true);
-        expect(testManager.getRetryState("endpoint_1")?.circuitOpen).toBe(false);
+        expect(testManager.getRetryState("endpoint_1")?.circuitOpen).toBe(
+          false,
+        );
         done();
       }, 150);
     });

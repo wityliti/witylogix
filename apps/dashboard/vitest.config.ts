@@ -9,10 +9,7 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     root: fileURLToPath(new URL(".", import.meta.url)),
-    include: [
-      "src/**/__tests__/**/*.test.{ts,tsx}",
-      "src/**/*.test.{ts,tsx}",
-    ],
+    include: ["src/**/__tests__/**/*.test.{ts,tsx}", "src/**/*.test.{ts,tsx}"],
   },
   resolve: {
     alias: {

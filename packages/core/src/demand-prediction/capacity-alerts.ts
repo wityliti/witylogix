@@ -10,7 +10,7 @@
  * - Alert dashboard data provider
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -19,19 +19,19 @@ import { EventEmitter } from 'events';
 /**
  * Alert severity level
  */
-export type AlertSeverity = 'warning' | 'critical' | 'emergency';
+export type AlertSeverity = "warning" | "critical" | "emergency";
 
 /**
  * Alert channel for notification
  */
-export type AlertChannel = 'in_app' | 'email' | 'slack' | 'sms';
+export type AlertChannel = "in_app" | "email" | "slack" | "sms";
 
 /**
  * Alert rule condition
  */
 export interface AlertCondition {
-  type: 'threshold' | 'change' | 'pattern' | 'comparison';
-  operator: '>' | '<' | '==' | '>=' | '<=' | 'change_percent' | 'contains';
+  type: "threshold" | "change" | "pattern" | "comparison";
+  operator: ">" | "<" | "==" | ">=" | "<=" | "change_percent" | "contains";
   value: number | string;
   metric: string; // e.g., "demand_gap_percent", "model_accuracy", "anomaly_count"
 }
@@ -57,7 +57,7 @@ export interface AlertRule {
 
   // Rule logic
   conditions: AlertCondition[];
-  conditionLogic: 'all' | 'any'; // AND or OR
+  conditionLogic: "all" | "any"; // AND or OR
   defaultSeverity: AlertSeverity;
   action: AlertAction;
 
@@ -85,7 +85,7 @@ export interface Alert {
   context: Record<string, any>;
 
   // Status
-  status: 'active' | 'acknowledged' | 'resolved' | 'escalated';
+  status: "active" | "acknowledged" | "resolved" | "escalated";
   triggeredAt: Date;
   acknowledgedAt?: Date;
   acknowledgedBy?: string;
@@ -134,63 +134,63 @@ export class CapacityAlertSystem extends EventEmitter {
   // Built-in rule templates
   private readonly builtInRules: Record<string, Partial<AlertRule>> = {
     demand_spike: {
-      name: 'Demand Spike Alert',
-      description: 'Triggered when demand increases >50% above prediction',
+      name: "Demand Spike Alert",
+      description: "Triggered when demand increases >50% above prediction",
       conditions: [
         {
-          type: 'threshold',
-          operator: '>',
+          type: "threshold",
+          operator: ">",
           value: 0.5,
-          metric: 'demandGapPercent',
+          metric: "demandGapPercent",
         },
       ],
-      conditionLogic: 'all',
-      defaultSeverity: 'warning',
+      conditionLogic: "all",
+      defaultSeverity: "warning",
       cooldownMinutes: 15,
     },
     capacity_shortage: {
-      name: 'Capacity Shortage Alert',
-      description: 'Triggered when demand exceeds capacity by >30%',
+      name: "Capacity Shortage Alert",
+      description: "Triggered when demand exceeds capacity by >30%",
       conditions: [
         {
-          type: 'threshold',
-          operator: '>',
+          type: "threshold",
+          operator: ">",
           value: 0.3,
-          metric: 'utilizationGap',
+          metric: "utilizationGap",
         },
       ],
-      conditionLogic: 'all',
-      defaultSeverity: 'critical',
+      conditionLogic: "all",
+      defaultSeverity: "critical",
       cooldownMinutes: 10,
     },
     model_degradation: {
-      name: 'Model Degradation Alert',
-      description: 'Triggered when prediction accuracy drops >10%',
+      name: "Model Degradation Alert",
+      description: "Triggered when prediction accuracy drops >10%",
       conditions: [
         {
-          type: 'change',
-          operator: 'change_percent',
+          type: "change",
+          operator: "change_percent",
           value: -10,
-          metric: 'model_accuracy',
+          metric: "model_accuracy",
         },
       ],
-      conditionLogic: 'all',
-      defaultSeverity: 'warning',
+      conditionLogic: "all",
+      defaultSeverity: "warning",
       cooldownMinutes: 60,
     },
     anomaly_cluster: {
-      name: 'Anomaly Cluster Alert',
-      description: 'Triggered when >3 anomalies detected in 30 minutes',
+      name: "Anomaly Cluster Alert",
+      description: "Triggered when >3 anomalies detected in 30 minutes",
       conditions: [
         {
-          type: 'threshold',
-          operator: '>',
+          type: "threshold",
+          operator: ">",
           value: 3,
-          metric: 'anomaly_count_30m',
+          metric: "anomaly_count_30m",
         },
       ],
-      conditionLogic: 'all',
-      defaultSeverity: 'critical',
+      conditionLogic: "all",
+      defaultSeverity: "critical",
       cooldownMinutes: 30,
     },
   };
@@ -207,14 +207,14 @@ export class CapacityAlertSystem extends EventEmitter {
     for (const [key, template] of Object.entries(this.builtInRules)) {
       const rule: AlertRule = {
         id: key,
-        name: template.name || '',
+        name: template.name || "",
         description: template.description,
         enabled: true,
         conditions: template.conditions || [],
-        conditionLogic: template.conditionLogic || 'all',
-        defaultSeverity: template.defaultSeverity || 'warning',
+        conditionLogic: template.conditionLogic || "all",
+        defaultSeverity: template.defaultSeverity || "warning",
         action: {
-          channels: ['in_app', 'email'],
+          channels: ["in_app", "email"],
           escalateAfterMinutes: 15,
           requiresAcknowledgement: true,
           autoResolveAfterMinutes: 240,
@@ -230,7 +230,9 @@ export class CapacityAlertSystem extends EventEmitter {
   /**
    * Create custom alert rule
    */
-  createRule(rule: Omit<AlertRule, 'id' | 'createdAt' | 'updatedAt'>): AlertRule {
+  createRule(
+    rule: Omit<AlertRule, "id" | "createdAt" | "updatedAt">,
+  ): AlertRule {
     const newRule: AlertRule = {
       ...rule,
       id: `rule-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -239,7 +241,7 @@ export class CapacityAlertSystem extends EventEmitter {
     };
 
     this.rules.set(newRule.id, newRule);
-    this.emit('rule_created', newRule);
+    this.emit("rule_created", newRule);
 
     return newRule;
   }
@@ -252,7 +254,7 @@ export class CapacityAlertSystem extends EventEmitter {
     if (!rule) return false;
 
     Object.assign(rule, updates, { updatedAt: new Date() });
-    this.emit('rule_updated', rule);
+    this.emit("rule_updated", rule);
 
     return true;
   }
@@ -263,7 +265,7 @@ export class CapacityAlertSystem extends EventEmitter {
   deleteRule(ruleId: string): boolean {
     const deleted = this.rules.delete(ruleId);
     if (deleted) {
-      this.emit('rule_deleted', ruleId);
+      this.emit("rule_deleted", ruleId);
     }
     return deleted;
   }
@@ -287,17 +289,20 @@ export class CapacityAlertSystem extends EventEmitter {
 
       // Check cooldown
       if (rule.lastTriggeredAt) {
-        const timeSinceLastTrigger = Date.now() - rule.lastTriggeredAt.getTime();
+        const timeSinceLastTrigger =
+          Date.now() - rule.lastTriggeredAt.getTime();
         if (timeSinceLastTrigger < rule.cooldownMinutes * 60 * 1000) {
           continue; // Still in cooldown
         }
       }
 
       // Evaluate conditions
-      const conditionResults = rule.conditions.map((condition) => this.evaluateCondition(condition, snapshot));
+      const conditionResults = rule.conditions.map((condition) =>
+        this.evaluateCondition(condition, snapshot),
+      );
 
       let ruleMatches: boolean;
-      if (rule.conditionLogic === 'all') {
+      if (rule.conditionLogic === "all") {
         ruleMatches = conditionResults.every((r) => r);
       } else {
         ruleMatches = conditionResults.some((r) => r);
@@ -324,11 +329,11 @@ export class CapacityAlertSystem extends EventEmitter {
     const alert = this.alerts.get(alertId);
     if (!alert) return false;
 
-    alert.status = 'acknowledged';
+    alert.status = "acknowledged";
     alert.acknowledgedAt = new Date();
     alert.acknowledgedBy = userId;
 
-    this.emit('alert_acknowledged', alert);
+    this.emit("alert_acknowledged", alert);
     return true;
   }
 
@@ -339,11 +344,11 @@ export class CapacityAlertSystem extends EventEmitter {
     const alert = this.alerts.get(alertId);
     if (!alert) return false;
 
-    alert.status = 'resolved';
+    alert.status = "resolved";
     alert.resolvedAt = new Date();
     alert.resolvedReason = reason;
 
-    this.emit('alert_resolved', alert);
+    this.emit("alert_resolved", alert);
     return true;
   }
 
@@ -358,20 +363,24 @@ export class CapacityAlertSystem extends EventEmitter {
    * Get all active alerts
    */
   getActiveAlerts(): Alert[] {
-    return Array.from(this.alerts.values()).filter((a) => a.status === 'active');
+    return Array.from(this.alerts.values()).filter(
+      (a) => a.status === "active",
+    );
   }
 
   /**
    * Get all acknowledged alerts
    */
   getAcknowledgedAlerts(): Alert[] {
-    return Array.from(this.alerts.values()).filter((a) => a.status === 'acknowledged');
+    return Array.from(this.alerts.values()).filter(
+      (a) => a.status === "acknowledged",
+    );
   }
 
   /**
    * Get alerts by zone
    */
-  getAlertsByZone(zoneId: string, status?: Alert['status']): Alert[] {
+  getAlertsByZone(zoneId: string, status?: Alert["status"]): Alert[] {
     return Array.from(this.alerts.values()).filter((a) => {
       if (a.zoneId !== zoneId) return false;
       if (status && a.status !== status) return false;
@@ -384,16 +393,19 @@ export class CapacityAlertSystem extends EventEmitter {
    */
   getAlertDashboard(): AlertDashboard {
     const allAlerts = Array.from(this.alerts.values());
-    const activeAlerts = allAlerts.filter((a) => a.status === 'active');
-    const acknowledgedAlerts = allAlerts.filter((a) => a.status === 'acknowledged');
-    const resolvedAlerts = allAlerts.filter((a) => a.status === 'resolved');
+    const activeAlerts = allAlerts.filter((a) => a.status === "active");
+    const acknowledgedAlerts = allAlerts.filter(
+      (a) => a.status === "acknowledged",
+    );
+    const resolvedAlerts = allAlerts.filter((a) => a.status === "resolved");
 
     // Count rule triggers for most common
     const ruleCounts: Record<string, number> = {};
     for (const alert of activeAlerts) {
       ruleCounts[alert.ruleId] = (ruleCounts[alert.ruleId] || 0) + 1;
     }
-    const mostCommonRule = Object.entries(ruleCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'none';
+    const mostCommonRule =
+      Object.entries(ruleCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "none";
 
     return {
       activeAlerts,
@@ -403,8 +415,10 @@ export class CapacityAlertSystem extends EventEmitter {
         totalActive: activeAlerts.length,
         totalAcknowledged: acknowledgedAlerts.length,
         totalResolved: resolvedAlerts.length,
-        criticalCount: activeAlerts.filter((a) => a.severity === 'critical').length,
-        emergencyCount: activeAlerts.filter((a) => a.severity === 'emergency').length,
+        criticalCount: activeAlerts.filter((a) => a.severity === "critical")
+          .length,
+        emergencyCount: activeAlerts.filter((a) => a.severity === "emergency")
+          .length,
         mostCommonRule,
       },
     };
@@ -434,24 +448,27 @@ export class CapacityAlertSystem extends EventEmitter {
   /**
    * Evaluate a single condition
    */
-  private evaluateCondition(condition: AlertCondition, snapshot: Record<string, any>): boolean {
+  private evaluateCondition(
+    condition: AlertCondition,
+    snapshot: Record<string, any>,
+  ): boolean {
     const value = snapshot[condition.metric];
     if (value === undefined) return false;
 
     switch (condition.operator) {
-      case '>':
+      case ">":
         return value > condition.value;
-      case '<':
+      case "<":
         return value < condition.value;
-      case '>=':
+      case ">=":
         return value >= condition.value;
-      case '<=':
+      case "<=":
         return value <= condition.value;
-      case '==':
+      case "==":
         return value === condition.value;
-      case 'change_percent':
+      case "change_percent":
         return value <= ((condition.value as number) / 100) * value;
-      case 'contains':
+      case "contains":
         return String(value).includes(String(condition.value));
       default:
         return false;
@@ -473,7 +490,7 @@ export class CapacityAlertSystem extends EventEmitter {
       title: rule.name,
       message: this.generateAlertMessage(rule, snapshot),
       context: snapshot,
-      status: 'active',
+      status: "active",
       triggeredAt: new Date(),
       escalationLevel: this.severityToLevel(rule.defaultSeverity),
       channelsNotified: [],
@@ -481,7 +498,7 @@ export class CapacityAlertSystem extends EventEmitter {
     };
 
     this.alerts.set(alertId, alert);
-    this.emit('alert_triggered', alert);
+    this.emit("alert_triggered", alert);
 
     return alert;
   }
@@ -489,18 +506,21 @@ export class CapacityAlertSystem extends EventEmitter {
   /**
    * Generate alert message
    */
-  private generateAlertMessage(rule: AlertRule, snapshot: Record<string, any>): string {
+  private generateAlertMessage(
+    rule: AlertRule,
+    snapshot: Record<string, any>,
+  ): string {
     switch (rule.id) {
-      case 'demand_spike':
+      case "demand_spike":
         return `Demand spike detected: ${Math.round((snapshot.demandGapPercent || 0) * 100)}% above predicted`;
-      case 'capacity_shortage':
+      case "capacity_shortage":
         return `Capacity shortage: demand exceeds capacity by ${Math.round((snapshot.utilizationGap || 0) * 100)}%`;
-      case 'model_degradation':
+      case "model_degradation":
         return `Model accuracy degraded to ${Math.round((snapshot.modelAccuracy || 0) * 100)}%`;
-      case 'anomaly_cluster':
+      case "anomaly_cluster":
         return `Anomaly cluster detected: ${snapshot.anomalyCount30m || 0} anomalies in 30 minutes`;
       default:
-        return rule.description || 'Alert triggered';
+        return rule.description || "Alert triggered";
     }
   }
 
@@ -532,11 +552,11 @@ export class CapacityAlertSystem extends EventEmitter {
    */
   private severityToLevel(severity: AlertSeverity): number {
     switch (severity) {
-      case 'warning':
+      case "warning":
         return 0;
-      case 'critical':
+      case "critical":
         return 1;
-      case 'emergency':
+      case "emergency":
         return 2;
     }
   }

@@ -131,7 +131,14 @@ export function createTenantContext(request: Request): TenantContext {
  */
 function roleToPermissions(role: string): TenantPermission[] {
   const rolePermissions: Record<string, TenantPermission[]> = {
-    OWNER: ["READ", "WRITE", "DELETE", "ADMIN", "MANAGE_USERS", "MANAGE_BILLING"],
+    OWNER: [
+      "READ",
+      "WRITE",
+      "DELETE",
+      "ADMIN",
+      "MANAGE_USERS",
+      "MANAGE_BILLING",
+    ],
     ADMIN: ["READ", "WRITE", "DELETE", "MANAGE_USERS"],
     MEMBER: ["READ", "WRITE"],
     VIEWER: ["READ"],
@@ -150,7 +157,10 @@ function roleToPermissions(role: string): TenantPermission[] {
  * @param tenantContext - Tenant context for filtering
  * @returns Scoped Prisma-like client
  */
-export function withTenantScope(prismaClient: any, tenantContext: TenantContext): any {
+export function withTenantScope(
+  prismaClient: any,
+  tenantContext: TenantContext,
+): any {
   return new Proxy(prismaClient, {
     get(target, model: string | symbol) {
       // Allow certain operations without filtering
@@ -181,9 +191,18 @@ export function withTenantScope(prismaClient: any, tenantContext: TenantContext)
           const delegate = Reflect.get(modelTarget, method);
 
           // Only wrap query methods
-          if (!["findUnique", "findFirst", "findMany", "create", "update", "delete", "updateMany", "deleteMany"].includes(
-            method as string,
-          )) {
+          if (
+            ![
+              "findUnique",
+              "findFirst",
+              "findMany",
+              "create",
+              "update",
+              "delete",
+              "updateMany",
+              "deleteMany",
+            ].includes(method as string)
+          ) {
             return delegate;
           }
 
@@ -269,7 +288,7 @@ export function tenantMiddleware(
 ): void {
   try {
     const tenantContext = createTenantContext(_req);
-    ((_req as any).tenantContext = tenantContext);
+    (_req as any).tenantContext = tenantContext;
     next();
   } catch (err) {
     // No tenant context — could be a public endpoint
@@ -314,7 +333,9 @@ export function requireTenantContext(
  */
 export function checkTenantPermission(permission: TenantPermission) {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const tenantContext = (req as any).tenantContext as TenantContext | undefined;
+    const tenantContext = (req as any).tenantContext as
+      | TenantContext
+      | undefined;
 
     if (!tenantContext) {
       res.status(401).json({

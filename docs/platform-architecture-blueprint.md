@@ -147,11 +147,25 @@ When a customer reaches checkout, Shopify POSTs order details (origin, destinati
 Registration uses the GraphQL `carrierServiceCreate` mutation (REST is deprecated for new apps as of April 2025):
 
 ```graphql
-mutation { carrierServiceCreate(input: {
-  name: "ScrollEngine Delivery",
-  callbackUrl: "https://api.example.com/shopify/rates",
-  active: true, supportsServiceDiscovery: true
-}) { carrierService { id name } userErrors { field message } } }
+mutation {
+  carrierServiceCreate(
+    input: {
+      name: "ScrollEngine Delivery"
+      callbackUrl: "https://api.example.com/shopify/rates"
+      active: true
+      supportsServiceDiscovery: true
+    }
+  ) {
+    carrierService {
+      id
+      name
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}
 ```
 
 Best practices for meeting the **500ms p95 target**: store carrier retail rates internally to avoid external calls, build a Redis caching layer keyed on `{origin_zip}_{dest_zip}_{weight}`, parallelize any external carrier API calls, set internal timeouts below 500ms with fallback to pre-computed backup rates, and host in Google Cloud regions near Shopify's infrastructure.

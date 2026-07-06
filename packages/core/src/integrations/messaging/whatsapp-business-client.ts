@@ -14,7 +14,10 @@
  * - Rate limiting (per-phone, per-business)
  */
 
-import type { NotificationTemplate, WhatsAppNotification } from "./notification-types.js";
+import type {
+  NotificationTemplate,
+  WhatsAppNotification,
+} from "./notification-types.js";
 
 /**
  * WhatsApp Business client for Meta Cloud API.
@@ -39,7 +42,7 @@ export class WhatsAppBusinessClient {
 
     if (!this.accessToken || !this.businessPhoneNumberId) {
       throw new Error(
-        "WhatsApp Business client requires accessToken and businessPhoneNumberId"
+        "WhatsApp Business client requires accessToken and businessPhoneNumberId",
       );
     }
   }
@@ -57,7 +60,7 @@ export class WhatsAppBusinessClient {
   private async request<T>(
     method: string,
     endpoint: string,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers: Record<string, string> = {
@@ -80,7 +83,7 @@ export class WhatsAppBusinessClient {
     if (!response.ok) {
       const error = data as Record<string, unknown>;
       throw new Error(
-        `WhatsApp API error: ${error.message || JSON.stringify(error)}`
+        `WhatsApp API error: ${error.message || JSON.stringify(error)}`,
       );
     }
 
@@ -100,7 +103,7 @@ export class WhatsAppBusinessClient {
       image?: { link: string };
       document?: { link: string };
       video?: { link: string };
-    }>
+    }>,
   ): Promise<{ messageId: string; status: string }> {
     try {
       const body: Record<string, unknown> = {
@@ -133,11 +136,7 @@ export class WhatsAppBusinessClient {
 
       const response = await this.request<{
         messages: Array<{ id: string }>;
-      }>(
-        "POST",
-        `/${this.businessPhoneNumberId}/messages`,
-        body
-      );
+      }>("POST", `/${this.businessPhoneNumberId}/messages`, body);
 
       const messageId = response.messages?.[0]?.id || `wa-${Date.now()}`;
 
@@ -155,22 +154,18 @@ export class WhatsAppBusinessClient {
    */
   async sendTextMessage(
     to: string,
-    body: string
+    body: string,
   ): Promise<{ messageId: string; status: string }> {
     try {
       const response = await this.request<{
         messages: Array<{ id: string }>;
-      }>(
-        "POST",
-        `/${this.businessPhoneNumberId}/messages`,
-        {
-          messaging_product: "whatsapp",
-          recipient_type: "individual",
-          to,
-          type: "text",
-          text: { preview_url: false, body },
-        }
-      );
+      }>("POST", `/${this.businessPhoneNumberId}/messages`, {
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to,
+        type: "text",
+        text: { preview_url: false, body },
+      });
 
       const messageId = response.messages?.[0]?.id || `wa-${Date.now()}`;
 
@@ -190,7 +185,7 @@ export class WhatsAppBusinessClient {
     to: string,
     mediaType: "image" | "video" | "document" | "audio",
     mediaUrl: string,
-    caption?: string
+    caption?: string,
   ): Promise<{ messageId: string; status: string }> {
     try {
       const mediaContent: Record<string, unknown> = {
@@ -203,17 +198,13 @@ export class WhatsAppBusinessClient {
 
       const response = await this.request<{
         messages: Array<{ id: string }>;
-      }>(
-        "POST",
-        `/${this.businessPhoneNumberId}/messages`,
-        {
-          messaging_product: "whatsapp",
-          recipient_type: "individual",
-          to,
-          type: mediaType,
-          [mediaType]: mediaContent,
-        }
-      );
+      }>("POST", `/${this.businessPhoneNumberId}/messages`, {
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to,
+        type: mediaType,
+        [mediaType]: mediaContent,
+      });
 
       const messageId = response.messages?.[0]?.id || `wa-${Date.now()}`;
 
@@ -239,7 +230,7 @@ export class WhatsAppBusinessClient {
       type?: "reply" | "call" | "url";
     }>,
     header?: string,
-    footer?: string
+    footer?: string,
   ): Promise<{ messageId: string; status: string }> {
     try {
       const payload: Record<string, unknown> = {
@@ -293,11 +284,7 @@ export class WhatsAppBusinessClient {
 
       const response = await this.request<{
         messages: Array<{ id: string }>;
-      }>(
-        "POST",
-        `/${this.businessPhoneNumberId}/messages`,
-        payload
-      );
+      }>("POST", `/${this.businessPhoneNumberId}/messages`, payload);
 
       const messageId = response.messages?.[0]?.id || `wa-${Date.now()}`;
 
@@ -315,7 +302,7 @@ export class WhatsAppBusinessClient {
    */
   verifyWebhookToken(
     verifyToken: string,
-    receivedToken: string
+    receivedToken: string,
   ): string | null {
     if (verifyToken === receivedToken) {
       return receivedToken;
@@ -403,10 +390,7 @@ export class WhatsAppBusinessClient {
           status: string;
           category: string;
         }>;
-      }>(
-        "GET",
-        `/${this.businessAccountId}/message_templates`
-      );
+      }>("GET", `/${this.businessAccountId}/message_templates`);
 
       return response.data || [];
     } catch (error) {
@@ -423,7 +407,7 @@ export class WhatsAppBusinessClient {
     language: string,
     bodyText: string,
     headerText?: string,
-    footerText?: string
+    footerText?: string,
   ): Promise<{ id: string; status: string }> {
     try {
       const components = [
@@ -450,16 +434,12 @@ export class WhatsAppBusinessClient {
       const response = await this.request<{
         id: string;
         status: string;
-      }>(
-        "POST",
-        `/${this.businessAccountId}/message_templates`,
-        {
-          name,
-          language,
-          category,
-          components,
-        }
-      );
+      }>("POST", `/${this.businessAccountId}/message_templates`, {
+        name,
+        language,
+        category,
+        components,
+      });
 
       return {
         id: response.id,
@@ -487,10 +467,7 @@ export class WhatsAppBusinessClient {
         status: string;
         category: string;
         language: string;
-      }>(
-        "GET",
-        `/${templateId}`
-      );
+      }>("GET", `/${templateId}`);
 
       return response;
     } catch (error) {
@@ -503,11 +480,7 @@ export class WhatsAppBusinessClient {
    */
   async submitTemplateForReview(templateId: string): Promise<void> {
     try {
-      await this.request<void>(
-        "POST",
-        `/${templateId}/submit`,
-        {}
-      );
+      await this.request<void>("POST", `/${templateId}/submit`, {});
     } catch (error) {
       throw new Error(`WhatsApp submit template failed: ${error}`);
     }
@@ -523,10 +496,7 @@ export class WhatsAppBusinessClient {
     try {
       const response = await this.request<{
         quality_rating: "UNKNOWN" | "LOW" | "MEDIUM" | "HIGH";
-      }>(
-        "GET",
-        `/${this.businessPhoneNumberId}/quality_rating`
-      );
+      }>("GET", `/${this.businessPhoneNumberId}/quality_rating`);
 
       return {
         quality: response.quality_rating,
@@ -551,10 +521,7 @@ export class WhatsAppBusinessClient {
           status: string;
         };
         quality_rating: string;
-      }>(
-        "GET",
-        `/${this.businessAccountId}`
-      );
+      }>("GET", `/${this.businessAccountId}`);
 
       return {
         status: response.health?.status || "active",
@@ -581,10 +548,7 @@ export class WhatsAppBusinessClient {
         quality_rating: string;
         name_status: string;
         is_official_business_account: boolean;
-      }>(
-        "GET",
-        `/${this.businessPhoneNumberId}`
-      );
+      }>("GET", `/${this.businessPhoneNumberId}`);
 
       return {
         phoneNumber: response.display_phone_number,
@@ -607,7 +571,7 @@ export class WhatsAppBusinessClient {
         `/${this.businessPhoneNumberId}/mark_message_read`,
         {
           message_id: messageId,
-        }
+        },
       );
     } catch (error) {
       throw new Error(`WhatsApp mark message read failed: ${error}`);
@@ -620,22 +584,19 @@ export class WhatsAppBusinessClient {
   async uploadMedia(
     fileData: Buffer | string,
     mimeType: string,
-    filename?: string
+    filename?: string,
   ): Promise<{ mediaId: string }> {
     try {
       // Note: In real implementation, would use FormData
       // This is simplified for demonstration
       const response = await this.request<{
         h: string; // media ID
-      }>(
-        "POST",
-        `/${this.businessPhoneNumberId}/media`,
-        {
-          file: typeof fileData === "string" ? fileData : fileData.toString("base64"),
-          type: mimeType,
-          filename,
-        }
-      );
+      }>("POST", `/${this.businessPhoneNumberId}/media`, {
+        file:
+          typeof fileData === "string" ? fileData : fileData.toString("base64"),
+        type: mimeType,
+        filename,
+      });
 
       return {
         mediaId: response.h,

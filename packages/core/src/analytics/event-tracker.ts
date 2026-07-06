@@ -133,7 +133,10 @@ export class EventTracker {
       await this.persistHandler(events);
     } catch (err) {
       // Re-add events on failure (store them back)
-      console.error("[EventTracker] Persist handler failed, retaining events:", err);
+      console.error(
+        "[EventTracker] Persist handler failed, retaining events:",
+        err,
+      );
       // Note: In production, implement exponential backoff and dead-letter queue
     } finally {
       this.isFlushing = false;

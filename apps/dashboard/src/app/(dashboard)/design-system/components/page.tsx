@@ -54,7 +54,12 @@ interface CopyState {
   [key: string]: boolean;
 }
 
-function ComponentPreviewCard({ title, description, preview, code }: ComponentPreviewProps) {
+function ComponentPreviewCard({
+  title,
+  description,
+  preview,
+  code,
+}: ComponentPreviewProps) {
   const [copiedCode, setCopiedCode] = useState(false);
 
   const handleCopyCode = () => {
@@ -67,7 +72,9 @@ function ComponentPreviewCard({ title, description, preview, code }: ComponentPr
     <Card className="overflow-hidden bg-wl-bg-surface border-wl-border-default">
       <CardHeader>
         <CardTitle className="text-white">{title}</CardTitle>
-        <CardDescription className="text-wl-text-secondary">{description}</CardDescription>
+        <CardDescription className="text-wl-text-secondary">
+          {description}
+        </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4">
@@ -88,7 +95,7 @@ function ComponentPreviewCard({ title, description, preview, code }: ComponentPr
                 "flex items-center gap-1 px-2 py-1 text-xs rounded",
                 "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong",
                 "transition-colors",
-                copiedCode && "bg-emerald-500/20 border-emerald-500"
+                copiedCode && "bg-emerald-500/20 border-emerald-500",
               )}
             >
               {copiedCode ? (
@@ -115,9 +122,13 @@ function ComponentPreviewCard({ title, description, preview, code }: ComponentPr
 
 export default function ComponentGalleryPage() {
   const [buttonSize, setButtonSize] = useState<"sm" | "md" | "lg">("md");
-  const [buttonVariant, setButtonVariant] = useState<"primary" | "secondary" | "ghost" | "danger">("primary");
+  const [buttonVariant, setButtonVariant] = useState<
+    "primary" | "secondary" | "ghost" | "danger"
+  >("primary");
   const [buttonDisabled, setButtonDisabled] = useState(false);
-  const [badgeVariant, setBadgeVariant] = useState<"default" | "success" | "warning" | "danger" | "info" | "primary">("primary");
+  const [badgeVariant, setBadgeVariant] = useState<
+    "default" | "success" | "warning" | "danger" | "info" | "primary"
+  >("primary");
   const [badgeWithDot, setBadgeWithDot] = useState(false);
   const [inputValue, setInputValue] = useState("Enter some text...");
   const [switchEnabled, setSwitchEnabled] = useState(false);
@@ -132,7 +143,9 @@ export default function ComponentGalleryPage() {
       {/* Header */}
       <div className="border-b border-wl-border-default sticky top-0 z-40 bg-wl-bg-root/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Component Gallery</h1>
+          <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">
+            Component Gallery
+          </h1>
           <p className="text-wl-text-secondary">
             Interactive showcase of all design system components
           </p>
@@ -153,7 +166,8 @@ export default function ComponentGalleryPage() {
                   size={buttonSize}
                   disabled={buttonDisabled}
                 >
-                  {buttonVariant.charAt(0).toUpperCase() + buttonVariant.slice(1)}
+                  {buttonVariant.charAt(0).toUpperCase() +
+                    buttonVariant.slice(1)}
                 </Button>
               </div>
             }
@@ -181,7 +195,7 @@ export default function ComponentGalleryPage() {
                         "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                         buttonVariant === v
                           ? "bg-wl-primary text-wl-text-inverse"
-                          : "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong text-wl-neutral-300"
+                          : "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong text-wl-neutral-300",
                       )}
                     >
                       {v}
@@ -203,7 +217,7 @@ export default function ComponentGalleryPage() {
                         "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                         buttonSize === s
                           ? "bg-wl-primary text-wl-text-inverse"
-                          : "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong text-wl-neutral-300"
+                          : "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong text-wl-neutral-300",
                       )}
                     >
                       {s}
@@ -215,7 +229,9 @@ export default function ComponentGalleryPage() {
               <div className="flex items-center gap-2">
                 <Checkbox
                   checked={buttonDisabled}
-                  onCheckedChange={(checked) => setButtonDisabled(checked === true)}
+                  onCheckedChange={(checked) =>
+                    setButtonDisabled(checked === true)
+                  }
                   id="button-disabled"
                 />
                 <label htmlFor="button-disabled" className="text-sm text-white">
@@ -252,7 +268,14 @@ export default function ComponentGalleryPage() {
                   Variant
                 </label>
                 <div className="flex gap-2 flex-wrap">
-                  {["default", "success", "warning", "danger", "info", "primary"].map((v) => (
+                  {[
+                    "default",
+                    "success",
+                    "warning",
+                    "danger",
+                    "info",
+                    "primary",
+                  ].map((v) => (
                     <button
                       key={v}
                       onClick={() => setBadgeVariant(v as any)}
@@ -260,7 +283,7 @@ export default function ComponentGalleryPage() {
                         "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                         badgeVariant === v
                           ? "bg-wl-primary text-wl-text-inverse"
-                          : "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong text-wl-neutral-300"
+                          : "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong text-wl-neutral-300",
                       )}
                     >
                       {v}
@@ -272,7 +295,9 @@ export default function ComponentGalleryPage() {
               <div className="flex items-center gap-2">
                 <Checkbox
                   checked={badgeWithDot}
-                  onCheckedChange={(checked) => setBadgeWithDot(checked === true)}
+                  onCheckedChange={(checked) =>
+                    setBadgeWithDot(checked === true)
+                  }
                   id="badge-dot"
                 />
                 <label htmlFor="badge-dot" className="text-sm text-white">
@@ -290,7 +315,9 @@ export default function ComponentGalleryPage() {
               <Card className="w-full max-w-xs bg-wl-bg-surface border-wl-border-default">
                 <CardHeader>
                   <CardTitle className="text-white">Card Title</CardTitle>
-                  <CardDescription className="text-wl-text-secondary">Card subtitle or description</CardDescription>
+                  <CardDescription className="text-wl-text-secondary">
+                    Card subtitle or description
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-wl-neutral-300">
@@ -323,7 +350,9 @@ export default function ComponentGalleryPage() {
             preview={
               <Input
                 value={inputValue}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setInputValue(e.target.value)
+                }
                 placeholder="Type something..."
                 className="w-full max-w-xs"
               />
@@ -361,10 +390,15 @@ export default function ComponentGalleryPage() {
               <div className="flex items-center gap-3">
                 <Switch
                   checked={switchEnabled}
-                  onCheckedChange={(checked) => setSwitchEnabled(checked === true)}
+                  onCheckedChange={(checked) =>
+                    setSwitchEnabled(checked === true)
+                  }
                   id="switch-demo"
                 />
-                <label htmlFor="switch-demo" className="text-sm text-wl-neutral-300">
+                <label
+                  htmlFor="switch-demo"
+                  className="text-sm text-wl-neutral-300"
+                >
                   {switchEnabled ? "Enabled" : "Disabled"}
                 </label>
               </div>
@@ -384,10 +418,15 @@ export default function ComponentGalleryPage() {
               <div className="flex items-center gap-3">
                 <Checkbox
                   checked={checkboxChecked}
-                  onCheckedChange={(checked) => setCheckboxChecked(checked === true)}
+                  onCheckedChange={(checked) =>
+                    setCheckboxChecked(checked === true)
+                  }
                   id="checkbox-demo"
                 />
-                <label htmlFor="checkbox-demo" className="text-sm text-wl-neutral-300">
+                <label
+                  htmlFor="checkbox-demo"
+                  className="text-sm text-wl-neutral-300"
+                >
                   {checkboxChecked ? "Checked" : "Unchecked"}
                 </label>
               </div>
@@ -423,7 +462,9 @@ export default function ComponentGalleryPage() {
               <div className="w-full max-w-xs space-y-4">
                 <div>
                   <div className="flex justify-between mb-2">
-                    <label className="text-xs text-wl-neutral-300">Progress: {progressValue}%</label>
+                    <label className="text-xs text-wl-neutral-300">
+                      Progress: {progressValue}%
+                    </label>
                   </div>
                   <Progress value={progressValue} />
                 </div>
@@ -650,8 +691,12 @@ export default function ComponentGalleryPage() {
                 <div className="flex gap-2 p-3 rounded-lg border border-blue-600/30 bg-blue-600/10">
                   <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-blue-500">Info Message</p>
-                    <p className="text-xs text-wl-text-secondary">This is an informational alert</p>
+                    <p className="text-sm font-medium text-blue-500">
+                      Info Message
+                    </p>
+                    <p className="text-xs text-wl-text-secondary">
+                      This is an informational alert
+                    </p>
                   </div>
                 </div>
               </div>
@@ -686,10 +731,7 @@ export default function ComponentGalleryPage() {
             title="Modal"
             description="Modal dialog component"
             preview={
-              <Button
-                variant="primary"
-                onClick={() => setModalOpen(true)}
-              >
+              <Button variant="primary" onClick={() => setModalOpen(true)}>
                 Open Modal
               </Button>
             }
@@ -774,9 +816,7 @@ export default function ComponentGalleryPage() {
             title="CommandPalette"
             description="Command palette for actions"
             preview={
-              <Button variant="secondary">
-                Command Palette (Cmd+K)
-              </Button>
+              <Button variant="secondary">Command Palette (Cmd+K)</Button>
             }
             code={`<CommandPalette
   commands={[
@@ -798,8 +838,18 @@ export default function ComponentGalleryPage() {
                   { key: "date", header: "Date" },
                 ]}
                 data={[
-                  { id: "1", name: "Item 1", status: "Active", date: "2024-03-01" },
-                  { id: "2", name: "Item 2", status: "Inactive", date: "2024-03-02" },
+                  {
+                    id: "1",
+                    name: "Item 1",
+                    status: "Active",
+                    date: "2024-03-01",
+                  },
+                  {
+                    id: "2",
+                    name: "Item 2",
+                    status: "Inactive",
+                    date: "2024-03-02",
+                  },
                 ]}
               />
             }

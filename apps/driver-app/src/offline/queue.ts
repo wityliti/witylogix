@@ -15,22 +15,22 @@
 // ---------------------------------------------------------------------------
 
 export type DeliveryEventType =
-  | 'DELIVERY_STATUS'
-  | 'POD_SIGNATURE'
-  | 'FAILED_DELIVERY'
-  | 'STOP_RESEQUENCED'
-  | 'PHOTO_EVIDENCE'
-  | 'RTS_WORKFLOW';
+  | "DELIVERY_STATUS"
+  | "POD_SIGNATURE"
+  | "FAILED_DELIVERY"
+  | "STOP_RESEQUENCED"
+  | "PHOTO_EVIDENCE"
+  | "RTS_WORKFLOW";
 
 export type FailedDeliveryReason =
-  | 'not_home'
-  | 'wrong_address'
-  | 'refused'
-  | 'damaged'
-  | 'access_denied'
-  | 'business_closed';
+  | "not_home"
+  | "wrong_address"
+  | "refused"
+  | "damaged"
+  | "access_denied"
+  | "business_closed";
 
-export type EventStatus = 'pending' | 'synced' | 'conflict' | 'error';
+export type EventStatus = "pending" | "synced" | "conflict" | "error";
 
 export interface DriverGPS {
   lat: number;
@@ -96,13 +96,16 @@ export const SYNC_PRIORITY: Record<DeliveryEventType, number> = {
  * Math.random fallback for older React Native environments.
  */
 export function createEventId(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
     return crypto.randomUUID();
   }
   // Fallback: RFC 4122 v4 UUID
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
-    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
   });
 }
 
@@ -120,11 +123,11 @@ export class AppendQueue {
    * @throws {Error} if PHOTO_EVIDENCE payload exceeds MAX_PHOTO_BYTES
    */
   append(input: AppendInput): string {
-    if (input.type === 'PHOTO_EVIDENCE') {
+    if (input.type === "PHOTO_EVIDENCE") {
       const photo = input.payload.photoBase64 as string | undefined;
       if (photo && photo.length > MAX_PHOTO_BYTES) {
         throw new Error(
-          `Photo size (${photo.length} bytes) exceeds the maximum allowed size of ${MAX_PHOTO_BYTES} bytes.`
+          `Photo size (${photo.length} bytes) exceeds the maximum allowed size of ${MAX_PHOTO_BYTES} bytes.`,
         );
       }
     }
@@ -138,7 +141,7 @@ export class AppendQueue {
       timestamp: Date.now(),
       driverGPS: input.driverGPS,
       syncPriority: SYNC_PRIORITY[input.type],
-      status: 'pending',
+      status: "pending",
       retryCount: 0,
     };
 
@@ -162,8 +165,10 @@ export class AppendQueue {
    */
   pendingByPriority(): OfflineEvent[] {
     return Array.from(this.store.values())
-      .filter((e) => e.status === 'pending')
-      .sort((a, b) => a.syncPriority - b.syncPriority || a.timestamp - b.timestamp);
+      .filter((e) => e.status === "pending")
+      .sort(
+        (a, b) => a.syncPriority - b.syncPriority || a.timestamp - b.timestamp,
+      );
   }
 
   // ── Status transitions ────────────────────────────────────────────────────
@@ -172,7 +177,7 @@ export class AppendQueue {
   markSynced(eventId: string): void {
     const event = this.store.get(eventId);
     if (event) {
-      event.status = 'synced';
+      event.status = "synced";
     }
   }
 
@@ -183,7 +188,7 @@ export class AppendQueue {
   markConflict(eventId: string, message: string): void {
     const event = this.store.get(eventId);
     if (event) {
-      event.status = 'conflict';
+      event.status = "conflict";
       event.conflictMessage = message;
     }
   }
@@ -206,7 +211,7 @@ export class AppendQueue {
     if (!event) return;
     event.retryCount += 1;
     if (event.retryCount >= MAX_RETRIES) {
-      event.status = 'error';
+      event.status = "error";
     }
     // Store last error message in payload for debugging (non-breaking)
     (event.payload as Record<string, unknown>).__lastError = lastError;
@@ -214,17 +219,19 @@ export class AppendQueue {
 
   /** All events currently in 'conflict' status (awaiting driver acknowledgement). */
   conflicts(): OfflineEvent[] {
-    return Array.from(this.store.values()).filter((e) => e.status === 'conflict');
+    return Array.from(this.store.values()).filter(
+      (e) => e.status === "conflict",
+    );
   }
 
   /** Summary counts for offline indicator UI. */
   summary(): QueueSummary {
     const events = Array.from(this.store.values());
     return {
-      pending: events.filter((e) => e.status === 'pending').length,
-      synced: events.filter((e) => e.status === 'synced').length,
-      conflict: events.filter((e) => e.status === 'conflict').length,
-      error: events.filter((e) => e.status === 'error').length,
+      pending: events.filter((e) => e.status === "pending").length,
+      synced: events.filter((e) => e.status === "synced").length,
+      conflict: events.filter((e) => e.status === "conflict").length,
+      error: events.filter((e) => e.status === "error").length,
       total: events.length,
     };
   }

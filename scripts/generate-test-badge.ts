@@ -155,7 +155,7 @@ async function generateBadges(reportPath: string): Promise<void> {
 
     // Generate passing percentage badge (mock calculation)
     const passingPercentage = Math.round(
-      ((report.stats.totalTests - 2) / report.stats.totalTests) * 100
+      ((report.stats.totalTests - 2) / report.stats.totalTests) * 100,
     );
     const passingColor = getPassingColor(passingPercentage);
     const passingBadge = generateSvgBadge({
@@ -178,10 +178,12 @@ async function generateBadges(reportPath: string): Promise<void> {
       const safeName = pkg.name.replace(/[^a-z0-9]/gi, "-").toLowerCase();
       fs.writeFileSync(
         path.join(BADGES_DIR, `${safeName}-coverage.svg`),
-        pkgBadge
+        pkgBadge,
       );
     }
-    console.log(`Generated coverage badges for top ${Math.min(5, report.packages.length)} packages`);
+    console.log(
+      `Generated coverage badges for top ${Math.min(5, report.packages.length)} packages`,
+    );
 
     console.log(`\nBadges saved to: ${BADGES_DIR}`);
   } catch (error) {
@@ -194,7 +196,7 @@ async function main() {
   const reportPath = path.join(
     process.cwd(),
     "coverage-reports",
-    "coverage-report.json"
+    "coverage-report.json",
   );
 
   if (!fs.existsSync(reportPath)) {

@@ -24,9 +24,21 @@ import { VehicleManager } from "./fleet-management-engine.js";
 import { VehicleAssigner } from "./fleet-management-engine.js";
 import { FleetHealthCalculator } from "./fleet-management-engine.js";
 import { FleetDashboardAggregator } from "./fleet-management-engine.js";
-import { PreventiveScheduler, ReactiveHandler, RecallManager } from "./maintenance-scheduler.js";
-import { FuelAnalyzer, FuelCardReconciler, FuelBudgetForecaster } from "./fuel-optimizer.js";
-import { TCOCalculator, CostPerMileTracker, BudgetManager } from "./fleet-cost-analyzer.js";
+import {
+  PreventiveScheduler,
+  ReactiveHandler,
+  RecallManager,
+} from "./maintenance-scheduler.js";
+import {
+  FuelAnalyzer,
+  FuelCardReconciler,
+  FuelBudgetForecaster,
+} from "./fuel-optimizer.js";
+import {
+  TCOCalculator,
+  CostPerMileTracker,
+  BudgetManager,
+} from "./fleet-cost-analyzer.js";
 
 // ─────────────────────────────────────────────────────────────────────────
 // ZOD VALIDATION SCHEMAS
@@ -36,7 +48,11 @@ const CreateVehicleSchema = z.object({
   vin: z.string().min(17).max(17),
   make: z.string(),
   model: z.string(),
-  year: z.number().int().min(1900).max(new Date().getFullYear() + 1),
+  year: z
+    .number()
+    .int()
+    .min(1900)
+    .max(new Date().getFullYear() + 1),
   type: z.enum(["TRUCK", "VAN", "CAR", "TRAILER"]),
   fuelType: z.enum(["DIESEL", "GASOLINE", "ELECTRIC", "HYBRID", "CNG"]),
   licensePlate: z.string(),
@@ -59,13 +75,15 @@ const UpdateVehicleSchema = z.object({
   mileage: z.number().int().min(0).optional(),
   status: z.enum(["ACTIVE", "MAINTENANCE", "RETIRED", "DISPOSED"]).optional(),
   assignedDriverId: z.string().nullable().optional(),
-  insurance: z.object({
-    policyNumber: z.string(),
-    provider: z.string(),
-    expiryDate: z.string().datetime(),
-    coverageType: z.enum(["COMPREHENSIVE", "LIABILITY", "COLLISION"]),
-    premium: z.number().positive(),
-  }).optional(),
+  insurance: z
+    .object({
+      policyNumber: z.string(),
+      provider: z.string(),
+      expiryDate: z.string().datetime(),
+      coverageType: z.enum(["COMPREHENSIVE", "LIABILITY", "COLLISION"]),
+      premium: z.number().positive(),
+    })
+    .optional(),
 });
 
 const AssignVehicleSchema = z.object({
@@ -107,10 +125,12 @@ const RecordFuelTransactionSchema = z.object({
   gallons: z.number().positive(),
   totalCost: z.number().positive(),
   station: z.string().optional(),
-  location: z.object({
-    latitude: z.number(),
-    longitude: z.number(),
-  }).optional(),
+  location: z
+    .object({
+      latitude: z.number(),
+      longitude: z.number(),
+    })
+    .optional(),
   odometerReading: z.number().int().min(0),
 });
 
@@ -170,7 +190,15 @@ export class FleetAPI {
     filters?: { status?: string; type?: string },
     page: number = 1,
     limit: number = 20,
-  ): Promise<{ data: Vehicle[]; pagination: { page: number; limit: number; total: number; totalPages: number } }> {
+  ): Promise<{
+    data: Vehicle[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
     const result = await this.vehicleManager.listVehicles(
       filters as any,
       page,
@@ -188,9 +216,15 @@ export class FleetAPI {
     };
   }
 
-  async updateVehicle(vehicleId: string, request: unknown): Promise<{ data: Vehicle }> {
+  async updateVehicle(
+    vehicleId: string,
+    request: unknown,
+  ): Promise<{ data: Vehicle }> {
     const validated = UpdateVehicleSchema.parse(request);
-    const vehicle = await this.vehicleManager.updateVehicle(vehicleId, validated);
+    const vehicle = await this.vehicleManager.updateVehicle(
+      vehicleId,
+      validated,
+    );
     return { data: vehicle };
   }
 
@@ -226,7 +260,9 @@ export class FleetAPI {
     return { data: assignment };
   }
 
-  async unassignVehicle(vehicleId: string): Promise<{ data: VehicleAssignment }> {
+  async unassignVehicle(
+    vehicleId: string,
+  ): Promise<{ data: VehicleAssignment }> {
     const assignment = await this.vehicleAssigner.unassignVehicle(vehicleId);
     return { data: assignment };
   }
@@ -234,12 +270,19 @@ export class FleetAPI {
   async swapVehicles(
     vehicleId1: string,
     vehicleId2: string,
-  ): Promise<{ data: { assignment1: VehicleAssignment; assignment2: VehicleAssignment } }> {
-    const result = await this.vehicleAssigner.swapVehicles(vehicleId1, vehicleId2);
+  ): Promise<{
+    data: { assignment1: VehicleAssignment; assignment2: VehicleAssignment };
+  }> {
+    const result = await this.vehicleAssigner.swapVehicles(
+      vehicleId1,
+      vehicleId2,
+    );
     return { data: result };
   }
 
-  async getAssignmentHistory(vehicleId: string): Promise<{ data: VehicleAssignment[] }> {
+  async getAssignmentHistory(
+    vehicleId: string,
+  ): Promise<{ data: VehicleAssignment[] }> {
     const history = await this.vehicleAssigner.getAssignmentHistory(vehicleId);
     return { data: history };
   }
@@ -248,7 +291,9 @@ export class FleetAPI {
   // MAINTENANCE ENDPOINTS
   // ─────────────────────────────────────────────────────────────────────
 
-  async scheduleMaintenance(request: unknown): Promise<{ data: MaintenanceRecord }> {
+  async scheduleMaintenance(
+    request: unknown,
+  ): Promise<{ data: MaintenanceRecord }> {
     const validated = CreateMaintenanceSchema.parse(request);
     const cost = await this.tcoCalculator.prisma.maintenanceRecord.create({
       data: validated,
@@ -261,7 +306,10 @@ export class FleetAPI {
     request: unknown,
   ): Promise<{ data: MaintenanceRecord }> {
     const validated = CompleteMaintenanceSchema.parse(request);
-    const maintenance = await this.reactiveHandler.complete(maintenanceId, validated);
+    const maintenance = await this.reactiveHandler.complete(
+      maintenanceId,
+      validated,
+    );
     return { data: maintenance };
   }
 
@@ -270,7 +318,11 @@ export class FleetAPI {
     description: string,
     location?: { latitude: number; longitude: number },
   ): Promise<{ data: MaintenanceRecord }> {
-    const maintenance = await this.reactiveHandler.reportBreakdown(vehicleId, description, location);
+    const maintenance = await this.reactiveHandler.reportBreakdown(
+      vehicleId,
+      description,
+      location,
+    );
     return { data: maintenance };
   }
 
@@ -285,13 +337,21 @@ export class FleetAPI {
       dispatchVendors: string[];
     };
   }> {
-    const result = await this.reactiveHandler.triagePriority(maintenanceId, severity);
+    const result = await this.reactiveHandler.triagePriority(
+      maintenanceId,
+      severity,
+    );
     return { data: result };
   }
 
   async registerRecall(
     vehicleId: string,
-    recallInfo: { recallId: string; manufacturer: string; reason: string; deadline: string },
+    recallInfo: {
+      recallId: string;
+      manufacturer: string;
+      reason: string;
+      deadline: string;
+    },
   ): Promise<{ data: MaintenanceRecord }> {
     const maintenance = await this.recallManager.registerRecall(vehicleId, {
       ...recallInfo,
@@ -309,7 +369,8 @@ export class FleetAPI {
       overdueRecalls: string[];
     };
   }> {
-    const result = await this.recallManager.getRecallComplianceReport(vehicleId);
+    const result =
+      await this.recallManager.getRecallComplianceReport(vehicleId);
     return { data: result };
   }
 
@@ -317,7 +378,9 @@ export class FleetAPI {
   // FUEL ENDPOINTS
   // ─────────────────────────────────────────────────────────────────────
 
-  async recordFuelTransaction(request: unknown): Promise<{ data: FuelTransaction }> {
+  async recordFuelTransaction(
+    request: unknown,
+  ): Promise<{ data: FuelTransaction }> {
     const validated = RecordFuelTransactionSchema.parse(request);
     const transaction = await (this.prisma as any).fuelTransaction.create({
       data: {
@@ -409,7 +472,10 @@ export class FleetAPI {
       variance: number;
     };
   }> {
-    const forecast = await this.fuelBudgetForecaster.forecastMonthlySpend(vehicleId, months);
+    const forecast = await this.fuelBudgetForecaster.forecastMonthlySpend(
+      vehicleId,
+      months,
+    );
     return {
       data: {
         vehicleId: forecast.vehicleId || "",
@@ -424,7 +490,10 @@ export class FleetAPI {
   // COST ANALYSIS ENDPOINTS
   // ─────────────────────────────────────────────────────────────────────
 
-  async calculateTCO(vehicleId: string, years: number = 5): Promise<{
+  async calculateTCO(
+    vehicleId: string,
+    years: number = 5,
+  ): Promise<{
     data: {
       tco: {
         acquisition: number;
@@ -440,8 +509,17 @@ export class FleetAPI {
       costPerMonth: number;
     };
   }> {
-    const result = await this.tcoCalculator.calculateVehicleTCO(vehicleId, years);
-    return { data: { tco: result.tco, costPerYear: result.costPerYear, costPerMonth: result.costPerMonth } };
+    const result = await this.tcoCalculator.calculateVehicleTCO(
+      vehicleId,
+      years,
+    );
+    return {
+      data: {
+        tco: result.tco,
+        costPerYear: result.costPerYear,
+        costPerMonth: result.costPerMonth,
+      },
+    };
   }
 
   async calculateFleetTCO(years: number = 5): Promise<{
@@ -461,16 +539,27 @@ export class FleetAPI {
     };
   }
 
-  async getCostPerMile(vehicleId: string, months: number = 3): Promise<{
+  async getCostPerMile(
+    vehicleId: string,
+    months: number = 3,
+  ): Promise<{
     data: {
       costPerMile: number;
       totalMiles: number;
       totalCost: number;
-      breakdown: { fuel: number; maintenance: number; insurance: number; other: number };
+      breakdown: {
+        fuel: number;
+        maintenance: number;
+        insurance: number;
+        other: number;
+      };
       trend: string;
     };
   }> {
-    const result = await this.costPerMileTracker.calculateCostPerMile(vehicleId, months);
+    const result = await this.costPerMileTracker.calculateCostPerMile(
+      vehicleId,
+      months,
+    );
     return { data: result };
   }
 
@@ -478,13 +567,23 @@ export class FleetAPI {
     totalBudget: number,
     strategy: "EQUAL" | "BY_MILEAGE" | "BY_AGE" = "EQUAL",
   ): Promise<{
-    data: Array<{ vehicleId: string; allocatedBudget: number; allocation: number }>;
+    data: Array<{
+      vehicleId: string;
+      allocatedBudget: number;
+      allocation: number;
+    }>;
   }> {
-    const allocations = await this.budgetManager.allocateBudget(totalBudget, strategy);
+    const allocations = await this.budgetManager.allocateBudget(
+      totalBudget,
+      strategy,
+    );
     return { data: allocations };
   }
 
-  async trackBudgetVariance(vehicleId: string, month: string): Promise<{
+  async trackBudgetVariance(
+    vehicleId: string,
+    month: string,
+  ): Promise<{
     data: {
       vehicleId: string;
       allocated: number;
@@ -493,7 +592,10 @@ export class FleetAPI {
       status: string;
     };
   }> {
-    const result = await this.budgetManager.trackVariance(vehicleId, new Date(month));
+    const result = await this.budgetManager.trackVariance(
+      vehicleId,
+      new Date(month),
+    );
     return { data: result };
   }
 
@@ -506,8 +608,11 @@ export class FleetAPI {
     return { data: health };
   }
 
-  async getVehicleHealth(vehicleId: string): Promise<{ data: FleetHealthScore }> {
-    const health = await this.healthCalculator.calculateVehicleHealth(vehicleId);
+  async getVehicleHealth(
+    vehicleId: string,
+  ): Promise<{ data: FleetHealthScore }> {
+    const health =
+      await this.healthCalculator.calculateVehicleHealth(vehicleId);
     return { data: health };
   }
 
@@ -516,8 +621,16 @@ export class FleetAPI {
     return { data: metrics };
   }
 
-  async getFleetCostSummary(startDate: string, endDate: string): Promise<{
-    data: { fuel: number; maintenance: number; insurance: number; total: number };
+  async getFleetCostSummary(
+    startDate: string,
+    endDate: string,
+  ): Promise<{
+    data: {
+      fuel: number;
+      maintenance: number;
+      insurance: number;
+      total: number;
+    };
   }> {
     const summary = await this.dashboardAggregator.getCostSummary(
       new Date(startDate),

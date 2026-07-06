@@ -109,20 +109,30 @@ export interface Job<T = any> {
   isWaiting(): Promise<boolean>;
   getState(): Promise<string>;
   getProgress(): Promise<number | object>;
-  logs(start?: number, end?: number, asc?: boolean): Promise<Array<{ msg: string; timestamp: number }>>;
+  logs(
+    start?: number,
+    end?: number,
+    asc?: boolean,
+  ): Promise<Array<{ msg: string; timestamp: number }>>;
   getChildrenValues(): Promise<object>;
   waitUntilFinished(listener: any, timeout?: number): Promise<any>;
   releaseLock(token: string): Promise<boolean>;
   extendLock(token: string, duration: number): Promise<string>;
   moveToFailed(err: Error, token: string): Promise<string>;
-  moveToCompleted(returnvalue: any, token: string, fetchNext?: boolean): Promise<Job | any[]>;
+  moveToCompleted(
+    returnvalue: any,
+    token: string,
+    fetchNext?: boolean,
+  ): Promise<Job | any[]>;
 }
 
 export interface QueueInterface<T = any> {
   name: string;
   opts: any;
   add(name: string, data: T, opts?: any): Promise<Job<T>>;
-  addBulk(jobs: Array<{ name: string; data: T; opts?: any }>): Promise<Job<T>[]>;
+  addBulk(
+    jobs: Array<{ name: string; data: T; opts?: any }>,
+  ): Promise<Job<T>[]>;
   pause(): Promise<void>;
   resume(): Promise<void>;
   count(): Promise<number>;
@@ -139,7 +149,10 @@ export interface WorkerInterface<T = any> {
   opts: any;
   on(event: string, listener: (...args: any[]) => void): void;
   off(event: string, listener: (...args: any[]) => void): void;
-  process(name: string | null, processor: (job: Job<T>, token?: string) => Promise<any>): Promise<void>;
+  process(
+    name: string | null,
+    processor: (job: Job<T>, token?: string) => Promise<any>,
+  ): Promise<void>;
   getMetrics(): Promise<any>;
   getWorkers(): Promise<string[]>;
   close(force?: boolean): Promise<void>;

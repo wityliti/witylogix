@@ -33,7 +33,10 @@ interface LocationCardProps {
   onDeactivate?: (id: string) => void;
 }
 
-const LOCATION_TYPE_TONE: Record<string, { label: string; tone?: BadgeProps["tone"] }> = {
+const LOCATION_TYPE_TONE: Record<
+  string,
+  { label: string; tone?: BadgeProps["tone"] }
+> = {
   WAREHOUSE: { label: "Warehouse", tone: "info" },
   STORE: { label: "Store", tone: "success" },
   HUB: { label: "Hub", tone: "attention" },
@@ -76,9 +79,7 @@ export function LocationCard({
         </BlockStack>
 
         <InlineStack align="end" gap="200">
-          {onEdit && (
-            <Button onClick={() => onEdit(location.id)}>Edit</Button>
-          )}
+          {onEdit && <Button onClick={() => onEdit(location.id)}>Edit</Button>}
           {onDeactivate && (
             <Button
               onClick={() => onDeactivate(location.id)}

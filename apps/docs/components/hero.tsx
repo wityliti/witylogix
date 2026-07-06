@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export function Hero() {
   const [terminalOutput, setTerminalOutput] = useState<string[]>([]);
@@ -9,23 +9,23 @@ export function Hero() {
 
   useEffect(() => {
     const lines = [
-      '$ pnpm create witylogix-app my-store',
-      '',
-      '⚙️  Initializing Witylogix delivery logistics...',
-      '📦 Installing dependencies',
-      '✓ @witylogix/core',
-      '✓ @witylogix/api',
-      '✓ @witylogix/tracking',
-      '✓ @witylogix/webhooks',
-      '',
-      '🔗 Integrations detected:',
-      '✓ Shopify',
-      '✓ WooCommerce',
-      '',
-      '✨ Setup complete!',
-      '',
-      '🚀 Ready at localhost:8000',
-      '📖 Docs: http://localhost:8000/docs',
+      "$ pnpm create witylogix-app my-store",
+      "",
+      "⚙️  Initializing Witylogix delivery logistics...",
+      "📦 Installing dependencies",
+      "✓ @witylogix/core",
+      "✓ @witylogix/api",
+      "✓ @witylogix/tracking",
+      "✓ @witylogix/webhooks",
+      "",
+      "🔗 Integrations detected:",
+      "✓ Shopify",
+      "✓ WooCommerce",
+      "",
+      "✨ Setup complete!",
+      "",
+      "🚀 Ready at localhost:8000",
+      "📖 Docs: http://localhost:8000/docs",
     ];
 
     let currentLine = 0;
@@ -48,7 +48,8 @@ export function Hero() {
       <div
         className="absolute inset-0 opacity-20"
         style={{
-          backgroundImage: 'url(data:image/svg+xml,%3Csvg width="40" height="40" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M0 0h40v40H0z" fill="none" stroke="%234f8fff" stroke-width="0.5"/%3E%3C/svg%3E)',
+          backgroundImage:
+            'url(data:image/svg+xml,%3Csvg width="40" height="40" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M0 0h40v40H0z" fill="none" stroke="%234f8fff" stroke-width="0.5"/%3E%3C/svg%3E)',
         }}
       />
 
@@ -69,7 +70,8 @@ export function Hero() {
                 Own Your Stack.
               </h1>
               <p className="text-lg sm:text-xl text-wl-text-secondary max-w-lg leading-relaxed">
-                Open-source delivery logistics platform for e-commerce. Multi-platform, real-time, self-hosted.
+                Open-source delivery logistics platform for e-commerce.
+                Multi-platform, real-time, self-hosted.
               </p>
             </div>
 
@@ -106,13 +108,18 @@ export function Hero() {
               </div>
               <div className="space-y-1">
                 <p className="text-2xl font-bold text-wl-accent">4</p>
-                <p className="text-sm text-wl-text-secondary">Platform Adapters</p>
+                <p className="text-sm text-wl-text-secondary">
+                  Platform Adapters
+                </p>
               </div>
             </div>
           </div>
 
           {/* Right: Terminal */}
-          <div className="relative animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <div
+            className="relative animate-slide-up"
+            style={{ animationDelay: "0.2s" }}
+          >
             {/* Terminal window */}
             <div className="rounded-lg border border-wl-border bg-wl-bg-secondary/50 backdrop-blur-md overflow-hidden shadow-lg">
               {/* Terminal header */}
@@ -120,7 +127,9 @@ export function Hero() {
                 <div className="w-3 h-3 rounded-full bg-wl-status-error" />
                 <div className="w-3 h-3 rounded-full bg-wl-status-warning" />
                 <div className="w-3 h-3 rounded-full bg-wl-status-success" />
-                <span className="ml-auto text-xs text-wl-text-secondary font-mono">terminal.sh</span>
+                <span className="ml-auto text-xs text-wl-text-secondary font-mono">
+                  terminal.sh
+                </span>
               </div>
 
               {/* Terminal content */}
@@ -133,13 +142,13 @@ export function Hero() {
                       animationDelay: `${index * 80}ms`,
                     }}
                   >
-                    {line === '' ? (
+                    {line === "" ? (
                       <div>&nbsp;</div>
-                    ) : line.startsWith('$') ? (
+                    ) : line.startsWith("$") ? (
                       <div className="text-wl-accent">{line}</div>
-                    ) : line.startsWith('✓') ? (
+                    ) : line.startsWith("✓") ? (
                       <div className="text-wl-status-success">{line}</div>
-                    ) : line.startsWith('✨') || line.startsWith('🚀') ? (
+                    ) : line.startsWith("✨") || line.startsWith("🚀") ? (
                       <div className="text-wl-accent font-bold">{line}</div>
                     ) : (
                       <div>{line}</div>

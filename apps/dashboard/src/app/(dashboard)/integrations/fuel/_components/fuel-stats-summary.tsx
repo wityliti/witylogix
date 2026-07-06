@@ -1,8 +1,13 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { StatCard } from '@/components/ui/stat-card';
-import { TrendingUp, TrendingDown, AlertTriangle, DollarSign } from 'lucide-react';
+import { cn } from "@/lib/utils";
+import { StatCard } from "@/components/ui/stat-card";
+import {
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle,
+  DollarSign,
+} from "lucide-react";
 
 interface FuelStatsSummaryProps {
   activeCards: number;

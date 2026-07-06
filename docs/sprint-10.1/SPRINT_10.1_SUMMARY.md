@@ -13,7 +13,7 @@
 ### API Server (Fastify 5)
 
 - **safeRegister pattern**: All 65+ route registrations wrapped in try/catch so failed routes don't crash the server
-- **Express-to-Fastify stubs**: Converted 9 Express-based route files to Fastify plugin stubs (ecommerce, notification-preferences, traffic, demand/*, invoicing/*, notifications-v2)
+- **Express-to-Fastify stubs**: Converted 9 Express-based route files to Fastify plugin stubs (ecommerce, notification-preferences, traffic, demand/_, invoicing/_, notifications-v2)
 - **ESM barrel fix**: Added `.js` extensions to all extensionless imports in 14 barrel files under `packages/core/src/*/index.ts` for Node 22 ESM compatibility
 - **Type-only re-exports**: Changed webhook types barrel to use `export type` instead of `export` for interface-only modules (fixes BridgeMetrics resolution crash)
 - **node-fetch removal**: Replaced all 26+ `import { fetch } from 'node-fetch'` with `globalThis.fetch` (Node 22 has native fetch)

@@ -10,14 +10,14 @@ import type {
   CRMFieldType,
   RateLimitInfo,
   CRMError,
-} from './types.js';
+} from "./types.js";
 
 // ─── CIRCUIT BREAKER STATE ─────────────────────────────────────────
 
 enum CircuitState {
-  CLOSED = 'CLOSED',
-  OPEN = 'OPEN',
-  HALF_OPEN = 'HALF_OPEN',
+  CLOSED = "CLOSED",
+  OPEN = "OPEN",
+  HALF_OPEN = "HALF_OPEN",
 }
 
 interface CircuitBreakerConfig {
@@ -40,7 +40,9 @@ class RateLimiter {
 
   async acquire(): Promise<void> {
     const now: number = Date.now();
-    this.requestTimestamps = this.requestTimestamps.filter((ts: number) => now - ts < this.windowMs);
+    this.requestTimestamps = this.requestTimestamps.filter(
+      (ts: number) => now - ts < this.windowMs,
+    );
 
     if (this.requestTimestamps.length >= this.maxRequests) {
       const oldestTimestamp: number = this.requestTimestamps[0] as number;
@@ -56,8 +58,13 @@ class RateLimiter {
 
   getInfo(): RateLimitInfo {
     const now: number = Date.now();
-    const recentRequests: number[] = this.requestTimestamps.filter((ts: number) => now - ts < this.windowMs);
-    const remaining: number = Math.max(0, this.maxRequests - recentRequests.length);
+    const recentRequests: number[] = this.requestTimestamps.filter(
+      (ts: number) => now - ts < this.windowMs,
+    );
+    const remaining: number = Math.max(
+      0,
+      this.maxRequests - recentRequests.length,
+    );
     const resetAt: Date = new Date(now + this.windowMs);
 
     return {
@@ -88,7 +95,7 @@ class CircuitBreaker {
         this.state = CircuitState.HALF_OPEN;
         this.successCount = 0;
       } else {
-        throw new Error('Circuit breaker is OPEN');
+        throw new Error("Circuit breaker is OPEN");
       }
     }
 
@@ -140,7 +147,10 @@ export class FieldMappingEngine {
     });
   }
 
-  getMapping(recordType: string, witylogixField: string): CRMFieldMapping | undefined {
+  getMapping(
+    recordType: string,
+    witylogixField: string,
+  ): CRMFieldMapping | undefined {
     const key: string = `${recordType}:${witylogixField}`;
     return this.mappings.get(key);
   }
@@ -161,13 +171,22 @@ export class FieldMappingEngine {
   ): Record<string, unknown> {
     const crmData: Record<string, unknown> = {};
 
-    Object.entries(witylogixData).forEach(([field, value]: [string, unknown]) => {
-      const mapping: CRMFieldMapping | undefined = this.getMapping(recordType, field);
-      if (mapping && (mapping.direction === 'to_crm' || mapping.direction === 'bidirectional')) {
-        const transformedValue: unknown = this.transformValue(value, mapping);
-        crmData[mapping.crmField] = transformedValue;
-      }
-    });
+    Object.entries(witylogixData).forEach(
+      ([field, value]: [string, unknown]) => {
+        const mapping: CRMFieldMapping | undefined = this.getMapping(
+          recordType,
+          field,
+        );
+        if (
+          mapping &&
+          (mapping.direction === "to_crm" ||
+            mapping.direction === "bidirectional")
+        ) {
+          const transformedValue: unknown = this.transformValue(value, mapping);
+          crmData[mapping.crmField] = transformedValue;
+        }
+      },
+    );
 
     return crmData;
   }
@@ -179,7 +198,10 @@ export class FieldMappingEngine {
     const witylogixData: Record<string, unknown> = {};
 
     this.getAllMappings(recordType).forEach((mapping: CRMFieldMapping) => {
-      if (mapping.direction === 'from_crm' || mapping.direction === 'bidirectional') {
+      if (
+        mapping.direction === "from_crm" ||
+        mapping.direction === "bidirectional"
+      ) {
         const value: unknown = crmData[mapping.crmField];
         if (value !== undefined) {
           const transformedValue: unknown = this.transformValue(value, mapping);
@@ -196,25 +218,28 @@ export class FieldMappingEngine {
       return value;
     }
 
-    const transformation: string = mapping.transformation || 'none';
+    const transformation: string = mapping.transformation || "none";
 
     switch (transformation) {
-      case 'uppercase':
+      case "uppercase":
         return String(value).toUpperCase();
-      case 'lowercase':
+      case "lowercase":
         return String(value).toLowerCase();
-      case 'phone_format':
+      case "phone_format":
         return this.formatPhone(String(value));
-      case 'custom':
-        return this.applyCustomTransformation(value, mapping.transformationScript);
-      case 'none':
+      case "custom":
+        return this.applyCustomTransformation(
+          value,
+          mapping.transformationScript,
+        );
+      case "none":
       default:
         return value;
     }
   }
 
   private formatPhone(phone: string): string {
-    const digits: string = phone.replace(/\D/g, '');
+    const digits: string = phone.replace(/\D/g, "");
     if (digits.length === 10) {
       return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
     }
@@ -226,7 +251,7 @@ export class FieldMappingEngine {
       return value;
     }
     try {
-      const fn: Function = new Function('value', `return ${script}`);
+      const fn: Function = new Function("value", `return ${script}`);
       return fn(value);
     } catch {
       return value;
@@ -242,7 +267,7 @@ export class PaginationHandler {
    */
   static generateSFDCOffset(pagination?: CRMPaginationParams): string {
     if (!pagination || pagination.offset === undefined) {
-      return '';
+      return "";
     }
     return ` OFFSET ${pagination.offset}`;
   }
@@ -263,7 +288,7 @@ export class PaginationHandler {
       return {};
     }
     try {
-      return JSON.parse(Buffer.from(cursor, 'base64').toString('utf-8'));
+      return JSON.parse(Buffer.from(cursor, "base64").toString("utf-8"));
     } catch {
       return {};
     }
@@ -273,7 +298,7 @@ export class PaginationHandler {
    * Encode pagination state to cursor
    */
   static encodeCursor(state: Record<string, unknown>): string {
-    return Buffer.from(JSON.stringify(state)).toString('base64');
+    return Buffer.from(JSON.stringify(state)).toString("base64");
   }
 }
 
@@ -317,7 +342,10 @@ export abstract class CRMAdapterBase {
     const now: Date = new Date();
     const expirationBuffer: number = 5 * 60 * 1000; // 5 minutes
 
-    if (now.getTime() + expirationBuffer >= this.connection.expiresAt.getTime()) {
+    if (
+      now.getTime() + expirationBuffer >=
+      this.connection.expiresAt.getTime()
+    ) {
       return await this.refreshToken();
     }
 
@@ -346,9 +374,9 @@ export abstract class CRMAdapterBase {
         try {
           const token: string = await this.ensureValidToken();
           const headers: Record<string, string> = {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            ...(options?.headers as Record<string, string> || {}),
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            ...((options?.headers as Record<string, string>) || {}),
           };
 
           const controller: AbortController = new AbortController();
@@ -367,7 +395,9 @@ export abstract class CRMAdapterBase {
           clearTimeout(timeoutId);
 
           if (!response.ok) {
-            const error: CRMError = new Error(`API Error: ${response.statusText}`) as CRMError;
+            const error: CRMError = new Error(
+              `API Error: ${response.statusText}`,
+            ) as CRMError;
             error.statusCode = response.status;
             error.retryable = response.status >= 500 || response.status === 429;
             error.provider = this.connection.provider;
@@ -378,7 +408,9 @@ export abstract class CRMAdapterBase {
 
             if (attempt < this.maxRetries - 1) {
               const waitMs: number = Math.pow(2, attempt) * 1000;
-              await new Promise((resolve: (value: void) => void) => setTimeout(resolve, waitMs));
+              await new Promise((resolve: (value: void) => void) =>
+                setTimeout(resolve, waitMs),
+              );
               continue;
             }
 
@@ -390,12 +422,14 @@ export abstract class CRMAdapterBase {
           lastError = error instanceof Error ? error : new Error(String(error));
           if (attempt < this.maxRetries - 1) {
             const waitMs: number = Math.pow(2, attempt) * 1000;
-            await new Promise((resolve: (value: void) => void) => setTimeout(resolve, waitMs));
+            await new Promise((resolve: (value: void) => void) =>
+              setTimeout(resolve, waitMs),
+            );
           }
         }
       }
 
-      throw lastError || new Error('Request failed after retries');
+      throw lastError || new Error("Request failed after retries");
     });
   }
 

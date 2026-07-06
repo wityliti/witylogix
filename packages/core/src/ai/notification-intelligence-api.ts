@@ -13,9 +13,25 @@
  * Request validation, error handling, response formatting.
  */
 
-import { type NotificationChannel, type NotificationCategory, type NotificationPriority } from "../notifications/notification-types.js";
-import { createSmartNotificationTimer, createBatchOptimizer, type SendTimeRecommendation, type NotificationOutcome } from "./smart-notification-timer.js";
-import { createFatigueDetector, createThrottleRecommender, createImportanceRanker, createUnsubscribePrediction, type FatigueScore, type ThrottleRecommendation } from "./notification-fatigue-detector.js";
+import {
+  type NotificationChannel,
+  type NotificationCategory,
+  type NotificationPriority,
+} from "../notifications/notification-types.js";
+import {
+  createSmartNotificationTimer,
+  createBatchOptimizer,
+  type SendTimeRecommendation,
+  type NotificationOutcome,
+} from "./smart-notification-timer.js";
+import {
+  createFatigueDetector,
+  createThrottleRecommender,
+  createImportanceRanker,
+  createUnsubscribePrediction,
+  type FatigueScore,
+  type ThrottleRecommendation,
+} from "./notification-fatigue-detector.js";
 import { type EngagementScore } from "./smart-notification-timer.js";
 
 // ─── TYPES ─────────────────────────────────────────────────────────────────
@@ -145,16 +161,24 @@ const importanceRanker = createImportanceRanker();
  * POST /api/notifications/ai/optimal-time
  * Get optimal send time for a single notification
  */
-export function getOptimalTime(req: OptimalTimeRequest): ApiResponse<SendTimeRecommendation> {
+export function getOptimalTime(
+  req: OptimalTimeRequest,
+): ApiResponse<SendTimeRecommendation> {
   const startTime = Date.now();
 
   try {
-    if (!req.userId || !req.category || !req.availableChannels || req.availableChannels.length === 0) {
+    if (
+      !req.userId ||
+      !req.category ||
+      !req.availableChannels ||
+      req.availableChannels.length === 0
+    ) {
       return {
         success: false,
         error: {
           code: "VALIDATION_ERROR",
-          message: "Missing required fields: userId, category, availableChannels",
+          message:
+            "Missing required fields: userId, category, availableChannels",
         },
         executionTimeMs: Date.now() - startTime,
       };
@@ -164,7 +188,7 @@ export function getOptimalTime(req: OptimalTimeRequest): ApiResponse<SendTimeRec
       req.userId,
       req.category,
       req.recipientTimezone || "UTC",
-      req.availableChannels
+      req.availableChannels,
     );
 
     return {
@@ -218,7 +242,7 @@ export function optimizeBatchSend(req: BatchOptimizeRequest): ApiResponse<any> {
       req.recipients,
       req.category,
       req.availableChannels,
-      req.sendWindowMinutesFromNow || 60
+      req.sendWindowMinutesFromNow || 60,
     );
 
     return {
@@ -284,7 +308,10 @@ export function getFatigueScore(userId: string): ApiResponse<FatigueScore> {
  * GET /api/notifications/ai/engagement/:userId
  * Get engagement metrics for a user
  */
-export function getEngagementMetrics(userId: string, channel: NotificationChannel): ApiResponse<EngagementScore> {
+export function getEngagementMetrics(
+  userId: string,
+  channel: NotificationChannel,
+): ApiResponse<EngagementScore> {
   const startTime = Date.now();
 
   try {
@@ -320,13 +347,24 @@ export function getEngagementMetrics(userId: string, channel: NotificationChanne
         userId,
         channel,
         category: "ORDER" as NotificationCategory, // placeholder
-        overallScore: Math.round((activity.totalNotificationsOpened / Math.max(activity.totalNotificationsSent, 1)) * 100),
+        overallScore: Math.round(
+          (activity.totalNotificationsOpened /
+            Math.max(activity.totalNotificationsSent, 1)) *
+            100,
+        ),
         factors: {
           openRatePercent:
-            (activity.totalNotificationsOpened / Math.max(activity.totalNotificationsSent, 1)) * 100,
+            (activity.totalNotificationsOpened /
+              Math.max(activity.totalNotificationsSent, 1)) *
+            100,
           clickRatePercent:
-            (activity.totalNotificationsClicked / Math.max(activity.totalNotificationsOpened, 1)) * 100,
-          responseTimeFactor: Math.max(0, Math.min(1, 1 / (1 + activity.averageResponseTimeMs / 60000))),
+            (activity.totalNotificationsClicked /
+              Math.max(activity.totalNotificationsOpened, 1)) *
+            100,
+          responseTimeFactor: Math.max(
+            0,
+            Math.min(1, 1 / (1 + activity.averageResponseTimeMs / 60000)),
+          ),
           categoryAffinityScore: 75,
           channelAffinityScore: 80,
           consistencyScore: 85,
@@ -357,7 +395,9 @@ export function getEngagementMetrics(userId: string, channel: NotificationChanne
  * POST /api/notifications/ai/channel-recommend
  * Recommend best channel for a notification
  */
-export function recommendChannel(req: ChannelRecommendRequest): ApiResponse<any> {
+export function recommendChannel(
+  req: ChannelRecommendRequest,
+): ApiResponse<any> {
   const startTime = Date.now();
 
   try {
@@ -376,7 +416,7 @@ export function recommendChannel(req: ChannelRecommendRequest): ApiResponse<any>
     const preference = channelLearner.learnChannelPreference(
       req.userId,
       req.category,
-      req.availableChannels
+      req.availableChannels,
     );
 
     return {
@@ -400,7 +440,9 @@ export function recommendChannel(req: ChannelRecommendRequest): ApiResponse<any>
  * POST /api/notifications/ai/feedback
  * Record notification outcome for learning
  */
-export function recordFeedback(req: FeedbackRequest): ApiResponse<{ acknowledged: boolean }> {
+export function recordFeedback(
+  req: FeedbackRequest,
+): ApiResponse<{ acknowledged: boolean }> {
   const startTime = Date.now();
 
   try {
@@ -434,7 +476,11 @@ export function recordFeedback(req: FeedbackRequest): ApiResponse<{ acknowledged
     } else if (outcome.dismissedAt) {
       fatigueDetector.recordNotificationDismissed(req.userId);
     } else {
-      fatigueDetector.recordNotificationSent(req.userId, req.channel, req.category);
+      fatigueDetector.recordNotificationSent(
+        req.userId,
+        req.channel,
+        req.category,
+      );
     }
 
     return {
@@ -589,7 +635,10 @@ export function getUnsubscribeRisk(userId: string): ApiResponse<any> {
 
     const fatigueScore = fatigueDetector.calculateFatigueScore(userId);
     const predictor = createUnsubscribePrediction();
-    const riskPrediction = predictor.predictUnsubscribeRisk(userId, fatigueScore);
+    const riskPrediction = predictor.predictUnsubscribeRisk(
+      userId,
+      fatigueScore,
+    );
 
     return {
       success: true,

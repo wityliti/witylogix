@@ -160,10 +160,7 @@ describe("OrderSyncEngine", () => {
         },
       };
 
-      const result = await engine.syncOrderOutbound(
-        witylogixOrder,
-        "shopify",
-      );
+      const result = await engine.syncOrderOutbound(witylogixOrder, "shopify");
 
       expect(result.success).toBe(true);
       expect(result.orderId).toBe("wity-123");
@@ -311,14 +308,14 @@ describe("OrderSyncEngine", () => {
       const statusMapping = {
         platform: "shopify" as const,
         mapping: {
-          "pending": "pending" as const,
-          "paid": "confirmed" as const,
-          "cancelled": "cancelled" as const,
+          pending: "pending" as const,
+          paid: "confirmed" as const,
+          cancelled: "cancelled" as const,
         },
         reverseMapping: {
-          "pending": "pending",
-          "confirmed": "paid",
-          "cancelled": "cancelled",
+          pending: "pending",
+          confirmed: "paid",
+          cancelled: "cancelled",
         },
       };
 
@@ -335,10 +332,7 @@ describe("OrderSyncEngine", () => {
         customer: { ...mockEcommerceOrder.customer, email: "" },
       };
 
-      const result = await engine.syncOrderInbound(
-        invalidOrder,
-        "shopify",
-      );
+      const result = await engine.syncOrderInbound(invalidOrder, "shopify");
 
       // Should still complete but may have issues
       expect(result).toBeDefined();

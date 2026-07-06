@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Switch, Checkbox, Input, Select, Button } from '@/components/ui';
-import { PreviewSection } from './preview-section';
+import { useState } from "react";
+import { Switch, Checkbox, Input, Select, Button } from "@/components/ui";
+import { PreviewSection } from "./preview-section";
 
 export function FormsSection() {
   const [switchEnabled, setSwitchEnabled] = useState(false);
@@ -11,12 +11,10 @@ export function FormsSection() {
   return (
     <div className="space-y-12">
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Form Components
-        </h2>
+        <h2 className="text-2xl font-bold text-white mb-2">Form Components</h2>
         <p className="text-wl-neutral-300 mb-8">
-          Collections of form-related components: switches, checkboxes, and their
-          combinations.
+          Collections of form-related components: switches, checkboxes, and
+          their combinations.
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-3xl">
@@ -59,10 +57,7 @@ export function FormsSection() {
             description="Typical form with multiple inputs"
             preview={
               <div className="w-full max-w-sm space-y-4">
-                <Input
-                  label="Full Name"
-                  placeholder="John Doe"
-                />
+                <Input label="Full Name" placeholder="John Doe" />
                 <Input
                   label="Email"
                   type="email"

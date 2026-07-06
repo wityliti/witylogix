@@ -62,7 +62,10 @@ function hasRequiredSkills(jobSkills: string[], techSkills: string[]): boolean {
 /**
  * Check if job is within technician's service zones.
  */
-function isInServiceZone(jobCoordinates: Coordinates, tech: Technician): boolean {
+function isInServiceZone(
+  jobCoordinates: Coordinates,
+  tech: Technician,
+): boolean {
   if (tech.serviceZones.length === 0) return true;
   return tech.serviceZones.some((zone) => {
     const distance = haversineDistance(zone.coordinates[0], jobCoordinates);
@@ -79,7 +82,10 @@ export class NearestAvailableDispatcher {
   /**
    * Dispatch job to nearest available qualified technician.
    */
-  static dispatch(job: WorkOrder, availableTechs: Technician[]): DispatchResult | null {
+  static dispatch(
+    job: WorkOrder,
+    availableTechs: Technician[],
+  ): DispatchResult | null {
     const candidates: DispatchCandidate[] = [];
 
     for (const tech of availableTechs) {
@@ -94,7 +100,10 @@ export class NearestAvailableDispatcher {
       }
 
       // Calculate distance and ETA
-      const distance = haversineDistance(tech.currentLocation, job.address.coordinates);
+      const distance = haversineDistance(
+        tech.currentLocation,
+        job.address.coordinates,
+      );
       const travelMinutes = estimateTravelTime(distance);
       const eta = new Date(Date.now() + travelMinutes * 60 * 1000);
 
@@ -142,7 +151,10 @@ export class WorkloadBalancer {
   /**
    * Get current workload metrics for technician.
    */
-  static getWorkload(tech: Technician, assignedJobs: WorkOrder[]): {
+  static getWorkload(
+    tech: Technician,
+    assignedJobs: WorkOrder[],
+  ): {
     workMinutes: number;
     estimatedUtilization: number;
     availableCapacity: number;
@@ -151,7 +163,10 @@ export class WorkloadBalancer {
     const workMinutes = assignedJobs
       .filter((j) => j.technicianId === tech.id)
       .reduce((sum, j) => sum + j.estimatedDuration, 0);
-    const estimatedUtilization = Math.min(100, (workMinutes / workingHours) * 100);
+    const estimatedUtilization = Math.min(
+      100,
+      (workMinutes / workingHours) * 100,
+    );
     const availableCapacity = workingHours - workMinutes;
 
     return {
@@ -168,7 +183,7 @@ export class WorkloadBalancer {
   static dispatch(
     job: WorkOrder,
     availableTechs: Technician[],
-    assignedJobs: WorkOrder[]
+    assignedJobs: WorkOrder[],
   ): DispatchResult | null {
     const targetUtilization = 80;
     const candidates: DispatchCandidate[] = [];
@@ -191,12 +206,17 @@ export class WorkloadBalancer {
       }
 
       // Calculate metrics
-      const distance = haversineDistance(tech.currentLocation, job.address.coordinates);
+      const distance = haversineDistance(
+        tech.currentLocation,
+        job.address.coordinates,
+      );
       const travelMinutes = estimateTravelTime(distance);
       const eta = new Date(Date.now() + travelMinutes * 60 * 1000);
 
       // Score: favor lower utilization
-      const utilizationDiff = Math.abs(workload.estimatedUtilization - targetUtilization);
+      const utilizationDiff = Math.abs(
+        workload.estimatedUtilization - targetUtilization,
+      );
       const score = 100 - Math.min(distance, 30) - utilizationDiff * 0.3;
 
       candidates.push({
@@ -244,7 +264,7 @@ export class PriorityDispatcher {
     job: WorkOrder,
     availableTechs: Technician[],
     allTechs: Technician[],
-    assignedJobs: WorkOrder[]
+    assignedJobs: WorkOrder[],
   ): {
     result: DispatchResult | null;
     reassignments: Array<{
@@ -260,7 +280,10 @@ export class PriorityDispatcher {
     }> = [];
 
     // Try immediate dispatch to available tech
-    const immediateResult = NearestAvailableDispatcher.dispatch(job, availableTechs);
+    const immediateResult = NearestAvailableDispatcher.dispatch(
+      job,
+      availableTechs,
+    );
     if (immediateResult) {
       return { result: immediateResult, reassignments };
     }
@@ -277,18 +300,25 @@ export class PriorityDispatcher {
       if (!isInServiceZone(job.address.coordinates, tech)) continue;
 
       // Find lowest-priority job assigned to this tech
-      const assignedToTech = assignedJobs.filter((j) => j.technicianId === tech.id);
+      const assignedToTech = assignedJobs.filter(
+        (j) => j.technicianId === tech.id,
+      );
       if (assignedToTech.length === 0) continue;
 
       const priorityOrder = { EMERGENCY: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
       const candidateForRemoval = assignedToTech.reduce((prev, current) =>
-        priorityOrder[current.priority] > priorityOrder[prev.priority] ? current : prev
+        priorityOrder[current.priority] > priorityOrder[prev.priority]
+          ? current
+          : prev,
       );
 
       // Only preempt if tech is overloaded
       const workload = WorkloadBalancer.getWorkload(tech, assignedJobs);
       if (workload.estimatedUtilization >= 85) {
-        const distance = haversineDistance(tech.currentLocation, job.address.coordinates);
+        const distance = haversineDistance(
+          tech.currentLocation,
+          job.address.coordinates,
+        );
         const score = 100 - distance;
 
         if (!bestPreemption || score > bestPreemption.score) {
@@ -304,9 +334,10 @@ export class PriorityDispatcher {
     if (bestPreemption) {
       const travelMinutes = estimateTravelTime(
         haversineDistance(
-          allTechs.find((t) => t.id === bestPreemption.technicianId)?.currentLocation!,
-          job.address.coordinates
-        )
+          allTechs.find((t) => t.id === bestPreemption.technicianId)
+            ?.currentLocation!,
+          job.address.coordinates,
+        ),
       );
 
       reassignments.push({
@@ -322,8 +353,9 @@ export class PriorityDispatcher {
           reason: `Preempted lower-priority job ${bestPreemption.jobToRemove.id}`,
           eta: new Date(Date.now() + travelMinutes * 60 * 1000),
           distance: haversineDistance(
-            allTechs.find((t) => t.id === bestPreemption.technicianId)?.currentLocation!,
-            job.address.coordinates
+            allTechs.find((t) => t.id === bestPreemption.technicianId)
+              ?.currentLocation!,
+            job.address.coordinates,
           ),
           travelMinutes,
         },
@@ -348,7 +380,7 @@ export class RouteOptimizer {
     technicianId: string,
     jobs: WorkOrder[],
     tech: Technician,
-    date: string
+    date: string,
   ): OptimizedRoute {
     const stops: RouteStop[] = [];
     let totalDistance = 0;
@@ -361,7 +393,10 @@ export class RouteOptimizer {
 
     for (let i = 0; i < sortedJobs.length; i++) {
       const job = sortedJobs[i];
-      const distance = haversineDistance(currentLocation, job.address.coordinates);
+      const distance = haversineDistance(
+        currentLocation,
+        job.address.coordinates,
+      );
       const travelMinutes = estimateTravelTime(distance);
 
       const stop: RouteStop = {
@@ -373,7 +408,8 @@ export class RouteOptimizer {
         distanceFromPrevious: distance,
         serviceDuration: job.estimatedDuration,
         estimatedDeparture: new Date(
-          currentTime.getTime() + (travelMinutes + job.estimatedDuration) * 60 * 1000
+          currentTime.getTime() +
+            (travelMinutes + job.estimatedDuration) * 60 * 1000,
         ),
       };
 
@@ -403,7 +439,10 @@ export class RouteOptimizer {
   /**
    * Nearest-neighbor sorting: start from origin, always go to nearest unvisited.
    */
-  private static nearestNeighbor(jobs: WorkOrder[], origin: Coordinates): WorkOrder[] {
+  private static nearestNeighbor(
+    jobs: WorkOrder[],
+    origin: Coordinates,
+  ): WorkOrder[] {
     const sorted: WorkOrder[] = [];
     const remaining = [...jobs];
     let current = origin;
@@ -411,10 +450,16 @@ export class RouteOptimizer {
     while (remaining.length > 0) {
       let nearest = remaining[0];
       let nearestIndex = 0;
-      let minDistance = haversineDistance(current, remaining[0].address.coordinates);
+      let minDistance = haversineDistance(
+        current,
+        remaining[0].address.coordinates,
+      );
 
       for (let i = 1; i < remaining.length; i++) {
-        const distance = haversineDistance(current, remaining[i].address.coordinates);
+        const distance = haversineDistance(
+          current,
+          remaining[i].address.coordinates,
+        );
         if (distance < minDistance) {
           minDistance = distance;
           nearest = remaining[i];
@@ -442,15 +487,41 @@ export class RouteOptimizer {
         for (let j = i + 2; j < stops.length; j++) {
           const d1 =
             (i === 0
-              ? haversineDistance({ latitude: 0, longitude: 0 }, stops[i].address.coordinates)
-              : haversineDistance(stops[i - 1].address.coordinates, stops[i].address.coordinates)) +
-            haversineDistance(stops[j].address.coordinates, stops[j === stops.length - 1 ? { latitude: 0, longitude: 0 } : stops[j + 1].address.coordinates]);
+              ? haversineDistance(
+                  { latitude: 0, longitude: 0 },
+                  stops[i].address.coordinates,
+                )
+              : haversineDistance(
+                  stops[i - 1].address.coordinates,
+                  stops[i].address.coordinates,
+                )) +
+            haversineDistance(
+              stops[j].address.coordinates,
+              stops[
+                j === stops.length - 1
+                  ? { latitude: 0, longitude: 0 }
+                  : stops[j + 1].address.coordinates
+              ],
+            );
 
           const d2 =
             (i === 0
-              ? haversineDistance({ latitude: 0, longitude: 0 }, stops[j].address.coordinates)
-              : haversineDistance(stops[i - 1].address.coordinates, stops[j].address.coordinates)) +
-            haversineDistance(stops[i].address.coordinates, stops[j === stops.length - 1 ? { latitude: 0, longitude: 0 } : stops[j + 1].address.coordinates]);
+              ? haversineDistance(
+                  { latitude: 0, longitude: 0 },
+                  stops[j].address.coordinates,
+                )
+              : haversineDistance(
+                  stops[i - 1].address.coordinates,
+                  stops[j].address.coordinates,
+                )) +
+            haversineDistance(
+              stops[i].address.coordinates,
+              stops[
+                j === stops.length - 1
+                  ? { latitude: 0, longitude: 0 }
+                  : stops[j + 1].address.coordinates
+              ],
+            );
 
           if (d2 < d1) {
             // Reverse segment
@@ -477,7 +548,7 @@ export class ETACalculator {
     tech: Technician,
     jobCoordinates: Coordinates,
     currentJobEndTime?: Date,
-    trafficFactor: number = 1.3
+    trafficFactor: number = 1.3,
   ): {
     eta: Date;
     travelMinutes: number;
@@ -487,7 +558,7 @@ export class ETACalculator {
     const baseMinutes = (distance / 50) * 60; // 50 km/h baseline
     const travelMinutes = Math.ceil(baseMinutes * trafficFactor);
     const eta = new Date(
-      (currentJobEndTime || new Date()).getTime() + travelMinutes * 60 * 1000
+      (currentJobEndTime || new Date()).getTime() + travelMinutes * 60 * 1000,
     );
 
     return {
@@ -504,7 +575,7 @@ export class ETACalculator {
     tech: Technician,
     targetCoordinates: Coordinates,
     queuedJobs: WorkOrder[],
-    trafficFactor: number = 1.3
+    trafficFactor: number = 1.3,
   ): {
     eta: Date;
     travelMinutes: number;
@@ -524,7 +595,9 @@ export class ETACalculator {
 
     // Final leg to target
     const finalDistance = haversineDistance(current, targetCoordinates);
-    const finalTravelMinutes = Math.ceil((finalDistance / 50) * 60 * trafficFactor);
+    const finalTravelMinutes = Math.ceil(
+      (finalDistance / 50) * 60 * trafficFactor,
+    );
     totalTime += finalTravelMinutes;
 
     return {
@@ -549,7 +622,7 @@ export class AutoDispatcher {
     job: WorkOrder,
     allTechs: Technician[],
     assignedJobs: WorkOrder[],
-    strategy: "nearest" | "balanced" | "priority" = "balanced"
+    strategy: "nearest" | "balanced" | "priority" = "balanced",
   ): DispatchResult | null {
     const availableTechs = allTechs.filter((t) => t.status === "AVAILABLE");
 
@@ -558,7 +631,12 @@ export class AutoDispatcher {
     } else if (strategy === "balanced") {
       return WorkloadBalancer.dispatch(job, availableTechs, assignedJobs);
     } else if (strategy === "priority" && job.priority === "EMERGENCY") {
-      const result = PriorityDispatcher.dispatch(job, availableTechs, allTechs, assignedJobs);
+      const result = PriorityDispatcher.dispatch(
+        job,
+        availableTechs,
+        allTechs,
+        assignedJobs,
+      );
       return result.result;
     }
 
@@ -572,20 +650,26 @@ export class AutoDispatcher {
     jobs: WorkOrder[],
     allTechs: Technician[],
     assignedJobs: WorkOrder[],
-    strategy: "nearest" | "balanced" | "priority" = "balanced"
+    strategy: "nearest" | "balanced" | "priority" = "balanced",
   ): DispatchResult[] {
     const results: DispatchResult[] = [];
 
     // Sort by priority
     const priorityOrder = { EMERGENCY: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
-    const sortedJobs = [...jobs].sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+    const sortedJobs = [...jobs].sort(
+      (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority],
+    );
 
     for (const job of sortedJobs) {
       const result = this.dispatch(job, allTechs, assignedJobs, strategy);
       if (result) {
         results.push(result);
         // Update assigned jobs for next iteration
-        const assigned = { ...job, technicianId: result.technicianId, status: "DISPATCHED" as const };
+        const assigned = {
+          ...job,
+          technicianId: result.technicianId,
+          status: "DISPATCHED" as const,
+        };
         assignedJobs.push(assigned);
       }
     }
