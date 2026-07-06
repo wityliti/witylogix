@@ -225,7 +225,7 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
         name: (store as any).name,
         domain: (store as any).shopifyDomain ?? "",
         planTier: planTier.toLowerCase() as string,
-        status: (store as any).suspendedAt ? "suspended" : "active",
+        status: (store as any).suspendedAt ? "SUSPENDED" : "ACTIVE",
         owner: {
           name: (store as any).users?.[0]?.name ?? (store as any).email ?? "Owner",
           email: (store as any).email ?? "",
@@ -236,8 +236,15 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
           orders: (store as any)._count?.orders ?? 0,
           shipments: (store as any)._count?.orders ?? 0,
           drivers: (store as any)._count?.drivers ?? 0,
+          users: (store as any)._count?.users ?? 0,
           apiCalls: 0,
           apiCallsLimit: planTier === "ENTERPRISE" ? 1000000 : planTier === "GROWTH" ? 500000 : 100000,
+          ...((store as any).suspendedAt ? {
+            suspension: {
+              suspendedAt: (store as any).suspendedAt,
+              reason: (store as any).suspensionReason ?? null,
+            },
+          } : {}),
         },
         billing: {
           currentPlan: planTier.charAt(0) + planTier.slice(1).toLowerCase(),
@@ -267,9 +274,9 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
     };
   });
 
-  // ── POST /stores/:id/suspend (Suspend store) ───────────────────
+  // ── PUT /stores/:id/suspend (Suspend store) ───────────────────
 
-  fastify.post(
+  fastify.put(
     "/stores/:id/suspend",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { id } = request.params as { id: string };
@@ -1126,8 +1133,39 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
 
   const SYSTEM_START = Date.now();
 
-  fastify.get("/system-health", async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get("/system-health", async (_request: FastifyRequest, _reply: FastifyReply) => {
     const services: Record<string, any>[] = [];
+
+    const dbStart = Date.now();
+    let dbStatus = "healthy";
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+    } catch {
+      dbStatus = "degraded";
+    }
+    services.push({ name: "database", status: dbStatus, latencyMs: Date.now() - dbStart });
+
+    const redisStart = Date.now();
+    let redisStatus = "healthy";
+    try {
+      await redis.ping();
+    } catch {
+      redisStatus = "degraded";
+    }
+    services.push({ name: "redis", status: redisStatus, latencyMs: Date.now() - redisStart });
+
+    const uptimeSeconds = Math.floor((Date.now() - SYSTEM_START) / 1000);
+    const mem = process.memoryUsage();
+
+    return {
+      data: {
+        status: services.every((s) => s.status === "healthy") ? "healthy" : "degraded",
+        uptimeSeconds,
+        memoryMb: Math.round(mem.heapUsed / 1024 / 1024),
+        services,
+      },
+    };
+  });
 
   // ── GET /queues/jobs — recent jobs across all queues ──────────
 
