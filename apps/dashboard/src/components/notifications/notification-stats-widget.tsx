@@ -62,7 +62,7 @@ interface NotificationStatsResponse {
   };
 }
 
-const CHANNEL_CSS_VARS: Record<string, string> = {
+const CHANNEL_COLORS: Record<string, string> = {
   email: "var(--wl-primary-500)",
   sms: "var(--wl-success-500)",
   whatsapp: "var(--wl-info-500)",
@@ -118,8 +118,8 @@ function DonutChart({ data }: { data: Record<string, ChannelStat> }) {
               fill="none"
               stroke={CHANNEL_COLORS[segment.channel] ?? "#6b7280"}
               strokeWidth="8"
-              strokeDasharray={s.dashArray}
-              strokeDashoffset={-s.dashOffset}
+              strokeDasharray={segment.dashArray}
+              strokeDashoffset={-segment.dashOffset}
               strokeLinecap="round" />
           ))}
         </svg>
@@ -140,7 +140,7 @@ function DonutChart({ data }: { data: Record<string, ChannelStat> }) {
               style={{ backgroundColor: CHANNEL_COLORS[channel] ?? "#6b7280" }}
             />
             <span className="text-xs text-[var(--wl-text-secondary)] capitalize">
-              {entry.channel}: {entry.percentage}%
+              {channel}: {stats.percentage}%
             </span>
           </div>
         ))}
@@ -232,10 +232,10 @@ export function NotificationStatsWidget({ className }: NotificationStatsWidgetPr
           <CardContent className="pt-6">
             <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">Delivery Rate</p>
             <p className="text-2xl font-bold text-[var(--wl-success)]">
-              {summary.deliveryRate.toFixed(1)}%
+              {(100 - parseFloat(summary.failureRate)).toFixed(1)}%
             </p>
             <p className="text-xs text-[var(--wl-text-secondary)] mt-1">
-              {(100 - summary.deliveryRate).toFixed(1)}% bounce
+              {summary.failureRate}% failure
             </p>
             <p className="text-xs text-[var(--wl-text-secondary)] mt-1">{summary.failedCount} failed</p>
           </CardContent>
@@ -304,9 +304,9 @@ export function NotificationStatsWidget({ className }: NotificationStatsWidgetPr
                 </div>
               ))}
             </div>
-          )}
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }
