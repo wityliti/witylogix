@@ -20,7 +20,7 @@ import {
   RefreshCw,
   Truck,
   Phone,
-  Truck,
+  MapPin,
   Package,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -81,6 +81,8 @@ interface DriverScoreResponse {
     podComplianceCount: number;
     podMissedCount: number;
     incidentCount: number;
+    avgCustomerRating?: string;
+    podCompliancePercent?: string;
   };
 }
 
@@ -108,7 +110,7 @@ interface DriverProfile {
   lastLocationAt: string | null;
   heading: number | null;
   createdAt: string;
-  orders?: { id: string }[];
+  orders?: ActiveOrderPin[];
 }
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -226,7 +228,7 @@ export default function DriverDetailPage() {
   const driverId = params.id as string;
   const [activeTab, setActiveTab] = useState<Tab>('score');
 
-  const { data: scoreData, loading: scoreLoading, error: scoreError, refetch } = useApiQuery<DriverScoreData>(
+  const { data: scoreData, loading: scoreLoading, error: scoreError, refetch } = useApiQuery<DriverScoreResponse>(
     `/api/v4/driver-scoring/${driverId}`,
   );
 
@@ -241,24 +243,24 @@ export default function DriverDetailPage() {
   const history = historyData ?? [];
 
   const currentLat = useMemo(
-    () => profile?.currentLocation?.latitude ?? null,
-    [profile],
+    () => profileData?.currentLocation?.latitude ?? null,
+    [profileData],
   );
   const currentLng = useMemo(
-    () => profile?.currentLocation?.longitude ?? null,
-    [profile],
+    () => profileData?.currentLocation?.longitude ?? null,
+    [profileData],
   );
 
-  const mapProps: DriverLocationMapProps | null = profile
+  const mapProps: DriverLocationMapProps | null = profileData
     ? {
         driverId,
-        driverName: profile.name,
-        driverStatus: profile.status,
-        vehicleType: profile.vehicleType,
-        activeDeliveries: profile.orders.length,
+        driverName: profileData.name,
+        driverStatus: profileData.status,
+        vehicleType: profileData.vehicleType,
+        activeDeliveries: profileData.orders?.length ?? 0,
         currentLat,
         currentLng,
-        activeOrders: profile.orders,
+        activeOrders: profileData.orders ?? [],
       }
     : null;
 
@@ -294,12 +296,16 @@ export default function DriverDetailPage() {
     );
   }
 
-  const tier = TIER_STYLE[scoreData.tier] ?? TIER_STYLE.bronze;
-  const scoreDelta = scoreData.previousScore != null
-    ? scoreData.compositeScore - scoreData.previousScore
+  const score = scoreData.score;
+  const driver = scoreData.driver;
+  const metrics = scoreData.metrics;
+
+  const tier = TIER_STYLE[score.tier] ?? TIER_STYLE.bronze;
+  const scoreDelta = score.previousScore != null
+    ? score.compositeScore - score.previousScore
     : null;
-  const avgRating = scoreData.metrics.avgCustomerRating ? parseFloat(scoreData.metrics.avgCustomerRating) : null;
-  const podPct = scoreData.metrics.podCompliancePercent ? parseFloat(scoreData.metrics.podCompliancePercent) : null;
+  const avgRating = metrics.avgCustomerRating ? parseFloat(metrics.avgCustomerRating) : null;
+  const podPct = metrics.podCompliancePercent ? parseFloat(metrics.podCompliancePercent) : null;
 
   return (
     <div className="min-h-screen">
@@ -321,44 +327,44 @@ export default function DriverDetailPage() {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2.5">
                 <h1 className="text-2xl font-bold text-white/90 tracking-tight">
-                  {scoreData.driverName}
+                  {driver.name}
                 </h1>
                 <span className={cn('text-xs font-medium px-2 py-1 rounded border capitalize', tier.bg, tier.text, tier.border)}>
                   {tier.label}
                 </span>
                 <span className="text-xs font-mono text-white/20">#{score.rank}</span>
                 {/* Live status from profile */}
-                {profile && (
+                {profileData && (
                   <span className="flex items-center gap-1.5 text-xs text-white/35">
-                    <span className={cn('w-2 h-2 rounded-full', STATUS_DOT[profile.status] ?? 'bg-wl-text-tertiary')} />
-                    {STATUS_LABEL[profile.status] ?? profile.status}
+                    <span className={cn('w-2 h-2 rounded-full', STATUS_DOT[profileData.status] ?? 'bg-wl-text-tertiary')} />
+                    {STATUS_LABEL[profileData.status] ?? profileData.status}
                   </span>
                 )}
               </div>
               <p className="text-sm text-white/35 mt-0.5">{driver.email}</p>
               {/* Vehicle + phone info from profile */}
               <div className="flex flex-wrap items-center gap-3 mt-1.5">
-                {(profile?.phone || driver.phone) && (
+                {(profileData?.phone || driver.phone) && (
                   <span className="inline-flex items-center gap-1 text-xs text-white/25">
                     <Phone className="w-3 h-3" />
-                    {profile?.phone ?? driver.phone}
+                    {profileData?.phone ?? driver.phone}
                   </span>
                 )}
-                {profile?.vehicleType && (
+                {profileData?.vehicleType && (
                   <span className="inline-flex items-center gap-1 text-xs text-white/25">
                     <Truck className="w-3 h-3" />
-                    {profile.vehicleType}
+                    {profileData.vehicleType}
                   </span>
                 )}
-                {profile?.vehiclePlate && (
+                {profileData?.vehiclePlate && (
                   <span className="text-xs font-mono text-white/25 bg-white/[0.04] px-2 py-0.5 rounded">
-                    {profile.vehiclePlate}
+                    {profileData.vehiclePlate}
                   </span>
                 )}
-                {profile && profile.orders.length > 0 && (
+                {profileData && (profileData.orders?.length ?? 0) > 0 && (
                   <span className="inline-flex items-center gap-1 text-xs text-amber-400/70">
                     <Package className="w-3 h-3" />
-                    {profile.orders.length} active order{profile.orders.length !== 1 ? 's' : ''}
+                    {profileData.orders!.length} active order{profileData.orders!.length !== 1 ? 's' : ''}
                   </span>
                 )}
                 {currentLat != null && (
@@ -407,7 +413,7 @@ export default function DriverDetailPage() {
           <div className="space-y-4">
             {/* Score dial */}
             <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 flex flex-col items-center">
-              <ScoreArc score={scoreData.compositeScore} />
+              <ScoreArc score={score.compositeScore} />
               <p className="text-xs text-white/30 mt-1">Composite Score</p>
               {scoreDelta !== null && (
                 <div className={cn('flex items-center gap-1.5 mt-3 text-sm font-mono font-medium',
@@ -418,17 +424,6 @@ export default function DriverDetailPage() {
                 </div>
               )}
             </div>
-
-                {/* Trend */}
-                {scoreDelta !== null && (
-                  <div className={cn('flex items-center gap-1.5 mt-3 text-sm font-mono font-medium',
-                    scoreDelta > 0 ? 'text-emerald-400' : scoreDelta < 0 ? 'text-red-400' : 'text-white/30'
-                  )}>
-                    {scoreDelta > 0 ? <TrendingUp className="w-4 h-4" /> : scoreDelta < 0 ? <TrendingDown className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
-                    {scoreDelta > 0 ? '+' : ''}{scoreDelta.toFixed(1)} vs last period
-                  </div>
-                )}
-              </div>
 
               {/* Score breakdown */}
               <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 space-y-4">
@@ -486,7 +481,7 @@ export default function DriverDetailPage() {
                     { label: 'Late Deliveries',   value: metrics.lateCount.toString() },
                     { label: 'POD Missed',         value: metrics.podMissedCount.toString() },
                     { label: 'Incidents',          value: metrics.incidentCount.toString() },
-                    { label: 'Vehicle Type',       value: profile?.vehicleType ?? driver.vehicleType ?? '—' },
+                    { label: 'Vehicle Type',       value: profileData?.vehicleType ?? driver.vehicleType ?? '—' },
                     { label: 'Member Since',       value: new Date(driver.joinedAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) },
                   ].map(({ label, value }) => (
                     <div key={label} className="bg-white/[0.02] rounded-lg p-3">
@@ -498,14 +493,14 @@ export default function DriverDetailPage() {
               </div>
 
               {/* Active orders list (if any) */}
-              {profile && profile.orders.length > 0 && (
+              {profileData && (profileData.orders?.length ?? 0) > 0 && (
                 <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-semibold text-white/60 tracking-wide">Active Orders</h3>
-                    <span className="text-[11px] text-white/20 font-mono">{profile.orders.length} total</span>
+                    <span className="text-[11px] text-white/20 font-mono">{profileData.orders!.length} total</span>
                   </div>
                   <div className="space-y-2">
-                    {profile.orders.map((order) => (
+                    {profileData.orders!.map((order) => (
                       <div key={order.id} className="flex items-center gap-3 py-2 border-b border-white/[0.04] last:border-0">
                         <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
                         <div className="min-w-0 flex-1">
@@ -533,15 +528,15 @@ export default function DriverDetailPage() {
               <div>
                 <p className="text-sm font-medium text-wl-text-secondary">Live Driver Location</p>
                 <p className="text-xs text-wl-text-tertiary mt-0.5">
-                  {profile?.currentLocation?.address
-                    ? profile.currentLocation.address
+                  {profileData?.currentLocation?.address
+                    ? profileData.currentLocation.address
                     : currentLat != null
                     ? `${currentLat.toFixed(5)}, ${currentLng?.toFixed(5)}`
                     : 'Position not reported yet'}
-                  {profile?.lastLocationAt && (
+                  {profileData?.lastLocationAt && (
                     <span className="ml-2 opacity-60">
                       · Last update{' '}
-                      {new Date(profile.lastLocationAt).toLocaleTimeString('en-GB', {
+                      {new Date(profileData.lastLocationAt).toLocaleTimeString('en-GB', {
                         hour: '2-digit',
                         minute: '2-digit',
                       })}
@@ -558,13 +553,13 @@ export default function DriverDetailPage() {
             )}
 
             {/* Active orders summary below map */}
-            {profile && profile.orders.length > 0 && (
+            {profileData && (profileData.orders?.length ?? 0) > 0 && (
               <div className="rounded-xl bg-wl-bg-surface border border-wl-border-default p-4">
                 <p className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-3">
                   Active Deliveries
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {profile.orders.map((order) => (
+                  {profileData.orders!.map((order) => (
                     <div
                       key={order.id}
                       className="flex items-center gap-2.5 p-2.5 rounded-lg bg-wl-bg-elevated hover:bg-wl-bg-overlay transition-colors cursor-default"

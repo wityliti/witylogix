@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Header } from "@/components/layout/header";
 import {
   Card,
@@ -36,6 +36,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useApiList } from "@/hooks/use-api";
+import { Input } from "@/components/ui/input";
 import Link from "next/link";
 
 // ── API types matching notifications-v2 /log response ─────────────────────
@@ -294,7 +295,7 @@ export default function NotificationLogPage() {
                 <Input
                   type="date"
                   value={filterDateFrom}
-                  onChange={(e) => setFilterDateFrom(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterDateFrom(e.target.value)}
                   className="bg-wl-bg-surface border-wl-border-default text-wl-text-primary"
                 />
               </div>
@@ -303,7 +304,7 @@ export default function NotificationLogPage() {
                 <Input
                   type="date"
                   value={filterDateTo}
-                  onChange={(e) => setFilterDateTo(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterDateTo(e.target.value)}
                   className="bg-wl-bg-surface border-wl-border-default text-wl-text-primary"
                 />
               </div>

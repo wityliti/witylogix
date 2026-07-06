@@ -31,7 +31,7 @@ const recordTypeVariants: Record<string, 'success' | 'info' | 'warning' | 'dange
 };
 
 export default function RecordsPage() {
-  const { items: apiRecords, loading, error, refetch } = useApiList<HealthRecord>('/api/v4/orders?type=healthcare&view=records');
+  const { items: records, loading, error, refetch } = useApiList<HealthRecord>('/api/v4/orders?type=healthcare&view=records');
   const [recordTypeFilter, setRecordTypeFilter] = useState<string>('ALL');
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
 
@@ -39,8 +39,8 @@ export default function RecordsPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const recordTypes = ['ALL', 'PROGRESS_NOTE', 'LAB_RESULT', 'IMAGING_REPORT', 'PRESCRIPTION', 'DISCHARGE_SUMMARY'];
-  const filteredRecords = recordTypeFilter === 'ALL' ? records : records.filter((r) => r.type === recordTypeFilter);
-  const selectedRecord = records.find((r) => r.id === selectedRecordId);
+  const filteredRecords = recordTypeFilter === 'ALL' ? records : records.filter((r: HealthRecord) => r.type === recordTypeFilter);
+  const selectedRecord = records.find((r: HealthRecord) => r.id === selectedRecordId);
 
   return (
     <div className="min-h-screen bg-wl-bg-root p-6">
@@ -153,7 +153,7 @@ export default function RecordsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredRecords.map((record) => (
+                {filteredRecords.map((record: HealthRecord) => (
                   <tr
                     key={record.id}
                     className="border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors cursor-pointer"

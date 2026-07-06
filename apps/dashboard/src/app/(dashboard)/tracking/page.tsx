@@ -114,6 +114,7 @@ export default function TrackingPage() {
   const loading = driversLoading || ordersLoading;
   const error = driversError || ordersError;
   const refetch = useCallback(async () => { await Promise.all([refetchDrivers(), refetchOrders()]); }, [refetchDrivers, refetchOrders]);
+  const [view, setView] = useState<"list" | "map">("list");
 
   const activeOrders = useMemo(
     () =>

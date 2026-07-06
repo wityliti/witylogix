@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent } from "../../../../../components/ui/card";
 import { Button } from "../../../../../components/ui/button";
@@ -18,11 +19,11 @@ import {
   Crown,
   Zap,
   RefreshCw,
-  Truck,
-  Trash2,
 } from "lucide-react";
 import { useApiQuery, useApiList } from '@/hooks/use-api';
 import { api } from '@/lib/api';
+import { LoadingSkeleton } from '../../../../../components/ui/loading-skeleton';
+import { ErrorState } from '../../../../../components/ui/error-state';
 
 interface ShopApiData {
   id: string;
