@@ -1,7 +1,16 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useActionData, useFetcher } from "react-router";
 import { useState } from "react";
-import { Page, Card, Layout, Text, Banner, Button, Modal, TextContainer } from "@shopify/polaris";
+import {
+  Page,
+  Card,
+  Layout,
+  Text,
+  Banner,
+  Button,
+  Modal,
+  TextContainer,
+} from "@shopify/polaris";
 import { createApiClientFromRequest } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
@@ -27,7 +36,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     const shopInfo = await api.get<{ data: { id: string; name: string } }>(
-      "/api/v4/shops/me"
+      "/api/v4/shops/me",
     );
     return { shopInfo: shopInfo.data, error: null };
   } catch (error) {
@@ -55,7 +64,7 @@ export async function action({ request }: ActionFunctionArgs) {
       {
         reason: "user-requested",
         timestamp: new Date().toISOString(),
-      }
+      },
     );
 
     if (uninstallResult.success) {
@@ -74,7 +83,8 @@ export async function action({ request }: ActionFunctionArgs) {
 
       return {
         status: "success",
-        message: "App uninstalled successfully. Redirecting to Shopify Admin...",
+        message:
+          "App uninstalled successfully. Redirecting to Shopify Admin...",
       };
     } else {
       return {
@@ -134,9 +144,7 @@ export default function UninstallPage() {
         {actionData?.status === "success" && (
           <Layout.Section>
             <Banner tone="success" title="Uninstall Complete">
-              <Text as="p">
-                {actionData.message}
-              </Text>
+              <Text as="p">{actionData.message}</Text>
             </Banner>
           </Layout.Section>
         )}
@@ -144,9 +152,7 @@ export default function UninstallPage() {
         {actionData?.status === "error" && (
           <Layout.Section>
             <Banner tone="critical" title="Uninstall Failed">
-              <Text as="p">
-                {actionData.message}
-              </Text>
+              <Text as="p">{actionData.message}</Text>
             </Banner>
           </Layout.Section>
         )}
@@ -223,7 +229,12 @@ export default function UninstallPage() {
         <Layout.Section>
           <Card>
             <div style={{ padding: "32px", textAlign: "center" }}>
-              <p style={{ marginBottom: "20px", color: "var(--p-color-text-subdued)" }}>
+              <p
+                style={{
+                  marginBottom: "20px",
+                  color: "var(--p-color-text-subdued)",
+                }}
+              >
                 This will immediately disconnect your Shopify store from
                 Witylogix.
               </p>
@@ -266,7 +277,13 @@ export default function UninstallPage() {
                 <li>Deregister all webhooks</li>
                 <li>Disconnect your driver tracking</li>
               </ul>
-              <p style={{ marginTop: "16px", fontStyle: "italic", color: "var(--p-color-text-subdued)" }}>
+              <p
+                style={{
+                  marginTop: "16px",
+                  fontStyle: "italic",
+                  color: "var(--p-color-text-subdued)",
+                }}
+              >
                 Your historical data will be retained for 90 days. After that,
                 it will be permanently deleted.
               </p>

@@ -23,8 +23,8 @@ interface PodiumMessage {
   conversation_id: string;
   contact_id: string;
   body: string;
-  direction: 'inbound' | 'outbound';
-  kind: 'text' | 'image' | 'video';
+  direction: "inbound" | "outbound";
+  kind: "text" | "image" | "video";
   created_at: string;
 }
 
@@ -62,15 +62,15 @@ export class PodiumClient {
     business_id: string,
     oauth_client_id?: string,
     oauth_client_secret?: string,
-    sandbox_mode: boolean = false
+    sandbox_mode: boolean = false,
   ) {
     this.oauth_token = oauth_token;
     this.business_id = business_id;
     this.oauth_client_id = oauth_client_id;
     this.oauth_client_secret = oauth_client_secret;
     this.base_url = sandbox_mode
-      ? 'https://sandbox.podiumapi.com/v4'
-      : 'https://api.podium.com/v4';
+      ? "https://sandbox.podiumapi.com/v4"
+      : "https://api.podium.com/v4";
   }
 
   private async refreshTokenIfNeeded(): Promise<void> {
@@ -83,15 +83,17 @@ export class PodiumClient {
     }
 
     try {
-      const auth = Buffer.from(`${this.oauth_client_id}:${this.oauth_client_secret}`).toString('base64');
+      const auth = Buffer.from(
+        `${this.oauth_client_id}:${this.oauth_client_secret}`,
+      ).toString("base64");
 
       const response = await fetch(`${this.base_url}/oauth/token`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Basic ${auth}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `Basic ${auth}`,
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: 'grant_type=client_credentials',
+        body: "grant_type=client_credentials",
       });
 
       if (!response.ok) {
@@ -102,15 +104,17 @@ export class PodiumClient {
       this.oauth_token = data.access_token;
       this.token_expires_at = Date.now() + (data.expires_in - 300) * 1000;
     } catch (error) {
-      throw new Error(`Failed to refresh Podium token: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to refresh Podium token: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   private getHeaders(): Record<string, string> {
     return {
-      'Authorization': `Bearer ${this.oauth_token}`,
-      'Content-Type': 'application/json',
-      'X-Business-ID': this.business_id,
+      Authorization: `Bearer ${this.oauth_token}`,
+      "Content-Type": "application/json",
+      "X-Business-ID": this.business_id,
     };
   }
 
@@ -119,7 +123,7 @@ export class PodiumClient {
 
     try {
       const response = await fetch(`${this.base_url}/contacts`, {
-        method: 'POST',
+        method: "POST",
         headers: this.getHeaders(),
         body: JSON.stringify(contact),
       });
@@ -130,7 +134,9 @@ export class PodiumClient {
 
       return (await response.json()) as PodiumContact;
     } catch (error) {
-      throw new Error(`Failed to create Podium contact: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to create Podium contact: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -139,7 +145,7 @@ export class PodiumClient {
 
     try {
       const response = await fetch(`${this.base_url}/contacts/${contact_id}`, {
-        method: 'GET',
+        method: "GET",
         headers: this.getHeaders(),
       });
 
@@ -153,16 +159,21 @@ export class PodiumClient {
 
       return (await response.json()) as PodiumContact;
     } catch (error) {
-      throw new Error(`Failed to get Podium contact: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get Podium contact: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  async updateContact(contact_id: string, updates: Partial<PodiumContact>): Promise<PodiumContact> {
+  async updateContact(
+    contact_id: string,
+    updates: Partial<PodiumContact>,
+  ): Promise<PodiumContact> {
     await this.refreshTokenIfNeeded();
 
     try {
       const response = await fetch(`${this.base_url}/contacts/${contact_id}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: this.getHeaders(),
         body: JSON.stringify(updates),
       });
@@ -173,45 +184,60 @@ export class PodiumClient {
 
       return (await response.json()) as PodiumContact;
     } catch (error) {
-      throw new Error(`Failed to update Podium contact: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to update Podium contact: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  async listConversations(filters?: { limit?: number; offset?: number }): Promise<PodiumConversation[]> {
+  async listConversations(filters?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<PodiumConversation[]> {
     await this.refreshTokenIfNeeded();
 
     try {
       const query_params = new URLSearchParams();
-      if (filters?.limit) query_params.append('limit', String(filters.limit));
-      if (filters?.offset) query_params.append('offset', String(filters.offset));
+      if (filters?.limit) query_params.append("limit", String(filters.limit));
+      if (filters?.offset)
+        query_params.append("offset", String(filters.offset));
 
       const response = await fetch(
         `${this.base_url}/conversations?${query_params.toString()}`,
         {
-          method: 'GET',
+          method: "GET",
           headers: this.getHeaders(),
-        }
+        },
       );
 
       if (!response.ok) {
         throw new Error(`Podium API error: ${response.statusText}`);
       }
 
-      const data = (await response.json()) as { conversations: PodiumConversation[] };
+      const data = (await response.json()) as {
+        conversations: PodiumConversation[];
+      };
       return data.conversations;
     } catch (error) {
-      throw new Error(`Failed to list Podium conversations: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to list Podium conversations: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  async getConversation(conversation_id: string): Promise<PodiumConversation | null> {
+  async getConversation(
+    conversation_id: string,
+  ): Promise<PodiumConversation | null> {
     await this.refreshTokenIfNeeded();
 
     try {
-      const response = await fetch(`${this.base_url}/conversations/${conversation_id}`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
+      const response = await fetch(
+        `${this.base_url}/conversations/${conversation_id}`,
+        {
+          method: "GET",
+          headers: this.getHeaders(),
+        },
+      );
 
       if (response.status === 404) {
         return null;
@@ -223,22 +249,27 @@ export class PodiumClient {
 
       return (await response.json()) as PodiumConversation;
     } catch (error) {
-      throw new Error(`Failed to get Podium conversation: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get Podium conversation: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async sendMessage(
     conversation_id: string,
-    message: { body: string; kind?: 'text' | 'image' | 'video' }
+    message: { body: string; kind?: "text" | "image" | "video" },
   ): Promise<PodiumMessage> {
     await this.refreshTokenIfNeeded();
 
     try {
-      const response = await fetch(`${this.base_url}/conversations/${conversation_id}/messages`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(message),
-      });
+      const response = await fetch(
+        `${this.base_url}/conversations/${conversation_id}/messages`,
+        {
+          method: "POST",
+          headers: this.getHeaders(),
+          body: JSON.stringify(message),
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`Podium API error: ${response.statusText}`);
@@ -246,7 +277,9 @@ export class PodiumClient {
 
       return (await response.json()) as PodiumMessage;
     } catch (error) {
-      throw new Error(`Failed to send Podium message: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to send Podium message: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -254,10 +287,13 @@ export class PodiumClient {
     await this.refreshTokenIfNeeded();
 
     try {
-      const response = await fetch(`${this.base_url}/conversations/${conversation_id}/messages`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
+      const response = await fetch(
+        `${this.base_url}/conversations/${conversation_id}/messages`,
+        {
+          method: "GET",
+          headers: this.getHeaders(),
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`Podium API error: ${response.statusText}`);
@@ -266,24 +302,30 @@ export class PodiumClient {
       const data = (await response.json()) as { messages: PodiumMessage[] };
       return data.messages;
     } catch (error) {
-      throw new Error(`Failed to list Podium messages: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to list Podium messages: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  async listReviews(filters?: { limit?: number; offset?: number }): Promise<PodiumReview[]> {
+  async listReviews(filters?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<PodiumReview[]> {
     await this.refreshTokenIfNeeded();
 
     try {
       const query_params = new URLSearchParams();
-      if (filters?.limit) query_params.append('limit', String(filters.limit));
-      if (filters?.offset) query_params.append('offset', String(filters.offset));
+      if (filters?.limit) query_params.append("limit", String(filters.limit));
+      if (filters?.offset)
+        query_params.append("offset", String(filters.offset));
 
       const response = await fetch(
         `${this.base_url}/reviews?${query_params.toString()}`,
         {
-          method: 'GET',
+          method: "GET",
           headers: this.getHeaders(),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -293,16 +335,21 @@ export class PodiumClient {
       const data = (await response.json()) as { reviews: PodiumReview[] };
       return data.reviews;
     } catch (error) {
-      throw new Error(`Failed to list Podium reviews: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to list Podium reviews: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  async getAverageRating(): Promise<{ average_rating: number; total_reviews: number }> {
+  async getAverageRating(): Promise<{
+    average_rating: number;
+    total_reviews: number;
+  }> {
     await this.refreshTokenIfNeeded();
 
     try {
       const response = await fetch(`${this.base_url}/reviews/stats`, {
-        method: 'GET',
+        method: "GET",
         headers: this.getHeaders(),
       });
 
@@ -310,18 +357,25 @@ export class PodiumClient {
         throw new Error(`Podium API error: ${response.statusText}`);
       }
 
-      return (await response.json()) as { average_rating: number; total_reviews: number };
+      return (await response.json()) as {
+        average_rating: number;
+        total_reviews: number;
+      };
     } catch (error) {
-      throw new Error(`Failed to get Podium average rating: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get Podium average rating: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  async sendPaymentRequest(payment: Partial<PodiumPaymentRequest>): Promise<PodiumPaymentRequest> {
+  async sendPaymentRequest(
+    payment: Partial<PodiumPaymentRequest>,
+  ): Promise<PodiumPaymentRequest> {
     await this.refreshTokenIfNeeded();
 
     try {
       const response = await fetch(`${this.base_url}/payment-requests`, {
-        method: 'POST',
+        method: "POST",
         headers: this.getHeaders(),
         body: JSON.stringify(payment),
       });
@@ -332,18 +386,25 @@ export class PodiumClient {
 
       return (await response.json()) as PodiumPaymentRequest;
     } catch (error) {
-      throw new Error(`Failed to send Podium payment request: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to send Podium payment request: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  async getPaymentRequest(payment_id: string): Promise<PodiumPaymentRequest | null> {
+  async getPaymentRequest(
+    payment_id: string,
+  ): Promise<PodiumPaymentRequest | null> {
     await this.refreshTokenIfNeeded();
 
     try {
-      const response = await fetch(`${this.base_url}/payment-requests/${payment_id}`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
+      const response = await fetch(
+        `${this.base_url}/payment-requests/${payment_id}`,
+        {
+          method: "GET",
+          headers: this.getHeaders(),
+        },
+      );
 
       if (response.status === 404) {
         return null;
@@ -355,7 +416,9 @@ export class PodiumClient {
 
       return (await response.json()) as PodiumPaymentRequest;
     } catch (error) {
-      throw new Error(`Failed to get Podium payment request: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get Podium payment request: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -363,14 +426,19 @@ export class PodiumClient {
     await this.refreshTokenIfNeeded();
 
     try {
-      const response = await fetch(`${this.base_url}/contacts/${contact_id}/review-invitation`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-      });
+      const response = await fetch(
+        `${this.base_url}/contacts/${contact_id}/review-invitation`,
+        {
+          method: "POST",
+          headers: this.getHeaders(),
+        },
+      );
 
       return response.ok;
     } catch (error) {
-      throw new Error(`Failed to send Podium review invitation: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to send Podium review invitation: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -379,7 +447,7 @@ export class PodiumClient {
 
     try {
       const response = await fetch(`${this.base_url}/webchat/status`, {
-        method: 'GET',
+        method: "GET",
         headers: this.getHeaders(),
       });
 
@@ -389,7 +457,9 @@ export class PodiumClient {
 
       return (await response.json()) as { enabled: boolean; online: boolean };
     } catch (error) {
-      throw new Error(`Failed to get Podium webchat status: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get Podium webchat status: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -406,7 +476,7 @@ export class PodiumClient {
 
     try {
       const response = await fetch(`${this.base_url}/feedback`, {
-        method: 'GET',
+        method: "GET",
         headers: this.getHeaders(),
       });
 
@@ -425,7 +495,9 @@ export class PodiumClient {
       };
       return data.feedback;
     } catch (error) {
-      throw new Error(`Failed to get Podium feedback: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get Podium feedback: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 }

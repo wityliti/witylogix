@@ -132,9 +132,12 @@ export class SmartDriverAssignment {
    */
   private calculateProximityScore(
     driver: Driver,
-    order: Order
+    order: Order,
   ): { score: number; distance: number } {
-    const distance = calculateDistance(driver.currentLocation, order.pickupLocation);
+    const distance = calculateDistance(
+      driver.currentLocation,
+      order.pickupLocation,
+    );
 
     // Score: 100 at 0km, declining to 0 at 50km
     const score = Math.max(0, 100 - (distance / 50) * 100);
@@ -150,7 +153,7 @@ export class SmartDriverAssignment {
    */
   private calculateCapacityScore(
     driver: Driver,
-    order: Order
+    order: Order,
   ): { score: number; canFit: boolean } {
     const remainingWeight = driver.capacity.weight - driver.usedCapacity.weight;
     const remainingVolume = driver.capacity.volume - driver.usedCapacity.volume;
@@ -158,7 +161,8 @@ export class SmartDriverAssignment {
     const orderWeight = order.weight || 0;
     const orderVolume = order.volume || 0;
 
-    const canFit = remainingWeight >= orderWeight && remainingVolume >= orderVolume;
+    const canFit =
+      remainingWeight >= orderWeight && remainingVolume >= orderVolume;
 
     if (!canFit) {
       return { score: 0, canFit: false };
@@ -244,7 +248,7 @@ export class SmartDriverAssignment {
     // Check constraints
     if (driver.completedDeliveries >= driver.maxDeliveriesPerShift) {
       violatedConstraints.push(
-        `Max deliveries per shift (${driver.maxDeliveriesPerShift}) reached`
+        `Max deliveries per shift (${driver.maxDeliveriesPerShift}) reached`,
       );
       isEligible = false;
     }
@@ -255,20 +259,24 @@ export class SmartDriverAssignment {
     }
 
     if (!this.checkZoneConstraint(driver, order)) {
-      violatedConstraints.push(`Order zone ${order.requiredZone} not in driver zones`);
+      violatedConstraints.push(
+        `Order zone ${order.requiredZone} not in driver zones`,
+      );
       isEligible = false;
     }
 
     // Calculate component scores
     const { score: proximityScore, distance } = this.calculateProximityScore(
       driver,
-      order
+      order,
     );
-    reasons.push(`${proximityScore}% proximity (${distance.toFixed(1)} km away)`);
+    reasons.push(
+      `${proximityScore}% proximity (${distance.toFixed(1)} km away)`,
+    );
 
     const { score: capacityScore, canFit } = this.calculateCapacityScore(
       driver,
-      order
+      order,
     );
 
     if (canFit) {
@@ -279,8 +287,11 @@ export class SmartDriverAssignment {
       isEligible = false;
     }
 
-    const { score: shiftHourScore, hoursRemaining } = this.calculateShiftHourScore(driver);
-    reasons.push(`${shiftHourScore}% shift hours (${hoursRemaining} min remaining)`);
+    const { score: shiftHourScore, hoursRemaining } =
+      this.calculateShiftHourScore(driver);
+    reasons.push(
+      `${shiftHourScore}% shift hours (${hoursRemaining} min remaining)`,
+    );
 
     const ratingScore = this.calculateRatingScore(driver, order);
     if (driver.rating) {
@@ -331,16 +342,16 @@ export class SmartDriverAssignment {
 
     const driver = this.drivers.find((d) => d.id === eligible.driverId)!;
     const travelTime = estimateTravelTime(
-      calculateDistance(driver.currentLocation, order.pickupLocation)
+      calculateDistance(driver.currentLocation, order.pickupLocation),
     );
     const pickupTime = new Date(Date.now() + travelTime * 60000);
     const deliveryTime = new Date(
-      pickupTime.getTime() + order.estimatedDuration * 60000
+      pickupTime.getTime() + order.estimatedDuration * 60000,
     );
 
     const distance = calculateDistance(
       driver.currentLocation,
-      order.deliveryLocation
+      order.deliveryLocation,
     );
 
     return {
@@ -373,13 +384,13 @@ export class SmartDriverAssignment {
       // If same priority, sort by distance to nearest driver
       const nearestDistA = Math.min(
         ...this.drivers.map((d) =>
-          calculateDistance(d.currentLocation, a.pickupLocation)
-        )
+          calculateDistance(d.currentLocation, a.pickupLocation),
+        ),
       );
       const nearestDistB = Math.min(
         ...this.drivers.map((d) =>
-          calculateDistance(d.currentLocation, b.pickupLocation)
-        )
+          calculateDistance(d.currentLocation, b.pickupLocation),
+        ),
       );
 
       return nearestDistA - nearestDistB;
@@ -418,7 +429,7 @@ export class SmartDriverAssignment {
    */
   public findNearbyOrders(
     order: Order,
-    radiusKm: number = 5
+    radiusKm: number = 5,
   ): { orders: Order[]; distances: number[] } {
     const nearby: Order[] = [];
     const distances: number[] = [];
@@ -428,7 +439,7 @@ export class SmartDriverAssignment {
 
       const distance = calculateDistance(
         order.deliveryLocation,
-        otherOrder.deliveryLocation
+        otherOrder.deliveryLocation,
       );
 
       if (distance <= radiusKm) {
@@ -461,8 +472,7 @@ export class SmartDriverAssignment {
         (driver.usedCapacity.volume / driver.capacity.volume) * 100;
       const deliveryUtil =
         (driver.completedDeliveries / driver.maxDeliveriesPerShift) * 100;
-      const timeUtil =
-        ((480 - driver.workingHoursRemaining) / 480) * 100; // 480 min = 8 hours
+      const timeUtil = ((480 - driver.workingHoursRemaining) / 480) * 100; // 480 min = 8 hours
 
       utilization[driver.id] = {
         weight: Math.round(weightUtil),

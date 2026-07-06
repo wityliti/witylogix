@@ -76,14 +76,19 @@ describe("SendbirdSDKClient", () => {
         headers: new Map([["content-type", "application/json"]]),
       });
 
-      const result = await client.updateUser("user-123", { nickname: "Updated" });
+      const result = await client.updateUser("user-123", {
+        nickname: "Updated",
+      });
       expect(result.nickname).toBe("Updated");
     });
 
     it("should list users with pagination", async () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ users: [{ user_id: "user-1" }], next_token: "token" }),
+        json: async () => ({
+          users: [{ user_id: "user-1" }],
+          next_token: "token",
+        }),
         headers: new Map([["content-type", "application/json"]]),
       });
 
@@ -100,7 +105,8 @@ describe("SendbirdSDKClient", () => {
 
       await client.deleteUser("user-123");
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[1].method).toBe("DELETE");
     });
 
@@ -121,7 +127,10 @@ describe("SendbirdSDKClient", () => {
     it("should create a group channel", async () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ channel_url: "channel-123", name: "Test Channel" }),
+        json: async () => ({
+          channel_url: "channel-123",
+          name: "Test Channel",
+        }),
         headers: new Map([["content-type", "application/json"]]),
       });
 
@@ -142,7 +151,9 @@ describe("SendbirdSDKClient", () => {
         headers: new Map([["content-type", "application/json"]]),
       });
 
-      const result = await client.updateGroupChannel("channel-123", { name: "Updated" });
+      const result = await client.updateGroupChannel("channel-123", {
+        name: "Updated",
+      });
       expect(result.name).toBe("Updated");
     });
 
@@ -155,7 +166,8 @@ describe("SendbirdSDKClient", () => {
 
       await client.freezeGroupChannel("channel-123", true);
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[0]).toContain("/group_channels/channel-123/freeze");
     });
 
@@ -166,7 +178,9 @@ describe("SendbirdSDKClient", () => {
         headers: new Map([["content-type", "application/json"]]),
       });
 
-      const result = await client.inviteUsersToGroupChannel("channel-123", ["user-2"]);
+      const result = await client.inviteUsersToGroupChannel("channel-123", [
+        "user-2",
+      ]);
       expect(result).toBeDefined();
     });
   });
@@ -208,7 +222,8 @@ describe("SendbirdSDKClient", () => {
 
       await client.deleteOpenChannel("open-channel-123");
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[1].method).toBe("DELETE");
     });
   });
@@ -222,7 +237,10 @@ describe("SendbirdSDKClient", () => {
       });
 
       const message = { text: "Hello" };
-      const result = await client.sendGroupChannelMessage("channel-123", message);
+      const result = await client.sendGroupChannelMessage(
+        "channel-123",
+        message,
+      );
       expect(result.message_id).toBe(123);
     });
 
@@ -244,7 +262,9 @@ describe("SendbirdSDKClient", () => {
         headers: new Map([["content-type", "application/json"]]),
       });
 
-      const result = await client.updateMessage("channel-123", 123, { text: "Updated" });
+      const result = await client.updateMessage("channel-123", 123, {
+        text: "Updated",
+      });
       expect(result.content).toBe("Updated");
     });
 
@@ -257,7 +277,8 @@ describe("SendbirdSDKClient", () => {
 
       await client.deleteMessage("channel-123", 123);
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[1].method).toBe("DELETE");
     });
 
@@ -287,7 +308,8 @@ describe("SendbirdSDKClient", () => {
         seconds: 3600,
       });
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[0]).toContain("/group_channels/channel-123/ban");
     });
 
@@ -303,7 +325,8 @@ describe("SendbirdSDKClient", () => {
         channel_url: "channel-123",
       });
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[0]).toContain("/group_channels/channel-123/mute");
     });
 
@@ -320,7 +343,8 @@ describe("SendbirdSDKClient", () => {
         report_description: "Spamming messages",
       });
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[0]).toContain("/report");
     });
   });
@@ -338,7 +362,8 @@ describe("SendbirdSDKClient", () => {
         type: "apns",
       });
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[0]).toContain("/push_tokens");
     });
   });

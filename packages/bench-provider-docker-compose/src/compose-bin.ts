@@ -1,7 +1,7 @@
-import { spawn, execFile } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { promisify } from 'node:util';
+import { spawn, execFile } from "node:child_process";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
+import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
@@ -18,10 +18,10 @@ export interface ComposeRunOptions {
  * looks for `.env` next to the compose file, which misses our layout).
  */
 function baseComposeArgs(opts: ComposeRunOptions): string[] {
-  const args = ['compose', '-f', opts.composeFile];
-  const envFile = resolve(opts.cwd, '.env');
+  const args = ["compose", "-f", opts.composeFile];
+  const envFile = resolve(opts.cwd, ".env");
   if (existsSync(envFile)) {
-    args.push('--env-file', envFile);
+    args.push("--env-file", envFile);
   }
   return args;
 }
@@ -42,7 +42,7 @@ export async function runCompose(
 ): Promise<ComposeRunResult> {
   try {
     const { stdout, stderr } = await execFileAsync(
-      'docker',
+      "docker",
       [...baseComposeArgs(opts), ...opts.args],
       {
         cwd: opts.cwd,
@@ -59,14 +59,14 @@ export async function runCompose(
     };
     if (allowNonZero) {
       return {
-        stdout: error.stdout ?? '',
+        stdout: error.stdout ?? "",
         stderr: error.stderr ?? error.message,
-        exitCode: typeof error.code === 'number' ? error.code : 1,
+        exitCode: typeof error.code === "number" ? error.code : 1,
       };
     }
     throw new ComposeError(
-      `docker compose ${opts.args.join(' ')} failed: ${error.stderr ?? error.message}`,
-      typeof error.code === 'number' ? error.code : 1,
+      `docker compose ${opts.args.join(" ")} failed: ${error.stderr ?? error.message}`,
+      typeof error.code === "number" ? error.code : 1,
     );
   }
 }
@@ -78,13 +78,13 @@ export async function runCompose(
 export async function* streamComposeLogs(
   opts: ComposeRunOptions,
 ): AsyncIterable<string> {
-  const child = spawn('docker', [...baseComposeArgs(opts), ...opts.args], {
+  const child = spawn("docker", [...baseComposeArgs(opts), ...opts.args], {
     cwd: opts.cwd,
     env: opts.env ?? process.env,
-    stdio: ['ignore', 'pipe', 'pipe'],
+    stdio: ["ignore", "pipe", "pipe"],
   });
 
-  let buffer = '';
+  let buffer = "";
   const queue: string[] = [];
   let resolveWaiter: (() => void) | null = null;
   let done = false;
@@ -97,20 +97,20 @@ export async function* streamComposeLogs(
     }
   };
 
-  child.stdout.setEncoding('utf8');
-  child.stderr.setEncoding('utf8');
-  child.stdout.on('data', (chunk: string) => {
+  child.stdout.setEncoding("utf8");
+  child.stderr.setEncoding("utf8");
+  child.stdout.on("data", (chunk: string) => {
     buffer += chunk;
     let idx: number;
-    while ((idx = buffer.indexOf('\n')) !== -1) {
+    while ((idx = buffer.indexOf("\n")) !== -1) {
       push(buffer.slice(0, idx));
       buffer = buffer.slice(idx + 1);
     }
   });
-  child.stderr.on('data', (chunk: string) => {
+  child.stderr.on("data", (chunk: string) => {
     buffer += chunk;
   });
-  child.on('exit', () => {
+  child.on("exit", () => {
     if (buffer) push(buffer);
     done = true;
     if (resolveWaiter) {
@@ -132,9 +132,12 @@ export async function* streamComposeLogs(
 }
 
 export class ComposeError extends Error {
-  constructor(message: string, public readonly exitCode: number) {
+  constructor(
+    message: string,
+    public readonly exitCode: number,
+  ) {
     super(message);
-    this.name = 'ComposeError';
+    this.name = "ComposeError";
   }
 }
 
@@ -153,32 +156,36 @@ export async function execComposeService(
 ): Promise<ComposeRunResult> {
   const envFlags: string[] = [];
   for (const [k, v] of Object.entries(opts.env ?? {})) {
-    envFlags.push('-e', `${k}=${v}`);
+    envFlags.push("-e", `${k}=${v}`);
   }
-  const args = ['exec', '-T', ...envFlags, opts.service, ...opts.cmd];
+  const args = ["exec", "-T", ...envFlags, opts.service, ...opts.cmd];
 
   // When stdin is supplied we need `spawn` so we can pipe it; otherwise the
   // simpler `execFile`-based `runCompose` path is fine.
   if (opts.stdin) {
     return new Promise((resolvePromise) => {
-      const child = spawn('docker', ['compose', '-f', opts.composeFile, ...args], {
-        cwd: opts.cwd,
-        env: process.env,
-        stdio: ['pipe', 'pipe', 'pipe'],
+      const child = spawn(
+        "docker",
+        ["compose", "-f", opts.composeFile, ...args],
+        {
+          cwd: opts.cwd,
+          env: process.env,
+          stdio: ["pipe", "pipe", "pipe"],
+        },
+      );
+      let stdout = "";
+      let stderr = "";
+      child.stdout.on("data", (chunk: Buffer) => {
+        stdout += chunk.toString("binary");
       });
-      let stdout = '';
-      let stderr = '';
-      child.stdout.on('data', (chunk: Buffer) => {
-        stdout += chunk.toString('binary');
+      child.stderr.on("data", (chunk: Buffer) => {
+        stderr += chunk.toString("utf8");
       });
-      child.stderr.on('data', (chunk: Buffer) => {
-        stderr += chunk.toString('utf8');
-      });
-      child.on('close', (code) => {
+      child.on("close", (code) => {
         resolvePromise({
           stdout,
           stderr,
-          exitCode: typeof code === 'number' ? code : 1,
+          exitCode: typeof code === "number" ? code : 1,
         });
       });
       opts.stdin!.pipe(child.stdin);
@@ -205,9 +212,16 @@ export async function runOneShotFromService(
 ): Promise<ComposeRunResult> {
   const envFlags: string[] = [];
   for (const [k, v] of Object.entries(opts.env ?? {})) {
-    envFlags.push('-e', `${k}=${v}`);
+    envFlags.push("-e", `${k}=${v}`);
   }
-  const args = ['run', '--rm', '--no-deps', ...envFlags, opts.fromService, ...opts.cmd];
+  const args = [
+    "run",
+    "--rm",
+    "--no-deps",
+    ...envFlags,
+    opts.fromService,
+    ...opts.cmd,
+  ];
   return runCompose(
     { composeFile: opts.composeFile, cwd: opts.cwd, args, env: process.env },
     true,
@@ -226,7 +240,7 @@ export async function checkDockerAvailable(): Promise<{
   let composeVersion: string | undefined;
 
   try {
-    const { stdout } = await execFileAsync('docker', ['--version']);
+    const { stdout } = await execFileAsync("docker", ["--version"]);
     docker = true;
     dockerVersion = stdout.trim();
   } catch {
@@ -234,9 +248,9 @@ export async function checkDockerAvailable(): Promise<{
   }
 
   try {
-    const { stdout } = await execFileAsync('docker', ['compose', 'version']);
+    const { stdout } = await execFileAsync("docker", ["compose", "version"]);
     compose = true;
-    composeVersion = stdout.trim().split('\n')[0];
+    composeVersion = stdout.trim().split("\n")[0];
   } catch {
     /* compose plugin not available */
   }

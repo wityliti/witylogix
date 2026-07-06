@@ -2,7 +2,7 @@
 
 /**
  * Expo Push Notifications Provider
- * 
+ *
  * For React Native applications using Expo.
  * Supports:
  * - Single and multicast delivery
@@ -17,7 +17,7 @@ import {
   MulticastPushResult,
   TenantPushConfig,
   DeployerPushConfig,
-} from './types';
+} from "./types";
 
 interface ExpoConfig {
   accessToken: string;
@@ -32,7 +32,7 @@ interface ExpoMessage {
   badge?: number;
   ttl?: number;
   expiration?: number;
-  priority?: 'default' | 'normal' | 'high';
+  priority?: "default" | "normal" | "high";
 }
 
 /**
@@ -40,8 +40,8 @@ interface ExpoMessage {
  */
 export class ExpoProvider implements PushProvider {
   private accessToken: string;
-  private baseUrl = 'https://exp.host/--/api/v2/push/send';
-  private receiptUrl = 'https://exp.host/--/api/v2/push/getReceipts';
+  private baseUrl = "https://exp.host/--/api/v2/push/send";
+  private receiptUrl = "https://exp.host/--/api/v2/push/getReceipts";
 
   constructor(config: ExpoConfig) {
     this.accessToken = config.accessToken;
@@ -69,7 +69,7 @@ export class ExpoProvider implements PushProvider {
       // const data = await response.json();
 
       // Mock implementation
-      const messageId = `expo-${Buffer.from(token).toString('hex').substring(0, 16)}`;
+      const messageId = `expo-${Buffer.from(token).toString("hex").substring(0, 16)}`;
 
       return {
         success: true,
@@ -86,14 +86,19 @@ export class ExpoProvider implements PushProvider {
   /**
    * Send push notification to multiple devices (batched)
    */
-  async sendMulticast(tokens: string[], payload: PushPayload): Promise<MulticastPushResult> {
+  async sendMulticast(
+    tokens: string[],
+    payload: PushPayload,
+  ): Promise<MulticastPushResult> {
     const results: PushResult[] = [];
     let successCount = 0;
     let failureCount = 0;
 
     try {
       // Build messages for all tokens
-      const messages = tokens.map((token) => this.buildExpoMessage(token, payload));
+      const messages = tokens.map((token) =>
+        this.buildExpoMessage(token, payload),
+      );
 
       // In production: call Expo API
       // const response = await fetch(this.baseUrl, {
@@ -113,7 +118,7 @@ export class ExpoProvider implements PushProvider {
       for (const token of tokens) {
         results.push({
           success: true,
-          messageId: `expo-${Buffer.from(token).toString('hex').substring(0, 12)}`,
+          messageId: `expo-${Buffer.from(token).toString("hex").substring(0, 12)}`,
         });
         successCount++;
       }
@@ -141,14 +146,18 @@ export class ExpoProvider implements PushProvider {
    */
   async subscribeTopic(token: string, topic: string): Promise<void> {
     // For Expo, topic subscriptions are typically managed by the app
-    console.log(`Expo: ${token} subscribed to topic ${topic} (application-managed)`);
+    console.log(
+      `Expo: ${token} subscribed to topic ${topic} (application-managed)`,
+    );
   }
 
   /**
    * Unsubscribe a device token from a topic
    */
   async unsubscribeTopic(token: string, topic: string): Promise<void> {
-    console.log(`Expo: ${token} unsubscribed from topic ${topic} (application-managed)`);
+    console.log(
+      `Expo: ${token} unsubscribed from topic ${topic} (application-managed)`,
+    );
   }
 
   /**
@@ -158,7 +167,7 @@ export class ExpoProvider implements PushProvider {
   async sendToTopic(topic: string, payload: PushPayload): Promise<PushResult> {
     // This would need to query a database to get all tokens subscribed to the topic
     throw new Error(
-      'Expo topic delivery requires application-level topic tracking. Use sendMulticast with topic tokens instead.'
+      "Expo topic delivery requires application-level topic tracking. Use sendMulticast with topic tokens instead.",
     );
   }
 
@@ -186,12 +195,14 @@ export class ExpoProvider implements PushProvider {
       const receipts: Record<string, any> = {};
       for (const id of ticketIds) {
         receipts[id] = {
-          status: 'ok',
+          status: "ok",
         };
       }
       return receipts;
     } catch (error) {
-      throw new Error(`Failed to check receipts: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to check receipts: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -211,10 +222,10 @@ export class ExpoProvider implements PushProvider {
       to: token,
       title: payload.title,
       body: payload.body,
-      sound: payload.notification?.sound || 'default',
+      sound: payload.notification?.sound || "default",
       badge: payload.notification?.badge || 1,
       ttl: payload.android?.ttl || 86400,
-      priority: 'high',
+      priority: "high",
     };
 
     if (payload.data) {
@@ -230,7 +241,7 @@ export class ExpoProvider implements PushProvider {
  */
 export function resolveExpoCredentials(
   tenantConfig?: TenantPushConfig,
-  deployerConfig?: DeployerPushConfig
+  deployerConfig?: DeployerPushConfig,
 ): ExpoConfig | null {
   // Tenant config takes precedence
   if (tenantConfig?.expo) {

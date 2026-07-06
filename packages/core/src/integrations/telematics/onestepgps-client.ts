@@ -4,21 +4,25 @@
  * API key authentication
  */
 
-import type { NormalizedVehicle, NormalizedPosition, NormalizedBehaviorEvent } from './types.js';
+import type {
+  NormalizedVehicle,
+  NormalizedPosition,
+  NormalizedBehaviorEvent,
+} from "./types.js";
 
 /**
  * One Step GPS API Client
  */
 export class OneStepGPSClient {
   private apiKey: string;
-  private apiUrl: string = 'https://api.onestepgps.com/v1';
+  private apiUrl: string = "https://api.onestepgps.com/v1";
 
   /**
    * Initialize One Step GPS client
    */
   constructor(apiKey: string) {
     if (!apiKey) {
-      throw new Error('Missing One Step GPS API key');
+      throw new Error("Missing One Step GPS API key");
     }
     this.apiKey = apiKey;
   }
@@ -28,7 +32,7 @@ export class OneStepGPSClient {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      await this.request('GET', '/assets?limit=1');
+      await this.request("GET", "/assets?limit=1");
       return true;
     } catch {
       return false;
@@ -38,10 +42,14 @@ export class OneStepGPSClient {
   /**
    * Make HTTP request
    */
-  private async request(method: string, endpoint: string, body?: unknown): Promise<any> {
+  private async request(
+    method: string,
+    endpoint: string,
+    body?: unknown,
+  ): Promise<any> {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.apiKey}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${this.apiKey}`,
     };
 
     const response = await fetch(`${this.apiUrl}${endpoint}`, {
@@ -62,7 +70,7 @@ export class OneStepGPSClient {
    * Get all assets (vehicles)
    */
   async getVehicles(): Promise<NormalizedVehicle[]> {
-    const response = await this.request('GET', '/assets');
+    const response = await this.request("GET", "/assets");
     return (response.assets || []).map((asset: any) => ({
       externalVehicleId: asset.id,
       name: asset.name,
@@ -71,9 +79,9 @@ export class OneStepGPSClient {
       make: asset.make,
       model: asset.model,
       year: asset.year,
-      status: asset.status === 'active' ? 'ACTIVE' : 'INACTIVE',
+      status: asset.status === "active" ? "ACTIVE" : "INACTIVE",
       odometer: asset.odometer
-        ? { value: asset.odometer, unit: 'miles' as const }
+        ? { value: asset.odometer, unit: "miles" as const }
         : undefined,
     }));
   }
@@ -82,14 +90,14 @@ export class OneStepGPSClient {
    * Get current vehicle position
    */
   async getVehiclePosition(vehicleId: string): Promise<NormalizedPosition> {
-    const response = await this.request('GET', `/assets/${vehicleId}/location`);
+    const response = await this.request("GET", `/assets/${vehicleId}/location`);
     return {
       externalVehicleId: vehicleId,
       latitude: response.lat,
       longitude: response.lng,
       altitude: response.altitude,
       speed: response.speed_mph
-        ? { value: response.speed_mph, unit: 'mph' as const }
+        ? { value: response.speed_mph, unit: "mph" as const }
         : undefined,
       heading: response.heading,
       accuracy: response.accuracy,
@@ -110,13 +118,16 @@ export class OneStepGPSClient {
       end: endDate.toISOString(),
     });
 
-    const response = await this.request('GET', `/assets/${vehicleId}/playback?${queryParams}`);
+    const response = await this.request(
+      "GET",
+      `/assets/${vehicleId}/playback?${queryParams}`,
+    );
     return (response.positions || []).map((pos: any) => ({
       externalVehicleId: vehicleId,
       latitude: pos.lat,
       longitude: pos.lng,
       speed: pos.speed_mph
-        ? { value: pos.speed_mph, unit: 'mph' as const }
+        ? { value: pos.speed_mph, unit: "mph" as const }
         : undefined,
       heading: pos.heading,
       timestamp: new Date(pos.timestamp),
@@ -126,12 +137,15 @@ export class OneStepGPSClient {
   /**
    * Create geofence
    */
-  async createGeofence(name: string, polygon: Array<[number, number]>): Promise<any> {
+  async createGeofence(
+    name: string,
+    polygon: Array<[number, number]>,
+  ): Promise<any> {
     const data = {
       name,
       vertices: polygon.map(([lat, lng]) => ({ lat, lng })),
     };
-    const response = await this.request('POST', '/geofences', data);
+    const response = await this.request("POST", "/geofences", data);
     return response;
   }
 
@@ -139,7 +153,7 @@ export class OneStepGPSClient {
    * List geofences
    */
   async listGeofences(): Promise<any[]> {
-    const response = await this.request('GET', '/geofences');
+    const response = await this.request("GET", "/geofences");
     return response.geofences || [];
   }
 
@@ -148,16 +162,22 @@ export class OneStepGPSClient {
    */
   async createAlert(name: string, condition: string): Promise<any> {
     const data = { name, condition };
-    const response = await this.request('POST', '/alerts', data);
+    const response = await this.request("POST", "/alerts", data);
     return response;
   }
 
   /**
    * Get driver scorecard
    */
-  async getDriverScorecard(driverId: string, period: string = 'month'): Promise<any> {
+  async getDriverScorecard(
+    driverId: string,
+    period: string = "month",
+  ): Promise<any> {
     const queryParams = new URLSearchParams({ period });
-    const response = await this.request('GET', `/drivers/${driverId}/scorecard?${queryParams}`);
+    const response = await this.request(
+      "GET",
+      `/drivers/${driverId}/scorecard?${queryParams}`,
+    );
     return {
       driverId,
       safetyScore: response.safety_score,
@@ -172,11 +192,11 @@ export class OneStepGPSClient {
    * Get fuel monitoring data
    */
   async getFuelLevel(vehicleId: string): Promise<any> {
-    const response = await this.request('GET', `/assets/${vehicleId}/fuel`);
+    const response = await this.request("GET", `/assets/${vehicleId}/fuel`);
     return {
       externalVehicleId: vehicleId,
       fuelLevel: response.level_percent,
-      fuelUnit: response.unit || 'gallons',
+      fuelUnit: response.unit || "gallons",
       fuelCapacity: response.capacity,
       timestamp: new Date(response.timestamp),
     };
@@ -194,7 +214,10 @@ export class OneStepGPSClient {
       start: startDate.toISOString(),
       end: endDate.toISOString(),
     });
-    const response = await this.request('GET', `/assets/${vehicleId}/fuel-consumption?${queryParams}`);
+    const response = await this.request(
+      "GET",
+      `/assets/${vehicleId}/fuel-consumption?${queryParams}`,
+    );
     return {
       vehicleId,
       totalFuelUsed: response.total_fuel,
@@ -217,20 +240,23 @@ export class OneStepGPSClient {
       end: endDate.toISOString(),
     });
 
-    const response = await this.request('GET', `/assets/${vehicleId}/safety-events?${queryParams}`);
+    const response = await this.request(
+      "GET",
+      `/assets/${vehicleId}/safety-events?${queryParams}`,
+    );
     return (response.events || []).map((event: any) => ({
       externalEventId: event.id,
       externalVehicleId: vehicleId,
       externalDriverId: event.driver_id,
       eventType: event.type,
-      severity: event.severity || 'warning',
+      severity: event.severity || "warning",
       latitude: event.lat,
       longitude: event.lng,
       speed: event.speed_mph
-        ? { value: event.speed_mph, unit: 'mph' as const }
+        ? { value: event.speed_mph, unit: "mph" as const }
         : undefined,
       speedLimit: event.speed_limit_mph
-        ? { value: event.speed_limit_mph, unit: 'mph' as const }
+        ? { value: event.speed_limit_mph, unit: "mph" as const }
         : undefined,
       timestamp: new Date(event.timestamp),
       description: event.description,

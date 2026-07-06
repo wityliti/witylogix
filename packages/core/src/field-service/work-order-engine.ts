@@ -111,7 +111,13 @@ export interface TimeEntry {
   timestamp: Date;
 
   /** Type of time entry. */
-  type: "CLOCK_IN" | "CLOCK_OUT" | "BREAK_START" | "BREAK_END" | "TRAVEL_START" | "TRAVEL_END";
+  type:
+    | "CLOCK_IN"
+    | "CLOCK_OUT"
+    | "BREAK_START"
+    | "BREAK_END"
+    | "TRAVEL_START"
+    | "TRAVEL_END";
 
   /** Duration (for break/travel end). */
   duration?: number;
@@ -170,7 +176,7 @@ export class WorkOrderLifecycle {
    */
   static transition(
     job: WorkOrder,
-    newStatus: WorkOrderStatus
+    newStatus: WorkOrderStatus,
   ): {
     success: boolean;
     job: WorkOrder;
@@ -233,7 +239,7 @@ export class PartsTracker {
    */
   static recordUsage(
     job: WorkOrder,
-    parts: WorkOrderPart[]
+    parts: WorkOrderPart[],
   ): {
     job: WorkOrder;
     reorderAlerts: string[];
@@ -250,7 +256,9 @@ export class PartsTracker {
     // Check for reorder thresholds (simplified)
     for (const part of parts) {
       if (part.quantity > 5) {
-        reorderAlerts.push(`High quantity used for part ${part.name} (${part.quantity}x)`);
+        reorderAlerts.push(
+          `High quantity used for part ${part.name} (${part.quantity}x)`,
+        );
       }
     }
 
@@ -297,7 +305,10 @@ export class PartsTracker {
   } {
     const uniqueParts = new Set(job.parts.map((p) => p.partId)).size;
     const totalQuantity = job.parts.reduce((sum, p) => sum + p.quantity, 0);
-    const partsCost = job.parts.reduce((sum, p) => sum + p.quantity * p.unitCost, 0);
+    const partsCost = job.parts.reduce(
+      (sum, p) => sum + p.quantity * p.unitCost,
+      0,
+    );
 
     return {
       partCount: job.parts.length,
@@ -317,10 +328,7 @@ export class TimeTracker {
   /**
    * Record time entry (clock in/out, break, travel).
    */
-  static recordEntry(
-    summary: TimeSummary,
-    entry: TimeEntry
-  ): TimeSummary {
+  static recordEntry(summary: TimeSummary, entry: TimeEntry): TimeSummary {
     const updated = {
       ...summary,
       entries: [...summary.entries, entry],
@@ -333,7 +341,10 @@ export class TimeTracker {
   /**
    * Clock in technician.
    */
-  static clockIn(jobId: string, location: { latitude: number; longitude: number }): TimeEntry {
+  static clockIn(
+    jobId: string,
+    location: { latitude: number; longitude: number },
+  ): TimeEntry {
     return {
       timestamp: new Date(),
       type: "CLOCK_IN",
@@ -344,7 +355,10 @@ export class TimeTracker {
   /**
    * Clock out technician.
    */
-  static clockOut(jobId: string, location: { latitude: number; longitude: number }): TimeEntry {
+  static clockOut(
+    jobId: string,
+    location: { latitude: number; longitude: number },
+  ): TimeEntry {
     return {
       timestamp: new Date(),
       type: "CLOCK_OUT",
@@ -375,7 +389,9 @@ export class TimeTracker {
 
     let totalTimeOnJob = 0;
     if (clockInTime && clockOutTime) {
-      totalTimeOnJob = Math.floor((clockOutTime.getTime() - clockInTime.getTime()) / 60000);
+      totalTimeOnJob = Math.floor(
+        (clockOutTime.getTime() - clockInTime.getTime()) / 60000,
+      );
     }
 
     const billableTime = totalTimeOnJob - breakTime;
@@ -409,7 +425,7 @@ export class SignatureCapture {
     job: WorkOrder,
     signerName: string,
     signatureData: string, // Base64 or S3 URL
-    type: "CUSTOMER" | "TECHNICIAN" = "CUSTOMER"
+    type: "CUSTOMER" | "TECHNICIAN" = "CUSTOMER",
   ): WorkOrder {
     const signature: SignatureData = {
       timestamp: new Date(),
@@ -464,9 +480,13 @@ export class InvoiceGenerator {
     technicianName: string,
     laborRatePerHour: number = 125,
     travelRatePerHour: number = 50,
-    taxRate: number = 0.08 // 8% sales tax
+    taxRate: number = 0.08, // 8% sales tax
   ): WorkOrderInvoice | null {
-    if (job.status !== "COMPLETED" || !job.scheduledStart || !job.scheduledEnd) {
+    if (
+      job.status !== "COMPLETED" ||
+      !job.scheduledStart ||
+      !job.scheduledEnd
+    ) {
       return null;
     }
 
@@ -570,14 +590,27 @@ export class SLAMonitor {
   /**
    * Calculate current SLA status for work order.
    */
-  static calculateStatus(job: WorkOrder, slaRule: { windows: Array<{ priority: string; responseTimeMinutes: number; completionTimeMinutes: number }> }): SLAStatus {
+  static calculateStatus(
+    job: WorkOrder,
+    slaRule: {
+      windows: Array<{
+        priority: string;
+        responseTimeMinutes: number;
+        completionTimeMinutes: number;
+      }>;
+    },
+  ): SLAStatus {
     const slaWindow = slaRule.windows.find((w) => w.priority === job.priority);
     if (!slaWindow) {
       throw new Error(`No SLA window defined for priority ${job.priority}`);
     }
 
-    const responseDeadline = new Date(job.createdAt.getTime() + slaWindow.responseTimeMinutes * 60 * 1000);
-    const completionDeadline = new Date(job.createdAt.getTime() + slaWindow.completionTimeMinutes * 60 * 1000);
+    const responseDeadline = new Date(
+      job.createdAt.getTime() + slaWindow.responseTimeMinutes * 60 * 1000,
+    );
+    const completionDeadline = new Date(
+      job.createdAt.getTime() + slaWindow.completionTimeMinutes * 60 * 1000,
+    );
 
     let breached = false;
     let breachType: "RESPONSE" | "COMPLETION" | undefined;
@@ -589,19 +622,38 @@ export class SLAMonitor {
     if (job.status === "CREATED" && now > responseDeadline) {
       breached = true;
       breachType = "RESPONSE";
-      minutesLate = Math.floor((now.getTime() - responseDeadline.getTime()) / 60000);
+      minutesLate = Math.floor(
+        (now.getTime() - responseDeadline.getTime()) / 60000,
+      );
     }
 
     // Check completion breach
-    if (["CREATED", "SCHEDULED", "DISPATCHED", "EN_ROUTE", "IN_PROGRESS"].includes(job.status) && now > completionDeadline) {
+    if (
+      [
+        "CREATED",
+        "SCHEDULED",
+        "DISPATCHED",
+        "EN_ROUTE",
+        "IN_PROGRESS",
+      ].includes(job.status) &&
+      now > completionDeadline
+    ) {
       breached = true;
       breachType = "COMPLETION";
-      minutesLate = Math.floor((now.getTime() - completionDeadline.getTime()) / 60000);
+      minutesLate = Math.floor(
+        (now.getTime() - completionDeadline.getTime()) / 60000,
+      );
     }
 
     // Calculate status percent (0-100)
     const timeSinceCreation = now.getTime() - job.createdAt.getTime();
-    const statusPercent = Math.min(100, Math.floor((timeSinceCreation / (slaWindow.completionTimeMinutes * 60 * 1000)) * 100));
+    const statusPercent = Math.min(
+      100,
+      Math.floor(
+        (timeSinceCreation / (slaWindow.completionTimeMinutes * 60 * 1000)) *
+          100,
+      ),
+    );
 
     return {
       jobId: job.id,
@@ -619,7 +671,9 @@ export class SLAMonitor {
   /**
    * Check if SLA needs escalation (at 80% and 100% thresholds).
    */
-  static getEscalationLevel(slaStatus: SLAStatus): "NONE" | "WARNING" | "CRITICAL" {
+  static getEscalationLevel(
+    slaStatus: SLAStatus,
+  ): "NONE" | "WARNING" | "CRITICAL" {
     if (slaStatus.breached) {
       return "CRITICAL";
     }
@@ -636,7 +690,13 @@ export class SLAMonitor {
    */
   static generateReport(
     jobs: WorkOrder[],
-    slaRule: { windows: Array<{ priority: string; responseTimeMinutes: number; completionTimeMinutes: number }> }
+    slaRule: {
+      windows: Array<{
+        priority: string;
+        responseTimeMinutes: number;
+        completionTimeMinutes: number;
+      }>;
+    },
   ): {
     totalJobs: number;
     compliantJobs: number;

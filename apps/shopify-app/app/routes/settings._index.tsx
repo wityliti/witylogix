@@ -103,7 +103,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     const response = await client.get<{ data: SettingsPageData }>(
-      "/api/v4/shops/me/settings"
+      "/api/v4/shops/me/settings",
     );
 
     return response.data;
@@ -158,7 +158,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
         {
           id: "key_1",
           name: "Production API Key",
-          maskedKey: "witylogix_live_\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022",
+          maskedKey:
+            "witylogix_live_\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022",
           createdAt: "2026-01-15",
           lastUsedAt: "2026-03-06",
         },
@@ -291,7 +292,9 @@ export default function Settings() {
             <Box padding="400">
               {selectedTab === 0 && <GeneralTab data={data.general} />}
               {selectedTab === 1 && <BrandingTab data={data.branding} />}
-              {selectedTab === 2 && <NotificationsTab data={data.notifications} />}
+              {selectedTab === 2 && (
+                <NotificationsTab data={data.notifications} />
+              )}
               {selectedTab === 3 && (
                 <APIKeysTab
                   data={data.apiKeys}
@@ -402,7 +405,11 @@ function BrandingTab({ data }: { data: BrandingSettings }) {
           autoComplete="off"
         />
         {data.logoUrl && (
-          <Box padding="300" background="bg-surface-secondary" borderRadius="200">
+          <Box
+            padding="300"
+            background="bg-surface-secondary"
+            borderRadius="200"
+          >
             <img
               src={data.logoUrl}
               alt="Logo"
@@ -430,11 +437,7 @@ function BrandingTab({ data }: { data: BrandingSettings }) {
             autoComplete="off"
           />
         </InlineGrid>
-        <Box
-          padding="400"
-          borderRadius="200"
-          background="bg-fill-info"
-        >
+        <Box padding="400" borderRadius="200" background="bg-fill-info">
           <BlockStack gap="200">
             <Text as="p" variant="headingSm" tone="text-inverse">
               Tracking Page Preview
@@ -469,7 +472,10 @@ function NotificationsTab({ data }: { data: NotificationSettings }) {
                 {event.channels.map((channel) => (
                   <Checkbox
                     key={channel.name}
-                    label={channel.name.charAt(0).toUpperCase() + channel.name.slice(1)}
+                    label={
+                      channel.name.charAt(0).toUpperCase() +
+                      channel.name.slice(1)
+                    }
                     name={`notification_${event.name}_${channel.name}`}
                     checked={channel.enabled}
                   />
@@ -522,18 +528,17 @@ function APIKeysTab({
         </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Form method="post" onSubmit={(e) => {
-          if (!confirm("Are you sure you want to revoke this key?")) {
-            e.preventDefault();
-          }
-        }}>
+        <Form
+          method="post"
+          onSubmit={(e) => {
+            if (!confirm("Are you sure you want to revoke this key?")) {
+              e.preventDefault();
+            }
+          }}
+        >
           <input type="hidden" name="intent" value="revoke-api-key" />
           <input type="hidden" name="keyId" value={key.id} />
-          <Button
-            submit
-            tone="critical"
-            size="slim"
-          >
+          <Button submit tone="critical" size="slim">
             Revoke
           </Button>
         </Form>
@@ -609,7 +614,9 @@ function BillingTab({ data }: { data: BillingInfo }) {
   const invoiceRows = data.invoices.map((invoice, index) => (
     <IndexTable.Row id={invoice.id} key={invoice.id} position={index}>
       <IndexTable.Cell>
-        <Text as="span" variant="bodySm">{invoice.id}</Text>
+        <Text as="span" variant="bodySm">
+          {invoice.id}
+        </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
         <Text as="span" variant="bodySm">
@@ -627,8 +634,8 @@ function BillingTab({ data }: { data: BillingInfo }) {
             invoice.status === "paid"
               ? "success"
               : invoice.status === "pending"
-              ? "warning"
-              : "critical"
+                ? "warning"
+                : "critical"
           }
         >
           {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
@@ -647,8 +654,8 @@ function BillingTab({ data }: { data: BillingInfo }) {
           </Text>
           <Text as="p" variant="bodyMd">
             You are currently on the <strong>{data.plan}</strong> plan with{" "}
-            <strong>{data.monthlyUsage.toLocaleString()}</strong> API calls used this
-            month.
+            <strong>{data.monthlyUsage.toLocaleString()}</strong> API calls used
+            this month.
           </Text>
 
           <Card>
@@ -658,7 +665,8 @@ function BillingTab({ data }: { data: BillingInfo }) {
                   Monthly Usage
                 </Text>
                 <Text as="span" variant="bodySm" tone="subdued">
-                  {Math.round(usagePercent)}% of {data.monthlyLimit.toLocaleString()}
+                  {Math.round(usagePercent)}% of{" "}
+                  {data.monthlyLimit.toLocaleString()}
                 </Text>
               </InlineStack>
               <ProgressBar
@@ -670,7 +678,8 @@ function BillingTab({ data }: { data: BillingInfo }) {
                   {data.monthlyUsage.toLocaleString()} calls used
                 </Text>
                 <Text as="span" variant="bodySm" tone="subdued">
-                  {(data.monthlyLimit - data.monthlyUsage).toLocaleString()} calls remaining
+                  {(data.monthlyLimit - data.monthlyUsage).toLocaleString()}{" "}
+                  calls remaining
                 </Text>
               </InlineStack>
             </BlockStack>
@@ -678,7 +687,9 @@ function BillingTab({ data }: { data: BillingInfo }) {
 
           <Text as="p" variant="bodySm">
             Next billing date:{" "}
-            <strong>{new Date(data.nextBillingDate).toLocaleDateString()}</strong>
+            <strong>
+              {new Date(data.nextBillingDate).toLocaleDateString()}
+            </strong>
           </Text>
         </BlockStack>
       </Card>

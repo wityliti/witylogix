@@ -80,7 +80,8 @@ export interface ConflictResolution {
 
 // ─── TEST DATA ───────────────────────────────────────────────────────────────
 
-const API_BASE_URL: string = process.env.API_BASE_URL || "http://localhost:3000/api/v4";
+const API_BASE_URL: string =
+  process.env.API_BASE_URL || "http://localhost:3000/api/v4";
 
 let mockIntegrations: Map<string, PlatformIntegration> = new Map();
 let mockSyncEvents: Map<string, SyncEvent> = new Map();
@@ -239,7 +240,8 @@ async function resolveConflict(
   conflictId: string,
   strategy: "priority" | "manual" | "merge",
 ): Promise<ConflictResolution> {
-  const conflict: ConflictResolution | undefined = mockConflicts.get(conflictId);
+  const conflict: ConflictResolution | undefined =
+    mockConflicts.get(conflictId);
   if (!conflict) throw new Error(`Conflict ${conflictId} not found`);
 
   conflict.resolutionStrategy = strategy;
@@ -344,7 +346,8 @@ describe("E-Commerce Sync E2E Tests", () => {
 
   describe("WooCommerce Integration", () => {
     it("should sync woocommerce product inventory", async () => {
-      const product: WooCommerceProductWebhook = createWooCommerceProductWebhook();
+      const product: WooCommerceProductWebhook =
+        createWooCommerceProductWebhook();
 
       const inventory: InventorySync = await syncWooCommerceProduct(product);
 
@@ -354,9 +357,10 @@ describe("E-Commerce Sync E2E Tests", () => {
     });
 
     it("should update inventory on woocommerce stock change", async () => {
-      const product: WooCommerceProductWebhook = createWooCommerceProductWebhook({
-        stock_quantity: 100,
-      });
+      const product: WooCommerceProductWebhook =
+        createWooCommerceProductWebhook({
+          stock_quantity: 100,
+        });
 
       let inventory: InventorySync = await syncWooCommerceProduct(product);
       expect(inventory.quantity).toBe(100);
@@ -372,7 +376,8 @@ describe("E-Commerce Sync E2E Tests", () => {
     });
 
     it("should track woocommerce product sync status", async () => {
-      const product: WooCommerceProductWebhook = createWooCommerceProductWebhook();
+      const product: WooCommerceProductWebhook =
+        createWooCommerceProductWebhook();
 
       const inventory: InventorySync = await syncWooCommerceProduct(product);
 
@@ -381,9 +386,10 @@ describe("E-Commerce Sync E2E Tests", () => {
     });
 
     it("should handle out of stock products", async () => {
-      const product: WooCommerceProductWebhook = createWooCommerceProductWebhook({
-        stock_quantity: 0,
-      });
+      const product: WooCommerceProductWebhook =
+        createWooCommerceProductWebhook({
+          stock_quantity: 0,
+        });
 
       const inventory: InventorySync = await syncWooCommerceProduct(product);
 
@@ -394,7 +400,8 @@ describe("E-Commerce Sync E2E Tests", () => {
 
   describe("Magento Integration", () => {
     it("should process magento fulfillment webhook", async () => {
-      const webhook: MagentoFulfillmentWebhook = createMagentoFulfillmentWebhook();
+      const webhook: MagentoFulfillmentWebhook =
+        createMagentoFulfillmentWebhook();
 
       const push: FulfillmentPush = await pushMagentoFulfillment(webhook);
 
@@ -404,7 +411,8 @@ describe("E-Commerce Sync E2E Tests", () => {
     });
 
     it("should push tracking number back to magento", async () => {
-      const webhook: MagentoFulfillmentWebhook = createMagentoFulfillmentWebhook();
+      const webhook: MagentoFulfillmentWebhook =
+        createMagentoFulfillmentWebhook();
 
       const push: FulfillmentPush = await pushMagentoFulfillment(webhook);
 
@@ -414,7 +422,8 @@ describe("E-Commerce Sync E2E Tests", () => {
     });
 
     it("should retry failed fulfillment push", async () => {
-      const webhook: MagentoFulfillmentWebhook = createMagentoFulfillmentWebhook();
+      const webhook: MagentoFulfillmentWebhook =
+        createMagentoFulfillmentWebhook();
 
       const push: FulfillmentPush = await pushMagentoFulfillment(webhook);
       expect(push.status).toBe("pending");
@@ -424,12 +433,15 @@ describe("E-Commerce Sync E2E Tests", () => {
       push.pushedAt = new Date();
       mockFulfillmentPushes.set(push.id, push);
 
-      const updated: FulfillmentPush | undefined = mockFulfillmentPushes.get(push.id);
+      const updated: FulfillmentPush | undefined = mockFulfillmentPushes.get(
+        push.id,
+      );
       expect(updated?.status).toBe("delivered");
     });
 
     it("should handle magento webhook failure", async () => {
-      const webhook: MagentoFulfillmentWebhook = createMagentoFulfillmentWebhook();
+      const webhook: MagentoFulfillmentWebhook =
+        createMagentoFulfillmentWebhook();
 
       const push: FulfillmentPush = await pushMagentoFulfillment(webhook);
 
@@ -437,7 +449,9 @@ describe("E-Commerce Sync E2E Tests", () => {
       push.status = "failed";
       mockFulfillmentPushes.set(push.id, push);
 
-      const failed: FulfillmentPush | undefined = mockFulfillmentPushes.get(push.id);
+      const failed: FulfillmentPush | undefined = mockFulfillmentPushes.get(
+        push.id,
+      );
       expect(failed?.status).toBe("failed");
     });
   });
@@ -534,7 +548,9 @@ describe("E-Commerce Sync E2E Tests", () => {
         "manual",
       );
 
-      expect(resolved.resolvedAt?.getTime()).toBeGreaterThan(startTime.getTime());
+      expect(resolved.resolvedAt?.getTime()).toBeGreaterThan(
+        startTime.getTime(),
+      );
     });
   });
 

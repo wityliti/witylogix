@@ -15,7 +15,7 @@ import {
   RedisStreamConfig,
   StreamMessage,
   RedisStreamError,
-} from './types.js';
+} from "./types.js";
 
 export class RedisStreamAdapter {
   private config: RedisStreamConfig;
@@ -40,7 +40,7 @@ export class RedisStreamAdapter {
     try {
       // Ensure Redis connection is available
       if (!this.config.redis) {
-        throw new RedisStreamError('Redis client not configured');
+        throw new RedisStreamError("Redis client not configured");
       }
 
       // Test connection
@@ -69,7 +69,7 @@ export class RedisStreamAdapter {
       // XADD returns the message ID
       const messageId = await this.config.redis.xadd(
         streamKey,
-        '*', // Auto-generate ID
+        "*", // Auto-generate ID
         ...messageData,
       );
 
@@ -98,15 +98,15 @@ export class RedisStreamAdapter {
       // Create consumer group, starting from latest message
       // MKSTREAM creates the stream if it doesn't exist
       await this.config.redis.xgroup(
-        'CREATE',
+        "CREATE",
         streamKey,
         this.config.consumerGroup,
-        '$',
-        'MKSTREAM',
+        "$",
+        "MKSTREAM",
       );
     } catch (error) {
       // Group already exists - this is expected and not an error
-      if (error instanceof Error && !error.message.includes('BUSYGROUP')) {
+      if (error instanceof Error && !error.message.includes("BUSYGROUP")) {
         throw new RedisStreamError(
           `Failed to create consumer group: ${error.message}`,
         );
@@ -139,16 +139,16 @@ export class RedisStreamAdapter {
     try {
       // XREADGROUP reads from consumer group with blocking
       const messages = await this.config.redis.xreadgroup(
-        'GROUP',
+        "GROUP",
         this.config.consumerGroup,
         this.config.consumerName,
-        'BLOCK',
+        "BLOCK",
         timeout,
-        'COUNT',
+        "COUNT",
         count,
-        'STREAMS',
+        "STREAMS",
         streamKey,
-        '>',
+        ">",
       );
 
       if (!messages || messages.length === 0) {
@@ -222,8 +222,8 @@ export class RedisStreamAdapter {
       const pending = await this.config.redis.xpending(
         streamKey,
         this.config.consumerGroup,
-        '-',
-        '+',
+        "-",
+        "+",
         count,
       );
 
@@ -283,15 +283,11 @@ export class RedisStreamAdapter {
         this.config.consumerName,
         minIdleMs,
         ...messageIds,
-        'JUSTID', // Return just the IDs
+        "JUSTID", // Return just the IDs
       );
 
       // Now fetch the full messages
-      const messages = await this.config.redis.xrange(
-        streamKey,
-        '-',
-        '+',
-      );
+      const messages = await this.config.redis.xrange(streamKey, "-", "+");
 
       return messages
         .filter((msg: StreamMessage) => claimed.includes(msg[0]))
@@ -325,7 +321,7 @@ export class RedisStreamAdapter {
     const streamKey = this.getStreamKey(eventType);
 
     try {
-      const info = await this.config.redis.xinfo('STREAM', streamKey);
+      const info = await this.config.redis.xinfo("STREAM", streamKey);
 
       // Parse XINFO output (returns array of [key, value, ...])
       const result: any = {};
@@ -335,32 +331,32 @@ export class RedisStreamAdapter {
 
       return {
         length: result.length || 0,
-        radixTreeKeys: result['radix-tree-keys'] || 0,
-        radixTreeNodes: result['radix-tree-nodes'] || 0,
+        radixTreeKeys: result["radix-tree-keys"] || 0,
+        radixTreeNodes: result["radix-tree-nodes"] || 0,
         groups: result.groups || 0,
-        lastGeneratedId: result['last-generated-id'] || '',
-        firstEntry: result['first-entry']
+        lastGeneratedId: result["last-generated-id"] || "",
+        firstEntry: result["first-entry"]
           ? {
-              id: result['first-entry'][0],
-              data: this.convertArrayToObject(result['first-entry'][1]),
+              id: result["first-entry"][0],
+              data: this.convertArrayToObject(result["first-entry"][1]),
             }
           : undefined,
-        lastEntry: result['last-entry']
+        lastEntry: result["last-entry"]
           ? {
-              id: result['last-entry'][0],
-              data: this.convertArrayToObject(result['last-entry'][1]),
+              id: result["last-entry"][0],
+              data: this.convertArrayToObject(result["last-entry"][1]),
             }
           : undefined,
       };
     } catch (error) {
       // Stream doesn't exist yet
-      if (error instanceof Error && error.message.includes('no such key')) {
+      if (error instanceof Error && error.message.includes("no such key")) {
         return {
           length: 0,
           radixTreeKeys: 0,
           radixTreeNodes: 0,
           groups: 0,
-          lastGeneratedId: '',
+          lastGeneratedId: "",
         };
       }
       throw new RedisStreamError(
@@ -372,7 +368,10 @@ export class RedisStreamAdapter {
   /**
    * Delete a consumer from the group
    */
-  async deleteConsumer(eventType: string, consumerName: string): Promise<number> {
+  async deleteConsumer(
+    eventType: string,
+    consumerName: string,
+  ): Promise<number> {
     if (!this.isInitialized) {
       await this.initialize();
     }
@@ -382,7 +381,7 @@ export class RedisStreamAdapter {
     try {
       // Returns number of pending messages transferred to other consumers
       return await this.config.redis.xgroup(
-        'DELCONSUMER',
+        "DELCONSUMER",
         streamKey,
         this.config.consumerGroup,
         consumerName,
@@ -406,7 +405,7 @@ export class RedisStreamAdapter {
 
     try {
       const result = await this.config.redis.xgroup(
-        'DESTROY',
+        "DESTROY",
         streamKey,
         this.config.consumerGroup,
       );
@@ -428,7 +427,7 @@ export class RedisStreamAdapter {
     try {
       await this.config.redis.xtrim(
         streamKey,
-        'MAXLEN',
+        "MAXLEN",
         this.config.maxStreamLength,
       );
     } catch (error) {
@@ -454,9 +453,9 @@ export class RedisStreamAdapter {
       timestamp: event.timestamp,
       correlationId: event.correlationId,
       schemaVersion: event.schemaVersion || 1,
-      traceId: event.traceId || '',
-      parentEventId: event.parentEventId || '',
-      metadata: event.metadata ? JSON.stringify(event.metadata) : '{}',
+      traceId: event.traceId || "",
+      parentEventId: event.parentEventId || "",
+      metadata: event.metadata ? JSON.stringify(event.metadata) : "{}",
       data: JSON.stringify(event.data),
     };
 

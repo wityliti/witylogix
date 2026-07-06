@@ -48,14 +48,14 @@ Production-ready configuration infrastructure for the Witylogix platform.
 
 ### Tests
 
-- **__tests__/env-validator.test.ts** — Environment validation tests
+- ****tests**/env-validator.test.ts** — Environment validation tests
   - Validation success/failure cases
   - Type coercion verification
   - Default values application
   - Error message redaction
   - 10+ test cases
 
-- **__tests__/feature-flags.test.ts** — Feature flag tests
+- ****tests**/feature-flags.test.ts** — Feature flag tests
   - Environment-specific defaults
   - Tenant overrides
   - Percentage rollout determinism
@@ -71,15 +71,15 @@ import {
   isFeatureEnabled,
   FeatureFlag,
   SecretsManager,
-  DeploymentChecker
-} from '@witylogix/core/config';
+  DeploymentChecker,
+} from "@witylogix/core/config";
 
 // Validated environment
 const port = env.PORT; // number (with defaults)
 
 // Nested configuration
 const config = getConfig();
-const poolSize = config.get('database.poolSize');
+const poolSize = config.get("database.poolSize");
 
 // Feature flags
 if (isFeatureEnabled(FeatureFlag.MFA_REQUIRED)) {
@@ -87,8 +87,8 @@ if (isFeatureEnabled(FeatureFlag.MFA_REQUIRED)) {
 }
 
 // Secrets
-const secrets = new SecretsManager('environment');
-const key = await secrets.getSecret('JWT_SECRET');
+const secrets = new SecretsManager("environment");
+const key = await secrets.getSecret("JWT_SECRET");
 
 // Pre-deployment checks
 const checker = new DeploymentChecker();
@@ -101,12 +101,14 @@ if (!report.canDeploy) process.exit(1);
 See `.env.example` in the root for complete list.
 
 **Required in all environments:**
+
 - `DATABASE_URL`
 - `REDIS_URL`
 - `JWT_SECRET`
 - `APP_URL`
 
 **Environment-specific:**
+
 - Production: `SENTRY_DSN`, `STRIPE_SECRET_KEY`, etc.
 - Staging: Subset of production keys
 - Development: Minimal, with defaults
@@ -143,16 +145,17 @@ npm test -- packages/core/src/config/__tests__/feature-flags.test.ts
 All modules are fully typed:
 
 ```typescript
-import type { Env } from '@witylogix/core/config';
+import type { Env } from "@witylogix/core/config";
 
 const env: Env = validateEnv(process.env);
-env.PORT // number ✓
-env.DATABASE_URL // string ✓
+env.PORT; // number ✓
+env.DATABASE_URL; // string ✓
 ```
 
 ## Production Readiness
 
 This module is production-ready with:
+
 - Security best practices (secrets redaction)
 - Comprehensive error handling
 - Full test coverage

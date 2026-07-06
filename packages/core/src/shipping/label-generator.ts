@@ -12,7 +12,7 @@ import {
   Shipment,
   ShipmentLabel,
   ShippingError,
-} from './shipping-types';
+} from "./shipping-types";
 
 // ============================================================================
 // Types
@@ -23,10 +23,10 @@ import {
  */
 interface CarrierLabelFormats {
   /** Supported formats */
-  formats: ('PDF' | 'ZPL' | 'PNG')[];
+  formats: ("PDF" | "ZPL" | "PNG")[];
 
   /** Default format */
-  default: 'PDF' | 'ZPL' | 'PNG';
+  default: "PDF" | "ZPL" | "PNG";
 }
 
 /**
@@ -56,40 +56,40 @@ export interface BatchLabelResult {
  */
 const CARRIER_LABEL_FORMATS: Record<CarrierCode, CarrierLabelFormats> = {
   [CarrierCode.EASYPOST]: {
-    formats: ['PDF', 'ZPL', 'PNG'],
-    default: 'PDF',
+    formats: ["PDF", "ZPL", "PNG"],
+    default: "PDF",
   },
   [CarrierCode.SHIPPO]: {
-    formats: ['PDF', 'ZPL'],
-    default: 'PDF',
+    formats: ["PDF", "ZPL"],
+    default: "PDF",
   },
   [CarrierCode.SHIPSTATION]: {
-    formats: ['PDF'],
-    default: 'PDF',
+    formats: ["PDF"],
+    default: "PDF",
   },
   [CarrierCode.DHL]: {
-    formats: ['PDF', 'ZPL'],
-    default: 'PDF',
+    formats: ["PDF", "ZPL"],
+    default: "PDF",
   },
   [CarrierCode.USPS]: {
-    formats: ['PDF', 'ZPL'],
-    default: 'PDF',
+    formats: ["PDF", "ZPL"],
+    default: "PDF",
   },
   [CarrierCode.UPS]: {
-    formats: ['PDF', 'ZPL', 'PNG'],
-    default: 'PDF',
+    formats: ["PDF", "ZPL", "PNG"],
+    default: "PDF",
   },
   [CarrierCode.FEDEX]: {
-    formats: ['PDF', 'ZPL'],
-    default: 'PDF',
+    formats: ["PDF", "ZPL"],
+    default: "PDF",
   },
   [CarrierCode.DOORDASH]: {
-    formats: ['PDF'],
-    default: 'PDF',
+    formats: ["PDF"],
+    default: "PDF",
   },
   [CarrierCode.UBER]: {
-    formats: ['PDF'],
-    default: 'PDF',
+    formats: ["PDF"],
+    default: "PDF",
   },
 };
 
@@ -145,7 +145,7 @@ export class LabelGenerator {
   async createLabel(
     shipment: Shipment,
     carrier: CarrierCode,
-    format: 'PDF' | 'ZPL' | 'PNG' = 'PDF',
+    format: "PDF" | "ZPL" | "PNG" = "PDF",
   ): Promise<ShipmentLabel> {
     // Validate shipment data
     this.validateShipment(shipment);
@@ -167,7 +167,7 @@ export class LabelGenerator {
     // In a real implementation, this would call the carrier's API
     // For now, we'll throw an error
     throw new ShippingError(
-      'CARRIER_NOT_IMPLEMENTED',
+      "CARRIER_NOT_IMPLEMENTED",
       `Carrier ${carrier} label creation not yet implemented`,
       carrier,
     );
@@ -182,8 +182,8 @@ export class LabelGenerator {
   async voidLabel(labelId: string, carrier: CarrierCode): Promise<boolean> {
     if (!labelId) {
       throw new ShippingError(
-        'INVALID_LABEL_ID',
-        'Label ID is required',
+        "INVALID_LABEL_ID",
+        "Label ID is required",
         carrier,
       );
     }
@@ -191,7 +191,7 @@ export class LabelGenerator {
     const label = this.labelStore.get(labelId);
     if (!label) {
       throw new ShippingError(
-        'LABEL_NOT_FOUND',
+        "LABEL_NOT_FOUND",
         `Label ${labelId} not found`,
         carrier,
       );
@@ -199,7 +199,7 @@ export class LabelGenerator {
 
     if (label.carrier !== carrier) {
       throw new ShippingError(
-        'CARRIER_MISMATCH',
+        "CARRIER_MISMATCH",
         `Label belongs to ${label.carrier}, not ${carrier}`,
         carrier,
       );
@@ -217,11 +217,11 @@ export class LabelGenerator {
    * @param carrier - Carrier code
    * @returns Supported formats
    */
-  getLabelFormats(carrier: CarrierCode): ('PDF' | 'ZPL' | 'PNG')[] {
+  getLabelFormats(carrier: CarrierCode): ("PDF" | "ZPL" | "PNG")[] {
     const formats = CARRIER_LABEL_FORMATS[carrier];
     if (!formats) {
       throw new ShippingError(
-        'UNSUPPORTED_CARRIER',
+        "UNSUPPORTED_CARRIER",
         `Carrier ${carrier} is not supported`,
         carrier,
       );
@@ -240,7 +240,7 @@ export class LabelGenerator {
   async batchCreateLabels(
     shipments: Shipment[],
     carrier: CarrierCode,
-    format: 'PDF' | 'ZPL' | 'PNG' = 'PDF',
+    format: "PDF" | "ZPL" | "PNG" = "PDF",
   ): Promise<BatchLabelResult> {
     const startTime = Date.now();
 
@@ -263,12 +263,12 @@ export class LabelGenerator {
     results.forEach((result, index) => {
       const shipmentId = shipments[index].shipmentId;
 
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         labels.push(result.value);
-      } else if (result.status === 'rejected') {
+      } else if (result.status === "rejected") {
         failures.push({
           shipmentId,
-          error: result.reason?.message ?? 'Unknown error',
+          error: result.reason?.message ?? "Unknown error",
         });
       }
     });
@@ -315,37 +315,28 @@ export class LabelGenerator {
    */
   private validateShipment(shipment: Shipment): void {
     if (!shipment) {
-      throw new ShippingError(
-        'INVALID_SHIPMENT',
-        'Shipment is required',
-      );
+      throw new ShippingError("INVALID_SHIPMENT", "Shipment is required");
     }
 
     if (!shipment.shipmentId) {
-      throw new ShippingError(
-        'MISSING_SHIPMENT_ID',
-        'Shipment ID is required',
-      );
+      throw new ShippingError("MISSING_SHIPMENT_ID", "Shipment ID is required");
     }
 
     if (!shipment.origin) {
-      throw new ShippingError(
-        'MISSING_ORIGIN',
-        'Origin address is required',
-      );
+      throw new ShippingError("MISSING_ORIGIN", "Origin address is required");
     }
 
     if (!shipment.destination) {
       throw new ShippingError(
-        'MISSING_DESTINATION',
-        'Destination address is required',
+        "MISSING_DESTINATION",
+        "Destination address is required",
       );
     }
 
     if (!shipment.packages || shipment.packages.length === 0) {
       throw new ShippingError(
-        'NO_PACKAGES',
-        'At least one package is required',
+        "NO_PACKAGES",
+        "At least one package is required",
       );
     }
 
@@ -355,14 +346,14 @@ export class LabelGenerator {
 
       if (!pkg.weight || pkg.weight <= 0) {
         throw new ShippingError(
-          'INVALID_PACKAGE_WEIGHT',
+          "INVALID_PACKAGE_WEIGHT",
           `Package ${i + 1}: weight must be positive`,
         );
       }
 
       if (!pkg.weightUnit) {
         throw new ShippingError(
-          'MISSING_WEIGHT_UNIT',
+          "MISSING_WEIGHT_UNIT",
           `Package ${i + 1}: weight unit is required`,
         );
       }
@@ -373,12 +364,15 @@ export class LabelGenerator {
    * Validate addresses
    * In a real implementation, this would call address validation APIs
    */
-  private async validateAddresses(shipment: Shipment, carrier: CarrierCode): Promise<void> {
+  private async validateAddresses(
+    shipment: Shipment,
+    carrier: CarrierCode,
+  ): Promise<void> {
     // Validate origin address
-    this.validateAddress(shipment.origin, 'origin', carrier);
+    this.validateAddress(shipment.origin, "origin", carrier);
 
     // Validate destination address
-    this.validateAddress(shipment.destination, 'destination', carrier);
+    this.validateAddress(shipment.destination, "destination", carrier);
   }
 
   /**
@@ -391,7 +385,7 @@ export class LabelGenerator {
   ): void {
     if (!address.name) {
       throw new ShippingError(
-        'INVALID_ADDRESS',
+        "INVALID_ADDRESS",
         `${type} address: name is required`,
         carrier,
       );
@@ -399,7 +393,7 @@ export class LabelGenerator {
 
     if (!address.street1) {
       throw new ShippingError(
-        'INVALID_ADDRESS',
+        "INVALID_ADDRESS",
         `${type} address: street1 is required`,
         carrier,
       );
@@ -407,7 +401,7 @@ export class LabelGenerator {
 
     if (!address.city) {
       throw new ShippingError(
-        'INVALID_ADDRESS',
+        "INVALID_ADDRESS",
         `${type} address: city is required`,
         carrier,
       );
@@ -415,7 +409,7 @@ export class LabelGenerator {
 
     if (!address.state) {
       throw new ShippingError(
-        'INVALID_ADDRESS',
+        "INVALID_ADDRESS",
         `${type} address: state is required`,
         carrier,
       );
@@ -423,7 +417,7 @@ export class LabelGenerator {
 
     if (!address.zip) {
       throw new ShippingError(
-        'INVALID_ADDRESS',
+        "INVALID_ADDRESS",
         `${type} address: zip is required`,
         carrier,
       );
@@ -431,7 +425,7 @@ export class LabelGenerator {
 
     if (!address.country) {
       throw new ShippingError(
-        'INVALID_ADDRESS',
+        "INVALID_ADDRESS",
         `${type} address: country is required`,
         carrier,
       );
@@ -444,13 +438,13 @@ export class LabelGenerator {
    */
   private negotiateFormat(
     carrier: CarrierCode,
-    requestedFormat: 'PDF' | 'ZPL' | 'PNG',
-  ): 'PDF' | 'ZPL' | 'PNG' {
+    requestedFormat: "PDF" | "ZPL" | "PNG",
+  ): "PDF" | "ZPL" | "PNG" {
     const carrierFormats = CARRIER_LABEL_FORMATS[carrier];
 
     if (!carrierFormats) {
       throw new ShippingError(
-        'UNSUPPORTED_CARRIER',
+        "UNSUPPORTED_CARRIER",
         `Carrier ${carrier} is not supported`,
         carrier,
       );

@@ -100,6 +100,7 @@ railway logs --latest --build --lines 400 --json
 ```
 
 Common causes and fixes:
+
 - **Missing dependencies**: check lockfiles, verify package manager detection
 - **Wrong build command**: override with `railway environment edit --service-config <service> build.buildCommand "<command>"`
 - **Builder mismatch**: switch builders with `railway environment edit --service-config <service> build.builder RAILPACK`
@@ -115,6 +116,7 @@ railway logs --service <service> --since 1h --lines 400 --json
 ```
 
 Common causes and fixes:
+
 - **Bad start command**: override with `railway environment edit --service-config <service> deploy.startCommand "<command>"`
 - **Missing runtime variable**: check `railway variable list --service <service> --json` and set missing values
 - **Port mismatch**: the service must listen on `$PORT` (Railway injects this). Verify with logs.

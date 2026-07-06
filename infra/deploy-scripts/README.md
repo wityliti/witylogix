@@ -22,19 +22,19 @@ Use `-y` or `--yes` to skip prompts and add both Postgres and Redis: `railway.sh
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `railway.sh setup` | Provision Postgres + Redis + deploy API |
-| `railway.sh init` | Create new Railway project and link |
-| `railway.sh link` | Link to existing Railway project |
-| `railway.sh deploy` | Deploy the API (default) |
-| `railway.sh logs` | Stream deployment logs |
-| `railway.sh status` | Show deployment status |
-| `railway.sh redeploy` | Redeploy without uploading new code |
-| `railway.sh vars list` | List environment variables |
-| `railway.sh vars set KEY=val` | Set a variable |
-| `railway.sh open` | Open project in Railway dashboard |
-| `railway.sh domain` | Generate public domain for API |
+| Command                       | Description                             |
+| ----------------------------- | --------------------------------------- |
+| `railway.sh setup`            | Provision Postgres + Redis + deploy API |
+| `railway.sh init`             | Create new Railway project and link     |
+| `railway.sh link`             | Link to existing Railway project        |
+| `railway.sh deploy`           | Deploy the API (default)                |
+| `railway.sh logs`             | Stream deployment logs                  |
+| `railway.sh status`           | Show deployment status                  |
+| `railway.sh redeploy`         | Redeploy without uploading new code     |
+| `railway.sh vars list`        | List environment variables              |
+| `railway.sh vars set KEY=val` | Set a variable                          |
+| `railway.sh open`             | Open project in Railway dashboard       |
+| `railway.sh domain`           | Generate public domain for API          |
 
 ## Options
 

@@ -5,6 +5,7 @@ This document describes the production-grade Socket.io implementation for real-t
 ## Architecture Overview
 
 The Socket.io layer provides:
+
 - **Tenant isolation** via shop-specific rooms (`shop:{shopId}`)
 - **JWT authentication** on connection
 - **Granular subscriptions** for shipments and drivers
@@ -15,7 +16,9 @@ The Socket.io layer provides:
 ## Files Created
 
 ### 1. `/apps/api/src/lib/socket.ts` (Server)
+
 Production-grade Socket.io server initialization with:
+
 - JWT authentication middleware
 - Room management (shop, shipment, driver)
 - Connection tracking and stats
@@ -23,7 +26,9 @@ Production-grade Socket.io server initialization with:
 - Graceful shutdown support
 
 ### 2. `/apps/api/src/lib/events.ts` (Server)
+
 Helper functions for route handlers to emit events:
+
 - `emitShipmentCreated(data)`
 - `emitShipmentStatusChanged(data)`
 - `emitShipmentAssigned(data)`
@@ -32,13 +37,17 @@ Helper functions for route handlers to emit events:
 - `emitNotificationSent(data)`, `emitPaymentReceived(data)`, `emitActivityNew(data)`
 
 ### 3. `/packages/core/src/realtime/index.ts` (Shared)
+
 Type-safe event constants and types used by both API and dashboard:
+
 - `EVENTS` object with event name constants
 - Room naming helpers (`getShopRoom()`, `getShipmentRoom()`, etc.)
 - Type definitions for all event payloads
 
 ### 4. `/apps/dashboard/src/lib/socket.ts` (Client)
+
 React hook for real-time updates:
+
 - `useSocket(shopId)` hook
 - Automatic reconnection with exponential backoff
 - Type-safe event listeners
@@ -141,11 +150,16 @@ Then run: `pnpm install`
 Example: Update `/apps/api/src/routes/shipments.ts` to emit events:
 
 ```typescript
-import { emitShipmentCreated, emitShipmentStatusChanged } from "../lib/events.js";
+import {
+  emitShipmentCreated,
+  emitShipmentStatusChanged,
+} from "../lib/events.js";
 
 // In POST / (create shipment)
 const shipment = await prisma.shipment.create({
-  data: { /* ... */ },
+  data: {
+    /* ... */
+  },
 });
 
 // Emit to all clients in the shop
@@ -335,7 +349,9 @@ export function NotificationListener({ shopId }: { shopId: string }) {
 ### Shipment Events
 
 #### `shipment:created`
+
 Fired when a new shipment is created.
+
 ```typescript
 {
   id: string;
@@ -350,7 +366,9 @@ Fired when a new shipment is created.
 ```
 
 #### `shipment:status_changed`
+
 Fired when a shipment's status changes.
+
 ```typescript
 {
   // ... all shipment fields ...
@@ -361,7 +379,9 @@ Fired when a shipment's status changes.
 ```
 
 #### `shipment:assigned`
+
 Fired when a shipment is assigned to a driver.
+
 ```typescript
 {
   // ... all shipment fields ...
@@ -374,10 +394,13 @@ Fired when a shipment is assigned to a driver.
 ### Driver Events
 
 #### `driver:status_changed`
+
 Fired when a driver's status changes (ONLINE/OFFLINE/BREAK).
 
 #### `driver:location_updated`
+
 Fired when a driver's location is updated.
+
 ```typescript
 {
   id: string;
@@ -396,9 +419,11 @@ Fired when a driver's location is updated.
 ### Order Events
 
 #### `order:created`
+
 Fired when a new order is created.
 
 #### `order:status_changed`
+
 Fired when an order status changes.
 
 ### Other Events
@@ -411,7 +436,9 @@ Fired when an order status changes.
 ## Production Considerations
 
 ### Scaling with Redis Adapter
+
 The implementation uses Redis as a message bus for horizontal scaling:
+
 ```typescript
 const pubClient = redis.duplicate();
 const subClient = redis.duplicate();
@@ -422,13 +449,17 @@ ioServer.adapter(createAdapter(pubClient, subClient));
 This allows Socket.io to work across multiple server instances.
 
 ### Connection Limits
+
 Configure these in `setupSocketServer()` based on your infrastructure:
+
 - `pingInterval: 25000` - Server ping interval (ms)
 - `pingTimeout: 5000` - Time to wait for client pong (ms)
 - `maxHttpBufferSize: 1e6` - Max message size (1MB)
 
 ### Monitoring
+
 Access connection stats via:
+
 ```typescript
 import { getConnectionStats, getSystemHealth } from "./lib/socket";
 
@@ -440,7 +471,9 @@ const health = getSystemHealth();
 ```
 
 ### CORS Configuration
+
 Update CORS in `setupSocketServer()` for your production domain:
+
 ```typescript
 cors: {
   origin: process.env.DASHBOARD_URL, // e.g., "https://dashboard.witylogix.com"
@@ -451,13 +484,17 @@ cors: {
 ## Debugging
 
 ### Enable Debug Logging
+
 Set environment variable:
+
 ```bash
 DEBUG=socket.io:* npm run dev
 ```
 
 ### Check Connection Status
+
 In dashboard:
+
 ```typescript
 const socket = useSocket(shopId);
 console.log("Connected:", socket.isConnected);
@@ -466,6 +503,7 @@ console.log("Last event:", socket.lastEvent);
 ```
 
 ### Test Events in API
+
 ```bash
 curl -X POST http://localhost:3000/api/v4/shipments \
   -H "Authorization: Bearer YOUR_TOKEN" \
@@ -478,15 +516,18 @@ Watch the dashboard for real-time updates.
 ## Troubleshooting
 
 ### Connection Fails with "Missing authentication token"
+
 Ensure the dashboard stores the JWT token in `sessionStorage` or `localStorage` with key `auth_token`.
 
 ### Events Not Being Received
+
 1. Check that the socket is connected: `socket.isConnected === true`
 2. Verify subscription: `socket.subscribe(shopId)` was called
 3. Check browser console for errors
 4. Verify event name matches: use constants from `EVENTS` object
 
 ### High Memory Usage
+
 - Check `connectionStats` for unusual connection counts
 - Review Redis memory with `redis-cli INFO memory`
 - Verify no circular event loops

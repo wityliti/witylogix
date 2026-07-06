@@ -2,7 +2,7 @@
 
 /**
  * Firebase Cloud Messaging (FCM) Push Provider
- * 
+ *
  * Real FCM implementation using HTTP v1 API with support for:
  * - Single device push notifications
  * - Multicast delivery (up to 500 tokens per request)
@@ -17,7 +17,7 @@ import {
   MulticastPushResult,
   TenantPushConfig,
   DeployerPushConfig,
-} from './types';
+} from "./types";
 
 // Manual type definitions for Firebase Admin SDK
 interface FirebaseApp {
@@ -51,7 +51,11 @@ export class FCMProvider implements PushProvider {
    */
   private async getAccessToken(): Promise<string> {
     // If we have a valid cached token, return it
-    if (this.accessToken && this.tokenExpiresAt && Date.now() < this.tokenExpiresAt) {
+    if (
+      this.accessToken &&
+      this.tokenExpiresAt &&
+      Date.now() < this.tokenExpiresAt
+    ) {
       return this.accessToken;
     }
 
@@ -71,13 +75,17 @@ export class FCMProvider implements PushProvider {
       // );
 
       // For now, we'll use a placeholder
-      const token = Buffer.from(`${this.clientEmail}:${Date.now()}`).toString('base64');
+      const token = Buffer.from(`${this.clientEmail}:${Date.now()}`).toString(
+        "base64",
+      );
       this.accessToken = token;
       this.tokenExpiresAt = Date.now() + 3600000; // 1 hour
 
       return token;
     } catch (error) {
-      throw new Error(`Failed to generate access token: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to generate access token: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -108,7 +116,7 @@ export class FCMProvider implements PushProvider {
       // });
 
       // Mock implementation
-      const messageId = `projects/${this.projectId}/messages/${Buffer.from(token).toString('hex').substring(0, 32)}`;
+      const messageId = `projects/${this.projectId}/messages/${Buffer.from(token).toString("hex").substring(0, 32)}`;
 
       return {
         success: true,
@@ -126,7 +134,10 @@ export class FCMProvider implements PushProvider {
    * Send push notification to multiple devices (batched)
    * FCM supports up to 500 tokens per request
    */
-  async sendMulticast(tokens: string[], payload: PushPayload): Promise<MulticastPushResult> {
+  async sendMulticast(
+    tokens: string[],
+    payload: PushPayload,
+  ): Promise<MulticastPushResult> {
     const results: PushResult[] = [];
     let successCount = 0;
     let failureCount = 0;
@@ -163,7 +174,7 @@ export class FCMProvider implements PushProvider {
         for (const token of batch) {
           results.push({
             success: true,
-            messageId: `msg-${Buffer.from(token).toString('hex').substring(0, 16)}`,
+            messageId: `msg-${Buffer.from(token).toString("hex").substring(0, 16)}`,
           });
           successCount++;
         }
@@ -210,7 +221,7 @@ export class FCMProvider implements PushProvider {
       console.log(`Subscribed ${token} to topic ${topic}`);
     } catch (error) {
       throw new Error(
-        `Failed to subscribe to topic: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to subscribe to topic: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -229,7 +240,7 @@ export class FCMProvider implements PushProvider {
       console.log(`Unsubscribed ${token} from topic ${topic}`);
     } catch (error) {
       throw new Error(
-        `Failed to unsubscribe from topic: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to unsubscribe from topic: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -256,7 +267,7 @@ export class FCMProvider implements PushProvider {
       //   body: JSON.stringify({ message }),
       // });
 
-      const messageId = `projects/${this.projectId}/messages/${Buffer.from(topic).toString('hex').substring(0, 32)}`;
+      const messageId = `projects/${this.projectId}/messages/${Buffer.from(topic).toString("hex").substring(0, 32)}`;
 
       return {
         success: true,
@@ -293,7 +304,7 @@ export class FCMProvider implements PushProvider {
     // Add Android-specific config
     if (payload?.android) {
       message.android = {
-        priority: payload.android.priority || 'high',
+        priority: payload.android.priority || "high",
         ttl: `${payload.android.ttl || 86400}s`,
       };
     }
@@ -317,7 +328,7 @@ export class FCMProvider implements PushProvider {
  */
 export function resolveFCMCredentials(
   tenantConfig?: TenantPushConfig,
-  deployerConfig?: DeployerPushConfig
+  deployerConfig?: DeployerPushConfig,
 ): FCMConfig | null {
   // Tenant config takes precedence
   if (tenantConfig?.fcm) {

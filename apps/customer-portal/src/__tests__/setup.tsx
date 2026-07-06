@@ -1,6 +1,6 @@
-import * as matchers from '@testing-library/jest-dom/matchers';
-import { cleanup } from '@testing-library/react';
-import { afterEach, expect, vi } from 'vitest';
+import * as matchers from "@testing-library/jest-dom/matchers";
+import { cleanup } from "@testing-library/react";
+import { afterEach, expect, vi } from "vitest";
 
 expect.extend(matchers);
 
@@ -9,8 +9,8 @@ afterEach(() => {
 });
 
 // Mock next/navigation
-vi.mock('next/navigation', () => ({
-  usePathname: () => '/',
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
   useRouter: () => ({
     push: vi.fn(),
     back: vi.fn(),
@@ -19,12 +19,12 @@ vi.mock('next/navigation', () => ({
     replace: vi.fn(),
     prefetch: vi.fn(),
   }),
-  useParams: () => ({ id: '1' }),
+  useParams: () => ({ id: "1" }),
   useSearchParams: () => new URLSearchParams(),
 }));
 
 // Mock next/link
-vi.mock('next/link', () => ({
+vi.mock("next/link", () => ({
   default: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -39,13 +39,13 @@ class MockIntersectionObserver {
   disconnect = vi.fn();
 }
 
-Object.defineProperty(window, 'IntersectionObserver', {
+Object.defineProperty(window, "IntersectionObserver", {
   writable: true,
   value: MockIntersectionObserver,
 });
 
 // Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({
     matches: false,

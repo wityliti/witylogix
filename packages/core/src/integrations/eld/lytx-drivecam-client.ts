@@ -220,13 +220,15 @@ export class LytxDriveCamClient extends ELDAdapter {
    */
   async initialize(): Promise<void> {
     if (!this.clientId || !this.clientSecret) {
-      throw new Error("Lytx DriveCam OAuth2 credentials (clientId, clientSecret) are required");
+      throw new Error(
+        "Lytx DriveCam OAuth2 credentials (clientId, clientSecret) are required",
+      );
     }
 
     try {
       await this.obtainAccessToken();
       await this.executeWithRetry(() =>
-        this.makeRequest<{ account: { id: string } }>("GET", "/account")
+        this.makeRequest<{ account: { id: string } }>("GET", "/account"),
       );
       this.logEvent({
         type: "diagnostic-event",
@@ -244,7 +246,7 @@ export class LytxDriveCamClient extends ELDAdapter {
   async getDriverLogs(
     _driverId: string,
     _startDate: Date,
-    _endDate: Date
+    _endDate: Date,
   ): Promise<ELDDriverLog[]> {
     // Lytx DriveCam is not HOS-focused; this returns empty
     return [];
@@ -272,7 +274,7 @@ export class LytxDriveCamClient extends ELDAdapter {
   async setDutyStatus(
     _driverId: string,
     _status: DutyStatus,
-    _location?: { latitude: number; longitude: number }
+    _location?: { latitude: number; longitude: number },
   ): Promise<ELDDutyStatus> {
     return this.getDutyStatus(_driverId);
   }
@@ -280,7 +282,10 @@ export class LytxDriveCamClient extends ELDAdapter {
   /**
    * Get safety events as violations (translating video events to violation format).
    */
-  async getViolations(driverId: string, days: number = 30): Promise<ELDViolation[]> {
+  async getViolations(
+    driverId: string,
+    days: number = 30,
+  ): Promise<ELDViolation[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -289,7 +294,7 @@ export class LytxDriveCamClient extends ELDAdapter {
         startDate: startDate.toISOString(),
         endDate: new Date().toISOString(),
         limit: 1000,
-      })
+      }),
     );
 
     const mapLytxSeverity = (s: string): "warning" | "error" | "critical" => {
@@ -324,7 +329,7 @@ export class LytxDriveCamClient extends ELDAdapter {
    */
   async getVehicle(vehicleId: string): Promise<ELDVehicle> {
     const vehicle = await this.executeWithRetry(() =>
-      this.makeRequest<LytxVehicle>("GET", `/vehicles/${vehicleId}`)
+      this.makeRequest<LytxVehicle>("GET", `/vehicles/${vehicleId}`),
     );
 
     return {
@@ -350,7 +355,7 @@ export class LytxDriveCamClient extends ELDAdapter {
     const vehicles = await this.executeWithRetry(() =>
       this.makeRequest<LytxVehicle[]>("GET", "/vehicles", {
         limit: 1000,
-      })
+      }),
     );
 
     return Promise.all(vehicles.map((v) => this.getVehicle(v.vehicleId)));
@@ -393,7 +398,7 @@ export class LytxDriveCamClient extends ELDAdapter {
         startDate: startDate.toISOString(),
         endDate: new Date().toISOString(),
         limit: 1000,
-      })
+      }),
     );
   }
 
@@ -402,14 +407,23 @@ export class LytxDriveCamClient extends ELDAdapter {
    */
   async requestVideoClip(eventId: string): Promise<LytxVideoClip> {
     return this.executeWithRetry(() =>
-      this.makeRequest<LytxVideoClip>("POST", `/events/${eventId}/video-clip`, null, {})
+      this.makeRequest<LytxVideoClip>(
+        "POST",
+        `/events/${eventId}/video-clip`,
+        null,
+        {},
+      ),
     );
   }
 
   /**
    * Download video clip (returns signed URL).
    */
-  async downloadVideoClip(eventId: string, startTime?: Date, endTime?: Date): Promise<string> {
+  async downloadVideoClip(
+    eventId: string,
+    startTime?: Date,
+    endTime?: Date,
+  ): Promise<string> {
     const response = await this.executeWithRetry(() =>
       this.makeRequest<{ downloadUrl: string }>(
         "POST",
@@ -418,8 +432,8 @@ export class LytxDriveCamClient extends ELDAdapter {
         {
           startTime: startTime?.toISOString(),
           endTime: endTime?.toISOString(),
-        }
-      )
+        },
+      ),
     );
     return response.downloadUrl;
   }
@@ -429,7 +443,7 @@ export class LytxDriveCamClient extends ELDAdapter {
    */
   async getDriver(driverId: string): Promise<LytxDriver> {
     return this.executeWithRetry(() =>
-      this.makeRequest<LytxDriver>("GET", `/drivers/${driverId}`)
+      this.makeRequest<LytxDriver>("GET", `/drivers/${driverId}`),
     );
   }
 
@@ -440,18 +454,25 @@ export class LytxDriveCamClient extends ELDAdapter {
     return this.executeWithRetry(() =>
       this.makeRequest<LytxDriver[]>("GET", "/drivers", {
         limit: 1000,
-      })
+      }),
     );
   }
 
   /**
    * Get safety score for driver.
    */
-  async getSafetyScore(driverId: string, period: string = "monthly"): Promise<LytxSafetyScore> {
+  async getSafetyScore(
+    driverId: string,
+    period: string = "monthly",
+  ): Promise<LytxSafetyScore> {
     return this.executeWithRetry(() =>
-      this.makeRequest<LytxSafetyScore>("GET", `/drivers/${driverId}/safety-score`, {
-        period,
-      })
+      this.makeRequest<LytxSafetyScore>(
+        "GET",
+        `/drivers/${driverId}/safety-score`,
+        {
+          period,
+        },
+      ),
     );
   }
 
@@ -462,14 +483,17 @@ export class LytxDriveCamClient extends ELDAdapter {
     return this.executeWithRetry(() =>
       this.makeRequest<any>("GET", "/fleet/safety-score", {
         period,
-      })
+      }),
     );
   }
 
   /**
    * Create coaching session from event.
    */
-  async createCoachingSession(eventId: string, topic?: string): Promise<LytxCoachingSession> {
+  async createCoachingSession(
+    eventId: string,
+    topic?: string,
+  ): Promise<LytxCoachingSession> {
     return this.executeWithRetry(() =>
       this.makeRequest<LytxCoachingSession>(
         "POST",
@@ -477,8 +501,8 @@ export class LytxDriveCamClient extends ELDAdapter {
         null,
         {
           topic: topic || "Safety Coaching",
-        }
-      )
+        },
+      ),
     );
   }
 
@@ -487,7 +511,10 @@ export class LytxDriveCamClient extends ELDAdapter {
    */
   async getCoachingSession(sessionId: string): Promise<LytxCoachingSession> {
     return this.executeWithRetry(() =>
-      this.makeRequest<LytxCoachingSession>("GET", `/coaching-sessions/${sessionId}`)
+      this.makeRequest<LytxCoachingSession>(
+        "GET",
+        `/coaching-sessions/${sessionId}`,
+      ),
     );
   }
 
@@ -496,7 +523,7 @@ export class LytxDriveCamClient extends ELDAdapter {
    */
   async completeCoachingSession(
     sessionId: string,
-    signOffBy: string
+    signOffBy: string,
   ): Promise<LytxCoachingSession> {
     return this.executeWithRetry(() =>
       this.makeRequest<LytxCoachingSession>(
@@ -505,26 +532,36 @@ export class LytxDriveCamClient extends ELDAdapter {
         null,
         {
           signedOffBy: signOffBy,
-        }
-      )
+        },
+      ),
     );
   }
 
   /**
    * Get safety report for driver.
    */
-  async getSafetyReport(driverId: string, period: string = "monthly"): Promise<LytxSafetyReport> {
+  async getSafetyReport(
+    driverId: string,
+    period: string = "monthly",
+  ): Promise<LytxSafetyReport> {
     return this.executeWithRetry(() =>
-      this.makeRequest<LytxSafetyReport>("GET", `/drivers/${driverId}/safety-report`, {
-        period,
-      })
+      this.makeRequest<LytxSafetyReport>(
+        "GET",
+        `/drivers/${driverId}/safety-report`,
+        {
+          period,
+        },
+      ),
     );
   }
 
   /**
    * Request live camera feed.
    */
-  async requestLiveStream(vehicleId: string, durationSeconds: number = 300): Promise<LytxLiveStream> {
+  async requestLiveStream(
+    vehicleId: string,
+    durationSeconds: number = 300,
+  ): Promise<LytxLiveStream> {
     return this.executeWithRetry(() =>
       this.makeRequest<LytxLiveStream>(
         "POST",
@@ -532,8 +569,8 @@ export class LytxDriveCamClient extends ELDAdapter {
         null,
         {
           durationSeconds,
-        }
-      )
+        },
+      ),
     );
   }
 
@@ -545,7 +582,7 @@ export class LytxDriveCamClient extends ELDAdapter {
       this.makeRequest<LytxAlert[]>("GET", "/alerts", {
         ...(severity && { severity }),
         limit: 1000,
-      })
+      }),
     );
   }
 
@@ -554,7 +591,12 @@ export class LytxDriveCamClient extends ELDAdapter {
    */
   async acknowledgeAlert(alertId: string): Promise<void> {
     await this.executeWithRetry(() =>
-      this.makeRequest<void>("POST", `/alerts/${alertId}/acknowledge`, null, {})
+      this.makeRequest<void>(
+        "POST",
+        `/alerts/${alertId}/acknowledge`,
+        null,
+        {},
+      ),
     );
   }
 
@@ -594,7 +636,7 @@ export class LytxDriveCamClient extends ELDAdapter {
   async healthCheck(): Promise<boolean> {
     try {
       await this.executeWithRetry(() =>
-        this.makeRequest<{ account: { id: string } }>("GET", "/account")
+        this.makeRequest<{ account: { id: string } }>("GET", "/account"),
       );
       return true;
     } catch {
@@ -645,7 +687,7 @@ export class LytxDriveCamClient extends ELDAdapter {
     method: string,
     path: string,
     params?: Record<string, unknown> | null,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     await this.obtainAccessToken();
 
@@ -669,7 +711,9 @@ export class LytxDriveCamClient extends ELDAdapter {
     });
 
     if (!response.ok) {
-      throw new Error(`Lytx API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Lytx API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     return response.json() as Promise<T>;

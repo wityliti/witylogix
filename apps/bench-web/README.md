@@ -20,13 +20,13 @@ Server-side only API calls — the `BENCH_SERVICE_TOKEN` never reaches the brows
 
 ## Scope split vs Phase 1 Bench CLI
 
-| | Bench CLI (`@witylogix/bench`) | Cloud control plane (`@witylogix/bench-web`) |
-|---|---|---|
-| Audience | Self-hosters, Witylogix DevOps | Witylogix team (Phase 1) → customers (Phase 2) |
-| Runs on | Operator laptop or CI | Our private deploy only |
-| Data | Single installation | Many installations |
-| Deploy | `npx @witylogix/bench init` | `pnpm --filter @witylogix/bench-web build` |
-| License | MIT (planned) / AGPL-3.0 (current) | Source-available / private |
+|          | Bench CLI (`@witylogix/bench`)     | Cloud control plane (`@witylogix/bench-web`)   |
+| -------- | ---------------------------------- | ---------------------------------------------- |
+| Audience | Self-hosters, Witylogix DevOps     | Witylogix team (Phase 1) → customers (Phase 2) |
+| Runs on  | Operator laptop or CI              | Our private deploy only                        |
+| Data     | Single installation                | Many installations                             |
+| Deploy   | `npx @witylogix/bench init`        | `pnpm --filter @witylogix/bench-web build`     |
+| License  | MIT (planned) / AGPL-3.0 (current) | Source-available / private                     |
 
 ## Roadmap
 

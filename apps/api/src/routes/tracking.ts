@@ -47,7 +47,12 @@ const trackingEtaRateLimiter = createRateLimiter({
 
 // ─── Haversine distance helper ──────────────────────────────
 
-function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+function haversineKm(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number,
+): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLng = ((lng2 - lng1) * Math.PI) / 180;
@@ -66,63 +71,70 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── GET TRACKING INFO ─────────────────────────────────────
 
-  fastify.get("/token/:trackingToken", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { trackingToken } = request.params as { trackingToken: string };
+  fastify.get(
+    "/token/:trackingToken",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { trackingToken } = request.params as { trackingToken: string };
 
-    const order = await prisma.order.findUnique({
-      where: { trackingToken },
-      select: {
-        id: true,
-        status: true,
-        customerName: true,
-        addressLine1: true,
-        city: true,
-        province: true,
-        postalCode: true,
-        deliveryDate: true,
-        estimatedArrival: true,
-        actualDelivery: true,
-        externalOrderNumber: true,
-        timeSlot: {
-          select: { name: true, startTime: true, endTime: true },
-        },
-        driver: {
-          select: {
-            id: true,
-            name: true,
-            vehicleType: true,
-            // Do NOT expose phone, email, or other PII
+      const order = await prisma.order.findUnique({
+        where: { trackingToken },
+        select: {
+          id: true,
+          status: true,
+          customerName: true,
+          addressLine1: true,
+          city: true,
+          province: true,
+          postalCode: true,
+          deliveryDate: true,
+          estimatedArrival: true,
+          actualDelivery: true,
+          externalOrderNumber: true,
+          timeSlot: {
+            select: { name: true, startTime: true, endTime: true },
+          },
+          driver: {
+            select: {
+              id: true,
+              name: true,
+              vehicleType: true,
+              // Do NOT expose phone, email, or other PII
+            },
+          },
+          proofOfDelivery: {
+            select: {
+              photoUrls: true,
+              recipientName: true,
+              deliveredAt: true,
+            },
+          },
+          shop: {
+            select: {
+              name: true,
+              settings: true, // branding info for tracking page
+            },
           },
         },
-        proofOfDelivery: {
-          select: {
-            photoUrls: true,
-            recipientName: true,
-            deliveredAt: true,
-          },
-        },
-        shop: {
-          select: {
-            name: true,
-            settings: true, // branding info for tracking page
-          },
-        },
-      },
-    });
+      });
 
-    if (!order) {
-      throw new NotFoundError("Tracking", trackingToken);
-    }
+      if (!order) {
+        throw new NotFoundError("Tracking", trackingToken);
+      }
 
-    // Get driver location if delivery is in progress
-    let driverLocation = null;
-    if (
-      order.driver &&
-      ["OUT_FOR_DELIVERY", "ARRIVED"].includes(order.status)
-    ) {
-      const [loc] = await prisma.$queryRaw<
-        Array<{ lat: number; lng: number; heading: number | null; last_at: Date | null }>
-      >`
+      // Get driver location if delivery is in progress
+      let driverLocation = null;
+      if (
+        order.driver &&
+        ["OUT_FOR_DELIVERY", "ARRIVED"].includes(order.status)
+      ) {
+        const [loc] = await prisma.$queryRaw<
+          Array<{
+            lat: number;
+            lng: number;
+            heading: number | null;
+            last_at: Date | null;
+          }>
+        >`
         SELECT
           ST_Y(current_location) as lat,
           ST_X(current_location) as lng,
@@ -133,50 +145,51 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
           AND current_location IS NOT NULL
       `;
 
-      if (loc) {
-        driverLocation = {
-          latitude: loc.lat,
-          longitude: loc.lng,
-          heading: loc.heading,
-          updatedAt: loc.last_at,
-        };
+        if (loc) {
+          driverLocation = {
+            latitude: loc.lat,
+            longitude: loc.lng,
+            heading: loc.heading,
+            updatedAt: loc.last_at,
+          };
+        }
       }
-    }
 
-    // Build status timeline
-    const timeline = buildTimeline(order.status);
+      // Build status timeline
+      const timeline = buildTimeline(order.status);
 
-    return {
-      data: {
-        orderNumber: order.externalOrderNumber,
-        status: order.status,
-        customerName: order.customerName,
-        deliveryAddress: {
-          line1: order.addressLine1,
-          city: order.city,
-          province: order.province,
-          postalCode: order.postalCode,
+      return {
+        data: {
+          orderNumber: order.externalOrderNumber,
+          status: order.status,
+          customerName: order.customerName,
+          deliveryAddress: {
+            line1: order.addressLine1,
+            city: order.city,
+            province: order.province,
+            postalCode: order.postalCode,
+          },
+          deliveryDate: order.deliveryDate,
+          estimatedArrival: order.estimatedArrival,
+          actualDelivery: order.actualDelivery,
+          timeSlot: order.timeSlot,
+          driver: order.driver
+            ? {
+                name: order.driver.name,
+                vehicleType: order.driver.vehicleType,
+              }
+            : null,
+          driverLocation,
+          proofOfDelivery: order.proofOfDelivery,
+          shop: {
+            name: order.shop.name,
+            branding: (order.shop.settings as any)?.branding || {},
+          },
+          timeline,
         },
-        deliveryDate: order.deliveryDate,
-        estimatedArrival: order.estimatedArrival,
-        actualDelivery: order.actualDelivery,
-        timeSlot: order.timeSlot,
-        driver: order.driver
-          ? {
-              name: order.driver.name,
-              vehicleType: order.driver.vehicleType,
-            }
-          : null,
-        driverLocation,
-        proofOfDelivery: order.proofOfDelivery,
-        shop: {
-          name: order.shop.name,
-          branding: (order.shop.settings as any)?.branding || {},
-        },
-        timeline,
-      },
-    };
-  });
+      };
+    },
+  );
 
   // ── GET CUSTOMER DELIVERY PREFERENCES ────────────────────
 
@@ -191,7 +204,7 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
       });
 
       return { data: prefs ?? null };
-    }
+    },
   );
 
   // ── PATCH CUSTOMER DELIVERY PREFERENCES ──────────────────
@@ -214,7 +227,7 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
       const parsed = patchPrefsSchema.safeParse(request.body);
       if (!parsed.success) {
         throw new ValidationError(
-          parsed.error.errors.map((e) => e.message).join("; ")
+          parsed.error.errors.map((e) => e.message).join("; "),
         );
       }
 
@@ -223,7 +236,7 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
       // Lock-out: instructions cannot change after driver has arrived
       if (["ARRIVED", "DELIVERED"].includes(order.status)) {
         throw new ValidationError(
-          "Delivery preferences cannot be updated after the driver has arrived"
+          "Delivery preferences cannot be updated after the driver has arrived",
         );
       }
 
@@ -233,7 +246,7 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
         ["OUT_FOR_DELIVERY", "ARRIVED", "DELIVERED"].includes(order.status)
       ) {
         throw new ValidationError(
-          "Reschedule is not available once the driver is on the way"
+          "Reschedule is not available once the driver is on the way",
         );
       }
 
@@ -283,7 +296,7 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
       });
 
       return { data: prefs };
-    }
+    },
   );
 
   // ── GET AVAILABLE RESCHEDULE SLOTS ────────────────────────
@@ -312,7 +325,7 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
       });
 
       return { data: slots, locked: false };
-    }
+    },
   );
 
   // ── GET AI-PREDICTED ETA ───────────────────────────────────
@@ -349,14 +362,27 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
       let eta: CachedETA;
 
       try {
-        const driverLoc = order.driver?.currentLocation as { lat?: number; lng?: number } | null;
-        const destLoc = order.deliveryLocation as { lat?: number; lng?: number } | null;
+        const driverLoc = order.driver?.currentLocation as {
+          lat?: number;
+          lng?: number;
+        } | null;
+        const destLoc = order.deliveryLocation as {
+          lat?: number;
+          lng?: number;
+        } | null;
 
         if (
-          driverLoc?.lat != null && driverLoc?.lng != null &&
-          destLoc?.lat != null && destLoc?.lng != null
+          driverLoc?.lat != null &&
+          driverLoc?.lng != null &&
+          destLoc?.lat != null &&
+          destLoc?.lng != null
         ) {
-          const distKm = haversineKm(driverLoc.lat, driverLoc.lng, destLoc.lat, destLoc.lng);
+          const distKm = haversineKm(
+            driverLoc.lat,
+            driverLoc.lng,
+            destLoc.lat,
+            destLoc.lng,
+          );
 
           const prediction = etaEngine.predictETA({
             origin: { lat: driverLoc.lat, lng: driverLoc.lng },
@@ -377,8 +403,12 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
         }
       } catch {
         // Fallback to static estimate from DB
-        const fallback = order.estimatedArrival ?? new Date(Date.now() + 2 * 60 * 60 * 1000);
-        const fallbackMs = fallback instanceof Date ? fallback.getTime() : new Date(fallback).getTime();
+        const fallback =
+          order.estimatedArrival ?? new Date(Date.now() + 2 * 60 * 60 * 1000);
+        const fallbackMs =
+          fallback instanceof Date
+            ? fallback.getTime()
+            : new Date(fallback).getTime();
 
         eta = {
           estimatedArrival: new Date(fallbackMs).toISOString(),
@@ -390,10 +420,13 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       // Cache for 5 minutes
-      etaCache.set(trackingToken, { data: eta, expiresAt: Date.now() + 5 * 60 * 1000 });
+      etaCache.set(trackingToken, {
+        data: eta,
+        expiresAt: Date.now() + 5 * 60 * 1000,
+      });
 
       return { data: eta };
-    }
+    },
   );
 
   // ── GET AI ETA — PUBLIC (WIT-310) ─────────────────────────
@@ -442,8 +475,14 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       // 3. Compute ETA via ML engine
-      const driverLoc = order.driver?.currentLocation as { lat?: number; lng?: number } | null;
-      const destLoc = order.deliveryLocation as { lat?: number; lng?: number } | null;
+      const driverLoc = order.driver?.currentLocation as {
+        lat?: number;
+        lng?: number;
+      } | null;
+      const destLoc = order.deliveryLocation as {
+        lat?: number;
+        lng?: number;
+      } | null;
 
       let result: {
         estimatedArrival: string;
@@ -453,10 +492,17 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
       };
 
       if (
-        driverLoc?.lat != null && driverLoc?.lng != null &&
-        destLoc?.lat != null && destLoc?.lng != null
+        driverLoc?.lat != null &&
+        driverLoc?.lng != null &&
+        destLoc?.lat != null &&
+        destLoc?.lng != null
       ) {
-        const distKm = haversineKm(driverLoc.lat, driverLoc.lng, destLoc.lat, destLoc.lng);
+        const distKm = haversineKm(
+          driverLoc.lat,
+          driverLoc.lng,
+          destLoc.lat,
+          destLoc.lng,
+        );
         const prediction = etaEngine.predictETA({
           origin: { lat: driverLoc.lat, lng: driverLoc.lng },
           destination: { lat: destLoc.lat, lng: destLoc.lng },
@@ -485,10 +531,12 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       // 4. Store in Redis (fire-and-forget; never block the response)
-      redis.set(cacheKey, JSON.stringify(result), "EX", ETA_REDIS_TTL).catch(() => {});
+      redis
+        .set(cacheKey, JSON.stringify(result), "EX", ETA_REDIS_TTL)
+        .catch(() => {});
 
       return { data: result };
-    }
+    },
   );
 }
 

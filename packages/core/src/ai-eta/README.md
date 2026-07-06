@@ -43,6 +43,7 @@ Traffic-aware ML ETA (Estimated Time of Arrival) prediction engine combining mul
 ### Model Ensemble (`model-ensemble.ts`)
 
 Combines predictions using:
+
 - **Weighted Averaging**: Model confidence × historical accuracy
 - **Dynamic Weighting**: Automatic adjustment based on recent performance
 - **Percentile Fusion**: Weighted median for confidence intervals
@@ -53,19 +54,21 @@ Combines predictions using:
 ### Basic ETA Prediction
 
 ```typescript
-import { etaEngine } from '@witylogix/core/ai-eta';
+import { etaEngine } from "@witylogix/core/ai-eta";
 
 const prediction = etaEngine.predictETA({
   origin: { lat: 40.7128, lng: -74.006 },
   destination: { lat: 40.758, lng: -73.9855 },
   distanceKm: 5.5,
   departureTime: new Date(),
-  zoneId: 'zone_downtown', // optional
-  orderId: 'order_123', // optional
+  zoneId: "zone_downtown", // optional
+  orderId: "order_123", // optional
 });
 
 console.log(`Expected: ${prediction.prediction.expected}`);
-console.log(`Range: ${prediction.prediction.low} - ${prediction.prediction.high}`);
+console.log(
+  `Range: ${prediction.prediction.low} - ${prediction.prediction.high}`,
+);
 console.log(`Confidence: ${(prediction.confidence * 100).toFixed(0)}%`);
 console.log(`Traffic: ${prediction.trafficCondition}`);
 ```
@@ -73,23 +76,23 @@ console.log(`Traffic: ${prediction.trafficCondition}`);
 ### Load Historical Data
 
 ```typescript
-import { etaEngine } from '@witylogix/core/ai-eta';
-import type { HistoricalRoute } from '@witylogix/core/ai-eta';
+import { etaEngine } from "@witylogix/core/ai-eta";
+import type { HistoricalRoute } from "@witylogix/core/ai-eta";
 
 const historicalRoutes: HistoricalRoute[] = [
   {
-    routeId: 'route_1',
+    routeId: "route_1",
     origin: { lat: 40.7128, lng: -74.006 },
     destination: { lat: 40.758, lng: -73.9855 },
     distanceKm: 5.5,
-    departureTime: new Date('2026-03-10T10:00:00'),
-    estimatedArrival: new Date('2026-03-10T10:25:00'),
-    actualArrival: new Date('2026-03-10T10:22:00'),
+    departureTime: new Date("2026-03-10T10:00:00"),
+    estimatedArrival: new Date("2026-03-10T10:25:00"),
+    actualArrival: new Date("2026-03-10T10:22:00"),
     dayOfWeek: 2,
     hourOfDay: 10,
-    trafficCondition: 'moderate',
-    zoneType: 'urban',
-    driverId: 'driver_1',
+    trafficCondition: "moderate",
+    zoneType: "urban",
+    driverId: "driver_1",
     success: true,
   },
   // ... more routes
@@ -101,13 +104,13 @@ etaEngine.loadHistoricalData(historicalRoutes);
 ### Traffic Zone Registration
 
 ```typescript
-import type { TrafficZone } from '@witylogix/core/ai-eta';
+import type { TrafficZone } from "@witylogix/core/ai-eta";
 
 const zones: TrafficZone[] = [
   {
-    zoneId: 'zone_downtown',
-    zoneName: 'Downtown Manhattan',
-    zoneType: 'urban',
+    zoneId: "zone_downtown",
+    zoneName: "Downtown Manhattan",
+    zoneType: "urban",
     center: { lat: 40.7128, lng: -74.006 },
     boundingBox: {
       ne: { lat: 40.8, lng: -73.9 },
@@ -127,14 +130,14 @@ etaEngine.registerTrafficZones(zones);
 const response = etaEngine.predictBatch({
   deliveries: [
     {
-      orderId: 'order_1',
+      orderId: "order_1",
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.758, lng: -73.9855 },
       distanceKm: 5.5,
       departureTime: new Date(),
     },
     {
-      orderId: 'order_2',
+      orderId: "order_2",
       origin: { lat: 40.7, lng: -73.95 },
       destination: { lat: 40.75, lng: -73.9 },
       distanceKm: 8.2,
@@ -155,11 +158,11 @@ const prediction = etaEngine.predictETA({
   origin: { lat: 40.7128, lng: -74.006 },
   destination: { lat: 40.758, lng: -73.9855 },
   distanceKm: 5.5,
-  departureTime: new Date('2026-03-15T10:00:00'),
-  orderId: 'order_123',
+  departureTime: new Date("2026-03-15T10:00:00"),
+  orderId: "order_123",
 });
 
-const actualTime = new Date('2026-03-15T10:18:00');
+const actualTime = new Date("2026-03-15T10:18:00");
 etaEngine.recordActualDelivery(prediction, actualTime);
 
 // Get model accuracy
@@ -178,6 +181,7 @@ console.log(`Avg Accuracy: ${(stats.averageAccuracy * 100).toFixed(2)}%`);
 ### TimeOfDayModel
 
 **Default Multipliers:**
+
 ```
 00:00-06:00: 0.85x  (Night - less traffic)
 07:00-09:00: 1.40x  (Morning rush)
@@ -195,6 +199,7 @@ Learned from actual delivery data via linear regression.
 **Linear Regression:** `ETA = intercept + (distance × slope)`
 
 Zone-specific parameters:
+
 - **Urban**: slope ≈ 2.0 (2 min/km), intercept ≈ 5 min
 - **Suburban**: slope ≈ 1.33 (1.33 min/km), intercept ≈ 5 min
 - **Rural**: slope ≈ 1.0 (1 min/km), intercept ≈ 3 min
@@ -204,12 +209,14 @@ R² validation ensures model fit quality.
 ### HistoricalModel
 
 **Similarity Matching:**
+
 - Zone type: exact match
 - Day of week: within ±1 day
 - Hour: within ±2 hours
 - Distance: within ±20%
 
 **Percentile-based CI:**
+
 - Low: 10th percentile
 - Expected: 50th percentile (median)
 - High: 90th percentile
@@ -217,11 +224,13 @@ R² validation ensures model fit quality.
 ### TrafficModel
 
 **Real-Time Integration:**
+
 - Queries Google Directions API for live traffic
 - 5-minute cache to reduce API calls
 - Falls back to historical patterns when unavailable
 
 **Historical Patterns:**
+
 ```
 Light (< 0.33):    ETA factor 0.8x
 Moderate (0.33-0.67): ETA factor 1.1x
@@ -231,6 +240,7 @@ Heavy (> 0.67):    ETA factor 1.4x
 ## Confidence Intervals
 
 Confidence scores reflect:
+
 - **Data availability**: More historical data = higher confidence
 - **Model agreement**: Models agreeing = higher confidence
 - **Recent accuracy**: Better recent performance = higher confidence
@@ -247,6 +257,7 @@ Range: 0.3 (low confidence) to 1.0 (high confidence)
 Predict ETA for a delivery.
 
 **Request:**
+
 ```json
 {
   "origin": { "lat": 40.7128, "lng": -74.006 },
@@ -259,6 +270,7 @@ Predict ETA for a delivery.
 ```
 
 **Response:**
+
 ```json
 {
   "prediction": {
@@ -272,7 +284,12 @@ Predict ETA for a delivery.
     },
     "confidence": 0.85,
     "modelUsed": "Ensemble",
-    "modelsConsidered": ["TimeOfDayModel", "DistanceModel", "HistoricalModel", "TrafficModel"],
+    "modelsConsidered": [
+      "TimeOfDayModel",
+      "DistanceModel",
+      "HistoricalModel",
+      "TrafficModel"
+    ],
     "trafficCondition": "moderate"
   },
   "timestamp": "2026-03-15T10:00:00Z"
@@ -288,9 +305,11 @@ Batch ETA predictions for multiple deliveries.
 Get model accuracy metrics.
 
 **Query Parameters:**
+
 - `modelName` (optional): Specific model name
 
 **Response:**
+
 ```json
 {
   "accuracies": [
@@ -360,6 +379,7 @@ npm test -- ai-eta
 ```
 
 Tests include:
+
 - ETA accuracy across different times
 - Confidence interval validity
 - Model ensemble weighting

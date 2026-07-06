@@ -138,7 +138,9 @@ describe("MagentoSDKClient", () => {
         }),
       });
 
-      await expect(client.getOrderById("invalid")).rejects.toThrow(MagentoAPIError);
+      await expect(client.getOrderById("invalid")).rejects.toThrow(
+        MagentoAPIError,
+      );
     });
 
     it("should handle network errors", async () => {
@@ -300,7 +302,9 @@ describe("MagentoSDKClient", () => {
         }),
       });
 
-      const shipment = await client.createShipment("123", [{ order_item_id: 1, qty: 2 }]);
+      const shipment = await client.createShipment("123", [
+        { order_item_id: 1, qty: 2 },
+      ]);
 
       expect(shipment.entity_id).toBe(888);
     });
@@ -637,7 +641,11 @@ describe("MagentoSDKClient", () => {
         }),
       });
 
-      const result = await client.updateMSISourceItem("default", "TEST-SKU", 100);
+      const result = await client.updateMSISourceItem(
+        "default",
+        "TEST-SKU",
+        100,
+      );
 
       expect(result.quantity).toBe(100);
     });
@@ -691,9 +699,7 @@ describe("MagentoSDKClient", () => {
       });
 
       const bulkUuid = await client.submitAsyncBulk({
-        requests: [
-          { url: "/products", method: "POST", body: { product: {} } },
-        ],
+        requests: [{ url: "/products", method: "POST", body: { product: {} } }],
       });
 
       expect(bulkUuid).toBe("uuid-1234");

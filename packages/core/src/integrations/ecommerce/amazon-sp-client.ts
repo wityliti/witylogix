@@ -244,7 +244,10 @@ interface AmazonReportData {
 /**
  * Amazon Selling Partner API Client
  */
-export class AmazonSPClient extends ECommerceAdapterBase implements IECommerceAdapter {
+export class AmazonSPClient
+  extends ECommerceAdapterBase
+  implements IECommerceAdapter
+{
   private baseUrl = "https://sellingpartnerapi-na.amazon.com";
   private lwaClientId: string;
   private lwaClientSecret: string;
@@ -261,7 +264,9 @@ export class AmazonSPClient extends ECommerceAdapterBase implements IECommerceAd
     super(config);
 
     if (!config.apiKey || !config.apiSecret || !config.accessToken) {
-      throw new Error("Amazon SP-API requires LWA clientId, clientSecret, and refreshToken");
+      throw new Error(
+        "Amazon SP-API requires LWA clientId, clientSecret, and refreshToken",
+      );
     }
 
     this.lwaClientId = config.apiKey;
@@ -312,7 +317,11 @@ export class AmazonSPClient extends ECommerceAdapterBase implements IECommerceAd
   /**
    * Make authenticated request to Amazon SP-API
    */
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  private async request<T>(
+    method: string,
+    path: string,
+    body?: unknown,
+  ): Promise<T> {
     await this.rateLimiter.waitIfNeeded();
 
     const accessToken = await this.getAccessToken();
@@ -328,7 +337,9 @@ export class AmazonSPClient extends ECommerceAdapterBase implements IECommerceAd
     });
 
     if (!response.ok) {
-      throw new Error(`Amazon SP-API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Amazon SP-API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     return (await response.json()) as T;
@@ -342,7 +353,9 @@ export class AmazonSPClient extends ECommerceAdapterBase implements IECommerceAd
 
     try {
       const params = new URLSearchParams({
-        CreatedAfter: options?.since?.toISOString() ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        CreatedAfter:
+          options?.since?.toISOString() ??
+          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
         PageSize: Math.min(options?.limit ?? 100, 100).toString(),
       });
 
@@ -398,11 +411,18 @@ export class AmazonSPClient extends ECommerceAdapterBase implements IECommerceAd
   /**
    * Update order (acknowledge in Amazon)
    */
-  async updateOrder(orderId: string, data: Partial<ECommerceOrder>): Promise<ECommerceOrder> {
+  async updateOrder(
+    orderId: string,
+    data: Partial<ECommerceOrder>,
+  ): Promise<ECommerceOrder> {
     // Amazon doesn't support order updates; acknowledge receipt instead
-    await this.request<unknown>("PUT", `/orders/v0/orders/${orderId}/acknowledgement`, {
-      acknowledgementItems: [],
-    });
+    await this.request<unknown>(
+      "PUT",
+      `/orders/v0/orders/${orderId}/acknowledgement`,
+      {
+        acknowledgementItems: [],
+      },
+    );
 
     return this.getOrderById(orderId);
   }
@@ -454,13 +474,18 @@ export class AmazonSPClient extends ECommerceAdapterBase implements IECommerceAd
    * Create product (not fully supported by Amazon)
    */
   async createProduct(product: ECommerceProduct): Promise<ECommerceProduct> {
-    throw new Error("Product creation requires use of Feeds API; implement submitFeed for inventory");
+    throw new Error(
+      "Product creation requires use of Feeds API; implement submitFeed for inventory",
+    );
   }
 
   /**
    * Update product (via Feeds API)
    */
-  async updateProduct(productId: string, data: Partial<ECommerceProduct>): Promise<ECommerceProduct> {
+  async updateProduct(
+    productId: string,
+    data: Partial<ECommerceProduct>,
+  ): Promise<ECommerceProduct> {
     // Implementation would use Feeds API
     throw new Error("Product updates require Feeds API implementation");
   }
@@ -483,22 +508,32 @@ export class AmazonSPClient extends ECommerceAdapterBase implements IECommerceAd
   /**
    * Update customer
    */
-  async updateCustomer(customerId: string, data: Partial<ECommerceCustomer>): Promise<ECommerceCustomer> {
+  async updateCustomer(
+    customerId: string,
+    data: Partial<ECommerceCustomer>,
+  ): Promise<ECommerceCustomer> {
     throw new Error("Amazon does not provide customer endpoints");
   }
 
   /**
    * Create fulfillment order
    */
-  async createFulfillment(orderId: string, request: FulfillmentRequest): Promise<FulfillmentResponse> {
+  async createFulfillment(
+    orderId: string,
+    request: FulfillmentRequest,
+  ): Promise<FulfillmentResponse> {
     try {
-      await this.request<unknown>("POST", `/fba-outbound/2020-07-01/fulfillmentOrders`, {
-        fulfillmentOrderLineItems: request.items.map((item) => ({
-          fulfillmentOrderLineItemId: item.lineItemId,
-          quantity: item.quantity,
-        })),
-        displayableOrderComment: "Order fulfilled",
-      });
+      await this.request<unknown>(
+        "POST",
+        `/fba-outbound/2020-07-01/fulfillmentOrders`,
+        {
+          fulfillmentOrderLineItems: request.items.map((item) => ({
+            fulfillmentOrderLineItemId: item.lineItemId,
+            quantity: item.quantity,
+          })),
+          displayableOrderComment: "Order fulfilled",
+        },
+      );
 
       return {
         id: `${orderId}-fulfillment`,
@@ -545,7 +580,10 @@ export class AmazonSPClient extends ECommerceAdapterBase implements IECommerceAd
     try {
       const response = await this.request<{
         inventorySummaries: AmazonInventorySummary[];
-      }>("GET", `/fba-inventory/2021-08-01/inventorySummaries?skus=${variantId}`);
+      }>(
+        "GET",
+        `/fba-inventory/2021-08-01/inventorySummaries?skus=${variantId}`,
+      );
 
       const summary = response.inventorySummaries[0];
       return {
@@ -553,7 +591,8 @@ export class AmazonSPClient extends ECommerceAdapterBase implements IECommerceAd
         quantity: summary.inventoryDetails?.fulfillableQuantity ?? 0,
         reservedQuantity: summary.inventoryDetails?.reservedQuantity ?? 0,
         availableQuantity:
-          (summary.inventoryDetails?.fulfillableQuantity ?? 0) - (summary.inventoryDetails?.reservedQuantity ?? 0),
+          (summary.inventoryDetails?.fulfillableQuantity ?? 0) -
+          (summary.inventoryDetails?.reservedQuantity ?? 0),
         trackQuantity: true,
         allowNegativeStock: false,
         updatedAt: new Date(summary.lastUpdateDate || new Date()),
@@ -567,7 +606,9 @@ export class AmazonSPClient extends ECommerceAdapterBase implements IECommerceAd
   /**
    * Update inventory
    */
-  async updateInventory(request: InventoryUpdateRequest): Promise<ECommerceInventory> {
+  async updateInventory(
+    request: InventoryUpdateRequest,
+  ): Promise<ECommerceInventory> {
     // Implementation would use Feeds API for inventory updates
     throw new Error("Inventory updates require Feeds API implementation");
   }
@@ -621,10 +662,15 @@ export class AmazonSPClient extends ECommerceAdapterBase implements IECommerceAd
   /**
    * Normalize Amazon order to standard format
    */
-  private normalizeOrder(order: AmazonOrderData, items: AmazonOrderItem[]): ECommerceOrder {
+  private normalizeOrder(
+    order: AmazonOrderData,
+    items: AmazonOrderItem[],
+  ): ECommerceOrder {
     const status: OrderStatus = this.mapOrderStatus(order.OrderStatus);
     const paymentStatus: PaymentStatus = "captured";
-    const fulfillmentStatus: FulfillmentStatus = order.NumberOfItemsShipped ? "complete" : "pending";
+    const fulfillmentStatus: FulfillmentStatus = order.NumberOfItemsShipped
+      ? "complete"
+      : "pending";
 
     return {
       id: order.AmazonOrderId,

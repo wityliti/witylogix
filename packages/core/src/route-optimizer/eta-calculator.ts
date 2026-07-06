@@ -69,7 +69,7 @@ export function calculateETA(
   to: GeoPoint,
   departureTime: Date,
   serviceTime: number,
-  config: Partial<ETAConfiguration> = {}
+  config: Partial<ETAConfiguration> = {},
 ): ETAResult {
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
 
@@ -78,11 +78,12 @@ export function calculateETA(
     from,
     to,
     finalConfig.speedKmh,
-    finalConfig.trafficFactor
+    finalConfig.trafficFactor,
   );
 
   // Traffic delay
-  const trafficDelaySeconds = baseTravelTimeSeconds * (finalConfig.trafficFactor - 1);
+  const trafficDelaySeconds =
+    baseTravelTimeSeconds * (finalConfig.trafficFactor - 1);
 
   // Service time
   const serviceTimeSeconds = serviceTime * 60;
@@ -91,10 +92,16 @@ export function calculateETA(
   const bufferSeconds = baseTravelTimeSeconds * finalConfig.safetyBufferPercent;
 
   // Total ETA
-  const totalETASeconds = baseTravelTimeSeconds + trafficDelaySeconds + bufferSeconds + serviceTimeSeconds;
+  const totalETASeconds =
+    baseTravelTimeSeconds +
+    trafficDelaySeconds +
+    bufferSeconds +
+    serviceTimeSeconds;
 
   // Estimated arrival time
-  const estimatedArrivalTime = new Date(departureTime.getTime() + totalETASeconds * 1000);
+  const estimatedArrivalTime = new Date(
+    departureTime.getTime() + totalETASeconds * 1000,
+  );
 
   return {
     baseTravelTimeSeconds,
@@ -127,7 +134,7 @@ export function calculateETAFromMatrix(
   departureTime: Date,
   serviceTime: number,
   matrix: DistanceMatrix,
-  config: Partial<ETAConfiguration> = {}
+  config: Partial<ETAConfiguration> = {},
 ): ETAResult {
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
 
@@ -148,12 +155,13 @@ export function calculateETAFromMatrix(
       matrix.points[fromIndex],
       matrix.points[toIndex],
       finalConfig.speedKmh,
-      1.0
+      1.0,
     );
   }
 
   // Traffic delay
-  const trafficDelaySeconds = baseTravelTimeSeconds * (finalConfig.trafficFactor - 1);
+  const trafficDelaySeconds =
+    baseTravelTimeSeconds * (finalConfig.trafficFactor - 1);
 
   // Service time
   const serviceTimeSeconds = serviceTime * 60;
@@ -162,10 +170,16 @@ export function calculateETAFromMatrix(
   const bufferSeconds = baseTravelTimeSeconds * finalConfig.safetyBufferPercent;
 
   // Total ETA
-  const totalETASeconds = baseTravelTimeSeconds + trafficDelaySeconds + bufferSeconds + serviceTimeSeconds;
+  const totalETASeconds =
+    baseTravelTimeSeconds +
+    trafficDelaySeconds +
+    bufferSeconds +
+    serviceTimeSeconds;
 
   // Estimated arrival time
-  const estimatedArrivalTime = new Date(departureTime.getTime() + totalETASeconds * 1000);
+  const estimatedArrivalTime = new Date(
+    departureTime.getTime() + totalETASeconds * 1000,
+  );
 
   return {
     baseTravelTimeSeconds,
@@ -198,7 +212,7 @@ export function recalculateETAFromPosition(
   currentTime: Date,
   remainingStops: Stop[],
   matrix: DistanceMatrix,
-  config: Partial<ETAConfiguration> = {}
+  config: Partial<ETAConfiguration> = {},
 ): ETAResult {
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
 
@@ -208,12 +222,15 @@ export function recalculateETAFromPosition(
     nextStop.location,
     currentTime,
     nextStop.serviceDuration,
-    finalConfig
+    finalConfig,
   );
 
   // If there are remaining stops, adjust confidence (less certain for far-future arrivals)
   if (remainingStops.length > 0) {
-    const adjustedConfidence = Math.max(0.5, finalConfig.confidence - remainingStops.length * 0.05);
+    const adjustedConfidence = Math.max(
+      0.5,
+      finalConfig.confidence - remainingStops.length * 0.05,
+    );
     return {
       ...eta,
       confidence: adjustedConfidence,
@@ -251,11 +268,14 @@ export function validateETAResult(eta: ETAResult): void {
 
   // Verify total is sum of parts
   const expectedTotal =
-    eta.baseTravelTimeSeconds + eta.trafficDelaySeconds + eta.bufferSeconds + eta.serviceTimeSeconds;
+    eta.baseTravelTimeSeconds +
+    eta.trafficDelaySeconds +
+    eta.bufferSeconds +
+    eta.serviceTimeSeconds;
   const tolerance = 1; // 1 second tolerance for floating point errors
   if (Math.abs(eta.totalETASeconds - expectedTotal) > tolerance) {
     throw new Error(
-      `ETA total (${eta.totalETASeconds}) does not match sum of components (${expectedTotal})`
+      `ETA total (${eta.totalETASeconds}) does not match sum of components (${expectedTotal})`,
     );
   }
 }
@@ -307,14 +327,16 @@ export function formatETAForDisplay(eta: ETAResult): string {
 export function adjustETAConfigForTime(
   baseConfig: Partial<ETAConfiguration>,
   peakHourFactor: number = 1.3,
-  currentTime: Date = new Date()
+  currentTime: Date = new Date(),
 ): ETAConfiguration {
   const finalConfig = { ...DEFAULT_CONFIG, ...baseConfig };
   const hour = currentTime.getHours();
 
   // Peak hours: 8-10am, 12-1pm, 5-7pm
   const isPeakHour =
-    (hour >= 8 && hour < 10) || (hour >= 12 && hour < 13) || (hour >= 17 && hour < 19);
+    (hour >= 8 && hour < 10) ||
+    (hour >= 12 && hour < 13) ||
+    (hour >= 17 && hour < 19);
 
   if (isPeakHour) {
     finalConfig.trafficFactor *= peakHourFactor;

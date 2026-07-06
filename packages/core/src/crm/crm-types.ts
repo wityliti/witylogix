@@ -262,7 +262,10 @@ export interface UnifiedActivity {
 /**
  * Transform function type
  */
-export type TransformFn = (value: unknown, context?: Record<string, unknown>) => unknown;
+export type TransformFn = (
+  value: unknown,
+  context?: Record<string, unknown>,
+) => unknown;
 
 /**
  * Conditional predicate function
@@ -289,7 +292,14 @@ export interface MappingRule {
   required: boolean;
 
   /** Data type for validation */
-  dataType: "string" | "number" | "boolean" | "date" | "object" | "array" | "null";
+  dataType:
+    | "string"
+    | "number"
+    | "boolean"
+    | "date"
+    | "object"
+    | "array"
+    | "null";
 }
 
 /**

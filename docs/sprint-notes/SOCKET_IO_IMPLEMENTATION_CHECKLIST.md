@@ -11,6 +11,7 @@
 ## To Complete Integration
 
 ### Phase 1: API Server Setup (Required)
+
 - [ ] Update `/apps/api/src/server.ts`:
   - [ ] Import `setupSocketServer` from `./lib/socket.js`
   - [ ] Import `shutdownSocket` from `./lib/socket.js`
@@ -18,30 +19,36 @@
   - [ ] Call `shutdownSocket(app.log)` in shutdown sequence
 
 ### Phase 2: Dashboard Dependencies (Required)
+
 - [ ] Add `socket.io-client` to `/apps/dashboard/package.json`
   - [ ] Run `pnpm install`
 
 ### Phase 3: Event Emission (Start with 1-2 routes)
+
 Emit events from route handlers after mutations:
 
 #### Shipments Route (`/apps/api/src/routes/shipments.ts`)
+
 - [ ] Import helpers: `emitShipmentCreated`, `emitShipmentStatusChanged`, `emitShipmentAssigned`
 - [ ] After POST `/` (create): emit `emitShipmentCreated(shipmentData)`
 - [ ] After PATCH `/:id/status`: emit `emitShipmentStatusChanged(shipmentData)`
 - [ ] After PATCH `/:id/assign`: emit `emitShipmentAssigned(shipmentData)`
 
 #### Drivers Route (`/apps/api/src/routes/drivers.ts`)
+
 - [ ] Import: `emitDriverStatusChanged`, `emitDriverLocationUpdated`
 - [ ] After status update: emit event
 - [ ] After location update: emit event
 
 #### Orders Route (`/apps/api/src/routes/orders.ts`)
+
 - [ ] Import: `emitOrderCreated`, `emitOrderStatusChanged`
 - [ ] Emit on create/update
 
 ### Phase 4: Dashboard Components (Start with 1-2 pages)
 
 #### Shipments List Page
+
 - [ ] Import `useSocket` from `@/lib/socket`
 - [ ] Call `const socket = useSocket(shopId)`
 - [ ] Subscribe to `EVENTS.SHIPMENT_CREATED`
@@ -49,15 +56,18 @@ Emit events from route handlers after mutations:
 - [ ] Update state on events
 
 #### Driver Map Page
+
 - [ ] Import `useSocket`
 - [ ] Subscribe to `EVENTS.DRIVER_LOCATION_UPDATED`
 - [ ] Update map markers on location change
 
 #### Notifications Component
+
 - [ ] Subscribe to `EVENTS.NOTIFICATION_SENT`
 - [ ] Display toast/alert on notification
 
 ### Phase 5: Testing
+
 - [ ] Test connection with browser DevTools (Application > Cookies/Storage)
 - [ ] Check auth token exists
 - [ ] Test event emission via API
@@ -69,14 +79,17 @@ Emit events from route handlers after mutations:
 ### Phase 6: Monitoring & Ops
 
 #### Add Health Check Endpoint
+
 - [ ] In `/apps/api/src/server.ts`, add GET `/health/socket`
   - [ ] Returns `getConnectionStats()` and `getSystemHealth()`
 
 #### Set Up Logging
-- [ ] Configure DEBUG=socket.io:* for development
+
+- [ ] Configure DEBUG=socket.io:\* for development
 - [ ] Add Socket.io metrics to observability stack
 
 #### Production Configuration
+
 - [ ] Set proper CORS origin
 - [ ] Configure Redis adapter for multiple instances
 - [ ] Set connection limits based on capacity
@@ -123,6 +136,7 @@ witylogix-platform/
 ## Code Examples
 
 ### Emit Event in Route Handler
+
 ```typescript
 import { emitShipmentCreated } from "../lib/events.js";
 
@@ -140,6 +154,7 @@ emitShipmentCreated({
 ```
 
 ### Subscribe in Dashboard Component
+
 ```typescript
 import { useSocket } from "@/lib/socket";
 import { EVENTS } from "@witylogix/core/realtime";

@@ -312,7 +312,7 @@ spec:
         - name: tmp
           emptyDir: {}
 
-      terminationGracePeriodSeconds: 40  # Allow 30s shutdown + 10s buffer
+      terminationGracePeriodSeconds: 40 # Allow 30s shutdown + 10s buffer
 
 ---
 apiVersion: v1

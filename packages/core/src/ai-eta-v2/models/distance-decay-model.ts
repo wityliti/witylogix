@@ -11,7 +11,7 @@ import type {
   HistoricalDelivery,
   ModelPrediction,
   DistanceDecayModelState,
-} from '../types.js';
+} from "../types.js";
 
 const DISTANCE_RANGES = {
   SHORT_MAX: 5, // km
@@ -119,7 +119,10 @@ export class DistanceDecayModel {
    */
   fit(historicalDeliveries: HistoricalDelivery[]): void {
     const shortRangeData = { distances: [] as number[], times: [] as number[] };
-    const mediumRangeData = { distances: [] as number[], times: [] as number[] };
+    const mediumRangeData = {
+      distances: [] as number[],
+      times: [] as number[],
+    };
     const longRangeData = { distances: [] as number[], times: [] as number[] };
 
     let urbanCount = 0;
@@ -140,7 +143,10 @@ export class DistanceDecayModel {
         longRangeData.times.push(time);
       }
 
-      if (delivery.zone_type === 'urban' || delivery.zone_type === 'urban-core') {
+      if (
+        delivery.zone_type === "urban" ||
+        delivery.zone_type === "urban-core"
+      ) {
         urbanCount++;
       }
       totalCount++;
@@ -199,11 +205,11 @@ export class DistanceDecayModel {
 
     // Apply zone multiplier (urban areas slower due to traffic/parking)
     const zoneMultiplier =
-      zoneType === 'urban-core'
+      zoneType === "urban-core"
         ? 1.3
-        : zoneType === 'urban'
+        : zoneType === "urban"
           ? 1.2
-          : zoneType === 'suburban'
+          : zoneType === "suburban"
             ? 1.05
             : 0.95;
 
@@ -221,11 +227,15 @@ export class DistanceDecayModel {
     const errorMargin = predictedDuration * (1 - confidence) * 2;
 
     return {
-      modelName: 'distance-decay',
+      modelName: "distance-decay",
       predicted_duration_minutes: Math.round(predictedDuration * 10) / 10,
       confidence,
-      lower_bound_minutes: Math.max(5, Math.round((predictedDuration - errorMargin) * 10) / 10),
-      upper_bound_minutes: Math.round((predictedDuration + errorMargin) * 10) / 10,
+      lower_bound_minutes: Math.max(
+        5,
+        Math.round((predictedDuration - errorMargin) * 10) / 10,
+      ),
+      upper_bound_minutes:
+        Math.round((predictedDuration + errorMargin) * 10) / 10,
     };
   }
 

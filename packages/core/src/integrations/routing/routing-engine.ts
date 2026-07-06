@@ -23,11 +23,11 @@ import type {
   MapMatchingResponse,
   RoutingProvider,
   RoutingHealthStatus,
-} from './types.js';
-import { ValhallaClient } from './valhalla-client.js';
-import { VroomClient } from './vroom-client.js';
-import { RoutificClient } from './routific-client.js';
-import { OptimocourteClient } from './optimoroute-client.js';
+} from "./types.js";
+import { ValhallaClient } from "./valhalla-client.js";
+import { VroomClient } from "./vroom-client.js";
+import { RoutificClient } from "./routific-client.js";
+import { OptimocourteClient } from "./optimoroute-client.js";
 
 /**
  * Provider registry entry
@@ -35,8 +35,10 @@ import { OptimocourteClient } from './optimoroute-client.js';
 interface ProviderEntry {
   id: string;
   provider: RoutingProvider;
-  type: 'open-source' | 'commercial';
-  capabilities: Array<'route' | 'optimize' | 'matrix' | 'isochrone' | 'map-match'>;
+  type: "open-source" | "commercial";
+  capabilities: Array<
+    "route" | "optimize" | "matrix" | "isochrone" | "map-match"
+  >;
   priority: number; // 0-100, higher = preferred
   health?: RoutingHealthStatus;
   lastChecked?: Date;
@@ -91,8 +93,10 @@ export class RoutingEngine {
     id: string,
     provider: RoutingProvider,
     config: {
-      type: 'open-source' | 'commercial';
-      capabilities: Array<'route' | 'optimize' | 'matrix' | 'isochrone' | 'map-match'>;
+      type: "open-source" | "commercial";
+      capabilities: Array<
+        "route" | "optimize" | "matrix" | "isochrone" | "map-match"
+      >;
       priority?: number;
     },
   ): void {
@@ -115,35 +119,43 @@ export class RoutingEngine {
     optimoroute?: { apiKey: string };
   }): void {
     if (config.valhalla !== undefined) {
-      this.registerProvider('valhalla', new ValhallaClient(config.valhalla), {
-        type: 'open-source',
-        capabilities: ['route', 'matrix', 'isochrone', 'map-match'],
+      this.registerProvider("valhalla", new ValhallaClient(config.valhalla), {
+        type: "open-source",
+        capabilities: ["route", "matrix", "isochrone", "map-match"],
         priority: 60,
       });
     }
 
     if (config.vroom !== undefined) {
-      this.registerProvider('vroom', new VroomClient(config.vroom), {
-        type: 'open-source',
-        capabilities: ['optimize', 'matrix'],
+      this.registerProvider("vroom", new VroomClient(config.vroom), {
+        type: "open-source",
+        capabilities: ["optimize", "matrix"],
         priority: 60,
       });
     }
 
     if (config.routific?.apiKey) {
-      this.registerProvider('routific', new RoutificClient(config.routific as any), {
-        type: 'commercial',
-        capabilities: ['optimize', 'matrix'],
-        priority: 80,
-      });
+      this.registerProvider(
+        "routific",
+        new RoutificClient(config.routific as any),
+        {
+          type: "commercial",
+          capabilities: ["optimize", "matrix"],
+          priority: 80,
+        },
+      );
     }
 
     if (config.optimoroute?.apiKey) {
-      this.registerProvider('optimoroute', new OptimocourteClient(config.optimoroute as any), {
-        type: 'commercial',
-        capabilities: ['optimize', 'matrix'],
-        priority: 80,
-      });
+      this.registerProvider(
+        "optimoroute",
+        new OptimocourteClient(config.optimoroute as any),
+        {
+          type: "commercial",
+          capabilities: ["optimize", "matrix"],
+          priority: 80,
+        },
+      );
     }
   }
 
@@ -186,7 +198,7 @@ export class RoutingEngine {
     const candidates = Array.from(this.providers.values()).filter(
       (p) =>
         p.capabilities.includes(operation as any) &&
-        (!p.health || p.health.status !== 'unhealthy'),
+        (!p.health || p.health.status !== "unhealthy"),
     );
 
     if (candidates.length === 0) {
@@ -195,9 +207,9 @@ export class RoutingEngine {
 
     // Sort by priority (descending) and health status
     candidates.sort((a, b) => {
-      const healthA = a.health?.status === 'healthy' ? 100 : 0;
-      const healthB = b.health?.status === 'healthy' ? 100 : 0;
-      return (healthB + b.priority) - (healthA + a.priority);
+      const healthA = a.health?.status === "healthy" ? 100 : 0;
+      const healthB = b.health?.status === "healthy" ? 100 : 0;
+      return healthB + b.priority - (healthA + a.priority);
     });
 
     return candidates[0];
@@ -241,7 +253,7 @@ export class RoutingEngine {
         health.set(id, status);
       } catch (error) {
         const status: RoutingHealthStatus = {
-          status: 'unhealthy',
+          status: "unhealthy",
           timestamp: new Date(),
           lastCheck: new Date(),
           error: error instanceof Error ? error.message : String(error),
@@ -259,13 +271,13 @@ export class RoutingEngine {
    * Compute route with auto-selection and fallback
    */
   async route(request: RouteRequest): Promise<RouteResponse> {
-    const cacheKey = this.getCacheKey('route', request);
+    const cacheKey = this.getCacheKey("route", request);
     const cached = this.getFromCache(cacheKey);
     if (cached) {
       return cached as RouteResponse;
     }
 
-    const providers = this.getProviderChain('route');
+    const providers = this.getProviderChain("route");
 
     for (const entry of providers) {
       try {
@@ -278,20 +290,20 @@ export class RoutingEngine {
       }
     }
 
-    throw new Error('All routing providers failed');
+    throw new Error("All routing providers failed");
   }
 
   /**
    * Optimize routes with auto-selection
    */
   async optimize(request: OptimizationRequest): Promise<OptimizationResponse> {
-    const cacheKey = this.getCacheKey('optimize', request);
+    const cacheKey = this.getCacheKey("optimize", request);
     const cached = this.getFromCache(cacheKey);
     if (cached) {
       return cached as OptimizationResponse;
     }
 
-    const providers = this.getProviderChain('optimize');
+    const providers = this.getProviderChain("optimize");
 
     for (const entry of providers) {
       try {
@@ -303,20 +315,20 @@ export class RoutingEngine {
       }
     }
 
-    throw new Error('All optimization providers failed');
+    throw new Error("All optimization providers failed");
   }
 
   /**
    * Compute distance/time matrix
    */
   async matrix(request: MatrixRequest): Promise<MatrixResponse> {
-    const cacheKey = this.getCacheKey('matrix', request);
+    const cacheKey = this.getCacheKey("matrix", request);
     const cached = this.getFromCache(cacheKey);
     if (cached) {
       return cached as MatrixResponse;
     }
 
-    const providers = this.getProviderChain('matrix');
+    const providers = this.getProviderChain("matrix");
 
     for (const entry of providers) {
       try {
@@ -328,20 +340,20 @@ export class RoutingEngine {
       }
     }
 
-    throw new Error('All matrix providers failed');
+    throw new Error("All matrix providers failed");
   }
 
   /**
    * Generate isochrone
    */
   async isochrone(request: IsochroneRequest): Promise<IsochroneResponse> {
-    const cacheKey = this.getCacheKey('isochrone', request);
+    const cacheKey = this.getCacheKey("isochrone", request);
     const cached = this.getFromCache(cacheKey);
     if (cached) {
       return cached as IsochroneResponse;
     }
 
-    const providers = this.getProviderChain('isochrone');
+    const providers = this.getProviderChain("isochrone");
 
     for (const entry of providers) {
       try {
@@ -354,20 +366,20 @@ export class RoutingEngine {
       }
     }
 
-    throw new Error('All isochrone providers failed');
+    throw new Error("All isochrone providers failed");
   }
 
   /**
    * Map matching
    */
   async mapMatch(request: MapMatchingRequest): Promise<MapMatchingResponse> {
-    const cacheKey = this.getCacheKey('map-match', request);
+    const cacheKey = this.getCacheKey("map-match", request);
     const cached = this.getFromCache(cacheKey);
     if (cached) {
       return cached as MapMatchingResponse;
     }
 
-    const providers = this.getProviderChain('map-match');
+    const providers = this.getProviderChain("map-match");
 
     for (const entry of providers) {
       try {
@@ -380,14 +392,17 @@ export class RoutingEngine {
       }
     }
 
-    throw new Error('All map matching providers failed');
+    throw new Error("All map matching providers failed");
   }
 
   /**
    * Compare routes from multiple providers
    */
-  async compareRoutes(request: RouteRequest, maxProviders = 2): Promise<RouteComparison> {
-    const providers = this.getProviderChain('route').slice(0, maxProviders);
+  async compareRoutes(
+    request: RouteRequest,
+    maxProviders = 2,
+  ): Promise<RouteComparison> {
+    const providers = this.getProviderChain("route").slice(0, maxProviders);
     const results = [];
 
     for (const entry of providers) {
@@ -404,7 +419,7 @@ export class RoutingEngine {
     }
 
     if (results.length === 0) {
-      throw new Error('No providers available for route comparison');
+      throw new Error("No providers available for route comparison");
     }
 
     // Find winner (minimum distance)
@@ -417,7 +432,8 @@ export class RoutingEngine {
       winner: winner.id,
       difference_percent:
         results.length > 1
-          ? ((Math.max(...results.map((r) => r.distance_m)) - winner.distance_m) /
+          ? ((Math.max(...results.map((r) => r.distance_m)) -
+              winner.distance_m) /
               winner.distance_m) *
             100
           : 0,
@@ -431,25 +447,31 @@ export class RoutingEngine {
     request: OptimizationRequest,
     maxProviders = 2,
   ): Promise<RouteComparison> {
-    const providers = this.getProviderChain('optimize').slice(0, maxProviders);
+    const providers = this.getProviderChain("optimize").slice(0, maxProviders);
     const results = [];
 
     for (const entry of providers) {
       try {
         const solution = await entry.provider.optimize(request);
-        const totalDistance = solution.routes.reduce((sum, r) => sum + r.distance_m, 0);
+        const totalDistance = solution.routes.reduce(
+          (sum, r) => sum + r.distance_m,
+          0,
+        );
         results.push({
           id: entry.id,
           distance_m: totalDistance,
           duration_s: solution.routes.reduce((sum, r) => sum + r.duration_s, 0),
         });
       } catch (error) {
-        console.warn(`Provider ${entry.id} failed for optimization comparison`, error);
+        console.warn(
+          `Provider ${entry.id} failed for optimization comparison`,
+          error,
+        );
       }
     }
 
     if (results.length === 0) {
-      throw new Error('No providers available for optimization comparison');
+      throw new Error("No providers available for optimization comparison");
     }
 
     const winner = results.reduce((best, current) =>
@@ -461,7 +483,8 @@ export class RoutingEngine {
       winner: winner.id,
       difference_percent:
         results.length > 1
-          ? ((Math.max(...results.map((r) => r.distance_m)) - winner.distance_m) /
+          ? ((Math.max(...results.map((r) => r.distance_m)) -
+              winner.distance_m) /
               winner.distance_m) *
             100
           : 0,

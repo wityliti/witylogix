@@ -191,7 +191,12 @@ export class HoltWintersModel {
       return this.emptyForecast(h);
     }
 
-    const { level, trend, seasonal, params: { m } } = this.state;
+    const {
+      level,
+      trend,
+      seasonal,
+      params: { m },
+    } = this.state;
     const forecast: number[] = [];
     const lower: number[] = [];
     const upper: number[] = [];
@@ -239,9 +244,10 @@ export class HoltWintersModel {
 
     if (!this.state) {
       // Return flat fallback
-      const daily = dailySeries.length > 0
-        ? dailySeries.reduce((a, b) => a + b, 0) / dailySeries.length
-        : 10;
+      const daily =
+        dailySeries.length > 0
+          ? dailySeries.reduce((a, b) => a + b, 0) / dailySeries.length
+          : 10;
       return Array.from({ length: daysAhead }, () =>
         hourlyProfile.map((p) => daily * p),
       );
@@ -285,10 +291,30 @@ export class HoltWintersModel {
  * Peaks at morning (9-10) and evening (17-19) windows.
  */
 export const DEFAULT_HOURLY_PROFILE: number[] = [
-  0.005, 0.003, 0.002, 0.002, 0.003, 0.008, // 00-05 (night)
-  0.020, 0.045, 0.065, 0.075, 0.070, 0.060, // 06-11 (morning peak)
-  0.055, 0.055, 0.055, 0.050, 0.045, 0.065, // 12-17 (midday)
-  0.075, 0.070, 0.055, 0.040, 0.025, 0.012, // 18-23 (evening peak)
+  0.005,
+  0.003,
+  0.002,
+  0.002,
+  0.003,
+  0.008, // 00-05 (night)
+  0.02,
+  0.045,
+  0.065,
+  0.075,
+  0.07,
+  0.06, // 06-11 (morning peak)
+  0.055,
+  0.055,
+  0.055,
+  0.05,
+  0.045,
+  0.065, // 12-17 (midday)
+  0.075,
+  0.07,
+  0.055,
+  0.04,
+  0.025,
+  0.012, // 18-23 (evening peak)
 ];
 
 // Normalize to sum to 1

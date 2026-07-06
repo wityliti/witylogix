@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import type { FastifyRequest, FastifyReply } from "fastify";
 
 /**
  * Carriers Route Integration Tests
@@ -62,54 +62,54 @@ interface MockCarrierServiceLevel {
 }
 
 const generateCarrier = (overrides?: Partial<MockCarrier>): MockCarrier => ({
-  id: 'carrier-' + Math.random().toString(36).substring(7),
-  shopId: 'shop-123',
-  name: 'FedEx',
-  code: 'FEDEX',
+  id: "carrier-" + Math.random().toString(36).substring(7),
+  shopId: "shop-123",
+  name: "FedEx",
+  code: "FEDEX",
   isActive: true,
   trackingEnabled: true,
-  trackingUrl: 'https://tracking.fedex.com',
-  apiKey: 'fedex-api-key',
+  trackingUrl: "https://tracking.fedex.com",
+  apiKey: "fedex-api-key",
   maxWeight: 70,
   maxDimensions: { length: 120, width: 80, height: 80 },
   estimatedDeliveryDays: 3,
-  supportedCountries: ['US', 'CA', 'MX'],
-  supportedZones: ['zone-1', 'zone-2', 'zone-3'],
-  createdAt: new Date('2026-03-09T10:00:00Z'),
-  updatedAt: new Date('2026-03-09T10:00:00Z'),
+  supportedCountries: ["US", "CA", "MX"],
+  supportedZones: ["zone-1", "zone-2", "zone-3"],
+  createdAt: new Date("2026-03-09T10:00:00Z"),
+  updatedAt: new Date("2026-03-09T10:00:00Z"),
   ...overrides,
 });
 
 const generateCarrierRate = (
-  overrides?: Partial<MockCarrierRate>
+  overrides?: Partial<MockCarrierRate>,
 ): MockCarrierRate => ({
-  id: 'rate-' + Math.random().toString(36).substring(7),
-  carrierId: 'carrier-123',
-  fromZone: 'zone-1',
-  toZone: 'zone-2',
+  id: "rate-" + Math.random().toString(36).substring(7),
+  carrierId: "carrier-123",
+  fromZone: "zone-1",
+  toZone: "zone-2",
   minWeight: 0,
   maxWeight: 10,
   baseCost: 15.99,
   costPerUnit: 1.5,
-  currency: 'USD',
+  currency: "USD",
   isActive: true,
   ...overrides,
 });
 
 const generateServiceLevel = (
-  overrides?: Partial<MockCarrierServiceLevel>
+  overrides?: Partial<MockCarrierServiceLevel>,
 ): MockCarrierServiceLevel => ({
-  id: 'service-' + Math.random().toString(36).substring(7),
-  carrierId: 'carrier-123',
-  name: 'Express',
-  code: 'EXPRESS',
+  id: "service-" + Math.random().toString(36).substring(7),
+  carrierId: "carrier-123",
+  name: "Express",
+  code: "EXPRESS",
   estimatedDays: 2,
   cost: 25.0,
   isActive: true,
   ...overrides,
 });
 
-describe('Carriers Routes', () => {
+describe("Carriers Routes", () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
   let mockPrisma: Record<string, any>;
@@ -158,8 +158,8 @@ describe('Carriers Routes', () => {
     };
   });
 
-  describe('GET /api/v4/carriers (List)', () => {
-    it('should list all carriers with pagination', async () => {
+  describe("GET /api/v4/carriers (List)", () => {
+    it("should list all carriers with pagination", async () => {
       const carriers = [generateCarrier(), generateCarrier()];
       mockPrisma.carrier.findMany.mockResolvedValue(carriers);
 
@@ -171,18 +171,18 @@ describe('Carriers Routes', () => {
       expect(result).toHaveLength(2);
     });
 
-    it('should return 200 with carrier list', async () => {
+    it("should return 200 with carrier list", async () => {
       const carriers = [generateCarrier()];
       mockPrisma.carrier.findMany.mockResolvedValue(carriers);
 
       const result = await (mockPrisma as any).carrier.findMany();
 
-      expect(result[0]).toHaveProperty('id');
-      expect(result[0]).toHaveProperty('name');
-      expect(result[0]).toHaveProperty('code');
+      expect(result[0]).toHaveProperty("id");
+      expect(result[0]).toHaveProperty("name");
+      expect(result[0]).toHaveProperty("code");
     });
 
-    it('should support pagination with skip and limit', async () => {
+    it("should support pagination with skip and limit", async () => {
       const carriers = [generateCarrier()];
       mockPrisma.carrier.findMany.mockResolvedValue(carriers);
 
@@ -194,11 +194,11 @@ describe('Carriers Routes', () => {
       });
 
       expect(mockPrisma.carrier.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ skip: 10, take: 50 })
+        expect.objectContaining({ skip: 10, take: 50 }),
       );
     });
 
-    it('should filter carriers by isActive status', async () => {
+    it("should filter carriers by isActive status", async () => {
       const carriers = [generateCarrier({ isActive: true })];
       mockPrisma.carrier.findMany.mockResolvedValue(carriers);
 
@@ -211,7 +211,7 @@ describe('Carriers Routes', () => {
       expect(result[0].isActive).toBe(true);
     });
 
-    it('should include total count in response', async () => {
+    it("should include total count in response", async () => {
       mockPrisma.carrier.count.mockResolvedValue(5);
 
       const count = await (mockPrisma as any).carrier.count();
@@ -219,21 +219,21 @@ describe('Carriers Routes', () => {
       expect(count).toBe(5);
     });
 
-    it('should sort carriers by name', async () => {
+    it("should sort carriers by name", async () => {
       const carriers = [
-        generateCarrier({ name: 'FedEx' }),
-        generateCarrier({ name: 'UPS' }),
+        generateCarrier({ name: "FedEx" }),
+        generateCarrier({ name: "UPS" }),
       ];
       mockPrisma.carrier.findMany.mockResolvedValue(carriers);
 
       await (mockPrisma as any).carrier.findMany({
-        orderBy: { name: 'asc' },
+        orderBy: { name: "asc" },
       });
 
       expect(mockPrisma.carrier.findMany).toHaveBeenCalled();
     });
 
-    it('should return empty array when no carriers exist', async () => {
+    it("should return empty array when no carriers exist", async () => {
       mockPrisma.carrier.findMany.mockResolvedValue([]);
 
       const result = await (mockPrisma as any).carrier.findMany();
@@ -242,21 +242,21 @@ describe('Carriers Routes', () => {
     });
   });
 
-  describe('GET /api/v4/carriers/:id (Detail)', () => {
-    it('should retrieve carrier by ID', async () => {
-      const carrier = generateCarrier({ id: 'carrier-123' });
+  describe("GET /api/v4/carriers/:id (Detail)", () => {
+    it("should retrieve carrier by ID", async () => {
+      const carrier = generateCarrier({ id: "carrier-123" });
       mockPrisma.carrier.findUnique.mockResolvedValue(carrier);
 
-      mockRequest.params = { id: 'carrier-123' };
+      mockRequest.params = { id: "carrier-123" };
 
       const result = await (mockPrisma as any).carrier.findUnique({
-        where: { id: 'carrier-123' },
+        where: { id: "carrier-123" },
       });
 
-      expect(result.id).toBe('carrier-123');
+      expect(result.id).toBe("carrier-123");
     });
 
-    it('should return 200 with carrier details', async () => {
+    it("should return 200 with carrier details", async () => {
       const carrier = generateCarrier();
       mockPrisma.carrier.findUnique.mockResolvedValue(carrier);
 
@@ -264,28 +264,28 @@ describe('Carriers Routes', () => {
         where: { id: carrier.id },
       });
 
-      expect(result).toHaveProperty('id');
-      expect(result).toHaveProperty('name');
-      expect(result).toHaveProperty('code');
-      expect(result).toHaveProperty('trackingEnabled');
+      expect(result).toHaveProperty("id");
+      expect(result).toHaveProperty("name");
+      expect(result).toHaveProperty("code");
+      expect(result).toHaveProperty("trackingEnabled");
     });
 
-    it('should return 404 when carrier not found', async () => {
+    it("should return 404 when carrier not found", async () => {
       mockPrisma.carrier.findUnique.mockResolvedValue(null);
 
-      mockRequest.params = { id: 'nonexistent' };
+      mockRequest.params = { id: "nonexistent" };
 
       const result = await (mockPrisma as any).carrier.findUnique({
-        where: { id: 'nonexistent' },
+        where: { id: "nonexistent" },
       });
 
       expect(result).toBeNull();
     });
 
-    it('should include supported countries and zones', async () => {
+    it("should include supported countries and zones", async () => {
       const carrier = generateCarrier({
-        supportedCountries: ['US', 'CA', 'MX'],
-        supportedZones: ['zone-1', 'zone-2'],
+        supportedCountries: ["US", "CA", "MX"],
+        supportedZones: ["zone-1", "zone-2"],
       });
       mockPrisma.carrier.findUnique.mockResolvedValue(carrier);
 
@@ -293,88 +293,88 @@ describe('Carriers Routes', () => {
         where: { id: carrier.id },
       });
 
-      expect(result.supportedCountries).toContain('US');
-      expect(result.supportedZones).toContain('zone-1');
+      expect(result.supportedCountries).toContain("US");
+      expect(result.supportedZones).toContain("zone-1");
     });
   });
 
-  describe('POST /api/v4/carriers (Create)', () => {
-    it('should create a new carrier with required fields', async () => {
+  describe("POST /api/v4/carriers (Create)", () => {
+    it("should create a new carrier with required fields", async () => {
       const carrier = generateCarrier();
       mockPrisma.carrier.create.mockResolvedValue(carrier);
 
       mockRequest.body = {
-        name: 'FedEx',
-        code: 'FEDEX',
-        trackingUrl: 'https://tracking.fedex.com',
+        name: "FedEx",
+        code: "FEDEX",
+        trackingUrl: "https://tracking.fedex.com",
       };
 
       const result = await (mockPrisma as any).carrier.create({
         data: mockRequest.body,
       });
 
-      expect(result.name).toBe('FedEx');
-      expect(result.code).toBe('FEDEX');
+      expect(result.name).toBe("FedEx");
+      expect(result.code).toBe("FEDEX");
     });
 
-    it('should return 201 for successful creation', async () => {
+    it("should return 201 for successful creation", async () => {
       const carrier = generateCarrier();
       mockPrisma.carrier.create.mockResolvedValue(carrier);
 
       mockRequest.body = {
-        name: 'UPS',
-        code: 'UPS',
+        name: "UPS",
+        code: "UPS",
       };
 
       const result = await (mockPrisma as any).carrier.create({
         data: mockRequest.body,
       });
 
-      expect(result).toHaveProperty('id');
+      expect(result).toHaveProperty("id");
     });
 
-    it('should require name field', () => {
+    it("should require name field", () => {
       mockRequest.body = {
-        code: 'FEDEX',
+        code: "FEDEX",
       };
 
       expect(mockRequest.body.name).toBeUndefined();
     });
 
-    it('should require code field', () => {
+    it("should require code field", () => {
       mockRequest.body = {
-        name: 'FedEx',
+        name: "FedEx",
       };
 
       expect(mockRequest.body.code).toBeUndefined();
     });
 
-    it('should validate code format (uppercase alphanumeric)', () => {
+    it("should validate code format (uppercase alphanumeric)", () => {
       mockRequest.body = {
-        name: 'FedEx',
-        code: 'fedex123',
+        name: "FedEx",
+        code: "fedex123",
       };
 
       const isValidCode = /^[A-Z0-9]+$/.test(String(mockRequest.body.code));
       expect(isValidCode).toBe(false);
     });
 
-    it('should validate name is not empty', () => {
+    it("should validate name is not empty", () => {
       mockRequest.body = {
-        name: '',
-        code: 'FEDEX',
+        name: "",
+        code: "FEDEX",
       };
 
       expect(String(mockRequest.body.name).length).toBe(0);
     });
 
-    it('should accept optional trackingEnabled flag', async () => {
+    it("should accept optional trackingEnabled flag", async () => {
       const carrier = generateCarrier({ trackingEnabled: true });
       mockPrisma.carrier.create.mockResolvedValue(carrier);
 
       mockRequest.body = {
-        name: 'FedEx',
-        code: 'FEDEX',
+        name: "FedEx",
+        code: "FEDEX",
         trackingEnabled: true,
       };
 
@@ -385,32 +385,32 @@ describe('Carriers Routes', () => {
       expect(result.trackingEnabled).toBe(true);
     });
 
-    it('should accept optional trackingUrl', async () => {
+    it("should accept optional trackingUrl", async () => {
       const carrier = generateCarrier({
-        trackingUrl: 'https://tracking.fedex.com',
+        trackingUrl: "https://tracking.fedex.com",
       });
       mockPrisma.carrier.create.mockResolvedValue(carrier);
 
       mockRequest.body = {
-        name: 'FedEx',
-        code: 'FEDEX',
-        trackingUrl: 'https://tracking.fedex.com',
+        name: "FedEx",
+        code: "FEDEX",
+        trackingUrl: "https://tracking.fedex.com",
       };
 
       const result = await (mockPrisma as any).carrier.create({
         data: mockRequest.body,
       });
 
-      expect(result.trackingUrl).toBe('https://tracking.fedex.com');
+      expect(result.trackingUrl).toBe("https://tracking.fedex.com");
     });
 
-    it('should accept optional maxWeight', async () => {
+    it("should accept optional maxWeight", async () => {
       const carrier = generateCarrier({ maxWeight: 70 });
       mockPrisma.carrier.create.mockResolvedValue(carrier);
 
       mockRequest.body = {
-        name: 'FedEx',
-        code: 'FEDEX',
+        name: "FedEx",
+        code: "FEDEX",
         maxWeight: 70,
       };
 
@@ -421,22 +421,22 @@ describe('Carriers Routes', () => {
       expect(result.maxWeight).toBe(70);
     });
 
-    it('should return 400 for missing required fields', () => {
+    it("should return 400 for missing required fields", () => {
       mockRequest.body = {
-        name: 'FedEx',
+        name: "FedEx",
       };
 
       expect(mockRequest.body.code).toBeUndefined();
     });
 
-    it('should return 409 for duplicate carrier code', async () => {
+    it("should return 409 for duplicate carrier code", async () => {
       mockPrisma.carrier.create.mockRejectedValue(
-        new Error('Unique constraint failed')
+        new Error("Unique constraint failed"),
       );
 
       mockRequest.body = {
-        name: 'FedEx',
-        code: 'FEDEX',
+        name: "FedEx",
+        code: "FEDEX",
       };
 
       try {
@@ -444,28 +444,28 @@ describe('Carriers Routes', () => {
           data: mockRequest.body,
         });
       } catch (error) {
-        expect((error as Error).message).toContain('Unique');
+        expect((error as Error).message).toContain("Unique");
       }
     });
   });
 
-  describe('PATCH /api/v4/carriers/:id (Update)', () => {
-    it('should update carrier fields', async () => {
-      const carrier = generateCarrier({ id: 'carrier-123', name: 'FedEx' });
+  describe("PATCH /api/v4/carriers/:id (Update)", () => {
+    it("should update carrier fields", async () => {
+      const carrier = generateCarrier({ id: "carrier-123", name: "FedEx" });
       mockPrisma.carrier.update.mockResolvedValue(carrier);
 
-      mockRequest.params = { id: 'carrier-123' };
-      mockRequest.body = { name: 'FedEx Express' };
+      mockRequest.params = { id: "carrier-123" };
+      mockRequest.body = { name: "FedEx Express" };
 
       const result = await (mockPrisma as any).carrier.update({
-        where: { id: 'carrier-123' },
+        where: { id: "carrier-123" },
         data: mockRequest.body,
       });
 
-      expect(result.id).toBe('carrier-123');
+      expect(result.id).toBe("carrier-123");
     });
 
-    it('should return 200 for successful update', async () => {
+    it("should return 200 for successful update", async () => {
       const carrier = generateCarrier();
       mockPrisma.carrier.update.mockResolvedValue(carrier);
 
@@ -477,77 +477,77 @@ describe('Carriers Routes', () => {
         data: mockRequest.body,
       });
 
-      expect(result).toHaveProperty('id');
+      expect(result).toHaveProperty("id");
     });
 
-    it('should return 404 when carrier not found', async () => {
+    it("should return 404 when carrier not found", async () => {
       mockPrisma.carrier.update.mockRejectedValue(
-        new Error('Record not found')
+        new Error("Record not found"),
       );
 
-      mockRequest.params = { id: 'nonexistent' };
-      mockRequest.body = { name: 'New Name' };
+      mockRequest.params = { id: "nonexistent" };
+      mockRequest.body = { name: "New Name" };
 
       try {
         await (mockPrisma as any).carrier.update({
-          where: { id: 'nonexistent' },
+          where: { id: "nonexistent" },
           data: mockRequest.body,
         });
       } catch (error) {
-        expect((error as Error).message).toContain('not found');
+        expect((error as Error).message).toContain("not found");
       }
     });
 
-    it('should allow updating isActive status', async () => {
+    it("should allow updating isActive status", async () => {
       const carrier = generateCarrier({ isActive: false });
       mockPrisma.carrier.update.mockResolvedValue(carrier);
 
       mockRequest.body = { isActive: false };
 
       const result = await (mockPrisma as any).carrier.update({
-        where: { id: 'carrier-123' },
+        where: { id: "carrier-123" },
         data: mockRequest.body,
       });
 
       expect(result.isActive).toBe(false);
     });
 
-    it('should allow updating supportedCountries', async () => {
+    it("should allow updating supportedCountries", async () => {
       const carrier = generateCarrier({
-        supportedCountries: ['US', 'CA', 'MX'],
+        supportedCountries: ["US", "CA", "MX"],
       });
       mockPrisma.carrier.update.mockResolvedValue(carrier);
 
       mockRequest.body = {
-        supportedCountries: ['US', 'CA', 'MX'],
+        supportedCountries: ["US", "CA", "MX"],
       };
 
       const result = await (mockPrisma as any).carrier.update({
-        where: { id: 'carrier-123' },
+        where: { id: "carrier-123" },
         data: mockRequest.body,
       });
 
-      expect(result.supportedCountries).toContain('MX');
+      expect(result.supportedCountries).toContain("MX");
     });
   });
 
-  describe('DELETE /api/v4/carriers/:id (Delete)', () => {
-    it('should delete a carrier', async () => {
-      const carrier = generateCarrier({ id: 'carrier-123' });
+  describe("DELETE /api/v4/carriers/:id (Delete)", () => {
+    it("should delete a carrier", async () => {
+      const carrier = generateCarrier({ id: "carrier-123" });
       mockPrisma.carrier.delete.mockResolvedValue(carrier);
 
-      mockRequest.params = { id: 'carrier-123' };
+      mockRequest.params = { id: "carrier-123" };
 
       await (mockPrisma as any).carrier.delete({
-        where: { id: 'carrier-123' },
+        where: { id: "carrier-123" },
       });
 
       expect(mockPrisma.carrier.delete).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { id: 'carrier-123' } })
+        expect.objectContaining({ where: { id: "carrier-123" } }),
       );
     });
 
-    it('should return 200 for successful deletion', async () => {
+    it("should return 200 for successful deletion", async () => {
       const carrier = generateCarrier();
       mockPrisma.carrier.delete.mockResolvedValue(carrier);
 
@@ -555,71 +555,71 @@ describe('Carriers Routes', () => {
         where: { id: carrier.id },
       });
 
-      expect(result).toHaveProperty('id');
+      expect(result).toHaveProperty("id");
     });
 
-    it('should return 404 when carrier not found', async () => {
+    it("should return 404 when carrier not found", async () => {
       mockPrisma.carrier.delete.mockRejectedValue(
-        new Error('Record not found')
+        new Error("Record not found"),
       );
 
       try {
         await (mockPrisma as any).carrier.delete({
-          where: { id: 'nonexistent' },
+          where: { id: "nonexistent" },
         });
       } catch (error) {
-        expect((error as Error).message).toContain('not found');
+        expect((error as Error).message).toContain("not found");
       }
     });
 
-    it('should prevent deletion of carriers with active shipments', async () => {
+    it("should prevent deletion of carriers with active shipments", async () => {
       mockPrisma.carrier.delete.mockRejectedValue(
-        new Error('Foreign key constraint failed')
+        new Error("Foreign key constraint failed"),
       );
 
       try {
         await (mockPrisma as any).carrier.delete({
-          where: { id: 'carrier-123' },
+          where: { id: "carrier-123" },
         });
       } catch (error) {
-        expect((error as Error).message).toContain('constraint');
+        expect((error as Error).message).toContain("constraint");
       }
     });
   });
 
-  describe('GET /api/v4/carriers/:id/rates (Rate Configuration)', () => {
-    it('should list carrier rates', async () => {
+  describe("GET /api/v4/carriers/:id/rates (Rate Configuration)", () => {
+    it("should list carrier rates", async () => {
       const rates = [generateCarrierRate(), generateCarrierRate()];
       mockPrisma.carrierRate.findMany.mockResolvedValue(rates);
 
-      mockRequest.params = { id: 'carrier-123' };
+      mockRequest.params = { id: "carrier-123" };
 
       const result = await (mockPrisma as any).carrierRate.findMany({
-        where: { carrierId: 'carrier-123' },
+        where: { carrierId: "carrier-123" },
       });
 
       expect(result).toHaveLength(2);
     });
 
-    it('should return rates with all fields', async () => {
+    it("should return rates with all fields", async () => {
       const rates = [generateCarrierRate()];
       mockPrisma.carrierRate.findMany.mockResolvedValue(rates);
 
       const result = await (mockPrisma as any).carrierRate.findMany({
-        where: { carrierId: 'carrier-123' },
+        where: { carrierId: "carrier-123" },
       });
 
-      expect(result[0]).toHaveProperty('fromZone');
-      expect(result[0]).toHaveProperty('toZone');
-      expect(result[0]).toHaveProperty('baseCost');
+      expect(result[0]).toHaveProperty("fromZone");
+      expect(result[0]).toHaveProperty("toZone");
+      expect(result[0]).toHaveProperty("baseCost");
     });
 
-    it('should filter rates by weight range', async () => {
+    it("should filter rates by weight range", async () => {
       const rates = [generateCarrierRate({ minWeight: 0, maxWeight: 10 })];
       mockPrisma.carrierRate.findMany.mockResolvedValue(rates);
 
       const result = await (mockPrisma as any).carrierRate.findMany({
-        where: { carrierId: 'carrier-123' },
+        where: { carrierId: "carrier-123" },
       });
 
       expect(result[0].minWeight).toBe(0);
@@ -627,19 +627,19 @@ describe('Carriers Routes', () => {
     });
   });
 
-  describe('POST /api/v4/carriers/:id/rates (Set Rates)', () => {
-    it('should create carrier rate', async () => {
+  describe("POST /api/v4/carriers/:id/rates (Set Rates)", () => {
+    it("should create carrier rate", async () => {
       const rate = generateCarrierRate();
       mockPrisma.carrierRate.create.mockResolvedValue(rate);
 
-      mockRequest.params = { id: 'carrier-123' };
+      mockRequest.params = { id: "carrier-123" };
       mockRequest.body = {
-        fromZone: 'zone-1',
-        toZone: 'zone-2',
+        fromZone: "zone-1",
+        toZone: "zone-2",
         minWeight: 0,
         maxWeight: 10,
         baseCost: 15.99,
-        currency: 'USD',
+        currency: "USD",
       };
 
       const result = await (mockPrisma as any).carrierRate.create({
@@ -649,26 +649,26 @@ describe('Carriers Routes', () => {
       expect(result.baseCost).toBe(15.99);
     });
 
-    it('should return 201 for successful rate creation', async () => {
+    it("should return 201 for successful rate creation", async () => {
       const rate = generateCarrierRate();
       mockPrisma.carrierRate.create.mockResolvedValue(rate);
 
       const result = await (mockPrisma as any).carrierRate.create({
         data: {
-          carrierId: 'carrier-123',
-          fromZone: 'zone-1',
-          toZone: 'zone-2',
+          carrierId: "carrier-123",
+          fromZone: "zone-1",
+          toZone: "zone-2",
           minWeight: 0,
           maxWeight: 10,
           baseCost: 15.99,
-          currency: 'USD',
+          currency: "USD",
         },
       });
 
-      expect(result).toHaveProperty('id');
+      expect(result).toHaveProperty("id");
     });
 
-    it('should require fromZone and toZone', () => {
+    it("should require fromZone and toZone", () => {
       mockRequest.body = {
         minWeight: 0,
         maxWeight: 10,
@@ -679,24 +679,24 @@ describe('Carriers Routes', () => {
       expect(mockRequest.body.toZone).toBeUndefined();
     });
 
-    it('should require valid weight range', () => {
+    it("should require valid weight range", () => {
       mockRequest.body = {
-        fromZone: 'zone-1',
-        toZone: 'zone-2',
+        fromZone: "zone-1",
+        toZone: "zone-2",
         minWeight: 10,
         maxWeight: 5,
         baseCost: 15.99,
       };
 
       expect(mockRequest.body.minWeight).toBeGreaterThan(
-        mockRequest.body.maxWeight
+        mockRequest.body.maxWeight,
       );
     });
 
-    it('should require baseCost > 0', () => {
+    it("should require baseCost > 0", () => {
       mockRequest.body = {
-        fromZone: 'zone-1',
-        toZone: 'zone-2',
+        fromZone: "zone-1",
+        toZone: "zone-2",
         minWeight: 0,
         maxWeight: 10,
         baseCost: -5,
@@ -705,112 +705,118 @@ describe('Carriers Routes', () => {
       expect(Number(mockRequest.body.baseCost)).toBeLessThanOrEqual(0);
     });
 
-    it('should require valid currency code', () => {
+    it("should require valid currency code", () => {
       mockRequest.body = {
-        fromZone: 'zone-1',
-        toZone: 'zone-2',
+        fromZone: "zone-1",
+        toZone: "zone-2",
         minWeight: 0,
         maxWeight: 10,
         baseCost: 15.99,
-        currency: 'INVALID',
+        currency: "INVALID",
       };
 
-      const validCurrencies = ['USD', 'EUR', 'GBP', 'CAD'];
+      const validCurrencies = ["USD", "EUR", "GBP", "CAD"];
       expect(validCurrencies.includes(String(mockRequest.body.currency))).toBe(
-        false
+        false,
       );
     });
   });
 
-  describe('GET /api/v4/carriers/:id/service-levels (Service Levels)', () => {
-    it('should list carrier service levels', async () => {
+  describe("GET /api/v4/carriers/:id/service-levels (Service Levels)", () => {
+    it("should list carrier service levels", async () => {
       const levels = [generateServiceLevel(), generateServiceLevel()];
       mockPrisma.carrierServiceLevel.findMany.mockResolvedValue(levels);
 
-      mockRequest.params = { id: 'carrier-123' };
+      mockRequest.params = { id: "carrier-123" };
 
       const result = await (mockPrisma as any).carrierServiceLevel.findMany({
-        where: { carrierId: 'carrier-123' },
+        where: { carrierId: "carrier-123" },
       });
 
       expect(result).toHaveLength(2);
     });
 
-    it('should return service levels with estimated days', async () => {
+    it("should return service levels with estimated days", async () => {
       const levels = [generateServiceLevel({ estimatedDays: 2 })];
       mockPrisma.carrierServiceLevel.findMany.mockResolvedValue(levels);
 
       const result = await (mockPrisma as any).carrierServiceLevel.findMany({
-        where: { carrierId: 'carrier-123' },
+        where: { carrierId: "carrier-123" },
       });
 
       expect(result[0].estimatedDays).toBe(2);
     });
 
-    it('should include service level costs', async () => {
+    it("should include service level costs", async () => {
       const levels = [generateServiceLevel({ cost: 25.0 })];
       mockPrisma.carrierServiceLevel.findMany.mockResolvedValue(levels);
 
       const result = await (mockPrisma as any).carrierServiceLevel.findMany({
-        where: { carrierId: 'carrier-123' },
+        where: { carrierId: "carrier-123" },
       });
 
       expect(result[0].cost).toBe(25.0);
     });
   });
 
-  describe('GET /api/v4/carriers/:id/availability (Availability by Zone)', () => {
-    it('should return carrier availability by zone', async () => {
+  describe("GET /api/v4/carriers/:id/availability (Availability by Zone)", () => {
+    it("should return carrier availability by zone", async () => {
       const availability = [
-        { zone: 'zone-1', available: true, maxWeight: 70 },
-        { zone: 'zone-2', available: true, maxWeight: 70 },
+        { zone: "zone-1", available: true, maxWeight: 70 },
+        { zone: "zone-2", available: true, maxWeight: 70 },
       ];
       mockPrisma.carrierZoneAvailability.findMany.mockResolvedValue(
-        availability
+        availability,
       );
 
-      mockRequest.params = { id: 'carrier-123' };
+      mockRequest.params = { id: "carrier-123" };
 
-      const result = await (mockPrisma as any).carrierZoneAvailability.findMany({
-        where: { carrierId: 'carrier-123' },
-      });
+      const result = await (mockPrisma as any).carrierZoneAvailability.findMany(
+        {
+          where: { carrierId: "carrier-123" },
+        },
+      );
 
       expect(result).toHaveLength(2);
     });
 
-    it('should indicate zone availability status', async () => {
+    it("should indicate zone availability status", async () => {
       const availability = [
-        { zone: 'zone-1', available: true },
-        { zone: 'zone-2', available: false },
+        { zone: "zone-1", available: true },
+        { zone: "zone-2", available: false },
       ];
       mockPrisma.carrierZoneAvailability.findMany.mockResolvedValue(
-        availability
+        availability,
       );
 
-      const result = await (mockPrisma as any).carrierZoneAvailability.findMany();
+      const result = await (
+        mockPrisma as any
+      ).carrierZoneAvailability.findMany();
 
       expect(result[0].available).toBe(true);
       expect(result[1].available).toBe(false);
     });
 
-    it('should show maximum weight per zone', async () => {
-      const availability = [{ zone: 'zone-1', available: true, maxWeight: 70 }];
+    it("should show maximum weight per zone", async () => {
+      const availability = [{ zone: "zone-1", available: true, maxWeight: 70 }];
       mockPrisma.carrierZoneAvailability.findMany.mockResolvedValue(
-        availability
+        availability,
       );
 
-      const result = await (mockPrisma as any).carrierZoneAvailability.findMany();
+      const result = await (
+        mockPrisma as any
+      ).carrierZoneAvailability.findMany();
 
       expect(result[0].maxWeight).toBe(70);
     });
   });
 
-  describe('GET /api/v4/carriers/:id/tracking (Tracking Integration)', () => {
-    it('should return tracking settings for carrier', async () => {
+  describe("GET /api/v4/carriers/:id/tracking (Tracking Integration)", () => {
+    it("should return tracking settings for carrier", async () => {
       const carrier = generateCarrier({
         trackingEnabled: true,
-        trackingUrl: 'https://tracking.fedex.com',
-        apiKey: 'fedex-api-key',
+        trackingUrl: "https://tracking.fedex.com",
+        apiKey: "fedex-api-key",
       });
       mockPrisma.carrier.findUnique.mockResolvedValue(carrier);
 
@@ -819,10 +825,10 @@ describe('Carriers Routes', () => {
       });
 
       expect(result.trackingEnabled).toBe(true);
-      expect(result.trackingUrl).toBe('https://tracking.fedex.com');
+      expect(result.trackingUrl).toBe("https://tracking.fedex.com");
     });
 
-    it('should indicate if tracking is enabled', async () => {
+    it("should indicate if tracking is enabled", async () => {
       const carrier = generateCarrier({ trackingEnabled: true });
       mockPrisma.carrier.findUnique.mockResolvedValue(carrier);
 
@@ -833,9 +839,9 @@ describe('Carriers Routes', () => {
       expect(result.trackingEnabled).toBe(true);
     });
 
-    it('should show tracking URL', async () => {
+    it("should show tracking URL", async () => {
       const carrier = generateCarrier({
-        trackingUrl: 'https://tracking.fedex.com',
+        trackingUrl: "https://tracking.fedex.com",
       });
       mockPrisma.carrier.findUnique.mockResolvedValue(carrier);
 
@@ -843,12 +849,12 @@ describe('Carriers Routes', () => {
         where: { id: carrier.id },
       });
 
-      expect(result.trackingUrl).toBe('https://tracking.fedex.com');
+      expect(result.trackingUrl).toBe("https://tracking.fedex.com");
     });
 
-    it('should show webhook URL if configured', async () => {
+    it("should show webhook URL if configured", async () => {
       const carrier = generateCarrier({
-        webhookUrl: 'https://webhook.example.com/tracking',
+        webhookUrl: "https://webhook.example.com/tracking",
       });
       mockPrisma.carrier.findUnique.mockResolvedValue(carrier);
 
@@ -856,11 +862,11 @@ describe('Carriers Routes', () => {
         where: { id: carrier.id },
       });
 
-      expect(result.webhookUrl).toBe('https://webhook.example.com/tracking');
+      expect(result.webhookUrl).toBe("https://webhook.example.com/tracking");
     });
 
-    it('should not expose API keys in response', async () => {
-      const carrier = generateCarrier({ apiKey: 'secret-key' });
+    it("should not expose API keys in response", async () => {
+      const carrier = generateCarrier({ apiKey: "secret-key" });
       mockPrisma.carrier.findUnique.mockResolvedValue({
         ...carrier,
         apiKey: undefined,
@@ -874,45 +880,45 @@ describe('Carriers Routes', () => {
     });
   });
 
-  describe('Carrier Validation', () => {
-    it('should validate carrier code is unique per shop', async () => {
+  describe("Carrier Validation", () => {
+    it("should validate carrier code is unique per shop", async () => {
       mockPrisma.carrier.create.mockRejectedValue(
-        new Error('Unique constraint failed on (shopId, code)')
+        new Error("Unique constraint failed on (shopId, code)"),
       );
 
       try {
         await (mockPrisma as any).carrier.create({
           data: {
-            shopId: 'shop-123',
-            name: 'FedEx',
-            code: 'FEDEX',
+            shopId: "shop-123",
+            name: "FedEx",
+            code: "FEDEX",
           },
         });
       } catch (error) {
-        expect((error as Error).message).toContain('Unique');
+        expect((error as Error).message).toContain("Unique");
       }
     });
 
-    it('should validate maxWeight is positive', () => {
+    it("should validate maxWeight is positive", () => {
       mockRequest.body = {
-        name: 'FedEx',
-        code: 'FEDEX',
+        name: "FedEx",
+        code: "FEDEX",
         maxWeight: -10,
       };
 
       expect(Number(mockRequest.body.maxWeight)).toBeLessThanOrEqual(0);
     });
 
-    it('should validate estimatedDeliveryDays is positive', () => {
+    it("should validate estimatedDeliveryDays is positive", () => {
       mockRequest.body = {
-        name: 'FedEx',
-        code: 'FEDEX',
+        name: "FedEx",
+        code: "FEDEX",
         estimatedDeliveryDays: -5,
       };
 
-      expect(Number(mockRequest.body.estimatedDeliveryDays)).toBeLessThanOrEqual(
-        0
-      );
+      expect(
+        Number(mockRequest.body.estimatedDeliveryDays),
+      ).toBeLessThanOrEqual(0);
     });
   });
 });

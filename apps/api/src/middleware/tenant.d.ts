@@ -22,13 +22,13 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 import { forTenant, forOrg } from "@witylogix/db";
 import { TenantRedis } from "../lib/redis.js";
 declare module "fastify" {
-    interface FastifyRequest {
-        tenantDb: ReturnType<typeof forTenant>;
-        orgDb?: ReturnType<typeof forOrg>;
-        tenantRedis: TenantRedis;
-        shopId: string;
-        orgId?: string;
-    }
+  interface FastifyRequest {
+    tenantDb: ReturnType<typeof forTenant>;
+    orgDb?: ReturnType<typeof forOrg>;
+    tenantRedis: TenantRedis;
+    shopId: string;
+    orgId?: string;
+  }
 }
 /**
  * Standard tenant context — used by all shop-scoped routes.
@@ -37,7 +37,10 @@ declare module "fastify" {
  *
  * Shopify webhooks, carrier service, orders, routes — all use this.
  */
-export declare function tenantContext(request: FastifyRequest, reply: FastifyReply): Promise<void>;
+export declare function tenantContext(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void>;
 /**
  * Org-level context — used by org management routes.
  * Provides request.orgDb for cross-shop queries (drivers, zones, members).
@@ -45,5 +48,8 @@ export declare function tenantContext(request: FastifyRequest, reply: FastifyRep
  * Must run AFTER requireAuth + tenantContext.
  * Only users with an orgId in their JWT can use this.
  */
-export declare function orgContext(request: FastifyRequest, reply: FastifyReply): Promise<void>;
+export declare function orgContext(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void>;
 //# sourceMappingURL=tenant.d.ts.map

@@ -93,12 +93,15 @@ export class TripReplayService {
       throw new Error("No positions provided for trip replay");
     }
 
-    const sortedPositions = [...positions].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    const sortedPositions = [...positions].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+    );
 
     const startPos = sortedPositions[0];
     const endPos = sortedPositions[sortedPositions.length - 1];
 
-    const totalDuration = (endPos.timestamp.getTime() - startPos.timestamp.getTime()) / (1000 * 60);
+    const totalDuration =
+      (endPos.timestamp.getTime() - startPos.timestamp.getTime()) / (1000 * 60);
     const waypoints: TripWaypoint[] = [];
     let totalDistance = 0;
     let maxSpeed = 0;
@@ -139,7 +142,10 @@ export class TripReplayService {
 
     // Detect stops (idle periods > 3 minutes)
     const stops = this.detectStops(sortedPositions);
-    const idleMinutes = stops.reduce((sum, stop) => sum + stop.durationMinutes, 0);
+    const idleMinutes = stops.reduce(
+      (sum, stop) => sum + stop.durationMinutes,
+      0,
+    );
 
     return {
       vehicleId,
@@ -184,7 +190,8 @@ export class TripReplayService {
         } else {
           currentStop.endTime = pos.timestamp;
           currentStop.durationMinutes =
-            (currentStop.endTime.getTime() - currentStop.startTime.getTime()) / (1000 * 60);
+            (currentStop.endTime.getTime() - currentStop.startTime.getTime()) /
+            (1000 * 60);
         }
       } else {
         if (currentStop && currentStop.durationMinutes >= minStopDuration) {
@@ -209,7 +216,9 @@ export class TripReplayService {
     const features: GeoJSONFeature[] = [];
 
     // Add route line
-    const routeCoordinates = timeline.waypoints.map((wp) => [wp.lng, wp.lat] as [number, number]);
+    const routeCoordinates = timeline.waypoints.map(
+      (wp) => [wp.lng, wp.lat] as [number, number],
+    );
     features.push({
       type: "Feature",
       geometry: {
@@ -278,7 +287,9 @@ export class TripReplayService {
   /**
    * Calculate speed profile for playback
    */
-  getSpeedProfile(timeline: TripReplayTimeline): Array<{ timestamp: Date; speed: number }> {
+  getSpeedProfile(
+    timeline: TripReplayTimeline,
+  ): Array<{ timestamp: Date; speed: number }> {
     return timeline.waypoints.map((wp) => ({
       timestamp: wp.timestamp,
       speed: wp.speed,
@@ -327,7 +338,8 @@ export class TripReplayService {
       });
 
       // Interpolate between current and next
-      const timeDiff = (next.timestamp.getTime() - current.timestamp.getTime()) / 1000; // seconds
+      const timeDiff =
+        (next.timestamp.getTime() - current.timestamp.getTime()) / 1000; // seconds
       const steps = Math.floor(timeDiff / intervalSeconds);
 
       if (steps > 1) {
@@ -335,10 +347,16 @@ export class TripReplayService {
           const ratio = step / steps;
           const interpLat = current.lat + (next.lat - current.lat) * ratio;
           const interpLng = current.lng + (next.lng - current.lng) * ratio;
-          const interpSpeed = current.speed + (next.speed - current.speed) * ratio;
-          const interpHeading = this.interpolateHeading(current.heading, next.heading, ratio);
+          const interpSpeed =
+            current.speed + (next.speed - current.speed) * ratio;
+          const interpHeading = this.interpolateHeading(
+            current.heading,
+            next.heading,
+            ratio,
+          );
           const interpTime = new Date(
-            current.timestamp.getTime() + (next.timestamp.getTime() - current.timestamp.getTime()) * ratio,
+            current.timestamp.getTime() +
+              (next.timestamp.getTime() - current.timestamp.getTime()) * ratio,
           );
 
           interpolated.push({
@@ -374,7 +392,12 @@ export class TripReplayService {
   /**
    * Haversine distance in miles
    */
-  private haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  private haversineDistance(
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number,
+  ): number {
     const R = 3959; // Earth radius in miles
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
     const dLng = ((lng2 - lng1) * Math.PI) / 180;
@@ -391,7 +414,11 @@ export class TripReplayService {
   /**
    * Interpolate heading between two angles
    */
-  private interpolateHeading(heading1: number, heading2: number, ratio: number): number {
+  private interpolateHeading(
+    heading1: number,
+    heading2: number,
+    ratio: number,
+  ): number {
     // Normalize angles to 0-360
     const h1 = heading1 % 360;
     const h2 = heading2 % 360;
@@ -417,7 +444,8 @@ export class TripReplayService {
     idlePercentage: number;
     stops: number;
   } {
-    const idlePercentage = (timeline.idleMinutes / timeline.totalDuration) * 100;
+    const idlePercentage =
+      (timeline.idleMinutes / timeline.totalDuration) * 100;
 
     return {
       totalDistance: timeline.totalDistance,

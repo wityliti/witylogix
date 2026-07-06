@@ -63,13 +63,21 @@ export class CognitoProvider implements BaseAuthProvider {
   /**
    * For OIDC flow, return the authorization URL.
    */
-  async authenticate(request: AuthenticationRequest): Promise<AuthResult | AuthorizationUrl> {
+  async authenticate(
+    request: AuthenticationRequest,
+  ): Promise<AuthResult | AuthorizationUrl> {
     const redirectUri = request.redirectUri;
     if (!redirectUri) {
-      throw new ConfigurationError("cognito", "redirectUri is required for Cognito OIDC flow");
+      throw new ConfigurationError(
+        "cognito",
+        "redirectUri is required for Cognito OIDC flow",
+      );
     }
 
-    return this.getAuthorizationUrl(redirectUri, request.state || this.generateState());
+    return this.getAuthorizationUrl(
+      redirectUri,
+      request.state || this.generateState(),
+    );
   }
 
   /**
@@ -120,7 +128,10 @@ export class CognitoProvider implements BaseAuthProvider {
         },
       };
     } catch (error) {
-      throw new ProviderUnavailableError("cognito", `Token exchange failed: ${String(error)}`);
+      throw new ProviderUnavailableError(
+        "cognito",
+        `Token exchange failed: ${String(error)}`,
+      );
     }
   }
 
@@ -174,14 +185,20 @@ export class CognitoProvider implements BaseAuthProvider {
         },
       };
     } catch (error) {
-      throw new ProviderUnavailableError("cognito", `Token refresh failed: ${String(error)}`);
+      throw new ProviderUnavailableError(
+        "cognito",
+        `Token refresh failed: ${String(error)}`,
+      );
     }
   }
 
   /**
    * Revoke a Cognito access token (logout).
    */
-  async revokeSession(accessToken: string, refreshToken?: string): Promise<void> {
+  async revokeSession(
+    accessToken: string,
+    refreshToken?: string,
+  ): Promise<void> {
     try {
       // In production: POST /oauth2/revoke
       // Payload: { token, client_id, client_secret }
@@ -217,7 +234,10 @@ export class CognitoProvider implements BaseAuthProvider {
   /**
    * Get authorization URL for Cognito SSO.
    */
-  async getAuthorizationUrl(redirectUri: string, state: string): Promise<AuthorizationUrl> {
+  async getAuthorizationUrl(
+    redirectUri: string,
+    state: string,
+  ): Promise<AuthorizationUrl> {
     const cognitoDomain = this.extractCognitoDomain();
 
     const params = new URLSearchParams({
@@ -240,7 +260,11 @@ export class CognitoProvider implements BaseAuthProvider {
    * Validate Cognito configuration.
    */
   async validateConfiguration(): Promise<void> {
-    if (!this.config.userPoolId || !this.config.region || !this.config.clientId) {
+    if (
+      !this.config.userPoolId ||
+      !this.config.region ||
+      !this.config.clientId
+    ) {
       throw new ConfigurationError(
         "cognito",
         "Cognito userPoolId, region, and clientId are required",
@@ -409,6 +433,8 @@ export class CognitoProvider implements BaseAuthProvider {
    * Generate random state token.
    */
   private generateState(): string {
-    return Buffer.from(Math.random().toString()).toString("base64").substring(0, 32);
+    return Buffer.from(Math.random().toString())
+      .toString("base64")
+      .substring(0, 32);
   }
 }

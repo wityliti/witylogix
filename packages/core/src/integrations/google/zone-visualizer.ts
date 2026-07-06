@@ -8,7 +8,7 @@ import type {
   GeoJSONFeature,
   GeoJSONFeatureCollection,
   CoverageStats,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Zone Visualizer Service
@@ -18,19 +18,21 @@ export class ZoneVisualizerService {
    * Convert zones to GeoJSON FeatureCollection
    */
   getZonePolygons(zones: Zone[]): GeoJSONFeatureCollection {
-    const features: GeoJSONFeature[] = zones.map(zone => {
+    const features: GeoJSONFeature[] = zones.map((zone) => {
       // Convert boundaries to polygon coordinates [lng, lat]
-      const coordinates = zone.boundaries.map(b => [b.longitude, b.latitude]);
+      const coordinates = zone.boundaries.map((b) => [b.longitude, b.latitude]);
 
       // Close the polygon by adding the first point at the end
-      if (coordinates.length > 0 &&
-          (coordinates[0][0] !== coordinates[coordinates.length - 1][0] ||
-           coordinates[0][1] !== coordinates[coordinates.length - 1][1])) {
+      if (
+        coordinates.length > 0 &&
+        (coordinates[0][0] !== coordinates[coordinates.length - 1][0] ||
+          coordinates[0][1] !== coordinates[coordinates.length - 1][1])
+      ) {
         coordinates.push(coordinates[0]);
       }
 
       return {
-        type: 'Feature',
+        type: "Feature",
         properties: {
           id: zone.id,
           name: zone.name,
@@ -40,14 +42,14 @@ export class ZoneVisualizerService {
           estimatedTime: zone.estimatedDeliveryTime || 0,
         },
         geometry: {
-          type: 'Polygon',
+          type: "Polygon",
           coordinates: [coordinates],
         },
       };
     });
 
     return {
-      type: 'FeatureCollection',
+      type: "FeatureCollection",
       features,
     };
   }
@@ -95,9 +97,10 @@ export class ZoneVisualizerService {
    * Calculate zone coverage statistics
    */
   calculateZoneCoverage(zones: Zone[]): CoverageStats {
-    const zoneDetails = zones.map(zone => {
+    const zoneDetails = zones.map((zone) => {
       const area = this.calculatePolygonArea(zone.boundaries);
-      const center = zone.center || this.calculatePolygonCenter(zone.boundaries);
+      const center =
+        zone.center || this.calculatePolygonCenter(zone.boundaries);
 
       return {
         zoneId: zone.id,
@@ -116,7 +119,8 @@ export class ZoneVisualizerService {
       totalZones: zones.length,
       totalArea,
       populationCovered: 0, // This would require external data
-      averageDensity: zoneDetails.length > 0 ? totalArea / zoneDetails.length : 0,
+      averageDensity:
+        zoneDetails.length > 0 ? totalArea / zoneDetails.length : 0,
       zoneDetails,
     };
   }
@@ -124,15 +128,17 @@ export class ZoneVisualizerService {
   /**
    * Calculate polygon area using Shoelace formula (in km²)
    */
-  private calculatePolygonArea(boundaries: Array<{ latitude: number; longitude: number }>): number {
+  private calculatePolygonArea(
+    boundaries: Array<{ latitude: number; longitude: number }>,
+  ): number {
     if (boundaries.length < 3) {
       return 0;
     }
 
     // Convert to radians for accurate area calculation
-    const points = boundaries.map(b => ({
-      lat: b.latitude * Math.PI / 180,
-      lng: b.longitude * Math.PI / 180,
+    const points = boundaries.map((b) => ({
+      lat: (b.latitude * Math.PI) / 180,
+      lng: (b.longitude * Math.PI) / 180,
     }));
 
     let area = 0;
@@ -151,7 +157,9 @@ export class ZoneVisualizerService {
   /**
    * Calculate polygon center (centroid)
    */
-  private calculatePolygonCenter(boundaries: Array<{ latitude: number; longitude: number }>): {
+  private calculatePolygonCenter(
+    boundaries: Array<{ latitude: number; longitude: number }>,
+  ): {
     latitude: number;
     longitude: number;
   } {
@@ -180,13 +188,13 @@ export class ZoneVisualizerService {
       width?: number;
       height?: number;
       zoom?: number;
-      maptype?: 'roadmap' | 'satellite' | 'terrain' | 'hybrid';
-    }
+      maptype?: "roadmap" | "satellite" | "terrain" | "hybrid";
+    },
   ): string {
     const width = options?.width || 600;
     const height = options?.height || 400;
     const zoom = options?.zoom || 12;
-    const maptype = options?.maptype || 'roadmap';
+    const maptype = options?.maptype || "roadmap";
 
     // Calculate center if not provided
     let centerPoint = center;
@@ -198,35 +206,38 @@ export class ZoneVisualizerService {
     }
 
     if (!centerPoint) {
-      throw new Error('No center point provided or calculable');
+      throw new Error("No center point provided or calculable");
     }
 
-    const baseUrl = 'https://maps.googleapis.com/maps/api/staticmap';
+    const baseUrl = "https://maps.googleapis.com/maps/api/staticmap";
     const params = new URLSearchParams();
 
-    params.append('center', `${centerPoint.latitude},${centerPoint.longitude}`);
-    params.append('zoom', zoom.toString());
-    params.append('size', `${width}x${height}`);
-    params.append('maptype', maptype);
-    params.append('scale', '2');
+    params.append("center", `${centerPoint.latitude},${centerPoint.longitude}`);
+    params.append("zoom", zoom.toString());
+    params.append("size", `${width}x${height}`);
+    params.append("maptype", maptype);
+    params.append("scale", "2");
 
     // Add zone boundaries as polylines
     for (const zone of zones) {
       if (zone.boundaries.length > 0) {
         const polyline = zone.boundaries
-          .map(b => `${b.latitude},${b.longitude}`)
-          .join('|');
-        params.append('path', `color:0x0000ff|weight:2|${polyline}`);
+          .map((b) => `${b.latitude},${b.longitude}`)
+          .join("|");
+        params.append("path", `color:0x0000ff|weight:2|${polyline}`);
 
         // Add zone center marker
         if (zone.center) {
-          params.append('markers', `color:0xff0000|label:${zone.id[0]}|${zone.center.latitude},${zone.center.longitude}`);
+          params.append(
+            "markers",
+            `color:0xff0000|label:${zone.id[0]}|${zone.center.latitude},${zone.center.longitude}`,
+          );
         }
       }
     }
 
     if (apiKey) {
-      params.append('key', apiKey);
+      params.append("key", apiKey);
     }
 
     return `${baseUrl}?${params.toString()}`;
@@ -237,8 +248,8 @@ export class ZoneVisualizerService {
    */
   getZoneKML(zone: Zone): string {
     const coordinates = zone.boundaries
-      .map(b => `${b.longitude},${b.latitude},0`)
-      .join(' ');
+      .map((b) => `${b.longitude},${b.latitude},0`)
+      .join(" ");
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
@@ -263,7 +274,7 @@ export class ZoneVisualizerService {
    */
   calculateDistance(
     point1: { latitude: number; longitude: number },
-    point2: { latitude: number; longitude: number }
+    point2: { latitude: number; longitude: number },
   ): number {
     const R = 6371; // Earth's radius in kilometers
     const dLat = this.toRad(point2.latitude - point1.latitude);
@@ -290,8 +301,9 @@ export class ZoneVisualizerService {
     longitude: number;
     weight: number;
   }> {
-    return zones.map(zone => {
-      const center = zone.center || this.calculatePolygonCenter(zone.boundaries);
+    return zones.map((zone) => {
+      const center =
+        zone.center || this.calculatePolygonCenter(zone.boundaries);
       const weight = zone.boundaries.length; // Weight by number of points
 
       return {
@@ -307,7 +319,7 @@ export class ZoneVisualizerService {
    */
   simplifyBoundaries(
     boundaries: Array<{ latitude: number; longitude: number }>,
-    tolerance: number = 0.0001
+    tolerance: number = 0.0001,
   ): Array<{ latitude: number; longitude: number }> {
     if (boundaries.length <= 2) {
       return boundaries;
@@ -317,7 +329,11 @@ export class ZoneVisualizerService {
 
     // Find the point with the maximum distance from line segment
     for (let i = 1; i < boundaries.length - 1; i++) {
-      const d = this.perpendicularDistance(boundaries[i], boundaries[0], boundaries[boundaries.length - 1]);
+      const d = this.perpendicularDistance(
+        boundaries[i],
+        boundaries[0],
+        boundaries[boundaries.length - 1],
+      );
       if (d > dmax.distance) {
         dmax.index = i;
         dmax.distance = d;
@@ -325,8 +341,14 @@ export class ZoneVisualizerService {
     }
 
     if (dmax.distance > tolerance) {
-      const left = this.simplifyBoundaries(boundaries.slice(0, dmax.index + 1), tolerance);
-      const right = this.simplifyBoundaries(boundaries.slice(dmax.index), tolerance);
+      const left = this.simplifyBoundaries(
+        boundaries.slice(0, dmax.index + 1),
+        tolerance,
+      );
+      const right = this.simplifyBoundaries(
+        boundaries.slice(dmax.index),
+        tolerance,
+      );
       return [...left.slice(0, -1), ...right];
     } else {
       return [boundaries[0], boundaries[boundaries.length - 1]];
@@ -336,13 +358,15 @@ export class ZoneVisualizerService {
   private perpendicularDistance(
     point: { latitude: number; longitude: number },
     lineStart: { latitude: number; longitude: number },
-    lineEnd: { latitude: number; longitude: number }
+    lineEnd: { latitude: number; longitude: number },
   ): number {
     const { latitude: x, longitude: y } = point;
     const { latitude: x1, longitude: y1 } = lineStart;
     const { latitude: x2, longitude: y2 } = lineEnd;
 
-    const numerator = Math.abs((y2 - y1) * x - (x2 - x1) * y + x2 * y1 - y2 * x1);
+    const numerator = Math.abs(
+      (y2 - y1) * x - (x2 - x1) * y + x2 * y1 - y2 * x1,
+    );
     const denominator = Math.sqrt(Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2));
 
     return denominator === 0 ? 0 : numerator / denominator;

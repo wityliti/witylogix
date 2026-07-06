@@ -272,11 +272,7 @@ export interface CycleRule {
  */
 export interface RuleSet {
   /** Jurisdiction: US_PROPERTY, US_PASSENGER, CANADA_FEDERAL, MEXICO */
-  jurisdiction:
-    | "US_PROPERTY"
-    | "US_PASSENGER"
-    | "CANADA_FEDERAL"
-    | "MEXICO";
+  jurisdiction: "US_PROPERTY" | "US_PASSENGER" | "CANADA_FEDERAL" | "MEXICO";
 
   /** Driving limit in hours per day */
   maxDrivingHours: number;

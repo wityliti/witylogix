@@ -40,10 +40,7 @@ describe("FreightWavesSONARClient", () => {
           ["x-ratelimit-limit", "100"],
           ["x-ratelimit-day-remaining", "9800"],
           ["x-ratelimit-day-limit", "10000"],
-          [
-            "x-ratelimit-reset",
-            String(Math.floor(Date.now() / 1000) + 3600),
-          ],
+          ["x-ratelimit-reset", String(Math.floor(Date.now() / 1000) + 3600)],
         ]),
         json: async () => [
           {
@@ -357,7 +354,7 @@ describe("FreightWavesSONARClient", () => {
       expect(result).toHaveLength(3);
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("metrics=OTVI,TLI,OTRI"),
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -367,7 +364,7 @@ describe("FreightWavesSONARClient", () => {
       await expect(
         client.batchQueryMetrics({
           metrics: metrics as any,
-        })
+        }),
       ).rejects.toThrow("Maximum 50 metrics");
     });
 
@@ -411,10 +408,7 @@ describe("FreightWavesSONARClient", () => {
           ["x-ratelimit-limit", "100"],
           ["x-ratelimit-day-remaining", "9000"],
           ["x-ratelimit-day-limit", "10000"],
-          [
-            "x-ratelimit-reset",
-            String(Math.floor(Date.now() / 1000) + 3600),
-          ],
+          ["x-ratelimit-reset", String(Math.floor(Date.now() / 1000) + 3600)],
         ]),
         json: async () => [{ metricName: "OTVI", value: 1245 }],
       });
@@ -437,10 +431,7 @@ describe("FreightWavesSONARClient", () => {
           ["x-ratelimit-limit", "100"],
           ["x-ratelimit-day-remaining", "9500"],
           ["x-ratelimit-day-limit", "10000"],
-          [
-            "x-ratelimit-reset",
-            String(Math.floor(Date.now() / 1000) + 3600),
-          ],
+          ["x-ratelimit-reset", String(Math.floor(Date.now() / 1000) + 3600)],
         ]),
         json: async () => [],
       });
@@ -520,7 +511,7 @@ describe("FreightWavesSONARClient", () => {
       expect(result.alertId).toBe("ALERT-12345");
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("/alerts"),
-        expect.objectContaining({ method: "POST" })
+        expect.objectContaining({ method: "POST" }),
       );
     });
 
@@ -565,7 +556,7 @@ describe("FreightWavesSONARClient", () => {
       expect(result).toHaveLength(2);
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("start_date=2024-01-01"),
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });

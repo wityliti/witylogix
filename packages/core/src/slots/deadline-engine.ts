@@ -70,7 +70,10 @@ export class DeadlineEngine {
   /**
    * Check if order cut-off has passed for a delivery date/slot
    */
-  async isOrderCutoffPassed(deliveryDate: Date, slotId: string): Promise<boolean> {
+  async isOrderCutoffPassed(
+    deliveryDate: Date,
+    slotId: string,
+  ): Promise<boolean> {
     const deadline = await this.getOrderDeadline(deliveryDate, slotId);
 
     if (!deadline) {
@@ -83,7 +86,10 @@ export class DeadlineEngine {
   /**
    * Set prep time for a location (minutes before delivery start)
    */
-  async setPrepTime(locationId: string, minutes: number): Promise<DeadlineConfig> {
+  async setPrepTime(
+    locationId: string,
+    minutes: number,
+  ): Promise<DeadlineConfig> {
     if (minutes < 0) {
       throw new Error("Prep time must be non-negative");
     }
@@ -188,7 +194,10 @@ export class DeadlineEngine {
         const slot = slots[0];
 
         // Check if deadline is still open
-        const isPastCutoff = await this.isOrderCutoffPassed(searchDate, slot.id);
+        const isPastCutoff = await this.isOrderCutoffPassed(
+          searchDate,
+          slot.id,
+        );
         if (!isPastCutoff) {
           return {
             date: searchDate,
@@ -209,7 +218,10 @@ export class DeadlineEngine {
   ): Promise<OrderDeadline[]> {
     return Promise.all(
       orders.map(async (order) => {
-        const deadline = await this.getOrderDeadline(order.deliveryDate, order.slotId);
+        const deadline = await this.getOrderDeadline(
+          order.deliveryDate,
+          order.slotId,
+        );
         return {
           ...deadline,
           orderId: order.orderId,
@@ -237,7 +249,8 @@ export class DeadlineEngine {
     }
 
     const now = new Date();
-    const hoursRemaining = (deadline.deadline.getTime() - now.getTime()) / (1000 * 60 * 60);
+    const hoursRemaining =
+      (deadline.deadline.getTime() - now.getTime()) / (1000 * 60 * 60);
     const compliant = hoursRemaining > 0;
 
     return {

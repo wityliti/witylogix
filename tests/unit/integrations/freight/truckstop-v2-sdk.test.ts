@@ -6,7 +6,10 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { TruckstopV2SDKClient } from "../../../../packages/core/src/integrations/freight/truckstop-v2-sdk-client";
-import type { EquipmentType, LoadStatus } from "../../../../packages/core/src/integrations/freight/freight-sdk-types";
+import type {
+  EquipmentType,
+  LoadStatus,
+} from "../../../../packages/core/src/integrations/freight/freight-sdk-types";
 
 /**
  * Mock fetch function
@@ -38,10 +41,7 @@ describe("TruckstopV2SDKClient", () => {
         headers: new Map([
           ["x-ratelimit-remaining", "490"],
           ["x-ratelimit-limit", "500"],
-          [
-            "x-ratelimit-reset",
-            String(Math.floor(Date.now() / 1000) + 3600),
-          ],
+          ["x-ratelimit-reset", String(Math.floor(Date.now() / 1000) + 3600)],
         ]),
         json: async () => ({
           loadId: "TS-LOAD-12345",
@@ -59,8 +59,16 @@ describe("TruckstopV2SDKClient", () => {
           status: "posted",
           postedAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          shipper: { name: "Shipper A", email: "shipper@example.com", phone: "555-1234" },
-          receiver: { name: "Receiver B", email: "receiver@example.com", phone: "555-5678" },
+          shipper: {
+            name: "Shipper A",
+            email: "shipper@example.com",
+            phone: "555-1234",
+          },
+          receiver: {
+            name: "Receiver B",
+            email: "receiver@example.com",
+            phone: "555-5678",
+          },
         }),
       });
 
@@ -76,15 +84,23 @@ describe("TruckstopV2SDKClient", () => {
         currency: "USD",
         commodity: "General",
         isHazmat: false,
-        shipper: { name: "Shipper A", email: "shipper@example.com", phone: "555-1234" },
-        receiver: { name: "Receiver B", email: "receiver@example.com", phone: "555-5678" },
+        shipper: {
+          name: "Shipper A",
+          email: "shipper@example.com",
+          phone: "555-1234",
+        },
+        receiver: {
+          name: "Receiver B",
+          email: "receiver@example.com",
+          phone: "555-5678",
+        },
       });
 
       expect(result.loadId).toBe("TS-LOAD-12345");
       expect(result.rate).toBe(2400);
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("/loads"),
-        expect.objectContaining({ method: "POST" })
+        expect.objectContaining({ method: "POST" }),
       );
     });
 
@@ -116,7 +132,7 @@ describe("TruckstopV2SDKClient", () => {
       expect(result.success).toBe(true);
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("/loads/TS-LOAD-12345"),
-        expect.objectContaining({ method: "DELETE" })
+        expect.objectContaining({ method: "DELETE" }),
       );
     });
 
@@ -141,7 +157,7 @@ describe("TruckstopV2SDKClient", () => {
       expect(result.total).toBe(0);
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("/loads"),
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -485,8 +501,7 @@ describe("TruckstopV2SDKClient", () => {
           ["content-type", "application/pdf"],
           ["content-disposition", "attachment; filename=BOL-001.pdf"],
         ]),
-        arrayBuffer: async () =>
-          new ArrayBuffer(10),
+        arrayBuffer: async () => new ArrayBuffer(10),
       });
 
       const result = await client.downloadDocument("DOC-12345");
@@ -503,10 +518,7 @@ describe("TruckstopV2SDKClient", () => {
         headers: new Map([
           ["x-ratelimit-remaining", "480"],
           ["x-ratelimit-limit", "500"],
-          [
-            "x-ratelimit-reset",
-            String(Math.floor(Date.now() / 1000) + 3600),
-          ],
+          ["x-ratelimit-reset", String(Math.floor(Date.now() / 1000) + 3600)],
         ]),
         json: async () => ({ loads: [] }),
       });
@@ -586,7 +598,7 @@ describe("TruckstopV2SDKClient", () => {
       expect(result.webhookId).toBe("WEBHOOK-1");
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("/webhooks"),
-        expect.objectContaining({ method: "POST" })
+        expect.objectContaining({ method: "POST" }),
       );
     });
   });

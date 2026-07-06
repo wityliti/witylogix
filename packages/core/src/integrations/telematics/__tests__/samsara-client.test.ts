@@ -208,7 +208,10 @@ describe("SamsaraClient", () => {
       fetchSpy.mockResolvedValueOnce({
         ok: false,
         status: 429,
-        json: async () => ({ code: "RATE_LIMIT", message: "Too many requests" }),
+        json: async () => ({
+          code: "RATE_LIMIT",
+          message: "Too many requests",
+        }),
       });
 
       // Second call: success
@@ -592,7 +595,10 @@ describe("SamsaraClient", () => {
       const startTime = Date.now();
 
       // Make 4 calls (should take time due to rate limiting)
-      global.fetch = mockFetch({ data: [], pagination: { hasNextPage: false } });
+      global.fetch = mockFetch({
+        data: [],
+        pagination: { hasNextPage: false },
+      });
 
       await client.getVehicles();
       await client.getVehicles();
@@ -642,7 +648,10 @@ describe("SamsaraClient", () => {
       client.resetCircuitBreaker();
 
       // Should work again
-      global.fetch = mockFetch({ data: [], pagination: { hasNextPage: false } });
+      global.fetch = mockFetch({
+        data: [],
+        pagination: { hasNextPage: false },
+      });
       await expect(client.getVehicles()).resolves.not.toThrow();
     });
   });

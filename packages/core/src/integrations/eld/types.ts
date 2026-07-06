@@ -463,7 +463,7 @@ export interface ELDAdapterInterface {
   getDriverLogs(
     driverId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<ELDDriverLog[]>;
 
   /** Get current duty status for driver */
@@ -473,7 +473,7 @@ export interface ELDAdapterInterface {
   setDutyStatus(
     driverId: string,
     status: DutyStatus,
-    location?: { latitude: number; longitude: number }
+    location?: { latitude: number; longitude: number },
   ): Promise<ELDDutyStatus>;
 
   /** Get HOS violations for driver */
@@ -494,7 +494,7 @@ export interface ELDAdapterInterface {
   /** Calculate HOS summary for driver */
   getHOSSummary(
     driverId: string,
-    date: Date
+    date: Date,
   ): Promise<{
     hours11: number;
     hours14: number;

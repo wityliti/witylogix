@@ -2,8 +2,14 @@
  * Drivers resource - manage delivery drivers
  */
 
-import type { WitylogixClient } from '../client';
-import type { Driver, DriverLocation, ListParams, PaginatedResponse, DriverStatus } from '../types';
+import type { WitylogixClient } from "../client";
+import type {
+  Driver,
+  DriverLocation,
+  ListParams,
+  PaginatedResponse,
+  DriverStatus,
+} from "../types";
 
 export interface CreateDriverData {
   name: string;
@@ -36,7 +42,7 @@ export class DriversResource {
    * const drivers = await client.drivers.list({ page: 1, limit: 50 });
    */
   public async list(params?: ListParams): Promise<PaginatedResponse<Driver>> {
-    return this.client.get<PaginatedResponse<Driver>>('/v1/drivers', params);
+    return this.client.get<PaginatedResponse<Driver>>("/v1/drivers", params);
   }
 
   /**
@@ -62,7 +68,7 @@ export class DriversResource {
    * });
    */
   public async create(data: CreateDriverData): Promise<Driver> {
-    return this.client.post<Driver>('/v1/drivers', data);
+    return this.client.post<Driver>("/v1/drivers", data);
   }
 
   /**
@@ -98,7 +104,10 @@ export class DriversResource {
    *   timestamp: '2024-03-10T12:00:00Z'
    * });
    */
-  public async updateLocation(id: string, location: DriverLocation): Promise<Driver> {
+  public async updateLocation(
+    id: string,
+    location: DriverLocation,
+  ): Promise<Driver> {
     return this.client.patch<Driver>(`/v1/drivers/${id}/location`, location);
   }
 
@@ -110,9 +119,9 @@ export class DriversResource {
    */
   public async getByStatus(
     status: DriverStatus,
-    params?: ListParams
+    params?: ListParams,
   ): Promise<PaginatedResponse<Driver>> {
-    return this.client.get<PaginatedResponse<Driver>>('/v1/drivers', {
+    return this.client.get<PaginatedResponse<Driver>>("/v1/drivers", {
       ...params,
       status,
     });
@@ -126,9 +135,9 @@ export class DriversResource {
    */
   public async getByZone(
     zoneId: string,
-    params?: ListParams
+    params?: ListParams,
   ): Promise<PaginatedResponse<Driver>> {
-    return this.client.get<PaginatedResponse<Driver>>('/v1/drivers', {
+    return this.client.get<PaginatedResponse<Driver>>("/v1/drivers", {
       ...params,
       assigned_zone_id: zoneId,
     });
@@ -140,8 +149,13 @@ export class DriversResource {
    * @example
    * const availableDrivers = await client.drivers.getAvailable({ limit: 10 });
    */
-  public async getAvailable(params?: ListParams): Promise<PaginatedResponse<Driver>> {
-    return this.client.get<PaginatedResponse<Driver>>('/v1/drivers/available', params);
+  public async getAvailable(
+    params?: ListParams,
+  ): Promise<PaginatedResponse<Driver>> {
+    return this.client.get<PaginatedResponse<Driver>>(
+      "/v1/drivers/available",
+      params,
+    );
   }
 
   /**

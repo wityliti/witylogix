@@ -149,22 +149,22 @@ The platform manages the full lifecycle of last-mile delivery for Shopify mercha
 
 ### 1.2 Non-Functional Requirements
 
-| Requirement | Target | Rationale |
-|-------------|--------|-----------|
-| Carrier Service p95 latency | ≤ 500ms | Shopify BFS certification |
-| Carrier Service availability | ≥ 99.9% over 28 days | Shopify BFS certification |
-| Admin LCP (p75) | ≤ 2.5s | Shopify BFS web vitals |
-| Admin CLS (p75) | ≤ 0.1 | Shopify BFS web vitals |
-| Admin INP (p75) | ≤ 200ms | Shopify BFS web vitals |
-| Checkout extension bundle | < 64KB | Shopify Preact hard limit (API 2025-10+) |
-| Storefront Lighthouse impact | < 10 points degradation | Shopify BFS requirement |
-| GPS update latency | < 2s from driver to customer map | Real-time tracking UX |
-| Distance matrix (25 pts) | < 3s via Mapbox | Route optimization feasibility |
-| Distance matrix (1000 pts) | < 5s via OSRM (Phase 2) | Large-fleet optimization |
-| Concurrent tenants | 1,000+ on shared infrastructure | Multi-tenant SaaS target |
-| Order throughput | 10,000 orders/day per tenant | High-volume merchant support |
-| Driver GPS updates | 10m distance filter, adaptive accuracy | Battery/bandwidth balance |
-| RLS overhead | < 5% query time increase | Benchmarked ~3.5ms vs ~3.2ms on 100K rows |
+| Requirement                  | Target                                 | Rationale                                 |
+| ---------------------------- | -------------------------------------- | ----------------------------------------- |
+| Carrier Service p95 latency  | ≤ 500ms                                | Shopify BFS certification                 |
+| Carrier Service availability | ≥ 99.9% over 28 days                   | Shopify BFS certification                 |
+| Admin LCP (p75)              | ≤ 2.5s                                 | Shopify BFS web vitals                    |
+| Admin CLS (p75)              | ≤ 0.1                                  | Shopify BFS web vitals                    |
+| Admin INP (p75)              | ≤ 200ms                                | Shopify BFS web vitals                    |
+| Checkout extension bundle    | < 64KB                                 | Shopify Preact hard limit (API 2025-10+)  |
+| Storefront Lighthouse impact | < 10 points degradation                | Shopify BFS requirement                   |
+| GPS update latency           | < 2s from driver to customer map       | Real-time tracking UX                     |
+| Distance matrix (25 pts)     | < 3s via Mapbox                        | Route optimization feasibility            |
+| Distance matrix (1000 pts)   | < 5s via OSRM (Phase 2)                | Large-fleet optimization                  |
+| Concurrent tenants           | 1,000+ on shared infrastructure        | Multi-tenant SaaS target                  |
+| Order throughput             | 10,000 orders/day per tenant           | High-volume merchant support              |
+| Driver GPS updates           | 10m distance filter, adaptive accuracy | Battery/bandwidth balance                 |
+| RLS overhead                 | < 5% query time increase               | Benchmarked ~3.5ms vs ~3.2ms on 100K rows |
 
 ### 1.3 Constraints
 
@@ -322,25 +322,25 @@ The v3 system has 77 MongoDB models. The v4 system consolidates these into 13 co
 
 **Model Consolidation Map (v3 → v4):**
 
-| v3 MongoDB Models | v4 PostgreSQL Table | Notes |
-|---|---|---|
-| storeDetails, storeSettings | `shops` | Merge settings into JSONB column |
-| users, userRoles, userPermission | `users` | Flatten role enum, move permissions to JSONB |
-| shopifyOrders | `orders` | Denormalize address, add PostGIS point |
-| shipment, shipmentLocation, shipmentPaymentTransactions | `orders` (extended) | Shipment concept merged into order workflow |
-| shipmentRoutes, shipmentDeliveryActivity | `routes`, `route_stops` | Separate route from stops |
-| shipmentRules, shipmentZones | `delivery_zones`, `time_slots` | Zone polygons + scheduling |
-| vehicle, vehicleLocation | `drivers` | Vehicle is a driver attribute |
-| shipmentDocuments, shipmentFeedbacks | `proof_of_delivery` | POD is the delivery evidence record |
-| notification (templates, logs) | `notification_logs` | Templates stored in shop settings JSONB |
-| codPaymentGateway, paymentGateways | Removed (Phase 1) | Simplify — payment tracking is secondary |
-| shopifyProducts, shopifyCustomer, shopifyInventory | Not stored locally | Query Shopify GraphQL on demand; don't cache |
-| analytics models | Not stored locally (Phase 1) | Use Redis Streams + external analytics |
-| calenderRules | `time_slots` | Calendar rules become time slot constraints |
-| billingPlan | `shops.plan_tier` | Plan tier is a shop attribute |
-| campaigns, featureRequests, contactUs | Removed (open-source) | Community features via GitHub |
-| — (new) | `organizations` | Multi-shop grouping layer above shops |
-| — (new) | `org_members` | Junction table for org membership with shop-scoped access |
+| v3 MongoDB Models                                       | v4 PostgreSQL Table            | Notes                                                     |
+| ------------------------------------------------------- | ------------------------------ | --------------------------------------------------------- |
+| storeDetails, storeSettings                             | `shops`                        | Merge settings into JSONB column                          |
+| users, userRoles, userPermission                        | `users`                        | Flatten role enum, move permissions to JSONB              |
+| shopifyOrders                                           | `orders`                       | Denormalize address, add PostGIS point                    |
+| shipment, shipmentLocation, shipmentPaymentTransactions | `orders` (extended)            | Shipment concept merged into order workflow               |
+| shipmentRoutes, shipmentDeliveryActivity                | `routes`, `route_stops`        | Separate route from stops                                 |
+| shipmentRules, shipmentZones                            | `delivery_zones`, `time_slots` | Zone polygons + scheduling                                |
+| vehicle, vehicleLocation                                | `drivers`                      | Vehicle is a driver attribute                             |
+| shipmentDocuments, shipmentFeedbacks                    | `proof_of_delivery`            | POD is the delivery evidence record                       |
+| notification (templates, logs)                          | `notification_logs`            | Templates stored in shop settings JSONB                   |
+| codPaymentGateway, paymentGateways                      | Removed (Phase 1)              | Simplify — payment tracking is secondary                  |
+| shopifyProducts, shopifyCustomer, shopifyInventory      | Not stored locally             | Query Shopify GraphQL on demand; don't cache              |
+| analytics models                                        | Not stored locally (Phase 1)   | Use Redis Streams + external analytics                    |
+| calenderRules                                           | `time_slots`                   | Calendar rules become time slot constraints               |
+| billingPlan                                             | `shops.plan_tier`              | Plan tier is a shop attribute                             |
+| campaigns, featureRequests, contactUs                   | Removed (open-source)          | Community features via GitHub                             |
+| — (new)                                                 | `organizations`                | Multi-shop grouping layer above shops                     |
+| — (new)                                                 | `org_members`                  | Junction table for org membership with shop-scoped access |
 
 **Key Schema Design Decisions:**
 
@@ -368,11 +368,11 @@ Organization (optional)
 
 **Prisma client scoping:** Three functions create RLS-aware clients:
 
-| Function | RLS Setting | Use Case |
-|----------|------------|----------|
-| `forTenant(shopId)` | `app.current_shop_id` | Shopify webhooks, carrier service, standalone shops |
-| `forOrg(orgId)` | `app.current_org_id` | Org dashboard, cross-shop analytics |
-| `forTenantInOrg(shopId, orgId)` | Both settings | Dashboard with org-shared drivers/zones visible |
+| Function                        | RLS Setting           | Use Case                                            |
+| ------------------------------- | --------------------- | --------------------------------------------------- |
+| `forTenant(shopId)`             | `app.current_shop_id` | Shopify webhooks, carrier service, standalone shops |
+| `forOrg(orgId)`                 | `app.current_org_id`  | Org dashboard, cross-shop analytics                 |
+| `forTenantInOrg(shopId, orgId)` | Both settings         | Dashboard with org-shared drivers/zones visible     |
 
 **Backward compatibility guarantee:** Shops without an org set `orgId = null`. The `forTenant(shopId)` function only sets `app.current_shop_id`. RLS policies check `current_setting('app.current_shop_id', TRUE)` with the `TRUE` flag (returns empty string instead of error when unset), so org-unaware code paths see only shop-level data.
 
@@ -789,15 +789,15 @@ Escalate to fallback channel:
 
 **Target: 1,000 tenants, top-10 processing 10K orders/day each**
 
-| Metric | Estimate | Source |
-|--------|----------|--------|
-| Webhook events/day | ~200K (orders, products, inventory) | 1000 tenants × 200 avg events |
-| Carrier rate requests/day | ~50K | 10% of checkouts request rates |
-| Carrier rate p95 target | < 500ms | Shopify BFS requirement |
-| GPS updates/second (peak) | ~500 | 100 active drivers × 5 updates/s |
-| Socket.io connections (peak) | ~2,000 | Drivers + tracking pages + dashboards |
-| Database queries/second | ~1,000 | CRUD + spatial queries |
-| BullMQ jobs/day | ~300K | Webhooks + notifications + sync |
+| Metric                       | Estimate                            | Source                                |
+| ---------------------------- | ----------------------------------- | ------------------------------------- |
+| Webhook events/day           | ~200K (orders, products, inventory) | 1000 tenants × 200 avg events         |
+| Carrier rate requests/day    | ~50K                                | 10% of checkouts request rates        |
+| Carrier rate p95 target      | < 500ms                             | Shopify BFS requirement               |
+| GPS updates/second (peak)    | ~500                                | 100 active drivers × 5 updates/s      |
+| Socket.io connections (peak) | ~2,000                              | Drivers + tracking pages + dashboards |
+| Database queries/second      | ~1,000                              | CRUD + spatial queries                |
+| BullMQ jobs/day              | ~300K                               | Webhooks + notifications + sync       |
 
 ### 4.2 Scaling Strategy
 
@@ -900,19 +900,19 @@ Alerts:
 
 ### 5.1 Decisions and Their Costs
 
-| Decision | Benefit | Cost | Revisit When |
-|----------|---------|------|-------------|
-| **PostgreSQL RLS over app-layer filtering** | Database-enforced tenant isolation; eliminates data leakage bugs | ~5% query overhead; more complex local development setup | Never — this is the security foundation |
-| **Orders absorb shipments** | Simpler data model; fewer joins; clearer mental model | Less flexible for multi-shipment-per-order scenarios | If merchants need split shipments from a single order |
-| **Multi-provider routing registry** | Tenants and deployers choose from Mapbox, OSRM, Google Maps, HERE, GraphHopper, TomTom; no vendor lock-in | Must maintain provider implementations one-by-one; more testing surface | If a single provider covers 100% of use cases — simplify to one |
-| **BYOK with metered fallback (routing)** | Deployer sets default; tenants bring their own routing provider + credentials; fallback usage is metered for billing | Tenants must manage their own accounts; metering table grows with usage | If all tenants are internal (single-deployer) — just use platform-managed mode |
-| **Multi-provider notification registry** | 4 independent channel registries (17 providers total); tenants choose per-channel providers | More testing surface; each provider SDK added one-by-one | If one provider per channel covers 100% of use cases |
-| **BYOK with metered fallback (notifications)** | Same pattern as routing: deployer defaults + tenant overrides + metering; per-channel independence | Complexity of per-channel config; credential management UX | If notifications are always deployer-managed |
-| **BullMQ over Azure Service Bus** | Open-source; Redis-native; no Azure dependency for self-hosters | Less mature than Service Bus; no built-in DLQ viewer (need Bull Board) | If message durability becomes critical (financial transactions) |
-| **Socket.io over Firebase Realtime DB** | No Firebase dependency; smaller tracking page bundle; full control | Must manage WebSocket infrastructure; needs Redis Adapter for multi-server | If connection count exceeds 10K and managed WebSocket becomes attractive |
-| **Single API process over separate webhook processes** | Shared code; simpler deployment; one Dockerfile | Single point of failure; one bad handler can affect others | If webhook processing becomes CPU-intensive enough to warrant isolation |
-| **JSONB settings over normalized tables** | Schema flexibility; no migration needed for new merchant settings | Harder to query across tenants; no foreign key constraints on nested data | If cross-tenant analytics on settings become important |
-| **Not storing Shopify products/customers locally** | No sync complexity; always-fresh data; less storage | Requires Shopify API calls for product/customer data; rate limit risk | If dashboard needs fast product/customer search or if API rate limits hit |
+| Decision                                               | Benefit                                                                                                              | Cost                                                                       | Revisit When                                                                   |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **PostgreSQL RLS over app-layer filtering**            | Database-enforced tenant isolation; eliminates data leakage bugs                                                     | ~5% query overhead; more complex local development setup                   | Never — this is the security foundation                                        |
+| **Orders absorb shipments**                            | Simpler data model; fewer joins; clearer mental model                                                                | Less flexible for multi-shipment-per-order scenarios                       | If merchants need split shipments from a single order                          |
+| **Multi-provider routing registry**                    | Tenants and deployers choose from Mapbox, OSRM, Google Maps, HERE, GraphHopper, TomTom; no vendor lock-in            | Must maintain provider implementations one-by-one; more testing surface    | If a single provider covers 100% of use cases — simplify to one                |
+| **BYOK with metered fallback (routing)**               | Deployer sets default; tenants bring their own routing provider + credentials; fallback usage is metered for billing | Tenants must manage their own accounts; metering table grows with usage    | If all tenants are internal (single-deployer) — just use platform-managed mode |
+| **Multi-provider notification registry**               | 4 independent channel registries (17 providers total); tenants choose per-channel providers                          | More testing surface; each provider SDK added one-by-one                   | If one provider per channel covers 100% of use cases                           |
+| **BYOK with metered fallback (notifications)**         | Same pattern as routing: deployer defaults + tenant overrides + metering; per-channel independence                   | Complexity of per-channel config; credential management UX                 | If notifications are always deployer-managed                                   |
+| **BullMQ over Azure Service Bus**                      | Open-source; Redis-native; no Azure dependency for self-hosters                                                      | Less mature than Service Bus; no built-in DLQ viewer (need Bull Board)     | If message durability becomes critical (financial transactions)                |
+| **Socket.io over Firebase Realtime DB**                | No Firebase dependency; smaller tracking page bundle; full control                                                   | Must manage WebSocket infrastructure; needs Redis Adapter for multi-server | If connection count exceeds 10K and managed WebSocket becomes attractive       |
+| **Single API process over separate webhook processes** | Shared code; simpler deployment; one Dockerfile                                                                      | Single point of failure; one bad handler can affect others                 | If webhook processing becomes CPU-intensive enough to warrant isolation        |
+| **JSONB settings over normalized tables**              | Schema flexibility; no migration needed for new merchant settings                                                    | Harder to query across tenants; no foreign key constraints on nested data  | If cross-tenant analytics on settings become important                         |
+| **Not storing Shopify products/customers locally**     | No sync complexity; always-fresh data; less storage                                                                  | Requires Shopify API calls for product/customer data; rate limit risk      | If dashboard needs fast product/customer search or if API rate limits hit      |
 
 ### 5.2 What We Explicitly Chose NOT to Build (Phase 1)
 

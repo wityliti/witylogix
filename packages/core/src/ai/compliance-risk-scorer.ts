@@ -14,8 +14,16 @@
  * - ROI calculator: cost of compliance investment vs violation/accident risk
  */
 
-import type { SafetyRating, CarrierMetrics, CarrierCensus } from '../freight/freight-types.js';
-import type { LogEntry, DutyStatus, HOSViolation } from '../compliance/hos-types.js';
+import type {
+  SafetyRating,
+  CarrierMetrics,
+  CarrierCensus,
+} from "../freight/freight-types.js";
+import type {
+  LogEntry,
+  DutyStatus,
+  HOSViolation,
+} from "../compliance/hos-types.js";
 
 // ─── TYPES ──────────────────────────────────────────────────────────────
 
@@ -34,7 +42,7 @@ export interface Driver {
 export interface DriverViolation {
   date: Date;
   type: string;
-  severity: 'minor' | 'serious' | 'critical';
+  severity: "minor" | "serious" | "critical";
   description: string;
   hoursFromViolation?: number; // null = no violation occurred
 }
@@ -42,7 +50,7 @@ export interface DriverViolation {
 export interface SafetyIncident {
   date: Date;
   type: string;
-  severity: 'minor' | 'major' | 'critical';
+  severity: "minor" | "major" | "critical";
   description: string;
 }
 
@@ -74,10 +82,15 @@ export interface DriverRiskScore {
     safetyIncidents: number;
     experienceLevel: number;
   };
-  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  riskLevel: "low" | "medium" | "high" | "critical";
   fatigueIndicators: FatigueIndicators;
-  trendDirection: 'improving' | 'stable' | 'declining';
-  interventionLevel: 'none' | 'monitor' | 'coaching' | 'mandatory_rest' | 'off_road';
+  trendDirection: "improving" | "stable" | "declining";
+  interventionLevel:
+    | "none"
+    | "monitor"
+    | "coaching"
+    | "mandatory_rest"
+    | "off_road";
 }
 
 export interface CarrierRiskScore {
@@ -91,10 +104,10 @@ export interface CarrierRiskScore {
     crashRate: number;
     vehicleMaintenanceRisk: number;
   };
-  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  riskLevel: "low" | "medium" | "high" | "critical";
   csaScore: CSAScore;
   auditReadiness: number; // 0-100%
-  riskTrend: 'improving' | 'stable' | 'declining';
+  riskTrend: "improving" | "stable" | "declining";
   recommendations: string[];
 }
 
@@ -119,7 +132,7 @@ export interface ViolationPrediction {
   estimatedTimeToViolation: number; // minutes
   currentHOSStatus: HOSClock;
   mitigationRecommendations: string[];
-  severity: 'low' | 'high' | 'critical';
+  severity: "low" | "high" | "critical";
 }
 
 export interface HOSClock {
@@ -143,19 +156,19 @@ export interface CSAScore {
   controlled_substances: number; // BASIC 5
   hazmat_compliance: number; // BASIC 6
   overall_percentile: number; // 0-100
-  inspection_level: 'normal' | 'intermediate' | 'scrutiny';
+  inspection_level: "normal" | "intermediate" | "scrutiny";
 }
 
 export interface PortfolioRisk {
   overallRisk: number; // 0-100
-  riskTrend: 'improving' | 'stable' | 'declining';
+  riskTrend: "improving" | "stable" | "declining";
   criticalDrivers: string[];
   flaggedVehicles: string[];
 }
 
 export interface AuditReadinessReport {
   entityId: string;
-  entityType: 'driver' | 'carrier' | 'fleet';
+  entityType: "driver" | "carrier" | "fleet";
   readinessScore: number; // 0-100%
   areaMembership: string[];
   passLikelihood: number; // 0-100%
@@ -217,7 +230,10 @@ export class ComplianceRiskScorer {
 
     const riskLevel = this.determineRiskLevel(overallScore);
     const trend = this.analyzeTrend(driver.id, overallScore);
-    const intervention = this.determineIntervention(overallScore, fatigueIndicators);
+    const intervention = this.determineIntervention(
+      overallScore,
+      fatigueIndicators,
+    );
 
     const score: DriverRiskScore = {
       driverId: driver.id,
@@ -253,7 +269,7 @@ export class ComplianceRiskScorer {
   async scoreCarrier(
     carrier: CarrierCensus,
     safetyRating: SafetyRating,
-    metrics: CarrierMetrics
+    metrics: CarrierMetrics,
   ): Promise<CarrierRiskScore> {
     const safetyScore = this.scoreSafetyRating(safetyRating);
     const inspectionScore = this.scoreInspectionDeficiency(safetyRating);
@@ -280,10 +296,13 @@ export class ComplianceRiskScorer {
     const riskLevel = this.determineRiskLevel(overallScore);
     const csaScore = this.calculateCSAScore(safetyRating, metrics);
     const auditReadiness = this.calculateAuditReadiness(safetyRating, metrics);
-    const trend = this.analyzeTrendCarrier(carrier.mcNumber || 'unknown', overallScore);
+    const trend = this.analyzeTrendCarrier(
+      carrier.mcNumber || "unknown",
+      overallScore,
+    );
 
     const score: CarrierRiskScore = {
-      carrierId: carrier.mcNumber || 'DOT-' + carrier.dotNumber,
+      carrierId: carrier.mcNumber || "DOT-" + carrier.dotNumber,
       carrierName: carrier.companyName,
       overallScore: Math.round(overallScore),
       scores: {
@@ -297,7 +316,10 @@ export class ComplianceRiskScorer {
       csaScore,
       auditReadiness,
       riskTrend: trend,
-      recommendations: this.generateCarrierRecommendations(overallScore, csaScore),
+      recommendations: this.generateCarrierRecommendations(
+        overallScore,
+        csaScore,
+      ),
     };
 
     this.carrierScores.set(carrier.mcNumber || carrier.dotNumber, score);
@@ -319,12 +341,16 @@ export class ComplianceRiskScorer {
       return {
         driverId: driver.id,
         driverName: driver.name,
-        violationType: '11-hour driving limit',
+        violationType: "11-hour driving limit",
         likelihood: Math.min(100, 50 + (60 - hosClock.drivingRemaining11)),
         estimatedTimeToViolation: hosClock.drivingRemaining11,
         currentHOSStatus: hosClock,
-        mitigationRecommendations: ['Mandatory 10-hour rest break', 'Route to nearest safe facility', 'Notify dispatcher immediately'],
-        severity: hosClock.drivingRemaining11 < 15 ? 'critical' : 'high',
+        mitigationRecommendations: [
+          "Mandatory 10-hour rest break",
+          "Route to nearest safe facility",
+          "Notify dispatcher immediately",
+        ],
+        severity: hosClock.drivingRemaining11 < 15 ? "critical" : "high",
       };
     }
 
@@ -332,12 +358,16 @@ export class ComplianceRiskScorer {
       return {
         driverId: driver.id,
         driverName: driver.name,
-        violationType: '14-hour window violation',
+        violationType: "14-hour window violation",
         likelihood: Math.min(100, 40 + (120 - hosClock.windowRemaining14) / 2),
         estimatedTimeToViolation: hosClock.windowRemaining14,
         currentHOSStatus: hosClock,
-        mitigationRecommendations: ['Take 34-hour reset', 'Reduce duty levels', 'Plan next 14-hour cycle carefully'],
-        severity: 'high',
+        mitigationRecommendations: [
+          "Take 34-hour reset",
+          "Reduce duty levels",
+          "Plan next 14-hour cycle carefully",
+        ],
+        severity: "high",
       };
     }
 
@@ -345,12 +375,16 @@ export class ComplianceRiskScorer {
       return {
         driverId: driver.id,
         driverName: driver.name,
-        violationType: '30-minute break requirement',
+        violationType: "30-minute break requirement",
         likelihood: Math.min(100, 60 + (hosClock.minutesSinceBreak - 500) / 10),
         estimatedTimeToViolation: Math.max(0, 600 - hosClock.minutesSinceBreak),
         currentHOSStatus: hosClock,
-        mitigationRecommendations: ['Take 30-minute break immediately', 'Stop driving for rest', 'Verify break location safe'],
-        severity: 'high',
+        mitigationRecommendations: [
+          "Take 30-minute break immediately",
+          "Stop driving for rest",
+          "Verify break location safe",
+        ],
+        severity: "high",
       };
     }
 
@@ -360,27 +394,42 @@ export class ComplianceRiskScorer {
   /**
    * Generate audit readiness assessment
    */
-  generateAuditReadiness(entityId: string, entityType: 'driver' | 'carrier' | 'fleet'): AuditReadinessReport {
+  generateAuditReadiness(
+    entityId: string,
+    entityType: "driver" | "carrier" | "fleet",
+  ): AuditReadinessReport {
     let readinessScore = 75; // Start optimistic
     const criticalGaps: string[] = [];
     const minorDeficiencies: string[] = [];
     let areaMembership: string[] = [];
 
-    if (entityType === 'driver') {
+    if (entityType === "driver") {
       const score = this.driverScores.get(entityId);
       if (score) {
         readinessScore -= (score.overallScore / 100) * 30;
-        if (score.scores.violationHistory < 50) minorDeficiencies.push('Recent violation history');
-        if (score.scores.hosCompliance < 70) criticalGaps.push('HOS compliance issues detected');
-        areaMembership.push('Driver File Documentation', 'Hours of Service Records', 'Vehicle Inspection Reports');
+        if (score.scores.violationHistory < 50)
+          minorDeficiencies.push("Recent violation history");
+        if (score.scores.hosCompliance < 70)
+          criticalGaps.push("HOS compliance issues detected");
+        areaMembership.push(
+          "Driver File Documentation",
+          "Hours of Service Records",
+          "Vehicle Inspection Reports",
+        );
       }
-    } else if (entityType === 'carrier') {
+    } else if (entityType === "carrier") {
       const score = this.carrierScores.get(entityId);
       if (score) {
         readinessScore -= (score.overallScore / 100) * 25;
-        if (score.csaScore.overall_percentile > 50) criticalGaps.push('CSA scores above acceptable threshold');
-        if (score.auditReadiness < 60) minorDeficiencies.push('Vehicle maintenance documentation gaps');
-        areaMembership = ['Safety Management', 'Vehicle Maintenance', 'Driver Hiring & Qualifications'];
+        if (score.csaScore.overall_percentile > 50)
+          criticalGaps.push("CSA scores above acceptable threshold");
+        if (score.auditReadiness < 60)
+          minorDeficiencies.push("Vehicle maintenance documentation gaps");
+        areaMembership = [
+          "Safety Management",
+          "Vehicle Maintenance",
+          "Driver Hiring & Qualifications",
+        ];
       }
     }
 
@@ -392,7 +441,10 @@ export class ComplianceRiskScorer {
       passLikelihood: Math.max(10, readinessScore),
       criticalGaps,
       minorDeficiencies,
-      mitigationPlan: this.generateMitigationPlan(criticalGaps, minorDeficiencies),
+      mitigationPlan: this.generateMitigationPlan(
+        criticalGaps,
+        minorDeficiencies,
+      ),
       timelineToCompletion: criticalGaps.length > 0 ? 30 : 7,
     };
   }
@@ -401,9 +453,9 @@ export class ComplianceRiskScorer {
    * Calculate ROI for compliance investment
    */
   calculateComplianceROI(
-    investmentType: 'telematics' | 'training' | 'equipment' | 'audit_prep',
+    investmentType: "telematics" | "training" | "equipment" | "audit_prep",
     investmentAmount: number,
-    riskReduction: number
+    riskReduction: number,
   ): ComplianceROI {
     // Estimate avoided costs based on industry benchmarks
     const violationCost = 5000; // Average violation fine
@@ -415,21 +467,21 @@ export class ComplianceRiskScorer {
     let avoidedPenalties = 0;
 
     switch (investmentType) {
-      case 'telematics':
+      case "telematics":
         avoidedViolations = riskReduction * 3; // Could prevent 3 violations per 100% reduction
         avoidedAccidents = riskReduction * 0.5;
         avoidedPenalties = avoidedViolations * violationCost;
         break;
-      case 'training':
+      case "training":
         avoidedViolations = riskReduction * 2;
         avoidedAccidents = riskReduction * 0.3;
         avoidedPenalties = avoidedViolations * violationCost;
         break;
-      case 'equipment':
+      case "equipment":
         avoidedAccidents = riskReduction * 1.0;
         avoidedPenalties = riskReduction * 20000; // Reduced accident-related penalties
         break;
-      case 'audit_prep':
+      case "audit_prep":
         avoidedPenalties = riskReduction * 100000; // Large penalties for audit failures
         break;
     }
@@ -439,8 +491,12 @@ export class ComplianceRiskScorer {
       avoidedAccidents * accidentCost +
       avoidedPenalties;
 
-    const paybackMonths = investmentAmount > 0 ? (investmentAmount / (expectedSavings / 12)) : 0;
-    const roi = investmentAmount > 0 ? ((expectedSavings - investmentAmount) / investmentAmount) * 100 : 0;
+    const paybackMonths =
+      investmentAmount > 0 ? investmentAmount / (expectedSavings / 12) : 0;
+    const roi =
+      investmentAmount > 0
+        ? ((expectedSavings - investmentAmount) / investmentAmount) * 100
+        : 0;
 
     return {
       investmentType,
@@ -468,14 +524,16 @@ export class ComplianceRiskScorer {
     let score = 100;
 
     for (const violation of driver.violations) {
-      const ageInDays = (new Date().getTime() - violation.date.getTime()) / (1000 * 60 * 60 * 24);
+      const ageInDays =
+        (new Date().getTime() - violation.date.getTime()) /
+        (1000 * 60 * 60 * 24);
 
       // Recent violations weigh more heavily
       const recencyMultiplier = Math.max(0.5, 1 - ageInDays / 365);
 
-      if (violation.severity === 'critical') {
+      if (violation.severity === "critical") {
         score -= 25 * recencyMultiplier;
-      } else if (violation.severity === 'serious') {
+      } else if (violation.severity === "serious") {
         score -= 15 * recencyMultiplier;
       } else {
         score -= 5 * recencyMultiplier;
@@ -490,7 +548,9 @@ export class ComplianceRiskScorer {
       return 50; // Unknown
     }
 
-    const violations = driver.hosLogs.filter((log) => log.hours > this.getHOSLimit(log.dutyStatus));
+    const violations = driver.hosLogs.filter(
+      (log) => log.hours > this.getHOSLimit(log.dutyStatus),
+    );
 
     if (violations.length === 0) {
       return 5; // Excellent
@@ -520,12 +580,14 @@ export class ComplianceRiskScorer {
     let score = 100;
 
     for (const incident of driver.safetyIncidents) {
-      const ageInDays = (new Date().getTime() - incident.date.getTime()) / (1000 * 60 * 60 * 24);
+      const ageInDays =
+        (new Date().getTime() - incident.date.getTime()) /
+        (1000 * 60 * 60 * 24);
       const recencyMultiplier = Math.max(0.3, 1 - ageInDays / 730);
 
-      if (incident.severity === 'critical') {
+      if (incident.severity === "critical") {
         score -= 40 * recencyMultiplier;
-      } else if (incident.severity === 'major') {
+      } else if (incident.severity === "major") {
         score -= 25 * recencyMultiplier;
       } else {
         score -= 10 * recencyMultiplier;
@@ -560,12 +622,15 @@ export class ComplianceRiskScorer {
     let consecutiveDaysMaxed = 0;
 
     for (const log of recentLogs) {
-      if (log.dutyStatus === 'DRIVING' && log.hours >= 10.5) {
+      if (log.dutyStatus === "DRIVING" && log.hours >= 10.5) {
         consecutiveDaysMaxed++;
       } else {
         consecutiveDaysMaxed = 0;
       }
-      indicators.consecutiveMaxDays = Math.max(indicators.consecutiveMaxDays, consecutiveDaysMaxed);
+      indicators.consecutiveMaxDays = Math.max(
+        indicators.consecutiveMaxDays,
+        consecutiveDaysMaxed,
+      );
     }
 
     indicators.isMaxingDrivingHours = indicators.consecutiveMaxDays > 2;
@@ -573,16 +638,19 @@ export class ComplianceRiskScorer {
     // Check for late night driving
     for (const log of recentLogs) {
       const hour = log.startTime.getHours();
-      if ((hour >= 22 || hour < 6) && log.dutyStatus === 'DRIVING') {
+      if ((hour >= 22 || hour < 6) && log.dutyStatus === "DRIVING") {
         indicators.hasLateNightDriving = true;
         indicators.lateNightHoursPerWeek += log.hours;
       }
     }
 
     // Average rest
-    const restLogs = recentLogs.filter((l) => l.dutyStatus === 'OFF_DUTY' || l.dutyStatus === 'SLEEPER_BERTH');
+    const restLogs = recentLogs.filter(
+      (l) => l.dutyStatus === "OFF_DUTY" || l.dutyStatus === "SLEEPER_BERTH",
+    );
     if (restLogs.length > 0) {
-      indicators.averageRestHours = restLogs.reduce((sum, l) => sum + l.hours, 0) / restLogs.length;
+      indicators.averageRestHours =
+        restLogs.reduce((sum, l) => sum + l.hours, 0) / restLogs.length;
     }
 
     indicators.shortRestPeriods = restLogs.filter((l) => l.hours < 6).length;
@@ -605,41 +673,52 @@ export class ComplianceRiskScorer {
     };
   }
 
-  private determineRiskLevel(score: number): 'low' | 'medium' | 'high' | 'critical' {
-    if (score < 30) return 'low';
-    if (score < 60) return 'medium';
-    if (score < 80) return 'high';
-    return 'critical';
+  private determineRiskLevel(
+    score: number,
+  ): "low" | "medium" | "high" | "critical" {
+    if (score < 30) return "low";
+    if (score < 60) return "medium";
+    if (score < 80) return "high";
+    return "critical";
   }
 
-  private determineIntervention(score: number, fatigue: FatigueIndicators): 'none' | 'monitor' | 'coaching' | 'mandatory_rest' | 'off_road' {
-    if (score > 85 || fatigue.isMaxingDrivingHours) return 'off_road';
-    if (score > 75 || fatigue.consecutiveMaxDays > 4) return 'mandatory_rest';
-    if (score > 60) return 'coaching';
-    if (score > 40) return 'monitor';
-    return 'none';
+  private determineIntervention(
+    score: number,
+    fatigue: FatigueIndicators,
+  ): "none" | "monitor" | "coaching" | "mandatory_rest" | "off_road" {
+    if (score > 85 || fatigue.isMaxingDrivingHours) return "off_road";
+    if (score > 75 || fatigue.consecutiveMaxDays > 4) return "mandatory_rest";
+    if (score > 60) return "coaching";
+    if (score > 40) return "monitor";
+    return "none";
   }
 
-  private analyzeTrend(driverId: string, currentScore: number): 'improving' | 'stable' | 'declining' {
+  private analyzeTrend(
+    driverId: string,
+    currentScore: number,
+  ): "improving" | "stable" | "declining" {
     const history = this.historicalScores.get(driverId);
-    if (!history || history.length < 2) return 'stable';
+    if (!history || history.length < 2) return "stable";
 
     const previous = history[history.length - 2]?.overallScore ?? currentScore;
     const diff = currentScore - previous;
 
-    if (diff < -10) return 'improving';
-    if (diff > 10) return 'declining';
-    return 'stable';
+    if (diff < -10) return "improving";
+    if (diff > 10) return "declining";
+    return "stable";
   }
 
-  private analyzeTrendCarrier(carrierId: string, currentScore: number): 'improving' | 'stable' | 'declining' {
+  private analyzeTrendCarrier(
+    carrierId: string,
+    currentScore: number,
+  ): "improving" | "stable" | "declining" {
     // Placeholder for carrier trend analysis
-    return 'stable';
+    return "stable";
   }
 
   private scoreSafetyRating(rating: SafetyRating): number {
-    if (rating.status === 'satisfactory') return 20;
-    if (rating.status === 'conditional') return 60;
+    if (rating.status === "satisfactory") return 20;
+    if (rating.status === "conditional") return 60;
     return 95;
   }
 
@@ -659,7 +738,10 @@ export class ComplianceRiskScorer {
     return 50; // Placeholder
   }
 
-  private calculateCSAScore(rating: SafetyRating, metrics: CarrierMetrics): CSAScore {
+  private calculateCSAScore(
+    rating: SafetyRating,
+    metrics: CarrierMetrics,
+  ): CSAScore {
     return {
       unsafe: rating.unsafe ? 85 : 30,
       vehicle_maintenance: metrics.inspectionDeficitPercentage,
@@ -668,35 +750,44 @@ export class ComplianceRiskScorer {
       controlled_substances: 25,
       hazmat_compliance: 30,
       overall_percentile: 45,
-      inspection_level: 'normal',
+      inspection_level: "normal",
     };
   }
 
-  private calculateAuditReadiness(rating: SafetyRating, metrics: CarrierMetrics): number {
+  private calculateAuditReadiness(
+    rating: SafetyRating,
+    metrics: CarrierMetrics,
+  ): number {
     let score = 80;
     score -= rating.inspectionDeficitPercentage / 2;
     score -= metrics.outOfServiceRate * 20;
     return Math.max(0, Math.min(100, score));
   }
 
-  private generateCarrierRecommendations(score: number, csa: CSAScore): string[] {
+  private generateCarrierRecommendations(
+    score: number,
+    csa: CSAScore,
+  ): string[] {
     const recommendations: string[] = [];
 
     if (score > 70) {
-      recommendations.push('Implement comprehensive safety training program');
-      recommendations.push('Increase vehicle maintenance frequency');
-      recommendations.push('Conduct internal safety audits');
+      recommendations.push("Implement comprehensive safety training program");
+      recommendations.push("Increase vehicle maintenance frequency");
+      recommendations.push("Conduct internal safety audits");
     }
 
     if (csa.hos_compliance > 50) {
-      recommendations.push('Review HOS compliance policies with drivers');
-      recommendations.push('Implement ELD best practices');
+      recommendations.push("Review HOS compliance policies with drivers");
+      recommendations.push("Implement ELD best practices");
     }
 
     return recommendations;
   }
 
-  private generateMitigationPlan(critical: string[], minor: string[]): string[] {
+  private generateMitigationPlan(
+    critical: string[],
+    minor: string[],
+  ): string[] {
     const plan: string[] = [];
 
     for (const gap of critical) {
@@ -711,8 +802,8 @@ export class ComplianceRiskScorer {
   }
 
   private getHOSLimit(dutyStatus: DutyStatus): number {
-    if (dutyStatus === 'DRIVING') return 11;
-    if (dutyStatus === 'ON_DUTY') return 14;
+    if (dutyStatus === "DRIVING") return 11;
+    if (dutyStatus === "ON_DUTY") return 14;
     return 999;
   }
 }

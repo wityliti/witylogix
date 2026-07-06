@@ -37,20 +37,20 @@ Witylogix is a full-stack, multi-tenant delivery management platform built for e
 
 ### Technology Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Monorepo** | Turborepo + pnpm workspaces |
-| **Backend** | Fastify 5 (TypeScript) |
-| **Frontend** | Next.js 15 (React 19, Tailwind CSS) |
-| **Database** | PostgreSQL 16 + PostGIS |
-| **Cache/Queue** | Redis 7 + BullMQ |
-| **Real-time** | Socket.io |
-| **Mobile** | React Native |
-| **Routing** | Mapbox, OSRM, Google Maps, HERE, GraphHopper, TomTom |
+| Layer             | Technology                                                   |
+| ----------------- | ------------------------------------------------------------ |
+| **Monorepo**      | Turborepo + pnpm workspaces                                  |
+| **Backend**       | Fastify 5 (TypeScript)                                       |
+| **Frontend**      | Next.js 15 (React 19, Tailwind CSS)                          |
+| **Database**      | PostgreSQL 16 + PostGIS                                      |
+| **Cache/Queue**   | Redis 7 + BullMQ                                             |
+| **Real-time**     | Socket.io                                                    |
+| **Mobile**        | React Native                                                 |
+| **Routing**       | Mapbox, OSRM, Google Maps, HERE, GraphHopper, TomTom         |
 | **Notifications** | SendGrid, Mailgun, SES, Postmark, Twilio, Vonage, Meta Cloud |
-| **File Storage** | S3 + local filesystem |
-| **Payments** | Stripe + custom provider support |
-| **Orchestration** | Docker Compose (dev) + Kubernetes (prod) |
+| **File Storage**  | S3 + local filesystem                                        |
+| **Payments**      | Stripe + custom provider support                             |
+| **Orchestration** | Docker Compose (dev) + Kubernetes (prod)                     |
 
 ---
 
@@ -646,6 +646,7 @@ The database is the source of truth for all system state, with strong multi-tena
 ### Data Model Highlights
 
 **Organizations & Shops**
+
 ```
 Organization (parent tenant)
   ├─ Shop (child, can have multiple)
@@ -655,6 +656,7 @@ Organization (parent tenant)
 ```
 
 **Orders & Shipments**
+
 ```
 Order (from e-commerce platform)
   ├─ Order Items (SKU, qty, price)
@@ -668,6 +670,7 @@ Order (from e-commerce platform)
 ```
 
 **Drivers & Routes**
+
 ```
 Driver
   ├─ Mobile Device (app registration)
@@ -685,6 +688,7 @@ Route
 ```
 
 **Zones & Pricing**
+
 ```
 Zone (PostGIS polygon geometry)
   ├─ Display Name & color
@@ -715,6 +719,7 @@ CREATE POLICY orders_tenant_isolation ON orders
 ```
 
 Every API request sets this via Fastify middleware:
+
 ```typescript
 // In request middleware
 await prisma.$executeRaw`
@@ -949,26 +954,32 @@ Witylogix uses a pluggable integration pattern for extensibility:
 ### 38 Integrated Providers (6 Categories)
 
 **Communication (7 providers)**
+
 - Email: SendGrid, Mailgun, SES, Postmark, Resend, SMTP
 - SMS: Twilio, Vonage, SNS, MessageBird, Plivo
 - WhatsApp: Meta Cloud, Twilio, 360dialog
 - Push: Firebase, OneSignal, Expo
 
 **Routing (6 providers)**
+
 - Mapbox, OSRM, Google Maps, HERE, GraphHopper, TomTom
 
 **Order Management (4 providers)**
+
 - Shopify (REST + GraphQL APIs)
 - WooCommerce, Magento, Custom
 
 **Inventory (3 providers)**
+
 - Shopify, WooCommerce, ERP systems
 
 **Payment (3 providers)**
+
 - Stripe (subscriptions, invoicing)
 - PayPal, Square
 
 **Analytics (4 providers)**
+
 - BigQuery, DataHub, custom webhooks
 
 ### Integration Lifecycle
@@ -1031,16 +1042,16 @@ Call adapter.send(message)
 
 ### Cached Data Types
 
-| Data | TTL | Invalidation | Hit Rate |
-|------|-----|--------------|----------|
-| **RBAC Permissions** | 5m | On role change | 95%+ |
-| **Zone Geometry** | 1h | Manual (PostGIS) | 99%+ |
-| **Driver Availability** | 1m | Location update | 85%+ |
-| **Delivery Rate (PostGIS)** | 30m | Zone change | 92%+ |
-| **Integration Config** | 24h | On save | 98%+ |
-| **Campaign Segments** | 5m | On update | 88%+ |
-| **Billing Metrics** | 1h | Hourly refresh | 90%+ |
-| **API Response** | Variable | Per endpoint | 70%+ |
+| Data                        | TTL      | Invalidation     | Hit Rate |
+| --------------------------- | -------- | ---------------- | -------- |
+| **RBAC Permissions**        | 5m       | On role change   | 95%+     |
+| **Zone Geometry**           | 1h       | Manual (PostGIS) | 99%+     |
+| **Driver Availability**     | 1m       | Location update  | 85%+     |
+| **Delivery Rate (PostGIS)** | 30m      | Zone change      | 92%+     |
+| **Integration Config**      | 24h      | On save          | 98%+     |
+| **Campaign Segments**       | 5m       | On update        | 88%+     |
+| **Billing Metrics**         | 1h       | Hourly refresh   | 90%+     |
+| **API Response**            | Variable | Per endpoint     | 70%+     |
 
 ### Cache Invalidation Patterns
 
@@ -1118,19 +1129,22 @@ Example (Zone update):
 ### Encryption & Data Protection
 
 **Field-Level Encryption**
+
 - Algorithm: AES-256-GCM (authenticated encryption)
 - Key derivation: Scrypt (salt + 16K iterations)
 - Key rotation: Supported with re-encryption
 - Fields: passwords, API keys, payment details, PII
 
 **Transport Security**
+
 - TLS 1.3 for all HTTP connections
 - HSTS headers (Strict-Transport-Security)
 - Certificate pinning for mobile apps
 - Automatic HTTPS redirect
 
 **Data Masking**
-- Audit logs: Credit card truncated (****-****-****-1234)
+
+- Audit logs: Credit card truncated (\***\*-\*\***-\*\*\*\*-1234)
 - Logs: Passwords replaced with [REDACTED]
 - Search: Full-text search on masked data
 - Export: Sensitive fields optional
@@ -1180,27 +1194,27 @@ Example (Zone update):
 
 ### Latency Targets (p95)
 
-| Operation | Target | Actual | Notes |
-|-----------|--------|--------|-------|
-| **GET /orders/:id** | 100ms | 45ms | Cached (Redis) |
-| **POST /orders** (create) | 500ms | 380ms | Workflow async |
-| **GET /rates** (zone calc) | 200ms | 150ms | PostGIS + cache |
-| **POST /drivers/:id/assign** | 800ms | 620ms | Route optimization |
-| **WebSocket location update** | 50ms | 30ms | Direct broadcast |
-| **Webhook delivery** | 1000ms | 750ms | HTTP + retry queue |
-| **Auth token validation** | 50ms | 20ms | JWT local decode |
-| **RBAC permission check** | 100ms | 35ms | Cache hit |
+| Operation                     | Target | Actual | Notes              |
+| ----------------------------- | ------ | ------ | ------------------ |
+| **GET /orders/:id**           | 100ms  | 45ms   | Cached (Redis)     |
+| **POST /orders** (create)     | 500ms  | 380ms  | Workflow async     |
+| **GET /rates** (zone calc)    | 200ms  | 150ms  | PostGIS + cache    |
+| **POST /drivers/:id/assign**  | 800ms  | 620ms  | Route optimization |
+| **WebSocket location update** | 50ms   | 30ms   | Direct broadcast   |
+| **Webhook delivery**          | 1000ms | 750ms  | HTTP + retry queue |
+| **Auth token validation**     | 50ms   | 20ms   | JWT local decode   |
+| **RBAC permission check**     | 100ms  | 35ms   | Cache hit          |
 
 ### Throughput Targets
 
-| Resource | Target | Actual | Scaling |
-|----------|--------|--------|---------|
-| **Concurrent users** | 1000 | 1200 | Via API replicas |
-| **Orders/sec** | 100 | 120 | Async processing |
-| **Events/sec** | 10k | 12k | Redis Streams sharding |
-| **Webhook deliveries/sec** | 1000 | 1100 | Worker pool scale |
-| **Location updates/sec** | 500 | 520 | WebSocket rooms |
-| **Audit log writes/sec** | 1000 | 950 | Batch + Redis queue |
+| Resource                   | Target | Actual | Scaling                |
+| -------------------------- | ------ | ------ | ---------------------- |
+| **Concurrent users**       | 1000   | 1200   | Via API replicas       |
+| **Orders/sec**             | 100    | 120    | Async processing       |
+| **Events/sec**             | 10k    | 12k    | Redis Streams sharding |
+| **Webhook deliveries/sec** | 1000   | 1100   | Worker pool scale      |
+| **Location updates/sec**   | 500    | 520    | WebSocket rooms        |
+| **Audit log writes/sec**   | 1000   | 950    | Batch + Redis queue    |
 
 ### Scalability Bottlenecks & Solutions
 
@@ -1308,13 +1322,13 @@ Dashboards
 
 ## Version History
 
-| Version | Date | Sprint | Key Changes |
-|---------|------|--------|-------------|
-| 4.0.0 | 2026-03-16 | 7.0 | Multi-tenancy refinement, RBAC, audit logging, integrations |
-| 3.5.0 | 2026-02-01 | 6.5 | Workflow engine, event bus, real-time WebSockets |
-| 3.0.0 | 2025-12-15 | 6.0 | Shopify checkout extension, billing system |
-| 2.0.0 | 2025-10-01 | 5.0 | PostgreSQL migration, PostGIS, RLS |
-| 1.0.0 | 2025-07-01 | 4.0 | Initial release, Fastify + Next.js |
+| Version | Date       | Sprint | Key Changes                                                 |
+| ------- | ---------- | ------ | ----------------------------------------------------------- |
+| 4.0.0   | 2026-03-16 | 7.0    | Multi-tenancy refinement, RBAC, audit logging, integrations |
+| 3.5.0   | 2026-02-01 | 6.5    | Workflow engine, event bus, real-time WebSockets            |
+| 3.0.0   | 2025-12-15 | 6.0    | Shopify checkout extension, billing system                  |
+| 2.0.0   | 2025-10-01 | 5.0    | PostgreSQL migration, PostGIS, RLS                          |
+| 1.0.0   | 2025-07-01 | 4.0    | Initial release, Fastify + Next.js                          |
 
 ---
 

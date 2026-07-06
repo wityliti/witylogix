@@ -40,6 +40,7 @@ This system provides a unified interface for managing multiple courier providers
 ## Files Created
 
 ### Core Type Definitions
+
 - **`packages/core/src/integrations/couriers/types.ts`** (200 lines)
   - `CourierConfig`: Provider credentials and configuration
   - `QuoteRequest`, `CourierQuote`: Pricing and estimates
@@ -51,12 +52,14 @@ This system provides a unified interface for managing multiple courier providers
   - Enums: `DeliveryStatus`, `WebhookEvent`, `DispatchStrategy`
 
 ### Abstract Adapter Interface
+
 - **`packages/core/src/integrations/couriers/courier-adapter.ts`** (150 lines)
   - `CourierAdapter`: Abstract base class
   - Methods: `getQuote()`, `createDelivery()`, `getDeliveryStatus()`, `cancelDelivery()`, `getDriverLocation()`, `listWebhooks()`, `registerWebhook()`, `deregisterWebhook()`, `validateConfig()`, `healthCheck()`
   - `WebhookInfo`: Webhook registration metadata
 
 ### Onfleet Client Implementation
+
 - **`packages/core/src/integrations/couriers/onfleet-client.ts`** (450 lines)
   - REST API client (Basic auth)
   - Features: Task management, team assignment, auto-assign, rate limiting (20 req/sec)
@@ -66,6 +69,7 @@ This system provides a unified interface for managing multiple courier providers
   - Event mapping: Onfleet event codes ↔ normalized webhook events
 
 ### Stuart Client Implementation
+
 - **`packages/core/src/integrations/couriers/stuart-client.ts`** (450 lines)
   - REST API client (OAuth2)
   - Features: Multi-transport types (bike/car/van), scheduled deliveries, job tracking
@@ -76,6 +80,7 @@ This system provides a unified interface for managing multiple courier providers
   - Price in cents conversion
 
 ### Uber Direct Client Implementation
+
 - **`packages/core/src/integrations/couriers/uber-direct-client.ts`** (450 lines)
   - REST API client (OAuth2)
   - Features: Tip support, dropoff verification, manifest items, signature capture
@@ -86,6 +91,7 @@ This system provides a unified interface for managing multiple courier providers
   - Event mapping: Uber event types ↔ normalized webhook events
 
 ### Normalizer & Comparison
+
 - **`packages/core/src/integrations/couriers/courier-normalizer.ts`** (200 lines)
   - `CourierNormalizer`: Normalize quotes and status across providers
     - Currency conversion to USD
@@ -101,6 +107,7 @@ This system provides a unified interface for managing multiple courier providers
     - Polling state management
 
 ### Dispatcher Service
+
 - **`packages/core/src/integrations/couriers/courier-dispatcher.ts`** (300 lines)
   - `CourierDispatcher`: Multi-provider orchestration
     - Register/manage adapters
@@ -112,11 +119,13 @@ This system provides a unified interface for managing multiple courier providers
   - `courierDispatcher`: Singleton instance for global use
 
 ### Barrel Exports
+
 - **`packages/core/src/integrations/couriers/index.ts`**
   - Exports all types, classes, and services
   - Single import source: `import { ... } from "@witylogix/core/integrations/couriers"`
 
 ### Database Schema
+
 - **`packages/db/prisma/schema/46-couriers.prisma`** (80 lines)
   - `CourierPartner`: Registered courier integrations
     - Credentials (encrypted at app layer)
@@ -133,6 +142,7 @@ This system provides a unified interface for managing multiple courier providers
   - Enums: `CourierStatus`, `DeliveryStatus`, `HealthStatus`
 
 ### API Routes
+
 - **`apps/api/src/routes/couriers.ts`** (400 lines)
   - 10 endpoints:
     - `GET /partners` - List registered couriers
@@ -152,6 +162,7 @@ This system provides a unified interface for managing multiple courier providers
   - Error handling with detailed messages
 
 ### Test Suite
+
 - **`packages/core/src/integrations/couriers/__tests__/onfleet-client.test.ts`** (200+ lines)
   - 20+ tests covering:
     - Configuration validation
@@ -198,20 +209,22 @@ const response = await fetch("/couriers/partners", {
     provider: "onfleet",
     name: "Onfleet Primary",
     credentials: {
-      apiKey: "your_onfleet_api_key"
+      apiKey: "your_onfleet_api_key",
     },
     config: {
       autoAssign: true,
-      teamId: "team_uuid"
-    }
-  })
+      teamId: "team_uuid",
+    },
+  }),
 });
 ```
 
 ### Get Multi-Courier Quote
 
 ```typescript
-const quote = await fetch("/couriers/quote?pickup.latitude=40.7128&pickup.longitude=-74.006&dropoff.latitude=40.758&dropoff.longitude=-73.9855");
+const quote = await fetch(
+  "/couriers/quote?pickup.latitude=40.7128&pickup.longitude=-74.006&dropoff.latitude=40.758&dropoff.longitude=-73.9855",
+);
 // Returns: { quotes, analysis: { cheapest, fastest, average, all } }
 ```
 
@@ -225,8 +238,8 @@ const dispatch = await fetch("/couriers/dispatch", {
     pickup: { latitude: 40.7128, longitude: -74.006 },
     dropoff: { latitude: 40.758, longitude: -73.9855 },
     recipient: { name: "John", phone: "+1234567890" },
-    strategy: "auto" // cheapest, fastest, preferred, or auto
-  })
+    strategy: "auto", // cheapest, fastest, preferred, or auto
+  }),
 });
 // Returns: { dispatch, tracking: deliveryRecord }
 ```
@@ -251,6 +264,7 @@ const tracking = await fetch("/couriers/deliveries/delivery_uuid/tracking");
 ## Adapter-Specific Details
 
 ### Onfleet
+
 - **Auth**: Basic HTTP (API key)
 - **Rate Limit**: 20 requests/second
 - **Task Types**: Pickup + Dropoff
@@ -259,6 +273,7 @@ const tracking = await fetch("/couriers/deliveries/delivery_uuid/tracking");
 - **Status Codes**: 0/1/2/3/-1 (numeric)
 
 ### Stuart
+
 - **Auth**: OAuth2 (client_credentials)
 - **Rate Limit**: Standard OAuth limits
 - **Transport Types**: Bike, Car, Van
@@ -268,22 +283,25 @@ const tracking = await fetch("/couriers/deliveries/delivery_uuid/tracking");
 - **Price Format**: Returned in cents
 
 ### Uber Direct
+
 - **Auth**: OAuth2 (client_credentials)
 - **Customer ID**: Required (tenant_id field)
 - **Key Features**: Tip support, dropoff signature, manifest items
 - **Webhook Events**: 9+ event types
-- **Status Values**: SCHEDULED, REQUEST_ACCEPTED, PICKUP_*, DROPOFF_*, etc.
+- **Status Values**: SCHEDULED, REQUEST*ACCEPTED, PICKUP*_, DROPOFF\__, etc.
 - **Price Format**: Returned in cents
 - **Token Refresh**: 1 minute before expiry
 
 ## Implementation Notes
 
 ### Currency Handling
+
 - All quotes normalized to USD
 - Exchange rates are default/configurable
 - Uber/Stuart return prices in cents (auto-converted)
 
 ### Status Mapping
+
 ```
 Provider-Specific → Normalized
 Onfleet: 0→pending, 1→picked_up, 2→in_transit, 3→delivered, -1→cancelled
@@ -292,12 +310,14 @@ Uber: SCHEDULED→pending, IN_TRANSIT→in_transit, DROPOFF_COMPLETED→delivere
 ```
 
 ### Dispatch Strategy
+
 - **cheapest**: Lowest price
 - **fastest**: Shortest ETA
 - **preferred**: Weighted scoring (60% price, 40% time)
 - **auto**: Fastest if within 20% of cheapest, else cheapest
 
 ### Webhook Event Mapping
+
 ```
 Onfleet (numeric codes): 0/13/14/15/16/17/84
 Stuart (strings): job_created/accepted/in_progress/completed/failed/cancelled
@@ -307,6 +327,7 @@ Normalized: DELIVERY_CREATED/PICKED_UP/IN_TRANSIT/DELIVERED/FAILED/CANCELLED
 ```
 
 ### Error Handling
+
 - Credential validation on registration
 - Per-provider error collection in multi-courier operations
 - Fallback support in dispatch (continues if provider fails)
@@ -323,11 +344,13 @@ All HTTP calls are marked with `// INTEGRATION:` comments for implementation:
 ## Testing
 
 Run tests with:
+
 ```bash
 npm test -- couriers
 ```
 
 Covers:
+
 - Credential validation
 - Quote retrieval and comparison
 - Delivery creation and status tracking

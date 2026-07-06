@@ -2,7 +2,11 @@
  * Template Engine — Multi-channel notification templates with variable interpolation
  */
 
-import { NotificationEventType, TemplateContent, TemplateVariables } from "./types.js";
+import {
+  NotificationEventType,
+  TemplateContent,
+  TemplateVariables,
+} from "./types.js";
 
 /**
  * Template definitions per channel
@@ -236,7 +240,7 @@ export class TemplateEngine {
   static renderTemplate(
     eventType: NotificationEventType,
     variables: TemplateVariables,
-    channel: "email" | "sms" | "whatsapp" | "push"
+    channel: "email" | "sms" | "whatsapp" | "push",
   ): TemplateContent {
     const template = TEMPLATES[eventType];
     if (!template) {
@@ -264,7 +268,10 @@ export class TemplateEngine {
         const waTemplate = template.whatsapp;
         return {
           templateId: waTemplate.templateId,
-          templateParams: this.extractTemplateParams(waTemplate.templateName, variables),
+          templateParams: this.extractTemplateParams(
+            waTemplate.templateName,
+            variables,
+          ),
         };
       }
 
@@ -284,7 +291,10 @@ export class TemplateEngine {
   /**
    * Interpolate variables in template text
    */
-  private static interpolate(text: string, variables: TemplateVariables): string {
+  private static interpolate(
+    text: string,
+    variables: TemplateVariables,
+  ): string {
     let result = text;
     for (const [key, value] of Object.entries(variables)) {
       if (value) {
@@ -302,12 +312,17 @@ export class TemplateEngine {
    */
   private static extractTemplateParams(
     templateName: string,
-    variables: TemplateVariables
+    variables: TemplateVariables,
   ): string[] {
     // WhatsApp template parameters in standard order based on template
     const paramMap: Record<string, string[]> = {
       order_confirmation: ["customerName", "orderId", "deliveryAddress"],
-      delivery_scheduled: ["customerName", "deliveryDate", "timeWindow", "deliveryAddress"],
+      delivery_scheduled: [
+        "customerName",
+        "deliveryDate",
+        "timeWindow",
+        "deliveryAddress",
+      ],
       out_for_delivery: ["customerName", "timeWindow", "driverName"],
       delivery_arriving: ["customerName", "deliveryAddress"],
       delivered: ["customerName"],
@@ -316,9 +331,7 @@ export class TemplateEngine {
     };
 
     const keys = paramMap[templateName] || [];
-    return keys
-      .map((key) => variables[key] || "")
-      .filter((v) => v.length > 0);
+    return keys.map((key) => variables[key] || "").filter((v) => v.length > 0);
   }
 
   /**

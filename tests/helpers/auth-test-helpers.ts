@@ -4,7 +4,7 @@
  * ~200 lines of reusable test fixtures and mocks
  */
 
-import { randomBytes, createHash, createHmac } from 'crypto';
+import { randomBytes, createHash, createHmac } from "crypto";
 
 // ───────────────────────────────────────────────────────────────────────────
 // MOCK DATA BUILDERS
@@ -13,26 +13,31 @@ import { randomBytes, createHash, createHmac } from 'crypto';
 /**
  * Create a mock user for testing
  */
-export function createMockUser(overrides: Partial<{
-  id: string;
-  email: string;
-  passwordHash: string;
-  orgId: string;
-  role: string;
-  isActive: boolean;
-}> = {}) {
-  const defaultPassword = 'TestPassword123!';
-  const salt = randomBytes(16).toString('hex');
-  const hash = createHash('sha256')
+export function createMockUser(
+  overrides: Partial<{
+    id: string;
+    email: string;
+    passwordHash: string;
+    orgId: string;
+    role: string;
+    isActive: boolean;
+  }> = {},
+) {
+  const defaultPassword = "TestPassword123!";
+  const salt = randomBytes(16).toString("hex");
+  const hash = createHash("sha256")
     .update(salt + defaultPassword)
-    .digest('hex');
+    .digest("hex");
 
   return {
-    id: overrides.id || `user-${randomBytes(4).toString('hex')}`,
-    email: overrides.email || `user-${randomBytes(4).toString('hex')}@example.com`,
-    passwordHash: overrides.passwordHash || `$argon2id$v=19$m=65536,t=3,p=4$${salt}$${hash}`,
-    orgId: overrides.orgId || `org-${randomBytes(4).toString('hex')}`,
-    role: overrides.role || 'MEMBER',
+    id: overrides.id || `user-${randomBytes(4).toString("hex")}`,
+    email:
+      overrides.email || `user-${randomBytes(4).toString("hex")}@example.com`,
+    passwordHash:
+      overrides.passwordHash ||
+      `$argon2id$v=19$m=65536,t=3,p=4$${salt}$${hash}`,
+    orgId: overrides.orgId || `org-${randomBytes(4).toString("hex")}`,
+    role: overrides.role || "MEMBER",
     isActive: overrides.isActive !== false,
   };
 }
@@ -40,18 +45,20 @@ export function createMockUser(overrides: Partial<{
 /**
  * Create a mock organization for testing
  */
-export function createMockOrg(overrides: Partial<{
-  id: string;
-  name: string;
-  industry: string;
-  planType: string;
-  isActive: boolean;
-}> = {}) {
+export function createMockOrg(
+  overrides: Partial<{
+    id: string;
+    name: string;
+    industry: string;
+    planType: string;
+    isActive: boolean;
+  }> = {},
+) {
   return {
-    id: overrides.id || `org-${randomBytes(4).toString('hex')}`,
+    id: overrides.id || `org-${randomBytes(4).toString("hex")}`,
     name: overrides.name || `Test Org ${Date.now()}`,
-    industry: overrides.industry || 'logistics',
-    planType: overrides.planType || 'premium',
+    industry: overrides.industry || "logistics",
+    planType: overrides.planType || "premium",
     isActive: overrides.isActive !== false,
   };
 }
@@ -59,21 +66,24 @@ export function createMockOrg(overrides: Partial<{
 /**
  * Create a mock session for testing
  */
-export function createMockSession(overrides: Partial<{
-  id: string;
-  userId: string;
-  deviceFingerprint: string;
-  isActive: boolean;
-  expiresAt: Date;
-  createdAt: Date;
-}> = {}) {
+export function createMockSession(
+  overrides: Partial<{
+    id: string;
+    userId: string;
+    deviceFingerprint: string;
+    isActive: boolean;
+    expiresAt: Date;
+    createdAt: Date;
+  }> = {},
+) {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours
 
   return {
-    id: overrides.id || `session-${randomBytes(8).toString('hex')}`,
-    userId: overrides.userId || `user-${randomBytes(4).toString('hex')}`,
-    deviceFingerprint: overrides.deviceFingerprint || randomBytes(32).toString('hex'),
+    id: overrides.id || `session-${randomBytes(8).toString("hex")}`,
+    userId: overrides.userId || `user-${randomBytes(4).toString("hex")}`,
+    deviceFingerprint:
+      overrides.deviceFingerprint || randomBytes(32).toString("hex"),
     isActive: overrides.isActive !== false,
     expiresAt: overrides.expiresAt || expiresAt,
     createdAt: overrides.createdAt || now,
@@ -83,21 +93,23 @@ export function createMockSession(overrides: Partial<{
 /**
  * Create a mock API key for testing
  */
-export function createMockApiKey(overrides: Partial<{
-  id: string;
-  key: string;
-  tenantId: string;
-  scopes: string[];
-  isActive: boolean;
-  createdAt: Date;
-}> = {}) {
-  const key = `wl_live_${randomBytes(32).toString('hex')}`;
+export function createMockApiKey(
+  overrides: Partial<{
+    id: string;
+    key: string;
+    tenantId: string;
+    scopes: string[];
+    isActive: boolean;
+    createdAt: Date;
+  }> = {},
+) {
+  const key = `wl_live_${randomBytes(32).toString("hex")}`;
 
   return {
-    id: overrides.id || `key-${randomBytes(4).toString('hex')}`,
+    id: overrides.id || `key-${randomBytes(4).toString("hex")}`,
     key: overrides.key || key,
-    tenantId: overrides.tenantId || `org-${randomBytes(4).toString('hex')}`,
-    scopes: overrides.scopes || ['read', 'write'],
+    tenantId: overrides.tenantId || `org-${randomBytes(4).toString("hex")}`,
+    scopes: overrides.scopes || ["read", "write"],
     isActive: overrides.isActive !== false,
     createdAt: overrides.createdAt || new Date(),
   };
@@ -110,15 +122,18 @@ export function createMockApiKey(overrides: Partial<{
 /**
  * Generate a test JWT token
  */
-export function generateTestJWT(claims: {
-  sub: string;
-  shopId: string;
-  orgId?: string;
-  role: string;
-  type: 'user' | 'driver';
-  exp?: number;
-  iat?: number;
-}, secret: string = 'test-secret'): string {
+export function generateTestJWT(
+  claims: {
+    sub: string;
+    shopId: string;
+    orgId?: string;
+    role: string;
+    type: "user" | "driver";
+    exp?: number;
+    iat?: number;
+  },
+  secret: string = "test-secret",
+): string {
   const now = Math.floor(Date.now() / 1000);
   const payload = {
     ...claims,
@@ -126,12 +141,14 @@ export function generateTestJWT(claims: {
     exp: claims.exp || now + 3600,
   };
 
-  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
-  const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const header = Buffer.from(
+    JSON.stringify({ alg: "HS256", typ: "JWT" }),
+  ).toString("base64url");
+  const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
 
-  const signature = createHmac('sha256', secret)
+  const signature = createHmac("sha256", secret)
     .update(`${header}.${body}`)
-    .digest('base64url');
+    .digest("base64url");
 
   return `${header}.${body}.${signature}`;
 }
@@ -139,20 +156,23 @@ export function generateTestJWT(claims: {
 /**
  * Decode and verify test JWT (for testing purposes)
  */
-export function verifyTestJWT(token: string, secret: string = 'test-secret'): any | null {
+export function verifyTestJWT(
+  token: string,
+  secret: string = "test-secret",
+): any | null {
   try {
-    const [headerB64, bodyB64, signatureB64] = token.split('.');
+    const [headerB64, bodyB64, signatureB64] = token.split(".");
 
     // Verify signature
-    const expectedSignature = createHmac('sha256', secret)
+    const expectedSignature = createHmac("sha256", secret)
       .update(`${headerB64}.${bodyB64}`)
-      .digest('base64url');
+      .digest("base64url");
 
     if (expectedSignature !== signatureB64) {
       return null;
     }
 
-    const payload = JSON.parse(Buffer.from(bodyB64, 'base64url').toString());
+    const payload = JSON.parse(Buffer.from(bodyB64, "base64url").toString());
     const now = Math.floor(Date.now() / 1000);
 
     if (payload.exp < now) {
@@ -172,37 +192,41 @@ export function verifyTestJWT(token: string, secret: string = 'test-secret'): an
 /**
  * Create a mock HTTP request object
  */
-export function createMockRequest(options: {
-  method?: string;
-  url?: string;
-  headers?: Record<string, string>;
-  body?: any;
-  auth?: any;
-} = {}) {
+export function createMockRequest(
+  options: {
+    method?: string;
+    url?: string;
+    headers?: Record<string, string>;
+    body?: any;
+    auth?: any;
+  } = {},
+) {
   return {
-    method: options.method || 'GET',
-    url: options.url || 'http://localhost:3000/',
+    method: options.method || "GET",
+    url: options.url || "http://localhost:3000/",
     headers: {
-      'content-type': 'application/json',
+      "content-type": "application/json",
       ...options.headers,
     },
     body: options.body,
     auth: options.auth,
-    ip: '127.0.0.1',
+    ip: "127.0.0.1",
   };
 }
 
 /**
  * Create a mock HTTP response object
  */
-export function createMockResponse(overrides: Partial<{
-  status: number;
-  headers: Record<string, string>;
-  body: any;
-}> = {}) {
+export function createMockResponse(
+  overrides: Partial<{
+    status: number;
+    headers: Record<string, string>;
+    body: any;
+  }> = {},
+) {
   return {
     status: overrides.status || 200,
-    headers: overrides.headers || { 'content-type': 'application/json' },
+    headers: overrides.headers || { "content-type": "application/json" },
     body: overrides.body || {},
     json: () => Promise.resolve(overrides.body || {}),
     text: () => Promise.resolve(JSON.stringify(overrides.body || {})),
@@ -225,21 +249,25 @@ export function mockPrismaClient() {
   return {
     user: {
       create: async (data: any) => {
-        const user = { id: `user-${randomBytes(4).toString('hex')}`, ...data };
+        const user = { id: `user-${randomBytes(4).toString("hex")}`, ...data };
         users.set(user.id, user);
         return user;
       },
       findUnique: async (query: any) => {
         if (query.where.id) return users.get(query.where.id) || null;
         if (query.where.email) {
-          return Array.from(users.values()).find(u => u.email === query.where.email) || null;
+          return (
+            Array.from(users.values()).find(
+              (u) => u.email === query.where.email,
+            ) || null
+          );
         }
         return null;
       },
       findMany: async () => Array.from(users.values()),
       update: async (query: any) => {
         const user = users.get(query.where.id);
-        if (!user) throw new Error('User not found');
+        if (!user) throw new Error("User not found");
         Object.assign(user, query.data);
         return user;
       },
@@ -252,7 +280,10 @@ export function mockPrismaClient() {
 
     session: {
       create: async (data: any) => {
-        const session = { id: `session-${randomBytes(8).toString('hex')}`, ...data };
+        const session = {
+          id: `session-${randomBytes(8).toString("hex")}`,
+          ...data,
+        };
         sessions.set(session.id, session);
         return session;
       },
@@ -260,7 +291,7 @@ export function mockPrismaClient() {
       findMany: async () => Array.from(sessions.values()),
       update: async (query: any) => {
         const session = sessions.get(query.where.id);
-        if (!session) throw new Error('Session not found');
+        if (!session) throw new Error("Session not found");
         Object.assign(session, query.data);
         return session;
       },
@@ -269,7 +300,7 @@ export function mockPrismaClient() {
 
     apiKey: {
       create: async (data: any) => {
-        const key = { id: `key-${randomBytes(4).toString('hex')}`, ...data };
+        const key = { id: `key-${randomBytes(4).toString("hex")}`, ...data };
         apiKeys.set(key.id, key);
         return key;
       },
@@ -279,11 +310,12 @@ export function mockPrismaClient() {
 
     organization: {
       create: async (data: any) => {
-        const org = { id: `org-${randomBytes(4).toString('hex')}`, ...data };
+        const org = { id: `org-${randomBytes(4).toString("hex")}`, ...data };
         organizations.set(org.id, org);
         return org;
       },
-      findUnique: async (query: any) => organizations.get(query.where.id) || null,
+      findUnique: async (query: any) =>
+        organizations.get(query.where.id) || null,
       findMany: async () => Array.from(organizations.values()),
     },
 
@@ -314,17 +346,27 @@ export function setupRateLimiterTest() {
       requests.get(key)!.push(timestamp);
     },
 
-    isRateLimited: (key: string, limit: number, windowMs: number, timestamp: number = Date.now()): boolean => {
+    isRateLimited: (
+      key: string,
+      limit: number,
+      windowMs: number,
+      timestamp: number = Date.now(),
+    ): boolean => {
       const times = requests.get(key) || [];
       const windowStart = timestamp - windowMs;
-      const recentRequests = times.filter(t => t > windowStart);
+      const recentRequests = times.filter((t) => t > windowStart);
       return recentRequests.length >= limit;
     },
 
-    getRemainingRequests: (key: string, limit: number, windowMs: number, timestamp: number = Date.now()): number => {
+    getRemainingRequests: (
+      key: string,
+      limit: number,
+      windowMs: number,
+      timestamp: number = Date.now(),
+    ): number => {
       const times = requests.get(key) || [];
       const windowStart = timestamp - windowMs;
-      const recentRequests = times.filter(t => t > windowStart);
+      const recentRequests = times.filter((t) => t > windowStart);
       return Math.max(0, limit - recentRequests.length);
     },
 
@@ -332,7 +374,10 @@ export function setupRateLimiterTest() {
 
     getStats: () => ({
       keys: requests.size,
-      totalRequests: Array.from(requests.values()).reduce((sum, times) => sum + times.length, 0),
+      totalRequests: Array.from(requests.values()).reduce(
+        (sum, times) => sum + times.length,
+        0,
+      ),
     }),
   };
 }
@@ -346,14 +391,14 @@ export function setupRateLimiterTest() {
  */
 export function generateTestOTP(length: number = 6): string {
   const code = Math.floor(Math.random() * Math.pow(10, length));
-  return code.toString().padStart(length, '0');
+  return code.toString().padStart(length, "0");
 }
 
 /**
  * Generate a test TOTP secret
  */
 export function generateTestTOTPSecret(): string {
-  return Buffer.from(randomBytes(32)).toString('base64');
+  return Buffer.from(randomBytes(32)).toString("base64");
 }
 
 /**
@@ -361,7 +406,7 @@ export function generateTestTOTPSecret(): string {
  */
 export function generateTestBackupCodes(count: number = 10): string[] {
   return Array.from({ length: count }, () =>
-    randomBytes(4).toString('hex').toUpperCase()
+    randomBytes(4).toString("hex").toUpperCase(),
   );
 }
 
@@ -369,21 +414,21 @@ export function generateTestBackupCodes(count: number = 10): string[] {
  * Generate a test magic link token
  */
 export function generateTestMagicLinkToken(): string {
-  return randomBytes(32).toString('hex');
+  return randomBytes(32).toString("hex");
 }
 
 /**
  * Generate a test password reset token
  */
 export function generateTestPasswordResetToken(): string {
-  return randomBytes(32).toString('hex');
+  return randomBytes(32).toString("hex");
 }
 
 /**
  * Generate a test CSRF token
  */
 export function generateTestCSRFToken(): string {
-  return randomBytes(32).toString('hex');
+  return randomBytes(32).toString("hex");
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -411,9 +456,7 @@ export function assertUserPermission(user: any, permission: string): boolean {
 export function assertSessionValid(session: any): boolean {
   const now = new Date();
   return (
-    session.isActive &&
-    session.expiresAt > now &&
-    !!session.deviceFingerprint
+    session.isActive && session.expiresAt > now && !!session.deviceFingerprint
   );
 }
 
@@ -425,14 +468,18 @@ export function assertAPIKeyValid(key: any): boolean {
   return (
     key.isActive &&
     (!key.expiresAt || key.expiresAt > now) &&
-    key.scopes && key.scopes.length > 0
+    key.scopes &&
+    key.scopes.length > 0
   );
 }
 
 /**
  * Assert token format is correct
  */
-export function assertTokenFormat(token: string, expectedPrefix?: string): boolean {
+export function assertTokenFormat(
+  token: string,
+  expectedPrefix?: string,
+): boolean {
   if (expectedPrefix) {
     return token.startsWith(expectedPrefix);
   }
@@ -442,18 +489,21 @@ export function assertTokenFormat(token: string, expectedPrefix?: string): boole
 /**
  * Assert password strength
  */
-export function assertPasswordStrength(password: string): { valid: boolean; message?: string } {
+export function assertPasswordStrength(password: string): {
+  valid: boolean;
+  message?: string;
+} {
   if (password.length < 8) {
-    return { valid: false, message: 'Password must be at least 8 characters' };
+    return { valid: false, message: "Password must be at least 8 characters" };
   }
   if (!/[A-Z]/.test(password)) {
-    return { valid: false, message: 'Password must contain uppercase letter' };
+    return { valid: false, message: "Password must contain uppercase letter" };
   }
   if (!/[0-9]/.test(password)) {
-    return { valid: false, message: 'Password must contain number' };
+    return { valid: false, message: "Password must contain number" };
   }
   if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    return { valid: false, message: 'Password must contain special character' };
+    return { valid: false, message: "Password must contain special character" };
   }
   return { valid: true };
 }

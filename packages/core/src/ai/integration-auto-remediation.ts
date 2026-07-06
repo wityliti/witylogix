@@ -11,14 +11,14 @@
 // ─── TYPES ──────────────────────────────────────────────────────────────────
 
 export type RemediationActionType =
-  | 'circuit_break'
-  | 'failover'
-  | 'throttle'
-  | 'retry_config_change'
-  | 'cache_enable'
-  | 'alert_ops'
-  | 'credential_rotate'
-  | 'provider_restart';
+  | "circuit_break"
+  | "failover"
+  | "throttle"
+  | "retry_config_change"
+  | "cache_enable"
+  | "alert_ops"
+  | "credential_rotate"
+  | "provider_restart";
 
 export interface RemediationAction {
   actionId: string;
@@ -26,7 +26,7 @@ export interface RemediationAction {
   providerId: string;
   description: string;
   estimatedEffectiveness: number; // 0-1
-  estimatedImpact: 'low' | 'medium' | 'high'; // impact on system
+  estimatedImpact: "low" | "medium" | "high"; // impact on system
   executionTime: number; // milliseconds
   isDestructive: boolean;
   rollbackPossible: boolean;
@@ -65,7 +65,7 @@ export interface PlaybookStep {
 export interface RemediationPlaybook {
   playbookId: string;
   anomalyType: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   steps: PlaybookStep[];
   estimatedDuration: number; // seconds
   successRate: number; // historical 0-1
@@ -77,7 +77,7 @@ export interface RemediationExecution {
   action: RemediationAction;
   startTime: Date;
   endTime?: Date;
-  status: 'pending' | 'in_progress' | 'success' | 'failed' | 'rolled_back';
+  status: "pending" | "in_progress" | "success" | "failed" | "rolled_back";
   error?: string;
   metricsAfter?: Record<string, number>;
   metricsBefore?: Record<string, number>;
@@ -93,7 +93,7 @@ export interface IncidentPrediction {
   confidenceScore: number; // 0-1
   riskFactors: string[];
   suggestedPreventiveActions: string[];
-  predictedSeverity?: 'low' | 'medium' | 'high' | 'critical';
+  predictedSeverity?: "low" | "medium" | "high" | "critical";
 }
 
 export interface RemediationMetrics {
@@ -117,36 +117,36 @@ export class RemediationRecommender {
 
   private initializeActionRepository(): void {
     // Latency anomalies
-    this.actionRepository.set('latency_spike', [
+    this.actionRepository.set("latency_spike", [
       {
-        actionId: 'cache_enable_latency',
-        actionType: 'cache_enable',
-        providerId: '',
-        description: 'Enable caching for frequently accessed endpoints',
+        actionId: "cache_enable_latency",
+        actionType: "cache_enable",
+        providerId: "",
+        description: "Enable caching for frequently accessed endpoints",
         estimatedEffectiveness: 0.65,
-        estimatedImpact: 'low',
+        estimatedImpact: "low",
         executionTime: 2000,
         isDestructive: false,
         rollbackPossible: true,
       },
       {
-        actionId: 'throttle_latency',
-        actionType: 'throttle',
-        providerId: '',
-        description: 'Reduce request rate to reduce provider load',
-        estimatedEffectiveness: 0.50,
-        estimatedImpact: 'medium',
+        actionId: "throttle_latency",
+        actionType: "throttle",
+        providerId: "",
+        description: "Reduce request rate to reduce provider load",
+        estimatedEffectiveness: 0.5,
+        estimatedImpact: "medium",
         executionTime: 1000,
         isDestructive: false,
         rollbackPossible: true,
       },
       {
-        actionId: 'alert_ops_latency',
-        actionType: 'alert_ops',
-        providerId: '',
-        description: 'Alert operations team for manual investigation',
-        estimatedEffectiveness: 0.40,
-        estimatedImpact: 'low',
+        actionId: "alert_ops_latency",
+        actionType: "alert_ops",
+        providerId: "",
+        description: "Alert operations team for manual investigation",
+        estimatedEffectiveness: 0.4,
+        estimatedImpact: "low",
         executionTime: 500,
         isDestructive: false,
         rollbackPossible: true,
@@ -154,37 +154,37 @@ export class RemediationRecommender {
     ]);
 
     // Error rate anomalies
-    this.actionRepository.set('error_burst', [
+    this.actionRepository.set("error_burst", [
       {
-        actionId: 'circuit_break_error',
-        actionType: 'circuit_break',
-        providerId: '',
-        description: 'Temporarily break circuit to prevent cascading failures',
-        estimatedEffectiveness: 0.80,
-        estimatedImpact: 'high',
+        actionId: "circuit_break_error",
+        actionType: "circuit_break",
+        providerId: "",
+        description: "Temporarily break circuit to prevent cascading failures",
+        estimatedEffectiveness: 0.8,
+        estimatedImpact: "high",
         executionTime: 1000,
         isDestructive: true,
         rollbackPossible: true,
-        prerequisites: ['failover_available'],
+        prerequisites: ["failover_available"],
       },
       {
-        actionId: 'failover_error',
-        actionType: 'failover',
-        providerId: '',
-        description: 'Failover to backup provider',
+        actionId: "failover_error",
+        actionType: "failover",
+        providerId: "",
+        description: "Failover to backup provider",
         estimatedEffectiveness: 0.75,
-        estimatedImpact: 'medium',
+        estimatedImpact: "medium",
         executionTime: 3000,
         isDestructive: false,
         rollbackPossible: true,
       },
       {
-        actionId: 'retry_config_error',
-        actionType: 'retry_config_change',
-        providerId: '',
-        description: 'Adjust retry policy to reduce load',
+        actionId: "retry_config_error",
+        actionType: "retry_config_change",
+        providerId: "",
+        description: "Adjust retry policy to reduce load",
         estimatedEffectiveness: 0.55,
-        estimatedImpact: 'low',
+        estimatedImpact: "low",
         executionTime: 500,
         isDestructive: false,
         rollbackPossible: true,
@@ -192,25 +192,25 @@ export class RemediationRecommender {
     ]);
 
     // Volume anomalies
-    this.actionRepository.set('traffic_spike', [
+    this.actionRepository.set("traffic_spike", [
       {
-        actionId: 'throttle_volume',
-        actionType: 'throttle',
-        providerId: '',
-        description: 'Rate limit incoming requests',
-        estimatedEffectiveness: 0.70,
-        estimatedImpact: 'medium',
+        actionId: "throttle_volume",
+        actionType: "throttle",
+        providerId: "",
+        description: "Rate limit incoming requests",
+        estimatedEffectiveness: 0.7,
+        estimatedImpact: "medium",
         executionTime: 1000,
         isDestructive: false,
         rollbackPossible: true,
       },
       {
-        actionId: 'failover_volume',
-        actionType: 'failover',
-        providerId: '',
-        description: 'Distribute load across multiple providers',
+        actionId: "failover_volume",
+        actionType: "failover",
+        providerId: "",
+        description: "Distribute load across multiple providers",
         estimatedEffectiveness: 0.65,
-        estimatedImpact: 'low',
+        estimatedImpact: "low",
         executionTime: 2000,
         isDestructive: false,
         rollbackPossible: true,
@@ -218,25 +218,25 @@ export class RemediationRecommender {
     ]);
 
     // Correlated errors
-    this.actionRepository.set('correlated_errors', [
+    this.actionRepository.set("correlated_errors", [
       {
-        actionId: 'credential_rotate_correlated',
-        actionType: 'credential_rotate',
-        providerId: '',
-        description: 'Rotate credentials to resolve auth issues',
-        estimatedEffectiveness: 0.70,
-        estimatedImpact: 'medium',
+        actionId: "credential_rotate_correlated",
+        actionType: "credential_rotate",
+        providerId: "",
+        description: "Rotate credentials to resolve auth issues",
+        estimatedEffectiveness: 0.7,
+        estimatedImpact: "medium",
         executionTime: 5000,
         isDestructive: false,
         rollbackPossible: true,
       },
       {
-        actionId: 'provider_restart_correlated',
-        actionType: 'provider_restart',
-        providerId: '',
-        description: 'Restart provider connection',
-        estimatedEffectiveness: 0.60,
-        estimatedImpact: 'high',
+        actionId: "provider_restart_correlated",
+        actionType: "provider_restart",
+        providerId: "",
+        description: "Restart provider connection",
+        estimatedEffectiveness: 0.6,
+        estimatedImpact: "high",
         executionTime: 10000,
         isDestructive: false,
         rollbackPossible: true,
@@ -244,7 +244,11 @@ export class RemediationRecommender {
     ]);
   }
 
-  recommend(anomalyType: string, score: number, providerId: string): RemediationRecommendation {
+  recommend(
+    anomalyType: string,
+    score: number,
+    providerId: string,
+  ): RemediationRecommendation {
     let baseActions = this.actionRepository.get(anomalyType) || [];
 
     // Clone and customize for provider
@@ -261,13 +265,18 @@ export class RemediationRecommender {
     const top3 = actions.slice(0, 3);
 
     // Boost effectiveness based on anomaly score
-    const avgEffectiveness = top3.length > 0
-      ? top3.reduce((sum, a) => sum + a.estimatedEffectiveness, 0) / top3.length
-      : 0;
+    const avgEffectiveness =
+      top3.length > 0
+        ? top3.reduce((sum, a) => sum + a.estimatedEffectiveness, 0) /
+          top3.length
+        : 0;
 
-    const successProbability = Math.min(1, avgEffectiveness * (1 + (score / 100) * 0.2));
+    const successProbability = Math.min(
+      1,
+      avgEffectiveness * (1 + (score / 100) * 0.2),
+    );
     const estimatedResolutionTime = Math.ceil(
-      top3.reduce((sum, a) => sum + a.executionTime, 0) / 1000
+      top3.reduce((sum, a) => sum + a.executionTime, 0) / 1000,
     );
 
     return {
@@ -280,7 +289,11 @@ export class RemediationRecommender {
     };
   }
 
-  trackEffectiveness(anomalyType: string, actionType: RemediationActionType, wasSuccessful: boolean): void {
+  trackEffectiveness(
+    anomalyType: string,
+    actionType: RemediationActionType,
+    wasSuccessful: boolean,
+  ): void {
     const key = `${anomalyType}_${actionType}`;
     if (!this.effectivenessHistory.has(key)) {
       this.effectivenessHistory.set(key, []);
@@ -304,13 +317,13 @@ export class AutoRemediationEngine {
 
   async executeAction(
     action: RemediationAction,
-    metricsSnapshot?: Record<string, number>
+    metricsSnapshot?: Record<string, number>,
   ): Promise<RemediationExecution> {
     const execution: RemediationExecution = {
       executionId: `exec_${Date.now()}_${Math.random()}`,
       action,
       startTime: new Date(),
-      status: 'pending',
+      status: "pending",
       metricsBefore: metricsSnapshot,
     };
 
@@ -319,30 +332,31 @@ export class AutoRemediationEngine {
     const count = this.executionCountPerHour.get(hourKey) || 0;
 
     if (count >= this.maxActionsPerHour) {
-      execution.status = 'failed';
-      execution.error = 'Rate limit exceeded (max ' + this.maxActionsPerHour + ' per hour)';
+      execution.status = "failed";
+      execution.error =
+        "Rate limit exceeded (max " + this.maxActionsPerHour + " per hour)";
       this.executionHistory.push(execution);
       return execution;
     }
 
     // Check for cascade risk
     if (this.detectCascadeRisk(action)) {
-      execution.status = 'failed';
-      execution.error = 'Cascade risk detected - action blocked';
+      execution.status = "failed";
+      execution.error = "Cascade risk detected - action blocked";
       this.executionHistory.push(execution);
       return execution;
     }
 
     // Execute action
     try {
-      execution.status = 'in_progress';
+      execution.status = "in_progress";
       await this.simulateActionExecution(action);
-      execution.status = 'success';
+      execution.status = "success";
       execution.endTime = new Date();
 
       this.executionCountPerHour.set(hourKey, count + 1);
     } catch (error) {
-      execution.status = 'failed';
+      execution.status = "failed";
       execution.error = String(error);
       execution.endTime = new Date();
     }
@@ -352,12 +366,14 @@ export class AutoRemediationEngine {
   }
 
   async rollbackAction(executionId: string): Promise<boolean> {
-    const execution = this.executionHistory.find((e) => e.executionId === executionId);
+    const execution = this.executionHistory.find(
+      (e) => e.executionId === executionId,
+    );
     if (!execution || !execution.action.rollbackPossible) {
       return false;
     }
 
-    execution.status = 'rolled_back';
+    execution.status = "rolled_back";
     execution.endTime = new Date();
     return true;
   }
@@ -367,15 +383,19 @@ export class AutoRemediationEngine {
     const recentActions = this.executionHistory.filter(
       (e) =>
         e.startTime.getTime() > Date.now() - this.cascadeDetectionWindow &&
-        e.status === 'success'
+        e.status === "success",
     );
 
     // If more than 2 destructive actions in cascade window, flag risk
-    const destructiveCount = recentActions.filter((e) => e.action.isDestructive).length;
+    const destructiveCount = recentActions.filter(
+      (e) => e.action.isDestructive,
+    ).length;
     return destructiveCount >= 2 && action.isDestructive;
   }
 
-  private async simulateActionExecution(action: RemediationAction): Promise<void> {
+  private async simulateActionExecution(
+    action: RemediationAction,
+  ): Promise<void> {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve();
@@ -385,12 +405,18 @@ export class AutoRemediationEngine {
 
   getMetrics(): RemediationMetrics {
     const total = this.executionHistory.length;
-    const successful = this.executionHistory.filter((e) => e.status === 'success').length;
-    const failed = this.executionHistory.filter((e) => e.status === 'failed').length;
-    const rolledBack = this.executionHistory.filter((e) => e.status === 'rolled_back').length;
+    const successful = this.executionHistory.filter(
+      (e) => e.status === "success",
+    ).length;
+    const failed = this.executionHistory.filter(
+      (e) => e.status === "failed",
+    ).length;
+    const rolledBack = this.executionHistory.filter(
+      (e) => e.status === "rolled_back",
+    ).length;
 
     const resolutionTimes = this.executionHistory
-      .filter((e) => e.endTime && e.status === 'success')
+      .filter((e) => e.endTime && e.status === "success")
       .map((e) => (e.endTime!.getTime() - e.startTime.getTime()) / 1000);
 
     const avgResolutionTime =
@@ -420,9 +446,15 @@ export class RemediationPlaybook {
     this.executionTracker.set(playbook.playbookId, 0);
   }
 
-  getPlaybook(anomalyType: string, severity: string): RemediationPlaybook | null {
+  getPlaybook(
+    anomalyType: string,
+    severity: string,
+  ): RemediationPlaybook | null {
     for (const [, playbook] of this.playbooks) {
-      if (playbook.anomalyType === anomalyType && playbook.severity === severity) {
+      if (
+        playbook.anomalyType === anomalyType &&
+        playbook.severity === severity
+      ) {
         return playbook;
       }
     }
@@ -431,7 +463,7 @@ export class RemediationPlaybook {
 
   async executePlaybook(
     playbook: RemediationPlaybook,
-    providerId: string
+    providerId: string,
   ): Promise<{ success: boolean; failedStep?: string; timeElapsed: number }> {
     const startTime = Date.now();
     let lastSuccessfulStep = -1;
@@ -446,13 +478,19 @@ export class RemediationPlaybook {
 
         // If checkpoint, wait for validation
         if (step.checkpoint) {
-          const isValid = await this.waitForCheckpoint(step, playbook.steps[i + 1]);
+          const isValid = await this.waitForCheckpoint(
+            step,
+            playbook.steps[i + 1],
+          );
           if (!isValid) {
             // Trigger rollback
             for (let j = lastSuccessfulStep; j >= 0; j--) {
               const prevStep = playbook.steps[j];
               if (prevStep.rollbackAction) {
-                await this.executeStep({ ...prevStep, action: prevStep.rollbackAction }, providerId);
+                await this.executeStep(
+                  { ...prevStep, action: prevStep.rollbackAction },
+                  providerId,
+                );
               }
             }
             return {
@@ -472,7 +510,8 @@ export class RemediationPlaybook {
     }
 
     // Mark success
-    const successCount = (this.executionTracker.get(playbook.playbookId) || 0) + 1;
+    const successCount =
+      (this.executionTracker.get(playbook.playbookId) || 0) + 1;
     const totalExecutions = this.playbooks.size; // simplified
     playbook.successRate = successCount / Math.max(1, totalExecutions);
 
@@ -482,7 +521,10 @@ export class RemediationPlaybook {
     };
   }
 
-  private async executeStep(step: Partial<PlaybookStep>, providerId: string): Promise<void> {
+  private async executeStep(
+    step: Partial<PlaybookStep>,
+    providerId: string,
+  ): Promise<void> {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve();
@@ -492,12 +534,15 @@ export class RemediationPlaybook {
 
   private async waitForCheckpoint(
     step: PlaybookStep,
-    nextStep?: PlaybookStep
+    nextStep?: PlaybookStep,
   ): Promise<boolean> {
     return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(true);
-      }, Math.min(step.maxWaitTime, 5000));
+      setTimeout(
+        () => {
+          resolve(true);
+        },
+        Math.min(step.maxWaitTime, 5000),
+      );
     });
   }
 }
@@ -535,7 +580,11 @@ export class IncidentPredictor {
     if (trends.length === 0) {
       return {
         providerId,
-        incidentProbability: { oneHour: 0.1, sixHours: 0.15, twentyFourHours: 0.2 },
+        incidentProbability: {
+          oneHour: 0.1,
+          sixHours: 0.15,
+          twentyFourHours: 0.2,
+        },
         confidenceScore: 0.3,
         riskFactors: [],
         suggestedPreventiveActions: [],
@@ -545,7 +594,7 @@ export class IncidentPredictor {
     const trend = this.calculateTrend(trends);
     const volatility = this.calculateVolatility(trends);
     const anomalyFrequency = anomalies.filter(
-      (a) => a.getTime() > Date.now() - 60 * 60 * 1000
+      (a) => a.getTime() > Date.now() - 60 * 60 * 1000,
     ).length;
 
     let prob1h = 0.05;
@@ -558,23 +607,23 @@ export class IncidentPredictor {
     if (trend > 0.01) {
       prob1h += 0.15;
       prob6h += 0.25;
-      prob24h += 0.30;
-      riskFactors.push('Increasing error trend');
+      prob24h += 0.3;
+      riskFactors.push("Increasing error trend");
     }
 
     // Volatility-based risk
     if (volatility > 0.3) {
-      prob1h += 0.10;
+      prob1h += 0.1;
       prob6h += 0.15;
       prob24h += 0.15;
-      riskFactors.push('High volatility in metrics');
+      riskFactors.push("High volatility in metrics");
     }
 
     // Anomaly frequency
     if (anomalyFrequency >= 2) {
-      prob1h += 0.20;
-      prob6h += 0.20;
-      prob24h += 0.20;
+      prob1h += 0.2;
+      prob6h += 0.2;
+      prob24h += 0.2;
       riskFactors.push(`${anomalyFrequency} anomalies detected in last hour`);
     }
 
@@ -582,9 +631,10 @@ export class IncidentPredictor {
     const confidence = Math.min(1, trends.length / 100);
 
     const preventiveActions: string[] = [];
-    if (trend > 0) preventiveActions.push('Enable proactive caching');
-    if (volatility > 0.3) preventiveActions.push('Increase rate limits');
-    if (anomalyFrequency >= 2) preventiveActions.push('Route traffic to backup provider');
+    if (trend > 0) preventiveActions.push("Enable proactive caching");
+    if (volatility > 0.3) preventiveActions.push("Increase rate limits");
+    if (anomalyFrequency >= 2)
+      preventiveActions.push("Route traffic to backup provider");
 
     return {
       providerId,
@@ -618,17 +668,19 @@ export class IncidentPredictor {
   private calculateVolatility(values: number[]): number {
     if (values.length < 2) return 0;
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
-    const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+    const variance =
+      values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+      values.length;
     return Math.sqrt(variance) / (mean || 1);
   }
 
   private predictSeverity(
     prob: number,
-    riskFactorCount: number
-  ): 'low' | 'medium' | 'high' | 'critical' {
-    if (prob > 0.5 && riskFactorCount > 2) return 'critical';
-    if (prob > 0.4 && riskFactorCount > 1) return 'high';
-    if (prob > 0.25 || riskFactorCount > 1) return 'medium';
-    return 'low';
+    riskFactorCount: number,
+  ): "low" | "medium" | "high" | "critical" {
+    if (prob > 0.5 && riskFactorCount > 2) return "critical";
+    if (prob > 0.4 && riskFactorCount > 1) return "high";
+    if (prob > 0.25 || riskFactorCount > 1) return "medium";
+    return "low";
   }
 }

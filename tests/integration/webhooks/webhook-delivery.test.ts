@@ -47,10 +47,7 @@ class WebhookDeliverySystem {
     return endpoint.id;
   }
 
-  subscribe(
-    endpointId: string,
-    eventTypes: string[]
-  ): string {
+  subscribe(endpointId: string, eventTypes: string[]): string {
     if (!this.endpoints.has(endpointId)) {
       throw new Error("Endpoint not found");
     }
@@ -70,10 +67,7 @@ class WebhookDeliverySystem {
 
   publishEvent(event: any): void {
     // Fan-out to all subscribed endpoints
-    for (const [
-      endpointId,
-      subs,
-    ] of this.subscriptions.entries()) {
+    for (const [endpointId, subs] of this.subscriptions.entries()) {
       const endpoint = this.endpoints.get(endpointId);
 
       for (const sub of subs) {
@@ -96,19 +90,15 @@ class WebhookDeliverySystem {
 
   processDeliveryQueue(): Promise<void> {
     return Promise.all(
-      this.deliveryQueue.map((delivery) =>
-        this.attemptDelivery(delivery)
-      )
+      this.deliveryQueue.map((delivery) => this.attemptDelivery(delivery)),
     ).then(() => {
       this.deliveryQueue = this.deliveryQueue.filter(
-        (d) => d.attempt < d.maxAttempts
+        (d) => d.attempt < d.maxAttempts,
       );
     });
   }
 
-  private async attemptDelivery(
-    delivery: any
-  ): Promise<void> {
+  private async attemptDelivery(delivery: any): Promise<void> {
     const endpoint = this.endpoints.get(delivery.endpointId);
     if (!endpoint) return;
 
@@ -131,19 +121,15 @@ class WebhookDeliverySystem {
 
         if (delivery.attempt >= delivery.maxAttempts) {
           this.dlq.push(
-            createDLQEntry(
-              delivery.eventId,
-              delivery.endpointId,
-              {
-                reason: "max_retries_exceeded",
-                failureCount: delivery.attempt,
-              }
-            )
+            createDLQEntry(delivery.eventId, delivery.endpointId, {
+              reason: "max_retries_exceeded",
+              failureCount: delivery.attempt,
+            }),
           );
           this.stats.dlqed++;
         } else {
           delivery.nextRetry = new Date(
-            Date.now() + 60000 * Math.pow(2, delivery.attempt)
+            Date.now() + 60000 * Math.pow(2, delivery.attempt),
           );
           this.stats.retries++;
         }
@@ -165,7 +151,7 @@ class WebhookDeliverySystem {
   batchDelivery(
     endpointId: string,
     events: any[],
-    batchSize: number = 10
+    batchSize: number = 10,
   ): void {
     const batches = [];
     for (let i = 0; i < events.length; i += batchSize) {
@@ -213,9 +199,7 @@ class WebhookDeliverySystem {
 
   getDeliveryHistory(eventId?: string) {
     if (eventId) {
-      return this.deliveryHistory.filter(
-        (h) => h.eventId === eventId
-      );
+      return this.deliveryHistory.filter((h) => h.eventId === eventId);
     }
     return [...this.deliveryHistory];
   }
@@ -235,10 +219,7 @@ class WebhookDeliverySystem {
     const entry = this.dlq[index];
     this.dlq.splice(index, 1);
 
-    this.queueDelivery(
-      { id: entry.eventId },
-      entry.endpointId
-    );
+    this.queueDelivery({ id: entry.eventId }, entry.endpointId);
 
     return true;
   }
@@ -330,9 +311,7 @@ describe("Webhook Delivery", () => {
       await system.processDeliveryQueue();
 
       const stats = system.getStats();
-      expect(
-        stats.delivered + stats.failed + stats.dlqed
-      ).toBeGreaterThan(0);
+      expect(stats.delivered + stats.failed + stats.dlqed).toBeGreaterThan(0);
     });
 
     it("should fan-out to multiple subscribed endpoints", () => {
@@ -405,10 +384,7 @@ describe("Webhook Delivery", () => {
     });
 
     it("should track DLQ entries", () => {
-      const dlqEntry = createDLQEntry(
-        "event-123",
-        "endpoint-456"
-      );
+      const dlqEntry = createDLQEntry("event-123", "endpoint-456");
 
       expect(dlqEntry.eventId).toBe("event-123");
       expect(dlqEntry.endpointId).toBe("endpoint-456");
@@ -443,7 +419,7 @@ describe("Webhook Delivery", () => {
       const endpointId = system.registerEndpoint(endpoint);
 
       const events = Array.from({ length: 25 }, () =>
-        createWebhookEvent("batch.event")
+        createWebhookEvent("batch.event"),
       );
 
       system.batchDelivery(endpointId, events, 10);
@@ -456,7 +432,7 @@ describe("Webhook Delivery", () => {
       const endpointId = system.registerEndpoint(endpoint);
 
       const events = Array.from({ length: 100 }, () =>
-        createWebhookEvent("batch.event")
+        createWebhookEvent("batch.event"),
       );
 
       system.batchDelivery(endpointId, events, 10);
@@ -478,7 +454,7 @@ describe("Webhook Delivery", () => {
   describe("Fan-Out Delivery", () => {
     it("should deliver to all matching subscriptions", () => {
       const endpoints = Array.from({ length: 5 }, () =>
-        createWebhookEndpoint()
+        createWebhookEndpoint(),
       );
 
       endpoints.forEach((ep) => {
@@ -517,7 +493,7 @@ describe("Webhook Delivery", () => {
       system.subscribe(endpointId, ["success.event"]);
 
       Array.from({ length: 5 }, () =>
-        createWebhookEvent("success.event")
+        createWebhookEvent("success.event"),
       ).forEach((event) => {
         system.publishEvent(event);
       });

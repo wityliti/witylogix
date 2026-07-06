@@ -14,9 +14,9 @@ import {
   HealthCheckResult,
   HealthCheckError,
   IntegrationAuthType,
-} from './types';
-import { CredentialValidator } from './credential-validator';
-import { getSetupConfig } from './integration-setup-registry';
+} from "./types";
+import { CredentialValidator } from "./credential-validator";
+import { getSetupConfig } from "./integration-setup-registry";
 
 // ─── Health Check Cache ────────────────────────────────────────
 
@@ -37,14 +37,14 @@ const CHECK_INTERVALS: Record<string, number> = {
   stripe: 5 * 60 * 1000,
   shopify: 5 * 60 * 1000,
   salesforce: 5 * 60 * 1000,
-  'google-maps': 5 * 60 * 1000,
+  "google-maps": 5 * 60 * 1000,
 
   // Standard providers: check every 15 minutes
   default: 15 * 60 * 1000,
 
   // Batch processing: less frequent
   sap: 30 * 60 * 1000,
-  'oracle-netsuite': 30 * 60 * 1000,
+  "oracle-netsuite": 30 * 60 * 1000,
 };
 
 // ─── Rate Limit Tracking ──────────────────────────────────────
@@ -73,7 +73,7 @@ export class HealthChecker {
   static async checkIntegrationHealth(
     providerId: string,
     credentials: Record<string, unknown>,
-    forceRefresh = false
+    forceRefresh = false,
   ): Promise<HealthCheckResult> {
     const cacheKey = `${providerId}:${JSON.stringify(credentials)}`;
 
@@ -111,12 +111,12 @@ export class HealthChecker {
       const authTest = await CredentialValidator.testConnection(
         providerId,
         config.authType,
-        credentials
+        credentials,
       );
 
       if (!authTest.success) {
         // Distinguish between auth failures and network/availability failures
-        const isAuthError = authTest.errorCode?.startsWith('HTTP_');
+        const isAuthError = authTest.errorCode?.startsWith("HTTP_");
         const status = isAuthError
           ? HealthStatus.UNAUTHORIZED
           : HealthStatus.DOWN;
@@ -148,7 +148,10 @@ export class HealthChecker {
 
       // Determine health status
       let status = HealthStatus.HEALTHY;
-      if (rateLimitInfo?.remaining !== undefined && rateLimitInfo.remaining < 10) {
+      if (
+        rateLimitInfo?.remaining !== undefined &&
+        rateLimitInfo.remaining < 10
+      ) {
         status = HealthStatus.RATE_LIMITED;
       }
 
@@ -164,7 +167,7 @@ export class HealthChecker {
         },
         details: {
           authLatencyMs: authTest.latencyMs,
-          providerStatus: 'operational',
+          providerStatus: "operational",
         },
         nextCheckAt: new Date(Date.now() + this.getCheckInterval(providerId)),
         cachedUntil: new Date(Date.now() + CACHE_TTL_MS),
@@ -204,7 +207,7 @@ export class HealthChecker {
       credentials: Record<string, unknown>;
     }>,
     concurrency = 5,
-    forceRefresh = false
+    forceRefresh = false,
   ): Promise<HealthCheckResult[]> {
     const results: HealthCheckResult[] = [];
     const queue = [...integrations];
@@ -216,17 +219,20 @@ export class HealthChecker {
         this.checkIntegrationHealth(
           integration.providerId,
           integration.credentials,
-          forceRefresh
-        ).catch((error) => ({
-          providerId: integration.providerId,
-          status: HealthStatus.DOWN,
-          timestamp: new Date(),
-          checks: {
-            authentication: false,
-            apiAvailability: false,
-          },
-          details: { error: String(error) },
-        } as HealthCheckResult))
+          forceRefresh,
+        ).catch(
+          (error) =>
+            ({
+              providerId: integration.providerId,
+              status: HealthStatus.DOWN,
+              timestamp: new Date(),
+              checks: {
+                authentication: false,
+                apiAvailability: false,
+              },
+              details: { error: String(error) },
+            }) as HealthCheckResult,
+        ),
       );
 
       const batchResults = await Promise.all(promises);
@@ -243,10 +249,14 @@ export class HealthChecker {
     return {
       totalChecks: results.length,
       healthy: results.filter((r) => r.status === HealthStatus.HEALTHY).length,
-      degraded: results.filter((r) => r.status === HealthStatus.DEGRADED).length,
+      degraded: results.filter((r) => r.status === HealthStatus.DEGRADED)
+        .length,
       down: results.filter((r) => r.status === HealthStatus.DOWN).length,
-      unauthorized: results.filter((r) => r.status === HealthStatus.UNAUTHORIZED).length,
-      rateLimited: results.filter((r) => r.status === HealthStatus.RATE_LIMITED).length,
+      unauthorized: results.filter(
+        (r) => r.status === HealthStatus.UNAUTHORIZED,
+      ).length,
+      rateLimited: results.filter((r) => r.status === HealthStatus.RATE_LIMITED)
+        .length,
     };
   }
 
@@ -257,7 +267,7 @@ export class HealthChecker {
     providerId: string,
     remaining: number,
     limit: number,
-    resetAt: Date
+    resetAt: Date,
   ): void {
     rateLimitTracking[providerId] = {
       remaining,
@@ -342,7 +352,7 @@ export class HealthChecker {
  */
 export async function checkHealth(
   providerId: string,
-  credentials: Record<string, unknown>
+  credentials: Record<string, unknown>,
 ): Promise<HealthCheckResult> {
   return HealthChecker.checkIntegrationHealth(providerId, credentials);
 }
@@ -354,14 +364,14 @@ export class HealthCheckScheduler {
   private intervals: Map<string, NodeJS.Timeout> = new Map();
   private readonly checkFunction: (
     providerId: string,
-    credentials: Record<string, unknown>
+    credentials: Record<string, unknown>,
   ) => Promise<HealthCheckResult>;
 
   constructor(
     checkFunction: (
       providerId: string,
-      credentials: Record<string, unknown>
-    ) => Promise<HealthCheckResult>
+      credentials: Record<string, unknown>,
+    ) => Promise<HealthCheckResult>,
   ) {
     this.checkFunction = checkFunction;
   }
@@ -372,7 +382,7 @@ export class HealthCheckScheduler {
   scheduleCheck(
     providerId: string,
     credentials: Record<string, unknown>,
-    intervalMs?: number
+    intervalMs?: number,
   ): void {
     const key = `${providerId}:${JSON.stringify(credentials)}`;
 
@@ -382,7 +392,8 @@ export class HealthCheckScheduler {
     }
 
     // Calculate interval
-    const interval = intervalMs || HealthChecker['getCheckInterval'](providerId);
+    const interval =
+      intervalMs || HealthChecker["getCheckInterval"](providerId);
 
     // Schedule new check
     const handle = setInterval(async () => {
@@ -391,7 +402,7 @@ export class HealthCheckScheduler {
       } catch (error) {
         console.error(
           `Health check failed for ${providerId}:`,
-          error instanceof Error ? error.message : String(error)
+          error instanceof Error ? error.message : String(error),
         );
       }
     }, interval);

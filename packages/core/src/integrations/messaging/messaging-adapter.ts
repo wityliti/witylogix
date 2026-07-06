@@ -91,7 +91,7 @@ class CircuitBreaker {
         this.state = "half_open";
       } else {
         throw new Error(
-          `Circuit breaker is open. Reset in ${this.resetTimeout - timeSinceLastFailure}ms`
+          `Circuit breaker is open. Reset in ${this.resetTimeout - timeSinceLastFailure}ms`,
         );
       }
     }
@@ -130,7 +130,11 @@ class RetryHandler {
   private readonly baseDelay: number;
   private readonly maxDelay: number;
 
-  constructor(maxRetries: number = 3, baseDelay: number = 1000, maxDelay: number = 30000) {
+  constructor(
+    maxRetries: number = 3,
+    baseDelay: number = 1000,
+    maxDelay: number = 30000,
+  ) {
     this.maxRetries = maxRetries;
     this.baseDelay = baseDelay;
     this.maxDelay = maxDelay;
@@ -138,7 +142,7 @@ class RetryHandler {
 
   async execute<T>(
     fn: () => Promise<T>,
-    isRetryable: (error: Error) => boolean = () => true
+    isRetryable: (error: Error) => boolean = () => true,
   ): Promise<T> {
     let lastError: Error | null = null;
 
@@ -154,7 +158,7 @@ class RetryHandler {
 
         const delay = Math.min(
           this.maxDelay,
-          this.baseDelay * Math.pow(2, attempt) + Math.random() * 1000
+          this.baseDelay * Math.pow(2, attempt) + Math.random() * 1000,
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
@@ -265,7 +269,10 @@ export abstract class MessagingAdapter {
    * Render template with variable substitution.
    * Replaces {{variable}} placeholders with values.
    */
-  protected renderTemplate(template: MessageTemplate, variables: Record<string, unknown>): string {
+  protected renderTemplate(
+    template: MessageTemplate,
+    variables: Record<string, unknown>,
+  ): string {
     let content = template.body;
     for (const [key, value] of Object.entries(variables)) {
       const placeholder = `{{${key}}}`;
@@ -292,7 +299,9 @@ export abstract class MessagingAdapter {
    * Send bulk messages with configurable concurrency.
    */
   async sendBulk(bulk: BulkMessage): Promise<BatchSendResult> {
-    const batchId = bulk.batchId || `batch_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const batchId =
+      bulk.batchId ||
+      `batch_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const results = new Map<string, SendResult>();
     const concurrency = bulk.concurrency || 10;
 
@@ -383,7 +392,8 @@ export abstract class MessagingAdapter {
     } catch (error) {
       this.health.healthy = false;
       this.health.consecutiveFailures += 1;
-      this.health.lastError = error instanceof Error ? error : new Error(String(error));
+      this.health.lastError =
+        error instanceof Error ? error : new Error(String(error));
       this.health.lastCheckAt = new Date();
       return false;
     }
@@ -422,9 +432,11 @@ export abstract class MessagingAdapter {
    */
   protected async executeWithProtections<T>(
     operation: () => Promise<T>,
-    isRetryable: (error: Error) => boolean = () => true
+    isRetryable: (error: Error) => boolean = () => true,
   ): Promise<T> {
     await this.waitForRateLimit();
-    return this.circuitBreaker.execute(() => this.retryHandler.execute(operation, isRetryable));
+    return this.circuitBreaker.execute(() =>
+      this.retryHandler.execute(operation, isRetryable),
+    );
   }
 }

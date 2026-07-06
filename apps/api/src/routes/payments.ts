@@ -24,9 +24,8 @@ interface PaymentQueryParams {
   limit?: number;
 }
 
-
 export default async function paymentRoutes(
-  fastify: FastifyInstance
+  fastify: FastifyInstance,
 ): Promise<void> {
   fastify.addHook("preHandler", requireAuth);
   fastify.addHook("preHandler", tenantContext);
@@ -92,31 +91,34 @@ export default async function paymentRoutes(
   });
 
   // PATCH /gateways/:id/default — Set a payment method as default gateway
-  fastify.patch("/gateways/:id/default", async (request: any, reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
-    const shopId = request.shopId;
+  fastify.patch(
+    "/gateways/:id/default",
+    async (request: any, reply: FastifyReply) => {
+      const { id } = request.params as { id: string };
+      const shopId = request.shopId;
 
-    const existing = await request.tenantDb.paymentMethod.findFirst({
-      where: { id, shopId },
-    });
-    if (!existing) {
-      return reply.code(404).send({ error: "Payment method not found" });
-    }
+      const existing = await request.tenantDb.paymentMethod.findFirst({
+        where: { id, shopId },
+      });
+      if (!existing) {
+        return reply.code(404).send({ error: "Payment method not found" });
+      }
 
-    // Unset all defaults, set the new one
-    await request.tenantDb.$transaction([
-      request.tenantDb.paymentMethod.updateMany({
-        where: { shopId },
-        data: { isDefault: false },
-      }),
-      request.tenantDb.paymentMethod.update({
-        where: { id },
-        data: { isDefault: true },
-      }),
-    ]);
+      // Unset all defaults, set the new one
+      await request.tenantDb.$transaction([
+        request.tenantDb.paymentMethod.updateMany({
+          where: { shopId },
+          data: { isDefault: false },
+        }),
+        request.tenantDb.paymentMethod.update({
+          where: { id },
+          data: { isDefault: true },
+        }),
+      ]);
 
-    return reply.send({ data: { id, isDefault: true } });
-  });
+      return reply.send({ data: { id, isDefault: true } });
+    },
+  );
 
   // DELETE /gateways/:id — Remove a payment method / gateway
   fastify.delete("/gateways/:id", async (request: any, reply: FastifyReply) => {
@@ -225,7 +227,7 @@ export default async function paymentRoutes(
         }
         throw error;
       }
-    }
+    },
   );
 
   // GET /:id — Get single payment with related info
@@ -264,7 +266,7 @@ export default async function paymentRoutes(
         }
         throw error;
       }
-    }
+    },
   );
 
   // POST / — Record a payment
@@ -294,7 +296,7 @@ export default async function paymentRoutes(
 
           if (!shipment) {
             throw new NotFoundError(
-              `Shipment ${shipmentId} not found for this shop`
+              `Shipment ${shipmentId} not found for this shop`,
             );
           }
         }
@@ -338,7 +340,7 @@ export default async function paymentRoutes(
         }
         throw error;
       }
-    }
+    },
   );
 
   // PATCH /:id/status — Update payment status
@@ -375,13 +377,13 @@ export default async function paymentRoutes(
 
         if (!validTransitions[currentPayment.status]?.includes(status)) {
           throw new ConflictError(
-            `Cannot transition from ${currentPayment.status} to ${status}`
+            `Cannot transition from ${currentPayment.status} to ${status}`,
           );
         }
 
         // Update payment
-        const updatedPayment =
-          await request.tenantDb.paymentTransaction.update({
+        const updatedPayment = await request.tenantDb.paymentTransaction.update(
+          {
             where: { id },
             data: {
               status,
@@ -396,7 +398,8 @@ export default async function paymentRoutes(
                 select: { id: true, name: true },
               },
             },
-          });
+          },
+        );
 
         return reply.code(200).send({
           success: true,
@@ -423,7 +426,7 @@ export default async function paymentRoutes(
         }
         throw error;
       }
-    }
+    },
   );
 
   // GET /summary — Revenue summary
@@ -456,7 +459,7 @@ export default async function paymentRoutes(
             _sum: {
               amount: true,
             },
-          }
+          },
         );
 
         // Get by status
@@ -484,14 +487,13 @@ export default async function paymentRoutes(
         });
 
         // Get daily totals
-        const allPayments =
-          await request.tenantDb.paymentTransaction.findMany({
-            where,
-            select: {
-              amount: true,
-              createdAt: true,
-            },
-          });
+        const allPayments = await request.tenantDb.paymentTransaction.findMany({
+          where,
+          select: {
+            amount: true,
+            createdAt: true,
+          },
+        });
 
         const dailyTotals: Record<string, number> = {};
         allPayments.forEach((p: any) => {
@@ -530,7 +532,7 @@ export default async function paymentRoutes(
         }
         throw error;
       }
-    }
+    },
   );
 
   // POST /:id/refund — Initiate refund
@@ -555,7 +557,7 @@ export default async function paymentRoutes(
 
         if (originalPayment.status !== "COMPLETED") {
           throw new ConflictError(
-            `Cannot refund a ${originalPayment.status} payment`
+            `Cannot refund a ${originalPayment.status} payment`,
           );
         }
 
@@ -609,95 +611,98 @@ export default async function paymentRoutes(
         }
         throw error;
       }
-    }
+    },
   );
 
   // GET /reconciliation — Reconciliation view: match payments against invoices
-  fastify.get(
-    "/reconciliation",
-    async (request: any, reply: FastifyReply) => {
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  fastify.get("/reconciliation", async (request: any, reply: FastifyReply) => {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-      const [payments, invoices] = await Promise.all([
-        request.tenantDb.payment.findMany({
-          where: {
-            shopId: request.shopId,
-            createdAt: { gte: thirtyDaysAgo },
-          },
-          orderBy: { createdAt: "desc" },
-          take: 100,
-          select: {
-            id: true,
-            createdAt: true,
-            amount: true,
-            status: true,
-            method: true,
-            reference: true,
-          },
-        }),
-        (request.tenantDb as any).invoice?.findMany
-          ? (request.tenantDb as any).invoice.findMany({
-              where: {
-                tenantId: request.tenantId,
-                issuedAt: { gte: thirtyDaysAgo },
-              },
-              orderBy: { issuedAt: "desc" },
-              take: 100,
-              select: {
-                id: true,
-                issuedAt: true,
-                total: true,
-                status: true,
-                invoiceNumber: true,
-              },
-            })
-          : Promise.resolve([]),
-      ]);
-
-      // Simple matching: mark payments as matched if amount appears in an invoice
-      const invoiceAmounts = new Set(invoices.map((inv: any) => String(Math.round(parseFloat(inv.total)))));
-
-      const bankTransactions = payments.map((p: any) => {
-        const amtStr = String(Math.round(parseFloat(p.amount)));
-        const matched = invoiceAmounts.has(amtStr);
-        return {
-          id: p.id,
-          date: p.createdAt,
-          description: `${p.method} payment${p.reference ? ` (${p.reference})` : ""}`,
-          amount: parseFloat(p.amount),
-          status: matched ? "matched" : "unmatched",
-          confidence: matched ? 0.9 : 0,
-        };
-      });
-
-      const paymentAmounts = new Set(payments.map((p: any) => String(Math.round(parseFloat(p.amount)))));
-      const internalRecords = invoices.map((inv: any) => {
-        const amtStr = String(Math.round(parseFloat(inv.total)));
-        const matched = paymentAmounts.has(amtStr);
-        return {
-          id: inv.id,
-          date: inv.issuedAt,
-          description: inv.invoiceNumber || `Invoice ${inv.id.slice(0, 8)}`,
-          amount: parseFloat(inv.total),
-          status: matched ? "matched" : "unmatched",
-        };
-      });
-
-      const unmatchedCount = bankTransactions.filter((t: any) => t.status === "unmatched").length;
-      const discrepancyTotal = bankTransactions
-        .filter((t: any) => t.status === "unmatched")
-        .reduce((sum: number, t: any) => sum + t.amount, 0);
-
-      return reply.send({
-        data: {
-          bankTransactions,
-          internalRecords,
-          unmatchedCount,
-          discrepancyTotal,
+    const [payments, invoices] = await Promise.all([
+      request.tenantDb.payment.findMany({
+        where: {
+          shopId: request.shopId,
+          createdAt: { gte: thirtyDaysAgo },
         },
-      });
-    },
-  );
+        orderBy: { createdAt: "desc" },
+        take: 100,
+        select: {
+          id: true,
+          createdAt: true,
+          amount: true,
+          status: true,
+          method: true,
+          reference: true,
+        },
+      }),
+      (request.tenantDb as any).invoice?.findMany
+        ? (request.tenantDb as any).invoice.findMany({
+            where: {
+              tenantId: request.tenantId,
+              issuedAt: { gte: thirtyDaysAgo },
+            },
+            orderBy: { issuedAt: "desc" },
+            take: 100,
+            select: {
+              id: true,
+              issuedAt: true,
+              total: true,
+              status: true,
+              invoiceNumber: true,
+            },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    // Simple matching: mark payments as matched if amount appears in an invoice
+    const invoiceAmounts = new Set(
+      invoices.map((inv: any) => String(Math.round(parseFloat(inv.total)))),
+    );
+
+    const bankTransactions = payments.map((p: any) => {
+      const amtStr = String(Math.round(parseFloat(p.amount)));
+      const matched = invoiceAmounts.has(amtStr);
+      return {
+        id: p.id,
+        date: p.createdAt,
+        description: `${p.method} payment${p.reference ? ` (${p.reference})` : ""}`,
+        amount: parseFloat(p.amount),
+        status: matched ? "matched" : "unmatched",
+        confidence: matched ? 0.9 : 0,
+      };
+    });
+
+    const paymentAmounts = new Set(
+      payments.map((p: any) => String(Math.round(parseFloat(p.amount)))),
+    );
+    const internalRecords = invoices.map((inv: any) => {
+      const amtStr = String(Math.round(parseFloat(inv.total)));
+      const matched = paymentAmounts.has(amtStr);
+      return {
+        id: inv.id,
+        date: inv.issuedAt,
+        description: inv.invoiceNumber || `Invoice ${inv.id.slice(0, 8)}`,
+        amount: parseFloat(inv.total),
+        status: matched ? "matched" : "unmatched",
+      };
+    });
+
+    const unmatchedCount = bankTransactions.filter(
+      (t: any) => t.status === "unmatched",
+    ).length;
+    const discrepancyTotal = bankTransactions
+      .filter((t: any) => t.status === "unmatched")
+      .reduce((sum: number, t: any) => sum + t.amount, 0);
+
+    return reply.send({
+      data: {
+        bankTransactions,
+        internalRecords,
+        unmatchedCount,
+        discrepancyTotal,
+      },
+    });
+  });
 }
 
 function getGatewayIcon(type: string): string {

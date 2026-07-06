@@ -36,7 +36,10 @@ import {
 } from "@shopify/polaris";
 import { OrderStatusBadge } from "~/components/OrderStatusBadge";
 import { StatusTimeline } from "~/components/StatusTimeline";
-import { createApiClientFromRequest, type SingleResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type SingleResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -58,7 +61,12 @@ interface OrderDetail {
   latitude: number | null;
   longitude: number | null;
   deliveryDate: string | null;
-  timeSlot: { id: string; label: string; startTime: string; endTime: string } | null;
+  timeSlot: {
+    id: string;
+    label: string;
+    startTime: string;
+    endTime: string;
+  } | null;
   totalPrice: number | null;
   totalWeight: number | null;
   itemCount: number;
@@ -68,7 +76,11 @@ interface OrderDetail {
   driver: { id: string; name: string; phone: string } | null;
   zone: { id: string; name: string } | null;
   route: { id: string; name: string } | null;
-  proofOfDelivery: { photos: string[]; signatureUrl: string | null; notes: string | null } | null;
+  proofOfDelivery: {
+    photos: string[];
+    signatureUrl: string | null;
+    notes: string | null;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -84,7 +96,12 @@ interface TimelineEvent {
 interface OrderPageData {
   order: OrderDetail;
   timeline: TimelineEvent[];
-  availableDrivers: { id: string; name: string; phone: string; activeOrders: number }[];
+  availableDrivers: {
+    id: string;
+    name: string;
+    phone: string;
+    activeOrders: number;
+  }[];
 }
 
 const STATUS_TRANSITIONS: Record<string, string[]> = {
@@ -108,11 +125,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const [orderRes, timelineRes, driversRes] = await Promise.allSettled([
     api.get<SingleResponse<OrderDetail>>(`/api/v4/orders/${params.id}`),
-    api.get<SingleResponse<TimelineEvent[]>>(`/api/v4/orders/${params.id}/timeline`),
-    api.get<SingleResponse<{ id: string; name: string; phone: string; activeOrders: number }[]>>(
-      "/api/v4/drivers",
-      { status: "AVAILABLE", limit: 50 },
+    api.get<SingleResponse<TimelineEvent[]>>(
+      `/api/v4/orders/${params.id}/timeline`,
     ),
+    api.get<
+      SingleResponse<
+        { id: string; name: string; phone: string; activeOrders: number }[]
+      >
+    >("/api/v4/drivers", { status: "AVAILABLE", limit: 50 }),
   ]);
 
   if (orderRes.status === "rejected") {
@@ -122,7 +142,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   return {
     order: orderRes.value.data,
     timeline: timelineRes.status === "fulfilled" ? timelineRes.value.data : [],
-    availableDrivers: driversRes.status === "fulfilled" ? driversRes.value.data : [],
+    availableDrivers:
+      driversRes.status === "fulfilled" ? driversRes.value.data : [],
   };
 }
 
@@ -200,13 +221,16 @@ export default function OrderDetailPage() {
       backAction={{ url: "/orders" }}
       title={orderTitle}
       titleMetadata={<OrderStatusBadge status={order.status} />}
-      subtitle={`Created ${new Date(order.createdAt).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      })}`}
+      subtitle={`Created ${new Date(order.createdAt).toLocaleDateString(
+        "en-US",
+        {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        },
+      )}`}
     >
       <Layout>
         {/* ── Left Column: Order Information ── */}
@@ -220,9 +244,18 @@ export default function OrderDetailPage() {
                 </Text>
                 <DescriptionList
                   items={[
-                    { term: "Name", description: order.customerName ?? "\u2014" },
-                    { term: "Email", description: order.customerEmail ?? "\u2014" },
-                    { term: "Phone", description: order.customerPhone ?? "\u2014" },
+                    {
+                      term: "Name",
+                      description: order.customerName ?? "\u2014",
+                    },
+                    {
+                      term: "Email",
+                      description: order.customerEmail ?? "\u2014",
+                    },
+                    {
+                      term: "Phone",
+                      description: order.customerPhone ?? "\u2014",
+                    },
                   ]}
                 />
               </BlockStack>
@@ -239,7 +272,8 @@ export default function OrderDetailPage() {
                 </Text>
                 {order.latitude != null && order.longitude != null && (
                   <Text as="p" variant="bodySm" tone="subdued">
-                    GPS: {Number(order.latitude).toFixed(6)}, {Number(order.longitude).toFixed(6)}
+                    GPS: {Number(order.latitude).toFixed(6)},{" "}
+                    {Number(order.longitude).toFixed(6)}
                   </Text>
                 )}
               </BlockStack>
@@ -256,31 +290,49 @@ export default function OrderDetailPage() {
                     {
                       term: "Delivery Date",
                       description: order.deliveryDate
-                        ? new Date(order.deliveryDate).toLocaleDateString("en-US", {
-                            weekday: "short",
-                            month: "short",
-                            day: "numeric",
-                          })
+                        ? new Date(order.deliveryDate).toLocaleDateString(
+                            "en-US",
+                            {
+                              weekday: "short",
+                              month: "short",
+                              day: "numeric",
+                            },
+                          )
                         : "Not scheduled",
                     },
-                    { term: "Time Slot", description: order.timeSlot?.label ?? "Any time" },
-                    { term: "Zone", description: order.zone?.name ?? "Unzoned" },
+                    {
+                      term: "Time Slot",
+                      description: order.timeSlot?.label ?? "Any time",
+                    },
+                    {
+                      term: "Zone",
+                      description: order.zone?.name ?? "Unzoned",
+                    },
                     { term: "Items", description: String(order.itemCount) },
                     {
                       term: "Total",
                       description:
-                        order.totalPrice != null ? `$${Number(order.totalPrice).toFixed(2)}` : "\u2014",
+                        order.totalPrice != null
+                          ? `$${Number(order.totalPrice).toFixed(2)}`
+                          : "\u2014",
                     },
                     {
                       term: "Weight",
                       description:
-                        order.totalWeight != null ? `${order.totalWeight}g` : "\u2014",
+                        order.totalWeight != null
+                          ? `${order.totalWeight}g`
+                          : "\u2014",
                     },
                   ]}
                 />
                 {order.notes && (
                   <BlockStack gap="100">
-                    <Text as="span" variant="bodySm" tone="subdued" fontWeight="medium">
+                    <Text
+                      as="span"
+                      variant="bodySm"
+                      tone="subdued"
+                      fontWeight="medium"
+                    >
                       Notes
                     </Text>
                     <Text as="p" variant="bodyMd">
@@ -329,7 +381,9 @@ export default function OrderDetailPage() {
                         </IndexTable.Cell>
                         <IndexTable.Cell>
                           <Text as="span" variant="bodyMd" alignment="end">
-                            {item.price != null ? `$${Number(item.price).toFixed(2)}` : "\u2014"}
+                            {item.price != null
+                              ? `$${Number(item.price).toFixed(2)}`
+                              : "\u2014"}
                           </Text>
                         </IndexTable.Cell>
                       </IndexTable.Row>
@@ -348,7 +402,12 @@ export default function OrderDetailPage() {
                   </Text>
                   {order.proofOfDelivery.signatureUrl && (
                     <BlockStack gap="100">
-                      <Text as="span" variant="bodySm" tone="subdued" fontWeight="medium">
+                      <Text
+                        as="span"
+                        variant="bodySm"
+                        tone="subdued"
+                        fontWeight="medium"
+                      >
                         Signature
                       </Text>
                       <img
@@ -360,7 +419,12 @@ export default function OrderDetailPage() {
                   )}
                   {order.proofOfDelivery.photos.length > 0 && (
                     <BlockStack gap="100">
-                      <Text as="span" variant="bodySm" tone="subdued" fontWeight="medium">
+                      <Text
+                        as="span"
+                        variant="bodySm"
+                        tone="subdued"
+                        fontWeight="medium"
+                      >
                         Photos
                       </Text>
                       <InlineStack gap="200" wrap>
@@ -369,7 +433,12 @@ export default function OrderDetailPage() {
                             key={i}
                             src={url}
                             alt={`Delivery photo ${i + 1}`}
-                            style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 8 }}
+                            style={{
+                              width: 120,
+                              height: 120,
+                              objectFit: "cover",
+                              borderRadius: 8,
+                            }}
                           />
                         ))}
                       </InlineStack>
@@ -377,7 +446,12 @@ export default function OrderDetailPage() {
                   )}
                   {order.proofOfDelivery.notes && (
                     <BlockStack gap="100">
-                      <Text as="span" variant="bodySm" tone="subdued" fontWeight="medium">
+                      <Text
+                        as="span"
+                        variant="bodySm"
+                        tone="subdued"
+                        fontWeight="medium"
+                      >
                         Delivery Notes
                       </Text>
                       <Text as="p" variant="bodyMd">
@@ -467,7 +541,10 @@ export default function OrderDetailPage() {
                     Assigned Driver
                   </Text>
                   <BlockStack gap="100">
-                    <PolarisLink url={`/drivers/${order.driver.id}`} removeUnderline>
+                    <PolarisLink
+                      url={`/drivers/${order.driver.id}`}
+                      removeUnderline
+                    >
                       {order.driver.name}
                     </PolarisLink>
                     <Text as="span" variant="bodySm" tone="subdued">
@@ -485,7 +562,10 @@ export default function OrderDetailPage() {
                   <Text as="h3" variant="headingSm">
                     Route
                   </Text>
-                  <PolarisLink url={`/routes/${order.route.id}`} removeUnderline>
+                  <PolarisLink
+                    url={`/routes/${order.route.id}`}
+                    removeUnderline
+                  >
                     {order.route.name}
                   </PolarisLink>
                 </BlockStack>

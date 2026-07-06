@@ -15,7 +15,7 @@ import type {
   TrafficData,
   TrafficZone,
   ModelPrediction,
-} from '../types.js';
+} from "../types.js";
 
 export class TrafficModel {
   /**
@@ -31,8 +31,7 @@ export class TrafficModel {
   /**
    * Historical traffic patterns (hour -> congestion level)
    */
-  private historicalPatterns: Map<string, Record<number, number>> =
-    new Map();
+  private historicalPatterns: Map<string, Record<number, number>> = new Map();
 
   /**
    * Cache expiry time (5 minutes)
@@ -101,26 +100,16 @@ export class TrafficModel {
     const realtimeTraffic = this.getValidTrafficData(trafficKey);
 
     if (realtimeTraffic) {
-      return this.predictWithRealtime(
-        realtimeTraffic,
-        departureTime,
-      );
+      return this.predictWithRealtime(realtimeTraffic, departureTime);
     }
 
     // Fall back to historical pattern
     if (zoneId) {
-      return this.predictWithHistorical(
-        zoneId,
-        baseTimeMinutes,
-        departureTime,
-      );
+      return this.predictWithHistorical(zoneId, baseTimeMinutes, departureTime);
     }
 
     // Final fallback: assume moderate traffic
-    return this.getFallbackPrediction(
-      baseTimeMinutes,
-      departureTime,
-    );
+    return this.getFallbackPrediction(baseTimeMinutes, departureTime);
   }
 
   /**
@@ -134,18 +123,14 @@ export class TrafficModel {
     const stdDev = expectedMinutes * 0.15;
 
     return {
-      modelName: 'TrafficModel (Real-time)',
+      modelName: "TrafficModel (Real-time)",
       prediction: {
         low: new Date(
-          departureTime.getTime() +
-            (expectedMinutes - stdDev * 1.96) * 60000,
+          departureTime.getTime() + (expectedMinutes - stdDev * 1.96) * 60000,
         ),
-        expected: new Date(
-          departureTime.getTime() + expectedMinutes * 60000,
-        ),
+        expected: new Date(departureTime.getTime() + expectedMinutes * 60000),
         high: new Date(
-          departureTime.getTime() +
-            (expectedMinutes + stdDev * 1.96) * 60000,
+          departureTime.getTime() + (expectedMinutes + stdDev * 1.96) * 60000,
         ),
       },
       confidence: traffic.confidence,
@@ -180,18 +165,14 @@ export class TrafficModel {
     const stdDev = expectedMinutes * 0.2;
 
     return {
-      modelName: 'TrafficModel (Historical)',
+      modelName: "TrafficModel (Historical)",
       prediction: {
         low: new Date(
-          departureTime.getTime() +
-            (expectedMinutes - stdDev * 1.96) * 60000,
+          departureTime.getTime() + (expectedMinutes - stdDev * 1.96) * 60000,
         ),
-        expected: new Date(
-          departureTime.getTime() + expectedMinutes * 60000,
-        ),
+        expected: new Date(departureTime.getTime() + expectedMinutes * 60000),
         high: new Date(
-          departureTime.getTime() +
-            (expectedMinutes + stdDev * 1.96) * 60000,
+          departureTime.getTime() + (expectedMinutes + stdDev * 1.96) * 60000,
         ),
       },
       confidence: 0.6,
@@ -216,18 +197,14 @@ export class TrafficModel {
     const stdDev = expectedMinutes * 0.25;
 
     return {
-      modelName: 'TrafficModel (Fallback)',
+      modelName: "TrafficModel (Fallback)",
       prediction: {
         low: new Date(
-          departureTime.getTime() +
-            (expectedMinutes - stdDev * 1.96) * 60000,
+          departureTime.getTime() + (expectedMinutes - stdDev * 1.96) * 60000,
         ),
-        expected: new Date(
-          departureTime.getTime() + expectedMinutes * 60000,
-        ),
+        expected: new Date(departureTime.getTime() + expectedMinutes * 60000),
         high: new Date(
-          departureTime.getTime() +
-            (expectedMinutes + stdDev * 1.96) * 60000,
+          departureTime.getTime() + (expectedMinutes + stdDev * 1.96) * 60000,
         ),
       },
       confidence: 0.4,
@@ -270,18 +247,18 @@ export class TrafficModel {
   getCongestionLevel(
     zoneId: string,
     hour: number,
-  ): 'light' | 'moderate' | 'heavy' {
+  ): "light" | "moderate" | "heavy" {
     const pattern = this.historicalPatterns.get(zoneId);
 
     if (!pattern) {
-      return 'moderate';
+      return "moderate";
     }
 
     const level = pattern[hour] ?? 0.5;
 
-    if (level < 0.33) return 'light';
-    if (level < 0.67) return 'moderate';
-    return 'heavy';
+    if (level < 0.33) return "light";
+    if (level < 0.67) return "moderate";
+    return "heavy";
   }
 
   /**

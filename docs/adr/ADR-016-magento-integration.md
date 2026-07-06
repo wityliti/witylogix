@@ -29,11 +29,13 @@ Magento 2 represents a significant and underserved market opportunity for Witylo
 ### Technical Landscape: Magento 2
 
 **API Structure:**
+
 - REST API v1: Primary interface for third-party integrations (stable since 2015)
 - GraphQL API: Newer async query interface (not required for this integration)
 - Base URL: `https://store.magento.com/rest/V1/` (configurable store base URL)
 
 **Authentication:**
+
 - **Integration Tokens (Bearer):** Primary method for REST API calls
   - Generated in Admin Panel > System > Extensions > Integrations
   - Long-lived tokens (no expiry by default)
@@ -44,6 +46,7 @@ Magento 2 represents a significant and underserved market opportunity for Witylo
   - Token refreshable, includes secret
 
 **Webhooks/Events:**
+
 - Magento uses a different webhook model than Shopify/WooCommerce
 - Event-driven architecture using internal message queues
 - Webhooks delivered via webhook plugins or custom observers
@@ -54,6 +57,7 @@ Magento 2 represents a significant and underserved market opportunity for Witylo
   - `inventory_stock_item_save_after` - Stock level changed
 
 **Data Schema Characteristics:**
+
 - Nested/hierarchical structure for orders (items, addresses, payment, shipping)
 - Attribute system for custom product fields (EAV - Entity-Attribute-Value)
 - Multiple store views per installation
@@ -74,6 +78,7 @@ Magento 2 represents a significant and underserved market opportunity for Witylo
 ### Overview
 
 Witylogix will implement native Magento 2 integration using:
+
 - **REST API v1** for all platform interactions (stable, widely supported)
 - **Bearer token authentication** for REST API calls
 - **Webhook signature verification** using HMAC-SHA256
@@ -82,35 +87,38 @@ Witylogix will implement native Magento 2 integration using:
 
 ### Why REST API v1?
 
-| Aspect | REST v1 | GraphQL |
-|--------|---------|---------|
-| Stability | Proven, 10+ years stable | Newer, still evolving |
-| Adoption | Universal across Magento 2 versions | Not all hosts support |
-| Admin Support | Full feature coverage | Limited by design |
-| Third-party Integration | Standard for all integrations | Less common |
-| Performance | Direct endpoint calls | Requires query composition |
-| **Decision** | **✓ Primary** | Secondary future work |
+| Aspect                  | REST v1                             | GraphQL                    |
+| ----------------------- | ----------------------------------- | -------------------------- |
+| Stability               | Proven, 10+ years stable            | Newer, still evolving      |
+| Adoption                | Universal across Magento 2 versions | Not all hosts support      |
+| Admin Support           | Full feature coverage               | Limited by design          |
+| Third-party Integration | Standard for all integrations       | Less common                |
+| Performance             | Direct endpoint calls               | Requires query composition |
+| **Decision**            | **✓ Primary**                       | Secondary future work      |
 
 ### Authentication Strategy
 
 **REST API Calls:**
+
 - Use **Bearer token** (Integration Token from Admin Panel)
 - Long-lived, no refresh required
 - Simple to implement and maintain
 - Token format: `Authorization: Bearer {token}`
 
 **Webhook Signature Validation:**
+
 - Magento sends webhook signature in `X-Magento-Webhook-Signature` header (or custom header)
 - HMAC-SHA256 with integration secret key
 - Validates webhook integrity and authenticity
 
 **Configuration in Witylogix:**
+
 ```typescript
 interface MagentoCredentials extends PlatformCredentials {
-  storeUrl: string;        // e.g., https://mystore.magento.com
-  accessToken: string;     // Bearer token from integration
-  webhookSecret: string;   // Secret key for webhook signature validation
-  integrationId?: string;  // Optional, for reference
+  storeUrl: string; // e.g., https://mystore.magento.com
+  accessToken: string; // Bearer token from integration
+  webhookSecret: string; // Secret key for webhook signature validation
+  integrationId?: string; // Optional, for reference
 }
 ```
 
@@ -119,6 +127,7 @@ interface MagentoCredentials extends PlatformCredentials {
 Unlike Shopify (webhook endpoint) and WooCommerce (webhook records), Magento uses an internal event system:
 
 **Magento Event Flow:**
+
 ```
 Action in Admin or Storefront
     ↓
@@ -134,12 +143,14 @@ Process Order/Product
 ```
 
 **Required Events:**
+
 - `sales_order_place_after` → Order created
 - `sales_order_save_after` → Order updated
 - `catalog_product_save_after` → Product updated
 - `inventory_stock_item_save_after` → Stock level updated
 
 **Webhook Payload Structure:**
+
 ```json
 {
   "eventType": "sales_order_place_after",
@@ -159,6 +170,7 @@ Process Order/Product
 ### Data Mapping: Magento Order → Witylogix Order
 
 **Key Challenges:**
+
 1. Magento uses `entity_id` (internal) AND `increment_id` (customer-facing)
 2. Items array contains order items (not products directly)
 3. Multiple address objects (shipping, billing)
@@ -167,39 +179,41 @@ Process Order/Product
 
 **Mapping Table:**
 
-| Magento Field | Witylogix Field | Notes |
-|---------------|-----------------|-------|
-| `entity_id` | `externalOrderId` | Unique per order |
-| `increment_id` | `externalOrderNumber` | Customer-visible order # |
-| `created_at` | `createdAt` | ISO 8601 timestamp |
-| `updated_at` | `updatedAt` | ISO 8601 timestamp |
-| `status` | `status` | pending, processing, complete, cancelled |
-| `grand_total` | `total` | As string (decimal precision) |
-| `currency_code` | `currency` | e.g., "USD", "EUR" |
-| `customer_email` | `customerEmail` | From billing address if not on order |
-| `customer_firstname` + `customer_lastname` | `customerName` | Concatenated |
-| `shipping_address.{street,city,region,postcode,country_id}` | `shippingAddress` | Normalized format |
-| `billing_address.*` | `billingAddress` | Same structure as shipping |
-| `items[].{sku, name, qty, price, product_id}` | `lineItems[]` | Extract from items array |
-| `payment.method` | `metadata.paymentMethod` | Store in metadata |
-| `custom_attributes.*` | `metadata` | All EAV attributes in metadata |
+| Magento Field                                               | Witylogix Field          | Notes                                    |
+| ----------------------------------------------------------- | ------------------------ | ---------------------------------------- |
+| `entity_id`                                                 | `externalOrderId`        | Unique per order                         |
+| `increment_id`                                              | `externalOrderNumber`    | Customer-visible order #                 |
+| `created_at`                                                | `createdAt`              | ISO 8601 timestamp                       |
+| `updated_at`                                                | `updatedAt`              | ISO 8601 timestamp                       |
+| `status`                                                    | `status`                 | pending, processing, complete, cancelled |
+| `grand_total`                                               | `total`                  | As string (decimal precision)            |
+| `currency_code`                                             | `currency`               | e.g., "USD", "EUR"                       |
+| `customer_email`                                            | `customerEmail`          | From billing address if not on order     |
+| `customer_firstname` + `customer_lastname`                  | `customerName`           | Concatenated                             |
+| `shipping_address.{street,city,region,postcode,country_id}` | `shippingAddress`        | Normalized format                        |
+| `billing_address.*`                                         | `billingAddress`         | Same structure as shipping               |
+| `items[].{sku, name, qty, price, product_id}`               | `lineItems[]`            | Extract from items array                 |
+| `payment.method`                                            | `metadata.paymentMethod` | Store in metadata                        |
+| `custom_attributes.*`                                       | `metadata`               | All EAV attributes in metadata           |
 
 **Order Status Mapping:**
+
 ```typescript
 // Magento → Witylogix Status
 const statusMap = {
-  'pending': 'PENDING',
-  'processing': 'PROCESSING',
-  'complete': 'COMPLETED',
-  'closed': 'CLOSED',
-  'canceled': 'CANCELLED',
-  'holded': 'ON_HOLD',
+  pending: "PENDING",
+  processing: "PROCESSING",
+  complete: "COMPLETED",
+  closed: "CLOSED",
+  canceled: "CANCELLED",
+  holded: "ON_HOLD",
 };
 ```
 
 ### Product Data Mapping: Magento Product → Witylogix Product
 
 **Key Challenges:**
+
 1. Simple vs. Configurable vs. Grouped vs. Bundle products
 2. EAV custom attributes (not in schema)
 3. Inventory tracked separately in Stock Items
@@ -207,21 +221,22 @@ const statusMap = {
 
 **Mapping Table:**
 
-| Magento Field | Witylogix Field | Notes |
-|---------------|-----------------|-------|
-| `id` (entity_id) | `externalProductId` | Internal ID |
-| `sku` | `sku` | Global identifier |
-| `name` | `title` | Product name |
-| `description` | `description` | Full HTML description |
-| `short_description` | metadata | Store separately |
-| `price` | `price` | Base price as string |
-| `type_id` | metadata | simple, configurable, grouped, bundle |
-| `status` | `status` | 1=ACTIVE, 2=INACTIVE |
-| `thumbnail` | `imageUrl` | Thumbnail image URL |
-| `images[0]` | `imageUrl` (if no thumbnail) | Fall back to first image |
-| `custom_attributes.*` | `metadata` | EAV attributes |
+| Magento Field         | Witylogix Field              | Notes                                 |
+| --------------------- | ---------------------------- | ------------------------------------- |
+| `id` (entity_id)      | `externalProductId`          | Internal ID                           |
+| `sku`                 | `sku`                        | Global identifier                     |
+| `name`                | `title`                      | Product name                          |
+| `description`         | `description`                | Full HTML description                 |
+| `short_description`   | metadata                     | Store separately                      |
+| `price`               | `price`                      | Base price as string                  |
+| `type_id`             | metadata                     | simple, configurable, grouped, bundle |
+| `status`              | `status`                     | 1=ACTIVE, 2=INACTIVE                  |
+| `thumbnail`           | `imageUrl`                   | Thumbnail image URL                   |
+| `images[0]`           | `imageUrl` (if no thumbnail) | Fall back to first image              |
+| `custom_attributes.*` | `metadata`                   | EAV attributes                        |
 
 **Variants Handling:**
+
 ```
 Simple Product → 1 variant (the product itself)
 Configurable Product → variants[] = child simple products
@@ -231,19 +246,20 @@ Configurable Product → variants[] = child simple products
 
 ### Customer Data Mapping
 
-| Magento Field | Witylogix Field | Notes |
-|---------------|-----------------|-------|
-| `id` (entity_id) | `externalCustomerId` | Internal ID |
-| `email` | `email` | Primary contact |
-| `firstname` | `firstName` | Given name |
-| `lastname` | `lastName` | Family name |
-| `default_billing` | `billingAddress` | Address ID reference |
-| `default_shipping` | `shippingAddress` | Address ID reference |
-| `addresses[]` | metadata | All addresses in metadata |
+| Magento Field      | Witylogix Field      | Notes                     |
+| ------------------ | -------------------- | ------------------------- |
+| `id` (entity_id)   | `externalCustomerId` | Internal ID               |
+| `email`            | `email`              | Primary contact           |
+| `firstname`        | `firstName`          | Given name                |
+| `lastname`         | `lastName`           | Family name               |
+| `default_billing`  | `billingAddress`     | Address ID reference      |
+| `default_shipping` | `shippingAddress`    | Address ID reference      |
+| `addresses[]`      | metadata             | All addresses in metadata |
 
 ### Authentication Flow Diagrams
 
 **Initial Setup (Admin Panel):**
+
 ```
 ┌──────────────────────┐
 │  Magento Admin       │
@@ -269,6 +285,7 @@ Configurable Product → variants[] = child simple products
 ```
 
 **REST API Call (Product Fetch):**
+
 ```
 ┌─────────────────────────────────────────────────────┐
 │  Witylogix fetchProducts()                           │
@@ -298,6 +315,7 @@ Configurable Product → variants[] = child simple products
 ```
 
 **Webhook Event Processing:**
+
 ```
 ┌──────────────────────────────────┐
 │  Magento Observer                │
@@ -338,16 +356,19 @@ Configurable Product → variants[] = child simple products
 ### Inventory & Stock Sync
 
 **Magento Inventory Model:**
+
 - Products have SKU
 - Stock Items track quantity per source/stock
 - Configurable products don't have stock (children do)
 
 **Sync Strategy:**
+
 - During product fetch, include stock info
 - Update stock in metadata for variants
 - During periodic product sync, refresh stock levels
 
 **API Call:**
+
 ```
 GET /rest/V1/inventory/stock-items?sku={sku}
 → Returns: qty, is_in_stock, status, etc.
@@ -358,6 +379,7 @@ GET /rest/V1/inventory/stock-items?sku={sku}
 **Objective:** Allow customers to select delivery date/time during checkout
 
 **Module Structure:**
+
 ```
 Witylogix_DeliveryOptimizer/
 ├── registration.php          # Register module with Magento
@@ -389,6 +411,7 @@ Witylogix_DeliveryOptimizer/
 ```
 
 **Integration Points:**
+
 1. **Checkout Page:** Add delivery date/time selector
 2. **Order Creation:** POST selected delivery slot to Witylogix API
 3. **Order Confirmation:** Show delivery window in confirmation email
@@ -416,13 +439,13 @@ Witylogix_DeliveryOptimizer/
 
 ### Mitigation Strategies
 
-| Risk | Mitigation |
-|------|-----------|
+| Risk               | Mitigation                                                                       |
+| ------------------ | -------------------------------------------------------------------------------- |
 | Maintenance burden | Create adapter code generators; extensive unit tests; well-documented interfaces |
-| API differences | Comprehensive integration tests; webhook payload fixtures |
-| EAV complexity | Document attribute mapping; provide admin UI for custom attribute config |
-| Module deployment | Provide installation guide; create Composer package; support auto-discovery |
-| Testing | Maintain Docker-based Magento 2 test environment in CI/CD pipeline |
+| API differences    | Comprehensive integration tests; webhook payload fixtures                        |
+| EAV complexity     | Document attribute mapping; provide admin UI for custom attribute config         |
+| Module deployment  | Provide installation guide; create Composer package; support auto-discovery      |
+| Testing            | Maintain Docker-based Magento 2 test environment in CI/CD pipeline               |
 
 ---
 
@@ -431,6 +454,7 @@ Witylogix_DeliveryOptimizer/
 ### Phase 1: REST API Adapter (Sprint 3.6)
 
 **Deliverables:**
+
 - [ ] `packages/core/src/platforms/adapters/magento.ts` (600+ lines)
   - Implement `PlatformAdapter` interface
   - `validateWebhook()` - HMAC-SHA256 verification
@@ -455,6 +479,7 @@ Witylogix_DeliveryOptimizer/
   - Test webhook delivery and signature validation
 
 **Success Criteria:**
+
 - All unit tests passing
 - Magento test environment successfully syncs orders/products
 - Webhook signature validation working
@@ -463,6 +488,7 @@ Witylogix_DeliveryOptimizer/
 ### Phase 2: Checkout Module (Sprint 3.7-3.8)
 
 **Deliverables:**
+
 - [ ] `witylogix_delivery_optimizer/` PHP module
   - Registration, DI configuration
   - Observer for order creation events
@@ -484,6 +510,7 @@ Witylogix_DeliveryOptimizer/
   - Customization guide
 
 **Success Criteria:**
+
 - Module installs cleanly in Magento 2.4+
 - Checkout page shows delivery selector
 - Selected delivery time saved to Witylogix database
@@ -492,6 +519,7 @@ Witylogix_DeliveryOptimizer/
 ### Phase 3: Advanced Features (Sprint 3.9+)
 
 **Deliverables:**
+
 - [ ] Inventory Sync
   - Real-time stock sync via events
   - Stock level caching
@@ -531,12 +559,14 @@ const isValid = timingSafeEqual(
 ```
 
 **Security Properties:**
+
 - HMAC prevents signature forgery without secret
 - Timing-safe comparison prevents timing attacks
 - Payload integrity verified (any modification fails validation)
 - Requires webhook secret in Witylogix database
 
 **Webhook Secret Management:**
+
 - Stored encrypted in database
 - Never logged or exposed in errors
 - Rotated in Magento Admin → secret updated in Witylogix
@@ -547,16 +577,19 @@ const isValid = timingSafeEqual(
 ## API Rate Limiting Handling
 
 **Magento REST API Limits:**
+
 - Community Edition: No hard limit (but 100 req/sec is standard)
 - Enterprise: Custom limits per setup
 
 **Witylogix Handling:**
+
 - Implement exponential backoff for rate limit errors (429)
 - Cache product data with TTL (default 1 hour)
 - Batch order fetches during low-traffic windows
 - Monitor 429 responses; alert if frequent
 
 **Code Pattern:**
+
 ```typescript
 async fetchWithRetry(fn, maxRetries = 3) {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -579,6 +612,7 @@ async fetchWithRetry(fn, maxRetries = 3) {
 ## Testing Strategy
 
 ### Unit Tests
+
 - HMAC validation (valid, invalid, tampered)
 - Order mapping (all field combinations)
 - Product mapping (simple, configurable, grouped)
@@ -586,6 +620,7 @@ async fetchWithRetry(fn, maxRetries = 3) {
 - Pagination cursor handling
 
 ### Integration Tests
+
 - Connect to Magento 2 test instance
 - Create test order
 - Fetch and validate
@@ -594,6 +629,7 @@ async fetchWithRetry(fn, maxRetries = 3) {
 - Test all error scenarios
 
 ### Test Environment Setup
+
 ```bash
 # Docker-based Magento 2 test environment
 docker-compose -f tests/magento2/docker-compose.yml up
@@ -606,12 +642,14 @@ docker-compose -f tests/magento2/docker-compose.yml up
 ## Migration Path: Existing Magento Users
 
 **For merchants already using Witylogix on WooCommerce/Shopify:**
+
 1. Magento integration available immediately upon release
 2. No data migration needed (each platform is separate)
 3. Credentials setup: Same onboarding flow
 4. Optional: Merge customer data across platforms (Phase 3)
 
 **For new Magento merchants:**
+
 1. Install Magento module via Composer
 2. Configure delivery slots in admin
 3. Test on staging environment
@@ -660,9 +698,9 @@ docker-compose -f tests/magento2/docker-compose.yml up
 
 ## Document History
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0 | 2026-03-08 | Arjun | Initial version, Phase 1 plan |
+| Version | Date       | Author | Changes                       |
+| ------- | ---------- | ------ | ----------------------------- |
+| 1.0     | 2026-03-08 | Arjun  | Initial version, Phase 1 plan |
 
 ---
 

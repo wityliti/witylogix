@@ -12,8 +12,8 @@ import {
   CredentialValidationResult,
   CredentialValidationError,
   IntegrationAuthType,
-} from './types';
-import { getSetupConfig } from './integration-setup-registry';
+} from "./types";
+import { getSetupConfig } from "./integration-setup-registry";
 
 // ─── Validation Endpoints Mapping ───────────────────────────────
 
@@ -21,116 +21,117 @@ const VALIDATION_ENDPOINTS: Record<
   string,
   {
     endpoint: string;
-    method: 'GET' | 'POST' | 'HEAD';
+    method: "GET" | "POST" | "HEAD";
     headers?: (creds: Record<string, unknown>) => Record<string, string>;
     expectedStatus?: number[];
   }
 > = {
   // ─── Routing ──────────────────────────────────────────────────
   valhalla: {
-    endpoint: '/status',
-    method: 'GET',
+    endpoint: "/status",
+    method: "GET",
     expectedStatus: [200],
   },
   vroom: {
-    endpoint: '/health',
-    method: 'GET',
+    endpoint: "/health",
+    method: "GET",
     expectedStatus: [200],
   },
-  'google-routes-api': {
-    endpoint: 'https://routes.googleapis.com/directions/v1:computeRoutes',
-    method: 'POST',
-    headers: (creds) => ({ 'X-Goog-Api-Key': String(creds.apiKey) }),
+  "google-routes-api": {
+    endpoint: "https://routes.googleapis.com/directions/v1:computeRoutes",
+    method: "POST",
+    headers: (creds) => ({ "X-Goog-Api-Key": String(creds.apiKey) }),
     expectedStatus: [200, 400], // 400 is ok (validation error, not auth)
   },
-  'mapbox-directions': {
-    endpoint: 'https://api.mapbox.com/directions/v5/mapbox/driving/0,0;1,1',
-    method: 'GET',
+  "mapbox-directions": {
+    endpoint: "https://api.mapbox.com/directions/v5/mapbox/driving/0,0;1,1",
+    method: "GET",
     headers: (creds) => ({ Authorization: `Bearer ${creds.accessToken}` }),
     expectedStatus: [200],
   },
 
   // ─── Telematics ───────────────────────────────────────────────
   samsara: {
-    endpoint: 'https://api.samsara.com/v1/fleet/vehicles',
-    method: 'GET',
+    endpoint: "https://api.samsara.com/v1/fleet/vehicles",
+    method: "GET",
     headers: (creds) => ({ Authorization: `Bearer ${creds.accessToken}` }),
     expectedStatus: [200],
   },
   geotab: {
-    endpoint: 'https://my.geotab.com/apiv1',
-    method: 'POST',
+    endpoint: "https://my.geotab.com/apiv1",
+    method: "POST",
     expectedStatus: [200],
   },
 
   // ─── E-Commerce ───────────────────────────────────────────────
   shopify: {
-    endpoint: 'https://{shopDomain}/admin/api/2024-01/graphql.json',
-    method: 'POST',
+    endpoint: "https://{shopDomain}/admin/api/2024-01/graphql.json",
+    method: "POST",
     headers: (creds) => ({
-      'X-Shopify-Access-Token': String(creds.accessToken || creds.apiKey),
-      'Content-Type': 'application/json',
+      "X-Shopify-Access-Token": String(creds.accessToken || creds.apiKey),
+      "Content-Type": "application/json",
     }),
     expectedStatus: [200],
   },
 
   // ─── Payments ──────────────────────────────────────────────────
   stripe: {
-    endpoint: 'https://api.stripe.com/v1/charges',
-    method: 'GET',
+    endpoint: "https://api.stripe.com/v1/charges",
+    method: "GET",
     headers: (creds) => ({
       Authorization: `Bearer ${creds.secretKey}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
+      "Content-Type": "application/x-www-form-urlencoded",
     }),
     expectedStatus: [200],
   },
 
   // ─── Email ────────────────────────────────────────────────────
   sendgrid: {
-    endpoint: 'https://api.sendgrid.com/v3/mail/send',
-    method: 'POST',
+    endpoint: "https://api.sendgrid.com/v3/mail/send",
+    method: "POST",
     headers: (creds) => ({
       Authorization: `Bearer ${creds.apiKey}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     }),
     expectedStatus: [200, 400], // 400 for validation errors
   },
   mailgun: {
-    endpoint: 'https://api.mailgun.net/v3/{domain}/messages',
-    method: 'POST',
+    endpoint: "https://api.mailgun.net/v3/{domain}/messages",
+    method: "POST",
     headers: (creds) => ({
-      Authorization: `Basic ${Buffer.from(
-        `api:${creds.apiKey}`
-      ).toString('base64')}`,
+      Authorization: `Basic ${Buffer.from(`api:${creds.apiKey}`).toString(
+        "base64",
+      )}`,
     }),
     expectedStatus: [200, 400],
   },
 
   // ─── Communications ───────────────────────────────────────────
   slack: {
-    endpoint: 'https://slack.com/api/auth.test',
-    method: 'POST',
+    endpoint: "https://slack.com/api/auth.test",
+    method: "POST",
     headers: (creds) => ({
       Authorization: `Bearer ${creds.accessToken || creds.botToken}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     }),
     expectedStatus: [200],
   },
   twilio: {
-    endpoint: 'https://api.twilio.com/2010-04-01/Accounts/{accountSid}',
-    method: 'GET',
+    endpoint: "https://api.twilio.com/2010-04-01/Accounts/{accountSid}",
+    method: "GET",
     headers: (creds) => ({
       Authorization: `Basic ${Buffer.from(
-        `${creds.accountSid}:${creds.authToken}`
-      ).toString('base64')}`,
+        `${creds.accountSid}:${creds.authToken}`,
+      ).toString("base64")}`,
     }),
     expectedStatus: [200],
   },
 
   // ─── E-Signatures ──────────────────────────────────────────────
   docusign: {
-    endpoint: 'https://na4.docusign.net/restapi/v2.1/accounts/{accountId}/envelopes',
-    method: 'GET',
+    endpoint:
+      "https://na4.docusign.net/restapi/v2.1/accounts/{accountId}/envelopes",
+    method: "GET",
     headers: (creds) => ({
       Authorization: `Bearer ${creds.accessToken}`,
     }),
@@ -139,39 +140,39 @@ const VALIDATION_ENDPOINTS: Record<
 
   // ─── CRM ───────────────────────────────────────────────────────
   salesforce: {
-    endpoint: 'https://{instanceUrl}/services/data/v58.0',
-    method: 'GET',
+    endpoint: "https://{instanceUrl}/services/data/v58.0",
+    method: "GET",
     headers: (creds) => ({
       Authorization: `Bearer ${creds.accessToken}`,
     }),
     expectedStatus: [200],
   },
   hubspot: {
-    endpoint: 'https://api.hubapi.com/crm/v3/objects/contacts',
-    method: 'GET',
+    endpoint: "https://api.hubapi.com/crm/v3/objects/contacts",
+    method: "GET",
     headers: (creds) => ({
       Authorization: `Bearer ${creds.accessToken}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     }),
     expectedStatus: [200],
   },
 
   // ─── Accounting ────────────────────────────────────────────────
   xero: {
-    endpoint: 'https://api.xero.com/api.xro/2.0/Invoices',
-    method: 'GET',
+    endpoint: "https://api.xero.com/api.xro/2.0/Invoices",
+    method: "GET",
     headers: (creds) => ({
       Authorization: `Bearer ${creds.accessToken}`,
-      'Xero-tenant-id': String(creds.tenantId || ''),
+      "Xero-tenant-id": String(creds.tenantId || ""),
     }),
     expectedStatus: [200],
   },
 
   // Default: API key validation
   default: {
-    endpoint: '/api/v1',
-    method: 'GET',
-    headers: (creds) => ({ 'X-API-Key': String(creds.apiKey) }),
+    endpoint: "/api/v1",
+    method: "GET",
+    headers: (creds) => ({ "X-API-Key": String(creds.apiKey) }),
     expectedStatus: [200, 401, 403], // Various endpoints return different codes
   },
 };
@@ -189,7 +190,7 @@ export class CredentialValidator {
    */
   static async validateCredentials(
     providerId: string,
-    credentials: Record<string, unknown>
+    credentials: Record<string, unknown>,
   ): Promise<CredentialValidationResult> {
     const startTime = Date.now();
     const config = getSetupConfig(providerId);
@@ -204,7 +205,11 @@ export class CredentialValidator {
     }
 
     try {
-      const result = await this.testConnection(providerId, config.authType, credentials);
+      const result = await this.testConnection(
+        providerId,
+        config.authType,
+        credentials,
+      );
 
       if (!result.success) {
         return {
@@ -242,21 +247,27 @@ export class CredentialValidator {
   static async testConnection(
     providerId: string,
     authType: IntegrationAuthType,
-    credentials: Record<string, unknown>
+    credentials: Record<string, unknown>,
   ): Promise<ConnectionTestResult> {
     const startTime = Date.now();
     const controller = new AbortController();
-    const timeoutHandle = setTimeout(() => controller.abort(), VALIDATION_TIMEOUT_MS);
+    const timeoutHandle = setTimeout(
+      () => controller.abort(),
+      VALIDATION_TIMEOUT_MS,
+    );
 
     try {
       let endpoint = VALIDATION_ENDPOINTS[providerId]?.endpoint;
-      const method = VALIDATION_ENDPOINTS[providerId]?.method || 'GET';
-      const expectedStatus = VALIDATION_ENDPOINTS[providerId]?.expectedStatus || [200];
-      let headers = VALIDATION_ENDPOINTS[providerId]?.headers?.(credentials) || {};
+      const method = VALIDATION_ENDPOINTS[providerId]?.method || "GET";
+      const expectedStatus = VALIDATION_ENDPOINTS[providerId]
+        ?.expectedStatus || [200];
+      let headers =
+        VALIDATION_ENDPOINTS[providerId]?.headers?.(credentials) || {};
 
       // Fallback to provider config test endpoint
       if (!endpoint && credentials.baseUrl) {
-        endpoint = String(credentials.baseUrl) + (credentials.testEndpoint || '/health');
+        endpoint =
+          String(credentials.baseUrl) + (credentials.testEndpoint || "/health");
       }
 
       if (!endpoint) {
@@ -272,10 +283,10 @@ export class CredentialValidator {
 
       // Prepare request body for POST requests
       let body: string | undefined;
-      if (method === 'POST' && authType === IntegrationAuthType.API_KEY) {
+      if (method === "POST" && authType === IntegrationAuthType.API_KEY) {
         // Minimal test payload
         body = JSON.stringify({});
-        headers = { ...headers, 'Content-Type': 'application/json' };
+        headers = { ...headers, "Content-Type": "application/json" };
       }
 
       // Add auth headers based on auth type
@@ -321,12 +332,12 @@ export class CredentialValidator {
       clearTimeout(timeoutHandle);
       const latencyMs = Date.now() - startTime;
 
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (error instanceof Error && error.name === "AbortError") {
         return {
           success: false,
           latencyMs,
           message: `Request timeout after ${VALIDATION_TIMEOUT_MS}ms`,
-          errorCode: 'TIMEOUT',
+          errorCode: "TIMEOUT",
         };
       }
 
@@ -334,7 +345,7 @@ export class CredentialValidator {
         success: false,
         latencyMs,
         message: error instanceof Error ? error.message : String(error),
-        errorCode: 'REQUEST_FAILED',
+        errorCode: "REQUEST_FAILED",
       };
     }
   }
@@ -343,7 +354,7 @@ export class CredentialValidator {
    * Validate webhook secret format and entropy.
    */
   static validateWebhookSecret(secret: string): boolean {
-    if (!secret || typeof secret !== 'string') return false;
+    if (!secret || typeof secret !== "string") return false;
     // Minimum 32 characters, mix of uppercase, lowercase, numbers
     if (secret.length < 32) return false;
     const hasUpper = /[A-Z]/.test(secret);
@@ -358,33 +369,38 @@ export class CredentialValidator {
   private static buildAuthHeaders(
     authType: IntegrationAuthType,
     credentials: Record<string, unknown>,
-    existingHeaders: Record<string, string>
+    existingHeaders: Record<string, string>,
   ): Record<string, string> {
     const headers = { ...existingHeaders };
 
     switch (authType) {
       case IntegrationAuthType.API_KEY:
-        headers['X-API-Key'] = String(credentials.apiKey || credentials.token || '');
+        headers["X-API-Key"] = String(
+          credentials.apiKey || credentials.token || "",
+        );
         break;
 
       case IntegrationAuthType.BEARER_TOKEN:
-        const token = credentials.accessToken || credentials.token || credentials.apiKey;
+        const token =
+          credentials.accessToken || credentials.token || credentials.apiKey;
         headers.Authorization = `Bearer ${String(token)}`;
         break;
 
       case IntegrationAuthType.BASIC_AUTH:
         const username = credentials.username || credentials.apiKey;
         const password = credentials.password || credentials.apiSecret;
-        const encoded = Buffer.from(`${String(username)}:${String(password)}`).toString('base64');
+        const encoded = Buffer.from(
+          `${String(username)}:${String(password)}`,
+        ).toString("base64");
         headers.Authorization = `Basic ${encoded}`;
         break;
 
       case IntegrationAuthType.OAUTH2:
-        headers.Authorization = `Bearer ${String(credentials.accessToken || '')}`;
+        headers.Authorization = `Bearer ${String(credentials.accessToken || "")}`;
         break;
 
       case IntegrationAuthType.WEBHOOK_SECRET:
-        headers['X-Webhook-Secret'] = String(credentials.webhookSecret || '');
+        headers["X-Webhook-Secret"] = String(credentials.webhookSecret || "");
         break;
 
       case IntegrationAuthType.CUSTOM:
@@ -400,7 +416,7 @@ export class CredentialValidator {
    */
   private static interpolateEndpoint(
     endpoint: string,
-    credentials: Record<string, unknown>
+    credentials: Record<string, unknown>,
   ): string {
     let result = endpoint;
 
@@ -430,7 +446,7 @@ export class CredentialValidator {
  */
 export async function testCredentials(
   providerId: string,
-  credentials: Record<string, unknown>
+  credentials: Record<string, unknown>,
 ): Promise<ConnectionTestResult> {
   const config = getSetupConfig(providerId);
   if (!config) {
@@ -441,5 +457,9 @@ export async function testCredentials(
     };
   }
 
-  return CredentialValidator.testConnection(providerId, config.authType, credentials);
+  return CredentialValidator.testConnection(
+    providerId,
+    config.authType,
+    credentials,
+  );
 }

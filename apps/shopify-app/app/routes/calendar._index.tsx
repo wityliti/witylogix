@@ -154,7 +154,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 // ─── Helpers ───────────────────────────────────────────────
 
-const RULE_TYPE_BADGE_TONE: Record<string, "critical" | "info" | "warning" | "success"> = {
+const RULE_TYPE_BADGE_TONE: Record<
+  string,
+  "critical" | "info" | "warning" | "success"
+> = {
   BLACKOUT: "critical",
   CAPACITY: "info",
   HOLIDAY: "warning",
@@ -210,15 +213,11 @@ export default function Calendar() {
           <BlockStack gap="400">
             {/* Month Navigation */}
             <InlineStack align="space-between" blockAlign="center">
-              <Button size="slim">
-                Prev
-              </Button>
+              <Button size="slim">Prev</Button>
               <Text as="h2" variant="headingMd" fontWeight="semibold">
                 {monthName} {currentYear}
               </Text>
-              <Button size="slim">
-                Next
-              </Button>
+              <Button size="slim">Next</Button>
             </InlineStack>
 
             {/* Calendar Grid */}
@@ -235,23 +234,29 @@ export default function Calendar() {
                 }}
               >
                 {/* Weekday headers */}
-                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                  <Box
-                    key={day}
-                    background="bg-surface"
-                    padding="300"
-                  >
-                    <Text as="p" variant="bodySm" fontWeight="semibold" tone="subdued" alignment="center">
-                      {day}
-                    </Text>
-                  </Box>
-                ))}
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                  (day) => (
+                    <Box key={day} background="bg-surface" padding="300">
+                      <Text
+                        as="p"
+                        variant="bodySm"
+                        fontWeight="semibold"
+                        tone="subdued"
+                        alignment="center"
+                      >
+                        {day}
+                      </Text>
+                    </Box>
+                  ),
+                )}
 
                 {/* Calendar days */}
                 {daysArray.map((day, idx) => (
                   <Box
                     key={idx}
-                    background={isBlackoutDate(day) ? "bg-surface-critical" : "bg-surface"}
+                    background={
+                      isBlackoutDate(day) ? "bg-surface-critical" : "bg-surface"
+                    }
                     padding="300"
                     minHeight="60px"
                   >
@@ -281,7 +286,9 @@ export default function Calendar() {
                   minHeight="16px"
                   minWidth="16px"
                 />
-                <Text as="span" variant="bodySm">Blackout</Text>
+                <Text as="span" variant="bodySm">
+                  Blackout
+                </Text>
               </InlineStack>
               <InlineStack gap="200" blockAlign="center">
                 <Box
@@ -290,7 +297,9 @@ export default function Calendar() {
                   minHeight="16px"
                   minWidth="16px"
                 />
-                <Text as="span" variant="bodySm">Capacity</Text>
+                <Text as="span" variant="bodySm">
+                  Capacity
+                </Text>
               </InlineStack>
               <InlineStack gap="200" blockAlign="center">
                 <Box
@@ -299,7 +308,9 @@ export default function Calendar() {
                   minHeight="16px"
                   minWidth="16px"
                 />
-                <Text as="span" variant="bodySm">Holiday</Text>
+                <Text as="span" variant="bodySm">
+                  Holiday
+                </Text>
               </InlineStack>
               <InlineStack gap="200" blockAlign="center">
                 <Box
@@ -308,7 +319,9 @@ export default function Calendar() {
                   minHeight="16px"
                   minWidth="16px"
                 />
-                <Text as="span" variant="bodySm">Special</Text>
+                <Text as="span" variant="bodySm">
+                  Special
+                </Text>
               </InlineStack>
             </InlineStack>
           </BlockStack>
@@ -328,8 +341,8 @@ export default function Calendar() {
                 action={{ content: "Add First Rule", url: "/calendar/new" }}
               >
                 <p>
-                  Create rules to manage blackout dates, capacity limits, holidays,
-                  and special delivery windows.
+                  Create rules to manage blackout dates, capacity limits,
+                  holidays, and special delivery windows.
                 </p>
               </PolarisEmptyState>
             ) : (
@@ -343,7 +356,12 @@ export default function Calendar() {
                     borderWidth="025"
                     borderColor="border-secondary"
                   >
-                    <InlineStack align="space-between" blockAlign="start" wrap={false} gap="400">
+                    <InlineStack
+                      align="space-between"
+                      blockAlign="start"
+                      wrap={false}
+                      gap="400"
+                    >
                       <InlineStack gap="300" blockAlign="start" wrap={false}>
                         <Badge tone={RULE_TYPE_BADGE_TONE[rule.type]}>
                           {getRuleTypeLabel(rule.type)}
@@ -361,17 +379,23 @@ export default function Calendar() {
 
                           <InlineStack gap="400" wrap>
                             <Text as="span" variant="bodySm" tone="subdued">
-                              {new Date(rule.startDate).toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                              })}
+                              {new Date(rule.startDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                },
+                              )}
                               {rule.startDate !== rule.endDate && (
                                 <>
                                   {" to "}
-                                  {new Date(rule.endDate).toLocaleDateString("en-US", {
-                                    month: "short",
-                                    day: "numeric",
-                                  })}
+                                  {new Date(rule.endDate).toLocaleDateString(
+                                    "en-US",
+                                    {
+                                      month: "short",
+                                      day: "numeric",
+                                    },
+                                  )}
                                 </>
                               )}
                             </Text>

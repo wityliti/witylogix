@@ -38,13 +38,19 @@ export interface PoolConfig {
  * @returns PoolConfig object suitable for PgBouncer or pg driver
  */
 export function createPoolConfig(
-  env: "development" | "staging" | "production"
+  env: "development" | "staging" | "production",
 ): PoolConfig {
-  const envConfig = env === "development"
-    ? { min: 1, max: 5, connectionTimeoutMs: 30000, idleTimeoutMs: 600000 }
-    : env === "staging"
-    ? { min: 5, max: 20, connectionTimeoutMs: 20000, idleTimeoutMs: 300000 }
-    : { min: 10, max: 100, connectionTimeoutMs: 10000, idleTimeoutMs: 60000 };
+  const envConfig =
+    env === "development"
+      ? { min: 1, max: 5, connectionTimeoutMs: 30000, idleTimeoutMs: 600000 }
+      : env === "staging"
+        ? { min: 5, max: 20, connectionTimeoutMs: 20000, idleTimeoutMs: 300000 }
+        : {
+            min: 10,
+            max: 100,
+            connectionTimeoutMs: 10000,
+            idleTimeoutMs: 60000,
+          };
 
   const baseConfig: PoolConfig = {
     ...envConfig,
@@ -102,7 +108,7 @@ export function validatePoolConfig(config: PoolConfig): void {
 function logConnectionEvent(
   event: "connect" | "disconnect",
   connectionId: string,
-  metadata: Record<string, any> = {}
+  metadata: Record<string, any> = {},
 ): void {
   const timestamp = new Date().toISOString();
   const logLevel = event === "connect" ? "info" : "debug";
@@ -117,8 +123,8 @@ function logConnectionEvent(
         ...metadata,
       },
       null,
-      2
-    )
+      2,
+    ),
   );
 }
 
@@ -137,7 +143,7 @@ export function createHealthCheckFn(config: PoolConfig) {
 
       if (duration > config.connectionTimeoutMs / 2) {
         console.warn(
-          `Health check slow: ${duration}ms (threshold: ${config.connectionTimeoutMs / 2}ms)`
+          `Health check slow: ${duration}ms (threshold: ${config.connectionTimeoutMs / 2}ms)`,
         );
       }
 
@@ -167,9 +173,11 @@ export function createLifecycleHooks(config: PoolConfig) {
 
       // Set connection timeouts
       await client.query(
-        `SET statement_timeout TO ${config.statementTimeoutMs}`
+        `SET statement_timeout TO ${config.statementTimeoutMs}`,
       );
-      await client.query(`SET idle_in_transaction_session_timeout TO ${config.idleTimeoutMs}`);
+      await client.query(
+        `SET idle_in_transaction_session_timeout TO ${config.idleTimeoutMs}`,
+      );
 
       if (config.onConnect) {
         await config.onConnect(client);

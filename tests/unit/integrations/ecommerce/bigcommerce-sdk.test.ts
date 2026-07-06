@@ -516,9 +516,7 @@ describe("BigCommerceSDKClient", () => {
     });
 
     it("should get product variants", async () => {
-      const mockVariants = [
-        { id: 10, sku: "VAR-1", price: 29.99 },
-      ];
+      const mockVariants = [{ id: 10, sku: "VAR-1", price: 29.99 }];
       const mockResponse = { data: mockVariants };
 
       (global.fetch as any).mockResolvedValueOnce({
@@ -678,7 +676,10 @@ describe("BigCommerceSDKClient", () => {
 
   describe("Webhook Verification", () => {
     it("should verify valid webhook signature", () => {
-      const payload = JSON.stringify({ scope: "store/order/updated", data: {} });
+      const payload = JSON.stringify({
+        scope: "store/order/updated",
+        data: {},
+      });
       const crypto = require("node:crypto");
       const signature = crypto
         .createHmac("sha256", mockWebhookSecret!)
@@ -691,7 +692,10 @@ describe("BigCommerceSDKClient", () => {
     });
 
     it("should reject invalid webhook signature", () => {
-      const payload = JSON.stringify({ scope: "store/order/updated", data: {} });
+      const payload = JSON.stringify({
+        scope: "store/order/updated",
+        data: {},
+      });
       const invalidSignature = "invalid_signature_123";
 
       const isValid = client.verifyWebhookSignature(payload, invalidSignature);
@@ -706,7 +710,10 @@ describe("BigCommerceSDKClient", () => {
       });
 
       const payload = JSON.stringify({ scope: "store/order/updated" });
-      const isValid = clientWithoutSecret.verifyWebhookSignature(payload, "sig");
+      const isValid = clientWithoutSecret.verifyWebhookSignature(
+        payload,
+        "sig",
+      );
 
       expect(isValid).toBe(false);
     });

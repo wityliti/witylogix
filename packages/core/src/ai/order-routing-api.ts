@@ -18,12 +18,12 @@ import type {
   WarehouseCandidate,
   FulfillmentRules,
   RoutingOptions,
-} from './intelligent-order-router.js';
+} from "./intelligent-order-router.js";
 import {
   IntelligentOrderRouter,
   createIntelligentOrderRouter,
   type SplitOrder,
-} from './intelligent-order-router.js';
+} from "./intelligent-order-router.js";
 
 import type {
   SalesDataPoint,
@@ -32,11 +32,11 @@ import type {
   TrendInfo,
   ExternalFactor,
   SKUCluster,
-} from './demand-forecaster.js';
+} from "./demand-forecaster.js";
 import {
   DemandForecasterService,
   createDemandForecaster,
-} from './demand-forecaster.js';
+} from "./demand-forecaster.js";
 
 // ─── API TYPES ──────────────────────────────────────────────────────────────
 
@@ -123,11 +123,17 @@ export class OrderRoutingAPIHandler {
    * POST /api/routing/assign
    * Auto-assign order to optimal fulfillment center
    */
-  async assignOrder(request: RoutingAssignRequest): Promise<ApiResponse<RoutingAssignResponse>> {
+  async assignOrder(
+    request: RoutingAssignRequest,
+  ): Promise<ApiResponse<RoutingAssignResponse>> {
     const startTime = Date.now();
 
     try {
-      const decision = this.router.routeOrder(request.order, request.warehouses, request.options);
+      const decision = this.router.routeOrder(
+        request.order,
+        request.warehouses,
+        request.options,
+      );
 
       return {
         success: true,
@@ -140,7 +146,7 @@ export class OrderRoutingAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
@@ -150,11 +156,17 @@ export class OrderRoutingAPIHandler {
    * POST /api/routing/evaluate
    * Evaluate all routing options without assigning
    */
-  async evaluateOptions(request: RoutingEvaluateRequest): Promise<ApiResponse<RoutingEvaluateResponse>> {
+  async evaluateOptions(
+    request: RoutingEvaluateRequest,
+  ): Promise<ApiResponse<RoutingEvaluateResponse>> {
     const startTime = Date.now();
 
     try {
-      const candidates = this.router.evaluateOptions(request.order, request.warehouses, request.options);
+      const candidates = this.router.evaluateOptions(
+        request.order,
+        request.warehouses,
+        request.options,
+      );
 
       return {
         success: true,
@@ -167,7 +179,7 @@ export class OrderRoutingAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
@@ -189,7 +201,7 @@ export class OrderRoutingAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
@@ -199,7 +211,9 @@ export class OrderRoutingAPIHandler {
    * PUT /api/routing/rules
    * Update routing rules
    */
-  async updateRules(request: RoutingRulesUpdateRequest): Promise<ApiResponse<FulfillmentRules>> {
+  async updateRules(
+    request: RoutingRulesUpdateRequest,
+  ): Promise<ApiResponse<FulfillmentRules>> {
     try {
       this.router.setRules(request.rules);
       const rules = this.router.getRules();
@@ -212,7 +226,7 @@ export class OrderRoutingAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
@@ -222,7 +236,9 @@ export class OrderRoutingAPIHandler {
    * POST /api/forecast/predict
    * Predict demand for SKU(s)
    */
-  async predictDemand(request: ForecastPredictRequest): Promise<ApiResponse<ForecastPredictResponse>> {
+  async predictDemand(
+    request: ForecastPredictRequest,
+  ): Promise<ApiResponse<ForecastPredictResponse>> {
     const startTime = Date.now();
 
     try {
@@ -230,7 +246,7 @@ export class OrderRoutingAPIHandler {
       const forecasts = this.forecaster.forecastMultipleDays(
         request.skuId,
         request.historicalData,
-        daysAhead
+        daysAhead,
       );
 
       // If specific forecast date requested, filter to just that date
@@ -266,7 +282,7 @@ export class OrderRoutingAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
@@ -277,7 +293,7 @@ export class OrderRoutingAPIHandler {
    * Get reorder suggestions for SKU
    */
   async getReorderSuggestions(
-    request: ForecastSuggestionsRequest
+    request: ForecastSuggestionsRequest,
   ): Promise<ApiResponse<ForecastSuggestionsResponse>> {
     const startTime = Date.now();
 
@@ -286,7 +302,7 @@ export class OrderRoutingAPIHandler {
         request.skuId,
         request.currentStock,
         request.historicalData,
-        request.leadTimeInDays
+        request.leadTimeInDays,
       );
 
       return {
@@ -300,7 +316,7 @@ export class OrderRoutingAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
@@ -310,11 +326,16 @@ export class OrderRoutingAPIHandler {
    * GET /api/forecast/trends
    * Get trend analysis for SKU
    */
-  async getTrends(request: ForecastTrendsRequest): Promise<ApiResponse<ForecastTrendsResponse>> {
+  async getTrends(
+    request: ForecastTrendsRequest,
+  ): Promise<ApiResponse<ForecastTrendsResponse>> {
     const startTime = Date.now();
 
     try {
-      const trend = this.forecaster.getTrendAnalysis(request.skuId, request.historicalData);
+      const trend = this.forecaster.getTrendAnalysis(
+        request.skuId,
+        request.historicalData,
+      );
 
       return {
         success: true,
@@ -327,7 +348,7 @@ export class OrderRoutingAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
@@ -352,7 +373,7 @@ export class OrderRoutingAPIHandler {
    */
   clusterSKUs(
     skuDataMap: Map<string, SalesDataPoint[]>,
-    skuProperties: Map<string, { price: number; category: string }>
+    skuProperties: Map<string, { price: number; category: string }>,
   ): SKUCluster[] {
     return this.forecaster.clusterSKUs(skuDataMap, skuProperties);
   }
@@ -379,7 +400,7 @@ export function createOrderRoutingAPI(): OrderRoutingAPIHandler {
  * Handle POST /api/routing/assign request
  */
 export async function handleAssignOrder(
-  request: RoutingAssignRequest
+  request: RoutingAssignRequest,
 ): Promise<ApiResponse<RoutingAssignResponse>> {
   return getOrderRoutingAPI().assignOrder(request);
 }
@@ -388,7 +409,7 @@ export async function handleAssignOrder(
  * Handle POST /api/routing/evaluate request
  */
 export async function handleEvaluateOptions(
-  request: RoutingEvaluateRequest
+  request: RoutingEvaluateRequest,
 ): Promise<ApiResponse<RoutingEvaluateResponse>> {
   return getOrderRoutingAPI().evaluateOptions(request);
 }
@@ -396,7 +417,9 @@ export async function handleEvaluateOptions(
 /**
  * Handle GET /api/routing/rules request
  */
-export async function handleGetRoutingRules(): Promise<ApiResponse<FulfillmentRules>> {
+export async function handleGetRoutingRules(): Promise<
+  ApiResponse<FulfillmentRules>
+> {
   return getOrderRoutingAPI().getRules();
 }
 
@@ -404,7 +427,7 @@ export async function handleGetRoutingRules(): Promise<ApiResponse<FulfillmentRu
  * Handle PUT /api/routing/rules request
  */
 export async function handleUpdateRoutingRules(
-  request: RoutingRulesUpdateRequest
+  request: RoutingRulesUpdateRequest,
 ): Promise<ApiResponse<FulfillmentRules>> {
   return getOrderRoutingAPI().updateRules(request);
 }
@@ -413,7 +436,7 @@ export async function handleUpdateRoutingRules(
  * Handle POST /api/forecast/predict request
  */
 export async function handlePredictDemand(
-  request: ForecastPredictRequest
+  request: ForecastPredictRequest,
 ): Promise<ApiResponse<ForecastPredictResponse>> {
   return getOrderRoutingAPI().predictDemand(request);
 }
@@ -422,7 +445,7 @@ export async function handlePredictDemand(
  * Handle GET /api/forecast/suggestions request
  */
 export async function handleGetReorderSuggestions(
-  request: ForecastSuggestionsRequest
+  request: ForecastSuggestionsRequest,
 ): Promise<ApiResponse<ForecastSuggestionsResponse>> {
   return getOrderRoutingAPI().getReorderSuggestions(request);
 }
@@ -431,7 +454,7 @@ export async function handleGetReorderSuggestions(
  * Handle GET /api/forecast/trends request
  */
 export async function handleGetTrends(
-  request: ForecastTrendsRequest
+  request: ForecastTrendsRequest,
 ): Promise<ApiResponse<ForecastTrendsResponse>> {
   return getOrderRoutingAPI().getTrends(request);
 }

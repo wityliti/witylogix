@@ -7,6 +7,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 9.6] - 2026-03-20 — Prisma Migration, Optimization APIs & Redesign
 
 ### Added
+
 - **Prisma (as any) migration** — Resolved all remaining `@ts-expect-error` suppressions, eliminated type-unsafe casts across database layer
 - **Route optimization API** — 3 new endpoints: `/api/routes/optimize` (nearest-neighbor + 2-opt), `/api/routes/suggestions` (multi-provider routing), `/api/routes/validate` (stop sequencing)
 - **Live tracking API** — Real-time driver location streams via `/api/tracking/stream` (WebSocket + SSE), PostGIS spatial queries for zone-based alerts
@@ -16,10 +17,12 @@ All notable changes to the Witylogix platform are documented here. This project 
 - **CHANGELOG.md update** — Complete documentation of Sprints 9.3-9.6 progress
 
 ### Changed
+
 - **Type safety** — Eliminated unsafe type assertions in Prisma queries, improved IDE autocomplete for schema relationships
 - **Dashboard page structure** — Consolidated 134 mock routes into API-wired endpoints (96% coverage)
 
 ### Dependencies
+
 - Prisma 6.19.2 (unchanged)
 - Next.js 15 (unchanged)
 - Tailwind CSS 3.4 (unchanged)
@@ -27,6 +30,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 9.5] - 2026-03-19 — Prisma Types, Infrastructure & Redesign
 
 ### Added
+
 - **Prisma type generation** — Automated type exports for all schema models, eliminates manual type definitions in API routes
 - **WebSocket infrastructure** — Socket.io rooms per tenant/order, real-time event emission with rate limiting (10 events/sec/execution), graceful reconnection with backoff
 - **Server-Sent Events (SSE) fallback** — `/api/realtime/events/stream` for WebSocket unavailability, same event format, automatic client fallback
@@ -34,33 +38,39 @@ All notable changes to the Witylogix platform are documented here. This project 
 - **shadcn/ui component consolidation** — Migrated dropdown-menu, skeleton, tooltip, pagination, breadcrumb components (44 total pages now using unified design system)
 
 ### Changed
+
 - **Event emission** — Switched from BullMQ-only to Socket.io + SSE dual channels for real-time delivery
 - **Database schema** — Added missing indexes on frequently-queried fields (orders.externalId, drivers.shopId, shipments.status)
 
 ### Performance
+
 - WebSocket event latency p95: < 50ms
 - SSE fallback polling interval: 1s (configurable per deployment)
 
 ## [Sprint 9.4] - 2026-03-18 — Mass Page Rewiring to API
 
 ### Added
+
 - **API-wired dashboard pages** — Migrated 134 pages from mock data → Fastify API integration (96% coverage achieved), remaining 7 pages static-content only
 - **useApiQuery hooks** — Generic pagination, refetch, loading/error/empty states; 7 domain-specific hooks (orders, drivers, zones, customers, returns, dashboard-stats) with caching
 - **API endpoint audit** — 51 route files registered, 77+ total endpoints across all domains (orders, shipments, drivers, zones, routes, proof-of-delivery, etc.)
 - **Page-by-page wiring** — Orders (CRUD + bulk), Drivers (assignment + scoring), Zones (geometry editor), Returns (RMA workflow), Campaigns (builder + scheduler), Integrations (marketplace + health monitoring)
 
 ### Changed
+
 - **Dashboard data flow** — Eliminated Redux store dependency (where applicable), used React Query patterns with `useApiList` for list pages, `useApiQuery` for detail pages
 - **Form submissions** — All forms now POST to API with client-side Zod validation before server validation
 - **Error handling** — Standardized 8-error-class mapping (ValidationError, NotFoundError, ConflictError, RateLimitError, InternalError, etc.)
 
 ### Performance
+
 - Dashboard page TTI (Time to Interactive): avg 1.2s (vs 2.4s with mock data)
 - API response p95: < 250ms (with pagination caching)
 
 ## [Sprint 9.3] - 2026-03-17 — Tech Debt Blitz
 
 ### Added
+
 - **Route registration cleanup** — 22 routes refactored: unified prefix patterns, consistent parameter naming (`shopId`, `tenantId`), removed 3 duplicate endpoints
 - **Hook rewriting** — 12 custom hooks rewritten for consistency: `useShopContext` → `useShop`, `useAuthContext` → `useAuth`, added TypeScript generics to `useApi*` hooks
 - **CI/CD improvements** — Docker image multi-stage build optimization (final layer 180MB → 140MB), added build cache layer, parallel job execution in GitHub Actions (test/lint/build concurrency)
@@ -69,10 +79,12 @@ All notable changes to the Witylogix platform are documented here. This project 
 - **Test infrastructure** — Vitest 1.6.1 configuration (parallel workers: 4, timeout: 30s), added coverage thresholds (line: 75%, branch: 70%), automated test report generation
 
 ### Changed
+
 - **Repository structure** — No breaking changes; all refactoring was backward-compatible
 - **Build performance** — `pnpm build` time reduced from 8m 22s → 5m 47s (30% improvement) via cache layer + parallelization
 
 ### Dependencies
+
 - Vitest 1.6.1 (added)
 - Node 20 (enforced via .nvmrc)
 - pnpm 9.15.0 (enforced via packageManager field)
@@ -80,6 +92,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 8.9] - 2026-03-17 — Integration Hardening & Final Testing
 
 ### Added
+
 - **Integration Gateway v2** — AdvancedCircuitBreaker (half-open probes, sliding window count+time-based, configurable per provider), BulkheadIsolator (semaphore-based concurrency limits, priority queue, overflow rejection), RetryEngine (exponential backoff with full jitter, retry budgets, idempotency-aware), RequestDeduplicator (content hash, TTL cache, concurrent coalescing), ResponseCache (LRU with TTL, stale-while-revalidate), CorrelationTracker (W3C Trace Context, parent-child spans), GatewayOrchestrator (composed middleware, health-aware routing, fallback chains), MetricsCollectorV2 (histogram latency p50/p95/p99/p999, anomaly baselines), MetricsExporter (Prometheus/JSON/StatsD), 15+ REST endpoints
 - **Webhook Management Engine** — WebhookRegistry (CRUD, event subscriptions, provider configs, active/paused states), DeliveryQueue (priority, configurable concurrency, rate limiting), DeadLetterQueue (TTL auto-cleanup, inspection, manual retry), SignatureVerifierV2 (HMAC-SHA256/RSA-SHA256/JWT, timing-safe comparison), ReplayProtector (5-min timestamp window, nonce tracking), FanOutManager (one-to-many, parallel, independent failure), DeliveryAnalytics (success/failure rates, latency, DLQ depth, health scoring)
 - **Credential Lifecycle Manager** — RotationScheduler (time-based daily/weekly/monthly, event-based on breach/team change, per-provider policies), SecretScanner (regex patterns + Shannon entropy > 4.5, finding classification critical/high/medium/low), ZeroDowntimeRotator (dual-credential window, gradual traffic shift 10%→50%→100%, rollback on failure), CredentialHealthScorer (age/exposure/compliance/usage, composite with weights), VaultAdapters (AWS Secrets Manager with KMS/versioning, HashiCorp Vault KV v2 with AppRole/K8s auth/dynamic secrets, Azure Key Vault with MSAL/soft-delete, Local AES-256-GCM for dev), VaultRouter (multi-vault routing, failover), 14+ REST endpoints
@@ -98,6 +111,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 8.8] - 2026-03-17 — E-Signatures, Healthcare, Analytics & Supply Chain
 
 ### Added
+
 - **E-Signature Workflow Engine v2** — EnvelopeManager (CRUD, clone, bulk send, status tracking), EnvelopeValidator (field placement, routing order), EnvelopeStatusTracker (7-state machine: draft→sent→delivered→signed→completed with decline/void), BulkSendManager (CSV import, variable substitution), TemplateManager (versioning, publishing, sharing, permissions), FieldMapper (anchor text detection, coordinate placement, tab groups), RoleManager (routing order, conditional routing), VariableManager (template variables, validation rules), TemplateAnalyticsManager (completion rates, usage metrics), SigningCeremonyOrchestrator (remote/embedded/in-person), SignerAuthenticator (email/SMS/knowledge-based/ID verification), SigningSessionManager (timeout, resume tokens), CompletionHandler (all-signed detection, certificate generation), AuditLogger (IP/user-agent, auto-flush batching), CertificateGenerator (X.509 hash chains), ComplianceReporter (ESIGN Act/UETA/eIDAS), TamperDetector (document hash verification, chain of custody), RetentionManager (auto-archive, purge), 15+ REST endpoints
 - **Healthcare Interoperability Engine** — FHIRResourceManager (R4 CRUD, search parameters, includes/revincludes), FHIRBundleProcessor (transaction/batch bundles, conditional create/update), FHIRValidator (R4 profile validation, required fields, reference integrity), FHIRTransformer (bidirectional custom↔FHIR), PatientMatcher (probabilistic matching with Levenshtein distance), HL7v2Parser (ADT/ORM/ORU/SIU message types), SegmentParser (MSH/PID/PV1/OBR/OBX/DG1/IN1/NK1), DataTypeParser (CX/XPN/XAD/XTN/CWE), HL7Encoder, HL7toFHIR (ADT→Encounter, ORU→Observation), AcknowledgmentBuilder (ACK/NACK), 15+ REST endpoints
 - **Supply Chain Orchestrator v2** — DemandPlanner (exponential smoothing, seasonal decomposition STL, promotion lift), SafetyStockCalculator (service level-based Z-score, ABC adjustment), ReorderPointEngine (EOQ, lead time demand, vendor MOQ), InventoryOptimizer (ABC/XYZ classification), ReplenishmentPlanner (auto-PO generation, batch optimization), WaveManager (priority-based planning, order consolidation), PickOptimizer (zone/batch/wave/cluster picking, route optimization), PackStation (cartonization, hazmat handling), ShipPlanner (carrier selection, rate shopping), OrderAllocator (multi-warehouse, split-ship), ReturnProcessor (RMA, inspection, disposition), 16+ REST endpoints
@@ -130,6 +144,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 8.7] - 2026-03-17 — Fuel, Fleet & Field Service
 
 ### Added
+
 - **Fleet management engine** — VehicleManager (CRUD, VIN decoder, registration/insurance tracking, status transitions), VehicleAssigner (assignment rules, conflict detection, swap workflow), FleetHealthCalculator (5-factor scoring: maintenance compliance, vehicle age, mileage, incident history, fuel efficiency), VehicleLifecycleManager (acquisition→disposition pipeline, straight-line/declining-balance depreciation, TCO calculator, replacement forecaster), FleetDashboardAggregator, 15+ REST endpoints
 - **Maintenance scheduler** — PreventiveScheduler (mileage/time/engine-hours intervals, auto-schedule from templates), ReactiveHandler (breakdown intake, priority triage CRITICAL/HIGH/MEDIUM/LOW, vendor dispatch), PredictiveEngine (component failure probability), MaintenanceOptimizer (batch combine, preferred vendor routing, cost estimation), RecallManager (VIN/make/model matching, compliance tracking), MaintenanceCostTracker (budget/variance, vendor comparison)
 - **Fuel optimizer** — FuelAnalyzer (MPG/L-per-100km per vehicle/driver/route), IdleReductionMonitor (idle detection, driver alerts, fleet benchmarks), RouteFuelCorrelator (cost per route/lane), FuelCardReconciler (anomaly detection: location mismatch, capacity overflow, unusual frequency, fraud scoring), FuelBudgetForecaster (monthly prediction, seasonal adjustments), FuelPriceTracker (regional monitoring, cheapest finder)
@@ -162,6 +177,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 8.6] - 2026-03-17 — Freight, ELD & Compliance
 
 ### Added
+
 - **Freight management engine v2** — LaneManager (pricing tiers, volume commitments, contract terms), CarrierScorecard (weighted 5-factor scoring: on-time/claims/tender/cost/safety, quarterly reviews, grade A-F), RateNegotiationTracker (multi-round bidding, counter-offers, award notifications), CapacityPlanner (seasonal demand, surge detection, backup carrier activation), 17 REST endpoints
 - **Freight audit engine** — InvoiceAuditor (line-item vs contract rate, configurable 1-3% tolerance), AccessorialValidator (detention/liftgate/residential tariff matching), DuplicateDetector (Levenshtein similarity scoring, PRO/BOL fuzzy match), DisputeManager (auto-dispute generation, 3-tier escalation at 7/14/30 days), AuditReporter (savings metrics, dispute win rate, carrier accuracy rankings)
 - **FMCSA SAFER client** — Carrier lookup by DOT#/MC#/company name, safety ratings (Satisfactory/Conditional/Unsatisfactory), inspection history, crash data, insurance/bond verification, operating authority status, census data, 24h cache TTL
@@ -191,6 +207,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 8.5] - 2026-03-17 — Collaboration, Messaging & Notifications
 
 ### Added
+
 - **Notification orchestrator v2** — ChannelRouter (priority-based channel selection), FallbackChainExecutor (automatic failover across channels), QuietHoursManager (timezone-aware suppression with critical override), DigestBatcher (configurable interval grouping), DeliveryTracker (receipt confirmation), RetryManager with DLQ, ThrottleManager (per-user rate limits), template engine (Handlebars-compatible, per-channel rendering, i18n, preview mode), 12+ REST endpoints
 - **Slack Web API SDK** — OAuth2 V2 flow, channels (CRUD, archive, invite), messages (send, update, delete, threads, reactions), users, files, search, Block Kit fluent builder, HMAC-SHA256 webhook verification, Tier 1-4 rate limiting
 - **Microsoft Teams Graph API SDK** — OAuth2 MSAL (Azure AD), Graph API for teams/channels/messages/replies/reactions, Adaptive Card builder, change notification subscriptions, proactive messaging, delegated + application permissions
@@ -213,6 +230,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 8.4] - 2026-03-17 — CRM, ERP & Accounting
 
 ### Added
+
 - **CRM sync engine v3** — FieldMappingDSL with fluent builder (map().to().transform().when()), BidirectionalResolver with 5 strategies (TIMESTAMP_WINS, SOURCE_OF_TRUTH, FIELD_PRIORITY, MERGE, MANUAL_REVIEW), ChangeDetector for field-level delta sync, SyncTransaction with atomic rollback, CrmRepository abstraction, 15+ RESTful endpoints
 - **CRM webhook handler** — Event normalization from Salesforce, HubSpot, Zoho, Pipedrive, deduplication (5-min window), retry with exponential backoff, event caching
 - **Salesforce SDK** — 65+ methods: OAuth2 Web Server flow, SOQL query builder (injection-safe), SObject CRUD (Account, Contact, Lead, Opportunity, Task, Event, Case), Composite API (25 subrequests), Bulk API 2.0 (CSV jobs), Streaming API (PushTopic), Metadata API, HMAC-SHA256 outbound message verification, Sforce-Limit-Info rate tracking (100K/24h)
@@ -241,6 +259,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 8.3] - 2026-03-16 — E-Commerce & Order Sync
 
 ### Added
+
 - **Order sync engine v2** — SyncOrchestrator with 4 conflict resolution strategies (LAST_WRITE_WINS, EXTERNAL_WINS, INTERNAL_WINS, MANUAL_REVIEW), IdempotencyManager with composite dedup keys, DeltaSyncTracker for incremental sync, RetryQueue with exponential backoff (1s→16s, 5 retries), DeadLetterQueue for permanent failures, BatchProcessor (500 orders), SyncMetrics
 - **Field mapper** — 15+ built-in transformers (currency, date, status, email, phone, address normalization, JSON, encoding), custom JavaScript transformer support, nested field mapping, reverse mapping for outbound sync, preview mode
 - **Sync scheduler** — Cron-based intervals (real-time/5m/15m/30m/1h/24h), priority queue (webhook > scheduled > manual), max 3 concurrent syncs per tenant, stale job detection, pause/resume per platform
@@ -263,6 +282,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 8.2] - 2026-03-16 — Shipping & Last-Mile Carriers
 
 ### Added
+
 - **Carrier rate engine** — Parallel rate fetching (Promise.allSettled) from multiple carriers, multi-strategy ranking (cheapest/fastest/best-value), per-tenant credential management, rate caching with 5-min TTL and LRU eviction
 - **Shipping types** — Package, ShipmentAddress, ShippingRate, ShipmentLabel, TrackingEvent, ShipmentStatus enum (8 states), CarrierCode enum (9 carriers)
 - **Label generator** — Unified label creation across carriers, format negotiation (PDF/ZPL/PNG), batch generation with parallel processing, address verification before creation
@@ -290,6 +310,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 8.1] - 2026-03-16 — Routing, Maps & Real-Time Tracking
 
 ### Added
+
 - **Routing orchestrator** — Multi-provider failover (Google, Mapbox, HERE, TomTom), health-weighted provider selection, automatic degradation, retry with backoff
 - **Geocoding service** — Multi-provider geocoding with result caching, fuzzy matching, configurable priority
 - **Route cache** — TTL-based caching with LRU eviction for computed routes
@@ -325,6 +346,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 8.0] - 2026-03-16 — Integration Infrastructure & P0 Core
 
 ### Added
+
 - **Credential vault** — AES-256-GCM encrypted storage for integration credentials, per-tenant isolation via composite key (tenantId:providerId), key rotation with re-encryption, TTL-based cache, credential masking (last 4 chars), audit logging for all access
 - **OAuth2 token manager** — Full token lifecycle (authorize URL, code exchange, refresh, revoke), auto-refresh 5 minutes before expiry, exponential backoff retries, PKCE support for public clients, token persistence via credential vault, EventEmitter for token events
 - **Webhook signature verification framework** — HMAC-SHA256 verification (timing-safe), timestamp validation (5-minute window with clock skew tolerance), replay protection with nonce tracking and TTL, provider-specific strategies (Stripe, Shopify, EasyPost, Generic)
@@ -346,16 +368,18 @@ All notable changes to the Witylogix platform are documented here. This project 
 - **AI smart integration recommender** — Industry-based recommendations (6 industries with specific provider stacks), workflow-aware suggestions, integration dependency graph (70+ synergy relationships), composite scoring (industry 40% + workflow 35% + popularity 20% + synergy 5%), setup wizard assistant (step-by-step onboarding, setup time estimates, progress tracking), recommendation API (5 endpoints, A/B test framework, feedback tracking)
 
 ### Changed
+
 - Moved 5 root MD files to docs/ (ARCHITECTURE, DEPLOYMENT, CONTRIBUTING, FORM_VALIDATION, PLAYWRIGHT)
 - Updated integration marketplace component exports
 
 ## [Sprint 7.1] - 2026-03-16 — Real-Time Dashboard, Search & Final Hardening
 
 ### Added
+
 - Real-time WebSocket infrastructure: Socket.io dashboard hub with Redis adapter for horizontal scaling, 11 event types (order CRUD, delivery status/assignment/completion, driver location/status, alerts, metrics), room management (org/shop/driver/admin rooms), JWT authentication on connect, rate limiting (50 events/sec per connection), event buffer (last 100 per room) with replay on reconnect using lastEventId, connection manager with plan-based limits (FREE 5, STARTER 25, GROWTH 100, ENTERPRISE unlimited), event broadcaster with smart fan-out (order→shop+org, delivery→shop+org+tracking, driver location→org+driver), 1-second metrics debounce
 - Live dashboard widgets: real-time order feed (live ticker, auto-scroll with pause-on-hover, status color coding, "New orders" notification bar, click-to-expand), active delivery map (Leaflet dark tiles, live driver pins with status colors, animated route lines, delivery status markers, driver popover with name/delivery/ETA, driver count overlay), animated KPI counters (orders today + active deliveries + available drivers + SLA % with count-up animations, trend indicators vs yesterday, sparkline mini-charts, pulse on value change), notification center (bell icon with unread badge, dropdown panel, 4 notification types with icons, mark as read individual/all, navigation on click, toast on critical events, sound toggle)
 - Settings & profile pages: account profile (avatar drag-drop upload, name/phone edit, password change with strength meter, MFA TOTP setup with QR code + backup codes), organization settings (logo upload, billing info with plan badge + usage bars, industry/size, danger zone delete), notification preferences (5×5 channel/category matrix — Email/SMS/Push/WhatsApp/In-App × Orders/Deliveries/Drivers/Alerts/Billing, quiet hours), API key management (list with masked keys, generate with name/scope/expiry, copy-to-clipboard with toast, revoke with confirmation, usage stats), team management (member list with avatar/role badge/last active, invite dialog, role change, remove with confirmation, pending invitations with resend/revoke), preferences (timezone with auto-detect, locale, date format, distance/weight units, default view), settings layout with side tabs
-- Redis-backed production rate limiter: sliding window using MULTI/EXEC (ZADD + ZREMRANGEBYSCORE + ZCARD), per-tenant plan enforcement (FREE 100/min, PRO 1000/min, ENTERPRISE 10000/min), 2x burst allowance for 5-second windows, auth endpoint restrictions (30/min for login/register/reset), standard X-RateLimit-* headers + Retry-After, graceful in-memory fallback when Redis unavailable
+- Redis-backed production rate limiter: sliding window using MULTI/EXEC (ZADD + ZREMRANGEBYSCORE + ZCARD), per-tenant plan enforcement (FREE 100/min, PRO 1000/min, ENTERPRISE 10000/min), 2x burst allowance for 5-second windows, auth endpoint restrictions (30/min for login/register/reset), standard X-RateLimit-\* headers + Retry-After, graceful in-memory fallback when Redis unavailable
 - Circuit breaker for external APIs: 3-state pattern (CLOSED→OPEN→HALF_OPEN→CLOSED), configurable thresholds (5 failures, 50% rate, 30s timeout, 3 half-open probes), per-provider tracking (Stripe, Mapbox, SendGrid), automatic transitions with timers, metrics and event emission
 - Request priority queue: 5 priority levels (CRITICAL→BACKGROUND), per-tenant configurable limits, 30-second timeout, dynamic priority escalation, starvation prevention (LOW guaranteed within 5min)
 - Rate limit analytics: per-tenant per-hour tracking, limit hit detection, anomaly detection (sudden spikes), top consumers report, daily summary aggregation
@@ -369,6 +393,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 7.0] - 2026-03-16 — Docs, Polish & Onboarding Wiring
 
 ### Added
+
 - ARCHITECTURE.md: comprehensive system architecture document with ASCII diagrams, data flow diagrams (order lifecycle, delivery assignment, auth, webhook delivery), module dependency map, database architecture (PostgreSQL 16 + PostGIS + RLS with 4 isolation layers), event system (TypedEventBus → Redis Streams → webhooks → realtime), multi-tenancy architecture, integration architecture (registry → adapter → provider pattern), 3-layer caching strategy, security architecture, and performance characteristics with latency targets
 - DEPLOYMENT.md: production deployment guide covering Docker Compose step-by-step, Kubernetes with Helm charts, environment configuration reference (40+ env vars), database setup (PostGIS, RLS, migrations, backups), SSL/TLS with Caddy/Nginx, monitoring setup (Prometheus + Grafana), horizontal scaling guide (API, read replicas, Redis cluster, workers), backup & disaster recovery (RTO 30min / RPO 1hr), health check endpoints, and troubleshooting
 - Onboarding wizard fully wired: removed all "Coming soon" placeholders, connected IntegrationsSelect (124 providers as chips), DashboardLayout (11 presets), DataImport (drivers/vehicles/CSV), and ReviewSummary components with full state management, URL param sync, and smooth transitions across all 9 steps
@@ -392,6 +417,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 6.2] - 2026-03-16 — CI/CD, Deployment & Documentation
 
 ### Added
+
 - CI/CD pipeline: GitHub Actions workflows — CI (lint + typecheck + test + build + security with Node 20/22 matrix, PostgreSQL 16 + Redis 7 services, pnpm/Turbo/Next.js caching, coverage reports), release (multi-arch Docker builds linux/amd64+arm64, GHCR push, GitHub releases with auto-notes, SBOM with Syft), Docker (multi-stage builds, Trivy scanning, SARIF reports), PR preview deploys with auto-comment and cleanup
 - GitHub configuration: branch protection rules (main: 2 reviews + CI required, develop: 1 review), CODEOWNERS (backend/frontend/devops/docs teams), Dependabot (weekly npm + Actions updates, grouped minor/patch, auto-merge patches), blue-green deployment script with health checks and rollback
 - Storybook 8: @storybook/nextjs with a11y + interactions + themes addons, dark theme matching Witylogix brand (#0a0a1a), 13 component stories (Button with 4 variants, Badge with 6 variants, Card, Input, Select, Modal, Table, Toast, Skeleton, Forms with 6 form components, Navigation, EmptyState, LoadingSpinner), CSF3 format with argTypes and play functions
@@ -407,6 +433,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 6.1] - 2026-03-14 — Database & API Production Hardening
 
 ### Added
+
 - Database production configuration: PgBouncer-compatible connection pool with environment-specific tuning (dev 1-5, staging 5-20, prod 10-100), read replica router with round-robin load balancing and lag detection (5s threshold) with auto-failover, zero-downtime migration manager (expand-contract pattern, locking, rollback planning, audit logging), backup service with PITR, checksum verification, 30-day retention, S3/GCS upload stubs
 - API hardening layer: per-tenant sliding window rate limiter (FREE 100/min, PRO 1000/min, ENTERPRISE 10000/min with burst allowance), Zod-based request validator with body/query/path/header validation and common schemas (pagination, sort, filter, date range), HMAC-signed opaque cursor pagination (forward/backward, max 100 per page), API version manager (URL/header/query detection, deprecation headers, response transformers), structured request logger (JSON, UUID request IDs, field sanitization, correlation IDs), standard response formatter (success/error envelopes, error code enum, HATEOAS helpers)
 - OWASP security hardening: CSP manager with nonce generation and per-environment policies, CORS config with whitelist + wildcard subdomain matching, input sanitizer (HTML encoding, XSS/SQL injection detection, path traversal prevention, recursive object sanitization), security headers middleware (HSTS, X-Frame-Options, Permissions-Policy, Cache-Control), request fingerprinter with anomaly scoring (rapid IP changes, TOR detection), immutable audit logger with hash chain tamper detection (10 event types), secret scanner (AWS keys, GitHub tokens, Stripe keys, DB credentials, entropy-based detection)
@@ -421,6 +448,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 6.0] - 2026-03-14 — Onboarding & Auth Hardening
 
 ### Added
+
 - Full Fleetbase-style onboarding wizard with 9 steps: email verification (6-digit OTP), deployment chooser (Cloud/Self-Managed), company info (name, website, logo, size), industry selector (9 verticals), goals picker (10 goals multi-select), integration picker (124 providers as toggleable chips grouped by 21 categories), dashboard layout chooser (11 presets), data import wizard (drivers, vehicles, CSV), review summary with edit links
 - Auth architecture: Argon2id password hashing with bcrypt fallback, password strength scoring, password history check (last 5)
 - JWT service: access tokens (15min), refresh tokens (7day), token rotation, blacklisting, claims (userId, orgId, role, permissions, mfaVerified)
@@ -438,7 +466,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 - New reset-password page: token validation, strength meter, auto-redirect
 - New magic-link page: token verification, loading/success/error states
 - Multi-tenant middleware: 5-strategy resolution (subdomain, header, JWT, API key, custom domain), LRU cache, plan validation
-- API key management: wl_live_/wl_test_ prefixes, SHA-256 hashing, generate/rotate/revoke, scope-based permissions
+- API key management: wl*live*/wl*test* prefixes, SHA-256 hashing, generate/rotate/revoke, scope-based permissions
 - Usage metering: async batch recording (buffer 100, flush 5s), daily aggregation, plan quotas (FREE: 1k/day, STARTER: 10k, GROWTH: 100k, ENTERPRISE: unlimited)
 - Workspace provisioning: organization creation, workspace settings, industry defaults, integration setup, API key generation, welcome email
 - Email verification service: 6-digit OTP, 10min expiry, rate limiting, brute force protection
@@ -454,6 +482,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 5.2] - 2026-03-12 — Final Integration Sprint — Analytics, Supply Chain, Healthcare, Freight, Fuel-Fleet, Field-Service, E-Commerce, Telematics, ERP
 
 ### Added
+
 - Analytics adapters: Tableau (PAT+JWT, workbook/view CRUD, trusted tickets), Power BI (Azure AD OAuth2, DAX queries, RLS embed), Looker (OAuth2, explore metadata, scheduled plans), Qlik (API key+OAuth2 M2M, app/sheet CRUD), Google Analytics (GA4 Data API, runReport, audiences)
 - Analytics aggregator: unified queries, dashboard federation, cross-provider normalization
 - Supply chain adapters: Manhattan (OAuth2, WSDL/REST hybrid), Blue Yonder (multi-tenant), Körber (voice-directed, robotics), Deposco, Extensiv, Fishbowl (manufacturing, BOM, QuickBooks sync)
@@ -478,6 +507,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 5.1] - 2026-03-12 — Mega Integration Sprint II — Collaboration, E-Signatures, CRM, Payments, POS, ELD, Last-Mile, Shipping
 
 ### Added
+
 - Collaboration adapters: Slack (Web API + Events API + Socket Mode, Block Kit, OAuth2), Microsoft Teams (Graph API, Adaptive Cards, Azure AD, change notifications), Pusher (Channels API, presence tracking, batch triggers)
 - Collaboration hub engine: cross-platform messaging, notification routing, presence aggregation, message templating, delivery tracking
 - Track-POD, DispatchTrack, Podium, WorkWave collaboration adapters for delivery management and customer communication
@@ -500,6 +530,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 5.0] - 2026-03-12 — Mega Integration Sprint I — Routing, Telematics, Messaging, Email, ERP
 
 ### Added
+
 - Routing adapters: Valhalla (turn-by-turn, isochrone, matrix, map-matching), VROOM (CVRP, VRPTW, pickup-delivery), Routific (async VRP, dispatch), OptimoRoute (plan routes, completion events)
 - HERE Routing V8 adapter (car/truck/EV routing, matrix, isoline) and Route4Me adapter (multi-stop optimization, tracking, territories)
 - HERE Maps adapter (geocoding, autosuggest, discover, map tiles) with LRU cache
@@ -524,6 +555,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 ## [Sprint 4.9] - 2026-03-12 — Demand Completion, Platform Adapters & Deployment
 
 ### Added
+
 - Real-time demand dashboard service with live snapshots, zone summaries, and EventEmitter streaming
 - Auto-rebalancer with imbalance detection, greedy redistribution algorithm, and zone capacity scoring
 - Capacity alert engine with 4 built-in rules, multi-level escalation, and multi-channel notifications (email, SMS, webhook, Slack)
@@ -562,12 +594,14 @@ All notable changes to the Witylogix platform are documented here. This project 
 - 200+ unit tests for platform, payments, CRM, e-commerce, shipping, and demand prediction modules
 
 ### Changed
+
 - Extended demand-prediction/index.ts with realtime dashboard, auto-rebalancer, capacity alerts, model retrainer exports
 - Extended payments/index.ts with PayPal, Square, multi-gateway router exports
 
 ## [Sprint 4.8] - 2026-03-11 — Invoicing Completion, Courier Ecosystem & AI Demand Prediction
 
 ### Added
+
 - Invoice generation engine with 6 billing models (per-delivery, per-mile, per-hour, flat-rate, tiered, subscription)
 - Invoice PDF renderer with professional HTML templates, multi-currency, QR codes
 - Payment gateway integration (Stripe payment links, checkout sessions, refunds)
@@ -591,10 +625,9 @@ All notable changes to the Witylogix platform are documented here. This project 
 - 200+ integration tests for invoicing, payments, courier webhooks, smart routing, SLA compliance
 
 ### Changed
+
 - Extended courier index.ts with partner performance, smart router, cost optimizer, SLA enforcer exports
 - Extended invoicing index.ts with invoice generator, PDF renderer, payment gateway, reminder exports
-
-
 
 ### Sprint 4.7 — Telematics, Traffic-Aware ETA & Integration Ecosystem (2026-03-11)
 
@@ -683,7 +716,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 - **Workflow integration triggers** (`packages/core/src/workflow-triggers/`, 8 files, ~2,600 lines) — TriggerRegistry (conditions, priority, debounce/throttle), API hooks (Fastify auto-trigger on order/shipment/driver events), Socket.io workflow events (room-based scoping), ShopifyWorkflowBridge (webhook→workflow, HMAC verification), tests + docs
 - **AI monitoring module** (`packages/core/src/ai-monitoring/`, 7 files, ~2,850 lines) — AnomalyDetector (z-score, IQR, moving average, deduplication, severity classification), ETAPredictor (regression model, feature extraction, confidence intervals, zone-aware), AlertEngine (rule-based + anomaly-based, routing, escalation chains, maintenance windows, daily digest), 2 test suites
 - **Activity log redesign** (`apps/dashboard/src/app/(dashboard)/activity/`, 4 files, ~1,327 lines) — Real-time event stream with live indicator, timeline view with date grouping, event type icons + severity badges, search + multi-filter (type, severity, date, user), event detail panel, CSV export
-- **Design tokens page** (`apps/dashboard/src/app/(dashboard)/design-system/tokens/`, 674 lines) — Interactive token browser (colors, typography, spacing, shadows, radius, breakpoints), copy-to-clipboard, search/filter, --wl-* CSS var swatches
+- **Design tokens page** (`apps/dashboard/src/app/(dashboard)/design-system/tokens/`, 674 lines) — Interactive token browser (colors, typography, spacing, shadows, radius, breakpoints), copy-to-clipboard, search/filter, --wl-\* CSS var swatches
 - **Component gallery** (`apps/dashboard/src/app/(dashboard)/design-system/components/`, 821 lines) — Interactive previews of 29+ UI components with prop controls and code snippets
 - **Event log viewer** (`apps/dashboard/src/app/(dashboard)/events/`, 3 files, ~830 lines) — Filterable event browser with JSON payload viewer, stats bar, infinite scroll, export
 - **Shopify workflow bridge API** (`apps/api/src/routes/shopify-workflow-bridge.ts`, 630 lines) — Order webhook→createDeliveryOrder workflow, fulfillment→shipment status, HMAC-SHA256 verification, idempotency, test suite (549 lines)
@@ -942,7 +975,7 @@ All notable changes to the Witylogix platform are documented here. This project 
 - **Firebase Push provider** — replaced stubs with real FCM HTTP v1 API, JWT-based OAuth2 with RSA-SHA256 signing, token caching with auto-refresh
 - **FedEx carrier adapter** — replaced stubs with real FedEx REST API v1 (OAuth2, rate quotes, shipment/label, void, tracking, pickup, address validation)
 - **UPS carrier adapter** — replaced stubs with real UPS REST API (OAuth2, rating, ship/label, void, tracking, pickup, address validation)
-- **24 dashboard pages migrated to Tailwind CSS** — orders/*, routes/*, delivery/*, shipping-profiles/*, collections, integrations, inventory, locations, analytics, billing, support, profile, notifications, stores (44 total migrated)
+- **24 dashboard pages migrated to Tailwind CSS** — orders/_, routes/_, delivery/_, shipping-profiles/_, collections, integrations, inventory, locations, analytics, billing, support, profile, notifications, stores (44 total migrated)
 
 ### Sprint 3.1 — Page Migration, Queue Consumers & Extensions (2026-03-08)
 

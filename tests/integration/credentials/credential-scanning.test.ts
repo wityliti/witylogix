@@ -36,52 +36,37 @@ class CredentialScanner {
     this.patterns.set("stripe_test", /sk_test_[A-Za-z0-9]{32,}/);
     this.patterns.set(
       "api_key_generic",
-      /api[_-]?key[:\s=]?['\"]?[A-Za-z0-9]{32,}['\"]?/i
+      /api[_-]?key[:\s=]?['\"]?[A-Za-z0-9]{32,}['\"]?/i,
     );
 
     // Tokens
-    this.patterns.set(
-      "github_token",
-      /ghp_[A-Za-z0-9]{36,}/
-    );
+    this.patterns.set("github_token", /ghp_[A-Za-z0-9]{36,}/);
     this.patterns.set(
       "jwt_token",
-      /eyJ[A-Za-z0-9_-]*\.eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*/
+      /eyJ[A-Za-z0-9_-]*\.eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*/,
     );
 
     // OAuth/Bearer
-    this.patterns.set(
-      "bearer_token",
-      /bearer[:\s]+[A-Za-z0-9._-]{20,}/i
-    );
+    this.patterns.set("bearer_token", /bearer[:\s]+[A-Za-z0-9._-]{20,}/i);
 
     // AWS
     this.patterns.set(
       "aws_secret",
-      /aws_secret_access_key[:\s=]?['\"]?[A-Za-z0-9/+=]{40}['\"]?/i
+      /aws_secret_access_key[:\s=]?['\"]?[A-Za-z0-9/+=]{40}['\"]?/i,
     );
 
     // Private Keys
-    this.patterns.set(
-      "rsa_private_key",
-      /-----BEGIN RSA PRIVATE KEY-----/
-    );
-    this.patterns.set(
-      "private_key",
-      /-----BEGIN PRIVATE KEY-----/
-    );
+    this.patterns.set("rsa_private_key", /-----BEGIN RSA PRIVATE KEY-----/);
+    this.patterns.set("private_key", /-----BEGIN PRIVATE KEY-----/);
 
     // Database Credentials
     this.patterns.set(
       "db_password",
-      /password[:\s=]?['\"]?[^\s\"']{8,}['\"]?/i
+      /password[:\s=]?['\"]?[^\s\"']{8,}['\"]?/i,
     );
   }
 
-  scanText(
-    content: string,
-    filename: string
-  ): SecretFinding[] {
+  scanText(content: string, filename: string): SecretFinding[] {
     const findings: SecretFinding[] = [];
     const lines = content.split("\n");
 
@@ -90,10 +75,7 @@ class CredentialScanner {
         const matches = line.matchAll(pattern);
 
         for (const match of matches) {
-          const confidence = this.calculateConfidence(
-            type,
-            match[0]
-          );
+          const confidence = this.calculateConfidence(type, match[0]);
 
           if (confidence > 0.5) {
             const finding: SecretFinding = {
@@ -117,10 +99,7 @@ class CredentialScanner {
     return findings;
   }
 
-  private calculateConfidence(
-    type: string,
-    value: string
-  ): number {
+  private calculateConfidence(type: string, value: string): number {
     // Higher confidence for known patterns
     const baseConfidence: Record<string, number> = {
       stripe_key: 0.99,
@@ -164,9 +143,7 @@ class CredentialScanner {
   }
 
   markAsFalsePositive(findingId: string): boolean {
-    const finding = this.findings.find(
-      (f) => f.id === findingId
-    );
+    const finding = this.findings.find((f) => f.id === findingId);
 
     if (!finding) return false;
 
@@ -182,11 +159,9 @@ class CredentialScanner {
 
   recordRemediation(
     findingId: string,
-    action: "rotated" | "revoked" | "ignored"
+    action: "rotated" | "revoked" | "ignored",
   ): boolean {
-    const finding = this.findings.find(
-      (f) => f.id === findingId
-    );
+    const finding = this.findings.find((f) => f.id === findingId);
 
     if (!finding) return false;
 
@@ -201,9 +176,7 @@ class CredentialScanner {
     return true;
   }
 
-  getFindings(
-    status?: string
-  ): SecretFinding[] {
+  getFindings(status?: string): SecretFinding[] {
     if (status) {
       return this.findings.filter((f) => f.status === status);
     }
@@ -219,17 +192,11 @@ class CredentialScanner {
   } {
     return {
       total: this.findings.length,
-      found: this.findings.filter((f) => f.status === "found")
+      found: this.findings.filter((f) => f.status === "found").length,
+      verified: this.findings.filter((f) => f.status === "verified").length,
+      falsePositives: this.findings.filter((f) => f.status === "false_positive")
         .length,
-      verified: this.findings.filter(
-        (f) => f.status === "verified"
-      ).length,
-      falsePositives: this.findings.filter(
-        (f) => f.status === "false_positive"
-      ).length,
-      remediated: this.findings.filter(
-        (f) => f.status === "remediated"
-      ).length,
+      remediated: this.findings.filter((f) => f.status === "remediated").length,
     };
   }
 
@@ -238,9 +205,7 @@ class CredentialScanner {
   }
 
   verifyFinding(findingId: string): boolean {
-    const finding = this.findings.find(
-      (f) => f.id === findingId
-    );
+    const finding = this.findings.find((f) => f.id === findingId);
 
     if (!finding) return false;
 
@@ -300,13 +265,9 @@ describe("Credential Scanning", () => {
 
     it("should detect AWS secrets", () => {
       const content =
-        'aws_secret_access_key="' +
-        'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"';
+        'aws_secret_access_key="' + 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"';
 
-      const findings = scanner.scanText(
-        content,
-        "aws-config.js"
-      );
+      const findings = scanner.scanText(content, "aws-config.js");
 
       expect(findings.length).toBeGreaterThan(0);
     });
@@ -317,10 +278,7 @@ describe("Credential Scanning", () => {
         "MIIEowIBAAKCAQEA2a2rwplLYH8N...\n" +
         "-----END RSA PRIVATE KEY-----";
 
-      const findings = scanner.scanText(
-        content,
-        "key.pem"
-      );
+      const findings = scanner.scanText(content, "key.pem");
 
       expect(findings.length).toBeGreaterThan(0);
     });
@@ -328,8 +286,7 @@ describe("Credential Scanning", () => {
 
   describe("Entropy-Based Detection", () => {
     it("should calculate high entropy for random strings", () => {
-      const randomSecret =
-        "aB3$cD9%eF2&gH7*iJ4^kL6@mN1!oP8+";
+      const randomSecret = "aB3$cD9%eF2&gH7*iJ4^kL6@mN1!oP8+";
 
       const entropy = scanner.detectByEntropy(randomSecret);
 
@@ -345,16 +302,13 @@ describe("Credential Scanning", () => {
     });
 
     it("should distinguish secrets from regular text", () => {
-      const secret =
-        "sk_live_" + "4eC39HqLyjWDarhtT1ZdV7dc";
+      const secret = "sk_live_" + "4eC39HqLyjWDarhtT1ZdV7dc";
       const normal = "const token = 'my-api'";
 
       const secretEntropy = scanner.detectByEntropy(secret);
       const normalEntropy = scanner.detectByEntropy(normal);
 
-      expect(secretEntropy).toBeGreaterThan(
-        normalEntropy
-      );
+      expect(secretEntropy).toBeGreaterThan(normalEntropy);
     });
   });
 
@@ -365,10 +319,7 @@ describe("Credential Scanning", () => {
         `const token = 'ghp_XYZ789';\n` +
         `const password = 'super-secret'`;
 
-      const findings = scanner.scanText(
-        content,
-        "credentials.ts"
-      );
+      const findings = scanner.scanText(content, "credentials.ts");
 
       expect(findings.length).toBeGreaterThan(1);
     });
@@ -397,17 +348,14 @@ describe("Credential Scanning", () => {
 
   describe("Finding Classification", () => {
     it("should classify by type", () => {
-      const content1 =
-        "const stripe = 'sk_live_ABC123'";
+      const content1 = "const stripe = 'sk_live_ABC123'";
       const content2 = "const github = 'ghp_XYZ789'";
 
       const findings1 = scanner.scanText(content1, "file1");
       const findings2 = scanner.scanText(content2, "file2");
 
       if (findings1.length > 0 && findings2.length > 0) {
-        expect(findings1[0].type).not.toBe(
-          findings2[0].type
-        );
+        expect(findings1[0].type).not.toBe(findings2[0].type);
       }
     });
 
@@ -448,9 +396,7 @@ describe("Credential Scanning", () => {
         scanner.markAsFalsePositive(findings[0].id);
       }
 
-      expect(
-        scanner.isFalsePositive(secretValue)
-      ).toBeDefined();
+      expect(scanner.isFalsePositive(secretValue)).toBeDefined();
     });
 
     it("should prevent re-reporting of false positives", () => {
@@ -509,8 +455,7 @@ describe("Credential Scanning", () => {
 
   describe("Statistics and Reporting", () => {
     it("should count findings by status", () => {
-      const content =
-        "const a = 'sk_live_ABC';\nconst b = 'ghp_XYZ'";
+      const content = "const a = 'sk_live_ABC';\nconst b = 'ghp_XYZ'";
 
       scanner.scanText(content, "file.ts");
 
@@ -526,10 +471,7 @@ describe("Credential Scanning", () => {
       const findings = scanner.scanText(content, "file.ts");
 
       if (findings.length > 0) {
-        scanner.recordRemediation(
-          findings[0].id,
-          "rotated"
-        );
+        scanner.recordRemediation(findings[0].id, "rotated");
       }
 
       const report = scanner.getRemediationTracking();

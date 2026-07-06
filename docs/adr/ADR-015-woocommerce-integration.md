@@ -13,12 +13,14 @@
 This decision documents the **WooCommerce integration strategy** as the first non-Shopify platform supported by Witylogix. It builds on ADR-014 (Platform Source Abstraction) to implement a vendor-neutral, adapter-based architecture for e-commerce platform integrations.
 
 **Strategic Context:**
+
 - WooCommerce powers 40% of all e-commerce stores globally
 - Represents 350M+ potential merchant addressable market
 - Second-highest merchant demand in Witylogix sales pipeline (after Shopify)
 - Enables "multi-platform" positioning for competitive advantage
 
 **Key Decisions:**
+
 1. **REST API Adapter Pattern** — WooCommerce REST API v3 as integration point (Webhooks + polling fallback)
 2. **Webhook Normalization** — WooCommerce webhooks → generic queue messages via `source` discriminator
 3. **Authentication** — Consumer Key + Consumer Secret (HMAC-SHA256), stored in Shop configuration
@@ -28,6 +30,7 @@ This decision documents the **WooCommerce integration strategy** as the first no
 7. **Multi-Platform Routing** — Same order workflows process Shopify + WooCommerce orders identically
 
 **Outcomes:**
+
 - Single adapter interface supports unlimited platforms
 - No schema duplication (ADR-014 enables this)
 - WooCommerce launch: End of Q2 2026
@@ -50,17 +53,20 @@ This decision documents the **WooCommerce integration strategy** as the first no
 | Custom/Other | 7% | Unknown | 6 (Later) |
 
 **Witylogix Sales Pipeline (Q1 2026):**
+
 - Shopify prospects: 45 (Converting 65% → ~29 customers/quarter)
 - WooCommerce prospects: 28 (Converting 25% → ~7 customers/quarter, IF support exists)
 - **Problem:** Can't close WooCommerce deals without native integration
 - **Opportunity:** 2-3 deal velocity increase with WooCommerce support
 
 **Merchant Persona Analysis:**
+
 - **Shopify Merchants:** SMBs ($100K-$10M revenue), outsource fulfillment
 - **WooCommerce Merchants:** DIY operators ($50K-$5M revenue), own hosting, price-sensitive
 - **Product Fit:** Perfect for WooCommerce (self-hosted, logistics control)
 
 **Why Not Magento First?**
+
 - Requires 2.5x engineering effort (more complex platform)
 - Smaller addressable market (15% vs 40%)
 - WooCommerce has higher merchant demand
@@ -69,18 +75,21 @@ This decision documents the **WooCommerce integration strategy** as the first no
 ### Current State: Shopify Tight Coupling
 
 Before ADR-014 (Platform Source Abstraction), Witylogix was:
+
 - **Field-Specific:** `shopifyOrderId`, `shopifyProductId`, `shopifyCustomerId` hardcoded
 - **Workflow-Specific:** Order processing assumed Shopify GraphQL schema
 - **Webhook-Specific:** Only handled Shopify HMAC validation
 - **Plugin-Specific:** Shopify app, no generic extension model
 
 **After ADR-014 Completion (End of Sprint 3.4):**
+
 - Generic fields: `externalOrderId`, `externalProductId`, `externalCustomerId`
 - `source` discriminator enables multi-platform queries
 - Webhook handlers normalize to generic payload format
 - Extension model (ADR-011) supports multiple platforms
 
 **This ADR (Sprint 3.5) builds on ADR-014:**
+
 - Implements first WooCommerce adapter
 - Establishes adapter factory pattern for future platforms
 - Defines data mapping interface (order, product, customer)
@@ -89,6 +98,7 @@ Before ADR-014 (Platform Source Abstraction), Witylogix was:
 ### WooCommerce Platform Overview
 
 **REST API Capabilities:**
+
 - **API Version:** v3 (latest, stable)
 - **Authentication:** OAuth 2.0 (admin approval) + API Key/Secret (system-to-system)
 - **Webhook Events:** 50+ available, 8 required for order/product lifecycle
@@ -96,12 +106,14 @@ Before ADR-014 (Platform Source Abstraction), Witylogix was:
 - **Data Availability:** Orders, Products, Customers, Variations, Collections
 
 **WooCommerce Deployment Models:**
+
 1. **Hosted (woocommerce.com)** — Automated setup, limited plugin support
 2. **Self-Hosted (WordPress.org)** — Full control, plugin support, manual maintenance
 3. **Multisite:** One WordPress instance, multiple storefronts
 4. **Headless:** REST/GraphQL API only, no frontend
 
 **Technical Constraints:**
+
 - Webhook IP validation not supported (no IP whitelist) → Must validate HMAC
 - Polling fallback required (webhooks may fail)
 - Product variations treated as separate SKUs
@@ -111,6 +123,7 @@ Before ADR-014 (Platform Source Abstraction), Witylogix was:
 ### Competitive Analysis
 
 **Fleetbase WooCommerce Support:**
+
 - REST API adapter (5+ years in production)
 - Basic order + product sync
 - No order status sync (limitation)
@@ -118,11 +131,13 @@ Before ADR-014 (Platform Source Abstraction), Witylogix was:
 - TAM: 100K+ customers per sales claims
 
 **Shippo WooCommerce Support:**
+
 - Plugin-based (shipping integration, not order management)
 - Limited to labels, no full fulfillment
 - Installed on 10K+ shops (Plugin directory stats)
 
 **Witylogix Competitive Advantage:**
+
 - Full order management (not just shipping)
 - Checkout delivery date picker (extension)
 - Multi-platform from day 1 (Shopify + WooCommerce)
@@ -131,21 +146,25 @@ Before ADR-014 (Platform Source Abstraction), Witylogix was:
 ### Existing Patterns We're Following
 
 **ADR-014: Platform Source Abstraction**
+
 - `PlatformSource` enum: `SHOPIFY | WOOCOMMERCE | MAGENTO | CUSTOM`
 - Unique constraints include `source` discriminator
 - Queue payloads use generic `externalOrderId` + `source`
 
 **ADR-011: Extension Architecture**
+
 - Plugin model for platform-specific features
 - Extension registry to load platform plugins
 - Admin UI configuration per platform
 
 **ADR-008: Auth Provider Abstraction**
+
 - Similar pattern: Provider enum, credential abstraction
 - Used for Google/GitHub/OKTA auth
 - We adapt same pattern for e-commerce platforms
 
 **ADR-010: Event Bus Architecture**
+
 - Generic event payloads normalize platform differences
 - Consumers don't know which platform event came from
 - Source discriminator enables optional platform-specific logic
@@ -154,37 +173,37 @@ Before ADR-014 (Platform Source Abstraction), Witylogix was:
 
 **Key Differences from Shopify:**
 
-| Aspect | Shopify | WooCommerce | Witylogix Mapping |
-|--------|---------|-------------|-------------------|
-| **Order ID Format** | GraphQL ID (gid://shopify/Order/123456789) | Integer (12345) | String in `externalOrderId` |
-| **Order Number** | Integer sequence (#1001) | Integer sequence or SKU (WC-1001) | String in `externalOrderNumber` |
-| **Customer ID** | GraphQL ID | Integer | String in `externalCustomerId` |
-| **Product ID** | GraphQL ID | Integer | String in `externalProductId` |
-| **Variant ID** | GraphQL ID | Integer (variation ID) | Include in SKU + metadata |
-| **Collections** | Smart + Manual | Categories + Tags | Use categories as collections |
-| **SKU** | SKU field | SKU field (on variation) | SKU field (identical) |
-| **Pricing** | Fixed per region | Support multiple tax rates | Map to base price |
-| **Webhook Auth** | HMAC-SHA256 header | HMAC-SHA256 header | Identical validation |
-| **Webhook Events** | order/created, order/updated, product/created | order.created, order.updated, product.created | Normalize to generic names |
+| Aspect              | Shopify                                       | WooCommerce                                   | Witylogix Mapping               |
+| ------------------- | --------------------------------------------- | --------------------------------------------- | ------------------------------- |
+| **Order ID Format** | GraphQL ID (gid://shopify/Order/123456789)    | Integer (12345)                               | String in `externalOrderId`     |
+| **Order Number**    | Integer sequence (#1001)                      | Integer sequence or SKU (WC-1001)             | String in `externalOrderNumber` |
+| **Customer ID**     | GraphQL ID                                    | Integer                                       | String in `externalCustomerId`  |
+| **Product ID**      | GraphQL ID                                    | Integer                                       | String in `externalProductId`   |
+| **Variant ID**      | GraphQL ID                                    | Integer (variation ID)                        | Include in SKU + metadata       |
+| **Collections**     | Smart + Manual                                | Categories + Tags                             | Use categories as collections   |
+| **SKU**             | SKU field                                     | SKU field (on variation)                      | SKU field (identical)           |
+| **Pricing**         | Fixed per region                              | Support multiple tax rates                    | Map to base price               |
+| **Webhook Auth**    | HMAC-SHA256 header                            | HMAC-SHA256 header                            | Identical validation            |
+| **Webhook Events**  | order/created, order/updated, product/created | order.created, order.updated, product.created | Normalize to generic names      |
 
 **Order Status Mapping:**
 
 | Shopify Status | WooCommerce Status | Witylogix Status |
-|----------------|-------------------|-----------------|
-| pending | pending | PENDING |
-| confirmed | processing | CONFIRMED |
-| paid | completed | PAID |
-| partially_paid | on-hold | ON_HOLD |
-| refunded | refunded | REFUNDED |
-| cancelled | cancelled | CANCELLED |
+| -------------- | ------------------ | ---------------- |
+| pending        | pending            | PENDING          |
+| confirmed      | processing         | CONFIRMED        |
+| paid           | completed          | PAID             |
+| partially_paid | on-hold            | ON_HOLD          |
+| refunded       | refunded           | REFUNDED         |
+| cancelled      | cancelled          | CANCELLED        |
 
 **Product Status Mapping:**
 
 | Shopify Status | WooCommerce Status | Witylogix Status |
-|----------------|-------------------|-----------------|
-| active | publish | ACTIVE |
-| archived | draft, private | INACTIVE |
-| draft | pending | DRAFT |
+| -------------- | ------------------ | ---------------- |
+| active         | publish            | ACTIVE           |
+| archived       | draft, private     | INACTIVE         |
+| draft          | pending            | DRAFT            |
 
 ---
 
@@ -193,6 +212,7 @@ Before ADR-014 (Platform Source Abstraction), Witylogix was:
 ### 1. Platform Adapter Interface
 
 All platform integrations implement a standard `PlatformAdapter` interface. This enables:
+
 - Single factory method to get adapter for any platform
 - Consumer code doesn't know platform details
 - Easy to add new platforms (just add adapter)
@@ -278,7 +298,10 @@ export interface PlatformAdapter {
    * @throws PlatformNotFoundError if order not found
    * @throws PlatformRateLimitError if API rate limit exceeded
    */
-  fetchOrder(externalOrderId: string, credentials: PlatformCredentials): Promise<unknown>;
+  fetchOrder(
+    externalOrderId: string,
+    credentials: PlatformCredentials,
+  ): Promise<unknown>;
 
   /**
    * Fetch products with pagination (REST API call)
@@ -294,7 +317,7 @@ export interface PlatformAdapter {
    */
   fetchProducts(
     credentials: PlatformCredentials,
-    cursor?: string
+    cursor?: string,
   ): Promise<{ products: unknown[]; nextCursor?: string }>;
 
   /**
@@ -302,7 +325,7 @@ export interface PlatformAdapter {
    */
   fetchOrders?(
     credentials: PlatformCredentials,
-    cursor?: string
+    cursor?: string,
   ): Promise<{ orders: unknown[]; nextCursor?: string }>;
 
   /**
@@ -310,7 +333,7 @@ export interface PlatformAdapter {
    */
   fetchCustomers?(
     credentials: PlatformCredentials,
-    cursor?: string
+    cursor?: string,
   ): Promise<{ customers: unknown[]; nextCursor?: string }>;
 
   /**
@@ -395,6 +418,7 @@ export interface CreateCustomerInput {
 **File:** `packages/core/src/platforms/adapters/woocommerce.ts`
 
 **Key Features:**
+
 - HMAC-SHA256 webhook validation (same as Shopify)
 - Order/Product/Customer data mapping
 - REST API polling support (webhook fallback)
@@ -430,7 +454,9 @@ export class WooCommerceAdapter implements PlatformAdapter {
     // Must be provided at queue consumption time
     const hmacKey = process.env.WOO_WEBHOOK_SECRET;
     if (!hmacKey) {
-      console.error("[WooCommerce] Missing WOO_WEBHOOK_SECRET environment variable");
+      console.error(
+        "[WooCommerce] Missing WOO_WEBHOOK_SECRET environment variable",
+      );
       return false;
     }
 
@@ -443,7 +469,7 @@ export class WooCommerceAdapter implements PlatformAdapter {
     // Constant-time comparison to prevent timing attacks
     return crypto.timingSafeEqual(
       Buffer.from(expectedHmac),
-      Buffer.from(encodedSignature)
+      Buffer.from(encodedSignature),
     );
   }
 
@@ -481,12 +507,15 @@ export class WooCommerceAdapter implements PlatformAdapter {
     };
   }
 
-  async fetchOrder(externalOrderId: string, creds: PlatformCredentials): Promise<unknown> {
+  async fetchOrder(
+    externalOrderId: string,
+    creds: PlatformCredentials,
+  ): Promise<unknown> {
     const credentials = creds.data as WooCommerceCredentials["data"];
 
     const url = `${credentials.siteUrl}/wp-json/wc/v3/orders/${externalOrderId}`;
     const auth = Buffer.from(
-      `${credentials.consumerKey}:${credentials.consumerSecret}`
+      `${credentials.consumerKey}:${credentials.consumerSecret}`,
     ).toString("base64");
 
     const response = await fetch(url, {
@@ -497,7 +526,9 @@ export class WooCommerceAdapter implements PlatformAdapter {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch WooCommerce order: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch WooCommerce order: ${response.statusText}`,
+      );
     }
 
     return response.json();
@@ -505,7 +536,7 @@ export class WooCommerceAdapter implements PlatformAdapter {
 
   async fetchProducts(
     creds: PlatformCredentials,
-    cursor?: string
+    cursor?: string,
   ): Promise<{ products: unknown[]; nextCursor?: string }> {
     const credentials = creds.data as WooCommerceCredentials["data"];
 
@@ -521,7 +552,7 @@ export class WooCommerceAdapter implements PlatformAdapter {
 
     const url = `${credentials.siteUrl}/wp-json/wc/v3/products?${params}`;
     const auth = Buffer.from(
-      `${credentials.consumerKey}:${credentials.consumerSecret}`
+      `${credentials.consumerKey}:${credentials.consumerSecret}`,
     ).toString("base64");
 
     const response = await fetch(url, {
@@ -532,7 +563,9 @@ export class WooCommerceAdapter implements PlatformAdapter {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch WooCommerce products: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch WooCommerce products: ${response.statusText}`,
+      );
     }
 
     const products = await response.json();
@@ -614,8 +647,8 @@ import { WooCommerceAdapter } from "./adapters/woocommerce";
 const ADAPTER_REGISTRY: Record<PlatformSource, PlatformAdapter> = {
   [PlatformSource.SHOPIFY]: new ShopifyAdapter(),
   [PlatformSource.WOOCOMMERCE]: new WooCommerceAdapter(),
-  [PlatformSource.MAGENTO]: new MagentoAdapter(),  // Placeholder
-  [PlatformSource.CUSTOM]: new CustomAdapter(),    // Placeholder
+  [PlatformSource.MAGENTO]: new MagentoAdapter(), // Placeholder
+  [PlatformSource.CUSTOM]: new CustomAdapter(), // Placeholder
 };
 
 /**
@@ -793,46 +826,46 @@ interface OrderUpdatedEvent extends OrderCreatedEvent {
 
 #### Order Field Mapping
 
-| Witylogix Field | Shopify Source | WooCommerce Source | Magento Source | Notes |
-|-----------------|---|---|---|---|
-| `externalOrderId` | `id` (GraphQL) | `id` (integer) | `entity_id` (integer) | Platform-specific ID format |
-| `externalOrderNumber` | `order_number` (int) | `order_key` or `number` | `increment_id` | Customer-facing order number |
-| `status` | `financial_status` + `fulfillment_status` | `status` (string) | `status` (string) | Map to WITYLOGIX status enum |
-| `total` | `total_price` (string) | `total` (string) | `grand_total` (decimal) | Currency neutral (stored as string) |
-| `currency` | `currency` (string) | `currency` (string) | `order_currency_code` | ISO 4217 code (USD, EUR, etc.) |
-| `customerName` | `customer.first_name` + `last_name` | `billing.first_name` + `last_name` | `customer_firstname` + `customer_lastname` | Combine first + last |
-| `customerEmail` | `customer.email` or `email` | `billing.email` | `customer_email` | Unique per shop |
-| `shippingAddress` | `shipping_address` (object) | `shipping` (object) | `shipping_address` (object) | Map to Address model |
-| `billingAddress` | `billing_address` (object) | `billing` (object) | `billing_address` (object) | Use for tax/invoice |
-| `lineItems` | `line_items[]` (array) | `line_items[]` (array) | `items[]` (array) | Array of { product_id, sku, qty } |
-| `createdAt` | `created_at` (ISO 8601) | `date_created` (ISO 8601) | `created_at` (ISO 8601) | Parse to UTC timestamp |
-| `updatedAt` | `updated_at` (ISO 8601) | `date_modified` (ISO 8601) | `updated_at` (ISO 8601) | Parse to UTC timestamp |
-| `notes` | `note` (string) | `customer_note` (string) | `customer_note` (text) | Customer/order notes |
-| `metadata` | `note_attributes[]` | `meta_data[]` | `order_extension_attributes` | Store as JSON |
+| Witylogix Field       | Shopify Source                            | WooCommerce Source                 | Magento Source                             | Notes                               |
+| --------------------- | ----------------------------------------- | ---------------------------------- | ------------------------------------------ | ----------------------------------- |
+| `externalOrderId`     | `id` (GraphQL)                            | `id` (integer)                     | `entity_id` (integer)                      | Platform-specific ID format         |
+| `externalOrderNumber` | `order_number` (int)                      | `order_key` or `number`            | `increment_id`                             | Customer-facing order number        |
+| `status`              | `financial_status` + `fulfillment_status` | `status` (string)                  | `status` (string)                          | Map to WITYLOGIX status enum        |
+| `total`               | `total_price` (string)                    | `total` (string)                   | `grand_total` (decimal)                    | Currency neutral (stored as string) |
+| `currency`            | `currency` (string)                       | `currency` (string)                | `order_currency_code`                      | ISO 4217 code (USD, EUR, etc.)      |
+| `customerName`        | `customer.first_name` + `last_name`       | `billing.first_name` + `last_name` | `customer_firstname` + `customer_lastname` | Combine first + last                |
+| `customerEmail`       | `customer.email` or `email`               | `billing.email`                    | `customer_email`                           | Unique per shop                     |
+| `shippingAddress`     | `shipping_address` (object)               | `shipping` (object)                | `shipping_address` (object)                | Map to Address model                |
+| `billingAddress`      | `billing_address` (object)                | `billing` (object)                 | `billing_address` (object)                 | Use for tax/invoice                 |
+| `lineItems`           | `line_items[]` (array)                    | `line_items[]` (array)             | `items[]` (array)                          | Array of { product_id, sku, qty }   |
+| `createdAt`           | `created_at` (ISO 8601)                   | `date_created` (ISO 8601)          | `created_at` (ISO 8601)                    | Parse to UTC timestamp              |
+| `updatedAt`           | `updated_at` (ISO 8601)                   | `date_modified` (ISO 8601)         | `updated_at` (ISO 8601)                    | Parse to UTC timestamp              |
+| `notes`               | `note` (string)                           | `customer_note` (string)           | `customer_note` (text)                     | Customer/order notes                |
+| `metadata`            | `note_attributes[]`                       | `meta_data[]`                      | `order_extension_attributes`               | Store as JSON                       |
 
 #### Product Field Mapping
 
-| Witylogix Field | Shopify Source | WooCommerce Source | Magento Source |
-|-----------------|---|---|---|
-| `externalProductId` | `id` (GraphQL) | `id` (integer) | `entity_id` (integer) |
-| `title` | `title` (string) | `name` (string) | `name` (string) |
-| `description` | `body_html` (HTML) | `description` (HTML) | `description` (text) |
-| `sku` | `variants[0].sku` | `sku` (string) | `sku` (string) |
-| `price` | `variants[0].price` | `price` (string) | `price` (decimal) |
-| `imageUrl` | `featured_image.src` | `images[0].src` (URL) | `thumbnail` (URL) |
-| `status` | `status` (active/archived) | `status` (publish/draft) | `status` (1=enabled, 0=disabled) |
-| `variants` | `variants[]` (array) | `variations[]` (array) | `configurable_options[]` (array) |
+| Witylogix Field     | Shopify Source             | WooCommerce Source       | Magento Source                   |
+| ------------------- | -------------------------- | ------------------------ | -------------------------------- |
+| `externalProductId` | `id` (GraphQL)             | `id` (integer)           | `entity_id` (integer)            |
+| `title`             | `title` (string)           | `name` (string)          | `name` (string)                  |
+| `description`       | `body_html` (HTML)         | `description` (HTML)     | `description` (text)             |
+| `sku`               | `variants[0].sku`          | `sku` (string)           | `sku` (string)                   |
+| `price`             | `variants[0].price`        | `price` (string)         | `price` (decimal)                |
+| `imageUrl`          | `featured_image.src`       | `images[0].src` (URL)    | `thumbnail` (URL)                |
+| `status`            | `status` (active/archived) | `status` (publish/draft) | `status` (1=enabled, 0=disabled) |
+| `variants`          | `variants[]` (array)       | `variations[]` (array)   | `configurable_options[]` (array) |
 
 #### Customer Field Mapping
 
-| Witylogix Field | Shopify Source | WooCommerce Source | Magento Source |
-|---|---|---|---|
-| `externalCustomerId` | `id` (GraphQL) | `id` (integer) | `entity_id` (integer) |
-| `email` | `email` (string) | `email` (string) | `email` (string) |
-| `firstName` | `first_name` (string) | `first_name` (string) | `firstname` (string) |
-| `lastName` | `last_name` (string) | `last_name` (string) | `lastname` (string) |
-| `phone` | `phone` (string) | `billing.phone` (string) | `telephone` (string) |
-| `defaultAddress` | `addresses[0]` | `billing` (object) | `default_billing` (address ID) |
+| Witylogix Field      | Shopify Source        | WooCommerce Source       | Magento Source                 |
+| -------------------- | --------------------- | ------------------------ | ------------------------------ |
+| `externalCustomerId` | `id` (GraphQL)        | `id` (integer)           | `entity_id` (integer)          |
+| `email`              | `email` (string)      | `email` (string)         | `email` (string)               |
+| `firstName`          | `first_name` (string) | `first_name` (string)    | `firstname` (string)           |
+| `lastName`           | `last_name` (string)  | `last_name` (string)     | `lastname` (string)            |
+| `phone`              | `phone` (string)      | `billing.phone` (string) | `telephone` (string)           |
+| `defaultAddress`     | `addresses[0]`        | `billing` (object)       | `default_billing` (address ID) |
 
 ### 6. WooCommerce Webhook Integration
 
@@ -878,7 +911,8 @@ router.post("/", async (req: Request, res: Response) => {
 
     if (!signature || !topic) {
       return res.status(400).json({
-        error: "Missing required headers (X-WC-Webhook-Signature, X-WC-Webhook-Topic)",
+        error:
+          "Missing required headers (X-WC-Webhook-Signature, X-WC-Webhook-Topic)",
       });
     }
 
@@ -893,7 +927,10 @@ router.post("/", async (req: Request, res: Response) => {
     const payload = req.body;
 
     // Get event type (e.g., "order.created", "product.updated")
-    const eventType = adapter.getWebhookEventType({ ...payload, action: topic });
+    const eventType = adapter.getWebhookEventType({
+      ...payload,
+      action: topic,
+    });
 
     if (!eventType) {
       return res.status(400).json({ error: "Could not determine event type" });
@@ -926,7 +963,9 @@ router.post("/", async (req: Request, res: Response) => {
       return res.status(200).json({ received: true });
     } else {
       console.warn(`[WooCommerce] Unhandled event type: ${eventType}`);
-      return res.status(400).json({ error: `Unhandled event type: ${eventType}` });
+      return res
+        .status(400)
+        .json({ error: `Unhandled event type: ${eventType}` });
     }
   } catch (error) {
     console.error("[WooCommerce Webhook Error]", error);
@@ -1111,7 +1150,7 @@ export class OrderProcessingWorkflow extends Workflow {
     }
 
     console.log(
-      `[OrderWorkflow] Processing ${order.source} order: ${order.externalOrderId}`
+      `[OrderWorkflow] Processing ${order.source} order: ${order.externalOrderId}`,
     );
 
     // Step 1: Validate order
@@ -1204,13 +1243,13 @@ import crypto from "crypto";
  */
 export function encryptCredentials(
   credentials: unknown,
-  encryptionKey: string
+  encryptionKey: string,
 ): string {
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv(
     "aes-256-gcm",
     Buffer.from(encryptionKey, "hex"),
-    iv
+    iv,
   );
 
   const encrypted = Buffer.concat([
@@ -1229,7 +1268,7 @@ export function encryptCredentials(
  */
 export function decryptCredentials(
   encrypted: string,
-  encryptionKey: string
+  encryptionKey: string,
 ): unknown {
   const [ivStr, authTagStr, encryptedStr] = encrypted.split(":");
 
@@ -1240,7 +1279,7 @@ export function decryptCredentials(
   const decipher = crypto.createDecipheriv(
     "aes-256-gcm",
     Buffer.from(encryptionKey, "hex"),
-    iv
+    iv,
   );
 
   decipher.setAuthTag(authTag);
@@ -1467,14 +1506,14 @@ WooCommerce Server                    Witylogix API
 
 ### Trade-offs
 
-| Aspect | Adapter Pattern | Monolithic |
-|--------|---|---|
-| **Code Duplication** | Low (single adapter) | High (per platform) |
-| **Maintenance** | Medium (adapter interface updates) | High (all consumers update) |
-| **Testing** | High (need per-platform tests) | Medium (fewer code paths) |
-| **Onboarding Merchants** | Medium (plugin install + OAuth) | Low (Shopify only) |
-| **Platform Addition Time** | 2-3 weeks (adapter + plugin) | 4-6 weeks (schema + consumers) |
-| **TAM** | 4M+ merchants (60% market) | 500K merchants (Shopify only) |
+| Aspect                     | Adapter Pattern                    | Monolithic                     |
+| -------------------------- | ---------------------------------- | ------------------------------ |
+| **Code Duplication**       | Low (single adapter)               | High (per platform)            |
+| **Maintenance**            | Medium (adapter interface updates) | High (all consumers update)    |
+| **Testing**                | High (need per-platform tests)     | Medium (fewer code paths)      |
+| **Onboarding Merchants**   | Medium (plugin install + OAuth)    | Low (Shopify only)             |
+| **Platform Addition Time** | 2-3 weeks (adapter + plugin)       | 4-6 weeks (schema + consumers) |
+| **TAM**                    | 4M+ merchants (60% market)         | 500K merchants (Shopify only)  |
 
 ---
 
@@ -1483,28 +1522,34 @@ WooCommerce Server                    Witylogix API
 ### Phase 1: Foundation (Sprint 3.5 — Week 1-2)
 
 **File Creation:**
+
 1. `packages/core/src/platforms/types.ts` — PlatformAdapter interface
 2. `packages/core/src/platforms/index.ts` — Adapter registry + factory
 3. `packages/core/src/platforms/adapters/woocommerce.ts` — WooCommerce adapter
 4. `packages/core/src/platforms/credentials.ts` — Encryption helpers
 
 **API Routes:**
+
 1. `apps/api/src/routes/webhooks/woocommerce.ts` — Webhook endpoint
 
 **Queue Consumers:**
+
 1. `packages/core/src/queues/consumers/woocommerce-order-webhook.ts`
 2. `packages/core/src/queues/consumers/woocommerce-product-webhook.ts`
 
 **Database:**
+
 1. Update `Shop` model to include WooCommerce credentials field
 2. Create migration to add `woo_credentials` column (encrypted JSON)
 
 **Tests:**
+
 1. Unit tests for PlatformAdapter interface
 2. Integration tests for WooCommerce webhook validation
 3. Data mapping tests (order/product schema conversion)
 
 **Deliverables:**
+
 - [ ] PlatformAdapter interface defined and documented
 - [ ] WooCommerce adapter implemented (90%+ test coverage)
 - [ ] Webhook endpoint receiving + validating payloads
@@ -1514,17 +1559,20 @@ WooCommerce Server                    Witylogix API
 ### Phase 2: Plugin Development (Sprint 3.5 — Week 3-4)
 
 **Plugin Files:**
+
 1. `plugins/woocommerce-witylogix-delivery-date-picker/plugin.php` — Main plugin
 2. `plugins/woocommerce-witylogix-delivery-date-picker/settings.php` — Settings UI
 3. `plugins/woocommerce-witylogix-delivery-date-picker/webhook-register.php` — Webhook setup
 
 **Setup Flow:**
+
 1. Merchant installs plugin from WordPress Marketplace
 2. Plugin prompts for Witylogix API key + store URL
 3. Plugin registers webhooks with WooCommerce
 4. Settings page shows webhook status + test button
 
 **Deliverables:**
+
 - [ ] Plugin passes WordPress review guidelines
 - [ ] Settings page functional
 - [ ] Webhook registration working
@@ -1534,6 +1582,7 @@ WooCommerce Server                    Witylogix API
 ### Phase 3: End-to-End Testing (Sprint 3.5 — Week 5)
 
 **Test Scenarios:**
+
 1. Create WooCommerce test store (Docker)
 2. Install plugin via file upload
 3. Configure with test credentials
@@ -1542,6 +1591,7 @@ WooCommerce Server                    Witylogix API
 6. Create product → webhook fires → Witylogix syncs product
 
 **Deliverables:**
+
 - [ ] E2E test suite (Playwright/Cypress)
 - [ ] Test WooCommerce store ready for QA
 - [ ] Webhook health check working
@@ -1550,12 +1600,14 @@ WooCommerce Server                    Witylogix API
 ### Phase 4: Documentation & Launch (Sprint 3.5 — Week 6)
 
 **Documentation:**
+
 1. Merchant setup guide (5-step wizard)
 2. Developer integration docs (webhook schema, adapters)
 3. Troubleshooting guide (common issues)
 4. ADR-015 (this document) finalized
 
 **Launch:**
+
 1. Plugin submitted to WordPress Marketplace
 2. Blog post: "Witylogix now supports WooCommerce"
 3. Sales enable: messaging + demo
@@ -1563,6 +1615,7 @@ WooCommerce Server                    Witylogix API
 5. Monitoring dashboards: webhook success rate
 
 **Deliverables:**
+
 - [ ] Merchant documentation complete
 - [ ] Developer docs merged
 - [ ] ADR-015 approved + archived
@@ -1673,7 +1726,7 @@ describe("POST /webhooks/woocommerce", () => {
 
     // Verify event was emitted
     const emitted = await waitFor(() =>
-      eventBus.getLastEmitted("order.created")
+      eventBus.getLastEmitted("order.created"),
     );
     expect(emitted.externalOrderId).toBe("12345");
   });
@@ -1714,6 +1767,7 @@ describe("POST /webhooks/woocommerce", () => {
 ### Implementation Files Created
 
 **TypeScript/Core:**
+
 - `/packages/core/src/platforms/types.ts` — PlatformAdapter interface
 - `/packages/core/src/platforms/index.ts` — Adapter registry
 - `/packages/core/src/platforms/adapters/woocommerce.ts` — WooCommerce adapter
@@ -1721,9 +1775,11 @@ describe("POST /webhooks/woocommerce", () => {
 - `/apps/api/src/routes/webhooks/woocommerce.ts` — Webhook endpoint
 
 **PHP Plugin:**
+
 - `/plugins/woocommerce-witylogix-delivery-date-picker/plugin.php` — Main plugin
 
 **Tests:**
+
 - `/packages/core/src/platforms/__tests__/woocommerce.test.ts`
 - `/apps/api/src/routes/webhooks/__tests__/woocommerce.integration.test.ts`
 
@@ -1747,6 +1803,7 @@ describe("POST /webhooks/woocommerce", () => {
 **Decision:** Accept ADR-015 (WooCommerce Integration via Adapter Pattern)
 
 **Rationale:**
+
 - Adapter pattern proven at scale (Fleetbase, Shopify apps)
 - Plugin ecosystem standard for platform integration
 - Zero impact on existing Shopify workflows

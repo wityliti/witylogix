@@ -133,7 +133,10 @@ interface BigCommerceShipmentData {
 /**
  * BigCommerce Client
  */
-export class BigCommerceClient extends ECommerceAdapterBase implements IECommerceAdapter {
+export class BigCommerceClient
+  extends ECommerceAdapterBase
+  implements IECommerceAdapter
+{
   private baseUrl: string;
   private storeHash: string;
   private accessToken: string;
@@ -173,7 +176,7 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
 
     const headers: Record<string, string> = {
       "X-Auth-Token": this.accessToken,
-      "Accept": "application/json",
+      Accept: "application/json",
     };
 
     return this.makeRequest<T>(method, url, {
@@ -207,14 +210,10 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
             count: number;
           };
         };
-      }>(
-        "GET",
-        "/orders",
-        {
-          query,
-          context: "Fetch BigCommerce orders",
-        },
-      );
+      }>("GET", "/orders", {
+        query,
+        context: "Fetch BigCommerce orders",
+      });
 
       const orders: ECommerceOrder[] = [];
 
@@ -222,12 +221,10 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
         // Fetch shipping addresses
         const addressesResponse = await this.bigcommerceRequest<{
           data: BigCommerceAddress[];
-        }>(
-          "GET",
-          `/orders/${order.id}/shipping_addresses`,
-        );
+        }>("GET", `/orders/${order.id}/shipping_addresses`);
 
-        const shippingAddress = addressesResponse.data[0] || order.billing_address;
+        const shippingAddress =
+          addressesResponse.data[0] || order.billing_address;
 
         orders.push(this.normalizeBigCommerceOrder(order, shippingAddress));
       }
@@ -245,21 +242,17 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
   async getOrderById(orderId: string): Promise<ECommerceOrder> {
     const order = await this.bigcommerceRequest<{
       data: BigCommerceOrderData;
-    }>(
-      "GET",
-      `/orders/${orderId}`,
-      { context: `Fetch BigCommerce order ${orderId}` },
-    );
+    }>("GET", `/orders/${orderId}`, {
+      context: `Fetch BigCommerce order ${orderId}`,
+    });
 
     // Fetch shipping address
     const addressesResponse = await this.bigcommerceRequest<{
       data: BigCommerceAddress[];
-    }>(
-      "GET",
-      `/orders/${orderId}/shipping_addresses`,
-    );
+    }>("GET", `/orders/${orderId}/shipping_addresses`);
 
-    const shippingAddress = addressesResponse.data[0] || order.data.billing_address;
+    const shippingAddress =
+      addressesResponse.data[0] || order.data.billing_address;
 
     return this.normalizeBigCommerceOrder(order.data, shippingAddress);
   }
@@ -267,7 +260,10 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
   /**
    * Update order
    */
-  async updateOrder(orderId: string, data: Partial<ECommerceOrder>): Promise<ECommerceOrder> {
+  async updateOrder(
+    orderId: string,
+    data: Partial<ECommerceOrder>,
+  ): Promise<ECommerceOrder> {
     const updateData: Record<string, unknown> = {};
 
     if (data.notes) {
@@ -281,24 +277,18 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
 
     const response = await this.bigcommerceRequest<{
       data: BigCommerceOrderData;
-    }>(
-      "POST",
-      `/orders/${orderId}`,
-      {
-        body: updateData,
-        context: `Update BigCommerce order ${orderId}`,
-      },
-    );
+    }>("POST", `/orders/${orderId}`, {
+      body: updateData,
+      context: `Update BigCommerce order ${orderId}`,
+    });
 
     // Fetch shipping address
     const addressesResponse = await this.bigcommerceRequest<{
       data: BigCommerceAddress[];
-    }>(
-      "GET",
-      `/orders/${orderId}/shipping_addresses`,
-    );
+    }>("GET", `/orders/${orderId}/shipping_addresses`);
 
-    const shippingAddress = addressesResponse.data[0] || response.data.billing_address;
+    const shippingAddress =
+      addressesResponse.data[0] || response.data.billing_address;
 
     return this.normalizeBigCommerceOrder(response.data, shippingAddress);
   }
@@ -310,7 +300,8 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
     try {
       const query: Record<string, string> = {
         limit: (options?.limit || 100).toString(),
-        include_fields: "id,name,type,sku,description,weight,price,cost_price,status,is_visible,image_url,created_at,updated_at",
+        include_fields:
+          "id,name,type,sku,description,weight,price,cost_price,status,is_visible,image_url,created_at,updated_at",
       };
 
       if (options?.since) {
@@ -324,14 +315,10 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
             total: number;
           };
         };
-      }>(
-        "GET",
-        "/catalog/products",
-        {
-          query,
-          context: "Fetch BigCommerce products",
-        },
-      );
+      }>("GET", "/catalog/products", {
+        query,
+        context: "Fetch BigCommerce products",
+      });
 
       const products: ECommerceProduct[] = [];
 
@@ -339,15 +326,13 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
         // Fetch variants for each product
         const variantsResponse = await this.bigcommerceRequest<{
           data: BigCommerceVariantData[];
-        }>(
-          "GET",
-          `/catalog/products/${product.id}/variants`,
-          {
-            query: { limit: "250" },
-          },
-        );
+        }>("GET", `/catalog/products/${product.id}/variants`, {
+          query: { limit: "250" },
+        });
 
-        products.push(this.normalizeBigCommerceProduct(product, variantsResponse.data));
+        products.push(
+          this.normalizeBigCommerceProduct(product, variantsResponse.data),
+        );
       }
 
       return products;
@@ -363,24 +348,21 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
   async getProductById(productId: string): Promise<ECommerceProduct> {
     const product = await this.bigcommerceRequest<{
       data: BigCommerceProductData;
-    }>(
-      "GET",
-      `/catalog/products/${productId}`,
-      { context: `Fetch BigCommerce product ${productId}` },
-    );
+    }>("GET", `/catalog/products/${productId}`, {
+      context: `Fetch BigCommerce product ${productId}`,
+    });
 
     // Fetch variants
     const variantsResponse = await this.bigcommerceRequest<{
       data: BigCommerceVariantData[];
-    }>(
-      "GET",
-      `/catalog/products/${productId}/variants`,
-      {
-        query: { limit: "250" },
-      },
-    );
+    }>("GET", `/catalog/products/${productId}/variants`, {
+      query: { limit: "250" },
+    });
 
-    return this.normalizeBigCommerceProduct(product.data, variantsResponse.data);
+    return this.normalizeBigCommerceProduct(
+      product.data,
+      variantsResponse.data,
+    );
   }
 
   /**
@@ -391,46 +373,44 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
 
     const response = await this.bigcommerceRequest<{
       data: BigCommerceProductData;
-    }>(
-      "POST",
-      "/catalog/products",
-      {
-        body: {
-          name: product.title,
-          type: "physical",
-          description: product.description,
-          status: product.status === "active" ? "active" : "disabled",
-          variants: [
-            {
-              sku: variant.sku,
-              price: variant.price,
-              cost_price: variant.costAmount,
-              inventory_level: variant.inventory.quantity,
-            },
-          ],
-        },
-        context: "Create BigCommerce product",
+    }>("POST", "/catalog/products", {
+      body: {
+        name: product.title,
+        type: "physical",
+        description: product.description,
+        status: product.status === "active" ? "active" : "disabled",
+        variants: [
+          {
+            sku: variant.sku,
+            price: variant.price,
+            cost_price: variant.costAmount,
+            inventory_level: variant.inventory.quantity,
+          },
+        ],
       },
-    );
+      context: "Create BigCommerce product",
+    });
 
     // Fetch variants
     const variantsResponse = await this.bigcommerceRequest<{
       data: BigCommerceVariantData[];
-    }>(
-      "GET",
-      `/catalog/products/${response.data.id}/variants`,
-      {
-        query: { limit: "250" },
-      },
-    );
+    }>("GET", `/catalog/products/${response.data.id}/variants`, {
+      query: { limit: "250" },
+    });
 
-    return this.normalizeBigCommerceProduct(response.data, variantsResponse.data);
+    return this.normalizeBigCommerceProduct(
+      response.data,
+      variantsResponse.data,
+    );
   }
 
   /**
    * Update product
    */
-  async updateProduct(productId: string, data: Partial<ECommerceProduct>): Promise<ECommerceProduct> {
+  async updateProduct(
+    productId: string,
+    data: Partial<ECommerceProduct>,
+  ): Promise<ECommerceProduct> {
     const variant = data.variants?.[0];
 
     const updateData: Record<string, unknown> = {
@@ -446,27 +426,22 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
 
     const response = await this.bigcommerceRequest<{
       data: BigCommerceProductData;
-    }>(
-      "PUT",
-      `/catalog/products/${productId}`,
-      {
-        body: updateData,
-        context: `Update BigCommerce product ${productId}`,
-      },
-    );
+    }>("PUT", `/catalog/products/${productId}`, {
+      body: updateData,
+      context: `Update BigCommerce product ${productId}`,
+    });
 
     // Fetch variants
     const variantsResponse = await this.bigcommerceRequest<{
       data: BigCommerceVariantData[];
-    }>(
-      "GET",
-      `/catalog/products/${productId}/variants`,
-      {
-        query: { limit: "250" },
-      },
-    );
+    }>("GET", `/catalog/products/${productId}/variants`, {
+      query: { limit: "250" },
+    });
 
-    return this.normalizeBigCommerceProduct(response.data, variantsResponse.data);
+    return this.normalizeBigCommerceProduct(
+      response.data,
+      variantsResponse.data,
+    );
   }
 
   /**
@@ -485,14 +460,10 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
             total: number;
           };
         };
-      }>(
-        "GET",
-        "/customers",
-        {
-          query,
-          context: "Fetch BigCommerce customers",
-        },
-      );
+      }>("GET", "/customers", {
+        query,
+        context: "Fetch BigCommerce customers",
+      });
 
       return response.data.map((customer) => ({
         id: customer.id.toString(),
@@ -516,11 +487,9 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
   async getCustomerById(customerId: string): Promise<ECommerceCustomer> {
     const response = await this.bigcommerceRequest<{
       data: BigCommerceCustomerData;
-    }>(
-      "GET",
-      `/customers/${customerId}`,
-      { context: `Fetch BigCommerce customer ${customerId}` },
-    );
+    }>("GET", `/customers/${customerId}`, {
+      context: `Fetch BigCommerce customer ${customerId}`,
+    });
 
     return {
       id: response.data.id.toString(),
@@ -543,20 +512,16 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
   ): Promise<ECommerceCustomer> {
     const response = await this.bigcommerceRequest<{
       data: BigCommerceCustomerData;
-    }>(
-      "PUT",
-      `/customers/${customerId}`,
-      {
-        body: {
-          first_name: data.firstName,
-          last_name: data.lastName,
-          email: data.email,
-          phone: data.phone,
-          accepts_marketing: data.acceptsMarketing,
-        },
-        context: `Update BigCommerce customer ${customerId}`,
+    }>("PUT", `/customers/${customerId}`, {
+      body: {
+        first_name: data.firstName,
+        last_name: data.lastName,
+        email: data.email,
+        phone: data.phone,
+        accepts_marketing: data.acceptsMarketing,
       },
-    );
+      context: `Update BigCommerce customer ${customerId}`,
+    });
 
     return {
       id: response.data.id.toString(),
@@ -573,22 +538,21 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
   /**
    * Create fulfillment (shipment)
    */
-  async createFulfillment(orderId: string, request: FulfillmentRequest): Promise<FulfillmentResponse> {
+  async createFulfillment(
+    orderId: string,
+    request: FulfillmentRequest,
+  ): Promise<FulfillmentResponse> {
     const response = await this.bigcommerceRequest<{
       data: BigCommerceShipmentData;
-    }>(
-      "POST",
-      `/orders/${orderId}/shipments`,
-      {
-        body: {
-          line_items: request.items,
-          tracking_number: request.trackingNumber,
-          carrier: request.trackingCompany,
-          notify_customer: request.notifyCustomer !== false,
-        },
-        context: `Create BigCommerce shipment for order ${orderId}`,
+    }>("POST", `/orders/${orderId}/shipments`, {
+      body: {
+        line_items: request.items,
+        tracking_number: request.trackingNumber,
+        carrier: request.trackingCompany,
+        notify_customer: request.notifyCustomer !== false,
       },
-    );
+      context: `Create BigCommerce shipment for order ${orderId}`,
+    });
 
     return {
       id: response.data.id.toString(),
@@ -602,7 +566,9 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
           }
         : undefined,
       createdAt: new Date(response.data.date_created),
-      updatedAt: new Date(response.data.date_updated || response.data.date_created),
+      updatedAt: new Date(
+        response.data.date_updated || response.data.date_created,
+      ),
     };
   }
 
@@ -618,11 +584,9 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
     // Fetch and return current data
     const response = await this.bigcommerceRequest<{
       data: BigCommerceShipmentData;
-    }>(
-      "GET",
-      `/orders/${orderId}/shipments/${fulfillmentId}`,
-      { context: `Fetch BigCommerce shipment ${fulfillmentId}` },
-    );
+    }>("GET", `/orders/${orderId}/shipments/${fulfillmentId}`, {
+      context: `Fetch BigCommerce shipment ${fulfillmentId}`,
+    });
 
     return {
       id: response.data.id.toString(),
@@ -639,26 +603,26 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
           }
         : undefined,
       createdAt: new Date(response.data.date_created),
-      updatedAt: new Date(response.data.date_updated || response.data.date_created),
+      updatedAt: new Date(
+        response.data.date_updated || response.data.date_created,
+      ),
     };
   }
 
   /**
    * Update inventory
    */
-  async updateInventory(request: InventoryUpdateRequest): Promise<ECommerceInventory> {
+  async updateInventory(
+    request: InventoryUpdateRequest,
+  ): Promise<ECommerceInventory> {
     const response = await this.bigcommerceRequest<{
       data: BigCommerceVariantData;
-    }>(
-      "PUT",
-      `/catalog/variants/${request.variantId}`,
-      {
-        body: {
-          inventory_level: request.quantity,
-        },
-        context: `Update BigCommerce inventory for ${request.variantId}`,
+    }>("PUT", `/catalog/variants/${request.variantId}`, {
+      body: {
+        inventory_level: request.quantity,
       },
-    );
+      context: `Update BigCommerce inventory for ${request.variantId}`,
+    });
 
     return {
       variantId: request.variantId,
@@ -675,11 +639,9 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
   async getInventory(variantId: string): Promise<ECommerceInventory> {
     const response = await this.bigcommerceRequest<{
       data: BigCommerceVariantData;
-    }>(
-      "GET",
-      `/catalog/variants/${variantId}`,
-      { context: `Fetch inventory for ${variantId}` },
-    );
+    }>("GET", `/catalog/variants/${variantId}`, {
+      context: `Fetch inventory for ${variantId}`,
+    });
 
     return {
       variantId,
@@ -696,7 +658,8 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
   verifyWebhookSignature(payload: unknown, signature: string): boolean {
     if (!this.config.webhookSecret) return false;
 
-    const payloadString = typeof payload === "string" ? payload : JSON.stringify(payload);
+    const payloadString =
+      typeof payload === "string" ? payload : JSON.stringify(payload);
     const expectedSignature = createHmac("sha256", this.config.webhookSecret)
       .update(payloadString)
       .digest("base64");
@@ -711,15 +674,20 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
     const raw = payload as Record<string, unknown>;
 
     return {
-      id: (typeof raw["id"] === "string" ? raw["id"] : undefined) ?? crypto.randomUUID(),
+      id:
+        (typeof raw["id"] === "string" ? raw["id"] : undefined) ??
+        crypto.randomUUID(),
       platform: "bigcommerce",
       topic: typeof raw["scope"] === "string" ? raw["scope"] : "",
       event: typeof raw["type"] === "string" ? raw["type"] : "",
-      createdAt: typeof raw["created_at"] === "string" || typeof raw["created_at"] === "number"
-        ? new Date(raw["created_at"] as string)
-        : new Date(),
+      createdAt:
+        typeof raw["created_at"] === "string" ||
+        typeof raw["created_at"] === "number"
+          ? new Date(raw["created_at"] as string)
+          : new Date(),
       data: raw["data"] as ECommerceWebhookEvent["data"],
-      signature: typeof raw["signature"] === "string" ? raw["signature"] : undefined,
+      signature:
+        typeof raw["signature"] === "string" ? raw["signature"] : undefined,
     };
   }
 
@@ -728,10 +696,7 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
    */
   async validateConnection(): Promise<boolean> {
     try {
-      await this.bigcommerceRequest<Record<string, unknown>>(
-        "GET",
-        "/store",
-      );
+      await this.bigcommerceRequest<Record<string, unknown>>("GET", "/store");
       return true;
     } catch {
       return false;
@@ -760,7 +725,9 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
     order: BigCommerceOrderData,
     shippingAddress: BigCommerceAddress,
   ): ECommerceOrder {
-    const parseAddress = (addr: BigCommerceAddress): ECommerceOrder["billingAddress"] => ({
+    const parseAddress = (
+      addr: BigCommerceAddress,
+    ): ECommerceOrder["billingAddress"] => ({
       firstName: addr.first_name,
       lastName: addr.last_name,
       company: addr.company,
@@ -813,9 +780,11 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
     variants: BigCommerceVariantData[],
   ): ECommerceProduct {
     const status: ECommerceProduct["status"] =
-      product.status === "active" ? "active" :
-      product.status === "archived" ? "archived" :
-      "draft";
+      product.status === "active"
+        ? "active"
+        : product.status === "archived"
+          ? "archived"
+          : "draft";
 
     return {
       id: product.id.toString(),
@@ -879,7 +848,9 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
   /**
    * Map BigCommerce payment status to internal status
    */
-  private mapBigCommercePaymentStatus(status: string): ECommerceOrder["paymentStatus"] {
+  private mapBigCommercePaymentStatus(
+    status: string,
+  ): ECommerceOrder["paymentStatus"] {
     const mapping: Record<string, ECommerceOrder["paymentStatus"]> = {
       "0": "pending",
       "1": "authorized",
@@ -894,6 +865,8 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
 /**
  * Factory function to create BigCommerce client
  */
-export function createBigCommerceClient(config: ECommerceAdapterConfig): BigCommerceClient {
+export function createBigCommerceClient(
+  config: ECommerceAdapterConfig,
+): BigCommerceClient {
   return new BigCommerceClient(config);
 }

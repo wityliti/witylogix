@@ -32,7 +32,7 @@
 5. **index.ts** (41 lines)
    - Public API exports
 
-6. **__tests__/filter-builder.test.ts** (360 lines)
+6. ****tests**/filter-builder.test.ts** (360 lines)
    - 30+ test cases
    - Operator coverage, SQL injection tests
    - Vitest suite
@@ -66,22 +66,24 @@
 ## Key APIs
 
 ### Search Engine
+
 ```typescript
 const engine = new SearchEngine(prisma, {
   weights: { A: 1.0, B: 0.7, C: 0.5, D: 0.3 },
   fuzzyThreshold: 0.3,
-  minRank: 0.01
+  minRank: 0.01,
 });
 
 const results = await engine.search(query, tenant, {
-  entities: ['orders', 'drivers'],
+  entities: ["orders", "drivers"],
   limit: 20,
   offset: 0,
-  useFuzzy: true
+  useFuzzy: true,
 });
 ```
 
 ### Search API Service
+
 ```typescript
 const service = new SearchApiService(engine, prisma);
 
@@ -96,23 +98,25 @@ const metrics = await service.getSearchMetrics(tenant, { days: 7 });
 ```
 
 ### Filter Builder
+
 ```typescript
 const builder = new FilterBuilder();
 
 const filters = {
   AND: [
-    { field: 'status', operator: 'in', value: ['ACTIVE', 'PENDING'] },
-    { field: 'createdAt', operator: 'gte', value: '2024-01-01' }
-  ]
+    { field: "status", operator: "in", value: ["ACTIVE", "PENDING"] },
+    { field: "createdAt", operator: "gte", value: "2024-01-01" },
+  ],
 };
 
 const { sql, params } = builder.buildWhereClause({
-  table: 'orders',
-  filters
+  table: "orders",
+  filters,
 });
 ```
 
 ### useSearch Hook
+
 ```typescript
 const search = useSearch({
   type: 'orders',
@@ -132,6 +136,7 @@ return (
 ```
 
 ### Search Command Palette
+
 ```typescript
 import { SearchCommandPalette } from '@/components/search/search-command-palette';
 
@@ -140,6 +145,7 @@ import { SearchCommandPalette } from '@/components/search/search-command-palette
 ```
 
 ### Filter Panel
+
 ```typescript
 <FilterPanel
   entityType="orders"

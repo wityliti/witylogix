@@ -31,7 +31,7 @@ export interface DatabaseConfig {
 
 export interface QueryMetrics {
   queryId: string;
-  queryType: 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE';
+  queryType: "SELECT" | "INSERT" | "UPDATE" | "DELETE";
   duration: number;
   success: boolean;
   rowsAffected?: number;
@@ -78,7 +78,7 @@ class DatabaseConnection {
 
   async query(sql: string, params: any[] = []): Promise<any> {
     if (!this.isActive) {
-      throw new Error('Connection is closed');
+      throw new Error("Connection is closed");
     }
 
     this.lastUsedTime = Date.now();
@@ -118,8 +118,8 @@ class ConnectionPool {
       host: config.host,
       port: config.port,
       database: config.database,
-      user: config.user || 'user',
-      password: config.password || 'password',
+      user: config.user || "user",
+      password: config.password || "password",
       timeout: config.timeout || 30000,
       maxConnections: maxConnections,
     };
@@ -154,7 +154,8 @@ class ConnectionPool {
   }
 
   getPoolMetrics(): ConnectionPoolMetrics {
-    const activeCount = this.connections.length - this.availableConnections.length;
+    const activeCount =
+      this.connections.length - this.availableConnections.length;
     return {
       totalConnections: this.connections.length,
       activeConnections: activeCount,
@@ -181,10 +182,10 @@ class QueryExecutor {
 
   async executeQuery(
     queryId: string,
-    queryType: 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE',
+    queryType: "SELECT" | "INSERT" | "UPDATE" | "DELETE",
     sql: string,
     params: any[] = [],
-    timeout?: number
+    timeout?: number,
   ): Promise<QueryMetrics> {
     const startTime = Date.now();
     let connection: DatabaseConnection | null = null;
@@ -194,7 +195,10 @@ class QueryExecutor {
       const result = await Promise.race([
         connection.query(sql, params),
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Query timeout')), timeout || 30000)
+          setTimeout(
+            () => reject(new Error("Query timeout")),
+            timeout || 30000,
+          ),
         ),
       ]);
 
@@ -209,7 +213,7 @@ class QueryExecutor {
       };
     } catch (error) {
       const duration = Date.now() - startTime;
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      const errorMsg = error instanceof Error ? error.message : "Unknown error";
       return {
         queryId,
         queryType,
@@ -246,11 +250,13 @@ export class DatabaseLoadTest {
     await this.pool.initialize();
   }
 
-  async stressTestConnectionPool(options: {
-    maxConnections?: number;
-    duration?: number;
-    rampUp?: boolean;
-  } = {}): Promise<DatabaseLoadTestResults> {
+  async stressTestConnectionPool(
+    options: {
+      maxConnections?: number;
+      duration?: number;
+      rampUp?: boolean;
+    } = {},
+  ): Promise<DatabaseLoadTestResults> {
     const maxConnections = options.maxConnections || 50;
     const duration = options.duration || 60000;
     const startTime = Date.now();
@@ -266,14 +272,14 @@ export class DatabaseLoadTest {
             queryCount++;
             const metrics = await this.executor.executeQuery(
               `query_${queryCount}`,
-              'SELECT',
+              "SELECT",
               `SELECT * FROM users WHERE id = $1`,
-              [Math.floor(Math.random() * 1000)]
+              [Math.floor(Math.random() * 1000)],
             );
             this.results.push(metrics);
             await new Promise((resolve) => setTimeout(resolve, 10));
           }
-        })()
+        })(),
       );
     }
 
@@ -284,11 +290,13 @@ export class DatabaseLoadTest {
     return new DatabaseLoadTestResults(metrics, this.results);
   }
 
-  async readWriteRatioTest(options: {
-    readPercentage?: number;
-    concurrency?: number;
-    duration?: number;
-  } = {}): Promise<DatabaseLoadTestResults> {
+  async readWriteRatioTest(
+    options: {
+      readPercentage?: number;
+      concurrency?: number;
+      duration?: number;
+    } = {},
+  ): Promise<DatabaseLoadTestResults> {
     const readPercentage = options.readPercentage || 80;
     const concurrency = options.concurrency || 20;
     const duration = options.duration || 60000;
@@ -304,19 +312,21 @@ export class DatabaseLoadTest {
           while (Date.now() - startTime < duration) {
             queryCount++;
             const isRead = Math.random() * 100 < readPercentage;
-            const queryType = isRead ? 'SELECT' : 'UPDATE';
-            const sql = isRead ? 'SELECT * FROM orders' : 'UPDATE orders SET status = $1';
+            const queryType = isRead ? "SELECT" : "UPDATE";
+            const sql = isRead
+              ? "SELECT * FROM orders"
+              : "UPDATE orders SET status = $1";
 
             const metrics = await this.executor.executeQuery(
               `query_${queryCount}`,
               queryType,
               sql,
-              isRead ? [] : ['PROCESSING']
+              isRead ? [] : ["PROCESSING"],
             );
             this.results.push(metrics);
             await new Promise((resolve) => setTimeout(resolve, 5));
           }
-        })()
+        })(),
       );
     }
 
@@ -327,11 +337,13 @@ export class DatabaseLoadTest {
     return new DatabaseLoadTestResults(metrics, this.results);
   }
 
-  async lockContentionTest(options: {
-    contentionRate?: number;
-    concurrency?: number;
-    duration?: number;
-  } = {}): Promise<DatabaseLoadTestResults> {
+  async lockContentionTest(
+    options: {
+      contentionRate?: number;
+      concurrency?: number;
+      duration?: number;
+    } = {},
+  ): Promise<DatabaseLoadTestResults> {
     const contentionRate = options.contentionRate || 0.2;
     const concurrency = options.concurrency || 30;
     const duration = options.duration || 60000;
@@ -347,22 +359,24 @@ export class DatabaseLoadTest {
           while (Date.now() - startTime < duration) {
             queryCount++;
             const isContention = Math.random() < contentionRate;
-            const recordId = isContention ? 1 : Math.floor(Math.random() * 1000);
+            const recordId = isContention
+              ? 1
+              : Math.floor(Math.random() * 1000);
 
             const lockWaitTime = isContention ? Math.random() * 500 : 0;
 
             const metrics = await this.executor.executeQuery(
               `query_${queryCount}`,
-              'UPDATE',
+              "UPDATE",
               `UPDATE accounts SET balance = balance + $1 WHERE id = $2`,
-              [100, recordId]
+              [100, recordId],
             );
 
             metrics.lockWaitTime = lockWaitTime;
             this.results.push(metrics);
             await new Promise((resolve) => setTimeout(resolve, 5));
           }
-        })()
+        })(),
       );
     }
 
@@ -373,11 +387,13 @@ export class DatabaseLoadTest {
     return new DatabaseLoadTestResults(metrics, this.results);
   }
 
-  async queryTimeoutTest(options: {
-    slowQueryPercentage?: number;
-    slowQueryDelay?: number;
-    concurrency?: number;
-  } = {}): Promise<DatabaseLoadTestResults> {
+  async queryTimeoutTest(
+    options: {
+      slowQueryPercentage?: number;
+      slowQueryDelay?: number;
+      concurrency?: number;
+    } = {},
+  ): Promise<DatabaseLoadTestResults> {
     const slowQueryPercentage = options.slowQueryPercentage || 10;
     const slowQueryDelay = options.slowQueryDelay || 35000;
     const concurrency = options.concurrency || 15;
@@ -396,16 +412,16 @@ export class DatabaseLoadTest {
 
             const metrics = await this.executor.executeQuery(
               `query_${queryCount}`,
-              'SELECT',
-              'SELECT * FROM large_table',
+              "SELECT",
+              "SELECT * FROM large_table",
               [],
-              isSlow ? slowQueryDelay : 30000
+              isSlow ? slowQueryDelay : 30000,
             );
 
             this.results.push(metrics);
             await new Promise((resolve) => setTimeout(resolve, 100));
           }
-        })()
+        })(),
       );
     }
 
@@ -422,28 +438,41 @@ export class DatabaseLoadTest {
     const durations = successMetrics.map((r) => r.duration);
     const sortedDurations = [...durations].sort((a, b) => a - b);
 
-    const reads = this.results.filter((r) => r.queryType === 'SELECT').length;
-    const writes = this.results.filter((r) => r.queryType !== 'SELECT').length;
+    const reads = this.results.filter((r) => r.queryType === "SELECT").length;
+    const writes = this.results.filter((r) => r.queryType !== "SELECT").length;
 
-    const timeouts = failedMetrics.filter((r) => r.error?.includes('timeout')).length;
-    const connections = failedMetrics.filter((r) => r.error?.includes('Connection')).length;
+    const timeouts = failedMetrics.filter((r) =>
+      r.error?.includes("timeout"),
+    ).length;
+    const connections = failedMetrics.filter((r) =>
+      r.error?.includes("Connection"),
+    ).length;
 
-    const lockWaits = this.results.filter((r) => r.lockWaitTime && r.lockWaitTime > 0);
-    const avgLockWait = lockWaits.length > 0
-      ? lockWaits.reduce((sum, r) => sum + (r.lockWaitTime || 0), 0) / lockWaits.length
-      : 0;
+    const lockWaits = this.results.filter(
+      (r) => r.lockWaitTime && r.lockWaitTime > 0,
+    );
+    const avgLockWait =
+      lockWaits.length > 0
+        ? lockWaits.reduce((sum, r) => sum + (r.lockWaitTime || 0), 0) /
+          lockWaits.length
+        : 0;
 
     return {
       totalQueries: this.results.length,
       successfulQueries: successMetrics.length,
       failedQueries: failedMetrics.length,
       totalDuration: testDurationMs,
-      averageQueryTime: durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0,
+      averageQueryTime:
+        durations.length > 0
+          ? durations.reduce((a, b) => a + b, 0) / durations.length
+          : 0,
       minQueryTime: durations.length > 0 ? Math.min(...durations) : 0,
       maxQueryTime: durations.length > 0 ? Math.max(...durations) : 0,
       p95QueryTime: this.percentile(sortedDurations, 0.95),
       p99QueryTime: this.percentile(sortedDurations, 0.99),
-      deadlocksDetected: failedMetrics.filter((r) => r.error?.includes('deadlock')).length,
+      deadlocksDetected: failedMetrics.filter((r) =>
+        r.error?.includes("deadlock"),
+      ).length,
       timeoutErrors: timeouts,
       connectionErrors: connections,
       throughput: (this.results.length / testDurationMs) * 1000,
@@ -471,7 +500,7 @@ export class DatabaseLoadTest {
 export class DatabaseLoadTestResults {
   constructor(
     private metrics: DatabaseLoadTestMetrics,
-    private queryResults: QueryMetrics[]
+    private queryResults: QueryMetrics[],
   ) {}
 
   getMetrics(): DatabaseLoadTestMetrics {
@@ -480,36 +509,36 @@ export class DatabaseLoadTestResults {
 
   generateReport(): string {
     const lines: string[] = [
-      '═══════════════════════════════════════════════════════════════',
-      'DATABASE LOAD TEST RESULTS',
-      '═══════════════════════════════════════════════════════════════',
-      '',
+      "═══════════════════════════════════════════════════════════════",
+      "DATABASE LOAD TEST RESULTS",
+      "═══════════════════════════════════════════════════════════════",
+      "",
       `Total Queries:         ${this.metrics.totalQueries}`,
       `Successful:            ${this.metrics.successfulQueries} (${((this.metrics.successfulQueries / this.metrics.totalQueries) * 100).toFixed(2)}%)`,
       `Failed:                ${this.metrics.failedQueries}`,
       `Test Duration:         ${(this.metrics.totalDuration / 1000).toFixed(2)}s`,
       `Throughput:            ${this.metrics.throughput.toFixed(2)} queries/s`,
       `Read/Write Ratio:      ${this.metrics.readWriteRatio.toFixed(2)}:1`,
-      '',
-      'QUERY PERFORMANCE (milliseconds)',
-      '─────────────────────────────────────────────────────────────',
+      "",
+      "QUERY PERFORMANCE (milliseconds)",
+      "─────────────────────────────────────────────────────────────",
       `Min:                   ${this.metrics.minQueryTime.toFixed(2)}ms`,
       `Max:                   ${this.metrics.maxQueryTime.toFixed(2)}ms`,
       `Average:               ${this.metrics.averageQueryTime.toFixed(2)}ms`,
       `p95:                   ${this.metrics.p95QueryTime.toFixed(2)}ms`,
       `p99:                   ${this.metrics.p99QueryTime.toFixed(2)}ms`,
-      '',
-      'ISSUES DETECTED',
-      '─────────────────────────────────────────────────────────────',
+      "",
+      "ISSUES DETECTED",
+      "─────────────────────────────────────────────────────────────",
       `Deadlocks:             ${this.metrics.deadlocksDetected}`,
       `Timeouts:              ${this.metrics.timeoutErrors}`,
       `Connection Errors:     ${this.metrics.connectionErrors}`,
       `Avg Lock Wait Time:    ${this.metrics.averageLockWaitTime.toFixed(2)}ms`,
-      '',
-      '═══════════════════════════════════════════════════════════════',
+      "",
+      "═══════════════════════════════════════════════════════════════",
     ];
 
-    return lines.join('\n');
+    return lines.join("\n");
   }
 
   assertPerformance(config: {
@@ -522,23 +551,39 @@ export class DatabaseLoadTestResults {
     const violations: string[] = [];
 
     if (config.maxP95 && this.metrics.p95QueryTime > config.maxP95) {
-      violations.push(`p95 (${this.metrics.p95QueryTime.toFixed(2)}ms) exceeds max (${config.maxP95}ms)`);
+      violations.push(
+        `p95 (${this.metrics.p95QueryTime.toFixed(2)}ms) exceeds max (${config.maxP95}ms)`,
+      );
     }
 
     if (config.maxP99 && this.metrics.p99QueryTime > config.maxP99) {
-      violations.push(`p99 (${this.metrics.p99QueryTime.toFixed(2)}ms) exceeds max (${config.maxP99}ms)`);
+      violations.push(
+        `p99 (${this.metrics.p99QueryTime.toFixed(2)}ms) exceeds max (${config.maxP99}ms)`,
+      );
     }
 
-    if (config.minThroughput && this.metrics.throughput < config.minThroughput) {
-      violations.push(`Throughput (${this.metrics.throughput.toFixed(2)} q/s) below min (${config.minThroughput} q/s)`);
+    if (
+      config.minThroughput &&
+      this.metrics.throughput < config.minThroughput
+    ) {
+      violations.push(
+        `Throughput (${this.metrics.throughput.toFixed(2)} q/s) below min (${config.minThroughput} q/s)`,
+      );
     }
 
-    if (config.maxDeadlocks && this.metrics.deadlocksDetected > config.maxDeadlocks) {
-      violations.push(`Deadlocks (${this.metrics.deadlocksDetected}) exceed max (${config.maxDeadlocks})`);
+    if (
+      config.maxDeadlocks &&
+      this.metrics.deadlocksDetected > config.maxDeadlocks
+    ) {
+      violations.push(
+        `Deadlocks (${this.metrics.deadlocksDetected}) exceed max (${config.maxDeadlocks})`,
+      );
     }
 
     if (config.maxTimeouts && this.metrics.timeoutErrors > config.maxTimeouts) {
-      violations.push(`Timeouts (${this.metrics.timeoutErrors}) exceed max (${config.maxTimeouts})`);
+      violations.push(
+        `Timeouts (${this.metrics.timeoutErrors}) exceed max (${config.maxTimeouts})`,
+      );
     }
 
     return {

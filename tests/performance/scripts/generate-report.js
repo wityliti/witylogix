@@ -14,23 +14,25 @@
  *   node generate-report.js ./results/20260316_120000 ./results/20260316_120000/report.html
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Parse arguments
 const resultsDir = process.argv[2];
-const outputFile = process.argv[3] || path.join(resultsDir, 'report.html');
+const outputFile = process.argv[3] || path.join(resultsDir, "report.html");
 
 if (!resultsDir || !fs.existsSync(resultsDir)) {
-  console.error('Error: Results directory not found');
+  console.error("Error: Results directory not found");
   process.exit(1);
 }
 
 // Find all JSON result files
-const jsonFiles = fs.readdirSync(resultsDir).filter((f) => f.endsWith('-results.json'));
+const jsonFiles = fs
+  .readdirSync(resultsDir)
+  .filter((f) => f.endsWith("-results.json"));
 
 if (jsonFiles.length === 0) {
-  console.error('Error: No JSON result files found in directory');
+  console.error("Error: No JSON result files found in directory");
   process.exit(1);
 }
 
@@ -38,8 +40,8 @@ if (jsonFiles.length === 0) {
  * Parse k6 JSON output
  */
 function parseK6Results(filePath) {
-  const data = fs.readFileSync(filePath, 'utf8');
-  const lines = data.split('\n').filter((line) => line.trim());
+  const data = fs.readFileSync(filePath, "utf8");
+  const lines = data.split("\n").filter((line) => line.trim());
 
   const metrics = {};
   const samples = [];
@@ -48,12 +50,12 @@ function parseK6Results(filePath) {
     try {
       const json = JSON.parse(line);
 
-      if (json.type === 'Metric') {
+      if (json.type === "Metric") {
         if (!metrics[json.metric]) {
           metrics[json.metric] = [];
         }
         metrics[json.metric].push(json.data?.value);
-      } else if (json.type === 'Point') {
+      } else if (json.type === "Point") {
         samples.push(json.data);
       }
     } catch {
@@ -282,11 +284,11 @@ function generateHTMLReport(results) {
   let avgResponseTime = 0;
 
   for (const [name, data] of Object.entries(results)) {
-    if (data.stats && data.stats['http_reqs']?.count) {
-      totalRequests += data.stats['http_reqs'].count;
+    if (data.stats && data.stats["http_reqs"]?.count) {
+      totalRequests += data.stats["http_reqs"].count;
     }
-    if (data.stats && data.stats['http_req_failed']?.count) {
-      totalErrors += data.stats['http_req_failed'].count;
+    if (data.stats && data.stats["http_req_failed"]?.count) {
+      totalErrors += data.stats["http_req_failed"].count;
     }
   }
 
@@ -295,7 +297,7 @@ function generateHTMLReport(results) {
                 <div class="card-title">Total Requests</div>
                 <div class="card-value">${totalRequests.toLocaleString()}</div>
             </div>
-            <div class="card ${totalErrors > 0 ? 'error' : 'success'}">
+            <div class="card ${totalErrors > 0 ? "error" : "success"}">
                 <div class="card-title">Errors</div>
                 <div class="card-value">${totalErrors}</div>
             </div>
@@ -317,26 +319,27 @@ function generateHTMLReport(results) {
                     </thead>
                     <tbody>`;
 
-    if (data.stats && data.stats['http_req_duration']) {
-      const duration = data.stats['http_req_duration'];
+    if (data.stats && data.stats["http_req_duration"]) {
+      const duration = data.stats["http_req_duration"];
       html += `
                         <tr>
                             <td><span class="success-indicator"><\/span>P95 Response Time</td>
-                            <td>${duration.p95?.toFixed(2) || 'N/A'} ms</td>
+                            <td>${duration.p95?.toFixed(2) || "N/A"} ms</td>
                         </tr>
                         <tr>
                             <td><span class="success-indicator"><\/span>P99 Response Time</td>
-                            <td>${duration.p99?.toFixed(2) || 'N/A'} ms</td>
+                            <td>${duration.p99?.toFixed(2) || "N/A"} ms</td>
                         </tr>
                         <tr>
                             <td><span class="success-indicator"><\/span>Avg Response Time</td>
-                            <td>${duration.avg?.toFixed(2) || 'N/A'} ms</td>
+                            <td>${duration.avg?.toFixed(2) || "N/A"} ms</td>
                         </tr>`;
     }
 
-    if (data.stats && data.stats['http_req_failed']) {
-      const errorRate = data.stats['http_req_failed'].rate || 0;
-      const errorClass = errorRate > 0.01 ? 'error-indicator' : 'success-indicator';
+    if (data.stats && data.stats["http_req_failed"]) {
+      const errorRate = data.stats["http_req_failed"].rate || 0;
+      const errorClass =
+        errorRate > 0.01 ? "error-indicator" : "success-indicator";
       html += `
                         <tr>
                             <td><span class="${errorClass}"><\/span>Error Rate</td>
@@ -369,7 +372,7 @@ try {
 
   for (const file of jsonFiles) {
     const filePath = path.join(resultsDir, file);
-    const testName = file.replace('-results.json', '');
+    const testName = file.replace("-results.json", "");
 
     console.log(`Parsing: ${testName}`);
 
@@ -381,7 +384,7 @@ try {
     };
 
     // Calculate statistics for common metrics
-    const metricKeys = ['http_req_duration', 'http_reqs', 'http_req_failed'];
+    const metricKeys = ["http_req_duration", "http_reqs", "http_req_failed"];
     for (const key of metricKeys) {
       if (metrics[key]) {
         results[testName].stats[key] = calculateStats(metrics[key]);
@@ -393,12 +396,12 @@ try {
   const htmlReport = generateHTMLReport(results);
 
   // Write report
-  fs.writeFileSync(outputFile, htmlReport, 'utf8');
+  fs.writeFileSync(outputFile, htmlReport, "utf8");
   console.log(`Report generated: ${outputFile}`);
-  console.log('Summary:');
+  console.log("Summary:");
   console.log(`  Tests: ${jsonFiles.length}`);
   console.log(`  Output: ${outputFile}`);
 } catch (error) {
-  console.error('Error generating report:', error.message);
+  console.error("Error generating report:", error.message);
   process.exit(1);
 }

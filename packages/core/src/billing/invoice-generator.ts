@@ -4,7 +4,7 @@
  * Supports line-item calculations, discount application, and PDF export.
  */
 
-import { PrismaClient } from '@witylogix/db';
+import { PrismaClient } from "@witylogix/db";
 
 // ─── LOCAL TYPE DEFINITIONS ─────────────────────────────────────────
 
@@ -13,14 +13,14 @@ type Decimal = number;
 
 // Helper to convert values to Decimal (number)
 const toDecimal = (value: number | string): Decimal => {
-  return typeof value === 'number' ? value : parseFloat(value);
+  return typeof value === "number" ? value : parseFloat(value);
 };
 
 export interface BillingPlan {
   id: string;
   name: string;
   price: number;
-  interval: 'monthly' | 'yearly';
+  interval: "monthly" | "yearly";
   trialDays?: number;
   limits?: Record<string, number | null>;
   createdAt?: Date;
@@ -31,7 +31,7 @@ export interface BillingSubscription {
   id: string;
   shopId: string;
   planId: string;
-  status: 'trialing' | 'active' | 'cancelled' | 'expired';
+  status: "trialing" | "active" | "cancelled" | "expired";
   currentPeriodStart: Date;
   currentPeriodEnd: Date;
   trialEnd?: Date | null;
@@ -49,7 +49,7 @@ export interface Invoice {
   amount: number;
   discountAmount?: number;
   currency: string;
-  status: 'draft' | 'finalized' | 'paid' | 'failed';
+  status: "draft" | "finalized" | "paid" | "failed";
   lineItems?: string; // JSON string
   couponCode?: string | null;
   dueDate: Date;
@@ -62,14 +62,14 @@ export interface Invoice {
 export class InvoiceError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'InvoiceError';
+    this.name = "InvoiceError";
   }
 }
 
 export class SubscriptionNotFoundError extends Error {
   constructor(subscriptionId: string) {
     super(`Subscription not found: ${subscriptionId}`);
-    this.name = 'SubscriptionNotFoundError';
+    this.name = "SubscriptionNotFoundError";
   }
 }
 
@@ -114,8 +114,8 @@ export class InvoiceGenerator {
         subscriptionId,
         shopId: subscription.shopId,
         amount: subtotal,
-        currency: 'usd',
-        status: 'draft',
+        currency: "usd",
+        status: "draft",
         lineItems: JSON.stringify(lineItems.items),
         dueDate,
       },
@@ -134,7 +134,9 @@ export class InvoiceGenerator {
     newPlan: BillingPlan,
   ): Promise<Invoice> {
     const subscription = await this.getSubscriptionWithPlan(subscriptionId);
-    const daysRemaining = this.calculateDaysRemaining(subscription.currentPeriodEnd);
+    const daysRemaining = this.calculateDaysRemaining(
+      subscription.currentPeriodEnd,
+    );
 
     const proration = this.calculateProration(oldPlan, newPlan, daysRemaining);
 
@@ -156,9 +158,7 @@ export class InvoiceGenerator {
       quantity: 1,
     });
 
-    const subtotal = proration.netDueAmount > 0
-      ? proration.netDueAmount
-      : 0;
+    const subtotal = proration.netDueAmount > 0 ? proration.netDueAmount : 0;
 
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 3); // Prorations due in 3 days
@@ -168,8 +168,8 @@ export class InvoiceGenerator {
         subscriptionId,
         shopId: subscription.shopId,
         amount: subtotal,
-        currency: 'usd',
-        status: 'draft',
+        currency: "usd",
+        status: "draft",
         lineItems: JSON.stringify(items),
         dueDate,
       },
@@ -210,11 +210,14 @@ export class InvoiceGenerator {
    * Apply discount to invoice
    * Supports both percentage and fixed-amount discounts
    */
-  async applyDiscounts(invoiceId: string, couponCode?: string): Promise<Invoice> {
+  async applyDiscounts(
+    invoiceId: string,
+    couponCode?: string,
+  ): Promise<Invoice> {
     const invoice = await this.getInvoice(invoiceId);
 
-    if (invoice.status !== 'draft') {
-      throw new InvoiceError('Can only apply discounts to draft invoices');
+    if (invoice.status !== "draft") {
+      throw new InvoiceError("Can only apply discounts to draft invoices");
     }
 
     let discountAmount = 0;
@@ -246,19 +249,19 @@ export class InvoiceGenerator {
   async finalizeInvoice(invoiceId: string): Promise<Invoice> {
     const invoice = await this.getInvoice(invoiceId);
 
-    if (invoice.status !== 'draft') {
-      throw new InvoiceError('Only draft invoices can be finalized');
+    if (invoice.status !== "draft") {
+      throw new InvoiceError("Only draft invoices can be finalized");
     }
 
     const updated = await (this.prisma as any).invoice.update({
       where: { id: invoiceId },
       data: {
-        status: 'finalized',
+        status: "finalized",
       },
     });
 
     // Emit event for payment processing
-    this.emitEvent('invoice.finalized', {
+    this.emitEvent("invoice.finalized", {
       invoiceId,
       amount: invoice.amount,
       dueDate: invoice.dueDate,
@@ -284,7 +287,7 @@ export class InvoiceGenerator {
     const [invoices, total] = await Promise.all([
       (this.prisma as any).invoice.findMany({
         where: { shopId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip,
         take: options.limit,
       }),
@@ -309,14 +312,16 @@ export class InvoiceGenerator {
    */
   async exportInvoicePdf(invoiceId: string): Promise<Buffer> {
     const invoice = await this.getInvoice(invoiceId);
-    const subscription = await this.getSubscriptionWithPlan(invoice.subscriptionId);
+    const subscription = await this.getSubscriptionWithPlan(
+      invoice.subscriptionId,
+    );
 
     // Generate HTML invoice template
     const html = this.generateInvoiceHtml(invoice, subscription);
 
     // Simple HTML to Buffer conversion
     // In production, would use a library like pdf-lib or puppeteer
-    const buffer = Buffer.from(html, 'utf-8');
+    const buffer = Buffer.from(html, "utf-8");
 
     return buffer;
   }
@@ -338,7 +343,9 @@ export class InvoiceGenerator {
   private async getSubscriptionWithPlan(
     subscriptionId: string,
   ): Promise<BillingSubscription & { plan: BillingPlan }> {
-    const subscription = await (this.prisma as any).billingSubscription.findUnique({
+    const subscription = await (
+      this.prisma as any
+    ).billingSubscription.findUnique({
       where: { id: subscriptionId },
       include: { plan: true },
     });
@@ -367,7 +374,7 @@ export class InvoiceGenerator {
   } {
     const oldPrice = toDecimal(oldPlan.price);
     const newPrice = toDecimal(newPlan.price);
-    const daysInPeriod = oldPlan.interval === 'yearly' ? 365 : 30;
+    const daysInPeriod = oldPlan.interval === "yearly" ? 365 : 30;
 
     // Daily rates
     const oldDailyRate = oldPrice / daysInPeriod;
@@ -386,17 +393,20 @@ export class InvoiceGenerator {
     };
   }
 
-  private calculateCouponDiscount(couponCode: string, invoiceAmount: number): number {
+  private calculateCouponDiscount(
+    couponCode: string,
+    invoiceAmount: number,
+  ): number {
     // Placeholder coupon logic
     // In production, would lookup coupon in database and apply rules
     const codeUpper = couponCode.toUpperCase();
 
-    if (codeUpper === 'WELCOME10') {
+    if (codeUpper === "WELCOME10") {
       // 10% off
       return invoiceAmount * 0.1;
     }
 
-    if (codeUpper === 'SAVE20') {
+    if (codeUpper === "SAVE20") {
       // 20% off
       return invoiceAmount * 0.2;
     }
@@ -408,9 +418,11 @@ export class InvoiceGenerator {
     invoice: Invoice,
     subscription: BillingSubscription & { plan: BillingPlan },
   ): string {
-    let lineItemsHtml = '';
+    let lineItemsHtml = "";
     try {
-      const items = JSON.parse(typeof invoice.lineItems === 'string' ? invoice.lineItems : '[]') as LineItem[];
+      const items = JSON.parse(
+        typeof invoice.lineItems === "string" ? invoice.lineItems : "[]",
+      ) as LineItem[];
       lineItemsHtml = items
         .map(
           (item) =>
@@ -421,7 +433,7 @@ export class InvoiceGenerator {
           <td style="text-align:right">$${(item.amount * item.quantity).toFixed(2)}</td>
         </tr>`,
         )
-        .join('');
+        .join("");
     } catch {
       lineItemsHtml = '<tr><td colspan="4">Invalid line items</td></tr>';
     }
@@ -482,7 +494,7 @@ export class InvoiceGenerator {
       </table>
 
       <div class="total-section">
-        ${invoice.discountAmount ? `<p>Discount: -$${invoice.discountAmount.toFixed(2)}</p>` : ''}
+        ${invoice.discountAmount ? `<p>Discount: -$${invoice.discountAmount.toFixed(2)}</p>` : ""}
         <p class="total-row">Total: $${invoice.amount.toFixed(2)}</p>
       </div>
     </div>

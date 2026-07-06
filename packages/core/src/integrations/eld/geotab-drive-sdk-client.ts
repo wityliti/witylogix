@@ -219,7 +219,7 @@ export class GeotabDriveClient extends ELDAdapter {
   async getDriverLogs(
     driverId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<ELDDriverLog[]> {
     const response = await this.executeWithRetry(() =>
       this.jsonRpcCall<GeotabDutyStatusLog[]>("Get", {
@@ -229,7 +229,7 @@ export class GeotabDriveClient extends ELDAdapter {
           startDateTime: startDate.toISOString(),
           endDateTime: endDate.toISOString(),
         },
-      })
+      }),
     );
 
     return response.map((log, idx) => ({
@@ -275,7 +275,7 @@ export class GeotabDriveClient extends ELDAdapter {
           driverId: driverId,
         },
         resultsLimit: 1,
-      })
+      }),
     );
 
     const currentLog = logs[0] || {
@@ -305,7 +305,7 @@ export class GeotabDriveClient extends ELDAdapter {
   async setDutyStatus(
     driverId: string,
     status: DutyStatus,
-    location?: { latitude: number; longitude: number }
+    location?: { latitude: number; longitude: number },
   ): Promise<ELDDutyStatus> {
     const dutyType = this.mapDutyStatusToGeotab(status);
 
@@ -326,7 +326,7 @@ export class GeotabDriveClient extends ELDAdapter {
       this.jsonRpcCall<string>("Add", {
         typeName: "DutyStatusLog",
         entity: log,
-      })
+      }),
     );
 
     this.logEvent({
@@ -341,7 +341,10 @@ export class GeotabDriveClient extends ELDAdapter {
   /**
    * Get HOS violations for driver.
    */
-  async getViolations(driverId: string, days: number = 30): Promise<ELDViolation[]> {
+  async getViolations(
+    driverId: string,
+    days: number = 30,
+  ): Promise<ELDViolation[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -352,7 +355,7 @@ export class GeotabDriveClient extends ELDAdapter {
           driverId,
           startDate: startDate.toISOString(),
         },
-      })
+      }),
     );
 
     return exceptions
@@ -362,7 +365,7 @@ export class GeotabDriveClient extends ELDAdapter {
           "After-HoursDriving",
           "ExcessiveSpeeding",
           "IdleTime",
-        ].includes(e.ruleName || "")
+        ].includes(e.ruleName || ""),
       )
       .map((e) => ({
         id: e.id,
@@ -371,7 +374,7 @@ export class GeotabDriveClient extends ELDAdapter {
         vehicleId: e.deviceId || "",
         violationType: this.mapExceptionToViolationType(e.ruleName || ""),
         description: e.ruleName || "Unknown violation",
-        severity: ("warning" as const),
+        severity: "warning" as const,
         detectedAt: e.dateTime ? new Date(e.dateTime) : new Date(),
         violationTimeRange: {
           start: e.dateTime ? new Date(e.dateTime) : new Date(),
@@ -391,7 +394,7 @@ export class GeotabDriveClient extends ELDAdapter {
       this.jsonRpcCall<GeotabDevice>("Get", {
         typeName: "Device",
         search: { id: vehicleId },
-      })
+      }),
     );
 
     return {
@@ -431,7 +434,7 @@ export class GeotabDriveClient extends ELDAdapter {
       this.jsonRpcCall<GeotabDevice[]>("Get", {
         typeName: "Device",
         search: {},
-      })
+      }),
     );
 
     return Promise.all(devices.map((d) => this.getVehicle(d.id)));
@@ -446,12 +449,13 @@ export class GeotabDriveClient extends ELDAdapter {
       deviceId: dvir.vehicleId,
       dateTime: new Date().toISOString(),
       inspectionType: dvir.type === "pre-trip" ? "PreTrip" : "PostTrip",
-      defectList: dvir.defects?.map((d) => ({
-        id: "",
-        defectListId: "",
-        remark: d.description,
-        severity: this.mapSeverityToGeotab(d.severity),
-      })) || [],
+      defectList:
+        dvir.defects?.map((d) => ({
+          id: "",
+          defectListId: "",
+          remark: d.description,
+          severity: this.mapSeverityToGeotab(d.severity),
+        })) || [],
       signature: dvir.driverRemarks,
       certificationDate: new Date().toISOString(),
     };
@@ -460,7 +464,7 @@ export class GeotabDriveClient extends ELDAdapter {
       this.jsonRpcCall<string>("Add", {
         typeName: "DVIRLog",
         entity: dvirLog,
-      })
+      }),
     );
 
     this.logEvent({
@@ -501,7 +505,7 @@ export class GeotabDriveClient extends ELDAdapter {
             startDateTime: startDate.toISOString(),
           },
         },
-      })
+      }),
     );
 
     return dvirs.map((d) => ({
@@ -510,13 +514,16 @@ export class GeotabDriveClient extends ELDAdapter {
       driverId: d.driverId,
       vehicleId: d.deviceId,
       inspectionTime: new Date(d.dateTime),
-      type: (d.inspectionType?.toLowerCase().replace("trip", "-trip") as any) || "pre-trip",
+      type:
+        (d.inspectionType?.toLowerCase().replace("trip", "-trip") as any) ||
+        "pre-trip",
       condition: "pass",
-      defects: d.defectList?.map((df) => ({
-        component: df.defectListId,
-        severity: this.mapGeotabSeverity(df.severity),
-        description: df.remark || "",
-      })) || [],
+      defects:
+        d.defectList?.map((df) => ({
+          component: df.defectListId,
+          severity: this.mapGeotabSeverity(df.severity),
+          description: df.remark || "",
+        })) || [],
       driverRemarks: d.signature,
       mechanicRemarks: d.certificationRemark,
       submittedAt: new Date(d.dateTime),
@@ -528,13 +535,13 @@ export class GeotabDriveClient extends ELDAdapter {
    * Get incremental data using GetFeed (efficient sync).
    */
   async getFeed(
-    feedToken?: string
+    feedToken?: string,
   ): Promise<{ feed: Array<unknown>; token: string; version: string }> {
     const result = await this.executeWithRetry(() =>
       this.jsonRpcCall<GeotabFeedToken>("GetFeed", {
         feedToken: feedToken || "0",
         typeName: "DutyStatusLog",
-      })
+      }),
     );
     return {
       feed: result.feed ?? [],
@@ -551,7 +558,7 @@ export class GeotabDriveClient extends ELDAdapter {
       this.jsonRpcCall<GeotabZone[]>("Get", {
         typeName: "Zone",
         search: {},
-      })
+      }),
     );
   }
 
@@ -561,7 +568,7 @@ export class GeotabDriveClient extends ELDAdapter {
   async getExceptions(
     driverId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<GeotabException[]> {
     return this.executeWithRetry(() =>
       this.jsonRpcCall<GeotabException[]>("Get", {
@@ -571,14 +578,17 @@ export class GeotabDriveClient extends ELDAdapter {
           startDate: startDate.toISOString(),
           endDate: endDate.toISOString(),
         },
-      })
+      }),
     );
   }
 
   /**
    * Send text message to driver.
    */
-  async sendMessageToDriver(deviceId: string, message: string): Promise<string> {
+  async sendMessageToDriver(
+    deviceId: string,
+    message: string,
+  ): Promise<string> {
     const textMsg: Partial<GeotabTextMessage> = {
       deviceId,
       messageContent: message,
@@ -589,7 +599,7 @@ export class GeotabDriveClient extends ELDAdapter {
       this.jsonRpcCall<string>("Add", {
         typeName: "TextMessage",
         entity: textMsg,
-      })
+      }),
     );
   }
 
@@ -601,7 +611,7 @@ export class GeotabDriveClient extends ELDAdapter {
       this.jsonRpcCall<GeotabStatusData[]>("Get", {
         typeName: "StatusData",
         search: { deviceId },
-      })
+      }),
     );
   }
 
@@ -613,19 +623,22 @@ export class GeotabDriveClient extends ELDAdapter {
       this.jsonRpcCall<string>("Add", {
         typeName: "User",
         entity: driver,
-      })
+      }),
     );
   }
 
   /**
    * Update user/driver.
    */
-  async updateDriver(userId: string, updates: Partial<GeotabDriver>): Promise<void> {
+  async updateDriver(
+    userId: string,
+    updates: Partial<GeotabDriver>,
+  ): Promise<void> {
     await this.executeWithRetry(() =>
       this.jsonRpcCall<void>("Set", {
         typeName: "User",
         entity: { ...updates, id: userId },
-      })
+      }),
     );
   }
 
@@ -690,7 +703,10 @@ export class GeotabDriveClient extends ELDAdapter {
   /**
    * Make JSONRPC 2.0 call to Geotab API.
    */
-  private async jsonRpcCall<T>(method: string, params: Record<string, unknown>): Promise<T> {
+  private async jsonRpcCall<T>(
+    method: string,
+    params: Record<string, unknown>,
+  ): Promise<T> {
     const requestId = Math.random().toString(36).substring(7);
 
     const request: JsonRpcRequest = {
@@ -710,7 +726,7 @@ export class GeotabDriveClient extends ELDAdapter {
 
     if (!response.ok) {
       throw new Error(
-        `Geotab API error: ${response.status} ${response.statusText}`
+        `Geotab API error: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -757,7 +773,7 @@ export class GeotabDriveClient extends ELDAdapter {
   private mapExceptionToViolationType(ruleName: string): any {
     const map: Record<string, string> = {
       "After-HoursDriving": "hours-14",
-      "SpecializedDrivingCycle": "hours-60-70",
+      SpecializedDrivingCycle: "hours-60-70",
       ExcessiveSpeeding: "hours-14",
       IdleTime: "break-30min",
     };

@@ -3,9 +3,11 @@
 ## Quick Start Integration
 
 ### Step 1: Update Settings Layout Navigation
+
 **File**: `/apps/dashboard/src/app/(dashboard)/settings/layout.tsx`
 
 Add the notification link to `SIDEBAR_LINKS`:
+
 ```tsx
 {
   href: "/settings/notifications",
@@ -16,6 +18,7 @@ Add the notification link to `SIDEBAR_LINKS`:
 ```
 
 ### Step 2: Register API Routes
+
 **File**: `/apps/api/src/index.ts` (or main server file)
 
 ```typescript
@@ -26,7 +29,9 @@ app.use("/api", notificationPreferencesRouter);
 ```
 
 ### Step 3: Update Environment Variables
+
 Add to `.env.local`:
+
 ```env
 # Email Provider
 EMAIL_PROVIDER=sendgrid
@@ -50,6 +55,7 @@ FCM_PRIVATE_KEY=your_key
 ```
 
 ### Step 4: Database Migration
+
 Run migration to create the `notification_preferences` table:
 
 ```sql
@@ -76,11 +82,13 @@ CREATE INDEX idx_notification_prefs_customer_id
 ```
 
 Or using Prisma:
+
 ```bash
 npx prisma migrate dev --name add_notification_preferences
 ```
 
 ### Step 5: Add Widget to Dashboard
+
 **File**: `/apps/dashboard/src/app/page.tsx`
 
 ```typescript
@@ -102,6 +110,7 @@ export default function DashboardPage() {
 ```
 
 ### Step 6: Run Tests
+
 ```bash
 # Run preference manager tests
 npm test -- preference-manager.test.ts
@@ -114,6 +123,7 @@ npm test -- --coverage notification
 ```
 
 ### Step 7: Start Development Server
+
 ```bash
 # Install dependencies if needed
 npm install
@@ -129,6 +139,7 @@ npm run dev
 ## Verification Checklist
 
 ### ✅ Settings Integration
+
 - [ ] Notification link appears in settings sidebar
 - [ ] Settings page loads without errors
 - [ ] Channel configuration forms work
@@ -136,6 +147,7 @@ npm run dev
 - [ ] Credentials can be saved/retrieved
 
 ### ✅ Template System
+
 - [ ] Templates page loads with sample data
 - [ ] Filtering by event type works
 - [ ] Template editor opens correctly
@@ -144,6 +156,7 @@ npm run dev
 - [ ] Test send button works
 
 ### ✅ WhatsApp Manager
+
 - [ ] WhatsApp page loads
 - [ ] Templates display with status
 - [ ] New template modal opens
@@ -151,6 +164,7 @@ npm run dev
 - [ ] Component builder functions
 
 ### ✅ Notification Log
+
 - [ ] Log page displays notifications
 - [ ] Filtering works (channel, status, date)
 - [ ] Detail modal opens
@@ -158,6 +172,7 @@ npm run dev
 - [ ] Statistics update correctly
 
 ### ✅ API Integration
+
 - [ ] GET /notifications/preferences/:customerId returns data
 - [ ] PUT /notifications/preferences/:customerId updates
 - [ ] POST /notifications/preferences/unsubscribe works
@@ -165,6 +180,7 @@ npm run dev
 - [ ] Error handling returns proper status codes
 
 ### ✅ Widget Integration
+
 - [ ] NotificationStatsWidget renders on dashboard
 - [ ] Statistics display correct values
 - [ ] Charts visualize properly
@@ -216,11 +232,13 @@ witylogix-platform/
 ### Test With cURL
 
 **Get preferences:**
+
 ```bash
 curl http://localhost:3000/api/notifications/preferences/customer-123
 ```
 
 **Update preferences:**
+
 ```bash
 curl -X PUT http://localhost:3000/api/notifications/preferences/customer-123 \
   -H "Content-Type: application/json" \
@@ -234,11 +252,13 @@ curl -X PUT http://localhost:3000/api/notifications/preferences/customer-123 \
 ```
 
 **Check if should send:**
+
 ```bash
 curl "http://localhost:3000/api/notifications/preferences/customer-123/check?channel=email&eventType=order_confirmed"
 ```
 
 **Unsubscribe:**
+
 ```bash
 curl -X POST http://localhost:3000/api/notifications/preferences/unsubscribe \
   -H "Content-Type: application/json" \
@@ -263,13 +283,17 @@ curl -X POST http://localhost:3000/api/notifications/preferences/unsubscribe \
 ## Common Issues & Solutions
 
 ### Issue: Database connection error
+
 **Solution**: Verify DATABASE_URL in .env and database is running
+
 ```bash
 npm run db:push  # Sync Prisma schema
 ```
 
 ### Issue: API route not found (404)
+
 **Solution**: Ensure route is registered in main server file
+
 ```typescript
 // Check if route is imported and used
 import notificationPreferencesRouter from "./routes/notification-preferences";
@@ -277,7 +301,9 @@ app.use("/api", notificationPreferencesRouter);
 ```
 
 ### Issue: Settings page blank/not loading
+
 **Solution**: Check browser console for errors, verify imports
+
 ```bash
 # Clear build cache
 npm run clean
@@ -286,14 +312,18 @@ npm run dev
 ```
 
 ### Issue: Credentials not masking properly
+
 **Solution**: Check the reveal toggle logic
+
 ```tsx
 // In page.tsx, look for revealedCredentials state
 const isRevealed = revealedCredentials[credKey];
 ```
 
 ### Issue: Template variables not inserting
+
 **Solution**: Verify variable name format and insertion handler
+
 ```tsx
 // Variables should be in format: {{variable_name}}
 const variable = `{{${variableName}}}`;
@@ -304,16 +334,19 @@ const variable = `{{${variableName}}}`;
 ## Performance Optimization Tips
 
 1. **API Caching**: Add Redis caching for preferences (TTL: 15 minutes)
+
    ```typescript
    const cached = await redis.get(`prefs:${customerId}`);
    ```
 
 2. **Database Indexing**: Ensure indexes exist
+
    ```sql
    CREATE INDEX idx_prefs_customer ON notification_preferences(customerId);
    ```
 
 3. **Lazy Loading**: Templates table uses pagination
+
    ```tsx
    // Implement infinite scroll or cursor pagination
    const [page, setPage] = useState(1);
@@ -329,6 +362,7 @@ const variable = `{{${variableName}}}`;
 ## Monitoring & Logging
 
 ### Add Logging to API
+
 ```typescript
 import logger from "winston";
 
@@ -339,6 +373,7 @@ router.get("/notifications/preferences/:customerId", (req, res) => {
 ```
 
 ### Monitor WhatsApp Sync
+
 ```typescript
 async function syncWhatsAppTemplates(orgId: string) {
   logger.info(`Starting WhatsApp sync for org ${orgId}`);
@@ -352,6 +387,7 @@ async function syncWhatsAppTemplates(orgId: string) {
 ```
 
 ### Track Preference Updates
+
 ```typescript
 // Add to database update
 const audit = {
@@ -369,22 +405,26 @@ await db.auditLog.create(audit);
 ## Troubleshooting Guide
 
 ### Settings page loads but forms don't work
+
 - Check that Switch, Input, Button components are imported
-- Verify CSS classes are valid (--wl-* variables exist)
+- Verify CSS classes are valid (--wl-\* variables exist)
 - Check browser console for JavaScript errors
 
 ### API returns 400 validation error
+
 - Validate JSON payload matches Zod schema
 - Check for required fields: customerId, channel, etc.
 - Use Postman to test payload before integrating
 
 ### WhatsApp template sync fails
+
 - Verify Meta Business Account ID is correct
 - Check access token hasn't expired
 - Ensure phone number ID is correct
 - Test Meta API directly
 
 ### Notification log shows no data
+
 - Verify notification records exist in database
 - Check date range filter isn't too restrictive
 - Clear browser cache and reload
@@ -417,6 +457,7 @@ await db.auditLog.create(audit);
 ## Questions & Support
 
 For questions or issues:
+
 1. Check documentation files first
 2. Review inline code comments
 3. Run test suite to isolate issues
@@ -428,6 +469,7 @@ For questions or issues:
 ## Deployment to Production
 
 ### Pre-deployment
+
 - [ ] All tests passing
 - [ ] Code review completed
 - [ ] Environment variables configured
@@ -435,6 +477,7 @@ For questions or issues:
 - [ ] Backup existing database
 
 ### Deployment
+
 ```bash
 # 1. Run migrations
 npx prisma migrate deploy
@@ -450,6 +493,7 @@ curl http://api.example.com/api/notifications/preferences/test-customer
 ```
 
 ### Post-deployment
+
 - [ ] Monitor error logs
 - [ ] Test all features
 - [ ] Verify database queries

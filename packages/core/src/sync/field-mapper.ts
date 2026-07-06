@@ -112,14 +112,17 @@ export class FieldMapper {
     this.transformers["bool_convert"] = (value: unknown) => {
       if (typeof value === "boolean") return value;
       if (typeof value === "string") {
-        return value.toLowerCase() === "true" || value === "1" || value === "yes";
+        return (
+          value.toLowerCase() === "true" || value === "1" || value === "yes"
+        );
       }
       return Boolean(value);
     };
 
     // Number conversion with rounding
     this.transformers["number_round_2"] = (value: unknown) => {
-      const num = typeof value === "string" ? parseFloat(value) : (value as number);
+      const num =
+        typeof value === "string" ? parseFloat(value) : (value as number);
       return isNaN(num) ? 0 : Math.round(num * 100) / 100;
     };
 
@@ -161,7 +164,10 @@ export class FieldMapper {
    * @param name - Transformer function name
    * @param fn - Transformer function
    */
-  public registerTransformer(name: string, fn: (value: unknown) => unknown): void {
+  public registerTransformer(
+    name: string,
+    fn: (value: unknown) => unknown,
+  ): void {
     this.transformers[name] = fn;
   }
 
@@ -195,7 +201,7 @@ export class FieldMapper {
   private setNestedValue(
     obj: Record<string, unknown>,
     path: string,
-    value: unknown
+    value: unknown,
   ): void {
     const keys = path.split(".");
     const lastKey = keys.pop();
@@ -260,7 +266,7 @@ export class FieldMapper {
   public mapToUnified(
     platformData: Record<string, unknown>,
     orderId: string,
-    externalOrderId: string
+    externalOrderId: string,
   ): PlatformOrder {
     const order: Partial<PlatformOrder> = {
       orderId,
@@ -272,7 +278,10 @@ export class FieldMapper {
 
     // Apply field mappings
     for (const mapping of this.config.fieldMappings) {
-      const sourceValue = this.getNestedValue(platformData, mapping.sourceField);
+      const sourceValue = this.getNestedValue(
+        platformData,
+        mapping.sourceField,
+      );
 
       // Skip required field validation during mapping, will validate after
       if (sourceValue === undefined && !mapping.required) {
@@ -283,12 +292,21 @@ export class FieldMapper {
 
       // Apply transformer if specified
       if (mapping.transformer) {
-        if (mapping.transformer.includes("=>") || mapping.transformer.includes("function")) {
+        if (
+          mapping.transformer.includes("=>") ||
+          mapping.transformer.includes("function")
+        ) {
           // Custom JavaScript transformer
-          transformedValue = this.executeCustomTransformer(sourceValue, mapping.transformer);
+          transformedValue = this.executeCustomTransformer(
+            sourceValue,
+            mapping.transformer,
+          );
         } else {
           // Built-in transformer name
-          transformedValue = this.applyTransformer(sourceValue, mapping.transformer);
+          transformedValue = this.applyTransformer(
+            sourceValue,
+            mapping.transformer,
+          );
         }
       }
 
@@ -320,7 +338,10 @@ export class FieldMapper {
       if (mapping.transformer) {
         // Most transformers are one-way, but some support reverse
         if (mapping.transformer === "currency_convert") {
-          transformedValue = this.applyTransformer(unifiedValue, "currency_convert");
+          transformedValue = this.applyTransformer(
+            unifiedValue,
+            "currency_convert",
+          );
         } else if (mapping.transformer === "date_format_iso") {
           // Already in ISO format, keep as-is
           transformedValue = unifiedValue;
@@ -363,7 +384,7 @@ export class FieldMapper {
    */
   public typeCheck(
     value: unknown,
-    expectedType: "string" | "number" | "boolean" | "date" | "object" | "array"
+    expectedType: "string" | "number" | "boolean" | "date" | "object" | "array",
   ): boolean {
     if (value === null || value === undefined) {
       return false;
@@ -377,7 +398,10 @@ export class FieldMapper {
       case "boolean":
         return typeof value === "boolean";
       case "date":
-        return value instanceof Date || (typeof value === "string" && !isNaN(Date.parse(value)));
+        return (
+          value instanceof Date ||
+          (typeof value === "string" && !isNaN(Date.parse(value)))
+        );
       case "object":
         return typeof value === "object" && !Array.isArray(value);
       case "array":
@@ -397,7 +421,7 @@ export class FieldMapper {
   public preview(
     platformData: Record<string, unknown>,
     orderId: string,
-    externalOrderId: string
+    externalOrderId: string,
   ): { data: PlatformOrder; warnings: string[] } {
     const warnings: string[] = [];
 
@@ -412,7 +436,7 @@ export class FieldMapper {
       const value = this.getNestedValue(platformData, mapping.sourceField);
       if (value !== undefined && !this.typeCheck(value, mapping.dataType)) {
         warnings.push(
-          `Type mismatch in field ${mapping.sourceField}: expected ${mapping.dataType}, got ${typeof value}`
+          `Type mismatch in field ${mapping.sourceField}: expected ${mapping.dataType}, got ${typeof value}`,
         );
       }
     }

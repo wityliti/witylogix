@@ -50,7 +50,7 @@ class CircuitBreaker {
 
     if (this.config.slidingWindowType === "time") {
       this.slidingWindow = this.slidingWindow.filter(
-        (t) => now - t < this.config.slidingWindowSize * 1000
+        (t) => now - t < this.config.slidingWindowSize * 1000,
       );
     } else {
       if (this.slidingWindow.length >= this.config.slidingWindowSize) {
@@ -83,7 +83,7 @@ class CircuitBreaker {
 
     if (this.config.slidingWindowType === "time") {
       this.failureWindow = this.failureWindow.filter(
-        (t) => now - t < this.config.slidingWindowSize * 1000
+        (t) => now - t < this.config.slidingWindowSize * 1000,
       );
     } else {
       if (this.failureWindow.length >= this.config.slidingWindowSize) {
@@ -102,8 +102,7 @@ class CircuitBreaker {
     perProvider.failures++;
     this.perProviderState.set(provider, perProvider);
 
-    const failureRate =
-      this.failureWindow.length / this.slidingWindow.length;
+    const failureRate = this.failureWindow.length / this.slidingWindow.length;
 
     if (
       this.failureWindow.length >= this.config.failureThreshold ||
@@ -113,24 +112,20 @@ class CircuitBreaker {
         this.transitionTo(
           "open",
           `failure threshold exceeded (${this.failureWindow.length})`,
-          provider
+          provider,
         );
       }
     }
 
     if (this.state.state === "half-open") {
-      this.transitionTo(
-        "open",
-        "failure during half-open probe",
-        provider
-      );
+      this.transitionTo("open", "failure during half-open probe", provider);
     }
   }
 
   transitionTo(
     newState: "closed" | "open" | "half-open",
     reason: string,
-    providerId?: string
+    providerId?: string,
   ) {
     const provider = providerId || "default";
     const oldState = this.state.state;
@@ -140,7 +135,7 @@ class CircuitBreaker {
 
     if (newState === "half-open") {
       this.state.nextProbeTime = new Date(
-        Date.now() + this.config.halfOpenProbeInterval
+        Date.now() + this.config.halfOpenProbeInterval,
       );
       this.state.successes = 0;
     }
@@ -150,9 +145,7 @@ class CircuitBreaker {
       this.failureWindow = [];
     }
 
-    this.events.push(
-      createStateTransitionEvent(oldState, newState, reason)
-    );
+    this.events.push(createStateTransitionEvent(oldState, newState, reason));
   }
 
   probeHalfOpen(providerId?: string): boolean {
@@ -178,8 +171,7 @@ class CircuitBreaker {
     if (this.state.state === "closed") return true;
     if (this.state.state === "open") {
       if (
-        this.state.lastTransition.getTime() +
-          this.config.timeout <
+        this.state.lastTransition.getTime() + this.config.timeout <
         Date.now()
       ) {
         this.transitionTo("half-open", "timeout expired", provider);
@@ -228,7 +220,7 @@ describe("Gateway V2 - Circuit Breaker", () => {
       const breaker = new CircuitBreaker(
         createCircuitBreakerConfig({
           failureThreshold: 2,
-        })
+        }),
       );
 
       breaker.recordFailure();
@@ -244,7 +236,7 @@ describe("Gateway V2 - Circuit Breaker", () => {
       const breaker = new CircuitBreaker(
         createCircuitBreakerConfig({
           halfOpenProbeInterval: 5000,
-        })
+        }),
       );
 
       breaker.recordFailure();
@@ -283,7 +275,7 @@ describe("Gateway V2 - Circuit Breaker", () => {
         createCircuitBreakerConfig({
           slidingWindowType: "count",
           slidingWindowSize: 10,
-        })
+        }),
       );
 
       for (let i = 0; i < 8; i++) {
@@ -305,7 +297,7 @@ describe("Gateway V2 - Circuit Breaker", () => {
         createCircuitBreakerConfig({
           slidingWindowType: "count",
           slidingWindowSize: 5,
-        })
+        }),
       );
 
       for (let i = 0; i < 10; i++) {
@@ -324,7 +316,7 @@ describe("Gateway V2 - Circuit Breaker", () => {
         createCircuitBreakerConfig({
           slidingWindowType: "time",
           slidingWindowSize: 5, // 5 seconds
-        })
+        }),
       );
 
       breaker.recordSuccess();
@@ -346,7 +338,7 @@ describe("Gateway V2 - Circuit Breaker", () => {
       const breaker = new CircuitBreaker(
         createCircuitBreakerConfig({
           failureThreshold: 3,
-        })
+        }),
       );
 
       expect(breaker.getState().state).toBe("closed");
@@ -362,7 +354,7 @@ describe("Gateway V2 - Circuit Breaker", () => {
       const breaker = new CircuitBreaker(
         createCircuitBreakerConfig({
           failureThreshold: 2,
-        })
+        }),
       );
 
       breaker.recordFailure();
@@ -428,7 +420,7 @@ describe("Gateway V2 - Circuit Breaker", () => {
       const breaker = new CircuitBreaker(
         createCircuitBreakerConfig({
           failureThreshold: 2,
-        })
+        }),
       );
 
       breaker.recordFailure("stripe");
@@ -472,7 +464,7 @@ describe("Gateway V2 - Circuit Breaker", () => {
       const breaker = new CircuitBreaker(
         createCircuitBreakerConfig({
           timeout: 1000,
-        })
+        }),
       );
 
       breaker.transitionTo("open", "test");

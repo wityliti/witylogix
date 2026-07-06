@@ -4,13 +4,13 @@
  * ~250 lines
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   mockCarrierRates,
   mockRateRequestPayload,
   mockCachedRate,
   mockMultiCurrencyRates,
-} from '../fixtures/shipping-fixtures.js';
+} from "../fixtures/shipping-fixtures.js";
 
 interface Rate {
   carrier: string;
@@ -27,7 +27,10 @@ interface RateCache {
 // Mock rate engine
 class RateEngine {
   private cache: RateCache = {};
-  private circuitBreaker: Record<string, { failures: number; blocked: boolean }> = {};
+  private circuitBreaker: Record<
+    string,
+    { failures: number; blocked: boolean }
+  > = {};
 
   async fetchRate(carrier: string): Promise<Rate | null> {
     // Simulate circuit breaker
@@ -36,19 +39,21 @@ class RateEngine {
     }
 
     // Simulate carrier-specific delays/failures
-    if (carrier === 'ontrac') {
+    if (carrier === "ontrac") {
       return new Promise((resolve) => {
         setTimeout(() => resolve(mockCarrierRates.ontrac), 100);
       });
     }
 
-    if (carrier === 'timeout_carrier') {
+    if (carrier === "timeout_carrier") {
       return new Promise((resolve) => {
         setTimeout(() => resolve(null), 15000); // Timeout after 10s
       });
     }
 
-    return Promise.resolve(mockCarrierRates[carrier as keyof typeof mockCarrierRates] || null);
+    return Promise.resolve(
+      mockCarrierRates[carrier as keyof typeof mockCarrierRates] || null,
+    );
   }
 
   async fetchParallelRates(carriers: string[]): Promise<(Rate | null)[]> {
@@ -113,7 +118,9 @@ class RateEngine {
       USD: 1.0,
     };
 
-    const normalized = rate.cost * (exchangeRates[rate.currency] || 1) / (exchangeRates[targetCurrency] || 1);
+    const normalized =
+      (rate.cost * (exchangeRates[rate.currency] || 1)) /
+      (exchangeRates[targetCurrency] || 1);
 
     return {
       ...rate,
@@ -135,7 +142,7 @@ class RateEngine {
   }
 }
 
-describe('Rate Accuracy', () => {
+describe("Rate Accuracy", () => {
   let engine: RateEngine;
 
   beforeEach(() => {
@@ -149,18 +156,18 @@ describe('Rate Accuracy', () => {
     engine.clearCache();
   });
 
-  describe('Carrier Rate Consistency', () => {
-    it('should return consistent rates across multiple calls', async () => {
-      const rate1 = await engine.fetchRate('fedex');
-      const rate2 = await engine.fetchRate('fedex');
+  describe("Carrier Rate Consistency", () => {
+    it("should return consistent rates across multiple calls", async () => {
+      const rate1 = await engine.fetchRate("fedex");
+      const rate2 = await engine.fetchRate("fedex");
 
       expect(rate1).toEqual(rate2);
-      expect(rate1?.carrier).toBe('FedEx');
+      expect(rate1?.carrier).toBe("FedEx");
       expect(rate1?.cost).toBe(25.5);
     });
 
-    it('should provide all carrier rates', async () => {
-      const carriers = ['fedex', 'ups', 'usps', 'dhl', 'ontrac'];
+    it("should provide all carrier rates", async () => {
+      const carriers = ["fedex", "ups", "usps", "dhl", "ontrac"];
       const rates = await engine.fetchParallelRates(carriers);
 
       expect(rates).toHaveLength(5);
@@ -168,34 +175,34 @@ describe('Rate Accuracy', () => {
       expect(validRates).toHaveLength(5);
     });
 
-    it('should include timestamp in each rate', async () => {
-      const rate = await engine.fetchRate('fedex');
+    it("should include timestamp in each rate", async () => {
+      const rate = await engine.fetchRate("fedex");
 
       expect(rate).toBeDefined();
       expect(rate?.timestamp).toBeDefined();
-      expect(new Date(rate?.timestamp || '').getTime()).toBeGreaterThan(0);
+      expect(new Date(rate?.timestamp || "").getTime()).toBeGreaterThan(0);
     });
 
-    it('should include currency in rate response', async () => {
-      const rate = await engine.fetchRate('usps');
+    it("should include currency in rate response", async () => {
+      const rate = await engine.fetchRate("usps");
 
-      expect(rate?.currency).toBe('USD');
+      expect(rate?.currency).toBe("USD");
     });
   });
 
-  describe('Parallel Rate Fetching', () => {
-    it('should fetch rates from multiple carriers concurrently', async () => {
-      const carriers = ['fedex', 'ups', 'usps'];
+  describe("Parallel Rate Fetching", () => {
+    it("should fetch rates from multiple carriers concurrently", async () => {
+      const carriers = ["fedex", "ups", "usps"];
       const rates = await engine.fetchParallelRates(carriers);
 
       expect(rates).toHaveLength(3);
-      expect(rates[0]?.carrier).toBe('FedEx');
-      expect(rates[1]?.carrier).toBe('UPS');
-      expect(rates[2]?.carrier).toBe('USPS');
+      expect(rates[0]?.carrier).toBe("FedEx");
+      expect(rates[1]?.carrier).toBe("UPS");
+      expect(rates[2]?.carrier).toBe("USPS");
     });
 
-    it('should handle mixed success and failure responses', async () => {
-      const carriers = ['fedex', 'invalid_carrier', 'usps', 'dhl'];
+    it("should handle mixed success and failure responses", async () => {
+      const carriers = ["fedex", "invalid_carrier", "usps", "dhl"];
       const rates = await engine.fetchParallelRates(carriers);
 
       expect(rates).toHaveLength(4);
@@ -205,23 +212,23 @@ describe('Rate Accuracy', () => {
       expect(rates[3]).not.toBeNull(); // dhl
     });
 
-    it('should complete even if some carriers timeout', async () => {
-      const carriers = ['fedex', 'timeout_carrier', 'usps'];
+    it("should complete even if some carriers timeout", async () => {
+      const carriers = ["fedex", "timeout_carrier", "usps"];
       const startTime = Date.now();
 
       // Set a timeout of 10 seconds
       const timeoutPromise = new Promise((resolve) => {
-        setTimeout(() => resolve('TIMEOUT'), 10000);
+        setTimeout(() => resolve("TIMEOUT"), 10000);
       });
 
       const ratesPromise = engine.fetchParallelRates(carriers);
       const result = await Promise.race([ratesPromise, timeoutPromise]);
 
-      expect(result).not.toBe('TIMEOUT');
+      expect(result).not.toBe("TIMEOUT");
     });
 
-    it('should support graceful degradation with 5 carriers (2 fail, 3 succeed)', async () => {
-      const carriers = ['fedex', 'invalid_1', 'ups', 'invalid_2', 'usps'];
+    it("should support graceful degradation with 5 carriers (2 fail, 3 succeed)", async () => {
+      const carriers = ["fedex", "invalid_1", "ups", "invalid_2", "usps"];
       const rates = await engine.fetchParallelRates(carriers);
 
       const successfulRates = rates.filter((r) => r !== null);
@@ -230,116 +237,130 @@ describe('Rate Accuracy', () => {
     });
   });
 
-  describe('Rate Ranking', () => {
-    it('should rank rates by cheapest cost', async () => {
-      const carriers = ['fedex', 'ups', 'usps', 'dhl', 'ontrac'];
-      const rates = (await engine.fetchParallelRates(carriers)).filter((r) => r !== null) as Rate[];
+  describe("Rate Ranking", () => {
+    it("should rank rates by cheapest cost", async () => {
+      const carriers = ["fedex", "ups", "usps", "dhl", "ontrac"];
+      const rates = (await engine.fetchParallelRates(carriers)).filter(
+        (r) => r !== null,
+      ) as Rate[];
       const ranked = engine.rankByPrice(rates);
 
-      expect(ranked[0]?.carrier).toBe('USPS'); // $18
-      expect(ranked[1]?.carrier).toBe('OnTrac'); // $22
-      expect(ranked[2]?.carrier).toBe('FedEx'); // $25.5
-      expect(ranked[3]?.carrier).toBe('UPS'); // $32.75
-      expect(ranked[4]?.carrier).toBe('DHL'); // $45
+      expect(ranked[0]?.carrier).toBe("USPS"); // $18
+      expect(ranked[1]?.carrier).toBe("OnTrac"); // $22
+      expect(ranked[2]?.carrier).toBe("FedEx"); // $25.5
+      expect(ranked[3]?.carrier).toBe("UPS"); // $32.75
+      expect(ranked[4]?.carrier).toBe("DHL"); // $45
     });
 
-    it('should rank rates by fastest delivery', async () => {
-      const carriers = ['fedex', 'ups', 'usps', 'dhl', 'ontrac'];
-      const rates = (await engine.fetchParallelRates(carriers)).filter((r) => r !== null) as Rate[];
+    it("should rank rates by fastest delivery", async () => {
+      const carriers = ["fedex", "ups", "usps", "dhl", "ontrac"];
+      const rates = (await engine.fetchParallelRates(carriers)).filter(
+        (r) => r !== null,
+      ) as Rate[];
       const ranked = engine.rankBySpeed(rates);
 
       expect(ranked[0]?.estimatedDays).toBe(1); // DHL
       expect(ranked[ranked.length - 1]?.estimatedDays).toBe(3); // USPS or OnTrac
     });
 
-    it('should rank rates by best value (cost per day)', async () => {
-      const carriers = ['fedex', 'ups', 'usps', 'dhl', 'ontrac'];
-      const rates = (await engine.fetchParallelRates(carriers)).filter((r) => r !== null) as Rate[];
+    it("should rank rates by best value (cost per day)", async () => {
+      const carriers = ["fedex", "ups", "usps", "dhl", "ontrac"];
+      const rates = (await engine.fetchParallelRates(carriers)).filter(
+        (r) => r !== null,
+      ) as Rate[];
       const ranked = engine.rankByValue(rates);
 
       // Best value = lowest cost per delivery day
       expect(ranked[0]).toBeDefined();
-      const firstValue = (ranked[0]?.cost || 0) / (ranked[0]?.estimatedDays || 1);
-      const lastValue = (ranked[4]?.cost || 0) / (ranked[4]?.estimatedDays || 1);
+      const firstValue =
+        (ranked[0]?.cost || 0) / (ranked[0]?.estimatedDays || 1);
+      const lastValue =
+        (ranked[4]?.cost || 0) / (ranked[4]?.estimatedDays || 1);
       expect(firstValue).toBeLessThan(lastValue);
     });
 
-    it('should maintain ranking consistency', async () => {
-      const carriers = ['fedex', 'ups', 'usps'];
-      const rates1 = (await engine.fetchParallelRates(carriers)).filter((r) => r !== null) as Rate[];
+    it("should maintain ranking consistency", async () => {
+      const carriers = ["fedex", "ups", "usps"];
+      const rates1 = (await engine.fetchParallelRates(carriers)).filter(
+        (r) => r !== null,
+      ) as Rate[];
       const ranked1 = engine.rankByPrice(rates1);
 
-      const rates2 = (await engine.fetchParallelRates(carriers)).filter((r) => r !== null) as Rate[];
+      const rates2 = (await engine.fetchParallelRates(carriers)).filter(
+        (r) => r !== null,
+      ) as Rate[];
       const ranked2 = engine.rankByPrice(rates2);
 
-      expect(ranked1.map((r) => r.carrier)).toEqual(ranked2.map((r) => r.carrier));
+      expect(ranked1.map((r) => r.carrier)).toEqual(
+        ranked2.map((r) => r.carrier),
+      );
     });
   });
 
-  describe('Rate Caching', () => {
-    it('should cache rates within TTL', async () => {
+  describe("Rate Caching", () => {
+    it("should cache rates within TTL", async () => {
       const rate = mockCarrierRates.usps;
-      engine.cacheRate('usps_rate', rate, 3600);
+      engine.cacheRate("usps_rate", rate, 3600);
 
-      const cached = engine.getCachedRate('usps_rate');
+      const cached = engine.getCachedRate("usps_rate");
       expect(cached).not.toBeNull();
-      expect(cached?.carrier).toBe('USPS');
+      expect(cached?.carrier).toBe("USPS");
     });
 
-    it('should expire cached rates after TTL', async () => {
+    it("should expire cached rates after TTL", async () => {
       const rate = mockCarrierRates.usps;
-      engine.cacheRate('usps_rate', rate, 10); // 10 seconds
+      engine.cacheRate("usps_rate", rate, 10); // 10 seconds
 
-      let cached = engine.getCachedRate('usps_rate');
+      let cached = engine.getCachedRate("usps_rate");
       expect(cached).not.toBeNull();
 
       // Advance time past TTL
       vi.advanceTimersByTime(11000);
 
-      cached = engine.getCachedRate('usps_rate');
+      cached = engine.getCachedRate("usps_rate");
       expect(cached).toBeNull();
     });
 
-    it('should return different rates for different cache keys', async () => {
-      engine.cacheRate('fedex_rate', mockCarrierRates.fedex, 3600);
-      engine.cacheRate('usps_rate', mockCarrierRates.usps, 3600);
+    it("should return different rates for different cache keys", async () => {
+      engine.cacheRate("fedex_rate", mockCarrierRates.fedex, 3600);
+      engine.cacheRate("usps_rate", mockCarrierRates.usps, 3600);
 
-      const fedex = engine.getCachedRate('fedex_rate');
-      const usps = engine.getCachedRate('usps_rate');
+      const fedex = engine.getCachedRate("fedex_rate");
+      const usps = engine.getCachedRate("usps_rate");
 
-      expect(fedex?.carrier).toBe('FedEx');
-      expect(usps?.carrier).toBe('USPS');
+      expect(fedex?.carrier).toBe("FedEx");
+      expect(usps?.carrier).toBe("USPS");
       expect(fedex?.cost).not.toBe(usps?.cost);
     });
 
-    it('should support configurable TTL', async () => {
-      engine.cacheRate('short_ttl', mockCarrierRates.fedex, 5);
-      engine.cacheRate('long_ttl', mockCarrierRates.ups, 3600);
+    it("should support configurable TTL", async () => {
+      engine.cacheRate("short_ttl", mockCarrierRates.fedex, 5);
+      engine.cacheRate("long_ttl", mockCarrierRates.ups, 3600);
 
       vi.advanceTimersByTime(6000);
 
-      const shortTTL = engine.getCachedRate('short_ttl');
-      const longTTL = engine.getCachedRate('long_ttl');
+      const shortTTL = engine.getCachedRate("short_ttl");
+      const longTTL = engine.getCachedRate("long_ttl");
 
       expect(shortTTL).toBeNull();
       expect(longTTL).not.toBeNull();
     });
   });
 
-  describe('Graceful Degradation', () => {
-    it('should return available rates when some carriers fail', async () => {
-      const carriers = ['fedex', 'invalid', 'usps', 'invalid', 'dhl'];
+  describe("Graceful Degradation", () => {
+    it("should return available rates when some carriers fail", async () => {
+      const carriers = ["fedex", "invalid", "usps", "invalid", "dhl"];
       const rates = await engine.fetchParallelRates(carriers);
       const successfulRates = rates.filter((r) => r !== null);
 
       expect(successfulRates).toHaveLength(3);
-      expect(successfulRates.map((r) => r?.carrier)).toContain('FedEx');
-      expect(successfulRates.map((r) => r?.carrier)).toContain('USPS');
-      expect(successfulRates.map((r) => r?.carrier)).toContain('DHL');
+      expect(successfulRates.map((r) => r?.carrier)).toContain("FedEx");
+      expect(successfulRates.map((r) => r?.carrier)).toContain("USPS");
+      expect(successfulRates.map((r) => r?.carrier)).toContain("DHL");
     });
 
-    it('should degrade gracefully with 2 out of 5 failures', async () => {
-      const carriers = ['fedex', 'invalid_1', 'ups', 'invalid_2', 'usps'];
+    it("should degrade gracefully with 2 out of 5 failures", async () => {
+      const carriers = ["fedex", "invalid_1", "ups", "invalid_2", "usps"];
       const rates = await engine.fetchParallelRates(carriers);
 
       const validRates = rates.filter((r) => r !== null);
@@ -349,17 +370,19 @@ describe('Rate Accuracy', () => {
       expect(validRates.length).toBe(3);
     });
 
-    it('should prioritize available carriers for selection', async () => {
-      const carriers = ['fedex', 'invalid', 'usps'];
-      const rates = (await engine.fetchParallelRates(carriers)).filter((r) => r !== null) as Rate[];
+    it("should prioritize available carriers for selection", async () => {
+      const carriers = ["fedex", "invalid", "usps"];
+      const rates = (await engine.fetchParallelRates(carriers)).filter(
+        (r) => r !== null,
+      ) as Rate[];
       const ranked = engine.rankByPrice(rates);
 
       expect(ranked).toHaveLength(2);
       expect(ranked[0]).toBeDefined();
     });
 
-    it('should handle complete failure scenario', async () => {
-      const carriers = ['invalid_1', 'invalid_2', 'invalid_3'];
+    it("should handle complete failure scenario", async () => {
+      const carriers = ["invalid_1", "invalid_2", "invalid_3"];
       const rates = await engine.fetchParallelRates(carriers);
 
       const successfulRates = rates.filter((r) => r !== null);
@@ -367,39 +390,43 @@ describe('Rate Accuracy', () => {
     });
   });
 
-  describe('Currency Normalization', () => {
-    it('should normalize EUR rates to USD', () => {
+  describe("Currency Normalization", () => {
+    it("should normalize EUR rates to USD", () => {
       const rate = mockMultiCurrencyRates.eur;
-      const normalized = engine.normalizeCurrency(rate, 'USD');
+      const normalized = engine.normalizeCurrency(rate, "USD");
 
-      expect(normalized.currency).toBe('USD');
+      expect(normalized.currency).toBe("USD");
       expect(normalized.cost).toBeGreaterThan(22.5); // Should be roughly 24.75
       expect(normalized.cost).toBeLessThan(26);
     });
 
-    it('should normalize GBP rates to USD', () => {
+    it("should normalize GBP rates to USD", () => {
       const rate = mockMultiCurrencyRates.gbp;
-      const normalized = engine.normalizeCurrency(rate, 'USD');
+      const normalized = engine.normalizeCurrency(rate, "USD");
 
-      expect(normalized.currency).toBe('USD');
+      expect(normalized.currency).toBe("USD");
       expect(normalized.cost).toBeGreaterThan(22);
       expect(normalized.cost).toBeLessThan(25);
     });
 
-    it('should handle USD to USD conversion (no change)', () => {
+    it("should handle USD to USD conversion (no change)", () => {
       const rate = mockMultiCurrencyRates.usd;
-      const normalized = engine.normalizeCurrency(rate, 'USD');
+      const normalized = engine.normalizeCurrency(rate, "USD");
 
-      expect(normalized.currency).toBe('USD');
+      expect(normalized.currency).toBe("USD");
       expect(normalized.cost).toBe(rate.cost);
     });
 
-    it('should normalize multiple rates for comparison', () => {
-      const rates = [mockMultiCurrencyRates.usd, mockMultiCurrencyRates.eur, mockMultiCurrencyRates.gbp];
-      const normalized = rates.map((r) => engine.normalizeCurrency(r, 'USD'));
+    it("should normalize multiple rates for comparison", () => {
+      const rates = [
+        mockMultiCurrencyRates.usd,
+        mockMultiCurrencyRates.eur,
+        mockMultiCurrencyRates.gbp,
+      ];
+      const normalized = rates.map((r) => engine.normalizeCurrency(r, "USD"));
 
       // All should now be in USD
-      expect(normalized.every((r) => r.currency === 'USD')).toBe(true);
+      expect(normalized.every((r) => r.currency === "USD")).toBe(true);
 
       // Should be comparable by cost
       expect(normalized[0].cost).toBeDefined();
@@ -407,9 +434,9 @@ describe('Rate Accuracy', () => {
       expect(normalized[2].cost).toBeDefined();
     });
 
-    it('should preserve original cost for same-currency rates', () => {
+    it("should preserve original cost for same-currency rates", () => {
       const rate = mockMultiCurrencyRates.usd;
-      const normalized = engine.normalizeCurrency(rate, 'USD');
+      const normalized = engine.normalizeCurrency(rate, "USD");
 
       expect(normalized.cost).toBe(25.5);
     });

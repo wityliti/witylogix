@@ -89,14 +89,7 @@ interface ConfigStructure {
 /**
  * Sensitive keys that should be redacted in debug output
  */
-const SENSITIVE_KEYS = [
-  "secret",
-  "password",
-  "token",
-  "key",
-  "sid",
-  "dsn",
-];
+const SENSITIVE_KEYS = ["secret", "password", "token", "key", "sid", "dsn"];
 
 /**
  * Singleton configuration service
@@ -214,7 +207,7 @@ export class ConfigService {
       watchFile(this.localConfigPath, { interval: 1000 }, () => {
         try {
           const localConfig = JSON.parse(
-            readFileSync(this.localConfigPath, "utf-8")
+            readFileSync(this.localConfigPath, "utf-8"),
           );
           this.config = { ...this.config, ...localConfig };
         } catch (error) {
@@ -262,7 +255,7 @@ export class ConfigService {
       tenantId?: string;
       userId?: string;
       percentageRollout?: number;
-    }
+    },
   ): boolean {
     const enabled = this.config.features[flag] ?? false;
 
@@ -291,30 +284,28 @@ export class ConfigService {
    * @returns Sanitized configuration object
    */
   getSnapshot(): Record<string, unknown> {
-    return this.redactSensitiveData(
-      JSON.parse(JSON.stringify(this.config))
-    );
+    return this.redactSensitiveData(JSON.parse(JSON.stringify(this.config)));
   }
 
   /**
    * Recursively redact sensitive configuration values
    */
   private redactSensitiveData(
-    obj: Record<string, unknown>
+    obj: Record<string, unknown>,
   ): Record<string, unknown> {
     const redacted: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(obj)) {
       const keyLower = key.toLowerCase();
       const isSensitive = SENSITIVE_KEYS.some((sensitive) =>
-        keyLower.includes(sensitive)
+        keyLower.includes(sensitive),
       );
 
       if (isSensitive && typeof value === "string") {
         redacted[key] = "***REDACTED***";
       } else if (typeof value === "object" && value !== null) {
         redacted[key] = this.redactSensitiveData(
-          value as Record<string, unknown>
+          value as Record<string, unknown>,
         );
       } else {
         redacted[key] = value;

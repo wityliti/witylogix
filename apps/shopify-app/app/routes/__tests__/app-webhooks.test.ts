@@ -221,7 +221,7 @@ describe("Webhook Management Route", () => {
 
       expect(mockWebhookPageData.endpoints).toHaveLength(3);
       expect(mockWebhookPageData.endpoints[0].url).toBe(
-        "https://witylogix.com/webhooks/orders"
+        "https://witylogix.com/webhooks/orders",
       );
     });
 
@@ -270,8 +270,12 @@ describe("Webhook Management Route", () => {
       (createApiClient as any).mockReturnValue(mockApiClient);
       mockApiClient.get.mockResolvedValueOnce({ data: mockEndpoints });
 
-      const result = await mockApiClient.get("/api/v4/shops/me/webhooks/endpoints");
-      expect(mockApiClient.get).toHaveBeenCalledWith("/api/v4/shops/me/webhooks/endpoints");
+      const result = await mockApiClient.get(
+        "/api/v4/shops/me/webhooks/endpoints",
+      );
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        "/api/v4/shops/me/webhooks/endpoints",
+      );
       expect(result.data).toEqual(mockEndpoints);
     });
   });
@@ -308,14 +312,18 @@ describe("Webhook Management Route", () => {
       (createApiClient as any).mockReturnValue(mockApiClient);
       mockApiClient.get.mockResolvedValueOnce({ data: mockTriggers });
 
-      const result = await mockApiClient.get("/api/v4/shops/me/webhooks/triggers");
-      expect(mockApiClient.get).toHaveBeenCalledWith("/api/v4/shops/me/webhooks/triggers");
+      const result = await mockApiClient.get(
+        "/api/v4/shops/me/webhooks/triggers",
+      );
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        "/api/v4/shops/me/webhooks/triggers",
+      );
       expect(result.data).toEqual(mockTriggers);
     });
 
     it("should handle multiple triggers for same event", () => {
       const orderCreateTriggers = mockWebhookPageData.triggers.filter(
-        (t) => t.shopifyEvent === "orders/create"
+        (t) => t.shopifyEvent === "orders/create",
       );
 
       expect(orderCreateTriggers).toHaveLength(1);
@@ -349,10 +357,10 @@ describe("Webhook Management Route", () => {
 
     it("should classify delivery success by status code", () => {
       const successes = mockWebhookPageData.deliveries.filter(
-        (d) => d.statusCode >= 200 && d.statusCode < 300
+        (d) => d.statusCode >= 200 && d.statusCode < 300,
       );
       const failures = mockWebhookPageData.deliveries.filter(
-        (d) => d.statusCode >= 400 || d.statusCode === 0
+        (d) => d.statusCode >= 400 || d.statusCode === 0,
       );
 
       expect(successes.length).toBe(2);
@@ -398,8 +406,14 @@ describe("Webhook Management Route", () => {
       (createApiClient as any).mockReturnValue(mockApiClient);
       mockApiClient.get.mockResolvedValueOnce({ data: mockDeliveries });
 
-      const result = await mockApiClient.get("/api/v4/shops/me/webhooks/deliveries", { limit: 50 });
-      expect(mockApiClient.get).toHaveBeenCalledWith("/api/v4/shops/me/webhooks/deliveries", { limit: 50 });
+      const result = await mockApiClient.get(
+        "/api/v4/shops/me/webhooks/deliveries",
+        { limit: 50 },
+      );
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        "/api/v4/shops/me/webhooks/deliveries",
+        { limit: 50 },
+      );
       expect(result.data).toEqual(mockDeliveries);
     });
   });
@@ -431,7 +445,7 @@ describe("Webhook Management Route", () => {
         {
           url: "https://new-endpoint.com/webhooks",
           events: ["orders/create"],
-        }
+        },
       );
 
       expect(result.data.url).toBe("https://new-endpoint.com/webhooks");
@@ -468,7 +482,7 @@ describe("Webhook Management Route", () => {
 
       const result = await mockApiClient.post(
         "/api/v4/shops/me/webhooks/endpoints",
-        eventRegistration
+        eventRegistration,
       );
 
       expect(result.data.events).toContain("orders/create");
@@ -495,7 +509,7 @@ describe("Webhook Management Route", () => {
 
       const result = await mockApiClient.patch(
         "/api/v4/shops/me/webhooks/endpoints/endpoint-001",
-        updates
+        updates,
       );
 
       expect(result.data.status).toBe("paused");
@@ -514,7 +528,7 @@ describe("Webhook Management Route", () => {
       mockApiClient.delete.mockResolvedValueOnce({ success: true });
 
       const result = await mockApiClient.delete(
-        "/api/v4/shops/me/webhooks/endpoints/endpoint-001"
+        "/api/v4/shops/me/webhooks/endpoints/endpoint-001",
       );
 
       expect(result.success).toBe(true);
@@ -539,7 +553,7 @@ describe("Webhook Management Route", () => {
 
       const result = await mockApiClient.patch(
         "/api/v4/shops/me/webhooks/endpoints/endpoint-003",
-        { status: "paused" }
+        { status: "paused" },
       );
 
       expect(result.data.status).toBe("paused");
@@ -566,7 +580,7 @@ describe("Webhook Management Route", () => {
 
       const result = await mockApiClient.patch(
         "/api/v4/shops/me/webhooks/endpoints/endpoint-003",
-        resetEndpoint
+        resetEndpoint,
       );
 
       expect(result.data.failureCount).toBe(0);
@@ -593,7 +607,7 @@ describe("Webhook Management Route", () => {
 
       const result = await mockApiClient.patch(
         "/api/v4/shops/me/webhooks/triggers/customers/create",
-        { enabled: true }
+        { enabled: true },
       );
 
       expect(result.data.enabled).toBe(true);
@@ -618,7 +632,7 @@ describe("Webhook Management Route", () => {
 
       const result = await mockApiClient.patch(
         "/api/v4/shops/me/webhooks/triggers/orders/create",
-        { enabled: false }
+        { enabled: false },
       );
 
       expect(result.data.enabled).toBe(false);
@@ -648,7 +662,7 @@ describe("Webhook Management Route", () => {
   describe("Webhook Delivery Log Filtering", () => {
     it("should filter deliveries by event type", () => {
       const orderCreateDeliveries = mockWebhookPageData.deliveries.filter(
-        (d) => d.event === "orders/create"
+        (d) => d.event === "orders/create",
       );
 
       expect(orderCreateDeliveries).toHaveLength(2);
@@ -659,7 +673,7 @@ describe("Webhook Management Route", () => {
 
     it("should filter deliveries by endpoint", () => {
       const ordersEndpointDeliveries = mockWebhookPageData.deliveries.filter(
-        (d) => d.endpoint === "https://witylogix.com/webhooks/orders"
+        (d) => d.endpoint === "https://witylogix.com/webhooks/orders",
       );
 
       expect(ordersEndpointDeliveries).toHaveLength(2);
@@ -667,7 +681,7 @@ describe("Webhook Management Route", () => {
 
     it("should filter deliveries by status code", () => {
       const successDeliveries = mockWebhookPageData.deliveries.filter(
-        (d) => d.statusCode >= 200 && d.statusCode < 300
+        (d) => d.statusCode >= 200 && d.statusCode < 300,
       );
 
       expect(successDeliveries).toHaveLength(2);
@@ -676,7 +690,7 @@ describe("Webhook Management Route", () => {
     it("should filter deliveries by timestamp range", () => {
       const hourAgo = new Date(Date.now() - 60 * 60 * 1000);
       const recentDeliveries = mockWebhookPageData.deliveries.filter(
-        (d) => d.timestamp > hourAgo
+        (d) => d.timestamp > hourAgo,
       );
 
       expect(recentDeliveries.length).toBeGreaterThan(0);
@@ -684,17 +698,17 @@ describe("Webhook Management Route", () => {
 
     it("should sort deliveries by timestamp (most recent first)", () => {
       const sorted = [...mockWebhookPageData.deliveries].sort(
-        (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+        (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
       );
 
       expect(sorted[0].timestamp.getTime()).toBeGreaterThanOrEqual(
-        sorted[sorted.length - 1].timestamp.getTime()
+        sorted[sorted.length - 1].timestamp.getTime(),
       );
     });
 
     it("should identify failed deliveries", () => {
       const failedDeliveries = mockWebhookPageData.deliveries.filter(
-        (d) => d.statusCode < 200 || d.statusCode >= 300
+        (d) => d.statusCode < 200 || d.statusCode >= 300,
       );
 
       expect(failedDeliveries.length).toBeGreaterThan(0);
@@ -728,7 +742,7 @@ describe("Webhook Management Route", () => {
 
     it("should support customer event filtering", () => {
       const customerEventTrigger = mockWebhookPageData.triggers.find(
-        (t) => t.shopifyEvent === "customers/create"
+        (t) => t.shopifyEvent === "customers/create",
       );
 
       expect(customerEventTrigger).toBeDefined();
@@ -813,7 +827,7 @@ describe("Webhook Management Route", () => {
 
     it("should pause endpoint after threshold", () => {
       const pausedEndpoint = mockWebhookPageData.endpoints.find(
-        (e) => e.status === "paused"
+        (e) => e.status === "paused",
       );
 
       expect(pausedEndpoint?.failureCount).toBeGreaterThan(10);
@@ -840,7 +854,7 @@ describe("Webhook Management Route", () => {
 
       const result = await mockApiClient.patch(
         "/api/v4/shops/me/webhooks/endpoints/endpoint-003",
-        resumed
+        resumed,
       );
 
       expect(result.data.status).toBe("active");

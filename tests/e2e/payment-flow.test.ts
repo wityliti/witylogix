@@ -73,13 +73,15 @@ export interface PaymentReconciliation {
 
 // ─── TEST DATA ───────────────────────────────────────────────────────────────
 
-const API_BASE_URL: string = process.env.API_BASE_URL || "http://localhost:3000/api/v4";
+const API_BASE_URL: string =
+  process.env.API_BASE_URL || "http://localhost:3000/api/v4";
 
 let mockTransactions: Map<string, PaymentTransaction> = new Map();
 let mockRefunds: Map<string, Refund> = new Map();
 let mockWebhooks: Map<string, WebhookDelivery> = new Map();
 let mockInvoicePayments: Map<string, PaymentTransaction[]> = new Map();
-let mockGatewaySettings: Map<string, { primary: string; secondary?: string }> = new Map();
+let mockGatewaySettings: Map<string, { primary: string; secondary?: string }> =
+  new Map();
 
 // ─── SETUP ──────────────────────────────────────────────────────────────────
 
@@ -139,7 +141,8 @@ async function captureStripePayment(
   merchant: AuthenticatedClient,
   transactionId: string,
 ): Promise<PaymentTransaction> {
-  const transaction: PaymentTransaction | undefined = mockTransactions.get(transactionId);
+  const transaction: PaymentTransaction | undefined =
+    mockTransactions.get(transactionId);
   if (!transaction) throw new Error(`Transaction ${transactionId} not found`);
 
   if (transaction.gateway !== "stripe") {
@@ -152,7 +155,8 @@ async function captureStripePayment(
   mockTransactions.set(transactionId, transaction);
 
   // Track payment for invoice
-  const payments: PaymentTransaction[] = mockInvoicePayments.get(transaction.invoiceId) || [];
+  const payments: PaymentTransaction[] =
+    mockInvoicePayments.get(transaction.invoiceId) || [];
   payments.push(transaction);
   mockInvoicePayments.set(transaction.invoiceId, payments);
 
@@ -166,7 +170,7 @@ async function processStripeWebhook(
 
   const delivery: WebhookDelivery = {
     id: webhookId,
-    type: webhookBody.type as string || "unknown",
+    type: (webhookBody.type as string) || "unknown",
     gateway: "stripe",
     payload: webhookBody,
     status: "delivered",
@@ -178,7 +182,8 @@ async function processStripeWebhook(
   // Handle specific webhook types
   if (webhookBody.type === "charge.captured") {
     // Update transaction status
-    const chargeId: string = (webhookBody.data as Record<string, unknown>)?.object?.id as string;
+    const chargeId: string = (webhookBody.data as Record<string, unknown>)
+      ?.object?.id as string;
     // Find and update transaction
   }
 
@@ -217,7 +222,8 @@ async function capturePayPalPayment(
   merchant: AuthenticatedClient,
   transactionId: string,
 ): Promise<PaymentTransaction> {
-  const transaction: PaymentTransaction | undefined = mockTransactions.get(transactionId);
+  const transaction: PaymentTransaction | undefined =
+    mockTransactions.get(transactionId);
   if (!transaction) throw new Error(`Transaction ${transactionId} not found`);
 
   if (transaction.gateway !== "paypal") {
@@ -229,7 +235,8 @@ async function capturePayPalPayment(
 
   mockTransactions.set(transactionId, transaction);
 
-  const payments: PaymentTransaction[] = mockInvoicePayments.get(transaction.invoiceId) || [];
+  const payments: PaymentTransaction[] =
+    mockInvoicePayments.get(transaction.invoiceId) || [];
   payments.push(transaction);
   mockInvoicePayments.set(transaction.invoiceId, payments);
 
@@ -241,7 +248,8 @@ async function refundPayPalPayment(
   transactionId: string,
   amount?: number,
 ): Promise<Refund> {
-  const transaction: PaymentTransaction | undefined = mockTransactions.get(transactionId);
+  const transaction: PaymentTransaction | undefined =
+    mockTransactions.get(transactionId);
   if (!transaction) throw new Error(`Transaction ${transactionId} not found`);
 
   const refundAmount: number = amount || transaction.amount;
@@ -303,7 +311,8 @@ async function captureSquarePayment(
   merchant: AuthenticatedClient,
   transactionId: string,
 ): Promise<PaymentTransaction> {
-  const transaction: PaymentTransaction | undefined = mockTransactions.get(transactionId);
+  const transaction: PaymentTransaction | undefined =
+    mockTransactions.get(transactionId);
   if (!transaction) throw new Error(`Transaction ${transactionId} not found`);
 
   if (transaction.gateway !== "square") {
@@ -315,7 +324,8 @@ async function captureSquarePayment(
 
   mockTransactions.set(transactionId, transaction);
 
-  const payments: PaymentTransaction[] = mockInvoicePayments.get(transaction.invoiceId) || [];
+  const payments: PaymentTransaction[] =
+    mockInvoicePayments.get(transaction.invoiceId) || [];
   payments.push(transaction);
   mockInvoicePayments.set(transaction.invoiceId, payments);
 
@@ -327,7 +337,8 @@ async function refundSquarePayment(
   transactionId: string,
   amount?: number,
 ): Promise<Refund> {
-  const transaction: PaymentTransaction | undefined = mockTransactions.get(transactionId);
+  const transaction: PaymentTransaction | undefined =
+    mockTransactions.get(transactionId);
   if (!transaction) throw new Error(`Transaction ${transactionId} not found`);
 
   const refundAmount: number = amount || transaction.amount;
@@ -352,7 +363,11 @@ async function refundSquarePayment(
 async function attemptGatewayFallback(
   invoiceId: string,
   amount: number,
-): Promise<{ primaryFailed: boolean; usedGateway: string; transaction: PaymentTransaction }> {
+): Promise<{
+  primaryFailed: boolean;
+  usedGateway: string;
+  transaction: PaymentTransaction;
+}> {
   const settings = mockGatewaySettings.get("default");
   if (!settings) throw new Error("Gateway settings not configured");
 
@@ -398,16 +413,20 @@ async function attemptGatewayFallback(
   }
 }
 
-async function reconcilePayments(invoiceId: string): Promise<PaymentReconciliation> {
+async function reconcilePayments(
+  invoiceId: string,
+): Promise<PaymentReconciliation> {
   const invoice = createInvoiceRecord({ id: invoiceId });
-  const payments: PaymentTransaction[] = mockInvoicePayments.get(invoiceId) || [];
+  const payments: PaymentTransaction[] =
+    mockInvoicePayments.get(invoiceId) || [];
 
   const receivedAmount: number = payments
     .filter((p) => p.status === "captured")
     .reduce((sum, p) => sum + p.amount, 0);
 
   const variance: number = Math.abs(invoice.amount - receivedAmount);
-  const status: "reconciled" | "pending" | "error" = variance === 0 ? "reconciled" : "pending";
+  const status: "reconciled" | "pending" | "error" =
+    variance === 0 ? "reconciled" : "pending";
 
   return {
     invoiceId,
@@ -470,7 +489,8 @@ describe("Payment Flow E2E Tests", () => {
 
       await captureStripePayment(merchant, transaction.id);
 
-      const payments: PaymentTransaction[] = mockInvoicePayments.get(invoiceId) || [];
+      const payments: PaymentTransaction[] =
+        mockInvoicePayments.get(invoiceId) || [];
       expect(payments.length).toBeGreaterThan(0);
       expect(payments[0].status).toBe("captured");
     });
@@ -537,7 +557,10 @@ describe("Payment Flow E2E Tests", () => {
 
       await capturePayPalPayment(merchant, transaction.id);
 
-      const refund: Refund = await refundPayPalPayment(merchant, transaction.id);
+      const refund: Refund = await refundPayPalPayment(
+        merchant,
+        transaction.id,
+      );
 
       expect(refund.amount).toBe(2999);
       expect(refund.status).toBe("completed");
@@ -553,12 +576,18 @@ describe("Payment Flow E2E Tests", () => {
 
       await capturePayPalPayment(merchant, transaction.id);
 
-      const refund: Refund = await refundPayPalPayment(merchant, transaction.id, 1000);
+      const refund: Refund = await refundPayPalPayment(
+        merchant,
+        transaction.id,
+        1000,
+      );
 
       expect(refund.amount).toBe(1000);
       expect(refund.transactionId).toBe(transaction.id);
 
-      const updated: PaymentTransaction | undefined = mockTransactions.get(transaction.id);
+      const updated: PaymentTransaction | undefined = mockTransactions.get(
+        transaction.id,
+      );
       expect(updated?.amount).toBe(1999); // 2999 - 1000
     });
   });
@@ -604,7 +633,11 @@ describe("Payment Flow E2E Tests", () => {
 
       await captureSquarePayment(merchant, transaction.id);
 
-      const refund: Refund = await refundSquarePayment(merchant, transaction.id, 500);
+      const refund: Refund = await refundSquarePayment(
+        merchant,
+        transaction.id,
+        500,
+      );
 
       expect(refund.amount).toBe(500);
       expect(refund.reason).toBe("partial_refund");
@@ -652,7 +685,8 @@ describe("Payment Flow E2E Tests", () => {
           data: { object: { id: `ch_${i}` } },
         };
 
-        const delivery: WebhookDelivery = await processStripeWebhook(webhookBody);
+        const delivery: WebhookDelivery =
+          await processStripeWebhook(webhookBody);
         webhookId = delivery.id;
         expect(delivery.status).toBe("delivered");
       }
@@ -672,7 +706,8 @@ describe("Payment Flow E2E Tests", () => {
 
       await captureStripePayment(merchant, transaction.id);
 
-      const reconciliation: PaymentReconciliation = await reconcilePayments(invoiceId);
+      const reconciliation: PaymentReconciliation =
+        await reconcilePayments(invoiceId);
 
       expect(reconciliation.invoiceId).toBe(invoiceId);
       expect(reconciliation.receivedAmount).toBe(2999);
@@ -689,7 +724,8 @@ describe("Payment Flow E2E Tests", () => {
       );
 
       // Don't capture payment
-      const reconciliation: PaymentReconciliation = await reconcilePayments(invoiceId);
+      const reconciliation: PaymentReconciliation =
+        await reconcilePayments(invoiceId);
 
       expect(reconciliation.variance).toBeGreaterThan(0);
       expect(reconciliation.status).toBe("pending");
@@ -698,13 +734,22 @@ describe("Payment Flow E2E Tests", () => {
     it("should reconcile multiple payments to single invoice", async () => {
       const invoiceId: string = `inv_${Math.random().toString(36).substring(7)}`;
 
-      const txn1: PaymentTransaction = await initiateStripePayment(merchant, invoiceId, 1500);
-      const txn2: PaymentTransaction = await initiatePayPalPayment(merchant, invoiceId, 1499);
+      const txn1: PaymentTransaction = await initiateStripePayment(
+        merchant,
+        invoiceId,
+        1500,
+      );
+      const txn2: PaymentTransaction = await initiatePayPalPayment(
+        merchant,
+        invoiceId,
+        1499,
+      );
 
       await captureStripePayment(merchant, txn1.id);
       await capturePayPalPayment(merchant, txn2.id);
 
-      const reconciliation: PaymentReconciliation = await reconcilePayments(invoiceId);
+      const reconciliation: PaymentReconciliation =
+        await reconcilePayments(invoiceId);
 
       expect(reconciliation.receivedAmount).toBe(2999);
       expect(reconciliation.status).toBe("reconciled");

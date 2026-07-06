@@ -59,7 +59,7 @@ describe("ServiceTitan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(oauthToken), { status: 200 })
+        new Response(JSON.stringify(oauthToken), { status: 200 }),
       );
 
       expect(oauthToken.access_token).toMatch(/^servicetitan_oauth_/);
@@ -72,7 +72,7 @@ describe("ServiceTitan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(refreshResponse), { status: 200 })
+        new Response(JSON.stringify(refreshResponse), { status: 200 }),
       );
 
       expect(refreshResponse.access_token).toBeDefined();
@@ -91,7 +91,7 @@ describe("ServiceTitan Adapter Integration", () => {
 
     it("should create job", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockJob), { status: 201 })
+        new Response(JSON.stringify(mockJob), { status: 201 }),
       );
 
       expect(mockJob.status).toBe("scheduled");
@@ -106,7 +106,7 @@ describe("ServiceTitan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(jobDetails), { status: 200 })
+        new Response(JSON.stringify(jobDetails), { status: 200 }),
       );
 
       expect(jobDetails.description).toBeDefined();
@@ -121,7 +121,7 @@ describe("ServiceTitan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(updatedJob), { status: 200 })
+        new Response(JSON.stringify(updatedJob), { status: 200 }),
       );
 
       expect(updatedJob.status).toBe("in_progress");
@@ -137,7 +137,7 @@ describe("ServiceTitan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(completedJob), { status: 200 })
+        new Response(JSON.stringify(completedJob), { status: 200 }),
       );
 
       expect(completedJob.status).toBe("completed");
@@ -152,11 +152,11 @@ describe("ServiceTitan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(rescheduled), { status: 200 })
+        new Response(JSON.stringify(rescheduled), { status: 200 }),
       );
 
       expect(rescheduled.newScheduledStart).toBeGreaterThan(
-        rescheduled.originalScheduledStart
+        rescheduled.originalScheduledStart,
       );
     });
   });
@@ -171,7 +171,7 @@ describe("ServiceTitan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(assignment), { status: 200 })
+        new Response(JSON.stringify(assignment), { status: 200 }),
       );
 
       expect(assignment.technicianId).toBeDefined();
@@ -189,7 +189,7 @@ describe("ServiceTitan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(schedule), { status: 200 })
+        new Response(JSON.stringify(schedule), { status: 200 }),
       );
 
       expect(schedule.jobs).toHaveLength(2);
@@ -205,7 +205,7 @@ describe("ServiceTitan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(locationUpdate), { status: 200 })
+        new Response(JSON.stringify(locationUpdate), { status: 200 }),
       );
 
       expect(locationUpdate.timestamp).toBeLessThanOrEqual(Date.now());
@@ -230,7 +230,7 @@ describe("ServiceTitan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(route), { status: 200 })
+        new Response(JSON.stringify(route), { status: 200 }),
       );
 
       expect(route.totalDistance).toBeGreaterThan(0);
@@ -250,7 +250,7 @@ describe("ServiceTitan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(invoice), { status: 201 })
+        new Response(JSON.stringify(invoice), { status: 201 }),
       );
 
       expect(invoice.amount).toBeGreaterThan(0);
@@ -265,7 +265,7 @@ describe("ServiceTitan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(sending), { status: 200 })
+        new Response(JSON.stringify(sending), { status: 200 }),
       );
 
       expect(sending.status).toBe("sent");
@@ -282,7 +282,7 @@ describe("ServiceTitan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(payment), { status: 200 })
+        new Response(JSON.stringify(payment), { status: 200 }),
       );
 
       expect(payment.status).toBe("completed");
@@ -302,7 +302,7 @@ describe("ServiceTitan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(membership), { status: 201 })
+        new Response(JSON.stringify(membership), { status: 201 }),
       );
 
       expect(membership.status).toBe("active");
@@ -317,7 +317,7 @@ describe("ServiceTitan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(renewal), { status: 200 })
+        new Response(JSON.stringify(renewal), { status: 200 }),
       );
 
       expect(renewal.status).toBe("renewed");
@@ -347,7 +347,7 @@ describe("Jobber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(oauthToken), { status: 200 })
+        new Response(JSON.stringify(oauthToken), { status: 200 }),
       );
 
       expect(oauthToken.access_token).toMatch(/^jobber_oauth_token_/);
@@ -365,7 +365,7 @@ describe("Jobber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(client), { status: 201 })
+        new Response(JSON.stringify(client), { status: 201 }),
       );
 
       expect(client.name).toBe("ABC Company");
@@ -380,7 +380,7 @@ describe("Jobber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(history), { status: 200 })
+        new Response(JSON.stringify(history), { status: 200 }),
       );
 
       expect(history.totalJobs).toBeGreaterThan(0);
@@ -399,7 +399,7 @@ describe("Jobber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(quote), { status: 201 })
+        new Response(JSON.stringify(quote), { status: 201 }),
       );
 
       expect(quote.status).toBe("sent");
@@ -414,7 +414,7 @@ describe("Jobber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(conversion), { status: 200 })
+        new Response(JSON.stringify(conversion), { status: 200 }),
       );
 
       expect(conversion.status).toBe("converted");
@@ -433,7 +433,7 @@ describe("Jobber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(job), { status: 201 })
+        new Response(JSON.stringify(job), { status: 201 }),
       );
 
       expect(job.status).toBe("scheduled");
@@ -448,7 +448,7 @@ describe("Jobber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(updated), { status: 200 })
+        new Response(JSON.stringify(updated), { status: 200 }),
       );
 
       expect(updated.status).toBe("completed");
@@ -466,7 +466,7 @@ describe("Jobber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(invoice), { status: 201 })
+        new Response(JSON.stringify(invoice), { status: 201 }),
       );
 
       expect(invoice.amount).toBeGreaterThan(0);
@@ -485,7 +485,7 @@ describe("Jobber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(slots), { status: 200 })
+        new Response(JSON.stringify(slots), { status: 200 }),
       );
 
       expect(slots.availableSlots).toHaveLength(3);
@@ -502,7 +502,7 @@ describe("Jobber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(booking), { status: 201 })
+        new Response(JSON.stringify(booking), { status: 201 }),
       );
 
       expect(booking.status).toBe("confirmed");
@@ -531,7 +531,7 @@ describe("Housecall Pro Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authResponse), { status: 200 })
+        new Response(JSON.stringify(authResponse), { status: 200 }),
       );
 
       expect(authResponse.accessToken).toBeDefined();
@@ -549,7 +549,7 @@ describe("Housecall Pro Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(estimate), { status: 201 })
+        new Response(JSON.stringify(estimate), { status: 201 }),
       );
 
       expect(estimate.estimatedPrice).toBeGreaterThan(0);
@@ -563,7 +563,7 @@ describe("Housecall Pro Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(sending), { status: 200 })
+        new Response(JSON.stringify(sending), { status: 200 }),
       );
 
       expect(sending.sentAt).toBeLessThanOrEqual(Date.now());
@@ -577,7 +577,7 @@ describe("Housecall Pro Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(acceptance), { status: 200 })
+        new Response(JSON.stringify(acceptance), { status: 200 }),
       );
 
       expect(acceptance.status).toBe("accepted");
@@ -594,7 +594,7 @@ describe("Housecall Pro Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(job), { status: 201 })
+        new Response(JSON.stringify(job), { status: 201 }),
       );
 
       expect(job.status).toBe("scheduled");
@@ -609,7 +609,7 @@ describe("Housecall Pro Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(completion), { status: 200 })
+        new Response(JSON.stringify(completion), { status: 200 }),
       );
 
       expect(completion.status).toBe("completed");
@@ -627,7 +627,7 @@ describe("Housecall Pro Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(payment), { status: 200 })
+        new Response(JSON.stringify(payment), { status: 200 }),
       );
 
       expect(payment.status).toBe("processed");
@@ -642,7 +642,7 @@ describe("Housecall Pro Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(refund), { status: 200 })
+        new Response(JSON.stringify(refund), { status: 200 }),
       );
 
       expect(refund.status).toBe("completed");
@@ -658,7 +658,7 @@ describe("Housecall Pro Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(review), { status: 201 })
+        new Response(JSON.stringify(review), { status: 201 }),
       );
 
       expect(review.sentAt).toBeDefined();
@@ -673,7 +673,7 @@ describe("Housecall Pro Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(reviews), { status: 200 })
+        new Response(JSON.stringify(reviews), { status: 200 }),
       );
 
       expect(reviews.rating).toBeGreaterThan(4);
@@ -702,7 +702,7 @@ describe("FieldEdge Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authResponse), { status: 200 })
+        new Response(JSON.stringify(authResponse), { status: 200 }),
       );
 
       expect(authResponse.sessionToken).toBeDefined();
@@ -721,7 +721,7 @@ describe("FieldEdge Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(workOrder), { status: 201 })
+        new Response(JSON.stringify(workOrder), { status: 201 }),
       );
 
       expect(workOrder.status).toBe("open");
@@ -736,7 +736,7 @@ describe("FieldEdge Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(updated), { status: 200 })
+        new Response(JSON.stringify(updated), { status: 200 }),
       );
 
       expect(updated.status).toBe("completed");
@@ -753,7 +753,7 @@ describe("FieldEdge Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(dispatch), { status: 200 })
+        new Response(JSON.stringify(dispatch), { status: 200 }),
       );
 
       expect(dispatch.technicianId).toBeDefined();
@@ -771,7 +771,7 @@ describe("FieldEdge Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(equipment), { status: 200 })
+        new Response(JSON.stringify(equipment), { status: 200 }),
       );
 
       expect(equipment.equipmentUsed).toHaveLength(2);
@@ -786,7 +786,7 @@ describe("FieldEdge Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(inventory), { status: 200 })
+        new Response(JSON.stringify(inventory), { status: 200 }),
       );
 
       expect(inventory.items).toHaveLength(2);
@@ -802,7 +802,7 @@ describe("FieldEdge Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(update), { status: 200 })
+        new Response(JSON.stringify(update), { status: 200 }),
       );
 
       expect(update.itemsUsed).toHaveLength(1);
@@ -840,7 +840,7 @@ describe("Field Service Dispatcher (Orchestrator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(optimization), { status: 200 })
+        new Response(JSON.stringify(optimization), { status: 200 }),
       );
 
       expect(optimization.optimizationScore).toBeGreaterThan(0.9);
@@ -858,7 +858,7 @@ describe("Field Service Dispatcher (Orchestrator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(skillBasedAssignment), { status: 200 })
+        new Response(JSON.stringify(skillBasedAssignment), { status: 200 }),
       );
 
       expect(skillBasedAssignment.recommendedAssignment).toBe("tech_001");
@@ -883,7 +883,7 @@ describe("Field Service Dispatcher (Orchestrator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(locationOptimization), { status: 200 })
+        new Response(JSON.stringify(locationOptimization), { status: 200 }),
       );
 
       expect(locationOptimization.bestCandidate).toBe("tech_001");
@@ -900,7 +900,7 @@ describe("Field Service Dispatcher (Orchestrator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(territory), { status: 201 })
+        new Response(JSON.stringify(territory), { status: 201 }),
       );
 
       expect(territory.assignedTechnicians).toHaveLength(3);
@@ -918,7 +918,7 @@ describe("Field Service Dispatcher (Orchestrator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(balancing), { status: 200 })
+        new Response(JSON.stringify(balancing), { status: 200 }),
       );
 
       expect(balancing.loadBalanced).toBe(true);
@@ -937,7 +937,7 @@ describe("Field Service Dispatcher (Orchestrator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(slaMonitoring), { status: 200 })
+        new Response(JSON.stringify(slaMonitoring), { status: 200 }),
       );
 
       expect(slaMonitoring.slaAchieved).toBeCloseTo(94.2, 1);
@@ -953,7 +953,7 @@ describe("Field Service Dispatcher (Orchestrator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(atRiskAlert), { status: 200 })
+        new Response(JSON.stringify(atRiskAlert), { status: 200 }),
       );
 
       expect(atRiskAlert.riskLevel).toBe("high");
@@ -967,13 +967,11 @@ describe("Field Service Dispatcher (Orchestrator) Integration", () => {
           { technicianId: "tech_001", compliance: 98.0 },
           { technicianId: "tech_002", compliance: 96.5 },
         ],
-        improvementAreas: [
-          { technicianId: "tech_010", compliance: 82.0 },
-        ],
+        improvementAreas: [{ technicianId: "tech_010", compliance: 82.0 }],
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(report), { status: 200 })
+        new Response(JSON.stringify(report), { status: 200 }),
       );
 
       expect(report.slaCompliance).toBeGreaterThan(90);
@@ -992,7 +990,7 @@ describe("Field Service Dispatcher (Orchestrator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(locationStream), { status: 200 })
+        new Response(JSON.stringify(locationStream), { status: 200 }),
       );
 
       expect(locationStream.currentJobId).toBeDefined();
@@ -1008,7 +1006,7 @@ describe("Field Service Dispatcher (Orchestrator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(statusChange), { status: 200 })
+        new Response(JSON.stringify(statusChange), { status: 200 }),
       );
 
       expect(statusChange.newStatus).toBe("completed");
@@ -1024,11 +1022,11 @@ describe("Field Service Dispatcher (Orchestrator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(reassignment), { status: 200 })
+        new Response(JSON.stringify(reassignment), { status: 200 }),
       );
 
       expect(reassignment.reassignedToTechnicianId).not.toBe(
-        reassignment.originalTechnicianId
+        reassignment.originalTechnicianId,
       );
     });
   });
@@ -1047,7 +1045,7 @@ describe("Field Service Dispatcher (Orchestrator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(coordination), { status: 200 })
+        new Response(JSON.stringify(coordination), { status: 200 }),
       );
 
       expect(coordination.allAssigned).toBe(true);
@@ -1057,7 +1055,7 @@ describe("Field Service Dispatcher (Orchestrator) Integration", () => {
       mockFetch.mockResolvedValueOnce(
         new Response(JSON.stringify({ error: "Provider unavailable" }), {
           status: 503,
-        })
+        }),
       );
 
       mockFetch.mockResolvedValueOnce(
@@ -1067,8 +1065,8 @@ describe("Field Service Dispatcher (Orchestrator) Integration", () => {
             failoverProvider: "jobber",
             jobsRerouted: 20,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       expect(mockFetch).toBeDefined();

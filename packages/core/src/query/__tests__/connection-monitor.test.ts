@@ -222,7 +222,9 @@ describe("ConnectionMonitor", () => {
       vi.advanceTimersByTime(6000); // Advance past monitoring interval
 
       const alerts = monitor.getAlerts();
-      const utilizationAlert = alerts.find((a) => a.type === "high_utilization");
+      const utilizationAlert = alerts.find(
+        (a) => a.type === "high_utilization",
+      );
 
       expect(utilizationAlert).toBeDefined();
 

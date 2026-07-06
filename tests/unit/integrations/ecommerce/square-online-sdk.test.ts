@@ -212,7 +212,10 @@ describe("SquareSdkClient", () => {
     });
 
     it("should return false for invalid signature without secret", () => {
-      const result = client.verifyWebhookSignature({ test: "data" }, "signature");
+      const result = client.verifyWebhookSignature(
+        { test: "data" },
+        "signature",
+      );
       expect(result).toBe(false);
     });
 

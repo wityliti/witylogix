@@ -18,24 +18,29 @@ export type Coordinate = LatLng | [number, number];
 /**
  * Travel modes
  */
-export type TravelMode = 'driving' | 'bicycling' | 'transit' | 'walking';
+export type TravelMode = "driving" | "bicycling" | "transit" | "walking";
 
 /**
  * Traffic condition severity levels
  */
-export type TrafficCondition = 'free_flow' | 'light' | 'moderate' | 'heavy' | 'severe';
+export type TrafficCondition =
+  | "free_flow"
+  | "light"
+  | "moderate"
+  | "heavy"
+  | "severe";
 
 /**
  * Incident type
  */
 export type IncidentType =
-  | 'accident'
-  | 'construction'
-  | 'road_closure'
-  | 'event'
-  | 'congestion'
-  | 'weather'
-  | 'other';
+  | "accident"
+  | "construction"
+  | "road_closure"
+  | "event"
+  | "congestion"
+  | "weather"
+  | "other";
 
 /**
  * Normalized route information
@@ -96,7 +101,7 @@ export interface TrafficImpact {
 export interface TrafficIncident {
   id: string;
   type: IncidentType;
-  severity: 'minor' | 'moderate' | 'severe';
+  severity: "minor" | "moderate" | "severe";
   location: LatLng;
   description: string;
   start_time: Date;
@@ -136,7 +141,7 @@ export interface DistanceMatrixResult {
       distance_km: number;
       duration_min: number;
       duration_in_traffic_min?: number;
-      status: 'OK' | 'NOT_FOUND' | 'ZERO_RESULTS' | 'MAX_ROUTE_LENGTH_EXCEEDED';
+      status: "OK" | "NOT_FOUND" | "ZERO_RESULTS" | "MAX_ROUTE_LENGTH_EXCEEDED";
     }[];
   }[];
 }
@@ -234,8 +239,8 @@ export interface TrafficProviderConfig {
   tomtomApiKey?: string;
   tomtomRateLimit?: number; // requests per second, default 30
   tomtomCacheTtl?: number; // milliseconds, default 300000 (5 min)
-  primaryProvider: 'google' | 'tomtom';
-  fallbackProvider?: 'google' | 'tomtom';
+  primaryProvider: "google" | "tomtom";
+  fallbackProvider?: "google" | "tomtom";
   timeout?: number; // milliseconds, default 30000
 }
 
@@ -261,7 +266,7 @@ export interface TrafficAwareETAResponse {
   route: NormalizedRoute;
   traffic_impact: TrafficImpact;
   alternatives?: NormalizedRoute[];
-  provider: 'google' | 'tomtom';
+  provider: "google" | "tomtom";
   timestamp: Date;
   confidence: number; // 0-1
 }
@@ -326,7 +331,7 @@ export interface CacheStats {
  * Provider health status
  */
 export interface ProviderHealth {
-  provider: 'google' | 'tomtom';
+  provider: "google" | "tomtom";
   healthy: boolean;
   lastCheck: Date;
   consecutiveFailures: number;

@@ -3,8 +3,14 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { Fleetcorv2SDKClient, FleetcorAPIError } from "../../../../packages/core/src/integrations/fuel-fleet/fleetcor-v2-sdk-client";
-import type { SDKConfig, CardIssuanceRequest } from "../../../../packages/core/src/integrations/fuel-fleet/fuel-fleet-sdk-types";
+import {
+  Fleetcorv2SDKClient,
+  FleetcorAPIError,
+} from "../../../../packages/core/src/integrations/fuel-fleet/fleetcor-v2-sdk-client";
+import type {
+  SDKConfig,
+  CardIssuanceRequest,
+} from "../../../../packages/core/src/integrations/fuel-fleet/fuel-fleet-sdk-types";
 
 describe("Fleetcorv2SDKClient", () => {
   let client: Fleetcorv2SDKClient;
@@ -305,7 +311,7 @@ describe("Fleetcorv2SDKClient", () => {
         "API_ERROR",
         "Request failed",
         { reason: "test" },
-        "req_123"
+        "req_123",
       );
 
       expect(error).toBeInstanceOf(FleetcorAPIError);
@@ -314,7 +320,9 @@ describe("Fleetcorv2SDKClient", () => {
     });
 
     it("should include HTTP status details", () => {
-      const error = new FleetcorAPIError("HTTP_500", "Internal server error", { status: 500 });
+      const error = new FleetcorAPIError("HTTP_500", "Internal server error", {
+        status: 500,
+      });
       expect(error.details?.status).toBe(500);
     });
   });

@@ -67,10 +67,7 @@ interface HandlerResult {
 export async function action({ request }: ActionFunctionArgs) {
   // Only accept POST requests
   if (request.method !== "POST") {
-    return Response.json(
-      { error: "Method not allowed" },
-      { status: 405 }
-    );
+    return Response.json({ error: "Method not allowed" }, { status: 405 });
   }
 
   // Rate limit by shop ID (from header) — 200 webhooks per minute per shop
@@ -79,7 +76,7 @@ export async function action({ request }: ActionFunctionArgs) {
   if (!rateLimit.allowed) {
     return Response.json(
       { error: "Rate limit exceeded" },
-      { status: 429, headers: rateLimitHeaders(rateLimit) }
+      { status: 429, headers: rateLimitHeaders(rateLimit) },
     );
   }
 
@@ -89,7 +86,7 @@ export async function action({ request }: ActionFunctionArgs) {
     if (!validated) {
       return Response.json(
         { error: "Invalid webhook signature" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -122,24 +119,30 @@ export async function action({ request }: ActionFunctionArgs) {
         topic: validated.topic,
         message: result.message,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Webhook handler error", {
       error: error instanceof Error ? error.message : String(error),
     });
 
-    captureException(error, { component: "webhook-handler", shopId: shopIdHeader });
+    captureException(error, {
+      component: "webhook-handler",
+      shopId: shopIdHeader,
+    });
 
     // Return 200 OK to prevent Shopify retry loop
     return Response.json(
       {
         success: false,
-        error: process.env.NODE_ENV === "production"
-          ? "Internal webhook error"
-          : (error instanceof Error ? error.message : "Unknown error"),
+        error:
+          process.env.NODE_ENV === "production"
+            ? "Internal webhook error"
+            : error instanceof Error
+              ? error.message
+              : "Unknown error",
       },
-      { status: 200 }
+      { status: 200 },
     );
   }
 }
@@ -154,7 +157,7 @@ export async function action({ request }: ActionFunctionArgs) {
  * @returns Validated webhook or null if signature is invalid
  */
 async function validateAndParseWebhook(
-  request: Request
+  request: Request,
 ): Promise<ValidatedWebhook | null> {
   try {
     // Read raw body for HMAC validation
@@ -183,7 +186,7 @@ async function validateAndParseWebhook(
     const isValid = validateHmacSignature(
       rawBody,
       String(hmacHeader),
-      process.env.SHOPIFY_WEBHOOK_SECRET || ""
+      process.env.SHOPIFY_WEBHOOK_SECRET || "",
     );
 
     if (!isValid) {
@@ -225,7 +228,7 @@ async function validateAndParseWebhook(
 function validateHmacSignature(
   payload: string,
   providedHmac: string,
-  secret: string
+  secret: string,
 ): boolean {
   try {
     // Compute HMAC-SHA256 of payload
@@ -255,7 +258,7 @@ function validateHmacSignature(
  * @returns Handler result with success/error status
  */
 async function routeWebhookToHandler(
-  context: WebhookContext
+  context: WebhookContext,
 ): Promise<HandlerResult> {
   const { topic, payload, shopId, webhookId } = context;
 
@@ -300,9 +303,12 @@ async function routeWebhookToHandler(
 
     return {
       success: false,
-      error: process.env.NODE_ENV === "production"
-        ? "Internal handler error"
-        : (error instanceof Error ? error.message : "Handler error"),
+      error:
+        process.env.NODE_ENV === "production"
+          ? "Internal handler error"
+          : error instanceof Error
+            ? error.message
+            : "Handler error",
     };
   }
 }
@@ -313,7 +319,9 @@ async function routeWebhookToHandler(
  * Handle orders/create webhook.
  * Enqueues a product-webhook job for order synchronization.
  */
-async function handleOrderCreated(context: WebhookContext): Promise<HandlerResult> {
+async function handleOrderCreated(
+  context: WebhookContext,
+): Promise<HandlerResult> {
   const { payload, shopId, webhookId } = context;
 
   try {
@@ -350,9 +358,12 @@ async function handleOrderCreated(context: WebhookContext): Promise<HandlerResul
   } catch (error) {
     return {
       success: false,
-      error: process.env.NODE_ENV === "production"
-        ? "Failed to handle order creation"
-        : (error instanceof Error ? error.message : "Failed to handle order creation"),
+      error:
+        process.env.NODE_ENV === "production"
+          ? "Failed to handle order creation"
+          : error instanceof Error
+            ? error.message
+            : "Failed to handle order creation",
     };
   }
 }
@@ -361,7 +372,9 @@ async function handleOrderCreated(context: WebhookContext): Promise<HandlerResul
  * Handle orders/updated webhook.
  * Updates order status in local database.
  */
-async function handleOrderUpdated(context: WebhookContext): Promise<HandlerResult> {
+async function handleOrderUpdated(
+  context: WebhookContext,
+): Promise<HandlerResult> {
   const { payload, shopId, webhookId } = context;
 
   try {
@@ -395,9 +408,12 @@ async function handleOrderUpdated(context: WebhookContext): Promise<HandlerResul
   } catch (error) {
     return {
       success: false,
-      error: process.env.NODE_ENV === "production"
-        ? "Failed to update order"
-        : (error instanceof Error ? error.message : "Failed to update order"),
+      error:
+        process.env.NODE_ENV === "production"
+          ? "Failed to update order"
+          : error instanceof Error
+            ? error.message
+            : "Failed to update order",
     };
   }
 }
@@ -406,7 +422,9 @@ async function handleOrderUpdated(context: WebhookContext): Promise<HandlerResul
  * Handle orders/fulfilled webhook.
  * Triggers delivery workflow for fulfilled orders.
  */
-async function handleOrderFulfilled(context: WebhookContext): Promise<HandlerResult> {
+async function handleOrderFulfilled(
+  context: WebhookContext,
+): Promise<HandlerResult> {
   const { payload, shopId, webhookId } = context;
 
   try {
@@ -440,9 +458,12 @@ async function handleOrderFulfilled(context: WebhookContext): Promise<HandlerRes
   } catch (error) {
     return {
       success: false,
-      error: process.env.NODE_ENV === "production"
-        ? "Failed to trigger delivery workflow"
-        : (error instanceof Error ? error.message : "Failed to trigger delivery workflow"),
+      error:
+        process.env.NODE_ENV === "production"
+          ? "Failed to trigger delivery workflow"
+          : error instanceof Error
+            ? error.message
+            : "Failed to trigger delivery workflow",
     };
   }
 }
@@ -451,7 +472,9 @@ async function handleOrderFulfilled(context: WebhookContext): Promise<HandlerRes
  * Handle app/uninstalled webhook.
  * Deactivates tenant and performs cleanup.
  */
-async function handleAppUninstalled(context: WebhookContext): Promise<HandlerResult> {
+async function handleAppUninstalled(
+  context: WebhookContext,
+): Promise<HandlerResult> {
   const { shopId, webhookId } = context;
 
   try {
@@ -473,9 +496,12 @@ async function handleAppUninstalled(context: WebhookContext): Promise<HandlerRes
   } catch (error) {
     return {
       success: false,
-      error: process.env.NODE_ENV === "production"
-        ? "Failed to deactivate tenant"
-        : (error instanceof Error ? error.message : "Failed to deactivate tenant"),
+      error:
+        process.env.NODE_ENV === "production"
+          ? "Failed to deactivate tenant"
+          : error instanceof Error
+            ? error.message
+            : "Failed to deactivate tenant",
     };
   }
 }
@@ -484,7 +510,9 @@ async function handleAppUninstalled(context: WebhookContext): Promise<HandlerRes
  * Handle customers/data_request webhook.
  * Exports customer GDPR data.
  */
-async function handleCustomerDataRequest(context: WebhookContext): Promise<HandlerResult> {
+async function handleCustomerDataRequest(
+  context: WebhookContext,
+): Promise<HandlerResult> {
   const { payload, shopId, webhookId } = context;
 
   try {
@@ -511,9 +539,12 @@ async function handleCustomerDataRequest(context: WebhookContext): Promise<Handl
   } catch (error) {
     return {
       success: false,
-      error: process.env.NODE_ENV === "production"
-        ? "Failed to export customer data"
-        : (error instanceof Error ? error.message : "Failed to export customer data"),
+      error:
+        process.env.NODE_ENV === "production"
+          ? "Failed to export customer data"
+          : error instanceof Error
+            ? error.message
+            : "Failed to export customer data",
     };
   }
 }
@@ -522,7 +553,9 @@ async function handleCustomerDataRequest(context: WebhookContext): Promise<Handl
  * Handle customers/redact webhook.
  * Deletes customer GDPR data.
  */
-async function handleCustomerRedact(context: WebhookContext): Promise<HandlerResult> {
+async function handleCustomerRedact(
+  context: WebhookContext,
+): Promise<HandlerResult> {
   const { payload, shopId, webhookId } = context;
 
   try {
@@ -548,9 +581,12 @@ async function handleCustomerRedact(context: WebhookContext): Promise<HandlerRes
   } catch (error) {
     return {
       success: false,
-      error: process.env.NODE_ENV === "production"
-        ? "Failed to redact customer data"
-        : (error instanceof Error ? error.message : "Failed to redact customer data"),
+      error:
+        process.env.NODE_ENV === "production"
+          ? "Failed to redact customer data"
+          : error instanceof Error
+            ? error.message
+            : "Failed to redact customer data",
     };
   }
 }
@@ -559,7 +595,9 @@ async function handleCustomerRedact(context: WebhookContext): Promise<HandlerRes
  * Handle shop/redact webhook.
  * Deletes shop GDPR data.
  */
-async function handleShopRedact(context: WebhookContext): Promise<HandlerResult> {
+async function handleShopRedact(
+  context: WebhookContext,
+): Promise<HandlerResult> {
   const { shopId, webhookId } = context;
 
   try {
@@ -578,9 +616,12 @@ async function handleShopRedact(context: WebhookContext): Promise<HandlerResult>
   } catch (error) {
     return {
       success: false,
-      error: process.env.NODE_ENV === "production"
-        ? "Failed to redact shop data"
-        : (error instanceof Error ? error.message : "Failed to redact shop data"),
+      error:
+        process.env.NODE_ENV === "production"
+          ? "Failed to redact shop data"
+          : error instanceof Error
+            ? error.message
+            : "Failed to redact shop data",
     };
   }
 }
@@ -609,10 +650,13 @@ async function enqueueOrderWebhookJob(params: {
       {
         tenantId: params.shopId,
         transactionId: `webhook:${params.webhookId}`,
-      }
+      },
     );
 
-    console.log("Order webhook job enqueued", { jobId, orderId: params.orderId });
+    console.log("Order webhook job enqueued", {
+      jobId,
+      orderId: params.orderId,
+    });
     return jobId;
   } catch (error) {
     console.error("Failed to enqueue order webhook job", { error });
@@ -678,10 +722,13 @@ async function triggerDeliveryWorkflow(params: {
       {
         tenantId: params.shopId,
         transactionId: `webhook:${params.webhookId}`,
-      }
+      },
     );
 
-    console.log("Delivery workflow enqueued", { jobId, orderId: params.orderId });
+    console.log("Delivery workflow enqueued", {
+      jobId,
+      orderId: params.orderId,
+    });
     return jobId;
   } catch (error) {
     console.error("Failed to trigger delivery workflow", { error });
@@ -710,14 +757,18 @@ async function deactivateTenant(params: {
 
     console.log("Tenant deactivated", { shopId: params.shopId });
   } catch (error) {
-    console.warn("Direct DB deactivation failed, falling back to API", { error });
+    console.warn("Direct DB deactivation failed, falling back to API", {
+      error,
+    });
     const API_BASE = process.env.API_BASE_URL ?? "http://localhost:8000";
     await fetch(`${API_BASE}/api/v4/webhooks/shopify/tenant-deactivate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(params),
     });
-    console.log("Tenant deactivation forwarded to API", { shopId: params.shopId });
+    console.log("Tenant deactivation forwarded to API", {
+      shopId: params.shopId,
+    });
   }
 }
 
@@ -740,7 +791,7 @@ async function exportCustomerData(params: {
       {
         tenantId: params.shopId,
         transactionId: `webhook:${params.webhookId}`,
-      }
+      },
     );
 
     console.log("GDPR data export job enqueued", {
@@ -777,14 +828,18 @@ async function deleteCustomerData(params: {
       shopId: params.shopId,
     });
   } catch (error) {
-    console.warn("Direct DB customer deletion failed, falling back to API", { error });
+    console.warn("Direct DB customer deletion failed, falling back to API", {
+      error,
+    });
     const API_BASE = process.env.API_BASE_URL ?? "http://localhost:8000";
     await fetch(`${API_BASE}/api/v4/webhooks/shopify/customer-redact`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(params),
     });
-    console.log("Customer deletion forwarded to API", { customerId: params.customerId });
+    console.log("Customer deletion forwarded to API", {
+      customerId: params.customerId,
+    });
   }
 }
 
@@ -805,7 +860,9 @@ async function deleteShopData(params: {
 
     console.log("Shop data deleted", { shopId: params.shopId });
   } catch (error) {
-    console.warn("Direct DB shop deletion failed, falling back to API", { error });
+    console.warn("Direct DB shop deletion failed, falling back to API", {
+      error,
+    });
     const API_BASE = process.env.API_BASE_URL ?? "http://localhost:8000";
     await fetch(`${API_BASE}/api/v4/webhooks/shopify/shop-redact`, {
       method: "POST",

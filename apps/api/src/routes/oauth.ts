@@ -41,7 +41,11 @@ import {
 } from "@witylogix/core/oauth";
 import { requireAuth } from "../middleware/auth.js";
 import { getConfig } from "../lib/config.js";
-import { BadRequestError, ForbiddenError, NotFoundError } from "../lib/errors.js";
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+} from "../lib/errors.js";
 
 // ─── Helpers ────────────────────────────────────────────────
 
@@ -138,12 +142,15 @@ async function oauthRoutes(fastify: FastifyInstance): Promise<void> {
     if (!parsed.success) {
       return reply.code(400).send({
         error: "invalid_request",
-        error_description: parsed.error.issues[0]?.message ?? "Invalid authorize params",
+        error_description:
+          parsed.error.issues[0]?.message ?? "Invalid authorize params",
       });
     }
     const q = parsed.data;
 
-    const client = await prisma.oAuthClient.findUnique({ where: { id: q.client_id } });
+    const client = await prisma.oAuthClient.findUnique({
+      where: { id: q.client_id },
+    });
     if (!client || client.status !== "ACTIVE") {
       return reply.code(404).send({
         error: "invalid_client",
@@ -182,7 +189,9 @@ async function oauthRoutes(fastify: FastifyInstance): Promise<void> {
     });
     if (q.state) dashParams.set("state", q.state);
 
-    return reply.redirect(`${config.DASHBOARD_URL}/apps/authorize?${dashParams.toString()}`);
+    return reply.redirect(
+      `${config.DASHBOARD_URL}/apps/authorize?${dashParams.toString()}`,
+    );
   });
 
   // ─── /consent ─────────────────────────────────────────
@@ -207,16 +216,22 @@ async function oauthRoutes(fastify: FastifyInstance): Promise<void> {
 
       const parsed = consentBodySchema.safeParse(request.body);
       if (!parsed.success) {
-        throw new BadRequestError(parsed.error.issues[0]?.message ?? "Invalid consent body");
+        throw new BadRequestError(
+          parsed.error.issues[0]?.message ?? "Invalid consent body",
+        );
       }
       const body = parsed.data;
 
-      const client = await prisma.oAuthClient.findUnique({ where: { id: body.clientId } });
+      const client = await prisma.oAuthClient.findUnique({
+        where: { id: body.clientId },
+      });
       if (!client || client.status !== "ACTIVE") {
         throw new NotFoundError("Unknown or suspended client");
       }
       if (!client.redirectUris.includes(body.redirectUri)) {
-        throw new BadRequestError("redirect_uri is not registered for this client");
+        throw new BadRequestError(
+          "redirect_uri is not registered for this client",
+        );
       }
 
       try {
@@ -252,7 +267,8 @@ async function oauthRoutes(fastify: FastifyInstance): Promise<void> {
     if (!parsed.success) {
       return reply.code(400).send({
         error: "invalid_request",
-        error_description: parsed.error.issues[0]?.message ?? "Invalid token body",
+        error_description:
+          parsed.error.issues[0]?.message ?? "Invalid token body",
       });
     }
     const body = parsed.data;
@@ -296,7 +312,9 @@ async function oauthRoutes(fastify: FastifyInstance): Promise<void> {
         error_description: "token is required",
       });
     }
-    const tokenHash = createHash("sha256").update(parsed.data.token).digest("hex");
+    const tokenHash = createHash("sha256")
+      .update(parsed.data.token)
+      .digest("hex");
     const now = new Date();
     await prisma.$transaction([
       prisma.oAuthAccessToken.updateMany({
@@ -314,68 +332,84 @@ async function oauthRoutes(fastify: FastifyInstance): Promise<void> {
   // ─── /scopes (public metadata) ────────────────────────
   fastify.get("/scopes", async (_request, reply) => {
     return reply.send({
-      scopes: ALL_OAUTH_SCOPES.map((s) => ({ name: s, description: OAUTH_SCOPES[s] })),
+      scopes: ALL_OAUTH_SCOPES.map((s) => ({
+        name: s,
+        description: OAUTH_SCOPES[s],
+      })),
     });
   });
 
   // ─── Developer: /clients ──────────────────────────────
-  fastify.get("/clients", { preHandler: [requireAuth] }, async (request, reply) => {
-    const auth = request.auth!;
-    if (auth.role !== "SUPER_ADMIN" && auth.role !== "ADMIN") {
-      throw new ForbiddenError("Only admins can manage OAuth clients");
-    }
-    const clients = await prisma.oAuthClient.findMany({
-      where: { ownerUserId: auth.userId! },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        logoUrl: true,
-        homepageUrl: true,
-        redirectUris: true,
-        allowedScopes: true,
-        clientType: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-    return reply.send({ clients });
-  });
-
-  fastify.post("/clients", { preHandler: [requireAuth] }, async (request, reply) => {
-    const auth = request.auth!;
-    if (auth.role !== "SUPER_ADMIN" && auth.role !== "ADMIN") {
-      throw new ForbiddenError("Only admins can register OAuth clients");
-    }
-    if (!auth.userId) throw new ForbiddenError("User context required");
-
-    const parsed = registerClientSchema.safeParse(request.body);
-    if (!parsed.success) {
-      throw new BadRequestError(parsed.error.issues[0]?.message ?? "Invalid client body");
-    }
-    try {
-      const result = await registerClient({ ...parsed.data, ownerUserId: auth.userId });
-      return reply.code(201).send({
-        client: {
-          id: result.client.id,
-          name: result.client.name,
-          description: result.client.description,
-          logoUrl: result.client.logoUrl,
-          homepageUrl: result.client.homepageUrl,
-          redirectUris: result.client.redirectUris,
-          allowedScopes: result.client.allowedScopes,
-          clientType: result.client.clientType,
-          status: result.client.status,
+  fastify.get(
+    "/clients",
+    { preHandler: [requireAuth] },
+    async (request, reply) => {
+      const auth = request.auth!;
+      if (auth.role !== "SUPER_ADMIN" && auth.role !== "ADMIN") {
+        throw new ForbiddenError("Only admins can manage OAuth clients");
+      }
+      const clients = await prisma.oAuthClient.findMany({
+        where: { ownerUserId: auth.userId! },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          logoUrl: true,
+          homepageUrl: true,
+          redirectUris: true,
+          allowedScopes: true,
+          clientType: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
         },
-        // Plaintext secret — shown once, never persisted.
-        clientSecret: result.clientSecret,
       });
-    } catch (err) {
-      return sendOAuthError(reply, err);
-    }
-  });
+      return reply.send({ clients });
+    },
+  );
+
+  fastify.post(
+    "/clients",
+    { preHandler: [requireAuth] },
+    async (request, reply) => {
+      const auth = request.auth!;
+      if (auth.role !== "SUPER_ADMIN" && auth.role !== "ADMIN") {
+        throw new ForbiddenError("Only admins can register OAuth clients");
+      }
+      if (!auth.userId) throw new ForbiddenError("User context required");
+
+      const parsed = registerClientSchema.safeParse(request.body);
+      if (!parsed.success) {
+        throw new BadRequestError(
+          parsed.error.issues[0]?.message ?? "Invalid client body",
+        );
+      }
+      try {
+        const result = await registerClient({
+          ...parsed.data,
+          ownerUserId: auth.userId,
+        });
+        return reply.code(201).send({
+          client: {
+            id: result.client.id,
+            name: result.client.name,
+            description: result.client.description,
+            logoUrl: result.client.logoUrl,
+            homepageUrl: result.client.homepageUrl,
+            redirectUris: result.client.redirectUris,
+            allowedScopes: result.client.allowedScopes,
+            clientType: result.client.clientType,
+            status: result.client.status,
+          },
+          // Plaintext secret — shown once, never persisted.
+          clientSecret: result.clientSecret,
+        });
+      } catch (err) {
+        return sendOAuthError(reply, err);
+      }
+    },
+  );
 
   fastify.post(
     "/clients/:id/rotate-secret",
@@ -400,126 +434,153 @@ async function oauthRoutes(fastify: FastifyInstance): Promise<void> {
     },
   );
 
-  fastify.get("/clients/:id", { preHandler: [requireAuth] }, async (request, reply) => {
-    const auth = request.auth!;
-    if (auth.role !== "SUPER_ADMIN" && auth.role !== "ADMIN") {
-      throw new ForbiddenError("Only admins can view OAuth clients");
-    }
-    const { id } = request.params as { id: string };
-    const client = await prisma.oAuthClient.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        logoUrl: true,
-        homepageUrl: true,
-        redirectUris: true,
-        allowedScopes: true,
-        clientType: true,
-        status: true,
-        secretPrefix: true,
-        ownerUserId: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-    if (!client) throw new NotFoundError("Client not found");
-    if (client.ownerUserId !== auth.userId && auth.role !== "SUPER_ADMIN") {
-      throw new ForbiddenError("You do not own this client");
-    }
-    return reply.send({ client });
-  });
-
-  fastify.patch("/clients/:id", { preHandler: [requireAuth] }, async (request, reply) => {
-    const auth = request.auth!;
-    if (auth.role !== "SUPER_ADMIN" && auth.role !== "ADMIN") {
-      throw new ForbiddenError("Only admins can update OAuth clients");
-    }
-    const { id } = request.params as { id: string };
-    const client = await prisma.oAuthClient.findUnique({ where: { id } });
-    if (!client) throw new NotFoundError("Client not found");
-    if (client.ownerUserId !== auth.userId && auth.role !== "SUPER_ADMIN") {
-      throw new ForbiddenError("You do not own this client");
-    }
-
-    const parsed = updateClientSchema.safeParse(request.body);
-    if (!parsed.success) {
-      throw new BadRequestError(parsed.error.issues[0]?.message ?? "Invalid update body");
-    }
-    const patch = parsed.data;
-
-    if (patch.allowedScopes) {
-      const unknown = patch.allowedScopes.filter((s) => !isValidScope(s));
-      if (unknown.length > 0) {
-        throw new BadRequestError(`Unknown scopes: ${unknown.join(", ")}`);
+  fastify.get(
+    "/clients/:id",
+    { preHandler: [requireAuth] },
+    async (request, reply) => {
+      const auth = request.auth!;
+      if (auth.role !== "SUPER_ADMIN" && auth.role !== "ADMIN") {
+        throw new ForbiddenError("Only admins can view OAuth clients");
       }
-    }
+      const { id } = request.params as { id: string };
+      const client = await prisma.oAuthClient.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          logoUrl: true,
+          homepageUrl: true,
+          redirectUris: true,
+          allowedScopes: true,
+          clientType: true,
+          status: true,
+          secretPrefix: true,
+          ownerUserId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+      if (!client) throw new NotFoundError("Client not found");
+      if (client.ownerUserId !== auth.userId && auth.role !== "SUPER_ADMIN") {
+        throw new ForbiddenError("You do not own this client");
+      }
+      return reply.send({ client });
+    },
+  );
 
-    const updated = await prisma.oAuthClient.update({
-      where: { id },
-      data: patch,
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        logoUrl: true,
-        homepageUrl: true,
-        redirectUris: true,
-        allowedScopes: true,
-        clientType: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-    return reply.send({ client: updated });
-  });
+  fastify.patch(
+    "/clients/:id",
+    { preHandler: [requireAuth] },
+    async (request, reply) => {
+      const auth = request.auth!;
+      if (auth.role !== "SUPER_ADMIN" && auth.role !== "ADMIN") {
+        throw new ForbiddenError("Only admins can update OAuth clients");
+      }
+      const { id } = request.params as { id: string };
+      const client = await prisma.oAuthClient.findUnique({ where: { id } });
+      if (!client) throw new NotFoundError("Client not found");
+      if (client.ownerUserId !== auth.userId && auth.role !== "SUPER_ADMIN") {
+        throw new ForbiddenError("You do not own this client");
+      }
+
+      const parsed = updateClientSchema.safeParse(request.body);
+      if (!parsed.success) {
+        throw new BadRequestError(
+          parsed.error.issues[0]?.message ?? "Invalid update body",
+        );
+      }
+      const patch = parsed.data;
+
+      if (patch.allowedScopes) {
+        const unknown = patch.allowedScopes.filter((s) => !isValidScope(s));
+        if (unknown.length > 0) {
+          throw new BadRequestError(`Unknown scopes: ${unknown.join(", ")}`);
+        }
+      }
+
+      const updated = await prisma.oAuthClient.update({
+        where: { id },
+        data: patch,
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          logoUrl: true,
+          homepageUrl: true,
+          redirectUris: true,
+          allowedScopes: true,
+          clientType: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+      return reply.send({ client: updated });
+    },
+  );
 
   // Soft-delete: marks client SUSPENDED and revokes live installations.
   // We do not hard-delete because access tokens and audit records reference it.
-  fastify.delete("/clients/:id", { preHandler: [requireAuth] }, async (request, reply) => {
-    const auth = request.auth!;
-    if (auth.role !== "SUPER_ADMIN" && auth.role !== "ADMIN") {
-      throw new ForbiddenError("Only admins can suspend OAuth clients");
-    }
-    const { id } = request.params as { id: string };
-    const client = await prisma.oAuthClient.findUnique({
-      where: { id },
-      include: { installations: { where: { status: "ACTIVE" }, select: { id: true } } },
-    });
-    if (!client) throw new NotFoundError("Client not found");
-    if (client.ownerUserId !== auth.userId && auth.role !== "SUPER_ADMIN") {
-      throw new ForbiddenError("You do not own this client");
-    }
+  fastify.delete(
+    "/clients/:id",
+    { preHandler: [requireAuth] },
+    async (request, reply) => {
+      const auth = request.auth!;
+      if (auth.role !== "SUPER_ADMIN" && auth.role !== "ADMIN") {
+        throw new ForbiddenError("Only admins can suspend OAuth clients");
+      }
+      const { id } = request.params as { id: string };
+      const client = await prisma.oAuthClient.findUnique({
+        where: { id },
+        include: {
+          installations: { where: { status: "ACTIVE" }, select: { id: true } },
+        },
+      });
+      if (!client) throw new NotFoundError("Client not found");
+      if (client.ownerUserId !== auth.userId && auth.role !== "SUPER_ADMIN") {
+        throw new ForbiddenError("You do not own this client");
+      }
 
-    await prisma.oAuthClient.update({
-      where: { id },
-      data: { status: "SUSPENDED" },
-    });
-    for (const inst of client.installations) {
-      await revokeInstallation(inst.id);
-    }
-    return reply.code(204).send();
-  });
+      await prisma.oAuthClient.update({
+        where: { id },
+        data: { status: "SUSPENDED" },
+      });
+      for (const inst of client.installations) {
+        await revokeInstallation(inst.id);
+      }
+      return reply.code(204).send();
+    },
+  );
 
   // ─── Tenant: /installations ───────────────────────────
-  fastify.get("/installations", { preHandler: [requireAuth] }, async (request, reply) => {
-    const auth = request.auth!;
-    if (auth.role === "APP") throw new ForbiddenError("Apps cannot list installations");
-    if (!auth.orgId) throw new ForbiddenError("Org context required");
+  fastify.get(
+    "/installations",
+    { preHandler: [requireAuth] },
+    async (request, reply) => {
+      const auth = request.auth!;
+      if (auth.role === "APP")
+        throw new ForbiddenError("Apps cannot list installations");
+      if (!auth.orgId) throw new ForbiddenError("Org context required");
 
-    const installations = await prisma.appInstallation.findMany({
-      where: { orgId: auth.orgId, status: "ACTIVE" },
-      orderBy: { installedAt: "desc" },
-      include: {
-        client: {
-          select: { id: true, name: true, description: true, logoUrl: true, homepageUrl: true },
+      const installations = await prisma.appInstallation.findMany({
+        where: { orgId: auth.orgId, status: "ACTIVE" },
+        orderBy: { installedAt: "desc" },
+        include: {
+          client: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              logoUrl: true,
+              homepageUrl: true,
+            },
+          },
         },
-      },
-    });
-    return reply.send({ installations });
-  });
+      });
+      return reply.send({ installations });
+    },
+  );
 
   fastify.delete(
     "/installations/:id",
@@ -530,7 +591,9 @@ async function oauthRoutes(fastify: FastifyInstance): Promise<void> {
         throw new ForbiddenError("Only admins can uninstall apps");
       }
       const { id } = request.params as { id: string };
-      const installation = await prisma.appInstallation.findUnique({ where: { id } });
+      const installation = await prisma.appInstallation.findUnique({
+        where: { id },
+      });
       if (!installation) throw new NotFoundError("Installation not found");
       if (installation.orgId !== auth.orgId) {
         throw new ForbiddenError("Installation belongs to another org");

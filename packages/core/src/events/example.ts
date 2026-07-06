@@ -141,9 +141,7 @@ async function exampleShipmentDelivered() {
     deliveryNotes: "Left at front door",
   };
 
-  console.log(
-    "\n=== Example 1: Shipment Delivered Event ===\n",
-  );
+  console.log("\n=== Example 1: Shipment Delivered Event ===\n");
 
   // Emit the event
   // The trigger engine automatically:
@@ -216,9 +214,7 @@ async function exampleDriverAssigned() {
     assignedAt: new Date(),
   };
 
-  console.log(
-    "\n=== Example 3: Driver Assigned Event ===\n",
-  );
+  console.log("\n=== Example 3: Driver Assigned Event ===\n");
 
   // Emit driver assigned event
   // The trigger engine:
@@ -237,9 +233,7 @@ async function exampleDriverAssigned() {
 // ───────────────────────────────────────────────────────────────────
 
 function exampleTemplateVariables() {
-  console.log(
-    "\n=== Example 4: Template Variable Building ===\n",
-  );
+  console.log("\n=== Example 4: Template Variable Building ===\n");
 
   // Build shipment variables
   const shipmentVars = buildShipmentVars({
@@ -333,9 +327,7 @@ function exampleTemplateVariables() {
 async function exampleOrderShipmentFlow() {
   const engine = setupTriggerEngine();
 
-  console.log(
-    "\n=== Example 5: Complete Order-to-Delivery Flow ===\n",
-  );
+  console.log("\n=== Example 5: Complete Order-to-Delivery Flow ===\n");
 
   const shopId = "shop_123";
   const orderId = "ord_789";
@@ -436,8 +428,12 @@ async function exampleOrderShipmentFlow() {
  * Run all examples (for demonstration purposes).
  */
 async function runExamples() {
-  console.log("\n╔════════════════════════════════════════════════════════════╗");
-  console.log("║  Event-Driven Notification Trigger System - Examples        ║");
+  console.log(
+    "\n╔════════════════════════════════════════════════════════════╗",
+  );
+  console.log(
+    "║  Event-Driven Notification Trigger System - Examples        ║",
+  );
   console.log("╚════════════════════════════════════════════════════════════╝");
 
   try {
@@ -450,7 +446,9 @@ async function runExamples() {
     console.log(
       "\n╔════════════════════════════════════════════════════════════╗",
     );
-    console.log("║  All examples completed successfully!                      ║");
+    console.log(
+      "║  All examples completed successfully!                      ║",
+    );
     console.log(
       "╚════════════════════════════════════════════════════════════╝\n",
     );
@@ -463,4 +461,10 @@ async function runExamples() {
 // Uncomment to run examples:
 // runExamples().catch(console.error);
 
-export { exampleShipmentDelivered, exampleDeliveryFailed, exampleDriverAssigned, exampleOrderShipmentFlow, exampleTemplateVariables };
+export {
+  exampleShipmentDelivered,
+  exampleDeliveryFailed,
+  exampleDriverAssigned,
+  exampleOrderShipmentFlow,
+  exampleTemplateVariables,
+};

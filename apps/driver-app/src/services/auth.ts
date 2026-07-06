@@ -1,9 +1,9 @@
-import * as SecureStore from 'expo-secure-store';
-import { api } from './api';
+import * as SecureStore from "expo-secure-store";
+import { api } from "./api";
 
-const TOKEN_KEY = 'auth_token';
-const USER_KEY = 'user_data';
-const TOKEN_ISSUED_AT_KEY = 'auth_token_issued_at';
+const TOKEN_KEY = "auth_token";
+const USER_KEY = "user_data";
+const TOKEN_ISSUED_AT_KEY = "auth_token_issued_at";
 
 const OFFLINE_GRACE_PERIOD_MS = 8 * 60 * 60 * 1000; // 8 hours
 
@@ -19,7 +19,7 @@ export interface AuthResponse {
 
 export const authService = {
   async login(phone: string, password: string): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/api/v4/auth/driver/login', {
+    const response = await api.post<AuthResponse>("/api/v4/auth/driver/login", {
       phone,
       password,
     });
@@ -33,9 +33,9 @@ export const authService = {
 
   async logout(): Promise<void> {
     try {
-      await api.post('/api/v4/auth/driver/logout', {});
+      await api.post("/api/v4/auth/driver/logout", {});
     } catch (error) {
-      console.error('Logout API error:', error);
+      console.error("Logout API error:", error);
     }
 
     await SecureStore.deleteItemAsync(TOKEN_KEY);
@@ -47,7 +47,7 @@ export const authService = {
     try {
       return await SecureStore.getItemAsync(TOKEN_KEY);
     } catch (error) {
-      console.error('Failed to get token:', error);
+      console.error("Failed to get token:", error);
       return null;
     }
   },
@@ -57,7 +57,7 @@ export const authService = {
       const userJson = await SecureStore.getItemAsync(USER_KEY);
       return userJson ? JSON.parse(userJson) : null;
     } catch (error) {
-      console.error('Failed to get user:', error);
+      console.error("Failed to get user:", error);
       return null;
     }
   },
@@ -71,7 +71,9 @@ export const authService = {
     const token = await this.getToken();
     if (!token) return false;
 
-    const issuedAtStr = await SecureStore.getItemAsync(TOKEN_ISSUED_AT_KEY).catch(() => null);
+    const issuedAtStr = await SecureStore.getItemAsync(
+      TOKEN_ISSUED_AT_KEY,
+    ).catch(() => null);
     if (!issuedAtStr) return false;
 
     const issuedAt = parseInt(issuedAtStr, 10);

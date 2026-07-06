@@ -116,11 +116,11 @@ interface OnTracTrackingResponse {
 
 /** OnTrac service codes → ServiceLevel */
 const ONTRAC_SERVICE_MAP: Record<string, string> = {
-  S: "OVERNIGHT",   // Sunrise (next day early AM)
-  G: "GROUND",      // Ground
-  C: "OVERNIGHT",   // C10 Next Day by 10 AM
-  H: "OVERNIGHT",   // H2 Next Day by noon
-  L: "GROUND",      // OnTrac Ground (alias)
+  S: "OVERNIGHT", // Sunrise (next day early AM)
+  G: "GROUND", // Ground
+  C: "OVERNIGHT", // C10 Next Day by 10 AM
+  H: "OVERNIGHT", // H2 Next Day by noon
+  L: "GROUND", // OnTrac Ground (alias)
 };
 
 const ONTRAC_TRANSIT_DAYS: Record<string, number> = {
@@ -151,7 +151,9 @@ export class OnTracAdapter extends ShippingAdapter {
   constructor(config: OnTracConfig) {
     super(config, 1); // 1 rps conservative
     this.account = config.account;
-    this.basicAuth = Buffer.from(`${config.account}:${config.password}`).toString("base64");
+    this.basicAuth = Buffer.from(
+      `${config.account}:${config.password}`,
+    ).toString("base64");
     // OnTrac does not have a formal sandbox; use production only
     this.baseUrl = "https://www.ontrac.com/restapi/v3";
   }
@@ -160,14 +162,28 @@ export class OnTracAdapter extends ShippingAdapter {
     const cfg = this.config as OnTracConfig;
     if (!cfg.account || !cfg.password) {
       throw new Error(
-        "OnTrac adapter requires account and password (ONTRAC_ACCOUNT, ONTRAC_PASSWORD)"
+        "OnTrac adapter requires account and password (ONTRAC_ACCOUNT, ONTRAC_PASSWORD)",
       );
     }
     // Validate by fetching a rate quote for a known Western US ZIP pair
     await this.getRates({
       shipmentId: "config-validate",
-      from: { name: "Test", street1: "123 Test St", city: "Los Angeles", state: "CA", zip: "90001", country: "US" },
-      to: { name: "Test", street1: "456 Test Ave", city: "San Francisco", state: "CA", zip: "94102", country: "US" },
+      from: {
+        name: "Test",
+        street1: "123 Test St",
+        city: "Los Angeles",
+        state: "CA",
+        zip: "90001",
+        country: "US",
+      },
+      to: {
+        name: "Test",
+        street1: "456 Test Ave",
+        city: "San Francisco",
+        state: "CA",
+        zip: "94102",
+        country: "US",
+      },
       weight: { value: 1, unit: "lb" },
     });
   }
@@ -186,15 +202,24 @@ export class OnTracAdapter extends ShippingAdapter {
     });
 
     if (request.dimensions) {
-      params.set("length", String(Math.ceil(this.UnitConverter.cmToIn(request.dimensions.length))));
-      params.set("width", String(Math.ceil(this.UnitConverter.cmToIn(request.dimensions.width))));
-      params.set("height", String(Math.ceil(this.UnitConverter.cmToIn(request.dimensions.height))));
+      params.set(
+        "length",
+        String(Math.ceil(this.UnitConverter.cmToIn(request.dimensions.length))),
+      );
+      params.set(
+        "width",
+        String(Math.ceil(this.UnitConverter.cmToIn(request.dimensions.width))),
+      );
+      params.set(
+        "height",
+        String(Math.ceil(this.UnitConverter.cmToIn(request.dimensions.height))),
+      );
     }
 
     const data = await this.request<{ Rates: OnTracRateResponse[] }>(
       "GET",
       `${this.baseUrl}/rates?${params.toString()}`,
-      { headers: this.authHeaders() }
+      { headers: this.authHeaders() },
     );
 
     return (data.Rates ?? [])
@@ -202,7 +227,8 @@ export class OnTracAdapter extends ShippingAdapter {
       .map((r) => ({
         rateId: r.ServiceCode,
         carrier: "ONTRAC" as const,
-        service: (ONTRAC_SERVICE_MAP[r.ServiceCode] ?? "GROUND") as ShipmentRate["service"],
+        service: (ONTRAC_SERVICE_MAP[r.ServiceCode] ??
+          "GROUND") as ShipmentRate["service"],
         price: Math.round((r.Charges + r.FuelSurcharge) * 100), // dollars → cents
         currency: "USD",
         estimatedDays: r.TransitDays || ONTRAC_TRANSIT_DAYS[r.ServiceCode] || 2,
@@ -213,7 +239,7 @@ export class OnTracAdapter extends ShippingAdapter {
 
   async createShipment(
     request: ShipmentRequest,
-    rateId: string
+    rateId: string,
   ): Promise<ShipmentLabel> {
     const from = this.AddressNormalizer.normalize(request.from);
     const to = this.AddressNormalizer.normalize(request.to);
@@ -276,7 +302,10 @@ export class OnTracAdapter extends ShippingAdapter {
     const data = await this.request<OnTracShipmentResponse>(
       "POST",
       `${this.baseUrl}/shipments`,
-      { headers: { ...this.authHeaders(), "Content-Type": "application/json" }, body: payload }
+      {
+        headers: { ...this.authHeaders(), "Content-Type": "application/json" },
+        body: payload,
+      },
     );
 
     const s = data.Shipment;
@@ -288,7 +317,8 @@ export class OnTracAdapter extends ShippingAdapter {
       labelId: s.ID,
       trackingNumber: s.Tracking,
       carrier: "ONTRAC",
-      service: (ONTRAC_SERVICE_MAP[rateId] ?? "GROUND") as ShipmentLabel["service"],
+      service: (ONTRAC_SERVICE_MAP[rateId] ??
+        "GROUND") as ShipmentLabel["service"],
       labelUrl: "",
       format: "PDF",
       labelBytes,
@@ -302,7 +332,7 @@ export class OnTracAdapter extends ShippingAdapter {
     const data = await this.request<OnTracShipmentResponse>(
       "GET",
       `${this.baseUrl}/shipments/${encodeURIComponent(labelId)}`,
-      { headers: this.authHeaders() }
+      { headers: this.authHeaders() },
     );
 
     const s = data.Shipment;
@@ -312,7 +342,8 @@ export class OnTracAdapter extends ShippingAdapter {
       labelId: s.ID,
       trackingNumber: s.Tracking,
       carrier: "ONTRAC",
-      service: (ONTRAC_SERVICE_MAP[s.ServiceCode] ?? "GROUND") as ShipmentLabel["service"],
+      service: (ONTRAC_SERVICE_MAP[s.ServiceCode] ??
+        "GROUND") as ShipmentLabel["service"],
       labelUrl: "",
       format: "PDF",
       labelBytes,
@@ -325,7 +356,7 @@ export class OnTracAdapter extends ShippingAdapter {
     const data = await this.request<OnTracTrackingResponse>(
       "GET",
       `${this.baseUrl}/shipments?track=${encodeURIComponent(trackingNumber)}`,
-      { headers: this.authHeaders() }
+      { headers: this.authHeaders() },
     );
 
     const shipment = data.Shipments?.[0];
@@ -340,20 +371,23 @@ export class OnTracAdapter extends ShippingAdapter {
     }
 
     const events: TrackingEvent[] = (shipment.Events ?? []).map((e) =>
-      this.parseEvent(e)
+      this.parseEvent(e),
     );
     events.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
     return {
       trackingNumber,
       carrier: "ONTRAC",
-      status: shipment.Delivered ? "DELIVERED" : this.normalizeStatus(shipment.Status),
+      status: shipment.Delivered
+        ? "DELIVERED"
+        : this.normalizeStatus(shipment.Status),
       estimatedDeliveryDate: shipment.ScheduledDelivery
         ? new Date(shipment.ScheduledDelivery)
         : undefined,
-      deliveryDate: shipment.Delivered && events.length > 0
-        ? events[events.length - 1].timestamp
-        : undefined,
+      deliveryDate:
+        shipment.Delivered && events.length > 0
+          ? events[events.length - 1].timestamp
+          : undefined,
       events,
       rawResponse: data,
     };
@@ -364,7 +398,7 @@ export class OnTracAdapter extends ShippingAdapter {
       await this.request<unknown>(
         "DELETE",
         `${this.baseUrl}/shipments/${encodeURIComponent(labelId)}`,
-        { headers: this.authHeaders() }
+        { headers: this.authHeaders() },
       );
       return true;
     } catch {
@@ -372,10 +406,21 @@ export class OnTracAdapter extends ShippingAdapter {
     }
   }
 
-  async validateAddress(address: ShippingAddress): Promise<AddressValidationResult> {
+  async validateAddress(
+    address: ShippingAddress,
+  ): Promise<AddressValidationResult> {
     const normalized = this.AddressNormalizer.normalize(address);
     // OnTrac coverage: Western US states only
-    const westernStates = new Set(["CA", "OR", "WA", "AZ", "CO", "ID", "NV", "UT"]);
+    const westernStates = new Set([
+      "CA",
+      "OR",
+      "WA",
+      "AZ",
+      "CO",
+      "ID",
+      "NV",
+      "UT",
+    ]);
     if (!westernStates.has(normalized.state)) {
       return {
         valid: false,
@@ -400,7 +445,8 @@ export class OnTracAdapter extends ShippingAdapter {
       timestamp: isNaN(ts.getTime()) ? new Date() : ts,
       status: this.normalizeStatus(e.Status),
       message: e.Description,
-      location: [e.City, e.State, e.Zip].filter(Boolean).join(", ") || undefined,
+      location:
+        [e.City, e.State, e.Zip].filter(Boolean).join(", ") || undefined,
       code: e.StatusCode,
       rawResponse: e,
     };
@@ -409,7 +455,8 @@ export class OnTracAdapter extends ShippingAdapter {
   private normalizeStatus(status: string): string {
     const upper = status.toUpperCase();
     if (upper.includes("DELIVERED")) return "DELIVERED";
-    if (upper.includes("OUT FOR DEL") || upper === "OD") return "OUT_FOR_DELIVERY";
+    if (upper.includes("OUT FOR DEL") || upper === "OD")
+      return "OUT_FOR_DELIVERY";
     if (upper.includes("IN TRANSIT") || upper === "IT") return "IN_TRANSIT";
     if (upper.includes("PICKED UP") || upper === "PU") return "PICKED_UP";
     if (upper.includes("EXCEPTION") || upper === "EX") return "EXCEPTION";

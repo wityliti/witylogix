@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 /**
  * Regression Test Configuration
@@ -16,8 +16,8 @@ import { defineConfig, devices } from '@playwright/test';
  */
 
 export default defineConfig({
-  testDir: './tests/regression',
-  testMatch: '**/*.spec.ts',
+  testDir: "./tests/regression",
+  testMatch: "**/*.spec.ts",
 
   /* Fail the build if tests are marked with .only() */
   forbidOnly: !!process.env.CI,
@@ -42,30 +42,30 @@ export default defineConfig({
   /* Reporter configurations */
   reporter: [
     /* HTML report for visual inspection */
-    ['html', { outputFolder: 'tests/regression/results/html' }],
+    ["html", { outputFolder: "tests/regression/results/html" }],
 
     /* JUnit XML for CI integration (GitHub Actions) */
-    ['junit', { outputFile: 'tests/regression/results/junit.xml' }],
+    ["junit", { outputFile: "tests/regression/results/junit.xml" }],
 
     /* JSON report for programmatic processing */
-    ['json', { outputFile: 'tests/regression/results/results.json' }],
+    ["json", { outputFile: "tests/regression/results/results.json" }],
 
     /* Console list for terminal output */
-    ['list'],
+    ["list"],
   ],
 
   /* Base URL for all tests */
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:3002',
+    baseURL: process.env.BASE_URL || "http://localhost:3002",
 
     /* Trace: captures detailed execution logs on retry */
-    trace: 'on-first-retry',
+    trace: "on-first-retry",
 
     /* Screenshot: capture on failure for debugging */
-    screenshot: 'only-on-failure',
+    screenshot: "only-on-failure",
 
     /* Video: record on failure for detailed inspection */
-    video: 'retain-on-failure',
+    video: "retain-on-failure",
 
     /* Action timeout: individual action timeout */
     actionTimeout: 5000,
@@ -74,16 +74,16 @@ export default defineConfig({
   /* Projects define browser and device combinations to test */
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
     {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
     },
     {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      name: "webkit",
+      use: { ...devices["Desktop Safari"] },
     },
 
     /* Optional: Test on mobile devices
@@ -102,32 +102,35 @@ export default defineConfig({
   webServer: [
     {
       /* Start web app server */
-      command: 'npm run dev',
-      url: 'http://localhost:3002',
+      command: "npm run dev",
+      url: "http://localhost:3002",
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
     },
     {
       /* Start API server */
-      command: 'npm run dev --workspace=@witylogix/api',
-      url: 'http://localhost:3001/health',
+      command: "npm run dev --workspace=@witylogix/api",
+      url: "http://localhost:3001/health",
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
     },
   ],
 
   /* Global setup for shared test initialization */
-  globalSetup: require.resolve('../e2e/global-setup.ts'),
+  globalSetup: require.resolve("../e2e/global-setup.ts"),
 
   /* Global teardown for cleanup */
-  globalTeardown: require.resolve('../e2e/global-teardown.ts'),
+  globalTeardown: require.resolve("../e2e/global-teardown.ts"),
 
   /* Snapshot configuration for visual regression */
-  snapshotPathTemplate: 'tests/regression/visual/baselines/{testFileDir}/{testFileName}-{platform}{ext}',
+  snapshotPathTemplate:
+    "tests/regression/visual/baselines/{testFileDir}/{testFileName}-{platform}{ext}",
 
   /* Update snapshots when flag is set */
-  updateSnapshots: process.env.UPDATE_SNAPSHOTS === 'true' || process.env.UPDATE_BASELINES === 'true',
+  updateSnapshots:
+    process.env.UPDATE_SNAPSHOTS === "true" ||
+    process.env.UPDATE_BASELINES === "true",
 
   /* Use stable snapshots across runs */
-  snapshotDir: 'tests/regression/visual/baselines',
+  snapshotDir: "tests/regression/visual/baselines",
 });

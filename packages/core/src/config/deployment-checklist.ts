@@ -290,21 +290,15 @@ export class DeploymentChecker {
     const timestamp = new Date();
     const environment = process.env.NODE_ENV || "unknown";
 
-    const [
-      dbCheck,
-      redisCheck,
-      servicesCheck,
-      diskCheck,
-      sslCheck,
-      dnsCheck,
-    ] = await Promise.all([
-      this.checkDatabaseConnectivity(),
-      this.checkRedisConnectivity(),
-      this.checkExternalServices(),
-      this.checkDiskSpace(),
-      this.checkSSLCertificates(),
-      this.checkDnsResolution(),
-    ]);
+    const [dbCheck, redisCheck, servicesCheck, diskCheck, sslCheck, dnsCheck] =
+      await Promise.all([
+        this.checkDatabaseConnectivity(),
+        this.checkRedisConnectivity(),
+        this.checkExternalServices(),
+        this.checkDiskSpace(),
+        this.checkSSLCertificates(),
+        this.checkDnsResolution(),
+      ]);
 
     const checks = [
       dbCheck,
@@ -356,13 +350,14 @@ export function formatDeploymentReport(report: DeploymentReport): string {
   ];
 
   for (const check of report.checks) {
-    const icon = check.status === "pass" ? "✓" : check.status === "fail" ? "✗" : "⚠";
+    const icon =
+      check.status === "pass" ? "✓" : check.status === "fail" ? "✗" : "⚠";
     lines.push(`${icon} ${check.name}: ${check.message} (${check.duration}ms)`);
     if (check.details) {
       lines.push(
         `  Details: ${JSON.stringify(check.details, null, 2)
           .split("\n")
-          .join("\n  ")}`
+          .join("\n  ")}`,
       );
     }
   }
@@ -370,10 +365,10 @@ export function formatDeploymentReport(report: DeploymentReport): string {
   lines.push("");
   lines.push("─".repeat(60));
   lines.push(
-    `Summary: ${report.passed} passed, ${report.failed} failed, ${report.warnings} warnings`
+    `Summary: ${report.passed} passed, ${report.failed} failed, ${report.warnings} warnings`,
   );
   lines.push(
-    `Status: ${report.canDeploy ? "✓ READY TO DEPLOY" : "✗ NOT READY"}`
+    `Status: ${report.canDeploy ? "✓ READY TO DEPLOY" : "✗ NOT READY"}`,
   );
   lines.push("═".repeat(60));
 

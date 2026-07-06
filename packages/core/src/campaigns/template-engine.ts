@@ -29,7 +29,7 @@ export class TemplateEngine {
    */
   static renderTemplate(
     template: string,
-    variables: Record<string, unknown>
+    variables: Record<string, unknown>,
   ): string {
     let result = template;
 
@@ -43,7 +43,7 @@ export class TemplateEngine {
     result = TemplateEngine.processVariables(result, variables);
 
     // Clean up any remaining unmatched tags
-    result = result.replace(/\{\{[^}]*\}\}/g, '');
+    result = result.replace(/\{\{[^}]*\}\}/g, "");
 
     return result;
   }
@@ -53,7 +53,7 @@ export class TemplateEngine {
    */
   private static processLoops(
     template: string,
-    variables: Record<string, unknown>
+    variables: Record<string, unknown>,
   ): string {
     const eachRegex = /\{\{#each\s+(\w+)\}\}([\s\S]*?)\{\{\/each\}\}/g;
 
@@ -61,7 +61,7 @@ export class TemplateEngine {
       const array = variables[arrayName];
 
       if (!Array.isArray(array)) {
-        return '';
+        return "";
       }
 
       return array
@@ -73,13 +73,13 @@ export class TemplateEngine {
           };
 
           // Handle item properties
-          if (typeof item === 'object' && item !== null) {
+          if (typeof item === "object" && item !== null) {
             Object.assign(itemVars, item);
           }
 
           return TemplateEngine.renderTemplate(content, itemVars);
         })
-        .join('');
+        .join("");
     });
   }
 
@@ -88,21 +88,22 @@ export class TemplateEngine {
    */
   private static processConditionals(
     template: string,
-    variables: Record<string, unknown>
+    variables: Record<string, unknown>,
   ): string {
-    const ifRegex = /\{\{#if\s+(.+?)\}\}([\s\S]*?)(\{\{else\}\}([\s\S]*?))?\{\{\/if\}\}/g;
+    const ifRegex =
+      /\{\{#if\s+(.+?)\}\}([\s\S]*?)(\{\{else\}\}([\s\S]*?))?\{\{\/if\}\}/g;
 
     return template.replace(
       ifRegex,
       (match, condition, trueContent, elseMatch, falseContent) => {
         const conditionResult = TemplateEngine.evaluateCondition(
           condition,
-          variables
+          variables,
         );
 
-        const content = conditionResult ? trueContent : falseContent || '';
+        const content = conditionResult ? trueContent : falseContent || "";
         return TemplateEngine.renderTemplate(content, variables);
-      }
+      },
     );
   }
 
@@ -111,10 +112,13 @@ export class TemplateEngine {
    */
   private static processVariables(
     template: string,
-    variables: Record<string, unknown>
+    variables: Record<string, unknown>,
   ): string {
     return template.replace(/\{\{([^#/][^}]*?)\}\}/g, (match, variablePath) => {
-      const value = TemplateEngine.resolveVariable(variablePath.trim(), variables);
+      const value = TemplateEngine.resolveVariable(
+        variablePath.trim(),
+        variables,
+      );
       return value !== undefined ? String(value) : match;
     });
   }
@@ -124,9 +128,9 @@ export class TemplateEngine {
    */
   private static resolveVariable(
     path: string,
-    variables: Record<string, unknown>
+    variables: Record<string, unknown>,
   ): unknown {
-    const parts = path.split('.');
+    const parts = path.split(".");
     let value: unknown = variables;
 
     for (const part of parts) {
@@ -153,7 +157,7 @@ export class TemplateEngine {
    */
   private static evaluateCondition(
     condition: string,
-    variables: Record<string, unknown>
+    variables: Record<string, unknown>,
   ): boolean {
     const condition_trimmed = condition.trim();
 
@@ -164,30 +168,33 @@ export class TemplateEngine {
     if (match) {
       const [, left, operator, right] = match;
       const leftValue = TemplateEngine.resolveVariable(left.trim(), variables);
-      const rightValue = TemplateEngine.resolveVariable(right.trim(), variables);
+      const rightValue = TemplateEngine.resolveVariable(
+        right.trim(),
+        variables,
+      );
 
       switch (operator) {
-        case '===':
+        case "===":
           return leftValue === rightValue;
-        case '!==':
+        case "!==":
           return leftValue !== rightValue;
-        case '==':
+        case "==":
           return leftValue == rightValue;
-        case '!=':
+        case "!=":
           return leftValue != rightValue;
-        case '>=':
+        case ">=":
           return Number(leftValue) >= Number(rightValue);
-        case '<=':
+        case "<=":
           return Number(leftValue) <= Number(rightValue);
-        case '>':
+        case ">":
           return Number(leftValue) > Number(rightValue);
-        case '<':
+        case "<":
           return Number(leftValue) < Number(rightValue);
       }
     }
 
     // Handle negation
-    if (condition_trimmed.startsWith('!')) {
+    if (condition_trimmed.startsWith("!")) {
       const innerCondition = condition_trimmed.slice(1).trim();
       return !TemplateEngine.evaluateCondition(innerCondition, variables);
     }
@@ -202,9 +209,9 @@ export class TemplateEngine {
    */
   private static isTruthy(value: unknown): boolean {
     if (value === null || value === undefined) return false;
-    if (typeof value === 'boolean') return value;
-    if (typeof value === 'number') return value !== 0;
-    if (typeof value === 'string') return value.length > 0;
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return value !== 0;
+    if (typeof value === "string") return value.length > 0;
     if (Array.isArray(value)) return value.length > 0;
     return true;
   }
@@ -222,14 +229,16 @@ export class TemplateEngine {
     const ifCount = (template.match(/\{\{#if\s/g) || []).length;
     const ifEndCount = (template.match(/\{\{\/if\}\}/g) || []).length;
     if (ifCount !== ifEndCount) {
-      errors.push(`Unmatched {{#if}} tags: ${ifCount} opens, ${ifEndCount} closes`);
+      errors.push(
+        `Unmatched {{#if}} tags: ${ifCount} opens, ${ifEndCount} closes`,
+      );
     }
 
     const eachCount = (template.match(/\{\{#each\s/g) || []).length;
     const eachEndCount = (template.match(/\{\{\/each\}\}/g) || []).length;
     if (eachCount !== eachEndCount) {
       errors.push(
-        `Unmatched {{#each}} tags: ${eachCount} opens, ${eachEndCount} closes`
+        `Unmatched {{#each}} tags: ${eachCount} opens, ${eachEndCount} closes`,
       );
     }
 
@@ -248,18 +257,18 @@ export class TemplateEngine {
     // Check for invalid syntax in conditionals
     const invalidIfRegex = /\{\{#if\s*\}\}/g;
     if (invalidIfRegex.test(template)) {
-      errors.push('Found {{#if}} with no condition');
+      errors.push("Found {{#if}} with no condition");
     }
 
     const invalidEachRegex = /\{\{#each\s*\}\}/g;
     if (invalidEachRegex.test(template)) {
-      errors.push('Found {{#each}} with no array name');
+      errors.push("Found {{#each}} with no array name");
     }
 
     // Check for unclosed variable tags
     const unclosedRegex = /\{\{(?!#|\/)[^}]*$/g;
     if (unclosedRegex.test(template)) {
-      errors.push('Found unclosed template tags');
+      errors.push("Found unclosed template tags");
     }
 
     return {
@@ -287,10 +296,10 @@ export class TemplateEngine {
   static sanitizeInput(input: string): string {
     // Remove potential template injection
     return input
-      .replace(/\{\{/g, '')
-      .replace(/\}\}/g, '')
-      .replace(/{{/g, '')
-      .replace(/}}/g, '');
+      .replace(/\{\{/g, "")
+      .replace(/\}\}/g, "")
+      .replace(/{{/g, "")
+      .replace(/}}/g, "");
   }
 
   /**
@@ -301,11 +310,11 @@ export class TemplateEngine {
   static escapeHtml(value: unknown): string {
     const str = String(value);
     const map: Record<string, string> = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;',
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
     };
     return str.replace(/[&<>"']/g, (char) => map[char]);
   }
@@ -317,12 +326,12 @@ export class TemplateEngine {
    * @returns Function that takes variables and returns rendered string
    */
   static compileTemplate(
-    template: string
+    template: string,
   ): (variables: Record<string, unknown>) => string {
     // Validate template first
     const validation = TemplateEngine.validateTemplate(template);
     if (!validation.valid) {
-      throw new Error(`Invalid template: ${validation.errors.join(', ')}`);
+      throw new Error(`Invalid template: ${validation.errors.join(", ")}`);
     }
 
     // Return a pre-bound render function

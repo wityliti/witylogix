@@ -7,7 +7,7 @@
 // Types
 // ============================================================================
 
-export type Locale = 'en' | 'es' | 'fr' | 'ar';
+export type Locale = "en" | "es" | "fr" | "ar";
 
 export interface TranslationKey {
   key: string;
@@ -30,9 +30,9 @@ export interface LocaleData {
 
 const translations = new Map<Locale, LocaleData>();
 const defaultConfig: I18nConfig = {
-  defaultLocale: 'en',
-  fallbackLocale: 'en',
-  supportedLocales: ['en', 'es', 'fr', 'ar'],
+  defaultLocale: "en",
+  fallbackLocale: "en",
+  supportedLocales: ["en", "es", "fr", "ar"],
 };
 
 let currentConfig = { ...defaultConfig };
@@ -50,7 +50,7 @@ let currentLocale: Locale = defaultConfig.defaultLocale;
  */
 function flattenTranslations(
   obj: LocaleData,
-  prefix = '',
+  prefix = "",
 ): Record<string, string> {
   const result: Record<string, string> = {};
 
@@ -59,9 +59,9 @@ function flattenTranslations(
       const value = obj[key];
       const fullKey = prefix ? `${prefix}.${key}` : key;
 
-      if (typeof value === 'string') {
+      if (typeof value === "string") {
         result[fullKey] = value;
-      } else if (value !== null && typeof value === 'object') {
+      } else if (value !== null && typeof value === "object") {
         Object.assign(result, flattenTranslations(value, fullKey));
       }
     }
@@ -86,7 +86,7 @@ function interpolate(
   for (const key in params) {
     if (Object.prototype.hasOwnProperty.call(params, key)) {
       const value = params[key];
-      const regex = new RegExp(`{{\\s*${key}\\s*}}`, 'g');
+      const regex = new RegExp(`{{\\s*${key}\\s*}}`, "g");
       result = result.replace(regex, String(value));
     }
   }
@@ -99,7 +99,7 @@ function interpolate(
  * @example getNestedValue({ a: { b: 'value' } }, 'a.b') => 'value'
  */
 function getNestedValue(obj: any, path: string): any {
-  const keys = path.split('.');
+  const keys = path.split(".");
   let current = obj;
 
   for (const key of keys) {
@@ -173,14 +173,17 @@ export function getConfig(): I18nConfig {
  * t('common.save') => 'Save'
  * t('orders.assigned', { driver: 'John' }) => 'Order assigned to John'
  */
-export function t(key: string, params?: Record<string, string | number>): string {
+export function t(
+  key: string,
+  params?: Record<string, string | number>,
+): string {
   // Try current locale first
   const localeData = translations.get(currentLocale);
   if (localeData) {
     const flatData = flattenTranslations(localeData);
     const translation = flatData[key] || getNestedValue(localeData, key);
 
-    if (translation && typeof translation === 'string') {
+    if (translation && typeof translation === "string") {
       return interpolate(translation, params);
     }
   }
@@ -192,7 +195,7 @@ export function t(key: string, params?: Record<string, string | number>): string
       const flatData = flattenTranslations(fallbackData);
       const translation = flatData[key] || getNestedValue(fallbackData, key);
 
-      if (translation && typeof translation === 'string') {
+      if (translation && typeof translation === "string") {
         return interpolate(translation, params);
       }
     }
@@ -225,14 +228,14 @@ export function hasKey(key: string): boolean {
  * Check if RTL support is needed (for Arabic, Hebrew, etc.)
  */
 export function isRTL(): boolean {
-  return currentLocale === 'ar';
+  return currentLocale === "ar";
 }
 
 /**
  * Get language direction (ltr or rtl)
  */
-export function getDirection(): 'ltr' | 'rtl' {
-  return isRTL() ? 'rtl' : 'ltr';
+export function getDirection(): "ltr" | "rtl" {
+  return isRTL() ? "rtl" : "ltr";
 }
 
 // ============================================================================

@@ -54,10 +54,12 @@ const stuartWebhookSchema = z.object({
     id: z.string(),
     status: z.string(),
     customer_reference: z.string().optional(),
-    location: z.object({
-      latitude: z.number(),
-      longitude: z.number(),
-    }).optional(),
+    location: z
+      .object({
+        latitude: z.number(),
+        longitude: z.number(),
+      })
+      .optional(),
   }),
 });
 
@@ -74,16 +76,20 @@ const uberDirectWebhookSchema = z.object({
   data: z.object({
     previous_status: z.string().optional(),
     current_status: z.string().optional(),
-    location: z.object({
-      latitude: z.number(),
-      longitude: z.number(),
-    }).optional(),
+    location: z
+      .object({
+        latitude: z.number(),
+        longitude: z.number(),
+      })
+      .optional(),
   }),
 });
 
 // ─── ROUTE REGISTRATION ─────────────────────────────────────────────────
 
-export default async function webhookRoutes(app: FastifyInstance): Promise<void> {
+export default async function webhookRoutes(
+  app: FastifyInstance,
+): Promise<void> {
   // ── Onfleet Webhook ───────────────────────────────────────────────
 
   app.post<{ Body: unknown }>(
@@ -93,11 +99,14 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
         // Get signature from header
         const signature = request.headers["x-onfleet-signature"] as string;
         if (!signature) {
-          return reply.code(401).send({ error: "Missing X-Onfleet-Signature header" });
+          return reply
+            .code(401)
+            .send({ error: "Missing X-Onfleet-Signature header" });
         }
 
         // Get request body as string for signature verification
-        const bodyString = request.rawBody?.toString("utf-8") || JSON.stringify(request.body);
+        const bodyString =
+          request.rawBody?.toString("utf-8") || JSON.stringify(request.body);
 
         // Validate payload schema
         const validatedPayload = onfleetWebhookSchema.parse(request.body);
@@ -110,17 +119,22 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
         });
 
         if (!partner) {
-          return reply.code(404).send({ error: "Onfleet partner not configured" });
+          return reply
+            .code(404)
+            .send({ error: "Onfleet partner not configured" });
         }
 
         // Get webhook secret from partner credentials
-        const credentials = typeof partner.credentials === "string"
-          ? JSON.parse(partner.credentials)
-          : partner.credentials;
+        const credentials =
+          typeof partner.credentials === "string"
+            ? JSON.parse(partner.credentials)
+            : partner.credentials;
         const secret = credentials.webhookSecret || credentials.apiKey;
 
         if (!secret) {
-          return reply.code(500).send({ error: "Webhook secret not configured" });
+          return reply
+            .code(500)
+            .send({ error: "Webhook secret not configured" });
         }
 
         // Process webhook
@@ -130,7 +144,7 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
           signature,
           secret,
           partner.id,
-          bodyString
+          bodyString,
         );
 
         if (!result.success && !result.isDuplicate) {
@@ -149,7 +163,7 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
           error: error instanceof Error ? error.message : "Invalid payload",
         });
       }
-    }
+    },
   );
 
   // ── Stuart Webhook ────────────────────────────────────────────────
@@ -161,11 +175,14 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
         // Get signature from header
         const signature = request.headers["x-stuart-signature"] as string;
         if (!signature) {
-          return reply.code(401).send({ error: "Missing X-Stuart-Signature header" });
+          return reply
+            .code(401)
+            .send({ error: "Missing X-Stuart-Signature header" });
         }
 
         // Get request body as string for signature verification
-        const bodyString = request.rawBody?.toString("utf-8") || JSON.stringify(request.body);
+        const bodyString =
+          request.rawBody?.toString("utf-8") || JSON.stringify(request.body);
 
         // Validate payload schema
         const validatedPayload = stuartWebhookSchema.parse(request.body);
@@ -178,17 +195,22 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
         });
 
         if (!partner) {
-          return reply.code(404).send({ error: "Stuart partner not configured" });
+          return reply
+            .code(404)
+            .send({ error: "Stuart partner not configured" });
         }
 
         // Get webhook secret from partner credentials
-        const credentials = typeof partner.credentials === "string"
-          ? JSON.parse(partner.credentials)
-          : partner.credentials;
+        const credentials =
+          typeof partner.credentials === "string"
+            ? JSON.parse(partner.credentials)
+            : partner.credentials;
         const secret = credentials.webhookSecret || credentials.clientSecret;
 
         if (!secret) {
-          return reply.code(500).send({ error: "Webhook secret not configured" });
+          return reply
+            .code(500)
+            .send({ error: "Webhook secret not configured" });
         }
 
         // Process webhook
@@ -198,7 +220,7 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
           signature,
           secret,
           partner.id,
-          bodyString
+          bodyString,
         );
 
         if (!result.success && !result.isDuplicate) {
@@ -217,7 +239,7 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
           error: error instanceof Error ? error.message : "Invalid payload",
         });
       }
-    }
+    },
   );
 
   // ── Uber Direct Webhook ───────────────────────────────────────────
@@ -229,11 +251,14 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
         // Get signature from header
         const signature = request.headers["x-uber-signature"] as string;
         if (!signature) {
-          return reply.code(401).send({ error: "Missing X-Uber-Signature header" });
+          return reply
+            .code(401)
+            .send({ error: "Missing X-Uber-Signature header" });
         }
 
         // Get request body as string for signature verification
-        const bodyString = request.rawBody?.toString("utf-8") || JSON.stringify(request.body);
+        const bodyString =
+          request.rawBody?.toString("utf-8") || JSON.stringify(request.body);
 
         // Validate payload schema
         const validatedPayload = uberDirectWebhookSchema.parse(request.body);
@@ -246,17 +271,22 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
         });
 
         if (!partner) {
-          return reply.code(404).send({ error: "Uber Direct partner not configured" });
+          return reply
+            .code(404)
+            .send({ error: "Uber Direct partner not configured" });
         }
 
         // Get webhook secret from partner credentials
-        const credentials = typeof partner.credentials === "string"
-          ? JSON.parse(partner.credentials)
-          : partner.credentials;
+        const credentials =
+          typeof partner.credentials === "string"
+            ? JSON.parse(partner.credentials)
+            : partner.credentials;
         const secret = credentials.webhookSecret || credentials.clientSecret;
 
         if (!secret) {
-          return reply.code(500).send({ error: "Webhook secret not configured" });
+          return reply
+            .code(500)
+            .send({ error: "Webhook secret not configured" });
         }
 
         // Process webhook
@@ -266,7 +296,7 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
           signature,
           secret,
           partner.id,
-          bodyString
+          bodyString,
         );
 
         if (!result.success && !result.isDuplicate) {
@@ -285,7 +315,7 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
           error: error instanceof Error ? error.message : "Invalid payload",
         });
       }
-    }
+    },
   );
 
   // ── Webhook Health Check ───────────────────────────────────────────
@@ -344,14 +374,14 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
             status: partner.healthStatus,
             lastWebhookAt: recentLogs[0]?.receivedAt || null,
           };
-        })
+        }),
       );
 
       reply.send({
         timestamp: new Date(),
         partners: health,
       });
-    }
+    },
   );
 
   // ── Webhook Logs (Admin) ───────────────────────────────────────────
@@ -363,44 +393,41 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
       offset?: string;
       eventType?: string;
     };
-  }>(
-    "/webhooks/logs",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const { partnerId, eventType, limit = "50", offset = "0" } = request.query;
-      const pageLimit = Math.min(parseInt(limit), 500);
-      const pageOffset = parseInt(offset);
+  }>("/webhooks/logs", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { partnerId, eventType, limit = "50", offset = "0" } = request.query;
+    const pageLimit = Math.min(parseInt(limit), 500);
+    const pageOffset = parseInt(offset);
 
-      const where: any = {};
-      if (partnerId) where.partnerId = partnerId;
-      if (eventType) where.eventType = eventType;
+    const where: any = {};
+    if (partnerId) where.partnerId = partnerId;
+    if (eventType) where.eventType = eventType;
 
-      const logs = await prisma.courierWebhookLog.findMany({
-        where,
-        orderBy: { receivedAt: "desc" },
-        take: pageLimit,
-        skip: pageOffset,
-      });
+    const logs = await prisma.courierWebhookLog.findMany({
+      where,
+      orderBy: { receivedAt: "desc" },
+      take: pageLimit,
+      skip: pageOffset,
+    });
 
-      const total = await prisma.courierWebhookLog.count({ where });
+    const total = await prisma.courierWebhookLog.count({ where });
 
-      reply.send({
-        logs: logs.map((log) => ({
-          id: log.id,
-          partnerId: log.partnerId,
-          eventType: log.eventType,
-          eventId: log.eventId,
-          processed: log.processed,
-          error: log.error,
-          receivedAt: log.receivedAt,
-        })),
-        pagination: {
-          limit: pageLimit,
-          offset: pageOffset,
-          total,
-        },
-      });
-    }
-  );
+    reply.send({
+      logs: logs.map((log) => ({
+        id: log.id,
+        partnerId: log.partnerId,
+        eventType: log.eventType,
+        eventId: log.eventId,
+        processed: log.processed,
+        error: log.error,
+        receivedAt: log.receivedAt,
+      })),
+      pagination: {
+        limit: pageLimit,
+        offset: pageOffset,
+        total,
+      },
+    });
+  });
 
   // ── Retry Failed Webhooks (Admin) ──────────────────────────────────
 
@@ -429,9 +456,10 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
 
           if (!partner) continue;
 
-          const credentials = typeof partner.credentials === "string"
-            ? JSON.parse(partner.credentials)
-            : partner.credentials;
+          const credentials =
+            typeof partner.credentials === "string"
+              ? JSON.parse(partner.credentials)
+              : partner.credentials;
           const secret = credentials.webhookSecret || credentials.apiKey;
 
           if (!secret) continue;
@@ -442,7 +470,7 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
             log.eventId, // Use eventId as signature placeholder
             secret,
             partnerId,
-            JSON.stringify(log.payload)
+            JSON.stringify(log.payload),
           );
 
           if (result.success) {
@@ -466,6 +494,6 @@ export default async function webhookRoutes(app: FastifyInstance): Promise<void>
         succeeded: successCount,
         failed: failedLogs.length - successCount,
       });
-    }
+    },
   );
 }

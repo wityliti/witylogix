@@ -6,7 +6,12 @@
 /**
  * Failure reason categorization
  */
-export type FailureReason = "timeout" | "4xx" | "5xx" | "network" | "invalid_url";
+export type FailureReason =
+  | "timeout"
+  | "4xx"
+  | "5xx"
+  | "network"
+  | "invalid_url";
 
 /**
  * Dead letter queue entry
@@ -130,7 +135,7 @@ export class DeadLetterQueue {
   async retryEntry(
     id: string,
     dispatcher: any,
-    secret: string
+    secret: string,
   ): Promise<boolean> {
     const entry = this.entries.get(id);
     if (!entry) {
@@ -143,7 +148,7 @@ export class DeadLetterQueue {
         // This is a placeholder - actual implementation would retrieve endpoint URL
         "",
         entry.payload,
-        secret
+        secret,
       );
 
       if (response.success) {
@@ -166,7 +171,7 @@ export class DeadLetterQueue {
   async batchRetry(
     ids: string[],
     dispatcher: any,
-    secretMap: Map<string, string>
+    secretMap: Map<string, string>,
   ): Promise<number> {
     let successCount = 0;
 
@@ -233,7 +238,7 @@ export class DeadLetterQueue {
 
     if (entries.length > 0) {
       const sorted = [...entries].sort(
-        (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+        (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
       );
       stats.oldestEntry = sorted[0].createdAt;
     }
@@ -286,9 +291,12 @@ export class DeadLetterQueue {
    */
   private startCleanupTimer(): void {
     // Run cleanup every 6 hours
-    this.cleanupInterval = setInterval(() => {
-      this.cleanup();
-    }, 6 * 60 * 60 * 1000);
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanup();
+      },
+      6 * 60 * 60 * 1000,
+    );
 
     // Don't keep process alive if this is the only interval
     if (this.cleanupInterval.unref) {

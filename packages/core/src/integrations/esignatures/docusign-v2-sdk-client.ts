@@ -46,7 +46,10 @@ class RateLimiter {
   private tokens: number;
   private lastRefillAt: number = Date.now();
 
-  constructor(private capacity: number, private refillRatePerSecond: number) {
+  constructor(
+    private capacity: number,
+    private refillRatePerSecond: number,
+  ) {
     this.tokens = capacity;
   }
 
@@ -93,7 +96,10 @@ export class DocuSignV2SDKClient {
 
   constructor(config: SDKConfig) {
     if (config.provider !== "docusign") {
-      throw new ValidationError("Config must be for DocuSign provider", "docusign");
+      throw new ValidationError(
+        "Config must be for DocuSign provider",
+        "docusign",
+      );
     }
     this.config = config;
     this.accessToken = config.credentials.accessToken;
@@ -121,7 +127,8 @@ export class DocuSignV2SDKClient {
    * Refresh OAuth2 token using refresh token.
    */
   async refreshToken(): Promise<void> {
-    const { clientId, clientSecret, refreshToken, apiUrl } = this.config.credentials;
+    const { clientId, clientSecret, refreshToken, apiUrl } =
+      this.config.credentials;
 
     if (!refreshToken) {
       throw new AuthenticationError("No refresh token available", "docusign");
@@ -146,7 +153,9 @@ export class DocuSignV2SDKClient {
 
     const data = (await response.json()) as Record<string, unknown>;
     this.accessToken = data.access_token as string;
-    this.tokenExpiresAt = new Date(Date.now() + ((data.expires_in as number) || 3600) * 1000);
+    this.tokenExpiresAt = new Date(
+      Date.now() + ((data.expires_in as number) || 3600) * 1000,
+    );
   }
 
   /**
@@ -163,7 +172,7 @@ export class DocuSignV2SDKClient {
   private async request(
     method: string,
     path: string,
-    body?: Record<string, unknown> | string
+    body?: Record<string, unknown> | string,
   ): Promise<Response> {
     await this.ensureValidToken();
     await this.rateLimiter.acquire();
@@ -183,13 +192,24 @@ export class DocuSignV2SDKClient {
         const response = await fetch(url, {
           method,
           headers,
-          body: body ? (typeof body === "string" ? body : JSON.stringify(body)) : undefined,
+          body: body
+            ? typeof body === "string"
+              ? body
+              : JSON.stringify(body)
+            : undefined,
           signal: AbortSignal.timeout(this.config.requestTimeout || 30000),
         });
 
         if (response.status === 429) {
-          const resetAt = new Date(Date.parse(response.headers.get("Retry-After") || ""));
-          throw new RateLimitError("Rate limit exceeded", "docusign", resetAt, 0);
+          const resetAt = new Date(
+            Date.parse(response.headers.get("Retry-After") || ""),
+          );
+          throw new RateLimitError(
+            "Rate limit exceeded",
+            "docusign",
+            resetAt,
+            0,
+          );
         }
 
         if (response.ok) {
@@ -197,7 +217,11 @@ export class DocuSignV2SDKClient {
           return response;
         }
 
-        if (response.status >= 500 || response.status === 408 || response.status === 429) {
+        if (
+          response.status >= 500 ||
+          response.status === 408 ||
+          response.status === 429
+        ) {
           throw new Error(`HTTP ${response.status}`);
         }
 
@@ -210,7 +234,7 @@ export class DocuSignV2SDKClient {
           throw new ESignatureSDKError(
             "Circuit breaker open - too many failures",
             "docusign",
-            "CIRCUIT_BREAKER_OPEN"
+            "CIRCUIT_BREAKER_OPEN",
           );
         }
 
@@ -232,17 +256,25 @@ export class DocuSignV2SDKClient {
   /**
    * Create an envelope.
    */
-  async createEnvelope(envelope: NormalizedEnvelope): Promise<EnvelopeOperationResult> {
+  async createEnvelope(
+    envelope: NormalizedEnvelope,
+  ): Promise<EnvelopeOperationResult> {
     const payload = this.normalizeEnvelopeForCreate(envelope);
     const response = await this.request(
       "POST",
       `/accounts/${this.config.credentials.accountId}/envelopes`,
-      payload
+      payload,
     );
 
     if (!response.ok) {
       const error = (await response.json()) as Record<string, unknown>;
-      throw new ESignatureSDKError("Failed to create envelope", "docusign", undefined, response.status, error);
+      throw new ESignatureSDKError(
+        "Failed to create envelope",
+        "docusign",
+        undefined,
+        response.status,
+        error,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
@@ -262,11 +294,16 @@ export class DocuSignV2SDKClient {
     const response = await this.request(
       "PUT",
       `/accounts/${this.config.credentials.accountId}/envelopes/${envelopeId}`,
-      payload
+      payload,
     );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to send envelope", "docusign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to send envelope",
+        "docusign",
+        undefined,
+        response.status,
+      );
     }
 
     return {
@@ -284,11 +321,16 @@ export class DocuSignV2SDKClient {
     const response = await this.request(
       "PUT",
       `/accounts/${this.config.credentials.accountId}/envelopes/${envelopeId}`,
-      payload
+      payload,
     );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to void envelope", "docusign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to void envelope",
+        "docusign",
+        undefined,
+        response.status,
+      );
     }
   }
 
@@ -297,17 +339,24 @@ export class DocuSignV2SDKClient {
    */
   async correctEnvelope(
     envelopeId: string,
-    updates: Partial<NormalizedEnvelope>
+    updates: Partial<NormalizedEnvelope>,
   ): Promise<EnvelopeOperationResult> {
-    const payload = this.normalizeEnvelopeForCreate(updates as NormalizedEnvelope);
+    const payload = this.normalizeEnvelopeForCreate(
+      updates as NormalizedEnvelope,
+    );
     const response = await this.request(
       "PUT",
       `/accounts/${this.config.credentials.accountId}/envelopes/${envelopeId}`,
-      payload
+      payload,
     );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to correct envelope", "docusign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to correct envelope",
+        "docusign",
+        undefined,
+        response.status,
+      );
     }
 
     return {
@@ -320,16 +369,24 @@ export class DocuSignV2SDKClient {
   /**
    * Resend an envelope to signers.
    */
-  async resendEnvelope(envelopeId: string, signerEmails?: string[]): Promise<void> {
+  async resendEnvelope(
+    envelopeId: string,
+    signerEmails?: string[],
+  ): Promise<void> {
     const payload = signerEmails ? { signerEmails } : {};
     const response = await this.request(
       "POST",
       `/accounts/${this.config.credentials.accountId}/envelopes/${envelopeId}/recipients/resend`,
-      payload
+      payload,
     );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to resend envelope", "docusign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to resend envelope",
+        "docusign",
+        undefined,
+        response.status,
+      );
     }
   }
 
@@ -339,11 +396,16 @@ export class DocuSignV2SDKClient {
   async getEnvelope(envelopeId: string): Promise<NormalizedEnvelope> {
     const response = await this.request(
       "GET",
-      `/accounts/${this.config.credentials.accountId}/envelopes/${envelopeId}`
+      `/accounts/${this.config.credentials.accountId}/envelopes/${envelopeId}`,
     );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to get envelope", "docusign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to get envelope",
+        "docusign",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
@@ -356,26 +418,41 @@ export class DocuSignV2SDKClient {
   async getEnvelopeStatus(envelopeId: string): Promise<EnvelopeStatusResult> {
     const response = await this.request(
       "GET",
-      `/accounts/${this.config.credentials.accountId}/envelopes/${envelopeId}/recipients`
+      `/accounts/${this.config.credentials.accountId}/envelopes/${envelopeId}/recipients`,
     );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to get envelope status", "docusign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to get envelope status",
+        "docusign",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
     const recipientsData = data.signers as Array<Record<string, unknown>>;
 
-    const signerStatuses = (recipientsData || []).map((signer: Record<string, unknown>) => ({
-      email: signer.email as string,
-      name: signer.name as string,
-      status: this.normalizeStatus(signer.status as string),
-      signedAt: signer.signedDateTime ? new Date(signer.signedDateTime as string) : undefined,
-      declinedAt: signer.declinedDateTime ? new Date(signer.declinedDateTime as string) : undefined,
-    }));
+    const signerStatuses = (recipientsData || []).map(
+      (signer: Record<string, unknown>) => ({
+        email: signer.email as string,
+        name: signer.name as string,
+        status: this.normalizeStatus(signer.status as string),
+        signedAt: signer.signedDateTime
+          ? new Date(signer.signedDateTime as string)
+          : undefined,
+        declinedAt: signer.declinedDateTime
+          ? new Date(signer.declinedDateTime as string)
+          : undefined,
+      }),
+    );
 
-    const completionPercentage = signerStatuses.filter((s) => s.status === "signed").length
-      ? (signerStatuses.filter((s) => s.status === "signed").length / signerStatuses.length) * 100
+    const completionPercentage = signerStatuses.filter(
+      (s) => s.status === "signed",
+    ).length
+      ? (signerStatuses.filter((s) => s.status === "signed").length /
+          signerStatuses.length) *
+        100
       : 0;
 
     return {
@@ -404,22 +481,28 @@ export class DocuSignV2SDKClient {
     });
 
     if (options?.status) params.append("status", options.status);
-    if (options?.fromDate) params.append("from_date", options.fromDate.toISOString());
+    if (options?.fromDate)
+      params.append("from_date", options.fromDate.toISOString());
     if (options?.toDate) params.append("to_date", options.toDate.toISOString());
 
     const response = await this.request(
       "GET",
-      `/accounts/${this.config.credentials.accountId}/envelopes?${params.toString()}`
+      `/accounts/${this.config.credentials.accountId}/envelopes?${params.toString()}`,
     );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to list envelopes", "docusign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to list envelopes",
+        "docusign",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
-    const envelopes = ((data.envelopes as Array<Record<string, unknown>>) || []).map((env) =>
-      this.normalizeEnvelopeFromProvider(env)
-    );
+    const envelopes = (
+      (data.envelopes as Array<Record<string, unknown>>) || []
+    ).map((env) => this.normalizeEnvelopeFromProvider(env));
 
     return {
       items: envelopes,
@@ -446,17 +529,22 @@ export class DocuSignV2SDKClient {
 
     const response = await this.request(
       "GET",
-      `/accounts/${this.config.credentials.accountId}/templates?${params.toString()}`
+      `/accounts/${this.config.credentials.accountId}/templates?${params.toString()}`,
     );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to list templates", "docusign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to list templates",
+        "docusign",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
-    const templates = ((data.documentTemplates as Array<Record<string, unknown>>) || []).map((tpl) =>
-      this.normalizeTemplateFromProvider(tpl)
-    );
+    const templates = (
+      (data.documentTemplates as Array<Record<string, unknown>>) || []
+    ).map((tpl) => this.normalizeTemplateFromProvider(tpl));
 
     return {
       items: templates,
@@ -473,11 +561,16 @@ export class DocuSignV2SDKClient {
   async getTemplate(templateId: string): Promise<NormalizedTemplate> {
     const response = await this.request(
       "GET",
-      `/accounts/${this.config.credentials.accountId}/templates/${templateId}`
+      `/accounts/${this.config.credentials.accountId}/templates/${templateId}`,
     );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to get template", "docusign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to get template",
+        "docusign",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
@@ -489,7 +582,7 @@ export class DocuSignV2SDKClient {
    */
   async createEnvelopeFromTemplate(
     templateId: string,
-    envelope: Partial<NormalizedEnvelope>
+    envelope: Partial<NormalizedEnvelope>,
   ): Promise<EnvelopeOperationResult> {
     const payload = {
       templateId,
@@ -506,11 +599,16 @@ export class DocuSignV2SDKClient {
     const response = await this.request(
       "POST",
       `/accounts/${this.config.credentials.accountId}/envelopes`,
-      payload
+      payload,
     );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to create envelope from template", "docusign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to create envelope from template",
+        "docusign",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
@@ -527,14 +625,22 @@ export class DocuSignV2SDKClient {
   /**
    * Download signed document.
    */
-  async downloadDocument(envelopeId: string, documentId: string): Promise<DocumentDownloadResult> {
+  async downloadDocument(
+    envelopeId: string,
+    documentId: string,
+  ): Promise<DocumentDownloadResult> {
     const response = await this.request(
       "GET",
-      `/accounts/${this.config.credentials.accountId}/envelopes/${envelopeId}/documents/${documentId}`
+      `/accounts/${this.config.credentials.accountId}/envelopes/${envelopeId}/documents/${documentId}`,
     );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to download document", "docusign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to download document",
+        "docusign",
+        undefined,
+        response.status,
+      );
     }
 
     const buffer = await response.arrayBuffer();
@@ -554,15 +660,20 @@ export class DocuSignV2SDKClient {
    * Download all envelope documents as combined PDF.
    */
   async downloadEnvelopeDocuments(
-    envelopeId: string
+    envelopeId: string,
   ): Promise<{ content: string; mimeType: string; fileName: string }> {
     const response = await this.request(
       "GET",
-      `/accounts/${this.config.credentials.accountId}/envelopes/${envelopeId}/documents/combined`
+      `/accounts/${this.config.credentials.accountId}/envelopes/${envelopeId}/documents/combined`,
     );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to download envelope documents", "docusign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to download envelope documents",
+        "docusign",
+        undefined,
+        response.status,
+      );
     }
 
     const buffer = await response.arrayBuffer();
@@ -583,7 +694,7 @@ export class DocuSignV2SDKClient {
   async getEmbeddedSigningUrl(
     envelopeId: string,
     signerEmail: string,
-    returnUrl: string
+    returnUrl: string,
   ): Promise<EmbedSigningResult> {
     const payload = {
       returnUrl,
@@ -595,11 +706,16 @@ export class DocuSignV2SDKClient {
     const response = await this.request(
       "POST",
       `/accounts/${this.config.credentials.accountId}/envelopes/${envelopeId}/views/recipient`,
-      payload
+      payload,
     );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to get embedded signing URL", "docusign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to get embedded signing URL",
+        "docusign",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
@@ -617,15 +733,20 @@ export class DocuSignV2SDKClient {
   /**
    * Verify and parse webhook event.
    */
-  async parseWebhookEvent(payload: Record<string, unknown>, headers: Record<string, string>): Promise<WebhookEvent> {
-    const signature = headers["X-DocuSign-Signature-1"] || headers["x-docusign-signature-1"];
+  async parseWebhookEvent(
+    payload: Record<string, unknown>,
+    headers: Record<string, string>,
+  ): Promise<WebhookEvent> {
+    const signature =
+      headers["X-DocuSign-Signature-1"] || headers["x-docusign-signature-1"];
 
     if (!signature) {
       return {
         eventId: uuid(),
         provider: "docusign",
         eventType: "envelope_created",
-        envelopeId: (payload.data as Record<string, unknown>)?.envelopeId as string,
+        envelopeId: (payload.data as Record<string, unknown>)
+          ?.envelopeId as string,
         timestamp: new Date(),
         newStatus: "created",
         payload,
@@ -635,7 +756,10 @@ export class DocuSignV2SDKClient {
       };
     }
 
-    const isValid = this.verifyWebhookSignature(JSON.stringify(payload), signature as string);
+    const isValid = this.verifyWebhookSignature(
+      JSON.stringify(payload),
+      signature as string,
+    );
 
     const data = payload.data as Record<string, unknown>;
     const eventType = this.normalizeEventType(payload.eventType as string);
@@ -645,7 +769,8 @@ export class DocuSignV2SDKClient {
       provider: "docusign",
       eventType,
       envelopeId: data?.envelopeId as string,
-      signerEmail: (data?.recipients as Array<Record<string, unknown>>)?.[0]?.email as string,
+      signerEmail: (data?.recipients as Array<Record<string, unknown>>)?.[0]
+        ?.email as string,
       timestamp: new Date(payload.timestamp as string),
       newStatus: this.normalizeStatus(data?.status as string),
       payload,
@@ -698,7 +823,9 @@ export class DocuSignV2SDKClient {
 
   // ─── Helper Methods ────────────────────────────────────────────────
 
-  private normalizeEnvelopeForCreate(envelope: NormalizedEnvelope): Record<string, unknown> {
+  private normalizeEnvelopeForCreate(
+    envelope: NormalizedEnvelope,
+  ): Record<string, unknown> {
     const docuSignDocuments = envelope.documents.map((doc, idx) => ({
       documentId: String(idx + 1),
       name: doc.name,
@@ -726,7 +853,7 @@ export class DocuSignV2SDKClient {
 
   private buildSignerTabs(
     fields: NormalizedField[],
-    signerEmail: string
+    signerEmail: string,
   ): Record<string, Array<Record<string, unknown>>> {
     const tabs: Record<string, Array<Record<string, unknown>>> = {};
 
@@ -752,7 +879,9 @@ export class DocuSignV2SDKClient {
     return tabs;
   }
 
-  private normalizeEnvelopeFromProvider(data: Record<string, unknown>): NormalizedEnvelope {
+  private normalizeEnvelopeFromProvider(
+    data: Record<string, unknown>,
+  ): NormalizedEnvelope {
     return {
       envelopeId: data.envelopeId as string,
       name: data.emailSubject as string,
@@ -762,15 +891,21 @@ export class DocuSignV2SDKClient {
       signers: [],
       fields: [],
       createdAt: new Date(data.createdDateTime as string),
-      sentAt: data.sentDateTime ? new Date(data.sentDateTime as string) : undefined,
-      completedAt: data.completedDateTime ? new Date(data.completedDateTime as string) : undefined,
+      sentAt: data.sentDateTime
+        ? new Date(data.sentDateTime as string)
+        : undefined,
+      completedAt: data.completedDateTime
+        ? new Date(data.completedDateTime as string)
+        : undefined,
       createdBy: "unknown",
       metadata: data,
       providerData: data,
     };
   }
 
-  private normalizeTemplateFromProvider(data: Record<string, unknown>): NormalizedTemplate {
+  private normalizeTemplateFromProvider(
+    data: Record<string, unknown>,
+  ): NormalizedTemplate {
     return {
       templateId: data.templateId as string,
       name: data.name as string,

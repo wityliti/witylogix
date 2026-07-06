@@ -5,6 +5,7 @@ Quick start guide for integrating the Slot Engine into Witylogix API.
 ## Files Created
 
 ### Core Modules (packages/core/src/slots/)
+
 ```
 ├── types.ts                    # All type definitions
 ├── slot-engine.ts              # Slot management (350+ lines)
@@ -20,6 +21,7 @@ Quick start guide for integrating the Slot Engine into Witylogix API.
 ```
 
 ### API Routes (apps/api/src/routes/checkout/)
+
 ```
 ├── slots.ts                    # Slot endpoints (380+ lines)
 ├── rates.ts                    # Rate endpoints (340+ lines)
@@ -27,6 +29,7 @@ Quick start guide for integrating the Slot Engine into Witylogix API.
 ```
 
 ### Database Schema (packages/db/prisma/schema/)
+
 ```
 └── 43-delivery-slots.prisma    # 8 Prisma models (200+ lines)
 ```
@@ -44,6 +47,7 @@ npx prisma generate
 ```
 
 The schema adds these models:
+
 - `DeliverySlot` - Time slots with capacity
 - `SlotReservation` - Order reservations
 - `CapacityConfig` - Daily limits
@@ -88,7 +92,7 @@ export const {
   capacityManager,
   zoneRateCalculator,
   deadlineEngine,
-  blackoutManager
+  blackoutManager,
 } = slotEngines;
 ```
 
@@ -123,23 +127,23 @@ Create zones with rates:
 const zone = await prisma.deliveryZone.create({
   data: {
     name: "Downtown Zone",
-    baseRate: 10.00,
-    perKmRate: 1.50,
-    minOrder: 5.00,
-    freeAbove: 50.00,
+    baseRate: 10.0,
+    perKmRate: 1.5,
+    minOrder: 5.0,
+    freeAbove: 50.0,
     isActive: true,
     metadata: {
       weightRates: [
         { minWeight: 0, maxWeight: 5, ratePerUnit: 2 },
-        { minWeight: 5, maxWeight: 10, ratePerUnit: 1.50 }
+        { minWeight: 5, maxWeight: 10, ratePerUnit: 1.5 },
       ],
       cartValueTiers: [
         { minValue: 0, maxValue: 50, rate: 5, rateName: "Standard" },
         { minValue: 50, maxValue: 100, rate: 3, rateName: "Economy" },
-        { minValue: 100, rate: 2, rateName: "Premium" }
-      ]
-    }
-  }
+        { minValue: 100, rate: 2, rateName: "Premium" },
+      ],
+    },
+  },
 });
 ```
 
@@ -153,7 +157,7 @@ const slot = await slotEngine.createSlot({
   startTime: "09:00",
   endTime: "12:00",
   maxCapacity: 20,
-  price: 15.00
+  price: 15.0,
 });
 
 // Or bulk create recurring slots
@@ -170,7 +174,7 @@ for (let i = 0; i < 14; i++) {
     startTime: "09:00",
     endTime: "12:00",
     maxCapacity: 20,
-    price: 15
+    price: 15,
   });
 }
 ```
@@ -179,24 +183,20 @@ for (let i = 0; i < 14; i++) {
 
 ```typescript
 // Add single holiday
-await blackoutManager.addBlackout(
-  "loc-1",
-  new Date("2026-12-25"),
-  "Christmas"
-);
+await blackoutManager.addBlackout("loc-1", new Date("2026-12-25"), "Christmas");
 
 // Add recurring (e.g., Sundays)
 await blackoutManager.addRecurringBlackout(
   "loc-1",
   0, // Sunday (0=Sun, 6=Sat)
-  "Closed on Sundays"
+  "Closed on Sundays",
 );
 
 // Bulk add holidays
 await blackoutManager.bulkAddBlackouts("loc-1", [
   { date: new Date("2026-01-01"), reason: "New Year" },
   { date: new Date("2026-07-04"), reason: "Independence Day" },
-  { date: new Date("2026-12-25"), reason: "Christmas" }
+  { date: new Date("2026-12-25"), reason: "Christmas" },
 ]);
 ```
 
@@ -205,16 +205,19 @@ await blackoutManager.bulkAddBlackouts("loc-1", [
 ### Checkout Slots
 
 **Get Available Slots**
+
 ```bash
 GET /api/checkout/slots?date=2026-04-05&zoneId=zone-1&locationId=loc-1
 ```
 
 **Get Slots for Date Range**
+
 ```bash
 GET /api/checkout/slots/range?start=2026-04-01&end=2026-04-30&zoneId=zone-1
 ```
 
 **Reserve a Slot**
+
 ```bash
 POST /api/checkout/slots/reserve
 Content-Type: application/json
@@ -227,6 +230,7 @@ Content-Type: application/json
 ```
 
 **Release Reservation**
+
 ```bash
 DELETE /api/checkout/slots/reserve/reservation-id
 Content-Type: application/json
@@ -237,11 +241,13 @@ Content-Type: application/json
 ```
 
 **Get Capacity Info**
+
 ```bash
 GET /api/checkout/slots/capacity?date=2026-04-05&locationId=loc-1
 ```
 
 **Get Order Deadline**
+
 ```bash
 GET /api/checkout/slots/deadline?slotId=slot-1&date=2026-04-05
 ```
@@ -249,11 +255,13 @@ GET /api/checkout/slots/deadline?slotId=slot-1&date=2026-04-05
 ### Checkout Rates
 
 **Get Zone Rate**
+
 ```bash
 GET /api/checkout/rates?zipcode=10001
 ```
 
 **Calculate Delivery Rate**
+
 ```bash
 POST /api/checkout/rates/calculate
 Content-Type: application/json
@@ -270,16 +278,19 @@ Content-Type: application/json
 ```
 
 **List Delivery Zones**
+
 ```bash
 GET /api/checkout/zones?page=1&limit=20&isActive=true
 ```
 
 **Get Zone Details**
+
 ```bash
 GET /api/checkout/zones/zone-1
 ```
 
 **Update Zone Rates**
+
 ```bash
 PATCH /api/checkout/zones/zone-1/rates
 Content-Type: application/json
@@ -296,20 +307,26 @@ Content-Type: application/json
 ```typescript
 // Get available slots for checkout
 async function getCheckoutSlots(date: string, locationId: string) {
-  const response = await fetch(`/api/checkout/slots?date=${date}&locationId=${locationId}`);
+  const response = await fetch(
+    `/api/checkout/slots?date=${date}&locationId=${locationId}`,
+  );
   const { data: slots } = await response.json();
   return slots;
 }
 
 // Calculate delivery fee
-async function calculateDeliveryFee(zipcode: string, cartValue: number, weight: number) {
+async function calculateDeliveryFee(
+  zipcode: string,
+  cartValue: number,
+  weight: number,
+) {
   const response = await fetch("/api/checkout/rates/calculate", {
     method: "POST",
     body: JSON.stringify({
       zipcode,
       cartValue,
-      weight
-    })
+      weight,
+    }),
   });
   const { data: rates } = await response.json();
   return rates.total;
@@ -322,8 +339,8 @@ async function reserveDeliverySlot(slotId: string, orderId: string) {
     body: JSON.stringify({
       slotId,
       orderId,
-      expiresInMinutes: 30
-    })
+      expiresInMinutes: 30,
+    }),
   });
   const { data } = await response.json();
   return data;
@@ -354,6 +371,7 @@ TZ="America/New_York"
 ### TypeScript Configuration
 
 Ensure tsconfig.json includes:
+
 ```json
 {
   "compilerOptions": {
@@ -409,9 +427,11 @@ curl -X POST http://localhost:3000/api/checkout/slots/reserve \
 ## Performance Optimization
 
 ### Database Indexes
+
 All critical queries have indexes (already in schema).
 
 ### Caching Recommendations
+
 ```typescript
 // Cache zone rates in Redis
 const cacheKey = `zone-rate:${zoneId}`;
@@ -424,7 +444,9 @@ return rate;
 ```
 
 ### Connection Pooling
+
 Configure Prisma connection pool:
+
 ```
 DATABASE_URL="postgresql://...?connection_limit=20&pool_timeout=0"
 ```
@@ -432,6 +454,7 @@ DATABASE_URL="postgresql://...?connection_limit=20&pool_timeout=0"
 ## Monitoring
 
 ### Key Metrics to Track
+
 1. Slot reservation rate
 2. Average utilization %
 3. Peak hours
@@ -440,34 +463,45 @@ DATABASE_URL="postgresql://...?connection_limit=20&pool_timeout=0"
 6. API response times
 
 ### Logging
+
 Add to your existing logger:
+
 ```typescript
 logger.info("Slot reserved", {
-  slotId, orderId, expiresAt,
-  locationId, zone,
-  timestamp: new Date()
+  slotId,
+  orderId,
+  expiresAt,
+  locationId,
+  zone,
+  timestamp: new Date(),
 });
 
 logger.error("Reservation failed", {
-  slotId, orderId, error,
-  remainingCapacity, maxCapacity
+  slotId,
+  orderId,
+  error,
+  remainingCapacity,
+  maxCapacity,
 });
 ```
 
 ## Troubleshooting
 
 ### Slots not appearing
+
 1. Check if location is blacked out: `await blackoutManager.isBlackedOut(locationId, date)`
 2. Verify slots exist: `SELECT * FROM delivery_slots WHERE location_id=$1 AND date=$2`
 3. Check if past cutoff: `await deadlineEngine.isOrderCutoffPassed(date, slotId)`
 
 ### Rate calculation wrong
+
 1. Verify zone exists for zipcode
 2. Check weight/cart tiers are configured
 3. Verify distance calculation: use Haversine formula
 4. Check free threshold configuration
 
 ### Reservations failing
+
 1. Check slot capacity: `await slotEngine.checkCapacity(slotId)`
 2. Verify slot is active
 3. Check for duplicate reservation
@@ -476,6 +510,7 @@ logger.error("Reservation failed", {
 ## Support & Debugging
 
 ### Enable Debug Logging
+
 ```typescript
 // In your app initialization
 if (process.env.DEBUG_SLOTS) {
@@ -490,13 +525,14 @@ if (process.env.DEBUG_SLOTS) {
 ```
 
 ### Common Issues
-| Issue | Solution |
-|-------|----------|
-| "Slot not found" | Verify slotId exists and isActive=true |
-| "Slot is full" | Check capacity and active reservations |
-| "Blackout date" | Check blackout manager configuration |
-| "Deadline passed" | Verify cutoff time settings |
-| "No zone found" | Create zone or verify zipcode mapping |
+
+| Issue             | Solution                               |
+| ----------------- | -------------------------------------- |
+| "Slot not found"  | Verify slotId exists and isActive=true |
+| "Slot is full"    | Check capacity and active reservations |
+| "Blackout date"   | Check blackout manager configuration   |
+| "Deadline passed" | Verify cutoff time settings            |
+| "No zone found"   | Create zone or verify zipcode mapping  |
 
 ## Next Steps
 
@@ -514,6 +550,7 @@ if (process.env.DEBUG_SLOTS) {
 ## Questions?
 
 Refer to:
+
 - `/packages/core/src/slots/README.md` - Complete documentation
 - `/SLOT_ENGINE_IMPLEMENTATION.md` - Technical overview
 - Test files for usage examples

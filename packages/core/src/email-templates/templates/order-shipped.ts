@@ -2,9 +2,9 @@
  * Order Shipped Email Template
  */
 
-import { ShippingEmailData } from '../types';
-import { baseLayout } from './base-layout';
-import { renderTemplate } from '../template-engine';
+import { ShippingEmailData } from "../types";
+import { baseLayout } from "./base-layout";
+import { renderTemplate } from "../template-engine";
 
 export function orderShippedTemplate(data: ShippingEmailData): string {
   const content = `

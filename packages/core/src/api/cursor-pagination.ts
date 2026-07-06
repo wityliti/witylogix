@@ -52,7 +52,10 @@ export class CursorPaginator {
   private maxPageSize: number;
   private defaultPageSize: number;
 
-  constructor(secretKey: string = "default-secret-key", defaultPageSize: number = 25) {
+  constructor(
+    secretKey: string = "default-secret-key",
+    defaultPageSize: number = 25,
+  ) {
     this.secretKey = secretKey;
     this.maxPageSize = 100;
     this.defaultPageSize = Math.min(defaultPageSize, this.maxPageSize);
@@ -63,11 +66,11 @@ export class CursorPaginator {
    */
   async paginate<T>(
     items: T[],
-    config: PaginationConfig = {}
+    config: PaginationConfig = {},
   ): Promise<PaginatedResponse<T>> {
     const pageSize = Math.min(
       config.pageSize || this.defaultPageSize,
-      this.maxPageSize
+      this.maxPageSize,
     );
 
     let startIndex = 0;
@@ -77,7 +80,9 @@ export class CursorPaginator {
     if (config.cursor) {
       const cursorData = this.decodeCursor(config.cursor);
       if (cursorData) {
-        startIndex = config.backward ? Math.max(0, cursorData.index - pageSize) : cursorData.index;
+        startIndex = config.backward
+          ? Math.max(0, cursorData.index - pageSize)
+          : cursorData.index;
         hasPreviousPage = startIndex > 0;
       }
     }
@@ -91,11 +96,10 @@ export class CursorPaginator {
     const data = pageItems.slice(0, pageSize);
 
     // Generate cursors
-    const startCursor = data.length > 0 ? this.encodeCursor(startIndex) : undefined;
+    const startCursor =
+      data.length > 0 ? this.encodeCursor(startIndex) : undefined;
     const endCursor =
-      data.length > 0
-        ? this.encodeCursor(startIndex + data.length)
-        : undefined;
+      data.length > 0 ? this.encodeCursor(startIndex + data.length) : undefined;
 
     // Build response
     const response: PaginatedResponse<T> = {
@@ -121,11 +125,11 @@ export class CursorPaginator {
    */
   async paginatePrismaQuery<T>(
     queryFn: (take: number, skip?: number) => Promise<T[]>,
-    config: PaginationConfig = {}
+    config: PaginationConfig = {},
   ): Promise<PaginatedResponse<T>> {
     const pageSize = Math.min(
       config.pageSize || this.defaultPageSize,
-      this.maxPageSize
+      this.maxPageSize,
     );
 
     let skip = 0;

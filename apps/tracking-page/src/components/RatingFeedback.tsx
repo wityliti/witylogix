@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface RatingFeedbackProps {
   driverName?: string;
@@ -8,27 +8,27 @@ interface RatingFeedbackProps {
 }
 
 const RatingFeedback: React.FC<RatingFeedbackProps> = ({
-  driverName = 'John Martinez',
-  driverPhoto = '👨',
+  driverName = "John Martinez",
+  driverPhoto = "👨",
   onSubmit,
   isDelivered = true,
 }) => {
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [selectedFeedback, setSelectedFeedback] = useState<string[]>([]);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   const feedbackChips = [
-    { id: 'on-time', label: 'On time', icon: '⏱️' },
-    { id: 'friendly', label: 'Friendly driver', icon: '😊' },
-    { id: 'intact', label: 'Package intact', icon: '📦' },
-    { id: 'communication', label: 'Good communication', icon: '💬' },
+    { id: "on-time", label: "On time", icon: "⏱️" },
+    { id: "friendly", label: "Friendly driver", icon: "😊" },
+    { id: "intact", label: "Package intact", icon: "📦" },
+    { id: "communication", label: "Good communication", icon: "💬" },
   ];
 
   const toggleFeedback = (id: string) => {
-    setSelectedFeedback(prev =>
-      prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]
+    setSelectedFeedback((prev) =>
+      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id],
     );
   };
 
@@ -39,7 +39,7 @@ const RatingFeedback: React.FC<RatingFeedbackProps> = ({
       setTimeout(() => {
         setRating(0);
         setSelectedFeedback([]);
-        setComment('');
+        setComment("");
         setSubmitted(false);
       }, 3000);
     }
@@ -55,7 +55,8 @@ const RatingFeedback: React.FC<RatingFeedbackProps> = ({
             Your feedback helps us improve delivery services
           </p>
           <p style={styles.successRating}>
-            You rated {driverName} <span style={styles.ratingStars}>{'⭐'.repeat(rating)}</span>
+            You rated {driverName}{" "}
+            <span style={styles.ratingStars}>{"⭐".repeat(rating)}</span>
           </p>
         </div>
       </div>
@@ -86,7 +87,7 @@ const RatingFeedback: React.FC<RatingFeedbackProps> = ({
         <div style={styles.ratingSection}>
           <p style={styles.ratingLabel}>Rate your delivery experience</p>
           <div style={styles.starsContainer}>
-            {[1, 2, 3, 4, 5].map(star => (
+            {[1, 2, 3, 4, 5].map((star) => (
               <button
                 key={star}
                 onMouseEnter={() => setHoveredRating(star)}
@@ -94,12 +95,15 @@ const RatingFeedback: React.FC<RatingFeedbackProps> = ({
                 onClick={() => setRating(star)}
                 style={styles.starButton}
               >
-                <span style={{
-                  ...styles.star,
-                  opacity: star <= (hoveredRating || rating) ? 1 : 0.2,
-                  fontSize: star <= (hoveredRating || rating) ? '36px' : '32px',
-                  transition: 'all 0.1s',
-                }}>
+                <span
+                  style={{
+                    ...styles.star,
+                    opacity: star <= (hoveredRating || rating) ? 1 : 0.2,
+                    fontSize:
+                      star <= (hoveredRating || rating) ? "36px" : "32px",
+                    transition: "all 0.1s",
+                  }}
+                >
                   ⭐
                 </span>
               </button>
@@ -107,11 +111,11 @@ const RatingFeedback: React.FC<RatingFeedbackProps> = ({
           </div>
           {rating > 0 && (
             <p style={styles.ratingText}>
-              {rating === 1 && 'Poor experience'}
-              {rating === 2 && 'Fair experience'}
-              {rating === 3 && 'Good experience'}
-              {rating === 4 && 'Very good experience'}
-              {rating === 5 && 'Excellent experience'}
+              {rating === 1 && "Poor experience"}
+              {rating === 2 && "Fair experience"}
+              {rating === 3 && "Good experience"}
+              {rating === 4 && "Very good experience"}
+              {rating === 5 && "Excellent experience"}
             </p>
           )}
         </div>
@@ -120,7 +124,7 @@ const RatingFeedback: React.FC<RatingFeedbackProps> = ({
         <div style={styles.feedbackSection}>
           <p style={styles.feedbackLabel}>What went well?</p>
           <div style={styles.chipsContainer}>
-            {feedbackChips.map(chip => (
+            {feedbackChips.map((chip) => (
               <button
                 key={chip.id}
                 onClick={() => toggleFeedback(chip.id)}
@@ -144,13 +148,15 @@ const RatingFeedback: React.FC<RatingFeedbackProps> = ({
             <input
               type="checkbox"
               onChange={(e) => {
-                if (!e.target.checked) setComment('');
+                if (!e.target.checked) setComment("");
               }}
               style={styles.commentCheckbox}
             />
-            <span style={styles.commentLabelText}>Add a comment (optional)</span>
+            <span style={styles.commentLabelText}>
+              Add a comment (optional)
+            </span>
           </label>
-          {comment !== '' && (
+          {comment !== "" && (
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -170,7 +176,7 @@ const RatingFeedback: React.FC<RatingFeedbackProps> = ({
             ...(rating === 0 ? styles.submitButtonDisabled : {}),
           }}
         >
-          {rating === 0 ? 'Please rate to continue' : 'Submit Feedback'}
+          {rating === 0 ? "Please rate to continue" : "Submit Feedback"}
         </button>
 
         {/* Privacy Note */}
@@ -184,223 +190,223 @@ const RatingFeedback: React.FC<RatingFeedbackProps> = ({
 
 const styles = {
   container: {
-    padding: '24px',
+    padding: "24px",
   } as React.CSSProperties,
   card: {
-    background: 'white',
-    borderRadius: '12px',
-    padding: '32px',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+    background: "white",
+    borderRadius: "12px",
+    padding: "32px",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
   } as React.CSSProperties,
   title: {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#1a1a1a',
-    margin: '0 0 8px 0',
+    fontSize: "24px",
+    fontWeight: "700",
+    color: "#1a1a1a",
+    margin: "0 0 8px 0",
   } as React.CSSProperties,
   subtitle: {
-    fontSize: '14px',
-    color: '#666',
-    margin: '0 0 24px 0',
+    fontSize: "14px",
+    color: "#666",
+    margin: "0 0 24px 0",
   } as React.CSSProperties,
   driverSection: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-    padding: '16px',
-    background: '#f9fafb',
-    borderRadius: '8px',
-    marginBottom: '24px',
+    display: "flex",
+    alignItems: "center",
+    gap: "16px",
+    padding: "16px",
+    background: "#f9fafb",
+    borderRadius: "8px",
+    marginBottom: "24px",
   } as React.CSSProperties,
   driverPhoto: {
-    fontSize: '40px',
-    width: '56px',
-    height: '56px',
-    borderRadius: '8px',
-    background: '#eff6ff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    fontSize: "40px",
+    width: "56px",
+    height: "56px",
+    borderRadius: "8px",
+    background: "#eff6ff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   } as React.CSSProperties,
   driverInfo: {
     flex: 1,
   } as React.CSSProperties,
   driverName: {
-    fontSize: '14px',
-    fontWeight: '700',
-    color: '#1a1a1a',
-    margin: '0 0 2px 0',
+    fontSize: "14px",
+    fontWeight: "700",
+    color: "#1a1a1a",
+    margin: "0 0 2px 0",
   } as React.CSSProperties,
   driverRole: {
-    fontSize: '12px',
-    color: '#999',
-    margin: '0',
+    fontSize: "12px",
+    color: "#999",
+    margin: "0",
   } as React.CSSProperties,
   ratingSection: {
-    textAlign: 'center',
-    marginBottom: '32px',
+    textAlign: "center",
+    marginBottom: "32px",
   } as React.CSSProperties,
   ratingLabel: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#1a1a1a',
-    margin: '0 0 12px 0',
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#1a1a1a",
+    margin: "0 0 12px 0",
   } as React.CSSProperties,
   starsContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '8px',
-    marginBottom: '12px',
+    display: "flex",
+    justifyContent: "center",
+    gap: "8px",
+    marginBottom: "12px",
   } as React.CSSProperties,
   starButton: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    padding: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'transform 0.2s',
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    padding: "8px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "transform 0.2s",
   } as React.CSSProperties,
   star: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   } as React.CSSProperties,
   ratingText: {
-    fontSize: '13px',
-    color: '#666',
-    margin: '0',
-    fontWeight: '500',
+    fontSize: "13px",
+    color: "#666",
+    margin: "0",
+    fontWeight: "500",
   } as React.CSSProperties,
   feedbackSection: {
-    marginBottom: '24px',
+    marginBottom: "24px",
   } as React.CSSProperties,
   feedbackLabel: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#1a1a1a',
-    margin: '0 0 12px 0',
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#1a1a1a",
+    margin: "0 0 12px 0",
   } as React.CSSProperties,
   chipsContainer: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-    gap: '10px',
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+    gap: "10px",
   } as React.CSSProperties,
   chip: {
-    padding: '10px 14px',
-    border: '2px solid #e5e7eb',
-    borderRadius: '8px',
-    background: 'white',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '500',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    transition: 'all 0.2s',
+    padding: "10px 14px",
+    border: "2px solid #e5e7eb",
+    borderRadius: "8px",
+    background: "white",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: "500",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    transition: "all 0.2s",
   } as React.CSSProperties,
   chipActive: {
-    borderColor: '#005bd3',
-    background: '#eff6ff',
-    color: '#005bd3',
+    borderColor: "#005bd3",
+    background: "#eff6ff",
+    color: "#005bd3",
   } as React.CSSProperties,
   chipInactive: {
-    color: '#666',
+    color: "#666",
   } as React.CSSProperties,
   chipIcon: {
-    fontSize: '16px',
+    fontSize: "16px",
   } as React.CSSProperties,
   commentSection: {
-    marginBottom: '24px',
-    padding: '16px',
-    background: '#f9fafb',
-    borderRadius: '8px',
+    marginBottom: "24px",
+    padding: "16px",
+    background: "#f9fafb",
+    borderRadius: "8px",
   } as React.CSSProperties,
   commentLabel: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    cursor: 'pointer',
-    margin: '0',
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    cursor: "pointer",
+    margin: "0",
   } as React.CSSProperties,
   commentCheckbox: {
-    cursor: 'pointer',
-    width: '18px',
-    height: '18px',
+    cursor: "pointer",
+    width: "18px",
+    height: "18px",
   } as React.CSSProperties,
   commentLabelText: {
-    fontSize: '13px',
-    fontWeight: '500',
-    color: '#666',
+    fontSize: "13px",
+    fontWeight: "500",
+    color: "#666",
   } as React.CSSProperties,
   commentTextarea: {
-    width: '100%',
-    minHeight: '80px',
-    padding: '12px',
-    border: '1px solid #e5e7eb',
-    borderRadius: '6px',
-    fontSize: '13px',
-    fontFamily: 'inherit',
-    marginTop: '10px',
-    resize: 'none',
-    outline: 'none',
-    boxSizing: 'border-box',
+    width: "100%",
+    minHeight: "80px",
+    padding: "12px",
+    border: "1px solid #e5e7eb",
+    borderRadius: "6px",
+    fontSize: "13px",
+    fontFamily: "inherit",
+    marginTop: "10px",
+    resize: "none",
+    outline: "none",
+    boxSizing: "border-box",
   } as React.CSSProperties,
   submitButton: {
-    width: '100%',
-    padding: '12px 24px',
-    background: '#005bd3',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '15px',
-    fontWeight: '700',
-    cursor: 'pointer',
-    transition: 'background 0.2s',
-    marginBottom: '12px',
+    width: "100%",
+    padding: "12px 24px",
+    background: "#005bd3",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    fontSize: "15px",
+    fontWeight: "700",
+    cursor: "pointer",
+    transition: "background 0.2s",
+    marginBottom: "12px",
   } as React.CSSProperties,
   submitButtonDisabled: {
-    background: '#d1d5db',
-    cursor: 'not-allowed',
+    background: "#d1d5db",
+    cursor: "not-allowed",
   } as React.CSSProperties,
   privacyNote: {
-    fontSize: '11px',
-    color: '#999',
-    textAlign: 'center',
-    margin: '0',
+    fontSize: "11px",
+    color: "#999",
+    textAlign: "center",
+    margin: "0",
   } as React.CSSProperties,
   successCard: {
-    background: 'white',
-    borderRadius: '12px',
-    padding: '48px 32px',
-    textAlign: 'center',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+    background: "white",
+    borderRadius: "12px",
+    padding: "48px 32px",
+    textAlign: "center",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
   } as React.CSSProperties,
   successIcon: {
-    fontSize: '48px',
-    marginBottom: '16px',
+    fontSize: "48px",
+    marginBottom: "16px",
   } as React.CSSProperties,
   successTitle: {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#10b981',
-    margin: '0 0 8px 0',
+    fontSize: "24px",
+    fontWeight: "700",
+    color: "#10b981",
+    margin: "0 0 8px 0",
   } as React.CSSProperties,
   successMessage: {
-    fontSize: '14px',
-    color: '#666',
-    margin: '0 0 16px 0',
+    fontSize: "14px",
+    color: "#666",
+    margin: "0 0 16px 0",
   } as React.CSSProperties,
   successRating: {
-    fontSize: '14px',
-    color: '#333',
-    margin: '0',
-    fontWeight: '500',
+    fontSize: "14px",
+    color: "#333",
+    margin: "0",
+    fontWeight: "500",
   } as React.CSSProperties,
   ratingStars: {
-    fontSize: '16px',
-    marginLeft: '8px',
+    fontSize: "16px",
+    marginLeft: "8px",
   } as React.CSSProperties,
 };
 

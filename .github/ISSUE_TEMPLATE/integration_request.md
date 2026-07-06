@@ -28,7 +28,7 @@ Select which category this integration belongs to:
 - [ ] Inventory
 - [ ] Payment
 - [ ] Analytics
-- [ ] Other: _______________
+- [ ] Other: ******\_\_\_******
 
 ## Use Case
 
@@ -53,7 +53,7 @@ How does the service authenticate requests?
 - [ ] API Key
 - [ ] OAuth 2.0
 - [ ] JWT Token
-- [ ] Other: _______________
+- [ ] Other: ******\_\_\_******
 
 ## API Requirements
 

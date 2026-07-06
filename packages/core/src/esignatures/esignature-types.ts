@@ -9,14 +9,14 @@
  * Represents the lifecycle state of a signing envelope
  */
 export enum EnvelopeStatus {
-  DRAFT = 'draft',
-  SENT = 'sent',
-  DELIVERED = 'delivered',
-  SIGNED = 'signed',
-  COMPLETED = 'completed',
-  DECLINED = 'declined',
-  VOIDED = 'voided',
-  EXPIRED = 'expired',
+  DRAFT = "draft",
+  SENT = "sent",
+  DELIVERED = "delivered",
+  SIGNED = "signed",
+  COMPLETED = "completed",
+  DECLINED = "declined",
+  VOIDED = "voided",
+  EXPIRED = "expired",
 }
 
 /**
@@ -24,16 +24,16 @@ export enum EnvelopeStatus {
  * Types of fields that can be placed on documents for signing
  */
 export enum FieldType {
-  SIGNATURE = 'signature',
-  INITIALS = 'initials',
-  DATE = 'date',
-  TEXT = 'text',
-  CHECKBOX = 'checkbox',
-  DROPDOWN = 'dropdown',
-  RADIO = 'radio',
-  EMAIL = 'email',
-  PHONE = 'phone',
-  TEXTAREA = 'textarea',
+  SIGNATURE = "signature",
+  INITIALS = "initials",
+  DATE = "date",
+  TEXT = "text",
+  CHECKBOX = "checkbox",
+  DROPDOWN = "dropdown",
+  RADIO = "radio",
+  EMAIL = "email",
+  PHONE = "phone",
+  TEXTAREA = "textarea",
 }
 
 /**
@@ -41,11 +41,11 @@ export enum FieldType {
  * Defines the role of signers in the routing order
  */
 export enum SignerRole {
-  SIGNER = 'signer',
-  CC = 'cc',
-  APPROVER = 'approver',
-  REVIEWER = 'reviewer',
-  WITNESS = 'witness',
+  SIGNER = "signer",
+  CC = "cc",
+  APPROVER = "approver",
+  REVIEWER = "reviewer",
+  WITNESS = "witness",
 }
 
 /**
@@ -53,12 +53,12 @@ export enum SignerRole {
  * Enum for signer authentication mechanisms
  */
 export enum AuthenticationMethod {
-  EMAIL = 'email',
-  SMS = 'sms',
-  KNOWLEDGE_BASED = 'knowledge_based',
-  ID_VERIFICATION = 'id_verification',
-  MULTI_FACTOR = 'multi_factor',
-  NONE = 'none',
+  EMAIL = "email",
+  SMS = "sms",
+  KNOWLEDGE_BASED = "knowledge_based",
+  ID_VERIFICATION = "id_verification",
+  MULTI_FACTOR = "multi_factor",
+  NONE = "none",
 }
 
 /**
@@ -132,7 +132,7 @@ export interface Signer {
   accessCodeValidated?: Date;
   // Custom data
   customFields?: Record<string, string>;
-  status: 'pending' | 'viewed' | 'signed' | 'declined';
+  status: "pending" | "viewed" | "signed" | "declined";
   declineReason?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -146,7 +146,7 @@ export interface EnvelopeDocument {
   id: string;
   envelopeId: string;
   fileName: string;
-  documentType: 'primary' | 'attachment';
+  documentType: "primary" | "attachment";
   fileSize: number;
   mimeType: string;
   pageCount: number;
@@ -169,17 +169,17 @@ export interface AuditEvent {
   signingCeremonyId?: string;
   signerId?: string;
   eventType:
-    | 'envelope_created'
-    | 'envelope_sent'
-    | 'envelope_delivered'
-    | 'document_viewed'
-    | 'field_signed'
-    | 'envelope_signed'
-    | 'envelope_completed'
-    | 'envelope_declined'
-    | 'envelope_voided'
-    | 'reminder_sent'
-    | 'access_verified';
+    | "envelope_created"
+    | "envelope_sent"
+    | "envelope_delivered"
+    | "document_viewed"
+    | "field_signed"
+    | "envelope_signed"
+    | "envelope_completed"
+    | "envelope_declined"
+    | "envelope_voided"
+    | "reminder_sent"
+    | "access_verified";
   description: string;
   ipAddress: string;
   userAgent: string;
@@ -221,8 +221,8 @@ export interface SigningCeremony {
   signerEmail: string;
   sessionToken: string; // Secure token for accessing signing session
   sessionKey: string; // Encryption key for session data
-  status: 'created' | 'active' | 'completed' | 'expired' | 'declined';
-  signingType: 'remote' | 'embedded' | 'in_person';
+  status: "created" | "active" | "completed" | "expired" | "declined";
+  signingType: "remote" | "embedded" | "in_person";
   // Session lifecycle
   initiatedAt: Date;
   startedAt?: Date;
@@ -355,7 +355,7 @@ export interface Template {
   // Ownership and sharing
   createdByUserId: string;
   sharedWith?: string[]; // User IDs or group IDs
-  sharePermission?: 'view' | 'edit' | 'admin';
+  sharePermission?: "view" | "edit" | "admin";
   // Metadata
   createdAt: Date;
   updatedAt: Date;
@@ -428,7 +428,7 @@ export interface TemplateVariable {
   templateId: string;
   name: string; // e.g., "{{recipient_name}}"
   displayName: string;
-  type: 'text' | 'email' | 'phone' | 'date' | 'number';
+  type: "text" | "email" | "phone" | "date" | "number";
   defaultValue?: string;
   required: boolean;
   validationRule?: string;
@@ -514,7 +514,7 @@ export interface ComplianceReport {
   // Findings
   findings: Array<{
     category: string;
-    severity: 'info' | 'warning' | 'error';
+    severity: "info" | "warning" | "error";
     message: string;
   }>;
 }
@@ -586,7 +586,7 @@ export interface BulkSendConfiguration {
   recipientNameColumn?: string;
   additionalRecipientsColumn?: string; // CC/additional signers
   // Execution
-  status: 'draft' | 'scheduled' | 'in_progress' | 'completed' | 'failed';
+  status: "draft" | "scheduled" | "in_progress" | "completed" | "failed";
   totalRows: number;
   processedRows: number;
   successfulRows: number;
@@ -613,7 +613,7 @@ export interface EnvelopeMergeResult {
   totalPageCount: number;
   mergedFieldCount: number;
   createdAt: Date;
-  status: 'success' | 'partial' | 'failed';
+  status: "success" | "partial" | "failed";
   errors?: Array<{
     envelopeId: string;
     error: string;
@@ -662,8 +662,8 @@ export interface FieldRenderConfig {
  * Templates for different notification types
  */
 export interface NotificationConfig {
-  type: 'send' | 'remind' | 'complete' | 'decline' | 'expire';
-  channel: 'email' | 'sms' | 'push';
+  type: "send" | "remind" | "complete" | "decline" | "expire";
+  channel: "email" | "sms" | "push";
   templateId?: string;
   subject?: string;
   body: string;

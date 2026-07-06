@@ -11,7 +11,7 @@ import type {
   DemandDataPoint,
   SeasonalDecomposition,
   MultiSeasonalDecomposition,
-} from '../types';
+} from "../types";
 
 /**
  * Extract trend using centered moving average
@@ -25,7 +25,11 @@ export function extractTrend(series: number[], window: number): number[] {
     let sum = 0;
     let count = 0;
 
-    for (let j = Math.max(0, i - halfWindow); j <= Math.min(series.length - 1, i + halfWindow); j++) {
+    for (
+      let j = Math.max(0, i - halfWindow);
+      j <= Math.min(series.length - 1, i + halfWindow);
+      j++
+    ) {
       sum += series[j];
       count++;
     }
@@ -90,7 +94,9 @@ function calculateStdDev(values: number[]): number {
   if (values.length === 0) return 0;
 
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
-  const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+  const variance =
+    values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+    values.length;
 
   return Math.sqrt(variance);
 }
@@ -231,7 +237,11 @@ export function forecastMultiSeasonal(
     const decomp = decomposition.decompositions.get(period);
     if (!decomp) continue;
 
-    const { predictions: p, lower: l, upper: u } = forecastSeasonal(decomp, horizon);
+    const {
+      predictions: p,
+      lower: l,
+      upper: u,
+    } = forecastSeasonal(decomp, horizon);
 
     for (let i = 0; i < horizon; i++) {
       predictions[i] += p[i];
@@ -282,13 +292,17 @@ export function getSeasonalIndices(
   decomposition: SeasonalDecomposition,
   positions: number[],
 ): number[] {
-  return positions.map((pos) => decomposition.seasonal[pos % decomposition.seasonality_period]);
+  return positions.map(
+    (pos) => decomposition.seasonal[pos % decomposition.seasonality_period],
+  );
 }
 
 /**
  * Detect seasonal patterns strength (variance explained)
  */
-export function getSeasonalityStrength(decomposition: SeasonalDecomposition): number {
+export function getSeasonalityStrength(
+  decomposition: SeasonalDecomposition,
+): number {
   const seasonalVar =
     decomposition.seasonal.reduce((sum, val) => sum + Math.pow(val, 2), 0) /
     decomposition.seasonal.length;
@@ -312,7 +326,8 @@ export function getTrendStrength(decomposition: SeasonalDecomposition): number {
     decomposition.trend.length;
 
   const detrended_var =
-    detrended.reduce((sum, val) => sum + Math.pow(val, 2), 0) / detrended.length;
+    detrended.reduce((sum, val) => sum + Math.pow(val, 2), 0) /
+    detrended.length;
 
   return trendVar / (trendVar + detrended_var);
 }

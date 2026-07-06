@@ -8,30 +8,30 @@
 // ─── Enums ──────────────────────────────────────────────────────────────────
 
 export enum TrendDirection {
-  IMPROVING = 'improving',
-  DECLINING = 'declining',
-  STABLE = 'stable',
+  IMPROVING = "improving",
+  DECLINING = "declining",
+  STABLE = "stable",
 }
 
 export enum BadgeType {
-  TOP_PERFORMER = 'top_performer',
-  MOST_IMPROVED = 'most_improved',
-  CONSISTENT = 'consistent',
-  NEEDS_COACHING = 'needs_coaching',
+  TOP_PERFORMER = "top_performer",
+  MOST_IMPROVED = "most_improved",
+  CONSISTENT = "consistent",
+  NEEDS_COACHING = "needs_coaching",
 }
 
 export enum AnomalySeverity {
-  INFO = 'info',
-  WARNING = 'warning',
-  CRITICAL = 'critical',
+  INFO = "info",
+  WARNING = "warning",
+  CRITICAL = "critical",
 }
 
 export enum AnomalyType {
-  UNUSUAL_STOP_DURATION = 'unusual_stop_duration',
-  ROUTE_DEVIATION = 'route_deviation',
-  SPEED_ANOMALY = 'speed_anomaly',
-  UNEXPECTED_STOP = 'unexpected_stop',
-  DELIVERY_GAP = 'delivery_gap',
+  UNUSUAL_STOP_DURATION = "unusual_stop_duration",
+  ROUTE_DEVIATION = "route_deviation",
+  SPEED_ANOMALY = "speed_anomaly",
+  UNEXPECTED_STOP = "unexpected_stop",
+  DELIVERY_GAP = "delivery_gap",
 }
 
 // ─── Configuration Types ────────────────────────────────────────────────────
@@ -53,7 +53,7 @@ export interface DriverScoringWeights {
 }
 
 export interface VehicleProfile {
-  type: 'van' | 'truck' | 'bike' | 'ev';
+  type: "van" | "truck" | "bike" | "ev";
   baseEmissionsFactor: number; // g/km
   idlingEmissions: number; // kg/hour
 }
@@ -93,7 +93,7 @@ export interface Stop {
   actualArrivalTime?: number;
   actualDuration?: number;
   orderId: string;
-  type: 'delivery' | 'pickup' | 'service';
+  type: "delivery" | "pickup" | "service";
 }
 
 export interface RouteEfficiencyScore {
@@ -153,10 +153,10 @@ export interface DeliveryContext {
   timeOfDay: number; // 0-23 (hour)
   dayOfWeek: number; // 0-6 (0 = Sunday)
   weather?: {
-    condition: 'clear' | 'rain' | 'snow' | 'fog';
+    condition: "clear" | "rain" | "snow" | "fog";
     temperature: number;
   };
-  stopComplexity: 'house' | 'apartment' | 'business' | 'warehouse'; // affects dwell time
+  stopComplexity: "house" | "apartment" | "business" | "warehouse"; // affects dwell time
 }
 
 export interface DeliveryPrediction {
@@ -245,7 +245,7 @@ export interface CO2Summary {
   totalSavedCO2: number; // kg
   averageSavingsPercent: number;
   vehicleBreakdown: Array<{
-    type: 'van' | 'truck' | 'bike' | 'ev';
+    type: "van" | "truck" | "bike" | "ev";
     count: number;
     totalCO2: number;
   }>;
@@ -273,7 +273,7 @@ export interface LeaderboardEntry {
 }
 
 export interface Leaderboard {
-  period: '24h' | '7d' | '30d';
+  period: "24h" | "7d" | "30d";
   entries: LeaderboardEntry[];
   generatedAt: number; // unix timestamp
 }

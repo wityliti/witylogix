@@ -10,7 +10,7 @@
  * - Embedded analytics (iframe, mashup)
  */
 
-import { AnalyticsAdapter } from './analytics-adapter.js';
+import { AnalyticsAdapter } from "./analytics-adapter.js";
 import type {
   AnalyticsConfig,
   QueryDefinition,
@@ -24,7 +24,7 @@ import type {
   HealthCheckResult,
   DataSource,
   FilterDefinition,
-} from './types.js';
+} from "./types.js";
 
 interface QlikApp {
   id: string;
@@ -85,7 +85,7 @@ interface QlikSpace {
   ownerId: string;
   createdDate: string;
   modifiedDate: string;
-  type: 'managed' | 'personal' | 'shared';
+  type: "managed" | "personal" | "shared";
 }
 
 interface QlikSession {
@@ -101,9 +101,9 @@ interface QlikSession {
  * Supports API key and OAuth2 M2M authentication.
  */
 export class QlikClient extends AnalyticsAdapter {
-  private accessToken: string = '';
+  private accessToken: string = "";
   private tokenExpiresAt: number = 0;
-  private apiKeyToken: string = '';
+  private apiKeyToken: string = "";
 
   constructor(config: AnalyticsConfig) {
     super(config);
@@ -138,10 +138,10 @@ export class QlikClient extends AnalyticsAdapter {
     const token: string = await this.authenticate();
 
     const response: Response = await fetch(`${this.config.apiUrl}/v1/apps`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
       },
     });
 
@@ -172,13 +172,16 @@ export class QlikClient extends AnalyticsAdapter {
   async getApp(appId: string): Promise<QlikApp> {
     const token: string = await this.authenticate();
 
-    const response: Response = await fetch(`${this.config.apiUrl}/v1/apps/${appId}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
+    const response: Response = await fetch(
+      `${this.config.apiUrl}/v1/apps/${appId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`Failed to fetch app: ${response.statusText}`);
@@ -212,10 +215,10 @@ export class QlikClient extends AnalyticsAdapter {
     };
 
     const response: Response = await fetch(`${this.config.apiUrl}/v1/apps`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
     });
@@ -247,12 +250,12 @@ export class QlikClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/v1/apps/${appId}/reload`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -270,16 +273,18 @@ export class QlikClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/v1/data-connections`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch data connections: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch data connections: ${response.statusText}`,
+      );
     }
 
     const data: any = await response.json();
@@ -302,7 +307,10 @@ export class QlikClient extends AnalyticsAdapter {
    * @returns Created connection
    */
   async createDataConnection(
-    connection: Omit<QlikDataConnection, 'id' | 'createdDate' | 'modifiedDate' | 'owner'>
+    connection: Omit<
+      QlikDataConnection,
+      "id" | "createdDate" | "modifiedDate" | "owner"
+    >,
   ): Promise<QlikDataConnection> {
     const token: string = await this.authenticate();
 
@@ -315,17 +323,19 @@ export class QlikClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/v1/data-connections`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
-      }
+      },
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to create data connection: ${response.statusText}`);
+      throw new Error(
+        `Failed to create data connection: ${response.statusText}`,
+      );
     }
 
     const data: any = await response.json();
@@ -351,12 +361,12 @@ export class QlikClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/v1/apps/${appId}/bookmarks`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -387,7 +397,7 @@ export class QlikClient extends AnalyticsAdapter {
   async createBookmark(
     appId: string,
     title: string,
-    selections: QlikSelection
+    selections: QlikSelection,
   ): Promise<QlikBookmark> {
     const token: string = await this.authenticate();
 
@@ -400,13 +410,13 @@ export class QlikClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/v1/apps/${appId}/bookmarks`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -433,10 +443,10 @@ export class QlikClient extends AnalyticsAdapter {
     const token: string = await this.authenticate();
 
     const response: Response = await fetch(`${this.config.apiUrl}/v1/spaces`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
       },
     });
 
@@ -468,7 +478,7 @@ export class QlikClient extends AnalyticsAdapter {
   async createSpace(
     name: string,
     description?: string,
-    type: 'managed' | 'personal' | 'shared' = 'managed'
+    type: "managed" | "personal" | "shared" = "managed",
   ): Promise<QlikSpace> {
     const token: string = await this.authenticate();
 
@@ -479,10 +489,10 @@ export class QlikClient extends AnalyticsAdapter {
     };
 
     const response: Response = await fetch(`${this.config.apiUrl}/v1/spaces`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
     });
@@ -512,7 +522,7 @@ export class QlikClient extends AnalyticsAdapter {
     return apps.map((app: QlikApp) => ({
       id: app.id,
       name: app.name,
-      type: 'app',
+      type: "app",
       tableName: app.name,
       owner: app.owner,
       archived: false,
@@ -524,7 +534,9 @@ export class QlikClient extends AnalyticsAdapter {
   /**
    * Protected method: Execute query implementation for Qlik.
    */
-  protected async _executeQueryImpl(query: QueryDefinition): Promise<QueryResult> {
+  protected async _executeQueryImpl(
+    query: QueryDefinition,
+  ): Promise<QueryResult> {
     const appId: string = query.dataSource;
     const app: QlikApp = await this.getApp(appId);
 
@@ -533,7 +545,7 @@ export class QlikClient extends AnalyticsAdapter {
       executionId: query.id,
       columns: query.fields.map((field: string) => ({
         name: field,
-        type: 'string',
+        type: "string",
       })),
       rows: [],
       totalRowCount: 0,
@@ -546,9 +558,12 @@ export class QlikClient extends AnalyticsAdapter {
    * Protected method: Create dashboard implementation for Qlik.
    */
   protected async _createDashboardImpl(
-    dashboard: DashboardDefinition
+    dashboard: DashboardDefinition,
   ): Promise<DashboardDefinition> {
-    const app: QlikApp = await this.createApp(dashboard.name, dashboard.description);
+    const app: QlikApp = await this.createApp(
+      dashboard.name,
+      dashboard.description,
+    );
     dashboard.id = app.id;
     return dashboard;
   }
@@ -556,7 +571,9 @@ export class QlikClient extends AnalyticsAdapter {
   /**
    * Protected method: Get dashboard implementation for Qlik.
    */
-  protected async _getDashboardImpl(dashboardId: string): Promise<DashboardDefinition> {
+  protected async _getDashboardImpl(
+    dashboardId: string,
+  ): Promise<DashboardDefinition> {
     const app: QlikApp = await this.getApp(dashboardId);
 
     return {
@@ -574,7 +591,7 @@ export class QlikClient extends AnalyticsAdapter {
    */
   protected async _updateDashboardImpl(
     dashboardId: string,
-    updates: Partial<DashboardDefinition>
+    updates: Partial<DashboardDefinition>,
   ): Promise<DashboardDefinition> {
     // Qlik app update would be implemented here
     return this._getDashboardImpl(dashboardId);
@@ -589,11 +606,11 @@ export class QlikClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `${this.config.apiUrl}/v1/apps/${dashboardId}`,
       {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -609,7 +626,7 @@ export class QlikClient extends AnalyticsAdapter {
     userId: string,
     _scopes: EmbedScope[],
     _rlsRules?: RLSRule[],
-    expiryMinutes: number = 60
+    expiryMinutes: number = 60,
   ): Promise<EmbedToken> {
     const token: string = await this.authenticate();
 
@@ -619,14 +636,17 @@ export class QlikClient extends AnalyticsAdapter {
       expiryMinutes,
     };
 
-    const response: Response = await fetch(`${this.config.apiUrl}/v1/embed-tokens`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+    const response: Response = await fetch(
+      `${this.config.apiUrl}/v1/embed-tokens`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`Failed to generate embed token: ${response.statusText}`);
@@ -638,9 +658,9 @@ export class QlikClient extends AnalyticsAdapter {
       id: `qlik-token-${Date.now()}`,
       token: data.token,
       entityId,
-      entityType: 'dashboard',
+      entityType: "dashboard",
       userId,
-      scopes: ['view'],
+      scopes: ["view"],
       expiresAt: new Date(Date.now() + expiryMinutes * 60 * 1000),
       createdAt: new Date(),
     };
@@ -652,18 +672,18 @@ export class QlikClient extends AnalyticsAdapter {
   protected async _exportDashboardImpl(
     entityId: string,
     format: AnalyticsExportFormat,
-    _filters?: FilterDefinition[]
+    _filters?: FilterDefinition[],
   ): Promise<ExportResult> {
     const token: string = await this.authenticate();
 
     const response: Response = await fetch(
       `${this.config.apiUrl}/v1/apps/${entityId}/export?format=${format}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -676,7 +696,7 @@ export class QlikClient extends AnalyticsAdapter {
       jobId: `export-${Date.now()}`,
       format,
       fileSizeBytes: buffer.length,
-      status: 'completed',
+      status: "completed",
       completedAt: new Date(),
     };
   }
@@ -689,9 +709,9 @@ export class QlikClient extends AnalyticsAdapter {
       const token: string = await this.authenticate();
 
       const response: Response = await fetch(`${this.config.apiUrl}/v1/apps`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -701,7 +721,8 @@ export class QlikClient extends AnalyticsAdapter {
         responseTimeMs: 0,
       };
     } catch (error: unknown) {
-      const message: string = error instanceof Error ? error.message : String(error);
+      const message: string =
+        error instanceof Error ? error.message : String(error);
       return {
         healthy: false,
         authenticated: false,
@@ -712,25 +733,30 @@ export class QlikClient extends AnalyticsAdapter {
   }
 
   private async _authenticateOAuth2(): Promise<string> {
-    const clientId: string = this.config.credentials.clientId || '';
-    const clientSecret: string = this.config.credentials.clientSecret || '';
+    const clientId: string = this.config.credentials.clientId || "";
+    const clientSecret: string = this.config.credentials.clientSecret || "";
 
     if (!clientId || !clientSecret) {
-      throw new Error('OAuth2 authentication requires clientId and clientSecret');
+      throw new Error(
+        "OAuth2 authentication requires clientId and clientSecret",
+      );
     }
 
     const body = new URLSearchParams();
-    body.append('grant_type', 'client_credentials');
-    body.append('client_id', clientId);
-    body.append('client_secret', clientSecret);
+    body.append("grant_type", "client_credentials");
+    body.append("client_id", clientId);
+    body.append("client_secret", clientSecret);
 
-    const response: Response = await fetch(`${this.config.apiUrl}/oauth/authorize`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+    const response: Response = await fetch(
+      `${this.config.apiUrl}/oauth/authorize`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body,
       },
-      body,
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`OAuth2 authentication failed: ${response.statusText}`);
@@ -744,9 +770,9 @@ export class QlikClient extends AnalyticsAdapter {
   }
 
   private _getApiKeyToken(): string {
-    const apiKey: string = this.config.credentials.apiKey || '';
+    const apiKey: string = this.config.credentials.apiKey || "";
     if (!apiKey) {
-      throw new Error('No API key available');
+      throw new Error("No API key available");
     }
     this.apiKeyToken = apiKey;
     return apiKey;

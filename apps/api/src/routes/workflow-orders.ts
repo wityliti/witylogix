@@ -54,7 +54,7 @@ const createOrderSchema = z.object({
         quantity: z.number().int().positive(),
         weight: z.number().positive().optional(),
         price: z.number().positive().optional(),
-      })
+      }),
     )
     .min(1),
   preferredDeliveryDate: z.string().datetime().optional(),
@@ -105,7 +105,7 @@ async function workflowOrderRoutes(fastify: FastifyInstance): Promise<void> {
       request: FastifyRequest<{
         Body: z.infer<typeof createOrderSchema>;
       }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) => {
       const body = createOrderSchema.parse(request.body);
 
@@ -134,7 +134,7 @@ async function workflowOrderRoutes(fastify: FastifyInstance): Promise<void> {
 
       if (existingOrder) {
         throw new ConflictError(
-          `Order with Shopify ID ${body.externalOrderId} already exists`
+          `Order with Shopify ID ${body.externalOrderId} already exists`,
         );
       }
 
@@ -188,12 +188,12 @@ async function workflowOrderRoutes(fastify: FastifyInstance): Promise<void> {
         execution = await engine.executeWorkflow(
           "createDeliveryOrder",
           workflowInput,
-          workflowContext
+          workflowContext,
         );
       } catch (error) {
         fastify.log.error("Workflow execution failed", error);
         throw new InternalServerError(
-          `Order creation workflow failed: ${error instanceof Error ? error.message : String(error)}`
+          `Order creation workflow failed: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
 
@@ -255,7 +255,7 @@ async function workflowOrderRoutes(fastify: FastifyInstance): Promise<void> {
           totalDurationMs: output.totalDurationMs,
         },
       };
-    }
+    },
   );
 
   // ── GET /api/workflow/orders/:id/execution (Get execution) ──
@@ -270,7 +270,7 @@ async function workflowOrderRoutes(fastify: FastifyInstance): Promise<void> {
         Params: { id: string };
         Querystring: z.infer<typeof getExecutionQuerySchema>;
       }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) => {
       const { id: orderId } = request.params;
       const { executionId } = getExecutionQuerySchema.parse(request.query);
@@ -288,7 +288,7 @@ async function workflowOrderRoutes(fastify: FastifyInstance): Promise<void> {
 
       if (!execution) {
         throw new NotFoundError(
-          `Workflow execution not found for order ${orderId}`
+          `Workflow execution not found for order ${orderId}`,
         );
       }
 
@@ -305,7 +305,7 @@ async function workflowOrderRoutes(fastify: FastifyInstance): Promise<void> {
           durationMs: execution.durationMs,
         },
       };
-    }
+    },
   );
 
   // ── POST /api/workflow/orders/:id/retry (Retry failed workflow) ──
@@ -320,7 +320,7 @@ async function workflowOrderRoutes(fastify: FastifyInstance): Promise<void> {
         Params: { id: string };
         Body: z.infer<typeof retrySchema>;
       }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) => {
       const { id: orderId } = request.params;
       const { executionId } = retrySchema.parse(request.body);
@@ -343,9 +343,7 @@ async function workflowOrderRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       if (previousExecution.status === "completed") {
-        throw new ConflictError(
-          "Cannot retry a completed workflow execution"
-        );
+        throw new ConflictError("Cannot retry a completed workflow execution");
       }
 
       // Build workflow context
@@ -371,12 +369,12 @@ async function workflowOrderRoutes(fastify: FastifyInstance): Promise<void> {
         execution = await engine.executeWorkflow(
           "createDeliveryOrder",
           previousExecution.input,
-          workflowContext
+          workflowContext,
         );
       } catch (error) {
         fastify.log.error("Workflow retry failed", error);
         throw new InternalServerError(
-          `Order creation workflow retry failed: ${error instanceof Error ? error.message : String(error)}`
+          `Order creation workflow retry failed: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
 
@@ -430,7 +428,7 @@ async function workflowOrderRoutes(fastify: FastifyInstance): Promise<void> {
           totalDurationMs: output.totalDurationMs,
         },
       };
-    }
+    },
   );
 }
 

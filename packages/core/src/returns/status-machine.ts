@@ -5,8 +5,8 @@
  * Enforces the lifecycle of return requests.
  */
 
-import type { ReturnStatus } from './types.js';
-import { ReturnStatus as RS } from './types.js';
+import type { ReturnStatus } from "./types.js";
+import { ReturnStatus as RS } from "./types.js";
 
 // ─── VALID TRANSITIONS ──────────────────────────────────────────
 
@@ -61,7 +61,7 @@ export function validateTransition(from: ReturnStatus, to: ReturnStatus): void {
     const allowedStatuses = getNextStatuses(from);
     throw new Error(
       `Invalid status transition from ${from} to ${to}. ` +
-      `Allowed transitions: ${allowedStatuses.join(', ') || 'none'}`
+        `Allowed transitions: ${allowedStatuses.join(", ") || "none"}`,
     );
   }
 }

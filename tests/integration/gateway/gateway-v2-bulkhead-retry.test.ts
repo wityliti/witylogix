@@ -35,11 +35,7 @@ class BulkheadRetry {
   private dlqRequests: QueuedRequest[] = [];
   private totalRetries = 0;
 
-  constructor(
-    maxConcurrent: number,
-    queueSize: number,
-    retryPolicy: any
-  ) {
+  constructor(maxConcurrent: number, queueSize: number, retryPolicy: any) {
     this.maxConcurrent = maxConcurrent;
     this.queueSize = queueSize;
     this.retryPolicy = retryPolicy;
@@ -112,37 +108,26 @@ class BulkheadRetry {
     queued.retryCount++;
     this.totalRetries++;
 
-    const delay = this.calculateBackoff(
-      queued.retryCount,
-      this.retryPolicy
-    );
+    const delay = this.calculateBackoff(queued.retryCount, this.retryPolicy);
 
     queued.nextRetryAt = new Date(Date.now() + delay);
     this.queue.push(queued);
     this.queue.sort((a, b) => b.priority - a.priority);
   }
 
-  calculateBackoff(
-    attempt: number,
-    policy: any
-  ): number {
+  calculateBackoff(attempt: number, policy: any): number {
     const baseDelay =
-      policy.initialDelayMs *
-      Math.pow(policy.backoffMultiplier, attempt - 1);
+      policy.initialDelayMs * Math.pow(policy.backoffMultiplier, attempt - 1);
 
-    const jitter =
-      baseDelay * policy.jitterFactor * Math.random();
+    const jitter = baseDelay * policy.jitterFactor * Math.random();
 
-    return Math.min(
-      baseDelay + jitter,
-      policy.maxDelayMs
-    );
+    return Math.min(baseDelay + jitter, policy.maxDelayMs);
   }
 
   submitIdempotentRequest(
     request: any,
     idempotencyKey: string,
-    priority: number = 5
+    priority: number = 5,
   ): boolean {
     // Check if already processed
     if (this.idempotencyMap.has(idempotencyKey)) {
@@ -190,8 +175,7 @@ class BulkheadRetry {
     return {
       used: this.totalRetries,
       available:
-        this.retryPolicy.maxAttempts *
-        (this.maxConcurrent + this.queueSize) -
+        this.retryPolicy.maxAttempts * (this.maxConcurrent + this.queueSize) -
         this.totalRetries,
     };
   }
@@ -300,18 +284,9 @@ describe("Gateway V2 - Bulkhead & Retry", () => {
     });
 
     it("should respect priority order in queue", () => {
-      bulkhead.submitRequest(
-        createConcurrentRequestBatch(1)[0],
-        1
-      );
-      bulkhead.submitRequest(
-        createConcurrentRequestBatch(1)[0],
-        5
-      );
-      bulkhead.submitRequest(
-        createConcurrentRequestBatch(1)[0],
-        10
-      );
+      bulkhead.submitRequest(createConcurrentRequestBatch(1)[0], 1);
+      bulkhead.submitRequest(createConcurrentRequestBatch(1)[0], 5);
+      bulkhead.submitRequest(createConcurrentRequestBatch(1)[0], 10);
 
       const queueLength = bulkhead.getQueueLength();
       expect(queueLength).toBeGreaterThan(0);
@@ -341,7 +316,7 @@ describe("Gateway V2 - Bulkhead & Retry", () => {
       });
 
       const delays = Array.from({ length: 10 }, (_, i) =>
-        bulkhead["calculateBackoff"](1, policy)
+        bulkhead["calculateBackoff"](1, policy),
       );
 
       const uniqueDelays = new Set(delays).size;
@@ -380,15 +355,11 @@ describe("Gateway V2 - Bulkhead & Retry", () => {
         maxAttempts: 2,
       });
 
-      const bulkheadLimited = new BulkheadRetry(
-        2,
-        10,
-        policy
-      );
+      const bulkheadLimited = new BulkheadRetry(2, 10, policy);
 
       const budget = bulkheadLimited.getRetryBudget();
       expect(budget.available).toBeLessThanOrEqual(
-        budget.used + budget.available
+        budget.used + budget.available,
       );
     });
 
@@ -406,29 +377,17 @@ describe("Gateway V2 - Bulkhead & Retry", () => {
       const req = createConcurrentRequestBatch(1)[0];
       const key = "idempotent-payment-123";
 
-      const first = bulkhead.submitIdempotentRequest(
-        req,
-        key
-      );
-      const second = bulkhead.submitIdempotentRequest(
-        req,
-        key
-      );
+      const first = bulkhead.submitIdempotentRequest(req, key);
+      const second = bulkhead.submitIdempotentRequest(req, key);
 
       expect(first).toBe(true);
       expect(second).toBe(true); // Should return cached result
     });
 
     it("should allow retry of failed idempotent requests", () => {
-      const policy = createIdempotentRetryPolicy(
-        "order-123"
-      );
+      const policy = createIdempotentRetryPolicy("order-123");
 
-      const bulkheadIdempotent = new BulkheadRetry(
-        5,
-        50,
-        policy
-      );
+      const bulkheadIdempotent = new BulkheadRetry(5, 50, policy);
 
       const req = createConcurrentRequestBatch(1)[0];
       const success = bulkheadIdempotent.submitRequest(req);
@@ -444,10 +403,7 @@ describe("Gateway V2 - Bulkhead & Retry", () => {
       bulkhead.markIdempotentSuccess(key);
 
       const secondReq = createConcurrentRequestBatch(1)[0];
-      const secondSuccess = bulkhead.submitIdempotentRequest(
-        secondReq,
-        key
-      );
+      const secondSuccess = bulkhead.submitIdempotentRequest(secondReq, key);
 
       expect(secondSuccess).toBe(true);
     });
@@ -459,11 +415,7 @@ describe("Gateway V2 - Bulkhead & Retry", () => {
         maxAttempts: 2,
       });
 
-      const bulkheadWithDLQ = new BulkheadRetry(
-        5,
-        20,
-        policy
-      );
+      const bulkheadWithDLQ = new BulkheadRetry(5, 20, policy);
 
       const req = createConcurrentRequestBatch(1)[0];
       bulkheadWithDLQ.submitRequest(req);

@@ -10,7 +10,11 @@
  */
 
 import { CourierAdapter } from "./courier-adapter.js";
-import { CourierNormalizer, QuoteComparator, StatusTracker } from "./courier-normalizer.js";
+import {
+  CourierNormalizer,
+  QuoteComparator,
+  StatusTracker,
+} from "./courier-normalizer.js";
 import { WebhookEvent, DeliveryStatus } from "./types.js";
 import type {
   QuoteRequest,
@@ -33,7 +37,10 @@ export class CourierDispatcher {
 
   private statusTracker = new StatusTracker();
 
-  private webhookHandlers: Map<WebhookEvent, Array<(payload: WebhookPayload) => Promise<void>>> = new Map();
+  private webhookHandlers: Map<
+    WebhookEvent,
+    Array<(payload: WebhookPayload) => Promise<void>>
+  > = new Map();
 
   /**
    * Register a courier adapter.
@@ -137,7 +144,9 @@ export class CourierDispatcher {
     );
 
     if (quotes.length === 0) {
-      throw new Error(`No quotes available. Errors: ${errors.map((e) => `${e.provider}: ${e.error}`).join("; ")}`);
+      throw new Error(
+        `No quotes available. Errors: ${errors.map((e) => `${e.provider}: ${e.error}`).join("; ")}`,
+      );
     }
 
     // Select courier based on strategy
@@ -147,9 +156,13 @@ export class CourierDispatcher {
 
     if (request.preferredCourier) {
       selectedCourier = request.preferredCourier;
-      selectedQuote = quotes.find((q) => q.provider === request.preferredCourier);
+      selectedQuote = quotes.find(
+        (q) => q.provider === request.preferredCourier,
+      );
       if (!selectedQuote) {
-        throw new Error(`Preferred courier ${request.preferredCourier} did not provide a quote`);
+        throw new Error(
+          `Preferred courier ${request.preferredCourier} did not provide a quote`,
+        );
       }
     } else {
       const strategy = request.strategy || "auto";
@@ -188,7 +201,9 @@ export class CourierDispatcher {
 
       if (!selectedQuote && selectedNormalized) {
         // Convert NormalizedQuote to CourierQuote
-        selectedQuote = quotes.find((q) => q.provider === selectedNormalized!.provider);
+        selectedQuote = quotes.find(
+          (q) => q.provider === selectedNormalized!.provider,
+        );
       }
 
       if (!selectedQuote) {
@@ -201,7 +216,9 @@ export class CourierDispatcher {
     // Create delivery with selected courier
     const adapter = this.getAdapter(selectedCourier);
     if (!adapter) {
-      throw new Error(`Adapter not found for selected courier: ${selectedCourier}`);
+      throw new Error(
+        `Adapter not found for selected courier: ${selectedCourier}`,
+      );
     }
 
     const delivery = await adapter.createDelivery({
@@ -239,10 +256,16 @@ export class CourierDispatcher {
     }
 
     // Parse and process webhook based on provider
-    const webhookPayload = this.parseWebhook(provider, payload as Record<string, unknown>);
+    const webhookPayload = this.parseWebhook(
+      provider,
+      payload as Record<string, unknown>,
+    );
 
     // Update delivery status tracker
-    this.statusTracker.trackStatus(webhookPayload.deliveryId, webhookPayload.data.status as DeliveryStatus);
+    this.statusTracker.trackStatus(
+      webhookPayload.deliveryId,
+      webhookPayload.data.status as DeliveryStatus,
+    );
 
     // Call registered handlers for this event type
     const handlers = this.webhookHandlers.get(webhookPayload.event) || [];
@@ -250,7 +273,10 @@ export class CourierDispatcher {
       try {
         await handler(webhookPayload);
       } catch (error) {
-        console.error(`Webhook handler error for ${webhookPayload.event}:`, error);
+        console.error(
+          `Webhook handler error for ${webhookPayload.event}:`,
+          error,
+        );
       }
     }
   }
@@ -261,7 +287,10 @@ export class CourierDispatcher {
    * @param event Event type to listen for
    * @param handler Handler function
    */
-  onWebhookEvent(event: WebhookEvent, handler: (payload: WebhookPayload) => Promise<void>): void {
+  onWebhookEvent(
+    event: WebhookEvent,
+    handler: (payload: WebhookPayload) => Promise<void>,
+  ): void {
     if (!this.webhookHandlers.has(event)) {
       this.webhookHandlers.set(event, []);
     }
@@ -333,7 +362,11 @@ export class CourierDispatcher {
    * @param events Events to subscribe to
    * @returns Webhook registration info
    */
-  async registerWebhook(provider: string, webhookUrl: string, events: WebhookEvent[]) {
+  async registerWebhook(
+    provider: string,
+    webhookUrl: string,
+    events: WebhookEvent[],
+  ) {
     const adapter = this.getAdapter(provider);
     if (!adapter) {
       throw new Error(`Unknown provider: ${provider}`);
@@ -350,7 +383,9 @@ export class CourierDispatcher {
    *
    * @returns Map of provider -> health status
    */
-  async healthCheck(): Promise<Map<string, { healthy: boolean; error?: string }>> {
+  async healthCheck(): Promise<
+    Map<string, { healthy: boolean; error?: string }>
+  > {
     const results = new Map<string, { healthy: boolean; error?: string }>();
 
     for (const [provider, adapter] of this.adapters.entries()) {
@@ -371,7 +406,10 @@ export class CourierDispatcher {
   /**
    * Parse webhook payload based on provider.
    */
-  private parseWebhook(provider: string, payload: Record<string, unknown>): WebhookPayload {
+  private parseWebhook(
+    provider: string,
+    payload: Record<string, unknown>,
+  ): WebhookPayload {
     switch (provider) {
       case "onfleet":
         return this.parseOnfleetWebhook(payload);
@@ -387,7 +425,9 @@ export class CourierDispatcher {
   /**
    * Parse Onfleet webhook.
    */
-  private parseOnfleetWebhook(payload: Record<string, unknown>): WebhookPayload {
+  private parseOnfleetWebhook(
+    payload: Record<string, unknown>,
+  ): WebhookPayload {
     const event = payload.action as string;
     const taskId = (payload.data as Record<string, unknown>)?.id as string;
 
@@ -419,7 +459,8 @@ export class CourierDispatcher {
    * Parse Uber webhook.
    */
   private parseUberWebhook(payload: Record<string, unknown>): WebhookPayload {
-    const deliveryId = (payload.data as Record<string, unknown>)?.delivery_id as string;
+    const deliveryId = (payload.data as Record<string, unknown>)
+      ?.delivery_id as string;
 
     return {
       event: this.mapUberEvent(payload.event_type as string),
@@ -488,11 +529,16 @@ export class CourierDispatcher {
   /**
    * Score quotes and return sorted by quality.
    */
-  private scoreQuotesForDispatch(quotes: CourierQuote[], exchangeRates?: Record<string, number>) {
+  private scoreQuotesForDispatch(
+    quotes: CourierQuote[],
+    exchangeRates?: Record<string, number>,
+  ) {
     const scored = QuoteComparator.scoreQuotes(quotes, 0.6, 0.4, exchangeRates);
-    return scored.sort((a, b) => b.score - a.score).map((q) => ({
-      quote: quotes.find((cq) => cq.provider === q.provider) as CourierQuote,
-    }));
+    return scored
+      .sort((a, b) => b.score - a.score)
+      .map((q) => ({
+        quote: quotes.find((cq) => cq.provider === q.provider) as CourierQuote,
+      }));
   }
 }
 

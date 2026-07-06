@@ -13,8 +13,8 @@ import type {
   SurgePricingInfo,
   PlatformType,
   DeliveryStatus,
-} from './types';
-import { createHash, createHmac } from 'crypto';
+} from "./types";
+import { createHash, createHmac } from "crypto";
 
 interface RateLimitBucket {
   tokens: number;
@@ -22,7 +22,7 @@ interface RateLimitBucket {
 }
 
 interface CircuitBreakerState {
-  state: 'closed' | 'open' | 'half_open';
+  state: "closed" | "open" | "half_open";
   failure_count: number;
   success_count: number;
   last_failure_time: number;
@@ -36,7 +36,7 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
 
   private rate_limit_buckets: Map<string, RateLimitBucket> = new Map();
   private circuit_breaker: CircuitBreakerState = {
-    state: 'closed',
+    state: "closed",
     failure_count: 0,
     success_count: 0,
     last_failure_time: 0,
@@ -61,28 +61,40 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
   }
 
   // Abstract methods that subclasses must implement
-  abstract createDelivery(delivery: Partial<LastMileDelivery>): Promise<LastMileDelivery>;
+  abstract createDelivery(
+    delivery: Partial<LastMileDelivery>,
+  ): Promise<LastMileDelivery>;
   abstract getDelivery(delivery_id: string): Promise<LastMileDelivery | null>;
   abstract updateDelivery(
     delivery_id: string,
-    updates: Partial<LastMileDelivery>
+    updates: Partial<LastMileDelivery>,
   ): Promise<LastMileDelivery>;
-  abstract cancelDelivery(delivery_id: string, reason?: string): Promise<LastMileDelivery>;
-  abstract listDeliveries(filters?: DeliveryFilterOptions): Promise<LastMileDelivery[]>;
+  abstract cancelDelivery(
+    delivery_id: string,
+    reason?: string,
+  ): Promise<LastMileDelivery>;
+  abstract listDeliveries(
+    filters?: DeliveryFilterOptions,
+  ): Promise<LastMileDelivery[]>;
   abstract getQuote(
     pickup: Location,
     dropoff: Location,
-    options?: QuoteOptions
+    options?: QuoteOptions,
   ): Promise<LastMileQuote>;
   abstract getTracking(delivery_id: string): Promise<LastMileTracking>;
-  abstract getTrackingByExternalId(external_id: string): Promise<LastMileTracking>;
+  abstract getTrackingByExternalId(
+    external_id: string,
+  ): Promise<LastMileTracking>;
   abstract getDriver(driver_id: string): Promise<LastMileDriver | null>;
-  abstract listAvailableDrivers(location: Location, radius_meters?: number): Promise<LastMileDriver[]>;
+  abstract listAvailableDrivers(
+    location: Location,
+    radius_meters?: number,
+  ): Promise<LastMileDriver[]>;
   abstract verifyWebhookSignature(payload: string, signature: string): boolean;
   abstract parseWebhookEvent(payload: string): any;
 
   // Rate Limiting
-  protected async checkRateLimit(key: string = 'default'): Promise<void> {
+  protected async checkRateLimit(key: string = "default"): Promise<void> {
     const now = Date.now();
     let bucket = this.rate_limit_buckets.get(key);
 
@@ -96,11 +108,14 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
 
     const time_passed_ms = now - bucket.last_refill;
     const time_passed_s = time_passed_ms / 1000;
-    const tokens_to_add = time_passed_s * (this.rate_limit_config.max_requests / this.rate_limit_config.window_seconds);
+    const tokens_to_add =
+      time_passed_s *
+      (this.rate_limit_config.max_requests /
+        this.rate_limit_config.window_seconds);
 
     bucket.tokens = Math.min(
       this.rate_limit_config.max_requests,
-      bucket.tokens + tokens_to_add
+      bucket.tokens + tokens_to_add,
     );
     bucket.last_refill = now;
 
@@ -113,27 +128,27 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
 
   // Circuit Breaker Pattern
   protected async executeWithCircuitBreaker<T>(
-    fn: () => Promise<T>
+    fn: () => Promise<T>,
   ): Promise<T> {
     const cb = this.circuit_breaker;
 
-    if (cb.state === 'open') {
+    if (cb.state === "open") {
       const time_since_open = Date.now() - cb.opened_at;
       if (time_since_open > this.circuit_breaker_config.recovery_timeout_ms) {
-        cb.state = 'half_open';
+        cb.state = "half_open";
         cb.success_count = 0;
       } else {
-        throw new Error('Circuit breaker is open');
+        throw new Error("Circuit breaker is open");
       }
     }
 
     try {
       const result = await fn();
 
-      if (cb.state === 'half_open') {
+      if (cb.state === "half_open") {
         cb.success_count += 1;
         if (cb.success_count >= this.circuit_breaker_config.success_threshold) {
-          cb.state = 'closed';
+          cb.state = "closed";
           cb.failure_count = 0;
           cb.success_count = 0;
         }
@@ -145,7 +160,7 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
       cb.last_failure_time = Date.now();
 
       if (cb.failure_count >= this.circuit_breaker_config.failure_threshold) {
-        cb.state = 'open';
+        cb.state = "open";
         cb.opened_at = Date.now();
       }
 
@@ -154,7 +169,10 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
   }
 
   // Distance Calculation using Haversine formula
-  protected calculateDistance(start: Location, end: Location): DistanceCalculation {
+  protected calculateDistance(
+    start: Location,
+    end: Location,
+  ): DistanceCalculation {
     const R = 6371; // Earth's radius in km
     const dLat = this.degreesToRadians(end.latitude - start.latitude);
     const dLon = this.degreesToRadians(end.longitude - start.longitude);
@@ -187,7 +205,7 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
   protected estimateDeliveryTime(
     pickup_location: Location,
     dropoff_location: Location,
-    current_time: Date = new Date()
+    current_time: Date = new Date(),
   ): DeliveryTimeEstimate {
     const distance = this.calculateDistance(pickup_location, dropoff_location);
 
@@ -196,13 +214,14 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
     const distance_eta_minutes = Math.ceil(distance.duration_seconds / 60);
     const dropoff_eta_minutes = 3;
 
-    const total_duration_minutes = pickup_eta_minutes + distance_eta_minutes + dropoff_eta_minutes;
+    const total_duration_minutes =
+      pickup_eta_minutes + distance_eta_minutes + dropoff_eta_minutes;
 
     return {
       pickup_eta_minutes,
       dropoff_eta_minutes,
       total_duration_minutes,
-      confidence_level: 'medium',
+      confidence_level: "medium",
     };
   }
 
@@ -214,7 +233,7 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
     time_fee_per_minute: number,
     duration_minutes: number,
     surge_multiplier: number = 1.0,
-    item_count: number = 0
+    item_count: number = 0,
   ): FeeCalculation {
     const distance_fee = distance_km * distance_fee_per_km;
     const time_fee = duration_minutes * time_fee_per_minute;
@@ -224,7 +243,8 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
       small_order_fee = 1.5;
     }
 
-    const subtotal_before_surge = base_fee + distance_fee + time_fee + small_order_fee;
+    const subtotal_before_surge =
+      base_fee + distance_fee + time_fee + small_order_fee;
     const surge_applied = subtotal_before_surge * (surge_multiplier - 1);
 
     const subtotal = subtotal_before_surge + surge_applied;
@@ -242,37 +262,39 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
       small_order_fee,
       tax,
       total_fee: subtotal_with_service + tax,
-      currency: 'USD',
+      currency: "USD",
     };
   }
 
   // Surge Pricing Detection
   protected detectSurgePricing(
-    current_demand_level: 'low' | 'medium' | 'high' | 'extreme',
-    time_of_day: number // 0-23
+    current_demand_level: "low" | "medium" | "high" | "extreme",
+    time_of_day: number, // 0-23
   ): SurgePricingInfo {
     let multiplier = 1.0;
     let is_surge = false;
     let surge_reason: string | undefined;
 
     // Time-based surge (dinner rush 5-9pm, lunch 11:30am-1:30pm)
-    if ((time_of_day >= 17 && time_of_day <= 21) ||
-        (time_of_day >= 11 && time_of_day <= 14)) {
+    if (
+      (time_of_day >= 17 && time_of_day <= 21) ||
+      (time_of_day >= 11 && time_of_day <= 14)
+    ) {
       multiplier *= 1.3;
-      surge_reason = 'peak_hours';
+      surge_reason = "peak_hours";
       is_surge = true;
     }
 
     // Demand-based surge
     switch (current_demand_level) {
-      case 'high':
+      case "high":
         multiplier *= 1.5;
-        surge_reason = 'high_demand';
+        surge_reason = "high_demand";
         is_surge = true;
         break;
-      case 'extreme':
+      case "extreme":
         multiplier *= 2.5;
-        surge_reason = 'extreme_demand';
+        surge_reason = "extreme_demand";
         is_surge = true;
         break;
     }
@@ -290,11 +312,11 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
   protected verifyHmacSignature(
     payload: string,
     signature: string,
-    secret: string
+    secret: string,
   ): boolean {
-    const computed_signature = createHmac('sha256', secret)
+    const computed_signature = createHmac("sha256", secret)
       .update(payload)
-      .digest('hex');
+      .digest("hex");
 
     return computed_signature === signature;
   }
@@ -303,12 +325,12 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
   protected verifyRsaSignature(
     payload: string,
     signature: string,
-    public_key: string
+    public_key: string,
   ): boolean {
     try {
-      const verify = createHmac('sha256', public_key);
+      const verify = createHmac("sha256", public_key);
       verify.update(payload);
-      return verify.digest('hex') === signature;
+      return verify.digest("hex") === signature;
     } catch {
       return false;
     }
@@ -317,7 +339,7 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
   // Commission Calculation
   protected calculateCommission(
     total_amount: number,
-    commission_rate: number
+    commission_rate: number,
   ): { commission: number; net_amount: number } {
     const commission = Math.round(total_amount * commission_rate);
     return {
@@ -329,70 +351,78 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
   // Platform-agnostic delivery status mapping
   protected mapStatusToUnified(platform_status: string): DeliveryStatus {
     const status_map: Record<string, DeliveryStatus> = {
-      created: 'created',
-      pending: 'created',
-      accepted: 'assigned',
-      assigned: 'assigned',
-      picked_up: 'picked-up',
-      picked: 'picked-up',
-      in_transit: 'in-transit',
-      in_progress: 'in-transit',
-      en_route: 'in-transit',
-      en_route_to_consumer: 'in-transit',
-      en_route_to_pickup: 'assigned',
-      en_route_to_dropoff: 'in-transit',
-      delivered: 'delivered',
-      completed: 'delivered',
-      cancelled: 'cancelled',
-      rejected: 'cancelled',
-      failed: 'failed',
-      error: 'failed',
+      created: "created",
+      pending: "created",
+      accepted: "assigned",
+      assigned: "assigned",
+      picked_up: "picked-up",
+      picked: "picked-up",
+      in_transit: "in-transit",
+      in_progress: "in-transit",
+      en_route: "in-transit",
+      en_route_to_consumer: "in-transit",
+      en_route_to_pickup: "assigned",
+      en_route_to_dropoff: "in-transit",
+      delivered: "delivered",
+      completed: "delivered",
+      cancelled: "cancelled",
+      rejected: "cancelled",
+      failed: "failed",
+      error: "failed",
     };
 
-    return status_map[platform_status.toLowerCase()] || ('created' as DeliveryStatus);
+    return (
+      status_map[platform_status.toLowerCase()] || ("created" as DeliveryStatus)
+    );
   }
 
-  protected mapUnifiedToStatus(unified_status: DeliveryStatus, platform: PlatformType): string {
-    const status_reverse_map: Record<PlatformType, Record<DeliveryStatus, string>> = {
+  protected mapUnifiedToStatus(
+    unified_status: DeliveryStatus,
+    platform: PlatformType,
+  ): string {
+    const status_reverse_map: Record<
+      PlatformType,
+      Record<DeliveryStatus, string>
+    > = {
       doordash: {
-        created: 'PENDING',
-        assigned: 'ACCEPTED',
-        'picked-up': 'PICKED_UP',
-        'in-transit': 'EN_ROUTE_TO_CONSUMER',
-        delivered: 'DELIVERED',
-        cancelled: 'CANCELLED',
-        failed: 'FAILED',
+        created: "PENDING",
+        assigned: "ACCEPTED",
+        "picked-up": "PICKED_UP",
+        "in-transit": "EN_ROUTE_TO_CONSUMER",
+        delivered: "DELIVERED",
+        cancelled: "CANCELLED",
+        failed: "FAILED",
       },
       ubereats: {
-        created: 'PENDING',
-        assigned: 'ACCEPTED',
-        'picked-up': 'PICKED_UP',
-        'in-transit': 'EN_ROUTE_TO_DROPOFF',
-        delivered: 'DELIVERED',
-        cancelled: 'CANCELLED',
-        failed: 'FAILED',
+        created: "PENDING",
+        assigned: "ACCEPTED",
+        "picked-up": "PICKED_UP",
+        "in-transit": "EN_ROUTE_TO_DROPOFF",
+        delivered: "DELIVERED",
+        cancelled: "CANCELLED",
+        failed: "FAILED",
       },
       grubhub: {
-        created: 'PENDING',
-        assigned: 'ASSIGNED',
-        'picked-up': 'PICKED_UP',
-        'in-transit': 'IN_TRANSIT',
-        delivered: 'DELIVERED',
-        cancelled: 'CANCELLED',
-        failed: 'FAILED',
+        created: "PENDING",
+        assigned: "ASSIGNED",
+        "picked-up": "PICKED_UP",
+        "in-transit": "IN_TRANSIT",
+        delivered: "DELIVERED",
+        cancelled: "CANCELLED",
+        failed: "FAILED",
       },
       uberdirect: {
-        created: 'PENDING',
-        assigned: 'ACCEPTED',
-        'picked-up': 'PICKED_UP',
-        'in-transit': 'IN_TRANSIT',
-        delivered: 'DELIVERED',
-        cancelled: 'CANCELLED',
-        failed: 'FAILED',
+        created: "PENDING",
+        assigned: "ACCEPTED",
+        "picked-up": "PICKED_UP",
+        "in-transit": "IN_TRANSIT",
+        delivered: "DELIVERED",
+        cancelled: "CANCELLED",
+        failed: "FAILED",
       },
     };
 
-    return status_reverse_map[platform]?.[unified_status] || 'PENDING';
+    return status_reverse_map[platform]?.[unified_status] || "PENDING";
   }
 
   // Validation helpers
@@ -410,7 +440,7 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
   }
 
   protected hashSignature(data: string): string {
-    return createHash('sha256').update(data).digest('hex');
+    return createHash("sha256").update(data).digest("hex");
   }
 
   protected generateRequestId(): string {

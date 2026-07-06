@@ -75,7 +75,8 @@ describe("MailgunSDKClient", () => {
         text: "Test",
       });
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       const headers = fetchCall[1].headers;
       expect(headers.Authorization).toContain("Basic");
     });
@@ -94,7 +95,8 @@ describe("MailgunSDKClient", () => {
         html: "<h1>Hello</h1>",
       });
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[0]).toContain("/messages");
     });
 
@@ -153,7 +155,8 @@ describe("MailgunSDKClient", () => {
 
       await client.updateTemplate("welcome", { template: "<h1>Updated</h1>" });
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[1].method).toBe("POST");
     });
 
@@ -166,7 +169,8 @@ describe("MailgunSDKClient", () => {
 
       await client.deleteTemplate("welcome");
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[1].method).toBe("DELETE");
     });
   });
@@ -289,7 +293,8 @@ describe("MailgunSDKClient", () => {
 
       await client.deleteBounce("bounced@example.com");
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[1].method).toBe("DELETE");
     });
 
@@ -356,7 +361,7 @@ describe("MailgunSDKClient", () => {
       const signature = "abc123";
 
       expect(
-        client.verifyWebhookSignature(timestamp, token, signature)
+        client.verifyWebhookSignature(timestamp, token, signature),
       ).toBeDefined();
     });
 
@@ -383,7 +388,7 @@ describe("MailgunSDKClient", () => {
         timestamp,
         token,
         signature,
-        payload
+        payload,
       );
 
       expect(result.event).toBe("delivered");
@@ -405,7 +410,7 @@ describe("MailgunSDKClient", () => {
           to: "user@example.com",
           subject: "Test",
           text: "Test",
-        })
+        }),
       ).rejects.toThrow("Mailgun API error");
     });
 

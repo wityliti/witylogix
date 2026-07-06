@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,10 +9,10 @@ import {
   ActivityIndicator,
   Alert,
   Switch,
-} from 'react-native';
-import { useAuth } from '../hooks/useAuth';
-import { api } from '../services/api';
-import { useOfflineSync } from '../hooks/useOfflineSync';
+} from "react-native";
+import { useAuth } from "../hooks/useAuth";
+import { api } from "../services/api";
+import { useOfflineSync } from "../hooks/useOfflineSync";
 
 interface DriverProfile {
   id: string;
@@ -45,27 +45,27 @@ const ProfileScreen: React.FC = () => {
   const fetchProfile = async () => {
     try {
       setIsLoading(true);
-      const data = await api.get('/api/v4/drivers/me/profile');
+      const data = await api.get("/api/v4/drivers/me/profile");
       setProfile(data);
     } catch (error) {
-      console.error('Failed to fetch profile:', error);
-      Alert.alert('Error', 'Failed to load profile');
+      console.error("Failed to fetch profile:", error);
+      Alert.alert("Error", "Failed to load profile");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleLogout = async () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
       {
-        text: 'Logout',
-        style: 'destructive',
+        text: "Logout",
+        style: "destructive",
         onPress: async () => {
           try {
             await logout();
           } catch (error) {
-            Alert.alert('Error', 'Failed to logout');
+            Alert.alert("Error", "Failed to logout");
           }
         },
       },
@@ -126,7 +126,9 @@ const ProfileScreen: React.FC = () => {
             <Text style={styles.sectionTitle}>Today's Stats</Text>
             <View style={styles.statsGrid}>
               <View style={styles.statBox}>
-                <Text style={styles.statNumber}>{profile.todayStats.deliveriesCompleted}</Text>
+                <Text style={styles.statNumber}>
+                  {profile.todayStats.deliveriesCompleted}
+                </Text>
                 <Text style={styles.statLabel}>Deliveries</Text>
               </View>
               <View style={styles.statBox}>
@@ -150,13 +152,15 @@ const ProfileScreen: React.FC = () => {
           <View style={styles.settingRow}>
             <View>
               <Text style={styles.settingLabel}>Push Notifications</Text>
-              <Text style={styles.settingDescription}>Receive delivery updates</Text>
+              <Text style={styles.settingDescription}>
+                Receive delivery updates
+              </Text>
             </View>
             <Switch
               value={notificationsEnabled}
               onValueChange={setNotificationsEnabled}
-              trackColor={{ false: '#ddd', true: '#81c784' }}
-              thumbColor={notificationsEnabled ? '#008060' : '#999'}
+              trackColor={{ false: "#ddd", true: "#81c784" }}
+              thumbColor={notificationsEnabled ? "#008060" : "#999"}
             />
           </View>
           <View style={styles.settingRow}>
@@ -165,12 +169,14 @@ const ProfileScreen: React.FC = () => {
               <Text style={styles.settingDescription}>
                 {lastSyncAt
                   ? new Date(lastSyncAt).toLocaleString()
-                  : 'Not yet synced this session'}
+                  : "Not yet synced this session"}
               </Text>
             </View>
             {pendingCount > 0 && (
               <View style={styles.pendingBadge}>
-                <Text style={styles.pendingBadgeText}>{pendingCount} pending</Text>
+                <Text style={styles.pendingBadgeText}>
+                  {pendingCount} pending
+                </Text>
               </View>
             )}
           </View>
@@ -189,51 +195,51 @@ const ProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   centerContent: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingVertical: 20,
-    alignItems: 'center',
+    alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   avatar: {
     width: 80,
     height: 80,
-    backgroundColor: '#005bd3',
+    backgroundColor: "#005bd3",
     borderRadius: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 12,
   },
   avatarText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   name: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#202223',
+    fontWeight: "700",
+    color: "#202223",
   },
   email: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginTop: 4,
   },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     marginHorizontal: 16,
     marginVertical: 12,
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -241,95 +247,95 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#202223',
+    fontWeight: "600",
+    color: "#202223",
     marginBottom: 12,
   },
   infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: "#f0f0f0",
   },
   label: {
     fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
+    color: "#666",
+    fontWeight: "500",
   },
   value: {
     fontSize: 14,
-    color: '#202223',
-    fontWeight: '600',
+    color: "#202223",
+    fontWeight: "600",
   },
   statsGrid: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   statBox: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
     borderRadius: 8,
     padding: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   statNumber: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#005bd3',
+    fontWeight: "700",
+    color: "#005bd3",
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
-    fontWeight: '500',
+    color: "#666",
+    fontWeight: "500",
   },
   settingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: "#f0f0f0",
   },
   settingLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#202223',
+    fontWeight: "600",
+    color: "#202223",
   },
   settingDescription: {
     fontSize: 12,
-    color: '#999',
+    color: "#999",
     marginTop: 2,
   },
   pendingBadge: {
-    backgroundColor: '#f59e0b',
+    backgroundColor: "#f59e0b",
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
   pendingBadgeText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   actionContainer: {
     paddingHorizontal: 16,
     paddingVertical: 20,
   },
   logoutButton: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
     paddingVertical: 14,
-    alignItems: 'center',
+    alignItems: "center",
   },
   logoutButtonText: {
-    color: '#202223',
+    color: "#202223",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 

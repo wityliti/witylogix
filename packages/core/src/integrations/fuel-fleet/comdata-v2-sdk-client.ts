@@ -38,7 +38,7 @@ export class ComdataAPIError extends Error {
   constructor(
     public code: string,
     message: string,
-    public details?: Record<string, unknown>
+    public details?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "ComdataAPIError";
@@ -69,7 +69,9 @@ export class Comdatav2SDKClient {
       throw new Error("Comdata SDK requires baseUrl");
     }
     if (!this.config.apiKey || !this.config.apiSecret) {
-      throw new Error("Comdata SDK requires apiKey and apiSecret for HMAC-SHA256");
+      throw new Error(
+        "Comdata SDK requires apiKey and apiSecret for HMAC-SHA256",
+      );
     }
   }
 
@@ -80,7 +82,7 @@ export class Comdatav2SDKClient {
     method: string,
     endpoint: string,
     body?: unknown,
-    timestamp: number = Date.now()
+    timestamp: number = Date.now(),
   ): { signature: string; timestamp: number } {
     const bodyString = body ? JSON.stringify(body) : "";
     const payload = [method, endpoint, timestamp, bodyString].join("\n");
@@ -98,14 +100,22 @@ export class Comdatav2SDKClient {
   private async apiRequest<T>(
     method: string,
     endpoint: string,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     await this.checkRateLimit();
 
-    const { signature, timestamp } = this.generateSignature(method, endpoint, body);
+    const { signature, timestamp } = this.generateSignature(
+      method,
+      endpoint,
+      body,
+    );
     const url = new URL(endpoint, this.config.baseUrl).toString();
 
-    for (let attempt = 0; attempt < (this.config.retryConfig?.maxAttempts || 3); attempt++) {
+    for (
+      let attempt = 0;
+      attempt < (this.config.retryConfig?.maxAttempts || 3);
+      attempt++
+    ) {
       try {
         const response = (await nodeFetch(url, {
           method,
@@ -127,7 +137,7 @@ export class Comdatav2SDKClient {
           throw new ComdataAPIError(
             errorData.code || `HTTP_${response.status}`,
             errorData.message || response.statusText,
-            errorData.details
+            errorData.details,
           );
         }
 
@@ -139,15 +149,17 @@ export class Comdatav2SDKClient {
           this.failureCount += 1;
           throw error;
         }
-        const delay = (this.config.retryConfig?.delayMs || 1000) * Math.pow(
-          this.config.retryConfig?.backoffMultiplier || 2,
-          attempt
-        );
+        const delay =
+          (this.config.retryConfig?.delayMs || 1000) *
+          Math.pow(this.config.retryConfig?.backoffMultiplier || 2, attempt);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
-    throw new ComdataAPIError("RETRY_EXHAUSTED", "All retry attempts exhausted");
+    throw new ComdataAPIError(
+      "RETRY_EXHAUSTED",
+      "All retry attempts exhausted",
+    );
   }
 
   /**
@@ -166,7 +178,9 @@ export class Comdatav2SDKClient {
     const maxRequests = 500;
     if (this.requestCount >= maxRequests) {
       const retryAfter = Math.ceil((windowMs - elapsed) / 1000);
-      throw new Error(`Rate limit exceeded (500/min). Retry after ${retryAfter}s`);
+      throw new Error(
+        `Rate limit exceeded (500/min). Retry after ${retryAfter}s`,
+      );
     }
 
     this.requestCount += 1;
@@ -193,8 +207,13 @@ export class Comdatav2SDKClient {
    * Issue a virtual one-time use MasterCard
    */
   async issueVirtualCard(
-    request: VirtualCardIssuanceRequest
-  ): Promise<{ cardId: string; cardNumber: string; cvv: string; expiryDate: string }> {
+    request: VirtualCardIssuanceRequest,
+  ): Promise<{
+    cardId: string;
+    cardNumber: string;
+    cvv: string;
+    expiryDate: string;
+  }> {
     return this.apiRequest("POST", "/api/v2/cards/virtual/issue", {
       cardholderName: request.cardholderName,
       purpose: request.purpose,
@@ -210,7 +229,9 @@ export class Comdatav2SDKClient {
   /**
    * Issue a fuel card and activate
    */
-  async issueFuelCard(request: CardIssuanceRequest): Promise<{ cardId: string; cardNumber: string }> {
+  async issueFuelCard(
+    request: CardIssuanceRequest,
+  ): Promise<{ cardId: string; cardNumber: string }> {
     return this.apiRequest("POST", "/api/v2/cards/fuel/issue", {
       cardholderName: request.cardholderName,
       driverId: request.driverId,
@@ -230,42 +251,68 @@ export class Comdatav2SDKClient {
   /**
    * Activate fuel card
    */
-  async activateFuelCard(cardId: string): Promise<{ status: string; activatedAt: Date }> {
+  async activateFuelCard(
+    cardId: string,
+  ): Promise<{ status: string; activatedAt: Date }> {
     return this.apiRequest("POST", `/api/v2/cards/fuel/${cardId}/activate`);
   }
 
   /**
    * Deactivate fuel card
    */
-  async deactivateFuelCard(cardId: string): Promise<{ status: string; deactivatedAt: Date }> {
+  async deactivateFuelCard(
+    cardId: string,
+  ): Promise<{ status: string; deactivatedAt: Date }> {
     return this.apiRequest("POST", `/api/v2/cards/fuel/${cardId}/deactivate`);
   }
 
   /**
    * Set fuel card spending limit
    */
-  async setFuelCardLimit(cardId: string, amount: number, limitType: "daily" | "weekly" | "monthly"): Promise<SpendingLimitConfig> {
-    return this.apiRequest("POST", `/api/v2/cards/fuel/${cardId}/limits/${limitType}`, {
-      amount,
-    });
+  async setFuelCardLimit(
+    cardId: string,
+    amount: number,
+    limitType: "daily" | "weekly" | "monthly",
+  ): Promise<SpendingLimitConfig> {
+    return this.apiRequest(
+      "POST",
+      `/api/v2/cards/fuel/${cardId}/limits/${limitType}`,
+      {
+        amount,
+      },
+    );
   }
 
   /**
    * Assign driver to fuel card
    */
-  async assignDriver(cardId: string, driverId: string): Promise<{ cardId: string; driverId: string; assignedAt: Date }> {
-    return this.apiRequest("POST", `/api/v2/cards/fuel/${cardId}/assign/driver`, {
-      driverId,
-    });
+  async assignDriver(
+    cardId: string,
+    driverId: string,
+  ): Promise<{ cardId: string; driverId: string; assignedAt: Date }> {
+    return this.apiRequest(
+      "POST",
+      `/api/v2/cards/fuel/${cardId}/assign/driver`,
+      {
+        driverId,
+      },
+    );
   }
 
   /**
    * Assign vehicle to fuel card
    */
-  async assignVehicle(cardId: string, vehicleId: string): Promise<{ cardId: string; vehicleId: string; assignedAt: Date }> {
-    return this.apiRequest("POST", `/api/v2/cards/fuel/${cardId}/assign/vehicle`, {
-      vehicleId,
-    });
+  async assignVehicle(
+    cardId: string,
+    vehicleId: string,
+  ): Promise<{ cardId: string; vehicleId: string; assignedAt: Date }> {
+    return this.apiRequest(
+      "POST",
+      `/api/v2/cards/fuel/${cardId}/assign/vehicle`,
+      {
+        vehicleId,
+      },
+    );
   }
 
   /**
@@ -273,12 +320,12 @@ export class Comdatav2SDKClient {
    */
   async setProductCodeRestrictions(
     cardId: string,
-    allowedCodes: string[]
+    allowedCodes: string[],
   ): Promise<{ cardId: string; productCodes: string[] }> {
     return this.apiRequest(
       "POST",
       `/api/v2/cards/fuel/${cardId}/restrictions/products`,
-      { allowedCodes }
+      { allowedCodes },
     );
   }
 
@@ -286,25 +333,29 @@ export class Comdatav2SDKClient {
    * Get real-time transaction stream (iConnectData)
    */
   async getRealTimeTransactionStream(
-    limit?: number
+    limit?: number,
   ): Promise<PaginatedResponse<RealTimeTransaction>> {
     const params = limit ? `?limit=${limit}` : "";
-    return this.apiRequest("GET", `/api/v2/iconnectdata/transactions/stream${params}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/iconnectdata/transactions/stream${params}`,
+    );
   }
 
   /**
    * Get enhanced transaction data
    */
-  async getEnhancedTransactionData(
-    transactionId: string
-  ): Promise<{
+  async getEnhancedTransactionData(transactionId: string): Promise<{
     transactionId: string;
     fuelType: string;
     quantity: number;
     unitPrice: number;
     odometer: number;
   }> {
-    return this.apiRequest("GET", `/api/v2/iconnectdata/transactions/${transactionId}/enhanced`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/iconnectdata/transactions/${transactionId}/enhanced`,
+    );
   }
 
   /**
@@ -312,7 +363,7 @@ export class Comdatav2SDKClient {
    */
   async getSmartBuyPricing(
     quantity: number,
-    fuelType: string
+    fuelType: string,
   ): Promise<{
     basePrice: number;
     bulkPrice: number;
@@ -330,8 +381,13 @@ export class Comdatav2SDKClient {
     quantity: number,
     fuelType: string,
     pricePerUnit: number,
-    expiryDate: Date
-  ): Promise<{ contractId: string; quantity: number; pricePerUnit: number; expiryDate: Date }> {
+    expiryDate: Date,
+  ): Promise<{
+    contractId: string;
+    quantity: number;
+    pricePerUnit: number;
+    expiryDate: Date;
+  }> {
     return this.apiRequest("POST", "/api/v2/smartbuy/contracts", {
       quantity,
       fuelType,
@@ -345,8 +401,14 @@ export class Comdatav2SDKClient {
    */
   async executeBulkFuelPurchase(
     contractId: string,
-    quantity: number
-  ): Promise<{ purchaseId: string; contractId: string; quantity: number; totalCost: number; status: string }> {
+    quantity: number,
+  ): Promise<{
+    purchaseId: string;
+    contractId: string;
+    quantity: number;
+    totalCost: number;
+    status: string;
+  }> {
     return this.apiRequest("POST", "/api/v2/smartbuy/purchase", {
       contractId,
       quantity,
@@ -357,7 +419,7 @@ export class Comdatav2SDKClient {
    * Search transactions with enhanced data
    */
   async searchTransactions(
-    criteria: TransactionSearchCriteria
+    criteria: TransactionSearchCriteria,
   ): Promise<PaginatedResponse<TransactionDetail>> {
     const params = new URLSearchParams();
     params.append("startDate", criteria.startDate.toISOString());
@@ -369,7 +431,10 @@ export class Comdatav2SDKClient {
     if (criteria.limit) params.append("limit", String(criteria.limit));
     if (criteria.offset) params.append("offset", String(criteria.offset));
 
-    return this.apiRequest("GET", `/api/v2/transactions/search?${params.toString()}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/transactions/search?${params.toString()}`,
+    );
   }
 
   /**
@@ -377,7 +442,7 @@ export class Comdatav2SDKClient {
    */
   async getFleetSpendAnalytics(
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<{
     totalSpend: number;
     transactionCount: number;
@@ -395,7 +460,7 @@ export class Comdatav2SDKClient {
   async getDriverBehaviorAnalytics(
     driverId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<{
     driverId: string;
     fuelingFrequency: number;
@@ -404,7 +469,10 @@ export class Comdatav2SDKClient {
     fuelingPatterns: Array<{ date: Date; gallons: number; cost: number }>;
   }> {
     const params = `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
-    return this.apiRequest("GET", `/api/v2/analytics/driver/${driverId}/behavior${params}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/analytics/driver/${driverId}/behavior${params}`,
+    );
   }
 
   /**
@@ -412,17 +480,31 @@ export class Comdatav2SDKClient {
    */
   async getCostAllocationByGLCode(
     startDate: Date,
-    endDate: Date
-  ): Promise<Array<{ glCode: string; amount: number; percentage: number; transactionCount: number }>> {
+    endDate: Date,
+  ): Promise<
+    Array<{
+      glCode: string;
+      amount: number;
+      percentage: number;
+      transactionCount: number;
+    }>
+  > {
     const params = `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
-    return this.apiRequest("GET", `/api/v2/reporting/cost-allocation/gl-code${params}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/reporting/cost-allocation/gl-code${params}`,
+    );
   }
 
   /**
    * Validate DOT number for compliance
    */
-  async validateDOTNumber(dotNumber: string): Promise<{ valid: boolean; complianceStatus: string }> {
-    return this.apiRequest("POST", "/api/v2/compliance/dot/validate", { dotNumber });
+  async validateDOTNumber(
+    dotNumber: string,
+  ): Promise<{ valid: boolean; complianceStatus: string }> {
+    return this.apiRequest("POST", "/api/v2/compliance/dot/validate", {
+      dotNumber,
+    });
   }
 
   /**
@@ -431,7 +513,7 @@ export class Comdatav2SDKClient {
   async getIFTAMileageData(
     vehicleId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<{
     vehicleId: string;
     totalMileage: number;
@@ -439,7 +521,10 @@ export class Comdatav2SDKClient {
     reportingPeriod: { startDate: Date; endDate: Date };
   }> {
     const params = `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
-    return this.apiRequest("GET", `/api/v2/compliance/ifta/mileage/${vehicleId}${params}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/compliance/ifta/mileage/${vehicleId}${params}`,
+    );
   }
 
   /**
@@ -447,7 +532,7 @@ export class Comdatav2SDKClient {
    */
   async subscribeWebhook(
     webhookUrl: string,
-    eventTypes: WebhookEventType[]
+    eventTypes: WebhookEventType[],
   ): Promise<{ webhookId: string; url: string; events: WebhookEventType[] }> {
     return this.apiRequest("POST", "/api/v2/webhooks/subscribe", {
       url: webhookUrl,
@@ -462,7 +547,7 @@ export class Comdatav2SDKClient {
   verifyWebhookSignature(
     payload: string,
     signature: string,
-    timestamp: string
+    timestamp: string,
   ): boolean {
     if (!this.config.webhookSecret) return false;
 
@@ -495,7 +580,12 @@ export class Comdatav2SDKClient {
     const uptime = now.getTime() - this.lastHealthCheck.getTime();
 
     return {
-      status: this.failureCount === 0 ? "healthy" : this.failureCount < 5 ? "degraded" : "unhealthy",
+      status:
+        this.failureCount === 0
+          ? "healthy"
+          : this.failureCount < 5
+            ? "degraded"
+            : "unhealthy",
       provider: "comdata_v2" as SDKProvider,
       lastChecked: now,
       circuitBreaker: {
@@ -515,14 +605,22 @@ export class Comdatav2SDKClient {
   /**
    * Generate custom analytics report
    */
-  async generateAnalyticsReport(params: ReportingParams): Promise<{ reportId: string; status: string; downloadUrl?: string }> {
-    return this.apiRequest("POST", "/api/v2/reporting/analytics/generate", params);
+  async generateAnalyticsReport(
+    params: ReportingParams,
+  ): Promise<{ reportId: string; status: string; downloadUrl?: string }> {
+    return this.apiRequest(
+      "POST",
+      "/api/v2/reporting/analytics/generate",
+      params,
+    );
   }
 
   /**
    * Get report status
    */
-  async getReportStatus(reportId: string): Promise<{ reportId: string; status: string; downloadUrl?: string }> {
+  async getReportStatus(
+    reportId: string,
+  ): Promise<{ reportId: string; status: string; downloadUrl?: string }> {
     return this.apiRequest("GET", `/api/v2/reporting/${reportId}`);
   }
 }

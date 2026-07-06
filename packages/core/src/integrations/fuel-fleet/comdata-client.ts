@@ -112,7 +112,7 @@ export class ComdataClient extends FuelFleetAdapter {
   private async apiRequest<T>(
     endpoint: string,
     method: string = "GET",
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     await this.preRequestCheck();
 
@@ -130,7 +130,7 @@ export class ComdataClient extends FuelFleetAdapter {
             },
             body: body ? JSON.stringify(body) : undefined,
           }),
-        `Comdata ${method} ${endpoint}`
+        `Comdata ${method} ${endpoint}`,
       )) as Response;
 
       if (!response.ok) {
@@ -169,7 +169,7 @@ export class ComdataClient extends FuelFleetAdapter {
         vehicleId: cardData.vehicleId,
         dailyLimit: cardData.dailyLimit,
         monthlyLimit: cardData.monthlyLimit,
-      }
+      },
     );
 
     return this.mapComdataCardToFuelCard(response);
@@ -185,7 +185,7 @@ export class ComdataClient extends FuelFleetAdapter {
     const response = await this.apiRequest<ComdataCardResponse>(
       `/api/cards/${cardId}/activate`,
       "POST",
-      {}
+      {},
     );
 
     return this.mapComdataCardToFuelCard(response);
@@ -201,7 +201,7 @@ export class ComdataClient extends FuelFleetAdapter {
     const response = await this.apiRequest<ComdataCardResponse>(
       `/api/cards/${cardId}/suspend`,
       "POST",
-      {}
+      {},
     );
 
     return this.mapComdataCardToFuelCard(response);
@@ -217,7 +217,7 @@ export class ComdataClient extends FuelFleetAdapter {
     const response = await this.apiRequest<ComdataCardResponse>(
       `/api/cards/${cardId}/close`,
       "POST",
-      {}
+      {},
     );
 
     return this.mapComdataCardToFuelCard(response);
@@ -231,7 +231,7 @@ export class ComdataClient extends FuelFleetAdapter {
    */
   async getCard(cardId: string): Promise<FuelCard> {
     const response = await this.apiRequest<ComdataCardResponse>(
-      `/api/cards/${cardId}`
+      `/api/cards/${cardId}`,
     );
 
     return this.mapComdataCardToFuelCard(response);
@@ -246,7 +246,7 @@ export class ComdataClient extends FuelFleetAdapter {
    */
   async getTransactions(
     cardId: string,
-    criteria?: Record<string, unknown>
+    criteria?: Record<string, unknown>,
   ): Promise<FuelTransaction[]> {
     const params = new URLSearchParams();
 
@@ -259,10 +259,11 @@ export class ComdataClient extends FuelFleetAdapter {
     }
 
     const endpoint = `/api/cards/${cardId}/transactions?${params.toString()}`;
-    const responses = await this.apiRequest<ComdataTransactionResponse[]>(endpoint);
+    const responses =
+      await this.apiRequest<ComdataTransactionResponse[]>(endpoint);
 
     return responses.map((response) =>
-      this.mapComdataTransactionToFuelTransaction(response)
+      this.mapComdataTransactionToFuelTransaction(response),
     );
   }
 
@@ -274,7 +275,7 @@ export class ComdataClient extends FuelFleetAdapter {
    */
   async getTransaction(transactionId: string): Promise<FuelTransaction> {
     const response = await this.apiRequest<ComdataTransactionResponse>(
-      `/api/transactions/${transactionId}`
+      `/api/transactions/${transactionId}`,
     );
 
     return this.mapComdataTransactionToFuelTransaction(response);
@@ -287,11 +288,7 @@ export class ComdataClient extends FuelFleetAdapter {
    * @returns Created/updated policy
    */
   async setPolicy(policy: Partial<FuelPolicy>): Promise<FuelPolicy> {
-    const response = await this.apiRequest(
-      "/api/policies",
-      "POST",
-      policy
-    );
+    const response = await this.apiRequest("/api/policies", "POST", policy);
 
     return response as FuelPolicy;
   }
@@ -303,9 +300,7 @@ export class ComdataClient extends FuelFleetAdapter {
    * @returns Policy data
    */
   async getPolicy(policyId: string): Promise<FuelPolicy> {
-    const response = await this.apiRequest(
-      `/api/policies/${policyId}`
-    );
+    const response = await this.apiRequest(`/api/policies/${policyId}`);
 
     return response as FuelPolicy;
   }
@@ -316,7 +311,9 @@ export class ComdataClient extends FuelFleetAdapter {
    * @param criteria - Filter criteria
    * @returns Array of station locations
    */
-  async listStations(criteria?: Record<string, unknown>): Promise<StationLocation[]> {
+  async listStations(
+    criteria?: Record<string, unknown>,
+  ): Promise<StationLocation[]> {
     const params = new URLSearchParams();
 
     if (criteria) {
@@ -356,7 +353,7 @@ export class ComdataClient extends FuelFleetAdapter {
    */
   async detectFraud(cardId: string): Promise<FraudAlert[]> {
     const response = await this.apiRequest<FraudAlert[]>(
-      `/api/cards/${cardId}/fraud-alerts`
+      `/api/cards/${cardId}/fraud-alerts`,
     );
 
     return response;
@@ -368,11 +365,13 @@ export class ComdataClient extends FuelFleetAdapter {
    * @param assignment - Assignment data
    * @returns Created assignment
    */
-  async assignCard(assignment: Partial<CardAssignment>): Promise<CardAssignment> {
+  async assignCard(
+    assignment: Partial<CardAssignment>,
+  ): Promise<CardAssignment> {
     const response = await this.apiRequest(
       "/api/assignments",
       "POST",
-      assignment
+      assignment,
     );
 
     return response as CardAssignment;
@@ -399,12 +398,10 @@ export class ComdataClient extends FuelFleetAdapter {
    * @param limit - Limit configuration
    * @returns Created/updated limit
    */
-  async setPurchaseLimit(limit: Partial<PurchaseLimit>): Promise<PurchaseLimit> {
-    const response = await this.apiRequest(
-      "/api/limits",
-      "POST",
-      limit
-    );
+  async setPurchaseLimit(
+    limit: Partial<PurchaseLimit>,
+  ): Promise<PurchaseLimit> {
+    const response = await this.apiRequest("/api/limits", "POST", limit);
 
     return response as PurchaseLimit;
   }
@@ -417,7 +414,7 @@ export class ComdataClient extends FuelFleetAdapter {
    */
   async getPurchaseLimits(cardId: string): Promise<PurchaseLimit[]> {
     const limits = await this.apiRequest<PurchaseLimit[]>(
-      `/api/cards/${cardId}/limits`
+      `/api/cards/${cardId}/limits`,
     );
 
     return limits;
@@ -431,7 +428,7 @@ export class ComdataClient extends FuelFleetAdapter {
    */
   async getCheckCode(checkCode: string): Promise<Record<string, unknown>> {
     const details = await this.apiRequest<Record<string, unknown>>(
-      `/api/check-codes/${checkCode}`
+      `/api/check-codes/${checkCode}`,
     );
 
     return details;
@@ -446,12 +443,12 @@ export class ComdataClient extends FuelFleetAdapter {
    */
   async processAdvance(
     cardId: string,
-    advanceData: Record<string, unknown>
+    advanceData: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
     const result = await this.apiRequest<Record<string, unknown>>(
       `/api/cards/${cardId}/advance`,
       "POST",
-      advanceData
+      advanceData,
     );
 
     return result;
@@ -463,7 +460,9 @@ export class ComdataClient extends FuelFleetAdapter {
    * @param criteria - Analytics criteria
    * @returns Analytics data
    */
-  async getFleetAnalytics(criteria: Record<string, unknown>): Promise<Record<string, unknown>> {
+  async getFleetAnalytics(
+    criteria: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
     const params = new URLSearchParams();
 
     Object.entries(criteria).forEach(([key, value]) => {
@@ -510,7 +509,7 @@ export class ComdataClient extends FuelFleetAdapter {
    * @returns FuelTransaction object
    */
   private mapComdataTransactionToFuelTransaction(
-    response: ComdataTransactionResponse
+    response: ComdataTransactionResponse,
   ): FuelTransaction {
     return {
       transactionId: response.transactionId,

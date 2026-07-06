@@ -38,7 +38,14 @@ import {
 
 const marketplaceQuerySchema = z.object({
   category: z
-    .enum(["COMMUNICATION", "ROUTING", "ORDER_MANAGEMENT", "INVENTORY", "PAYMENT", "ANALYTICS"])
+    .enum([
+      "COMMUNICATION",
+      "ROUTING",
+      "ORDER_MANAGEMENT",
+      "INVENTORY",
+      "PAYMENT",
+      "ANALYTICS",
+    ])
     .optional(),
   status: z.enum(["AVAILABLE", "COMING_SOON", "BETA", "DEPRECATED"]).optional(),
   subcategory: z.string().max(50).optional(),
@@ -60,7 +67,15 @@ const eventsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(500).optional().default(50),
   offset: z.coerce.number().int().min(0).optional().default(0),
   eventType: z
-    .enum(["INSTALL", "UNINSTALL", "SYNC", "WEBHOOK", "HEALTH_CHECK", "METER", "CONFIG_UPDATE"])
+    .enum([
+      "INSTALL",
+      "UNINSTALL",
+      "SYNC",
+      "WEBHOOK",
+      "HEALTH_CHECK",
+      "METER",
+      "CONFIG_UPDATE",
+    ])
     .optional(),
 });
 
@@ -71,7 +86,9 @@ const meterQuerySchema = z.object({
 
 // ─── Route Registration ─────────────────────────────────────
 
-export default async function integrationRoutes(app: FastifyInstance): Promise<void> {
+export default async function integrationRoutes(
+  app: FastifyInstance,
+): Promise<void> {
   // All routes require authentication + tenant context
   app.addHook("preHandler", requireAuth);
   app.addHook("preHandler", tenantContext);
@@ -99,7 +116,9 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
         healthStatus: integration.healthStatus,
         lastSyncAt: integration.lastSyncAt,
         lastHealthCheckAt: integration.lastHealthCheckAt,
-        credentials: maskCredentials(integration.credentials as Record<string, unknown>),
+        credentials: maskCredentials(
+          integration.credentials as Record<string, unknown>,
+        ),
         config: integration.config,
         installedAt: integration.installedAt,
         updatedAt: integration.updatedAt,
@@ -116,61 +135,68 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
 
   // ── GET /marketplace — Browse catalog ───────────────────────
 
-  app.get("/marketplace", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const query = marketplaceQuerySchema.parse(request.query);
-      const shopId = request.shopId;
+  app.get(
+    "/marketplace",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const query = marketplaceQuerySchema.parse(request.query);
+        const shopId = request.shopId;
 
-      // Get integrations from registry
-      let apps: IntegrationAppMeta[];
+        // Get integrations from registry
+        let apps: IntegrationAppMeta[];
 
-      if (query.search) {
-        apps = searchIntegrations(query.search);
-      } else {
-        apps = getAvailableIntegrations({
-          status: query.status as IntegrationStatus | undefined,
-          category: query.category as IntegrationCategory | undefined,
+        if (query.search) {
+          apps = searchIntegrations(query.search);
+        } else {
+          apps = getAvailableIntegrations({
+            status: query.status as IntegrationStatus | undefined,
+            category: query.category as IntegrationCategory | undefined,
+          });
+        }
+
+        // Apply subcategory filter
+        if (query.subcategory) {
+          apps = apps.filter((a) => a.subcategory === query.subcategory);
+        }
+
+        // Get installed slugs for this shop
+        const installed = await prisma.integration.findMany({
+          where: { shopId },
+          select: { appSlug: true, isEnabled: true, healthStatus: true },
         });
-      }
+        const installedMap = new Map(installed.map((i) => [i.appSlug, i]));
 
-      // Apply subcategory filter
-      if (query.subcategory) {
-        apps = apps.filter((a) => a.subcategory === query.subcategory);
-      }
-
-      // Get installed slugs for this shop
-      const installed = await prisma.integration.findMany({
-        where: { shopId },
-        select: { appSlug: true, isEnabled: true, healthStatus: true },
-      });
-      const installedMap = new Map(installed.map((i) => [i.appSlug, i]));
-
-      // Annotate each app with install status
-      const result = apps.map((app) => {
-        const install = installedMap.get(app.slug);
-        return {
-          ...app,
-          installed: !!install,
-          isEnabled: install?.isEnabled ?? false,
-          healthStatus: install?.healthStatus ?? null,
-        };
-      });
-
-      return reply.send({
-        apps: result,
-        categories: CATEGORY_LABELS,
-        counts: getIntegrationCounts(),
-      });
-    } catch (err) {
-      if (err instanceof ZodError) {
-        return reply.status(422).send({
-          success: false,
-          error: { code: "VALIDATION_ERROR", message: "Invalid query parameters", details: err.errors },
+        // Annotate each app with install status
+        const result = apps.map((app) => {
+          const install = installedMap.get(app.slug);
+          return {
+            ...app,
+            installed: !!install,
+            isEnabled: install?.isEnabled ?? false,
+            healthStatus: install?.healthStatus ?? null,
+          };
         });
+
+        return reply.send({
+          apps: result,
+          categories: CATEGORY_LABELS,
+          counts: getIntegrationCounts(),
+        });
+      } catch (err) {
+        if (err instanceof ZodError) {
+          return reply.status(422).send({
+            success: false,
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "Invalid query parameters",
+              details: err.errors,
+            },
+          });
+        }
+        throw err;
       }
-      throw err;
-    }
-  });
+    },
+  );
 
   // ── GET /marketplace/:slug — Integration detail ─────────────
 
@@ -237,12 +263,16 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
         if (appMeta.status === "COMING_SOON") {
           return reply
             .status(400)
-            .send({ error: `${appMeta.name} is coming soon and cannot be installed yet.` });
+            .send({
+              error: `${appMeta.name} is coming soon and cannot be installed yet.`,
+            });
         }
         if (appMeta.status === "DEPRECATED") {
           return reply
             .status(400)
-            .send({ error: `${appMeta.name} is deprecated and cannot be installed.` });
+            .send({
+              error: `${appMeta.name} is deprecated and cannot be installed.`,
+            });
         }
 
         // Check for existing installation
@@ -252,7 +282,9 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
         if (existing) {
           return reply
             .status(409)
-            .send({ error: `${appMeta.name} is already installed. Use PATCH to update.` });
+            .send({
+              error: `${appMeta.name} is already installed. Use PATCH to update.`,
+            });
         }
 
         // Validate required credentials
@@ -306,7 +338,11 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
         if (err instanceof ZodError) {
           return reply.status(422).send({
             success: false,
-            error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "Invalid request body",
+              details: err.errors,
+            },
           });
         }
         throw err;
@@ -377,12 +413,14 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
 
         if (body.credentials !== undefined) {
           // Merge with existing credentials (allow partial updates)
-          const currentCreds = (existing.credentials as Record<string, unknown>) ?? {};
+          const currentCreds =
+            (existing.credentials as Record<string, unknown>) ?? {};
           updateData.credentials = { ...currentCreds, ...body.credentials };
         }
 
         if (body.config !== undefined) {
-          const currentConfig = (existing.config as Record<string, unknown>) ?? {};
+          const currentConfig =
+            (existing.config as Record<string, unknown>) ?? {};
           updateData.config = { ...currentConfig, ...body.config };
         }
 
@@ -412,7 +450,9 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
             slug: updated.appSlug,
             isEnabled: updated.isEnabled,
             healthStatus: updated.healthStatus,
-            credentials: maskCredentials(updated.credentials as Record<string, unknown>),
+            credentials: maskCredentials(
+              updated.credentials as Record<string, unknown>,
+            ),
             config: updated.config,
             updatedAt: updated.updatedAt,
           },
@@ -421,7 +461,11 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
         if (err instanceof ZodError) {
           return reply.status(422).send({
             success: false,
-            error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "Invalid request body",
+              details: err.errors,
+            },
           });
         }
         throw err;
@@ -452,7 +496,9 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
         // For now, just validate that required credential fields are present
         const appMeta = getIntegrationBySlug(slug);
         if (!appMeta) {
-          return reply.status(404).send({ error: "Integration not found in registry" });
+          return reply
+            .status(404)
+            .send({ error: "Integration not found in registry" });
         }
 
         const creds = (existing.credentials as Record<string, unknown>) ?? {};
@@ -487,7 +533,8 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
           slug,
           healthy,
           healthStatus,
-          missingRequired: missingRequired.length > 0 ? missingRequired : undefined,
+          missingRequired:
+            missingRequired.length > 0 ? missingRequired : undefined,
           lastHealthCheckAt: new Date(),
         });
       } catch (err) {
@@ -538,7 +585,11 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
         if (err instanceof ZodError) {
           return reply.status(422).send({
             success: false,
-            error: { code: "VALIDATION_ERROR", message: "Invalid query parameters", details: err.errors },
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "Invalid query parameters",
+              details: err.errors,
+            },
           });
         }
         throw err;
@@ -548,98 +599,113 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
 
   // ── GET /connections — List installed integrations as connections ──
 
-  app.get("/connections", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const shopId = request.shopId;
-      const query = request.query as { category?: string; page?: string; limit?: string };
-      const page = Math.max(1, Number(query.page) || 1);
-      const limit = Math.min(100, Math.max(1, Number(query.limit) || 20));
-      const categoryFilter = query.category?.toLowerCase();
+  app.get(
+    "/connections",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const shopId = request.shopId;
+        const query = request.query as {
+          category?: string;
+          page?: string;
+          limit?: string;
+        };
+        const page = Math.max(1, Number(query.page) || 1);
+        const limit = Math.min(100, Math.max(1, Number(query.limit) || 20));
+        const categoryFilter = query.category?.toLowerCase();
 
-      const installed = await prisma.integration.findMany({
-        where: { shopId },
-        include: { app: true },
-        orderBy: { installedAt: "desc" },
-      });
-
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-
-      const eventCounts = await prisma.integrationEvent.groupBy({
-        by: ["integrationId", "eventType"],
-        where: {
-          shopId,
-          integrationId: { in: installed.map((i) => i.id) },
-          timestamp: { gte: thirtyDaysAgo },
-        },
-        _count: { id: true },
-      });
-
-      const countMap = new Map<string, { api: number; errors: number }>();
-      for (const row of eventCounts) {
-        if (!row.integrationId) continue;
-        const existing = countMap.get(row.integrationId) ?? { api: 0, errors: 0 };
-        if (row.eventType === "METER" || row.eventType === "SYNC") {
-          existing.api += row._count.id;
-        }
-        countMap.set(row.integrationId, existing);
-      }
-
-      const allConnections = installed
-        .filter((integration) =>
-          !categoryFilter || integration.app.category.toLowerCase() === categoryFilter
-        )
-        .map((integration) => {
-          const counts = countMap.get(integration.id) ?? { api: 0, errors: 0 };
-
-          let status: "connected" | "disconnected" | "error" | "pending";
-          if (!integration.isEnabled) {
-            status = "disconnected";
-          } else if (integration.healthStatus === "ERROR") {
-            status = "error";
-          } else if (integration.healthStatus === "UNKNOWN") {
-            status = "pending";
-          } else {
-            status = "connected";
-          }
-
-          const uptime =
-            integration.healthStatus === "DEGRADED"
-              ? 95
-              : integration.healthStatus === "ERROR"
-                ? 0
-                : 100;
-
-          return {
-            id: integration.appSlug,
-            providerId: integration.appSlug,
-            providerName: integration.app.name,
-            status,
-            lastSyncTime: integration.lastSyncAt?.toISOString(),
-            apiCallsCount: counts.api,
-            errorCount: counts.errors,
-            uptime,
-            category: integration.app.category.toLowerCase(),
-            icon: integration.app.logoUrl ?? integration.appSlug,
-          };
+        const installed = await prisma.integration.findMany({
+          where: { shopId },
+          include: { app: true },
+          orderBy: { installedAt: "desc" },
         });
 
-      const total = allConnections.length;
-      const offset = (page - 1) * limit;
-      const connections = allConnections.slice(offset, offset + limit);
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-      return reply.send({
-        data: connections,
-        meta: {
-          total,
-          page,
-          limit,
-          totalPages: Math.ceil(total / limit),
-        },
-      });
-    } catch (err) {
-      throw err;
-    }
-  });
+        const eventCounts = await prisma.integrationEvent.groupBy({
+          by: ["integrationId", "eventType"],
+          where: {
+            shopId,
+            integrationId: { in: installed.map((i) => i.id) },
+            timestamp: { gte: thirtyDaysAgo },
+          },
+          _count: { id: true },
+        });
+
+        const countMap = new Map<string, { api: number; errors: number }>();
+        for (const row of eventCounts) {
+          if (!row.integrationId) continue;
+          const existing = countMap.get(row.integrationId) ?? {
+            api: 0,
+            errors: 0,
+          };
+          if (row.eventType === "METER" || row.eventType === "SYNC") {
+            existing.api += row._count.id;
+          }
+          countMap.set(row.integrationId, existing);
+        }
+
+        const allConnections = installed
+          .filter(
+            (integration) =>
+              !categoryFilter ||
+              integration.app.category.toLowerCase() === categoryFilter,
+          )
+          .map((integration) => {
+            const counts = countMap.get(integration.id) ?? {
+              api: 0,
+              errors: 0,
+            };
+
+            let status: "connected" | "disconnected" | "error" | "pending";
+            if (!integration.isEnabled) {
+              status = "disconnected";
+            } else if (integration.healthStatus === "ERROR") {
+              status = "error";
+            } else if (integration.healthStatus === "UNKNOWN") {
+              status = "pending";
+            } else {
+              status = "connected";
+            }
+
+            const uptime =
+              integration.healthStatus === "DEGRADED"
+                ? 95
+                : integration.healthStatus === "ERROR"
+                  ? 0
+                  : 100;
+
+            return {
+              id: integration.appSlug,
+              providerId: integration.appSlug,
+              providerName: integration.app.name,
+              status,
+              lastSyncTime: integration.lastSyncAt?.toISOString(),
+              apiCallsCount: counts.api,
+              errorCount: counts.errors,
+              uptime,
+              category: integration.app.category.toLowerCase(),
+              icon: integration.app.logoUrl ?? integration.appSlug,
+            };
+          });
+
+        const total = allConnections.length;
+        const offset = (page - 1) * limit;
+        const connections = allConnections.slice(offset, offset + limit);
+
+        return reply.send({
+          data: connections,
+          meta: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+          },
+        });
+      } catch (err) {
+        throw err;
+      }
+    },
+  );
 
   // ── DELETE /connections/:connectionId — Disconnect by slug ──
 
@@ -654,7 +720,8 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
         const existing = await prisma.integration.findUnique({
           where: { shopId_appSlug: { shopId, appSlug: connectionId } },
         });
-        if (!existing) return reply.status(404).send({ error: "Integration not found" });
+        if (!existing)
+          return reply.status(404).send({ error: "Integration not found" });
 
         await prisma.integrationEvent.create({
           data: {
@@ -669,7 +736,9 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
           where: { shopId_appSlug: { shopId, appSlug: connectionId } },
         });
 
-        return reply.send({ message: `${connectionId} disconnected successfully` });
+        return reply.send({
+          message: `${connectionId} disconnected successfully`,
+        });
       } catch (err) {
         throw err;
       }
@@ -688,7 +757,8 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
         const existing = await prisma.integration.findUnique({
           where: { shopId_appSlug: { shopId, appSlug: connectionId } },
         });
-        if (!existing) return reply.status(404).send({ error: "Integration not found" });
+        if (!existing)
+          return reply.status(404).send({ error: "Integration not found" });
 
         await prisma.integration.update({
           where: { shopId_appSlug: { shopId, appSlug: connectionId } },
@@ -714,7 +784,8 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
         const existing = await prisma.integration.findUnique({
           where: { shopId_appSlug: { shopId, appSlug: connectionId } },
         });
-        if (!existing) return reply.status(404).send({ error: "Integration not found" });
+        if (!existing)
+          return reply.status(404).send({ error: "Integration not found" });
 
         await prisma.integration.update({
           where: { shopId_appSlug: { shopId, appSlug: connectionId } },
@@ -740,7 +811,8 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
         const existing = await prisma.integration.findUnique({
           where: { shopId_appSlug: { shopId, appSlug: connectionId } },
         });
-        if (!existing) return reply.status(404).send({ error: "Integration not found" });
+        if (!existing)
+          return reply.status(404).send({ error: "Integration not found" });
 
         await prisma.integration.update({
           where: { id: existing.id },
@@ -778,35 +850,76 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
         const integration = await prisma.integration.findUnique({
           where: { shopId_appSlug: { shopId, appSlug: slug } },
         });
-        if (!integration) return reply.status(404).send({ error: "Integration not found" });
+        if (!integration)
+          return reply.status(404).send({ error: "Integration not found" });
 
         const now = new Date();
-        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startOfToday = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+        );
         const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         const startOfMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
         const [apiToday, apiWeek, apiMonth, webhooksToday] = await Promise.all([
           prisma.integrationEvent.count({
-            where: { integrationId: integration.id, eventType: "METER", timestamp: { gte: startOfToday } },
+            where: {
+              integrationId: integration.id,
+              eventType: "METER",
+              timestamp: { gte: startOfToday },
+            },
           }),
           prisma.integrationEvent.count({
-            where: { integrationId: integration.id, eventType: "METER", timestamp: { gte: startOfWeek } },
+            where: {
+              integrationId: integration.id,
+              eventType: "METER",
+              timestamp: { gte: startOfWeek },
+            },
           }),
           prisma.integrationEvent.count({
-            where: { integrationId: integration.id, eventType: "METER", timestamp: { gte: startOfMonth } },
+            where: {
+              integrationId: integration.id,
+              eventType: "METER",
+              timestamp: { gte: startOfMonth },
+            },
           }),
           prisma.integrationEvent.count({
-            where: { integrationId: integration.id, eventType: "WEBHOOK", timestamp: { gte: startOfToday } },
+            where: {
+              integrationId: integration.id,
+              eventType: "WEBHOOK",
+              timestamp: { gte: startOfToday },
+            },
           }),
         ]);
 
         return reply.send({
           usage: [
-            { label: "API Calls", value: apiToday, unit: "calls", period: "today" },
-            { label: "API Calls", value: apiWeek, unit: "calls", period: "week" },
-            { label: "API Calls", value: apiMonth, unit: "calls", period: "month" },
+            {
+              label: "API Calls",
+              value: apiToday,
+              unit: "calls",
+              period: "today",
+            },
+            {
+              label: "API Calls",
+              value: apiWeek,
+              unit: "calls",
+              period: "week",
+            },
+            {
+              label: "API Calls",
+              value: apiMonth,
+              unit: "calls",
+              period: "month",
+            },
             { label: "Data Synced", value: 0, unit: "GB", period: "month" },
-            { label: "Webhooks", value: webhooksToday, unit: "events", period: "today" },
+            {
+              label: "Webhooks",
+              value: webhooksToday,
+              unit: "events",
+              period: "today",
+            },
           ],
         });
       } catch (err) {
@@ -835,7 +948,8 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
 
         const activity = events.map((event) => {
           const meta = event.metadata as Record<string, unknown>;
-          const isError = event.eventType === "HEALTH_CHECK" && meta?.healthy === false;
+          const isError =
+            event.eventType === "HEALTH_CHECK" && meta?.healthy === false;
           return {
             id: event.id,
             type: event.eventType.toLowerCase(),
@@ -934,7 +1048,11 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
       if (err instanceof ZodError) {
         return reply.status(422).send({
           success: false,
-          error: { code: "VALIDATION_ERROR", message: "Invalid query parameters", details: err.errors },
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Invalid query parameters",
+            details: err.errors,
+          },
         });
       }
       throw err;
@@ -959,7 +1077,9 @@ function describeEvent(
     case "UNINSTALL":
       return "Integration uninstalled";
     case "HEALTH_CHECK":
-      return meta?.healthy === false ? "Health check failed" : "Health check passed";
+      return meta?.healthy === false
+        ? "Health check failed"
+        : "Health check passed";
     case "METER":
       return `API call${operation ? ` — ${operation}` : ""}`;
     case "CONFIG_UPDATE":

@@ -86,8 +86,20 @@ describe("Users Routes", () => {
     it("should list users in shop", async () => {
       mockRequest.query = { page: 1, limit: 20 };
       const users = [
-        { id: "user-1", name: "Alice", email: "alice@shop.com", role: "SUPER_ADMIN", isActive: true },
-        { id: "user-2", name: "Bob", email: "bob@shop.com", role: "ADMIN", isActive: true },
+        {
+          id: "user-1",
+          name: "Alice",
+          email: "alice@shop.com",
+          role: "SUPER_ADMIN",
+          isActive: true,
+        },
+        {
+          id: "user-2",
+          name: "Bob",
+          email: "bob@shop.com",
+          role: "ADMIN",
+          isActive: true,
+        },
       ];
       prisma.user.findMany.mockResolvedValue(users);
       prisma.user.count.mockResolvedValue(2);
@@ -99,7 +111,9 @@ describe("Users Routes", () => {
     it("should require SUPER_ADMIN or ADMIN role", async () => {
       mockRequest.auth.role = "VIEWER";
 
-      const canAccess = ["SUPER_ADMIN", "ADMIN"].includes(mockRequest.auth.role);
+      const canAccess = ["SUPER_ADMIN", "ADMIN"].includes(
+        mockRequest.auth.role,
+      );
       expect(canAccess).toBe(false);
     });
 
@@ -164,7 +178,13 @@ describe("Users Routes", () => {
 
     it("should select safe fields only (no password)", async () => {
       prisma.user.findMany.mockResolvedValue([
-        { id: "user-1", name: "Alice", email: "alice@test.com", role: "ADMIN", lastLogin: null },
+        {
+          id: "user-1",
+          name: "Alice",
+          email: "alice@test.com",
+          role: "ADMIN",
+          lastLogin: null,
+        },
       ]);
 
       const user = (await prisma.user.findMany())[0];
@@ -197,7 +217,9 @@ describe("Users Routes", () => {
     it("should require SUPER_ADMIN or ADMIN role", async () => {
       mockRequest.auth.role = "DISPATCHER";
 
-      const canAccess = ["SUPER_ADMIN", "ADMIN"].includes(mockRequest.auth.role);
+      const canAccess = ["SUPER_ADMIN", "ADMIN"].includes(
+        mockRequest.auth.role,
+      );
       expect(canAccess).toBe(false);
     });
 
@@ -214,7 +236,9 @@ describe("Users Routes", () => {
       mockRequest.params = { id: "nonexistent" };
       prisma.user.findFirst.mockResolvedValue(null);
 
-      const user = await prisma.user.findFirst({ where: { id: "nonexistent" } });
+      const user = await prisma.user.findFirst({
+        where: { id: "nonexistent" },
+      });
       expect(user).toBeNull();
     });
 
@@ -262,7 +286,9 @@ describe("Users Routes", () => {
     it("should require SUPER_ADMIN or ADMIN role", async () => {
       mockRequest.auth.role = "VIEWER";
 
-      const canCreate = ["SUPER_ADMIN", "ADMIN"].includes(mockRequest.auth.role);
+      const canCreate = ["SUPER_ADMIN", "ADMIN"].includes(
+        mockRequest.auth.role,
+      );
       expect(canCreate).toBe(false);
     });
 
@@ -293,9 +319,14 @@ describe("Users Routes", () => {
 
     it("should validate email uniqueness within shop", async () => {
       mockRequest.body = { email: "alice@shop.com" };
-      prisma.user.findUnique.mockResolvedValue({ id: "user-1", email: "alice@shop.com" });
+      prisma.user.findUnique.mockResolvedValue({
+        id: "user-1",
+        email: "alice@shop.com",
+      });
 
-      const existing = await prisma.user.findUnique({ where: { shopId_email: {} as any } });
+      const existing = await prisma.user.findUnique({
+        where: { shopId_email: {} as any },
+      });
       expect(existing).not.toBeNull();
     });
 
@@ -331,7 +362,10 @@ describe("Users Routes", () => {
 
     it("should auto-add user to org MEMBER role if shop belongs to org", async () => {
       mockRequest.auth.shopId = "shop-123";
-      prisma.shop.findUnique.mockResolvedValue({ id: "shop-123", orgId: "org-456" });
+      prisma.shop.findUnique.mockResolvedValue({
+        id: "shop-123",
+        orgId: "org-456",
+      });
       prisma.orgMember.create.mockResolvedValue({
         orgId: "org-456",
         userId: "user-new",
@@ -365,7 +399,9 @@ describe("Users Routes", () => {
     it("should validate email format", async () => {
       mockRequest.body = { email: "invalid-email" };
 
-      const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mockRequest.body.email as string);
+      const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        mockRequest.body.email as string,
+      );
       expect(isValidEmail).toBe(false);
     });
 
@@ -373,7 +409,9 @@ describe("Users Routes", () => {
       mockRequest.body = { password: "short" };
 
       const minLength = 8;
-      expect((mockRequest.body.password as string).length).toBeLessThan(minLength);
+      expect((mockRequest.body.password as string).length).toBeLessThan(
+        minLength,
+      );
     });
 
     it("should validate name is not empty", async () => {
@@ -388,8 +426,17 @@ describe("Users Routes", () => {
     it("should update user name", async () => {
       mockRequest.params = { id: "user-123" };
       mockRequest.body = { name: "New Name" };
-      const user = { id: "user-123", name: "New Name", role: "ADMIN", isActive: true };
-      prisma.user.findFirst.mockResolvedValue({ id: "user-123", role: "ADMIN", isActive: true });
+      const user = {
+        id: "user-123",
+        name: "New Name",
+        role: "ADMIN",
+        isActive: true,
+      };
+      prisma.user.findFirst.mockResolvedValue({
+        id: "user-123",
+        role: "ADMIN",
+        isActive: true,
+      });
       prisma.user.update.mockResolvedValue(user);
 
       expect(user.name).toBe("New Name");
@@ -398,7 +445,10 @@ describe("Users Routes", () => {
     it("should update user email", async () => {
       mockRequest.params = { id: "user-123" };
       mockRequest.body = { email: "newemail@shop.com" };
-      prisma.user.findFirst.mockResolvedValue({ id: "user-123", role: "ADMIN" });
+      prisma.user.findFirst.mockResolvedValue({
+        id: "user-123",
+        role: "ADMIN",
+      });
       prisma.user.findUnique.mockResolvedValue(null);
       prisma.user.update.mockResolvedValue({ email: "newemail@shop.com" });
 
@@ -409,7 +459,10 @@ describe("Users Routes", () => {
       mockRequest.params = { id: "user-123" };
       mockRequest.body = { role: "DISPATCHER" };
       mockRequest.auth.role = "ADMIN";
-      prisma.user.findFirst.mockResolvedValue({ id: "user-123", role: "VIEWER" });
+      prisma.user.findFirst.mockResolvedValue({
+        id: "user-123",
+        role: "VIEWER",
+      });
 
       const roleHierarchy = {
         SUPER_ADMIN: 4,
@@ -419,7 +472,8 @@ describe("Users Routes", () => {
       };
 
       const canManage =
-        roleHierarchy[mockRequest.auth.role] >= roleHierarchy[mockRequest.body.role as string];
+        roleHierarchy[mockRequest.auth.role] >=
+        roleHierarchy[mockRequest.body.role as string];
       expect(canManage).toBe(true);
     });
 
@@ -435,7 +489,8 @@ describe("Users Routes", () => {
       };
 
       const canManage =
-        roleHierarchy[mockRequest.auth.role] >= roleHierarchy[mockRequest.body.role as string];
+        roleHierarchy[mockRequest.auth.role] >=
+        roleHierarchy[mockRequest.body.role as string];
       expect(canManage).toBe(false);
     });
 
@@ -451,7 +506,10 @@ describe("Users Routes", () => {
       mockRequest.params = { id: "user-123" };
       mockRequest.body = { isActive: false };
       mockRequest.auth.role = "SUPER_ADMIN";
-      prisma.user.findFirst.mockResolvedValue({ id: "user-123", role: "SUPER_ADMIN" });
+      prisma.user.findFirst.mockResolvedValue({
+        id: "user-123",
+        role: "SUPER_ADMIN",
+      });
       prisma.user.count.mockResolvedValue(0);
 
       expect(prisma.user.count).toBeDefined();
@@ -461,7 +519,10 @@ describe("Users Routes", () => {
       mockRequest.auth.role = "ADMIN";
       mockRequest.params = { id: "user-123" };
       mockRequest.body = { role: "DISPATCHER" };
-      prisma.user.findFirst.mockResolvedValue({ id: "user-123", role: "SUPER_ADMIN" });
+      prisma.user.findFirst.mockResolvedValue({
+        id: "user-123",
+        role: "SUPER_ADMIN",
+      });
 
       const roleHierarchy = {
         SUPER_ADMIN: 4,
@@ -478,8 +539,14 @@ describe("Users Routes", () => {
     it("should validate email uniqueness on update", async () => {
       mockRequest.params = { id: "user-123" };
       mockRequest.body = { email: "taken@shop.com" };
-      prisma.user.findFirst.mockResolvedValue({ id: "user-123", role: "ADMIN" });
-      prisma.user.findUnique.mockResolvedValue({ id: "user-999", email: "taken@shop.com" });
+      prisma.user.findFirst.mockResolvedValue({
+        id: "user-123",
+        role: "ADMIN",
+      });
+      prisma.user.findUnique.mockResolvedValue({
+        id: "user-999",
+        email: "taken@shop.com",
+      });
 
       expect(prisma.user.findUnique).toBeDefined();
     });
@@ -489,7 +556,9 @@ describe("Users Routes", () => {
       mockRequest.body = { name: "New" };
       prisma.user.findFirst.mockResolvedValue(null);
 
-      const user = await prisma.user.findFirst({ where: { id: "nonexistent" } });
+      const user = await prisma.user.findFirst({
+        where: { id: "nonexistent" },
+      });
       expect(user).toBeNull();
     });
 
@@ -506,7 +575,10 @@ describe("Users Routes", () => {
     it("should allow user to change own password", async () => {
       mockRequest.params = { id: "user-123" };
       mockRequest.auth.userId = "user-123";
-      mockRequest.body = { password: "newpass123", currentPassword: "oldpass123" };
+      mockRequest.body = {
+        password: "newpass123",
+        currentPassword: "oldpass123",
+      };
 
       const isSelf = mockRequest.params.id === mockRequest.auth.userId;
       expect(isSelf).toBe(true);
@@ -527,7 +599,9 @@ describe("Users Routes", () => {
       mockRequest.params = { id: "user-2" };
 
       const isSelf = mockRequest.params.id === mockRequest.auth.userId;
-      const isAdmin = mockRequest.auth.role === "SUPER_ADMIN" || mockRequest.auth.role === "ADMIN";
+      const isAdmin =
+        mockRequest.auth.role === "SUPER_ADMIN" ||
+        mockRequest.auth.role === "ADMIN";
 
       expect(!isSelf && !isAdmin).toBe(true);
     });
@@ -546,9 +620,13 @@ describe("Users Routes", () => {
     it("should verify current password before allowing change", async () => {
       mockRequest.params = { id: "user-123" };
       mockRequest.auth.userId = "user-123";
-      mockRequest.body = { password: "newpass123", currentPassword: "wrongpass" };
+      mockRequest.body = {
+        password: "newpass123",
+        currentPassword: "wrongpass",
+      };
 
-      const passwordCorrect = mockRequest.body.currentPassword === "correctpass";
+      const passwordCorrect =
+        mockRequest.body.currentPassword === "correctpass";
       expect(passwordCorrect).toBe(false);
     });
 
@@ -557,7 +635,9 @@ describe("Users Routes", () => {
       mockRequest.params = { id: "other-user" };
       mockRequest.body = { password: "resetpass123" };
 
-      const isAdmin = mockRequest.auth.role === "SUPER_ADMIN" || mockRequest.auth.role === "ADMIN";
+      const isAdmin =
+        mockRequest.auth.role === "SUPER_ADMIN" ||
+        mockRequest.auth.role === "ADMIN";
       expect(isAdmin).toBe(true);
     });
 
@@ -566,14 +646,18 @@ describe("Users Routes", () => {
       mockRequest.auth.userId = "user-123";
       mockRequest.body = { password: "newpass123" };
 
-      expect((mockRequest.body.password as string).length).toBeGreaterThanOrEqual(8);
+      expect(
+        (mockRequest.body.password as string).length,
+      ).toBeGreaterThanOrEqual(8);
     });
 
     it("should return 404 for non-existent user", async () => {
       mockRequest.params = { id: "nonexistent" };
       prisma.user.findFirst.mockResolvedValue(null);
 
-      const user = await prisma.user.findFirst({ where: { id: "nonexistent" } });
+      const user = await prisma.user.findFirst({
+        where: { id: "nonexistent" },
+      });
       expect(user).toBeNull();
     });
 
@@ -582,7 +666,9 @@ describe("Users Routes", () => {
       mockRequest.params = { id: "user-123" };
       mockRequest.body = { password: "newpass123" };
 
-      const isAdmin = mockRequest.auth.role === "SUPER_ADMIN" || mockRequest.auth.role === "ADMIN";
+      const isAdmin =
+        mockRequest.auth.role === "SUPER_ADMIN" ||
+        mockRequest.auth.role === "ADMIN";
       expect(isAdmin).toBe(false);
     });
 
@@ -590,13 +676,18 @@ describe("Users Routes", () => {
       mockRequest.body = { password: "short" };
 
       const minLength = 8;
-      expect((mockRequest.body.password as string).length).toBeLessThan(minLength);
+      expect((mockRequest.body.password as string).length).toBeLessThan(
+        minLength,
+      );
     });
 
     it("should prevent admin changing higher-role user password", async () => {
       mockRequest.auth.role = "ADMIN";
       mockRequest.params = { id: "super-admin-user" };
-      prisma.user.findFirst.mockResolvedValue({ id: "super-admin-user", role: "SUPER_ADMIN" });
+      prisma.user.findFirst.mockResolvedValue({
+        id: "super-admin-user",
+        role: "SUPER_ADMIN",
+      });
 
       const roleHierarchy = {
         SUPER_ADMIN: 4,
@@ -615,7 +706,11 @@ describe("Users Routes", () => {
     it("should deactivate user (soft delete)", async () => {
       mockRequest.params = { id: "user-456" };
       mockRequest.auth.role = "SUPER_ADMIN";
-      prisma.user.findFirst.mockResolvedValue({ id: "user-456", role: "ADMIN", isActive: true });
+      prisma.user.findFirst.mockResolvedValue({
+        id: "user-456",
+        role: "ADMIN",
+        isActive: true,
+      });
       prisma.user.update.mockResolvedValue({ id: "user-456", isActive: false });
 
       expect(mockRequest.params.id).toBe("user-456");
@@ -624,7 +719,9 @@ describe("Users Routes", () => {
     it("should require SUPER_ADMIN or ADMIN role", async () => {
       mockRequest.auth.role = "VIEWER";
 
-      const canDelete = ["SUPER_ADMIN", "ADMIN"].includes(mockRequest.auth.role);
+      const canDelete = ["SUPER_ADMIN", "ADMIN"].includes(
+        mockRequest.auth.role,
+      );
       expect(canDelete).toBe(false);
     });
 
@@ -639,7 +736,10 @@ describe("Users Routes", () => {
     it("should prevent deactivating higher-role users", async () => {
       mockRequest.auth.role = "ADMIN";
       mockRequest.params = { id: "super-user" };
-      prisma.user.findFirst.mockResolvedValue({ id: "super-user", role: "SUPER_ADMIN" });
+      prisma.user.findFirst.mockResolvedValue({
+        id: "super-user",
+        role: "SUPER_ADMIN",
+      });
 
       const roleHierarchy = {
         SUPER_ADMIN: 4,
@@ -656,7 +756,10 @@ describe("Users Routes", () => {
     it("should prevent deactivating last SUPER_ADMIN", async () => {
       mockRequest.params = { id: "last-super-admin" };
       mockRequest.auth.role = "SUPER_ADMIN";
-      prisma.user.findFirst.mockResolvedValue({ id: "last-super-admin", role: "SUPER_ADMIN" });
+      prisma.user.findFirst.mockResolvedValue({
+        id: "last-super-admin",
+        role: "SUPER_ADMIN",
+      });
       prisma.user.count.mockResolvedValue(0);
 
       expect(prisma.user.count).toBeDefined();
@@ -666,13 +769,18 @@ describe("Users Routes", () => {
       mockRequest.params = { id: "nonexistent" };
       prisma.user.findFirst.mockResolvedValue(null);
 
-      const user = await prisma.user.findFirst({ where: { id: "nonexistent" } });
+      const user = await prisma.user.findFirst({
+        where: { id: "nonexistent" },
+      });
       expect(user).toBeNull();
     });
 
     it("should preserve audit trail via soft delete", async () => {
       mockRequest.params = { id: "user-789" };
-      prisma.user.findFirst.mockResolvedValue({ id: "user-789", role: "ADMIN" });
+      prisma.user.findFirst.mockResolvedValue({
+        id: "user-789",
+        role: "ADMIN",
+      });
       prisma.user.update.mockResolvedValue({ id: "user-789", isActive: false });
 
       expect(mockRequest.params.id).toBeDefined();
@@ -682,7 +790,9 @@ describe("Users Routes", () => {
       mockRequest.params = { id: "user-789" };
       prisma.user.update.mockResolvedValue({ id: "user-789" });
 
-      const response = { data: { message: "User deactivated", userId: "user-789" } };
+      const response = {
+        data: { message: "User deactivated", userId: "user-789" },
+      };
       expect(response.data.message).toBe("User deactivated");
     });
 
@@ -760,7 +870,9 @@ describe("Users Routes", () => {
       mockRequest.auth.userId = "deleted-user";
       prisma.user.findUnique.mockResolvedValue(null);
 
-      const user = await prisma.user.findUnique({ where: { id: "deleted-user" } });
+      const user = await prisma.user.findUnique({
+        where: { id: "deleted-user" },
+      });
       expect(user).toBeNull();
     });
 
@@ -789,7 +901,9 @@ describe("Users Routes", () => {
     it("should return 403 for insufficient permissions", async () => {
       mockRequest.auth.role = "VIEWER";
 
-      const canAccess = ["SUPER_ADMIN", "ADMIN"].includes(mockRequest.auth.role);
+      const canAccess = ["SUPER_ADMIN", "ADMIN"].includes(
+        mockRequest.auth.role,
+      );
       expect(canAccess).toBe(false);
     });
 
@@ -819,7 +933,9 @@ describe("Users Routes", () => {
     it("should return 500 for database errors", async () => {
       prisma.user.findMany.mockRejectedValue(new Error("DB connection lost"));
 
-      await expect(prisma.user.findMany()).rejects.toThrow("DB connection lost");
+      await expect(prisma.user.findMany()).rejects.toThrow(
+        "DB connection lost",
+      );
     });
   });
 
@@ -840,9 +956,12 @@ describe("Users Routes", () => {
     it("should allow SUPER_ADMIN to manage all roles", async () => {
       mockRequest.auth.role = "SUPER_ADMIN";
 
-      const canManageAll = ["SUPER_ADMIN", "ADMIN", "DISPATCHER", "VIEWER"].every(
-        (role) => mockRequest.auth.role === "SUPER_ADMIN",
-      );
+      const canManageAll = [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "DISPATCHER",
+        "VIEWER",
+      ].every((role) => mockRequest.auth.role === "SUPER_ADMIN");
 
       expect(canManageAll).toBe(true);
     });
@@ -857,7 +976,9 @@ describe("Users Routes", () => {
     it("should prevent DISPATCHER from creating users", async () => {
       mockRequest.auth.role = "DISPATCHER";
 
-      const canCreate = ["SUPER_ADMIN", "ADMIN"].includes(mockRequest.auth.role);
+      const canCreate = ["SUPER_ADMIN", "ADMIN"].includes(
+        mockRequest.auth.role,
+      );
       expect(canCreate).toBe(false);
     });
   });

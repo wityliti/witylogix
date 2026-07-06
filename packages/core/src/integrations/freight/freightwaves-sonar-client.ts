@@ -52,11 +52,7 @@ export class FreightWavesSONARClient extends EventEmitter {
   /**
    * Initialize FreightWaves SONAR client
    */
-  constructor(config: {
-    apiKey: string;
-    baseUrl?: string;
-    debug?: boolean;
-  }) {
+  constructor(config: { apiKey: string; baseUrl?: string; debug?: boolean }) {
     super();
     this.apiKey = config.apiKey;
     this.baseUrl = config.baseUrl || "https://api.freightwaves.com/sonar";
@@ -75,7 +71,7 @@ export class FreightWavesSONARClient extends EventEmitter {
       query?: Record<string, string | number | boolean>;
       timeout?: number;
       cacheMinutes?: number;
-    } = {}
+    } = {},
   ): Promise<T> {
     const url = new URL(`${this.baseUrl}${endpoint}`);
 

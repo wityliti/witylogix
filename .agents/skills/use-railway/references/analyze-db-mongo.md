@@ -6,6 +6,7 @@ For common analysis patterns (output structure, collection status handling, perf
 ### What the Script Collects
 
 **Via SSH (mongosh):**
+
 - **Server Status:** version, storage engine, uptime, connections, opcounters, latency, memory, network, WiredTiger cache/checkpoint/tickets, global lock queues, document operations, query efficiency, cursors, TTL, asserts
 - **DB Stats:** dataSize, storageSize, indexSize, object count, collection count
 - **Collection Stats:** per-collection document count, size, storage size, index size, index count
@@ -19,36 +20,40 @@ For common analysis patterns (output structure, collection status handling, perf
 ### MongoDB Performance Patterns
 
 **WiredTiger Cache Pressure Pattern:**
+
 - Cache usage > 80% + app thread evictions > 0 = cache too small for working set
 - Dirty cache > 20% of total = checkpoint falling behind, writes accumulating
 - Read/write tickets depleted = operations queueing at storage engine level
 - Fix: increase service RAM (WiredTiger uses ~50% of available RAM for cache)
 
 **Query Efficiency Pattern:**
+
 - `scannedObjects >> docsReturned` = collection scans, missing indexes
 - Plan cache misses >> hits = frequent query re-planning, add indexes
 - Sort spill to disk > 0 = sorts exceeding 100MB memory limit, needs index
 
 **Connection Saturation Pattern:**
+
 - `connectionsCurrent` approaching `connectionsAvailable` = connection pool exhaustion
 - Many active ops with high microsecs_running = slow queries holding connections
 - Queued readers/writers > 0 = global lock contention
 
 **Oplog Pressure Pattern:**
+
 - Oplog usage > 80% = replication window shrinking
 - High write rate + small oplog = replicas may fall out of sync
 - timeDiffHours < 1 on busy systems = risk of replica resync
 
 ### MongoDB Thresholds
 
-| Metric | Healthy | Warning | Critical |
-|--------|---------|---------|----------|
-| WT cache usage | <70% | 70-85% | >85% |
-| WT dirty % | <5% | 5-20% | >20% |
-| App thread evictions | 0 | 1-100 | >100 |
-| Connection usage | <70% | 70-85% | >85% |
-| Queued operations | 0 | 1-10 | >10 |
-| Scan-to-return ratio | <2x | 2-10x | >10x |
+| Metric               | Healthy | Warning | Critical |
+| -------------------- | ------- | ------- | -------- |
+| WT cache usage       | <70%    | 70-85%  | >85%     |
+| WT dirty %           | <5%     | 5-20%   | >20%     |
+| App thread evictions | 0       | 1-100   | >100     |
+| Connection usage     | <70%    | 70-85%  | >85%     |
+| Queued operations    | 0       | 1-10    | >10      |
+| Scan-to-return ratio | <2x     | 2-10x   | >10x     |
 
 ## Infrastructure (7d + 24h)
 
@@ -75,6 +80,7 @@ Do NOT show cpu_limit/memory_limit columns or utilization %. Railway auto-scales
 ## MongoDB Autoscale Note
 
 See [analyze-db.md](analyze-db.md) for full autoscale rules. For MongoDB specifically:
+
 - WiredTiger uses ~50% of available RAM for cache by default. As Railway auto-scales the container, the cache ceiling grows automatically.
 - Do NOT recommend limiting WiredTiger cache to a fraction of the Railway memory limit — the limit is the autoscale ceiling, not fixed allocation.
 - If cache usage is consistently >80%, this indicates working set pressure — note it but do not tell the user to increase RAM manually.

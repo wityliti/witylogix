@@ -11,7 +11,7 @@ import {
   RedisLike,
   GetOrSetOptions,
   BatchGetResult,
-} from './types';
+} from "./types";
 
 /**
  * CacheClient - Main cache operations wrapper
@@ -90,7 +90,7 @@ export class CacheClient {
     key: string,
     value: T,
     ttl?: number,
-    tags?: string[]
+    tags?: string[],
   ): Promise<void> {
     try {
       const prefixedKey = this.prefixKey(key);
@@ -104,7 +104,7 @@ export class CacheClient {
       };
 
       const serialized = JSON.stringify(entry);
-      await this.redis.set(prefixedKey, serialized, 'EX', finalTtl);
+      await this.redis.set(prefixedKey, serialized, "EX", finalTtl);
 
       // Track tags for invalidation
       if (tags && tags.length > 0) {
@@ -152,13 +152,16 @@ export class CacheClient {
       const deleted = await this.redis.del(...keys);
       this.emitInvalidation({
         pattern,
-        reason: 'Pattern-based invalidation',
+        reason: "Pattern-based invalidation",
         timestamp: Date.now(),
       });
 
       return deleted;
     } catch (error) {
-      console.error(`Cache deleteByPattern error for pattern ${pattern}:`, error);
+      console.error(
+        `Cache deleteByPattern error for pattern ${pattern}:`,
+        error,
+      );
       return 0;
     }
   }
@@ -183,7 +186,7 @@ export class CacheClient {
 
       this.emitInvalidation({
         tags: [tag],
-        reason: 'Tag-based invalidation',
+        reason: "Tag-based invalidation",
         timestamp: Date.now(),
       });
 
@@ -236,7 +239,7 @@ export class CacheClient {
   async getOrSet<T = any>(
     key: string,
     factory: () => Promise<T>,
-    options?: GetOrSetOptions
+    options?: GetOrSetOptions,
   ): Promise<T> {
     try {
       // Try to get from cache
@@ -329,7 +332,7 @@ export class CacheClient {
       const total = this.stats.hits + this.stats.misses;
       const hitRate = total > 0 ? (this.stats.hits / total) * 100 : 0;
 
-      const prefixPattern = this.prefixKey('*');
+      const prefixPattern = this.prefixKey("*");
       const keys = await this.redis.keys(prefixPattern);
 
       const stats: CacheStats = {
@@ -343,7 +346,7 @@ export class CacheClient {
 
       return stats;
     } catch (error) {
-      console.error('Cache getStats error:', error);
+      console.error("Cache getStats error:", error);
       return this.stats;
     }
   }
@@ -353,7 +356,7 @@ export class CacheClient {
    */
   async flush(): Promise<void> {
     try {
-      const prefixPattern = this.prefixKey('*');
+      const prefixPattern = this.prefixKey("*");
       const keys = await this.redis.keys(prefixPattern);
 
       if (keys.length > 0) {
@@ -371,11 +374,11 @@ export class CacheClient {
       };
 
       this.emitInvalidation({
-        reason: 'Cache flush',
+        reason: "Cache flush",
         timestamp: Date.now(),
       });
     } catch (error) {
-      console.error('Cache flush error:', error);
+      console.error("Cache flush error:", error);
       throw error;
     }
   }
@@ -404,7 +407,7 @@ export class CacheClient {
       try {
         listener(event);
       } catch (error) {
-        console.error('Invalidation listener error:', error);
+        console.error("Invalidation listener error:", error);
       }
     });
   }

@@ -54,21 +54,25 @@ const MagentoOrderSchema = z.object({
       qty_ordered: z.number(),
       price: z.number(),
       row_total: z.number(),
-    })
+    }),
   ),
-  billing_address: z.object({
-    firstname: z.string(),
-    lastname: z.string(),
-    street: z.array(z.string()).optional(),
-    city: z.string(),
-    postcode: z.string(),
-    country_id: z.string(),
-    email: z.string().optional(),
-    telephone: z.string().optional(),
-  }).optional(),
-  payment: z.object({
-    method: z.string(),
-  }).optional(),
+  billing_address: z
+    .object({
+      firstname: z.string(),
+      lastname: z.string(),
+      street: z.array(z.string()).optional(),
+      city: z.string(),
+      postcode: z.string(),
+      country_id: z.string(),
+      email: z.string().optional(),
+      telephone: z.string().optional(),
+    })
+    .optional(),
+  payment: z
+    .object({
+      method: z.string(),
+    })
+    .optional(),
 });
 
 /**
@@ -83,14 +87,18 @@ const MagentoProductSchema = z.object({
   status: z.number(),
   created_at: z.string(),
   updated_at: z.string(),
-  extension_attributes: z.object({
-    website_ids: z.array(z.number()).optional(),
-    stock_item: z.object({
-      qty: z.number(),
-      is_in_stock: z.boolean(),
-    }).optional(),
-    configurable_product_links: z.array(z.number()).optional(),
-  }).optional(),
+  extension_attributes: z
+    .object({
+      website_ids: z.array(z.number()).optional(),
+      stock_item: z
+        .object({
+          qty: z.number(),
+          is_in_stock: z.boolean(),
+        })
+        .optional(),
+      configurable_product_links: z.array(z.number()).optional(),
+    })
+    .optional(),
 });
 
 /**
@@ -106,15 +114,19 @@ const MagentoCustomerSchema = z.object({
   website_id: z.number(),
   created_at: z.string(),
   updated_at: z.string(),
-  addresses: z.array(z.object({
-    firstname: z.string(),
-    lastname: z.string(),
-    street: z.array(z.string()).optional(),
-    city: z.string(),
-    postcode: z.string(),
-    country_id: z.string(),
-    telephone: z.string().optional(),
-  })).optional(),
+  addresses: z
+    .array(
+      z.object({
+        firstname: z.string(),
+        lastname: z.string(),
+        street: z.array(z.string()).optional(),
+        city: z.string(),
+        postcode: z.string(),
+        country_id: z.string(),
+        telephone: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 
 // ─── Helpers ─────────────────────────────────────────────
@@ -130,9 +142,10 @@ const MagentoCustomerSchema = z.object({
 function validateMagentoSignature(
   rawBody: string | Buffer,
   signature: string,
-  secret: string
+  secret: string,
 ): boolean {
-  const bodyString = typeof rawBody === "string" ? rawBody : rawBody.toString("utf-8");
+  const bodyString =
+    typeof rawBody === "string" ? rawBody : rawBody.toString("utf-8");
 
   const computed = crypto
     .createHmac("sha256", secret)
@@ -154,7 +167,7 @@ function validateMagentoSignature(
  */
 async function findShopByWebhookSource(
   db: any,
-  integrationSecret: string
+  integrationSecret: string,
 ): Promise<any> {
   // Try to match by Magento integration secret
   return db.shop.findFirst({
@@ -171,9 +184,7 @@ async function findShopByWebhookSource(
  * Parse Magento webhook topic to determine event type
  * Format: resource_action (e.g., "sales_order_save_after", "catalog_product_save_after")
  */
-function parseWebhookTopic(
-  topic: string
-): {
+function parseWebhookTopic(topic: string): {
   resource: "order" | "product" | "customer";
   action: string;
 } | null {
@@ -195,7 +206,7 @@ function parseWebhookTopic(
 // ─── Route Plugin ────────────────────────────────────────
 
 export default async function magentoWebhookRoutes(
-  fastify: FastifyInstance
+  fastify: FastifyInstance,
 ): Promise<void> {
   const adapter = new MagentoAdapter();
 
@@ -216,7 +227,7 @@ export default async function magentoWebhookRoutes(
         // Validate required headers
         if (!signature || !topic) {
           fastify.log.warn(
-            "Magento webhook missing required headers (signature, topic)"
+            "Magento webhook missing required headers (signature, topic)",
           );
           return reply.code(200).send({ success: true }); // Return 200 to stop retries
         }
@@ -226,14 +237,18 @@ export default async function magentoWebhookRoutes(
 
         // For Magento, we use the signature itself to look up the integration
         // In production, you'd extract the integration ID from the payload or headers
-        const integrationSecret = (request.body as any)?._integration_secret || signature;
+        const integrationSecret =
+          (request.body as any)?._integration_secret || signature;
 
         // Lookup shop to get webhook secret
-        const shop = await findShopByWebhookSource((fastify as any).db, integrationSecret);
+        const shop = await findShopByWebhookSource(
+          (fastify as any).db,
+          integrationSecret,
+        );
         if (!shop || !shop.magentoIntegrationSecret) {
           fastify.log.warn(
             { topic },
-            "Magento webhook from unknown shop or missing integration secret"
+            "Magento webhook from unknown shop or missing integration secret",
           );
           return reply.code(200).send({ success: true });
         }
@@ -242,13 +257,13 @@ export default async function magentoWebhookRoutes(
         const isValid = adapter.validateWebhook(
           rawBody,
           signature,
-          shop.magentoIntegrationSecret
+          shop.magentoIntegrationSecret,
         );
 
         if (!isValid) {
           fastify.log.warn(
             { topic },
-            "Magento webhook signature validation failed"
+            "Magento webhook signature validation failed",
           );
           return reply.code(200).send({ success: true }); // Return 200 to avoid retries for bad signatures
         }
@@ -269,7 +284,7 @@ export default async function magentoWebhookRoutes(
             topic,
             shop.id,
             action,
-            fastify
+            fastify,
           );
         } else if (resource === "product") {
           await handleProductWebhook(
@@ -277,7 +292,7 @@ export default async function magentoWebhookRoutes(
             topic,
             shop.id,
             action,
-            fastify
+            fastify,
           );
         } else if (resource === "customer") {
           await handleCustomerWebhook(
@@ -285,25 +300,22 @@ export default async function magentoWebhookRoutes(
             topic,
             shop.id,
             action,
-            fastify
+            fastify,
           );
         }
 
         fastify.log.info(
           { shopId: shop.id, topic, resource, action },
-          "Magento webhook enqueued"
+          "Magento webhook enqueued",
         );
 
         return reply.code(200).send({ success: true });
       } catch (error) {
-        fastify.log.error(
-          error,
-          "Error processing Magento webhook"
-        );
+        fastify.log.error(error, "Error processing Magento webhook");
         // Always return 200 to prevent webhook retries
         return reply.code(200).send({ success: true });
       }
-    }
+    },
   );
 }
 
@@ -315,7 +327,7 @@ async function handleOrderWebhook(
   topic: string,
   shopId: string,
   action: string,
-  fastify: any
+  fastify: any,
 ): Promise<void> {
   try {
     // Validate payload structure
@@ -351,7 +363,7 @@ async function handleOrderWebhook(
   } catch (error) {
     fastify.log.error(
       error,
-      `Failed to process Magento order webhook: ${topic}`
+      `Failed to process Magento order webhook: ${topic}`,
     );
     throw error;
   }
@@ -365,7 +377,7 @@ async function handleProductWebhook(
   topic: string,
   shopId: string,
   action: string,
-  fastify: any
+  fastify: any,
 ): Promise<void> {
   try {
     // Validate payload structure
@@ -397,7 +409,7 @@ async function handleProductWebhook(
   } catch (error) {
     fastify.log.error(
       error,
-      `Failed to process Magento product webhook: ${topic}`
+      `Failed to process Magento product webhook: ${topic}`,
     );
     throw error;
   }
@@ -411,7 +423,7 @@ async function handleCustomerWebhook(
   topic: string,
   shopId: string,
   action: string,
-  fastify: any
+  fastify: any,
 ): Promise<void> {
   try {
     // Validate payload structure
@@ -424,7 +436,9 @@ async function handleCustomerWebhook(
     // Enqueue for async processing
     const queue = (fastify as any).queue;
     if (!queue) {
-      fastify.log.warn("Queue not initialized, cannot process customer webhook");
+      fastify.log.warn(
+        "Queue not initialized, cannot process customer webhook",
+      );
       return;
     }
 
@@ -441,7 +455,7 @@ async function handleCustomerWebhook(
   } catch (error) {
     fastify.log.error(
       error,
-      `Failed to process Magento customer webhook: ${topic}`
+      `Failed to process Magento customer webhook: ${topic}`,
     );
     throw error;
   }

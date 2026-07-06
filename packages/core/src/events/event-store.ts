@@ -15,7 +15,7 @@ import {
   EventStoreQueryOptions,
   EventStoreQueryResult,
   EventBusError,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Event Store Interface
@@ -64,13 +64,11 @@ export interface IEventStore {
   /**
    * Replay events in order (for event sourcing)
    */
-  replay(
-    opts: {
-      fromTimestamp?: Date;
-      toTimestamp?: Date;
-      batchSize?: number;
-    },
-  ): AsyncIterator<BaseEvent>;
+  replay(opts: {
+    fromTimestamp?: Date;
+    toTimestamp?: Date;
+    batchSize?: number;
+  }): AsyncIterator<BaseEvent>;
 
   /**
    * Get event by ID
@@ -133,9 +131,7 @@ export class InMemoryEventStore implements IEventStore {
     }
 
     if (filter.correlationId) {
-      results = results.filter(
-        (e) => e.correlationId === filter.correlationId,
-      );
+      results = results.filter((e) => e.correlationId === filter.correlationId);
     }
 
     if (filter.startTime) {
@@ -158,11 +154,11 @@ export class InMemoryEventStore implements IEventStore {
     }
 
     // Sort
-    const sortOrder = opts.sortOrder || 'desc';
+    const sortOrder = opts.sortOrder || "desc";
     results.sort((a, b) => {
       const aTime = new Date(a.timestamp).getTime();
       const bTime = new Date(b.timestamp).getTime();
-      return sortOrder === 'asc' ? aTime - bTime : bTime - aTime;
+      return sortOrder === "asc" ? aTime - bTime : bTime - aTime;
     });
 
     // Paginate
@@ -183,9 +179,7 @@ export class InMemoryEventStore implements IEventStore {
     correlationId: string,
     opts?: { limit?: number; offset?: number },
   ): Promise<BaseEvent[]> {
-    let results = this.events.filter(
-      (e) => e.correlationId === correlationId,
-    );
+    let results = this.events.filter((e) => e.correlationId === correlationId);
 
     const offset = opts?.offset || 0;
     const limit = opts?.limit || 100;
@@ -220,11 +214,15 @@ export class InMemoryEventStore implements IEventStore {
     let results = [...this.events];
 
     if (opts.fromTimestamp) {
-      results = results.filter((e) => new Date(e.timestamp) >= opts.fromTimestamp!);
+      results = results.filter(
+        (e) => new Date(e.timestamp) >= opts.fromTimestamp!,
+      );
     }
 
     if (opts.toTimestamp) {
-      results = results.filter((e) => new Date(e.timestamp) <= opts.toTimestamp!);
+      results = results.filter(
+        (e) => new Date(e.timestamp) <= opts.toTimestamp!,
+      );
     }
 
     results.sort(
@@ -325,9 +323,7 @@ export class InMemoryEventStore implements IEventStore {
    */
   private patternMatch(eventType: string, pattern: string): boolean {
     const regex = new RegExp(
-      `^${pattern
-        .replace(/\./g, '\\.')
-        .replace(/\*/g, '.*')}$`,
+      `^${pattern.replace(/\./g, "\\.").replace(/\*/g, ".*")}$`,
     );
     return regex.test(eventType);
   }
@@ -349,13 +345,13 @@ export class EventStoreFactory {
   /**
    * Get or create a store
    */
-  static get(name: string = 'memory'): IEventStore {
+  static get(name: string = "memory"): IEventStore {
     if (!this.stores.has(name)) {
-      if (name === 'memory') {
+      if (name === "memory") {
         this.stores.set(name, new InMemoryEventStore());
       } else {
         throw new EventBusError(
-          'STORE_NOT_FOUND',
+          "STORE_NOT_FOUND",
           `Event store '${name}' not registered`,
         );
       }
@@ -375,7 +371,7 @@ export class EventStoreFactory {
  * Convenience function to get default event store
  */
 export function getEventStore(): IEventStore {
-  return EventStoreFactory.get('memory');
+  return EventStoreFactory.get("memory");
 }
 
 /**

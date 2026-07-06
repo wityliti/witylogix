@@ -34,7 +34,7 @@ describe("AfterShipSDKClient", () => {
         () =>
           new AfterShipSDKClient({
             apiKey: "",
-          })
+          }),
       ).toThrow("AfterShip API key is required");
     });
 
@@ -183,7 +183,10 @@ describe("AfterShipSDKClient", () => {
       });
 
       // Mock fetch to avoid actual API calls
-      vi.stubGlobal("fetch", vi.fn(() => Promise.reject(new Error("Timeout"))));
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(() => Promise.reject(new Error("Timeout"))),
+      );
 
       try {
         // Should throw after hitting rate limit

@@ -222,7 +222,7 @@ describe("Settings Page", () => {
       });
 
       expect(mockSettingsPageData.general.companyName).toBe(
-        "Test Logistics Inc."
+        "Test Logistics Inc.",
       );
     });
 
@@ -335,7 +335,7 @@ describe("Settings Page", () => {
       });
 
       expect(mockSettingsPageData.branding.logoUrl).toBe(
-        "https://example.com/logo.png"
+        "https://example.com/logo.png",
       );
     });
 
@@ -388,20 +388,24 @@ describe("Settings Page", () => {
       });
 
       expect(mockSettingsPageData.branding.trackingPageUrl).toBe(
-        "https://example.com/track"
+        "https://example.com/track",
       );
     });
 
     it("should validate color format as hex code", () => {
       const hexColorRegex = /^#[0-9A-F]{6}$/i;
-      expect(hexColorRegex.test(mockSettingsPageData.branding.primaryColor)).toBe(true);
-      expect(hexColorRegex.test(mockSettingsPageData.branding.secondaryColor)).toBe(true);
+      expect(
+        hexColorRegex.test(mockSettingsPageData.branding.primaryColor),
+      ).toBe(true);
+      expect(
+        hexColorRegex.test(mockSettingsPageData.branding.secondaryColor),
+      ).toBe(true);
     });
 
     it("should validate tracking page URL format", () => {
       const urlPattern = /^https?:\/\//;
       expect(
-        urlPattern.test(mockSettingsPageData.branding.trackingPageUrl)
+        urlPattern.test(mockSettingsPageData.branding.trackingPageUrl),
       ).toBe(true);
     });
   });
@@ -423,7 +427,7 @@ describe("Settings Page", () => {
 
       expect(mockSettingsPageData.notifications.events).toHaveLength(2);
       expect(mockSettingsPageData.notifications.events[0].name).toBe(
-        "Order Created"
+        "Order Created",
       );
     });
 
@@ -481,7 +485,8 @@ describe("Settings Page", () => {
       });
 
       const orderCreatedEvent = mockSettingsPageData.notifications.events[0];
-      const deliveryCompletedEvent = mockSettingsPageData.notifications.events[1];
+      const deliveryCompletedEvent =
+        mockSettingsPageData.notifications.events[1];
 
       expect(orderCreatedEvent.channels[1].enabled).toBe(false); // sms disabled
       expect(deliveryCompletedEvent.channels[1].enabled).toBe(true); // sms enabled
@@ -558,7 +563,7 @@ describe("Settings Page", () => {
       });
 
       expect(mockSettingsPageData.apiKeys[0].createdAt).toBe(
-        "2024-01-15T10:00:00Z"
+        "2024-01-15T10:00:00Z",
       );
     });
 
@@ -577,7 +582,7 @@ describe("Settings Page", () => {
       });
 
       expect(mockSettingsPageData.apiKeys[0].lastUsedAt).toBe(
-        "2024-03-08T15:30:00Z"
+        "2024-03-08T15:30:00Z",
       );
       expect(mockSettingsPageData.apiKeys[1].lastUsedAt).toBeNull();
     });
@@ -597,7 +602,7 @@ describe("Settings Page", () => {
       });
 
       const unusedKey = mockSettingsPageData.apiKeys.find(
-        (k) => k.lastUsedAt === null
+        (k) => k.lastUsedAt === null,
       );
       expect(unusedKey).toBeDefined();
     });
@@ -670,7 +675,7 @@ describe("Settings Page", () => {
       });
 
       expect(mockSettingsPageData.billing.nextBillingDate).toBe(
-        "2024-04-09T00:00:00Z"
+        "2024-04-09T00:00:00Z",
       );
     });
 
@@ -757,9 +762,7 @@ describe("Settings Page", () => {
   describe("Branding Settings Update", () => {
     it("should validate logo URL is HTTPS", () => {
       const urlPattern = /^https:\/\//;
-      expect(
-        urlPattern.test(mockSettingsPageData.branding.logoUrl)
-      ).toBe(true);
+      expect(urlPattern.test(mockSettingsPageData.branding.logoUrl)).toBe(true);
     });
 
     it("should reject HTTP logo URLs", () => {
@@ -805,10 +808,7 @@ describe("Settings Page", () => {
       const updatedEvent = {
         ...mockSettingsPageData.notifications.events[0],
         channels: mockSettingsPageData.notifications.events[0].channels.map(
-          (ch) =>
-            ch.name === "sms"
-              ? { ...ch, enabled: true }
-              : ch
+          (ch) => (ch.name === "sms" ? { ...ch, enabled: true } : ch),
         ),
       };
 
@@ -868,7 +868,7 @@ describe("Settings Page", () => {
 
       const result = await mockApiClient.patch(
         "/api/v4/shops/me/notifications",
-        updatedSettings
+        updatedSettings,
       );
 
       expect(result.data.events[0].channels[0].enabled).toBe(false);
@@ -902,7 +902,7 @@ describe("Settings Page", () => {
 
       const result = await mockApiClient.post(
         "/api/v4/shops/me/api-keys",
-        newKeyRequest
+        newKeyRequest,
       );
 
       expect(result.data.name).toBe("New Test Key");
@@ -922,7 +922,7 @@ describe("Settings Page", () => {
       mockApiClient.delete.mockResolvedValueOnce({ success: true });
 
       const result = await mockApiClient.delete(
-        "/api/v4/shops/me/api-keys/key-001"
+        "/api/v4/shops/me/api-keys/key-001",
       );
 
       expect(result.success).toBe(true);
@@ -959,7 +959,9 @@ describe("Settings Page", () => {
       ];
 
       requiredGeneralFields.forEach((field) => {
-        expect(mockSettingsPageData.general[field as keyof GeneralSettings]).toBeDefined();
+        expect(
+          mockSettingsPageData.general[field as keyof GeneralSettings],
+        ).toBeDefined();
       });
     });
 
@@ -985,9 +987,7 @@ describe("Settings Page", () => {
       };
       (createApiClient as any).mockReturnValue(mockApiClient);
 
-      mockApiClient.patch.mockRejectedValueOnce(
-        new Error("Network error")
-      );
+      mockApiClient.patch.mockRejectedValueOnce(new Error("Network error"));
 
       try {
         await mockApiClient.patch("/api/v4/shops/me/settings", {
@@ -1000,7 +1000,7 @@ describe("Settings Page", () => {
 
     it("should validate session before update", async () => {
       (authenticate.admin as any).mockRejectedValueOnce(
-        new Error("Invalid session")
+        new Error("Invalid session"),
       );
 
       try {
@@ -1047,7 +1047,7 @@ describe("Settings Page", () => {
 
       const result = await mockApiClient.patch(
         "/api/v4/shops/me/general",
-        updates
+        updates,
       );
 
       expect(result.data.companyName).toBe("Updated Company");
@@ -1070,7 +1070,7 @@ describe("Settings Page", () => {
 
       expect(mockApiClient.patch).toHaveBeenCalledWith(
         "/api/v4/shops/me/branding",
-        {}
+        {},
       );
     });
 
@@ -1090,7 +1090,7 @@ describe("Settings Page", () => {
 
       expect(mockApiClient.patch).toHaveBeenCalledWith(
         "/api/v4/shops/me/notifications",
-        {}
+        {},
       );
     });
   });

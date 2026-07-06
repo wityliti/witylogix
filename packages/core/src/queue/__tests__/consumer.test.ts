@@ -42,7 +42,7 @@ class TestQueueConsumer extends QueueConsumer {
 
   async process(
     job: QueueJobPayload,
-    metadata: QueueJobMetadata
+    metadata: QueueJobMetadata,
   ): Promise<JobProcessingResult> {
     if (this.processingDelay > 0) {
       await new Promise((resolve) => setTimeout(resolve, this.processingDelay));
@@ -82,7 +82,7 @@ const createJobPayload = (type: string, data = {}): QueueJobPayload => ({
 
 const createJobMetadata = (
   jobId = "job-123",
-  attempt = 1
+  attempt = 1,
 ): QueueJobMetadata => ({
   jobId,
   queueName: "test-queue",
@@ -170,12 +170,12 @@ describe("QueueConsumer", () => {
 
       // First attempt fails
       await expect(consumer.process(job, metadata1)).rejects.toThrow(
-        QueueTransientError
+        QueueTransientError,
       );
 
       // Second attempt fails
       await expect(consumer.process(job, metadata2)).rejects.toThrow(
-        QueueTransientError
+        QueueTransientError,
       );
 
       // Third attempt succeeds
@@ -190,7 +190,7 @@ describe("QueueConsumer", () => {
       const metadata = createJobMetadata("job-1", 1);
 
       await expect(consumer.process(job, metadata)).rejects.toThrow(
-        QueueTransientError
+        QueueTransientError,
       );
     });
 
@@ -201,7 +201,7 @@ describe("QueueConsumer", () => {
       const metadata = createJobMetadata("job-1", 3); // At max retries
 
       await expect(consumer.process(job, metadata)).rejects.toThrow(
-        QueuePermanentError
+        QueuePermanentError,
       );
     });
 
@@ -324,15 +324,15 @@ describe("QueueConsumer", () => {
       const jobs = [
         concurrentConsumer.process(
           createJobPayload("job1"),
-          createJobMetadata("id-1", 1)
+          createJobMetadata("id-1", 1),
         ),
         concurrentConsumer.process(
           createJobPayload("job2"),
-          createJobMetadata("id-2", 1)
+          createJobMetadata("id-2", 1),
         ),
         concurrentConsumer.process(
           createJobPayload("job3"),
-          createJobMetadata("id-3", 1)
+          createJobMetadata("id-3", 1),
         ),
       ];
 
@@ -359,15 +359,15 @@ describe("QueueConsumer", () => {
       const jobs = [
         concurrentConsumer.process(
           createJobPayload("job1"),
-          createJobMetadata("id-1", 1)
+          createJobMetadata("id-1", 1),
         ),
         concurrentConsumer.process(
           createJobPayload("job2"),
-          createJobMetadata("id-2", 1)
+          createJobMetadata("id-2", 1),
         ),
         concurrentConsumer.process(
           createJobPayload("job3"),
-          createJobMetadata("id-3", 1)
+          createJobMetadata("id-3", 1),
         ),
       ];
 
@@ -403,7 +403,7 @@ describe("QueueConsumer", () => {
           try {
             const result = await maxConcurrentConsumer.process(
               createJobPayload(`job${i}`),
-              createJobMetadata(`id-${i}`, 1)
+              createJobMetadata(`id-${i}`, 1),
             );
             return result;
           } finally {
@@ -417,7 +417,7 @@ describe("QueueConsumer", () => {
       await Promise.all(jobs);
 
       expect(peakConcurrency).toBeLessThanOrEqual(
-        defaultConfig.concurrency + 1
+        defaultConfig.concurrency + 1,
       );
     });
   });
@@ -526,7 +526,9 @@ describe("QueueConsumer", () => {
 
       const testConsumer = new TestQueueConsumer(defaultConfig);
 
-      await expect(testConsumer.validateJob(validWebhook)).resolves.toBeUndefined();
+      await expect(
+        testConsumer.validateJob(validWebhook),
+      ).resolves.toBeUndefined();
     });
   });
 
@@ -558,7 +560,7 @@ describe("QueueConsumer", () => {
         "Processing failed",
         "PROCESSING_ERROR",
         true,
-        details
+        details,
       );
 
       expect(error.details).toEqual(details);

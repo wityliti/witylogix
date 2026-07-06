@@ -131,9 +131,7 @@ describe("ShopifyClient", () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({ orders: mockOrders }),
-        headers: new Map([
-          ["X-Shopify-Shop-Api-Call-Limit", "39/40"],
-        ]),
+        headers: new Map([["X-Shopify-Shop-Api-Call-Limit", "39/40"]]),
       });
 
       const result = await client.listOrders({ limit: 50 });
@@ -217,9 +215,7 @@ describe("ShopifyClient", () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({ order: mockOrder }),
-        headers: new Map([
-          ["X-Shopify-Shop-Api-Call-Limit", "39/40"],
-        ]),
+        headers: new Map([["X-Shopify-Shop-Api-Call-Limit", "39/40"]]),
       });
 
       const order = await client.getOrderById("123");
@@ -281,9 +277,7 @@ describe("ShopifyClient", () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({ products: mockProducts }),
-        headers: new Map([
-          ["X-Shopify-Shop-Api-Call-Limit", "39/40"],
-        ]),
+        headers: new Map([["X-Shopify-Shop-Api-Call-Limit", "39/40"]]),
       });
 
       const result = await client.listProducts({ limit: 50 });
@@ -330,9 +324,7 @@ describe("ShopifyClient", () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({ product: mockProduct }),
-        headers: new Map([
-          ["X-Shopify-Shop-Api-Call-Limit", "39/40"],
-        ]),
+        headers: new Map([["X-Shopify-Shop-Api-Call-Limit", "39/40"]]),
       });
 
       const product = await client.createProduct({
@@ -359,9 +351,7 @@ describe("ShopifyClient", () => {
             },
           ],
         }),
-        headers: new Map([
-          ["X-Shopify-Shop-Api-Call-Limit", "39/40"],
-        ]),
+        headers: new Map([["X-Shopify-Shop-Api-Call-Limit", "39/40"]]),
       });
 
       const inventory = await client.adjustInventory({
@@ -383,9 +373,7 @@ describe("ShopifyClient", () => {
             { id: 2, name: "Warehouse 2" },
           ],
         }),
-        headers: new Map([
-          ["X-Shopify-Shop-Api-Call-Limit", "39/40"],
-        ]),
+        headers: new Map([["X-Shopify-Shop-Api-Call-Limit", "39/40"]]),
       });
 
       const locations = await client.listLocations();
@@ -401,10 +389,7 @@ describe("ShopifyClient", () => {
       const secret = "test-webhook-secret";
 
       // Create valid signature
-      const hmac = require("node:crypto").createHmac(
-        "sha256",
-        secret,
-      );
+      const hmac = require("node:crypto").createHmac("sha256", secret);
       const signature = hmac.update(JSON.stringify(payload)).digest("base64");
 
       const isValid = client.verifyWebhookSignature(payload, signature);
@@ -416,10 +401,7 @@ describe("ShopifyClient", () => {
       const payload = { test: "data" };
       const invalidSignature = "invalid-signature";
 
-      const isValid = client.verifyWebhookSignature(
-        payload,
-        invalidSignature,
-      );
+      const isValid = client.verifyWebhookSignature(payload, invalidSignature);
 
       expect(isValid).toBe(false);
     });
@@ -439,9 +421,7 @@ describe("ShopifyClient", () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({ webhook: mockWebhook }),
-        headers: new Map([
-          ["X-Shopify-Shop-Api-Call-Limit", "39/40"],
-        ]),
+        headers: new Map([["X-Shopify-Shop-Api-Call-Limit", "39/40"]]),
       });
 
       const webhook = await client.registerWebhook(

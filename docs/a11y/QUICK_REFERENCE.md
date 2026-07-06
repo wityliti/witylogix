@@ -12,7 +12,7 @@ import {
   generateId,
   calculateContrastRatio,
   useReducedMotion,
-} from '@/lib/a11y';
+} from "@/lib/a11y";
 
 // Components
 import {
@@ -20,14 +20,15 @@ import {
   VisuallyHidden,
   FocusRing,
   injectFocusIndicatorStyles,
-} from '@/components/a11y';
+} from "@/components/a11y";
 ```
 
 ## Common Recipes
 
 ### Modal with Focus Trap
+
 ```tsx
-import { useFocusTrap } from '@/lib/a11y';
+import { useFocusTrap } from "@/lib/a11y";
 
 export function Modal({ onClose }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -48,12 +49,13 @@ export function Modal({ onClose }) {
 ```
 
 ### Menu with Arrow Key Navigation
+
 ```tsx
-import { useKeyboardNavigation } from '@/lib/a11y';
+import { useKeyboardNavigation } from "@/lib/a11y";
 
 export function Menu({ items, onSelect }) {
   const { selectedIndex, handlers } = useKeyboardNavigation(items, {
-    orientation: 'vertical',
+    orientation: "vertical",
     onSelect,
   });
 
@@ -63,7 +65,7 @@ export function Menu({ items, onSelect }) {
         <button
           key={i}
           role="menuitem"
-          className={i === selectedIndex ? 'bg-blue-500' : ''}
+          className={i === selectedIndex ? "bg-blue-500" : ""}
         >
           {item}
         </button>
@@ -74,12 +76,13 @@ export function Menu({ items, onSelect }) {
 ```
 
 ### Form Input with Error
+
 ```tsx
-import { generateId, VisuallyHidden } from '@/lib/a11y';
+import { generateId, VisuallyHidden } from "@/lib/a11y";
 
 export function FormInput({ label, error, value, onChange }) {
-  const inputId = generateId('input');
-  const errorId = generateId('error');
+  const inputId = generateId("input");
+  const errorId = generateId("error");
 
   return (
     <div>
@@ -101,26 +104,29 @@ export function FormInput({ label, error, value, onChange }) {
 ```
 
 ### Announce Action
+
 ```tsx
-import { announceAction } from '@/lib/a11y';
+import { announceAction } from "@/lib/a11y";
 
 function handleSave() {
   save();
-  announceAction('Changes saved successfully');
+  announceAction("Changes saved successfully");
 }
 ```
 
 ### Check Color Contrast
-```tsx
-import { analyzeContrast } from '@/lib/a11y';
 
-const result = analyzeContrast('#333', '#fff');
+```tsx
+import { analyzeContrast } from "@/lib/a11y";
+
+const result = analyzeContrast("#333", "#fff");
 console.log(result.aa); // true (meets WCAG AA)
 ```
 
 ### Skip Links
+
 ```tsx
-import { SkipLinks } from '@/components/a11y';
+import { SkipLinks } from "@/components/a11y";
 
 export function Layout() {
   return (
@@ -134,8 +140,9 @@ export function Layout() {
 ```
 
 ### Focus Indicators
+
 ```tsx
-import { injectFocusIndicatorStyles, FocusRing } from '@/components/a11y';
+import { injectFocusIndicatorStyles, FocusRing } from "@/components/a11y";
 
 // In app root useEffect:
 injectFocusIndicatorStyles();
@@ -143,12 +150,13 @@ injectFocusIndicatorStyles();
 // In components:
 <FocusRing offset="default" width="default">
   <button>Click me</button>
-</FocusRing>
+</FocusRing>;
 ```
 
 ### Respect Motion Preferences
+
 ```tsx
-import { useReducedMotion, MotionSafe } from '@/lib/a11y';
+import { useReducedMotion, MotionSafe } from "@/lib/a11y";
 
 export function Animation() {
   const prefersReducedMotion = useReducedMotion();
@@ -162,33 +170,33 @@ export function Animation() {
 ```
 
 ### Screen Reader Only Text
+
 ```tsx
-import { VisuallyHidden } from '@/components/a11y';
+import { VisuallyHidden } from "@/components/a11y";
 
 <button>
-  <VisuallyHidden>Close menu</VisuallyHidden>
-  ✕
-</button>
+  <VisuallyHidden>Close menu</VisuallyHidden>✕
+</button>;
 ```
 
 ## ARIA Patterns
 
 ### Button with Icon
+
 ```tsx
 <button aria-label="Close">×</button>
 ```
 
 ### Toggle Button
+
 ```tsx
-<button
-  aria-pressed={isActive}
-  onClick={toggle}
->
-  {isActive ? 'Enabled' : 'Disabled'}
+<button aria-pressed={isActive} onClick={toggle}>
+  {isActive ? "Enabled" : "Disabled"}
 </button>
 ```
 
 ### Expandable Section
+
 ```tsx
 import { useAriaExpanded } from '@/lib/a11y';
 
@@ -205,18 +213,22 @@ const { ariaExpanded, setAriaExpanded } = useAriaExpanded(isOpen);
 ```
 
 ### Combobox
+
 ```tsx
 <div role="combobox" aria-expanded={isOpen} aria-haspopup="listbox">
   <input aria-autocomplete="list" />
   {isOpen && (
     <ul role="listbox">
-      <li role="option" aria-selected={selected}>Item</li>
+      <li role="option" aria-selected={selected}>
+        Item
+      </li>
     </ul>
   )}
 </div>
 ```
 
 ### Table
+
 ```tsx
 <table>
   <thead>
@@ -237,17 +249,25 @@ const { ariaExpanded, setAriaExpanded } = useAriaExpanded(isOpen);
 ## Keyboard Shortcuts
 
 ```tsx
-import { useKeyboardShortcut } from '@/lib/a11y';
+import { useKeyboardShortcut } from "@/lib/a11y";
 
 // Cmd+/ or Ctrl+/ to focus search
-useKeyboardShortcut('/', () => {
-  searchInputRef.current?.focus();
-}, []);
+useKeyboardShortcut(
+  "/",
+  () => {
+    searchInputRef.current?.focus();
+  },
+  [],
+);
 
 // Escape to close
-useKeyboardShortcut('Escape', () => {
-  close();
-}, ['escape']);
+useKeyboardShortcut(
+  "Escape",
+  () => {
+    close();
+  },
+  ["escape"],
+);
 ```
 
 ## Testing
@@ -279,15 +299,19 @@ describe('MyComponent', () => {
 ## Colors & Contrast
 
 ```typescript
-import { parseColor, analyzeContrast, suggestAccessibleColor } from '@/lib/a11y';
+import {
+  parseColor,
+  analyzeContrast,
+  suggestAccessibleColor,
+} from "@/lib/a11y";
 
 // Parse any color format
-const rgb = parseColor('#fff');
-const rgb2 = parseColor('rgb(255, 255, 255)');
-const rgb3 = parseColor('hsl(0, 0%, 100%)');
+const rgb = parseColor("#fff");
+const rgb2 = parseColor("rgb(255, 255, 255)");
+const rgb3 = parseColor("hsl(0, 0%, 100%)");
 
 // Check contrast
-const analysis = analyzeContrast('#333', '#fff');
+const analysis = analyzeContrast("#333", "#fff");
 // {
 //   ratio: 12.63,
 //   aa: true,        // meets AA
@@ -297,33 +321,37 @@ const analysis = analyzeContrast('#333', '#fff');
 // }
 
 // Get accessible alternative
-const accessible = suggestAccessibleColor('#666', '#fff', 4.5);
+const accessible = suggestAccessibleColor("#666", "#fff", 4.5);
 ```
 
 ## Debugging
 
 ### Check Focusable Elements
+
 ```tsx
-import { getFocusableElements } from '@/lib/a11y';
+import { getFocusableElements } from "@/lib/a11y";
 
 const focusables = getFocusableElements(container);
-console.log('Focusable elements:', focusables);
+console.log("Focusable elements:", focusables);
 ```
 
 ### Check ARIA Attributes
+
 ```tsx
-const expanded = element.getAttribute('aria-expanded');
-const label = element.getAttribute('aria-label');
-const describedBy = element.getAttribute('aria-describedby');
+const expanded = element.getAttribute("aria-expanded");
+const label = element.getAttribute("aria-label");
+const describedBy = element.getAttribute("aria-describedby");
 ```
 
 ### Test with Keyboard Only
+
 - Tab/Shift+Tab to navigate
 - Enter/Space to activate
 - Arrow keys for lists/menus
 - Escape to close modals
 
 ### Test with Screen Reader
+
 - **Mac**: Cmd+F5 (VoiceOver)
 - **Windows**: Download NVDA (free) or use JAWS
 - Common commands:

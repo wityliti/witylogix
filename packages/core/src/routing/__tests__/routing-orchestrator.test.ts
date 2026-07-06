@@ -4,11 +4,14 @@
  * Tests: failover chain, health tracking, caching, deduplication, metrics
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { RoutingOrchestrator, type OrchestratorConfig } from '../routing-orchestrator.js';
-import { RouteCache } from '../route-cache.js';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import {
+  RoutingOrchestrator,
+  type OrchestratorConfig,
+} from "../routing-orchestrator.js";
+import { RouteCache } from "../route-cache.js";
 
-describe('RoutingOrchestrator', () => {
+describe("RoutingOrchestrator", () => {
   let orchestrator: RoutingOrchestrator;
   let cache: RouteCache;
   let config: OrchestratorConfig;
@@ -16,25 +19,25 @@ describe('RoutingOrchestrator', () => {
   beforeEach(() => {
     cache = new RouteCache();
     config = {
-      tenantId: 'tenant-1',
+      tenantId: "tenant-1",
       providers: [
         {
-          name: 'google-routes',
+          name: "google-routes",
           enabled: true,
           priority: 1,
-          apiKey: 'test-key',
+          apiKey: "test-key",
         },
         {
-          name: 'mapbox-directions',
+          name: "mapbox-directions",
           enabled: true,
           priority: 2,
-          apiKey: 'test-key',
+          apiKey: "test-key",
         },
         {
-          name: 'here-routing',
+          name: "here-routing",
           enabled: true,
           priority: 3,
-          apiKey: 'test-key',
+          apiKey: "test-key",
         },
       ],
       cacheTtlSeconds: 300,
@@ -46,8 +49,8 @@ describe('RoutingOrchestrator', () => {
     orchestrator = new RoutingOrchestrator(config);
   });
 
-  describe('route()', () => {
-    it('should return route from primary provider', async () => {
+  describe("route()", () => {
+    it("should return route from primary provider", async () => {
       const origin = { lat: 40.7128, lng: -74.006 };
       const destination = { lat: 40.758, lng: -73.9855 };
 
@@ -61,11 +64,11 @@ describe('RoutingOrchestrator', () => {
           provider: expect.any(String),
           cached: false,
           latencyMs: expect.any(Number),
-        })
+        }),
       );
     });
 
-    it('should include waypoints in cache key', async () => {
+    it("should include waypoints in cache key", async () => {
       const origin = { lat: 40.7128, lng: -74.006 };
       const destination = { lat: 40.758, lng: -73.9855 };
       const waypoints = [{ lat: 40.74, lng: -73.99 }];
@@ -77,7 +80,7 @@ describe('RoutingOrchestrator', () => {
       expect(result2.cached).toBe(true);
     });
 
-    it('should cache results with correct TTL', async () => {
+    it("should cache results with correct TTL", async () => {
       const origin = { lat: 40.7128, lng: -74.006 };
       const destination = { lat: 40.758, lng: -73.9855 };
 
@@ -89,7 +92,7 @@ describe('RoutingOrchestrator', () => {
       expect(result2.distance).toBe(result1.distance);
     });
 
-    it('should deduplicate concurrent identical requests', async () => {
+    it("should deduplicate concurrent identical requests", async () => {
       const origin = { lat: 40.7128, lng: -74.006 };
       const destination = { lat: 40.758, lng: -73.9855 };
 
@@ -104,7 +107,7 @@ describe('RoutingOrchestrator', () => {
       expect(result1.provider).toBe(result2.provider);
     });
 
-    it('should disable cache when cacheEnabled is false', async () => {
+    it("should disable cache when cacheEnabled is false", async () => {
       const noCacheConfig: OrchestratorConfig = {
         ...config,
         cacheEnabled: false,
@@ -122,8 +125,8 @@ describe('RoutingOrchestrator', () => {
     });
   });
 
-  describe('Provider Health Tracking', () => {
-    it('should track provider success rate', async () => {
+  describe("Provider Health Tracking", () => {
+    it("should track provider success rate", async () => {
       const origin = { lat: 40.7128, lng: -74.006 };
       const destination = { lat: 40.758, lng: -73.9855 };
 
@@ -132,13 +135,13 @@ describe('RoutingOrchestrator', () => {
       const metrics = orchestrator.getMetrics();
       expect(metrics.providers.size).toBeGreaterThan(0);
 
-      const googleMetrics = metrics.providers.get('google-routes');
+      const googleMetrics = metrics.providers.get("google-routes");
       expect(googleMetrics).toBeDefined();
       expect(googleMetrics?.totalRequests).toBeGreaterThan(0);
       expect(googleMetrics?.successRate).toBeGreaterThan(0);
     });
 
-    it('should track latency percentiles', async () => {
+    it("should track latency percentiles", async () => {
       const origin = { lat: 40.7128, lng: -74.006 };
       const destination = { lat: 40.758, lng: -73.9855 };
 
@@ -149,27 +152,31 @@ describe('RoutingOrchestrator', () => {
       ]);
 
       const metrics = orchestrator.getMetrics();
-      const googleMetrics = metrics.providers.get('google-routes');
+      const googleMetrics = metrics.providers.get("google-routes");
 
       expect(googleMetrics?.p50Latency).toBeGreaterThanOrEqual(0);
-      expect(googleMetrics?.p95Latency).toBeGreaterThanOrEqual(googleMetrics?.p50Latency || 0);
-      expect(googleMetrics?.p99Latency).toBeGreaterThanOrEqual(googleMetrics?.p95Latency || 0);
+      expect(googleMetrics?.p95Latency).toBeGreaterThanOrEqual(
+        googleMetrics?.p50Latency || 0,
+      );
+      expect(googleMetrics?.p99Latency).toBeGreaterThanOrEqual(
+        googleMetrics?.p95Latency || 0,
+      );
     });
 
-    it('should track provider failures', async () => {
+    it("should track provider failures", async () => {
       const failingConfig: OrchestratorConfig = {
-        tenantId: 'tenant-1',
+        tenantId: "tenant-1",
         providers: [
           {
-            name: 'google-routes',
+            name: "google-routes",
             enabled: false, // Disabled to simulate failure
             priority: 1,
           },
           {
-            name: 'mapbox-directions',
+            name: "mapbox-directions",
             enabled: true,
             priority: 2,
-            apiKey: 'test-key',
+            apiKey: "test-key",
           },
         ],
         cacheEnabled: true,
@@ -187,8 +194,8 @@ describe('RoutingOrchestrator', () => {
     });
   });
 
-  describe('Metrics', () => {
-    it('should track total requests', async () => {
+  describe("Metrics", () => {
+    it("should track total requests", async () => {
       const origin = { lat: 40.7128, lng: -74.006 };
       const destination = { lat: 40.758, lng: -73.9855 };
 
@@ -199,7 +206,7 @@ describe('RoutingOrchestrator', () => {
       expect(metrics.totalRequests).toBe(2);
     });
 
-    it('should track cache hit rate', async () => {
+    it("should track cache hit rate", async () => {
       const origin = { lat: 40.7128, lng: -74.006 };
       const destination = { lat: 40.758, lng: -73.9855 };
 
@@ -212,7 +219,7 @@ describe('RoutingOrchestrator', () => {
       expect(metrics.cacheHitRate).toBe(0.5);
     });
 
-    it('should calculate average latency', async () => {
+    it("should calculate average latency", async () => {
       const origin = { lat: 40.7128, lng: -74.006 };
       const destination = { lat: 40.758, lng: -73.9855 };
 
@@ -222,7 +229,7 @@ describe('RoutingOrchestrator', () => {
       expect(metrics.averageLatencyMs).toBeGreaterThanOrEqual(0);
     });
 
-    it('should provide provider health status', async () => {
+    it("should provide provider health status", async () => {
       const origin = { lat: 40.7128, lng: -74.006 };
       const destination = { lat: 40.758, lng: -73.9855 };
 
@@ -232,13 +239,13 @@ describe('RoutingOrchestrator', () => {
       expect(healthStatus.size).toBeGreaterThan(0);
 
       healthStatus.forEach((status) => {
-        expect(['healthy', 'degraded', 'unhealthy']).toContain(status);
+        expect(["healthy", "degraded", "unhealthy"]).toContain(status);
       });
     });
   });
 
-  describe('Cache Management', () => {
-    it('should clear cache', async () => {
+  describe("Cache Management", () => {
+    it("should clear cache", async () => {
       const origin = { lat: 40.7128, lng: -74.006 };
       const destination = { lat: 40.758, lng: -73.9855 };
 
@@ -249,7 +256,7 @@ describe('RoutingOrchestrator', () => {
       expect(result.cached).toBe(false);
     });
 
-    it('should reset metrics', async () => {
+    it("should reset metrics", async () => {
       const origin = { lat: 40.7128, lng: -74.006 };
       const destination = { lat: 40.758, lng: -73.9855 };
 
@@ -263,8 +270,8 @@ describe('RoutingOrchestrator', () => {
     });
   });
 
-  describe('Provider Sorting', () => {
-    it('should prioritize providers by health and priority', async () => {
+  describe("Provider Sorting", () => {
+    it("should prioritize providers by health and priority", async () => {
       const origin = { lat: 40.7128, lng: -74.006 };
       const destination = { lat: 40.758, lng: -73.9855 };
 
@@ -275,7 +282,7 @@ describe('RoutingOrchestrator', () => {
 
       const metrics = orchestrator.getMetrics();
       const providers = Array.from(metrics.providers.values()).sort(
-        (a, b) => b.healthScore - a.healthScore
+        (a, b) => b.healthScore - a.healthScore,
       );
 
       // Healthiest provider should be first

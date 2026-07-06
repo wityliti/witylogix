@@ -30,7 +30,12 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { prisma } from "@witylogix/db";
 import { getNotificationQueue } from "../lib/queue.js";
 import { CustomAdapter } from "@witylogix/core/platforms/adapters/custom.js";
-import type { CustomCredentials, CustomAuthConfig, CustomWebhookConfig, CustomFieldMapping } from "@witylogix/core/platforms/adapters/custom.js";
+import type {
+  CustomCredentials,
+  CustomAuthConfig,
+  CustomWebhookConfig,
+  CustomFieldMapping,
+} from "@witylogix/core/platforms/adapters/custom.js";
 
 // ─── Route Plugin ───────────────────────────────────────────
 
@@ -61,7 +66,10 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
    */
   fastify.post<{ Params: { shopId: string } }>(
     "/api/v4/webhooks/custom/:shopId",
-    async (request: FastifyRequest<{ Params: { shopId: string } }>, reply: FastifyReply) => {
+    async (
+      request: FastifyRequest<{ Params: { shopId: string } }>,
+      reply: FastifyReply,
+    ) => {
       const { shopId } = request.params;
       const payload = request.body as any;
 
@@ -71,10 +79,7 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
         return reply.status(400).send({ error: "Invalid shop ID" });
       }
 
-      request.log.info(
-        { shopId },
-        "Webhook: custom platform"
-      );
+      request.log.info({ shopId }, "Webhook: custom platform");
 
       try {
         // Step 1: Load shop and its platform configuration
@@ -95,25 +100,39 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
 
         if (shop.platformSource !== "CUSTOM") {
           request.log.warn(
-            { shopId, expectedSource: "CUSTOM", actualSource: shop.platformSource },
-            "Shop is not a CUSTOM platform"
+            {
+              shopId,
+              expectedSource: "CUSTOM",
+              actualSource: shop.platformSource,
+            },
+            "Shop is not a CUSTOM platform",
           );
-          return reply.status(400).send({ error: "Shop is not configured for CUSTOM platform" });
+          return reply
+            .status(400)
+            .send({ error: "Shop is not configured for CUSTOM platform" });
         }
 
         // Step 2: Extract webhook configuration from shop settings
         const platformConfig = shop.platformConfig as any;
         if (!platformConfig) {
           request.log.error({ shopId }, "Shop missing platform configuration");
-          return reply.status(400).send({ error: "Shop platform configuration not found" });
+          return reply
+            .status(400)
+            .send({ error: "Shop platform configuration not found" });
         }
 
         const fieldMapping = platformConfig.fieldMapping as CustomFieldMapping;
-        const webhookConfig = platformConfig.webhookConfig as CustomWebhookConfig;
+        const webhookConfig =
+          platformConfig.webhookConfig as CustomWebhookConfig;
 
         if (!fieldMapping) {
-          request.log.error({ shopId }, "Shop missing field mapping configuration");
-          return reply.status(400).send({ error: "Shop field mapping not configured" });
+          request.log.error(
+            { shopId },
+            "Shop missing field mapping configuration",
+          );
+          return reply
+            .status(400)
+            .send({ error: "Shop field mapping not configured" });
         }
 
         // Step 3: Validate webhook signature/auth
@@ -123,12 +142,14 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
             request,
             adapter,
             payload,
-            authConfig
+            authConfig,
           );
 
           if (!isValid) {
             request.log.warn({ shopId }, "Webhook authentication failed");
-            return reply.status(401).send({ error: "Webhook authentication failed" });
+            return reply
+              .status(401)
+              .send({ error: "Webhook authentication failed" });
           }
         }
 
@@ -140,12 +161,17 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
         const eventType = adapter.getWebhookEventType(
           payload,
           eventTypeHeader,
-          webhookConfig
+          webhookConfig,
         );
 
         if (!eventType) {
-          request.log.warn({ shopId }, "Unable to determine webhook event type");
-          return reply.status(400).send({ error: "Unable to determine event type" });
+          request.log.warn(
+            { shopId },
+            "Unable to determine webhook event type",
+          );
+          return reply
+            .status(400)
+            .send({ error: "Unable to determine event type" });
         }
 
         request.log.info({ shopId, eventType }, "Webhook event type detected");
@@ -159,7 +185,7 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
             payload,
             eventType,
             fieldMapping,
-            webhookConfig
+            webhookConfig,
           );
         } else if (eventType.includes("product")) {
           return await handleProductWebhook(
@@ -169,23 +195,28 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
             payload,
             eventType,
             fieldMapping,
-            webhookConfig
+            webhookConfig,
           );
         } else {
           request.log.warn({ shopId, eventType }, "Unknown event type");
-          return reply.status(400).send({ error: `Unknown event type: ${eventType}` });
+          return reply
+            .status(400)
+            .send({ error: `Unknown event type: ${eventType}` });
         }
       } catch (error) {
         request.log.error(
-          { shopId, error: error instanceof Error ? error.message : String(error) },
-          "Error processing custom webhook"
+          {
+            shopId,
+            error: error instanceof Error ? error.message : String(error),
+          },
+          "Error processing custom webhook",
         );
         return reply.status(500).send({
           error: "Failed to process webhook",
           details: error instanceof Error ? error.message : String(error),
         });
       }
-    }
+    },
   );
 
   /**
@@ -209,25 +240,29 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
     payload: any,
     eventType: string,
     fieldMapping: CustomFieldMapping,
-    webhookConfig?: CustomWebhookConfig
+    webhookConfig?: CustomWebhookConfig,
   ) {
     try {
       // Extract external order ID from payload using field mapping
       const orderIdField = fieldMapping.order?.externalOrderId;
       if (!orderIdField) {
         request.log.error({ shopId }, "Field mapping missing externalOrderId");
-        return reply.status(400).send({ error: "Field mapping not configured for externalOrderId" });
+        return reply
+          .status(400)
+          .send({ error: "Field mapping not configured for externalOrderId" });
       }
 
       const externalOrderId = extractField(payload, orderIdField);
       if (!externalOrderId) {
         request.log.warn({ shopId }, "Unable to extract order ID from payload");
-        return reply.status(400).send({ error: "Unable to extract order ID from payload" });
+        return reply
+          .status(400)
+          .send({ error: "Unable to extract order ID from payload" });
       }
 
       request.log.info(
         { shopId, externalOrderId, eventType },
-        "Processing custom order webhook"
+        "Processing custom order webhook",
       );
 
       // Determine action from event type
@@ -254,7 +289,9 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
             payload,
             fieldMapping,
             webhookConfig,
-            eventTypeFromHeader: request.headers["x-event-type"] as string | undefined,
+            eventTypeFromHeader: request.headers["x-event-type"] as
+              | string
+              | undefined,
           },
         },
         {
@@ -265,12 +302,12 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
             type: "exponential",
             delay: 5000,
           },
-        }
+        },
       );
 
       request.log.info(
         { shopId, externalOrderId, jobId },
-        "Custom order webhook queued"
+        "Custom order webhook queued",
       );
 
       reply.status(202);
@@ -278,7 +315,7 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
     } catch (error) {
       request.log.error(
         { error: error instanceof Error ? error.message : String(error) },
-        "Error handling order webhook"
+        "Error handling order webhook",
       );
       throw error;
     }
@@ -305,25 +342,37 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
     payload: any,
     eventType: string,
     fieldMapping: CustomFieldMapping,
-    webhookConfig?: CustomWebhookConfig
+    webhookConfig?: CustomWebhookConfig,
   ) {
     try {
       // Extract external product ID from payload using field mapping
       const productIdField = fieldMapping.product?.externalProductId;
       if (!productIdField) {
-        request.log.error({ shopId }, "Field mapping missing externalProductId");
-        return reply.status(400).send({ error: "Field mapping not configured for externalProductId" });
+        request.log.error(
+          { shopId },
+          "Field mapping missing externalProductId",
+        );
+        return reply
+          .status(400)
+          .send({
+            error: "Field mapping not configured for externalProductId",
+          });
       }
 
       const externalProductId = extractField(payload, productIdField);
       if (!externalProductId) {
-        request.log.warn({ shopId }, "Unable to extract product ID from payload");
-        return reply.status(400).send({ error: "Unable to extract product ID from payload" });
+        request.log.warn(
+          { shopId },
+          "Unable to extract product ID from payload",
+        );
+        return reply
+          .status(400)
+          .send({ error: "Unable to extract product ID from payload" });
       }
 
       request.log.info(
         { shopId, externalProductId, eventType },
-        "Processing custom product webhook"
+        "Processing custom product webhook",
       );
 
       // Determine action from event type
@@ -350,7 +399,9 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
             payload,
             fieldMapping,
             webhookConfig,
-            eventTypeFromHeader: request.headers["x-event-type"] as string | undefined,
+            eventTypeFromHeader: request.headers["x-event-type"] as
+              | string
+              | undefined,
           },
         },
         {
@@ -361,12 +412,12 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
             type: "exponential",
             delay: 5000,
           },
-        }
+        },
       );
 
       request.log.info(
         { shopId, externalProductId, jobId },
-        "Custom product webhook queued"
+        "Custom product webhook queued",
       );
 
       reply.status(202);
@@ -374,7 +425,7 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
     } catch (error) {
       request.log.error(
         { error: error instanceof Error ? error.message : String(error) },
-        "Error handling product webhook"
+        "Error handling product webhook",
       );
       throw error;
     }
@@ -399,14 +450,18 @@ function validateWebhookAuth(
   request: FastifyRequest,
   adapter: CustomAdapter,
   payload: any,
-  authConfig: CustomAuthConfig
+  authConfig: CustomAuthConfig,
 ): boolean {
   try {
     switch (authConfig.method) {
       case "api_key": {
         const headerName = authConfig.headerName || "x-api-key";
         const key = request.headers[headerName.toLowerCase()];
-        return adapter.validateWebhook(Buffer.from(""), String(key || ""), authConfig);
+        return adapter.validateWebhook(
+          Buffer.from(""),
+          String(key || ""),
+          authConfig,
+        );
       }
 
       case "hmac": {

@@ -287,12 +287,16 @@ describe("FilterBuilder", () => {
     });
 
     it("should build last_30_days filter", () => {
-      const filters = FilterBuilder.buildDateRangeFilter("createdAt", "last_30_days");
+      const filters = FilterBuilder.buildDateRangeFilter(
+        "createdAt",
+        "last_30_days",
+      );
 
       expect(filters).toHaveLength(2);
       const startDate = new Date(filters[0].value);
       const endDate = new Date(filters[1].value);
-      const diffDays = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+      const diffDays =
+        (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
 
       expect(diffDays).toBeCloseTo(30, 1);
     });
@@ -315,7 +319,7 @@ describe("FilterBuilder", () => {
     it("should merge filters with AND logic", () => {
       const filter = FilterBuilder.mergeFilters(
         { field: "status", operator: "eq", value: "ACTIVE" },
-        { field: "type", operator: "eq", value: "driver" }
+        { field: "type", operator: "eq", value: "driver" },
       );
 
       expect(filter.AND).toHaveLength(2);
@@ -324,7 +328,7 @@ describe("FilterBuilder", () => {
     it("should create OR filters", () => {
       const filter = FilterBuilder.orFilters(
         { field: "status", operator: "eq", value: "ACTIVE" },
-        { field: "status", operator: "eq", value: "PENDING" }
+        { field: "status", operator: "eq", value: "PENDING" },
       );
 
       expect(filter.OR).toHaveLength(2);

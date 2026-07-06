@@ -3,12 +3,12 @@
  */
 
 export type EmailTemplate =
-  | 'order_confirmed'
-  | 'order_shipped'
-  | 'out_for_delivery'
-  | 'delivered'
-  | 'return_initiated'
-  | 'return_refunded';
+  | "order_confirmed"
+  | "order_shipped"
+  | "out_for_delivery"
+  | "delivered"
+  | "return_initiated"
+  | "return_refunded";
 
 export interface OrderItem {
   name: string;
@@ -54,7 +54,7 @@ export interface ReturnEmailData {
   orderNumber: string;
   customerName: string;
   returnId: string;
-  returnStatus: 'initiated' | 'approved' | 'received' | 'refunded';
+  returnStatus: "initiated" | "approved" | "received" | "refunded";
   refundAmount: number;
   items: ReturnItem[];
   returnLabelUrl: string;

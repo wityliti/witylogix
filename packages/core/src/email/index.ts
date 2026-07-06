@@ -11,17 +11,31 @@ import type {
   EmailTemplate,
   EmailBulkResult,
   TemplateVariables,
-} from './types.js';
-import { EmailStatus } from './types.js';
-import { ConsoleEmailProvider } from './providers/console-provider.js';
-import { SmtpEmailProvider } from './providers/smtp-provider.js';
-import { renderTemplate } from './template-renderer.js';
+} from "./types.js";
+import { EmailStatus } from "./types.js";
+import { ConsoleEmailProvider } from "./providers/console-provider.js";
+import { SmtpEmailProvider } from "./providers/smtp-provider.js";
+import { renderTemplate } from "./template-renderer.js";
 
-export type { EmailConfig, EmailMessage, EmailResult, EmailTemplate, EmailBulkResult, TemplateVariables };
-export { EmailStatus, type EmailProvider, type EmailAttachment } from './types.js';
-export { ConsoleEmailProvider } from './providers/console-provider.js';
-export { SmtpEmailProvider, type SmtpTransport } from './providers/smtp-provider.js';
-export { renderTemplate } from './template-renderer.js';
+export type {
+  EmailConfig,
+  EmailMessage,
+  EmailResult,
+  EmailTemplate,
+  EmailBulkResult,
+  TemplateVariables,
+};
+export {
+  EmailStatus,
+  type EmailProvider,
+  type EmailAttachment,
+} from "./types.js";
+export { ConsoleEmailProvider } from "./providers/console-provider.js";
+export {
+  SmtpEmailProvider,
+  type SmtpTransport,
+} from "./providers/smtp-provider.js";
+export { renderTemplate } from "./template-renderer.js";
 
 /**
  * Email service for sending emails through configured provider
@@ -43,15 +57,15 @@ export class EmailService {
    */
   private initializeProvider(): EmailProvider {
     switch (this.config.provider) {
-      case 'console':
+      case "console":
         return new ConsoleEmailProvider();
 
-      case 'smtp':
+      case "smtp":
         return new SmtpEmailProvider(this.config);
 
-      case 'sendgrid':
+      case "sendgrid":
         throw new Error(
-          'SendGrid provider not yet implemented. Use console or smtp provider for now.',
+          "SendGrid provider not yet implemented. Use console or smtp provider for now.",
         );
 
       default:
@@ -87,7 +101,9 @@ export class EmailService {
 
     const subject = renderTemplate(template.subject, variables);
     const html = renderTemplate(template.htmlTemplate, variables);
-    const text = template.textTemplate ? renderTemplate(template.textTemplate, variables) : undefined;
+    const text = template.textTemplate
+      ? renderTemplate(template.textTemplate, variables)
+      : undefined;
 
     return this.send({
       to,
@@ -116,7 +132,8 @@ export class EmailService {
         // Rate limiting
         await this.sleep(this.rateLimitDelay);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         failedMessages.push({ message, error: errorMessage });
       }
     }

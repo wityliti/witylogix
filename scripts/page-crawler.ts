@@ -172,13 +172,21 @@ async function main() {
         (els) =>
           els
             .map((el) => el.textContent?.trim())
-            .filter((t) => t && (t.includes("Failed") || t.includes("Error") || t.includes("failed")))
-            .slice(0, 3)
+            .filter(
+              (t) =>
+                t &&
+                (t.includes("Failed") ||
+                  t.includes("Error") ||
+                  t.includes("failed")),
+            )
+            .slice(0, 3),
       );
 
       // Check if main content area is empty
       const mainContent = await page.evaluate(() => {
-        const main = document.querySelector("main") || document.querySelector('[class*="content"]');
+        const main =
+          document.querySelector("main") ||
+          document.querySelector('[class*="content"]');
         if (!main) return "no-main";
         const text = main.textContent?.trim() || "";
         return text.length < 20 ? "empty" : "has-content";
@@ -198,16 +206,32 @@ async function main() {
 
       if (hasError) {
         const errorDetail = errorElements.join("; ") || "Error text in page";
-        results.push({ path, status: "error", details: errorDetail.substring(0, 200) });
+        results.push({
+          path,
+          status: "error",
+          details: errorDetail.substring(0, 200),
+        });
       } else if (!hasContent || mainContent === "empty") {
-        results.push({ path, status: "empty", details: `content=${mainContent}, bodyLen=${bodyText.length}` });
+        results.push({
+          path,
+          status: "empty",
+          details: `content=${mainContent}, bodyLen=${bodyText.length}`,
+        });
       } else if (failedRequests.length > 0) {
-        results.push({ path, status: "api_error", details: failedRequests.slice(0, 2).join("; ") });
+        results.push({
+          path,
+          status: "api_error",
+          details: failedRequests.slice(0, 2).join("; "),
+        });
       } else {
         results.push({ path, status: "ok", details: "" });
       }
     } catch (err: any) {
-      results.push({ path, status: "crash", details: err.message.substring(0, 200) });
+      results.push({
+        path,
+        status: "crash",
+        details: err.message.substring(0, 200),
+      });
     }
 
     await page.close();
@@ -242,7 +266,16 @@ async function main() {
   const fs = await import("fs");
   fs.writeFileSync(
     "/tmp/wl-page-audit.json",
-    JSON.stringify({ total: results.length, ok: ok.length, broken: broken.length, results: broken }, null, 2)
+    JSON.stringify(
+      {
+        total: results.length,
+        ok: ok.length,
+        broken: broken.length,
+        results: broken,
+      },
+      null,
+      2,
+    ),
   );
   console.log("\nFull report: /tmp/wl-page-audit.json");
 }

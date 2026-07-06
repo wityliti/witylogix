@@ -50,7 +50,7 @@ class PDFGenerator {
     const catalogId = this.addObject(this.createCatalog());
     const pagesId = this.addObject(this.createPages());
     const pageId = this.addObject(
-      this.createPage(pagesId, this.createContents())
+      this.createPage(pagesId, this.createContents()),
     );
     const contentsId = this.addObject(this.createContents());
     const fontResourcesId = this.addObject(this.createFontResources());
@@ -59,18 +59,18 @@ class PDFGenerator {
     const pageObj = this.objects[pageId - 1];
     pageObj.content = pageObj.content.replace(
       "<<CONTENTS_PLACEHOLDER>>",
-      "/Contents " + contentsId + " 0 R"
+      "/Contents " + contentsId + " 0 R",
     );
     pageObj.content = pageObj.content.replace(
       "<<RESOURCES_PLACEHOLDER>>",
-      "/Resources << /Font " + fontResourcesId + " 0 R >>"
+      "/Resources << /Font " + fontResourcesId + " 0 R >>",
     );
 
     // Update pages object with page reference
     const pagesObj = this.objects[pagesId - 1];
     pagesObj.content = pagesObj.content.replace(
       "<<PAGES_PLACEHOLDER>>",
-      "/Kids [" + pageId + " 0 R] /Count 1"
+      "/Kids [" + pageId + " 0 R] /Count 1",
     );
 
     // Build PDF file
@@ -112,7 +112,7 @@ class PDFGenerator {
 
     // Service type (top-right)
     stream += "/F1 12 Tf\n";
-    stream += (this.pageWidth - 100) + " " + (this.pageHeight - 30) + " Td\n";
+    stream += this.pageWidth - 100 + " " + (this.pageHeight - 30) + " Td\n";
     stream += `(${escapePDFString(this.label.service)}) Tj\n`;
 
     // FROM label
@@ -256,10 +256,10 @@ class PDFGenerator {
  * Escape special characters in PDF strings
  */
 function escapePDFString(text: string): string {
-  const controlChars = new RegExp("[\\x00-\\x1f]", "g")
+  const controlChars = new RegExp("[\\x00-\\x1f]", "g");
   return text
     .replace(/\\/g, "\\\\") // Escape backslash
     .replace(/\(/g, "\\(") // Escape left paren
     .replace(/\)/g, "\\)") // Escape right paren
-    .replace(controlChars, " ") // Replace control characters with space
+    .replace(controlChars, " "); // Replace control characters with space
 }

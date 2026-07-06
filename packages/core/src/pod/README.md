@@ -5,6 +5,7 @@ Complete proof of delivery system with multi-method capture, status timeline tra
 ## Features
 
 ### Multi-Method POD Capture
+
 - **Photo**: JPEG/PNG with automatic thumbnail generation and EXIF/geolocation extraction
 - **E-Signature**: SVG path data or point arrays, rendered to PNG with signature validation
 - **QR Code**: Scanned QR data with fuzzy matching support
@@ -12,6 +13,7 @@ Complete proof of delivery system with multi-method capture, status timeline tra
 - **Manual Confirmation**: Verbal confirmation with driver name and notes
 
 ### Delivery Timeline
+
 - 9 status events: CREATED, CONFIRMED, PICKED_UP, OUT_FOR_DELIVERY, ARRIVED, DELIVERED, FAILED, RESCHEDULED, RETURNED
 - Location tracking (latitude, longitude)
 - Attachment support (photos, signatures, notes)
@@ -19,6 +21,7 @@ Complete proof of delivery system with multi-method capture, status timeline tra
 - Event query and retrieval
 
 ### Storage Abstraction
+
 - **Local Filesystem**: Development and testing
 - **AWS S3**: Production cloud storage
 - **Cloudflare R2**: S3-compatible alternative
@@ -26,6 +29,7 @@ Complete proof of delivery system with multi-method capture, status timeline tra
 - Automatic key generation
 
 ### Quality Assurance
+
 - Photo validation (format, size, dimensions, EXIF data)
 - Signature validation (minimum stroke points, data format)
 - QR code verification with similarity matching
@@ -46,13 +50,13 @@ pnpm install
 ### Initialize POD Service
 
 ```typescript
-import { createPODService, deliveryTimelineService } from '@witylogix/core/pod';
+import { createPODService, deliveryTimelineService } from "@witylogix/core/pod";
 
 const podService = createPODService({
-  type: 's3',
+  type: "s3",
   s3: {
-    bucketName: 'witylogix-pod-uploads',
-    region: 'us-east-1',
+    bucketName: "witylogix-pod-uploads",
+    region: "us-east-1",
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
@@ -62,17 +66,13 @@ const podService = createPODService({
 ### Capture Photo POD
 
 ```typescript
-const imageBuffer = await fs.promises.readFile('delivery-photo.jpg');
+const imageBuffer = await fs.promises.readFile("delivery-photo.jpg");
 
-const result = await podService.capturePOD(
-  deliveryId,
-  'photo',
-  imageBuffer
-);
+const result = await podService.capturePOD(deliveryId, "photo", imageBuffer);
 
 if (result.success) {
-  console.log('Photo stored at:', result.data.imageUrl);
-  console.log('Thumbnail at:', result.data.thumbnailUrl);
+  console.log("Photo stored at:", result.data.imageUrl);
+  console.log("Thumbnail at:", result.data.thumbnailUrl);
 }
 ```
 
@@ -80,20 +80,20 @@ if (result.success) {
 
 ```typescript
 // From canvas/drawing app (SVG path data)
-const signatureData = 'M10,10 L20,20 Q30,30 40,40 L50,50';
+const signatureData = "M10,10 L20,20 Q30,30 40,40 L50,50";
 
 const result = await podService.capturePOD(
   deliveryId,
-  'signature',
+  "signature",
   signatureData,
   {
-    signerName: 'John Doe',
-    notes: 'Signed via mobile app',
-  }
+    signerName: "John Doe",
+    notes: "Signed via mobile app",
+  },
 );
 
 if (result.success) {
-  console.log('Signature stored:', result.data.signatureUrl);
+  console.log("Signature stored:", result.data.signatureUrl);
 }
 ```
 
@@ -101,18 +101,15 @@ Or with point array from touch/mouse tracking:
 
 ```typescript
 const points = [
-  { x: 10, y: 20, t: 1000 },  // t = timestamp
+  { x: 10, y: 20, t: 1000 }, // t = timestamp
   { x: 15, y: 25, t: 1050 },
   { x: 20, y: 30, t: 1100 },
   // ... more points
 ];
 
-const result = await podService.capturePOD(
-  deliveryId,
-  'signature',
-  points,
-  { signerName: 'Jane Smith' }
-);
+const result = await podService.capturePOD(deliveryId, "signature", points, {
+  signerName: "Jane Smith",
+});
 ```
 
 ### Capture QR Code POD
@@ -120,12 +117,12 @@ const result = await podService.capturePOD(
 ```typescript
 const result = await podService.capturePOD(
   deliveryId,
-  'qr_scan',
+  "qr_scan",
   scannedQRData,
   {
-    expectedData: deliveryId,  // Optional, defaults to deliveryId
-    fuzzyMatch: true,          // Optional, for handling corruption
-  }
+    expectedData: deliveryId, // Optional, defaults to deliveryId
+    fuzzyMatch: true, // Optional, for handling corruption
+  },
 );
 ```
 
@@ -134,12 +131,12 @@ const result = await podService.capturePOD(
 ```typescript
 const result = await podService.capturePOD(
   deliveryId,
-  'barcode',
-  '9781234567890',
+  "barcode",
+  "9781234567890",
   {
-    expectedBarcode: '9781234567890',  // Optional
-    format: 'EAN13',                   // Optional, auto-detected
-  }
+    expectedBarcode: "9781234567890", // Optional
+    format: "EAN13", // Optional, auto-detected
+  },
 );
 ```
 
@@ -148,12 +145,12 @@ const result = await podService.capturePOD(
 ```typescript
 const result = await podService.capturePOD(
   deliveryId,
-  'manual_confirm',
+  "manual_confirm",
   {},
   {
-    confirmedBy: 'Driver Name',
-    notes: 'Delivered to recipient in person',
-  }
+    confirmedBy: "Driver Name",
+    notes: "Delivered to recipient in person",
+  },
 );
 ```
 
@@ -162,8 +159,8 @@ const result = await podService.capturePOD(
 ```typescript
 const verification = await podService.verifyPOD(deliveryId);
 
-console.log('POD Valid:', verification.isVerified);
-console.log('Verification Issues:', verification.issues);
+console.log("POD Valid:", verification.isVerified);
+console.log("Verification Issues:", verification.issues);
 ```
 
 ### Record Timeline Events
@@ -171,17 +168,17 @@ console.log('Verification Issues:', verification.issues);
 ```typescript
 const timelineEntry = deliveryTimelineService.recordEvent({
   deliveryId,
-  event: 'OUT_FOR_DELIVERY',
-  description: 'Package out for delivery',
+  event: "OUT_FOR_DELIVERY",
+  description: "Package out for delivery",
   latitude: 40.7128,
   longitude: -74.006,
   attachments: {
-    photoUrl: 'https://...',
-    notes: 'Package scanned at hub',
+    photoUrl: "https://...",
+    notes: "Package scanned at hub",
   },
   metadata: {
-    hubId: 'HUB-123',
-    driverId: 'DRV-456',
+    hubId: "HUB-123",
+    driverId: "DRV-456",
   },
 });
 ```
@@ -197,13 +194,16 @@ const currentStatus = deliveryTimelineService.getCurrentStatus(deliveryId);
 // Returns: 'pending' | 'confirmed' | 'out_for_delivery' | 'delivered' | etc.
 
 // Get specific event
-const deliveredEvent = deliveryTimelineService.getEventByType(deliveryId, 'DELIVERED');
+const deliveredEvent = deliveryTimelineService.getEventByType(
+  deliveryId,
+  "DELIVERED",
+);
 
 // Get events in time range
 const recentEvents = deliveryTimelineService.getEventsBetween(
   deliveryId,
-  new Date(Date.now() - 3600000),  // Last hour
-  new Date()
+  new Date(Date.now() - 3600000), // Last hour
+  new Date(),
 );
 ```
 
@@ -212,6 +212,7 @@ const recentEvents = deliveryTimelineService.getEventsBetween(
 All routes require authentication (`requireAuth` middleware).
 
 ### Photo POD
+
 ```
 POST /api/pod/:deliveryId/photo
 Content-Type: multipart/form-data
@@ -235,6 +236,7 @@ Response:
 ```
 
 ### Signature POD
+
 ```
 POST /api/pod/:deliveryId/signature
 Content-Type: application/json
@@ -260,6 +262,7 @@ Response:
 ```
 
 ### QR Code POD
+
 ```
 POST /api/pod/:deliveryId/qr
 Content-Type: application/json
@@ -272,6 +275,7 @@ Content-Type: application/json
 ```
 
 ### Barcode POD
+
 ```
 POST /api/pod/:deliveryId/barcode
 Content-Type: application/json
@@ -284,6 +288,7 @@ Content-Type: application/json
 ```
 
 ### Manual Confirmation
+
 ```
 POST /api/pod/:deliveryId/confirm
 Content-Type: application/json
@@ -295,6 +300,7 @@ Content-Type: application/json
 ```
 
 ### Get POD Records
+
 ```
 GET /api/pod/:deliveryId
 
@@ -307,6 +313,7 @@ Response:
 ```
 
 ### Get Delivery Timeline
+
 ```
 GET /api/pod/:deliveryId/timeline
 
@@ -319,6 +326,7 @@ Response:
 ```
 
 ### Verify POD
+
 ```
 GET /api/pod/:deliveryId/verify
 
@@ -471,7 +479,7 @@ interface OfflinePODQueue {
   data: any;
   options?: Record<string, any>;
   queuedAt: Date;
-  status: 'pending' | 'synced' | 'failed';
+  status: "pending" | "synced" | "failed";
 }
 
 const offlineQueue: OfflinePODQueue[] = [];
@@ -479,12 +487,12 @@ const offlineQueue: OfflinePODQueue[] = [];
 // Queue locally
 function queuePOD(entry: OfflinePODQueue) {
   offlineQueue.push(entry);
-  localStorage.setItem('pod-queue', JSON.stringify(offlineQueue));
+  localStorage.setItem("pod-queue", JSON.stringify(offlineQueue));
 }
 
 // Sync when online
 async function syncPODQueue() {
-  const queue = JSON.parse(localStorage.getItem('pod-queue') || '[]');
+  const queue = JSON.parse(localStorage.getItem("pod-queue") || "[]");
 
   for (const item of queue) {
     try {
@@ -492,15 +500,15 @@ async function syncPODQueue() {
         item.deliveryId,
         item.method,
         item.data,
-        item.options
+        item.options,
       );
-      item.status = 'synced';
+      item.status = "synced";
     } catch (error) {
-      item.status = 'failed';
+      item.status = "failed";
     }
   }
 
-  localStorage.setItem('pod-queue', JSON.stringify(queue));
+  localStorage.setItem("pod-queue", JSON.stringify(queue));
 }
 ```
 
@@ -509,6 +517,7 @@ async function syncPODQueue() {
 ### Storage Configuration Examples
 
 **Local Storage (Development)**
+
 ```typescript
 {
   type: 'local',
@@ -520,6 +529,7 @@ async function syncPODQueue() {
 ```
 
 **AWS S3**
+
 ```typescript
 {
   type: 's3',
@@ -534,6 +544,7 @@ async function syncPODQueue() {
 ```
 
 **Cloudflare R2**
+
 ```typescript
 {
   type: 'r2',

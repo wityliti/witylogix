@@ -29,7 +29,10 @@ export async function initSentry(): Promise<void> {
   }
 }
 
-export async function captureException(error: unknown, context?: Record<string, unknown>): Promise<void> {
+export async function captureException(
+  error: unknown,
+  context?: Record<string, unknown>,
+): Promise<void> {
   if (!process.env.SENTRY_DSN) return;
   try {
     const Sentry = await import("@sentry/node");

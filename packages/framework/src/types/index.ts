@@ -58,9 +58,7 @@ export interface WorkflowContext {
  * Result of a single step execution.
  * Discriminated union: either success with data, or failure with error.
  */
-export type StepResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; error: Error };
+export type StepResult<T> = { ok: true; data: T } | { ok: false; error: Error };
 
 /**
  * Input handler for a step.
@@ -68,7 +66,7 @@ export type StepResult<T> =
  */
 export type StepInputHandler<TUpstream, TInput> = (
   upstreamOutput: TUpstream,
-  context: WorkflowContext
+  context: WorkflowContext,
 ) => TInput | Promise<TInput>;
 
 /**
@@ -77,7 +75,7 @@ export type StepInputHandler<TUpstream, TInput> = (
  */
 export type StepInvokeHandler<TInput, TOutput> = (
   input: TInput,
-  context: WorkflowContext
+  context: WorkflowContext,
 ) => TOutput | Promise<TOutput>;
 
 /**
@@ -86,7 +84,7 @@ export type StepInvokeHandler<TInput, TOutput> = (
  */
 export type StepCompensateHandler<TOutput> = (
   output: TOutput,
-  context: WorkflowContext
+  context: WorkflowContext,
 ) => void | Promise<void>;
 
 /**
@@ -196,7 +194,7 @@ export interface WorkflowExecution {
 export type BeforeWorkflowHook = (
   name: string,
   input: unknown,
-  context: WorkflowContext
+  context: WorkflowContext,
 ) => void | Promise<void>;
 
 /**
@@ -204,7 +202,7 @@ export type BeforeWorkflowHook = (
  */
 export type AfterWorkflowHook = (
   execution: WorkflowExecution,
-  context: WorkflowContext
+  context: WorkflowContext,
 ) => void | Promise<void>;
 
 /**
@@ -213,7 +211,7 @@ export type AfterWorkflowHook = (
 export type BeforeStepHook = (
   step: WorkflowStep,
   input: unknown,
-  context: WorkflowContext
+  context: WorkflowContext,
 ) => void | Promise<void>;
 
 /**
@@ -221,7 +219,7 @@ export type BeforeStepHook = (
  */
 export type AfterStepHook = (
   stepExecution: WorkflowStepExecution,
-  context: WorkflowContext
+  context: WorkflowContext,
 ) => void | Promise<void>;
 
 /**
@@ -313,4 +311,6 @@ export interface WorkflowEvent {
 /**
  * Listener for workflow events.
  */
-export type WorkflowEventListener = (event: WorkflowEvent) => void | Promise<void>;
+export type WorkflowEventListener = (
+  event: WorkflowEvent,
+) => void | Promise<void>;

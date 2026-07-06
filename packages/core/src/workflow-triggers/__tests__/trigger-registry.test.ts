@@ -46,7 +46,8 @@ describe("TriggerRegistry", () => {
     });
 
     it("should register trigger with conditions", () => {
-      const condition = (ctx: TriggerContext) => ctx.entity.status === "PENDING";
+      const condition = (ctx: TriggerContext) =>
+        ctx.entity.status === "PENDING";
 
       const id = registry.register({
         eventType: "order.created",

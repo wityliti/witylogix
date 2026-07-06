@@ -2,7 +2,11 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { OrderWebhookConsumer } from "../consumers/order-webhook";
-import type { QueueJobPayload, QueueJobMetadata, ConsumerConfig } from "../types";
+import type {
+  QueueJobPayload,
+  QueueJobMetadata,
+  ConsumerConfig,
+} from "../types";
 
 /**
  * Integration test suite for order webhook consumer
@@ -135,7 +139,7 @@ describe("OrderWebhookConsumer", () => {
             email: "customer@example.com",
             currency: "USD",
           }),
-        })
+        }),
       );
     });
 
@@ -293,7 +297,7 @@ describe("OrderWebhookConsumer", () => {
         }),
         expect.objectContaining({
           tenantId: "shop_123",
-        })
+        }),
       );
     });
 
@@ -318,7 +322,7 @@ describe("OrderWebhookConsumer", () => {
         }),
         expect.objectContaining({
           tenantId: "shop_123",
-        })
+        }),
       );
     });
   });
@@ -375,7 +379,9 @@ describe("OrderWebhookConsumer", () => {
     it("should return failure result on transient errors", async () => {
       const job = makeOrderJob();
 
-      mockPrisma.order.upsert.mockRejectedValueOnce(new Error("Connection timeout"));
+      mockPrisma.order.upsert.mockRejectedValueOnce(
+        new Error("Connection timeout"),
+      );
 
       const result = await consumer.executeJob(job);
       expect(result.success).toBe(false);
@@ -421,7 +427,7 @@ describe("OrderWebhookConsumer", () => {
         expect.any(Object),
         expect.objectContaining({
           tenantId: "shop_456",
-        })
+        }),
       );
     });
   });

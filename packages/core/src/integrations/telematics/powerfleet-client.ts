@@ -136,7 +136,11 @@ export class PowerfleetClient implements ITelematicsAdapter {
   /**
    * Make authenticated request to Powerfleet API
    */
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  private async request<T>(
+    method: string,
+    path: string,
+    body?: unknown,
+  ): Promise<T> {
     return this.circuitBreaker.execute(async () => {
       await this.rateLimiter.waitIfNeeded();
 
@@ -152,7 +156,9 @@ export class PowerfleetClient implements ITelematicsAdapter {
       });
 
       if (!response.ok) {
-        throw new Error(`Powerfleet API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Powerfleet API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       if (response.status === 204 || typeof response.json !== "function") {
@@ -230,7 +236,9 @@ export class PowerfleetClient implements ITelematicsAdapter {
   /**
    * Get diagnostics by vehicle ID
    */
-  async getDiagnosticsByVehicleId(vehicleId: string): Promise<NormalizedDiagnostic> {
+  async getDiagnosticsByVehicleId(
+    vehicleId: string,
+  ): Promise<NormalizedDiagnostic> {
     return {
       externalVehicleId: vehicleId,
       engineRunning: false,
@@ -242,7 +250,9 @@ export class PowerfleetClient implements ITelematicsAdapter {
   /**
    * Get behavior events
    */
-  async getBehaviorEvents(options?: SyncOptions): Promise<NormalizedBehaviorEvent[]> {
+  async getBehaviorEvents(
+    options?: SyncOptions,
+  ): Promise<NormalizedBehaviorEvent[]> {
     // Powerfleet focuses on tracking; behavior events may come from yard management
     return [];
   }
@@ -250,7 +260,9 @@ export class PowerfleetClient implements ITelematicsAdapter {
   /**
    * Get fuel readings
    */
-  async getFuelReadings(options?: SyncOptions): Promise<NormalizedFuelReading[]> {
+  async getFuelReadings(
+    options?: SyncOptions,
+  ): Promise<NormalizedFuelReading[]> {
     // Powerfleet doesn't provide fuel data
     return [];
   }
@@ -258,7 +270,9 @@ export class PowerfleetClient implements ITelematicsAdapter {
   /**
    * Get fuel reading by vehicle ID
    */
-  async getFuelReadingByVehicleId(vehicleId: string): Promise<NormalizedFuelReading> {
+  async getFuelReadingByVehicleId(
+    vehicleId: string,
+  ): Promise<NormalizedFuelReading> {
     return {
       externalVehicleId: vehicleId,
       fuelLevel: 0,
@@ -270,7 +284,9 @@ export class PowerfleetClient implements ITelematicsAdapter {
   /**
    * Get yard dwell events
    */
-  async getYardDwellEvents(options?: SyncOptions): Promise<PowerfleetDwellEvent[]> {
+  async getYardDwellEvents(
+    options?: SyncOptions,
+  ): Promise<PowerfleetDwellEvent[]> {
     try {
       const response = await this.request<{
         events: PowerfleetDwellEvent[];
@@ -286,13 +302,12 @@ export class PowerfleetClient implements ITelematicsAdapter {
   /**
    * Get utilization report
    */
-  async getUtilizationReport(vehicleId?: string): Promise<Record<string, unknown>> {
+  async getUtilizationReport(
+    vehicleId?: string,
+  ): Promise<Record<string, unknown>> {
     try {
       const path = vehicleId ? `/utilization/${vehicleId}` : "/utilization";
-      const response = await this.request<Record<string, unknown>>(
-        "GET",
-        path,
-      );
+      const response = await this.request<Record<string, unknown>>("GET", path);
 
       return response;
     } catch (error) {
@@ -336,7 +351,9 @@ export class PowerfleetClient implements ITelematicsAdapter {
   /**
    * Create geofence
    */
-  async createGeofence(geofence: Omit<PowerfleetGeofence, "geofenceId">): Promise<PowerfleetGeofence> {
+  async createGeofence(
+    geofence: Omit<PowerfleetGeofence, "geofenceId">,
+  ): Promise<PowerfleetGeofence> {
     const response = await this.request<PowerfleetGeofence>(
       "POST",
       "/geofences",
@@ -428,7 +445,9 @@ export class PowerfleetClient implements ITelematicsAdapter {
     return this.getPositionByVehicleId(vehicleId);
   }
 
-  async getVehicleDiagnostics(vehicleId: string): Promise<NormalizedDiagnostic> {
+  async getVehicleDiagnostics(
+    vehicleId: string,
+  ): Promise<NormalizedDiagnostic> {
     return this.getDiagnosticsByVehicleId(vehicleId);
   }
 
@@ -436,7 +455,10 @@ export class PowerfleetClient implements ITelematicsAdapter {
     driverId: string,
     dateRange: { startDate: Date; endDate: Date },
   ): Promise<NormalizedBehaviorEvent[]> {
-    return this.getBehaviorEvents({ startDate: dateRange.startDate, endDate: dateRange.endDate });
+    return this.getBehaviorEvents({
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate,
+    });
   }
 
   async getFuelLevel(vehicleId: string): Promise<NormalizedFuelReading> {
@@ -447,8 +469,18 @@ export class PowerfleetClient implements ITelematicsAdapter {
     webhookUrl: string,
     eventTypes: string[],
   ): Promise<WebhookSubscription> {
-    await this.subscribeWebhook({ webhookId: "", url: webhookUrl, events: eventTypes, createdAt: new Date() });
-    return { webhookId: `powerfleet-${Date.now()}`, url: webhookUrl, events: eventTypes, createdAt: new Date() };
+    await this.subscribeWebhook({
+      webhookId: "",
+      url: webhookUrl,
+      events: eventTypes,
+      createdAt: new Date(),
+    });
+    return {
+      webhookId: `powerfleet-${Date.now()}`,
+      url: webhookUrl,
+      events: eventTypes,
+      createdAt: new Date(),
+    };
   }
 
   async unsubscribeFromEvents(webhookId: string): Promise<void> {

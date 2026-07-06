@@ -3,9 +3,7 @@
  * Export public API
  */
 
-export {
-  WidgetManager,
-} from './widget-manager';
+export { WidgetManager } from "./widget-manager";
 
 export type {
   Widget,
@@ -19,7 +17,7 @@ export type {
   WidgetCatalogEntry,
   WidgetType,
   WidgetSize,
-} from './types';
+} from "./types";
 
 export {
   WIDGET_CATALOG,
@@ -29,4 +27,4 @@ export {
   DEFAULT_GRID_WIDTH,
   WidgetNotFoundError,
   WidgetValidationError,
-} from './types';
+} from "./types";

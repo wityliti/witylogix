@@ -309,7 +309,10 @@ export class NotificationTriggerEngine {
     for (const event of Object.values(TriggerEvent)) {
       this.eventBus.on(event, (payload) => {
         this.processEvent(event, payload).catch((err) => {
-          console.error(`[TriggerEngine] Error processing event "${event}":`, err);
+          console.error(
+            `[TriggerEngine] Error processing event "${event}":`,
+            err,
+          );
         });
       });
     }
@@ -325,7 +328,10 @@ export class NotificationTriggerEngine {
    * By default, queries the database. Can be overridden by injecting a custom
    * ruleLoader during construction.
    */
-  async loadRules(shopId: string, event?: TriggerEvent): Promise<TriggerRule[]> {
+  async loadRules(
+    shopId: string,
+    event?: TriggerEvent,
+  ): Promise<TriggerRule[]> {
     if (this.ruleLoader) {
       return this.ruleLoader(shopId, event);
     }
@@ -463,7 +469,7 @@ export class NotificationTriggerEngine {
       case "admin":
         // For admin notifications, return a placeholder.
         // Real implementation would fetch admin contact from shop settings.
-        return payload.shopId as string || null;
+        return (payload.shopId as string) || null;
 
       default:
         return null;
@@ -484,7 +490,10 @@ export class NotificationTriggerEngine {
    *   Input: { shipmentId, trackingNumber, deliveredAt, driverName }
    *   Output: { tracking_number, delivered_at, driver_name, ... }
    */
-  buildTemplateVars(event: TriggerEvent, payload: EventPayload): Record<string, unknown> {
+  buildTemplateVars(
+    event: TriggerEvent,
+    payload: EventPayload,
+  ): Record<string, unknown> {
     const vars: Record<string, unknown> = {};
 
     // Common fields across all events
@@ -577,7 +586,9 @@ export class NotificationTriggerEngine {
     try {
       // Load rules for this shop and event
       const rules = await this.loadRules(shopId, event);
-      const relevantRules = rules.filter((r) => r.event === event && r.isActive);
+      const relevantRules = rules.filter(
+        (r) => r.event === event && r.isActive,
+      );
 
       // Process each matching rule
       for (const rule of relevantRules) {
@@ -687,8 +698,8 @@ export const triggerEngine = new NotificationTriggerEngine(eventBus);
 // EVENT BUS V2 — Redis Streams (Sprint 4.4)
 // ───────────────────────────────────────────────────────────────────
 
-export * as EventBusV2 from './event-bus';
-export * as EventBusTypes from './types';
-export * as RedisStreamAdapter from './redis-stream-adapter';
-export * as EventStoreModule from './event-store';
-export * as DeadLetterModule from './dead-letter';
+export * as EventBusV2 from "./event-bus";
+export * as EventBusTypes from "./types";
+export * as RedisStreamAdapter from "./redis-stream-adapter";
+export * as EventStoreModule from "./event-store";
+export * as DeadLetterModule from "./dead-letter";

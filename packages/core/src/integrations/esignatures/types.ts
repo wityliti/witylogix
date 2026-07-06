@@ -514,21 +514,32 @@ export interface ESignatureAdapterInterface {
   // ─── Template Management ─────────────────────────────────────────────
 
   /** List available templates. */
-  listTemplates(options?: { limit?: number; offset?: number }): Promise<{ templates: Template[]; total: number }>;
+  listTemplates(options?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<{ templates: Template[]; total: number }>;
 
   /** Get template details. */
   getTemplate(templateId: string): Promise<Template>;
 
   /** Create envelope from template. */
-  createEnvelopeFromTemplate(templateId: string, envelope: Partial<Envelope>): Promise<EnvelopeResult>;
+  createEnvelopeFromTemplate(
+    templateId: string,
+    envelope: Partial<Envelope>,
+  ): Promise<EnvelopeResult>;
 
   // ─── Document Management ────────────────────────────────────────────
 
   /** Download signed document. */
-  downloadDocument(envelopeId: string, documentId: string): Promise<DocumentDownloadResult>;
+  downloadDocument(
+    envelopeId: string,
+    documentId: string,
+  ): Promise<DocumentDownloadResult>;
 
   /** Download all documents from envelope as ZIP. */
-  downloadEnvelopeDocuments(envelopeId: string): Promise<{ content: string; mimeType: string; fileName: string }>;
+  downloadEnvelopeDocuments(
+    envelopeId: string,
+  ): Promise<{ content: string; mimeType: string; fileName: string }>;
 
   // ─── Signing & Embedding ────────────────────────────────────────────
 
@@ -536,7 +547,7 @@ export interface ESignatureAdapterInterface {
   getEmbeddedSigningUrl(
     envelopeId: string,
     signerEmail: string,
-    returnUrl: string
+    returnUrl: string,
   ): Promise<EmbedSigningResult>;
 
   /** Mark document as viewed by signer. */
@@ -548,7 +559,10 @@ export interface ESignatureAdapterInterface {
   getEnvelopeEvents(envelopeId: string): Promise<SigningEvent[]>;
 
   /** Parse and validate webhook event. */
-  parseWebhookEvent(payload: Record<string, unknown>, headers: Record<string, string>): Promise<ESignatureWebhookEvent>;
+  parseWebhookEvent(
+    payload: Record<string, unknown>,
+    headers: Record<string, string>,
+  ): Promise<ESignatureWebhookEvent>;
 
   /** Verify webhook signature. */
   verifyWebhookSignature(payload: string, signature: string): boolean;
@@ -562,7 +576,10 @@ export interface ESignatureAdapterInterface {
   getRateLimitStatus(): Promise<{ remaining: number; resetAt: Date }>;
 
   /** Get circuit breaker status. */
-  getCircuitBreakerStatus(): Promise<{ state: "closed" | "open" | "half_open"; failureCount: number }>;
+  getCircuitBreakerStatus(): Promise<{
+    state: "closed" | "open" | "half_open";
+    failureCount: number;
+  }>;
 }
 
 // ─── Envelope Engine Types ──────────────────────────────────────────────
@@ -570,7 +587,11 @@ export interface ESignatureAdapterInterface {
 /**
  * Provider selection strategy.
  */
-export type ProviderSelectionStrategy = "cost" | "features" | "reliability" | "speed";
+export type ProviderSelectionStrategy =
+  | "cost"
+  | "features"
+  | "reliability"
+  | "speed";
 
 /**
  * Envelope engine options.
@@ -595,7 +616,9 @@ export interface EnvelopeEngineOptions {
   enableComplianceLog?: boolean;
 
   /** Providers to use (in preference order). */
-  preferredProviders?: Array<"docusign" | "adobe_sign" | "pandadoc" | "hellosign">;
+  preferredProviders?: Array<
+    "docusign" | "adobe_sign" | "pandadoc" | "hellosign"
+  >;
 }
 
 /**
@@ -641,7 +664,12 @@ export interface ComplianceEvent {
   signerEmail?: string;
 
   /** Event type. */
-  type: "envelope_created" | "envelope_sent" | "document_signed" | "envelope_voided" | "webhook_received";
+  type:
+    | "envelope_created"
+    | "envelope_sent"
+    | "document_signed"
+    | "envelope_voided"
+    | "webhook_received";
 
   /** Event timestamp. */
   timestamp: Date;

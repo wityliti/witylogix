@@ -4,7 +4,7 @@
  * Submissions are queued offline-first via OfflineQueue.
  */
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState } from "react";
 import {
   View,
   Text,
@@ -17,17 +17,20 @@ import {
   Alert,
   ScrollView,
   Image,
-} from 'react-native';
-import { CameraView as CameraViewImpl, useCameraPermissions } from 'expo-camera';
-import SvgImpl, { Path as PathImpl } from 'react-native-svg';
-import * as Location from 'expo-location';
-import type { CameraView as CameraViewType } from 'expo-camera';
+} from "react-native";
+import {
+  CameraView as CameraViewImpl,
+  useCameraPermissions,
+} from "expo-camera";
+import SvgImpl, { Path as PathImpl } from "react-native-svg";
+import * as Location from "expo-location";
+import type { CameraView as CameraViewType } from "expo-camera";
 
 // expo-camera v16 and react-native-svg v15 have a `refs` mismatch with React 18 class types
 const CameraView = CameraViewImpl as unknown as React.ComponentType<any>;
 const Svg = SvgImpl as unknown as React.ComponentType<any>;
 const Path = PathImpl as unknown as React.ComponentType<any>;
-import { offlineQueue } from '../lib/offline-queue';
+import { offlineQueue } from "../lib/offline-queue";
 
 interface DeliveryProofCaptureProps {
   shipmentId: string;
@@ -37,19 +40,19 @@ interface DeliveryProofCaptureProps {
 }
 
 const PAD_HEIGHT = 160;
-const PAD_WIDTH = Dimensions.get('window').width - 64; // accounting for padding
+const PAD_WIDTH = Dimensions.get("window").width - 64; // accounting for padding
 
-type Step = 'form' | 'camera' | 'signature';
+type Step = "form" | "camera" | "signature";
 
 const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
   shipmentId,
-  recipientName: initialRecipientName = '',
+  recipientName: initialRecipientName = "",
   onSubmitSuccess,
   onSubmitError,
 }) => {
-  const [step, setStep] = useState<Step>('form');
+  const [step, setStep] = useState<Step>("form");
   const [recipientName, setRecipientName] = useState(initialRecipientName);
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState("");
   const [photoBase64, setPhotoBase64] = useState<string | undefined>();
   const [signatureBase64, setSignatureBase64] = useState<string | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,7 +66,7 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
 
   // Signature
   const [completedPaths, setCompletedPaths] = useState<string[]>([]);
-  const currentPathRef = useRef('');
+  const currentPathRef = useRef("");
   const [, forceRender] = useState(0);
 
   const signaturePanResponder = useRef(
@@ -83,7 +86,7 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
       onPanResponderRelease: () => {
         if (currentPathRef.current) {
           setCompletedPaths((prev) => [...prev, currentPathRef.current]);
-          currentPathRef.current = '';
+          currentPathRef.current = "";
         }
       },
     }),
@@ -95,24 +98,30 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
     if (!cameraPermission?.granted) {
       const result = await requestCameraPermission();
       if (!result.granted) {
-        Alert.alert('Permission required', 'Camera access is needed to capture delivery proof.');
+        Alert.alert(
+          "Permission required",
+          "Camera access is needed to capture delivery proof.",
+        );
         return;
       }
     }
     setPhotoPreview(null);
-    setStep('camera');
+    setStep("camera");
   };
 
   const handleTakePhoto = async () => {
     if (!cameraRef.current || capturing) return;
     try {
       setCapturing(true);
-      const photo = await cameraRef.current.takePictureAsync({ base64: true, quality: 0.7 });
+      const photo = await cameraRef.current.takePictureAsync({
+        base64: true,
+        quality: 0.7,
+      });
       if (photo?.base64) {
         setPhotoPreview(`data:image/jpeg;base64,${photo.base64}`);
       }
     } catch {
-      Alert.alert('Error', 'Failed to capture photo. Please try again.');
+      Alert.alert("Error", "Failed to capture photo. Please try again.");
     } finally {
       setCapturing(false);
     }
@@ -122,20 +131,20 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
     if (photoPreview) {
       setPhotoBase64(photoPreview);
     }
-    setStep('form');
+    setStep("form");
   };
 
   // ─── Signature step ───────────────────────────────────────
 
   const handleClearSignature = () => {
     setCompletedPaths([]);
-    currentPathRef.current = '';
+    currentPathRef.current = "";
     forceRender((n) => n + 1);
   };
 
   const handleConfirmSignature = () => {
     if (completedPaths.length === 0) {
-      Alert.alert('No signature', 'Please draw a signature first.');
+      Alert.alert("No signature", "Please draw a signature first.");
       return;
     }
     const pathElements = completedPaths
@@ -143,15 +152,15 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
         (d) =>
           `<path d="${d}" stroke="black" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`,
       )
-      .join('');
+      .join("");
     const svgXml = [
       `<svg xmlns="http://www.w3.org/2000/svg" width="${PAD_WIDTH}" height="${PAD_HEIGHT}">`,
       `<rect width="${PAD_WIDTH}" height="${PAD_HEIGHT}" fill="white"/>`,
       pathElements,
-      '</svg>',
-    ].join('');
+      "</svg>",
+    ].join("");
     setSignatureBase64(`data:image/svg+xml;base64,${btoa(svgXml)}`);
-    setStep('form');
+    setStep("form");
   };
 
   // ─── Submit ───────────────────────────────────────────────
@@ -159,15 +168,15 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
   const handleSubmit = async () => {
     setError(null);
     if (!recipientName.trim()) {
-      setError('Recipient name is required');
+      setError("Recipient name is required");
       return;
     }
     if (!photoBase64) {
-      setError('Photo is required');
+      setError("Photo is required");
       return;
     }
     if (!signatureBase64) {
-      setError('Signature is required');
+      setError("Signature is required");
       return;
     }
 
@@ -176,7 +185,7 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
       let latitude: number | undefined;
       let longitude: number | undefined;
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
+      if (status === "granted") {
         const loc = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Balanced,
         });
@@ -196,9 +205,9 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
       };
 
       const operationId = offlineQueue.enqueue({
-        type: 'POST',
+        type: "POST",
         endpoint: `/api/v4/shipments/${shipmentId}/proof-of-delivery`,
-        method: 'POST',
+        method: "POST",
         body: proofData,
       });
 
@@ -209,8 +218,8 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
       onSubmitSuccess?.(operationId);
 
       // Reset form
-      setRecipientName('');
-      setNotes('');
+      setRecipientName("");
+      setNotes("");
       setPhotoBase64(undefined);
       setSignatureBase64(undefined);
       setCompletedPaths([]);
@@ -225,15 +234,18 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
 
   // ─── Camera step UI ───────────────────────────────────────
 
-  if (step === 'camera') {
+  if (step === "camera") {
     if (!cameraPermission?.granted) {
       return (
         <View style={styles.centered}>
           <Text style={styles.permText}>Camera permission is required.</Text>
-          <TouchableOpacity style={styles.primaryBtn} onPress={requestCameraPermission}>
+          <TouchableOpacity
+            style={styles.primaryBtn}
+            onPress={requestCameraPermission}
+          >
             <Text style={styles.primaryBtnText}>Grant Permission</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setStep('form')}>
+          <TouchableOpacity onPress={() => setStep("form")}>
             <Text style={styles.linkText}>Cancel</Text>
           </TouchableOpacity>
         </View>
@@ -243,12 +255,22 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
     if (photoPreview) {
       return (
         <View style={styles.cameraContainer}>
-          <Image source={{ uri: photoPreview }} style={styles.fullPreview} resizeMode="cover" />
+          <Image
+            source={{ uri: photoPreview }}
+            style={styles.fullPreview}
+            resizeMode="cover"
+          />
           <View style={styles.previewActions}>
-            <TouchableOpacity style={styles.secondaryBtn} onPress={() => setPhotoPreview(null)}>
+            <TouchableOpacity
+              style={styles.secondaryBtn}
+              onPress={() => setPhotoPreview(null)}
+            >
               <Text style={styles.secondaryBtnText}>Retake</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.primaryBtn} onPress={handleUsePhoto}>
+            <TouchableOpacity
+              style={styles.primaryBtn}
+              onPress={handleUsePhoto}
+            >
               <Text style={styles.primaryBtnText}>Use Photo</Text>
             </TouchableOpacity>
           </View>
@@ -261,7 +283,7 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
         <CameraView ref={cameraRef} style={styles.camera} facing="back">
           <View style={styles.cameraOverlay}>
             <View style={styles.shutterRow}>
-              <TouchableOpacity onPress={() => setStep('form')}>
+              <TouchableOpacity onPress={() => setStep("form")}>
                 <Text style={styles.cancelWhite}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -285,11 +307,12 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
 
   // ─── Signature step UI ────────────────────────────────────
 
-  if (step === 'signature') {
+  if (step === "signature") {
     const allPaths = completedPaths.concat(
       currentPathRef.current ? [currentPathRef.current] : [],
     );
-    const hasStrokes = completedPaths.length > 0 || currentPathRef.current.length > 0;
+    const hasStrokes =
+      completedPaths.length > 0 || currentPathRef.current.length > 0;
 
     return (
       <View style={styles.signatureContainer}>
@@ -323,19 +346,30 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
             onPress={handleClearSignature}
             disabled={!hasStrokes}
           >
-            <Text style={[styles.secondaryBtnText, !hasStrokes && { color: '#64748b' }]}>
+            <Text
+              style={[
+                styles.secondaryBtnText,
+                !hasStrokes && { color: "#64748b" },
+              ]}
+            >
               Clear
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.primaryBtn, !hasStrokes && styles.primaryBtnDisabled]}
+            style={[
+              styles.primaryBtn,
+              !hasStrokes && styles.primaryBtnDisabled,
+            ]}
             onPress={handleConfirmSignature}
             disabled={!hasStrokes}
           >
             <Text style={styles.primaryBtnText}>Confirm</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => setStep('form')} style={styles.cancelRow}>
+        <TouchableOpacity
+          onPress={() => setStep("form")}
+          style={styles.cancelRow}
+        >
           <Text style={styles.linkText}>Cancel</Text>
         </TouchableOpacity>
       </View>
@@ -348,7 +382,11 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
     <ScrollView style={styles.form} contentContainerStyle={styles.formContent}>
       <Text style={styles.formTitle}>Delivery Proof</Text>
 
-      {error && <View style={styles.errorBox}><Text style={styles.errorText}>{error}</Text></View>}
+      {error && (
+        <View style={styles.errorBox}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
 
       {/* Recipient Name */}
       <Text style={styles.label}>Recipient Name *</Text>
@@ -366,19 +404,28 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
       <Text style={styles.label}>Package Photo *</Text>
       {photoBase64 ? (
         <View>
-          <Image source={{ uri: photoBase64 }} style={styles.thumbPreview} resizeMode="cover" />
-          <TouchableOpacity style={styles.secondaryBtn} onPress={handleOpenCamera}>
+          <Image
+            source={{ uri: photoBase64 }}
+            style={styles.thumbPreview}
+            resizeMode="cover"
+          />
+          <TouchableOpacity
+            style={styles.secondaryBtn}
+            onPress={handleOpenCamera}
+          >
             <Text style={styles.secondaryBtnText}>Retake Photo</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <TouchableOpacity style={styles.captureBtn} onPress={handleOpenCamera}>
-          <Text style={styles.captureBtnText}>📷  Take Photo</Text>
+          <Text style={styles.captureBtnText}>📷 Take Photo</Text>
         </TouchableOpacity>
       )}
 
       {/* Signature */}
-      <Text style={[styles.label, { marginTop: 16 }]}>Recipient Signature *</Text>
+      <Text style={[styles.label, { marginTop: 16 }]}>
+        Recipient Signature *
+      </Text>
       {signatureBase64 ? (
         <View>
           <Image
@@ -386,13 +433,19 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
             style={styles.sigPreview}
             resizeMode="contain"
           />
-          <TouchableOpacity style={styles.secondaryBtn} onPress={() => setStep('signature')}>
+          <TouchableOpacity
+            style={styles.secondaryBtn}
+            onPress={() => setStep("signature")}
+          >
             <Text style={styles.secondaryBtnText}>Redo Signature</Text>
           </TouchableOpacity>
         </View>
       ) : (
-        <TouchableOpacity style={styles.captureBtn} onPress={() => setStep('signature')}>
-          <Text style={styles.captureBtnText}>✍️  Capture Signature</Text>
+        <TouchableOpacity
+          style={styles.captureBtn}
+          onPress={() => setStep("signature")}
+        >
+          <Text style={styles.captureBtnText}>✍️ Capture Signature</Text>
         </TouchableOpacity>
       )}
 
@@ -415,11 +468,16 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
         style={[
           styles.primaryBtn,
           styles.submitBtn,
-          (!recipientName || !photoBase64 || !signatureBase64 || isSubmitting) &&
+          (!recipientName ||
+            !photoBase64 ||
+            !signatureBase64 ||
+            isSubmitting) &&
             styles.primaryBtnDisabled,
         ]}
         onPress={handleSubmit}
-        disabled={!recipientName || !photoBase64 || !signatureBase64 || isSubmitting}
+        disabled={
+          !recipientName || !photoBase64 || !signatureBase64 || isSubmitting
+        }
       >
         {isSubmitting ? (
           <ActivityIndicator size="small" color="#fff" />
@@ -433,39 +491,39 @@ const DeliveryProofCapture: React.FC<DeliveryProofCaptureProps> = ({
 
 const styles = StyleSheet.create({
   // Camera
-  cameraContainer: { flex: 1, backgroundColor: '#000' },
+  cameraContainer: { flex: 1, backgroundColor: "#000" },
   camera: { flex: 1 },
-  cameraOverlay: { flex: 1, justifyContent: 'flex-end', paddingBottom: 36 },
+  cameraOverlay: { flex: 1, justifyContent: "flex-end", paddingBottom: 36 },
   shutterRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 32,
   },
-  cancelWhite: { color: '#fff', fontSize: 14, fontWeight: '600', width: 56 },
+  cancelWhite: { color: "#fff", fontSize: 14, fontWeight: "600", width: 56 },
   shutter: {
     width: 68,
     height: 68,
     borderRadius: 34,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 3,
-    borderColor: 'rgba(255,255,255,0.5)',
+    borderColor: "rgba(255,255,255,0.5)",
   },
   shutterDisabled: { opacity: 0.6 },
   shutterInner: {
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderWidth: 2,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
   },
   fullPreview: { flex: 1 },
   previewActions: {
-    flexDirection: 'row',
-    backgroundColor: '#0f172a',
+    flexDirection: "row",
+    backgroundColor: "#0f172a",
     paddingVertical: 16,
     paddingHorizontal: 20,
     gap: 12,
@@ -473,119 +531,139 @@ const styles = StyleSheet.create({
   // Signature
   signatureContainer: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: "#0f172a",
     paddingHorizontal: 16,
     paddingTop: 24,
   },
-  stepTitle: { fontSize: 18, fontWeight: '700', color: '#e2e8f0', marginBottom: 4 },
-  stepSubtitle: { fontSize: 13, color: '#94a3b8', marginBottom: 20 },
+  stepTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#e2e8f0",
+    marginBottom: 4,
+  },
+  stepSubtitle: { fontSize: 13, color: "#94a3b8", marginBottom: 20 },
   padWrapper: {
     width: PAD_WIDTH,
     height: PAD_HEIGHT,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#334155',
-    overflow: 'hidden',
-    position: 'relative',
+    borderColor: "#334155",
+    overflow: "hidden",
+    position: "relative",
   },
-  svgPad: { backgroundColor: '#fff' },
+  svgPad: { backgroundColor: "#fff" },
   padPlaceholder: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
-  padPlaceholderText: { color: '#cbd5e1', fontSize: 14, fontStyle: 'italic' },
-  signatureActions: { flexDirection: 'row', marginTop: 16, gap: 12 },
-  cancelRow: { alignItems: 'center', paddingVertical: 16 },
+  padPlaceholderText: { color: "#cbd5e1", fontSize: 14, fontStyle: "italic" },
+  signatureActions: { flexDirection: "row", marginTop: 16, gap: 12 },
+  cancelRow: { alignItems: "center", paddingVertical: 16 },
   // Form
-  form: { flex: 1, backgroundColor: '#0f172a' },
+  form: { flex: 1, backgroundColor: "#0f172a" },
   formContent: { padding: 16 },
-  formTitle: { fontSize: 20, fontWeight: '700', color: '#e2e8f0', marginBottom: 16 },
+  formTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#e2e8f0",
+    marginBottom: 16,
+  },
   label: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#94a3b8',
+    fontWeight: "600",
+    color: "#94a3b8",
     marginBottom: 6,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 0.3,
   },
   input: {
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#475569',
+    borderColor: "#475569",
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
-    color: '#e2e8f0',
+    color: "#e2e8f0",
     marginBottom: 16,
   },
   inputMultiline: {
     minHeight: 72,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   captureBtn: {
-    backgroundColor: '#1e3a5f',
+    backgroundColor: "#1e3a5f",
     borderRadius: 8,
     paddingVertical: 14,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#3b82f6',
+    borderColor: "#3b82f6",
     marginBottom: 8,
   },
-  captureBtnText: { color: '#93c5fd', fontSize: 14, fontWeight: '600' },
-  thumbPreview: { width: '100%', height: 160, borderRadius: 8, marginBottom: 8 },
+  captureBtnText: { color: "#93c5fd", fontSize: 14, fontWeight: "600" },
+  thumbPreview: {
+    width: "100%",
+    height: 160,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
   sigPreview: {
-    width: '100%',
+    width: "100%",
     height: 80,
     borderRadius: 8,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     marginBottom: 8,
   },
   submitBtn: { marginTop: 16, paddingVertical: 14 },
   // Shared
   primaryBtn: {
     flex: 1,
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
     borderRadius: 8,
     paddingVertical: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
-  primaryBtnDisabled: { backgroundColor: '#475569' },
-  primaryBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  primaryBtnDisabled: { backgroundColor: "#475569" },
+  primaryBtnText: { color: "#fff", fontSize: 14, fontWeight: "700" },
   secondaryBtn: {
     flex: 1,
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     borderRadius: 8,
     paddingVertical: 12,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#475569',
+    borderColor: "#475569",
   },
-  secondaryBtnText: { color: '#e2e8f0', fontSize: 14, fontWeight: '600' },
+  secondaryBtnText: { color: "#e2e8f0", fontSize: 14, fontWeight: "600" },
   centered: {
     flex: 1,
-    backgroundColor: '#0f172a',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#0f172a",
+    justifyContent: "center",
+    alignItems: "center",
     padding: 24,
   },
-  permText: { color: '#cbd5e1', fontSize: 14, textAlign: 'center', marginBottom: 20 },
-  linkText: { color: '#64748b', fontSize: 14 },
+  permText: {
+    color: "#cbd5e1",
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  linkText: { color: "#64748b", fontSize: 14 },
   errorBox: {
-    backgroundColor: '#450a0a',
+    backgroundColor: "#450a0a",
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#7f1d1d',
+    borderColor: "#7f1d1d",
   },
-  errorText: { color: '#fca5a5', fontSize: 13 },
+  errorText: { color: "#fca5a5", fontSize: 13 },
 });
 
 export default DeliveryProofCapture;

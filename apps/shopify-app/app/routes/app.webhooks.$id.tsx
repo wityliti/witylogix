@@ -35,11 +35,7 @@ import {
   Box,
   Divider,
 } from "@shopify/polaris";
-import {
-  DeleteIcon,
-  RefreshIcon,
-  SendIcon,
-} from "@shopify/polaris-icons";
+import { DeleteIcon, RefreshIcon, SendIcon } from "@shopify/polaris-icons";
 import { WebhookEventPicker } from "~/components/WebhookEventPicker";
 import { authenticate } from "~/lib/shopify.server";
 import { createApiClientFromRequest } from "~/lib/api.server";
@@ -90,11 +86,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   try {
     const [webhookRes, deliveriesRes] = await Promise.allSettled([
       api.get<{ data: WebhookDetail }>(
-        `/api/v4/shops/me/webhooks/endpoints/${id}`
+        `/api/v4/shops/me/webhooks/endpoints/${id}`,
       ),
       api.get<{ data: WebhookDeliveryDetail[] }>(
         `/api/v4/shops/me/webhooks/endpoints/${id}/deliveries`,
-        { limit: 20 }
+        { limit: 20 },
       ),
     ]);
 
@@ -103,9 +99,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         ? webhookRes.value.data
         : ({} as WebhookDetail);
     const recentDeliveries =
-      deliveriesRes.status === "fulfilled"
-        ? deliveriesRes.value.data
-        : [];
+      deliveriesRes.status === "fulfilled" ? deliveriesRes.value.data : [];
 
     return json<WebhookDetailPageData>({
       webhook,
@@ -148,17 +142,16 @@ export async function action({ params, request }: ActionFunctionArgs) {
       if (action === "rotate-secret") {
         await api.post(
           `/api/v4/shops/me/webhooks/endpoints/${id}/rotate-secret`,
-          {}
+          {},
         );
         return json({ success: true });
       }
 
       if (action === "test-event") {
         const event = formData.get("event") as string;
-        await api.post(
-          `/api/v4/shops/me/webhooks/endpoints/${id}/test`,
-          { event }
-        );
+        await api.post(`/api/v4/shops/me/webhooks/endpoints/${id}/test`, {
+          event,
+        });
         return json({ success: true, message: "Test event sent" });
       }
 
@@ -174,7 +167,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
         {
           error: error instanceof Error ? error.message : "Unknown error",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
   }
@@ -185,8 +178,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 // ─── Component ─────────────────────────────────────────────
 
 export default function WebhookDetailPage() {
-  const { webhook, recentDeliveries } =
-    useLoaderData<WebhookDetailPageData>();
+  const { webhook, recentDeliveries } = useLoaderData<WebhookDetailPageData>();
   const actionData = useActionData<{
     success?: boolean;
     message?: string;
@@ -203,9 +195,7 @@ export default function WebhookDetailPage() {
   // Modal states
   const [rotateModalActive, setRotateModalActive] = useState(false);
   const [deleteModalActive, setDeleteModalActive] = useState(false);
-  const [expandedDelivery, setExpandedDelivery] = useState<string | null>(
-    null
-  );
+  const [expandedDelivery, setExpandedDelivery] = useState<string | null>(null);
 
   const handleSave = useCallback(async () => {
     setIsSaving(true);
@@ -274,9 +264,7 @@ export default function WebhookDetailPage() {
   return (
     <Page
       title="Webhook Endpoint"
-      breadcrumbs={[
-        { content: "Webhooks", url: "/app/webhooks" },
-      ]}
+      breadcrumbs={[{ content: "Webhooks", url: "/app/webhooks" }]}
       primaryAction={
         isEditing
           ? {
@@ -392,10 +380,7 @@ export default function WebhookDetailPage() {
               </Text>
               {isEditing && (
                 <div style={{ marginTop: 12 }}>
-                  <WebhookEventPicker
-                    selected={events}
-                    onChange={setEvents}
-                  />
+                  <WebhookEventPicker selected={events} onChange={setEvents} />
                 </div>
               )}
               {!isEditing && (
@@ -477,13 +462,7 @@ export default function WebhookDetailPage() {
               </div>
             ) : (
               <DataTable
-                columnContentTypes={[
-                  "text",
-                  "text",
-                  "text",
-                  "text",
-                  "text",
-                ]}
+                columnContentTypes={["text", "text", "text", "text", "text"]}
                 headings={[
                   "Event",
                   "Status",

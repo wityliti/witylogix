@@ -14,9 +14,13 @@ import { z } from "zod";
 export const idParam = z.string().uuid("Invalid UUID format");
 export const slugParam = z.string().min(1).max(100);
 export const email = z.string().email("Invalid email format").toLowerCase();
-export const phone = z.string().regex(/^\+?1?\d{9,15}$/, "Invalid phone format");
+export const phone = z
+  .string()
+  .regex(/^\+?1?\d{9,15}$/, "Invalid phone format");
 export const iso8601DateTime = z.string().datetime("Invalid ISO 8601 datetime");
-export const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)");
+export const date = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)");
 
 // Pagination & Search
 export const pagination = z.object({
@@ -25,12 +29,14 @@ export const pagination = z.object({
   cursor: z.string().optional(),
 });
 
-export const searchQuery = z.object({
-  q: z.string().min(1).max(200).optional(),
-  filter: z.record(z.string()).optional(),
-  sortBy: z.string().default("createdAt"),
-  sortOrder: z.enum(["asc", "desc"]).default("desc"),
-}).merge(pagination);
+export const searchQuery = z
+  .object({
+    q: z.string().min(1).max(200).optional(),
+    filter: z.record(z.string()).optional(),
+    sortBy: z.string().default("createdAt"),
+    sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  })
+  .merge(pagination);
 
 export const bulkAction = z.object({
   ids: z.array(idParam).min(1).max(1000),
@@ -74,13 +80,17 @@ const baseOrder = {
   customerPhone: phone,
   shippingAddress: address,
   billingAddress: address.optional(),
-  items: z.array(z.object({
-    name: z.string().min(1).max(255),
-    sku: z.string().min(1).max(100),
-    quantity: z.number().int().min(1),
-    price: z.number().min(0),
-    weight: z.number().min(0).optional(),
-  })).min(1),
+  items: z
+    .array(
+      z.object({
+        name: z.string().min(1).max(255),
+        sku: z.string().min(1).max(100),
+        quantity: z.number().int().min(1),
+        price: z.number().min(0),
+        weight: z.number().min(0).optional(),
+      }),
+    )
+    .min(1),
   totalAmount: z.number().min(0),
   currency: z.string().length(3),
   notes: z.string().max(1000).optional(),
@@ -90,7 +100,9 @@ const baseOrder = {
 export const orderCreateSchema = z.object({
   ...baseOrder,
   driverId: idParam.optional(),
-  assignmentPriority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).default("MEDIUM"),
+  assignmentPriority: z
+    .enum(["LOW", "MEDIUM", "HIGH", "URGENT"])
+    .default("MEDIUM"),
   scheduledDate: date.optional(),
 });
 
@@ -103,7 +115,16 @@ export const orderUpdateSchema = z.object({
 });
 
 export const orderListSchema = pagination.extend({
-  status: z.enum(["PENDING", "ASSIGNED", "IN_PROGRESS", "COMPLETED", "FAILED", "CANCELLED"]).optional(),
+  status: z
+    .enum([
+      "PENDING",
+      "ASSIGNED",
+      "IN_PROGRESS",
+      "COMPLETED",
+      "FAILED",
+      "CANCELLED",
+    ])
+    .optional(),
   driverId: idParam.optional(),
   createdAfter: iso8601DateTime.optional(),
   createdBefore: iso8601DateTime.optional(),
@@ -111,7 +132,14 @@ export const orderListSchema = pagination.extend({
 });
 
 export const orderStatusUpdateSchema = z.object({
-  status: z.enum(["PENDING", "ASSIGNED", "IN_PROGRESS", "COMPLETED", "FAILED", "CANCELLED"]),
+  status: z.enum([
+    "PENDING",
+    "ASSIGNED",
+    "IN_PROGRESS",
+    "COMPLETED",
+    "FAILED",
+    "CANCELLED",
+  ]),
   reason: z.string().max(500).optional(),
 });
 
@@ -131,11 +159,13 @@ export const driverCreateSchema = z.object({
   licenseExpiry: date,
   vehicleType: z.enum(["VAN", "TRUCK", "CAR", "BIKE", "SCOOTER"]),
   vehicleRegistration: z.string().min(1).max(50).optional(),
-  insurance: z.object({
-    provider: z.string().min(1).max(100),
-    policyNumber: z.string().min(1).max(100),
-    expiryDate: date,
-  }).optional(),
+  insurance: z
+    .object({
+      provider: z.string().min(1).max(100),
+      policyNumber: z.string().min(1).max(100),
+      expiryDate: date,
+    })
+    .optional(),
   baseLocation: coordinates,
   metadata: z.record(z.any()).optional(),
 });
@@ -159,7 +189,13 @@ export const driverLocationSchema = z.object({
 });
 
 export const driverStatusSchema = z.object({
-  status: z.enum(["AVAILABLE", "ON_DUTY", "ON_BREAK", "OFF_DUTY", "UNAVAILABLE"]),
+  status: z.enum([
+    "AVAILABLE",
+    "ON_DUTY",
+    "ON_BREAK",
+    "OFF_DUTY",
+    "UNAVAILABLE",
+  ]),
   reason: z.string().max(200).optional(),
 });
 
@@ -178,10 +214,12 @@ export const deliveryCreateSchema = z.object({
   address: address,
   deliveryType: z.enum(["STANDARD", "EXPRESS", "SAME_DAY", "SCHEDULED"]),
   scheduledDate: date.optional(),
-  scheduledWindow: z.object({
-    startTime: z.string().regex(/^\d{2}:\d{2}$/),
-    endTime: z.string().regex(/^\d{2}:\d{2}$/),
-  }).optional(),
+  scheduledWindow: z
+    .object({
+      startTime: z.string().regex(/^\d{2}:\d{2}$/),
+      endTime: z.string().regex(/^\d{2}:\d{2}$/),
+    })
+    .optional(),
   specialInstructions: z.string().max(1000).optional(),
   proofRequired: z.boolean().default(true),
   metadata: z.record(z.any()).optional(),
@@ -210,7 +248,9 @@ export const deliveryCompleteSchema = z.object({
 });
 
 export const deliveryListSchema = pagination.extend({
-  status: z.enum(["PENDING", "ASSIGNED", "IN_PROGRESS", "COMPLETED", "FAILED"]).optional(),
+  status: z
+    .enum(["PENDING", "ASSIGNED", "IN_PROGRESS", "COMPLETED", "FAILED"])
+    .optional(),
   driverId: idParam.optional(),
   createdAfter: iso8601DateTime.optional(),
   createdBefore: iso8601DateTime.optional(),
@@ -223,15 +263,52 @@ export const zoneCreateSchema = z.object({
   description: z.string().max(500).optional(),
   polygon: polygon,
   serviceLevel: z.enum(["STANDARD", "EXPRESS", "PREMIUM"]),
-  operatingHours: z.object({
-    monday: z.object({ start: z.string().regex(/^\d{2}:\d{2}$/), end: z.string().regex(/^\d{2}:\d{2}$/) }).optional(),
-    tuesday: z.object({ start: z.string().regex(/^\d{2}:\d{2}$/), end: z.string().regex(/^\d{2}:\d{2}$/) }).optional(),
-    wednesday: z.object({ start: z.string().regex(/^\d{2}:\d{2}$/), end: z.string().regex(/^\d{2}:\d{2}$/) }).optional(),
-    thursday: z.object({ start: z.string().regex(/^\d{2}:\d{2}$/), end: z.string().regex(/^\d{2}:\d{2}$/) }).optional(),
-    friday: z.object({ start: z.string().regex(/^\d{2}:\d{2}$/), end: z.string().regex(/^\d{2}:\d{2}$/) }).optional(),
-    saturday: z.object({ start: z.string().regex(/^\d{2}:\d{2}$/), end: z.string().regex(/^\d{2}:\d{2}$/) }).optional(),
-    sunday: z.object({ start: z.string().regex(/^\d{2}:\d{2}$/), end: z.string().regex(/^\d{2}:\d{2}$/) }).optional(),
-  }).optional(),
+  operatingHours: z
+    .object({
+      monday: z
+        .object({
+          start: z.string().regex(/^\d{2}:\d{2}$/),
+          end: z.string().regex(/^\d{2}:\d{2}$/),
+        })
+        .optional(),
+      tuesday: z
+        .object({
+          start: z.string().regex(/^\d{2}:\d{2}$/),
+          end: z.string().regex(/^\d{2}:\d{2}$/),
+        })
+        .optional(),
+      wednesday: z
+        .object({
+          start: z.string().regex(/^\d{2}:\d{2}$/),
+          end: z.string().regex(/^\d{2}:\d{2}$/),
+        })
+        .optional(),
+      thursday: z
+        .object({
+          start: z.string().regex(/^\d{2}:\d{2}$/),
+          end: z.string().regex(/^\d{2}:\d{2}$/),
+        })
+        .optional(),
+      friday: z
+        .object({
+          start: z.string().regex(/^\d{2}:\d{2}$/),
+          end: z.string().regex(/^\d{2}:\d{2}$/),
+        })
+        .optional(),
+      saturday: z
+        .object({
+          start: z.string().regex(/^\d{2}:\d{2}$/),
+          end: z.string().regex(/^\d{2}:\d{2}$/),
+        })
+        .optional(),
+      sunday: z
+        .object({
+          start: z.string().regex(/^\d{2}:\d{2}$/),
+          end: z.string().regex(/^\d{2}:\d{2}$/),
+        })
+        .optional(),
+    })
+    .optional(),
   metadata: z.record(z.any()).optional(),
 });
 
@@ -257,7 +334,11 @@ export const zonePointValidationSchema = z.object({
 
 export const organizationCreateSchema = z.object({
   name: z.string().min(1).max(255),
-  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
+  slug: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[a-z0-9-]+$/),
   email: email,
   phone: phone.optional(),
   website: z.string().url().optional(),
@@ -336,21 +417,32 @@ export const routeCreateSchema = z.object({
 });
 
 export const routeAddStopsSchema = z.object({
-  stops: z.array(z.object({
-    orderId: idParam.optional(),
-    sequence: z.number().int().nonnegative(),
-    stopType: z.enum(["PICKUP", "DELIVERY", "RETURN", "DEPOT"]).default("DELIVERY"),
-  })).min(1).max(500),
+  stops: z
+    .array(
+      z.object({
+        orderId: idParam.optional(),
+        sequence: z.number().int().nonnegative(),
+        stopType: z
+          .enum(["PICKUP", "DELIVERY", "RETURN", "DEPOT"])
+          .default("DELIVERY"),
+      }),
+    )
+    .min(1)
+    .max(500),
 });
 
 export const routeOptimizeSchema = z.object({
-  algorithm: z.enum(["NEAREST_NEIGHBOR", "GENETIC", "SIMULATED_ANNEALING"]).default("GENETIC"),
-  constraints: z.object({
-    maxDrivingTime: z.number().min(1).optional(),
-    maxStops: z.number().min(1).optional(),
-    maxDistance: z.number().min(1).optional(),
-    timeWindows: z.boolean().default(true),
-  }).optional(),
+  algorithm: z
+    .enum(["NEAREST_NEIGHBOR", "GENETIC", "SIMULATED_ANNEALING"])
+    .default("GENETIC"),
+  constraints: z
+    .object({
+      maxDrivingTime: z.number().min(1).optional(),
+      maxStops: z.number().min(1).optional(),
+      maxDistance: z.number().min(1).optional(),
+      timeWindows: z.boolean().default(true),
+    })
+    .optional(),
 });
 
 // ─── EXPORT & BULK SCHEMAS ────────────────────────────────────
@@ -360,10 +452,12 @@ export const exportDataSchema = z.object({
   format: z.enum(["csv", "json", "xlsx"]),
   filters: z.record(z.any()).optional(),
   fields: z.array(z.string()).optional(),
-  dateRange: z.object({
-    start: iso8601DateTime,
-    end: iso8601DateTime,
-  }).optional(),
+  dateRange: z
+    .object({
+      start: iso8601DateTime,
+      end: iso8601DateTime,
+    })
+    .optional(),
 });
 
 // ─── UTILITY FUNCTIONS ──────────────────────────────────────────
@@ -388,10 +482,12 @@ export const paginatedResponse = <T extends z.ZodTypeAny>(dataSchema: T) =>
 export const apiResponse = <T extends z.ZodTypeAny>(dataSchema: T) =>
   z.object({
     data: dataSchema,
-    metadata: z.object({
-      timestamp: iso8601DateTime,
-      version: z.string(),
-    }).optional(),
+    metadata: z
+      .object({
+        timestamp: iso8601DateTime,
+        version: z.string(),
+      })
+      .optional(),
   });
 
 /**

@@ -8,20 +8,20 @@
  * Represents all resources that can be protected by RBAC
  */
 export enum Resources {
-  ORDERS = 'orders',
-  SHIPMENTS = 'shipments',
-  ROUTES = 'routes',
-  DRIVERS = 'drivers',
-  CUSTOMERS = 'customers',
-  SETTINGS = 'settings',
-  BILLING = 'billing',
-  ANALYTICS = 'analytics',
-  INTEGRATIONS = 'integrations',
-  ZONES = 'zones',
-  PRODUCTS = 'products',
-  INVENTORY = 'inventory',
-  CAMPAIGNS = 'campaigns',
-  SUPPORT = 'support',
+  ORDERS = "orders",
+  SHIPMENTS = "shipments",
+  ROUTES = "routes",
+  DRIVERS = "drivers",
+  CUSTOMERS = "customers",
+  SETTINGS = "settings",
+  BILLING = "billing",
+  ANALYTICS = "analytics",
+  INTEGRATIONS = "integrations",
+  ZONES = "zones",
+  PRODUCTS = "products",
+  INVENTORY = "inventory",
+  CAMPAIGNS = "campaigns",
+  SUPPORT = "support",
 }
 
 /**
@@ -29,13 +29,13 @@ export enum Resources {
  * Represents the actions that can be performed on resources
  */
 export enum Actions {
-  CREATE = 'create',
-  READ = 'read',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  MANAGE = 'manage', // Full control (create, read, update, delete)
-  EXPORT = 'export',
-  IMPORT = 'import',
+  CREATE = "create",
+  READ = "read",
+  UPDATE = "update",
+  DELETE = "delete",
+  MANAGE = "manage", // Full control (create, read, update, delete)
+  EXPORT = "export",
+  IMPORT = "import",
 }
 
 /**
@@ -43,12 +43,12 @@ export enum Actions {
  * Predefined role names for common use cases
  */
 export enum BuiltInRoles {
-  OWNER = 'owner',
-  ADMIN = 'admin',
-  MANAGER = 'manager',
-  DISPATCHER = 'dispatcher',
-  DRIVER = 'driver',
-  VIEWER = 'viewer',
+  OWNER = "owner",
+  ADMIN = "admin",
+  MANAGER = "manager",
+  DISPATCHER = "dispatcher",
+  DRIVER = "driver",
+  VIEWER = "viewer",
 }
 
 /**
@@ -126,7 +126,7 @@ export const ROLE_HIERARCHY: Record<string, number> = {
 export const DEFAULT_PERMISSIONS: Record<BuiltInRoles, Permission[]> = {
   [BuiltInRoles.OWNER]: [
     // Owner has full control over everything
-    { resource: '*', action: '*' },
+    { resource: "*", action: "*" },
   ],
   [BuiltInRoles.ADMIN]: [
     // Admin has full control over most resources except billing
@@ -203,34 +203,34 @@ export class RBACError extends Error {
     public statusCode: number = 400,
   ) {
     super(message);
-    this.name = 'RBACError';
+    this.name = "RBACError";
   }
 }
 
 export class PermissionDeniedError extends RBACError {
-  constructor(message: string = 'Permission denied') {
-    super('PERMISSION_DENIED', message, 403);
-    this.name = 'PermissionDeniedError';
+  constructor(message: string = "Permission denied") {
+    super("PERMISSION_DENIED", message, 403);
+    this.name = "PermissionDeniedError";
   }
 }
 
 export class RoleNotFoundError extends RBACError {
   constructor(roleId: string) {
-    super('ROLE_NOT_FOUND', `Role not found: ${roleId}`, 404);
-    this.name = 'RoleNotFoundError';
+    super("ROLE_NOT_FOUND", `Role not found: ${roleId}`, 404);
+    this.name = "RoleNotFoundError";
   }
 }
 
 export class RoleImmutableError extends RBACError {
   constructor(roleId: string) {
-    super('ROLE_IMMUTABLE', `Built-in role cannot be modified: ${roleId}`, 400);
-    this.name = 'RoleImmutableError';
+    super("ROLE_IMMUTABLE", `Built-in role cannot be modified: ${roleId}`, 400);
+    this.name = "RoleImmutableError";
   }
 }
 
 export class InvalidPermissionError extends RBACError {
-  constructor(message: string = 'Invalid permission specification') {
-    super('INVALID_PERMISSION', message, 400);
-    this.name = 'InvalidPermissionError';
+  constructor(message: string = "Invalid permission specification") {
+    super("INVALID_PERMISSION", message, 400);
+    this.name = "InvalidPermissionError";
   }
 }

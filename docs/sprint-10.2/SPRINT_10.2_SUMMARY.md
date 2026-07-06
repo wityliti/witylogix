@@ -11,23 +11,27 @@ Prove the dashboard is fully integrated with the Fastify API using real database
 ## What Was Done
 
 ### 1. Database Seeding (`packages/db/prisma/seed.ts`)
+
 - Created comprehensive seed script with real-world data
 - Entities: 1 org, 1 shop, 3 users, 5 drivers, 8 customers, 25 orders, 3 routes with stops, 3 delivery zones, 20 activity logs
 - Login credentials: `admin@demo.witylogix.io / Admin123!`
 - Idempotent via `upsert` — safe to re-run
 
 ### 2. Auth Context API Integration (`apps/dashboard/src/lib/auth-context.tsx`)
+
 - Fixed API URL to point to `http://localhost:8000/api/v4`
 - Added `shopDomain` to login request body
 - Fixed response unwrapping: API returns `{ data: { accessToken, user } }` not `{ token, user }`
 - Stores shop data in localStorage
 
 ### 3. Playwright E2E Test Infrastructure
+
 - Installed `@playwright/test` with Chromium browser
 - Created `playwright.config.ts` with dual webServer (API:8000 + Next.js:3000)
 - Added `test:e2e` and `test:e2e:headed` scripts to `package.json`
 
 ### 4. E2E Test Suites
+
 - **`e2e/auth.spec.ts`** (3 tests): Login page loads, valid login redirects to dashboard, invalid login shows error
 - **`e2e/dashboard.spec.ts`** (8 tests): Dashboard home, orders, drivers, routes, settings, zones, analytics, customers pages all load without errors with real data
 
@@ -53,14 +57,14 @@ Running 11 tests using 1 worker
 
 ## Key Files Changed
 
-| File | Change |
-|------|--------|
-| `packages/db/prisma/seed.ts` | New: comprehensive database seed script |
+| File                                      | Change                                      |
+| ----------------------------------------- | ------------------------------------------- |
+| `packages/db/prisma/seed.ts`              | New: comprehensive database seed script     |
 | `apps/dashboard/src/lib/auth-context.tsx` | Fixed API URL, shopDomain, response mapping |
-| `apps/dashboard/playwright.config.ts` | New: Playwright config with dual webServer |
-| `apps/dashboard/e2e/auth.spec.ts` | New: 3 authentication E2E tests |
-| `apps/dashboard/e2e/dashboard.spec.ts` | New: 8 dashboard page E2E tests |
-| `apps/dashboard/package.json` | Added E2E test scripts, Playwright dep |
+| `apps/dashboard/playwright.config.ts`     | New: Playwright config with dual webServer  |
+| `apps/dashboard/e2e/auth.spec.ts`         | New: 3 authentication E2E tests             |
+| `apps/dashboard/e2e/dashboard.spec.ts`    | New: 8 dashboard page E2E tests             |
+| `apps/dashboard/package.json`             | Added E2E test scripts, Playwright dep      |
 
 ## Team
 

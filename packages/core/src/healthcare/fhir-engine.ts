@@ -18,7 +18,7 @@ import {
   FHIRIdentifier,
   DataQualityScore,
   ComplianceStatus,
-} from './healthcare-types';
+} from "./healthcare-types";
 
 export interface SearchParams {
   _count?: number;
@@ -32,13 +32,13 @@ export interface SearchParams {
 export interface ValidationError {
   path: string;
   message: string;
-  severity: 'error' | 'warning';
+  severity: "error" | "warning";
 }
 
 export interface MatchScore {
   patientId: string;
   score: number;
-  confidence: 'high' | 'medium' | 'low';
+  confidence: "high" | "medium" | "low";
   matchedFields: string[];
 }
 
@@ -55,15 +55,15 @@ export class FHIRResourceManager {
 
   private initializeResourceTypes(): void {
     const resourceTypes = [
-      'Patient',
-      'Encounter',
-      'Observation',
-      'Condition',
-      'MedicationRequest',
-      'AllergyIntolerance',
-      'DiagnosticReport',
-      'Procedure',
-      'Immunization',
+      "Patient",
+      "Encounter",
+      "Observation",
+      "Condition",
+      "MedicationRequest",
+      "AllergyIntolerance",
+      "DiagnosticReport",
+      "Procedure",
+      "Immunization",
     ];
     resourceTypes.forEach((type) => {
       this.resources.set(type, new Map());
@@ -76,7 +76,7 @@ export class FHIRResourceManager {
    */
   create<T extends { resourceType: string; id?: string }>(resource: T): T {
     if (!resource.resourceType) {
-      throw new Error('Resource must have resourceType');
+      throw new Error("Resource must have resourceType");
     }
 
     const id = resource.id || this.generateId();
@@ -112,7 +112,9 @@ export class FHIRResourceManager {
     }
 
     if (!resourceMap.has(resource.id)) {
-      throw new Error(`Resource not found: ${resource.resourceType}/${resource.id}`);
+      throw new Error(
+        `Resource not found: ${resource.resourceType}/${resource.id}`,
+      );
     }
 
     const updated = {
@@ -149,7 +151,7 @@ export class FHIRResourceManager {
    */
   search<T>(
     resourceType: string,
-    params: SearchParams
+    params: SearchParams,
   ): { resources: T[]; total: number; offset: number; count: number } {
     const resourceMap = this.resources.get(resourceType);
     if (!resourceMap) {
@@ -186,7 +188,7 @@ export class FHIRResourceManager {
   resolveReferences<T>(
     resources: T[],
     includes: string[] = [],
-    revincludes: string[] = []
+    revincludes: string[] = [],
   ): T[] {
     const resolved = [...resources];
 
@@ -227,9 +229,12 @@ export class FHIRResourceManager {
    */
   conditionalCreate<T extends { resourceType: string; id?: string }>(
     resource: T,
-    searchParams: Record<string, string>
+    searchParams: Record<string, string>,
   ): { resource: T; created: boolean } {
-    const existing = this.search(resource.resourceType, searchParams as SearchParams);
+    const existing = this.search(
+      resource.resourceType,
+      searchParams as SearchParams,
+    );
 
     if (existing.resources.length > 0) {
       return {
@@ -247,9 +252,12 @@ export class FHIRResourceManager {
    */
   conditionalUpdate<T extends { resourceType: string; id?: string }>(
     resource: T,
-    searchParams: Record<string, string>
+    searchParams: Record<string, string>,
   ): { resource: T; created: boolean } {
-    const existing = this.search(resource.resourceType, searchParams as SearchParams);
+    const existing = this.search(
+      resource.resourceType,
+      searchParams as SearchParams,
+    );
 
     if (existing.resources.length === 0) {
       const created = this.create(resource);
@@ -257,10 +265,13 @@ export class FHIRResourceManager {
     }
 
     if (existing.resources.length > 1) {
-      throw new Error('Conditional update matched multiple resources');
+      throw new Error("Conditional update matched multiple resources");
     }
 
-    const updated = this.update({ ...resource, id: (existing.resources[0] as any).id });
+    const updated = this.update({
+      ...resource,
+      id: (existing.resources[0] as any).id,
+    });
     return { resource: updated, created: false };
   }
 
@@ -276,10 +287,12 @@ export class FHIRResourceManager {
     const typeIndex = this.indexes.get(resourceType) || new Map();
 
     if (resource.identifier) {
-      const ids = Array.isArray(resource.identifier) ? resource.identifier : [resource.identifier];
+      const ids = Array.isArray(resource.identifier)
+        ? resource.identifier
+        : [resource.identifier];
       ids.forEach((id: FHIRIdentifier) => {
         if (id.value) {
-          const key = `identifier:${id.system || 'default'}|${id.value}`;
+          const key = `identifier:${id.system || "default"}|${id.value}`;
           if (!typeIndex.has(key)) typeIndex.set(key, new Set());
           typeIndex.get(key)!.add(resource.id);
         }
@@ -306,24 +319,36 @@ export class FHIRResourceManager {
   private applySearchFilters(
     resources: any[],
     resourceType: string,
-    params: SearchParams
+    params: SearchParams,
   ): any[] {
     return resources.filter((resource) => {
       for (const [key, value] of Object.entries(params)) {
-        if (key.startsWith('_')) continue;
+        if (key.startsWith("_")) continue;
 
-        if (resourceType === 'Patient') {
-          if (key === 'name' && !this.matchesPatientName(resource, value as string)) return false;
-          if (key === 'birthdate' && resource.birthDate !== value) return false;
-          if (key === 'gender' && resource.gender !== value) return false;
-          if (key === 'identifier' && !this.matchesIdentifier(resource, value as string))
+        if (resourceType === "Patient") {
+          if (
+            key === "name" &&
+            !this.matchesPatientName(resource, value as string)
+          )
+            return false;
+          if (key === "birthdate" && resource.birthDate !== value) return false;
+          if (key === "gender" && resource.gender !== value) return false;
+          if (
+            key === "identifier" &&
+            !this.matchesIdentifier(resource, value as string)
+          )
             return false;
         }
 
-        if (resourceType === 'Observation') {
-          if (key === 'code' && resource.code?.coding?.[0]?.code !== value) return false;
-          if (key === 'subject' && resource.subject?.reference !== value) return false;
-          if (key === 'date' && !resource.effectiveDateTime?.startsWith(value as string))
+        if (resourceType === "Observation") {
+          if (key === "code" && resource.code?.coding?.[0]?.code !== value)
+            return false;
+          if (key === "subject" && resource.subject?.reference !== value)
+            return false;
+          if (
+            key === "date" &&
+            !resource.effectiveDateTime?.startsWith(value as string)
+          )
             return false;
         }
       }
@@ -332,7 +357,7 @@ export class FHIRResourceManager {
   }
 
   private applySorting(resources: any[], sort: string): any[] {
-    const isDesc = sort.startsWith('-');
+    const isDesc = sort.startsWith("-");
     const field = isDesc ? sort.slice(1) : sort;
 
     return resources.sort((a, b) => {
@@ -346,7 +371,7 @@ export class FHIRResourceManager {
   }
 
   private getNestedValue(obj: any, path: string): any {
-    return path.split('.').reduce((current, prop) => current?.[prop], obj);
+    return path.split(".").reduce((current, prop) => current?.[prop], obj);
   }
 
   private matchesPatientName(patient: FHIRPatient, name: string): boolean {
@@ -354,21 +379,24 @@ export class FHIRResourceManager {
     return patient.name.some(
       (n) =>
         n.given?.some((g) => g.toLowerCase().includes(name.toLowerCase())) ||
-        n.family?.toLowerCase().includes(name.toLowerCase())
+        n.family?.toLowerCase().includes(name.toLowerCase()),
     );
   }
 
   private matchesIdentifier(resource: any, identifier: string): boolean {
     if (!resource.identifier) return false;
-    const [system, value] = identifier.split('|');
+    const [system, value] = identifier.split("|");
     return resource.identifier.some(
-      (id: FHIRIdentifier) => id.system === system && id.value === value
+      (id: FHIRIdentifier) => id.system === system && id.value === value,
     );
   }
 
-  private extractReferences(resource: any, includePath: string): FHIRReference[] {
+  private extractReferences(
+    resource: any,
+    includePath: string,
+  ): FHIRReference[] {
     const refs: FHIRReference[] = [];
-    const [resourceType, refField] = includePath.split(':');
+    const [resourceType, refField] = includePath.split(":");
 
     if (resource.resourceType === resourceType) {
       const value = this.getNestedValue(resource, refField);
@@ -386,14 +414,14 @@ export class FHIRResourceManager {
 
   private resolveReference(ref: FHIRReference): any {
     if (ref.reference) {
-      const [resourceType, id] = ref.reference.split('/');
+      const [resourceType, id] = ref.reference.split("/");
       return this.read(resourceType, id);
     }
     return null;
   }
 
   private reverseSearch(revinclude: string, resources: any[]): any[] {
-    const [targetType, refField] = revinclude.split(':');
+    const [targetType, refField] = revinclude.split(":");
     const results: any[] = [];
 
     const targetMap = this.resources.get(targetType);
@@ -401,9 +429,15 @@ export class FHIRResourceManager {
 
     resources.forEach((resource) => {
       targetMap.forEach((target) => {
-        const refs = this.extractReferences(target, `${resource.resourceType}:${refField}`);
+        const refs = this.extractReferences(
+          target,
+          `${resource.resourceType}:${refField}`,
+        );
         if (
-          refs.some((ref) => ref.reference === `${resource.resourceType}/${resource.id}`)
+          refs.some(
+            (ref) =>
+              ref.reference === `${resource.resourceType}/${resource.id}`,
+          )
         ) {
           results.push(target);
         }
@@ -424,8 +458,8 @@ export class FHIRBundleProcessor {
    * Process transaction bundle - atomic operation
    */
   processTransactionBundle(bundle: FHIRBundle): FHIRBundle {
-    if (bundle.type !== 'transaction') {
-      throw new Error('Bundle must be of type transaction');
+    if (bundle.type !== "transaction") {
+      throw new Error("Bundle must be of type transaction");
     }
 
     const responses: any[] = [];
@@ -438,8 +472,8 @@ export class FHIRBundleProcessor {
       });
 
       return {
-        resourceType: 'Bundle',
-        type: 'transaction-response',
+        resourceType: "Bundle",
+        type: "transaction-response",
         entry: responses,
       };
     } catch (error) {
@@ -451,8 +485,8 @@ export class FHIRBundleProcessor {
    * Process batch bundle - independent operations
    */
   processBatchBundle(bundle: FHIRBundle): FHIRBundle {
-    if (bundle.type !== 'batch') {
-      throw new Error('Bundle must be of type batch');
+    if (bundle.type !== "batch") {
+      throw new Error("Bundle must be of type batch");
     }
 
     const responses: any[] = [];
@@ -465,16 +499,25 @@ export class FHIRBundleProcessor {
       } catch (error) {
         responses.push({
           response: {
-            status: '400',
-            outcome: { resourceType: 'OperationOutcome', issue: [{ severity: 'error', code: 'processing', details: { text: String(error) } }] },
+            status: "400",
+            outcome: {
+              resourceType: "OperationOutcome",
+              issue: [
+                {
+                  severity: "error",
+                  code: "processing",
+                  details: { text: String(error) },
+                },
+              ],
+            },
           },
         });
       }
     });
 
     return {
-      resourceType: 'Bundle',
-      type: 'batch-response',
+      resourceType: "Bundle",
+      type: "batch-response",
       entry: responses,
     };
   }
@@ -483,17 +526,17 @@ export class FHIRBundleProcessor {
     const { request, resource } = entry;
 
     if (!request || !request.method) {
-      throw new Error('Entry missing request method');
+      throw new Error("Entry missing request method");
     }
 
     switch (request.method) {
-      case 'POST':
+      case "POST":
         return this.handleCreate(resource);
-      case 'PUT':
+      case "PUT":
         return this.handleUpdate(resource, request.url);
-      case 'DELETE':
+      case "DELETE":
         return this.handleDelete(request.url);
-      case 'GET':
+      case "GET":
         return this.handleSearch(request.url);
       default:
         throw new Error(`Unsupported method: ${request.method}`);
@@ -504,7 +547,7 @@ export class FHIRBundleProcessor {
     const created = this.resourceManager.create(resource);
     return {
       response: {
-        status: '201',
+        status: "201",
         location: `${resource.resourceType}/${created.id}`,
       },
       resource: created,
@@ -515,7 +558,7 @@ export class FHIRBundleProcessor {
     const updated = this.resourceManager.update(resource);
     return {
       response: {
-        status: '200',
+        status: "200",
         location: url,
       },
       resource: updated,
@@ -523,33 +566,36 @@ export class FHIRBundleProcessor {
   }
 
   private handleDelete(url: string): any {
-    const [resourceType, id] = url.split('/');
+    const [resourceType, id] = url.split("/");
     this.resourceManager.delete(resourceType, id);
     return {
       response: {
-        status: '204',
+        status: "204",
       },
     };
   }
 
   private handleSearch(url: string): any {
-    const [path, queryString] = url.split('?');
-    const [resourceType] = path.split('/');
-    const params = this.parseQueryString(queryString || '');
+    const [path, queryString] = url.split("?");
+    const [resourceType] = path.split("/");
+    const params = this.parseQueryString(queryString || "");
 
-    const result = this.resourceManager.search(resourceType, params as SearchParams);
+    const result = this.resourceManager.search(
+      resourceType,
+      params as SearchParams,
+    );
 
     return {
       response: {
-        status: '200',
+        status: "200",
       },
       resource: {
-        resourceType: 'Bundle',
-        type: 'searchset',
+        resourceType: "Bundle",
+        type: "searchset",
         total: result.total,
         entry: result.resources.map((resource) => ({
           resource,
-          search: { mode: 'match' },
+          search: { mode: "match" },
         })),
       },
     };
@@ -576,12 +622,18 @@ export class FHIRBundleProcessor {
  */
 export class FHIRValidator {
   private requiredFields: Record<string, string[]> = {
-    Patient: ['resourceType'],
-    Encounter: ['resourceType', 'status', 'class', 'subject'],
-    Observation: ['resourceType', 'status', 'code', 'subject'],
-    Condition: ['resourceType', 'code', 'subject'],
-    MedicationRequest: ['resourceType', 'status', 'intent', 'medicationCodeableConcept', 'subject'],
-    Procedure: ['resourceType', 'status', 'subject'],
+    Patient: ["resourceType"],
+    Encounter: ["resourceType", "status", "class", "subject"],
+    Observation: ["resourceType", "status", "code", "subject"],
+    Condition: ["resourceType", "code", "subject"],
+    MedicationRequest: [
+      "resourceType",
+      "status",
+      "intent",
+      "medicationCodeableConcept",
+      "subject",
+    ],
+    Procedure: ["resourceType", "status", "subject"],
   };
 
   /**
@@ -593,9 +645,9 @@ export class FHIRValidator {
     // Check resource type
     if (!resource.resourceType) {
       errors.push({
-        path: 'resourceType',
-        message: 'Missing resourceType',
-        severity: 'error',
+        path: "resourceType",
+        message: "Missing resourceType",
+        severity: "error",
       });
       return { valid: false, errors };
     }
@@ -607,15 +659,15 @@ export class FHIRValidator {
         errors.push({
           path: field,
           message: `Required field missing: ${field}`,
-          severity: 'error',
+          severity: "error",
         });
       }
     });
 
     // Type-specific validation
-    if (resource.resourceType === 'Patient') {
+    if (resource.resourceType === "Patient") {
       this.validatePatient(resource, errors);
-    } else if (resource.resourceType === 'Observation') {
+    } else if (resource.resourceType === "Observation") {
       this.validateObservation(resource, errors);
     }
 
@@ -623,35 +675,48 @@ export class FHIRValidator {
     this.validateReferences(resource, errors);
 
     return {
-      valid: errors.filter((e) => e.severity === 'error').length === 0,
+      valid: errors.filter((e) => e.severity === "error").length === 0,
       errors,
     };
   }
 
-  private validatePatient(patient: FHIRPatient, errors: ValidationError[]): void {
+  private validatePatient(
+    patient: FHIRPatient,
+    errors: ValidationError[],
+  ): void {
     if (patient.birthDate && !/^\d{4}-\d{2}-\d{2}$/.test(patient.birthDate)) {
       errors.push({
-        path: 'birthDate',
-        message: 'Invalid date format (YYYY-MM-DD expected)',
-        severity: 'error',
+        path: "birthDate",
+        message: "Invalid date format (YYYY-MM-DD expected)",
+        severity: "error",
       });
     }
 
-    if (patient.gender && !['male', 'female', 'other', 'unknown'].includes(patient.gender)) {
+    if (
+      patient.gender &&
+      !["male", "female", "other", "unknown"].includes(patient.gender)
+    ) {
       errors.push({
-        path: 'gender',
-        message: 'Invalid gender value',
-        severity: 'error',
+        path: "gender",
+        message: "Invalid gender value",
+        severity: "error",
       });
     }
   }
 
-  private validateObservation(observation: FHIRObservation, errors: ValidationError[]): void {
-    if (!['registered', 'preliminary', 'final', 'amended', 'cancelled'].includes(observation.status)) {
+  private validateObservation(
+    observation: FHIRObservation,
+    errors: ValidationError[],
+  ): void {
+    if (
+      !["registered", "preliminary", "final", "amended", "cancelled"].includes(
+        observation.status,
+      )
+    ) {
       errors.push({
-        path: 'status',
-        message: 'Invalid observation status',
-        severity: 'error',
+        path: "status",
+        message: "Invalid observation status",
+        severity: "error",
       });
     }
   }
@@ -659,11 +724,14 @@ export class FHIRValidator {
   private validateReferences(resource: any, errors: ValidationError[]): void {
     const refs = this.extractAllReferences(resource);
     refs.forEach((ref) => {
-      if (ref.reference && !/^[A-Za-z]+\/[A-Za-z0-9\-\.]+$/.test(ref.reference)) {
+      if (
+        ref.reference &&
+        !/^[A-Za-z]+\/[A-Za-z0-9\-\.]+$/.test(ref.reference)
+      ) {
         errors.push({
-          path: 'reference',
+          path: "reference",
           message: `Invalid reference format: ${ref.reference}`,
-          severity: 'warning',
+          severity: "warning",
         });
       }
     });
@@ -674,16 +742,19 @@ export class FHIRValidator {
   }
 
   private getNestedValue(obj: any, path: string): any {
-    return path.split('.').reduce((current, prop) => current?.[prop], obj);
+    return path.split(".").reduce((current, prop) => current?.[prop], obj);
   }
 
-  private extractAllReferences(obj: any, refs: FHIRReference[] = []): FHIRReference[] {
-    if (obj && typeof obj === 'object') {
-      if ('reference' in obj) {
+  private extractAllReferences(
+    obj: any,
+    refs: FHIRReference[] = [],
+  ): FHIRReference[] {
+    if (obj && typeof obj === "object") {
+      if ("reference" in obj) {
         refs.push(obj as FHIRReference);
       }
       Object.values(obj).forEach((value) => {
-        if (value && typeof value === 'object') {
+        if (value && typeof value === "object") {
           this.extractAllReferences(value, refs);
         }
       });
@@ -701,12 +772,12 @@ export class FHIRTransformer {
    */
   toFHIRPatient(customData: any): FHIRPatient {
     return {
-      resourceType: 'Patient',
+      resourceType: "Patient",
       id: customData.patientId,
       identifier: customData.mrn
         ? [
             {
-              system: 'http://example.com/mrn',
+              system: "http://example.com/mrn",
               value: customData.mrn,
             },
           ]
@@ -720,12 +791,14 @@ export class FHIRTransformer {
       gender: customData.gender,
       birthDate: customData.dateOfBirth,
       telecom: customData.phone
-        ? [{ system: 'phone', value: customData.phone }]
+        ? [{ system: "phone", value: customData.phone }]
         : undefined,
       address: customData.address
         ? [
             {
-              line: [customData.address.line1, customData.address.line2].filter(Boolean),
+              line: [customData.address.line1, customData.address.line2].filter(
+                Boolean,
+              ),
               city: customData.address.city,
               state: customData.address.state,
               postalCode: customData.address.zip,
@@ -741,12 +814,14 @@ export class FHIRTransformer {
    */
   fromFHIRPatient(fhirPatient: FHIRPatient): Record<string, any> {
     const primaryName = fhirPatient.name?.[0];
-    const primaryPhone = fhirPatient.telecom?.find((t) => t.system === 'phone');
+    const primaryPhone = fhirPatient.telecom?.find((t) => t.system === "phone");
     const primaryAddress = fhirPatient.address?.[0];
 
     return {
       patientId: fhirPatient.id,
-      mrn: fhirPatient.identifier?.find((i) => i.system === 'http://example.com/mrn')?.value,
+      mrn: fhirPatient.identifier?.find(
+        (i) => i.system === "http://example.com/mrn",
+      )?.value,
       firstName: primaryName?.given?.[0],
       lastName: primaryName?.family,
       gender: fhirPatient.gender,
@@ -777,7 +852,7 @@ export class PatientMatcher {
    */
   matchPatients(
     incomingPatient: FHIRPatient,
-    candidatePatients: FHIRPatient[]
+    candidatePatients: FHIRPatient[],
   ): MatchScore[] {
     return candidatePatients
       .map((candidate) => this.scoreMatch(incomingPatient, candidate))
@@ -785,17 +860,28 @@ export class PatientMatcher {
       .sort((a, b) => b.score - a.score);
   }
 
-  private scoreMatch(incoming: FHIRPatient, candidate: FHIRPatient): MatchScore {
+  private scoreMatch(
+    incoming: FHIRPatient,
+    candidate: FHIRPatient,
+  ): MatchScore {
     const matchedFields: string[] = [];
     let score = 0;
 
     // MRN match (highest priority)
-    const incomingMRN = incoming.identifier?.find((i) => i.system === 'http://example.com/mrn');
-    const candidateMRN = candidate.identifier?.find((i) => i.system === 'http://example.com/mrn');
+    const incomingMRN = incoming.identifier?.find(
+      (i) => i.system === "http://example.com/mrn",
+    );
+    const candidateMRN = candidate.identifier?.find(
+      (i) => i.system === "http://example.com/mrn",
+    );
 
-    if (incomingMRN?.value && candidateMRN?.value && incomingMRN.value === candidateMRN.value) {
+    if (
+      incomingMRN?.value &&
+      candidateMRN?.value &&
+      incomingMRN.value === candidateMRN.value
+    ) {
       score += 40;
-      matchedFields.push('mrn');
+      matchedFields.push("mrn");
     }
 
     // Name match
@@ -803,31 +889,42 @@ export class PatientMatcher {
     const candidateName = candidate.name?.[0];
 
     if (incomingName && candidateName) {
-      const familyMatch = this.stringSimilarity(incomingName.family, candidateName.family);
+      const familyMatch = this.stringSimilarity(
+        incomingName.family,
+        candidateName.family,
+      );
       const givenMatch = this.stringSimilarity(
         incomingName.given?.[0],
-        candidateName.given?.[0]
+        candidateName.given?.[0],
       );
 
       if (familyMatch > 0.8) {
         score += 20;
-        matchedFields.push('family_name');
+        matchedFields.push("family_name");
       }
       if (givenMatch > 0.8) {
         score += 15;
-        matchedFields.push('given_name');
+        matchedFields.push("given_name");
       }
     }
 
     // DOB match
-    if (incoming.birthDate && candidate.birthDate && incoming.birthDate === candidate.birthDate) {
+    if (
+      incoming.birthDate &&
+      candidate.birthDate &&
+      incoming.birthDate === candidate.birthDate
+    ) {
       score += 20;
-      matchedFields.push('dob');
+      matchedFields.push("dob");
     }
 
     // SSN last 4 (if available)
-    const incomingSSN = incoming.identifier?.find((i) => i.system === 'http://example.com/ssn');
-    const candidateSSN = candidate.identifier?.find((i) => i.system === 'http://example.com/ssn');
+    const incomingSSN = incoming.identifier?.find(
+      (i) => i.system === "http://example.com/ssn",
+    );
+    const candidateSSN = candidate.identifier?.find(
+      (i) => i.system === "http://example.com/ssn",
+    );
 
     if (
       incomingSSN?.value &&
@@ -835,20 +932,24 @@ export class PatientMatcher {
       incomingSSN.value.slice(-4) === candidateSSN.value.slice(-4)
     ) {
       score += 15;
-      matchedFields.push('ssn_last4');
+      matchedFields.push("ssn_last4");
     }
 
     // Gender match
-    if (incoming.gender && candidate.gender && incoming.gender === candidate.gender) {
+    if (
+      incoming.gender &&
+      candidate.gender &&
+      incoming.gender === candidate.gender
+    ) {
       score += 10;
-      matchedFields.push('gender');
+      matchedFields.push("gender");
     }
 
-    const confidence: 'high' | 'medium' | 'low' =
-      score >= 90 ? 'high' : score >= 75 ? 'medium' : 'low';
+    const confidence: "high" | "medium" | "low" =
+      score >= 90 ? "high" : score >= 75 ? "medium" : "low";
 
     return {
-      patientId: candidate.id || '',
+      patientId: candidate.id || "",
       score: Math.min(score, 100),
       confidence,
       matchedFields,
@@ -889,7 +990,7 @@ export class PatientMatcher {
           matrix[i][j] = Math.min(
             matrix[i - 1][j - 1] + 1,
             matrix[i][j - 1] + 1,
-            matrix[i - 1][j] + 1
+            matrix[i - 1][j] + 1,
           );
         }
       }

@@ -95,7 +95,7 @@ describe("RequestLogger", () => {
       logger.logResponse(reqId, { statusCode: 200 });
 
       const lastLog = JSON.parse(
-        consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0] as string
+        consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0] as string,
       );
       expect(lastLog.statusCode).toBe(200);
     });
@@ -110,7 +110,7 @@ describe("RequestLogger", () => {
       logger.logResponse(reqId, { statusCode: 200 }, 150);
 
       const lastLog = JSON.parse(
-        consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0] as string
+        consoleSpy.mock.calls[consoleSpy.mock.calls.length - 1][0] as string,
       );
       expect(lastLog.durationMs).toBe(150);
     });

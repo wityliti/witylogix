@@ -9,8 +9,8 @@
  * AES-256-CBC: Traditional cipher block chaining mode
  */
 export enum EncryptionAlgorithm {
-  AES_256_GCM = 'aes-256-gcm',
-  AES_256_CBC = 'aes-256-cbc',
+  AES_256_GCM = "aes-256-gcm",
+  AES_256_CBC = "aes-256-cbc",
 }
 
 /**
@@ -86,9 +86,12 @@ export interface DecryptionResult {
  * Error thrown when decryption fails
  */
 export class DecryptionError extends Error {
-  constructor(message: string, public readonly code: string = 'DECRYPTION_FAILED') {
+  constructor(
+    message: string,
+    public readonly code: string = "DECRYPTION_FAILED",
+  ) {
     super(message);
-    this.name = 'DecryptionError';
+    this.name = "DecryptionError";
     Object.setPrototypeOf(this, DecryptionError.prototype);
   }
 }
@@ -97,9 +100,12 @@ export class DecryptionError extends Error {
  * Error thrown when encryption fails
  */
 export class EncryptionError extends Error {
-  constructor(message: string, public readonly code: string = 'ENCRYPTION_FAILED') {
+  constructor(
+    message: string,
+    public readonly code: string = "ENCRYPTION_FAILED",
+  ) {
     super(message);
-    this.name = 'EncryptionError';
+    this.name = "EncryptionError";
     Object.setPrototypeOf(this, EncryptionError.prototype);
   }
 }

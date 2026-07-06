@@ -18,7 +18,10 @@ import type { LoaderFunctionArgs } from "react-router";
 import { useLoaderData, useSearchParams, Link } from "react-router";
 import { ShipmentStatusBadge } from "~/components/ShipmentStatusBadge";
 import { EmptyState } from "~/components/EmptyState";
-import { createApiClientFromRequest, type PaginatedResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type PaginatedResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 import {
   Page,
@@ -91,16 +94,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const dateFrom = url.searchParams.get("dateFrom") ?? undefined;
   const dateTo = url.searchParams.get("dateTo") ?? undefined;
 
-  const response = await api.get<PaginatedResponse<Shipment>>("/api/v4/shipments", {
-    page,
-    limit,
-    status,
-    search,
-    deliveryMethod,
-    carrier,
-    dateFrom,
-    dateTo,
-  });
+  const response = await api.get<PaginatedResponse<Shipment>>(
+    "/api/v4/shipments",
+    {
+      page,
+      limit,
+      status,
+      search,
+      deliveryMethod,
+      carrier,
+      dateFrom,
+      dateTo,
+    },
+  );
 
   return { shipments: response.data, meta: response.meta };
 }
@@ -162,11 +168,7 @@ export default function ShipmentsList() {
   const resourceName = { singular: "shipment", plural: "shipments" };
 
   const rowMarkup = shipments.map((shipment, index) => (
-    <IndexTable.Row
-      id={shipment.id}
-      key={shipment.id}
-      position={index}
-    >
+    <IndexTable.Row id={shipment.id} key={shipment.id} position={index}>
       <IndexTable.Cell>
         <Link to={`/shipments/${shipment.id}`}>
           <Text as="span" variant="bodyMd" fontWeight="semibold" tone="magic">

@@ -14,8 +14,8 @@ import type {
   TaxRate,
   PaginationParams,
   PaginatedResult,
-} from './types.js';
-import { AbstractERPAdapter } from './erp-adapter.js';
+} from "./types.js";
+import { AbstractERPAdapter } from "./erp-adapter.js";
 
 // ─── SAGE-SPECIFIC TYPES ───────────────────────────────────────────────────
 
@@ -23,7 +23,7 @@ export interface SageConfig {
   clientId: string;
   clientSecret: string;
   redirectUri: string;
-  environment?: 'sandbox' | 'production';
+  environment?: "sandbox" | "production";
   timeout?: number;
   maxRetries?: number;
 }
@@ -38,7 +38,7 @@ export interface SageAuthResponse {
 export interface SageContact {
   id?: string;
   name: string;
-  status?: 'ACTIVE' | 'ARCHIVED';
+  status?: "ACTIVE" | "ARCHIVED";
   reference?: string;
   email?: string;
   phone?: string;
@@ -63,7 +63,7 @@ export interface SageProduct {
     id: string;
     percentage: number;
   };
-  status?: 'ACTIVE' | 'ARCHIVED';
+  status?: "ACTIVE" | "ARCHIVED";
 }
 
 export interface SageLedgerAccount {
@@ -71,12 +71,12 @@ export interface SageLedgerAccount {
   code: string;
   name: string;
   type: string;
-  status: 'ACTIVE' | 'ARCHIVED';
+  status: "ACTIVE" | "ARCHIVED";
 }
 
 export interface SageFinancialReport {
   id?: string;
-  reportType: 'PROFIT_AND_LOSS' | 'BALANCE_SHEET' | 'TRIAL_BALANCE';
+  reportType: "PROFIT_AND_LOSS" | "BALANCE_SHEET" | "TRIAL_BALANCE";
   generatedDate: Date;
   data: Record<string, any>;
 }
@@ -93,17 +93,17 @@ export class SageClient extends AbstractERPAdapter {
   private authBaseUrl: string;
 
   constructor(connection: ERPConnection, config: SageConfig) {
-    super('sage', connection);
+    super("sage", connection);
     this.config = {
       timeout: 30000,
       maxRetries: 3,
-      environment: 'production',
+      environment: "production",
       ...config,
     };
 
-    const env = this.config.environment === 'sandbox' ? 'sandbox' : '';
-    this.apiBaseUrl = `https://api${env ? `.${env}` : ''}.columbus.sage.com/v3.1`;
-    this.authBaseUrl = `https://oauth${env ? `.${env}` : ''}.columbus.sage.com`;
+    const env = this.config.environment === "sandbox" ? "sandbox" : "";
+    this.apiBaseUrl = `https://api${env ? `.${env}` : ""}.columbus.sage.com/v3.1`;
+    this.authBaseUrl = `https://oauth${env ? `.${env}` : ""}.columbus.sage.com`;
   }
 
   /**
@@ -112,9 +112,9 @@ export class SageClient extends AbstractERPAdapter {
   getAuthorizationUrl(state?: string): string {
     const params = new URLSearchParams({
       client_id: this.config.clientId,
-      response_type: 'code',
+      response_type: "code",
       redirect_uri: this.config.redirectUri,
-      scope: 'full_access',
+      scope: "full_access",
       state: state || this.generateRandomString(32),
     });
 
@@ -133,7 +133,7 @@ export class SageClient extends AbstractERPAdapter {
       access_token: `sage_at_${Date.now()}`,
       refresh_token: `sage_rt_${Date.now()}`,
       expires_in: 3600,
-      token_type: 'Bearer',
+      token_type: "Bearer",
     };
 
     this.connection.credentials.accessToken = mockResponse.access_token;
@@ -149,7 +149,9 @@ export class SageClient extends AbstractERPAdapter {
   async checkHealth(): Promise<boolean> {
     try {
       return await this.executeWithRateLimit(async () => {
-        const response = await this.restGet('/contacts?attributes=id&$pageSize=1');
+        const response = await this.restGet(
+          "/contacts?attributes=id&$pageSize=1",
+        );
         return Array.isArray(response.data);
       });
     } catch {
@@ -162,7 +164,10 @@ export class SageClient extends AbstractERPAdapter {
   /**
    * Create contact (customer or vendor)
    */
-  async createContact(contact: SageContact, contactType: 'customer' | 'vendor'): Promise<SageContact> {
+  async createContact(
+    contact: SageContact,
+    contactType: "customer" | "vendor",
+  ): Promise<SageContact> {
     return this.executeWithRateLimit(async () => {
       const sagePayload = this.mapContactToSage(contact);
       const response = await this.restPost(`/${contactType}s`, sagePayload);
@@ -177,7 +182,10 @@ export class SageClient extends AbstractERPAdapter {
   /**
    * Get contact
    */
-  async getContact(contactId: string, contactType: 'customer' | 'vendor'): Promise<SageContact> {
+  async getContact(
+    contactId: string,
+    contactType: "customer" | "vendor",
+  ): Promise<SageContact> {
     return this.executeWithRateLimit(async () => {
       const response = await this.restGet(`/${contactType}s/${contactId}`);
       return this.mapContactFromSage(response.data);
@@ -190,7 +198,7 @@ export class SageClient extends AbstractERPAdapter {
   async updateContact(
     contactId: string,
     contact: Partial<SageContact>,
-    contactType: 'customer' | 'vendor',
+    contactType: "customer" | "vendor",
   ): Promise<SageContact> {
     return this.executeWithRateLimit(async () => {
       const sagePayload = this.mapContactToSage(contact as SageContact);
@@ -205,7 +213,7 @@ export class SageClient extends AbstractERPAdapter {
   async createCustomer(customer: ERPCustomer): Promise<ERPCustomer> {
     return this.executeWithRateLimit(async () => {
       const sageContact = this.mapERPCustomerToSageContact(customer);
-      const response = await this.restPost('/customers', sageContact);
+      const response = await this.restPost("/customers", sageContact);
 
       return {
         ...customer,
@@ -228,9 +236,14 @@ export class SageClient extends AbstractERPAdapter {
   /**
    * Update customer
    */
-  async updateCustomer(customerId: string, customer: Partial<ERPCustomer>): Promise<ERPCustomer> {
+  async updateCustomer(
+    customerId: string,
+    customer: Partial<ERPCustomer>,
+  ): Promise<ERPCustomer> {
     return this.executeWithRateLimit(async () => {
-      const sageContact = this.mapERPCustomerToSageContact(customer as ERPCustomer);
+      const sageContact = this.mapERPCustomerToSageContact(
+        customer as ERPCustomer,
+      );
       await this.restPut(`/customers/${customerId}`, sageContact);
       return this.getCustomer(customerId);
     });
@@ -267,7 +280,7 @@ export class SageClient extends AbstractERPAdapter {
   async createSalesInvoice(invoice: ERPInvoice): Promise<ERPInvoice> {
     return this.executeWithRateLimit(async () => {
       const sagePayload = this.mapInvoiceToSage(invoice);
-      const response = await this.restPost('/salesInvoices', sagePayload);
+      const response = await this.restPost("/salesInvoices", sagePayload);
 
       return {
         ...invoice,
@@ -291,7 +304,10 @@ export class SageClient extends AbstractERPAdapter {
   /**
    * Update sales invoice
    */
-  async updateSalesInvoice(invoiceId: string, invoice: Partial<ERPInvoice>): Promise<ERPInvoice> {
+  async updateSalesInvoice(
+    invoiceId: string,
+    invoice: Partial<ERPInvoice>,
+  ): Promise<ERPInvoice> {
     return this.executeWithRateLimit(async () => {
       const sagePayload = this.mapInvoiceToSage(invoice as ERPInvoice);
       await this.restPut(`/salesInvoices/${invoiceId}`, sagePayload);
@@ -311,7 +327,10 @@ export class SageClient extends AbstractERPAdapter {
   /**
    * Send invoice via email
    */
-  async emailSalesInvoice(invoiceId: string, recipients: string[]): Promise<void> {
+  async emailSalesInvoice(
+    invoiceId: string,
+    recipients: string[],
+  ): Promise<void> {
     return this.executeWithRateLimit(async () => {
       await this.restPost(`/salesInvoices/${invoiceId}/email`, {
         to: recipients,
@@ -327,7 +346,7 @@ export class SageClient extends AbstractERPAdapter {
   async createPurchaseInvoice(invoice: ERPInvoice): Promise<ERPInvoice> {
     return this.executeWithRateLimit(async () => {
       const sagePayload = this.mapInvoiceToSage(invoice);
-      const response = await this.restPost('/purchaseInvoices', sagePayload);
+      const response = await this.restPost("/purchaseInvoices", sagePayload);
 
       return {
         ...invoice,
@@ -365,7 +384,7 @@ export class SageClient extends AbstractERPAdapter {
   async createProduct(product: ERPProduct): Promise<ERPProduct> {
     return this.executeWithRateLimit(async () => {
       const sagePayload = this.mapProductToSage(product);
-      const response = await this.restPost('/products', sagePayload);
+      const response = await this.restPost("/products", sagePayload);
 
       return {
         ...product,
@@ -388,7 +407,10 @@ export class SageClient extends AbstractERPAdapter {
   /**
    * Update product
    */
-  async updateProduct(productId: string, product: Partial<ERPProduct>): Promise<ERPProduct> {
+  async updateProduct(
+    productId: string,
+    product: Partial<ERPProduct>,
+  ): Promise<ERPProduct> {
     return this.executeWithRateLimit(async () => {
       const sagePayload = this.mapProductToSage(product as ERPProduct);
       await this.restPut(`/products/${productId}`, sagePayload);
@@ -404,7 +426,7 @@ export class SageClient extends AbstractERPAdapter {
   async createBankTransaction(payment: ERPPayment): Promise<ERPPayment> {
     return this.executeWithRateLimit(async () => {
       const sagePayload = this.mapPaymentToSage(payment);
-      const response = await this.restPost('/bankTransactions', sagePayload);
+      const response = await this.restPost("/bankTransactions", sagePayload);
 
       return {
         ...payment,
@@ -436,7 +458,10 @@ export class SageClient extends AbstractERPAdapter {
   /**
    * Match bank transaction to invoice
    */
-  async matchBankTransaction(transactionId: string, invoiceId: string): Promise<void> {
+  async matchBankTransaction(
+    transactionId: string,
+    invoiceId: string,
+  ): Promise<void> {
     return this.executeWithRateLimit(async () => {
       await this.restPost(`/bankTransactions/${transactionId}/match`, {
         invoiceId,
@@ -451,7 +476,7 @@ export class SageClient extends AbstractERPAdapter {
    */
   async getTaxRates(): Promise<TaxRate[]> {
     return this.executeWithRateLimit(async () => {
-      const response = await this.restGet('/taxRates');
+      const response = await this.restGet("/taxRates");
 
       return response.data.map((tr: any) => ({
         code: tr.code,
@@ -483,7 +508,9 @@ export class SageClient extends AbstractERPAdapter {
   /**
    * Get ledger accounts (chart of accounts)
    */
-  async getLedgerAccounts(pagination?: PaginationParams): Promise<PaginatedResult<SageLedgerAccount>> {
+  async getLedgerAccounts(
+    pagination?: PaginationParams,
+  ): Promise<PaginatedResult<SageLedgerAccount>> {
     return this.executeWithRateLimit(async () => {
       const skip = pagination?.skip || 0;
       const limit = pagination?.limit || 100;
@@ -510,9 +537,11 @@ export class SageClient extends AbstractERPAdapter {
   /**
    * Post journal entry
    */
-  async postJournalEntry(data: Record<string, any>): Promise<{ journalId: string }> {
+  async postJournalEntry(
+    data: Record<string, any>,
+  ): Promise<{ journalId: string }> {
     return this.executeWithRateLimit(async () => {
-      const response = await this.restPost('/journalEntries', data);
+      const response = await this.restPost("/journalEntries", data);
       return { journalId: response.data.id };
     });
   }
@@ -527,14 +556,14 @@ export class SageClient extends AbstractERPAdapter {
     toDate: Date,
   ): Promise<SageFinancialReport> {
     return this.executeWithRateLimit(async () => {
-      const response = await this.restPost('/reports/profitAndLoss', {
-        fromDate: fromDate.toISOString().split('T')[0],
-        toDate: toDate.toISOString().split('T')[0],
+      const response = await this.restPost("/reports/profitAndLoss", {
+        fromDate: fromDate.toISOString().split("T")[0],
+        toDate: toDate.toISOString().split("T")[0],
       });
 
       return {
         id: response.data.id,
-        reportType: 'PROFIT_AND_LOSS',
+        reportType: "PROFIT_AND_LOSS",
         generatedDate: new Date(),
         data: response.data,
       };
@@ -544,15 +573,17 @@ export class SageClient extends AbstractERPAdapter {
   /**
    * Generate balance sheet report
    */
-  async generateBalanceSheetReport(asOfDate: Date): Promise<SageFinancialReport> {
+  async generateBalanceSheetReport(
+    asOfDate: Date,
+  ): Promise<SageFinancialReport> {
     return this.executeWithRateLimit(async () => {
-      const response = await this.restPost('/reports/balanceSheet', {
-        asOfDate: asOfDate.toISOString().split('T')[0],
+      const response = await this.restPost("/reports/balanceSheet", {
+        asOfDate: asOfDate.toISOString().split("T")[0],
       });
 
       return {
         id: response.data.id,
-        reportType: 'BALANCE_SHEET',
+        reportType: "BALANCE_SHEET",
         generatedDate: new Date(),
         data: response.data,
       };
@@ -562,15 +593,17 @@ export class SageClient extends AbstractERPAdapter {
   /**
    * Generate trial balance report
    */
-  async generateTrialBalanceReport(asOfDate: Date): Promise<SageFinancialReport> {
+  async generateTrialBalanceReport(
+    asOfDate: Date,
+  ): Promise<SageFinancialReport> {
     return this.executeWithRateLimit(async () => {
-      const response = await this.restPost('/reports/trialBalance', {
-        asOfDate: asOfDate.toISOString().split('T')[0],
+      const response = await this.restPost("/reports/trialBalance", {
+        asOfDate: asOfDate.toISOString().split("T")[0],
       });
 
       return {
         id: response.data.id,
-        reportType: 'TRIAL_BALANCE',
+        reportType: "TRIAL_BALANCE",
         generatedDate: new Date(),
         data: response.data,
       };
@@ -582,22 +615,29 @@ export class SageClient extends AbstractERPAdapter {
   /**
    * REST GET request
    */
-  protected async restGet(path: string, headers?: Record<string, string>): Promise<any> {
+  protected async restGet(
+    path: string,
+    headers?: Record<string, string>,
+  ): Promise<any> {
     const url = `${this.apiBaseUrl}${path}`;
     const accessToken = await this.getAccessToken();
 
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...headers,
       },
       signal: AbortSignal.timeout(this.config.timeout!),
     });
 
     if (!response.ok) {
-      throw this.createError(`REST GET failed: ${response.statusText}`, 'REST_ERROR', response.status >= 500);
+      throw this.createError(
+        `REST GET failed: ${response.statusText}`,
+        "REST_ERROR",
+        response.status >= 500,
+      );
     }
 
     return response.json();
@@ -606,15 +646,19 @@ export class SageClient extends AbstractERPAdapter {
   /**
    * REST POST request
    */
-  protected async restPost(path: string, body: any, headers?: Record<string, string>): Promise<any> {
+  protected async restPost(
+    path: string,
+    body: any,
+    headers?: Record<string, string>,
+  ): Promise<any> {
     const url = `${this.apiBaseUrl}${path}`;
     const accessToken = await this.getAccessToken();
 
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...headers,
       },
       body: JSON.stringify(body),
@@ -622,7 +666,11 @@ export class SageClient extends AbstractERPAdapter {
     });
 
     if (!response.ok) {
-      throw this.createError(`REST POST failed: ${response.statusText}`, 'REST_ERROR', response.status >= 500);
+      throw this.createError(
+        `REST POST failed: ${response.statusText}`,
+        "REST_ERROR",
+        response.status >= 500,
+      );
     }
 
     return response.json();
@@ -631,15 +679,19 @@ export class SageClient extends AbstractERPAdapter {
   /**
    * REST PUT request
    */
-  protected async restPut(path: string, body: any, headers?: Record<string, string>): Promise<any> {
+  protected async restPut(
+    path: string,
+    body: any,
+    headers?: Record<string, string>,
+  ): Promise<any> {
     const url = `${this.apiBaseUrl}${path}`;
     const accessToken = await this.getAccessToken();
 
     const response = await fetch(url, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...headers,
       },
       body: JSON.stringify(body),
@@ -647,7 +699,11 @@ export class SageClient extends AbstractERPAdapter {
     });
 
     if (!response.ok) {
-      throw this.createError(`REST PUT failed: ${response.statusText}`, 'REST_ERROR', response.status >= 500);
+      throw this.createError(
+        `REST PUT failed: ${response.statusText}`,
+        "REST_ERROR",
+        response.status >= 500,
+      );
     }
 
     return response.json();
@@ -661,7 +717,7 @@ export class SageClient extends AbstractERPAdapter {
     return {
       name: contact.name,
       reference: contact.reference || contact.name,
-      status: contact.status || 'ACTIVE',
+      status: contact.status || "ACTIVE",
       email: contact.email,
       phone: contact.phone,
       mainAddress: contact.mainAddress,
@@ -680,11 +736,13 @@ export class SageClient extends AbstractERPAdapter {
     };
   }
 
-  private mapERPCustomerToSageContact(customer: ERPCustomer): Record<string, any> {
+  private mapERPCustomerToSageContact(
+    customer: ERPCustomer,
+  ): Record<string, any> {
     return {
       name: customer.name,
       reference: customer.code || customer.name,
-      status: customer.status === 'active' ? 'ACTIVE' : 'ARCHIVED',
+      status: customer.status === "active" ? "ACTIVE" : "ARCHIVED",
       email: customer.email,
       phone: customer.phone,
       mainAddress: customer.addresses?.[0] && {
@@ -706,7 +764,7 @@ export class SageClient extends AbstractERPAdapter {
       name: data.name,
       email: data.email,
       phone: data.phone,
-      status: data.status === 'ACTIVE' ? 'active' : 'inactive',
+      status: data.status === "ACTIVE" ? "active" : "inactive",
     };
   }
 
@@ -716,8 +774,8 @@ export class SageClient extends AbstractERPAdapter {
         id: invoice.customerId,
       },
       reference: invoice.invoiceNumber,
-      date: invoice.invoiceDate.toISOString().split('T')[0],
-      dueDate: invoice.dueDate.toISOString().split('T')[0],
+      date: invoice.invoiceDate.toISOString().split("T")[0],
+      dueDate: invoice.dueDate.toISOString().split("T")[0],
       lineItems: invoice.lineItems.map((line) => ({
         description: line.itemName,
         quantity: line.quantity,
@@ -734,10 +792,10 @@ export class SageClient extends AbstractERPAdapter {
       id: data.id,
       externalId: data.id,
       invoiceNumber: data.reference,
-      customerId: data.customerRef?.id || '',
+      customerId: data.customerRef?.id || "",
       invoiceDate: new Date(data.date),
       dueDate: new Date(data.dueDate),
-      status: (data.status as any) || 'draft',
+      status: (data.status as any) || "draft",
       lineItems: data.lineItems || [],
       total: data.total,
     };
@@ -751,7 +809,7 @@ export class SageClient extends AbstractERPAdapter {
       salesPrice: product.unitPrice,
       purchasePrice: product.cost,
       taxRate: product.taxCode ? { id: product.taxCode } : undefined,
-      status: product.status === 'active' ? 'ACTIVE' : 'ARCHIVED',
+      status: product.status === "active" ? "ACTIVE" : "ARCHIVED",
     };
   }
 
@@ -764,14 +822,14 @@ export class SageClient extends AbstractERPAdapter {
       description: data.description,
       unitPrice: data.salesPrice,
       cost: data.purchasePrice,
-      status: data.status === 'ACTIVE' ? 'active' : 'inactive',
+      status: data.status === "ACTIVE" ? "active" : "inactive",
     };
   }
 
   private mapPaymentToSage(payment: ERPPayment): Record<string, any> {
     return {
-      type: payment.paymentMethod || 'BANK_TRANSFER',
-      date: payment.paymentDate.toISOString().split('T')[0],
+      type: payment.paymentMethod || "BANK_TRANSFER",
+      date: payment.paymentDate.toISOString().split("T")[0],
       amount: payment.amount,
       reference: payment.referenceNumber,
     };
@@ -785,11 +843,11 @@ export class SageClient extends AbstractERPAdapter {
       paymentDate: new Date(data.date),
       paymentMethod: data.type,
       referenceNumber: data.reference,
-      status: 'posted',
+      status: "posted",
     };
   }
 
   private generateRandomString(length: number): string {
-    return Array.from({ length }, () => Math.random().toString(36)[2]).join('');
+    return Array.from({ length }, () => Math.random().toString(36)[2]).join("");
   }
 }

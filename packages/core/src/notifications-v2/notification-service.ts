@@ -43,12 +43,14 @@ export class NotificationService {
     this.urlShortener = new UrlShortener(config.trackingBaseUrl);
 
     // Initialize channels
-    this.emailChannel = new EmailChannel(config.emailFrom || "noreply@witylogix.com");
+    this.emailChannel = new EmailChannel(
+      config.emailFrom || "noreply@witylogix.com",
+    );
     this.smsChannel = new SMSChannel(config.smsSender || "+1234567890");
     this.whatsappChannel = new WhatsAppChannel("", ""); // Would be initialized with real credentials
     this.pushChannel = new PushChannel(
       config.vapidPublicKey || "",
-      config.vapidPrivateKey || ""
+      config.vapidPrivateKey || "",
     );
   }
 
@@ -78,7 +80,7 @@ export class NotificationService {
         // Use available channels for this customer and event
         channels = PreferenceManager.getAvailableChannels(
           request.customerId,
-          request.eventType
+          request.eventType,
         );
       }
 
@@ -98,7 +100,10 @@ export class NotificationService {
       for (const channel of channels) {
         // Check rate limiting
         if (!this.rateLimiter.canSend(request.customerId, channel)) {
-          const status = this.rateLimiter.getStatus(request.customerId, channel);
+          const status = this.rateLimiter.getStatus(
+            request.customerId,
+            channel,
+          );
           const result: SendResult = {
             success: false,
             notificationId: this.generateNotificationId(),
@@ -117,7 +122,11 @@ export class NotificationService {
         // Record send
         if (result.success) {
           this.rateLimiter.recordSend(request.customerId, channel);
-          this.recordNotification(request.customerId, result, request.eventType);
+          this.recordNotification(
+            request.customerId,
+            result,
+            request.eventType,
+          );
         }
 
         // Fire webhooks
@@ -133,7 +142,8 @@ export class NotificationService {
 
       return results;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       return [
         {
           success: false,
@@ -168,7 +178,7 @@ export class NotificationService {
    */
   private async sendToChannel(
     channel: NotificationChannel,
-    request: NotificationRequest
+    request: NotificationRequest,
   ): Promise<SendResult> {
     const notificationId = this.generateNotificationId();
 
@@ -177,7 +187,7 @@ export class NotificationService {
       const template = TemplateEngine.renderTemplate(
         request.eventType,
         request.data,
-        channel
+        channel,
       );
 
       switch (channel) {
@@ -267,7 +277,8 @@ export class NotificationService {
           throw new Error(`Unknown channel: ${channel}`);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       return {
         success: false,
         notificationId,
@@ -302,7 +313,11 @@ export class NotificationService {
   /**
    * Record notification in history
    */
-  private recordNotification(customerId: string, result: SendResult, eventType: string = "order_confirmed"): void {
+  private recordNotification(
+    customerId: string,
+    result: SendResult,
+    eventType: string = "order_confirmed",
+  ): void {
     let history = notificationHistory.get(customerId) || [];
 
     const record: NotificationRecord = {

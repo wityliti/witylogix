@@ -129,7 +129,9 @@ export const healthRegistry = getHealthChecker();
 const healthCheckStartTime = Date.now();
 
 export function registerDefaultHealthChecks(
-  registry: InstanceType<typeof import("./health-endpoint").HealthChecker> = healthRegistry
+  registry: InstanceType<
+    typeof import("./health-endpoint").HealthChecker
+  > = healthRegistry,
 ): void {
   registry.register("database", async () => ({
     status: "UP" as const,

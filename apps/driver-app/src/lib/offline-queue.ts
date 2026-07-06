@@ -5,13 +5,13 @@
 
 export interface QueuedOperation {
   id: string;
-  type: 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  type: "POST" | "PUT" | "PATCH" | "DELETE";
   endpoint: string;
   method: string;
   body: Record<string, any>;
   createdAt: number;
   retryCount: number;
-  status: 'pending' | 'completed' | 'failed';
+  status: "pending" | "completed" | "failed";
   lastError?: string;
   serverTimestamp?: number;
 }
@@ -23,13 +23,14 @@ export interface QueueStatus {
   lastSyncAt?: number;
 }
 
-const STORAGE_KEY = 'witylogix_offline_queue';
+const STORAGE_KEY = "witylogix_offline_queue";
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 2000;
 
 export class OfflineQueue {
   private queue: Map<string, QueuedOperation> = new Map();
-  private isOnline: boolean = typeof navigator !== 'undefined' ? navigator.onLine : true;
+  private isOnline: boolean =
+    typeof navigator !== "undefined" ? navigator.onLine : true;
   private syncInProgress: boolean = false;
   private listeners: Set<() => void> = new Set();
   private pollInterval: NodeJS.Timeout | null = null;
@@ -43,15 +44,15 @@ export class OfflineQueue {
    * Setup network status detection
    */
   private setupNetworkListeners(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
-    window.addEventListener('online', () => {
+    window.addEventListener("online", () => {
       this.isOnline = true;
       this.notifyListeners();
       this.processQueue();
     });
 
-    window.addEventListener('offline', () => {
+    window.addEventListener("offline", () => {
       this.isOnline = false;
       this.notifyListeners();
     });
@@ -72,14 +73,19 @@ export class OfflineQueue {
   /**
    * Add operation to queue
    */
-  enqueue(operation: Omit<QueuedOperation, 'id' | 'createdAt' | 'retryCount' | 'status'>): string {
+  enqueue(
+    operation: Omit<
+      QueuedOperation,
+      "id" | "createdAt" | "retryCount" | "status"
+    >,
+  ): string {
     const id = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const queuedOp: QueuedOperation = {
       ...operation,
       id,
       createdAt: Date.now(),
       retryCount: 0,
-      status: 'pending',
+      status: "pending",
     };
 
     this.queue.set(id, queuedOp);
@@ -101,7 +107,7 @@ export class OfflineQueue {
 
     try {
       const pendingOps = Array.from(this.queue.values()).filter(
-        (op) => op.status === 'pending'
+        (op) => op.status === "pending",
       );
 
       for (const operation of pendingOps) {
@@ -109,7 +115,7 @@ export class OfflineQueue {
         await this.delay(RETRY_DELAY_MS / 2);
       }
     } catch (error) {
-      console.error('Error processing queue:', error);
+      console.error("Error processing queue:", error);
     } finally {
       this.syncInProgress = false;
       this.notifyListeners();
@@ -124,7 +130,7 @@ export class OfflineQueue {
       const response = await fetch(operation.endpoint, {
         method: operation.type,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...this.getAuthHeaders(),
         },
         body: JSON.stringify(operation.body),
@@ -135,18 +141,19 @@ export class OfflineQueue {
       }
 
       const responseData = await response.json();
-      operation.status = 'completed';
+      operation.status = "completed";
       operation.serverTimestamp = responseData.timestamp || Date.now();
       this.saveToStorage();
       this.notifyListeners();
     } catch (error) {
       operation.retryCount++;
-      operation.lastError = error instanceof Error ? error.message : String(error);
+      operation.lastError =
+        error instanceof Error ? error.message : String(error);
 
       if (operation.retryCount >= MAX_RETRIES) {
-        operation.status = 'failed';
+        operation.status = "failed";
       } else {
-        operation.status = 'pending';
+        operation.status = "pending";
       }
 
       this.saveToStorage();
@@ -158,7 +165,10 @@ export class OfflineQueue {
    * Get authentication headers (override as needed)
    */
   private getAuthHeaders(): Record<string, string> {
-    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    const token =
+      typeof localStorage !== "undefined"
+        ? localStorage.getItem("auth_token")
+        : null;
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
 
@@ -167,12 +177,12 @@ export class OfflineQueue {
    */
   async retryFailed(): Promise<void> {
     const failedOps = Array.from(this.queue.values()).filter(
-      (op) => op.status === 'failed'
+      (op) => op.status === "failed",
     );
 
     for (const operation of failedOps) {
       operation.retryCount = 0;
-      operation.status = 'pending';
+      operation.status = "pending";
     }
 
     this.saveToStorage();
@@ -186,8 +196,8 @@ export class OfflineQueue {
    */
   getQueueStatus(): QueueStatus {
     const operations = Array.from(this.queue.values());
-    const pending = operations.filter((op) => op.status === 'pending').length;
-    const failed = operations.filter((op) => op.status === 'failed').length;
+    const pending = operations.filter((op) => op.status === "pending").length;
+    const failed = operations.filter((op) => op.status === "failed").length;
     const total = operations.length;
 
     return {
@@ -204,7 +214,7 @@ export class OfflineQueue {
   clearCompleted(): void {
     const opsToDelete: string[] = [];
     this.queue.forEach((op, id) => {
-      if (op.status === 'completed') {
+      if (op.status === "completed") {
         opsToDelete.push(id);
       }
     });
@@ -265,13 +275,13 @@ export class OfflineQueue {
    * Save queue to localStorage
    */
   private saveToStorage(): void {
-    if (typeof localStorage === 'undefined') return;
+    if (typeof localStorage === "undefined") return;
 
     try {
       const data = Array.from(this.queue.values());
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (error) {
-      console.error('Failed to save queue to storage:', error);
+      console.error("Failed to save queue to storage:", error);
     }
   }
 
@@ -279,7 +289,7 @@ export class OfflineQueue {
    * Load queue from localStorage
    */
   private loadFromStorage(): void {
-    if (typeof localStorage === 'undefined') return;
+    if (typeof localStorage === "undefined") return;
 
     try {
       const data = localStorage.getItem(STORAGE_KEY);
@@ -290,7 +300,7 @@ export class OfflineQueue {
         });
       }
     } catch (error) {
-      console.error('Failed to load queue from storage:', error);
+      console.error("Failed to load queue from storage:", error);
     }
   }
 
@@ -300,7 +310,7 @@ export class OfflineQueue {
   private getLastSyncTime(): number | undefined {
     let lastSync: number | undefined;
     this.queue.forEach((op) => {
-      if (op.status === 'completed' && op.serverTimestamp) {
+      if (op.status === "completed" && op.serverTimestamp) {
         if (!lastSync || op.serverTimestamp > lastSync) {
           lastSync = op.serverTimestamp;
         }
@@ -325,7 +335,7 @@ export class OfflineQueue {
     }
     this.listeners.clear();
     this.queue.clear();
-    if (typeof localStorage !== 'undefined') {
+    if (typeof localStorage !== "undefined") {
       localStorage.removeItem(STORAGE_KEY);
     }
   }

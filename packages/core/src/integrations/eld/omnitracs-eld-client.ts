@@ -172,8 +172,8 @@ export class OmnitrocsELDClient extends ELDAdapter {
       await this.executeWithRetry(() =>
         this.makeRequest<{ organization: { id: string } }>(
           "GET",
-          "/organization"
-        )
+          "/organization",
+        ),
       );
       this.logEvent({
         type: "diagnostic-event",
@@ -190,7 +190,7 @@ export class OmnitrocsELDClient extends ELDAdapter {
   async getDriverLogs(
     driverId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<ELDDriverLog[]> {
     const response = await this.executeWithRetry(() =>
       this.makeRequest<{ records: OmnitracHosRecord[] }>(
@@ -199,8 +199,8 @@ export class OmnitrocsELDClient extends ELDAdapter {
         {
           startTime: startDate.toISOString(),
           endTime: endDate.toISOString(),
-        }
-      )
+        },
+      ),
     );
 
     return response.records.map((record, idx) => ({
@@ -212,7 +212,10 @@ export class OmnitrocsELDClient extends ELDAdapter {
       endTime: new Date(record.endTime),
       dutyStatus: this.mapDutyStatus(record.status),
       miles: record.miles,
-      hours: getHoursDifference(new Date(record.startTime), new Date(record.endTime)),
+      hours: getHoursDifference(
+        new Date(record.startTime),
+        new Date(record.endTime),
+      ),
       startLocation: record.location ? { ...record.location } : undefined,
       endLocation: record.location ? { ...record.location } : undefined,
       remarks: record.annotations?.join("; "),
@@ -228,7 +231,7 @@ export class OmnitrocsELDClient extends ELDAdapter {
    */
   async getDutyStatus(driverId: string): Promise<ELDDutyStatus> {
     const driver = await this.executeWithRetry(() =>
-      this.makeRequest<OmnitracDriver>("GET", `/drivers/${driverId}`)
+      this.makeRequest<OmnitracDriver>("GET", `/drivers/${driverId}`),
     );
 
     const currentStatus = driver.currentStatus || {
@@ -261,7 +264,7 @@ export class OmnitrocsELDClient extends ELDAdapter {
   async setDutyStatus(
     driverId: string,
     status: DutyStatus,
-    location?: { latitude: number; longitude: number }
+    location?: { latitude: number; longitude: number },
   ): Promise<ELDDutyStatus> {
     const payload = {
       status: this.mapDutyStatusReverse(status),
@@ -274,8 +277,8 @@ export class OmnitrocsELDClient extends ELDAdapter {
         "POST",
         `/drivers/${driverId}/duty-status`,
         null,
-        payload
-      )
+        payload,
+      ),
     );
 
     this.logEvent({
@@ -292,7 +295,7 @@ export class OmnitrocsELDClient extends ELDAdapter {
    */
   async getViolations(
     driverId: string,
-    days: number = 30
+    days: number = 30,
   ): Promise<ELDViolation[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -301,8 +304,8 @@ export class OmnitrocsELDClient extends ELDAdapter {
       this.makeRequest<{ violations: OmnitracViolation[] }>(
         "GET",
         `/drivers/${driverId}/violations`,
-        { startDate: startDate.toISOString() }
-      )
+        { startDate: startDate.toISOString() },
+      ),
     );
 
     return response.violations.map((v) => ({
@@ -330,7 +333,7 @@ export class OmnitrocsELDClient extends ELDAdapter {
    */
   async getVehicle(vehicleId: string): Promise<ELDVehicle> {
     const vehicle = await this.executeWithRetry(() =>
-      this.makeRequest<OmnitracVehicle>("GET", `/vehicles/${vehicleId}`)
+      this.makeRequest<OmnitracVehicle>("GET", `/vehicles/${vehicleId}`),
     );
 
     return {
@@ -343,7 +346,9 @@ export class OmnitrocsELDClient extends ELDAdapter {
       year: vehicle.year,
       group: undefined,
       odometerMiles: vehicle.odometer,
-      fuelType: (vehicle.fuelType as "diesel" | "gasoline" | "electric" | "hybrid") || undefined,
+      fuelType:
+        (vehicle.fuelType as "diesel" | "gasoline" | "electric" | "hybrid") ||
+        undefined,
       capacityLbs: vehicle.gvwr,
       currentLocation: vehicle.currentLocation
         ? {
@@ -354,9 +359,9 @@ export class OmnitrocsELDClient extends ELDAdapter {
           }
         : undefined,
       driverId: vehicle.driver?.id,
-      activeFaults: vehicle.events
-        ?.filter((e) => e.type === "fault")
-        .map((e) => e.code) || [],
+      activeFaults:
+        vehicle.events?.filter((e) => e.type === "fault").map((e) => e.code) ||
+        [],
       lastInspectionDate: undefined,
       nextInspectionDueDate: undefined,
       maintenanceStatus: "good",
@@ -370,12 +375,10 @@ export class OmnitrocsELDClient extends ELDAdapter {
    */
   async getVehicles(): Promise<ELDVehicle[]> {
     const response = await this.executeWithRetry(() =>
-      this.makeRequest<{ vehicles: OmnitracVehicle[] }>("GET", "/vehicles")
+      this.makeRequest<{ vehicles: OmnitracVehicle[] }>("GET", "/vehicles"),
     );
 
-    return Promise.all(
-      response.vehicles.map((v) => this.getVehicle(v.id))
-    );
+    return Promise.all(response.vehicles.map((v) => this.getVehicle(v.id)));
   }
 
   /**
@@ -387,11 +390,12 @@ export class OmnitrocsELDClient extends ELDAdapter {
       vehicleId: dvir.vehicleId,
       type: dvir.type === "pre-trip" ? "pretrip" : "posttrip",
       status: dvir.condition,
-      items: dvir.defects?.map((d) => ({
-        name: d.component,
-        status: d.severity,
-        notes: d.description,
-      })) || [],
+      items:
+        dvir.defects?.map((d) => ({
+          name: d.component,
+          status: d.severity,
+          notes: d.description,
+        })) || [],
       driverSignature: dvir.driverRemarks,
     };
 
@@ -400,8 +404,8 @@ export class OmnitrocsELDClient extends ELDAdapter {
         "POST",
         `/vehicles/${dvir.vehicleId}/dvir`,
         null,
-        payload
-      )
+        payload,
+      ),
     );
 
     this.logEvent({
@@ -442,8 +446,8 @@ export class OmnitrocsELDClient extends ELDAdapter {
       this.makeRequest<{ dvirs: OmnitracDVIR[] }>(
         "GET",
         `/vehicles/${vehicleId}/dvirs`,
-        { startDate: startDate.toISOString() }
-      )
+        { startDate: startDate.toISOString() },
+      ),
     );
 
     return response.dvirs.map((d) => ({
@@ -508,8 +512,8 @@ export class OmnitrocsELDClient extends ELDAdapter {
       await this.executeWithRetry(() =>
         this.makeRequest<{ organization: { id: string } }>(
           "GET",
-          "/organization"
-        )
+          "/organization",
+        ),
       );
       return true;
     } catch {
@@ -526,7 +530,7 @@ export class OmnitrocsELDClient extends ELDAdapter {
     method: string,
     path: string,
     params?: Record<string, unknown> | null,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     const url = new URL(`${this.baseUrl}${path}`);
 
@@ -549,7 +553,7 @@ export class OmnitrocsELDClient extends ELDAdapter {
 
     if (!response.ok) {
       throw new Error(
-        `Omnitracs API error: ${response.status} ${response.statusText}`
+        `Omnitracs API error: ${response.status} ${response.statusText}`,
       );
     }
 

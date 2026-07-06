@@ -14,14 +14,14 @@ import type {
   ERPJournalEntry,
   ERPInventory,
   ERPConnection,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Infor CloudSuite API Client
  */
 export class InforClient {
   private accessToken?: string;
-  private apiUrl: string = 'https://infor-api.inforcloud.com/v1';
+  private apiUrl: string = "https://infor-api.inforcloud.com/v1";
   private connection: ERPConnection;
 
   /**
@@ -39,7 +39,7 @@ export class InforClient {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      await this.request('GET', '/companies?limit=1');
+      await this.request("GET", "/companies?limit=1");
       return true;
     } catch {
       return false;
@@ -49,14 +49,18 @@ export class InforClient {
   /**
    * Make HTTP request
    */
-  private async request(method: string, endpoint: string, body?: unknown): Promise<any> {
+  private async request(
+    method: string,
+    endpoint: string,
+    body?: unknown,
+  ): Promise<any> {
     if (!this.accessToken) {
-      throw new Error('Not authenticated');
+      throw new Error("Not authenticated");
     }
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.accessToken}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${this.accessToken}`,
     };
 
     const response = await fetch(`${this.apiUrl}${endpoint}`, {
@@ -87,11 +91,11 @@ export class InforClient {
       taxId: customer.taxId,
       creditLimit: customer.creditLimit,
       paymentTerms: customer.paymentTerms,
-      status: customer.status || 'active',
+      status: customer.status || "active",
       addresses: customer.addresses,
     };
 
-    const response = await this.request('POST', '/customers', data);
+    const response = await this.request("POST", "/customers", data);
     return {
       id: response.customerId,
       externalId: response.customerId,
@@ -109,7 +113,7 @@ export class InforClient {
    * Get customer
    */
   async getCustomer(customerId: string): Promise<ERPCustomer> {
-    const response = await this.request('GET', `/customers/${customerId}`);
+    const response = await this.request("GET", `/customers/${customerId}`);
     return {
       id: response.customerId,
       externalId: response.customerId,
@@ -125,7 +129,7 @@ export class InforClient {
    * List customers
    */
   async listCustomers(): Promise<ERPCustomer[]> {
-    const response = await this.request('GET', '/customers');
+    const response = await this.request("GET", "/customers");
     return (response.customers || []).map((cust: any) => ({
       id: cust.customerId,
       externalId: cust.customerId,
@@ -150,10 +154,10 @@ export class InforClient {
       phone: vendor.phone,
       taxId: vendor.taxId,
       paymentTerms: vendor.paymentTerms,
-      status: vendor.status || 'active',
+      status: vendor.status || "active",
     };
 
-    const response = await this.request('POST', '/vendors', data);
+    const response = await this.request("POST", "/vendors", data);
     return {
       id: response.vendorId,
       externalId: response.vendorId,
@@ -169,7 +173,7 @@ export class InforClient {
    * Get vendor
    */
   async getVendor(vendorId: string): Promise<ERPVendor> {
-    const response = await this.request('GET', `/vendors/${vendorId}`);
+    const response = await this.request("GET", `/vendors/${vendorId}`);
     return {
       id: response.vendorId,
       externalId: response.vendorId,
@@ -184,7 +188,7 @@ export class InforClient {
    * List vendors
    */
   async listVendors(): Promise<ERPVendor[]> {
-    const response = await this.request('GET', '/vendors');
+    const response = await this.request("GET", "/vendors");
     return (response.vendors || []).map((v: any) => ({
       id: v.vendorId,
       externalId: v.vendorId,
@@ -208,11 +212,11 @@ export class InforClient {
       category: product.category,
       unitPrice: product.unitPrice,
       cost: product.cost,
-      status: product.status || 'active',
+      status: product.status || "active",
       taxCode: product.taxCode,
     };
 
-    const response = await this.request('POST', '/products', data);
+    const response = await this.request("POST", "/products", data);
     return {
       id: response.itemId,
       externalId: response.itemId,
@@ -228,7 +232,7 @@ export class InforClient {
    * Get product
    */
   async getProduct(productId: string): Promise<ERPProduct> {
-    const response = await this.request('GET', `/products/${productId}`);
+    const response = await this.request("GET", `/products/${productId}`);
     return {
       id: response.itemId,
       externalId: response.itemId,
@@ -244,7 +248,7 @@ export class InforClient {
    * List products
    */
   async listProducts(): Promise<ERPProduct[]> {
-    const response = await this.request('GET', '/products');
+    const response = await this.request("GET", "/products");
     return (response.items || []).map((item: any) => ({
       id: item.itemId,
       externalId: item.itemId,
@@ -269,10 +273,10 @@ export class InforClient {
       customerId: order.customerId,
       lineItems: order.lineItems,
       total: order.total,
-      status: order.status || 'pending',
+      status: order.status || "pending",
     };
 
-    const response = await this.request('POST', '/orders', data);
+    const response = await this.request("POST", "/orders", data);
     return {
       id: response.orderId,
       externalId: response.orderId,
@@ -289,7 +293,7 @@ export class InforClient {
    * Get order
    */
   async getOrder(orderId: string): Promise<ERPOrder> {
-    const response = await this.request('GET', `/orders/${orderId}`);
+    const response = await this.request("GET", `/orders/${orderId}`);
     return {
       id: response.orderId,
       externalId: response.orderId,
@@ -306,7 +310,7 @@ export class InforClient {
    * List orders
    */
   async listOrders(): Promise<ERPOrder[]> {
-    const response = await this.request('GET', '/orders');
+    const response = await this.request("GET", "/orders");
     return (response.orders || []).map((o: any) => ({
       id: o.orderId,
       externalId: o.orderId,
@@ -331,10 +335,10 @@ export class InforClient {
       customerId: invoice.customerId,
       lineItems: invoice.lineItems,
       total: invoice.total,
-      status: invoice.status || 'draft',
+      status: invoice.status || "draft",
     };
 
-    const response = await this.request('POST', '/invoices', data);
+    const response = await this.request("POST", "/invoices", data);
     return {
       id: response.invoiceId,
       externalId: response.invoiceId,
@@ -352,7 +356,7 @@ export class InforClient {
    * Get invoice
    */
   async getInvoice(invoiceId: string): Promise<ERPInvoice> {
-    const response = await this.request('GET', `/invoices/${invoiceId}`);
+    const response = await this.request("GET", `/invoices/${invoiceId}`);
     return {
       id: response.invoiceId,
       externalId: response.invoiceId,
@@ -370,7 +374,7 @@ export class InforClient {
    * List invoices
    */
   async listInvoices(): Promise<ERPInvoice[]> {
-    const response = await this.request('GET', '/invoices');
+    const response = await this.request("GET", "/invoices");
     return (response.invoices || []).map((inv: any) => ({
       id: inv.invoiceId,
       externalId: inv.invoiceId,
@@ -393,10 +397,10 @@ export class InforClient {
       transactionDate: entry.transactionDate,
       description: entry.description,
       lines: entry.lines,
-      status: entry.status || 'draft',
+      status: entry.status || "draft",
     };
 
-    const response = await this.request('POST', '/journal-entries', data);
+    const response = await this.request("POST", "/journal-entries", data);
     return {
       id: response.journalId,
       externalId: response.journalId,
@@ -411,7 +415,7 @@ export class InforClient {
    * Get journal entry
    */
   async getJournalEntry(journalId: string): Promise<ERPJournalEntry> {
-    const response = await this.request('GET', `/journal-entries/${journalId}`);
+    const response = await this.request("GET", `/journal-entries/${journalId}`);
     return {
       id: response.journalId,
       externalId: response.journalId,
@@ -427,9 +431,14 @@ export class InforClient {
   /**
    * Get inventory
    */
-  async getInventory(itemId: string, warehouse?: string): Promise<ERPInventory> {
-    const endpoint = warehouse ? `/inventory/${itemId}?warehouse=${warehouse}` : `/inventory/${itemId}`;
-    const response = await this.request('GET', endpoint);
+  async getInventory(
+    itemId: string,
+    warehouse?: string,
+  ): Promise<ERPInventory> {
+    const endpoint = warehouse
+      ? `/inventory/${itemId}?warehouse=${warehouse}`
+      : `/inventory/${itemId}`;
+    const response = await this.request("GET", endpoint);
     return {
       id: response.inventoryId,
       itemId: response.itemId,
@@ -444,7 +453,7 @@ export class InforClient {
    * List inventory
    */
   async listInventory(): Promise<ERPInventory[]> {
-    const response = await this.request('GET', '/inventory');
+    const response = await this.request("GET", "/inventory");
     return (response.inventory || []).map((inv: any) => ({
       id: inv.inventoryId,
       itemId: inv.itemId,
@@ -457,8 +466,12 @@ export class InforClient {
   /**
    * Adjust inventory
    */
-  async adjustInventory(itemId: string, quantity: number, reason: string): Promise<void> {
+  async adjustInventory(
+    itemId: string,
+    quantity: number,
+    reason: string,
+  ): Promise<void> {
     const data = { itemId, quantity, reason };
-    await this.request('POST', '/inventory/adjustments', data);
+    await this.request("POST", "/inventory/adjustments", data);
   }
 }

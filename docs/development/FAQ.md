@@ -11,6 +11,7 @@ Frequently asked questions about developing on Witylogix.
 ### Q: How do I start developing locally?
 
 **A**: Follow the [Development Setup Guide](./SETUP.md). TL;DR:
+
 ```bash
 git clone https://github.com/witylogix/witylogix-platform.git
 cd witylogix-platform
@@ -24,6 +25,7 @@ pnpm dev
 ### Q: What IDEs are recommended?
 
 **A**: VS Code is recommended with these extensions:
+
 - TypeScript Vue Plugin
 - ESLint
 - Prettier
@@ -36,6 +38,7 @@ See `docs/development/SETUP.md` for detailed setup.
 ### Q: Why use Turborepo?
 
 **A**: Turborepo provides:
+
 - **Task orchestration**: Run scripts across all packages efficiently
 - **Smart caching**: Only rebuild changed packages
 - **Parallel execution**: Speed up builds with multiple workers
@@ -45,6 +48,7 @@ See `docs/development/SETUP.md` for detailed setup.
 ### Q: How does the monorepo structure work?
 
 **A**: Witylogix uses a monorepo with:
+
 - **packages/**: Shared libraries (core, db, types, validators, etc.)
 - **apps/**: Production applications (api, dashboard, driver-app, etc.)
 - **extensions/**: Merchant-facing UI extensions
@@ -54,6 +58,7 @@ pnpm workspaces manages dependencies, Turborepo orchestrates tasks.
 ### Q: How do I add a new package?
 
 **A**:
+
 1. Create directory: `mkdir packages/my-package`
 2. Add package.json with unique name: `@witylogix/my-package`
 3. Update `pnpm-workspace.yaml` (auto-detected)
@@ -62,6 +67,7 @@ pnpm workspaces manages dependencies, Turborepo orchestrates tasks.
 ### Q: How do I run a command for a specific package?
 
 **A**:
+
 ```bash
 # Run in a specific app
 cd apps/api && pnpm dev
@@ -75,6 +81,7 @@ pnpm build --filter=dashboard
 ### Q: Why are some dependencies in workspace?
 
 **A**: Shared dependencies at the root are:
+
 - Build tools (TypeScript, Turbo, Babel)
 - Linting (ESLint, Prettier)
 - Testing (Jest, Vitest)
@@ -87,6 +94,7 @@ App-specific dependencies live in their package.json.
 ### Q: What's Row-Level Security (RLS)?
 
 **A**: RLS enforces tenant isolation at the PostgreSQL level:
+
 - Each user can only see their own organization's data
 - Policies are defined in migrations
 - Enforced by database, not application code
@@ -95,18 +103,20 @@ App-specific dependencies live in their package.json.
 ### Q: How do multi-tenant queries work?
 
 **A**: Every query includes the current tenant context:
+
 ```typescript
 // Automatically scoped to current tenant
 const orders = await prisma.orders.findMany({
   where: {
-    tenantId: session.tenantId  // Enforced by Prisma middleware
-  }
+    tenantId: session.tenantId, // Enforced by Prisma middleware
+  },
 });
 ```
 
 ### Q: How do I run migrations?
 
 **A**:
+
 ```bash
 # Create a new migration
 pnpm db:create-migration
@@ -124,6 +134,7 @@ pnpm db:generate
 ### Q: Can I modify the schema?
 
 **A**: Yes, follow these steps:
+
 1. Update `packages/db/prisma/schema.prisma`
 2. Create migration: `pnpm db:create-migration`
 3. Review the generated SQL
@@ -133,6 +144,7 @@ pnpm db:generate
 ### Q: What if migrations conflict?
 
 **A**:
+
 ```bash
 # Resolve conflicts
 git merge origin/main
@@ -149,6 +161,7 @@ pnpm db:migrate
 ### Q: When should I use Server Components vs Client Components?
 
 **A**:
+
 - **Server Components** (default): For data fetching, secure operations, large libraries
 - **Client Components**: Only for interactivity (useState, useEffect, event handlers)
 
@@ -157,11 +170,10 @@ See `docs/development/CODE_STYLE.md` for examples.
 ### Q: How do I use Tailwind CSS?
 
 **A**: Use utility classes:
+
 ```tsx
 <div className="flex items-center justify-between p-4 rounded-lg bg-white dark:bg-gray-900">
-  <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-    Title
-  </h1>
+  <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Title</h1>
 </div>
 ```
 
@@ -170,6 +182,7 @@ No inline styles. Support dark mode. Use `cn()` for conditional classes.
 ### Q: How is dark mode supported?
 
 **A**: Tailwind handles dark mode:
+
 ```tsx
 // Automatically respects user preference via CSS media query
 <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
@@ -182,6 +195,7 @@ Users toggle dark mode in dashboard settings.
 ### Q: How do I create a new component?
 
 **A**:
+
 1. Create file: `apps/dashboard/src/components/MyComponent.tsx`
 2. Define props interface
 3. Export named function component
@@ -193,6 +207,7 @@ See component patterns in `docs/development/CODE_STYLE.md`.
 ### Q: Where should I put custom styles?
 
 **A**: Use Tailwind utilities in className. For global styles:
+
 - CSS modules: `component.module.css` (scoped)
 - Global styles: `app.css` (root layout)
 - Avoid inline styles
@@ -200,19 +215,20 @@ See component patterns in `docs/development/CODE_STYLE.md`.
 ### Q: How do forms work?
 
 **A**: Use Zod for validation + React Hook Form for handling:
+
 ```typescript
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 const schema = z.object({
   email: z.string().email(),
-  name: z.string().min(1)
+  name: z.string().min(1),
 });
 
 export function MyForm() {
   const form = useForm({
-    resolver: zodResolver(schema)
+    resolver: zodResolver(schema),
   });
   // ...
 }
@@ -223,6 +239,7 @@ export function MyForm() {
 ### Q: How does the API structure work?
 
 **A**: Fastify-based API with:
+
 - **Controllers**: HTTP request handlers
 - **Services**: Business logic
 - **Repositories**: Data access (Prisma)
@@ -232,16 +249,19 @@ export function MyForm() {
 ### Q: How do I validate API inputs?
 
 **A**: Use Zod schemas:
+
 ```typescript
 const createOrderSchema = z.object({
   customerId: z.string().uuid(),
-  items: z.array(z.object({
-    productId: z.string(),
-    quantity: z.number().positive()
-  }))
+  items: z.array(
+    z.object({
+      productId: z.string(),
+      quantity: z.number().positive(),
+    }),
+  ),
 });
 
-fastify.post('/orders', async (request) => {
+fastify.post("/orders", async (request) => {
   const data = createOrderSchema.parse(request.body);
   // data is validated and typed
 });
@@ -250,17 +270,18 @@ fastify.post('/orders', async (request) => {
 ### Q: How do I handle errors?
 
 **A**: Use custom error classes:
+
 ```typescript
 class NotFoundError extends Error {
   constructor(resource: string, id: string) {
     super(`${resource} ${id} not found`);
-    this.name = 'NotFoundError';
+    this.name = "NotFoundError";
   }
 }
 
 async function getOrder(id: string) {
   const order = await prisma.orders.findUnique({ where: { id } });
-  if (!order) throw new NotFoundError('Order', id);
+  if (!order) throw new NotFoundError("Order", id);
   return order;
 }
 ```
@@ -268,6 +289,7 @@ async function getOrder(id: string) {
 ### Q: How do I add a new API endpoint?
 
 **A**:
+
 1. Create controller: `apps/api/src/routes/orders.ts`
 2. Define routes with Zod validation
 3. Implement business logic
@@ -279,6 +301,7 @@ See ADR-018 for error handling patterns.
 ### Q: How do webhooks work?
 
 **A**: Outbound webhooks:
+
 - Store webhook URLs in database
 - Sign with HMAC-SHA256
 - Retry with exponential backoff
@@ -290,6 +313,7 @@ See ADR-018 for error handling patterns.
 ### Q: What's the test coverage target?
 
 **A**:
+
 - **Critical business logic**: 80%+
 - **Utilities/helpers**: 70%+
 - **UI components**: 50%+
@@ -299,12 +323,13 @@ Run `pnpm test --coverage` to check.
 ### Q: How do I write tests?
 
 **A**: Use Vitest for packages, Jest for apps:
+
 ```typescript
-describe('calculateDistance', () => {
-  it('should calculate distance between coordinates', () => {
+describe("calculateDistance", () => {
+  it("should calculate distance between coordinates", () => {
     const result = calculateDistance(
       { lat: 40.7128, lon: -74.006 },
-      { lat: 34.0522, lon: -118.2437 }
+      { lat: 34.0522, lon: -118.2437 },
     );
     expect(result).toBeGreaterThan(0);
   });
@@ -316,27 +341,29 @@ See `docs/development/CODE_STYLE.md` for patterns.
 ### Q: How do I mock database calls?
 
 **A**: Use Prisma mock client:
+
 ```typescript
-import { PrismaClient } from '@prisma/client';
-import { mockDeep } from 'jest-mock-extended';
+import { PrismaClient } from "@prisma/client";
+import { mockDeep } from "jest-mock-extended";
 
 const prismaMock = mockDeep<PrismaClient>();
 
-it('should create order', async () => {
+it("should create order", async () => {
   prismaMock.orders.create.mockResolvedValue({
-    id: '123',
-    customerId: 'cust-1'
+    id: "123",
+    customerId: "cust-1",
     // ...
   });
 
   const result = await createOrder(prismaMock, data);
-  expect(result.id).toBe('123');
+  expect(result.id).toBe("123");
 });
 ```
 
 ### Q: How do I run E2E tests?
 
 **A**: Use Playwright:
+
 ```bash
 pnpm test:e2e
 
@@ -351,6 +378,7 @@ See `PLAYWRIGHT_INTEGRATION.md` for setup.
 ### Q: How do I deploy the application?
 
 **A**: See `docs/deployment/` for deployment guides:
+
 - Docker Compose for self-hosted
 - Cloud deployment (AWS, GCP, Azure)
 - Kubernetes support
@@ -358,6 +386,7 @@ See `PLAYWRIGHT_INTEGRATION.md` for setup.
 ### Q: What's the deployment checklist?
 
 **A**: Before deploying:
+
 - [ ] All tests pass
 - [ ] No type errors
 - [ ] Environment variables configured
@@ -369,6 +398,7 @@ See `PLAYWRIGHT_INTEGRATION.md` for setup.
 ### Q: How do I handle secrets?
 
 **A**: Use environment variables only:
+
 - Never commit secrets
 - Use `.env.local` for development
 - Use secret managers (AWS Secrets Manager, HashiCorp Vault) for production
@@ -377,6 +407,7 @@ See `PLAYWRIGHT_INTEGRATION.md` for setup.
 ### Q: How do I scale the application?
 
 **A**: Horizontal scaling:
+
 - API is stateless (scale with load balancer)
 - Use read replicas for PostgreSQL
 - Redis cluster for caching/sessions
@@ -390,6 +421,7 @@ See `docs/architecture/ARCHITECTURE.md`.
 ### Q: How do I find performance bottlenecks?
 
 **A**:
+
 ```bash
 # API profiling
 LOG_LEVEL=debug pnpm dev --filter=api
@@ -404,6 +436,7 @@ EXPLAIN ANALYZE SELECT * FROM orders;
 ### Q: How do I optimize database queries?
 
 **A**:
+
 - Use includes for relationships (avoid N+1)
 - Add indexes on frequently queried fields
 - Denormalize when necessary
@@ -413,6 +446,7 @@ EXPLAIN ANALYZE SELECT * FROM orders;
 ### Q: How is caching implemented?
 
 **A**: Multiple caching layers:
+
 - **Redis**: Session, cache, queue storage
 - **Database query cache**: Prisma client-level
 - **API response cache**: Conditional requests
@@ -423,6 +457,7 @@ EXPLAIN ANALYZE SELECT * FROM orders;
 ### Q: My local environment won't start
 
 **A**: Follow these steps:
+
 1. Verify system requirements
 2. Check Docker is running: `docker ps`
 3. Clean and reinstall: `rm -rf node_modules && pnpm install`
@@ -432,6 +467,7 @@ EXPLAIN ANALYZE SELECT * FROM orders;
 ### Q: Tests are failing locally but passing in CI
 
 **A**: Common causes:
+
 - Database state issues: `pnpm db:reset`
 - Cache issues: Clear .turbo: `rm -rf .turbo`
 - Race conditions: Run individually vs together
@@ -440,6 +476,7 @@ EXPLAIN ANALYZE SELECT * FROM orders;
 ### Q: Port conflicts
 
 **A**: Change ports in `.env.local`:
+
 ```env
 PORT=8001
 DASHBOARD_URL=http://localhost:3001
@@ -450,6 +487,7 @@ Or kill process: `lsof -i :8000 && kill -9 <PID>`
 ### Q: Out of memory during build
 
 **A**: Increase Node memory:
+
 ```bash
 NODE_OPTIONS=--max-old-space-size=4096 pnpm build
 ```
@@ -459,6 +497,7 @@ NODE_OPTIONS=--max-old-space-size=4096 pnpm build
 ### Q: Where can I get help?
 
 **A**:
+
 - **Docs**: https://docs.witylogix.com
 - **Discussions**: GitHub Discussions
 - **Discord**: https://discord.gg/witylogix
@@ -467,6 +506,7 @@ NODE_OPTIONS=--max-old-space-size=4096 pnpm build
 ### Q: How do I contribute?
 
 **A**: See `CONTRIBUTING.md` for guidelines. TL;DR:
+
 1. Create feature branch
 2. Make changes
 3. Write tests
@@ -476,6 +516,7 @@ NODE_OPTIONS=--max-old-space-size=4096 pnpm build
 ### Q: How are contributions recognized?
 
 **A**: Contributors are:
+
 - Listed in CONTRIBUTORS.md
 - Mentioned in release notes
 - Highlighted in community updates

@@ -40,7 +40,7 @@ export class PushChannel {
   constructor(
     vapidPublicKey: string,
     vapidPrivateKey: string,
-    vapidSubject: string = "mailto:support@witylogix.com"
+    vapidSubject: string = "mailto:support@witylogix.com",
   ) {
     this.vapidPublicKey = vapidPublicKey;
     this.vapidPrivateKey = vapidPrivateKey;
@@ -122,7 +122,8 @@ export class PushChannel {
         messageId: mockMessageId,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       return {
         accepted: false,
         error: errorMessage,

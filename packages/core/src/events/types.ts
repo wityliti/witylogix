@@ -53,7 +53,7 @@ export interface BaseEvent {
  * Order domain events
  */
 export interface OrderCreatedEvent extends BaseEvent {
-  type: 'order.created';
+  type: "order.created";
   data: {
     orderId: string;
     shopId: string;
@@ -78,7 +78,7 @@ export interface OrderCreatedEvent extends BaseEvent {
 }
 
 export interface OrderUpdatedEvent extends BaseEvent {
-  type: 'order.updated';
+  type: "order.updated";
   data: {
     orderId: string;
     shopId: string;
@@ -92,7 +92,7 @@ export interface OrderUpdatedEvent extends BaseEvent {
  * Shipment domain events
  */
 export interface ShipmentCreatedEvent extends BaseEvent {
-  type: 'shipment.created';
+  type: "shipment.created";
   data: {
     shipmentId: string;
     orderId: string;
@@ -110,7 +110,7 @@ export interface ShipmentCreatedEvent extends BaseEvent {
 }
 
 export interface ShipmentStatusChangedEvent extends BaseEvent {
-  type: 'shipment.status_changed';
+  type: "shipment.status_changed";
   data: {
     shipmentId: string;
     orderId: string;
@@ -125,7 +125,7 @@ export interface ShipmentStatusChangedEvent extends BaseEvent {
  * Driver domain events
  */
 export interface DriverAssignedEvent extends BaseEvent {
-  type: 'driver.assigned';
+  type: "driver.assigned";
   data: {
     shipmentId: string;
     driverId: string;
@@ -138,7 +138,7 @@ export interface DriverAssignedEvent extends BaseEvent {
 }
 
 export interface DriverLocationUpdatedEvent extends BaseEvent {
-  type: 'driver.location_updated';
+  type: "driver.location_updated";
   data: {
     driverId: string;
     latitude: number;
@@ -153,7 +153,7 @@ export interface DriverLocationUpdatedEvent extends BaseEvent {
  * Delivery domain events
  */
 export interface DeliveryCompletedEvent extends BaseEvent {
-  type: 'delivery.completed';
+  type: "delivery.completed";
   data: {
     shipmentId: string;
     orderId: string;
@@ -168,7 +168,7 @@ export interface DeliveryCompletedEvent extends BaseEvent {
 }
 
 export interface ETAUpdatedEvent extends BaseEvent {
-  type: 'eta.updated';
+  type: "eta.updated";
   data: {
     shipmentId: string;
     previousEta?: string;
@@ -183,7 +183,7 @@ export interface ETAUpdatedEvent extends BaseEvent {
  * Webhook domain events
  */
 export interface WebhookDeliveredEvent extends BaseEvent {
-  type: 'webhook.delivered';
+  type: "webhook.delivered";
   data: {
     webhookId: string;
     shopId: string;
@@ -200,7 +200,7 @@ export interface WebhookDeliveredEvent extends BaseEvent {
  * Workflow domain events
  */
 export interface WorkflowTriggeredEvent extends BaseEvent {
-  type: 'workflow.triggered';
+  type: "workflow.triggered";
   data: {
     workflowId: string;
     workflowName: string;
@@ -312,7 +312,7 @@ export interface EventStoreQueryOptions {
   filter: EventFilter;
 
   /** Sort order ('asc' or 'desc') */
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 
   /** Whether to include archived events */
   includeArchived?: boolean;
@@ -366,7 +366,7 @@ export interface DeadLetterEntry {
   createdAt: Date;
 
   /** DLQ status */
-  status: 'pending' | 'resolved' | 'ignored';
+  status: "pending" | "resolved" | "ignored";
 
   /** Additional context */
   context?: Record<string, any>;
@@ -486,7 +486,7 @@ export class EventBusError extends Error {
     public statusCode: number = 500,
   ) {
     super(message);
-    this.name = 'EventBusError';
+    this.name = "EventBusError";
   }
 }
 
@@ -495,8 +495,8 @@ export class EventBusError extends Error {
  */
 export class EventSerializationError extends EventBusError {
   constructor(message: string) {
-    super('EVENT_SERIALIZATION_ERROR', message, 400);
-    this.name = 'EventSerializationError';
+    super("EVENT_SERIALIZATION_ERROR", message, 400);
+    this.name = "EventSerializationError";
   }
 }
 
@@ -508,8 +508,8 @@ export class EventHandlerError extends EventBusError {
     message: string,
     public originalError?: Error,
   ) {
-    super('EVENT_HANDLER_ERROR', message, 500);
-    this.name = 'EventHandlerError';
+    super("EVENT_HANDLER_ERROR", message, 500);
+    this.name = "EventHandlerError";
   }
 }
 
@@ -518,8 +518,8 @@ export class EventHandlerError extends EventBusError {
  */
 export class RedisStreamError extends EventBusError {
   constructor(message: string) {
-    super('REDIS_STREAM_ERROR', message, 500);
-    this.name = 'RedisStreamError';
+    super("REDIS_STREAM_ERROR", message, 500);
+    this.name = "RedisStreamError";
   }
 }
 

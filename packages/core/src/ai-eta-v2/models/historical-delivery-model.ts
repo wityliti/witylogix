@@ -11,8 +11,8 @@ import type {
   HistoricalDelivery,
   ModelPrediction,
   HistoricalDeliveryModelState,
-} from '../types.js';
-import { featureExtractor } from '../feature-extractor.js';
+} from "../types.js";
+import { featureExtractor } from "../feature-extractor.js";
 
 const DEFAULT_K = 10;
 const MIN_K = 3;
@@ -37,7 +37,8 @@ export class HistoricalDeliveryModel {
    */
   private getRecencyWeight(deliveryDate: Date): number {
     const now = new Date();
-    const ageWeeks = (now.getTime() - deliveryDate.getTime()) / (7 * 24 * 60 * 60 * 1000);
+    const ageWeeks =
+      (now.getTime() - deliveryDate.getTime()) / (7 * 24 * 60 * 60 * 1000);
     return Math.pow(this.recencyDecay, ageWeeks);
   }
 
@@ -54,7 +55,10 @@ export class HistoricalDeliveryModel {
 
     // Adaptive K: scale with data density
     // More data = higher K (but capped at MAX_K)
-    this.adaptiveK = Math.min(MAX_K, Math.max(MIN_K, Math.floor(Math.sqrt(this.deliveries.length))));
+    this.adaptiveK = Math.min(
+      MAX_K,
+      Math.max(MIN_K, Math.floor(Math.sqrt(this.deliveries.length))),
+    );
   }
 
   /**
@@ -81,7 +85,9 @@ export class HistoricalDeliveryModel {
 
     // Compute weights (inverse distance + recency)
     const result = topK.map(({ index, distance }) => {
-      const recencyWeight = this.getRecencyWeight(this.deliveries[index].timestamp);
+      const recencyWeight = this.getRecencyWeight(
+        this.deliveries[index].timestamp,
+      );
       // RBF kernel: exp(-distance)
       const distanceWeight = Math.exp(-distance);
       return {
@@ -109,7 +115,7 @@ export class HistoricalDeliveryModel {
   predict(features: FeatureVector): ModelPrediction {
     if (this.deliveries.length === 0) {
       return {
-        modelName: 'historical-similarity',
+        modelName: "historical-similarity",
         predicted_duration_minutes: 30,
         confidence: 0.2,
         lower_bound_minutes: 20,
@@ -122,7 +128,7 @@ export class HistoricalDeliveryModel {
 
     if (neighbors.length === 0) {
       return {
-        modelName: 'historical-similarity',
+        modelName: "historical-similarity",
         predicted_duration_minutes: 30,
         confidence: 0.2,
         lower_bound_minutes: 20,
@@ -147,7 +153,8 @@ export class HistoricalDeliveryModel {
 
     // Compute confidence from nearest neighbor distance and consensus
     // If neighbors are close together, confidence is higher
-    const avgDistance = neighbors.reduce((sum, n) => sum + n.distance, 0) / neighbors.length;
+    const avgDistance =
+      neighbors.reduce((sum, n) => sum + n.distance, 0) / neighbors.length;
     const confidence = Math.min(0.95, Math.exp(-avgDistance));
 
     // Compute percentiles from samples
@@ -156,7 +163,7 @@ export class HistoricalDeliveryModel {
     const p90 = sortedSamples[Math.floor(sortedSamples.length * 0.9)];
 
     return {
-      modelName: 'historical-similarity',
+      modelName: "historical-similarity",
       predicted_duration_minutes: Math.round(predictedDuration * 10) / 10,
       confidence,
       lower_bound_minutes: Math.round(p10 * 10) / 10,

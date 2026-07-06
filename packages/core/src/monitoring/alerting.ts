@@ -96,7 +96,7 @@ export class WebhookChannel implements AlertChannelHandler {
 
       if (!response.ok) {
         throw new Error(
-          `Webhook returned ${response.status}: ${response.statusText}`
+          `Webhook returned ${response.status}: ${response.statusText}`,
         );
       }
     } catch (error) {
@@ -187,7 +187,7 @@ export class SlackChannel implements AlertChannelHandler {
 
       if (!response.ok) {
         throw new Error(
-          `Slack returned ${response.status}: ${response.statusText}`
+          `Slack returned ${response.status}: ${response.statusText}`,
         );
       }
     } catch (error) {
@@ -252,7 +252,8 @@ export class AlertManager {
 
         // Check cooldown
         const lastTime = this.lastAlertTime.get(rule.id) || 0;
-        const cooldown = (rule.cooldownMinutes || DEFAULT_COOLDOWN_MINUTES) * 60 * 1000;
+        const cooldown =
+          (rule.cooldownMinutes || DEFAULT_COOLDOWN_MINUTES) * 60 * 1000;
 
         if (Date.now() - lastTime < cooldown) {
           continue;
@@ -300,9 +301,7 @@ export class AlertManager {
     const promises = Array.from(this.channels.values()).map((channel) =>
       channel
         .send(alert)
-        .catch((error) =>
-          console.error("Error sending alert:", error)
-        )
+        .catch((error) => console.error("Error sending alert:", error)),
     );
 
     await Promise.all(promises);
@@ -320,9 +319,7 @@ export class AlertManager {
    */
   getActiveAlerts(): Alert[] {
     const oneHourAgo = Date.now() - 60 * 60 * 1000;
-    return this.alertHistory.filter(
-      (a) => a.timestamp.getTime() > oneHourAgo
-    );
+    return this.alertHistory.filter((a) => a.timestamp.getTime() > oneHourAgo);
   }
 
   /**

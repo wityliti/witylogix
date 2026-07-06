@@ -53,7 +53,9 @@ export class CernerFhirV2SdkClient extends EventEmitter {
     super();
 
     if (!config.clientId || !config.clientSecret || !config.tokenEndpoint) {
-      throw new Error("Cerner SDK requires clientId, clientSecret, and tokenEndpoint");
+      throw new Error(
+        "Cerner SDK requires clientId, clientSecret, and tokenEndpoint",
+      );
     }
 
     this.config = {
@@ -82,7 +84,10 @@ export class CernerFhirV2SdkClient extends EventEmitter {
   /**
    * Get SMART app launch authorization URL.
    */
-  getSMARTAuthorizationUrl(redirectUri: string, scope: string = "patient/*.read launch"): string {
+  getSMARTAuthorizationUrl(
+    redirectUri: string,
+    scope: string = "patient/*.read launch",
+  ): string {
     const params = new URLSearchParams({
       response_type: "code",
       client_id: this.config.clientId,
@@ -97,7 +102,10 @@ export class CernerFhirV2SdkClient extends EventEmitter {
   /**
    * Exchange authorization code for access token.
    */
-  async exchangeCodeForToken(code: string, redirectUri: string): Promise<OAuth2Token> {
+  async exchangeCodeForToken(
+    code: string,
+    redirectUri: string,
+  ): Promise<OAuth2Token> {
     const body = new URLSearchParams({
       grant_type: "authorization_code",
       code,
@@ -161,7 +169,9 @@ export class CernerFhirV2SdkClient extends EventEmitter {
   /**
    * Search for patients.
    */
-  async searchPatients(params: Record<string, string>): Promise<FHIRBundle<NormalizedPatient>> {
+  async searchPatients(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<NormalizedPatient>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Patient`);
@@ -177,13 +187,17 @@ export class CernerFhirV2SdkClient extends EventEmitter {
    */
   async getPatient(patientId: string): Promise<NormalizedPatient> {
     await this.ensureToken();
-    return this.makeRequest<NormalizedPatient>(`${this.baseUrl}/Patient/${patientId}`);
+    return this.makeRequest<NormalizedPatient>(
+      `${this.baseUrl}/Patient/${patientId}`,
+    );
   }
 
   /**
    * Search encounters.
    */
-  async searchEncounters(params: Record<string, string>): Promise<FHIRBundle<NormalizedEncounter>> {
+  async searchEncounters(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<NormalizedEncounter>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Encounter`);
@@ -199,13 +213,17 @@ export class CernerFhirV2SdkClient extends EventEmitter {
    */
   async getEncounter(encounterId: string): Promise<NormalizedEncounter> {
     await this.ensureToken();
-    return this.makeRequest<NormalizedEncounter>(`${this.baseUrl}/Encounter/${encounterId}`);
+    return this.makeRequest<NormalizedEncounter>(
+      `${this.baseUrl}/Encounter/${encounterId}`,
+    );
   }
 
   /**
    * Search observations (vitals, labs).
    */
-  async searchObservations(params: Record<string, string>): Promise<FHIRBundle<NormalizedObservation>> {
+  async searchObservations(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<NormalizedObservation>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Observation`);
@@ -219,7 +237,9 @@ export class CernerFhirV2SdkClient extends EventEmitter {
   /**
    * Search conditions.
    */
-  async searchConditions(params: Record<string, string>): Promise<FHIRBundle<NormalizedCondition>> {
+  async searchConditions(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<NormalizedCondition>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Condition`);
@@ -281,7 +301,9 @@ export class CernerFhirV2SdkClient extends EventEmitter {
   /**
    * Search procedures.
    */
-  async searchProcedures(params: Record<string, string>): Promise<FHIRBundle<FHIRResource>> {
+  async searchProcedures(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<FHIRResource>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Procedure`);
@@ -295,7 +317,9 @@ export class CernerFhirV2SdkClient extends EventEmitter {
   /**
    * Search immunizations.
    */
-  async searchImmunizations(params: Record<string, string>): Promise<FHIRBundle<FHIRResource>> {
+  async searchImmunizations(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<FHIRResource>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Immunization`);
@@ -309,7 +333,9 @@ export class CernerFhirV2SdkClient extends EventEmitter {
   /**
    * Search appointments.
    */
-  async searchAppointments(params: Record<string, string>): Promise<FHIRBundle<FHIRResource>> {
+  async searchAppointments(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<FHIRResource>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Appointment`);
@@ -323,7 +349,9 @@ export class CernerFhirV2SdkClient extends EventEmitter {
   /**
    * Search schedules.
    */
-  async searchSchedules(params: Record<string, string>): Promise<FHIRBundle<FHIRResource>> {
+  async searchSchedules(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<FHIRResource>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Schedule`);
@@ -337,7 +365,9 @@ export class CernerFhirV2SdkClient extends EventEmitter {
   /**
    * Search available slots.
    */
-  async searchSlots(params: Record<string, string>): Promise<FHIRBundle<FHIRResource>> {
+  async searchSlots(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<FHIRResource>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Slot`);
@@ -351,7 +381,9 @@ export class CernerFhirV2SdkClient extends EventEmitter {
   /**
    * Search related persons.
    */
-  async searchRelatedPersons(params: Record<string, string>): Promise<FHIRBundle<FHIRResource>> {
+  async searchRelatedPersons(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<FHIRResource>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/RelatedPerson`);
@@ -365,7 +397,9 @@ export class CernerFhirV2SdkClient extends EventEmitter {
   /**
    * Search care teams.
    */
-  async searchCareTeams(params: Record<string, string>): Promise<FHIRBundle<FHIRResource>> {
+  async searchCareTeams(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<FHIRResource>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/CareTeam`);
@@ -379,7 +413,9 @@ export class CernerFhirV2SdkClient extends EventEmitter {
   /**
    * Search goals.
    */
-  async searchGoals(params: Record<string, string>): Promise<FHIRBundle<FHIRResource>> {
+  async searchGoals(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<FHIRResource>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Goal`);
@@ -417,7 +453,10 @@ export class CernerFhirV2SdkClient extends EventEmitter {
   /**
    * Initiate bulk export operation.
    */
-  async initiateBulkExport(resourceTypes?: string[], since?: string): Promise<string> {
+  async initiateBulkExport(
+    resourceTypes?: string[],
+    since?: string,
+  ): Promise<string> {
     await this.ensureToken();
 
     let url = `${this.baseUrl}/$export`;
@@ -455,7 +494,9 @@ export class CernerFhirV2SdkClient extends EventEmitter {
   /**
    * Get bulk export status.
    */
-  async getBulkExportStatus(statusUrl: string): Promise<BulkExportResult | null> {
+  async getBulkExportStatus(
+    statusUrl: string,
+  ): Promise<BulkExportResult | null> {
     await this.ensureToken();
 
     const response = await fetch(statusUrl, {
@@ -470,7 +511,11 @@ export class CernerFhirV2SdkClient extends EventEmitter {
 
     if (!response.ok) {
       const outcome = await this.parseErrorResponse(response);
-      throw this.createError("BULK_EXPORT_STATUS_FAILED", response.status, outcome);
+      throw this.createError(
+        "BULK_EXPORT_STATUS_FAILED",
+        response.status,
+        outcome,
+      );
     }
 
     return response.json() as Promise<BulkExportResult>;
@@ -548,7 +593,11 @@ export class CernerFhirV2SdkClient extends EventEmitter {
 
             if (!response.ok) {
               const outcome = await this.parseErrorResponse(response);
-              throw this.createError("REQUEST_FAILED", response.status, outcome);
+              throw this.createError(
+                "REQUEST_FAILED",
+                response.status,
+                outcome,
+              );
             }
 
             this.circuitBreakerFailures = 0;
@@ -584,10 +633,14 @@ export class CernerFhirV2SdkClient extends EventEmitter {
             });
 
             if (!response.ok) {
-              throw this.createError("BINARY_DOWNLOAD_FAILED", response.status, {
-                resourceType: "OperationOutcome",
-                issue: [],
-              });
+              throw this.createError(
+                "BINARY_DOWNLOAD_FAILED",
+                response.status,
+                {
+                  resourceType: "OperationOutcome",
+                  issue: [],
+                },
+              );
             }
 
             this.circuitBreakerFailures = 0;
@@ -664,7 +717,8 @@ export class CernerFhirV2SdkClient extends EventEmitter {
     this.rateLimiter.lastRefillTime = now;
 
     if (this.rateLimiter.tokens < 1) {
-      const waitTime = (1 - this.rateLimiter.tokens) / this.rateLimiter.refillRate;
+      const waitTime =
+        (1 - this.rateLimiter.tokens) / this.rateLimiter.refillRate;
       await new Promise((resolve) => setTimeout(resolve, waitTime * 1000));
       this.rateLimiter.tokens = 1;
     }
@@ -691,7 +745,9 @@ export class CernerFhirV2SdkClient extends EventEmitter {
   /**
    * Private: Parse error response.
    */
-  private async parseErrorResponse(response: Response): Promise<OperationOutcome> {
+  private async parseErrorResponse(
+    response: Response,
+  ): Promise<OperationOutcome> {
     try {
       return (await response.json()) as OperationOutcome;
     } catch {

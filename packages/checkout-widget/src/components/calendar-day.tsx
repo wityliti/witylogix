@@ -3,7 +3,11 @@
 import { ReactNode } from "react";
 import { cn } from "../utils/cn";
 
-export type AvailabilityStatus = "available" | "limited" | "full" | "unavailable";
+export type AvailabilityStatus =
+  | "available"
+  | "limited"
+  | "full"
+  | "unavailable";
 
 export interface CalendarDayProps {
   date: number;
@@ -23,7 +27,10 @@ const statusColors: Record<AvailabilityStatus, string> = {
   unavailable: "bg-wl-neutral-300",
 };
 
-const getAvailabilityText = (status: AvailabilityStatus, slotsLeft?: number): string => {
+const getAvailabilityText = (
+  status: AvailabilityStatus,
+  slotsLeft?: number,
+): string => {
   if (status === "available" && slotsLeft) return `${slotsLeft} slots`;
   if (status === "limited" && slotsLeft) return `${slotsLeft} left`;
   if (status === "full") return "Full";
@@ -51,7 +58,7 @@ export function CalendarDay({
         "hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed",
         isSelected && "ring-2 ring-wl-primary-500 border-wl-primary-500",
         isToday && "border-2 border-wl-primary-500",
-        className
+        className,
       )}
       aria-label={`${isToday ? "Today, " : ""}${date}${slotsLeft ? `, ${slotsLeft} slots` : ""}`}
     >
@@ -60,7 +67,7 @@ export function CalendarDay({
         className={cn(
           "font-bold text-base",
           isBlackedOut && "line-through opacity-50",
-          "text-wl-text-primary"
+          "text-wl-text-primary",
         )}
       >
         {date}
@@ -72,7 +79,7 @@ export function CalendarDay({
           className={cn(
             "w-2 h-2 rounded-full",
             statusColors[status],
-            status === "available" && "shadow-sm"
+            status === "available" && "shadow-sm",
           )}
           aria-label={`${status}`}
         />

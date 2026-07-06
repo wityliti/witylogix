@@ -4,8 +4,8 @@
  * @packageDocumentation
  */
 
-import { SupplyChainAdapter } from './supply-chain-adapter';
-import { RetryHandler } from './supply-chain-adapter';
+import { SupplyChainAdapter } from "./supply-chain-adapter";
+import { RetryHandler } from "./supply-chain-adapter";
 import type {
   SupplyChainConfig,
   WarehouseLocation,
@@ -20,7 +20,7 @@ import type {
   PickTask,
   PackStation,
   ShipConfirmation,
-} from './types';
+} from "./types";
 
 /**
  * Deposco Bright Suite adapter
@@ -30,10 +30,12 @@ export class DeposcoClient extends SupplyChainAdapter {
   public async initialize(): Promise<void> {
     try {
       await this.checkPrerequisites();
-      this.logEvent('deposco.initialized');
+      this.logEvent("deposco.initialized");
     } catch (error) {
       this.handleApiResponse(false, error as Error);
-      throw new Error(`Deposco initialization failed: ${(error as Error).message}`);
+      throw new Error(
+        `Deposco initialization failed: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -43,7 +45,7 @@ export class DeposcoClient extends SupplyChainAdapter {
       const response = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const result = await fetch(`${this.config.baseUrl}/api/v1/warehouses`, {
-          method: 'GET',
+          method: "GET",
           headers,
           signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
@@ -63,12 +65,16 @@ export class DeposcoClient extends SupplyChainAdapter {
 
       const warehouse = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v1/warehouses/${warehouseId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to get warehouse: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/warehouses/${warehouseId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to get warehouse: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -79,14 +85,14 @@ export class DeposcoClient extends SupplyChainAdapter {
         name: warehouse.name,
         code: warehouse.code,
         address: {
-          street: warehouse.address?.street || '',
-          city: warehouse.address?.city || '',
-          state: warehouse.address?.state || '',
-          postalCode: warehouse.address?.zip || '',
-          country: warehouse.address?.country || 'US',
+          street: warehouse.address?.street || "",
+          city: warehouse.address?.city || "",
+          state: warehouse.address?.state || "",
+          postalCode: warehouse.address?.zip || "",
+          country: warehouse.address?.country || "US",
         },
-        type: 'fc',
-        status: 'active',
+        type: "fc",
+        status: "active",
       };
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -100,12 +106,16 @@ export class DeposcoClient extends SupplyChainAdapter {
 
       const warehouses = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v1/warehouses`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to list warehouses: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/warehouses`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to list warehouses: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -116,14 +126,14 @@ export class DeposcoClient extends SupplyChainAdapter {
         name: w.name,
         code: w.code,
         address: {
-          street: w.address?.street || '',
-          city: w.address?.city || '',
-          state: w.address?.state || '',
-          postalCode: w.address?.zip || '',
-          country: w.address?.country || 'US',
+          street: w.address?.street || "",
+          city: w.address?.city || "",
+          state: w.address?.state || "",
+          postalCode: w.address?.zip || "",
+          country: w.address?.country || "US",
         },
-        type: 'fc',
-        status: 'active',
+        type: "fc",
+        status: "active",
       }));
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -131,7 +141,9 @@ export class DeposcoClient extends SupplyChainAdapter {
     }
   }
 
-  public async createWarehouse(warehouse: WarehouseLocation): Promise<WarehouseLocation> {
+  public async createWarehouse(
+    warehouse: WarehouseLocation,
+  ): Promise<WarehouseLocation> {
     try {
       await this.checkPrerequisites();
 
@@ -150,26 +162,30 @@ export class DeposcoClient extends SupplyChainAdapter {
           },
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v1/warehouses`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to create warehouse: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/warehouses`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to create warehouse: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('warehouse.created', { id: warehouse.id });
+      this.logEvent("warehouse.created", { id: warehouse.id });
 
       return {
         id: result.id,
         name: result.name,
         code: result.code,
         address: warehouse.address,
-        type: 'fc',
-        status: 'active',
+        type: "fc",
+        status: "active",
       };
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -179,7 +195,7 @@ export class DeposcoClient extends SupplyChainAdapter {
 
   public async updateWarehouse(
     warehouseId: string,
-    updates: Partial<WarehouseLocation>
+    updates: Partial<WarehouseLocation>,
   ): Promise<WarehouseLocation> {
     try {
       await this.checkPrerequisites();
@@ -190,17 +206,21 @@ export class DeposcoClient extends SupplyChainAdapter {
           name: updates.name,
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v1/warehouses/${warehouseId}`, {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to update warehouse: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/warehouses/${warehouseId}`,
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to update warehouse: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('warehouse.updated', { id: warehouseId });
+      this.logEvent("warehouse.updated", { id: warehouseId });
 
       return this.getWarehouse(warehouseId);
     } catch (error) {
@@ -209,7 +229,10 @@ export class DeposcoClient extends SupplyChainAdapter {
     }
   }
 
-  public async getInventory(warehouseId: string, sku: string): Promise<InventoryItem> {
+  public async getInventory(
+    warehouseId: string,
+    sku: string,
+  ): Promise<InventoryItem> {
     try {
       await this.checkPrerequisites();
 
@@ -217,9 +240,14 @@ export class DeposcoClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/warehouses/${warehouseId}/inventory/${sku}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to get inventory: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to get inventory: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -229,15 +257,15 @@ export class DeposcoClient extends SupplyChainAdapter {
         id: inventory.id,
         sku: inventory.sku,
         warehouseId,
-        zone: inventory.location?.zone || '',
-        binLocation: inventory.location?.bin || '',
+        zone: inventory.location?.zone || "",
+        binLocation: inventory.location?.bin || "",
         quantityOnHand: inventory.qty_on_hand,
         quantityAllocated: inventory.qty_allocated,
         quantityAvailable: inventory.qty_available,
         productName: sku,
-        uom: inventory.uom || 'EA',
+        uom: inventory.uom || "EA",
         receivedDate: new Date(inventory.received_date || Date.now()),
-        status: 'available',
+        status: "available",
         unitCost: inventory.cost || 0,
       };
     } catch (error) {
@@ -248,7 +276,7 @@ export class DeposcoClient extends SupplyChainAdapter {
 
   public async listInventory(
     warehouseId: string,
-    filters?: { zone?: string; status?: string; sku?: string }
+    filters?: { zone?: string; status?: string; sku?: string },
   ): Promise<InventoryItem[]> {
     try {
       await this.checkPrerequisites();
@@ -256,14 +284,19 @@ export class DeposcoClient extends SupplyChainAdapter {
       const items = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams();
-        if (filters?.sku) params.append('sku', filters.sku);
-        if (filters?.zone) params.append('zone', filters.zone);
+        if (filters?.sku) params.append("sku", filters.sku);
+        if (filters?.zone) params.append("zone", filters.zone);
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/warehouses/${warehouseId}/inventory?${params}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to list inventory: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to list inventory: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -273,15 +306,15 @@ export class DeposcoClient extends SupplyChainAdapter {
         id: inv.id,
         sku: inv.sku,
         warehouseId,
-        zone: inv.location?.zone || '',
-        binLocation: inv.location?.bin || '',
+        zone: inv.location?.zone || "",
+        binLocation: inv.location?.bin || "",
         quantityOnHand: inv.qty_on_hand,
         quantityAllocated: inv.qty_allocated,
         quantityAvailable: inv.qty_available,
         productName: inv.sku,
-        uom: inv.uom || 'EA',
+        uom: inv.uom || "EA",
         receivedDate: new Date(inv.received_date || Date.now()),
-        status: 'available',
+        status: "available",
         unitCost: inv.cost || 0,
       }));
     } catch (error) {
@@ -290,18 +323,26 @@ export class DeposcoClient extends SupplyChainAdapter {
     }
   }
 
-  public async syncInventoryRealTime(warehouseId: string): Promise<InventoryItem[]> {
+  public async syncInventoryRealTime(
+    warehouseId: string,
+  ): Promise<InventoryItem[]> {
     return this.listInventory(warehouseId);
   }
 
-  public async syncInventoryBatch(warehouseId: string, skus: string[]): Promise<InventoryItem[]> {
+  public async syncInventoryBatch(
+    warehouseId: string,
+    skus: string[],
+  ): Promise<InventoryItem[]> {
     const results: InventoryItem[] = [];
     for (const sku of skus) {
       try {
         const item = await this.getInventory(warehouseId, sku);
         results.push(item);
       } catch (error) {
-        this.logEvent('inventory.sync.error', { sku, error: (error as Error).message });
+        this.logEvent("inventory.sync.error", {
+          sku,
+          error: (error as Error).message,
+        });
       }
     }
     return results;
@@ -311,7 +352,7 @@ export class DeposcoClient extends SupplyChainAdapter {
     warehouseId: string,
     sku: string,
     quantity: number,
-    reason: string
+    reason: string,
   ): Promise<InventoryItem> {
     try {
       await this.checkPrerequisites();
@@ -327,13 +368,19 @@ export class DeposcoClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/warehouses/${warehouseId}/inventory-adjustments`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to adjust inventory: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to adjust inventory: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('inventory.adjusted', { sku, quantity, reason });
+      this.logEvent("inventory.adjusted", { sku, quantity, reason });
 
       return this.getInventory(warehouseId, sku);
     } catch (error) {
@@ -347,7 +394,7 @@ export class DeposcoClient extends SupplyChainAdapter {
     sku: string,
     fromBin: string,
     toBin: string,
-    quantity: number
+    quantity: number,
   ): Promise<InventoryItem[]> {
     try {
       await this.checkPrerequisites();
@@ -364,13 +411,19 @@ export class DeposcoClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/warehouses/${warehouseId}/inventory-moves`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to move inventory: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to move inventory: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('inventory.moved', { sku, fromBin, toBin, quantity });
+      this.logEvent("inventory.moved", { sku, fromBin, toBin, quantity });
 
       return [await this.getInventory(warehouseId, sku)];
     } catch (error) {
@@ -379,18 +432,26 @@ export class DeposcoClient extends SupplyChainAdapter {
     }
   }
 
-  public async getInboundShipment(shipmentId: string): Promise<InboundShipment> {
+  public async getInboundShipment(
+    shipmentId: string,
+  ): Promise<InboundShipment> {
     try {
       await this.checkPrerequisites();
 
       const shipment = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v1/inbound/${shipmentId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to get inbound shipment: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/inbound/${shipmentId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(
+            `Failed to get inbound shipment: ${response.statusText}`,
+          );
         return response.json() as Promise<any>;
       });
 
@@ -398,9 +459,9 @@ export class DeposcoClient extends SupplyChainAdapter {
 
       return {
         id: shipment.id,
-        trackingNumber: shipment.tracking_number || '',
+        trackingNumber: shipment.tracking_number || "",
         warehouseId: shipment.warehouse_id,
-        status: (shipment.status as any) || 'in_transit',
+        status: (shipment.status as any) || "in_transit",
         items: shipment.items || [],
         expectedDeliveryDate: new Date(shipment.expected_arrival),
       };
@@ -412,7 +473,7 @@ export class DeposcoClient extends SupplyChainAdapter {
 
   public async listInboundShipments(
     warehouseId: string,
-    status?: string
+    status?: string,
   ): Promise<InboundShipment[]> {
     try {
       await this.checkPrerequisites();
@@ -420,14 +481,20 @@ export class DeposcoClient extends SupplyChainAdapter {
       const shipments = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams({ warehouse_id: warehouseId });
-        if (status) params.append('status', status);
+        if (status) params.append("status", status);
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/inbound?${params}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
         if (!response.ok)
-          throw new Error(`Failed to list inbound shipments: ${response.statusText}`);
+          throw new Error(
+            `Failed to list inbound shipments: ${response.statusText}`,
+          );
         return response.json() as Promise<any>;
       });
 
@@ -435,9 +502,9 @@ export class DeposcoClient extends SupplyChainAdapter {
 
       return shipments.map((s: any) => ({
         id: s.id,
-        trackingNumber: s.tracking_number || '',
+        trackingNumber: s.tracking_number || "",
         warehouseId,
-        status: (s.status as any) || 'in_transit',
+        status: (s.status as any) || "in_transit",
         items: s.items || [],
         expectedDeliveryDate: new Date(s.expected_arrival),
       }));
@@ -447,7 +514,9 @@ export class DeposcoClient extends SupplyChainAdapter {
     }
   }
 
-  public async createInboundShipment(shipment: InboundShipment): Promise<InboundShipment> {
+  public async createInboundShipment(
+    shipment: InboundShipment,
+  ): Promise<InboundShipment> {
     try {
       await this.checkPrerequisites();
 
@@ -458,27 +527,30 @@ export class DeposcoClient extends SupplyChainAdapter {
           warehouse_id: shipment.warehouseId,
           expected_arrival: shipment.expectedDeliveryDate,
           items: shipment.items,
-          status: 'in_transit',
+          status: "in_transit",
         };
 
         const response = await fetch(`${this.config.baseUrl}/api/v1/inbound`, {
-          method: 'POST',
+          method: "POST",
           headers,
           body: JSON.stringify(payload),
           signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
-        if (!response.ok) throw new Error(`Failed to create inbound shipment: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(
+            `Failed to create inbound shipment: ${response.statusText}`,
+          );
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('inbound.created', { id: result.id });
+      this.logEvent("inbound.created", { id: result.id });
 
       return {
         id: result.id,
         trackingNumber: result.tracking_number,
         warehouseId: shipment.warehouseId,
-        status: 'in_transit',
+        status: "in_transit",
         items: shipment.items,
         expectedDeliveryDate: shipment.expectedDeliveryDate,
       };
@@ -490,7 +562,7 @@ export class DeposcoClient extends SupplyChainAdapter {
 
   public async receiveInboundShipment(
     shipmentId: string,
-    receivedItems: Array<{ sku: string; quantity: number; lotNumber?: string }>
+    receivedItems: Array<{ sku: string; quantity: number; lotNumber?: string }>,
   ): Promise<InboundShipment> {
     try {
       await this.checkPrerequisites();
@@ -503,17 +575,21 @@ export class DeposcoClient extends SupplyChainAdapter {
           items: receivedItems,
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v1/inbound/${shipmentId}/receive`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to receive shipment: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/inbound/${shipmentId}/receive`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to receive shipment: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('inbound.received', { id: shipmentId });
+      this.logEvent("inbound.received", { id: shipmentId });
 
       return this.getInboundShipment(shipmentId);
     } catch (error) {
@@ -525,7 +601,7 @@ export class DeposcoClient extends SupplyChainAdapter {
   public async confirmQualityCheck(
     shipmentId: string,
     qcPassed: boolean,
-    notes?: string
+    notes?: string,
   ): Promise<ReceiptConfirmation> {
     try {
       await this.checkPrerequisites();
@@ -535,30 +611,36 @@ export class DeposcoClient extends SupplyChainAdapter {
         const payload = {
           shipment_id: shipmentId,
           qc_passed: qcPassed,
-          qc_notes: notes || '',
+          qc_notes: notes || "",
           qc_date: new Date().toISOString(),
         };
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/inbound/${shipmentId}/qc`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to confirm QC: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to confirm QC: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('qc.confirmed', { shipmentId, qcPassed });
+      this.logEvent("qc.confirmed", { shipmentId, qcPassed });
 
       return {
         id: result.receipt_id,
         shipmentId,
-        warehouseId: this.config.warehouseId || '',
+        warehouseId: this.config.warehouseId || "",
         receiptDate: new Date(),
-        receivedBy: 'system',
-        status: qcPassed ? 'qc_passed' : 'qc_failed',
+        receivedBy: "system",
+        status: qcPassed ? "qc_passed" : "qc_failed",
         items: result.items || [],
-        qcStatus: qcPassed ? 'pass' : 'fail',
+        qcStatus: qcPassed ? "pass" : "fail",
         qcNotes: notes,
       };
     } catch (error) {
@@ -573,12 +655,16 @@ export class DeposcoClient extends SupplyChainAdapter {
 
       const order = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v1/orders/${orderId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to get order: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/orders/${orderId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to get order: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -587,11 +673,11 @@ export class DeposcoClient extends SupplyChainAdapter {
       return {
         id: order.id,
         orderNumber: order.order_number,
-        type: 'sales',
+        type: "sales",
         sourceWarehouseId: order.warehouse_id,
         orderDate: new Date(order.order_date),
-        status: (order.status as any) || 'pending',
-        priority: 'standard',
+        status: (order.status as any) || "pending",
+        priority: "standard",
         items: order.items || [],
       };
     } catch (error) {
@@ -602,7 +688,7 @@ export class DeposcoClient extends SupplyChainAdapter {
 
   public async listOutboundOrders(
     warehouseId: string,
-    status?: string
+    status?: string,
   ): Promise<OutboundOrder[]> {
     try {
       await this.checkPrerequisites();
@@ -610,14 +696,18 @@ export class DeposcoClient extends SupplyChainAdapter {
       const orders = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams({ warehouse_id: warehouseId });
-        if (status) params.append('status', status);
+        if (status) params.append("status", status);
 
-        const response = await fetch(`${this.config.baseUrl}/api/v1/orders?${params}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to list orders: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/orders?${params}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to list orders: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -626,11 +716,11 @@ export class DeposcoClient extends SupplyChainAdapter {
       return orders.map((o: any) => ({
         id: o.id,
         orderNumber: o.order_number,
-        type: 'sales',
+        type: "sales",
         sourceWarehouseId: warehouseId,
         orderDate: new Date(o.order_date),
-        status: (o.status as any) || 'pending',
-        priority: 'standard',
+        status: (o.status as any) || "pending",
+        priority: "standard",
         items: o.items || [],
       }));
     } catch (error) {
@@ -639,7 +729,9 @@ export class DeposcoClient extends SupplyChainAdapter {
     }
   }
 
-  public async createOutboundOrder(order: OutboundOrder): Promise<OutboundOrder> {
+  public async createOutboundOrder(
+    order: OutboundOrder,
+  ): Promise<OutboundOrder> {
     try {
       await this.checkPrerequisites();
 
@@ -650,21 +742,22 @@ export class DeposcoClient extends SupplyChainAdapter {
           warehouse_id: order.sourceWarehouseId,
           order_date: order.orderDate,
           items: order.items,
-          status: 'pending',
+          status: "pending",
         };
 
         const response = await fetch(`${this.config.baseUrl}/api/v1/orders`, {
-          method: 'POST',
+          method: "POST",
           headers,
           body: JSON.stringify(payload),
           signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
-        if (!response.ok) throw new Error(`Failed to create order: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to create order: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('order.created', { id: result.id });
+      this.logEvent("order.created", { id: result.id });
 
       return {
         id: result.id,
@@ -672,7 +765,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         type: order.type,
         sourceWarehouseId: order.sourceWarehouseId,
         orderDate: order.orderDate,
-        status: 'pending',
+        status: "pending",
         priority: order.priority,
         items: order.items,
       };
@@ -684,7 +777,7 @@ export class DeposcoClient extends SupplyChainAdapter {
 
   public async updateOutboundOrder(
     orderId: string,
-    updates: Partial<OutboundOrder>
+    updates: Partial<OutboundOrder>,
   ): Promise<OutboundOrder> {
     try {
       await this.checkPrerequisites();
@@ -693,17 +786,21 @@ export class DeposcoClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const payload = { status: updates.status, priority: updates.priority };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v1/orders/${orderId}`, {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to update order: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/orders/${orderId}`,
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to update order: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('order.updated', { id: orderId });
+      this.logEvent("order.updated", { id: orderId });
 
       return this.getOutboundOrder(orderId);
     } catch (error) {
@@ -712,7 +809,10 @@ export class DeposcoClient extends SupplyChainAdapter {
     }
   }
 
-  public async cancelOutboundOrder(orderId: string, reason: string): Promise<OutboundOrder> {
+  public async cancelOutboundOrder(
+    orderId: string,
+    reason: string,
+  ): Promise<OutboundOrder> {
     try {
       await this.checkPrerequisites();
 
@@ -720,17 +820,21 @@ export class DeposcoClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const payload = { reason };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v1/orders/${orderId}/cancel`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to cancel order: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/orders/${orderId}/cancel`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to cancel order: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('order.cancelled', { id: orderId, reason });
+      this.logEvent("order.cancelled", { id: orderId, reason });
 
       return this.getOutboundOrder(orderId);
     } catch (error) {
@@ -739,7 +843,9 @@ export class DeposcoClient extends SupplyChainAdapter {
     }
   }
 
-  public async getFulfillmentRequest(fulfillmentId: string): Promise<FulfillmentRequest> {
+  public async getFulfillmentRequest(
+    fulfillmentId: string,
+  ): Promise<FulfillmentRequest> {
     try {
       await this.checkPrerequisites();
 
@@ -747,10 +853,16 @@ export class DeposcoClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/fulfillment-requests/${fulfillmentId}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
         if (!response.ok)
-          throw new Error(`Failed to get fulfillment request: ${response.statusText}`);
+          throw new Error(
+            `Failed to get fulfillment request: ${response.statusText}`,
+          );
         return response.json() as Promise<any>;
       });
 
@@ -761,7 +873,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         orderId: result.order_id,
         warehouseId: result.warehouse_id,
         createdAt: new Date(result.created_date),
-        status: (result.status as any) || 'pending',
+        status: (result.status as any) || "pending",
         allocations: result.allocations || [],
       };
     } catch (error) {
@@ -773,7 +885,7 @@ export class DeposcoClient extends SupplyChainAdapter {
   public async allocateOrder(
     orderId: string,
     warehouseId: string,
-    allocationMethod?: 'fifo' | 'closest' | 'random'
+    allocationMethod?: "fifo" | "closest" | "random",
   ): Promise<FulfillmentRequest> {
     try {
       await this.checkPrerequisites();
@@ -783,29 +895,30 @@ export class DeposcoClient extends SupplyChainAdapter {
         const payload = {
           order_id: orderId,
           warehouse_id: warehouseId,
-          allocation_method: allocationMethod || 'fifo',
+          allocation_method: allocationMethod || "fifo",
           allocated_date: new Date().toISOString(),
         };
 
         const response = await fetch(`${this.config.baseUrl}/api/v1/allocate`, {
-          method: 'POST',
+          method: "POST",
           headers,
           body: JSON.stringify(payload),
           signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
-        if (!response.ok) throw new Error(`Failed to allocate order: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to allocate order: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('order.allocated', { orderId, warehouseId });
+      this.logEvent("order.allocated", { orderId, warehouseId });
 
       return {
         id: result.id,
         orderId,
         warehouseId,
         createdAt: new Date(),
-        status: 'allocated',
+        status: "allocated",
         allocations: result.allocations || [],
       };
     } catch (error) {
@@ -814,13 +927,15 @@ export class DeposcoClient extends SupplyChainAdapter {
     }
   }
 
-  public async releaseFulfillment(fulfillmentId: string): Promise<FulfillmentRequest> {
-    return this.updateFulfillmentStatus(fulfillmentId, 'in_progress');
+  public async releaseFulfillment(
+    fulfillmentId: string,
+  ): Promise<FulfillmentRequest> {
+    return this.updateFulfillmentStatus(fulfillmentId, "in_progress");
   }
 
   public async updateFulfillmentStatus(
     fulfillmentId: string,
-    status: string
+    status: string,
   ): Promise<FulfillmentRequest> {
     try {
       await this.checkPrerequisites();
@@ -831,14 +946,21 @@ export class DeposcoClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/fulfillment-requests/${fulfillmentId}`,
-          { method: 'PUT', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
         if (!response.ok)
-          throw new Error(`Failed to update fulfillment: ${response.statusText}`);
+          throw new Error(
+            `Failed to update fulfillment: ${response.statusText}`,
+          );
       });
 
       this.handleApiResponse(true);
-      this.logEvent('fulfillment.updated', { id: fulfillmentId, status });
+      this.logEvent("fulfillment.updated", { id: fulfillmentId, status });
 
       return this.getFulfillmentRequest(fulfillmentId);
     } catch (error) {
@@ -853,12 +975,16 @@ export class DeposcoClient extends SupplyChainAdapter {
 
       const wave = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v1/waves/${waveId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to get wave: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/waves/${waveId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to get wave: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -869,7 +995,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         waveNumber: wave.wave_number,
         warehouseId: wave.warehouse_id,
         createdAt: new Date(wave.created_date),
-        status: (wave.status as any) || 'planned',
+        status: (wave.status as any) || "planned",
         fulfillmentRequestIds: wave.fulfillment_ids || [],
         orderCount: wave.order_count,
         unitCount: wave.unit_count,
@@ -880,21 +1006,28 @@ export class DeposcoClient extends SupplyChainAdapter {
     }
   }
 
-  public async listWaves(warehouseId: string, status?: string): Promise<WaveDefinition[]> {
+  public async listWaves(
+    warehouseId: string,
+    status?: string,
+  ): Promise<WaveDefinition[]> {
     try {
       await this.checkPrerequisites();
 
       const waves = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams({ warehouse_id: warehouseId });
-        if (status) params.append('status', status);
+        if (status) params.append("status", status);
 
-        const response = await fetch(`${this.config.baseUrl}/api/v1/waves?${params}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to list waves: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/waves?${params}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to list waves: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -905,7 +1038,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         waveNumber: w.wave_number,
         warehouseId,
         createdAt: new Date(w.created_date),
-        status: (w.status as any) || 'planned',
+        status: (w.status as any) || "planned",
         fulfillmentRequestIds: w.fulfillment_ids || [],
         orderCount: w.order_count,
         unitCount: w.unit_count,
@@ -919,7 +1052,7 @@ export class DeposcoClient extends SupplyChainAdapter {
   public async createWave(
     warehouseId: string,
     fulfillmentIds: string[],
-    pickMethod?: 'zone' | 'batch' | 'order'
+    pickMethod?: "zone" | "batch" | "order",
   ): Promise<WaveDefinition> {
     try {
       await this.checkPrerequisites();
@@ -929,29 +1062,30 @@ export class DeposcoClient extends SupplyChainAdapter {
         const payload = {
           warehouse_id: warehouseId,
           fulfillment_ids: fulfillmentIds,
-          pick_method: pickMethod || 'zone',
+          pick_method: pickMethod || "zone",
           created_date: new Date().toISOString(),
         };
 
         const response = await fetch(`${this.config.baseUrl}/api/v1/waves`, {
-          method: 'POST',
+          method: "POST",
           headers,
           body: JSON.stringify(payload),
           signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
-        if (!response.ok) throw new Error(`Failed to create wave: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to create wave: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('wave.created', { id: result.id });
+      this.logEvent("wave.created", { id: result.id });
 
       return {
         id: result.id,
         waveNumber: result.wave_number,
         warehouseId,
         createdAt: new Date(result.created_date),
-        status: 'planned',
+        status: "planned",
         fulfillmentRequestIds: fulfillmentIds,
       };
     } catch (error) {
@@ -968,17 +1102,21 @@ export class DeposcoClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const payload = { released_date: new Date().toISOString() };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v1/waves/${waveId}/release`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to release wave: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/waves/${waveId}/release`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to release wave: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('wave.released', { id: waveId });
+      this.logEvent("wave.released", { id: waveId });
 
       return this.getWave(waveId);
     } catch (error) {
@@ -995,17 +1133,21 @@ export class DeposcoClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const payload = { completed_date: new Date().toISOString() };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v1/waves/${waveId}/complete`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to complete wave: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/waves/${waveId}/complete`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to complete wave: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('wave.completed', { id: waveId });
+      this.logEvent("wave.completed", { id: waveId });
 
       return this.getWave(waveId);
     } catch (error) {
@@ -1020,12 +1162,16 @@ export class DeposcoClient extends SupplyChainAdapter {
 
       const task = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v1/pick-tasks/${taskId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to get pick task: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/pick-tasks/${taskId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to get pick task: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -1035,12 +1181,12 @@ export class DeposcoClient extends SupplyChainAdapter {
         id: task.id,
         waveId: task.wave_id,
         fromBinLocation: task.from_bin,
-        zone: task.zone || '',
+        zone: task.zone || "",
         sku: task.sku,
         quantity: task.quantity,
         pickedQuantity: task.picked_quantity || 0,
-        toBinLocation: task.to_bin || '',
-        status: (task.status as any) || 'pending',
+        toBinLocation: task.to_bin || "",
+        status: (task.status as any) || "pending",
       };
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -1054,12 +1200,16 @@ export class DeposcoClient extends SupplyChainAdapter {
 
       const tasks = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v1/pick-tasks?wave_id=${waveId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to list pick tasks: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/pick-tasks?wave_id=${waveId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to list pick tasks: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -1069,12 +1219,12 @@ export class DeposcoClient extends SupplyChainAdapter {
         id: t.id,
         waveId,
         fromBinLocation: t.from_bin,
-        zone: t.zone || '',
+        zone: t.zone || "",
         sku: t.sku,
         quantity: t.quantity,
         pickedQuantity: t.picked_quantity || 0,
-        toBinLocation: t.to_bin || '',
-        status: (t.status as any) || 'pending',
+        toBinLocation: t.to_bin || "",
+        status: (t.status as any) || "pending",
       }));
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -1085,7 +1235,7 @@ export class DeposcoClient extends SupplyChainAdapter {
   public async updatePickTask(
     taskId: string,
     pickedQuantity: number,
-    status: string
+    status: string,
   ): Promise<PickTask> {
     try {
       await this.checkPrerequisites();
@@ -1098,17 +1248,25 @@ export class DeposcoClient extends SupplyChainAdapter {
           updated_date: new Date().toISOString(),
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v1/pick-tasks/${taskId}`, {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to update pick task: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/pick-tasks/${taskId}`,
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to update pick task: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('pick_task.updated', { id: taskId, pickedQuantity, status });
+      this.logEvent("pick_task.updated", {
+        id: taskId,
+        pickedQuantity,
+        status,
+      });
 
       return this.getPickTask(taskId);
     } catch (error) {
@@ -1123,12 +1281,16 @@ export class DeposcoClient extends SupplyChainAdapter {
 
       const station = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v1/pack-stations/${stationId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to get pack station: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/pack-stations/${stationId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to get pack station: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -1140,8 +1302,8 @@ export class DeposcoClient extends SupplyChainAdapter {
         warehouseId: station.warehouse_id,
         zone: station.zone,
         location: station.location,
-        type: (station.type as any) || 'manual',
-        status: (station.status as any) || 'active',
+        type: (station.type as any) || "manual",
+        status: (station.status as any) || "active",
       };
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -1157,9 +1319,16 @@ export class DeposcoClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/pack-stations?warehouse_id=${warehouseId}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to list pack stations: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(
+            `Failed to list pack stations: ${response.statusText}`,
+          );
         return response.json() as Promise<any>;
       });
 
@@ -1171,8 +1340,8 @@ export class DeposcoClient extends SupplyChainAdapter {
         warehouseId,
         zone: s.zone,
         location: s.location,
-        type: (s.type as any) || 'manual',
-        status: (s.status as any) || 'active',
+        type: (s.type as any) || "manual",
+        status: (s.status as any) || "active",
       }));
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -1184,7 +1353,7 @@ export class DeposcoClient extends SupplyChainAdapter {
     orderId: string,
     carrier: string,
     trackingNumber: string,
-    weight?: number
+    weight?: number,
   ): Promise<ShipConfirmation> {
     try {
       await this.checkPrerequisites();
@@ -1199,24 +1368,28 @@ export class DeposcoClient extends SupplyChainAdapter {
           ship_date: new Date().toISOString(),
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v1/ship-confirm`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to confirm shipment: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/ship-confirm`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to confirm shipment: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('shipment.confirmed', { orderId, trackingNumber });
+      this.logEvent("shipment.confirmed", { orderId, trackingNumber });
 
       return {
         id: result.id,
         orderId,
         shipmentNumber: result.shipment_number,
-        warehouseId: this.config.warehouseId || '',
+        warehouseId: this.config.warehouseId || "",
         shipDate: new Date(),
         items: [],
         carrier,
@@ -1231,8 +1404,13 @@ export class DeposcoClient extends SupplyChainAdapter {
 
   public async getLocation(
     warehouseId: string,
-    binLocation: string
-  ): Promise<{ binLocation: string; zone: string; capacity?: number; currentQuantity?: number }> {
+    binLocation: string,
+  ): Promise<{
+    binLocation: string;
+    zone: string;
+    capacity?: number;
+    currentQuantity?: number;
+  }> {
     try {
       await this.checkPrerequisites();
 
@@ -1240,9 +1418,14 @@ export class DeposcoClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/warehouses/${warehouseId}/locations/${binLocation}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to get location: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to get location: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -1268,9 +1451,14 @@ export class DeposcoClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/warehouses/${warehouseId}/zones`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to list zones: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to list zones: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -1286,7 +1474,7 @@ export class DeposcoClient extends SupplyChainAdapter {
   public async configureZone(
     warehouseId: string,
     zone: string,
-    config: { pickMethod?: string; packStations?: number; capacity?: number }
+    config: { pickMethod?: string; packStations?: number; capacity?: number },
   ): Promise<Record<string, unknown>> {
     try {
       await this.checkPrerequisites();
@@ -1300,18 +1488,22 @@ export class DeposcoClient extends SupplyChainAdapter {
           updated_date: new Date().toISOString(),
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v1/zones/${zone}`, {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to configure zone: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/zones/${zone}`,
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to configure zone: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('zone.configured', { zone });
+      this.logEvent("zone.configured", { zone });
 
       return result;
     } catch (error) {
@@ -1326,12 +1518,16 @@ export class DeposcoClient extends SupplyChainAdapter {
 
       const po = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v1/purchase-orders/${poId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to get PO: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/purchase-orders/${poId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to get PO: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -1344,7 +1540,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         warehouseId: po.warehouse_id,
         createdDate: new Date(po.created_date),
         expectedDeliveryDate: new Date(po.expected_delivery_date),
-        status: (po.status as any) || 'draft',
+        status: (po.status as any) || "draft",
         items: po.items || [],
         totalValue: po.total_value,
       };
@@ -1361,13 +1557,18 @@ export class DeposcoClient extends SupplyChainAdapter {
       const pos = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams();
-        if (status) params.append('status', status);
+        if (status) params.append("status", status);
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/purchase-orders?${params}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to list POs: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to list POs: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -1380,7 +1581,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         warehouseId: p.warehouse_id,
         createdDate: new Date(p.created_date),
         expectedDeliveryDate: new Date(p.expected_delivery_date),
-        status: (p.status as any) || 'draft',
+        status: (p.status as any) || "draft",
         items: p.items || [],
         totalValue: p.total_value,
       }));
@@ -1403,21 +1604,25 @@ export class DeposcoClient extends SupplyChainAdapter {
           created_date: po.createdDate,
           expected_delivery_date: po.expectedDeliveryDate,
           items: po.items,
-          status: 'draft',
+          status: "draft",
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v1/purchase-orders`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to create PO: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/purchase-orders`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(`Failed to create PO: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('po.created', { id: result.id });
+      this.logEvent("po.created", { id: result.id });
 
       return {
         id: result.id,
@@ -1426,7 +1631,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         warehouseId: po.warehouseId,
         createdDate: po.createdDate,
         expectedDeliveryDate: po.expectedDeliveryDate,
-        status: 'draft',
+        status: "draft",
         items: po.items,
       };
     } catch (error) {
@@ -1441,12 +1646,18 @@ export class DeposcoClient extends SupplyChainAdapter {
 
       const to = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v1/transfer-orders/${toId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to get transfer order: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/transfer-orders/${toId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(
+            `Failed to get transfer order: ${response.statusText}`,
+          );
         return response.json() as Promise<any>;
       });
 
@@ -1459,7 +1670,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         toWarehouseId: to.to_warehouse_id,
         createdDate: new Date(to.created_date),
         expectedDeliveryDate: new Date(to.expected_delivery_date),
-        status: (to.status as any) || 'pending',
+        status: (to.status as any) || "pending",
         items: to.items || [],
       };
     } catch (error) {
@@ -1475,13 +1686,20 @@ export class DeposcoClient extends SupplyChainAdapter {
       const tos = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams();
-        if (status) params.append('status', status);
+        if (status) params.append("status", status);
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/transfer-orders?${params}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to list transfer orders: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(
+            `Failed to list transfer orders: ${response.statusText}`,
+          );
         return response.json() as Promise<any>;
       });
 
@@ -1494,7 +1712,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         toWarehouseId: t.to_warehouse_id,
         createdDate: new Date(t.created_date),
         expectedDeliveryDate: new Date(t.expected_delivery_date),
-        status: (t.status as any) || 'pending',
+        status: (t.status as any) || "pending",
         items: t.items || [],
       }));
     } catch (error) {
@@ -1516,21 +1734,27 @@ export class DeposcoClient extends SupplyChainAdapter {
           created_date: to.createdDate,
           expected_delivery_date: to.expectedDeliveryDate,
           items: to.items,
-          status: 'pending',
+          status: "pending",
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v1/transfer-orders`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
-        if (!response.ok) throw new Error(`Failed to create transfer order: ${response.statusText}`);
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v1/transfer-orders`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
+        if (!response.ok)
+          throw new Error(
+            `Failed to create transfer order: ${response.statusText}`,
+          );
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('to.created', { id: result.id });
+      this.logEvent("to.created", { id: result.id });
 
       return {
         id: result.id,
@@ -1539,7 +1763,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         toWarehouseId: to.toWarehouseId,
         createdDate: to.createdDate,
         expectedDeliveryDate: to.expectedDeliveryDate,
-        status: 'pending',
+        status: "pending",
         items: to.items,
       };
     } catch (error) {
@@ -1550,8 +1774,8 @@ export class DeposcoClient extends SupplyChainAdapter {
 
   private buildHeaders(): Record<string, string> {
     return {
-      'Content-Type': 'application/json',
-      'X-API-Key': this.config.apiKey || '',
+      "Content-Type": "application/json",
+      "X-API-Key": this.config.apiKey || "",
       ...this.config.customHeaders,
     };
   }

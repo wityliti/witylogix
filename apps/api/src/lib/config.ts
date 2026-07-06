@@ -7,10 +7,14 @@ import { z } from "zod";
 
 const configSchema = z.object({
   // App
-  NODE_ENV: z.enum(["development", "staging", "production"]).default("development"),
+  NODE_ENV: z
+    .enum(["development", "staging", "production"])
+    .default("development"),
   PORT: z.coerce.number().int().min(1).max(65535).default(8000),
   HOST: z.string().default("0.0.0.0"),
-  LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
+  LOG_LEVEL: z
+    .enum(["fatal", "error", "warn", "info", "debug", "trace"])
+    .default("info"),
 
   // Database
   DATABASE_URL: z.string().url().startsWith("postgresql://"),
@@ -27,9 +31,11 @@ const configSchema = z.object({
   SHOPIFY_API_SECRET: z.string().default(""),
   SHOPIFY_APP_URL: z.string().url().optional(),
   // Minimal scope set — WIT-303 Built for Shopify certification
-  SHOPIFY_SCOPES: z.string().default(
-    "read_products,read_orders,write_orders,read_fulfillments,write_fulfillments,read_locations,read_customers",
-  ),
+  SHOPIFY_SCOPES: z
+    .string()
+    .default(
+      "read_products,read_orders,write_orders,read_fulfillments,write_fulfillments,read_locations,read_customers",
+    ),
 
   // Routing — provider + BYOK mode
   // Deployer sets the default provider. Tenants can override when BYOK=true.

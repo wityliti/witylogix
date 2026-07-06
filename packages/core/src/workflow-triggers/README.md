@@ -164,10 +164,7 @@ const bridge = new ShopifyWorkflowBridge({
 });
 
 app.post("/webhooks/shopify", async (request, reply) => {
-  const result = await bridge.handleWebhook(
-    request.body,
-    request.headers,
-  );
+  const result = await bridge.handleWebhook(request.body, request.headers);
 
   if (result.success) {
     // Match triggers
@@ -205,9 +202,7 @@ Conditions are predicates that determine if a trigger should execute:
 registry.register({
   eventType: "order.created",
   workflowName: "createDeliveryOrder",
-  conditions: [
-    (ctx) => ctx.entity.status === "PENDING",
-  ],
+  conditions: [(ctx) => ctx.entity.status === "PENDING"],
 });
 
 // Multiple conditions (AND logic)
@@ -451,14 +446,14 @@ const matches = await registry.match("order.created", context);
   - Signature verification
   - Error handling
 
-- **__tests__/trigger-registry.test.ts** (~300 lines)
+- ****tests**/trigger-registry.test.ts** (~300 lines)
   - Registration tests
   - Matching tests
   - Priority ordering tests
   - Debounce behavior tests
   - Edge case tests
 
-- **__tests__/integration.test.ts** (~300 lines)
+- ****tests**/integration.test.ts** (~300 lines)
   - End-to-end workflow tests
   - API hook integration tests
   - Socket.io event tests

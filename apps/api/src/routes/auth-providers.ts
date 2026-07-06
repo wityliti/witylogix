@@ -175,9 +175,7 @@ async function authProvidersRoutes(fastify: FastifyInstance): Promise<void> {
     }
 
     if (provider.shopId !== request.shopId) {
-      throw new ForbiddenError(
-        "Cannot access auth provider from another shop",
-      );
+      throw new ForbiddenError("Cannot access auth provider from another shop");
     }
 
     // Don't leak secrets in response
@@ -202,9 +200,7 @@ async function authProvidersRoutes(fastify: FastifyInstance): Promise<void> {
     }
 
     if (provider.shopId !== request.shopId) {
-      throw new ForbiddenError(
-        "Cannot update auth provider from another shop",
-      );
+      throw new ForbiddenError("Cannot update auth provider from another shop");
     }
 
     // Check for name conflicts
@@ -239,48 +235,51 @@ async function authProvidersRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── DELETE /:id (Delete provider) ───────────────────────────────
 
-  fastify.delete("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+  fastify.delete(
+    "/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
-    const { id } = request.params as { id: string };
+      const { id } = request.params as { id: string };
 
-    const provider = await (request.tenantDb as any).authProvider.findUnique({
-      where: { id },
-    });
+      const provider = await (request.tenantDb as any).authProvider.findUnique({
+        where: { id },
+      });
 
-    if (!provider) {
-      throw new NotFoundError("Auth provider", id);
-    }
+      if (!provider) {
+        throw new NotFoundError("Auth provider", id);
+      }
 
-    if (provider.shopId !== request.shopId) {
-      throw new ForbiddenError(
-        "Cannot delete auth provider from another shop",
+      if (provider.shopId !== request.shopId) {
+        throw new ForbiddenError(
+          "Cannot delete auth provider from another shop",
+        );
+      }
+
+      if (provider.isDefault) {
+        throw new ValidationError(
+          "Cannot delete the default auth provider. Set another as default first.",
+        );
+      }
+
+      // Delete associated tokens first
+      await (request.tenantDb as any).authProviderToken.deleteMany({
+        where: { providerId: id },
+      });
+
+      const deleted = await (request.tenantDb as any).authProvider.delete({
+        where: { id },
+      });
+
+      fastify.log.info(
+        { shopId: request.shopId, providerId: id, type: provider.type },
+        "Auth provider deleted",
       );
-    }
 
-    if (provider.isDefault) {
-      throw new ValidationError(
-        "Cannot delete the default auth provider. Set another as default first.",
-      );
-    }
-
-    // Delete associated tokens first
-    await (request.tenantDb as any).authProviderToken.deleteMany({
-      where: { providerId: id },
-    });
-
-    const deleted = await (request.tenantDb as any).authProvider.delete({
-      where: { id },
-    });
-
-    fastify.log.info(
-      { shopId: request.shopId, providerId: id, type: provider.type },
-      "Auth provider deleted",
-    );
-
-    reply.status(204);
-    return;
-  });
+      reply.status(204);
+      return;
+    },
+  );
 
   // ── POST /:id/test (Test connection) ────────────────────────────
 
@@ -301,9 +300,7 @@ async function authProvidersRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       if (provider.shopId !== request.shopId) {
-        throw new ForbiddenError(
-          "Cannot test auth provider from another shop",
-        );
+        throw new ForbiddenError("Cannot test auth provider from another shop");
       }
 
       // Attempt connection test
@@ -315,12 +312,15 @@ async function authProvidersRoutes(fastify: FastifyInstance): Promise<void> {
       try {
         // Simple connectivity check based on provider type
         if (provider.type === "GOOGLE") {
-          const response = await fetch("https://www.googleapis.com/oauth2/v1/tokeninfo", {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${provider.clientSecret}`,
+          const response = await fetch(
+            "https://www.googleapis.com/oauth2/v1/tokeninfo",
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${provider.clientSecret}`,
+              },
             },
-          });
+          );
           testResult = {
             success: response.ok,
             message: response.ok
@@ -445,7 +445,9 @@ async function authProvidersRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       if (!code || !state) {
-        throw new ValidationError("Missing required callback parameters (code, state)");
+        throw new ValidationError(
+          "Missing required callback parameters (code, state)",
+        );
       }
 
       // Decode state to find provider and user
@@ -470,7 +472,12 @@ async function authProvidersRoutes(fastify: FastifyInstance): Promise<void> {
       // Exchange code for token with OAuth provider
       let tokens: any;
       try {
-        tokens = await exchangeOAuthCode(provider, code, provider.redirectUri || `${process.env.API_URL}/api/v4/auth-providers/callback`);
+        tokens = await exchangeOAuthCode(
+          provider,
+          code,
+          provider.redirectUri ||
+            `${process.env.API_URL}/api/v4/auth-providers/callback`,
+        );
       } catch (error) {
         fastify.log.error(
           { providerId, error: (error as Error).message },
@@ -515,7 +522,8 @@ async function authProvidersRoutes(fastify: FastifyInstance): Promise<void> {
       );
 
       // Redirect to app with success
-      const redirectUrl = redirectAfterAuth || `/?auth=success&provider=${provider.type}`;
+      const redirectUrl =
+        redirectAfterAuth || `/?auth=success&provider=${provider.type}`;
       return reply.redirect(redirectUrl);
     },
   );
@@ -552,7 +560,9 @@ async function authProvidersRoutes(fastify: FastifyInstance): Promise<void> {
       ).toString("base64");
 
       // Build redirect URL
-      const redirectUri = provider.redirectUri || `${process.env.API_URL}/api/v4/auth-providers/callback`;
+      const redirectUri =
+        provider.redirectUri ||
+        `${process.env.API_URL}/api/v4/auth-providers/callback`;
       const params = new URLSearchParams({
         client_id: provider.clientId,
         redirect_uri: redirectUri,
@@ -614,10 +624,7 @@ async function authProvidersRoutes(fastify: FastifyInstance): Promise<void> {
           isValid = false;
         }
       } catch (error) {
-        fastify.log.error(
-          { providerId, error },
-          "Token validation failed",
-        );
+        fastify.log.error({ providerId, error }, "Token validation failed");
         isValid = false;
       }
 
@@ -671,7 +678,9 @@ async function exchangeOAuthCode(
       return exchangeSAML(provider, code);
 
     default:
-      throw new ValidationError(`Unsupported auth provider type: ${providerType}`);
+      throw new ValidationError(
+        `Unsupported auth provider type: ${providerType}`,
+      );
   }
 }
 
@@ -696,11 +705,15 @@ async function exchangeGoogle(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({})) as { error_description?: string };
-    throw new Error(`Google token exchange failed: ${error.error_description || response.statusText}`);
+    const error = (await response.json().catch(() => ({}))) as {
+      error_description?: string;
+    };
+    throw new Error(
+      `Google token exchange failed: ${error.error_description || response.statusText}`,
+    );
   }
 
-  const data = await response.json() as any;
+  const data = (await response.json()) as any;
   const decoded = decodeJWT(data.id_token);
 
   return {
@@ -725,25 +738,32 @@ async function exchangeMicrosoft(
   code: string,
   redirectUri: string,
 ): Promise<any> {
-  const response = await fetch("https://login.microsoftonline.com/common/oauth2/v2.0/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: provider.clientId,
-      client_secret: provider.clientSecret,
-      code,
-      redirect_uri: redirectUri,
-      grant_type: "authorization_code",
-      scope: provider.scopes?.join(" ") || "openid profile email",
-    }).toString(),
-  });
+  const response = await fetch(
+    "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: provider.clientId,
+        client_secret: provider.clientSecret,
+        code,
+        redirect_uri: redirectUri,
+        grant_type: "authorization_code",
+        scope: provider.scopes?.join(" ") || "openid profile email",
+      }).toString(),
+    },
+  );
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({})) as { error_description?: string };
-    throw new Error(`Microsoft token exchange failed: ${error.error_description || response.statusText}`);
+    const error = (await response.json().catch(() => ({}))) as {
+      error_description?: string;
+    };
+    throw new Error(
+      `Microsoft token exchange failed: ${error.error_description || response.statusText}`,
+    );
   }
 
-  const data = await response.json() as any;
+  const data = (await response.json()) as any;
   const decoded = decodeJWT(data.id_token);
 
   return {
@@ -768,9 +788,13 @@ async function exchangeOkta(
   code: string,
   redirectUri: string,
 ): Promise<any> {
-  const domain = (provider.metadata?.domain as string) || provider.authUrl?.split("/oauth2")[0];
+  const domain =
+    (provider.metadata?.domain as string) ||
+    provider.authUrl?.split("/oauth2")[0];
   if (!domain) {
-    throw new ValidationError("Okta domain not configured in provider metadata");
+    throw new ValidationError(
+      "Okta domain not configured in provider metadata",
+    );
   }
 
   const response = await fetch(`${domain}/oauth2/v1/token`, {
@@ -786,11 +810,15 @@ async function exchangeOkta(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({})) as { error_description?: string };
-    throw new Error(`Okta token exchange failed: ${error.error_description || response.statusText}`);
+    const error = (await response.json().catch(() => ({}))) as {
+      error_description?: string;
+    };
+    throw new Error(
+      `Okta token exchange failed: ${error.error_description || response.statusText}`,
+    );
   }
 
-  const data = await response.json() as any;
+  const data = (await response.json()) as any;
   const decoded = decodeJWT(data.id_token);
 
   return {
@@ -815,9 +843,13 @@ async function exchangeAuth0(
   code: string,
   redirectUri: string,
 ): Promise<any> {
-  const domain = (provider.metadata?.domain as string) || provider.authUrl?.split("/oauth/authorize")[0];
+  const domain =
+    (provider.metadata?.domain as string) ||
+    provider.authUrl?.split("/oauth/authorize")[0];
   if (!domain) {
-    throw new ValidationError("Auth0 domain not configured in provider metadata");
+    throw new ValidationError(
+      "Auth0 domain not configured in provider metadata",
+    );
   }
 
   const response = await fetch(`${domain}/oauth/token`, {
@@ -833,11 +865,15 @@ async function exchangeAuth0(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({})) as { error_description?: string };
-    throw new Error(`Auth0 token exchange failed: ${error.error_description || response.statusText}`);
+    const error = (await response.json().catch(() => ({}))) as {
+      error_description?: string;
+    };
+    throw new Error(
+      `Auth0 token exchange failed: ${error.error_description || response.statusText}`,
+    );
   }
 
-  const data = await response.json() as any;
+  const data = (await response.json()) as any;
   const decoded = decodeJWT(data.id_token);
 
   return {
@@ -863,7 +899,9 @@ async function exchangeCustomOAuth(
   redirectUri: string,
 ): Promise<any> {
   if (!provider.tokenUrl) {
-    throw new ValidationError("Token URL not configured for custom OAuth provider");
+    throw new ValidationError(
+      "Token URL not configured for custom OAuth provider",
+    );
   }
 
   const response = await fetch(provider.tokenUrl, {
@@ -879,11 +917,15 @@ async function exchangeCustomOAuth(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({})) as { error_description?: string };
-    throw new Error(`Custom OAuth token exchange failed: ${error.error_description || response.statusText}`);
+    const error = (await response.json().catch(() => ({}))) as {
+      error_description?: string;
+    };
+    throw new Error(
+      `Custom OAuth token exchange failed: ${error.error_description || response.statusText}`,
+    );
   }
 
-  const data = await response.json() as any;
+  const data = (await response.json()) as any;
 
   // For custom providers, try to decode id_token if available, otherwise use access_token metadata
   let metadata: Record<string, any> = {};
@@ -910,10 +952,7 @@ async function exchangeCustomOAuth(
  * SAML assertion processing (no code exchange needed).
  * The SAML assertion is typically POSTed directly from the IdP.
  */
-async function exchangeSAML(
-  provider: any,
-  samlResponse: string,
-): Promise<any> {
+async function exchangeSAML(provider: any, samlResponse: string): Promise<any> {
   // In production, would use a SAML library (like @node-saml/node-saml2-js or passport-saml)
   // For now, we'll do minimal processing and assume the samlResponse is base64-encoded XML
 
@@ -922,8 +961,12 @@ async function exchangeSAML(
     const xmlData = Buffer.from(samlResponse, "base64").toString("utf-8");
     // Extract email and name from SAML assertion (simplified)
     // In production, use proper SAML parsing with xmldom and @node-saml/node-saml2-js
-    const emailMatch = xmlData.match(/<urn:oid:0\.9\.2342\.19400300\.100\.1\.3>([^<]+)<\/urn:oid:0\.9\.2342\.19400300\.100\.1\.3>/);
-    const nameMatch = xmlData.match(/<urn:oid:2\.5\.4\.3>([^<]+)<\/urn:oid:2\.5\.4\.3>/);
+    const emailMatch = xmlData.match(
+      /<urn:oid:0\.9\.2342\.19400300\.100\.1\.3>([^<]+)<\/urn:oid:0\.9\.2342\.19400300\.100\.1\.3>/,
+    );
+    const nameMatch = xmlData.match(
+      /<urn:oid:2\.5\.4\.3>([^<]+)<\/urn:oid:2\.5\.4\.3>/,
+    );
 
     decoded = {
       sub: samlResponse.substring(0, 32),

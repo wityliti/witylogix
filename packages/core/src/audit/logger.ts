@@ -11,7 +11,7 @@ import {
   SENSITIVE_FIELDS,
   AuditLogError,
   AuditEventBuilder,
-} from './types';
+} from "./types";
 
 /**
  * AuditLogger
@@ -200,7 +200,10 @@ export class AuditLogger {
     after: Record<string, any>,
   ): ChangedField[] {
     const changes: ChangedField[] = [];
-    const allKeys = new Set([...Object.keys(before || {}), ...Object.keys(after || {})]);
+    const allKeys = new Set([
+      ...Object.keys(before || {}),
+      ...Object.keys(after || {}),
+    ]);
 
     for (const key of allKeys) {
       const oldValue = before?.[key];
@@ -250,14 +253,14 @@ export class AuditLogger {
    */
   private summarizeChanges(changes: ChangedField[]): string {
     if (changes.length === 0) {
-      return 'No changes';
+      return "No changes";
     }
 
     const fieldNames = changes.map((c) => c.fieldName);
     if (fieldNames.length === 1) {
       return `Modified ${fieldNames[0]}`;
     }
-    return `Modified ${fieldNames.length} fields: ${fieldNames.join(', ')}`;
+    return `Modified ${fieldNames.length} fields: ${fieldNames.join(", ")}`;
   }
 
   /**
@@ -265,10 +268,10 @@ export class AuditLogger {
    * @private
    */
   private getValueType(value: any): string {
-    if (value === null) return 'null';
-    if (Array.isArray(value)) return 'array';
-    if (value instanceof Date) return 'date';
-    if (typeof value === 'object') return 'object';
+    if (value === null) return "null";
+    if (Array.isArray(value)) return "array";
+    if (value instanceof Date) return "date";
+    if (typeof value === "object") return "object";
     return typeof value;
   }
 
@@ -284,7 +287,7 @@ export class AuditLogger {
     const masked = { ...obj };
     for (const key of Object.keys(masked)) {
       if (this.isSensitiveField(key)) {
-        masked[key] = '***REDACTED***';
+        masked[key] = "***REDACTED***";
       }
     }
     return masked;
@@ -299,7 +302,7 @@ export class AuditLogger {
       const masked: Record<string, any> = {};
       for (const [key, value] of Object.entries(event.changes)) {
         if (this.isSensitiveField(key)) {
-          masked[key] = { old: '***REDACTED***', new: '***REDACTED***' };
+          masked[key] = { old: "***REDACTED***", new: "***REDACTED***" };
         } else {
           masked[key] = value;
         }
@@ -318,7 +321,9 @@ export class AuditLogger {
    */
   private isSensitiveField(fieldName: string): boolean {
     const lower = fieldName.toLowerCase();
-    return SENSITIVE_FIELDS.some((sensitive) => lower.includes(sensitive.toLowerCase()));
+    return SENSITIVE_FIELDS.some((sensitive) =>
+      lower.includes(sensitive.toLowerCase()),
+    );
   }
 
   /**
@@ -332,10 +337,10 @@ export class AuditLogger {
 
     // Build a complete event
     const partial = event as Partial<AuditEvent>;
-    if (!partial.tenantId) throw new Error('tenantId is required');
-    if (!partial.userId) throw new Error('userId is required');
-    if (!partial.action) throw new Error('action is required');
-    if (!partial.resource) throw new Error('resource is required');
+    if (!partial.tenantId) throw new Error("tenantId is required");
+    if (!partial.userId) throw new Error("userId is required");
+    if (!partial.action) throw new Error("action is required");
+    if (!partial.resource) throw new Error("resource is required");
 
     return {
       id: `audit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,

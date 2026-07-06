@@ -15,8 +15,8 @@
  * Reference: https://developers.google.com/maps/documentation/routes/overview
  */
 
-import type { Coordinate, LatLng } from './types.js';
-import { RoutingAdapter } from './routing-adapter.js';
+import type { Coordinate, LatLng } from "./types.js";
+import { RoutingAdapter } from "./routing-adapter.js";
 import type {
   RouteRequest,
   RouteResponse,
@@ -26,7 +26,7 @@ import type {
   MatrixResponse,
   MatrixElement,
   RoutingAdapterConfig,
-} from './types.js';
+} from "./types.js";
 import type {
   RoutingRequest,
   RoutingResult,
@@ -35,8 +35,8 @@ import type {
   MatrixResult,
   WitylogixRoutingError as WitylogixRoutingErrorType,
   RateLimitInfo,
-} from './unified-routing-types.js';
-import { decodeGooglePolyline, getPolylineBounds } from './polyline-utils.js';
+} from "./unified-routing-types.js";
+import { decodeGooglePolyline, getPolylineBounds } from "./polyline-utils.js";
 
 /**
  * Google Routes API request/response types
@@ -108,7 +108,7 @@ interface GoogleRoutesConfig extends RoutingAdapterConfig {
  * Google Routes API SDK
  */
 export class GoogleRoutesSDK extends RoutingAdapter {
-  private googleBaseUrl: string = 'https://routes.googleapis.com/directions/v2';
+  private googleBaseUrl: string = "https://routes.googleapis.com/directions/v2";
   private rateLimitInfo: RateLimitInfo = {
     remaining: 100,
     limit: 100,
@@ -129,7 +129,7 @@ export class GoogleRoutesSDK extends RoutingAdapter {
     });
 
     if (!config.apiKey) {
-      throw new Error('Google Routes API requires apiKey');
+      throw new Error("Google Routes API requires apiKey");
     }
 
     if (config.baseUrl) {
@@ -141,10 +141,12 @@ export class GoogleRoutesSDK extends RoutingAdapter {
    * Compute single route with traffic awareness
    */
   async route(request: RouteRequest): Promise<RouteResponse> {
-    return this.executeRequest('GoogleRoutes.route', async () => {
+    return this.executeRequest("GoogleRoutes.route", async () => {
       const origin = this.normalizeCoordinate(request.origin);
       const destination = this.normalizeCoordinate(request.destination);
-      const waypoints = (request.waypoints || []).map((w) => this.normalizeCoordinate(w));
+      const waypoints = (request.waypoints || []).map((w) =>
+        this.normalizeCoordinate(w),
+      );
 
       const googleRequest = {
         origin: { latitude: origin.lat, longitude: origin.lng },
@@ -153,11 +155,11 @@ export class GoogleRoutesSDK extends RoutingAdapter {
           latitude: w.lat,
           longitude: w.lng,
         })),
-        travelMode: this.mapTravelMode(request.costing || 'auto'),
+        travelMode: this.mapTravelMode(request.costing || "auto"),
         routingPreference: this.mapTrafficMode(request.options),
-        polylineQuality: 'OVERVIEW' as const,
+        polylineQuality: "OVERVIEW" as const,
         computeAlternativeRoutes: request.options?.alternatives || false,
-        languageCode: request.options?.language || 'en-US',
+        languageCode: request.options?.language || "en-US",
         routeModifiers: {
           avoidTolls: request.options?.exclude_toll || false,
           avoidHighways: request.options?.exclude_motorway || false,
@@ -166,14 +168,14 @@ export class GoogleRoutesSDK extends RoutingAdapter {
       };
 
       const response = await this.callGoogleAPI<GoogleComputeRoutesResponse>(
-        '/computeRoutes',
+        "/computeRoutes",
         googleRequest,
       );
 
       if (!response.routes || response.routes.length === 0) {
         throw this.createRoutingError(
-          'NO_ROUTE_FOUND',
-          'No route found between origin and destination',
+          "NO_ROUTE_FOUND",
+          "No route found between origin and destination",
         );
       }
 
@@ -185,9 +187,11 @@ export class GoogleRoutesSDK extends RoutingAdapter {
    * Compute distance/duration matrix
    */
   async matrix(request: MatrixRequest): Promise<MatrixResponse> {
-    return this.executeRequest('GoogleRoutes.matrix', async () => {
+    return this.executeRequest("GoogleRoutes.matrix", async () => {
       const origins = request.origins.map((o) => this.normalizeCoordinate(o));
-      const destinations = request.destinations.map((d) => this.normalizeCoordinate(d));
+      const destinations = request.destinations.map((d) =>
+        this.normalizeCoordinate(d),
+      );
 
       const googleRequest = {
         origins: origins.map((o) => ({
@@ -198,11 +202,11 @@ export class GoogleRoutesSDK extends RoutingAdapter {
           latitude: d.lat,
           longitude: d.lng,
         })),
-        travelMode: this.mapTravelMode(request.costing || 'auto'),
+        travelMode: this.mapTravelMode(request.costing || "auto"),
       };
 
       const response = await this.callGoogleAPI<GoogleComputeMatrixResponse>(
-        '/computeRouteMatrix',
+        "/computeRouteMatrix",
         googleRequest,
       );
 
@@ -214,8 +218,12 @@ export class GoogleRoutesSDK extends RoutingAdapter {
    * Google Routes does not expose a VRP optimization endpoint.
    * Throws to allow the routing engine to fall back to a dedicated optimizer.
    */
-  async optimize(_request: import('./types.js').OptimizationRequest): Promise<import('./types.js').OptimizationResponse> {
-    throw new Error('Google Routes SDK does not support VRP optimization — use a dedicated optimizer provider');
+  async optimize(
+    _request: import("./types.js").OptimizationRequest,
+  ): Promise<import("./types.js").OptimizationResponse> {
+    throw new Error(
+      "Google Routes SDK does not support VRP optimization — use a dedicated optimizer provider",
+    );
   }
 
   /**
@@ -223,16 +231,16 @@ export class GoogleRoutesSDK extends RoutingAdapter {
    */
   private mapTravelMode(costing: string): string {
     const map: Record<string, string> = {
-      auto: 'DRIVE',
-      car: 'DRIVE',
-      truck: 'DRIVE',
-      bicycle: 'BICYCLE',
-      pedestrian: 'WALKING',
-      taxi: 'DRIVE',
-      motorcycle: 'DRIVE',
+      auto: "DRIVE",
+      car: "DRIVE",
+      truck: "DRIVE",
+      bicycle: "BICYCLE",
+      pedestrian: "WALKING",
+      taxi: "DRIVE",
+      motorcycle: "DRIVE",
     };
 
-    return map[costing] || 'DRIVE';
+    return map[costing] || "DRIVE";
   }
 
   /**
@@ -240,7 +248,7 @@ export class GoogleRoutesSDK extends RoutingAdapter {
    */
   private mapTrafficMode(options?: Record<string, unknown>): string {
     // In real implementation, would check traffic model preference
-    return 'TRAFFIC_AWARE';
+    return "TRAFFIC_AWARE";
   }
 
   /**
@@ -250,10 +258,10 @@ export class GoogleRoutesSDK extends RoutingAdapter {
     const url = `${this.googleBaseUrl}${endpoint}?key=${this.googleConfig.apiKey}`;
 
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': this.googleConfig.user_agent || 'Witylogix/1.0',
+        "Content-Type": "application/json",
+        "User-Agent": this.googleConfig.user_agent || "Witylogix/1.0",
       },
       body: JSON.stringify(body),
     });
@@ -262,7 +270,9 @@ export class GoogleRoutesSDK extends RoutingAdapter {
     this.updateRateLimitInfo(response.headers);
 
     if (!response.ok) {
-      const errorData: Record<string, unknown> = await response.json().catch(() => ({})) as Record<string, unknown>;
+      const errorData: Record<string, unknown> = (await response
+        .json()
+        .catch(() => ({}))) as Record<string, unknown>;
       throw this.createRoutingError(
         response.status.toString(),
         this.extractErrorMessage(errorData),
@@ -277,8 +287,8 @@ export class GoogleRoutesSDK extends RoutingAdapter {
    * Update rate limit tracking from response headers
    */
   private updateRateLimitInfo(headers: Headers): void {
-    const remaining = headers.get('x-goog-remaining-quota');
-    const limit = headers.get('x-goog-quota-limit');
+    const remaining = headers.get("x-goog-remaining-quota");
+    const limit = headers.get("x-goog-quota-limit");
 
     if (remaining) {
       this.rateLimitInfo.remaining = parseInt(remaining, 10);
@@ -295,22 +305,22 @@ export class GoogleRoutesSDK extends RoutingAdapter {
    * Extract error message from Google API response
    */
   private extractErrorMessage(data: unknown): string {
-    if (typeof data === 'object' && data !== null) {
+    if (typeof data === "object" && data !== null) {
       const error = data as Record<string, unknown>;
 
-      if (error.error && typeof error.error === 'object') {
+      if (error.error && typeof error.error === "object") {
         const errorObj = error.error as Record<string, unknown>;
-        if (typeof errorObj.message === 'string') {
+        if (typeof errorObj.message === "string") {
           return errorObj.message;
         }
       }
 
-      if (typeof error.message === 'string') {
+      if (typeof error.message === "string") {
         return error.message;
       }
     }
 
-    return 'Unknown Google Routes API error';
+    return "Unknown Google Routes API error";
   }
 
   /**
@@ -322,7 +332,7 @@ export class GoogleRoutesSDK extends RoutingAdapter {
     details?: Record<string, unknown>,
   ): Error {
     const error = new Error(message);
-    error.name = 'WitylogixRoutingError';
+    error.name = "WitylogixRoutingError";
     Object.assign(error, { code, details });
     return error;
   }
@@ -335,7 +345,10 @@ export class GoogleRoutesSDK extends RoutingAdapter {
     originalRequest: RouteRequest,
   ): RouteResponse {
     if (!route.polyline || !route.polyline.encoded_polyline) {
-      throw this.createRoutingError('INVALID_RESPONSE', 'No polyline in route response');
+      throw this.createRoutingError(
+        "INVALID_RESPONSE",
+        "No polyline in route response",
+      );
     }
 
     const polyline = route.polyline.encoded_polyline;
@@ -343,9 +356,14 @@ export class GoogleRoutesSDK extends RoutingAdapter {
     const bounds = getPolylineBounds(polyline);
 
     const legs: RouteLeg[] = (route.legs || []).map((leg, index) => {
-      const startLocation = index === 0 ? this.normalizeCoordinate(originalRequest.origin) :
-        index === (route.legs?.length || 0) - 1 ? this.normalizeCoordinate(originalRequest.destination) :
-        this.normalizeCoordinate(originalRequest.waypoints?.[index - 1] || { lat: 0, lng: 0 });
+      const startLocation =
+        index === 0
+          ? this.normalizeCoordinate(originalRequest.origin)
+          : index === (route.legs?.length || 0) - 1
+            ? this.normalizeCoordinate(originalRequest.destination)
+            : this.normalizeCoordinate(
+                originalRequest.waypoints?.[index - 1] || { lat: 0, lng: 0 },
+              );
 
       return {
         distance_m: leg.distance_meters || 0,
@@ -413,10 +431,10 @@ export class GoogleRoutesSDK extends RoutingAdapter {
   /**
    * Map Google status code to standard status
    */
-  private mapElementStatus(code?: number): 'OK' | 'UNREACHABLE' | 'NO_ROUTE' {
-    if (!code) return 'OK';
-    if (code === 12) return 'UNREACHABLE';
-    return 'NO_ROUTE';
+  private mapElementStatus(code?: number): "OK" | "UNREACHABLE" | "NO_ROUTE" {
+    if (!code) return "OK";
+    if (code === 12) return "UNREACHABLE";
+    return "NO_ROUTE";
   }
 
   /**
@@ -430,6 +448,8 @@ export class GoogleRoutesSDK extends RoutingAdapter {
 /**
  * Export factory function
  */
-export function createGoogleRoutesSDK(config: GoogleRoutesConfig): GoogleRoutesSDK {
+export function createGoogleRoutesSDK(
+  config: GoogleRoutesConfig,
+): GoogleRoutesSDK {
   return new GoogleRoutesSDK(config);
 }

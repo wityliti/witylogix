@@ -15,7 +15,7 @@
  * ~320 lines, 15 tests
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 // ============================================================================
 // MOCK TYPES & INTERFACES
@@ -39,10 +39,10 @@ interface Vehicle {
 interface TelematicsEvent {
   id: string;
   vehicleId: string;
-  type: 'SPEEDING' | 'HARSH_BRAKING' | 'RAPID_ACCELERATION' | 'IDLING';
+  type: "SPEEDING" | "HARSH_BRAKING" | "RAPID_ACCELERATION" | "IDLING";
   timestamp: string;
   location?: GPSCoordinate;
-  severity: 'LOW' | 'MEDIUM' | 'HIGH';
+  severity: "LOW" | "MEDIUM" | "HIGH";
 }
 
 interface Geofence {
@@ -76,12 +76,12 @@ interface TelemetryData {
 // ============================================================================
 
 class SamsaraAdapter {
-  private apiKey: string = '';
-  private baseUrl = 'https://api.samsara.com/v1';
+  private apiKey: string = "";
+  private baseUrl = "https://api.samsara.com/v1";
 
   async authenticate(apiKey: string): Promise<boolean> {
     if (!apiKey || apiKey.length < 10) {
-      throw new Error('Invalid API key');
+      throw new Error("Invalid API key");
     }
     this.apiKey = apiKey;
     return true;
@@ -89,50 +89,59 @@ class SamsaraAdapter {
 
   async parseDeviceData(deviceData: Record<string, any>): Promise<Vehicle> {
     if (!deviceData.id || !deviceData.name) {
-      throw new Error('Missing device identification');
+      throw new Error("Missing device identification");
     }
     return {
       id: deviceData.id,
       name: deviceData.name,
-      type: 'truck',
-      lastLocation: deviceData.lastLocation ? {
-        latitude: deviceData.lastLocation.latitude,
-        longitude: deviceData.lastLocation.longitude,
-        timestamp: deviceData.lastLocation.timestamp,
-      } : undefined,
+      type: "truck",
+      lastLocation: deviceData.lastLocation
+        ? {
+            latitude: deviceData.lastLocation.latitude,
+            longitude: deviceData.lastLocation.longitude,
+            timestamp: deviceData.lastLocation.timestamp,
+          }
+        : undefined,
     };
   }
 
   async fetchVehicles(): Promise<Vehicle[]> {
-    if (!this.apiKey) throw new Error('Not authenticated');
+    if (!this.apiKey) throw new Error("Not authenticated");
     return [
-      { id: 'samsara_v1', name: 'Vehicle 1', type: 'truck' },
-      { id: 'samsara_v2', name: 'Vehicle 2', type: 'van' },
+      { id: "samsara_v1", name: "Vehicle 1", type: "truck" },
+      { id: "samsara_v2", name: "Vehicle 2", type: "van" },
     ];
   }
 
-  async fetchRealtimeEvents(vehicleId: string, limit: number = 100): Promise<TelematicsEvent[]> {
-    if (!this.apiKey) throw new Error('Not authenticated');
+  async fetchRealtimeEvents(
+    vehicleId: string,
+    limit: number = 100,
+  ): Promise<TelematicsEvent[]> {
+    if (!this.apiKey) throw new Error("Not authenticated");
     return [
       {
-        id: 'evt_1',
+        id: "evt_1",
         vehicleId,
-        type: 'SPEEDING',
+        type: "SPEEDING",
         timestamp: new Date().toISOString(),
-        severity: 'MEDIUM',
+        severity: "MEDIUM",
       },
     ];
   }
 }
 
 class GeotabAdapter {
-  private username: string = '';
-  private password: string = '';
-  private database: string = '';
+  private username: string = "";
+  private password: string = "";
+  private database: string = "";
 
-  async authenticate(username: string, password: string, database: string): Promise<boolean> {
+  async authenticate(
+    username: string,
+    password: string,
+    database: string,
+  ): Promise<boolean> {
     if (!username || !password || !database) {
-      throw new Error('Invalid credentials');
+      throw new Error("Invalid credentials");
     }
     this.username = username;
     this.password = password;
@@ -142,7 +151,7 @@ class GeotabAdapter {
 
   normalizeCoordinates(lat: number, lon: number): GPSCoordinate {
     if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-      throw new Error('Invalid GPS coordinates');
+      throw new Error("Invalid GPS coordinates");
     }
     return {
       latitude: lat,
@@ -151,8 +160,10 @@ class GeotabAdapter {
     };
   }
 
-  async processGPSData(gpsPoints: Array<{ lat: number; lon: number; ts: string }>): Promise<GPSCoordinate[]> {
-    if (!this.username) throw new Error('Not authenticated');
+  async processGPSData(
+    gpsPoints: Array<{ lat: number; lon: number; ts: string }>,
+  ): Promise<GPSCoordinate[]> {
+    if (!this.username) throw new Error("Not authenticated");
     return gpsPoints.map((point) => ({
       latitude: point.lat,
       longitude: point.lon,
@@ -176,20 +187,20 @@ class GeotabAdapter {
 }
 
 class MotiveAdapter {
-  private accessToken: string = '';
+  private accessToken: string = "";
 
   async authenticate(clientId: string, clientSecret: string): Promise<boolean> {
     if (!clientId || !clientSecret) {
-      throw new Error('Invalid credentials');
+      throw new Error("Invalid credentials");
     }
     this.accessToken = `motive_token_${Date.now()}`;
     return true;
   }
 
   async parseHOSData(driverId: string, date: string): Promise<HOSData> {
-    if (!this.accessToken) throw new Error('Not authenticated');
+    if (!this.accessToken) throw new Error("Not authenticated");
     if (!driverId || !date) {
-      throw new Error('Missing required parameters');
+      throw new Error("Missing required parameters");
     }
     return {
       driverId,
@@ -202,14 +213,16 @@ class MotiveAdapter {
     };
   }
 
-  async validateHOSCompliance(hosData: HOSData): Promise<{ compliant: boolean; violations: string[] }> {
+  async validateHOSCompliance(
+    hosData: HOSData,
+  ): Promise<{ compliant: boolean; violations: string[] }> {
     const violations: string[] = [];
     const totalDutyMinutes = hosData.drivingMinutes + hosData.onDutyMinutes;
     if (totalDutyMinutes > 840) {
-      violations.push('Daily duty limit exceeded (14 hours)');
+      violations.push("Daily duty limit exceeded (14 hours)");
     }
     if (hosData.drivingMinutes > 600) {
-      violations.push('Driving limit exceeded (10 hours)');
+      violations.push("Driving limit exceeded (10 hours)");
     }
     return {
       compliant: violations.length === 0,
@@ -219,12 +232,12 @@ class MotiveAdapter {
 }
 
 class VerizonConnectAdapter {
-  private apiKey: string = '';
-  private fleetId: string = '';
+  private apiKey: string = "";
+  private fleetId: string = "";
 
   async authenticate(apiKey: string, fleetId: string): Promise<boolean> {
     if (!apiKey || !fleetId) {
-      throw new Error('Invalid credentials');
+      throw new Error("Invalid credentials");
     }
     this.apiKey = apiKey;
     this.fleetId = fleetId;
@@ -232,23 +245,27 @@ class VerizonConnectAdapter {
   }
 
   async trackFleet(): Promise<Vehicle[]> {
-    if (!this.apiKey) throw new Error('Not authenticated');
+    if (!this.apiKey) throw new Error("Not authenticated");
     return [
       {
-        id: 'vz_v1',
-        name: 'Tracked Vehicle 1',
+        id: "vz_v1",
+        name: "Tracked Vehicle 1",
         lastLocation: {
           latitude: 40.7128,
           longitude: -74.006,
           timestamp: new Date().toISOString(),
         },
-        type: 'truck',
+        type: "truck",
       },
     ];
   }
 
-  async importHistoricalData(startDate: string, endDate: string, vehicleId: string): Promise<TelemetryData[]> {
-    if (!this.apiKey) throw new Error('Not authenticated');
+  async importHistoricalData(
+    startDate: string,
+    endDate: string,
+    vehicleId: string,
+  ): Promise<TelemetryData[]> {
+    if (!this.apiKey) throw new Error("Not authenticated");
     return [
       {
         vehicleId,
@@ -266,7 +283,8 @@ class GeofenceEngine {
   isPointInGeofence(point: GPSCoordinate, geofence: Geofence): boolean {
     const R = 6371000;
     const dLat = ((point.latitude - geofence.center.latitude) * Math.PI) / 180;
-    const dLon = ((point.longitude - geofence.center.longitude) * Math.PI) / 180;
+    const dLon =
+      ((point.longitude - geofence.center.longitude) * Math.PI) / 180;
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos((geofence.center.latitude * Math.PI) / 180) *
@@ -281,20 +299,24 @@ class GeofenceEngine {
   calculateGeofenceEvents(
     currentLocation: GPSCoordinate,
     previousLocation: GPSCoordinate | undefined,
-    geofences: Geofence[]
-  ): Array<{ geofenceId: string; event: 'ENTER' | 'EXIT' }> {
-    const events: Array<{ geofenceId: string; event: 'ENTER' | 'EXIT' }> = [];
-    const currentInGeofences = geofences.filter((g) => this.isPointInGeofence(currentLocation, g));
+    geofences: Geofence[],
+  ): Array<{ geofenceId: string; event: "ENTER" | "EXIT" }> {
+    const events: Array<{ geofenceId: string; event: "ENTER" | "EXIT" }> = [];
+    const currentInGeofences = geofences.filter((g) =>
+      this.isPointInGeofence(currentLocation, g),
+    );
 
     if (previousLocation) {
-      const previousInGeofences = geofences.filter((g) => this.isPointInGeofence(previousLocation, g));
+      const previousInGeofences = geofences.filter((g) =>
+        this.isPointInGeofence(previousLocation, g),
+      );
       geofences.forEach((geofence) => {
         const wasInside = previousInGeofences.some((g) => g.id === geofence.id);
         const isInside = currentInGeofences.some((g) => g.id === geofence.id);
         if (!wasInside && isInside) {
-          events.push({ geofenceId: geofence.id, event: 'ENTER' });
+          events.push({ geofenceId: geofence.id, event: "ENTER" });
         } else if (wasInside && !isInside) {
-          events.push({ geofenceId: geofence.id, event: 'EXIT' });
+          events.push({ geofenceId: geofence.id, event: "EXIT" });
         }
       });
     }
@@ -307,95 +329,107 @@ class GeofenceEngine {
 // TEST SUITES
 // ============================================================================
 
-describe('Telematics Adapters Integration Tests', () => {
-  describe('Samsara Adapter', () => {
+describe("Telematics Adapters Integration Tests", () => {
+  describe("Samsara Adapter", () => {
     let adapter: SamsaraAdapter;
 
     beforeEach(() => {
       adapter = new SamsaraAdapter();
     });
 
-    it('should authenticate with valid API key', async () => {
-      const authenticated = await adapter.authenticate('samsara_key_1234567890');
+    it("should authenticate with valid API key", async () => {
+      const authenticated = await adapter.authenticate(
+        "samsara_key_1234567890",
+      );
       expect(authenticated).toBe(true);
     });
 
-    it('should reject invalid API key', async () => {
-      await expect(adapter.authenticate('short')).rejects.toThrow('Invalid API key');
+    it("should reject invalid API key", async () => {
+      await expect(adapter.authenticate("short")).rejects.toThrow(
+        "Invalid API key",
+      );
     });
 
-    it('should parse device data correctly', async () => {
-      await adapter.authenticate('samsara_key_1234567890');
+    it("should parse device data correctly", async () => {
+      await adapter.authenticate("samsara_key_1234567890");
       const vehicle = await adapter.parseDeviceData({
-        id: 'device_123',
-        name: 'Truck 1',
+        id: "device_123",
+        name: "Truck 1",
         lastLocation: {
           latitude: 40.7128,
           longitude: -74.006,
           timestamp: new Date().toISOString(),
         },
       });
-      expect(vehicle.id).toBe('device_123');
-      expect(vehicle.name).toBe('Truck 1');
+      expect(vehicle.id).toBe("device_123");
+      expect(vehicle.name).toBe("Truck 1");
       expect(vehicle.lastLocation).toBeDefined();
     });
 
-    it('should fetch vehicles list', async () => {
-      await adapter.authenticate('samsara_key_1234567890');
+    it("should fetch vehicles list", async () => {
+      await adapter.authenticate("samsara_key_1234567890");
       const vehicles = await adapter.fetchVehicles();
       expect(vehicles).toHaveLength(2);
-      expect(vehicles[0]).toHaveProperty('id');
-      expect(vehicles[0]).toHaveProperty('name');
+      expect(vehicles[0]).toHaveProperty("id");
+      expect(vehicles[0]).toHaveProperty("name");
     });
 
-    it('should fetch real-time events for vehicle', async () => {
-      await adapter.authenticate('samsara_key_1234567890');
-      const events = await adapter.fetchRealtimeEvents('samsara_v1');
+    it("should fetch real-time events for vehicle", async () => {
+      await adapter.authenticate("samsara_key_1234567890");
+      const events = await adapter.fetchRealtimeEvents("samsara_v1");
       expect(events).toHaveLength(1);
-      expect(events[0].type).toBe('SPEEDING');
-      expect(events[0].severity).toBe('MEDIUM');
+      expect(events[0].type).toBe("SPEEDING");
+      expect(events[0].severity).toBe("MEDIUM");
     });
   });
 
-  describe('Geotab Adapter', () => {
+  describe("Geotab Adapter", () => {
     let adapter: GeotabAdapter;
 
     beforeEach(() => {
       adapter = new GeotabAdapter();
     });
 
-    it('should authenticate with credentials', async () => {
-      const authenticated = await adapter.authenticate('user@example.com', 'password', 'demo');
+    it("should authenticate with credentials", async () => {
+      const authenticated = await adapter.authenticate(
+        "user@example.com",
+        "password",
+        "demo",
+      );
       expect(authenticated).toBe(true);
     });
 
-    it('should normalize valid GPS coordinates', () => {
+    it("should normalize valid GPS coordinates", () => {
       const normalized = adapter.normalizeCoordinates(40.7128, -74.006);
       expect(normalized.latitude).toBe(40.7128);
       expect(normalized.longitude).toBe(-74.006);
       expect(normalized.timestamp).toBeDefined();
     });
 
-    it('should reject invalid latitude', () => {
-      expect(() => adapter.normalizeCoordinates(91, 0)).toThrow('Invalid GPS coordinates');
+    it("should reject invalid latitude", () => {
+      expect(() => adapter.normalizeCoordinates(91, 0)).toThrow(
+        "Invalid GPS coordinates",
+      );
     });
 
-    it('should reject invalid longitude', () => {
-      expect(() => adapter.normalizeCoordinates(0, 181)).toThrow('Invalid GPS coordinates');
+    it("should reject invalid longitude", () => {
+      expect(() => adapter.normalizeCoordinates(0, 181)).toThrow(
+        "Invalid GPS coordinates",
+      );
     });
 
-    it('should process GPS data batch', async () => {
-      await adapter.authenticate('user@example.com', 'password', 'demo');
+    it("should process GPS data batch", async () => {
+      await adapter.authenticate("user@example.com", "password", "demo");
       const processed = await adapter.processGPSData([
         { lat: 40.7128, lon: -74.006, ts: new Date().toISOString() },
         { lat: 40.758, lon: -73.9855, ts: new Date().toISOString() },
       ]);
       expect(processed).toHaveLength(2);
-      expect(processed[0]).toHaveProperty('latitude');
+      expect(processed[0]).toHaveProperty("latitude");
     });
 
-    it('should calculate distance between coordinates', async () => {
-      await adapter.authenticate('user@example.com', 'password', 'demo');
+    it("should calculate distance between coordinates", async () => {
+      await adapter.authenticate("user@example.com", "password", "demo");
       const coord1 = adapter.normalizeCoordinates(40.7128, -74.006);
       const coord2 = adapter.normalizeCoordinates(40.758, -73.9855);
       const distance = adapter.calculateDistance(coord1, coord2);
@@ -404,39 +438,42 @@ describe('Telematics Adapters Integration Tests', () => {
     });
   });
 
-  describe('Motive (KeepTruckin) Adapter', () => {
+  describe("Motive (KeepTruckin) Adapter", () => {
     let adapter: MotiveAdapter;
 
     beforeEach(() => {
       adapter = new MotiveAdapter();
     });
 
-    it('should authenticate with credentials', async () => {
-      const authenticated = await adapter.authenticate('client_id', 'client_secret');
+    it("should authenticate with credentials", async () => {
+      const authenticated = await adapter.authenticate(
+        "client_id",
+        "client_secret",
+      );
       expect(authenticated).toBe(true);
     });
 
-    it('should parse HOS data for driver', async () => {
-      await adapter.authenticate('client_id', 'client_secret');
-      const hosData = await adapter.parseHOSData('driver_123', '2024-03-14');
-      expect(hosData.driverId).toBe('driver_123');
-      expect(hosData.date).toBe('2024-03-14');
+    it("should parse HOS data for driver", async () => {
+      await adapter.authenticate("client_id", "client_secret");
+      const hosData = await adapter.parseHOSData("driver_123", "2024-03-14");
+      expect(hosData.driverId).toBe("driver_123");
+      expect(hosData.date).toBe("2024-03-14");
       expect(hosData.drivingMinutes).toBeGreaterThan(0);
     });
 
-    it('should validate HOS compliance', async () => {
-      await adapter.authenticate('client_id', 'client_secret');
-      const hosData = await adapter.parseHOSData('driver_123', '2024-03-14');
+    it("should validate HOS compliance", async () => {
+      await adapter.authenticate("client_id", "client_secret");
+      const hosData = await adapter.parseHOSData("driver_123", "2024-03-14");
       const validation = await adapter.validateHOSCompliance(hosData);
-      expect(validation).toHaveProperty('compliant');
+      expect(validation).toHaveProperty("compliant");
       expect(Array.isArray(validation.violations)).toBe(true);
     });
 
-    it('should detect HOS violations', async () => {
-      await adapter.authenticate('client_id', 'client_secret');
+    it("should detect HOS violations", async () => {
+      await adapter.authenticate("client_id", "client_secret");
       const violatedData: HOSData = {
-        driverId: 'driver_123',
-        date: '2024-03-14',
+        driverId: "driver_123",
+        date: "2024-03-14",
         drivingMinutes: 700,
         onDutyMinutes: 300,
         offDutyMinutes: 240,
@@ -449,31 +486,34 @@ describe('Telematics Adapters Integration Tests', () => {
     });
   });
 
-  describe('Verizon Connect Adapter', () => {
+  describe("Verizon Connect Adapter", () => {
     let adapter: VerizonConnectAdapter;
 
     beforeEach(() => {
       adapter = new VerizonConnectAdapter();
     });
 
-    it('should authenticate with API key and fleet ID', async () => {
-      const authenticated = await adapter.authenticate('api_key_123', 'fleet_456');
+    it("should authenticate with API key and fleet ID", async () => {
+      const authenticated = await adapter.authenticate(
+        "api_key_123",
+        "fleet_456",
+      );
       expect(authenticated).toBe(true);
     });
 
-    it('should track fleet vehicles', async () => {
-      await adapter.authenticate('api_key_123', 'fleet_456');
+    it("should track fleet vehicles", async () => {
+      await adapter.authenticate("api_key_123", "fleet_456");
       const vehicles = await adapter.trackFleet();
       expect(vehicles).toHaveLength(1);
       expect(vehicles[0].lastLocation).toBeDefined();
     });
 
-    it('should import historical telemetry data', async () => {
-      await adapter.authenticate('api_key_123', 'fleet_456');
+    it("should import historical telemetry data", async () => {
+      await adapter.authenticate("api_key_123", "fleet_456");
       const data = await adapter.importHistoricalData(
-        '2024-03-01',
-        '2024-03-14',
-        'vz_v1'
+        "2024-03-01",
+        "2024-03-14",
+        "vz_v1",
       );
       expect(data).toHaveLength(1);
       expect(data[0].odometer).toBeDefined();
@@ -481,21 +521,25 @@ describe('Telematics Adapters Integration Tests', () => {
     });
   });
 
-  describe('Geofence Engine', () => {
+  describe("Geofence Engine", () => {
     let engine: GeofenceEngine;
     let geofence: Geofence;
 
     beforeEach(() => {
       engine = new GeofenceEngine();
       geofence = {
-        id: 'geo_1',
-        name: 'Warehouse A',
-        center: { latitude: 40.7128, longitude: -74.006, timestamp: new Date().toISOString() },
+        id: "geo_1",
+        name: "Warehouse A",
+        center: {
+          latitude: 40.7128,
+          longitude: -74.006,
+          timestamp: new Date().toISOString(),
+        },
         radiusMeters: 500,
       };
     });
 
-    it('should detect point inside geofence', () => {
+    it("should detect point inside geofence", () => {
       const point: GPSCoordinate = {
         latitude: 40.7128,
         longitude: -74.006,
@@ -505,7 +549,7 @@ describe('Telematics Adapters Integration Tests', () => {
       expect(isInside).toBe(true);
     });
 
-    it('should detect point outside geofence', () => {
+    it("should detect point outside geofence", () => {
       const point: GPSCoordinate = {
         latitude: 40.758,
         longitude: -73.9855,
@@ -515,7 +559,7 @@ describe('Telematics Adapters Integration Tests', () => {
       expect(isInside).toBe(false);
     });
 
-    it('should calculate ENTER event on geofence entry', () => {
+    it("should calculate ENTER event on geofence entry", () => {
       const previousLocation: GPSCoordinate = {
         latitude: 40.758,
         longitude: -73.9855,
@@ -526,14 +570,18 @@ describe('Telematics Adapters Integration Tests', () => {
         longitude: -74.006,
         timestamp: new Date().toISOString(),
       };
-      const events = engine.calculateGeofenceEvents(currentLocation, previousLocation, [geofence]);
+      const events = engine.calculateGeofenceEvents(
+        currentLocation,
+        previousLocation,
+        [geofence],
+      );
       expect(events).toContainEqual({
-        geofenceId: 'geo_1',
-        event: 'ENTER',
+        geofenceId: "geo_1",
+        event: "ENTER",
       });
     });
 
-    it('should calculate EXIT event on geofence departure', () => {
+    it("should calculate EXIT event on geofence departure", () => {
       const previousLocation: GPSCoordinate = {
         latitude: 40.7128,
         longitude: -74.006,
@@ -544,18 +592,26 @@ describe('Telematics Adapters Integration Tests', () => {
         longitude: -73.9855,
         timestamp: new Date().toISOString(),
       };
-      const events = engine.calculateGeofenceEvents(currentLocation, previousLocation, [geofence]);
+      const events = engine.calculateGeofenceEvents(
+        currentLocation,
+        previousLocation,
+        [geofence],
+      );
       expect(events).toContainEqual({
-        geofenceId: 'geo_1',
-        event: 'EXIT',
+        geofenceId: "geo_1",
+        event: "EXIT",
       });
     });
 
-    it('should handle multiple geofences', () => {
+    it("should handle multiple geofences", () => {
       const geofence2 = {
-        id: 'geo_2',
-        name: 'Warehouse B',
-        center: { latitude: 40.758, longitude: -73.9855, timestamp: new Date().toISOString() },
+        id: "geo_2",
+        name: "Warehouse B",
+        center: {
+          latitude: 40.758,
+          longitude: -73.9855,
+          timestamp: new Date().toISOString(),
+        },
         radiusMeters: 500,
       };
       const point: GPSCoordinate = {
@@ -568,10 +624,10 @@ describe('Telematics Adapters Integration Tests', () => {
     });
   });
 
-  describe('Data Normalization', () => {
-    it('should validate telemetry data structure', () => {
+  describe("Data Normalization", () => {
+    it("should validate telemetry data structure", () => {
       const telemetry: TelemetryData = {
-        vehicleId: 'v1',
+        vehicleId: "v1",
         timestamp: new Date().toISOString(),
         odometer: 125000,
         speed: 65,
@@ -583,16 +639,21 @@ describe('Telematics Adapters Integration Tests', () => {
       expect(telemetry.fuelLevel).toBeLessThanOrEqual(1);
     });
 
-    it('should validate event structure', () => {
+    it("should validate event structure", () => {
       const event: TelematicsEvent = {
-        id: 'evt_1',
-        vehicleId: 'v1',
-        type: 'SPEEDING',
+        id: "evt_1",
+        vehicleId: "v1",
+        type: "SPEEDING",
         timestamp: new Date().toISOString(),
-        severity: 'HIGH',
+        severity: "HIGH",
       };
-      expect(['SPEEDING', 'HARSH_BRAKING', 'RAPID_ACCELERATION', 'IDLING']).toContain(event.type);
-      expect(['LOW', 'MEDIUM', 'HIGH']).toContain(event.severity);
+      expect([
+        "SPEEDING",
+        "HARSH_BRAKING",
+        "RAPID_ACCELERATION",
+        "IDLING",
+      ]).toContain(event.type);
+      expect(["LOW", "MEDIUM", "HIGH"]).toContain(event.severity);
     });
   });
 });

@@ -104,12 +104,8 @@ export class IdempotencyManager {
    * @param store - Idempotency store implementation
    * @param deduplicationWindowMs - Deduplication window in milliseconds
    */
-  constructor(
-    store?: IdempotencyStore,
-    deduplicationWindowMs?: number
-  ) {
-    this.store =
-      store || new InMemoryIdempotencyStore();
+  constructor(store?: IdempotencyStore, deduplicationWindowMs?: number) {
+    this.store = store || new InMemoryIdempotencyStore();
     if (deduplicationWindowMs) {
       this.deduplicationWindowMs = deduplicationWindowMs;
     }
@@ -123,11 +119,7 @@ export class IdempotencyManager {
    * @param timestamp - Event timestamp (optional, uses now if not provided)
    * @returns Idempotency key
    */
-  generateKey(
-    eventType: string,
-    resourceId: string,
-    timestamp?: Date
-  ): string {
+  generateKey(eventType: string, resourceId: string, timestamp?: Date): string {
     const ts = timestamp ? timestamp.getTime() : Date.now();
     const sanitizedEventType = eventType.replace(/[^a-zA-Z0-9._-]/g, "_");
     const sanitizedResourceId = resourceId.replace(/[^a-zA-Z0-9._-]/g, "_");
@@ -169,7 +161,7 @@ export class IdempotencyManager {
     key: string,
     statusCode: number,
     body?: string,
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
   ): Promise<void> {
     const response: CachedResponse = {
       statusCode,
@@ -254,9 +246,7 @@ export class IdempotencyManager {
    * @param key - Idempotency key
    * @returns Parsed components
    */
-  static parseKey(
-    key: string
-  ): {
+  static parseKey(key: string): {
     eventType: string;
     resourceId: string;
     timestamp: number;

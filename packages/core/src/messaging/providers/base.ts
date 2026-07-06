@@ -3,7 +3,12 @@
  * Defines the contract that each provider (Email, SMS, WhatsApp, Push) must implement.
  */
 
-import type { Message, MessageTemplate, SendResult, DeliveryStatus } from '../types.js';
+import type {
+  Message,
+  MessageTemplate,
+  SendResult,
+  DeliveryStatus,
+} from "../types.js";
 
 /**
  * Abstract provider interface.

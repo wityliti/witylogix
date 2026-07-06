@@ -18,7 +18,12 @@ import { TenantContext } from "../tenant/types";
 
 // ─── TYPES ──────────────────────────────────────────────────────────
 
-export type SearchableEntity = "orders" | "drivers" | "deliveries" | "integrations" | "customers";
+export type SearchableEntity =
+  | "orders"
+  | "drivers"
+  | "deliveries"
+  | "integrations"
+  | "customers";
 
 export interface SearchConfig {
   weights: {
@@ -84,10 +89,16 @@ export class SearchEngine {
       limit?: number;
       offset?: number;
       useFuzzy?: boolean;
-    } = {}
+    } = {},
   ): Promise<SearchResult[]> {
     const {
-      entities = ["orders", "drivers", "deliveries", "integrations", "customers"],
+      entities = [
+        "orders",
+        "drivers",
+        "deliveries",
+        "integrations",
+        "customers",
+      ],
       limit = 20,
       offset = 0,
       useFuzzy = true,
@@ -107,7 +118,7 @@ export class SearchEngine {
         processedQuery,
         tenant,
         useFuzzy,
-        limit * 2 // fetch more to account for deduplication
+        limit * 2, // fetch more to account for deduplication
       );
 
       for (const result of entityResults) {
@@ -130,10 +141,16 @@ export class SearchEngine {
     query: string,
     tenant: TenantContext,
     useFuzzy: boolean,
-    limit: number
+    limit: number,
   ): Promise<SearchResult[]> {
     try {
-      const results = await this.buildEntityQuery(entity, query, tenant, useFuzzy, limit);
+      const results = await this.buildEntityQuery(
+        entity,
+        query,
+        tenant,
+        useFuzzy,
+        limit,
+      );
       return results.filter((r) => r.rank >= this.config.minRank);
     } catch (error) {
       console.error(`Search failed for entity ${entity}:`, error);
@@ -149,7 +166,7 @@ export class SearchEngine {
     query: string,
     tenant: TenantContext,
     useFuzzy: boolean,
-    limit: number
+    limit: number,
   ): Promise<SearchResult[]> {
     let sql = "";
     const params: any[] = [tenant.orgId];
@@ -175,7 +192,10 @@ export class SearchEngine {
     }
 
     params.push(limit);
-    const rawResults = await (this.prisma as any).$queryRawUnsafe(sql, ...params);
+    const rawResults = await (this.prisma as any).$queryRawUnsafe(
+      sql,
+      ...params,
+    );
 
     return (rawResults as any[]).map((row) => ({
       id: row.id,
@@ -400,7 +420,7 @@ export class SearchEngine {
   async getSuggestions(
     prefix: string,
     tenant: TenantContext,
-    limit: number = 5
+    limit: number = 5,
   ): Promise<string[]> {
     if (prefix.length < 1) {
       return [];
@@ -424,7 +444,7 @@ export class SearchEngine {
       sql,
       tenant.orgId,
       prefix,
-      limit
+      limit,
     );
 
     return (results as any[]).map((r) => r.suggestion);
@@ -436,10 +456,10 @@ export class SearchEngine {
   async rebuildIndexes(): Promise<void> {
     try {
       await (this.prisma as any).$queryRawUnsafe(
-        `REINDEX INDEX CONCURRENTLY idx_orders_tsvector;`
+        `REINDEX INDEX CONCURRENTLY idx_orders_tsvector;`,
       );
       await (this.prisma as any).$queryRawUnsafe(
-        `REINDEX INDEX CONCURRENTLY idx_drivers_tsvector;`
+        `REINDEX INDEX CONCURRENTLY idx_drivers_tsvector;`,
       );
     } catch (error) {
       console.error("Failed to rebuild search indexes:", error);
@@ -452,7 +472,7 @@ export class SearchEngine {
  */
 export function createSearchEngine(
   prisma: PrismaClient,
-  config?: Partial<SearchConfig>
+  config?: Partial<SearchConfig>,
 ): SearchEngine {
   return new SearchEngine(prisma, config);
 }

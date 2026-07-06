@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import crypto from 'crypto';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import crypto from "crypto";
 
 /**
  * Custom Webhooks Route Tests
@@ -60,20 +60,20 @@ interface MockWebhookSecret {
 }
 
 const createMockCustomWebhook = (
-  overrides?: Partial<MockCustomWebhook>
+  overrides?: Partial<MockCustomWebhook>,
 ): MockCustomWebhook => ({
-  id: 'webhook-custom-' + Math.random().toString(36).substring(7),
-  storeId: 'store-123',
-  name: 'My Custom Webhook',
-  deliveryUrl: 'https://webhook.example.com/custom',
-  secret: crypto.randomBytes(32).toString('hex'),
+  id: "webhook-custom-" + Math.random().toString(36).substring(7),
+  storeId: "store-123",
+  name: "My Custom Webhook",
+  deliveryUrl: "https://webhook.example.com/custom",
+  secret: crypto.randomBytes(32).toString("hex"),
   schema: {
-    type: 'object',
+    type: "object",
     properties: {
-      orderId: { type: 'string' },
-      amount: { type: 'number' },
+      orderId: { type: "string" },
+      amount: { type: "number" },
     },
-    required: ['orderId', 'amount'],
+    required: ["orderId", "amount"],
   },
   isActive: true,
   maxRetries: 5,
@@ -81,26 +81,26 @@ const createMockCustomWebhook = (
   timeout: 30000,
   createdAt: new Date(),
   updatedAt: new Date(),
-  createdBy: 'user-123',
+  createdBy: "user-123",
   ...overrides,
 });
 
 const createMockWebhookLog = (
-  overrides?: Partial<MockWebhookLog>
+  overrides?: Partial<MockWebhookLog>,
 ): MockWebhookLog => ({
-  id: 'log-' + Math.random().toString(36).substring(7),
-  webhookId: 'webhook-custom-123',
-  eventType: 'order.created',
-  payload: { orderId: '123', amount: 99.99 },
+  id: "log-" + Math.random().toString(36).substring(7),
+  webhookId: "webhook-custom-123",
+  eventType: "order.created",
+  payload: { orderId: "123", amount: 99.99 },
   statusCode: 200,
-  responseBody: 'OK',
+  responseBody: "OK",
   deliveryDuration: 150,
   retryCount: 0,
   createdAt: new Date(),
   ...overrides,
 });
 
-describe('Custom Webhooks', () => {
+describe("Custom Webhooks", () => {
   let mockTenantDb: any;
   let mockRequest: any;
   let mockReply: any;
@@ -132,8 +132,8 @@ describe('Custom Webhooks', () => {
       params: {},
       body: {},
       headers: {},
-      shopId: 'shop-123',
-      auth: { role: 'ADMIN', userId: 'user-123' },
+      shopId: "shop-123",
+      auth: { role: "ADMIN", userId: "user-123" },
       tenantDb: mockTenantDb,
       log: {
         info: vi.fn(),
@@ -152,21 +152,21 @@ describe('Custom Webhooks', () => {
     vi.clearAllMocks();
   });
 
-  describe('Webhook Registration', () => {
-    it('should register new custom webhook', async () => {
+  describe("Webhook Registration", () => {
+    it("should register new custom webhook", async () => {
       const mockWebhook = createMockCustomWebhook();
       mockTenantDb.customWebhook.create.mockResolvedValue(mockWebhook);
 
       mockRequest.body = {
-        name: 'My Custom Webhook',
-        deliveryUrl: 'https://webhook.example.com/custom',
+        name: "My Custom Webhook",
+        deliveryUrl: "https://webhook.example.com/custom",
         schema: {
-          type: 'object',
+          type: "object",
           properties: {
-            orderId: { type: 'string' },
-            amount: { type: 'number' },
+            orderId: { type: "string" },
+            amount: { type: "number" },
           },
-          required: ['orderId', 'amount'],
+          required: ["orderId", "amount"],
         },
       };
 
@@ -174,13 +174,13 @@ describe('Custom Webhooks', () => {
 
       const result = { data: mockWebhook };
 
-      expect(result.data.name).toBe('My Custom Webhook');
+      expect(result.data.name).toBe("My Custom Webhook");
       expect(result.data.isActive).toBe(true);
       expect(result.data.secret).toBeDefined();
       expect(mockTenantDb.customWebhook.create).toHaveBeenCalled();
     });
 
-    it('should generate random secret on registration', async () => {
+    it("should generate random secret on registration", async () => {
       const mockWebhook1 = createMockCustomWebhook();
       const mockWebhook2 = createMockCustomWebhook();
 
@@ -188,55 +188,58 @@ describe('Custom Webhooks', () => {
       expect(mockWebhook1.secret).toHaveLength(64); // 32 bytes hex
     });
 
-    it('should require delivery URL', async () => {
+    it("should require delivery URL", async () => {
       mockRequest.body = {
-        name: 'My Custom Webhook',
-        schema: { type: 'object' },
+        name: "My Custom Webhook",
+        schema: { type: "object" },
       };
 
       const hasDeliveryUrl = mockRequest.body.deliveryUrl;
       expect(hasDeliveryUrl).toBeUndefined();
     });
 
-    it('should validate webhook name', async () => {
+    it("should validate webhook name", async () => {
       mockRequest.body = {
-        name: '',
-        deliveryUrl: 'https://webhook.example.com/custom',
-        schema: { type: 'object' },
+        name: "",
+        deliveryUrl: "https://webhook.example.com/custom",
+        schema: { type: "object" },
       };
 
-      const hasValidName = mockRequest.body.name && mockRequest.body.name.length > 0;
+      const hasValidName =
+        mockRequest.body.name && mockRequest.body.name.length > 0;
       expect(hasValidName).toBeFalsy();
     });
 
-    it('should accept optional custom headers', async () => {
+    it("should accept optional custom headers", async () => {
       const mockWebhook = createMockCustomWebhook({
-        headers: { 'X-Custom-Header': 'value' },
+        headers: { "X-Custom-Header": "value" },
       });
 
       mockTenantDb.customWebhook.create.mockResolvedValue(mockWebhook);
 
       mockRequest.body = {
-        name: 'Webhook with headers',
-        deliveryUrl: 'https://webhook.example.com/custom',
-        headers: { 'X-Custom-Header': 'value' },
-        schema: { type: 'object' },
+        name: "Webhook with headers",
+        deliveryUrl: "https://webhook.example.com/custom",
+        headers: { "X-Custom-Header": "value" },
+        schema: { type: "object" },
       };
 
       const result = { data: mockWebhook };
 
-      expect(result.data.headers).toEqual({ 'X-Custom-Header': 'value' });
+      expect(result.data.headers).toEqual({ "X-Custom-Header": "value" });
     });
 
-    it('should list custom webhooks for store', async () => {
+    it("should list custom webhooks for store", async () => {
       const mockWebhooks = [
-        createMockCustomWebhook({ name: 'Webhook 1' }),
-        createMockCustomWebhook({ name: 'Webhook 2' }),
+        createMockCustomWebhook({ name: "Webhook 1" }),
+        createMockCustomWebhook({ name: "Webhook 2" }),
       ];
 
       mockTenantDb.customWebhook.findMany.mockResolvedValue(mockWebhooks);
 
-      await mockTenantDb.customWebhook.findMany({ where: { storeId: mockRequest.shopId } });
+      await mockTenantDb.customWebhook.findMany({
+        where: { storeId: mockRequest.shopId },
+      });
 
       const result = { data: mockWebhooks };
 
@@ -244,7 +247,7 @@ describe('Custom Webhooks', () => {
       expect(mockTenantDb.customWebhook.findMany).toHaveBeenCalled();
     });
 
-    it('should support optional custom configuration', async () => {
+    it("should support optional custom configuration", async () => {
       const mockWebhook = createMockCustomWebhook({
         maxRetries: 10,
         retryDelayMs: 5000,
@@ -254,12 +257,12 @@ describe('Custom Webhooks', () => {
       mockTenantDb.customWebhook.create.mockResolvedValue(mockWebhook);
 
       mockRequest.body = {
-        name: 'Custom config webhook',
-        deliveryUrl: 'https://webhook.example.com/custom',
+        name: "Custom config webhook",
+        deliveryUrl: "https://webhook.example.com/custom",
         maxRetries: 10,
         retryDelayMs: 5000,
         timeout: 60000,
-        schema: { type: 'object' },
+        schema: { type: "object" },
       };
 
       const result = { data: mockWebhook };
@@ -269,34 +272,33 @@ describe('Custom Webhooks', () => {
     });
   });
 
-  describe('Payload Validation Against Schema', () => {
+  describe("Payload Validation Against Schema", () => {
     const mockSchema = {
-      type: 'object',
+      type: "object",
       properties: {
-        orderId: { type: 'string' },
-        amount: { type: 'number' },
-        email: { type: 'string', format: 'email' },
+        orderId: { type: "string" },
+        amount: { type: "number" },
+        email: { type: "string", format: "email" },
       },
-      required: ['orderId', 'amount'],
+      required: ["orderId", "amount"],
     };
 
-    it('should accept valid payload', async () => {
+    it("should accept valid payload", async () => {
       const validPayload = {
-        orderId: '123',
+        orderId: "123",
         amount: 99.99,
-        email: 'test@example.com',
+        email: "test@example.com",
       };
 
       const isValid =
-        validPayload.orderId &&
-        typeof validPayload.amount === 'number';
+        validPayload.orderId && typeof validPayload.amount === "number";
 
       expect(isValid).toBe(true);
     });
 
-    it('should reject payload missing required fields', async () => {
+    it("should reject payload missing required fields", async () => {
       const invalidPayload = {
-        orderId: '123',
+        orderId: "123",
         // Missing 'amount'
       };
 
@@ -307,26 +309,26 @@ describe('Custom Webhooks', () => {
       expect(hasAllRequired).toBe(false);
     });
 
-    it('should reject payload with wrong data types', async () => {
+    it("should reject payload with wrong data types", async () => {
       const invalidPayload = {
-        orderId: '123',
-        amount: 'not a number', // Should be number
+        orderId: "123",
+        amount: "not a number", // Should be number
       };
 
-      const isValidType = typeof invalidPayload.amount === 'number';
+      const isValidType = typeof invalidPayload.amount === "number";
 
       expect(isValidType).toBe(false);
     });
 
-    it('should validate nested objects', async () => {
+    it("should validate nested objects", async () => {
       const nestedSchema = {
-        type: 'object',
+        type: "object",
         properties: {
           order: {
-            type: 'object',
+            type: "object",
             properties: {
-              id: { type: 'string' },
-              items: { type: 'array' },
+              id: { type: "string" },
+              items: { type: "array" },
             },
           },
         },
@@ -334,22 +336,22 @@ describe('Custom Webhooks', () => {
 
       const validPayload = {
         order: {
-          id: '123',
+          id: "123",
           items: [],
         },
       };
 
       expect(validPayload.order).toBeDefined();
-      expect(validPayload.order.id).toBe('123');
+      expect(validPayload.order.id).toBe("123");
     });
 
-    it('should support array validation', async () => {
+    it("should support array validation", async () => {
       const arraySchema = {
-        type: 'object',
+        type: "object",
         properties: {
           items: {
-            type: 'array',
-            items: { type: 'object' },
+            type: "array",
+            items: { type: "object" },
           },
         },
       };
@@ -362,26 +364,26 @@ describe('Custom Webhooks', () => {
       expect(validPayload.items).toHaveLength(2);
     });
 
-    it('should allow additional properties by default', async () => {
+    it("should allow additional properties by default", async () => {
       const payload = {
-        orderId: '123',
+        orderId: "123",
         amount: 99.99,
-        extraField: 'allowed',
+        extraField: "allowed",
       };
 
       expect(payload.extraField).toBeDefined();
     });
   });
 
-  describe('Webhook Secret Management', () => {
-    it('should store secret securely', async () => {
+  describe("Webhook Secret Management", () => {
+    it("should store secret securely", async () => {
       const mockWebhook = createMockCustomWebhook();
       mockTenantDb.customWebhook.create.mockResolvedValue(mockWebhook);
 
       mockRequest.body = {
-        name: 'Secure webhook',
-        deliveryUrl: 'https://webhook.example.com/custom',
-        schema: { type: 'object' },
+        name: "Secure webhook",
+        deliveryUrl: "https://webhook.example.com/custom",
+        schema: { type: "object" },
       };
 
       const result = { data: mockWebhook };
@@ -391,9 +393,9 @@ describe('Custom Webhooks', () => {
       expect(result.data.secret.length).toBe(64);
     });
 
-    it('should rotate secret', async () => {
+    it("should rotate secret", async () => {
       const oldWebhook = createMockCustomWebhook();
-      const newSecret = crypto.randomBytes(32).toString('hex');
+      const newSecret = crypto.randomBytes(32).toString("hex");
       const updatedWebhook = { ...oldWebhook, secret: newSecret };
 
       mockTenantDb.customWebhook.findUnique.mockResolvedValue(oldWebhook);
@@ -412,18 +414,18 @@ describe('Custom Webhooks', () => {
       expect(mockTenantDb.customWebhook.update).toHaveBeenCalled();
     });
 
-    it('should track secret rotation history', async () => {
+    it("should track secret rotation history", async () => {
       const secrets = [
         {
-          id: 'secret-1',
-          secret: crypto.randomBytes(32).toString('hex'),
-          rotatedAt: new Date('2026-03-08'),
+          id: "secret-1",
+          secret: crypto.randomBytes(32).toString("hex"),
+          rotatedAt: new Date("2026-03-08"),
           isActive: false,
         },
         {
-          id: 'secret-2',
-          secret: crypto.randomBytes(32).toString('hex'),
-          rotatedAt: new Date('2026-03-09'),
+          id: "secret-2",
+          secret: crypto.randomBytes(32).toString("hex"),
+          rotatedAt: new Date("2026-03-09"),
           isActive: true,
         },
       ];
@@ -432,9 +434,9 @@ describe('Custom Webhooks', () => {
       expect(secrets[1].isActive).toBe(true);
     });
 
-    it('should allow grace period for old secret', async () => {
-      const oldSecret = crypto.randomBytes(32).toString('hex');
-      const newSecret = crypto.randomBytes(32).toString('hex');
+    it("should allow grace period for old secret", async () => {
+      const oldSecret = crypto.randomBytes(32).toString("hex");
+      const newSecret = crypto.randomBytes(32).toString("hex");
       const gracePeriodMs = 3600000; // 1 hour
 
       const secretRotation = {
@@ -444,17 +446,19 @@ describe('Custom Webhooks', () => {
         expiresAt: new Date(Date.now() + gracePeriodMs),
       };
 
-      expect(secretRotation.expiresAt.getTime()).toBeGreaterThan(new Date().getTime());
+      expect(secretRotation.expiresAt.getTime()).toBeGreaterThan(
+        new Date().getTime(),
+      );
     });
 
-    it('should support secret expiration', async () => {
+    it("should support secret expiration", async () => {
       const mockSecret = {
-        id: 'secret-123',
-        webhookId: 'webhook-123',
-        secret: 'secret_abc123',
+        id: "secret-123",
+        webhookId: "webhook-123",
+        secret: "secret_abc123",
         isActive: true,
-        rotatedAt: new Date('2026-01-01'),
-        expiresAt: new Date('2026-02-01'),
+        rotatedAt: new Date("2026-01-01"),
+        expiresAt: new Date("2026-02-01"),
       };
 
       const now = new Date();
@@ -464,8 +468,8 @@ describe('Custom Webhooks', () => {
     });
   });
 
-  describe('Delivery Retry Logic', () => {
-    it('should retry failed delivery', async () => {
+  describe("Delivery Retry Logic", () => {
+    it("should retry failed delivery", async () => {
       const mockLog = createMockWebhookLog({
         statusCode: 500,
         retryCount: 0,
@@ -474,7 +478,7 @@ describe('Custom Webhooks', () => {
 
       mockTenantDb.webhookLog.create.mockResolvedValue(mockLog);
 
-      mockRequest.body = { orderId: '123', amount: 99.99 };
+      mockRequest.body = { orderId: "123", amount: 99.99 };
 
       await mockTenantDb.webhookLog.create({
         data: expect.objectContaining({
@@ -486,7 +490,7 @@ describe('Custom Webhooks', () => {
       expect(mockTenantDb.webhookLog.create).toHaveBeenCalled();
     });
 
-    it('should implement exponential backoff', async () => {
+    it("should implement exponential backoff", async () => {
       const baseDelayMs = 1000;
       const retryAttempt = 3;
       const backoffMs = baseDelayMs * Math.pow(2, retryAttempt);
@@ -494,7 +498,7 @@ describe('Custom Webhooks', () => {
       expect(backoffMs).toBe(8000);
     });
 
-    it('should respect max retries configuration', async () => {
+    it("should respect max retries configuration", async () => {
       const webhook = createMockCustomWebhook({ maxRetries: 3 });
       const currentRetry = 3;
 
@@ -503,7 +507,7 @@ describe('Custom Webhooks', () => {
       expect(shouldRetry).toBe(false);
     });
 
-    it('should mark delivery as successful after retry', async () => {
+    it("should mark delivery as successful after retry", async () => {
       const mockLog = createMockWebhookLog({
         statusCode: 200,
         retryCount: 2,
@@ -511,7 +515,9 @@ describe('Custom Webhooks', () => {
 
       mockTenantDb.webhookLog.create.mockResolvedValue(mockLog);
 
-      await mockTenantDb.webhookLog.create({ data: { statusCode: 200, retryCount: 2 } });
+      await mockTenantDb.webhookLog.create({
+        data: { statusCode: 200, retryCount: 2 },
+      });
 
       const result = { data: mockLog };
 
@@ -519,7 +525,7 @@ describe('Custom Webhooks', () => {
       expect(mockTenantDb.webhookLog.create).toHaveBeenCalled();
     });
 
-    it('should stop retrying after max attempts', async () => {
+    it("should stop retrying after max attempts", async () => {
       const maxRetries = 5;
       const currentRetry = 5;
 
@@ -528,27 +534,27 @@ describe('Custom Webhooks', () => {
       expect(shouldRetry).toBe(false);
     });
 
-    it('should handle timeout during delivery', async () => {
+    it("should handle timeout during delivery", async () => {
       const webhook = createMockCustomWebhook({ timeout: 5000 });
 
       expect(webhook.timeout).toBe(5000);
     });
   });
 
-  describe('Webhook Logs', () => {
-    it('should create delivery log', async () => {
+  describe("Webhook Logs", () => {
+    it("should create delivery log", async () => {
       const mockLog = createMockWebhookLog();
       mockTenantDb.webhookLog.create.mockResolvedValue(mockLog);
 
-      mockRequest.params = { id: 'webhook-123' };
+      mockRequest.params = { id: "webhook-123" };
 
       const result = { data: mockLog };
 
-      expect(result.data.webhookId).toBe('webhook-custom-123');
+      expect(result.data.webhookId).toBe("webhook-custom-123");
       expect(result.data.statusCode).toBe(200);
     });
 
-    it('should record delivery duration', async () => {
+    it("should record delivery duration", async () => {
       const mockLog = createMockWebhookLog({
         deliveryDuration: 250,
       });
@@ -556,16 +562,16 @@ describe('Custom Webhooks', () => {
       expect(mockLog.deliveryDuration).toBe(250);
     });
 
-    it('should capture error messages', async () => {
+    it("should capture error messages", async () => {
       const mockLog = createMockWebhookLog({
         statusCode: 500,
-        errorMessage: 'Internal Server Error',
+        errorMessage: "Internal Server Error",
       });
 
-      expect(mockLog.errorMessage).toBe('Internal Server Error');
+      expect(mockLog.errorMessage).toBe("Internal Server Error");
     });
 
-    it('should list webhook logs with pagination', async () => {
+    it("should list webhook logs with pagination", async () => {
       const mockLogs = [
         createMockWebhookLog(),
         createMockWebhookLog(),
@@ -574,10 +580,12 @@ describe('Custom Webhooks', () => {
 
       mockTenantDb.webhookLog.findMany.mockResolvedValue(mockLogs);
 
-      mockRequest.params = { id: 'webhook-123' };
+      mockRequest.params = { id: "webhook-123" };
       mockRequest.query = { page: 1, limit: 20 };
 
-      await mockTenantDb.webhookLog.findMany({ where: { webhookId: 'webhook-123' } });
+      await mockTenantDb.webhookLog.findMany({
+        where: { webhookId: "webhook-123" },
+      });
 
       const result = { data: mockLogs };
 
@@ -585,7 +593,7 @@ describe('Custom Webhooks', () => {
       expect(mockTenantDb.webhookLog.findMany).toHaveBeenCalled();
     });
 
-    it('should filter logs by status code', async () => {
+    it("should filter logs by status code", async () => {
       const successLogs = [
         createMockWebhookLog({ statusCode: 200 }),
         createMockWebhookLog({ statusCode: 200 }),
@@ -593,7 +601,7 @@ describe('Custom Webhooks', () => {
 
       mockTenantDb.webhookLog.findMany.mockResolvedValue(successLogs);
 
-      mockRequest.params = { id: 'webhook-123' };
+      mockRequest.params = { id: "webhook-123" };
       mockRequest.query = { statusCode: 200 };
 
       const result = { data: successLogs };
@@ -602,19 +610,19 @@ describe('Custom Webhooks', () => {
       expect(result.data[0].statusCode).toBe(200);
     });
 
-    it('should sort logs by creation time', async () => {
+    it("should sort logs by creation time", async () => {
       const mockLogs = [
-        createMockWebhookLog({ createdAt: new Date('2026-03-08') }),
-        createMockWebhookLog({ createdAt: new Date('2026-03-09') }),
+        createMockWebhookLog({ createdAt: new Date("2026-03-08") }),
+        createMockWebhookLog({ createdAt: new Date("2026-03-09") }),
       ];
 
       expect(mockLogs[0].createdAt < mockLogs[1].createdAt).toBe(true);
     });
 
-    it('should support log retention policy', async () => {
+    it("should support log retention policy", async () => {
       const retentionDays = 30;
       const logsToDelete = [
-        createMockWebhookLog({ createdAt: new Date('2026-02-01') }),
+        createMockWebhookLog({ createdAt: new Date("2026-02-01") }),
       ];
 
       mockTenantDb.webhookLog.deleteMany.mockResolvedValue({ count: 1 });
@@ -625,8 +633,8 @@ describe('Custom Webhooks', () => {
     });
   });
 
-  describe('Webhook Deactivation', () => {
-    it('should deactivate webhook', async () => {
+  describe("Webhook Deactivation", () => {
+    it("should deactivate webhook", async () => {
       const webhook = createMockCustomWebhook({ isActive: true });
       const deactivated = { ...webhook, isActive: false };
 
@@ -640,7 +648,7 @@ describe('Custom Webhooks', () => {
       expect(result.data.isActive).toBe(false);
     });
 
-    it('should delete webhook', async () => {
+    it("should delete webhook", async () => {
       const webhook = createMockCustomWebhook();
 
       mockTenantDb.customWebhook.findUnique.mockResolvedValue(webhook);
@@ -651,11 +659,11 @@ describe('Custom Webhooks', () => {
       await mockTenantDb.customWebhook.delete({ where: { id: webhook.id } });
 
       expect(mockTenantDb.customWebhook.delete).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { id: webhook.id } })
+        expect.objectContaining({ where: { id: webhook.id } }),
       );
     });
 
-    it('should skip delivery for inactive webhook', async () => {
+    it("should skip delivery for inactive webhook", async () => {
       const webhook = createMockCustomWebhook({ isActive: false });
 
       mockTenantDb.customWebhook.findUnique.mockResolvedValue(webhook);
@@ -667,10 +675,12 @@ describe('Custom Webhooks', () => {
       expect(result.data.isActive).toBe(false);
     });
 
-    it('should clean up logs on webhook deletion', async () => {
+    it("should clean up logs on webhook deletion", async () => {
       const webhook = createMockCustomWebhook();
 
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
       mockTenantDb.webhookLog.deleteMany.mockResolvedValue({ count: 10 });
       mockTenantDb.customWebhook.delete.mockResolvedValue(webhook);
 
@@ -691,54 +701,55 @@ describe('Custom Webhooks', () => {
     });
   });
 
-  describe('Error Handling & Validation', () => {
-    it('should return 400 for invalid schema', async () => {
+  describe("Error Handling & Validation", () => {
+    it("should return 400 for invalid schema", async () => {
       mockRequest.body = {
-        name: 'Bad schema webhook',
-        deliveryUrl: 'https://webhook.example.com/custom',
+        name: "Bad schema webhook",
+        deliveryUrl: "https://webhook.example.com/custom",
         schema: null,
       };
 
-      const hasValidSchema = mockRequest.body.schema && typeof mockRequest.body.schema === 'object';
+      const hasValidSchema =
+        mockRequest.body.schema && typeof mockRequest.body.schema === "object";
       expect(hasValidSchema).toBeFalsy();
     });
 
-    it('should return 400 for invalid delivery URL', async () => {
+    it("should return 400 for invalid delivery URL", async () => {
       mockRequest.body = {
-        name: 'Bad URL webhook',
-        deliveryUrl: 'not-a-url',
-        schema: { type: 'object' },
+        name: "Bad URL webhook",
+        deliveryUrl: "not-a-url",
+        schema: { type: "object" },
       };
 
       const isValidUrl = /^https?:\/\//.test(mockRequest.body.deliveryUrl);
       expect(isValidUrl).toBe(false);
     });
 
-    it('should return 404 for non-existent webhook', async () => {
+    it("should return 404 for non-existent webhook", async () => {
       mockTenantDb.customWebhook.findUnique.mockResolvedValue(null);
 
-      mockRequest.params = { id: 'non-existent' };
+      mockRequest.params = { id: "non-existent" };
 
       mockReply.status(404);
 
       expect(mockReply.status).toHaveBeenCalledWith(404);
     });
 
-    it('should enforce role-based access control', async () => {
-      mockRequest.auth = { role: 'VIEWER' };
+    it("should enforce role-based access control", async () => {
+      mockRequest.auth = { role: "VIEWER" };
 
-      const canEdit = mockRequest.auth.role === 'ADMIN';
+      const canEdit = mockRequest.auth.role === "ADMIN";
       expect(canEdit).toBe(false);
     });
 
-    it('should return 200 OK for successful webhook', async () => {
+    it("should return 200 OK for successful webhook", async () => {
       const mockWebhook = createMockCustomWebhook();
       mockTenantDb.customWebhook.create.mockResolvedValue(mockWebhook);
 
       mockRequest.body = {
-        name: 'Success webhook',
-        deliveryUrl: 'https://webhook.example.com/custom',
-        schema: { type: 'object' },
+        name: "Success webhook",
+        deliveryUrl: "https://webhook.example.com/custom",
+        schema: { type: "object" },
       };
 
       mockReply.status(201);
@@ -747,44 +758,44 @@ describe('Custom Webhooks', () => {
     });
   });
 
-  describe('Webhook Update', () => {
-    it('should update webhook configuration', async () => {
-      const webhook = createMockCustomWebhook({ name: 'Original Name' });
-      const updated = { ...webhook, name: 'Updated Name' };
+  describe("Webhook Update", () => {
+    it("should update webhook configuration", async () => {
+      const webhook = createMockCustomWebhook({ name: "Original Name" });
+      const updated = { ...webhook, name: "Updated Name" };
 
       mockTenantDb.customWebhook.findUnique.mockResolvedValue(webhook);
       mockTenantDb.customWebhook.update.mockResolvedValue(updated);
 
       mockRequest.params = { id: webhook.id };
-      mockRequest.body = { name: 'Updated Name' };
+      mockRequest.body = { name: "Updated Name" };
 
       const result = { data: updated };
 
-      expect(result.data.name).toBe('Updated Name');
+      expect(result.data.name).toBe("Updated Name");
     });
 
-    it('should update delivery URL', async () => {
+    it("should update delivery URL", async () => {
       const webhook = createMockCustomWebhook({
-        deliveryUrl: 'https://old.example.com/hook',
+        deliveryUrl: "https://old.example.com/hook",
       });
       const updated = {
         ...webhook,
-        deliveryUrl: 'https://new.example.com/hook',
+        deliveryUrl: "https://new.example.com/hook",
       };
 
       mockTenantDb.customWebhook.update.mockResolvedValue(updated);
 
-      mockRequest.body = { deliveryUrl: 'https://new.example.com/hook' };
+      mockRequest.body = { deliveryUrl: "https://new.example.com/hook" };
 
       const result = { data: updated };
 
-      expect(result.data.deliveryUrl).toBe('https://new.example.com/hook');
+      expect(result.data.deliveryUrl).toBe("https://new.example.com/hook");
     });
 
-    it('should validate schema on update', async () => {
+    it("should validate schema on update", async () => {
       const invalidSchema = null;
 
-      const isValid = invalidSchema && typeof invalidSchema === 'object';
+      const isValid = invalidSchema && typeof invalidSchema === "object";
       expect(isValid).toBeFalsy();
     });
   });

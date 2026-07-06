@@ -116,7 +116,9 @@ describe("Freight Rate Fetching - Multiple Providers", () => {
       });
 
       expect(newRate.rate).toBeGreaterThan(oldRate.rate);
-      expect(newRate.timestamp.getTime()).toBeGreaterThan(oldRate.timestamp.getTime());
+      expect(newRate.timestamp.getTime()).toBeGreaterThan(
+        oldRate.timestamp.getTime(),
+      );
     });
   });
 
@@ -166,7 +168,11 @@ describe("Rate Comparison Across Providers", () => {
 
   it("should identify lowest rate across providers", () => {
     const rates = createMultiProviderRates();
-    const allRates = [rates.dat.rate, rates.truckstop.rate, rates.freightWaves.rate];
+    const allRates = [
+      rates.dat.rate,
+      rates.truckstop.rate,
+      rates.freightWaves.rate,
+    ];
     const lowestRate = Math.min(...allRates);
 
     expect(lowestRate).toBeGreaterThan(0);
@@ -175,7 +181,11 @@ describe("Rate Comparison Across Providers", () => {
 
   it("should calculate rate variance across providers", () => {
     const rates = createMultiProviderRates();
-    const allRates = [rates.dat.rate, rates.truckstop.rate, rates.freightWaves.rate];
+    const allRates = [
+      rates.dat.rate,
+      rates.truckstop.rate,
+      rates.freightWaves.rate,
+    ];
     const avgRate = allRates.reduce((a, b) => a + b) / allRates.length;
     const maxRate = Math.max(...allRates);
     const minRate = Math.min(...allRates);
@@ -429,7 +439,9 @@ describe("Accessorial Charge Validation", () => {
       accessorials: [{ type: "detention", charge: 100 }],
     });
 
-    const detentionCharge = mockRate.accessorials.find((a) => a.type === "detention");
+    const detentionCharge = mockRate.accessorials.find(
+      (a) => a.type === "detention",
+    );
     expect(detentionCharge).toBeDefined();
     expect(detentionCharge?.charge).toBe(100);
   });
@@ -445,7 +457,10 @@ describe("Accessorial Charge Validation", () => {
 
     expect(mockRate.accessorials).toHaveLength(3);
 
-    const totalAccessorial = mockRate.accessorials.reduce((sum, a) => sum + a.charge, 0);
+    const totalAccessorial = mockRate.accessorials.reduce(
+      (sum, a) => sum + a.charge,
+      0,
+    );
     expect(totalAccessorial).toBe(225);
   });
 

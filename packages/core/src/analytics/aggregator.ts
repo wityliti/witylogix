@@ -77,7 +77,9 @@ export class AnalyticsAggregator {
    * @param config - Optional configuration overrides.
    */
   constructor(
-    private queryExecutor: (query: QueryBuilder) => Promise<Record<string, unknown>[]>,
+    private queryExecutor: (
+      query: QueryBuilder,
+    ) => Promise<Record<string, unknown>[]>,
     config: Partial<AggregatorConfig> = {},
   ) {
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -211,7 +213,9 @@ export class AnalyticsAggregator {
     if ((metric.granularity || metric.groupBy) && metric.groupBy) {
       const groupByClauses: string[] = [];
       if (metric.granularity) {
-        groupByClauses.push(this.buildTimestampGrouping("timestamp", metric.granularity));
+        groupByClauses.push(
+          this.buildTimestampGrouping("timestamp", metric.granularity),
+        );
       }
       for (const dim of metric.groupBy) {
         groupByClauses.push(`metadata->>'${dim.field}'`);
@@ -236,7 +240,10 @@ export class AnalyticsAggregator {
    * @param granularity - The granularity level.
    * @returns SQL expression for time grouping.
    */
-  private buildTimestampGrouping(fieldName: string, granularity: Granularity): string {
+  private buildTimestampGrouping(
+    fieldName: string,
+    granularity: Granularity,
+  ): string {
     switch (granularity) {
       case "hourly":
         return `DATE_TRUNC('hour', ${fieldName}) AS time_bucket`;
@@ -290,7 +297,10 @@ export class AnalyticsAggregator {
    * @param params - Query parameters array (to append to).
    * @returns SQL WHERE clause fragment.
    */
-  private buildFilterClause(filter: FilterCondition, params: unknown[]): string {
+  private buildFilterClause(
+    filter: FilterCondition,
+    params: unknown[],
+  ): string {
     const fieldExpr = `metadata->>'${filter.field}'`;
 
     switch (filter.operator) {
@@ -453,11 +463,10 @@ export class AnalyticsAggregator {
 
     for (let i = 0; i < values.length; i++) {
       const windowStart = Math.max(0, i - windowSize + 1);
-      const windowValues = values
-        .slice(windowStart, i + 1)
-        .map((v) => v.value);
+      const windowValues = values.slice(windowStart, i + 1).map((v) => v.value);
 
-      const average = windowValues.reduce((a, b) => a + b, 0) / windowValues.length;
+      const average =
+        windowValues.reduce((a, b) => a + b, 0) / windowValues.length;
 
       result.push({
         timestamp: values[i].timestamp,

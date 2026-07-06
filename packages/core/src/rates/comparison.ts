@@ -3,7 +3,12 @@
  * Enables customers to compare rates and services across different carriers
  */
 
-import { RateCalculationRequest, RateComparisonResult, CalculatedRate, ShippingProfile } from "./types";
+import {
+  RateCalculationRequest,
+  RateComparisonResult,
+  CalculatedRate,
+  ShippingProfile,
+} from "./types";
 import { calculateRate } from "./calculator";
 
 /**
@@ -29,7 +34,9 @@ export function compareRates(
   profiles: ShippingProfile[],
 ): RateComparisonResult {
   if (!profiles || profiles.length === 0) {
-    throw new Error("At least one shipping profile is required for rate comparison");
+    throw new Error(
+      "At least one shipping profile is required for rate comparison",
+    );
   }
 
   const calculatedRates: CalculatedRate[] = [];
@@ -39,7 +46,10 @@ export function compareRates(
   for (const profile of profiles) {
     try {
       // Filter service level if requested
-      if (request.serviceLevel && profile.serviceLevel !== request.serviceLevel) {
+      if (
+        request.serviceLevel &&
+        profile.serviceLevel !== request.serviceLevel
+      ) {
         continue;
       }
 
@@ -55,16 +65,22 @@ export function compareRates(
   }
 
   if (calculatedRates.length === 0) {
-    const errorMessages = failedProfiles.map((f) => `${f.profile.carrier}: ${f.error}`).join("; ");
+    const errorMessages = failedProfiles
+      .map((f) => `${f.profile.carrier}: ${f.error}`)
+      .join("; ");
     throw new Error(`No valid rates could be calculated. ${errorMessages}`);
   }
 
   // Sort by price to find cheapest
-  const sortedByPrice = [...calculatedRates].sort((a, b) => a.totalRate - b.totalRate);
+  const sortedByPrice = [...calculatedRates].sort(
+    (a, b) => a.totalRate - b.totalRate,
+  );
   const cheapest = sortedByPrice[0];
 
   // Sort by speed to find fastest
-  const sortedBySpeed = [...calculatedRates].sort((a, b) => a.estimatedDays - b.estimatedDays);
+  const sortedBySpeed = [...calculatedRates].sort(
+    (a, b) => a.estimatedDays - b.estimatedDays,
+  );
   const fastest = sortedBySpeed[0];
 
   // Calculate value scores and find best value
@@ -179,11 +195,15 @@ export function findBestRate(
 
   // Apply filters
   if (criteria.filterMinDays !== undefined) {
-    filtered = filtered.filter((r) => r.estimatedDays >= criteria.filterMinDays!);
+    filtered = filtered.filter(
+      (r) => r.estimatedDays >= criteria.filterMinDays!,
+    );
   }
 
   if (criteria.filterMaxDays !== undefined) {
-    filtered = filtered.filter((r) => r.estimatedDays <= criteria.filterMaxDays!);
+    filtered = filtered.filter(
+      (r) => r.estimatedDays <= criteria.filterMaxDays!,
+    );
   }
 
   if (criteria.filterMaxPrice !== undefined) {
@@ -191,7 +211,9 @@ export function findBestRate(
   }
 
   if (criteria.excludeCarriers && criteria.excludeCarriers.length > 0) {
-    filtered = filtered.filter((r) => !criteria.excludeCarriers!.includes(r.carrier));
+    filtered = filtered.filter(
+      (r) => !criteria.excludeCarriers!.includes(r.carrier),
+    );
   }
 
   if (filtered.length === 0) {
@@ -202,19 +224,33 @@ export function findBestRate(
   const ascending = criteria.ascending !== false;
   switch (criteria.sortBy) {
     case "price":
-      filtered.sort((a, b) => (ascending ? a.totalRate - b.totalRate : b.totalRate - a.totalRate));
+      filtered.sort((a, b) =>
+        ascending ? a.totalRate - b.totalRate : b.totalRate - a.totalRate,
+      );
       break;
     case "speed":
-      filtered.sort((a, b) => (ascending ? a.estimatedDays - b.estimatedDays : b.estimatedDays - a.estimatedDays));
+      filtered.sort((a, b) =>
+        ascending
+          ? a.estimatedDays - b.estimatedDays
+          : b.estimatedDays - a.estimatedDays,
+      );
       break;
-    case "value":
-      {
-        const scores = filtered.map((r) => ({ rate: r, score: calculateValueScore(r) }));
-        scores.sort((a, b) => (ascending ? a.score - b.score : b.score - a.score));
-        return scores[0].rate;
-      }
+    case "value": {
+      const scores = filtered.map((r) => ({
+        rate: r,
+        score: calculateValueScore(r),
+      }));
+      scores.sort((a, b) =>
+        ascending ? a.score - b.score : b.score - a.score,
+      );
+      return scores[0].rate;
+    }
     case "carrier":
-      filtered.sort((a, b) => (ascending ? a.carrier.localeCompare(b.carrier) : b.carrier.localeCompare(a.carrier)));
+      filtered.sort((a, b) =>
+        ascending
+          ? a.carrier.localeCompare(b.carrier)
+          : b.carrier.localeCompare(a.carrier),
+      );
       break;
   }
 

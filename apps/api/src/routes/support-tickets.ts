@@ -29,7 +29,10 @@ import {
 const createTicketSchema = z.object({
   subject: z.string().min(5).max(200),
   description: z.string().min(10).max(5000),
-  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional().default("MEDIUM"),
+  priority: z
+    .enum(["LOW", "MEDIUM", "HIGH", "URGENT"])
+    .optional()
+    .default("MEDIUM"),
   category: z.string().optional(),
 });
 
@@ -38,7 +41,9 @@ const updateTicketSchema = z.object({
   description: z.string().min(10).max(5000).optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
   category: z.string().optional(),
-  status: z.enum(["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED", "REOPEN"]).optional(),
+  status: z
+    .enum(["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED", "REOPEN"])
+    .optional(),
 });
 
 const addMessageSchema = z.object({
@@ -74,8 +79,15 @@ async function supportTicketsRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
     let body: z.infer<typeof createTicketSchema>;
-    try { body = createTicketSchema.parse(request.body); }
-    catch (err) { throw new ValidationError(err instanceof ZodError ? err.errors[0]?.message ?? "Invalid input" : "Invalid input"); }
+    try {
+      body = createTicketSchema.parse(request.body);
+    } catch (err) {
+      throw new ValidationError(
+        err instanceof ZodError
+          ? (err.errors[0]?.message ?? "Invalid input")
+          : "Invalid input",
+      );
+    }
 
     const ticket = await (request.tenantDb as any).supportTicket.create({
       data: {
@@ -106,9 +118,25 @@ async function supportTicketsRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
     let query: z.infer<typeof listTicketsQuery>;
-    try { query = listTicketsQuery.parse(request.query); }
-    catch (err) { throw new ValidationError(err instanceof ZodError ? err.errors[0]?.message ?? "Invalid query" : "Invalid query"); }
-    const { page, limit, status, priority, category, search, sortBy, sortOrder } = query;
+    try {
+      query = listTicketsQuery.parse(request.query);
+    } catch (err) {
+      throw new ValidationError(
+        err instanceof ZodError
+          ? (err.errors[0]?.message ?? "Invalid query")
+          : "Invalid query",
+      );
+    }
+    const {
+      page,
+      limit,
+      status,
+      priority,
+      category,
+      search,
+      sortBy,
+      sortOrder,
+    } = query;
 
     const where: any = {
       shopId: request.shopId,
@@ -193,8 +221,15 @@ async function supportTicketsRoutes(fastify: FastifyInstance): Promise<void> {
 
     const { id } = request.params as { id: string };
     let body: z.infer<typeof updateTicketSchema>;
-    try { body = updateTicketSchema.parse(request.body); }
-    catch (err) { throw new ValidationError(err instanceof ZodError ? err.errors[0]?.message ?? "Invalid input" : "Invalid input"); }
+    try {
+      body = updateTicketSchema.parse(request.body);
+    } catch (err) {
+      throw new ValidationError(
+        err instanceof ZodError
+          ? (err.errors[0]?.message ?? "Invalid input")
+          : "Invalid input",
+      );
+    }
 
     const ticket = await (request.tenantDb as any).supportTicket.findUnique({
       where: { id },
@@ -256,8 +291,15 @@ async function supportTicketsRoutes(fastify: FastifyInstance): Promise<void> {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { id } = request.params as { id: string };
       let body: z.infer<typeof addMessageSchema>;
-      try { body = addMessageSchema.parse(request.body); }
-      catch (err) { throw new ValidationError(err instanceof ZodError ? err.errors[0]?.message ?? "Invalid input" : "Invalid input"); }
+      try {
+        body = addMessageSchema.parse(request.body);
+      } catch (err) {
+        throw new ValidationError(
+          err instanceof ZodError
+            ? (err.errors[0]?.message ?? "Invalid input")
+            : "Invalid input",
+        );
+      }
 
       const ticket = await (request.tenantDb as any).supportTicket.findUnique({
         where: { id },
@@ -268,7 +310,9 @@ async function supportTicketsRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       if (ticket.shopId !== request.shopId) {
-        throw new ForbiddenError("Cannot add message to ticket from another shop");
+        throw new ForbiddenError(
+          "Cannot add message to ticket from another shop",
+        );
       }
 
       const message = await (request.tenantDb as any).ticketMessage.create({
@@ -308,8 +352,15 @@ async function supportTicketsRoutes(fastify: FastifyInstance): Promise<void> {
 
       const { id } = request.params as { id: string };
       let assigneeId: string;
-      try { ({ assigneeId } = assignTicketSchema.parse(request.body)); }
-      catch (err) { throw new ValidationError(err instanceof ZodError ? err.errors[0]?.message ?? "Invalid input" : "Invalid input"); }
+      try {
+        ({ assigneeId } = assignTicketSchema.parse(request.body));
+      } catch (err) {
+        throw new ValidationError(
+          err instanceof ZodError
+            ? (err.errors[0]?.message ?? "Invalid input")
+            : "Invalid input",
+        );
+      }
 
       const ticket = await (request.tenantDb as any).supportTicket.findUnique({
         where: { id },

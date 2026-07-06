@@ -126,15 +126,13 @@ function countTestsInFile(filePath: string): number {
   try {
     const content = fs.readFileSync(
       path.join(process.cwd(), filePath),
-      "utf-8"
+      "utf-8",
     );
 
     // Count test declarations
     const vitestMatches = (content.match(/\b(describe|it|test)\s*\(/g) || [])
       .length;
-    const playwrightMatches = (
-      content.match(/test\s*\(/g) || []
-    ).length;
+    const playwrightMatches = (content.match(/test\s*\(/g) || []).length;
 
     return Math.max(vitestMatches, playwrightMatches);
   } catch {
@@ -145,11 +143,11 @@ function countTestsInFile(filePath: string): number {
 function calculateModuleCoverage(packageName: string): number {
   // Mock coverage calculation - in production, parse coverage reports
   const baseCoverage: Record<string, number> = {
-    "unit": 85,
-    "integration": 65,
-    "e2e": 45,
-    "load": 30,
-    "performance": 25,
+    unit: 85,
+    integration: 65,
+    e2e: 45,
+    load: 30,
+    performance: 25,
   };
 
   for (const [key, coverage] of Object.entries(baseCoverage)) {
@@ -218,11 +216,13 @@ async function generateReport(testFiles: TestFile[]): Promise<TestReport> {
   }
 
   // Calculate average coverage
-  const coverageValues = Array.from(packageStats.values()).map((p) => p.coverage);
+  const coverageValues = Array.from(packageStats.values()).map(
+    (p) => p.coverage,
+  );
   stats.avgCoverage =
     coverageValues.length > 0
       ? Math.round(
-          coverageValues.reduce((a, b) => a + b, 0) / coverageValues.length
+          coverageValues.reduce((a, b) => a + b, 0) / coverageValues.length,
         )
       : 0;
 
@@ -282,14 +282,18 @@ function generateMarkdownTable(report: TestReport): string {
   table += "|----------|-------|------------|\n";
 
   const total = report.stats.totalTests;
-  for (const [category, count] of Object.entries(report.stats.testsPerCategory)) {
+  for (const [category, count] of Object.entries(
+    report.stats.testsPerCategory,
+  )) {
     const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
     table += `| ${category.charAt(0).toUpperCase() + category.slice(1)} | ${count} | ${percentage}% |\n`;
   }
 
   table += "\n## Package Coverage\n\n";
-  table += "| Package | Tests | Coverage | Unit | Integration | E2E | Load | Performance |\n";
-  table += "|---------|-------|----------|------|-------------|-----|------|-------------|\n";
+  table +=
+    "| Package | Tests | Coverage | Unit | Integration | E2E | Load | Performance |\n";
+  table +=
+    "|---------|-------|----------|------|-------------|-----|------|-------------|\n";
 
   for (const pkg of report.packages) {
     table += `| ${pkg.name} | ${pkg.testCount} | ${pkg.coverage}% | ${pkg.categories.unit || 0} | ${pkg.categories.integration || 0} | ${pkg.categories.e2e || 0} | ${pkg.categories.load || 0} | ${pkg.categories.performance || 0} |\n`;

@@ -13,7 +13,13 @@
  * Provides fallback chains, batch optimization, and split delivery support.
  */
 
-import type { CourierQuote, CourierDelivery, PackageSpec, LocationInfo, RecipientInfo } from "./types.js";
+import type {
+  CourierQuote,
+  CourierDelivery,
+  PackageSpec,
+  LocationInfo,
+  RecipientInfo,
+} from "./types.js";
 import type { PerformanceScore } from "./partner-performance.js";
 
 // ─── Routing Data Types ──────────────────────────────────────
@@ -212,7 +218,9 @@ export interface ICourierProvider {
 /**
  * Score function type for custom scoring.
  */
-export type ScoringFunction = (option: Omit<CourierOption, "routingScore" | "rank">) => number;
+export type ScoringFunction = (
+  option: Omit<CourierOption, "routingScore" | "rank">,
+) => number;
 
 // ─── Smart Router Service ──────────────────────────────────────
 
@@ -271,7 +279,8 @@ export class SmartRouter {
       maxOptions?: number;
     },
   ): Promise<RoutingResult> {
-    const providersToRoute = options?.providers || Array.from(this.providers.keys());
+    const providersToRoute =
+      options?.providers || Array.from(this.providers.keys());
     const courierOptions: CourierOption[] = [];
 
     // Get quotes and availability for each provider
@@ -281,7 +290,10 @@ export class SmartRouter {
 
       try {
         // Check service area
-        const canService = await providerImpl.canServiceArea(delivery.pickup, delivery.dropoff);
+        const canService = await providerImpl.canServiceArea(
+          delivery.pickup,
+          delivery.dropoff,
+        );
         if (!canService) {
           return {
             provider,
@@ -291,7 +303,10 @@ export class SmartRouter {
         }
 
         // Check package compatibility
-        if (delivery.package && !providerImpl.canHandlePackage(delivery.package)) {
+        if (
+          delivery.package &&
+          !providerImpl.canHandlePackage(delivery.package)
+        ) {
           return {
             provider,
             viable: false,
@@ -329,7 +344,12 @@ export class SmartRouter {
       if (!result.viable) {
         courierOptions.push({
           provider: result.provider,
-          quote: { price: 0, currency: "USD", estimatedMinutes: 0, provider: result.provider },
+          quote: {
+            price: 0,
+            currency: "USD",
+            estimatedMinutes: 0,
+            provider: result.provider,
+          },
           performanceScore: null,
           availability: 0,
           loadPercentage: 100,
@@ -343,13 +363,14 @@ export class SmartRouter {
             compatibilityScore: 0,
           },
           isViable: false,
-          issues: [result.issue ?? 'Unknown issue'],
+          issues: [result.issue ?? "Unknown issue"],
           rank: 0,
         });
         continue;
       }
 
-      const performanceScore = this.performanceCache.get(result.provider) || null;
+      const performanceScore =
+        this.performanceCache.get(result.provider) || null;
       const option = this.buildCourierOption(
         result.provider,
         result.quote!,
@@ -362,7 +383,11 @@ export class SmartRouter {
     }
 
     // Score and rank
-    const scoredOptions = this.scoreAndRankOptions(courierOptions, delivery, options?.customScoringFunction);
+    const scoredOptions = this.scoreAndRankOptions(
+      courierOptions,
+      delivery,
+      options?.customScoringFunction,
+    );
 
     // Apply priorities
     if (options?.prioritizeSpeed) {
@@ -396,11 +421,16 @@ export class SmartRouter {
       cheapest: Math.min(...viableCosts, Number.MAX_VALUE),
       recommended: viable[0]?.quote.price || 0,
       mostExpensive: Math.max(...viableCosts, 0),
-      avgCost: viable.length > 0 ? viableCosts.reduce((a, b) => a + b, 0) / viable.length : 0,
+      avgCost:
+        viable.length > 0
+          ? viableCosts.reduce((a, b) => a + b, 0) / viable.length
+          : 0,
     };
 
     // Limit options if requested
-    const limitedOptions = options?.maxOptions ? scoredOptions.slice(0, options.maxOptions) : scoredOptions;
+    const limitedOptions = options?.maxOptions
+      ? scoredOptions.slice(0, options.maxOptions)
+      : scoredOptions;
 
     return {
       options: limitedOptions,
@@ -411,7 +441,9 @@ export class SmartRouter {
       analysis: {
         totalOptions: scoredOptions.length,
         viableOptions: viable.length,
-        recommendationConfidence: viable[0]?.routingScore ? viable[0].routingScore / 100 : 0,
+        recommendationConfidence: viable[0]?.routingScore
+          ? viable[0].routingScore / 100
+          : 0,
       },
     };
   }
@@ -456,7 +488,9 @@ export class SmartRouter {
     const splitAssignments: BatchRoutingResult["splitAssignments"] = [];
     if (options?.allowSplitDeliveries) {
       for (const [id, result] of results) {
-        const delivery = deliveries.find((d) => (d.orderId || `delivery-${0}`) === id);
+        const delivery = deliveries.find(
+          (d) => (d.orderId || `delivery-${0}`) === id,
+        );
         if (delivery?.package && this.shouldSplitDelivery(delivery.package)) {
           const splits = await this.splitDelivery(id, delivery, result);
           if (splits) {
@@ -464,7 +498,10 @@ export class SmartRouter {
               originalDeliveryId: id,
               splits: splits.splits,
             });
-            optimizedTotal = (optimizedTotal || 0) - (result.recommended?.quote.price || 0) + (splits.totalCost || 0);
+            optimizedTotal =
+              (optimizedTotal || 0) -
+              (result.recommended?.quote.price || 0) +
+              (splits.totalCost || 0);
           }
         }
       }
@@ -479,7 +516,8 @@ export class SmartRouter {
         individualTotal,
         optimizedTotal,
         savings,
-        savingsPercent: individualTotal > 0 ? (savings / individualTotal) * 100 : 0,
+        savingsPercent:
+          individualTotal > 0 ? (savings / individualTotal) * 100 : 0,
       },
       splitAssignments,
     };
@@ -503,8 +541,13 @@ export class SmartRouter {
       issues.push(`Cost ${quote.price} exceeds max ${delivery.maxCost}`);
       isViable = false;
     }
-    if (delivery.maxDeliveryMinutes && quote.estimatedMinutes > delivery.maxDeliveryMinutes) {
-      issues.push(`ETA ${quote.estimatedMinutes}min exceeds max ${delivery.maxDeliveryMinutes}min`);
+    if (
+      delivery.maxDeliveryMinutes &&
+      quote.estimatedMinutes > delivery.maxDeliveryMinutes
+    ) {
+      issues.push(
+        `ETA ${quote.estimatedMinutes}min exceeds max ${delivery.maxDeliveryMinutes}min`,
+      );
       isViable = false;
     }
     if (availability.apiStatus === "offline") {
@@ -534,7 +577,12 @@ export class SmartRouter {
     };
 
     // Weighted composite score
-    const routingScore = costScore * 0.2 + speedScore * 0.2 + perfScore * 0.35 + availabilityScore * 0.15 + compatScore * 0.1;
+    const routingScore =
+      costScore * 0.2 +
+      speedScore * 0.2 +
+      perfScore * 0.35 +
+      availabilityScore * 0.15 +
+      compatScore * 0.1;
 
     return {
       provider,
@@ -583,7 +631,8 @@ export class SmartRouter {
    */
   private shouldSplitDelivery(pkg: PackageSpec): boolean {
     if (!pkg.dimensions) return false;
-    const volume = pkg.dimensions.length * pkg.dimensions.width * pkg.dimensions.height;
+    const volume =
+      pkg.dimensions.length * pkg.dimensions.width * pkg.dimensions.height;
     // Split if volume > 1.5m³ or weight > 50kg
     return volume > 1500000 || (pkg.weight || 0) > 50;
   }
@@ -599,7 +648,8 @@ export class SmartRouter {
     splits: Array<{ splitId: string; provider: string; packageItems: number }>;
     totalCost: number;
   } | null> {
-    if (!delivery.package?.itemCount || delivery.package.itemCount < 2) return null;
+    if (!delivery.package?.itemCount || delivery.package.itemCount < 2)
+      return null;
 
     const itemsPerSplit = Math.ceil(delivery.package.itemCount / 2);
     const splits = [];
@@ -612,7 +662,8 @@ export class SmartRouter {
       splits.push({
         splitId: `${deliveryId}-split-${i + 1}`,
         provider: providers[i].provider,
-        packageItems: i === 0 ? itemsPerSplit : delivery.package.itemCount - itemsPerSplit,
+        packageItems:
+          i === 0 ? itemsPerSplit : delivery.package.itemCount - itemsPerSplit,
       });
       totalCost += providers[i].quote.price;
     }

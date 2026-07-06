@@ -40,7 +40,9 @@ interface UserSessionData {
  * @param session - User session data
  * @returns Completion prediction with risk analysis
  */
-export function predictCompletion(session: UserSessionData): CompletionPrediction {
+export function predictCompletion(
+  session: UserSessionData,
+): CompletionPrediction {
   const riskFactors: RiskFactor[] = [];
   let riskScore = 0;
 
@@ -144,7 +146,11 @@ export function predictCompletion(session: UserSessionData): CompletionPredictio
   const willComplete = riskScore < 0.5;
 
   // Suggest interventions based on risk factors
-  const intervention = getInterventionSuggestion(session, riskFactors, riskScore);
+  const intervention = getInterventionSuggestion(
+    session,
+    riskFactors,
+    riskScore,
+  );
 
   return {
     willComplete,
@@ -246,15 +252,9 @@ export function getRiskAssessment(session: UserSessionData): {
   const remainingSteps = getExpectedRemainingSteps(session.currentStep);
 
   // Estimate difficulty of next step
-  if (
-    ["EMAIL_VERIFICATION", "BASIC_INFO"].includes(
-      remainingSteps[0] ?? "",
-    )
-  ) {
+  if (["EMAIL_VERIFICATION", "BASIC_INFO"].includes(remainingSteps[0] ?? "")) {
     nextStepDifficulty = "easy";
-  } else if (
-    ["INTEGRATION_SETUP"].includes(remainingSteps[0] ?? "")
-  ) {
+  } else if (["INTEGRATION_SETUP"].includes(remainingSteps[0] ?? "")) {
     nextStepDifficulty = "hard";
   }
 
@@ -290,10 +290,7 @@ function getExpectedRemainingSteps(currentStep: string): string[] {
  * Build recommended onboarding path based on behavior.
  */
 function buildRecommendedPath(session: UserSessionData): string {
-  if (
-    session.backwardNavigations > 5 ||
-    session.formErrors > 5
-  ) {
+  if (session.backwardNavigations > 5 || session.formErrors > 5) {
     return "Simplified path: skip optional steps";
   }
 
@@ -358,9 +355,7 @@ export function estimateCompletionTime(session: UserSessionData): number {
 /**
  * Get completion prediction for cohort analysis.
  */
-export function getCohortCompletionPrediction(
-  sessions: UserSessionData[],
-): {
+export function getCohortCompletionPrediction(sessions: UserSessionData[]): {
   predictedCompletionRate: number;
   avgRiskScore: number;
   riskDistribution: Record<"low" | "medium" | "high", number>;

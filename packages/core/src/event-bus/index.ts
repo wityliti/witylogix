@@ -158,11 +158,7 @@ export class TypedEventBus<TEvents extends Record<string, any>> {
     data: TEvents[K],
     metadata?: Partial<EventMetadata>,
   ): Promise<void> {
-    const envelope = this.createEnvelope(
-      type as string,
-      data,
-      metadata,
-    );
+    const envelope = this.createEnvelope(type as string, data, metadata);
 
     // Apply beforePublish middleware
     let processedEnvelope = envelope as EventEnvelope<unknown>;
@@ -367,7 +363,7 @@ export class TypedEventBus<TEvents extends Record<string, any>> {
     // Calculate total DLQ count
     const totalDlqCount = Array.from(this.dlqCounts.values()).reduce(
       (sum, count) => sum + count,
-      0
+      0,
     );
 
     return {
@@ -483,10 +479,8 @@ export class TypedEventBus<TEvents extends Record<string, any>> {
     subscriptions: EventSubscription[],
   ): Promise<void> {
     const streamKey = this.getStreamKey(pattern);
-    const batchSize =
-      this.config.consumerGroup?.batchSize ?? 10;
-    const blockTimeoutMs =
-      this.config.consumerGroup?.blockTimeoutMs ?? 1000;
+    const batchSize = this.config.consumerGroup?.batchSize ?? 10;
+    const blockTimeoutMs = this.config.consumerGroup?.blockTimeoutMs ?? 1000;
 
     try {
       // Read messages from the group
@@ -510,11 +504,7 @@ export class TypedEventBus<TEvents extends Record<string, any>> {
 
       // Handle pending messages (dead-letter recovery)
       if (this.config.consumerGroup?.claimAfterMs) {
-        await this.handlePendingMessages(
-          streamKey,
-          groupName,
-          subscriptions,
-        );
+        await this.handlePendingMessages(streamKey, groupName, subscriptions);
       }
     } catch (error) {
       console.error(
@@ -598,7 +588,7 @@ export class TypedEventBus<TEvents extends Record<string, any>> {
 
         // Emit to dead-letter queue stream if configured
         if (this.config.deadLetter?.enabled) {
-          const dlqKey = '__dlq';
+          const dlqKey = "__dlq";
           const dlqMessage = {
             originalMessageId: messageId,
             originalStreamKey: streamKey,
@@ -612,17 +602,20 @@ export class TypedEventBus<TEvents extends Record<string, any>> {
           try {
             await this.config.adapter.publish(dlqKey, dlqMessage as any);
             console.warn(
-              `Message ${messageId} moved to DLQ for event type ${eventType}`
+              `Message ${messageId} moved to DLQ for event type ${eventType}`,
             );
           } catch (dlqError) {
             console.error(
               `Failed to publish to DLQ for message ${messageId}:`,
-              dlqError
+              dlqError,
             );
           }
         }
       } catch (dlqTrackingError) {
-        console.error(`Error tracking DLQ for message ${messageId}:`, dlqTrackingError);
+        console.error(
+          `Error tracking DLQ for message ${messageId}:`,
+          dlqTrackingError,
+        );
       }
     }
   }
@@ -697,8 +690,7 @@ export class TypedEventBus<TEvents extends Record<string, any>> {
     groupName: string,
     subscriptions: EventSubscription[],
   ): Promise<void> {
-    const claimAfterMs =
-      this.config.consumerGroup?.claimAfterMs ?? 60000; // 1 minute default
+    const claimAfterMs = this.config.consumerGroup?.claimAfterMs ?? 60000; // 1 minute default
 
     try {
       const pending = await this.config.adapter.getPendingMessages(

@@ -21,8 +21,19 @@
 
 // ─── TYPES ─────────────────────────────────────────────────────────────────
 
-export type CarrierCode = 'ups' | 'fedex' | 'dhl' | 'usps' | 'canada_post' | 'generic';
-export type ServiceLevel = 'ground' | 'express' | 'overnight' | 'economy' | 'international';
+export type CarrierCode =
+  | "ups"
+  | "fedex"
+  | "dhl"
+  | "usps"
+  | "canada_post"
+  | "generic";
+export type ServiceLevel =
+  | "ground"
+  | "express"
+  | "overnight"
+  | "economy"
+  | "international";
 
 export interface Coordinate {
   latitude: number;
@@ -142,7 +153,7 @@ export interface CarrierABTest {
   controlCarrier: CarrierCode;
   variantCarrier: CarrierCode;
   splitPercent: number; // 0-100, % of shipments to variant
-  successMetric: 'onTimeRate' | 'damageRate' | 'cost' | 'customerRating';
+  successMetric: "onTimeRate" | "damageRate" | "cost" | "customerRating";
   startDate: Date;
   endDate?: Date;
   active: boolean;
@@ -153,7 +164,7 @@ export interface CarrierABTest {
  */
 export interface ABTestOutcome {
   experimentId: string;
-  variant: 'control' | 'test';
+  variant: "control" | "test";
   carrier: CarrierCode;
   success: boolean;
   metricValue: number;
@@ -188,7 +199,7 @@ export class ReliabilityTracker {
     damaged: boolean,
     hadException: boolean,
     customerRating: number,
-    trackingAccurate: boolean
+    trackingAccurate: boolean,
   ): void {
     const key = `${carrier}|${lane}`;
     let reliability = this.reliabilityMap.get(key);
@@ -208,11 +219,22 @@ export class ReliabilityTracker {
     } else {
       // Update running averages
       const prevCount = reliability.sampleCount;
-      reliability.onTimeRate = (reliability.onTimeRate * prevCount + (onTime ? 1 : 0)) / (prevCount + 1);
-      reliability.damageRate = (reliability.damageRate * prevCount + (damaged ? 1 : 0)) / (prevCount + 1);
-      reliability.exceptionRate = (reliability.exceptionRate * prevCount + (hadException ? 1 : 0)) / (prevCount + 1);
-      reliability.customerRating = (reliability.customerRating * prevCount + customerRating) / (prevCount + 1);
-      reliability.trackingAccuracy = (reliability.trackingAccuracy * prevCount + (trackingAccurate ? 1 : 0)) / (prevCount + 1);
+      reliability.onTimeRate =
+        (reliability.onTimeRate * prevCount + (onTime ? 1 : 0)) /
+        (prevCount + 1);
+      reliability.damageRate =
+        (reliability.damageRate * prevCount + (damaged ? 1 : 0)) /
+        (prevCount + 1);
+      reliability.exceptionRate =
+        (reliability.exceptionRate * prevCount + (hadException ? 1 : 0)) /
+        (prevCount + 1);
+      reliability.customerRating =
+        (reliability.customerRating * prevCount + customerRating) /
+        (prevCount + 1);
+      reliability.trackingAccuracy =
+        (reliability.trackingAccuracy * prevCount +
+          (trackingAccurate ? 1 : 0)) /
+        (prevCount + 1);
       reliability.sampleCount = prevCount + 1;
       reliability.lastUpdated = new Date();
     }
@@ -223,7 +245,10 @@ export class ReliabilityTracker {
   /**
    * Get reliability metrics for a carrier on a lane
    */
-  public getReliability(carrier: CarrierCode, lane: string): CarrierReliability | undefined {
+  public getReliability(
+    carrier: CarrierCode,
+    lane: string,
+  ): CarrierReliability | undefined {
     return this.reliabilityMap.get(`${carrier}|${lane}`);
   }
 
@@ -244,16 +269,27 @@ export class CostOptimizer {
   /**
    * Find cheapest carrier meeting deadline
    */
-  public findCheapestMeetingDeadline(rates: CarrierRate[], deadlineDays: number): CarrierRate | null {
-    const eligible = rates.filter((r) => r.estimatedDays <= deadlineDays).sort((a, b) => a.cost - b.cost);
+  public findCheapestMeetingDeadline(
+    rates: CarrierRate[],
+    deadlineDays: number,
+  ): CarrierRate | null {
+    const eligible = rates
+      .filter((r) => r.estimatedDays <= deadlineDays)
+      .sort((a, b) => a.cost - b.cost);
     return eligible.length > 0 ? eligible[0] : null;
   }
 
   /**
    * Calculate savings compared to most expensive option
    */
-  public calculateSavings(rates: CarrierRate[]): { cheapest: number; mostExpensive: number; savings: number; percentSavings: number } {
-    if (rates.length === 0) return { cheapest: 0, mostExpensive: 0, savings: 0, percentSavings: 0 };
+  public calculateSavings(rates: CarrierRate[]): {
+    cheapest: number;
+    mostExpensive: number;
+    savings: number;
+    percentSavings: number;
+  } {
+    if (rates.length === 0)
+      return { cheapest: 0, mostExpensive: 0, savings: 0, percentSavings: 0 };
 
     const costs = rates.map((r) => r.cost).sort((a, b) => a - b);
     const cheapest = costs[0];
@@ -277,8 +313,13 @@ export class SpeedOptimizer {
   /**
    * Find fastest carrier within budget
    */
-  public findFastestWithinBudget(rates: CarrierRate[], budgetUSD: number): CarrierRate | null {
-    const eligible = rates.filter((r) => r.cost <= budgetUSD).sort((a, b) => a.estimatedDays - b.estimatedDays);
+  public findFastestWithinBudget(
+    rates: CarrierRate[],
+    budgetUSD: number,
+  ): CarrierRate | null {
+    const eligible = rates
+      .filter((r) => r.cost <= budgetUSD)
+      .sort((a, b) => a.estimatedDays - b.estimatedDays);
     return eligible.length > 0 ? eligible[0] : null;
   }
 
@@ -325,7 +366,11 @@ export class GreenShippingOptimizer {
   /**
    * Calculate carbon footprint
    */
-  public calculateCarbonFootprint(carrier: CarrierCode, weightKilo: number, distanceKm: number): number {
+  public calculateCarbonFootprint(
+    carrier: CarrierCode,
+    weightKilo: number,
+    distanceKm: number,
+  ): number {
     const info = this.ecoData.get(carrier);
     if (!info) return distanceKm * weightKilo * 0.1; // rough estimate
 
@@ -356,7 +401,7 @@ export class CarrierScorer {
     allRates: CarrierRate[],
     lane: string,
     weights: ScoringWeights = DEFAULT_WEIGHTS,
-    prioritizeEco: boolean = false
+    prioritizeEco: boolean = false,
   ): CarrierScore {
     const reasons: string[] = [];
 
@@ -371,30 +416,45 @@ export class CarrierScorer {
     const days = allRates.map((r) => r.estimatedDays).sort((a, b) => a - b);
     const minDays = days[0];
     const maxDays = days[days.length - 1];
-    const speedScore = 100 - ((rate.estimatedDays - minDays) / (maxDays - minDays + 0.1)) * 100;
-    if (rate.estimatedDays === minDays) reasons.push(`Fastest delivery in ${rate.estimatedDays} days`);
+    const speedScore =
+      100 - ((rate.estimatedDays - minDays) / (maxDays - minDays + 0.1)) * 100;
+    if (rate.estimatedDays === minDays)
+      reasons.push(`Fastest delivery in ${rate.estimatedDays} days`);
 
     // 3. Reliability score (0-100)
     let reliabilityScore = 70; // default if no data
-    const reliability = this.reliabilityTracker.getReliability(rate.carrier, lane);
+    const reliability = this.reliabilityTracker.getReliability(
+      rate.carrier,
+      lane,
+    );
     if (reliability) {
       // Score based on on-time rate, low damage, low exceptions
-      reliabilityScore = (reliability.onTimeRate * 0.6 + (1 - reliability.damageRate) * 0.2 + (1 - reliability.exceptionRate) * 0.2) * 100;
-      reasons.push(`${(reliability.onTimeRate * 100).toFixed(0)}% on-time delivery rate`);
+      reliabilityScore =
+        (reliability.onTimeRate * 0.6 +
+          (1 - reliability.damageRate) * 0.2 +
+          (1 - reliability.exceptionRate) * 0.2) *
+        100;
+      reasons.push(
+        `${(reliability.onTimeRate * 100).toFixed(0)}% on-time delivery rate`,
+      );
     }
 
     // 4. Tracking quality score (0-100)
     let trackingScore = 70;
     if (reliability) {
       trackingScore = reliability.trackingAccuracy * 100;
-      reasons.push(`${(reliability.trackingAccuracy * 100).toFixed(0)}% tracking accuracy`);
+      reasons.push(
+        `${(reliability.trackingAccuracy * 100).toFixed(0)}% tracking accuracy`,
+      );
     }
 
     // 5. Customer rating score (0-100)
     let ratingScore = 75;
     if (reliability && reliability.customerRating > 0) {
       ratingScore = (reliability.customerRating / 5) * 100;
-      reasons.push(`${reliability.customerRating.toFixed(1)}/5 customer rating`);
+      reasons.push(
+        `${reliability.customerRating.toFixed(1)}/5 customer rating`,
+      );
     }
 
     // 6. Eco score (optional bonus)
@@ -405,7 +465,12 @@ export class CarrierScorer {
     }
 
     // Weighted composite score
-    const overallScore = costScore * weights.cost + speedScore * weights.speed + reliabilityScore * weights.reliability + trackingScore * weights.tracking + ratingScore * weights.rating;
+    const overallScore =
+      costScore * weights.cost +
+      speedScore * weights.speed +
+      reliabilityScore * weights.reliability +
+      trackingScore * weights.tracking +
+      ratingScore * weights.rating;
 
     return {
       carrier: rate.carrier,
@@ -431,7 +496,7 @@ export class CarrierScorer {
     lane: string,
     deadlineDays?: number,
     weights: ScoringWeights = DEFAULT_WEIGHTS,
-    prioritizeEco: boolean = false
+    prioritizeEco: boolean = false,
   ): CarrierScore[] {
     // Filter by deadline if specified
     let eligible = rates;
@@ -440,7 +505,9 @@ export class CarrierScorer {
     }
 
     // Score each
-    const scores = eligible.map((rate) => this.scoreCarrier(rate, rates, lane, weights, prioritizeEco));
+    const scores = eligible.map((rate) =>
+      this.scoreCarrier(rate, rates, lane, weights, prioritizeEco),
+    );
 
     // Rank by overall score descending
     return scores.sort((a, b) => b.overallScore - a.overallScore);
@@ -478,7 +545,11 @@ export class CarrierABTestManager {
     controlCarrier: CarrierCode,
     variantCarrier: CarrierCode,
     splitPercent: number = 50,
-    successMetric: 'onTimeRate' | 'damageRate' | 'cost' | 'customerRating' = 'onTimeRate'
+    successMetric:
+      | "onTimeRate"
+      | "damageRate"
+      | "cost"
+      | "customerRating" = "onTimeRate",
   ): CarrierABTest {
     const experiment: CarrierABTest = {
       experimentId,
@@ -502,13 +573,21 @@ export class CarrierABTestManager {
     if (!experiment || !experiment.active) return null;
 
     const random = Math.random() * 100;
-    return random < experiment.splitPercent ? experiment.variantCarrier : experiment.controlCarrier;
+    return random < experiment.splitPercent
+      ? experiment.variantCarrier
+      : experiment.controlCarrier;
   }
 
   /**
    * Record outcome of variant test
    */
-  public recordOutcome(experimentId: string, variant: 'control' | 'test', carrier: CarrierCode, success: boolean, metricValue: number): void {
+  public recordOutcome(
+    experimentId: string,
+    variant: "control" | "test",
+    carrier: CarrierCode,
+    success: boolean,
+    metricValue: number,
+  ): void {
     this.outcomes.push({
       experimentId,
       variant,
@@ -527,24 +606,45 @@ export class CarrierABTestManager {
     totalOutcomes: number;
     controlSuccessRate: number;
     testSuccessRate: number;
-    winner: 'control' | 'test' | 'tie';
+    winner: "control" | "test" | "tie";
     confidence: number;
   } | null {
     const experiment = this.experiments.get(experimentId);
     if (!experiment) return null;
 
-    const outcomes = this.outcomes.filter((o) => o.experimentId === experimentId);
+    const outcomes = this.outcomes.filter(
+      (o) => o.experimentId === experimentId,
+    );
     if (outcomes.length === 0) {
-      return { experimentId, totalOutcomes: 0, controlSuccessRate: 0, testSuccessRate: 0, winner: 'tie', confidence: 0 };
+      return {
+        experimentId,
+        totalOutcomes: 0,
+        controlSuccessRate: 0,
+        testSuccessRate: 0,
+        winner: "tie",
+        confidence: 0,
+      };
     }
 
-    const controlOutcomes = outcomes.filter((o) => o.variant === 'control');
-    const testOutcomes = outcomes.filter((o) => o.variant === 'test');
+    const controlOutcomes = outcomes.filter((o) => o.variant === "control");
+    const testOutcomes = outcomes.filter((o) => o.variant === "test");
 
-    const controlSuccessRate = controlOutcomes.length > 0 ? controlOutcomes.filter((o) => o.success).length / controlOutcomes.length : 0;
-    const testSuccessRate = testOutcomes.length > 0 ? testOutcomes.filter((o) => o.success).length / testOutcomes.length : 0;
+    const controlSuccessRate =
+      controlOutcomes.length > 0
+        ? controlOutcomes.filter((o) => o.success).length /
+          controlOutcomes.length
+        : 0;
+    const testSuccessRate =
+      testOutcomes.length > 0
+        ? testOutcomes.filter((o) => o.success).length / testOutcomes.length
+        : 0;
 
-    const winner = testSuccessRate > controlSuccessRate * 1.05 ? 'test' : controlSuccessRate > testSuccessRate * 1.05 ? 'control' : 'tie';
+    const winner =
+      testSuccessRate > controlSuccessRate * 1.05
+        ? "test"
+        : controlSuccessRate > testSuccessRate * 1.05
+          ? "control"
+          : "tie";
     const minSamples = Math.min(controlOutcomes.length, testOutcomes.length);
     const confidence = Math.min(100, (minSamples / 30) * 100); // rough confidence metric
 
@@ -587,10 +687,10 @@ export class SmartCarrierSelector {
     originZip: string,
     destinationZip: string,
     deadlineDays?: number,
-    customWeights?: ScoringWeights
+    customWeights?: ScoringWeights,
   ): CarrierRecommendation {
     if (rates.length === 0) {
-      throw new Error('No carrier rates available');
+      throw new Error("No carrier rates available");
     }
 
     const lane = `${originZip}-${destinationZip}`;
@@ -600,18 +700,29 @@ export class SmartCarrierSelector {
     const deadline = deadlineDays || pref?.maxDeliveryDays || 7;
 
     // Score all carriers
-    const scores = this.scorer.scoreAllCarriers(rates, lane, deadline, weights, prioritizeEco);
+    const scores = this.scorer.scoreAllCarriers(
+      rates,
+      lane,
+      deadline,
+      weights,
+      prioritizeEco,
+    );
 
     if (scores.length === 0) {
-      throw new Error(`No carriers available that meet ${deadline} day deadline`);
+      throw new Error(
+        `No carriers available that meet ${deadline} day deadline`,
+      );
     }
 
     // Get top recommendation
     const topScore = scores[0];
-    const matchingRate = rates.find((r) => r.carrier === topScore.carrier && r.cost === topScore.estimatedCost);
+    const matchingRate = rates.find(
+      (r) =>
+        r.carrier === topScore.carrier && r.cost === topScore.estimatedCost,
+    );
 
     if (!matchingRate) {
-      throw new Error('Could not find matching rate for top carrier');
+      throw new Error("Could not find matching rate for top carrier");
     }
 
     const reasoning = [
@@ -636,16 +747,18 @@ export class SmartCarrierSelector {
       alternatives: scores
         .slice(1, 4)
         .map((s) => {
-          const rate = rates.find((r) => r.carrier === s.carrier && r.cost === s.estimatedCost);
+          const rate = rates.find(
+            (r) => r.carrier === s.carrier && r.cost === s.estimatedCost,
+          );
           return {
             carrier: s.carrier,
-            service: rate?.service || 'Unknown',
+            service: rate?.service || "Unknown",
             cost: s.estimatedCost,
             estimatedDays: s.estimatedDays,
             score: s.overallScore,
           };
         })
-        .filter((a) => a.service !== 'Unknown'),
+        .filter((a) => a.service !== "Unknown"),
     };
   }
 

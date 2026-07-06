@@ -67,61 +67,64 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── LIST CAMPAIGNS ──────────────────────────────────────────
 
-  fastify.get(
-    "/",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const {
-          page = 1,
-          limit = 20,
-          type,
-          status,
-          search,
-        } = request.query as {
-          page?: number;
-          limit?: number;
-          type?: string;
-          status?: string;
-          search?: string;
-        };
+  fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const {
+        page = 1,
+        limit = 20,
+        type,
+        status,
+        search,
+      } = request.query as {
+        page?: number;
+        limit?: number;
+        type?: string;
+        status?: string;
+        search?: string;
+      };
 
-        const pageNum = Math.max(1, parseInt(String(page)) || 1);
-        const pageSize = Math.min(100, Math.max(1, parseInt(String(limit)) || 20));
-        const skip = (pageNum - 1) * pageSize;
+      const pageNum = Math.max(1, parseInt(String(page)) || 1);
+      const pageSize = Math.min(
+        100,
+        Math.max(1, parseInt(String(limit)) || 20),
+      );
+      const skip = (pageNum - 1) * pageSize;
 
-        let whereClause = "WHERE shop_id = $1::uuid";
-        const params: any[] = [(request as any).shopId];
-        let paramCount = 1;
+      let whereClause = "WHERE shop_id = $1::uuid";
+      const params: any[] = [(request as any).shopId];
+      let paramCount = 1;
 
-        if (type) {
-          paramCount++;
-          whereClause += ` AND type = $${paramCount}::text`;
-          params.push(type);
-        }
+      if (type) {
+        paramCount++;
+        whereClause += ` AND type = $${paramCount}::text`;
+        params.push(type);
+      }
 
-        if (status) {
-          paramCount++;
-          whereClause += ` AND status = $${paramCount}::text`;
-          params.push(status);
-        }
+      if (status) {
+        paramCount++;
+        whereClause += ` AND status = $${paramCount}::text`;
+        params.push(status);
+      }
 
-        if (search) {
-          paramCount++;
-          whereClause += ` AND name ILIKE $${paramCount}`;
-          params.push(`%${search}%`);
-        }
+      if (search) {
+        paramCount++;
+        whereClause += ` AND name ILIKE $${paramCount}`;
+        params.push(`%${search}%`);
+      }
 
-        // Get total count
-        const countResult: any[] = await (request as any).tenantDb.$queryRawUnsafe(
-          `SELECT COUNT(*) as count FROM campaigns ${whereClause}`,
-          ...params
-        );
-        const total = Number(countResult[0]?.count || 0);
+      // Get total count
+      const countResult: any[] = await (
+        request as any
+      ).tenantDb.$queryRawUnsafe(
+        `SELECT COUNT(*) as count FROM campaigns ${whereClause}`,
+        ...params,
+      );
+      const total = Number(countResult[0]?.count || 0);
 
-        // Get paginated results
-        paramCount += 2;
-        const result: any[] = await (request as any).tenantDb.$queryRawUnsafe(
-          `
+      // Get paginated results
+      paramCount += 2;
+      const result: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+        `
             SELECT
               id, shop_id, name, type, template_id, status,
               recipient_count, delivered_count, opened_count, clicked_count,
@@ -132,52 +135,49 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
             LIMIT $${paramCount - 1}::int
             OFFSET $${paramCount}::int
           `,
-          ...params,
-          pageSize,
-          skip
-        );
+        ...params,
+        pageSize,
+        skip,
+      );
 
-        return {
-          data: result,
-          pagination: {
-            page: pageNum,
-            limit: pageSize,
-            total,
-            pages: Math.ceil(total / pageSize),
-          },
-        };
-      } catch (error) {
-        fastify.log.error({ err: error }, "Failed to list campaigns");
-        return reply.code(500).send({ error: "Failed to list campaigns" });
-      }
+      return {
+        data: result,
+        pagination: {
+          page: pageNum,
+          limit: pageSize,
+          total,
+          pages: Math.ceil(total / pageSize),
+        },
+      };
+    } catch (error) {
+      fastify.log.error({ err: error }, "Failed to list campaigns");
+      return reply.code(500).send({ error: "Failed to list campaigns" });
     }
-  );
+  });
 
   // ── GET SINGLE CAMPAIGN ─────────────────────────────────────
 
-  fastify.get(
-    "/:id",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const { id } = request.params as { id: string };
+  fastify.get("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { id } = request.params as { id: string };
 
-        const campaign: any[] = await (request as any).tenantDb.$queryRawUnsafe(
-          `
+      const campaign: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+        `
             SELECT *
             FROM campaigns
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
-          id,
-          (request as any).shopId
-        );
+        id,
+        (request as any).shopId,
+      );
 
-        if (!campaign || campaign.length === 0) {
-          throw new NotFoundError("Campaign", id);
-        }
+      if (!campaign || campaign.length === 0) {
+        throw new NotFoundError("Campaign", id);
+      }
 
-        // Get detailed stats
-        const stats: any[] = await (request as any).tenantDb.$queryRawUnsafe(
-          `
+      // Get detailed stats
+      const stats: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+        `
             SELECT
               COUNT(*) as total_events,
               SUM(CASE WHEN event_type = 'DELIVERED' THEN 1 ELSE 0 END) as delivered,
@@ -187,28 +187,27 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
             FROM campaign_events
             WHERE campaign_id = $1::uuid
           `,
-          id
-        );
+        id,
+      );
 
-        return {
-          ...campaign[0],
-          stats: stats[0] || {
-            total_events: 0,
-            delivered: 0,
-            opened: 0,
-            clicked: 0,
-            failed: 0,
-          },
-        };
-      } catch (error) {
-        if (error instanceof NotFoundError) {
-          return reply.code(404).send({ error: error.message });
-        }
-        fastify.log.error({ err: error }, "Failed to get campaign");
-        return reply.code(500).send({ error: "Failed to get campaign" });
+      return {
+        ...campaign[0],
+        stats: stats[0] || {
+          total_events: 0,
+          delivered: 0,
+          opened: 0,
+          clicked: 0,
+          failed: 0,
+        },
+      };
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return reply.code(404).send({ error: error.message });
       }
+      fastify.log.error({ err: error }, "Failed to get campaign");
+      return reply.code(500).send({ error: "Failed to get campaign" });
     }
-  );
+  });
 
   // ── CREATE CAMPAIGN ─────────────────────────────────────────
 
@@ -223,7 +222,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
           WHERE id = $1::uuid AND shop_id = $2::uuid
         `,
         body.templateId,
-        (request as any).shopId
+        (request as any).shopId,
       );
 
       if (!template || template.length === 0) {
@@ -245,7 +244,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
         body.scheduledAt ? "SCHEDULED" : "DRAFT",
         body.audienceFilter ? JSON.stringify(body.audienceFilter) : null,
         body.scheduledAt || null,
-        body.metadata ? JSON.stringify(body.metadata) : "{}"
+        body.metadata ? JSON.stringify(body.metadata) : "{}",
       );
 
       return reply.code(201).send(result[0]);
@@ -279,7 +278,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (!campaign || campaign.length === 0) {
@@ -288,7 +287,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
 
         if (!["DRAFT", "SCHEDULED"].includes(campaign[0].status)) {
           throw new ConflictError(
-            `Cannot update campaign in '${campaign[0].status}' status`
+            `Cannot update campaign in '${campaign[0].status}' status`,
           );
         }
 
@@ -337,7 +336,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
             RETURNING *
           `,
-          ...values
+          ...values,
         );
 
         return result[0];
@@ -356,7 +355,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to update campaign");
         return reply.code(500).send({ error: "Failed to update campaign" });
       }
-    }
+    },
   );
 
   // ── SEND CAMPAIGN ───────────────────────────────────────────
@@ -373,7 +372,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (!campaign || campaign.length === 0) {
@@ -382,7 +381,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
 
         if (!["DRAFT", "SCHEDULED"].includes(campaign[0].status)) {
           throw new ConflictError(
-            `Cannot send campaign in '${campaign[0].status}' status`
+            `Cannot send campaign in '${campaign[0].status}' status`,
           );
         }
 
@@ -394,12 +393,12 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
             RETURNING *
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         fastify.log.info(
           { campaignId: id, shopId: (request as any).shopId },
-          "Campaign send triggered"
+          "Campaign send triggered",
         );
 
         return result[0];
@@ -413,7 +412,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to send campaign");
         return reply.code(500).send({ error: "Failed to send campaign" });
       }
-    }
+    },
   );
 
   // ── PAUSE CAMPAIGN ──────────────────────────────────────────
@@ -430,7 +429,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (!campaign || campaign.length === 0) {
@@ -439,7 +438,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
 
         if (!["SENDING", "SCHEDULED"].includes(campaign[0].status)) {
           throw new ConflictError(
-            `Cannot pause campaign in '${campaign[0].status}' status`
+            `Cannot pause campaign in '${campaign[0].status}' status`,
           );
         }
 
@@ -451,7 +450,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
             RETURNING *
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         return result[0];
@@ -465,7 +464,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to pause campaign");
         return reply.code(500).send({ error: "Failed to pause campaign" });
       }
-    }
+    },
   );
 
   // ── RESUME CAMPAIGN ─────────────────────────────────────────
@@ -482,7 +481,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (!campaign || campaign.length === 0) {
@@ -491,7 +490,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
 
         if (campaign[0].status !== "PAUSED") {
           throw new ConflictError(
-            `Cannot resume campaign in '${campaign[0].status}' status`
+            `Cannot resume campaign in '${campaign[0].status}' status`,
           );
         }
 
@@ -503,7 +502,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
             RETURNING *
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         return result[0];
@@ -517,7 +516,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to resume campaign");
         return reply.code(500).send({ error: "Failed to resume campaign" });
       }
-    }
+    },
   );
 
   // ── DELETE CAMPAIGN ─────────────────────────────────────────
@@ -534,7 +533,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (!campaign || campaign.length === 0) {
@@ -543,19 +542,19 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
 
         if (campaign[0].status !== "DRAFT") {
           throw new ConflictError(
-            `Cannot delete campaign in '${campaign[0].status}' status`
+            `Cannot delete campaign in '${campaign[0].status}' status`,
           );
         }
 
         // Delete associated events and recipients
         await (request as any).tenantDb.$queryRawUnsafe(
           `DELETE FROM campaign_events WHERE campaign_id = $1::uuid`,
-          id
+          id,
         );
 
         await (request as any).tenantDb.$queryRawUnsafe(
           `DELETE FROM campaign_recipients WHERE campaign_id = $1::uuid`,
-          id
+          id,
         );
 
         await (request as any).tenantDb.$queryRawUnsafe(
@@ -564,7 +563,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         return reply.code(204).send();
@@ -578,7 +577,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to delete campaign");
         return reply.code(500).send({ error: "Failed to delete campaign" });
       }
-    }
+    },
   );
 
   // ── GET CAMPAIGN RECIPIENTS ─────────────────────────────────
@@ -588,14 +587,21 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { id } = request.params as { id: string };
-        const { page = 1, limit = 20, status } = request.query as {
+        const {
+          page = 1,
+          limit = 20,
+          status,
+        } = request.query as {
           page?: number;
           limit?: number;
           status?: string;
         };
 
         const pageNum = Math.max(1, parseInt(String(page)) || 1);
-        const pageSize = Math.min(100, Math.max(1, parseInt(String(limit)) || 20));
+        const pageSize = Math.min(
+          100,
+          Math.max(1, parseInt(String(limit)) || 20),
+        );
         const skip = (pageNum - 1) * pageSize;
 
         let whereClause = "WHERE campaign_id = $1::uuid";
@@ -615,7 +621,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (!campaign || campaign.length === 0) {
@@ -623,9 +629,11 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
         }
 
         // Get total count
-        const countResult: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+        const countResult: any[] = await (
+          request as any
+        ).tenantDb.$queryRawUnsafe(
           `SELECT COUNT(*) as count FROM campaign_recipients ${whereClause}`,
-          ...params
+          ...params,
         );
         const total = Number(countResult[0]?.count || 0);
 
@@ -645,7 +653,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
           `,
           ...params,
           pageSize,
-          skip
+          skip,
         );
 
         return {
@@ -666,7 +674,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
           .code(500)
           .send({ error: "Failed to get campaign recipients" });
       }
-    }
+    },
   );
 
   // ── GET CAMPAIGN EVENTS ─────────────────────────────────────
@@ -676,14 +684,21 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { id } = request.params as { id: string };
-        const { page = 1, limit = 50, eventType } = request.query as {
+        const {
+          page = 1,
+          limit = 50,
+          eventType,
+        } = request.query as {
           page?: number;
           limit?: number;
           eventType?: string;
         };
 
         const pageNum = Math.max(1, parseInt(String(page)) || 1);
-        const pageSize = Math.min(200, Math.max(1, parseInt(String(limit)) || 50));
+        const pageSize = Math.min(
+          200,
+          Math.max(1, parseInt(String(limit)) || 50),
+        );
         const skip = (pageNum - 1) * pageSize;
 
         let whereClause = "WHERE campaign_id = $1::uuid";
@@ -703,7 +718,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (!campaign || campaign.length === 0) {
@@ -711,9 +726,11 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
         }
 
         // Get total count
-        const countResult: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+        const countResult: any[] = await (
+          request as any
+        ).tenantDb.$queryRawUnsafe(
           `SELECT COUNT(*) as count FROM campaign_events ${whereClause}`,
-          ...params
+          ...params,
         );
         const total = Number(countResult[0]?.count || 0);
 
@@ -732,7 +749,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
           `,
           ...params,
           pageSize,
-          skip
+          skip,
         );
 
         return {
@@ -751,7 +768,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to get campaign events");
         return reply.code(500).send({ error: "Failed to get campaign events" });
       }
-    }
+    },
   );
 }
 

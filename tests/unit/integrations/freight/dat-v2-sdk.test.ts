@@ -6,7 +6,10 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { DATv2SDKClient } from "../../../../packages/core/src/integrations/freight/dat-v2-sdk-client";
-import type { EquipmentType, LoadStatus } from "../../../../packages/core/src/integrations/freight/freight-sdk-types";
+import type {
+  EquipmentType,
+  LoadStatus,
+} from "../../../../packages/core/src/integrations/freight/freight-sdk-types";
 
 /**
  * Mock fetch function
@@ -54,7 +57,7 @@ describe("DATv2SDKClient", () => {
           headers: expect.objectContaining({
             "Content-Type": "application/x-www-form-urlencoded",
           }),
-        })
+        }),
       );
     });
 
@@ -65,7 +68,9 @@ describe("DATv2SDKClient", () => {
         json: async () => ({ error: "invalid_credentials" }),
       });
 
-      await expect(client.authenticate()).rejects.toThrow("Authentication failed");
+      await expect(client.authenticate()).rejects.toThrow(
+        "Authentication failed",
+      );
     });
 
     it("should cache token and reuse for subsequent requests", async () => {
@@ -135,7 +140,7 @@ describe("DATv2SDKClient", () => {
       expect(result.spotRate.rate).toBe(2.45);
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("/rateview/spot-rate"),
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -235,8 +240,16 @@ describe("DATv2SDKClient", () => {
           status: "posted",
           postedAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          shipper: { name: "Shipper A", email: "shipper@example.com", phone: "555-1234" },
-          receiver: { name: "Receiver B", email: "receiver@example.com", phone: "555-5678" },
+          shipper: {
+            name: "Shipper A",
+            email: "shipper@example.com",
+            phone: "555-1234",
+          },
+          receiver: {
+            name: "Receiver B",
+            email: "receiver@example.com",
+            phone: "555-5678",
+          },
         }),
       });
 
@@ -252,15 +265,23 @@ describe("DATv2SDKClient", () => {
         currency: "USD",
         commodity: "Electronics",
         isHazmat: false,
-        shipper: { name: "Shipper A", email: "shipper@example.com", phone: "555-1234" },
-        receiver: { name: "Receiver B", email: "receiver@example.com", phone: "555-5678" },
+        shipper: {
+          name: "Shipper A",
+          email: "shipper@example.com",
+          phone: "555-1234",
+        },
+        receiver: {
+          name: "Receiver B",
+          email: "receiver@example.com",
+          phone: "555-5678",
+        },
       });
 
       expect(result.loadId).toBe("LOAD-12345");
       expect(result.rate).toBe(2400);
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("/loadboard/loads"),
-        expect.objectContaining({ method: "POST" })
+        expect.objectContaining({ method: "POST" }),
       );
     });
 
@@ -282,7 +303,7 @@ describe("DATv2SDKClient", () => {
       expect(result.rate).toBe(2500);
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("/loadboard/loads/LOAD-12345"),
-        expect.objectContaining({ method: "PUT" })
+        expect.objectContaining({ method: "PUT" }),
       );
     });
 
@@ -300,7 +321,7 @@ describe("DATv2SDKClient", () => {
       expect(result.success).toBe(true);
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("/loadboard/loads/LOAD-12345"),
-        expect.objectContaining({ method: "DELETE" })
+        expect.objectContaining({ method: "DELETE" }),
       );
     });
 
@@ -330,7 +351,7 @@ describe("DATv2SDKClient", () => {
       expect(result.total).toBe(0);
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("/loadboard/loads"),
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -544,10 +565,7 @@ describe("DATv2SDKClient", () => {
         headers: new Map([
           ["x-ratelimit-remaining", "950"],
           ["x-ratelimit-limit", "1000"],
-          [
-            "x-ratelimit-reset",
-            String(Math.floor(Date.now() / 1000) + 3600),
-          ],
+          ["x-ratelimit-reset", String(Math.floor(Date.now() / 1000) + 3600)],
         ]),
         json: async () => ({ spotRate: { rate: 2.45 } }),
       });
@@ -648,7 +666,7 @@ describe("DATv2SDKClient", () => {
       expect(result.webhookId).toBe("WEBHOOK-1");
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("/webhooks"),
-        expect.objectContaining({ method: "POST" })
+        expect.objectContaining({ method: "POST" }),
       );
     });
   });

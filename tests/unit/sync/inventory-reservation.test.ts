@@ -27,14 +27,19 @@ describe("Inventory Reservation System", () => {
       100,
       StockAdjustmentReason.MANUAL,
       undefined,
-      "system"
+      "system",
     );
   });
 
   describe("Basic Reservation", () => {
     it("should create reservation with 5 minute expiration", () => {
       const before = Date.now();
-      const reservation = engine.reserveStock("ORDER-001", "SKU-001", 50, "WH-001");
+      const reservation = engine.reserveStock(
+        "ORDER-001",
+        "SKU-001",
+        50,
+        "WH-001",
+      );
       const after = Date.now();
 
       expect(reservation.status).toBe(ReservationStatus.ACTIVE);
@@ -91,7 +96,12 @@ describe("Inventory Reservation System", () => {
 
   describe("Reservation Confirmation", () => {
     it("should transition from ACTIVE to CONFIRMED", () => {
-      const reservation = engine.reserveStock("ORDER-001", "SKU-001", 50, "WH-001");
+      const reservation = engine.reserveStock(
+        "ORDER-001",
+        "SKU-001",
+        50,
+        "WH-001",
+      );
       expect(reservation.status).toBe(ReservationStatus.ACTIVE);
 
       engine.confirmReservation(reservation.reservationId);
@@ -102,7 +112,12 @@ describe("Inventory Reservation System", () => {
     });
 
     it("should set completion timestamp on confirm", () => {
-      const reservation = engine.reserveStock("ORDER-001", "SKU-001", 50, "WH-001");
+      const reservation = engine.reserveStock(
+        "ORDER-001",
+        "SKU-001",
+        50,
+        "WH-001",
+      );
       expect(reservation.completedAt).toBeUndefined();
 
       engine.confirmReservation(reservation.reservationId);
@@ -115,7 +130,9 @@ describe("Inventory Reservation System", () => {
       engine.reserveStock("ORDER-001", "SKU-001", 50, "WH-001");
 
       const before = engine.getStockLevel("SKU-001", "WH-001");
-      engine.confirmReservation((engine as any).reservations.keys().next().value);
+      engine.confirmReservation(
+        (engine as any).reservations.keys().next().value,
+      );
       const after = engine.getStockLevel("SKU-001", "WH-001");
 
       expect(before?.available).toBe(after?.available);
@@ -125,7 +142,12 @@ describe("Inventory Reservation System", () => {
 
   describe("Reservation Release", () => {
     it("should release reserved stock on cancel", () => {
-      const reservation = engine.reserveStock("ORDER-001", "SKU-001", 50, "WH-001");
+      const reservation = engine.reserveStock(
+        "ORDER-001",
+        "SKU-001",
+        50,
+        "WH-001",
+      );
 
       const before = engine.getStockLevel("SKU-001", "WH-001");
       expect(before?.available).toBe(50);
@@ -139,19 +161,29 @@ describe("Inventory Reservation System", () => {
     });
 
     it("should set RELEASED status", () => {
-      const reservation = engine.reserveStock("ORDER-001", "SKU-001", 50, "WH-001");
+      const reservation = engine.reserveStock(
+        "ORDER-001",
+        "SKU-001",
+        50,
+        "WH-001",
+      );
       engine.releaseReservation(reservation.reservationId);
 
       // Verify status is released
       const orderReservations = engine.getOrderReservations("ORDER-001");
       const released = orderReservations.find(
-        (r) => r.reservationId === reservation.reservationId
+        (r) => r.reservationId === reservation.reservationId,
       );
       expect(released?.status).toBe(ReservationStatus.RELEASED);
     });
 
     it("should not release already released reservation", () => {
-      const reservation = engine.reserveStock("ORDER-001", "SKU-001", 50, "WH-001");
+      const reservation = engine.reserveStock(
+        "ORDER-001",
+        "SKU-001",
+        50,
+        "WH-001",
+      );
       engine.releaseReservation(reservation.reservationId);
 
       const before = engine.getStockLevel("SKU-001", "WH-001");
@@ -175,28 +207,42 @@ describe("Inventory Reservation System", () => {
 
   describe("Reservation Expiration", () => {
     it("should mark expired reservations", () => {
-      const reservation = engine.reserveStock("ORDER-001", "SKU-001", 50, "WH-001");
+      const reservation = engine.reserveStock(
+        "ORDER-001",
+        "SKU-001",
+        50,
+        "WH-001",
+      );
 
       // Manually set expiration to past
-      (reservation as any).expiresAt = new Date(Date.now() - 1000).toISOString();
+      (reservation as any).expiresAt = new Date(
+        Date.now() - 1000,
+      ).toISOString();
 
       engine.processExpiredReservations();
 
       const orderReservations = engine.getOrderReservations("ORDER-001");
       const expired = orderReservations.find(
-        (r) => r.reservationId === reservation.reservationId
+        (r) => r.reservationId === reservation.reservationId,
       );
       expect(expired?.status).toBe(ReservationStatus.EXPIRED);
     });
 
     it("should release stock on expiration", () => {
-      const reservation = engine.reserveStock("ORDER-001", "SKU-001", 50, "WH-001");
+      const reservation = engine.reserveStock(
+        "ORDER-001",
+        "SKU-001",
+        50,
+        "WH-001",
+      );
 
       const before = engine.getStockLevel("SKU-001", "WH-001");
       expect(before?.available).toBe(50);
 
       // Set past expiration
-      (reservation as any).expiresAt = new Date(Date.now() - 1000).toISOString();
+      (reservation as any).expiresAt = new Date(
+        Date.now() - 1000,
+      ).toISOString();
       engine.processExpiredReservations();
 
       const after = engine.getStockLevel("SKU-001", "WH-001");
@@ -205,7 +251,12 @@ describe("Inventory Reservation System", () => {
     });
 
     it("should not expire active reservations", () => {
-      const reservation = engine.reserveStock("ORDER-001", "SKU-001", 50, "WH-001");
+      const reservation = engine.reserveStock(
+        "ORDER-001",
+        "SKU-001",
+        50,
+        "WH-001",
+      );
 
       // Expiration is in future, should not expire
       engine.processExpiredReservations();
@@ -261,12 +312,22 @@ describe("Inventory Reservation System", () => {
 
   describe("Reservation Versioning", () => {
     it("should track version for optimistic locking", () => {
-      const reservation = engine.reserveStock("ORDER-001", "SKU-001", 50, "WH-001");
+      const reservation = engine.reserveStock(
+        "ORDER-001",
+        "SKU-001",
+        50,
+        "WH-001",
+      );
       expect(reservation.version).toBe(1);
     });
 
     it("should support version checking on updates", () => {
-      const reservation = engine.reserveStock("ORDER-001", "SKU-001", 50, "WH-001");
+      const reservation = engine.reserveStock(
+        "ORDER-001",
+        "SKU-001",
+        50,
+        "WH-001",
+      );
       const version = reservation.version;
 
       // In production, version would be incremented on state change
@@ -287,7 +348,7 @@ describe("Inventory Reservation System", () => {
         "ORDER-001",
         "SKU-001",
         50,
-        "WH-001"
+        "WH-001",
       );
 
       expect(reservation.tenantId).toBe(tenantId);
@@ -303,7 +364,7 @@ describe("Inventory Reservation System", () => {
         "ORDER-001",
         "SKU-001",
         50,
-        "WH-001"
+        "WH-001",
       );
       const after = Date.now();
 
@@ -321,11 +382,13 @@ describe("Inventory Reservation System", () => {
         "ORDER-001",
         "SKU-001",
         50,
-        "WH-001"
+        "WH-001",
       );
 
       // Set to past
-      (reservation as any).expiresAt = new Date(Date.now() - 1000).toISOString();
+      (reservation as any).expiresAt = new Date(
+        Date.now() - 1000,
+      ).toISOString();
 
       expect(reservationManager.isExpired(reservation)).toBe(true);
     });
@@ -336,7 +399,7 @@ describe("Inventory Reservation System", () => {
         "ORDER-001",
         "SKU-001",
         50,
-        "WH-001"
+        "WH-001",
       );
 
       expect(reservationManager.isExpired(reservation)).toBe(false);

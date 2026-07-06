@@ -75,8 +75,12 @@ export const defineModule = {
 // packages/core/src/orders/order-manager.ts
 export class OrderManager {
   constructor(private db: PrismaClient) {}
-  async createOrder(data) { /* direct Prisma calls */ }
-  async updateStatus(id, status) { /* ... */ }
+  async createOrder(data) {
+    /* direct Prisma calls */
+  }
+  async updateStatus(id, status) {
+    /* ... */
+  }
   // No DI container, direct imports in routes
 }
 
@@ -159,37 +163,56 @@ export async function POST(req, { container }) {
 
 ```typescript
 // medusa-commerce/packages/workflows/product/create-products.ts
-import { createWorkflow, createStep, StepResponse } from "@medusajs/workflows-sdk";
+import {
+  createWorkflow,
+  createStep,
+  StepResponse,
+} from "@medusajs/workflows-sdk";
 
-const validateProductDataStep = createStep("validate-product-data", async (input, { container }) => {
-  const validation = await container.resolve("validationService").validate(input.data);
-  return new StepResponse(validation);
-});
-
-const saveProductStep = createStep("save-product", async (input, { container }) => {
-  const productService = container.resolve("productService");
-  const product = await productService.create(input.validated);
-  return new StepResponse(product);
-}, {
-  compensate: async (error, input, { container }) => {
-    // Rollback: delete the product if subsequent steps fail
-    const productService = container.resolve("productService");
-    await productService.delete(input.product.id);
+const validateProductDataStep = createStep(
+  "validate-product-data",
+  async (input, { container }) => {
+    const validation = await container
+      .resolve("validationService")
+      .validate(input.data);
+    return new StepResponse(validation);
   },
-});
+);
 
-const emitProductCreatedStep = createStep("emit-product-created", async (input, { container }) => {
-  const eventBus = container.resolve("eventBus");
-  await eventBus.emit("product.created", { product: input.product });
-  return new StepResponse({});
-});
+const saveProductStep = createStep(
+  "save-product",
+  async (input, { container }) => {
+    const productService = container.resolve("productService");
+    const product = await productService.create(input.validated);
+    return new StepResponse(product);
+  },
+  {
+    compensate: async (error, input, { container }) => {
+      // Rollback: delete the product if subsequent steps fail
+      const productService = container.resolve("productService");
+      await productService.delete(input.product.id);
+    },
+  },
+);
 
-export const createProductsWorkflow = createWorkflow("create-products", (input: CreateInput) => {
-  const validatedData = validateProductDataStep(input.data);
-  const product = saveProductStep(validatedData);
-  const emitted = emitProductCreatedStep(product);
-  return { product };
-});
+const emitProductCreatedStep = createStep(
+  "emit-product-created",
+  async (input, { container }) => {
+    const eventBus = container.resolve("eventBus");
+    await eventBus.emit("product.created", { product: input.product });
+    return new StepResponse({});
+  },
+);
+
+export const createProductsWorkflow = createWorkflow(
+  "create-products",
+  (input: CreateInput) => {
+    const validatedData = validateProductDataStep(input.data);
+    const product = saveProductStep(validatedData);
+    const emitted = emitProductCreatedStep(product);
+    return { product };
+  },
+);
 ```
 
 **Witylogix Today**
@@ -231,71 +254,92 @@ res.json(order);
 // packages/workflows/orders/create-delivery-order.ts
 import { createWorkflow, createStep } from "@witylogix/framework";
 
-const validateDeliveryDataStep = createStep("validate-delivery-data", async (input, { container }) => {
-  const validator = container.resolve("validationService");
-  const errors = await validator.validate("DeliveryOrder", input.data);
-  if (errors.length) {
-    throw new Error(`Validation failed: ${errors.join(", ")}`);
-  }
-  return new StepResponse(input.data);
-});
-
-const checkInventoryStep = createStep("check-inventory", async (input, { container }) => {
-  const inventoryService = container.resolve("inventoryService");
-  const available = await inventoryService.checkAvailability(
-    input.data.items.map(i => ({ sku: i.sku, quantity: i.quantity }))
-  );
-  if (!available) {
-    throw new Error("Inventory unavailable");
-  }
-  return new StepResponse(input.data);
-});
-
-const assignZoneStep = createStep("assign-zone", async (input, { container }) => {
-  const routingService = container.resolve("routingService");
-  const zone = await routingService.findOptimalZone(input.data.deliveryAddress);
-  return new StepResponse({ ...input.data, zoneId: zone.id });
-});
-
-const calculateRateStep = createStep("calculate-rate", async (input, { container }) => {
-  const billingService = container.resolve("billingService");
-  const rate = await billingService.calculateDeliveryRate({
-    zoneId: input.zoneId,
-    weight: input.data.totalWeight,
-    distance: input.data.distance,
-  });
-  return new StepResponse({ ...input.data, rate });
-});
-
-const createOrderStep = createStep("create-order", async (input, { container }) => {
-  const orderService = container.resolve("orderService");
-  const order = await orderService.create({
-    customerId: input.data.customerId,
-    items: input.data.items,
-    zoneId: input.zoneId,
-    rate: input.rate,
-    status: "pending",
-  });
-  return new StepResponse(order);
-}, {
-  compensate: async (error, input, { container }) => {
-    // Rollback: if later steps fail, delete the order
-    const orderService = container.resolve("orderService");
-    if (input.order?.id) {
-      await orderService.delete(input.order.id);
+const validateDeliveryDataStep = createStep(
+  "validate-delivery-data",
+  async (input, { container }) => {
+    const validator = container.resolve("validationService");
+    const errors = await validator.validate("DeliveryOrder", input.data);
+    if (errors.length) {
+      throw new Error(`Validation failed: ${errors.join(", ")}`);
     }
+    return new StepResponse(input.data);
   },
-});
+);
 
-const emitOrderCreatedStep = createStep("emit-order-created", async (input, { container }) => {
-  const eventBus = container.resolve("eventBus");
-  await eventBus.emit("order.created", {
-    orderId: input.order.id,
-    customerId: input.order.customerId,
-    totalCharge: input.order.rate,
-  });
-  return new StepResponse({});
-});
+const checkInventoryStep = createStep(
+  "check-inventory",
+  async (input, { container }) => {
+    const inventoryService = container.resolve("inventoryService");
+    const available = await inventoryService.checkAvailability(
+      input.data.items.map((i) => ({ sku: i.sku, quantity: i.quantity })),
+    );
+    if (!available) {
+      throw new Error("Inventory unavailable");
+    }
+    return new StepResponse(input.data);
+  },
+);
+
+const assignZoneStep = createStep(
+  "assign-zone",
+  async (input, { container }) => {
+    const routingService = container.resolve("routingService");
+    const zone = await routingService.findOptimalZone(
+      input.data.deliveryAddress,
+    );
+    return new StepResponse({ ...input.data, zoneId: zone.id });
+  },
+);
+
+const calculateRateStep = createStep(
+  "calculate-rate",
+  async (input, { container }) => {
+    const billingService = container.resolve("billingService");
+    const rate = await billingService.calculateDeliveryRate({
+      zoneId: input.zoneId,
+      weight: input.data.totalWeight,
+      distance: input.data.distance,
+    });
+    return new StepResponse({ ...input.data, rate });
+  },
+);
+
+const createOrderStep = createStep(
+  "create-order",
+  async (input, { container }) => {
+    const orderService = container.resolve("orderService");
+    const order = await orderService.create({
+      customerId: input.data.customerId,
+      items: input.data.items,
+      zoneId: input.zoneId,
+      rate: input.rate,
+      status: "pending",
+    });
+    return new StepResponse(order);
+  },
+  {
+    compensate: async (error, input, { container }) => {
+      // Rollback: if later steps fail, delete the order
+      const orderService = container.resolve("orderService");
+      if (input.order?.id) {
+        await orderService.delete(input.order.id);
+      }
+    },
+  },
+);
+
+const emitOrderCreatedStep = createStep(
+  "emit-order-created",
+  async (input, { container }) => {
+    const eventBus = container.resolve("eventBus");
+    await eventBus.emit("order.created", {
+      orderId: input.order.id,
+      customerId: input.order.customerId,
+      totalCharge: input.order.rate,
+    });
+    return new StepResponse({});
+  },
+);
 
 export const createDeliveryOrderWorkflow = createWorkflow(
   "create-delivery-order",
@@ -307,7 +351,7 @@ export const createDeliveryOrderWorkflow = createWorkflow(
     const order = createOrderStep(withRate);
     const emitted = emitOrderCreatedStep(order);
     return { order };
-  }
+  },
 );
 ```
 
@@ -354,14 +398,17 @@ export const defineModule = {
 };
 
 // The plugin's step
-const fraudCheckStep = createStep("fraud-check", async (input, { container }) => {
-  const fraudService = container.resolve("fraudDetectionService");
-  const result = await fraudService.analyze(input);
-  if (result.riskLevel > 0.8) {
-    throw new Error(`High fraud risk: ${result.reason}`);
-  }
-  return new StepResponse(input);
-});
+const fraudCheckStep = createStep(
+  "fraud-check",
+  async (input, { container }) => {
+    const fraudService = container.resolve("fraudDetectionService");
+    const result = await fraudService.analyze(input);
+    if (result.riskLevel > 0.8) {
+      throw new Error(`High fraud risk: ${result.reason}`);
+    }
+    return new StepResponse(input);
+  },
+);
 ```
 
 ---
@@ -564,7 +611,10 @@ export class OrderService extends WityService {
     // Optionally hydrate full customer, items, zone:
     const linkManager = this.container.resolve("linkManager");
     const customer = await linkManager.resolve("orders-customers", order.id);
-    const items = await linkManager.resolveList("orders-items-products", order.id);
+    const items = await linkManager.resolveList(
+      "orders-items-products",
+      order.id,
+    );
     const zone = await linkManager.resolve("orders-zones", order.id);
 
     return { order, customer, items, zone };
@@ -590,11 +640,14 @@ Events are **emitted as workflow steps**, not from services:
 
 ```typescript
 // medusa-commerce/packages/workflows/order/create-order.ts
-const emitOrderCreatedStep = createStep("emit-order-created", async (input, { container }) => {
-  const eventBus = container.resolve("eventBus");
-  await eventBus.emit("order.created", { orderId: input.order.id });
-  return new StepResponse({});
-});
+const emitOrderCreatedStep = createStep(
+  "emit-order-created",
+  async (input, { container }) => {
+    const eventBus = container.resolve("eventBus");
+    await eventBus.emit("order.created", { orderId: input.order.id });
+    return new StepResponse({});
+  },
+);
 
 // Subscribers are lightweight and delegate to workflows
 // medusa-commerce/packages/modules/notification/subscribers/order-created.ts
@@ -604,7 +657,9 @@ export const subscribers = [
     handler: async ({ event, container }) => {
       // Don't implement business logic here!
       // Instead, invoke a workflow
-      const sendOrderNotificationWorkflow = container.resolve("sendOrderNotificationWorkflow");
+      const sendOrderNotificationWorkflow = container.resolve(
+        "sendOrderNotificationWorkflow",
+      );
       await sendOrderNotificationWorkflow.run({
         input: { orderId: event.data.orderId },
       });
@@ -629,9 +684,13 @@ export class OrderManager {
 // apps/process-manager/src/subscribers/order-created.ts
 export const orderCreatedHandler = async (event) => {
   // Business logic buried in subscriber
-  const customer = await db.customers.findUnique({ where: { id: event.order.customerId } });
+  const customer = await db.customers.findUnique({
+    where: { id: event.order.customerId },
+  });
   await sendEmail(customer.email, "Order Confirmed", { order: event.order });
-  await db.notifications.create({ data: { customerId: customer.id, type: "order_created" } });
+  await db.notifications.create({
+    data: { customerId: customer.id, type: "order_created" },
+  });
   // What if email fails? What if notification creation fails? No rollback.
 };
 
@@ -652,53 +711,69 @@ eventBus.subscribe("order:created", orderCreatedHandler);
 // packages/workflows/notifications/send-order-notification.ts
 import { createWorkflow, createStep } from "@witylogix/framework";
 
-const resolveCustomerStep = createStep("resolve-customer", async (input, { container }) => {
-  const customerService = container.resolve("customerService");
-  const customer = await customerService.retrieve(input.orderId);
-  return new StepResponse(customer);
-});
-
-const resolveOrderStep = createStep("resolve-order", async (input, { container }) => {
-  const orderService = container.resolve("orderService");
-  const order = await orderService.retrieve(input.orderId);
-  return new StepResponse(order);
-});
-
-const renderTemplateStep = createStep("render-template", async (input, { container }) => {
-  const templateEngine = container.resolve("templateEngine");
-  const html = await templateEngine.render("order-confirmation", {
-    customer: input.customer,
-    order: input.order,
-  });
-  return new StepResponse(html);
-});
-
-const sendEmailStep = createStep("send-email", async (input, { container }) => {
-  const emailService = container.resolve("emailService");
-  const result = await emailService.send({
-    to: input.customer.email,
-    subject: "Your Order Confirmed",
-    html: input.html,
-  });
-  return new StepResponse(result);
-}, {
-  compensate: async (error, input, { container }) => {
-    // If later steps fail, we could log that email was sent but order was rejected
-    // (Not reversible, but we know the state)
+const resolveCustomerStep = createStep(
+  "resolve-customer",
+  async (input, { container }) => {
+    const customerService = container.resolve("customerService");
+    const customer = await customerService.retrieve(input.orderId);
+    return new StepResponse(customer);
   },
-});
+);
 
-const createNotificationRecordStep = createStep("create-notification", async (input, { container }) => {
-  const notificationService = container.resolve("notificationService");
-  await notificationService.create({
-    customerId: input.customer.id,
-    orderId: input.order.id,
-    type: "order_confirmation",
-    status: "sent",
-    sentAt: new Date(),
-  });
-  return new StepResponse({});
-});
+const resolveOrderStep = createStep(
+  "resolve-order",
+  async (input, { container }) => {
+    const orderService = container.resolve("orderService");
+    const order = await orderService.retrieve(input.orderId);
+    return new StepResponse(order);
+  },
+);
+
+const renderTemplateStep = createStep(
+  "render-template",
+  async (input, { container }) => {
+    const templateEngine = container.resolve("templateEngine");
+    const html = await templateEngine.render("order-confirmation", {
+      customer: input.customer,
+      order: input.order,
+    });
+    return new StepResponse(html);
+  },
+);
+
+const sendEmailStep = createStep(
+  "send-email",
+  async (input, { container }) => {
+    const emailService = container.resolve("emailService");
+    const result = await emailService.send({
+      to: input.customer.email,
+      subject: "Your Order Confirmed",
+      html: input.html,
+    });
+    return new StepResponse(result);
+  },
+  {
+    compensate: async (error, input, { container }) => {
+      // If later steps fail, we could log that email was sent but order was rejected
+      // (Not reversible, but we know the state)
+    },
+  },
+);
+
+const createNotificationRecordStep = createStep(
+  "create-notification",
+  async (input, { container }) => {
+    const notificationService = container.resolve("notificationService");
+    await notificationService.create({
+      customerId: input.customer.id,
+      orderId: input.order.id,
+      type: "order_confirmation",
+      status: "sent",
+      sentAt: new Date(),
+    });
+    return new StepResponse({});
+  },
+);
 
 export const sendOrderNotificationWorkflow = createWorkflow(
   "send-order-notification",
@@ -707,9 +782,12 @@ export const sendOrderNotificationWorkflow = createWorkflow(
     const order = resolveOrderStep(input);
     const html = renderTemplateStep({ customer, order });
     const emailResult = sendEmailStep({ customer, html });
-    const notificationCreated = createNotificationRecordStep({ customer, order });
+    const notificationCreated = createNotificationRecordStep({
+      customer,
+      order,
+    });
     return { success: true };
-  }
+  },
 );
 ```
 
@@ -731,7 +809,12 @@ export const subscribers = [
       } catch (error) {
         // Log the error; the order exists, but notification failed
         // Depending on importance, retry later or alert ops
-        container.resolve("logger").error("Failed to send order notification", { error, orderId: event.data.orderId });
+        container
+          .resolve("logger")
+          .error("Failed to send order notification", {
+            error,
+            orderId: event.data.orderId,
+          });
       }
     },
   },
@@ -841,7 +924,7 @@ export const syncShopifyInventoryWorkflow = createWorkflow(
     const updated = updateLocalInventoryStep(shopifyData);
     const emitted = emitInventorySyncedStep(updated);
     return { updated };
-  }
+  },
 );
 ```
 
@@ -897,7 +980,9 @@ export const createOrderRoute = createRoute({
   method: "POST",
   path: "/orders",
   handler: async (req, res, { container }) => {
-    const createDeliveryOrderWorkflow = container.resolve("createDeliveryOrderWorkflow");
+    const createDeliveryOrderWorkflow = container.resolve(
+      "createDeliveryOrderWorkflow",
+    );
     try {
       const { order } = await createDeliveryOrderWorkflow.run({
         input: { data: req.body },
@@ -950,7 +1035,10 @@ export const definePlugin = {
       event: "order.fraud-detected",
       handler: async ({ event, container }) => {
         const notificationService = container.resolve("notificationService");
-        await notificationService.alert({ reason: "Fraud detected", orderId: event.data.orderId });
+        await notificationService.alert({
+          reason: "Fraud detected",
+          orderId: event.data.orderId,
+        });
       },
     },
   ],
@@ -1094,6 +1182,7 @@ These are the core workflows Witylogix would formalize using the workflow engine
 **Purpose**: End-to-end order creation with validation, inventory, zone assignment, and rate calculation.
 
 **Steps**:
+
 1. `validateDeliveryDataStep` — Check required fields, address validity
 2. `checkInventoryStep` — Verify items are in stock
 3. `assignZoneStep` — Determine service zone by address
@@ -1108,6 +1197,7 @@ These are the core workflows Witylogix would formalize using the workflow engine
 **Modules Consumed**: orders, inventory, billing (zones), notifications (indirectly via event)
 
 **Sample Invocation**:
+
 ```typescript
 const workflow = container.resolve("createDeliveryOrderWorkflow");
 const { order } = await workflow.run({
@@ -1129,6 +1219,7 @@ const { order } = await workflow.run({
 **Purpose**: Match a delivery order to an available driver, optimize route, and send assignment notification.
 
 **Steps**:
+
 1. `findAvailableDriversStep` — Query drivers with capacity in the zone
 2. `checkCapacityStep` — Confirm space for order weight/volume
 3. `optimizeRouteStep` — Call routing engine (Google Maps, Mapbox) to compute ETAs
@@ -1150,6 +1241,7 @@ const { order } = await workflow.run({
 **Purpose**: Finalize a delivery with proof-of-delivery, status update, billing, and receipt.
 
 **Steps**:
+
 1. `validateProofOfDeliveryStep` — Check photo, signature, or PIN
 2. `updateOrderStatusStep` — Mark order as delivered
 3. `recordDeliveryMetricsStep` — Log delivery time, distance, driver notes
@@ -1171,6 +1263,7 @@ const { order } = await workflow.run({
 **Purpose**: Manage subscription plan changes (new, upgrade, downgrade, cancel).
 
 **Steps**:
+
 1. `validatePlanStep` — Check plan exists and customer is eligible
 2. `validatePaymentMethodStep` — Confirm card or bank account on file
 3. `calculateProrationStep` — Compute credits or charges for mid-cycle changes
@@ -1192,6 +1285,7 @@ const { order } = await workflow.run({
 **Purpose**: Batch-optimize delivery routes for a set of orders and drivers.
 
 **Steps**:
+
 1. `gatherPendingOrdersStep` — Fetch orders marked "awaiting assignment"
 2. `gatherAvailableDriversStep` — Fetch drivers on shift
 3. `callRoutingProviderStep` — Send orders + drivers to optimization engine (e.g., Vroom API)
@@ -1214,6 +1308,7 @@ const { order } = await workflow.run({
 **Purpose**: Process incoming webhooks (Stripe, Shopify, third-party integrations) safely and consistently.
 
 **Steps**:
+
 1. `validateWebhookSignatureStep` — Verify HMAC/JWT to prevent spoofing
 2. `parseWebhookPayloadStep` — Deserialize and validate schema
 3. `idempotencyCheckStep` — Check if webhook already processed (by idempotency key)
@@ -1235,6 +1330,7 @@ const { order } = await workflow.run({
 **Purpose**: Unified notification dispatch (email, SMS, push, webhook) with template rendering and delivery tracking.
 
 **Steps**:
+
 1. `resolveRecipientStep` — Fetch customer contact info, preferences
 2. `selectChannelsStep` — Choose appropriate channels (email if preferred, SMS as fallback, etc.)
 3. `renderTemplateStep` — Fill in template variables (order #, delivery time, etc.)
@@ -1256,6 +1352,7 @@ const { order } = await workflow.run({
 **Purpose**: Manage marketing campaigns (build audience, render content, schedule sends, track opens).
 
 **Steps**:
+
 1. `validateCampaignStep` — Check name, content, sender info
 2. `buildAudienceStep` — Execute audience query (e.g., "customers in zone X with 3+ orders")
 3. `validateContentStep` — Check links, verify unsubscribe footer
@@ -1277,6 +1374,7 @@ const { order } = await workflow.run({
 **Purpose**: Mirror Shopify orders into Witylogix as delivery orders (webhook-triggered).
 
 **Steps**:
+
 1. `validateShopifyOrderStep` — Check webhook signature, order integrity
 2. `mapShopifyToWityStep` — Transform Shopify line items, addresses to Witylogix format
 3. `lookupOrCreateCustomerStep` — Find/create customer from Shopify contact
@@ -1298,6 +1396,7 @@ const { order } = await workflow.run({
 **Purpose**: Monthly invoice generation from delivered orders, subscriptions, and usage charges.
 
 **Steps**:
+
 1. `aggregateUsageStep` — Sum delivered orders, API calls, extra fees for the month
 2. `calculateChargesStep` — Apply tiering, discounts, taxes
 3. `createInvoiceRecordStep` — Write invoice to database
@@ -1569,7 +1668,11 @@ export class SubscriptionManager {
     if (!newPlan) throw new Error("New plan not found");
 
     // Calculate proration
-    const proratedCredit = calculateProration(sub.plan.price, newPlan.price, sub.currentBillingCycle);
+    const proratedCredit = calculateProration(
+      sub.plan.price,
+      newPlan.price,
+      sub.currentBillingCycle,
+    );
 
     // Update subscription
     const updated = await this.db.subscription.update({
@@ -1582,7 +1685,10 @@ export class SubscriptionManager {
     });
 
     // Emit event
-    await eventBus.emit("subscription:upgraded", { subscription: updated, credit: proratedCredit });
+    await eventBus.emit("subscription:upgraded", {
+      subscription: updated,
+      credit: proratedCredit,
+    });
 
     return updated;
   }
@@ -1604,7 +1710,10 @@ export async function POST(req, res) {
 export async function PATCH(req, res) {
   const subMgr = new SubscriptionManager(prisma);
   try {
-    const sub = await subMgr.upgradeSubscription(req.body.subscriptionId, req.body.newPlanId);
+    const sub = await subMgr.upgradeSubscription(
+      req.body.subscriptionId,
+      req.body.newPlanId,
+    );
     res.status(200).json(sub);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -1661,7 +1770,7 @@ export class BillingService extends WityService {
     const proratedCredit = calculateProration(
       sub.plan.price,
       newPlan.price,
-      sub.currentBillingCycle
+      sub.currentBillingCycle,
     );
 
     const updated = await this.db.subscription.update({
@@ -1701,72 +1810,91 @@ export const defineModule = {
 // packages/workflows/billing/process-subscription.ts
 import { createWorkflow, createStep } from "@witylogix/framework";
 
-const validatePlanStep = createStep("validate-plan", async (input, { container }) => {
-  const db = container.resolve("db");
-  const plan = await db.subscriptionPlan.findUnique({
-    where: { id: input.planId },
-  });
-  if (!plan) throw new Error("Plan not found");
-  return new StepResponse(plan);
-});
-
-const validatePaymentMethodStep = createStep("validate-payment-method", async (input, { container }) => {
-  const customerService = container.resolve("customerService");
-  const customer = await customerService.retrieve(input.customerId);
-  if (!customer.paymentMethodId) throw new Error("No payment method on file");
-  return new StepResponse(customer.paymentMethodId);
-});
-
-const createSubscriptionStep = createStep("create-subscription", async (input, { container }) => {
-  const billingService = container.resolve("billingService");
-  const sub = await billingService.createSubscription({
-    customerId: input.customerId,
-    planId: input.plan.id,
-    startDate: new Date(),
-  });
-  return new StepResponse(sub);
-}, {
-  compensate: async (error, input, { container }) => {
-    const billingService = container.resolve("billingService");
-    if (input.sub?.id) {
-      await billingService.delete(input.sub.id);
-    }
+const validatePlanStep = createStep(
+  "validate-plan",
+  async (input, { container }) => {
+    const db = container.resolve("db");
+    const plan = await db.subscriptionPlan.findUnique({
+      where: { id: input.planId },
+    });
+    if (!plan) throw new Error("Plan not found");
+    return new StepResponse(plan);
   },
-});
+);
 
-const updateQuotaStep = createStep("update-quota", async (input, { container }) => {
-  const db = container.resolve("db");
-  await db.customer.update({
-    where: { id: input.customerId },
-    data: {
-      orderQuota: input.plan.monthlyOrderLimit,
-      apiRateLimit: input.plan.apiCallsPerMonth,
-    },
-  });
-  return new StepResponse({});
-});
+const validatePaymentMethodStep = createStep(
+  "validate-payment-method",
+  async (input, { container }) => {
+    const customerService = container.resolve("customerService");
+    const customer = await customerService.retrieve(input.customerId);
+    if (!customer.paymentMethodId) throw new Error("No payment method on file");
+    return new StepResponse(customer.paymentMethodId);
+  },
+);
 
-const sendConfirmationStep = createStep("send-confirmation", async (input, { container }) => {
-  const notificationWorkflow = container.resolve("sendNotificationWorkflow");
-  await notificationWorkflow.run({
-    input: {
+const createSubscriptionStep = createStep(
+  "create-subscription",
+  async (input, { container }) => {
+    const billingService = container.resolve("billingService");
+    const sub = await billingService.createSubscription({
       customerId: input.customerId,
-      type: "subscription_created",
-      data: { planName: input.plan.name, price: input.plan.price },
+      planId: input.plan.id,
+      startDate: new Date(),
+    });
+    return new StepResponse(sub);
+  },
+  {
+    compensate: async (error, input, { container }) => {
+      const billingService = container.resolve("billingService");
+      if (input.sub?.id) {
+        await billingService.delete(input.sub.id);
+      }
     },
-  });
-  return new StepResponse({});
-});
+  },
+);
 
-const emitSubscriptionCreatedStep = createStep("emit-subscription-created", async (input, { container }) => {
-  const eventBus = container.resolve("eventBus");
-  await eventBus.emit("subscription.created", {
-    subscriptionId: input.sub.id,
-    customerId: input.customerId,
-    planId: input.plan.id,
-  });
-  return new StepResponse({});
-});
+const updateQuotaStep = createStep(
+  "update-quota",
+  async (input, { container }) => {
+    const db = container.resolve("db");
+    await db.customer.update({
+      where: { id: input.customerId },
+      data: {
+        orderQuota: input.plan.monthlyOrderLimit,
+        apiRateLimit: input.plan.apiCallsPerMonth,
+      },
+    });
+    return new StepResponse({});
+  },
+);
+
+const sendConfirmationStep = createStep(
+  "send-confirmation",
+  async (input, { container }) => {
+    const notificationWorkflow = container.resolve("sendNotificationWorkflow");
+    await notificationWorkflow.run({
+      input: {
+        customerId: input.customerId,
+        type: "subscription_created",
+        data: { planName: input.plan.name, price: input.plan.price },
+      },
+    });
+    return new StepResponse({});
+  },
+);
+
+const emitSubscriptionCreatedStep = createStep(
+  "emit-subscription-created",
+  async (input, { container }) => {
+    const eventBus = container.resolve("eventBus");
+    await eventBus.emit("subscription.created", {
+      subscriptionId: input.sub.id,
+      customerId: input.customerId,
+      planId: input.plan.id,
+    });
+    return new StepResponse({});
+  },
+);
 
 export const processSubscriptionWorkflow = createWorkflow(
   "process-subscription",
@@ -1774,11 +1902,14 @@ export const processSubscriptionWorkflow = createWorkflow(
     const plan = validatePlanStep(input);
     const paymentMethod = validatePaymentMethodStep(input);
     const sub = createSubscriptionStep({ ...input, plan });
-    const quotaUpdated = updateQuotaStep({ customerId: input.customerId, plan });
+    const quotaUpdated = updateQuotaStep({
+      customerId: input.customerId,
+      plan,
+    });
     const confirmationSent = sendConfirmationStep(input);
     const emitted = emitSubscriptionCreatedStep({ ...input, sub, plan });
     return { sub };
-  }
+  },
 );
 ```
 
@@ -1787,7 +1918,9 @@ export const processSubscriptionWorkflow = createWorkflow(
 ```typescript
 // apps/api/src/routes/billing-subscriptions.ts
 export async function POST(req, res, { container }) {
-  const processSubscriptionWorkflow = container.resolve("processSubscriptionWorkflow");
+  const processSubscriptionWorkflow = container.resolve(
+    "processSubscriptionWorkflow",
+  );
   try {
     const { sub } = await processSubscriptionWorkflow.run({
       input: {
@@ -1802,7 +1935,9 @@ export async function POST(req, res, { container }) {
 }
 
 export async function PATCH(req, res, { container }) {
-  const upgradeSubscriptionWorkflow = container.resolve("upgradeSubscriptionWorkflow");
+  const upgradeSubscriptionWorkflow = container.resolve(
+    "upgradeSubscriptionWorkflow",
+  );
   try {
     const { sub } = await upgradeSubscriptionWorkflow.run({
       input: {
@@ -1842,7 +1977,9 @@ export const subscribers = [
     event: "subscription.created",
     handler: async ({ event, container }) => {
       // Don't send email directly. Invoke workflow.
-      const sendNotificationWorkflow = container.resolve("sendNotificationWorkflow");
+      const sendNotificationWorkflow = container.resolve(
+        "sendNotificationWorkflow",
+      );
       try {
         await sendNotificationWorkflow.run({
           input: {
@@ -1852,7 +1989,9 @@ export const subscribers = [
           },
         });
       } catch (error) {
-        container.resolve("logger").error("Failed to send subscription confirmation", { error });
+        container
+          .resolve("logger")
+          .error("Failed to send subscription confirmation", { error });
       }
     },
   },
@@ -1896,7 +2035,7 @@ describe("processSubscriptionWorkflow", () => {
     // Mock updateQuotaStep to fail
     const workflow = container.resolve("processSubscriptionWorkflow");
     await expect(
-      workflow.run({ input: { customerId: "cust_123", planId: "plan_pro" } })
+      workflow.run({ input: { customerId: "cust_123", planId: "plan_pro" } }),
     ).rejects.toThrow();
     // Subscription should be deleted (compensate)
   });
@@ -1905,17 +2044,17 @@ describe("processSubscriptionWorkflow", () => {
 
 ### Summary of Migration
 
-| Aspect | Before | After |
-|--------|--------|-------|
-| **Service location** | `packages/core/src/billing/` | `packages/modules/billing/src/` |
-| **Service method** | Direct Prisma, emit event ad-hoc | Extends WityService, no event emission |
-| **Orchestration** | Tangled in service method | Dedicated workflow with steps |
-| **Rollback** | Manual try-catch | Automatic per-step compensation |
-| **Event emission** | In service method | In workflow step |
-| **Cross-module calls** | Direct imports | Via container (DI) or workflows |
-| **Relationships** | Prisma FK relations | Link tables |
-| **Testing** | Integration tests | Unit tests (service) + integration (workflow) |
-| **Routes** | Call service directly | Call workflow via container |
+| Aspect                 | Before                           | After                                         |
+| ---------------------- | -------------------------------- | --------------------------------------------- |
+| **Service location**   | `packages/core/src/billing/`     | `packages/modules/billing/src/`               |
+| **Service method**     | Direct Prisma, emit event ad-hoc | Extends WityService, no event emission        |
+| **Orchestration**      | Tangled in service method        | Dedicated workflow with steps                 |
+| **Rollback**           | Manual try-catch                 | Automatic per-step compensation               |
+| **Event emission**     | In service method                | In workflow step                              |
+| **Cross-module calls** | Direct imports                   | Via container (DI) or workflows               |
+| **Relationships**      | Prisma FK relations              | Link tables                                   |
+| **Testing**            | Integration tests                | Unit tests (service) + integration (workflow) |
+| **Routes**             | Call service directly            | Call workflow via container                   |
 
 ---
 
@@ -1963,6 +2102,7 @@ describe("processSubscriptionWorkflow", () => {
 **Witylogix does now**: Single Postgres, shared Prisma schema with module-level namespacing.
 
 **When we'd change**: At 10+ modules and 50+ tables per module, schema conflicts and deployment pain become real. We'd then:
+
 1. Split into logical databases (e.g., `witylogix_orders`, `witylogix_billing`, `witylogix_routing`) sharing one Postgres instance.
 2. Use view-based joins for cross-module queries.
 3. Enforce no cross-module foreign keys (links only).
@@ -1984,6 +2124,7 @@ describe("processSubscriptionWorkflow", () => {
 3. **Audit trail** — Every row has a tenantId, making billing and compliance audits trivial.
 
 **Example**:
+
 ```sql
 -- Postgres policy: Users can only see their own tenant's orders
 CREATE POLICY tenant_isolation ON orders
@@ -2073,6 +2214,7 @@ export default {
 5. Write framework documentation and workflow SDK docs
 
 **Deliverables**:
+
 - 500+ lines of framework code
 - 2 workflows with 8+ steps each
 - 20+ unit tests, 10+ integration tests
@@ -2102,6 +2244,7 @@ export default {
 5. Implement Redis-backed event bus for multi-node setups
 
 **Deliverables**:
+
 - 5 modules fully migrated
 - 5 workflows with compensation
 - Link tables auto-generated and tested
@@ -2121,7 +2264,7 @@ export default {
    - `runCampaignWorkflow`
    - `syncShopifyOrderWorkflow`
    - `generateInvoiceWorkflow`
-   - + 2 custom workflows per major customer
+   - - 2 custom workflows per major customer
 
 3. Build plugin system:
    - `definePlugin` macro
@@ -2134,6 +2277,7 @@ export default {
 5. Build plugin marketplace UI (curated list of community plugins)
 
 **Deliverables**:
+
 - All 11 modules isolated + tested
 - 10+ workflows (reusable, compensatable)
 - Plugin system + 3 example plugins
@@ -2159,6 +2303,7 @@ export default {
 5. Build workflow editor UI (visual workflow builder)
 
 **Deliverables**:
+
 - 10+ enterprise plugins (fraud, compliance, advanced routing)
 - Workflow editor (drag-and-drop)
 - SLA monitoring + incident alerting
@@ -2195,6 +2340,7 @@ export default {
 This ADR lays out a multi-year evolution of Witylogix's architecture, deeply informed by Medusa v2's proven patterns. We're not adopting Medusa wholesale, but rather using its solutions to solve delivery logistics problems.
 
 **The core insight**: Workflow-driven architecture (not microservices) allows us to:
+
 - Scale to thousands of concurrent deliveries
 - Add custom features without forking
 - Test thoroughly via compensation/rollback

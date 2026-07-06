@@ -19,7 +19,7 @@ import {
   AddressValidationResponse,
   CarrierError,
   Package,
-} from '../types';
+} from "../types";
 
 /**
  * Generic carrier configuration
@@ -133,7 +133,7 @@ export class GenericAdapter implements CarrierAdapter {
       if (applicableRates.length === 0) {
         throw new CarrierError(
           this.code as any,
-          'NO_APPLICABLE_RATES',
+          "NO_APPLICABLE_RATES",
           `No applicable rates available for ${this.name} (total weight: ${totalWeight}kg)`,
         );
       }
@@ -146,7 +146,10 @@ export class GenericAdapter implements CarrierAdapter {
         totalCharge: rate.price,
         currency: rate.currency,
         estimatedDeliveryDate: rate.estimatedDays
-          ? new Date(request.shipDate.getTime() + rate.estimatedDays * 24 * 60 * 60 * 1000)
+          ? new Date(
+              request.shipDate.getTime() +
+                rate.estimatedDays * 24 * 60 * 60 * 1000,
+            )
           : undefined,
         estimatedTransitDays: rate.estimatedDays,
         guaranteedDelivery: rate.guaranteed || false,
@@ -158,7 +161,7 @@ export class GenericAdapter implements CarrierAdapter {
 
       throw new CarrierError(
         this.code as any,
-        'RATE_LOOKUP_FAILED',
+        "RATE_LOOKUP_FAILED",
         `Failed to retrieve ${this.name} shipping rates`,
         error instanceof Error ? error : undefined,
       );
@@ -177,12 +180,14 @@ export class GenericAdapter implements CarrierAdapter {
       this.validateLabelRequest(request);
 
       // Get rate configuration
-      const rateConfig = this.config.rates.find((r) => r.code === request.serviceCode);
+      const rateConfig = this.config.rates.find(
+        (r) => r.code === request.serviceCode,
+      );
 
       if (!rateConfig) {
         throw new CarrierError(
           this.code as any,
-          'INVALID_SERVICE_CODE',
+          "INVALID_SERVICE_CODE",
           `Service code '${request.serviceCode}' not found for ${this.name}`,
         );
       }
@@ -197,9 +202,11 @@ export class GenericAdapter implements CarrierAdapter {
         service: rateConfig.name,
         cost: rateConfig.price,
         currency: rateConfig.currency,
-        labelFormat: request.labelFormat || 'PDF',
+        labelFormat: request.labelFormat || "PDF",
         estimatedDeliveryDate: rateConfig.estimatedDays
-          ? new Date(Date.now() + rateConfig.estimatedDays * 24 * 60 * 60 * 1000)
+          ? new Date(
+              Date.now() + rateConfig.estimatedDays * 24 * 60 * 60 * 1000,
+            )
           : undefined,
         barcode: trackingNumber,
         labelData: this.generateMockLabelData(trackingNumber, rateConfig.name),
@@ -212,12 +219,12 @@ export class GenericAdapter implements CarrierAdapter {
       const trackingResponse: TrackingResponse = {
         carrier: this.name,
         trackingNumber,
-        status: 'pending_pickup',
+        status: "pending_pickup",
         delivered: false,
         events: [
           {
             timestamp: new Date(),
-            status: 'label_created',
+            status: "label_created",
             description: `Label created for ${this.name}`,
           },
         ],
@@ -233,7 +240,7 @@ export class GenericAdapter implements CarrierAdapter {
 
       throw new CarrierError(
         this.code as any,
-        'LABEL_CREATION_FAILED',
+        "LABEL_CREATION_FAILED",
         `Failed to create label for ${this.name}`,
         error instanceof Error ? error : undefined,
       );
@@ -251,8 +258,8 @@ export class GenericAdapter implements CarrierAdapter {
       if (!trackingNumber) {
         throw new CarrierError(
           this.code as any,
-          'INVALID_TRACKING',
-          'Tracking number is required',
+          "INVALID_TRACKING",
+          "Tracking number is required",
         );
       }
 
@@ -262,7 +269,7 @@ export class GenericAdapter implements CarrierAdapter {
       if (!label) {
         throw new CarrierError(
           this.code as any,
-          'TRACKING_NOT_FOUND',
+          "TRACKING_NOT_FOUND",
           `Tracking number '${trackingNumber}' not found`,
         );
       }
@@ -271,11 +278,11 @@ export class GenericAdapter implements CarrierAdapter {
       const tracking = this.trackingStore.get(trackingNumber);
 
       if (tracking) {
-        tracking.status = 'voided';
+        tracking.status = "voided";
         tracking.events.push({
           timestamp: new Date(),
-          status: 'voided',
-          description: 'Shipment cancelled',
+          status: "voided",
+          description: "Shipment cancelled",
         });
       }
 
@@ -294,7 +301,7 @@ export class GenericAdapter implements CarrierAdapter {
 
       throw new CarrierError(
         this.code as any,
-        'VOID_FAILED',
+        "VOID_FAILED",
         `Failed to void ${this.name} shipment`,
         error instanceof Error ? error : undefined,
       );
@@ -312,8 +319,8 @@ export class GenericAdapter implements CarrierAdapter {
       if (!trackingNumber) {
         throw new CarrierError(
           this.code as any,
-          'INVALID_TRACKING',
-          'Tracking number is required',
+          "INVALID_TRACKING",
+          "Tracking number is required",
         );
       }
 
@@ -322,7 +329,7 @@ export class GenericAdapter implements CarrierAdapter {
       if (!tracking) {
         throw new CarrierError(
           this.code as any,
-          'TRACKING_NOT_FOUND',
+          "TRACKING_NOT_FOUND",
           `Tracking number '${trackingNumber}' not found for ${this.name}`,
         );
       }
@@ -335,7 +342,7 @@ export class GenericAdapter implements CarrierAdapter {
 
       throw new CarrierError(
         this.code as any,
-        'TRACKING_FAILED',
+        "TRACKING_FAILED",
         `Failed to retrieve tracking for ${this.name}`,
         error instanceof Error ? error : undefined,
       );
@@ -355,7 +362,12 @@ export class GenericAdapter implements CarrierAdapter {
     event: {
       status: string;
       description: string;
-      location?: { city: string; state?: string; country: string; zipCode?: string };
+      location?: {
+        city: string;
+        state?: string;
+        country: string;
+        zipCode?: string;
+      };
       details?: string;
     },
   ): void {
@@ -364,7 +376,7 @@ export class GenericAdapter implements CarrierAdapter {
     if (!tracking) {
       throw new CarrierError(
         this.code as any,
-        'TRACKING_NOT_FOUND',
+        "TRACKING_NOT_FOUND",
         `Tracking number '${trackingNumber}' not found`,
       );
     }
@@ -376,7 +388,7 @@ export class GenericAdapter implements CarrierAdapter {
     });
 
     // Mark as delivered if status is delivered
-    if (status === 'delivered') {
+    if (status === "delivered") {
       tracking.delivered = true;
       tracking.deliveredAt = new Date();
     }
@@ -393,7 +405,7 @@ export class GenericAdapter implements CarrierAdapter {
       if (!this.config.supportsPickup) {
         throw new CarrierError(
           this.code as any,
-          'PICKUP_NOT_SUPPORTED',
+          "PICKUP_NOT_SUPPORTED",
           `${this.name} does not support scheduled pickups`,
         );
       }
@@ -419,7 +431,7 @@ export class GenericAdapter implements CarrierAdapter {
 
       throw new CarrierError(
         this.code as any,
-        'PICKUP_FAILED',
+        "PICKUP_FAILED",
         `Failed to schedule ${this.name} pickup`,
         error instanceof Error ? error : undefined,
       );
@@ -435,7 +447,7 @@ export class GenericAdapter implements CarrierAdapter {
       if (!this.config.supportsPickup) {
         throw new CarrierError(
           this.code as any,
-          'PICKUP_NOT_SUPPORTED',
+          "PICKUP_NOT_SUPPORTED",
           `${this.name} does not support scheduled pickups`,
         );
       }
@@ -443,8 +455,8 @@ export class GenericAdapter implements CarrierAdapter {
       if (!pickupId) {
         throw new CarrierError(
           this.code as any,
-          'INVALID_PICKUP_ID',
-          'Pickup ID is required',
+          "INVALID_PICKUP_ID",
+          "Pickup ID is required",
         );
       }
 
@@ -457,7 +469,7 @@ export class GenericAdapter implements CarrierAdapter {
 
       throw new CarrierError(
         this.code as any,
-        'PICKUP_CANCELLATION_FAILED',
+        "PICKUP_CANCELLATION_FAILED",
         `Failed to cancel ${this.name} pickup`,
         error instanceof Error ? error : undefined,
       );
@@ -489,7 +501,7 @@ export class GenericAdapter implements CarrierAdapter {
         valid: true,
         address,
         standardized: false,
-        addressType: address.residential ? 'residential' : 'commercial',
+        addressType: address.residential ? "residential" : "commercial",
       };
     } catch (error) {
       if (error instanceof CarrierError) {
@@ -498,7 +510,7 @@ export class GenericAdapter implements CarrierAdapter {
 
       throw new CarrierError(
         this.code as any,
-        'ADDRESS_VALIDATION_FAILED',
+        "ADDRESS_VALIDATION_FAILED",
         `Failed to validate address for ${this.name}`,
         error instanceof Error ? error : undefined,
       );
@@ -514,19 +526,27 @@ export class GenericAdapter implements CarrierAdapter {
    */
   private validateRateRequest(request: RateRequest): void {
     if (!request.origin?.street1 || !request.origin?.city) {
-      throw new CarrierError(this.code as any, 'INVALID_ORIGIN', 'Invalid origin address');
+      throw new CarrierError(
+        this.code as any,
+        "INVALID_ORIGIN",
+        "Invalid origin address",
+      );
     }
 
     if (!request.destination?.street1 || !request.destination?.city) {
       throw new CarrierError(
         this.code as any,
-        'INVALID_DESTINATION',
-        'Invalid destination address',
+        "INVALID_DESTINATION",
+        "Invalid destination address",
       );
     }
 
     if (!request.packages || request.packages.length === 0) {
-      throw new CarrierError(this.code as any, 'NO_PACKAGES', 'At least one package is required');
+      throw new CarrierError(
+        this.code as any,
+        "NO_PACKAGES",
+        "At least one package is required",
+      );
     }
   }
 
@@ -539,8 +559,8 @@ export class GenericAdapter implements CarrierAdapter {
     if (!request.serviceCode) {
       throw new CarrierError(
         this.code as any,
-        'NO_SERVICE_CODE',
-        'Service code is required',
+        "NO_SERVICE_CODE",
+        "Service code is required",
       );
     }
   }
@@ -550,14 +570,18 @@ export class GenericAdapter implements CarrierAdapter {
    */
   private validatePickupRequest(request: PickupRequest): void {
     if (!request.location?.street1 || !request.location?.city) {
-      throw new CarrierError(this.code as any, 'INVALID_LOCATION', 'Invalid pickup location');
+      throw new CarrierError(
+        this.code as any,
+        "INVALID_LOCATION",
+        "Invalid pickup location",
+      );
     }
 
     if (request.packageCount <= 0) {
       throw new CarrierError(
         this.code as any,
-        'INVALID_PACKAGE_COUNT',
-        'Package count must be positive',
+        "INVALID_PACKAGE_COUNT",
+        "Package count must be positive",
       );
     }
   }
@@ -569,8 +593,8 @@ export class GenericAdapter implements CarrierAdapter {
     if (!address.street1 || !address.city || !address.postalCode) {
       throw new CarrierError(
         this.code as any,
-        'INVALID_ADDRESS',
-        'Address is missing required fields',
+        "INVALID_ADDRESS",
+        "Address is missing required fields",
       );
     }
   }
@@ -580,13 +604,13 @@ export class GenericAdapter implements CarrierAdapter {
    */
   private convertToKg(weight: number, unit: string): number {
     switch (unit) {
-      case 'kg':
+      case "kg":
         return weight;
-      case 'g':
+      case "g":
         return weight / 1000;
-      case 'lb':
+      case "lb":
         return weight * 0.453592;
-      case 'oz':
+      case "oz":
         return weight * 0.0283495;
       default:
         return weight;
@@ -613,9 +637,12 @@ export class GenericAdapter implements CarrierAdapter {
   /**
    * Generate mock label data
    */
-  private generateMockLabelData(trackingNumber: string, serviceName: string): string {
+  private generateMockLabelData(
+    trackingNumber: string,
+    serviceName: string,
+  ): string {
     const labelContent = `${this.name.toUpperCase()} LABEL\nTracking: ${trackingNumber}\nService: ${serviceName}\n\nManual/Custom Carrier`;
-    return Buffer.from(labelContent).toString('base64');
+    return Buffer.from(labelContent).toString("base64");
   }
 }
 
@@ -631,7 +658,7 @@ export class GenericAdapter implements CarrierAdapter {
 export function createGenericCarrier(
   name: string,
   code: string,
-  rates: GenericCarrierConfig['rates'],
+  rates: GenericCarrierConfig["rates"],
   defaultService: string,
   options?: Partial<GenericCarrierConfig>,
 ): GenericAdapter {

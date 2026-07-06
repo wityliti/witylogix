@@ -27,7 +27,7 @@ import type {
   RateLimitState,
   CircuitBreakerState,
   AdapterMetrics,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Rate limiter implementation
@@ -79,7 +79,7 @@ class TokenBucketRateLimiter {
  * Circuit breaker implementation
  */
 class HealthCircuitBreaker {
-  private state: CircuitBreakerState = 'closed';
+  private state: CircuitBreakerState = "closed";
   private failureCount = 0;
   private failureThreshold = 5;
   private successCount = 0;
@@ -89,8 +89,11 @@ class HealthCircuitBreaker {
 
   state_(): CircuitBreakerState {
     // Check if we should try half-open
-    if (this.state === 'open' && Date.now() - this.lastFailureTime > this.resetTimeout) {
-      this.state = 'half_open';
+    if (
+      this.state === "open" &&
+      Date.now() - this.lastFailureTime > this.resetTimeout
+    ) {
+      this.state = "half_open";
       this.successCount = 0;
     }
     return this.state;
@@ -99,10 +102,10 @@ class HealthCircuitBreaker {
   recordSuccess(): void {
     this.failureCount = 0;
 
-    if (this.state === 'half_open') {
+    if (this.state === "half_open") {
       this.successCount++;
       if (this.successCount >= this.successThreshold) {
-        this.state = 'closed';
+        this.state = "closed";
         this.successCount = 0;
       }
     }
@@ -113,11 +116,11 @@ class HealthCircuitBreaker {
     this.failureCount++;
 
     if (this.failureCount >= this.failureThreshold) {
-      this.state = 'open';
+      this.state = "open";
     }
 
-    if (this.state === 'half_open') {
-      this.state = 'open';
+    if (this.state === "half_open") {
+      this.state = "open";
       this.successCount = 0;
     }
   }
@@ -125,8 +128,8 @@ class HealthCircuitBreaker {
   async call<T>(fn: () => Promise<T>): Promise<T> {
     const circuitState = this.state_();
 
-    if (circuitState === 'open') {
-      throw new Error('Circuit breaker is open - service unavailable');
+    if (circuitState === "open") {
+      throw new Error("Circuit breaker is open - service unavailable");
     }
 
     try {
@@ -172,7 +175,7 @@ class ExponentialBackoffRetry {
       }
     }
 
-    throw lastError || new Error('Retry exhausted');
+    throw lastError || new Error("Retry exhausted");
   }
 }
 
@@ -187,7 +190,7 @@ export abstract class RoutingAdapter implements RoutingProvider {
   protected metrics: AdapterMetrics;
   protected lastHealthCheck: Date = new Date();
   protected healthStatus: RoutingHealthStatus = {
-    status: 'healthy',
+    status: "healthy",
     timestamp: new Date(),
     lastCheck: new Date(),
   };
@@ -237,14 +240,14 @@ export abstract class RoutingAdapter implements RoutingProvider {
       );
 
       this.metrics.successfulRequests++;
-      this.logRequest(name, 'success', Date.now() - startTime);
-      this.updateHealthStatus('healthy');
+      this.logRequest(name, "success", Date.now() - startTime);
+      this.updateHealthStatus("healthy");
 
       return result;
     } catch (error) {
       this.metrics.failedRequests++;
-      this.logRequest(name, 'failure', Date.now() - startTime, error as Error);
-      this.updateHealthStatus('degraded', error as Error);
+      this.logRequest(name, "failure", Date.now() - startTime, error as Error);
+      this.updateHealthStatus("degraded", error as Error);
       throw error;
     }
   }
@@ -252,7 +255,9 @@ export abstract class RoutingAdapter implements RoutingProvider {
   /**
    * Normalize coordinate to LatLng
    */
-  protected normalizeCoordinate(coord: import('./types.js').Coordinate): import('./types.js').LatLng {
+  protected normalizeCoordinate(
+    coord: import("./types.js").Coordinate,
+  ): import("./types.js").LatLng {
     if (Array.isArray(coord)) {
       return { lat: coord[0], lng: coord[1] };
     }
@@ -262,7 +267,12 @@ export abstract class RoutingAdapter implements RoutingProvider {
   /**
    * Log request details
    */
-  protected logRequest(name: string, status: string, duration: number, error?: Error): void {
+  protected logRequest(
+    name: string,
+    status: string,
+    duration: number,
+    error?: Error,
+  ): void {
     const timestamp = new Date().toISOString();
     const message = `[${timestamp}] ${name} - ${status} (${duration}ms)`;
 
@@ -276,7 +286,10 @@ export abstract class RoutingAdapter implements RoutingProvider {
   /**
    * Update health status
    */
-  protected updateHealthStatus(status: 'healthy' | 'degraded' | 'unhealthy', error?: Error): void {
+  protected updateHealthStatus(
+    status: "healthy" | "degraded" | "unhealthy",
+    error?: Error,
+  ): void {
     this.healthStatus = {
       status,
       timestamp: new Date(),
@@ -314,6 +327,8 @@ export abstract class RoutingAdapter implements RoutingProvider {
    * Abstract methods to implement in subclasses
    */
   abstract route(request: RouteRequest): Promise<RouteResponse>;
-  abstract optimize(request: OptimizationRequest): Promise<OptimizationResponse>;
+  abstract optimize(
+    request: OptimizationRequest,
+  ): Promise<OptimizationResponse>;
   abstract matrix(request: MatrixRequest): Promise<MatrixResponse>;
 }

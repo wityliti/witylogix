@@ -35,7 +35,10 @@ import {
   Pagination,
   Divider,
 } from "@shopify/polaris";
-import { createApiClientFromRequest, type PaginatedResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type PaginatedResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -72,7 +75,10 @@ interface LocationsPageData {
 
 const LOCATION_TYPES = ["WAREHOUSE", "STORE", "HUB", "DROP_POINT"];
 
-const TYPE_BADGE_TONE: Record<string, "info" | "success" | "critical" | "warning" | "attention"> = {
+const TYPE_BADGE_TONE: Record<
+  string,
+  "info" | "success" | "critical" | "warning" | "attention"
+> = {
   WAREHOUSE: "info",
   STORE: "success",
   HUB: "critical",
@@ -91,12 +97,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const type = url.searchParams.get("type") ?? undefined;
   const search = url.searchParams.get("search") ?? undefined;
 
-  const response = await api.get<PaginatedResponse<Location>>("/api/v4/locations", {
-    page,
-    limit,
-    type,
-    search,
-  });
+  const response = await api.get<PaginatedResponse<Location>>(
+    "/api/v4/locations",
+    {
+      page,
+      limit,
+      type,
+      search,
+    },
+  );
 
   return { locations: response.data, meta: response.meta };
 }
@@ -184,9 +193,7 @@ export default function LocationsList() {
       return "Hours not set";
     }
     const openDays = location.operatingHours.filter((h) => !h.closed);
-    return openDays.length > 0
-      ? `${openDays.length} days/week`
-      : "Closed";
+    return openDays.length > 0 ? `${openDays.length} days/week` : "Closed";
   };
 
   const deactivatingLocation = deactivatingId
@@ -260,7 +267,11 @@ export default function LocationsList() {
               {locations.map((location) => (
                 <Card key={location.id}>
                   <BlockStack gap="300">
-                    <InlineStack align="space-between" blockAlign="start" gap="200">
+                    <InlineStack
+                      align="space-between"
+                      blockAlign="start"
+                      gap="200"
+                    >
                       <Text as="h3" variant="headingSm" fontWeight="semibold">
                         {location.name}
                       </Text>
@@ -350,7 +361,8 @@ export default function LocationsList() {
               <input type="hidden" name="intent" value="deactivate" />
               <input type="hidden" name="id" value={deactivatingId} />
               <Text as="p">
-                This location will no longer be available for orders and assignments.
+                This location will no longer be available for orders and
+                assignments.
               </Text>
             </Form>
           </Modal.Section>

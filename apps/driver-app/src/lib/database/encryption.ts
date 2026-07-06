@@ -1,4 +1,4 @@
-import * as Crypto from 'expo-crypto';
+import * as Crypto from "expo-crypto";
 
 /**
  * Derives a SQLite encryption key from the driver's auth JWT token.
@@ -47,5 +47,5 @@ export async function deriveEncryptionKey(authToken: string): Promise<string> {
  * token bytes — NOT cryptographically safe, test-only.
  */
 export function deriveEncryptionKeySync(authToken: string): string {
-  return Buffer.from(authToken, 'utf8').toString('hex').slice(0, 64);
+  return Buffer.from(authToken, "utf8").toString("hex").slice(0, 64);
 }

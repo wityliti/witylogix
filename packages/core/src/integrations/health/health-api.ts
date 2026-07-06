@@ -5,7 +5,7 @@
  * error trends, degradation detection, and alert management with Zod validation.
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 import type {
   ProviderHealth,
   SLAReport,
@@ -15,7 +15,7 @@ import type {
   DegradationEvent,
   Alert,
   AlertRule,
-} from './health-types.js';
+} from "./health-types.js";
 import type {
   RealTimeHealthTracker,
   SLAMonitor,
@@ -23,7 +23,7 @@ import type {
   ErrorTrendAnalyzer,
   DegradationDetector,
   AlertingEngine,
-} from './integration-health-monitor.js';
+} from "./integration-health-monitor.js";
 
 // ─── ZODE VALIDATION SCHEMAS ────────────────────────────────────────────────
 
@@ -34,15 +34,15 @@ const percentageSchema = z.number().min(0).max(100);
 const CreateAlertRuleSchema = z.object({
   providerId: providerId.optional(),
   name: z.string().min(1).max(255),
-  type: z.enum(['threshold', 'trend', 'anomaly', 'sla_breach']),
+  type: z.enum(["threshold", "trend", "anomaly", "sla_breach"]),
   condition: z.object({
-    metric: z.enum(['latency', 'error_rate', 'uptime', 'volume', 'sla']),
-    operator: z.enum(['>', '<', '>=', '<=', '==', '!=']),
+    metric: z.enum(["latency", "error_rate", "uptime", "volume", "sla"]),
+    operator: z.enum([">", "<", ">=", "<=", "==", "!="]),
     threshold: z.number(),
     window: z.number().optional(),
   }),
-  severity: z.enum(['critical', 'high', 'medium', 'low', 'info']),
-  channels: z.array(z.enum(['slack', 'email', 'pagerduty', 'webhook'])),
+  severity: z.enum(["critical", "high", "medium", "low", "info"]),
+  channels: z.array(z.enum(["slack", "email", "pagerduty", "webhook"])),
   enabled: z.boolean().default(true),
 });
 
@@ -65,8 +65,8 @@ const ExecuteHealthCheckSchema = z.object({
 
 const AlertQuerySchema = z.object({
   providerId: providerId.optional(),
-  severity: z.enum(['critical', 'high', 'medium', 'low', 'info']).optional(),
-  status: z.enum(['firing', 'acknowledged', 'resolved']).optional(),
+  severity: z.enum(["critical", "high", "medium", "low", "info"]).optional(),
+  status: z.enum(["firing", "acknowledged", "resolved"]).optional(),
   limit: z.number().min(1).max(1000).default(100),
   offset: z.number().min(0).default(0),
 });
@@ -156,7 +156,7 @@ export class HealthAPIHandler {
     private latencyHistogram: LatencyHistogram,
     private errorAnalyzer: ErrorTrendAnalyzer,
     private degradationDetector: DegradationDetector,
-    private alertingEngine: AlertingEngine
+    private alertingEngine: AlertingEngine,
   ) {}
 
   /**
@@ -165,10 +165,18 @@ export class HealthAPIHandler {
    */
   async getAllProviderHealth(): Promise<HealthStatusResponse> {
     const providers = this.tracker.getAllHealthStatus();
-    const healthy = providers.filter((p: ProviderHealth) => p.status === 'healthy').length;
-    const degraded = providers.filter((p: ProviderHealth) => p.status === 'degraded').length;
-    const down = providers.filter((p: ProviderHealth) => p.status === 'down').length;
-    const unknown = providers.filter((p: ProviderHealth) => p.status === 'unknown').length;
+    const healthy = providers.filter(
+      (p: ProviderHealth) => p.status === "healthy",
+    ).length;
+    const degraded = providers.filter(
+      (p: ProviderHealth) => p.status === "degraded",
+    ).length;
+    const down = providers.filter(
+      (p: ProviderHealth) => p.status === "down",
+    ).length;
+    const unknown = providers.filter(
+      (p: ProviderHealth) => p.status === "unknown",
+    ).length;
 
     return {
       providers,
@@ -223,7 +231,9 @@ export class HealthAPIHandler {
    * GET /health/sla
    * Get SLA reports for all providers.
    */
-  async getAllSLAReports(period: 'daily' | 'weekly' | 'monthly'): Promise<SLAReportResponse> {
+  async getAllSLAReports(
+    period: "daily" | "weekly" | "monthly",
+  ): Promise<SLAReportResponse> {
     const providers = this.tracker.getAllHealthStatus();
     const reports: SLAReport[] = [];
     let totalBreaches = 0;
@@ -231,7 +241,11 @@ export class HealthAPIHandler {
 
     for (const provider of providers) {
       const history = this.tracker.getHealthHistory(provider.providerId);
-      const report = this.slaMonitor.calculateSLAReport(provider.providerId, history, period);
+      const report = this.slaMonitor.calculateSLAReport(
+        provider.providerId,
+        history,
+        period,
+      );
       if (report) {
         reports.push(report);
         totalBreaches += report.breachCount;
@@ -250,9 +264,14 @@ export class HealthAPIHandler {
    * GET /health/sla/:providerId
    * Get SLA report for specific provider.
    */
-  async getProviderSLAReport(providerId: string, period: 'daily' | 'weekly' | 'monthly'): Promise<SLAReport | null> {
+  async getProviderSLAReport(
+    providerId: string,
+    period: "daily" | "weekly" | "monthly",
+  ): Promise<SLAReport | null> {
     const history = this.tracker.getHealthHistory(providerId);
-    return this.slaMonitor.calculateSLAReport(providerId, history, period) || null;
+    return (
+      this.slaMonitor.calculateSLAReport(providerId, history, period) || null
+    );
   }
 
   /**
@@ -262,9 +281,13 @@ export class HealthAPIHandler {
   async getLatencyAnalysis(
     providerId: string,
     endpoint: string,
-    window: LatencyTimeWindow = '1hr'
+    window: LatencyTimeWindow = "1hr",
   ): Promise<LatencyAnalysisResponse> {
-    const bucket = this.latencyHistogram.getLatencyBucket(providerId, endpoint, window);
+    const bucket = this.latencyHistogram.getLatencyBucket(
+      providerId,
+      endpoint,
+      window,
+    );
     const slowRequests = this.latencyHistogram.identifySlowRequests(providerId);
 
     return {
@@ -323,7 +346,9 @@ export class HealthAPIHandler {
    * GET /health/errors/:providerId/trends
    * Get error trends for specific provider.
    */
-  async getProviderErrorTrends(providerId: string): Promise<ErrorAnalysisResponse | null> {
+  async getProviderErrorTrends(
+    providerId: string,
+  ): Promise<ErrorAnalysisResponse | null> {
     const trend = this.errorAnalyzer.analyzeTrends(providerId);
 
     if (!trend) return null;
@@ -356,7 +381,9 @@ export class HealthAPIHandler {
     let criticalCount = 0;
 
     for (const provider of providers) {
-      const event = this.degradationDetector.getLatestEvent(provider.providerId);
+      const event = this.degradationDetector.getLatestEvent(
+        provider.providerId,
+      );
       const isDegraded = event && !event.recovered;
 
       degradations.push({
@@ -367,7 +394,7 @@ export class HealthAPIHandler {
         timestamp: new Date().toISOString(),
       });
 
-      if (isDegraded && event?.severity === 'critical') {
+      if (isDegraded && event?.severity === "critical") {
         criticalCount++;
       }
     }
@@ -379,27 +406,36 @@ export class HealthAPIHandler {
    * GET /health/alerts
    * Get alerts with filtering and pagination.
    */
-  async getAlerts(query: z.infer<typeof AlertQuerySchema>): Promise<AlertsResponse> {
+  async getAlerts(
+    query: z.infer<typeof AlertQuerySchema>,
+  ): Promise<AlertsResponse> {
     const validated = AlertQuerySchema.parse(query);
     const allAlerts = Array.from(
-      this.alertingEngine['alerts']?.values?.() || []
+      this.alertingEngine["alerts"]?.values?.() || [],
     ) as Alert[];
 
     let filtered = allAlerts;
 
     if (validated.providerId) {
-      filtered = filtered.filter((a: Alert) => a.providerId === validated.providerId);
+      filtered = filtered.filter(
+        (a: Alert) => a.providerId === validated.providerId,
+      );
     }
 
     if (validated.severity) {
-      filtered = filtered.filter((a: Alert) => a.severity === validated.severity);
+      filtered = filtered.filter(
+        (a: Alert) => a.severity === validated.severity,
+      );
     }
 
     if (validated.status) {
       filtered = filtered.filter((a: Alert) => a.status === validated.status);
     }
 
-    const paginated = filtered.slice(validated.offset, validated.offset + validated.limit);
+    const paginated = filtered.slice(
+      validated.offset,
+      validated.offset + validated.limit,
+    );
 
     return {
       alerts: paginated,
@@ -415,10 +451,14 @@ export class HealthAPIHandler {
    */
   async acknowledgeAlert(
     alertId: string,
-    data: z.infer<typeof AcknowledgeAlertSchema>
+    data: z.infer<typeof AcknowledgeAlertSchema>,
   ): Promise<{ success: boolean; alertId: string }> {
     const validated = AcknowledgeAlertSchema.parse(data);
-    this.alertingEngine.acknowledgeAlert(alertId, validated.acknowledgedBy, validated.comment);
+    this.alertingEngine.acknowledgeAlert(
+      alertId,
+      validated.acknowledgedBy,
+      validated.comment,
+    );
 
     return {
       success: true,
@@ -432,14 +472,14 @@ export class HealthAPIHandler {
    */
   async resolveAlert(
     alertId: string,
-    data: z.infer<typeof ResolveAlertSchema>
+    data: z.infer<typeof ResolveAlertSchema>,
   ): Promise<{ success: boolean; alertId: string }> {
     const validated = ResolveAlertSchema.parse(data);
     this.alertingEngine.resolveAlert(
       alertId,
       validated.resolvedBy,
       validated.rootCause,
-      validated.actionsTaken
+      validated.actionsTaken,
     );
 
     return {
@@ -454,7 +494,7 @@ export class HealthAPIHandler {
    */
   async executeHealthCheck(
     providerId: string,
-    data: z.infer<typeof ExecuteHealthCheckSchema>
+    data: z.infer<typeof ExecuteHealthCheckSchema>,
   ): Promise<HealthCheckResultResponse> {
     const validated = ExecuteHealthCheckSchema.parse(data);
     const startTime = Date.now();
@@ -463,7 +503,9 @@ export class HealthAPIHandler {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), validated.timeoutMs);
 
-      const response = await fetch(validated.endpoint, { signal: controller.signal });
+      const response = await fetch(validated.endpoint, {
+        signal: controller.signal,
+      });
       clearTimeout(timeout);
       const responseTime = Date.now() - startTime;
 
@@ -492,7 +534,9 @@ export class HealthAPIHandler {
    * POST /health/rules
    * Create alert rule.
    */
-  async createAlertRule(data: z.infer<typeof CreateAlertRuleSchema>): Promise<AlertRule> {
+  async createAlertRule(
+    data: z.infer<typeof CreateAlertRuleSchema>,
+  ): Promise<AlertRule> {
     const validated = CreateAlertRuleSchema.parse(data);
     const ruleId = `rule-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
@@ -521,7 +565,9 @@ export class HealthAPIHandler {
     rules: AlertRule[];
     total: number;
   }> {
-    const rules = Array.from(this.alertingEngine['alertRules']?.values?.() || []) as AlertRule[];
+    const rules = Array.from(
+      this.alertingEngine["alertRules"]?.values?.() || [],
+    ) as AlertRule[];
     return {
       rules,
       total: rules.length,
@@ -533,7 +579,7 @@ export class HealthAPIHandler {
    * Get overall health summary.
    */
   async getHealthSummary(): Promise<{
-    overallStatus: 'healthy' | 'degraded' | 'down';
+    overallStatus: "healthy" | "degraded" | "down";
     providerCount: number;
     healthyCount: number;
     degradedCount: number;
@@ -543,22 +589,35 @@ export class HealthAPIHandler {
     timestamp: string;
   }> {
     const allHealth = this.tracker.getAllHealthStatus();
-    const healthy = allHealth.filter((p: ProviderHealth) => p.status === 'healthy').length;
-    const degraded = allHealth.filter((p: ProviderHealth) => p.status === 'degraded').length;
-    const down = allHealth.filter((p: ProviderHealth) => p.status === 'down').length;
+    const healthy = allHealth.filter(
+      (p: ProviderHealth) => p.status === "healthy",
+    ).length;
+    const degraded = allHealth.filter(
+      (p: ProviderHealth) => p.status === "degraded",
+    ).length;
+    const down = allHealth.filter(
+      (p: ProviderHealth) => p.status === "down",
+    ).length;
 
-    let overallStatus: 'healthy' | 'degraded' | 'down' = 'healthy';
-    if (down > 0) overallStatus = 'down';
-    else if (degraded > 0) overallStatus = 'degraded';
+    let overallStatus: "healthy" | "degraded" | "down" = "healthy";
+    if (down > 0) overallStatus = "down";
+    else if (degraded > 0) overallStatus = "degraded";
 
-    const allAlerts = Array.from(this.alertingEngine['alerts']?.values?.() || []) as Alert[];
-    const activeAlerts = allAlerts.filter((a: Alert) => a.status === 'firing').length;
+    const allAlerts = Array.from(
+      this.alertingEngine["alerts"]?.values?.() || [],
+    ) as Alert[];
+    const activeAlerts = allAlerts.filter(
+      (a: Alert) => a.status === "firing",
+    ).length;
 
-    const slaDaily = this.slaMonitor['slaReports'];
+    const slaDaily = this.slaMonitor["slaReports"];
     let breachCount = 0;
     if (slaDaily) {
       for (const reports of slaDaily.values()) {
-        breachCount += reports.reduce((sum: number, r: SLAReport) => sum + (r.breachCount || 0), 0);
+        breachCount += reports.reduce(
+          (sum: number, r: SLAReport) => sum + (r.breachCount || 0),
+          0,
+        );
       }
     }
 
@@ -585,7 +644,7 @@ export function attachHealthAPI(
   latencyHistogram: LatencyHistogram,
   errorAnalyzer: ErrorTrendAnalyzer,
   degradationDetector: DegradationDetector,
-  alertingEngine: AlertingEngine
+  alertingEngine: AlertingEngine,
 ): void {
   const handler = new HealthAPIHandler(
     tracker,
@@ -593,11 +652,11 @@ export function attachHealthAPI(
     latencyHistogram,
     errorAnalyzer,
     degradationDetector,
-    alertingEngine
+    alertingEngine,
   );
 
   // Health status endpoints
-  router.get('/health/providers', async (req: any, res: any) => {
+  router.get("/health/providers", async (req: any, res: any) => {
     try {
       const result = await handler.getAllProviderHealth();
       res.json(result);
@@ -606,11 +665,11 @@ export function attachHealthAPI(
     }
   });
 
-  router.get('/health/providers/:id', async (req: any, res: any) => {
+  router.get("/health/providers/:id", async (req: any, res: any) => {
     try {
       const result = await handler.getProviderHealth(req.params.id);
       if (!result) {
-        res.status(404).json({ error: 'Provider not found' });
+        res.status(404).json({ error: "Provider not found" });
       } else {
         res.json(result);
       }
@@ -619,7 +678,7 @@ export function attachHealthAPI(
     }
   });
 
-  router.get('/health/providers/:id/history', async (req: any, res: any) => {
+  router.get("/health/providers/:id/history", async (req: any, res: any) => {
     try {
       const result = await handler.getProviderHealthHistory(req.params.id);
       res.json(result);
@@ -629,9 +688,9 @@ export function attachHealthAPI(
   });
 
   // SLA endpoints
-  router.get('/health/sla', async (req: any, res: any) => {
+  router.get("/health/sla", async (req: any, res: any) => {
     try {
-      const period = req.query.period || 'daily';
+      const period = req.query.period || "daily";
       const result = await handler.getAllSLAReports(period);
       res.json(result);
     } catch (error) {
@@ -639,12 +698,15 @@ export function attachHealthAPI(
     }
   });
 
-  router.get('/health/sla/:providerId', async (req: any, res: any) => {
+  router.get("/health/sla/:providerId", async (req: any, res: any) => {
     try {
-      const period = req.query.period || 'daily';
-      const result = await handler.getProviderSLAReport(req.params.providerId, period);
+      const period = req.query.period || "daily";
+      const result = await handler.getProviderSLAReport(
+        req.params.providerId,
+        period,
+      );
       if (!result) {
-        res.status(404).json({ error: 'SLA report not found' });
+        res.status(404).json({ error: "SLA report not found" });
       } else {
         res.json(result);
       }
@@ -654,11 +716,15 @@ export function attachHealthAPI(
   });
 
   // Latency endpoints
-  router.get('/health/latency/:providerId', async (req: any, res: any) => {
+  router.get("/health/latency/:providerId", async (req: any, res: any) => {
     try {
-      const endpoint = req.query.endpoint || 'default';
-      const window = req.query.window || '1hr';
-      const result = await handler.getLatencyAnalysis(req.params.providerId, endpoint, window);
+      const endpoint = req.query.endpoint || "default";
+      const window = req.query.window || "1hr";
+      const result = await handler.getLatencyAnalysis(
+        req.params.providerId,
+        endpoint,
+        window,
+      );
       res.json(result);
     } catch (error) {
       res.status(500).json({ error: String(error) });
@@ -666,7 +732,7 @@ export function attachHealthAPI(
   });
 
   // Error endpoints
-  router.get('/health/errors', async (req: any, res: any) => {
+  router.get("/health/errors", async (req: any, res: any) => {
     try {
       const result = await handler.getAllErrorTrends();
       res.json(result);
@@ -675,21 +741,26 @@ export function attachHealthAPI(
     }
   });
 
-  router.get('/health/errors/:providerId/trends', async (req: any, res: any) => {
-    try {
-      const result = await handler.getProviderErrorTrends(req.params.providerId);
-      if (!result) {
-        res.status(404).json({ error: 'Error trend not found' });
-      } else {
-        res.json(result);
+  router.get(
+    "/health/errors/:providerId/trends",
+    async (req: any, res: any) => {
+      try {
+        const result = await handler.getProviderErrorTrends(
+          req.params.providerId,
+        );
+        if (!result) {
+          res.status(404).json({ error: "Error trend not found" });
+        } else {
+          res.json(result);
+        }
+      } catch (error) {
+        res.status(500).json({ error: String(error) });
       }
-    } catch (error) {
-      res.status(500).json({ error: String(error) });
-    }
-  });
+    },
+  );
 
   // Degradation endpoints
-  router.get('/health/degradation', async (req: any, res: any) => {
+  router.get("/health/degradation", async (req: any, res: any) => {
     try {
       const result = await handler.getAllDegradationStatus();
       res.json(result);
@@ -699,7 +770,7 @@ export function attachHealthAPI(
   });
 
   // Alert endpoints
-  router.get('/health/alerts', async (req: any, res: any) => {
+  router.get("/health/alerts", async (req: any, res: any) => {
     try {
       const result = await handler.getAlerts(req.query);
       res.json(result);
@@ -708,7 +779,7 @@ export function attachHealthAPI(
     }
   });
 
-  router.post('/health/alerts/:id/acknowledge', async (req: any, res: any) => {
+  router.post("/health/alerts/:id/acknowledge", async (req: any, res: any) => {
     try {
       const result = await handler.acknowledgeAlert(req.params.id, req.body);
       res.json(result);
@@ -717,7 +788,7 @@ export function attachHealthAPI(
     }
   });
 
-  router.post('/health/alerts/:id/resolve', async (req: any, res: any) => {
+  router.post("/health/alerts/:id/resolve", async (req: any, res: any) => {
     try {
       const result = await handler.resolveAlert(req.params.id, req.body);
       res.json(result);
@@ -727,9 +798,12 @@ export function attachHealthAPI(
   });
 
   // Manual check endpoint
-  router.post('/health/check/:providerId', async (req: any, res: any) => {
+  router.post("/health/check/:providerId", async (req: any, res: any) => {
     try {
-      const result = await handler.executeHealthCheck(req.params.providerId, req.body);
+      const result = await handler.executeHealthCheck(
+        req.params.providerId,
+        req.body,
+      );
       res.json(result);
     } catch (error) {
       res.status(500).json({ error: String(error) });
@@ -737,7 +811,7 @@ export function attachHealthAPI(
   });
 
   // Rule endpoints
-  router.post('/health/rules', async (req: any, res: any) => {
+  router.post("/health/rules", async (req: any, res: any) => {
     try {
       const result = await handler.createAlertRule(req.body);
       res.json(result);
@@ -746,7 +820,7 @@ export function attachHealthAPI(
     }
   });
 
-  router.get('/health/rules', async (req: any, res: any) => {
+  router.get("/health/rules", async (req: any, res: any) => {
     try {
       const result = await handler.getAlertRules();
       res.json(result);
@@ -756,7 +830,7 @@ export function attachHealthAPI(
   });
 
   // Summary endpoint
-  router.get('/health/status/summary', async (req: any, res: any) => {
+  router.get("/health/status/summary", async (req: any, res: any) => {
     try {
       const result = await handler.getHealthSummary();
       res.json(result);

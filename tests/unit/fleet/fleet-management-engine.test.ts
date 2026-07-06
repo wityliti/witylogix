@@ -253,11 +253,7 @@ describe("VehicleManager", () => {
     mockPrisma.vehicle.findMany.mockResolvedValue(vehicles);
     mockPrisma.vehicle.count.mockResolvedValue(1);
 
-    const result = await manager.listVehicles(
-      { status: "ACTIVE" },
-      1,
-      20,
-    );
+    const result = await manager.listVehicles({ status: "ACTIVE" }, 1, 20);
 
     expect(result.vehicles).toHaveLength(1);
     expect(result.total).toBe(1);
@@ -320,7 +316,10 @@ describe("VehicleAssigner", () => {
     mockPrisma.vehicle.findUnique.mockResolvedValue(vehicle);
     mockPrisma.vehicleAssignment.findFirst.mockResolvedValue(null);
     mockPrisma.vehicleAssignment.create.mockResolvedValue(assignment);
-    mockPrisma.vehicle.update.mockResolvedValue({ ...vehicle, assignedDriverId: "d1" });
+    mockPrisma.vehicle.update.mockResolvedValue({
+      ...vehicle,
+      assignedDriverId: "d1",
+    });
 
     const result = await assigner.assignVehicle({
       vehicleId: "v1",
@@ -344,7 +343,9 @@ describe("VehicleAssigner", () => {
     };
 
     mockPrisma.vehicle.findUnique.mockResolvedValue({ id: "v1" });
-    mockPrisma.vehicleAssignment.findFirst.mockResolvedValue(existingAssignment);
+    mockPrisma.vehicleAssignment.findFirst.mockResolvedValue(
+      existingAssignment,
+    );
 
     await expect(
       assigner.assignVehicle({ vehicleId: "v1", driverId: "d2" }),
@@ -370,7 +371,10 @@ describe("VehicleAssigner", () => {
 
     mockPrisma.vehicleAssignment.findFirst.mockResolvedValue(activeAssignment);
     mockPrisma.vehicleAssignment.update.mockResolvedValue(unassignedAssignment);
-    mockPrisma.vehicle.update.mockResolvedValue({ id: "v1", assignedDriverId: null });
+    mockPrisma.vehicle.update.mockResolvedValue({
+      id: "v1",
+      assignedDriverId: null,
+    });
 
     const result = await assigner.unassignVehicle("v1");
 
@@ -603,9 +607,7 @@ describe("FleetDashboardAggregator", () => {
       { totalCost: 100 },
     ]);
 
-    mockPrisma.maintenanceRecord.findMany.mockResolvedValue([
-      { cost: 500 },
-    ]);
+    mockPrisma.maintenanceRecord.findMany.mockResolvedValue([{ cost: 500 }]);
 
     mockPrisma.vehicle.findMany.mockResolvedValue([
       { insurance: { premium: 1200 } },

@@ -8,45 +8,50 @@
  * - Status progression: CREATED → PICKED_UP → OUT_FOR_DELIVERY → ARRIVED → DELIVERED
  */
 
-import type { TimelineEntry, TimelineEvent, DeliveryStatus, TimelineRecordRequest } from './types.js';
+import type {
+  TimelineEntry,
+  TimelineEvent,
+  DeliveryStatus,
+  TimelineRecordRequest,
+} from "./types.js";
 
 // ─── EVENT DEFINITIONS ──────────────────────────────────────────
 
 const EVENT_DESCRIPTIONS: Record<TimelineEvent, string> = {
-  CREATED: 'Delivery order created',
-  CONFIRMED: 'Delivery confirmed',
-  PICKED_UP: 'Package picked up from sender',
-  OUT_FOR_DELIVERY: 'Package out for delivery',
-  ARRIVED: 'Arrived at delivery location',
-  DELIVERED: 'Package delivered successfully',
-  FAILED: 'Delivery failed',
-  RESCHEDULED: 'Delivery rescheduled',
-  RETURNED: 'Package returned to sender',
+  CREATED: "Delivery order created",
+  CONFIRMED: "Delivery confirmed",
+  PICKED_UP: "Package picked up from sender",
+  OUT_FOR_DELIVERY: "Package out for delivery",
+  ARRIVED: "Arrived at delivery location",
+  DELIVERED: "Package delivered successfully",
+  FAILED: "Delivery failed",
+  RESCHEDULED: "Delivery rescheduled",
+  RETURNED: "Package returned to sender",
 };
 
 const EVENT_STATUS_MAP: Record<TimelineEvent, DeliveryStatus> = {
-  CREATED: 'pending',
-  CONFIRMED: 'confirmed',
-  PICKED_UP: 'picked_up',
-  OUT_FOR_DELIVERY: 'out_for_delivery',
-  ARRIVED: 'arrived',
-  DELIVERED: 'delivered',
-  FAILED: 'failed',
-  RESCHEDULED: 'rescheduled',
-  RETURNED: 'returned',
+  CREATED: "pending",
+  CONFIRMED: "confirmed",
+  PICKED_UP: "picked_up",
+  OUT_FOR_DELIVERY: "out_for_delivery",
+  ARRIVED: "arrived",
+  DELIVERED: "delivered",
+  FAILED: "failed",
+  RESCHEDULED: "rescheduled",
+  RETURNED: "returned",
 };
 
 // ─── VALID STATUS TRANSITIONS ──────────────────────────────────
 
 const VALID_TRANSITIONS: Record<DeliveryStatus, DeliveryStatus[]> = {
-  pending: ['confirmed', 'failed'],
-  confirmed: ['picked_up', 'failed', 'rescheduled'],
-  picked_up: ['out_for_delivery', 'failed', 'returned'],
-  out_for_delivery: ['arrived', 'failed', 'returned'],
-  arrived: ['delivered', 'failed', 'rescheduled'],
+  pending: ["confirmed", "failed"],
+  confirmed: ["picked_up", "failed", "rescheduled"],
+  picked_up: ["out_for_delivery", "failed", "returned"],
+  out_for_delivery: ["arrived", "failed", "returned"],
+  arrived: ["delivered", "failed", "rescheduled"],
   delivered: [], // Terminal state
-  failed: ['rescheduled', 'returned'], // Can retry or return
-  rescheduled: ['confirmed', 'failed'],
+  failed: ["rescheduled", "returned"], // Can retry or return
+  rescheduled: ["confirmed", "failed"],
   returned: [], // Terminal state
 };
 
@@ -61,14 +66,22 @@ export class DeliveryTimelineService {
    * Creates a new TimelineEntry and stores it
    */
   recordEvent(request: TimelineRecordRequest): TimelineEntry {
-    const { deliveryId, event, description, latitude, longitude, attachments, metadata } = request;
+    const {
+      deliveryId,
+      event,
+      description,
+      latitude,
+      longitude,
+      attachments,
+      metadata,
+    } = request;
 
     if (!deliveryId) {
-      throw new Error('Delivery ID is required');
+      throw new Error("Delivery ID is required");
     }
 
     if (!event) {
-      throw new Error('Event type is required');
+      throw new Error("Event type is required");
     }
 
     // Validate event type
@@ -81,14 +94,15 @@ export class DeliveryTimelineService {
 
     // Validate status transition
     const currentTimeline = this.timeline.get(deliveryId) || [];
-    const currentStatus = currentTimeline.length > 0
-      ? currentTimeline[currentTimeline.length - 1].status
-      : 'pending';
+    const currentStatus =
+      currentTimeline.length > 0
+        ? currentTimeline[currentTimeline.length - 1].status
+        : "pending";
 
     if (!this.isValidTransition(currentStatus, status)) {
       throw new Error(
         `Invalid status transition: ${currentStatus} → ${status}. ` +
-          `Allowed: ${VALID_TRANSITIONS[currentStatus as DeliveryStatus]?.join(', ') || 'none'}`
+          `Allowed: ${VALID_TRANSITIONS[currentStatus as DeliveryStatus]?.join(", ") || "none"}`,
       );
     }
 
@@ -140,7 +154,10 @@ export class DeliveryTimelineService {
   /**
    * Get specific event from timeline
    */
-  getEventByType(deliveryId: string, eventType: TimelineEvent): TimelineEntry | null {
+  getEventByType(
+    deliveryId: string,
+    eventType: TimelineEvent,
+  ): TimelineEntry | null {
     const timeline = this.getTimeline(deliveryId);
     return timeline.find((entry) => entry.event === eventType) || null;
   }
@@ -151,16 +168,22 @@ export class DeliveryTimelineService {
   getEventsBetween(
     deliveryId: string,
     startTime: Date,
-    endTime: Date
+    endTime: Date,
   ): TimelineEntry[] {
     const timeline = this.getTimeline(deliveryId);
-    return timeline.filter((entry) => entry.timestamp >= startTime && entry.timestamp <= endTime);
+    return timeline.filter(
+      (entry) => entry.timestamp >= startTime && entry.timestamp <= endTime,
+    );
   }
 
   /**
    * Update an event (for corrections)
    */
-  updateEvent(deliveryId: string, entryId: string, updates: Partial<TimelineEntry>): TimelineEntry | null {
+  updateEvent(
+    deliveryId: string,
+    entryId: string,
+    updates: Partial<TimelineEntry>,
+  ): TimelineEntry | null {
     const timeline = this.timeline.get(deliveryId) || [];
     const index = timeline.findIndex((e) => e.id === entryId);
 

@@ -1,17 +1,17 @@
-import * as SQLite from 'expo-sqlite';
-import { runMigrations } from './migrations';
-import { deriveEncryptionKey } from './encryption';
+import * as SQLite from "expo-sqlite";
+import { runMigrations } from "./migrations";
+import { deriveEncryptionKey } from "./encryption";
 import type {
   OfflineEvent,
   CachedRoute,
   CachedDelivery,
   PodAsset,
   SyncStatus,
-} from './schema';
+} from "./schema";
 
 export type { OfflineEvent, CachedRoute, CachedDelivery, PodAsset, SyncStatus };
 
-const DB_NAME = 'witylogix_driver.db';
+const DB_NAME = "witylogix_driver.db";
 
 let _db: SQLite.SQLiteDatabase | null = null;
 
@@ -24,7 +24,9 @@ let _db: SQLite.SQLiteDatabase | null = null;
  *
  * @param authToken  Raw JWT from expo-secure-store. Used to derive the AES key.
  */
-export async function openDatabase(authToken: string): Promise<SQLite.SQLiteDatabase> {
+export async function openDatabase(
+  authToken: string,
+): Promise<SQLite.SQLiteDatabase> {
   if (_db) return _db;
 
   const encryptionKey = await deriveEncryptionKey(authToken);
@@ -41,7 +43,7 @@ export async function openDatabase(authToken: string): Promise<SQLite.SQLiteData
  */
 export function getDatabase(): SQLite.SQLiteDatabase {
   if (!_db) {
-    throw new Error('Database not initialised. Call openDatabase() first.');
+    throw new Error("Database not initialised. Call openDatabase() first.");
   }
   return _db;
 }
@@ -91,7 +93,7 @@ export async function getOfflineEventsByStatus(
   status: SyncStatus,
 ): Promise<OfflineEvent[]> {
   return db.getAllAsync<OfflineEvent>(
-    'SELECT * FROM offline_events WHERE sync_status = ? ORDER BY device_captured_at ASC',
+    "SELECT * FROM offline_events WHERE sync_status = ? ORDER BY device_captured_at ASC",
     [status],
   );
 }
@@ -116,7 +118,7 @@ export async function incrementOfflineEventRetry(
   id: string,
 ): Promise<void> {
   await db.runAsync(
-    'UPDATE offline_events SET retry_count = retry_count + 1 WHERE id = ?',
+    "UPDATE offline_events SET retry_count = retry_count + 1 WHERE id = ?",
     [id],
   );
 }
@@ -143,16 +145,17 @@ export async function getCachedRoute(
   routeId: string,
 ): Promise<CachedRoute | null> {
   return db.getFirstAsync<CachedRoute>(
-    'SELECT * FROM cached_routes WHERE route_id = ?',
+    "SELECT * FROM cached_routes WHERE route_id = ?",
     [routeId],
   );
 }
 
-export async function deleteExpiredRoutes(db: SQLite.SQLiteDatabase): Promise<void> {
-  await db.runAsync(
-    'DELETE FROM cached_routes WHERE expires_at < ?',
-    [new Date().toISOString()],
-  );
+export async function deleteExpiredRoutes(
+  db: SQLite.SQLiteDatabase,
+): Promise<void> {
+  await db.runAsync("DELETE FROM cached_routes WHERE expires_at < ?", [
+    new Date().toISOString(),
+  ]);
 }
 
 // ─── cached_deliveries ───────────────────────────────────────────────────────
@@ -176,7 +179,7 @@ export async function getCachedDelivery(
   deliveryId: string,
 ): Promise<CachedDelivery | null> {
   return db.getFirstAsync<CachedDelivery>(
-    'SELECT * FROM cached_deliveries WHERE delivery_id = ?',
+    "SELECT * FROM cached_deliveries WHERE delivery_id = ?",
     [deliveryId],
   );
 }
@@ -190,7 +193,13 @@ export async function insertPodAsset(
   await db.runAsync(
     `INSERT INTO pod_assets (id, event_id, asset_type, file_path, sync_status)
      VALUES (?, ?, ?, ?, ?)`,
-    [asset.id, asset.event_id, asset.asset_type, asset.file_path, asset.sync_status],
+    [
+      asset.id,
+      asset.event_id,
+      asset.asset_type,
+      asset.file_path,
+      asset.sync_status,
+    ],
   );
 }
 
@@ -199,7 +208,7 @@ export async function getPodAssetsByEvent(
   eventId: string,
 ): Promise<PodAsset[]> {
   return db.getAllAsync<PodAsset>(
-    'SELECT * FROM pod_assets WHERE event_id = ?',
+    "SELECT * FROM pod_assets WHERE event_id = ?",
     [eventId],
   );
 }
@@ -209,8 +218,8 @@ export async function updatePodAssetSyncStatus(
   id: string,
   status: SyncStatus,
 ): Promise<void> {
-  await db.runAsync(
-    'UPDATE pod_assets SET sync_status = ? WHERE id = ?',
-    [status, id],
-  );
+  await db.runAsync("UPDATE pod_assets SET sync_status = ? WHERE id = ?", [
+    status,
+    id,
+  ]);
 }

@@ -304,14 +304,22 @@ export class OneSignalSDKClient {
    * Cancel a notification by ID.
    */
   async cancelNotification(notificationId: string): Promise<void> {
-    await this.request("DELETE", `/notifications/${notificationId}?app_id=${this.appId}`);
+    await this.request(
+      "DELETE",
+      `/notifications/${notificationId}?app_id=${this.appId}`,
+    );
   }
 
   /**
    * View notification details.
    */
-  async viewNotification(notificationId: string): Promise<Record<string, unknown>> {
-    return this.request("GET", `/notifications/${notificationId}?app_id=${this.appId}`);
+  async viewNotification(
+    notificationId: string,
+  ): Promise<Record<string, unknown>> {
+    return this.request(
+      "GET",
+      `/notifications/${notificationId}?app_id=${this.appId}`,
+    );
   }
 
   /**
@@ -343,7 +351,9 @@ export class OneSignalSDKClient {
   /**
    * Create a segment.
    */
-  async createSegment(segment: OneSignalSegment): Promise<Record<string, unknown>> {
+  async createSegment(
+    segment: OneSignalSegment,
+  ): Promise<Record<string, unknown>> {
     const payload = {
       ...segment,
       app_id: this.appId,
@@ -381,7 +391,9 @@ export class OneSignalSDKClient {
   /**
    * Add a player (device).
    */
-  async addPlayer(player: Record<string, unknown>): Promise<Record<string, unknown>> {
+  async addPlayer(
+    player: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
     const payload = {
       ...player,
       app_id: this.appId,
@@ -393,7 +405,10 @@ export class OneSignalSDKClient {
   /**
    * Edit player information.
    */
-  async editPlayer(playerId: string, updates: Record<string, unknown>): Promise<void> {
+  async editPlayer(
+    playerId: string,
+    updates: Record<string, unknown>,
+  ): Promise<void> {
     await this.request("PUT", `/players/${playerId}`, {
       ...updates,
       app_id: this.appId,
@@ -411,16 +426,16 @@ export class OneSignalSDKClient {
    * Export players to CSV.
    */
   async exportPlayers(): Promise<Record<string, unknown>> {
-    return this.request(
-      "POST",
-      `/players/csv_export?app_id=${this.appId}`,
-    );
+    return this.request("POST", `/players/csv_export?app_id=${this.appId}`);
   }
 
   /**
    * Add tags to a player.
    */
-  async addPlayerTags(playerId: string, tags: Record<string, string>): Promise<void> {
+  async addPlayerTags(
+    playerId: string,
+    tags: Record<string, string>,
+  ): Promise<void> {
     await this.request("PUT", `/players/${playerId}`, {
       tags,
       app_id: this.appId,
@@ -445,7 +460,9 @@ export class OneSignalSDKClient {
   /**
    * Create a template.
    */
-  async createTemplate(template: OneSignalTemplate): Promise<Record<string, unknown>> {
+  async createTemplate(
+    template: OneSignalTemplate,
+  ): Promise<Record<string, unknown>> {
     const payload = {
       ...template,
       app_id: this.appId,
@@ -544,10 +561,7 @@ export class OneSignalSDKClient {
   /**
    * Verify webhook payload signature using timing-safe comparison.
    */
-  verifyWebhookSignature(
-    payload: string,
-    signature: string,
-  ): boolean {
+  verifyWebhookSignature(payload: string, signature: string): boolean {
     if (!this.webhookSecret) {
       throw new Error("Webhook secret is not configured");
     }
@@ -568,7 +582,10 @@ export class OneSignalSDKClient {
   /**
    * Parse and verify webhook event.
    */
-  async handleWebhookEvent(payload: string, signature: string): Promise<OneSignalWebhookPayload> {
+  async handleWebhookEvent(
+    payload: string,
+    signature: string,
+  ): Promise<OneSignalWebhookPayload> {
     if (!this.verifyWebhookSignature(payload, signature)) {
       throw new Error("Invalid webhook signature");
     }

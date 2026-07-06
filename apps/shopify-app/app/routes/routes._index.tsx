@@ -13,10 +13,19 @@
  */
 
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import { useLoaderData, useSearchParams, Link, Form, redirect } from "react-router";
+import {
+  useLoaderData,
+  useSearchParams,
+  Link,
+  Form,
+  redirect,
+} from "react-router";
 import { useState, useCallback } from "react";
 import { EmptyState } from "~/components/EmptyState";
-import { createApiClientFromRequest, type PaginatedResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type PaginatedResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 import {
   Page,
@@ -62,7 +71,13 @@ interface RoutesPageData {
   };
 }
 
-const ROUTE_STATUSES = ["DRAFT", "OPTIMIZING", "READY", "IN_PROGRESS", "COMPLETED"];
+const ROUTE_STATUSES = [
+  "DRAFT",
+  "OPTIMIZING",
+  "READY",
+  "IN_PROGRESS",
+  "COMPLETED",
+];
 
 const STATUS_BADGE_TONE: Record<string, BadgeProps["tone"]> = {
   DRAFT: undefined,
@@ -108,7 +123,10 @@ export async function action({ request }: ActionFunctionArgs) {
       date: formData.get("date") as string,
       driverId: (formData.get("driverId") as string) || undefined,
     };
-    const result = await api.post<{ data: { id: string } }>("/api/v4/routes", route);
+    const result = await api.post<{ data: { id: string } }>(
+      "/api/v4/routes",
+      route,
+    );
     return redirect(`/routes/${result.data.id}`);
   }
 
@@ -173,7 +191,9 @@ export default function RoutesList() {
       content: "Optimize Selected",
       onAction: () => {
         // Submit optimize form programmatically
-        const form = document.getElementById("optimize-form") as HTMLFormElement;
+        const form = document.getElementById(
+          "optimize-form",
+        ) as HTMLFormElement;
         if (form) {
           form.submit();
         }
@@ -198,7 +218,9 @@ export default function RoutesList() {
       <IndexTable.Cell>
         {route.driverName ? (
           <Link to={`/drivers/${route.driverId}`}>
-            <Text as="span" tone="magic">{route.driverName}</Text>
+            <Text as="span" tone="magic">
+              {route.driverName}
+            </Text>
           </Link>
         ) : (
           <Text as="span" variant="bodyMd" tone="subdued">

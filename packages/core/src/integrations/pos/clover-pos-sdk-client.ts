@@ -4,9 +4,20 @@
  * Implements OAuth2, merchant ID routing, and event subscriptions
  */
 
-import type { POSLocation, POSMenuItem, POSOrder, POSPayment, POSWebhookEvent, POSEmployee, POSShift, POSRevenueCenter, MenuSyncOptions, OrderFilters } from './types';
-import { POSAdapter } from './pos-adapter';
-import type { Clover, RateLimitInfo, POSSDKError } from './pos-sdk-types';
+import type {
+  POSLocation,
+  POSMenuItem,
+  POSOrder,
+  POSPayment,
+  POSWebhookEvent,
+  POSEmployee,
+  POSShift,
+  POSRevenueCenter,
+  MenuSyncOptions,
+  OrderFilters,
+} from "./types";
+import { POSAdapter } from "./pos-adapter";
+import type { Clover, RateLimitInfo, POSSDKError } from "./pos-sdk-types";
 
 /**
  * Clover POS SDK Client
@@ -14,16 +25,25 @@ import type { Clover, RateLimitInfo, POSSDKError } from './pos-sdk-types';
 export class CloverPOSSDKClient extends POSAdapter {
   private config: Clover.Config;
   private baseUrl: string;
-  private rateLimitInfo: RateLimitInfo = { remaining: 16, reset: Date.now(), limit: 16 };
-  private requestQueue: Array<{ execute: () => Promise<any>; resolve: (v: any) => void; reject: (e: any) => void }> = [];
+  private rateLimitInfo: RateLimitInfo = {
+    remaining: 16,
+    reset: Date.now(),
+    limit: 16,
+  };
+  private requestQueue: Array<{
+    execute: () => Promise<any>;
+    resolve: (v: any) => void;
+    reject: (e: any) => void;
+  }> = [];
   private isProcessingQueue = false;
 
   constructor(config: Clover.Config) {
-    super('clover');
+    super("clover");
     this.config = config;
-    this.baseUrl = config.environment === 'production'
-      ? 'https://api.clover.com'
-      : 'https://sandbox.dev.clover.com';
+    this.baseUrl =
+      config.environment === "production"
+        ? "https://api.clover.com"
+        : "https://sandbox.dev.clover.com";
     this.initializeRateLimiter();
   }
 
@@ -32,7 +52,10 @@ export class CloverPOSSDKClient extends POSAdapter {
    */
   private initializeRateLimiter(): void {
     setInterval(() => {
-      this.rateLimitInfo.remaining = Math.min(16, this.rateLimitInfo.remaining + 16);
+      this.rateLimitInfo.remaining = Math.min(
+        16,
+        this.rateLimitInfo.remaining + 16,
+      );
     }, 1000);
   }
 
@@ -60,7 +83,7 @@ export class CloverPOSSDKClient extends POSAdapter {
       const { execute, resolve, reject } = this.requestQueue.shift()!;
 
       if (this.rateLimitInfo.remaining < 1) {
-        await new Promise(r => setTimeout(r, 62.5)); // ~16 req/sec
+        await new Promise((r) => setTimeout(r, 62.5)); // ~16 req/sec
       }
 
       try {
@@ -80,25 +103,28 @@ export class CloverPOSSDKClient extends POSAdapter {
   async getLocation(locationId: string): Promise<POSLocation> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
-        const response = await this.makeRequest(`/v3/merchants/${this.config.merchantId}`, 'GET');
+        const response = await this.makeRequest(
+          `/v3/merchants/${this.config.merchantId}`,
+          "GET",
+        );
         const merchant = response;
 
         return {
           id: merchant.id,
           externalId: merchant.id,
-          providerId: 'clover',
+          providerId: "clover",
           name: merchant.name,
           address: {
-            street1: merchant.address?.address1 || '',
+            street1: merchant.address?.address1 || "",
             street2: merchant.address?.address2,
-            city: merchant.address?.city || '',
-            state: merchant.address?.state || '',
-            postalCode: merchant.address?.zip || '',
-            country: merchant.address?.country || 'US',
+            city: merchant.address?.city || "",
+            state: merchant.address?.state || "",
+            postalCode: merchant.address?.zip || "",
+            country: merchant.address?.country || "US",
           },
           phone: merchant.phone,
           email: merchant.email,
-          timezone: merchant.timezone || 'UTC',
+          timezone: merchant.timezone || "UTC",
           isActive: true,
           createdAt: new Date(merchant.createdTime || Date.now()),
           updatedAt: new Date(merchant.modifiedTime || Date.now()),
@@ -122,10 +148,13 @@ export class CloverPOSSDKClient extends POSAdapter {
   /**
    * Get menu items
    */
-  async getMenuItems(locationId?: string, categoryId?: string): Promise<POSMenuItem[]> {
+  async getMenuItems(
+    locationId?: string,
+    categoryId?: string,
+  ): Promise<POSMenuItem[]> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
-        const cached = this.getMenuFromCache(locationId || 'default');
+        const cached = this.getMenuFromCache(locationId || "default");
         if (cached && !categoryId) {
           return cached;
         }
@@ -134,11 +163,13 @@ export class CloverPOSSDKClient extends POSAdapter {
           ? `/v3/merchants/${this.config.merchantId}/categories/${categoryId}/items`
           : `/v3/merchants/${this.config.merchantId}/items`;
 
-        const response = await this.makeRequest(path, 'GET');
-        const items = (response.elements || []).map((item: any) => this.mapCloverItemToPOS(item, locationId || 'default'));
+        const response = await this.makeRequest(path, "GET");
+        const items = (response.elements || []).map((item: any) =>
+          this.mapCloverItemToPOS(item, locationId || "default"),
+        );
 
         if (!categoryId) {
-          this.cacheMenu(locationId || 'default', items);
+          this.cacheMenu(locationId || "default", items);
         }
 
         return items;
@@ -149,29 +180,45 @@ export class CloverPOSSDKClient extends POSAdapter {
   /**
    * Create order
    */
-  async createOrder(locationId: string, order: Partial<POSOrder>): Promise<POSOrder> {
+  async createOrder(
+    locationId: string,
+    order: Partial<POSOrder>,
+  ): Promise<POSOrder> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const validation = this.validateOrder(order);
         if (!validation.valid) {
-          throw this.createError('INVALID_ORDER', validation.errors.join(', '));
+          throw this.createError("INVALID_ORDER", validation.errors.join(", "));
         }
 
         const payload = {
           note: order.notes,
-          state: 'open',
+          state: "open",
         };
 
-        const response = await this.makeRequest(`/v3/merchants/${this.config.merchantId}/orders`, 'POST', payload);
+        const response = await this.makeRequest(
+          `/v3/merchants/${this.config.merchantId}/orders`,
+          "POST",
+          payload,
+        );
 
         // Add line items
         for (const li of order.lineItems || []) {
-          await this.addOrderLineItem(response.id, li.menuItemId, li.quantity, li.price);
+          await this.addOrderLineItem(
+            response.id,
+            li.menuItemId,
+            li.quantity,
+            li.price,
+          );
         }
 
         // Add discounts
         for (const discount of order.discounts || []) {
-          await this.addOrderDiscount(response.id, discount.type, discount.amount);
+          await this.addOrderDiscount(
+            response.id,
+            discount.type,
+            discount.amount,
+          );
         }
 
         return this.getOrder(locationId, response.id);
@@ -185,7 +232,10 @@ export class CloverPOSSDKClient extends POSAdapter {
   async getOrder(locationId: string, orderId: string): Promise<POSOrder> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
-        const response = await this.makeRequest(`/v3/merchants/${this.config.merchantId}/orders/${orderId}`, 'GET');
+        const response = await this.makeRequest(
+          `/v3/merchants/${this.config.merchantId}/orders/${orderId}`,
+          "GET",
+        );
         return this.mapCloverOrderToPOS(response, locationId);
       });
     });
@@ -194,21 +244,29 @@ export class CloverPOSSDKClient extends POSAdapter {
   /**
    * List orders
    */
-  async listOrders(locationId: string, filters?: OrderFilters): Promise<POSOrder[]> {
+  async listOrders(
+    locationId: string,
+    filters?: OrderFilters,
+  ): Promise<POSOrder[]> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const params = new URLSearchParams();
 
         if (filters?.startDate) {
-          params.append('filter', `createdTime>=${filters.startDate.getTime()}`);
+          params.append(
+            "filter",
+            `createdTime>=${filters.startDate.getTime()}`,
+          );
         }
         if (filters?.endDate) {
-          params.append('filter', `createdTime<=${filters.endDate.getTime()}`);
+          params.append("filter", `createdTime<=${filters.endDate.getTime()}`);
         }
 
         const path = `/v3/merchants/${this.config.merchantId}/orders?${params}`;
-        const response = await this.makeRequest(path, 'GET');
-        const orders = (response.elements || []).map((o: any) => this.mapCloverOrderToPOS(o, locationId));
+        const response = await this.makeRequest(path, "GET");
+        const orders = (response.elements || []).map((o: any) =>
+          this.mapCloverOrderToPOS(o, locationId),
+        );
 
         return orders;
       });
@@ -218,13 +276,21 @@ export class CloverPOSSDKClient extends POSAdapter {
   /**
    * Update order
    */
-  async updateOrder(locationId: string, orderId: string, updates: Partial<POSOrder>): Promise<POSOrder> {
+  async updateOrder(
+    locationId: string,
+    orderId: string,
+    updates: Partial<POSOrder>,
+  ): Promise<POSOrder> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload: Record<string, any> = {};
         if (updates.notes) payload.note = updates.notes;
 
-        await this.makeRequest(`/v3/merchants/${this.config.merchantId}/orders/${orderId}`, 'POST', payload);
+        await this.makeRequest(
+          `/v3/merchants/${this.config.merchantId}/orders/${orderId}`,
+          "POST",
+          payload,
+        );
         return this.getOrder(locationId, orderId);
       });
     });
@@ -233,26 +299,30 @@ export class CloverPOSSDKClient extends POSAdapter {
   /**
    * Add payment to order
    */
-  async addPayment(locationId: string, orderId: string, payment: Partial<POSPayment>): Promise<POSPayment> {
+  async addPayment(
+    locationId: string,
+    orderId: string,
+    payment: Partial<POSPayment>,
+  ): Promise<POSPayment> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload = {
           amount: payment.amount || 0,
-          tender: { id: 'default' },
-          note: 'Payment',
+          tender: { id: "default" },
+          note: "Payment",
         };
 
         const response = await this.makeRequest(
           `/v3/merchants/${this.config.merchantId}/orders/${orderId}/payments`,
-          'POST',
-          payload
+          "POST",
+          payload,
         );
 
         return {
           id: response.id,
-          method: payment.method || 'card',
+          method: payment.method || "card",
           amount: payment.amount || 0,
-          currency: 'USD',
+          currency: "USD",
           tip: payment.tip || 0,
           createdAt: new Date(response.createdTime),
         };
@@ -263,7 +333,12 @@ export class CloverPOSSDKClient extends POSAdapter {
   /**
    * Add line item to order
    */
-  private async addOrderLineItem(orderId: string, itemId: string, quantity: number, price: number): Promise<void> {
+  private async addOrderLineItem(
+    orderId: string,
+    itemId: string,
+    quantity: number,
+    price: number,
+  ): Promise<void> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload = {
@@ -274,8 +349,8 @@ export class CloverPOSSDKClient extends POSAdapter {
 
         await this.makeRequest(
           `/v3/merchants/${this.config.merchantId}/orders/${orderId}/line_items`,
-          'POST',
-          payload
+          "POST",
+          payload,
         );
       });
     });
@@ -284,12 +359,16 @@ export class CloverPOSSDKClient extends POSAdapter {
   /**
    * Add discount to order
    */
-  private async addOrderDiscount(orderId: string, type: string, amount: number): Promise<void> {
+  private async addOrderDiscount(
+    orderId: string,
+    type: string,
+    amount: number,
+  ): Promise<void> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload: Record<string, any> = {};
 
-        if (type === 'percentage') {
+        if (type === "percentage") {
           payload.percent = amount;
         } else {
           payload.amount = amount;
@@ -297,8 +376,8 @@ export class CloverPOSSDKClient extends POSAdapter {
 
         await this.makeRequest(
           `/v3/merchants/${this.config.merchantId}/orders/${orderId}/discounts`,
-          'POST',
-          payload
+          "POST",
+          payload,
         );
       });
     });
@@ -307,11 +386,19 @@ export class CloverPOSSDKClient extends POSAdapter {
   /**
    * Void order
    */
-  async voidOrder(locationId: string, orderId: string, reason?: string): Promise<POSOrder> {
+  async voidOrder(
+    locationId: string,
+    orderId: string,
+    reason?: string,
+  ): Promise<POSOrder> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
-        const payload = { state: 'deleted' };
-        await this.makeRequest(`/v3/merchants/${this.config.merchantId}/orders/${orderId}`, 'POST', payload);
+        const payload = { state: "deleted" };
+        await this.makeRequest(
+          `/v3/merchants/${this.config.merchantId}/orders/${orderId}`,
+          "POST",
+          payload,
+        );
         return this.getOrder(locationId, orderId);
       });
     });
@@ -328,15 +415,15 @@ export class CloverPOSSDKClient extends POSAdapter {
 
         const response = await this.makeRequest(
           `/v3/merchants/${this.config.merchantId}/payments/${paymentId}/refunds`,
-          'POST',
-          payload
+          "POST",
+          payload,
         );
 
         return {
           id: response.id,
-          method: 'card',
+          method: "card",
           amount: response.amount || 0,
-          currency: 'USD',
+          currency: "USD",
           createdAt: new Date(response.createdTime),
         };
       });
@@ -352,8 +439,8 @@ export class CloverPOSSDKClient extends POSAdapter {
         const payload = { tipAmount };
         await this.makeRequest(
           `/v3/merchants/${this.config.merchantId}/payments/${paymentId}`,
-          'POST',
-          payload
+          "POST",
+          payload,
         );
       });
     });
@@ -362,7 +449,11 @@ export class CloverPOSSDKClient extends POSAdapter {
   /**
    * Create inventory item
    */
-  async createInventoryItem(categoryId: string, name: string, price: number): Promise<{ id: string; name: string }> {
+  async createInventoryItem(
+    categoryId: string,
+    name: string,
+    price: number,
+  ): Promise<{ id: string; name: string }> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload = {
@@ -371,8 +462,12 @@ export class CloverPOSSDKClient extends POSAdapter {
           category: { id: categoryId },
         };
 
-        const response = await this.makeRequest(`/v3/merchants/${this.config.merchantId}/items`, 'POST', payload);
-        this.invalidateMenuCache('default');
+        const response = await this.makeRequest(
+          `/v3/merchants/${this.config.merchantId}/items`,
+          "POST",
+          payload,
+        );
+        this.invalidateMenuCache("default");
         return { id: response.id, name: response.name };
       });
     });
@@ -384,8 +479,14 @@ export class CloverPOSSDKClient extends POSAdapter {
   async listCategories(): Promise<Array<{ id: string; name: string }>> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
-        const response = await this.makeRequest(`/v3/merchants/${this.config.merchantId}/categories`, 'GET');
-        return (response.elements || []).map((c: any) => ({ id: c.id, name: c.name }));
+        const response = await this.makeRequest(
+          `/v3/merchants/${this.config.merchantId}/categories`,
+          "GET",
+        );
+        return (response.elements || []).map((c: any) => ({
+          id: c.id,
+          name: c.name,
+        }));
       });
     });
   }
@@ -393,7 +494,11 @@ export class CloverPOSSDKClient extends POSAdapter {
   /**
    * Add modifier
    */
-  async addModifier(groupId: string, name: string, price?: number): Promise<{ id: string }> {
+  async addModifier(
+    groupId: string,
+    name: string,
+    price?: number,
+  ): Promise<{ id: string }> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload = {
@@ -404,8 +509,8 @@ export class CloverPOSSDKClient extends POSAdapter {
 
         const response = await this.makeRequest(
           `/v3/merchants/${this.config.merchantId}/modifiers`,
-          'POST',
-          payload
+          "POST",
+          payload,
         );
 
         return { id: response.id };
@@ -422,8 +527,8 @@ export class CloverPOSSDKClient extends POSAdapter {
         const payload = { quantity };
         await this.makeRequest(
           `/v3/merchants/${this.config.merchantId}/inventory/${itemId}`,
-          'POST',
-          payload
+          "POST",
+          payload,
         );
       });
     });
@@ -438,8 +543,8 @@ export class CloverPOSSDKClient extends POSAdapter {
         const payload = { reorderLevel: threshold };
         await this.makeRequest(
           `/v3/merchants/${this.config.merchantId}/items/${itemId}`,
-          'POST',
-          payload
+          "POST",
+          payload,
         );
       });
     });
@@ -451,17 +556,20 @@ export class CloverPOSSDKClient extends POSAdapter {
   async listEmployees(locationId: string): Promise<POSEmployee[]> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
-        const response = await this.makeRequest(`/v3/merchants/${this.config.merchantId}/employees`, 'GET');
+        const response = await this.makeRequest(
+          `/v3/merchants/${this.config.merchantId}/employees`,
+          "GET",
+        );
         const employees = (response.elements || []).map((emp: any) => ({
           id: emp.id,
           externalId: emp.id,
-          providerId: 'clover',
+          providerId: "clover",
           locationId,
-          firstName: emp.name?.split(' ')[0] || emp.name || '',
-          lastName: emp.name?.split(' ').slice(1).join(' ') || '',
+          firstName: emp.name?.split(" ")[0] || emp.name || "",
+          lastName: emp.name?.split(" ").slice(1).join(" ") || "",
           email: emp.email,
           phone: emp.phone,
-          role: emp.role?.name || 'staff',
+          role: emp.role?.name || "staff",
           isActive: emp.active,
           createdAt: new Date(emp.createdTime || Date.now()),
           updatedAt: new Date(emp.modifiedTime || Date.now()),
@@ -475,7 +583,10 @@ export class CloverPOSSDKClient extends POSAdapter {
   /**
    * Create employee
    */
-  async createEmployee(locationId: string, data: { firstName: string; lastName: string; email?: string; pin?: string }): Promise<POSEmployee> {
+  async createEmployee(
+    locationId: string,
+    data: { firstName: string; lastName: string; email?: string; pin?: string },
+  ): Promise<POSEmployee> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload = {
@@ -484,17 +595,21 @@ export class CloverPOSSDKClient extends POSAdapter {
           pin: data.pin,
         };
 
-        const response = await this.makeRequest(`/v3/merchants/${this.config.merchantId}/employees`, 'POST', payload);
+        const response = await this.makeRequest(
+          `/v3/merchants/${this.config.merchantId}/employees`,
+          "POST",
+          payload,
+        );
 
         return {
           id: response.id,
           externalId: response.id,
-          providerId: 'clover',
+          providerId: "clover",
           locationId,
           firstName: data.firstName,
           lastName: data.lastName,
           email: data.email,
-          role: 'staff',
+          role: "staff",
           isActive: true,
           createdAt: new Date(response.createdTime),
           updatedAt: new Date(response.modifiedTime),
@@ -506,7 +621,10 @@ export class CloverPOSSDKClient extends POSAdapter {
   /**
    * Create shift
    */
-  async createShift(locationId: string, shift: Partial<POSShift>): Promise<POSShift> {
+  async createShift(
+    locationId: string,
+    shift: Partial<POSShift>,
+  ): Promise<POSShift> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload = {
@@ -514,17 +632,21 @@ export class CloverPOSSDKClient extends POSAdapter {
           inTime: shift.startTime?.getTime(),
         };
 
-        const response = await this.makeRequest(`/v3/merchants/${this.config.merchantId}/timeclock`, 'POST', payload);
+        const response = await this.makeRequest(
+          `/v3/merchants/${this.config.merchantId}/timeclock`,
+          "POST",
+          payload,
+        );
 
         return {
           id: response.id,
           externalId: response.id,
-          providerId: 'clover',
+          providerId: "clover",
           locationId,
-          employeeId: shift.employeeId || '',
+          employeeId: shift.employeeId || "",
           startTime: new Date(response.inTime),
           endTime: response.outTime ? new Date(response.outTime) : undefined,
-          status: response.outTime ? 'closed' : 'open',
+          status: response.outTime ? "closed" : "open",
           createdAt: new Date(response.createdTime),
           updatedAt: new Date(response.modifiedTime),
         };
@@ -541,19 +663,19 @@ export class CloverPOSSDKClient extends POSAdapter {
         const payload = { outTime: Date.now() };
         const response = await this.makeRequest(
           `/v3/merchants/${this.config.merchantId}/timeclock/${shiftId}`,
-          'POST',
-          payload
+          "POST",
+          payload,
         );
 
         return {
           id: response.id,
           externalId: response.id,
-          providerId: 'clover',
+          providerId: "clover",
           locationId,
-          employeeId: response.employee?.id || '',
+          employeeId: response.employee?.id || "",
           startTime: new Date(response.inTime),
           endTime: response.outTime ? new Date(response.outTime) : undefined,
-          status: 'closed',
+          status: "closed",
           createdAt: new Date(response.createdTime),
           updatedAt: new Date(response.modifiedTime),
         };
@@ -588,12 +710,22 @@ export class CloverPOSSDKClient extends POSAdapter {
   /**
    * Get kitchen display status
    */
-  async getKitchenDisplayStatus(locationId: string, orderId: string): Promise<import('./types').KitchenOrderStatus> {
+  async getKitchenDisplayStatus(
+    locationId: string,
+    orderId: string,
+  ): Promise<import("./types").KitchenOrderStatus> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const order = await this.getOrder(locationId, orderId);
         const s = order.status;
-        const mapped: import('./types').KitchenOrderStatus = s === 'completed' ? 'completed' : s === 'in_progress' ? 'in_progress' : s === 'open' ? 'new' : 'received';
+        const mapped: import("./types").KitchenOrderStatus =
+          s === "completed"
+            ? "completed"
+            : s === "in_progress"
+              ? "in_progress"
+              : s === "open"
+                ? "new"
+                : "received";
         return mapped;
       });
     });
@@ -602,16 +734,19 @@ export class CloverPOSSDKClient extends POSAdapter {
   /**
    * Get revenue center
    */
-  async getRevenueCenter(locationId: string, revenueCenterId: string): Promise<POSRevenueCenter> {
+  async getRevenueCenter(
+    locationId: string,
+    revenueCenterId: string,
+  ): Promise<POSRevenueCenter> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         return {
           id: revenueCenterId,
           externalId: revenueCenterId,
-          providerId: 'clover',
+          providerId: "clover",
           locationId,
-          name: 'Default',
-          type: 'dining_room',
+          name: "Default",
+          type: "dining_room",
           isActive: true,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -628,12 +763,12 @@ export class CloverPOSSDKClient extends POSAdapter {
       return this.executeWithRetries(async () => {
         return [
           {
-            id: 'default',
-            externalId: 'default',
-            providerId: 'clover',
+            id: "default",
+            externalId: "default",
+            providerId: "clover",
             locationId,
-            name: 'Default',
-            type: 'dining_room',
+            name: "Default",
+            type: "dining_room",
             isActive: true,
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -646,7 +781,10 @@ export class CloverPOSSDKClient extends POSAdapter {
   /**
    * Subscribe to webhook event
    */
-  async subscribeToWebhook(eventType: string, webhookUrl: string): Promise<{ subscriptionId: string }> {
+  async subscribeToWebhook(
+    eventType: string,
+    webhookUrl: string,
+  ): Promise<{ subscriptionId: string }> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload = {
@@ -656,8 +794,8 @@ export class CloverPOSSDKClient extends POSAdapter {
 
         const response = await this.makeRequest(
           `/v3/merchants/${this.config.merchantId}/webhooks`,
-          'POST',
-          payload
+          "POST",
+          payload,
         );
 
         return { subscriptionId: response.id };
@@ -679,28 +817,28 @@ export class CloverPOSSDKClient extends POSAdapter {
    */
   parseWebhookPayload(payload: Record<string, any>): POSWebhookEvent | null {
     const eventTypeMap: Record<string, string> = {
-      'order.created': 'order',
-      'order.updated': 'order',
-      'order.deleted': 'order',
-      'payment.created': 'payment',
-      'payment.updated': 'payment',
-      'employee.created': 'employee',
-      'employee.updated': 'employee',
-      'timeclock.created': 'shift',
-      'timeclock.updated': 'shift',
-      'inventory.updated': 'inventory',
+      "order.created": "order",
+      "order.updated": "order",
+      "order.deleted": "order",
+      "payment.created": "payment",
+      "payment.updated": "payment",
+      "employee.created": "employee",
+      "employee.updated": "employee",
+      "timeclock.created": "shift",
+      "timeclock.updated": "shift",
+      "inventory.updated": "inventory",
     };
 
-    const eventType = payload.type || 'unknown';
-    const resourceType = eventTypeMap[eventType] || 'order';
+    const eventType = payload.type || "unknown";
+    const resourceType = eventTypeMap[eventType] || "order";
 
     return {
       id: payload.id || `clover-${Date.now()}`,
-      providerId: 'clover',
-      provider: 'clover',
+      providerId: "clover",
+      provider: "clover",
       eventType,
       resourceType: resourceType as any,
-      resourceId: payload.objectId || '',
+      resourceId: payload.objectId || "",
       data: payload,
       timestamp: new Date(payload.timestamp || Date.now()),
       verified: true,
@@ -713,14 +851,14 @@ export class CloverPOSSDKClient extends POSAdapter {
    */
   private async makeRequest(
     path: string,
-    method: string = 'GET',
-    body?: Record<string, any>
+    method: string = "GET",
+    body?: Record<string, any>,
   ): Promise<any> {
     try {
       const headers: Record<string, string> = {
-        'Authorization': `Bearer ${this.config.accessToken}`,
-        'Content-Type': 'application/json',
-        'User-Agent': 'Witylogix-Clover-SDK/1.0',
+        Authorization: `Bearer ${this.config.accessToken}`,
+        "Content-Type": "application/json",
+        "User-Agent": "Witylogix-Clover-SDK/1.0",
       };
 
       const options: any = { method, headers };
@@ -729,13 +867,15 @@ export class CloverPOSSDKClient extends POSAdapter {
       }
 
       const response = await fetch(`${this.baseUrl}${path}`, options);
-      const data = await response.json() as Record<string, unknown>;
+      const data = (await response.json()) as Record<string, unknown>;
 
       if (!response.ok && response.status >= 400) {
         throw this.createError(
-          (data.error as Record<string, unknown> | undefined)?.code as string || 'API_ERROR',
-          (data.error as Record<string, unknown> | undefined)?.message as string || response.statusText,
-          { statusCode: response.status }
+          ((data.error as Record<string, unknown> | undefined)
+            ?.code as string) || "API_ERROR",
+          ((data.error as Record<string, unknown> | undefined)
+            ?.message as string) || response.statusText,
+          { statusCode: response.status },
         );
       }
 
@@ -744,17 +884,28 @@ export class CloverPOSSDKClient extends POSAdapter {
       if (error instanceof Error && (error as any).code) {
         throw error;
       }
-      throw this.createError('REQUEST_FAILED', (error as Error).message);
+      throw this.createError("REQUEST_FAILED", (error as Error).message);
     }
   }
 
   /**
    * Create typed error
    */
-  private createError(code: string, message: string, details?: Record<string, any>): Error & { code: string; retryable: boolean } {
-    const error = new Error(message) as Error & { code: string; retryable: boolean };
+  private createError(
+    code: string,
+    message: string,
+    details?: Record<string, any>,
+  ): Error & { code: string; retryable: boolean } {
+    const error = new Error(message) as Error & {
+      code: string;
+      retryable: boolean;
+    };
     error.code = code;
-    error.retryable = !['INVALID_REQUEST', 'UNAUTHORIZED', 'NOT_FOUND'].includes(code);
+    error.retryable = ![
+      "INVALID_REQUEST",
+      "UNAUTHORIZED",
+      "NOT_FOUND",
+    ].includes(code);
     return error;
   }
 
@@ -774,31 +925,34 @@ export class CloverPOSSDKClient extends POSAdapter {
     return {
       id: order.id,
       externalId: order.id,
-      providerId: 'clover',
+      providerId: "clover",
       locationId,
       orderNumber: order.id.slice(-6),
-      status: order.state === 'deleted' ? 'voided' : (order.state || 'open'),
-      orderType: 'takeout',
+      status: order.state === "deleted" ? "voided" : order.state || "open",
+      orderType: "takeout",
       lineItems: (order.lineItems?.elements || []).map((li: any) => ({
         id: li.id,
         menuItemId: li.item?.id,
         quantity: li.quantity,
         price: li.price || 0,
         subtotal: (li.price || 0) * li.quantity,
-        modifiers: li.modifiers?.elements?.map((m: any) => ({ modifierId: m.id, price: m.price || 0 })),
+        modifiers: li.modifiers?.elements?.map((m: any) => ({
+          modifierId: m.id,
+          price: m.price || 0,
+        })),
       })),
       discounts: (order.discounts?.elements || []).map((d: any) => ({
         id: d.id,
-        type: d.percent ? 'percentage' : 'fixed',
+        type: d.percent ? "percentage" : "fixed",
         amount: d.amount || d.percent || 0,
         reason: d.name,
       })),
       payments: (order.payments?.elements || []).map((p: any) => ({
         id: p.id,
-        method: p.tender?.label || 'card',
+        method: p.tender?.label || "card",
         amount: p.amount || 0,
-        currency: 'USD',
-        tip: p.cashTendered ? (p.cashTendered - p.amount) : undefined,
+        currency: "USD",
+        tip: p.cashTendered ? p.cashTendered - p.amount : undefined,
         createdAt: new Date(p.createdTime),
       })),
       subtotal: totals.subtotal,
@@ -816,13 +970,13 @@ export class CloverPOSSDKClient extends POSAdapter {
     return {
       id: item.id,
       externalId: item.id,
-      providerId: 'clover',
+      providerId: "clover",
       locationId,
-      categoryId: item.category?.id || '',
+      categoryId: item.category?.id || "",
       name: item.name,
       description: item.note,
       price: item.price || 0,
-      currency: 'USD',
+      currency: "USD",
       cost: item.cost,
       taxable: true,
       discountable: true,
@@ -830,18 +984,18 @@ export class CloverPOSSDKClient extends POSAdapter {
         (g.modifiers?.elements || []).map((m: any) => ({
           id: m.id,
           externalId: m.id,
-          providerId: 'clover',
-          categoryId: item.category?.id || '',
+          providerId: "clover",
+          categoryId: item.category?.id || "",
           groupId: g.id,
           name: m.name,
           price: m.price || 0,
-          currency: 'USD',
+          currency: "USD",
           isRequired: false,
           isActive: true,
           displayOrder: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
-        }))
+        })),
       ),
       sku: item.sku,
       isActive: !item.deleted,

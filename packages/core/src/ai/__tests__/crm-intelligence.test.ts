@@ -9,7 +9,7 @@
  * - SalesForecaster predicting revenue from pipeline
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   createCRMIntelligence,
   getCRMIntelligence,
@@ -21,24 +21,24 @@ import {
   type Deal,
   type Lead,
   type Contact,
-} from '../crm-intelligence.js';
+} from "../crm-intelligence.js";
 
-describe('CRM Intelligence Engine', () => {
+describe("CRM Intelligence Engine", () => {
   let service: ReturnType<typeof createCRMIntelligence>;
 
   beforeEach(() => {
     service = createCRMIntelligence();
   });
 
-  describe('DealScoringModel', () => {
-    it('should score a deal correctly', () => {
+  describe("DealScoringModel", () => {
+    it("should score a deal correctly", () => {
       const deal: Deal = {
-        id: 'deal_123',
-        companyName: 'Acme Corp',
+        id: "deal_123",
+        companyName: "Acme Corp",
         amount: 50000,
-        stage: 'proposal',
-        createdAt: new Date('2026-01-15'),
-        lastActivityAt: new Date('2026-03-10'),
+        stage: "proposal",
+        createdAt: new Date("2026-01-15"),
+        lastActivityAt: new Date("2026-03-10"),
         daysInStage: 14,
         contactEngagementScore: 75,
         emailsSent: 8,
@@ -49,7 +49,7 @@ describe('CRM Intelligence Engine', () => {
 
       const score = service.dealScorer.scoreDeal(deal);
 
-      expect(score.dealId).toBe('deal_123');
+      expect(score.dealId).toBe("deal_123");
       expect(score.closeProbability).toBeGreaterThanOrEqual(0);
       expect(score.closeProbability).toBeLessThanOrEqual(1);
       expect(score.expectedClosingMonth).toBeDefined();
@@ -59,14 +59,14 @@ describe('CRM Intelligence Engine', () => {
       expect(Array.isArray(score.recommendations)).toBe(true);
     });
 
-    it('should identify stagnant deals', () => {
+    it("should identify stagnant deals", () => {
       const deal: Deal = {
-        id: 'deal_stagnant',
-        companyName: 'Old Company',
+        id: "deal_stagnant",
+        companyName: "Old Company",
         amount: 25000,
-        stage: 'qualified',
-        createdAt: new Date('2025-06-01'),
-        lastActivityAt: new Date('2026-02-01'), // 45+ days ago
+        stage: "qualified",
+        createdAt: new Date("2025-06-01"),
+        lastActivityAt: new Date("2026-02-01"), // 45+ days ago
         daysInStage: 120,
         contactEngagementScore: 20,
         emailsSent: 3,
@@ -81,14 +81,14 @@ describe('CRM Intelligence Engine', () => {
       expect(score.closeProbability).toBeLessThan(0.5);
     });
 
-    it('should score advanced stage deals higher', () => {
+    it("should score advanced stage deals higher", () => {
       const earlyDeal: Deal = {
-        id: 'deal_early',
-        companyName: 'Company A',
+        id: "deal_early",
+        companyName: "Company A",
         amount: 50000,
-        stage: 'prospect',
-        createdAt: new Date('2026-02-01'),
-        lastActivityAt: new Date('2026-03-10'),
+        stage: "prospect",
+        createdAt: new Date("2026-02-01"),
+        lastActivityAt: new Date("2026-03-10"),
         daysInStage: 10,
         contactEngagementScore: 60,
         emailsSent: 2,
@@ -98,12 +98,12 @@ describe('CRM Intelligence Engine', () => {
       };
 
       const lateDeal: Deal = {
-        id: 'deal_late',
-        companyName: 'Company B',
+        id: "deal_late",
+        companyName: "Company B",
         amount: 50000,
-        stage: 'negotiation',
-        createdAt: new Date('2026-01-01'),
-        lastActivityAt: new Date('2026-03-10'),
+        stage: "negotiation",
+        createdAt: new Date("2026-01-01"),
+        lastActivityAt: new Date("2026-03-10"),
         daysInStage: 10,
         contactEngagementScore: 60,
         emailsSent: 8,
@@ -115,73 +115,75 @@ describe('CRM Intelligence Engine', () => {
       const earlyScore = service.dealScorer.scoreDeal(earlyDeal);
       const lateScore = service.dealScorer.scoreDeal(lateDeal);
 
-      expect(lateScore.closeProbability).toBeGreaterThan(earlyScore.closeProbability);
+      expect(lateScore.closeProbability).toBeGreaterThan(
+        earlyScore.closeProbability,
+      );
     });
   });
 
-  describe('LeadScorer', () => {
-    it('should score an inbound lead', () => {
+  describe("LeadScorer", () => {
+    it("should score an inbound lead", () => {
       const lead: Lead = {
-        id: 'lead_123',
-        companyName: 'Tech Startup',
-        email: 'info@techstartup.com',
-        industry: 'technology',
-        companySize: 'mid',
+        id: "lead_123",
+        companyName: "Tech Startup",
+        email: "info@techstartup.com",
+        industry: "technology",
+        companySize: "mid",
         budget: 75000,
-        purchaseTimeline: 'immediate',
-        source: 'inbound',
+        purchaseTimeline: "immediate",
+        source: "inbound",
       };
 
       const score = service.leadScorer.scoreLead(lead);
 
-      expect(score.leadId).toBe('lead_123');
+      expect(score.leadId).toBe("lead_123");
       expect(score.score).toBeGreaterThanOrEqual(0);
       expect(score.score).toBeLessThanOrEqual(100);
-      expect(['A', 'B', 'C', 'D']).toContain(score.grade);
+      expect(["A", "B", "C", "D"]).toContain(score.grade);
       expect(score.factors).toBeDefined();
       expect(Array.isArray(score.explanation)).toBe(true);
       expect(Array.isArray(score.nextSteps)).toBe(true);
     });
 
-    it('should assign grade A for high-quality leads', () => {
+    it("should assign grade A for high-quality leads", () => {
       const lead: Lead = {
-        id: 'lead_quality',
-        companyName: 'Enterprise Corp',
-        email: 'contact@enterprise.com',
-        industry: 'fintech',
-        companySize: 'enterprise',
+        id: "lead_quality",
+        companyName: "Enterprise Corp",
+        email: "contact@enterprise.com",
+        industry: "fintech",
+        companySize: "enterprise",
         budget: 500000,
-        purchaseTimeline: 'immediate',
-        source: 'inbound',
+        purchaseTimeline: "immediate",
+        source: "inbound",
       };
 
       const score = service.leadScorer.scoreLead(lead);
 
-      expect(score.grade).toBe('A');
+      expect(score.grade).toBe("A");
       expect(score.score).toBeGreaterThanOrEqual(80);
     });
 
-    it('should score outbound leads lower than inbound', () => {
+    it("should score outbound leads lower than inbound", () => {
       const inboundLead: Lead = {
-        id: 'inbound',
-        companyName: 'Company A',
-        email: 'a@example.com',
-        industry: 'technology',
-        companySize: 'small',
+        id: "inbound",
+        companyName: "Company A",
+        email: "a@example.com",
+        industry: "technology",
+        companySize: "small",
         budget: 50000,
-        purchaseTimeline: 'quarter',
-        source: 'inbound',
+        purchaseTimeline: "quarter",
+        source: "inbound",
       };
 
       const outboundLead: Lead = {
-        id: 'outbound',
-        companyName: 'Company B',
-        email: 'b@example.com',
-        industry: 'technology',
-        companySize: 'small',
+        id: "outbound",
+        companyName: "Company B",
+        email: "b@example.com",
+        industry: "technology",
+        companySize: "small",
         budget: 50000,
-        purchaseTimeline: 'quarter',
-        source: 'outbound',
+        purchaseTimeline: "quarter",
+        source: "outbound",
       };
 
       const inboundScore = service.leadScorer.scoreLead(inboundLead);
@@ -190,14 +192,14 @@ describe('CRM Intelligence Engine', () => {
       expect(inboundScore.score).toBeGreaterThan(outboundScore.score);
     });
 
-    it('should handle missing budget information', () => {
+    it("should handle missing budget information", () => {
       const lead: Lead = {
-        id: 'lead_no_budget',
-        companyName: 'Unknown Budget Co',
-        email: 'contact@unknown.com',
-        industry: 'retail',
-        companySize: 'startup',
-        source: 'content',
+        id: "lead_no_budget",
+        companyName: "Unknown Budget Co",
+        email: "contact@unknown.com",
+        industry: "retail",
+        companySize: "startup",
+        source: "content",
       };
 
       const score = service.leadScorer.scoreLead(lead);
@@ -207,91 +209,105 @@ describe('CRM Intelligence Engine', () => {
     });
   });
 
-  describe('ActivityRecommender', () => {
-    it('should recommend activity for a contact', () => {
+  describe("ActivityRecommender", () => {
+    it("should recommend activity for a contact", () => {
       const contact: Contact = {
-        id: 'contact_123',
-        name: 'John Doe',
-        title: 'CEO',
-        email: 'john@acme.com',
-        companyId: 'company_123',
-        seniority: 'c-suite',
+        id: "contact_123",
+        name: "John Doe",
+        title: "CEO",
+        email: "john@acme.com",
+        companyId: "company_123",
+        seniority: "c-suite",
         emailsReceived: 5,
         emailsOpened: 4,
         emailsClicked: 2,
       };
 
-      const recommendation = service.activityRecommender.recommendActivity(contact);
+      const recommendation =
+        service.activityRecommender.recommendActivity(contact);
 
-      expect(recommendation.contactId).toBe('contact_123');
-      expect(['send_email', 'schedule_call', 'schedule_meeting', 'send_proposal', 'negotiate', 'close', 'nurture']).toContain(
-        recommendation.recommendedAction
-      );
+      expect(recommendation.contactId).toBe("contact_123");
+      expect([
+        "send_email",
+        "schedule_call",
+        "schedule_meeting",
+        "send_proposal",
+        "negotiate",
+        "close",
+        "nurture",
+      ]).toContain(recommendation.recommendedAction);
       expect(recommendation.actionDetails).toBeDefined();
-      expect(['immediate', 'within_week', 'within_month']).toContain(recommendation.actionDetails.timing);
-      expect(['high', 'medium', 'low']).toContain(recommendation.actionDetails.priority);
+      expect(["immediate", "within_week", "within_month"]).toContain(
+        recommendation.actionDetails.timing,
+      );
+      expect(["high", "medium", "low"]).toContain(
+        recommendation.actionDetails.priority,
+      );
       expect(Array.isArray(recommendation.reasoning)).toBe(true);
     });
 
-    it('should recommend call for engaged contact without calls', () => {
+    it("should recommend call for engaged contact without calls", () => {
       const contact: Contact = {
-        id: 'contact_no_call',
-        name: 'Jane Smith',
-        title: 'VP Sales',
-        email: 'jane@acme.com',
-        companyId: 'company_123',
-        seniority: 'vp',
-        lastEmailAt: new Date('2026-03-01'),
+        id: "contact_no_call",
+        name: "Jane Smith",
+        title: "VP Sales",
+        email: "jane@acme.com",
+        companyId: "company_123",
+        seniority: "vp",
+        lastEmailAt: new Date("2026-03-01"),
         emailsReceived: 10,
         emailsOpened: 9,
         emailsClicked: 7,
       };
 
-      const recommendation = service.activityRecommender.recommendActivity(contact);
+      const recommendation =
+        service.activityRecommender.recommendActivity(contact);
 
-      expect(recommendation.recommendedAction).toBe('schedule_call');
+      expect(recommendation.recommendedAction).toBe("schedule_call");
     });
 
-    it('should prioritize stale contacts', () => {
+    it("should prioritize stale contacts", () => {
       const contact: Contact = {
-        id: 'contact_stale',
-        name: 'Old Contact',
-        title: 'Manager',
-        email: 'old@acme.com',
-        companyId: 'company_123',
-        seniority: 'manager',
-        lastEmailAt: new Date('2026-01-15'), // 60+ days ago
+        id: "contact_stale",
+        name: "Old Contact",
+        title: "Manager",
+        email: "old@acme.com",
+        companyId: "company_123",
+        seniority: "manager",
+        lastEmailAt: new Date("2026-01-15"), // 60+ days ago
         emailsReceived: 5,
         emailsOpened: 2,
         emailsClicked: 0,
       };
 
-      const recommendation = service.activityRecommender.recommendActivity(contact);
+      const recommendation =
+        service.activityRecommender.recommendActivity(contact);
 
-      expect(recommendation.actionDetails.priority).toBe('high');
-      expect(['immediate']).toContain(recommendation.actionDetails.timing);
+      expect(recommendation.actionDetails.priority).toBe("high");
+      expect(["immediate"]).toContain(recommendation.actionDetails.timing);
     });
   });
 
-  describe('RelationshipStrengthCalculator', () => {
-    it('should calculate relationship strength', () => {
+  describe("RelationshipStrengthCalculator", () => {
+    it("should calculate relationship strength", () => {
       const contact: Contact = {
-        id: 'contact_strong',
-        name: 'Loyal Customer',
-        title: 'CFO',
-        email: 'loyal@company.com',
-        companyId: 'company_123',
-        seniority: 'c-suite',
-        lastEmailAt: new Date('2026-03-10'),
-        lastCallAt: new Date('2026-03-08'),
+        id: "contact_strong",
+        name: "Loyal Customer",
+        title: "CFO",
+        email: "loyal@company.com",
+        companyId: "company_123",
+        seniority: "c-suite",
+        lastEmailAt: new Date("2026-03-10"),
+        lastCallAt: new Date("2026-03-08"),
         emailsReceived: 20,
         emailsOpened: 18,
         emailsClicked: 12,
       };
 
-      const strength = service.relationshipCalculator.calculateStrength(contact);
+      const strength =
+        service.relationshipCalculator.calculateStrength(contact);
 
-      expect(strength.contactId).toBe('contact_strong');
+      expect(strength.contactId).toBe("contact_strong");
       expect(strength.strength).toBeGreaterThanOrEqual(0);
       expect(strength.strength).toBeLessThanOrEqual(100);
       expect(strength.trustLevel).toBeGreaterThanOrEqual(0);
@@ -300,35 +316,36 @@ describe('CRM Intelligence Engine', () => {
       expect(Array.isArray(strength.recommendations)).toBe(true);
     });
 
-    it('should score new contacts lower', () => {
+    it("should score new contacts lower", () => {
       const newContact: Contact = {
-        id: 'contact_new',
-        name: 'New Contact',
-        title: 'Manager',
-        email: 'new@company.com',
-        companyId: 'company_456',
-        seniority: 'manager',
+        id: "contact_new",
+        name: "New Contact",
+        title: "Manager",
+        email: "new@company.com",
+        companyId: "company_456",
+        seniority: "manager",
         emailsReceived: 1,
         emailsOpened: 0,
         emailsClicked: 0,
       };
 
-      const strength = service.relationshipCalculator.calculateStrength(newContact);
+      const strength =
+        service.relationshipCalculator.calculateStrength(newContact);
 
       expect(strength.strength).toBeLessThan(50);
     });
   });
 
-  describe('SalesForecaster', () => {
-    it('should forecast revenue from pipeline', () => {
+  describe("SalesForecaster", () => {
+    it("should forecast revenue from pipeline", () => {
       const deals: Deal[] = [
         {
-          id: 'deal_1',
-          companyName: 'Company 1',
+          id: "deal_1",
+          companyName: "Company 1",
           amount: 100000,
-          stage: 'proposal',
-          createdAt: new Date('2026-01-01'),
-          lastActivityAt: new Date('2026-03-10'),
+          stage: "proposal",
+          createdAt: new Date("2026-01-01"),
+          lastActivityAt: new Date("2026-03-10"),
           daysInStage: 20,
           contactEngagementScore: 80,
           emailsSent: 5,
@@ -337,12 +354,12 @@ describe('CRM Intelligence Engine', () => {
           meetingsAttended: 1,
         },
         {
-          id: 'deal_2',
-          companyName: 'Company 2',
+          id: "deal_2",
+          companyName: "Company 2",
           amount: 50000,
-          stage: 'qualified',
-          createdAt: new Date('2026-01-15'),
-          lastActivityAt: new Date('2026-03-12'),
+          stage: "qualified",
+          createdAt: new Date("2026-01-15"),
+          lastActivityAt: new Date("2026-03-12"),
           daysInStage: 15,
           contactEngagementScore: 60,
           emailsSent: 3,
@@ -352,9 +369,12 @@ describe('CRM Intelligence Engine', () => {
         },
       ];
 
-      const forecast = service.salesForecaster.forecastRevenue(deals, '2026-Q2');
+      const forecast = service.salesForecaster.forecastRevenue(
+        deals,
+        "2026-Q2",
+      );
 
-      expect(forecast.period).toBe('2026-Q2');
+      expect(forecast.period).toBe("2026-Q2");
       expect(forecast.forecastedRevenue).toBeGreaterThan(0);
       expect(forecast.confidence).toBeGreaterThanOrEqual(0);
       expect(forecast.confidence).toBeLessThanOrEqual(1);
@@ -363,15 +383,15 @@ describe('CRM Intelligence Engine', () => {
       expect(forecast.downside).toBeGreaterThanOrEqual(0);
     });
 
-    it('should weight advanced stages higher', () => {
+    it("should weight advanced stages higher", () => {
       const dealsEarly: Deal[] = [
         {
-          id: 'deal_early',
-          companyName: 'Early Stage',
+          id: "deal_early",
+          companyName: "Early Stage",
           amount: 100000,
-          stage: 'lead',
-          createdAt: new Date('2026-01-01'),
-          lastActivityAt: new Date('2026-03-10'),
+          stage: "lead",
+          createdAt: new Date("2026-01-01"),
+          lastActivityAt: new Date("2026-03-10"),
           daysInStage: 5,
           contactEngagementScore: 30,
           emailsSent: 1,
@@ -383,12 +403,12 @@ describe('CRM Intelligence Engine', () => {
 
       const dealsLate: Deal[] = [
         {
-          id: 'deal_late',
-          companyName: 'Late Stage',
+          id: "deal_late",
+          companyName: "Late Stage",
           amount: 100000,
-          stage: 'negotiation',
-          createdAt: new Date('2026-01-01'),
-          lastActivityAt: new Date('2026-03-10'),
+          stage: "negotiation",
+          createdAt: new Date("2026-01-01"),
+          lastActivityAt: new Date("2026-03-10"),
           daysInStage: 20,
           contactEngagementScore: 90,
           emailsSent: 10,
@@ -398,21 +418,29 @@ describe('CRM Intelligence Engine', () => {
         },
       ];
 
-      const earlyForecast = service.salesForecaster.forecastRevenue(dealsEarly, '2026-Q2');
-      const lateForecast = service.salesForecaster.forecastRevenue(dealsLate, '2026-Q2');
+      const earlyForecast = service.salesForecaster.forecastRevenue(
+        dealsEarly,
+        "2026-Q2",
+      );
+      const lateForecast = service.salesForecaster.forecastRevenue(
+        dealsLate,
+        "2026-Q2",
+      );
 
-      expect(lateForecast.forecastedRevenue).toBeGreaterThan(earlyForecast.forecastedRevenue);
+      expect(lateForecast.forecastedRevenue).toBeGreaterThan(
+        earlyForecast.forecastedRevenue,
+      );
     });
 
-    it('should identify risk factors for stagnant deals', () => {
+    it("should identify risk factors for stagnant deals", () => {
       const stagnantDeals: Deal[] = [
         {
-          id: 'stagnant_1',
-          companyName: 'Stagnant Co',
+          id: "stagnant_1",
+          companyName: "Stagnant Co",
           amount: 150000,
-          stage: 'proposal',
-          createdAt: new Date('2025-09-01'),
-          lastActivityAt: new Date('2026-02-01'), // 45+ days ago
+          stage: "proposal",
+          createdAt: new Date("2025-09-01"),
+          lastActivityAt: new Date("2026-02-01"), // 45+ days ago
           daysInStage: 120,
           contactEngagementScore: 20,
           emailsSent: 2,
@@ -422,15 +450,18 @@ describe('CRM Intelligence Engine', () => {
         },
       ];
 
-      const forecast = service.salesForecaster.forecastRevenue(stagnantDeals, '2026-Q2');
+      const forecast = service.salesForecaster.forecastRevenue(
+        stagnantDeals,
+        "2026-Q2",
+      );
 
       expect(forecast.riskFactors.length).toBeGreaterThan(0);
       expect(forecast.downside).toBeGreaterThan(0);
     });
   });
 
-  describe('Singleton pattern', () => {
-    it('should return same instance for repeated calls', () => {
+  describe("Singleton pattern", () => {
+    it("should return same instance for repeated calls", () => {
       const instance1 = getCRMIntelligence();
       const instance2 = getCRMIntelligence();
 

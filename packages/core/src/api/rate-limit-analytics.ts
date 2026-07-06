@@ -92,7 +92,7 @@ export class RateLimitAnalytics {
     tenantId: string,
     endpoint: string,
     allowed: boolean,
-    latency?: number
+    latency?: number,
   ): void {
     const event: RateLimitEvent = {
       tenantId,
@@ -121,8 +121,7 @@ export class RateLimitAnalytics {
     if (latency && stats.averageLatency === undefined) {
       stats.averageLatency = latency;
     } else if (latency && stats.averageLatency) {
-      stats.averageLatency =
-        (stats.averageLatency + latency) / 2;
+      stats.averageLatency = (stats.averageLatency + latency) / 2;
     }
 
     // Recalculate success rate
@@ -149,7 +148,7 @@ export class RateLimitAnalytics {
    */
   getTenantHourlyMetrics(
     tenantId: string,
-    hoursBack: number = 24
+    hoursBack: number = 24,
   ): TenantHourlyMetrics[] {
     const result: TenantHourlyMetrics[] = [];
     const now = Date.now();
@@ -221,10 +220,7 @@ export class RateLimitAnalytics {
         let lastHourRequests = 0;
 
         for (const [key, hourStats] of this.hourlyMetrics) {
-          if (
-            key.startsWith(tenantId + ":") &&
-            key.endsWith(lastHour)
-          ) {
+          if (key.startsWith(tenantId + ":") && key.endsWith(lastHour)) {
             lastHourRequests += hourStats.requests;
           }
         }
@@ -247,7 +243,9 @@ export class RateLimitAnalytics {
   /**
    * Detect anomalies for a tenant (spike detection).
    */
-  private detectAnomalies(tenantId: string): Array<{ hour: string; value: number }> {
+  private detectAnomalies(
+    tenantId: string,
+  ): Array<{ hour: string; value: number }> {
     const hourlyRequests = new Map<string, number>();
 
     for (const [key, stats] of this.hourlyMetrics) {
@@ -255,7 +253,7 @@ export class RateLimitAnalytics {
         const hour = key.split(":")[2];
         hourlyRequests.set(
           hour,
-          (hourlyRequests.get(hour) || 0) + stats.requests
+          (hourlyRequests.get(hour) || 0) + stats.requests,
         );
       }
     }
@@ -266,13 +264,15 @@ export class RateLimitAnalytics {
 
     // Calculate baseline (average of all hours)
     const requests = Array.from(hourlyRequests.values());
-    const baseline =
-      requests.reduce((a, b) => a + b, 0) / requests.length;
+    const baseline = requests.reduce((a, b) => a + b, 0) / requests.length;
     const threshold = baseline * this.anomalyConfig.baselineThreshold;
 
     // Detect anomalies
     return Array.from(hourlyRequests.entries())
-      .filter(([_, value]) => value > threshold || value > this.anomalyConfig.spikeThreshold)
+      .filter(
+        ([_, value]) =>
+          value > threshold || value > this.anomalyConfig.spikeThreshold,
+      )
       .map(([hour, value]) => ({ hour, value }));
   }
 

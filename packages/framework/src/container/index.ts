@@ -57,7 +57,7 @@ export class Container {
   register<T>(
     key: string,
     factory: ServiceFactory<T>,
-    options: { lifetime?: ServiceLifetime } = {}
+    options: { lifetime?: ServiceLifetime } = {},
   ): void {
     const lifetime = options.lifetime || "transient";
 
@@ -76,7 +76,7 @@ export class Container {
   async resolve<T = unknown>(key: string): Promise<T> {
     if (!this.has(key)) {
       throw new Error(
-        `Service "${key}" not found in container. Did you forget to register it?`
+        `Service "${key}" not found in container. Did you forget to register it?`,
       );
     }
 
@@ -88,7 +88,10 @@ export class Container {
     const definition = this.services.get(key)!;
 
     // Return cached singleton
-    if (definition.lifetime === "singleton" && definition.instance !== undefined) {
+    if (
+      definition.lifetime === "singleton" &&
+      definition.instance !== undefined
+    ) {
       return definition.instance as T;
     }
 
@@ -120,7 +123,7 @@ export class Container {
 
     if (definition.instance === undefined) {
       throw new Error(
-        `Service "${key}" not yet initialized. Use async resolve() or initialize singletons eagerly.`
+        `Service "${key}" not yet initialized. Use async resolve() or initialize singletons eagerly.`,
       );
     }
 
@@ -168,20 +171,16 @@ export class Container {
   private setupDefaults(): void {
     // Default logger (no-op or console-based)
     if (!this.has("logger")) {
-      this.register(
-        "logger",
-        () => createDefaultLogger(),
-        { lifetime: "singleton" }
-      );
+      this.register("logger", () => createDefaultLogger(), {
+        lifetime: "singleton",
+      });
     }
 
     // Store config as a service
     if (!this.has("config")) {
-      this.register(
-        "config",
-        () => ({ ...this.config }),
-        { lifetime: "singleton" }
-      );
+      this.register("config", () => ({ ...this.config }), {
+        lifetime: "singleton",
+      });
     }
   }
 }

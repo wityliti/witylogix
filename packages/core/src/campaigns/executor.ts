@@ -4,21 +4,21 @@
  * Implements pause/resume support and tracks progress in real-time
  */
 
-import { CampaignStatus, CampaignType, CampaignContent } from './types.js';
+import { CampaignStatus, CampaignType, CampaignContent } from "./types.js";
 
 /**
  * Campaign execution state
  */
 export type ExecutionState =
-  | 'validating'
-  | 'fetching_audience'
-  | 'batching'
-  | 'sending'
-  | 'tracking'
-  | 'completed'
-  | 'failed'
-  | 'paused'
-  | 'resumed';
+  | "validating"
+  | "fetching_audience"
+  | "batching"
+  | "sending"
+  | "tracking"
+  | "completed"
+  | "failed"
+  | "paused"
+  | "resumed";
 
 /**
  * Campaign execution context
@@ -60,7 +60,7 @@ export interface RecipientData {
 export interface SendResultItem {
   recipientId: string;
   messageId: string;
-  status: 'sent' | 'failed';
+  status: "sent" | "failed";
   error?: string;
   timestamp: Date;
 }
@@ -72,12 +72,12 @@ export interface MessageDispatcher {
   send(
     channel: string,
     recipient: RecipientData,
-    content: CampaignContent
+    content: CampaignContent,
   ): Promise<SendResultItem>;
   sendBatch(
     channel: string,
     recipients: RecipientData[],
-    content: CampaignContent
+    content: CampaignContent,
   ): Promise<SendResultItem[]>;
 }
 
@@ -87,7 +87,7 @@ export interface MessageDispatcher {
 export class ExecutorError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'ExecutorError';
+    this.name = "ExecutorError";
   }
 }
 
@@ -126,11 +126,11 @@ export class CampaignExecutor {
     tenantId: string,
     recipients: RecipientData[],
     content: CampaignContent,
-    campaignType: CampaignType
+    campaignType: CampaignType,
   ): Promise<ExecutionContext> {
     if (!campaignId || !tenantId || !recipients || recipients.length === 0) {
       throw new ExecutorError(
-        'campaignId, tenantId, and recipients are required'
+        "campaignId, tenantId, and recipients are required",
       );
     }
 
@@ -138,7 +138,7 @@ export class CampaignExecutor {
     const context: ExecutionContext = {
       campaignId,
       tenantId,
-      state: 'validating',
+      state: "validating",
       totalRecipients: recipients.length,
       sentCount: 0,
       deliveredCount: 0,
@@ -159,11 +159,11 @@ export class CampaignExecutor {
     try {
       // State 1: Validate campaign and content
       await this.validateCampaign(campaignId, content, campaignType);
-      context.state = 'fetching_audience';
+      context.state = "fetching_audience";
       this.updateContext(context);
 
       // State 2: Fetch audience (already done in this case)
-      context.state = 'batching';
+      context.state = "batching";
       this.updateContext(context);
 
       // State 3: Batch recipients
@@ -172,23 +172,18 @@ export class CampaignExecutor {
       this.updateContext(context);
 
       // State 4: Send messages in batches
-      context.state = 'sending';
-      await this.sendBatches(
-        context,
-        batches,
-        content,
-        campaignType
-      );
+      context.state = "sending";
+      await this.sendBatches(context, batches, content, campaignType);
       this.updateContext(context);
 
       // State 5: Track results
-      context.state = 'tracking';
+      context.state = "tracking";
       this.updateContext(context);
 
       // Check for failure threshold
       const failureRate = context.failedCount / context.totalRecipients;
       if (failureRate > this.FAILURE_THRESHOLD) {
-        context.state = 'failed';
+        context.state = "failed";
         context.error = `Campaign failed: ${(failureRate * 100).toFixed(2)}% of messages failed (threshold: ${(this.FAILURE_THRESHOLD * 100).toFixed(2)}%)`;
         context.updatedAt = new Date();
         this.updateContext(context);
@@ -196,13 +191,13 @@ export class CampaignExecutor {
       }
 
       // Mark as completed
-      context.state = 'completed';
+      context.state = "completed";
       context.updatedAt = new Date();
       this.updateContext(context);
 
       return context;
     } catch (error) {
-      context.state = 'failed';
+      context.state = "failed";
       context.error = error instanceof Error ? error.message : String(error);
       context.updatedAt = new Date();
       this.updateContext(context);
@@ -217,7 +212,7 @@ export class CampaignExecutor {
     this.pausedCampaigns.add(campaignId);
     const context = this.executionContexts.get(campaignId);
     if (context) {
-      context.state = 'paused';
+      context.state = "paused";
       context.isPaused = true;
       context.updatedAt = new Date();
       this.updateContext(context);
@@ -231,7 +226,7 @@ export class CampaignExecutor {
     this.pausedCampaigns.delete(campaignId);
     const context = this.executionContexts.get(campaignId);
     if (context) {
-      context.state = 'resumed';
+      context.state = "resumed";
       context.isPaused = false;
       context.updatedAt = new Date();
       this.updateContext(context);
@@ -251,14 +246,14 @@ export class CampaignExecutor {
   private async validateCampaign(
     campaignId: string,
     content: CampaignContent,
-    campaignType: CampaignType
+    campaignType: CampaignType,
   ): Promise<void> {
     if (!campaignId) {
-      throw new ExecutorError('Campaign ID is required');
+      throw new ExecutorError("Campaign ID is required");
     }
 
     if (!content) {
-      throw new ExecutorError('Campaign content is required');
+      throw new ExecutorError("Campaign content is required");
     }
 
     // Validate content based on campaign type
@@ -266,39 +261,44 @@ export class CampaignExecutor {
       case CampaignType.EMAIL:
         if (!content.email?.subject || !content.email?.htmlBody) {
           throw new ExecutorError(
-            'Email campaign must have subject and htmlBody'
+            "Email campaign must have subject and htmlBody",
           );
         }
         if (!content.email?.fromEmail) {
-          throw new ExecutorError('Email campaign must have fromEmail');
+          throw new ExecutorError("Email campaign must have fromEmail");
         }
         break;
 
       case CampaignType.SMS:
         if (!content.sms?.message) {
-          throw new ExecutorError('SMS campaign must have message');
+          throw new ExecutorError("SMS campaign must have message");
         }
         if (content.sms.message.length > 160) {
-          throw new ExecutorError('SMS message must not exceed 160 characters');
+          throw new ExecutorError("SMS message must not exceed 160 characters");
         }
         break;
 
       case CampaignType.WHATSAPP:
         if (!content.whatsapp?.templateName) {
-          throw new ExecutorError('WhatsApp campaign must have templateName');
+          throw new ExecutorError("WhatsApp campaign must have templateName");
         }
         break;
 
       case CampaignType.PUSH:
         if (!content.push?.title || !content.push?.body) {
-          throw new ExecutorError('Push campaign must have title and body');
+          throw new ExecutorError("Push campaign must have title and body");
         }
         break;
 
       case CampaignType.MULTI_CHANNEL:
-        if (!content.email && !content.sms && !content.whatsapp && !content.push) {
+        if (
+          !content.email &&
+          !content.sms &&
+          !content.whatsapp &&
+          !content.push
+        ) {
           throw new ExecutorError(
-            'Multi-channel campaign must have at least one channel configured'
+            "Multi-channel campaign must have at least one channel configured",
           );
         }
         break;
@@ -328,7 +328,7 @@ export class CampaignExecutor {
     context: ExecutionContext,
     batches: RecipientData[][],
     content: CampaignContent,
-    campaignType: CampaignType
+    campaignType: CampaignType,
   ): Promise<void> {
     for (let i = 0; i < batches.length; i++) {
       // Check if paused
@@ -347,12 +347,12 @@ export class CampaignExecutor {
         const results = await this.dispatcher.sendBatch(
           channel,
           batch,
-          content
+          content,
         );
 
         // Update stats
         for (const result of results) {
-          if (result.status === 'sent') {
+          if (result.status === "sent") {
             context.sentCount++;
             context.deliveredCount++; // Assume delivered if sent
           } else {
@@ -380,17 +380,17 @@ export class CampaignExecutor {
   private getChannelFromCampaignType(campaignType: CampaignType): string {
     switch (campaignType) {
       case CampaignType.EMAIL:
-        return 'email';
+        return "email";
       case CampaignType.SMS:
-        return 'sms';
+        return "sms";
       case CampaignType.WHATSAPP:
-        return 'whatsapp';
+        return "whatsapp";
       case CampaignType.PUSH:
-        return 'push';
+        return "push";
       case CampaignType.MULTI_CHANNEL:
-        return 'multi_channel';
+        return "multi_channel";
       default:
-        return 'email';
+        return "email";
     }
   }
 
@@ -411,7 +411,7 @@ export class CampaignExecutor {
       return 0;
     }
 
-    if (context.state === 'completed' || context.state === 'failed') {
+    if (context.state === "completed" || context.state === "failed") {
       return 100;
     }
 
@@ -419,9 +419,7 @@ export class CampaignExecutor {
       return 0;
     }
 
-    return Math.round(
-      (context.currentBatchIndex / context.totalBatches) * 100
-    );
+    return Math.round((context.currentBatchIndex / context.totalBatches) * 100);
   }
 
   /**
@@ -458,7 +456,7 @@ export class CampaignExecutor {
 
     for (const [campaignId, context] of this.executionContexts.entries()) {
       if (
-        (context.state === 'completed' || context.state === 'failed') &&
+        (context.state === "completed" || context.state === "failed") &&
         context.updatedAt < cutoffDate
       ) {
         this.executionContexts.delete(campaignId);

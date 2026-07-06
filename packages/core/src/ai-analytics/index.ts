@@ -29,7 +29,7 @@ export type {
   VehicleProfile,
   LeaderboardEntry,
   Leaderboard,
-} from './types.js';
+} from "./types.js";
 
 // Enum exports
 export {
@@ -37,21 +37,21 @@ export {
   BadgeType,
   AnomalySeverity,
   AnomalyType,
-} from './types.js';
+} from "./types.js";
 
 // Route Efficiency exports
 export {
   calculateRouteEfficiency,
   calculateRouteEfficiencyBatch,
   recordBenchmark,
-} from './route-efficiency.js';
+} from "./route-efficiency.js";
 
 // Driver Scoring exports
 export {
   calculateDriverScore,
   calculateDriverScoreBatch,
   recordPeerScore,
-} from './driver-scorer.js';
+} from "./driver-scorer.js";
 
 // Delivery Prediction exports
 export {
@@ -59,13 +59,10 @@ export {
   predictDeliveryWindowBatch,
   recordDelivery,
   getCalibrationInfo,
-} from './delivery-predictor.js';
+} from "./delivery-predictor.js";
 
 // Anomaly Detection exports
-export {
-  detectAnomalies,
-  detectAnomaliesBatch,
-} from './anomaly-detector.js';
+export { detectAnomalies, detectAnomaliesBatch } from "./anomaly-detector.js";
 
 // CO2 Calculator exports
 export {
@@ -74,4 +71,4 @@ export {
   getCO2Summary,
   compareCO2,
   recordCO2,
-} from './co2-calculator.js';
+} from "./co2-calculator.js";

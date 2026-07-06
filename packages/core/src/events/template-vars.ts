@@ -234,7 +234,9 @@ export function buildDriverVars(
   // Vehicle info
   vars.vehicle_number = driver.vehicleNumber || driver.vehicleRegistration;
   vars.vehicle_type = driver.vehicleType;
-  vars.vehicle_type_display = getVehicleTypeDisplay(driver.vehicleType as string);
+  vars.vehicle_type_display = getVehicleTypeDisplay(
+    driver.vehicleType as string,
+  );
   vars.license_plate = driver.licensePlate;
 
   // Assignment
@@ -250,7 +252,8 @@ export function buildDriverVars(
   const rating = driver.rating as number;
   if (rating) {
     vars.rating = rating.toFixed(1);
-    vars.rating_stars = "★".repeat(Math.floor(rating)) + "☆".repeat(5 - Math.floor(rating));
+    vars.rating_stars =
+      "★".repeat(Math.floor(rating)) + "☆".repeat(5 - Math.floor(rating));
   }
 
   vars.deliveries_completed = driver.deliveriesCompleted || 0;
@@ -337,7 +340,8 @@ export function buildPaymentVars(
 
   // Error details (if payment failed)
   if (payment.status === "failed" || payment.status === "declined") {
-    vars.error_message = payment.errorMessage || "Payment could not be processed";
+    vars.error_message =
+      payment.errorMessage || "Payment could not be processed";
     vars.error_code = payment.errorCode;
   }
 

@@ -8,7 +8,7 @@ export {
   TicketNotFoundError,
   FeatureRequestNotFoundError,
   TicketError,
-} from './ticket-manager';
+} from "./ticket-manager";
 export type {
   TicketStatus,
   TicketPriority,
@@ -29,4 +29,4 @@ export type {
   PaginationOptions,
   TicketListResponse,
   FeatureRequestListResponse,
-} from './types';
+} from "./types";

@@ -16,7 +16,7 @@ Complete API documentation, validation, and health monitoring for the Witylogix 
    - Standard status codes and error patterns
    - **Read first for:** API endpoint reference, route structure
 
-2. **[Integration Guide](./INTEGRATION.md)** *(to be created)*
+2. **[Integration Guide](./INTEGRATION.md)** _(to be created)_
    - Step-by-step integration examples
    - Code samples for common operations
    - Webhook setup and testing
@@ -43,7 +43,7 @@ Located in `packages/core/src/api/`:
    - Fastify plugin for monitoring endpoints
    - **Import in server:** `import healthDashboardPlugin from "@witylogix/core/api/health-dashboard"`
 
-4. **__tests__/validation-schemas.test.ts** — Test suite
+4. ****tests**/validation-schemas.test.ts** — Test suite
    - 40+ test cases for validation schemas
    - Edge cases, security tests, error verification
    - **Run tests:** `npm test -- validation-schemas.test.ts`
@@ -53,41 +53,54 @@ Located in `packages/core/src/api/`:
 ## Module Overview
 
 ### Authentication (12 routes)
+
 Login, registration, token refresh, MFA, password reset
+
 - **Key endpoints:** POST /auth/login, POST /auth/register, GET /auth/me
 - **Auth required:** Most routes, except registration/password reset
 
 ### Orders (18 routes)
+
 Complete order lifecycle from creation to delivery
+
 - **Key endpoints:** GET/POST /orders, PATCH /orders/:id/status, POST /orders/bulk/create
 - **Validation:** orderCreateSchema, orderUpdateSchema, orderListSchema
 - **Errors:** ORDER_NOT_FOUND, ORDER_INVALID_STATUS_TRANSITION, ORDER_ALREADY_ASSIGNED
 
 ### Drivers (14 routes)
+
 Driver management, location tracking, performance metrics
+
 - **Key endpoints:** GET/POST /drivers, POST /drivers/:id/location, GET /drivers/:id/performance
 - **Validation:** driverCreateSchema, driverLocationSchema, driverStatusSchema
 - **Errors:** DRIVER_NOT_FOUND, DRIVER_INACTIVE, DRIVER_LICENSE_EXPIRED
 
 ### Deliveries (16 routes)
+
 Delivery operations, proof collection, status tracking
+
 - **Key endpoints:** GET/POST /deliveries, POST /deliveries/:id/proof, POST /deliveries/:id/complete
 - **Validation:** deliveryCreateSchema, deliveryProofSchema, deliveryCompleteSchema
 - **Errors:** DELIVERY_NOT_FOUND, DELIVERY_PROOF_REQUIRED, DELIVERY_RECIPIENT_UNREACHABLE
 
 ### Zones (8 routes)
+
 Geographic zone management with polygon validation
+
 - **Key endpoints:** GET/POST /zones, POST /zones/:id/validate-point
 - **Validation:** zoneCreateSchema, zonePointValidationSchema
 - **Errors:** ZONE_INVALID_POLYGON, ZONE_OVERLAPPING, ZONE_STILL_IN_USE
 
 ### Organizations (10 routes)
+
 Multi-tenant organization and member management
+
 - **Key endpoints:** GET/POST /organizations, POST /organizations/:id/members/invite
 - **Validation:** organizationCreateSchema, inviteMemberSchema
 - **Errors:** ORG_DUPLICATE_SLUG, ORG_MEMBER_DUPLICATE, ORG_SUBSCRIPTION_REQUIRED
 
 ### Other Modules
+
 - **Integrations** (15 routes) — Third-party service integration
 - **Webhooks** (11 routes) — Webhook subscription and delivery
 - **Analytics** (13 routes) — Reporting and analytics
@@ -130,7 +143,7 @@ fastify.setErrorHandler((error, request, reply) => {
         code: errorDef.code,
         message: errorDef.messageTemplate,
         statusCode: errorDef.httpStatus,
-      }
+      },
     });
   }
 });
@@ -163,18 +176,18 @@ async function startServer() {
 
 ```typescript
 // Single field validators
-export const idParam           // UUID validation
-export const email             // Email format
-export const phone             // Phone number (e.g., +1234567890)
-export const date              // YYYY-MM-DD format
-export const iso8601DateTime   // ISO 8601 datetime
+export const idParam; // UUID validation
+export const email; // Email format
+export const phone; // Phone number (e.g., +1234567890)
+export const date; // YYYY-MM-DD format
+export const iso8601DateTime; // ISO 8601 datetime
 
 // Composite validators
-export const address            // Full address with coordinates
-export const coordinates        // Latitude/longitude
-export const polygon            // GeoJSON Polygon for zones
-export const pagination         // Page, limit with bounds
-export const searchQuery        // Full-text search with pagination
+export const address; // Full address with coordinates
+export const coordinates; // Latitude/longitude
+export const polygon; // GeoJSON Polygon for zones
+export const pagination; // Page, limit with bounds
+export const searchQuery; // Full-text search with pagination
 ```
 
 ### Schema Composition
@@ -206,6 +219,7 @@ DOMAIN_SPECIFIC_ERROR
 ```
 
 Examples:
+
 - `AUTH_INVALID_CREDENTIALS` — Authentication domain
 - `ORDER_NOT_FOUND` — Order domain
 - `DRIVER_INACTIVE` — Driver domain
@@ -342,12 +356,12 @@ npm test -- validation-schemas.test.ts --coverage
 
 Four tier system with different request limits:
 
-| Tier | Requests/Hour | Requests/Day | Burst Limit |
-|------|---------------|--------------|-------------|
-| Free | 100 | 1,000 | 10/min |
-| Basic | 1,000 | 10,000 | 100/min |
-| Pro | 10,000 | 100,000 | 500/min |
-| Enterprise | Unlimited | Unlimited | Unlimited |
+| Tier       | Requests/Hour | Requests/Day | Burst Limit |
+| ---------- | ------------- | ------------ | ----------- |
+| Free       | 100           | 1,000        | 10/min      |
+| Basic      | 1,000         | 10,000       | 100/min     |
+| Pro        | 10,000        | 100,000      | 500/min     |
+| Enterprise | Unlimited     | Unlimited    | Unlimited   |
 
 ### Rate Limit Headers
 
@@ -377,23 +391,27 @@ X-RateLimit-Reset: 1647439200
 ## Standards & Conventions
 
 ### Naming Conventions
+
 - Routes: kebab-case (e.g., `/webhook-deliveries`)
 - Schema names: camelCase (e.g., `orderCreateSchema`)
 - Error codes: SCREAMING_SNAKE_CASE (e.g., `ORDER_NOT_FOUND`)
 - Types: PascalCase (e.g., `OrderCreate`, `DriverLocation`)
 
 ### Field Naming
+
 - UUIDs: `*Id` (e.g., `orderId`, `driverId`)
 - Timestamps: `*At` or `*Date` (e.g., `createdAt`, `scheduledDate`)
 - Status fields: `status` (e.g., `orderStatus`, `deliveryStatus`)
 - Counts: `*Count` (e.g., `itemCount`, `totalCount`)
 
 ### API Versioning
+
 - Current version: `1.0.0`
 - Header support: `Accept: application/json; version=1.0`
 - Path versioning: Not used (header-based only)
 
 ### Pagination
+
 Default page size: 25 items
 Max page size: 100 items
 Cursor-based pagination: Supported via `cursor` parameter
@@ -403,6 +421,7 @@ Cursor-based pagination: Supported via `cursor` parameter
 ## Common Operations
 
 ### Create Order
+
 ```bash
 POST /orders
 Content-Type: application/json
@@ -432,12 +451,14 @@ Authorization: Bearer <token>
 ```
 
 ### List Orders with Filters
+
 ```bash
 GET /orders?status=ASSIGNED&driverId=<uuid>&sortBy=createdAt&sortOrder=desc&page=1&limit=25
 Authorization: Bearer <token>
 ```
 
 ### Update Order Status
+
 ```bash
 PATCH /orders/:id/status
 Content-Type: application/json
@@ -454,18 +475,22 @@ Authorization: Bearer <token>
 ## Troubleshooting
 
 ### Validation Errors
+
 - **Issue:** "Validation failed: Invalid value for X"
 - **Solution:** Check ROUTE_MAP.md for field requirements, use validation schema types
 
 ### Rate Limit Exceeded
+
 - **Issue:** 429 Too Many Requests
 - **Solution:** Check your plan tier, implement exponential backoff, request upgrade
 
 ### Service Unavailable
+
 - **Issue:** 503 Service Unavailable
 - **Solution:** Check /health/status page, wait and retry, contact support
 
 ### Authentication Failures
+
 - **Issue:** 401 Unauthorized
 - **Solution:** Verify token is valid, check expiry, refresh if needed
 

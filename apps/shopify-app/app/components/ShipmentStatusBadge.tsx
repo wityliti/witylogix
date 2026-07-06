@@ -13,7 +13,10 @@ interface ShipmentStatusBadgeProps {
   size?: "small" | "medium";
 }
 
-const STATUS_CONFIG: Record<string, { label: string; tone?: BadgeProps["tone"] }> = {
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; tone?: BadgeProps["tone"] }
+> = {
   PENDING: { label: "Pending", tone: "attention" },
   PROCESSING: { label: "Processing", tone: "info" },
   LABEL_CREATED: { label: "Label Created", tone: "info" },

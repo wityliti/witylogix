@@ -10,32 +10,32 @@
  * Calculates savings from optimized routing and tracks trends.
  */
 
-import type { CO2Report, CO2Summary, VehicleProfile } from './types.js';
+import type { CO2Report, CO2Summary, VehicleProfile } from "./types.js";
 
 /**
  * Vehicle emissions profiles (g CO2 per km)
  */
 const VEHICLE_PROFILES: Record<
-  'van' | 'truck' | 'bike' | 'ev',
+  "van" | "truck" | "bike" | "ev",
   VehicleProfile
 > = {
   van: {
-    type: 'van',
+    type: "van",
     baseEmissionsFactor: 250,
     idlingEmissions: 2.5, // kg per hour
   },
   truck: {
-    type: 'truck',
+    type: "truck",
     baseEmissionsFactor: 350,
     idlingEmissions: 4.0,
   },
   bike: {
-    type: 'bike',
+    type: "bike",
     baseEmissionsFactor: 0,
     idlingEmissions: 0,
   },
   ev: {
-    type: 'ev',
+    type: "ev",
     baseEmissionsFactor: 50, // Grid average
     idlingEmissions: 0,
   },
@@ -67,7 +67,7 @@ const co2History: Map<string, CO2HistoryEntry[]> = new Map();
  * Get vehicle profile
  */
 function getVehicleProfile(
-  type: 'van' | 'truck' | 'bike' | 'ev',
+  type: "van" | "truck" | "bike" | "ev",
 ): VehicleProfile {
   return VEHICLE_PROFILES[type];
 }
@@ -78,7 +78,7 @@ function getVehicleProfile(
 function calculateDrivingEmissions(
   distanceMeters: number,
   profile: VehicleProfile,
-  terrainType: string = 'suburban',
+  terrainType: string = "suburban",
 ): number {
   const distanceKm = distanceMeters / 1000;
   const terrainFactor = TERRAIN_ADJUSTMENTS[terrainType] ?? 1.0;
@@ -164,8 +164,8 @@ export function calculateCO2(
   distance: number,
   duration: number,
   idleTime: number,
-  vehicleType: 'van' | 'truck' | 'bike' | 'ev' = 'van',
-  terrainType: string = 'suburban',
+  vehicleType: "van" | "truck" | "bike" | "ev" = "van",
+  terrainType: string = "suburban",
 ): CO2Report {
   const profile = getVehicleProfile(vehicleType);
 
@@ -192,8 +192,8 @@ export function calculateCO2(
   const efficiency = (actualCO2 / (distance / 1000)) * 1000; // g/km
 
   // Record for trends
-  const today = new Date().toISOString().split('T')[0];
-  recordCO2('default-tenant', today, actualCO2, savedCO2);
+  const today = new Date().toISOString().split("T")[0];
+  recordCO2("default-tenant", today, actualCO2, savedCO2);
 
   return {
     routeId,
@@ -224,7 +224,7 @@ export function calculateCO2Batch(
     distance: number;
     duration: number;
     idleTime: number;
-    vehicleType: 'van' | 'truck' | 'bike' | 'ev';
+    vehicleType: "van" | "truck" | "bike" | "ev";
     terrainType?: string;
   }>,
 ): Array<CO2Report> {
@@ -294,23 +294,31 @@ export function getCO2Summary(
   // Vehicle breakdown (mock - in production would come from database)
   const vehicleBreakdown = [
     {
-      type: 'van' as const,
-      count: Math.floor(periodData.reduce((sum, d) => sum + d.routeCount, 0) * 0.6),
+      type: "van" as const,
+      count: Math.floor(
+        periodData.reduce((sum, d) => sum + d.routeCount, 0) * 0.6,
+      ),
       totalCO2: Math.round(totalActualCO2 * 0.6),
     },
     {
-      type: 'truck' as const,
-      count: Math.floor(periodData.reduce((sum, d) => sum + d.routeCount, 0) * 0.3),
+      type: "truck" as const,
+      count: Math.floor(
+        periodData.reduce((sum, d) => sum + d.routeCount, 0) * 0.3,
+      ),
       totalCO2: Math.round(totalActualCO2 * 0.3),
     },
     {
-      type: 'bike' as const,
-      count: Math.floor(periodData.reduce((sum, d) => sum + d.routeCount, 0) * 0.08),
+      type: "bike" as const,
+      count: Math.floor(
+        periodData.reduce((sum, d) => sum + d.routeCount, 0) * 0.08,
+      ),
       totalCO2: 0,
     },
     {
-      type: 'ev' as const,
-      count: Math.floor(periodData.reduce((sum, d) => sum + d.routeCount, 0) * 0.02),
+      type: "ev" as const,
+      count: Math.floor(
+        periodData.reduce((sum, d) => sum + d.routeCount, 0) * 0.02,
+      ),
       totalCO2: Math.round(totalActualCO2 * 0.02),
     },
   ];
@@ -344,7 +352,7 @@ export function compareCO2(
     duration: number;
     idleTime: number;
   },
-  vehicleType: 'van' | 'truck' | 'bike' | 'ev' = 'van',
+  vehicleType: "van" | "truck" | "bike" | "ev" = "van",
 ): {
   savingsKg: number;
   savingsPercent: number;

@@ -5,7 +5,10 @@
  */
 
 import { WebhookManager, getWebhookManager } from "./webhook-manager";
-import { WebhookDeliveryService, getWebhookDeliveryService } from "./webhook-delivery";
+import {
+  WebhookDeliveryService,
+  getWebhookDeliveryService,
+} from "./webhook-delivery";
 
 /**
  * Webhook processor configuration
@@ -36,7 +39,10 @@ export class WebhookProcessor {
   constructor(prisma: any, config: WebhookProcessorConfig = {}) {
     this.prisma = prisma;
     this.webhookManager = getWebhookManager(prisma);
-    this.deliveryService = getWebhookDeliveryService(this.webhookManager, prisma);
+    this.deliveryService = getWebhookDeliveryService(
+      this.webhookManager,
+      prisma,
+    );
     this.processingIntervalMs = config.processingIntervalMs || 5000; // 5 seconds
     this.batchSize = config.batchSize || 10;
     this.maxConcurrentDeliveries = config.maxConcurrentDeliveries || 5;
@@ -53,7 +59,7 @@ export class WebhookProcessor {
 
     this.isRunning = true;
     console.log(
-      `Starting webhook processor (interval: ${this.processingIntervalMs}ms, batch: ${this.batchSize})`
+      `Starting webhook processor (interval: ${this.processingIntervalMs}ms, batch: ${this.batchSize})`,
     );
 
     // Run processing loop
@@ -87,14 +93,18 @@ export class WebhookProcessor {
       } catch (error) {
         console.error(
           "Error in webhook processor:",
-          error instanceof Error ? error.message : String(error)
+          error instanceof Error ? error.message : String(error),
         );
       }
 
       // Schedule next run
       if (this.isRunning) {
-        await new Promise((resolve) =>
-          (this.processingTimer = setTimeout(resolve, this.processingIntervalMs))
+        await new Promise(
+          (resolve) =>
+            (this.processingTimer = setTimeout(
+              resolve,
+              this.processingIntervalMs,
+            )),
         );
       }
     }
@@ -116,12 +126,12 @@ export class WebhookProcessor {
       try {
         await this.deliveryService.processPendingDeliveries(
           tenantId,
-          this.batchSize
+          this.batchSize,
         );
       } catch (error) {
         console.error(
           `Error processing deliveries for tenant ${tenantId}:`,
-          error instanceof Error ? error.message : String(error)
+          error instanceof Error ? error.message : String(error),
         );
       }
     }
@@ -146,14 +156,14 @@ export class WebhookProcessor {
     for (const endpoint of endpoints) {
       try {
         console.log(
-          `Resetting circuit breaker for endpoint ${endpoint.id} (last failure: ${endpoint.lastFailureAt})`
+          `Resetting circuit breaker for endpoint ${endpoint.id} (last failure: ${endpoint.lastFailureAt})`,
         );
 
         await this.webhookManager.resetCircuitBreaker(endpoint.id);
       } catch (error) {
         console.error(
           `Failed to reset circuit breaker for ${endpoint.id}:`,
-          error instanceof Error ? error.message : String(error)
+          error instanceof Error ? error.message : String(error),
         );
       }
     }
@@ -162,10 +172,13 @@ export class WebhookProcessor {
   /**
    * Process deliveries for a specific tenant (manual trigger)
    */
-  async processForTenant(tenantId: string, batchSize?: number): Promise<number> {
+  async processForTenant(
+    tenantId: string,
+    batchSize?: number,
+  ): Promise<number> {
     return await this.deliveryService.processPendingDeliveries(
       tenantId,
-      batchSize || this.batchSize
+      batchSize || this.batchSize,
     );
   }
 
@@ -197,7 +210,7 @@ let processorInstance: WebhookProcessor | null = null;
  */
 export function getWebhookProcessor(
   prisma: any,
-  config?: WebhookProcessorConfig
+  config?: WebhookProcessorConfig,
 ): WebhookProcessor {
   if (!processorInstance) {
     processorInstance = new WebhookProcessor(prisma, config);
@@ -210,7 +223,7 @@ export function getWebhookProcessor(
  */
 export function initializeWebhookProcessor(
   prisma: any,
-  config?: WebhookProcessorConfig
+  config?: WebhookProcessorConfig,
 ): WebhookProcessor {
   const processor = getWebhookProcessor(prisma, config);
   processor.start();

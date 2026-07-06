@@ -6,11 +6,11 @@ The Witylogix API implements rate limiting to ensure fair usage and system stabi
 
 ### Plan Limits (Requests per Minute)
 
-| Plan | Standard Endpoints | Webhook Events | Route Optimization | Total Burst |
-|------|-------------------|-----------------|-------------------|------------|
-| **FREE** | 100 | 50 | 5 | 150 |
-| **PRO** | 1,000 | 500 | 50 | 1,500 |
-| **ENTERPRISE** | 10,000 | 5,000 | 500 | 15,000 |
+| Plan           | Standard Endpoints | Webhook Events | Route Optimization | Total Burst |
+| -------------- | ------------------ | -------------- | ------------------ | ----------- |
+| **FREE**       | 100                | 50             | 5                  | 150         |
+| **PRO**        | 1,000              | 500            | 50                 | 1,500       |
+| **ENTERPRISE** | 10,000             | 5,000          | 500                | 15,000      |
 
 ### By Authentication Method
 
@@ -59,6 +59,7 @@ Rate limits use a **sliding window** algorithm:
 - As old requests fall outside the window, new requests become available
 
 Example:
+
 ```
 Minute 00:00 - 00:60: 100 requests allowed
 Minute 00:30 - 01:30: After 30 seconds, first 50 requests have "expired"
@@ -73,6 +74,7 @@ Short-term traffic spikes are permitted within generous burst limits:
 - **Automatic Backoff**: Burst quota regenerates at per-minute rate
 
 Example (PRO plan, 1000/min limit):
+
 ```
 Normal traffic: 1000 requests/minute spread evenly (~16/second)
 Burst allowed: Up to 2000 requests for 10 seconds (~200/second)
@@ -106,7 +108,7 @@ Implement exponential backoff when receiving 429 responses:
 async function callApiWithRetry(
   url: string,
   options: RequestInit,
-  maxRetries = 3
+  maxRetries = 3,
 ): Promise<Response> {
   let lastError: Error | undefined;
 
@@ -118,14 +120,14 @@ async function callApiWithRetry(
     }
 
     const retryAfter = parseInt(
-      response.headers.get('X-RateLimit-Retry-After') || '1'
+      response.headers.get("X-RateLimit-Retry-After") || "1",
     );
 
     // Exponential backoff: 2^attempt * retryAfter seconds
     const delaySeconds = Math.pow(2, attempt) * retryAfter;
     console.log(`Rate limited. Retrying after ${delaySeconds}s...`);
 
-    await new Promise(resolve => setTimeout(resolve, delaySeconds * 1000));
+    await new Promise((resolve) => setTimeout(resolve, delaySeconds * 1000));
   }
 
   throw new Error(`Failed after ${maxRetries} attempts`);
@@ -133,8 +135,8 @@ async function callApiWithRetry(
 
 // Usage
 const response = await callApiWithRetry(
-  'https://api.witylogix.com/api/v4/orders',
-  { headers: { Authorization: `Bearer ${token}` } }
+  "https://api.witylogix.com/api/v4/orders",
+  { headers: { Authorization: `Bearer ${token}` } },
 );
 ```
 
@@ -143,10 +145,10 @@ const response = await callApiWithRetry(
 The official SDK handles rate limiting automatically:
 
 ```typescript
-import { WitylogixClient } from '@witylogix/sdk';
+import { WitylogixClient } from "@witylogix/sdk";
 
 const client = new WitylogixClient({
-  apiKey: 'wl_live_sk_...',
+  apiKey: "wl_live_sk_...",
   retryConfig: {
     maxRetries: 3,
     initialDelayMs: 100,
@@ -200,12 +202,12 @@ retry_request "https://api.witylogix.com/api/v4/orders" "$TOKEN"
 
 Most endpoints share the plan-wide limit, but some intensive operations have separate limits:
 
-| Endpoint | Limit | Notes |
-|----------|-------|-------|
-| `POST /api/v4/routes/{id}/optimize` | 50/min | Route optimization is computationally expensive |
-| `POST /api/v4/webhooks/deliveries/retry` | 200/min | Webhook retries |
-| `GET /api/v4/admin/metrics` | 10/min | Expensive aggregation query |
-| All others | Plan limit | Standard rate limit |
+| Endpoint                                 | Limit      | Notes                                           |
+| ---------------------------------------- | ---------- | ----------------------------------------------- |
+| `POST /api/v4/routes/{id}/optimize`      | 50/min     | Route optimization is computationally expensive |
+| `POST /api/v4/webhooks/deliveries/retry` | 200/min    | Webhook retries                                 |
+| `GET /api/v4/admin/metrics`              | 10/min     | Expensive aggregation query                     |
+| All others                               | Plan limit | Standard rate limit                             |
 
 ### Example: Route Optimization
 
@@ -234,6 +236,7 @@ curl https://api.witylogix.com/api/v4/tenants/usage \
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -298,7 +301,7 @@ curl -X POST https://api.witylogix.com/api/v4/orders/batch-status-update \
 Cache API responses locally to reduce requests:
 
 ```typescript
-import NodeCache from 'node-cache';
+import NodeCache from "node-cache";
 
 const cache = new NodeCache({ stdTTL: 300 }); // 5-minute TTL
 
@@ -308,7 +311,7 @@ async function getDriver(driverId: string) {
 
   const response = await fetch(
     `https://api.witylogix.com/api/v4/drivers/${driverId}`,
-    { headers: { Authorization: `Bearer ${token}` } }
+    { headers: { Authorization: `Bearer ${token}` } },
   );
   const driver = await response.json();
 

@@ -31,7 +31,7 @@ const TEST_SECRET = "test-shopify-secret-key-for-integration";
 function validateShopifyHmac(
   rawBody: string | Buffer,
   hmacHeader: string,
-  secret: string
+  secret: string,
 ): boolean {
   const bodyString =
     typeof rawBody === "string" ? rawBody : rawBody.toString("utf-8");
@@ -50,7 +50,10 @@ function validateShopifyHmac(
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function makeHmac(payload: Record<string, unknown>, secret = TEST_SECRET): string {
+function makeHmac(
+  payload: Record<string, unknown>,
+  secret = TEST_SECRET,
+): string {
   return crypto
     .createHmac("sha256", secret)
     .update(JSON.stringify(payload), "utf-8")
@@ -66,14 +69,20 @@ interface Db {
     findFirst: ReturnType<typeof vi.fn>;
     delete: ReturnType<typeof vi.fn>;
   };
-  order: { upsert: ReturnType<typeof vi.fn>; updateMany: ReturnType<typeof vi.fn> };
+  order: {
+    upsert: ReturnType<typeof vi.fn>;
+    updateMany: ReturnType<typeof vi.fn>;
+  };
   product: { upsert: ReturnType<typeof vi.fn> };
   customer: { updateMany: ReturnType<typeof vi.fn> };
   activityLog: { create: ReturnType<typeof vi.fn> };
 }
 
 class ShopifyWebhookReceiver {
-  constructor(private db: Db, private secret: string) {}
+  constructor(
+    private db: Db,
+    private secret: string,
+  ) {}
 
   /** Verify the HMAC header against the raw request body. */
   verifyHmac(rawBody: string, hmacHeader?: string): boolean {
@@ -132,7 +141,7 @@ class ShopifyWebhookReceiver {
   }
 
   async handleCustomerDataRequest(
-    payload: Record<string, unknown>
+    payload: Record<string, unknown>,
   ): Promise<void> {
     const p = payload as any;
     const shop = await this.findShopByDomain(p.shop_domain);
@@ -199,7 +208,7 @@ class ShopifyWebhookReceiver {
 
   async handleOrderCreate(
     shopDomain: string | undefined,
-    payload: Record<string, unknown>
+    payload: Record<string, unknown>,
   ): Promise<void> {
     if (!shopDomain) return;
     const p = payload as any;
@@ -208,7 +217,10 @@ class ShopifyWebhookReceiver {
 
     await this.db.order.upsert({
       where: {
-        shopId_externalOrderId: { shopId: shop.id, externalOrderId: String(p.id) },
+        shopId_externalOrderId: {
+          shopId: shop.id,
+          externalOrderId: String(p.id),
+        },
       },
       update: {
         status: p.fulfillment_status ?? "UNFULFILLED",
@@ -237,7 +249,7 @@ class ShopifyWebhookReceiver {
 
   async handleOrderUpdated(
     shopDomain: string | undefined,
-    payload: Record<string, unknown>
+    payload: Record<string, unknown>,
   ): Promise<void> {
     if (!shopDomain) return;
     const p = payload as any;
@@ -259,7 +271,7 @@ class ShopifyWebhookReceiver {
 
   async handleProductUpdate(
     shopDomain: string | undefined,
-    payload: Record<string, unknown>
+    payload: Record<string, unknown>,
   ): Promise<void> {
     if (!shopDomain) return;
     const p = payload as any;
@@ -368,7 +380,9 @@ describe("Shopify Webhook Receive — WIT-234", () => {
         .createHmac("sha256", TEST_SECRET)
         .update(body, "utf-8")
         .digest("base64");
-      expect(validateShopifyHmac(Buffer.from(body), sig, TEST_SECRET)).toBe(true);
+      expect(validateShopifyHmac(Buffer.from(body), sig, TEST_SECRET)).toBe(
+        true,
+      );
     });
   });
 
@@ -478,7 +492,11 @@ describe("Shopify Webhook Receive — WIT-234", () => {
     const gdprPayload = {
       shop_id: 111222333,
       shop_domain: "gdpr-shop.myshopify.com",
-      customer: { id: 987654321, email: "customer@gdpr.com", phone: "+1-555-0100" },
+      customer: {
+        id: 987654321,
+        email: "customer@gdpr.com",
+        phone: "+1-555-0100",
+      },
       orders_requested: [10001, 10002],
     };
 
@@ -532,7 +550,9 @@ describe("Shopify Webhook Receive — WIT-234", () => {
       await receiver.handleCustomerDataRequest(gdprPayload);
 
       const query = db.shop.findFirst.mock.calls[0][0];
-      expect(query.where.OR).toContainEqual({ domain: "gdpr-shop.myshopify.com" });
+      expect(query.where.OR).toContainEqual({
+        domain: "gdpr-shop.myshopify.com",
+      });
       expect(query.where.OR).toContainEqual({
         shopifyDomain: "gdpr-shop.myshopify.com",
       });
@@ -916,7 +936,11 @@ describe("Shopify Webhook Receive — WIT-234", () => {
     it("upserts on app/installed so re-install is safe", async () => {
       db.shop.upsert.mockResolvedValue({ id: "shop-reinstall" });
 
-      const shopPayload = { id: 1, name: "Store", domain: "store.myshopify.com" };
+      const shopPayload = {
+        id: 1,
+        name: "Store",
+        domain: "store.myshopify.com",
+      };
 
       await receiver.handleAppInstalled(shopPayload);
       await receiver.handleAppInstalled(shopPayload);
@@ -935,7 +959,11 @@ describe("Shopify Webhook Receive — WIT-234", () => {
       db.shop.upsert.mockRejectedValue(new Error("connection lost"));
       // The route catches errors and returns 200 — receiver must not throw
       await expect(
-        receiver.handleAppInstalled({ id: 1, name: "x", domain: "x.myshopify.com" })
+        receiver.handleAppInstalled({
+          id: 1,
+          name: "x",
+          domain: "x.myshopify.com",
+        }),
       ).rejects.toThrow(); // Receiver itself throws; route wraps it in try/catch
     });
 
@@ -945,7 +973,7 @@ describe("Shopify Webhook Receive — WIT-234", () => {
       db.order.upsert.mockRejectedValue(new Error("deadlock detected"));
 
       await expect(
-        receiver.handleOrderCreate("err.myshopify.com", { id: 1 })
+        receiver.handleOrderCreate("err.myshopify.com", { id: 1 }),
       ).rejects.toThrow("deadlock detected");
     });
   });

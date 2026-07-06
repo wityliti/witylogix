@@ -260,7 +260,11 @@ describe("ETAPredictor", () => {
 
         const prediction = predictor.predict(`ship${i}`, features);
         // Record actual time very close to prediction
-        predictor.recordActual(`ship${i}`, prediction.estimatedTimeMs * 1.05, features);
+        predictor.recordActual(
+          `ship${i}`,
+          prediction.estimatedTimeMs * 1.05,
+          features,
+        );
       }
 
       const result = predictor.predict("shipment_new", defaultFeatures);
@@ -468,9 +472,7 @@ describe("ETAPredictor", () => {
       const result = predictor.predict("shipment1", features);
 
       // Should account for stop time
-      expect(result.estimatedTimeMs).toBeGreaterThan(
-        20 * 120000,
-      ); // At least 20 stops worth
+      expect(result.estimatedTimeMs).toBeGreaterThan(20 * 120000); // At least 20 stops worth
     });
 
     it("should handle early morning predictions", () => {

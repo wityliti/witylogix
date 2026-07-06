@@ -28,7 +28,10 @@ import {
 } from "@shopify/polaris";
 import { KPICard } from "~/components/KPICard";
 import { StatusTimeline } from "~/components/StatusTimeline";
-import { createApiClientFromRequest, type SingleResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type SingleResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -88,9 +91,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         };
 
   const recentActivity: ActivityEvent[] =
-    activityResponse.status === "fulfilled"
-      ? activityResponse.value.data
-      : [];
+    activityResponse.status === "fulfilled" ? activityResponse.value.data : [];
 
   return { stats, recentActivity };
 }
@@ -101,10 +102,7 @@ export default function Dashboard() {
   const { stats, recentActivity } = useLoaderData<DashboardData>();
 
   return (
-    <Page
-      title="Dashboard"
-      subtitle="Overview of today's delivery operations"
-    >
+    <Page title="Dashboard" subtitle="Overview of today's delivery operations">
       <Layout>
         {/* KPI Cards */}
         <Layout.Section>

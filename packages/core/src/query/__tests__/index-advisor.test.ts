@@ -56,10 +56,7 @@ describe("IndexAdvisor", () => {
     it("should recommend index for frequently filtered column", () => {
       // Record pattern multiple times
       for (let i = 0; i < 5; i++) {
-        advisor.recordQuery(
-          "SELECT * FROM users WHERE user_id = $1",
-          [i]
-        );
+        advisor.recordQuery("SELECT * FROM users WHERE user_id = $1", [i]);
       }
 
       const recommendations = advisor.getRecommendations();
@@ -71,10 +68,9 @@ describe("IndexAdvisor", () => {
 
     it("should include CREATE INDEX SQL", () => {
       for (let i = 0; i < 5; i++) {
-        advisor.recordQuery(
-          "SELECT * FROM products WHERE category_id = $1",
-          [i]
-        );
+        advisor.recordQuery("SELECT * FROM products WHERE category_id = $1", [
+          i,
+        ]);
       }
 
       const recommendations = advisor.getRecommendations();
@@ -89,7 +85,7 @@ describe("IndexAdvisor", () => {
       for (let i = 0; i < 5; i++) {
         advisor.recordQuery(
           "SELECT * FROM orders WHERE status = $1 ORDER BY created_at DESC",
-          ["pending"]
+          ["pending"],
         );
       }
 
@@ -104,7 +100,7 @@ describe("IndexAdvisor", () => {
       for (let i = 0; i < 5; i++) {
         advisor.recordQuery(
           "SELECT * FROM shipments WHERE delivery_id = $1 ORDER BY created_at",
-          [i]
+          [i],
         );
       }
 
@@ -122,7 +118,7 @@ describe("IndexAdvisor", () => {
       for (let i = 0; i < 5; i++) {
         advisor.recordQuery(
           "SELECT * FROM tasks WHERE status = $1 AND priority = $2",
-          ["active", "high"]
+          ["active", "high"],
         );
       }
 
@@ -136,10 +132,7 @@ describe("IndexAdvisor", () => {
   describe("Index Impact and Sizing", () => {
     it("should estimate index size", () => {
       for (let i = 0; i < 5; i++) {
-        advisor.recordQuery(
-          "SELECT * FROM users WHERE email = $1",
-          [i]
-        );
+        advisor.recordQuery("SELECT * FROM users WHERE email = $1", [i]);
       }
 
       const recommendations = advisor.getRecommendations();
@@ -149,39 +142,37 @@ describe("IndexAdvisor", () => {
 
     it("should estimate impact percentage", () => {
       for (let i = 0; i < 5; i++) {
-        advisor.recordQuery(
-          "SELECT * FROM orders WHERE customer_id = $1",
-          [i]
-        );
+        advisor.recordQuery("SELECT * FROM orders WHERE customer_id = $1", [i]);
       }
 
       const recommendations = advisor.getRecommendations();
       expect(recommendations[0].estimatedImpactPercent).toBeGreaterThan(0);
-      expect(recommendations[0].estimatedImpactPercent).toBeLessThanOrEqual(100);
+      expect(recommendations[0].estimatedImpactPercent).toBeLessThanOrEqual(
+        100,
+      );
     });
 
     it("should rank by impact", () => {
       // High-frequency pattern
       for (let i = 0; i < 10; i++) {
-        advisor.recordQuery(
-          "SELECT * FROM orders WHERE status = $1",
-          ["pending"]
-        );
+        advisor.recordQuery("SELECT * FROM orders WHERE status = $1", [
+          "pending",
+        ]);
       }
 
       // Lower-frequency pattern
       for (let i = 0; i < 2; i++) {
-        advisor.recordQuery(
-          "SELECT * FROM users WHERE created_at > $1",
-          ["2024-01-01"]
-        );
+        advisor.recordQuery("SELECT * FROM users WHERE created_at > $1", [
+          "2024-01-01",
+        ]);
       }
 
       const recommendations = advisor.getRecommendations();
       if (recommendations.length > 1) {
         // Higher impact should come first
-        expect(recommendations[0].estimatedImpactPercent)
-          .toBeGreaterThanOrEqual(recommendations[1].estimatedImpactPercent);
+        expect(
+          recommendations[0].estimatedImpactPercent,
+        ).toBeGreaterThanOrEqual(recommendations[1].estimatedImpactPercent);
       }
     });
   });
@@ -205,14 +196,8 @@ describe("IndexAdvisor", () => {
 
     it("should not duplicate across tables", () => {
       for (let i = 0; i < 5; i++) {
-        advisor.recordQuery(
-          "SELECT * FROM users WHERE user_id = $1",
-          [i]
-        );
-        advisor.recordQuery(
-          "SELECT * FROM orders WHERE order_id = $1",
-          [i]
-        );
+        advisor.recordQuery("SELECT * FROM users WHERE user_id = $1", [i]);
+        advisor.recordQuery("SELECT * FROM orders WHERE order_id = $1", [i]);
       }
 
       const recommendations = advisor.getRecommendations();
@@ -233,10 +218,7 @@ describe("IndexAdvisor", () => {
       advisor.setTableRowCount("orders", 500000);
 
       for (let i = 0; i < 5; i++) {
-        advisor.recordQuery(
-          "SELECT * FROM orders WHERE id = $1",
-          [i]
-        );
+        advisor.recordQuery("SELECT * FROM orders WHERE id = $1", [i]);
       }
 
       const recommendations = advisor.getRecommendations();
@@ -249,10 +231,7 @@ describe("IndexAdvisor", () => {
   describe("Time Window Pruning", () => {
     it("should handle reset", () => {
       for (let i = 0; i < 5; i++) {
-        advisor.recordQuery(
-          "SELECT * FROM users WHERE id = $1",
-          [i]
-        );
+        advisor.recordQuery("SELECT * FROM users WHERE id = $1", [i]);
       }
 
       advisor.reset();
@@ -290,7 +269,8 @@ describe("IndexAdvisor", () => {
     });
 
     it("should handle queries with multiple ORDER BY", () => {
-      const sql = "SELECT * FROM products WHERE category = $1 ORDER BY price, name";
+      const sql =
+        "SELECT * FROM products WHERE category = $1 ORDER BY price, name";
 
       for (let i = 0; i < 5; i++) {
         advisor.recordQuery(sql, ["electronics"]);

@@ -11,13 +11,13 @@ export {
   type RequestContext,
   SENSITIVE_FIELD_PATTERNS,
   SENSITIVE_HEADERS,
-} from './types.js';
+} from "./types.js";
 
 export {
   // Logger
   Logger,
   createLogger,
-} from './logger.js';
+} from "./logger.js";
 
 export {
   // Request logger plugin
@@ -25,4 +25,4 @@ export {
   attachRequestContext,
   generateTraceId,
   getRequestContext,
-} from './request-logger.js';
+} from "./request-logger.js";

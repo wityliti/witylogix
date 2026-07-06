@@ -4,9 +4,9 @@
  */
 import type { FastifyInstance } from "fastify";
 declare module "fastify" {
-    interface FastifyRequest {
-        rawBody?: Buffer;
-    }
+  interface FastifyRequest {
+    rawBody?: Buffer;
+  }
 }
 declare function rawBodyPlugin(fastify: FastifyInstance): Promise<void>;
 declare const _default: typeof rawBodyPlugin;

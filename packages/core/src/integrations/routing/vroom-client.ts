@@ -11,7 +11,7 @@
  * Reference: https://github.com/VROOM-Project/vroom
  */
 
-import { RoutingAdapter } from './routing-adapter.js';
+import { RoutingAdapter } from "./routing-adapter.js";
 import type {
   OptimizationRequest,
   OptimizationResponse,
@@ -22,7 +22,7 @@ import type {
   RouteRequest,
   RouteResponse,
   RoutingAdapterConfig,
-} from './types.js';
+} from "./types.js";
 
 /**
  * VROOM vehicle definition
@@ -111,7 +111,7 @@ interface VroomProblem {
  * VROOM route step
  */
 interface VroomStep {
-  type: 'start' | 'job' | 'delivery' | 'pickup' | 'end';
+  type: "start" | "job" | "delivery" | "pickup" | "end";
   id?: number;
   location: [number, number];
   arrival: number;
@@ -151,7 +151,7 @@ interface VroomSolution {
   routes: VroomRoute[];
   unassigned: Array<{
     id: number;
-    type: 'job' | 'shipment';
+    type: "job" | "shipment";
   }>;
 }
 
@@ -165,12 +165,12 @@ export class VroomClient extends RoutingAdapter {
 
   constructor(config: RoutingAdapterConfig = {}) {
     super({
-      baseUrl: 'https://solver.vroom-project.org',
+      baseUrl: "https://solver.vroom-project.org",
       rateLimit: 5,
       ...config,
     });
 
-    this.baseUrl = this.config.baseUrl || 'https://solver.vroom-project.org';
+    this.baseUrl = this.config.baseUrl || "https://solver.vroom-project.org";
     this.cacheTtl = this.config.cache_ttl || 600000; // 10 minutes for optimization
   }
 
@@ -211,7 +211,9 @@ export class VroomClient extends RoutingAdapter {
   /**
    * Convert to VROOM location format [lon, lat]
    */
-  private toVroomLocation(coord: import('./types.js').Coordinate): [number, number] {
+  private toVroomLocation(
+    coord: import("./types.js").Coordinate,
+  ): [number, number] {
     const normalized = this.normalizeCoordinate(coord);
     return [normalized.lng, normalized.lat]; // VROOM uses [lon, lat]
   }
@@ -220,8 +222,8 @@ export class VroomClient extends RoutingAdapter {
    * Optimize vehicle routes
    */
   async optimize(request: OptimizationRequest): Promise<OptimizationResponse> {
-    return this.executeRequest('optimize', async () => {
-      const cacheKey = this.getCacheKey('optimize', request);
+    return this.executeRequest("optimize", async () => {
+      const cacheKey = this.getCacheKey("optimize", request);
       const cached = this.getFromCache(cacheKey);
       if (cached) {
         return cached as OptimizationResponse;
@@ -233,10 +235,13 @@ export class VroomClient extends RoutingAdapter {
         start: this.toVroomLocation(v.start_location || [0, 0]),
         end: this.toVroomLocation(v.end_location || [0, 0]),
         capacity: v.capacity ? [v.capacity] : [1000],
-        time_window: v.available_from && v.available_until ? {
-          start: Math.floor(v.available_from / 1000),
-          end: Math.floor(v.available_until / 1000),
-        } : undefined,
+        time_window:
+          v.available_from && v.available_until
+            ? {
+                start: Math.floor(v.available_from / 1000),
+                end: Math.floor(v.available_until / 1000),
+              }
+            : undefined,
         speed_factor: v.speed_factor,
         max_tasks: 100,
         skills: v.skills ? v.skills.map((_, i) => i) : undefined,
@@ -247,12 +252,14 @@ export class VroomClient extends RoutingAdapter {
         location: this.toVroomLocation(j.location),
         service: j.duration_s || 300,
         demand: j.priority ? [j.priority] : undefined,
-        time_windows: j.time_window ? [
-          {
-            start: Math.floor((j.time_window.earliest || 0) / 1000),
-            end: Math.floor((j.time_window.latest || Date.now()) / 1000),
-          },
-        ] : undefined,
+        time_windows: j.time_window
+          ? [
+              {
+                start: Math.floor((j.time_window.earliest || 0) / 1000),
+                end: Math.floor((j.time_window.latest || Date.now()) / 1000),
+              },
+            ]
+          : undefined,
         priority: j.priority,
         skills: j.skills ? j.skills.map((_, i) => i) : undefined,
       }));
@@ -293,7 +300,7 @@ export class VroomClient extends RoutingAdapter {
       }));
 
       const result: OptimizationResponse = {
-        code: 'OK',
+        code: "OK",
         summary: {
           distance_m: response.summary.cost,
           duration_s: response.summary.cost, // Simplified
@@ -303,7 +310,7 @@ export class VroomClient extends RoutingAdapter {
         routes,
         unassigned: response.unassigned.map((u) => ({
           id: u.id.toString(),
-          reason: 'Unable to assign',
+          reason: "Unable to assign",
         })),
       };
 
@@ -316,13 +323,13 @@ export class VroomClient extends RoutingAdapter {
    * Turn-by-turn routing (not main purpose of VROOM, but supported)
    */
   async route(request: RouteRequest): Promise<RouteResponse> {
-    return this.executeRequest('route', async () => {
+    return this.executeRequest("route", async () => {
       // VROOM is primarily for optimization, use matrix for routing
       return {
         distance_m: 0,
         duration_s: 0,
         legs: [],
-        polyline: '',
+        polyline: "",
         bounds: {
           ne: { lat: 0, lng: 0 },
           sw: { lat: 0, lng: 0 },
@@ -335,8 +342,8 @@ export class VroomClient extends RoutingAdapter {
    * Matrix calculation (not primary function)
    */
   async matrix(request: MatrixRequest): Promise<MatrixResponse> {
-    return this.executeRequest('matrix', async () => {
-      const cacheKey = this.getCacheKey('matrix', request);
+    return this.executeRequest("matrix", async () => {
+      const cacheKey = this.getCacheKey("matrix", request);
       const cached = this.getFromCache(cacheKey);
       if (cached) {
         return cached as MatrixResponse;
@@ -353,7 +360,7 @@ export class VroomClient extends RoutingAdapter {
           matrix[i][j] = {
             distance_m: 0,
             duration_s: 0,
-            status: 'OK',
+            status: "OK",
           };
         }
       }
@@ -379,17 +386,19 @@ export class VroomClient extends RoutingAdapter {
 
     try {
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': this.config.user_agent || 'Witylogix/1.0',
+          "Content-Type": "application/json",
+          "User-Agent": this.config.user_agent || "Witylogix/1.0",
         },
         body: JSON.stringify(payload),
         signal: controller.signal,
       });
 
       if (!response.ok) {
-        throw new Error(`VROOM API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `VROOM API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       return (await response.json()) as T;

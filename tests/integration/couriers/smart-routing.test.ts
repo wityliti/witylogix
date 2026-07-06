@@ -39,10 +39,10 @@ class RoutingService {
 
   routeSingleDelivery(
     delivery: fixtures.DeliveryRequest,
-    availableCouriers: fixtures.CourierProfile[]
+    availableCouriers: fixtures.CourierProfile[],
   ): RoutingResult {
     const scores = availableCouriers.map((courier) =>
-      this.scoreForDelivery(courier, delivery)
+      this.scoreForDelivery(courier, delivery),
     );
 
     // Sort by score (highest first)
@@ -65,10 +65,13 @@ class RoutingService {
 
   private scoreForDelivery(
     courier: fixtures.CourierProfile,
-    delivery: fixtures.DeliveryRequest
+    delivery: fixtures.DeliveryRequest,
   ): RoutingScore {
     // Cost calculation
-    const distance = this.calculateDistance(delivery.pickupLocation.coordinates, delivery.dropoffLocation.coordinates);
+    const distance = this.calculateDistance(
+      delivery.pickupLocation.coordinates,
+      delivery.dropoffLocation.coordinates,
+    );
     const cost = distance * courier.costPerMile + courier.costPerDelivery;
 
     // Estimated time (distance / avg speed + buffer)
@@ -91,7 +94,10 @@ class RoutingService {
     };
   }
 
-  private calculateDistance(from: fixtures.Coordinates, to: fixtures.Coordinates): number {
+  private calculateDistance(
+    from: fixtures.Coordinates,
+    to: fixtures.Coordinates,
+  ): number {
     // Simplified Haversine formula
     const R = 3959; // Earth radius in miles
     const lat1 = (from.latitude * Math.PI) / 180;
@@ -111,11 +117,15 @@ class RoutingService {
 
   optimizeBatchRouting(
     deliveries: fixtures.DeliveryRequest[],
-    availableCouriers: fixtures.CourierProfile[]
-  ): Array<{ delivery: fixtures.DeliveryRequest; assignedCourier: fixtures.CourierProfile }> {
+    availableCouriers: fixtures.CourierProfile[],
+  ): Array<{
+    delivery: fixtures.DeliveryRequest;
+    assignedCourier: fixtures.CourierProfile;
+  }> {
     return deliveries.map((delivery, index) => {
       // Round-robin distribution to balance load across couriers
-      const assignedCourier = availableCouriers[index % availableCouriers.length];
+      const assignedCourier =
+        availableCouriers[index % availableCouriers.length];
       return { delivery, assignedCourier };
     });
   }
@@ -124,12 +134,12 @@ class RoutingService {
 
   compareCosts(
     delivery: fixtures.DeliveryRequest,
-    couriers: fixtures.CourierProfile[]
+    couriers: fixtures.CourierProfile[],
   ): Array<{ courier: string; cost: number; rating: number }> {
     return couriers.map((courier) => {
       const distance = this.calculateDistance(
         delivery.pickupLocation.coordinates,
-        delivery.dropoffLocation.coordinates
+        delivery.dropoffLocation.coordinates,
       );
       const cost = distance * courier.costPerMile + courier.costPerDelivery;
 
@@ -144,7 +154,7 @@ class RoutingService {
   // ─ Performance-Based Selection ─────────────────────────────────────────
 
   selectByPerformance(
-    couriers: fixtures.CourierProfile[]
+    couriers: fixtures.CourierProfile[],
   ): fixtures.CourierProfile | null {
     // Filter by minimum acceptance rate
     const qualified = couriers.filter((c) => c.acceptanceRate >= 0.8);
@@ -159,9 +169,11 @@ class RoutingService {
 
   filterByPackageType(
     couriers: fixtures.CourierProfile[],
-    packageType: string
+    packageType: string,
   ): fixtures.CourierProfile[] {
-    return couriers.filter((c) => c.supportedPackageTypes.includes(packageType));
+    return couriers.filter((c) =>
+      c.supportedPackageTypes.includes(packageType),
+    );
   }
 
   // ─ Fallback Chain Execution ────────────────────────────────────────────
@@ -169,7 +181,7 @@ class RoutingService {
   executeFallbackChain(
     delivery: fixtures.DeliveryRequest,
     primaryCouriers: fixtures.CourierProfile[],
-    fallbackOptions: Array<fixtures.CourierProfile[]>
+    fallbackOptions: Array<fixtures.CourierProfile[]>,
   ): RoutingResult | null {
     // Try primary
     if (primaryCouriers.length > 0) {
@@ -200,11 +212,11 @@ class RoutingService {
 
   shouldSplitDelivery(
     delivery: fixtures.DeliveryRequest,
-    availableCouriers: fixtures.CourierProfile[]
+    availableCouriers: fixtures.CourierProfile[],
   ): boolean {
     // Split if all couriers at capacity
     const allAtCapacity = availableCouriers.every(
-      (c) => c.capacity.currentDeliveries >= c.capacity.maxDeliveries
+      (c) => c.capacity.currentDeliveries >= c.capacity.maxDeliveries,
     );
 
     // Split if package too large for any courier (only heavy freight requires a truck)
@@ -240,9 +252,18 @@ describe("Smart Routing Integration Tests", () => {
     service = new RoutingService();
     delivery = fixtures.createDeliveryRequest();
     couriers = [
-      fixtures.createCourierProfile("onfleet", { name: "Courier A", rating: 4.8 }),
-      fixtures.createCourierProfile("stuart", { name: "Courier B", rating: 4.5 }),
-      fixtures.createCourierProfile("uber_direct", { name: "Courier C", rating: 4.2 }),
+      fixtures.createCourierProfile("onfleet", {
+        name: "Courier A",
+        rating: 4.8,
+      }),
+      fixtures.createCourierProfile("stuart", {
+        name: "Courier B",
+        rating: 4.5,
+      }),
+      fixtures.createCourierProfile("uber_direct", {
+        name: "Courier C",
+        rating: 4.2,
+      }),
     ];
   });
 
@@ -266,12 +287,16 @@ describe("Smart Routing Integration Tests", () => {
 
       const allScores = [result.primaryCourier, ...result.alternativeCouriers];
       for (let i = 0; i < allScores.length - 1; i++) {
-        expect(allScores[i].totalScore).toBeGreaterThanOrEqual(allScores[i + 1].totalScore);
+        expect(allScores[i].totalScore).toBeGreaterThanOrEqual(
+          allScores[i + 1].totalScore,
+        );
       }
     });
 
     it("should throw error when no couriers available", () => {
-      expect(() => service.routeSingleDelivery(delivery, [])).toThrow("No available couriers");
+      expect(() => service.routeSingleDelivery(delivery, [])).toThrow(
+        "No available couriers",
+      );
     });
 
     it("should calculate cost correctly", () => {
@@ -290,7 +315,9 @@ describe("Smart Routing Integration Tests", () => {
 
   describe("Batch Routing Optimization", () => {
     it("should route multiple deliveries", () => {
-      const deliveries = Array.from({ length: 5 }, () => fixtures.createDeliveryRequest());
+      const deliveries = Array.from({ length: 5 }, () =>
+        fixtures.createDeliveryRequest(),
+      );
       const assignments = service.optimizeBatchRouting(deliveries, couriers);
 
       expect(assignments).toHaveLength(5);
@@ -301,17 +328,23 @@ describe("Smart Routing Integration Tests", () => {
     });
 
     it("should handle large batch", () => {
-      const deliveries = Array.from({ length: 100 }, () => fixtures.createDeliveryRequest());
+      const deliveries = Array.from({ length: 100 }, () =>
+        fixtures.createDeliveryRequest(),
+      );
       const assignments = service.optimizeBatchRouting(deliveries, couriers);
 
       expect(assignments).toHaveLength(100);
     });
 
     it("should distribute across multiple couriers", () => {
-      const deliveries = Array.from({ length: 10 }, () => fixtures.createDeliveryRequest());
+      const deliveries = Array.from({ length: 10 }, () =>
+        fixtures.createDeliveryRequest(),
+      );
       const assignments = service.optimizeBatchRouting(deliveries, couriers);
 
-      const couriersUsed = new Set(assignments.map((a) => a.assignedCourier.id));
+      const couriersUsed = new Set(
+        assignments.map((a) => a.assignedCourier.id),
+      );
       expect(couriersUsed.size).toBeGreaterThan(1);
     });
   });
@@ -333,7 +366,7 @@ describe("Smart Routing Integration Tests", () => {
       const cheapest = costs.reduce((min, c) => (c.cost < min.cost ? c : min));
 
       expect(cheapest.cost).toBeLessThanOrEqual(
-        Math.max(...costs.map((c) => c.cost))
+        Math.max(...costs.map((c) => c.cost)),
       );
     });
 
@@ -396,7 +429,10 @@ describe("Smart Routing Integration Tests", () => {
         }),
       ];
 
-      const compatible = service.filterByPackageType(typedCouriers, "documents");
+      const compatible = service.filterByPackageType(
+        typedCouriers,
+        "documents",
+      );
 
       expect(compatible).toHaveLength(1);
       expect(compatible[0].name).toContain("Courier");
@@ -409,7 +445,10 @@ describe("Smart Routing Integration Tests", () => {
         }),
       ];
 
-      const compatible = service.filterByPackageType(typedCouriers, "oversized_cargo");
+      const compatible = service.filterByPackageType(
+        typedCouriers,
+        "oversized_cargo",
+      );
 
       expect(compatible).toHaveLength(0);
     });
@@ -426,7 +465,11 @@ describe("Smart Routing Integration Tests", () => {
     it("should execute fallback when primary unavailable", () => {
       const fallbackCouriers = [fixtures.createCourierProfile("uber_direct")];
 
-      const result = service.executeFallbackChain(delivery, [], [fallbackCouriers]);
+      const result = service.executeFallbackChain(
+        delivery,
+        [],
+        [fallbackCouriers],
+      );
 
       expect(result).toBeDefined();
       expect(result?.selectedReason).toContain("fallback");
@@ -436,7 +479,11 @@ describe("Smart Routing Integration Tests", () => {
       const fallback1 = [fixtures.createCourierProfile("onfleet")];
       const fallback2 = [fixtures.createCourierProfile("stuart")];
 
-      const result = service.executeFallbackChain(delivery, [], [fallback1, fallback2]);
+      const result = service.executeFallbackChain(
+        delivery,
+        [],
+        [fallback1, fallback2],
+      );
 
       expect(result).toBeDefined();
     });
@@ -456,7 +503,10 @@ describe("Smart Routing Integration Tests", () => {
         }),
       ];
 
-      const shouldSplit = service.shouldSplitDelivery(delivery, capacityCouriers);
+      const shouldSplit = service.shouldSplitDelivery(
+        delivery,
+        capacityCouriers,
+      );
 
       expect(shouldSplit).toBe(true);
     });
@@ -468,7 +518,10 @@ describe("Smart Routing Integration Tests", () => {
         }),
       ];
 
-      const shouldSplit = service.shouldSplitDelivery(delivery, availableCouriers);
+      const shouldSplit = service.shouldSplitDelivery(
+        delivery,
+        availableCouriers,
+      );
 
       expect(shouldSplit).toBe(false);
     });
@@ -515,7 +568,10 @@ describe("Smart Routing Integration Tests", () => {
         },
       });
 
-      const result = service.routeSingleDelivery(longDistanceDelivery, couriers);
+      const result = service.routeSingleDelivery(
+        longDistanceDelivery,
+        couriers,
+      );
 
       expect(result.primaryCourier.cost).toBeGreaterThan(100);
     });
@@ -524,7 +580,7 @@ describe("Smart Routing Integration Tests", () => {
       const overlappingCouriers = Array.from({ length: 5 }, () =>
         fixtures.createCourierProfile("onfleet", {
           serviceArea: [delivery.pickupLocation.coordinates],
-        })
+        }),
       );
 
       const result = service.routeSingleDelivery(delivery, overlappingCouriers);
@@ -534,7 +590,7 @@ describe("Smart Routing Integration Tests", () => {
 
     it("should handle rapid sequential routing", () => {
       const results = Array.from({ length: 100 }, () =>
-        service.routeSingleDelivery(fixtures.createDeliveryRequest(), couriers)
+        service.routeSingleDelivery(fixtures.createDeliveryRequest(), couriers),
       );
 
       expect(results).toHaveLength(100);

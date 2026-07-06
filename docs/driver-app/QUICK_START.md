@@ -57,7 +57,7 @@ import RouteNavigator from './components/RouteNavigator';
 
 export function RouteScreen() {
   const [stops, setStops] = useState([...]);
-  
+
   return (
     <RouteNavigator
       stops={stops}
@@ -73,13 +73,13 @@ export function RouteScreen() {
 
 ```typescript
 // services/api.ts
-import { offlineQueue } from '../lib/offline-queue';
+import { offlineQueue } from "../lib/offline-queue";
 
 export async function submitData(data: any) {
   const opId = offlineQueue.enqueue({
-    type: 'POST',
-    endpoint: '/api/data',
-    method: 'POST',
+    type: "POST",
+    endpoint: "/api/data",
+    method: "POST",
     body: data,
   });
 
@@ -97,12 +97,13 @@ export async function submitData(data: any) {
 ## Common Tasks
 
 ### Check Online Status
+
 ```typescript
 import { useOfflineSync } from './hooks/useOfflineSync';
 
 function MyComponent() {
   const { isOnline, pendingCount, syncNow } = useOfflineSync();
-  
+
   return (
     <div>
       <p>{isOnline ? 'Online' : 'Offline'} ({pendingCount} pending)</p>
@@ -113,14 +114,16 @@ function MyComponent() {
 ```
 
 ### Get Current Location
+
 ```typescript
-import { locationService } from './lib/location-service';
+import { locationService } from "./lib/location-service";
 
 const location = await locationService.getCurrentPosition();
 console.log(`${location?.latitude}, ${location?.longitude}`);
 ```
 
 ### Track Distance Traveled
+
 ```typescript
 const stats = locationService.getTrackingStats();
 console.log(`Distance: ${stats.distanceTraveledKm} km`);
@@ -128,22 +131,21 @@ console.log(`Speed: ${stats.averageSpeedKmh} km/h`);
 ```
 
 ### Check Geofence
+
 ```typescript
-const inZone = locationService.isInGeofence(
-  lat, lng,
-  {
-    id: 'zone-1',
-    name: 'Delivery Zone',
-    latitude: 40.7128,
-    longitude: -74.0060,
-    radiusMeters: 500,
-  }
-);
+const inZone = locationService.isInGeofence(lat, lng, {
+  id: "zone-1",
+  name: "Delivery Zone",
+  latitude: 40.7128,
+  longitude: -74.006,
+  radiusMeters: 500,
+});
 ```
 
 ### Handle Push Notifications
+
 ```typescript
-import { pushHandler, PushPayload } from './lib/push-handler';
+import { pushHandler, PushPayload } from "./lib/push-handler";
 
 useEffect(() => {
   const unsub = pushHandler.subscribe((payload: PushPayload) => {
@@ -155,9 +157,10 @@ useEffect(() => {
 ```
 
 ### Get Notification History
+
 ```typescript
 const history = pushHandler.getNotificationHistory();
-history.forEach(item => {
+history.forEach((item) => {
   console.log(`${item.displayedAt}: ${item.payload.title}`);
 });
 ```
@@ -166,15 +169,15 @@ history.forEach(item => {
 
 ## What Each File Does
 
-| File | Purpose | Main Class |
-|------|---------|-----------|
-| `lib/offline-queue.ts` | Queue & replay requests | `offlineQueue` |
-| `lib/push-handler.ts` | Push notifications | `pushHandler` |
-| `lib/location-service.ts` | GPS tracking | `locationService` |
-| `hooks/useOfflineSync.ts` | React state hook | `useOfflineSync()` |
-| `components/OfflineIndicator.tsx` | Status bar | Self-contained |
-| `components/DeliveryProofCapture.tsx` | Photo + signature | Self-contained |
-| `components/RouteNavigator.tsx` | Route display | Self-contained |
+| File                                  | Purpose                 | Main Class         |
+| ------------------------------------- | ----------------------- | ------------------ |
+| `lib/offline-queue.ts`                | Queue & replay requests | `offlineQueue`     |
+| `lib/push-handler.ts`                 | Push notifications      | `pushHandler`      |
+| `lib/location-service.ts`             | GPS tracking            | `locationService`  |
+| `hooks/useOfflineSync.ts`             | React state hook        | `useOfflineSync()` |
+| `components/OfflineIndicator.tsx`     | Status bar              | Self-contained     |
+| `components/DeliveryProofCapture.tsx` | Photo + signature       | Self-contained     |
+| `components/RouteNavigator.tsx`       | Route display           | Self-contained     |
 
 ---
 
@@ -195,6 +198,7 @@ POST /api/delivery-proofs
 ## Offline Testing
 
 In Chrome DevTools:
+
 1. Open DevTools (F12)
 2. Go to Network tab
 3. Check "Offline" checkbox
@@ -207,12 +211,13 @@ In Chrome DevTools:
 ## Common Integration Patterns
 
 ### Pattern 1: Form Submission with Offline Support
+
 ```typescript
 const handleSubmit = async (data) => {
   const opId = offlineQueue.enqueue({
-    type: 'POST',
-    endpoint: '/api/submit',
-    method: 'POST',
+    type: "POST",
+    endpoint: "/api/submit",
+    method: "POST",
     body: data,
   });
 
@@ -220,15 +225,16 @@ const handleSubmit = async (data) => {
     await offlineQueue.processQueue();
   }
 
-  showMessage('Submitted' + (navigator.onLine ? '' : ' (will sync)'));
+  showMessage("Submitted" + (navigator.onLine ? "" : " (will sync)"));
 };
 ```
 
 ### Pattern 2: Get Status with Hook
+
 ```typescript
 function StatusBar() {
   const { isOnline, pendingCount, syncNow, syncInProgress } = useOfflineSync();
-  
+
   return (
     <>
       {!isOnline && <div>OFFLINE</div>}
@@ -243,10 +249,11 @@ function StatusBar() {
 ```
 
 ### Pattern 3: Conditional Rendering
+
 ```typescript
 function MyComponent() {
   const { isOnline } = useOfflineSync();
-  
+
   if (!isOnline) {
     return <OfflineMode />;
   }
@@ -258,13 +265,13 @@ function MyComponent() {
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| Queue not syncing | Check `offlineQueue.getQueueStatus()` |
-| Location not capturing | Check geolocation permissions |
-| Notifications not showing | Check `Notification.permission` |
-| Signature not saving | Ensure canvas ref is properly set |
-| Photo preview not showing | Check File API browser support |
+| Issue                     | Solution                              |
+| ------------------------- | ------------------------------------- |
+| Queue not syncing         | Check `offlineQueue.getQueueStatus()` |
+| Location not capturing    | Check geolocation permissions         |
+| Notifications not showing | Check `Notification.permission`       |
+| Signature not saving      | Ensure canvas ref is properly set     |
+| Photo preview not showing | Check File API browser support        |
 
 ---
 

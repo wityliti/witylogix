@@ -4,7 +4,12 @@
  */
 
 import { v4 as uuidv4 } from "uuid";
-import { WebhookPayload, WebhookEventType, WebhookSubscription, WebhookDeliveryAttempt } from "./types";
+import {
+  WebhookPayload,
+  WebhookEventType,
+  WebhookSubscription,
+  WebhookDeliveryAttempt,
+} from "./types";
 import { deliverWebhook, scheduleRetry, shouldRetry } from "./delivery";
 
 /**
@@ -40,7 +45,7 @@ const DISPATCHER_CONFIG = {
 export async function processQueue(): Promise<void> {
   const now = new Date();
   const pending = store.deliveryQueue.filter(
-    (attempt) => attempt.status === "pending" && attempt.scheduledAt <= now
+    (attempt) => attempt.status === "pending" && attempt.scheduledAt <= now,
   );
 
   // Process up to QUEUE_BATCH_SIZE items
@@ -102,7 +107,8 @@ export async function processQueue(): Promise<void> {
         }
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       moveToDeadLetter(attempt, errorMessage);
     }
   }
@@ -117,13 +123,13 @@ export async function processQueue(): Promise<void> {
 export async function dispatchEvent(
   shopId: string,
   event: WebhookEventType,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
 ): Promise<void> {
   const subscriptions = store.subscriptions.get(shopId) || [];
 
   // Find matching subscriptions
   const matching = subscriptions.filter(
-    (sub) => sub.isActive && sub.events.includes(event)
+    (sub) => sub.isActive && sub.events.includes(event),
   );
 
   // Queue delivery for each matching subscription
@@ -157,12 +163,10 @@ export function getDeliveryQueue(): WebhookDeliveryAttempt[] {
  * @returns Array of dead letter delivery attempts
  */
 export function getDeadLetterQueue(shopId: string): WebhookDeliveryAttempt[] {
-  return store.deadLetterQueue.filter(
-    (attempt) => {
-      const subscription = findSubscription(attempt.subscriptionId);
-      return subscription?.shopId === shopId;
-    }
-  );
+  return store.deadLetterQueue.filter((attempt) => {
+    const subscription = findSubscription(attempt.subscriptionId);
+    return subscription?.shopId === shopId;
+  });
 }
 
 /**
@@ -197,7 +201,9 @@ export function unregisterSubscription(subscriptionId: string): boolean {
  * @param subscriptionId - ID to search for
  * @returns Subscription or undefined
  */
-function findSubscription(subscriptionId: string): WebhookSubscription | undefined {
+function findSubscription(
+  subscriptionId: string,
+): WebhookSubscription | undefined {
   for (const subscriptions of store.subscriptions.values()) {
     const subscription = subscriptions.find((s) => s.id === subscriptionId);
     if (subscription) {
@@ -212,7 +218,10 @@ function findSubscription(subscriptionId: string): WebhookSubscription | undefin
  * @param attempt - Attempt to move
  * @param reason - Reason for moving to dead letter
  */
-function moveToDeadLetter(attempt: WebhookDeliveryAttempt, reason: string): void {
+function moveToDeadLetter(
+  attempt: WebhookDeliveryAttempt,
+  reason: string,
+): void {
   attempt.status = "dead_letter";
   attempt.error = reason;
 
@@ -232,9 +241,14 @@ function moveToDeadLetter(attempt: WebhookDeliveryAttempt, reason: string): void
  */
 export function getStats() {
   return {
-    totalSubscriptions: Array.from(store.subscriptions.values()).reduce((sum, arr) => sum + arr.length, 0),
-    pendingDeliveries: store.deliveryQueue.filter((a) => a.status === "pending").length,
-    failedDeliveries: store.deliveryQueue.filter((a) => a.status === "failed").length,
+    totalSubscriptions: Array.from(store.subscriptions.values()).reduce(
+      (sum, arr) => sum + arr.length,
+      0,
+    ),
+    pendingDeliveries: store.deliveryQueue.filter((a) => a.status === "pending")
+      .length,
+    failedDeliveries: store.deliveryQueue.filter((a) => a.status === "failed")
+      .length,
     deadLetterCount: store.deadLetterQueue.length,
   };
 }

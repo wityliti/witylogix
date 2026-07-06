@@ -22,7 +22,12 @@
  * Work order type classification.
  * Determines service category and required expertise.
  */
-export type WorkOrderType = "SERVICE" | "INSTALL" | "REPAIR" | "MAINTENANCE" | "INSPECTION";
+export type WorkOrderType =
+  | "SERVICE"
+  | "INSTALL"
+  | "REPAIR"
+  | "MAINTENANCE"
+  | "INSPECTION";
 
 /**
  * Work order priority level.
@@ -179,7 +184,12 @@ export interface PhotoData {
  * Technician availability status.
  * Determines whether tech can accept new work.
  */
-export type TechnicianStatus = "AVAILABLE" | "EN_ROUTE" | "ON_JOB" | "BREAK" | "OFF_DUTY";
+export type TechnicianStatus =
+  | "AVAILABLE"
+  | "EN_ROUTE"
+  | "ON_JOB"
+  | "BREAK"
+  | "OFF_DUTY";
 
 /**
  * Working hours pattern for a technician.
@@ -382,7 +392,11 @@ export interface DispatchCandidate {
 /**
  * Frequency pattern for recurring work orders.
  */
-export type RecurrenceFrequency = "WEEKLY" | "BIWEEKLY" | "MONTHLY" | "QUARTERLY";
+export type RecurrenceFrequency =
+  | "WEEKLY"
+  | "BIWEEKLY"
+  | "MONTHLY"
+  | "QUARTERLY";
 
 /**
  * Recurring service plan.

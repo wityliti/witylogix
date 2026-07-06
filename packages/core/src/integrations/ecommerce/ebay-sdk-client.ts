@@ -195,7 +195,10 @@ export interface EBayOffer {
 /**
  * eBay SDK Client - Implements IECommerceAdapter
  */
-export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAdapter {
+export class EbaySdkClient
+  extends ECommerceAdapterBase
+  implements IECommerceAdapter
+{
   private readonly baseUrl = "https://api.ebay.com";
   private readonly sandboxUrl = "https://api.sandbox.ebay.com";
   private clientId: string;
@@ -206,10 +209,14 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
   private marketplaceId: string = "EBAY_US";
   private isSandbox: boolean;
   protected logger = {
-    info: (msg: string, data?: unknown) => console.info(`[EbaySdk] ${msg}`, data),
-    error: (msg: string, error?: unknown) => console.error(`[EbaySdk] ${msg}`, error),
-    warn: (msg: string, data?: unknown) => console.warn(`[EbaySdk] ${msg}`, data),
-    debug: (msg: string, data?: unknown) => console.debug(`[EbaySdk] ${msg}`, data),
+    info: (msg: string, data?: unknown) =>
+      console.info(`[EbaySdk] ${msg}`, data),
+    error: (msg: string, error?: unknown) =>
+      console.error(`[EbaySdk] ${msg}`, error),
+    warn: (msg: string, data?: unknown) =>
+      console.warn(`[EbaySdk] ${msg}`, data),
+    debug: (msg: string, data?: unknown) =>
+      console.debug(`[EbaySdk] ${msg}`, data),
   };
 
   /**
@@ -220,14 +227,17 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
     super(config);
 
     if (!config.apiKey || !config.apiSecret || !config.accessToken) {
-      throw new Error("eBay SDK requires apiKey (clientId), apiSecret (clientSecret), and accessToken (refreshToken)");
+      throw new Error(
+        "eBay SDK requires apiKey (clientId), apiSecret (clientSecret), and accessToken (refreshToken)",
+      );
     }
 
     this.clientId = config.apiKey;
     this.clientSecret = config.apiSecret;
     this.refreshToken = config.accessToken;
     this.isSandbox = config.customAttributes?.sandbox === true;
-    this.marketplaceId = (config.customAttributes?.marketplaceId as string) || "EBAY_US";
+    this.marketplaceId =
+      (config.customAttributes?.marketplaceId as string) || "EBAY_US";
   }
 
   /**
@@ -260,7 +270,9 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
       refresh_token: this.refreshToken,
     });
 
-    const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString("base64");
+    const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString(
+      "base64",
+    );
 
     const response = await fetch(url, {
       method: "POST",
@@ -283,7 +295,11 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
   /**
    * Make authenticated request to eBay API
    */
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  private async request<T>(
+    method: string,
+    path: string,
+    body?: unknown,
+  ): Promise<T> {
     await this.rateLimiter.waitIfNeeded();
 
     const accessToken = await this.getAccessToken();
@@ -300,7 +316,9 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
     });
 
     if (!response.ok) {
-      throw new Error(`eBay API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `eBay API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     return (await response.json()) as T;
@@ -319,7 +337,9 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
         pageToken?: string;
       }>("GET", `/sell/fulfillment/v1/order?limit=${limit}`);
 
-      orders.push(...response.orders.map((order) => this.normalizeOrder(order)));
+      orders.push(
+        ...response.orders.map((order) => this.normalizeOrder(order)),
+      );
     } catch (error) {
       this.logger.error("Failed to get orders from eBay", error);
     }
@@ -331,14 +351,20 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
    * Get order by ID
    */
   async getOrderById(orderId: string): Promise<ECommerceOrder> {
-    const response = await this.request<EBayOrderData>("GET", `/sell/fulfillment/v1/order/${orderId}`);
+    const response = await this.request<EBayOrderData>(
+      "GET",
+      `/sell/fulfillment/v1/order/${orderId}`,
+    );
     return this.normalizeOrder(response);
   }
 
   /**
    * Update order
    */
-  async updateOrder(orderId: string, data: Partial<ECommerceOrder>): Promise<ECommerceOrder> {
+  async updateOrder(
+    orderId: string,
+    data: Partial<ECommerceOrder>,
+  ): Promise<ECommerceOrder> {
     // eBay doesn't support direct order updates via API
     this.logger.warn("eBay does not support order updates via API");
     return this.getOrderById(orderId);
@@ -371,7 +397,10 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
    * Get product by ID (SKU)
    */
   async getProductById(productId: string): Promise<ECommerceProduct> {
-    const response = await this.request<EBayInventoryItem>("GET", `/sell/inventory/v1/inventory/${productId}`);
+    const response = await this.request<EBayInventoryItem>(
+      "GET",
+      `/sell/inventory/v1/inventory/${productId}`,
+    );
     return this.normalizeInventoryItem(response);
   }
 
@@ -384,17 +413,21 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
       throw new Error("Product must have at least one variant");
     }
 
-    const response = await this.request<EBayInventoryItem>("POST", "/sell/inventory/v1/inventory", {
-      sku: variant.sku,
-      inStock: variant.inventory.quantity > 0,
-      quantity: variant.inventory.quantity,
-      price: {
-        currency: "USD",
-        value: variant.price.toString(),
+    const response = await this.request<EBayInventoryItem>(
+      "POST",
+      "/sell/inventory/v1/inventory",
+      {
+        sku: variant.sku,
+        inStock: variant.inventory.quantity > 0,
+        quantity: variant.inventory.quantity,
+        price: {
+          currency: "USD",
+          value: variant.price.toString(),
+        },
+        condition: "NEW",
+        conditionDescription: product.description || "",
       },
-      condition: "NEW",
-      conditionDescription: product.description || "",
-    });
+    );
 
     return this.normalizeInventoryItem(response);
   }
@@ -402,7 +435,10 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
   /**
    * Update product
    */
-  async updateProduct(productId: string, data: Partial<ECommerceProduct>): Promise<ECommerceProduct> {
+  async updateProduct(
+    productId: string,
+    data: Partial<ECommerceProduct>,
+  ): Promise<ECommerceProduct> {
     const updateData: Record<string, unknown> = {};
 
     if (data.variants?.[0]?.inventory?.quantity !== undefined) {
@@ -416,7 +452,11 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
       };
     }
 
-    const response = await this.request<EBayInventoryItem>("PUT", `/sell/inventory/v1/inventory/${productId}`, updateData);
+    const response = await this.request<EBayInventoryItem>(
+      "PUT",
+      `/sell/inventory/v1/inventory/${productId}`,
+      updateData,
+    );
 
     return this.normalizeInventoryItem(response);
   }
@@ -445,7 +485,10 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
   /**
    * Create fulfillment (shipment)
    */
-  async createFulfillment(orderId: string, request: FulfillmentRequest): Promise<FulfillmentResponse> {
+  async createFulfillment(
+    orderId: string,
+    request: FulfillmentRequest,
+  ): Promise<FulfillmentResponse> {
     try {
       const trackingInfo = request.trackingNumber
         ? {
@@ -454,22 +497,27 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
           }
         : undefined;
 
-      await this.request<unknown>("POST", `/sell/fulfillment/v1/order/${orderId}/shipping_fulfillment`, {
-        lineItems: request.items,
-        trackingInfo,
-      });
+      await this.request<unknown>(
+        "POST",
+        `/sell/fulfillment/v1/order/${orderId}/shipping_fulfillment`,
+        {
+          lineItems: request.items,
+          trackingInfo,
+        },
+      );
 
       return {
         id: `${orderId}-fulfillment`,
         orderId,
         status: "complete" as FulfillmentStatus,
         items: request.items,
-        trackingInfo: trackingInfo && request.trackingNumber
-          ? {
-              company: request.trackingCompany || "Unknown",
-              number: request.trackingNumber,
-            }
-          : undefined,
+        trackingInfo:
+          trackingInfo && request.trackingNumber
+            ? {
+                company: request.trackingCompany || "Unknown",
+                number: request.trackingNumber,
+              }
+            : undefined,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -502,7 +550,10 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
    */
   async getInventory(variantId: string): Promise<ECommerceInventory> {
     try {
-      const response = await this.request<EBayInventoryItem>("GET", `/sell/inventory/v1/inventory/${variantId}`);
+      const response = await this.request<EBayInventoryItem>(
+        "GET",
+        `/sell/inventory/v1/inventory/${variantId}`,
+      );
 
       return {
         variantId,
@@ -521,10 +572,16 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
   /**
    * Update inventory
    */
-  async updateInventory(request: InventoryUpdateRequest): Promise<ECommerceInventory> {
-    await this.request<unknown>("PUT", `/sell/inventory/v1/inventory/${request.variantId}`, {
-      quantity: request.quantity,
-    });
+  async updateInventory(
+    request: InventoryUpdateRequest,
+  ): Promise<ECommerceInventory> {
+    await this.request<unknown>(
+      "PUT",
+      `/sell/inventory/v1/inventory/${request.variantId}`,
+      {
+        quantity: request.quantity,
+      },
+    );
 
     return this.getInventory(request.variantId);
   }
@@ -537,8 +594,13 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
       return false;
     }
 
-    const payloadString = typeof payload === "string" ? payload : JSON.stringify(payload);
-    return this.verifySignature(payloadString, signature, this.config.webhookSecret);
+    const payloadString =
+      typeof payload === "string" ? payload : JSON.stringify(payload);
+    return this.verifySignature(
+      payloadString,
+      signature,
+      this.config.webhookSecret,
+    );
   }
 
   /**
@@ -587,7 +649,10 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
   async searchItems(query: string, limit = 50): Promise<EBayItem[]> {
     const response = await this.request<{
       itemSummaries: EBayItem[];
-    }>("GET", `/buy/browse/v1/item_summary/search?q=${encodeURIComponent(query)}&limit=${Math.min(limit, 200)}`);
+    }>(
+      "GET",
+      `/buy/browse/v1/item_summary/search?q=${encodeURIComponent(query)}&limit=${Math.min(limit, 200)}`,
+    );
 
     return response.itemSummaries || [];
   }
@@ -621,8 +686,12 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
    */
   private normalizeOrder(order: EBayOrderData): ECommerceOrder {
     const status: OrderStatus = this.mapOrderStatus(order.orderStatus);
-    const paymentStatus: PaymentStatus = this.mapPaymentStatus(order.paymentStatus);
-    const fulfillmentStatus: FulfillmentStatus = this.mapFulfillmentStatus(order.fulfillmentStatus);
+    const paymentStatus: PaymentStatus = this.mapPaymentStatus(
+      order.paymentStatus,
+    );
+    const fulfillmentStatus: FulfillmentStatus = this.mapFulfillmentStatus(
+      order.fulfillmentStatus,
+    );
 
     return {
       id: order.orderId,

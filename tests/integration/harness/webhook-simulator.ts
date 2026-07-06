@@ -4,8 +4,8 @@
  * ~250 lines
  */
 
-import http from 'http';
-import { HMACSignatureGenerator } from './auth-simulators';
+import http from "http";
+import { HMACSignatureGenerator } from "./auth-simulators";
 
 // ───────────────────────────────────────────────────────────────────────────
 // TYPES
@@ -22,7 +22,7 @@ export interface WebhookDeliveryRecord {
   id: string;
   eventId: string;
   url: string;
-  status: 'success' | 'failed' | 'pending';
+  status: "success" | "failed" | "pending";
   statusCode?: number;
   attempts: number;
   lastAttemptAt: number;
@@ -32,7 +32,7 @@ export interface WebhookDeliveryRecord {
 }
 
 export interface WebhookSignatureConfig {
-  provider: 'stripe' | 'shopify' | 'generic';
+  provider: "stripe" | "shopify" | "generic";
   secret: string;
   headerName?: string;
 }
@@ -75,9 +75,11 @@ export class WebhookSimulator {
   async fireEvent(event: WebhookEvent): Promise<void> {
     this.eventPayloads.set(event.id, event);
 
-    const promises = Array.from(this.registeredUrls.entries()).map(([url, config]) => {
-      return this.deliverToUrl(url, event, config);
-    });
+    const promises = Array.from(this.registeredUrls.entries()).map(
+      ([url, config]) => {
+        return this.deliverToUrl(url, event, config);
+      },
+    );
 
     await Promise.all(promises);
   }
@@ -94,14 +96,18 @@ export class WebhookSimulator {
     }
 
     const record = await this.deliverToUrl(url, event, config);
-    return record.status === 'success';
+    return record.status === "success";
   }
 
   /**
    * Deliver webhook to a specific URL with retry logic
    */
-  private async deliverToUrl(url: string, event: WebhookEvent, config: WebhookSignatureConfig): Promise<WebhookDeliveryRecord> {
-    const recordId = `delivery_${event.id}_${Buffer.from(url).toString('base64url')}`;
+  private async deliverToUrl(
+    url: string,
+    event: WebhookEvent,
+    config: WebhookSignatureConfig,
+  ): Promise<WebhookDeliveryRecord> {
+    const recordId = `delivery_${event.id}_${Buffer.from(url).toString("base64url")}`;
     let record = this.deliveryRecords.get(recordId);
 
     if (!record) {
@@ -109,7 +115,7 @@ export class WebhookSimulator {
         id: recordId,
         eventId: event.id,
         url,
-        status: 'pending',
+        status: "pending",
         attempts: 0,
         lastAttemptAt: Date.now(),
       };
@@ -124,7 +130,7 @@ export class WebhookSimulator {
       const success = await this.sendWebhook(url, event, config);
 
       if (success) {
-        record.status = 'success';
+        record.status = "success";
         record.statusCode = 200;
         return record;
       }
@@ -134,8 +140,8 @@ export class WebhookSimulator {
         record.nextRetryAt = Date.now() + delay;
         await new Promise((resolve) => setTimeout(resolve, delay));
       } else {
-        record.status = 'failed';
-        record.error = 'Max retries exceeded';
+        record.status = "failed";
+        record.error = "Max retries exceeded";
       }
     }
 
@@ -145,32 +151,41 @@ export class WebhookSimulator {
   /**
    * Send webhook HTTP request
    */
-  private sendWebhook(url: string, event: WebhookEvent, config: WebhookSignatureConfig): Promise<boolean> {
+  private sendWebhook(
+    url: string,
+    event: WebhookEvent,
+    config: WebhookSignatureConfig,
+  ): Promise<boolean> {
     return new Promise((resolve) => {
       try {
         const payload = JSON.stringify(event);
         const signature = this.generateSignature(payload, config);
-        const headerName = config.headerName || this.getDefaultHeaderName(config.provider);
+        const headerName =
+          config.headerName || this.getDefaultHeaderName(config.provider);
 
         const parsedUrl = new URL(url);
         const options = {
           hostname: parsedUrl.hostname,
           port: parsedUrl.port || 80,
           path: parsedUrl.pathname + parsedUrl.search,
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(payload),
+            "Content-Type": "application/json",
+            "Content-Length": Buffer.byteLength(payload),
             [headerName]: signature,
-            'User-Agent': 'WitylogixWebhookSimulator/1.0',
+            "User-Agent": "WitylogixWebhookSimulator/1.0",
           },
         };
 
         const req = http.request(options, (res) => {
-          resolve(res.statusCode === 200 || res.statusCode === 201 || res.statusCode === 204);
+          resolve(
+            res.statusCode === 200 ||
+              res.statusCode === 201 ||
+              res.statusCode === 204,
+          );
         });
 
-        req.on('error', () => resolve(false));
+        req.on("error", () => resolve(false));
         req.setTimeout(5000, () => {
           req.destroy();
           resolve(false);
@@ -187,15 +202,27 @@ export class WebhookSimulator {
   /**
    * Generate webhook signature based on provider
    */
-  private generateSignature(payload: string, config: WebhookSignatureConfig): string {
+  private generateSignature(
+    payload: string,
+    config: WebhookSignatureConfig,
+  ): string {
     switch (config.provider) {
-      case 'stripe':
-        return HMACSignatureGenerator.generateStripeSignature(payload, config.secret);
-      case 'shopify':
-        return HMACSignatureGenerator.generateShopifySignature(payload, config.secret);
-      case 'generic':
+      case "stripe":
+        return HMACSignatureGenerator.generateStripeSignature(
+          payload,
+          config.secret,
+        );
+      case "shopify":
+        return HMACSignatureGenerator.generateShopifySignature(
+          payload,
+          config.secret,
+        );
+      case "generic":
       default:
-        return HMACSignatureGenerator.generateStripeSignature(payload, config.secret);
+        return HMACSignatureGenerator.generateStripeSignature(
+          payload,
+          config.secret,
+        );
     }
   }
 
@@ -204,12 +231,12 @@ export class WebhookSimulator {
    */
   private getDefaultHeaderName(provider: string): string {
     switch (provider) {
-      case 'stripe':
-        return 'x-stripe-signature';
-      case 'shopify':
-        return 'x-shopify-hmac-sha256';
+      case "stripe":
+        return "x-stripe-signature";
+      case "shopify":
+        return "x-shopify-hmac-sha256";
       default:
-        return 'x-webhook-signature';
+        return "x-webhook-signature";
     }
   }
 
@@ -242,7 +269,9 @@ export class WebhookSimulator {
    * Get all delivery records for an event
    */
   getDeliveryRecordsForEvent(eventId: string): WebhookDeliveryRecord[] {
-    return Array.from(this.deliveryRecords.values()).filter((r) => r.eventId === eventId);
+    return Array.from(this.deliveryRecords.values()).filter(
+      (r) => r.eventId === eventId,
+    );
   }
 
   /**
@@ -274,9 +303,12 @@ export class WebhookSimulator {
 // ───────────────────────────────────────────────────────────────────────────
 
 export class WebhookEventFactory {
-  static createEvent(type: string, data: Record<string, any> = {}): WebhookEvent {
+  static createEvent(
+    type: string,
+    data: Record<string, any> = {},
+  ): WebhookEvent {
     return {
-      id: `evt_${Buffer.from(`${type}${Date.now()}`).toString('base64url').slice(0, 20)}`,
+      id: `evt_${Buffer.from(`${type}${Date.now()}`).toString("base64url").slice(0, 20)}`,
       type,
       timestamp: Date.now(),
       data: {
@@ -286,7 +318,10 @@ export class WebhookEventFactory {
     };
   }
 
-  static createStripeEvent(type: string, data: Record<string, any> = {}): WebhookEvent {
+  static createStripeEvent(
+    type: string,
+    data: Record<string, any> = {},
+  ): WebhookEvent {
     return {
       id: `evt_${randomId()}`,
       type: `charge.${type}`,
@@ -300,7 +335,10 @@ export class WebhookEventFactory {
     };
   }
 
-  static createShopifyEvent(topic: string, data: Record<string, any> = {}): WebhookEvent {
+  static createShopifyEvent(
+    topic: string,
+    data: Record<string, any> = {},
+  ): WebhookEvent {
     return {
       id: `shopify_${randomId()}`,
       type: topic,
@@ -309,10 +347,13 @@ export class WebhookEventFactory {
     };
   }
 
-  static createPaymentEvent(status: 'succeeded' | 'failed' | 'pending', amount: number): WebhookEvent {
+  static createPaymentEvent(
+    status: "succeeded" | "failed" | "pending",
+    amount: number,
+  ): WebhookEvent {
     return {
       id: `evt_${randomId()}`,
-      type: 'payment.status_changed',
+      type: "payment.status_changed",
       timestamp: Date.now(),
       data: {
         paymentId: `pay_${randomId()}`,
@@ -322,10 +363,12 @@ export class WebhookEventFactory {
     };
   }
 
-  static createShipmentEvent(status: 'created' | 'picked_up' | 'in_transit' | 'delivered' | 'failed'): WebhookEvent {
+  static createShipmentEvent(
+    status: "created" | "picked_up" | "in_transit" | "delivered" | "failed",
+  ): WebhookEvent {
     return {
       id: `evt_${randomId()}`,
-      type: 'shipment.status_changed',
+      type: "shipment.status_changed",
       timestamp: Date.now(),
       data: {
         shipmentId: `ship_${randomId()}`,
@@ -337,5 +380,7 @@ export class WebhookEventFactory {
 }
 
 function randomId(): string {
-  return Buffer.from(Math.random().toString()).toString('base64url').slice(0, 20);
+  return Buffer.from(Math.random().toString())
+    .toString("base64url")
+    .slice(0, 20);
 }

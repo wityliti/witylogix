@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import type { DeliveryTracking, DriverLocation, DeliveryStep } from '@/types';
+import { useState, useEffect, useCallback, useRef } from "react";
+import type { DeliveryTracking, DriverLocation, DeliveryStep } from "@/types";
 
 interface TrackingEvent {
-  type: 'driver:location' | 'delivery:status-update' | 'delivery:eta-update';
+  type: "driver:location" | "delivery:status-update" | "delivery:eta-update";
   data: any;
   timestamp: number;
 }
@@ -41,8 +41,12 @@ export function useDeliveryTracking({
   autoReconnect = true,
   reconnectMaxAttempts = 5,
 }: UseDeliveryTrackingOptions): UseDeliveryTrackingReturn {
-  const [driverPosition, setDriverPosition] = useState<DriverLocation | null>(null);
-  const [deliveryStatus, setDeliveryStatus] = useState<DeliveryStep | null>(null);
+  const [driverPosition, setDriverPosition] = useState<DriverLocation | null>(
+    null,
+  );
+  const [deliveryStatus, setDeliveryStatus] = useState<DeliveryStep | null>(
+    null,
+  );
   const [eta, setEta] = useState<Date | null>(null);
   const [etaConfidence, setEtaConfidence] = useState<number | null>(null);
   const [etaDeltaMinutes, setEtaDeltaMinutes] = useState<number | null>(null);
@@ -68,9 +72,11 @@ export function useDeliveryTracking({
     try {
       const wsUrl = new URL(
         `/tracking?orderId=${orderId}&token=${token}`,
-        typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+        typeof window !== "undefined"
+          ? window.location.origin
+          : "http://localhost:3000",
       );
-      wsUrl.protocol = wsUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+      wsUrl.protocol = wsUrl.protocol === "https:" ? "wss:" : "ws:";
 
       const ws = new WebSocket(wsUrl.toString());
 
@@ -80,16 +86,18 @@ export function useDeliveryTracking({
         setRetryCount(0);
 
         // Send subscription message
-        ws.send(JSON.stringify({
-          type: 'subscribe',
-          orderId,
-          token,
-        }));
+        ws.send(
+          JSON.stringify({
+            type: "subscribe",
+            orderId,
+            token,
+          }),
+        );
 
         // Start heartbeat
         heartbeatIntervalRef.current = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'ping' }));
+            ws.send(JSON.stringify({ type: "ping" }));
           }
         }, 30000);
       };
@@ -99,7 +107,7 @@ export function useDeliveryTracking({
           const message: TrackingEvent = JSON.parse(event.data);
 
           switch (message.type) {
-            case 'driver:location': {
+            case "driver:location": {
               const location: DriverLocation = {
                 latitude: message.data.latitude,
                 longitude: message.data.longitude,
@@ -111,34 +119,34 @@ export function useDeliveryTracking({
               break;
             }
 
-            case 'delivery:status-update': {
+            case "delivery:status-update": {
               const status: DeliveryStep = message.data.status;
               setDeliveryStatus(status);
               break;
             }
 
-            case 'delivery:eta-update': {
+            case "delivery:eta-update": {
               if (message.data.eta) {
                 setEta(new Date(message.data.eta));
               }
-              if (typeof message.data.confidence === 'number') {
+              if (typeof message.data.confidence === "number") {
                 setEtaConfidence(message.data.confidence);
                 setIsAIPredicted(true);
               }
-              if (typeof message.data.etaDeltaMinutes === 'number') {
+              if (typeof message.data.etaDeltaMinutes === "number") {
                 setEtaDeltaMinutes(message.data.etaDeltaMinutes);
               }
               break;
             }
           }
         } catch (parseError) {
-          console.error('Failed to parse WebSocket message:', parseError);
+          console.error("Failed to parse WebSocket message:", parseError);
         }
       };
 
       ws.onerror = (event) => {
-        setError('Connection error occurred');
-        console.error('WebSocket error:', event);
+        setError("Connection error occurred");
+        console.error("WebSocket error:", event);
       };
 
       ws.onclose = () => {
@@ -155,15 +163,22 @@ export function useDeliveryTracking({
             connect();
           }, delay);
         } else if (retryCount >= reconnectMaxAttempts) {
-          setError('Max reconnection attempts reached');
+          setError("Max reconnection attempts reached");
         }
       };
 
       wsRef.current = ws;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to connect');
+      setError(err instanceof Error ? err.message : "Failed to connect");
     }
-  }, [orderId, token, autoReconnect, reconnectMaxAttempts, retryCount, calculateBackoffDelay]);
+  }, [
+    orderId,
+    token,
+    autoReconnect,
+    reconnectMaxAttempts,
+    retryCount,
+    calculateBackoffDelay,
+  ]);
 
   useEffect(() => {
     connect();

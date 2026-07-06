@@ -6,7 +6,13 @@
 /**
  * Types of inventory movements
  */
-export type MovementType = 'RECEIVE' | 'SHIP' | 'ADJUST' | 'TRANSFER' | 'RESERVE' | 'RELEASE';
+export type MovementType =
+  | "RECEIVE"
+  | "SHIP"
+  | "ADJUST"
+  | "TRANSFER"
+  | "RESERVE"
+  | "RELEASE";
 
 /**
  * Inventory level at a location
@@ -16,11 +22,11 @@ export interface InventoryLevel {
   productId: string;
   variantId?: string;
   locationId: string;
-  quantity: number;           // Physical quantity on hand
-  reservedQuantity: number;   // Quantity reserved for orders
-  reorderPoint: number;       // Low stock threshold
-  reorderQuantity: number;    // Suggested reorder amount
-  availableQuantity: number;  // quantity - reservedQuantity
+  quantity: number; // Physical quantity on hand
+  reservedQuantity: number; // Quantity reserved for orders
+  reorderPoint: number; // Low stock threshold
+  reorderQuantity: number; // Suggested reorder amount
+  availableQuantity: number; // quantity - reservedQuantity
 }
 
 /**
@@ -33,7 +39,7 @@ export interface StockMovement {
   quantity: number;
   fromLocation?: string;
   toLocation?: string;
-  reference?: string;         // PO#, Order#, etc
+  reference?: string; // PO#, Order#, etc
   createdAt: Date;
 }
 
@@ -49,7 +55,7 @@ export interface LowStockAlert {
   reorderPoint: number;
   reorderQuantity: number;
   suggestedOrderQuantity: number; // reorderQuantity - currentQuantity
-  daysUntilStockout?: number;     // Estimated days until zero
+  daysUntilStockout?: number; // Estimated days until zero
 }
 
 /**
@@ -57,7 +63,7 @@ export interface LowStockAlert {
  */
 export interface AdjustStockRequest {
   itemId: string;
-  quantity: number;           // Positive or negative
+  quantity: number; // Positive or negative
   type: MovementType;
   reference?: string;
 }
@@ -148,5 +154,5 @@ export interface LowStockAlertOptions {
   shopId: string;
   locationId?: string;
   includeZeroStock?: boolean;
-  sortBy?: 'daysUntilStockout' | 'percentageOfReorderPoint';
+  sortBy?: "daysUntilStockout" | "percentageOfReorderPoint";
 }

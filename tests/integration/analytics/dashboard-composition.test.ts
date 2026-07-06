@@ -13,7 +13,7 @@
  * ~200 lines, 16+ tests
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 // ============================================================================
 // MOCK TYPES & INTERFACES
@@ -21,7 +21,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 interface Widget {
   id: string;
-  type: 'chart' | 'metric' | 'table' | 'map' | 'gauge';
+  type: "chart" | "metric" | "table" | "map" | "gauge";
   title: string;
   dataSourceId: string;
   position: { x: number; y: number };
@@ -37,7 +37,7 @@ interface Dashboard {
   createdAt: Date;
   updatedAt: Date;
   widgets: Widget[];
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
   isPublic: boolean;
   refreshInterval?: number;
 }
@@ -45,12 +45,12 @@ interface Dashboard {
 interface DataSource {
   id: string;
   name: string;
-  type: 'database' | 'api' | 'csv' | 'spreadsheet';
+  type: "database" | "api" | "csv" | "spreadsheet";
   connectionString?: string;
   query?: string;
-  updateFrequency: 'real-time' | 'hourly' | 'daily' | 'manual';
+  updateFrequency: "real-time" | "hourly" | "daily" | "manual";
   lastUpdated: Date;
-  status: 'connected' | 'disconnected' | 'error';
+  status: "connected" | "disconnected" | "error";
 }
 
 interface DashboardData {
@@ -61,9 +61,9 @@ interface DashboardData {
 }
 
 interface ExportConfig {
-  format: 'pdf' | 'csv' | 'xlsx';
+  format: "pdf" | "csv" | "xlsx";
   includeCharts: boolean;
-  pageOrientation?: 'portrait' | 'landscape';
+  pageOrientation?: "portrait" | "landscape";
   fileName: string;
 }
 
@@ -71,7 +71,7 @@ interface DashboardShare {
   id: string;
   dashboardId: string;
   sharedWith: string;
-  permission: 'view' | 'edit' | 'admin';
+  permission: "view" | "edit" | "admin";
   sharedAt: Date;
 }
 
@@ -93,7 +93,7 @@ class MockDashboardService {
       createdAt: new Date(),
       updatedAt: new Date(),
       widgets: [],
-      theme: 'light',
+      theme: "light",
       isPublic: false,
     };
     this.dashboards.set(dashboard.id, dashboard);
@@ -106,7 +106,10 @@ class MockDashboardService {
     return dashboard;
   }
 
-  async updateDashboard(id: string, updates: Partial<Dashboard>): Promise<Dashboard> {
+  async updateDashboard(
+    id: string,
+    updates: Partial<Dashboard>,
+  ): Promise<Dashboard> {
     const dashboard = await this.getDashboard(id);
     const updated = { ...dashboard, ...updates, updatedAt: new Date() };
     this.dashboards.set(id, updated);
@@ -118,9 +121,15 @@ class MockDashboardService {
     this.dashboards.delete(id);
   }
 
-  async addWidget(dashboardId: string, widget: Omit<Widget, 'id'>): Promise<Widget> {
+  async addWidget(
+    dashboardId: string,
+    widget: Omit<Widget, "id">,
+  ): Promise<Widget> {
     const dashboard = await this.getDashboard(dashboardId);
-    const newWidget: Widget = { ...widget, id: `widget_${Math.random().toString(36).substr(2, 9)}` };
+    const newWidget: Widget = {
+      ...widget,
+      id: `widget_${Math.random().toString(36).substr(2, 9)}`,
+    };
     dashboard.widgets.push(newWidget);
     dashboard.updatedAt = new Date();
     return newWidget;
@@ -128,23 +137,29 @@ class MockDashboardService {
 
   async removeWidget(dashboardId: string, widgetId: string): Promise<void> {
     const dashboard = await this.getDashboard(dashboardId);
-    dashboard.widgets = dashboard.widgets.filter(w => w.id !== widgetId);
+    dashboard.widgets = dashboard.widgets.filter((w) => w.id !== widgetId);
     dashboard.updatedAt = new Date();
   }
 
-  async updateWidget(dashboardId: string, widgetId: string, updates: Partial<Widget>): Promise<Widget> {
+  async updateWidget(
+    dashboardId: string,
+    widgetId: string,
+    updates: Partial<Widget>,
+  ): Promise<Widget> {
     const dashboard = await this.getDashboard(dashboardId);
-    const widget = dashboard.widgets.find(w => w.id === widgetId);
+    const widget = dashboard.widgets.find((w) => w.id === widgetId);
     if (!widget) throw new Error(`Widget ${widgetId} not found`);
 
     const updated = { ...widget, ...updates };
-    const index = dashboard.widgets.findIndex(w => w.id === widgetId);
+    const index = dashboard.widgets.findIndex((w) => w.id === widgetId);
     dashboard.widgets[index] = updated;
     dashboard.updatedAt = new Date();
     return updated;
   }
 
-  async createDataSource(source: Omit<DataSource, 'id' | 'lastUpdated'>): Promise<DataSource> {
+  async createDataSource(
+    source: Omit<DataSource, "id" | "lastUpdated">,
+  ): Promise<DataSource> {
     const dataSource: DataSource = {
       ...source,
       id: `ds_${Math.random().toString(36).substr(2, 9)}`,
@@ -160,14 +175,20 @@ class MockDashboardService {
     return source;
   }
 
-  async updateDataSource(id: string, updates: Partial<DataSource>): Promise<DataSource> {
+  async updateDataSource(
+    id: string,
+    updates: Partial<DataSource>,
+  ): Promise<DataSource> {
     const source = await this.getDataSource(id);
     const updated = { ...source, ...updates, lastUpdated: new Date() };
     this.dataSources.set(id, updated);
     return updated;
   }
 
-  async loadWidgetData(widgetId: string, sourceId: string): Promise<DashboardData> {
+  async loadWidgetData(
+    widgetId: string,
+    sourceId: string,
+  ): Promise<DashboardData> {
     const source = await this.getDataSource(sourceId);
 
     const data: DashboardData = {
@@ -195,7 +216,10 @@ class MockDashboardService {
     return this.widgetData.get(widgetId) || null;
   }
 
-  async setRefreshInterval(dashboardId: string, intervalSeconds: number): Promise<Dashboard> {
+  async setRefreshInterval(
+    dashboardId: string,
+    intervalSeconds: number,
+  ): Promise<Dashboard> {
     const dashboard = await this.getDashboard(dashboardId);
     dashboard.refreshInterval = intervalSeconds;
     dashboard.updatedAt = new Date();
@@ -215,7 +239,10 @@ class MockDashboardService {
     return refreshedData;
   }
 
-  async exportDashboard(dashboardId: string, config: ExportConfig): Promise<{ fileName: string; mimeType: string; size: number }> {
+  async exportDashboard(
+    dashboardId: string,
+    config: ExportConfig,
+  ): Promise<{ fileName: string; mimeType: string; size: number }> {
     const dashboard = await this.getDashboard(dashboardId);
 
     const fileContent = this.generateExportContent(dashboard, config);
@@ -228,8 +255,11 @@ class MockDashboardService {
     };
   }
 
-  private generateExportContent(dashboard: Dashboard, config: ExportConfig): string {
-    if (config.format === 'csv') {
+  private generateExportContent(
+    dashboard: Dashboard,
+    config: ExportConfig,
+  ): string {
+    if (config.format === "csv") {
       return `Dashboard,${dashboard.name}\nCreated,${dashboard.createdAt}\nWidgets,${dashboard.widgets.length}`;
     }
     return JSON.stringify(dashboard);
@@ -237,17 +267,17 @@ class MockDashboardService {
 
   private getMimeType(format: string): string {
     const types: Record<string, string> = {
-      pdf: 'application/pdf',
-      csv: 'text/csv',
-      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      pdf: "application/pdf",
+      csv: "text/csv",
+      xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     };
-    return types[format] || 'application/octet-stream';
+    return types[format] || "application/octet-stream";
   }
 
   async shareDashboard(
     dashboardId: string,
     sharedWith: string,
-    permission: 'view' | 'edit' | 'admin',
+    permission: "view" | "edit" | "admin",
   ): Promise<DashboardShare> {
     const share: DashboardShare = {
       id: `share_${Math.random().toString(36).substr(2, 9)}`,
@@ -261,10 +291,15 @@ class MockDashboardService {
   }
 
   async getShares(dashboardId: string): Promise<DashboardShare[]> {
-    return Array.from(this.shares.values()).filter(s => s.dashboardId === dashboardId);
+    return Array.from(this.shares.values()).filter(
+      (s) => s.dashboardId === dashboardId,
+    );
   }
 
-  async updateShare(shareId: string, permission: 'view' | 'edit' | 'admin'): Promise<DashboardShare> {
+  async updateShare(
+    shareId: string,
+    permission: "view" | "edit" | "admin",
+  ): Promise<DashboardShare> {
     const share = this.shares.get(shareId);
     if (!share) throw new Error(`Share ${shareId} not found`);
     share.permission = permission;
@@ -280,7 +315,7 @@ class MockDashboardService {
 // TEST SUITE
 // ============================================================================
 
-describe('Dashboard Composition', () => {
+describe("Dashboard Composition", () => {
   let service: MockDashboardService;
 
   beforeEach(() => {
@@ -292,37 +327,49 @@ describe('Dashboard Composition', () => {
   });
 
   // CRUD Operations
-  it('should create dashboard', async () => {
-    const dashboard = await service.createDashboard('Sales Overview', 'user@example.com');
+  it("should create dashboard", async () => {
+    const dashboard = await service.createDashboard(
+      "Sales Overview",
+      "user@example.com",
+    );
 
     expect(dashboard.id).toBeTruthy();
-    expect(dashboard.name).toBe('Sales Overview');
+    expect(dashboard.name).toBe("Sales Overview");
     expect(dashboard.createdAt).toBeTruthy();
   });
 
-  it('should read dashboard by ID', async () => {
-    const created = await service.createDashboard('Revenue Dashboard', 'user@example.com');
+  it("should read dashboard by ID", async () => {
+    const created = await service.createDashboard(
+      "Revenue Dashboard",
+      "user@example.com",
+    );
 
     const retrieved = await service.getDashboard(created.id);
 
     expect(retrieved.id).toBe(created.id);
-    expect(retrieved.name).toBe('Revenue Dashboard');
+    expect(retrieved.name).toBe("Revenue Dashboard");
   });
 
-  it('should update dashboard properties', async () => {
-    const created = await service.createDashboard('Old Name', 'user@example.com');
+  it("should update dashboard properties", async () => {
+    const created = await service.createDashboard(
+      "Old Name",
+      "user@example.com",
+    );
 
     const updated = await service.updateDashboard(created.id, {
-      name: 'New Name',
-      theme: 'dark',
+      name: "New Name",
+      theme: "dark",
     });
 
-    expect(updated.name).toBe('New Name');
-    expect(updated.theme).toBe('dark');
+    expect(updated.name).toBe("New Name");
+    expect(updated.theme).toBe("dark");
   });
 
-  it('should delete dashboard', async () => {
-    const created = await service.createDashboard('To Delete', 'user@example.com');
+  it("should delete dashboard", async () => {
+    const created = await service.createDashboard(
+      "To Delete",
+      "user@example.com",
+    );
 
     await service.deleteDashboard(created.id);
 
@@ -330,29 +377,35 @@ describe('Dashboard Composition', () => {
   });
 
   // Widget Management
-  it('should add widget to dashboard', async () => {
-    const dashboard = await service.createDashboard('Widget Test', 'user@example.com');
+  it("should add widget to dashboard", async () => {
+    const dashboard = await service.createDashboard(
+      "Widget Test",
+      "user@example.com",
+    );
 
     const widget = await service.addWidget(dashboard.id, {
-      type: 'chart',
-      title: 'Sales Chart',
-      dataSourceId: 'ds_123',
+      type: "chart",
+      title: "Sales Chart",
+      dataSourceId: "ds_123",
       position: { x: 0, y: 0 },
       size: { width: 400, height: 300 },
-      config: { chartType: 'bar' },
+      config: { chartType: "bar" },
     });
 
     expect(widget.id).toBeTruthy();
-    expect(widget.title).toBe('Sales Chart');
+    expect(widget.title).toBe("Sales Chart");
   });
 
-  it('should update widget position and size', async () => {
-    const dashboard = await service.createDashboard('Position Test', 'user@example.com');
+  it("should update widget position and size", async () => {
+    const dashboard = await service.createDashboard(
+      "Position Test",
+      "user@example.com",
+    );
 
     const widget = await service.addWidget(dashboard.id, {
-      type: 'metric',
-      title: 'Total Revenue',
-      dataSourceId: 'ds_456',
+      type: "metric",
+      title: "Total Revenue",
+      dataSourceId: "ds_456",
       position: { x: 0, y: 0 },
       size: { width: 200, height: 200 },
       config: {},
@@ -367,13 +420,16 @@ describe('Dashboard Composition', () => {
     expect(updated.size).toEqual({ width: 400, height: 400 });
   });
 
-  it('should remove widget from dashboard', async () => {
-    const dashboard = await service.createDashboard('Remove Test', 'user@example.com');
+  it("should remove widget from dashboard", async () => {
+    const dashboard = await service.createDashboard(
+      "Remove Test",
+      "user@example.com",
+    );
 
     const widget = await service.addWidget(dashboard.id, {
-      type: 'table',
-      title: 'Orders Table',
-      dataSourceId: 'ds_789',
+      type: "table",
+      title: "Orders Table",
+      dataSourceId: "ds_789",
       position: { x: 0, y: 0 },
       size: { width: 600, height: 400 },
       config: {},
@@ -386,63 +442,66 @@ describe('Dashboard Composition', () => {
   });
 
   // Data Source Management
-  it('should create data source', async () => {
+  it("should create data source", async () => {
     const source = await service.createDataSource({
-      name: 'Sales DB',
-      type: 'database',
-      connectionString: 'postgresql://...',
-      updateFrequency: 'hourly',
-      status: 'connected',
+      name: "Sales DB",
+      type: "database",
+      connectionString: "postgresql://...",
+      updateFrequency: "hourly",
+      status: "connected",
     });
 
     expect(source.id).toBeTruthy();
-    expect(source.name).toBe('Sales DB');
+    expect(source.name).toBe("Sales DB");
   });
 
-  it('should update data source configuration', async () => {
+  it("should update data source configuration", async () => {
     const source = await service.createDataSource({
-      name: 'Old Source',
-      type: 'api',
-      updateFrequency: 'manual',
-      status: 'connected',
+      name: "Old Source",
+      type: "api",
+      updateFrequency: "manual",
+      status: "connected",
     });
 
     const updated = await service.updateDataSource(source.id, {
-      updateFrequency: 'real-time',
+      updateFrequency: "real-time",
     });
 
-    expect(updated.updateFrequency).toBe('real-time');
+    expect(updated.updateFrequency).toBe("real-time");
   });
 
   // Data Loading
-  it('should load widget data from source', async () => {
+  it("should load widget data from source", async () => {
     const source = await service.createDataSource({
-      name: 'Widget Source',
-      type: 'api',
-      updateFrequency: 'hourly',
-      status: 'connected',
+      name: "Widget Source",
+      type: "api",
+      updateFrequency: "hourly",
+      status: "connected",
     });
 
-    const data = await service.loadWidgetData('widget_123', source.id);
+    const data = await service.loadWidgetData("widget_123", source.id);
 
-    expect(data.widgetId).toBe('widget_123');
+    expect(data.widgetId).toBe("widget_123");
     expect(data.data).toBeTruthy();
     expect(data.metrics).toBeTruthy();
   });
 
-  it('should refresh all dashboard data', async () => {
-    const dashboard = await service.createDashboard('Refresh Test', 'user@example.com');
+  it("should refresh all dashboard data", async () => {
+    const dashboard = await service.createDashboard(
+      "Refresh Test",
+      "user@example.com",
+    );
 
     const source1 = await service.createDataSource({
-      name: 'Source 1',
-      type: 'database',
-      updateFrequency: 'hourly',
-      status: 'connected',
+      name: "Source 1",
+      type: "database",
+      updateFrequency: "hourly",
+      status: "connected",
     });
 
     const widget1 = await service.addWidget(dashboard.id, {
-      type: 'chart',
-      title: 'Chart 1',
+      type: "chart",
+      title: "Chart 1",
       dataSourceId: source1.id,
       position: { x: 0, y: 0 },
       size: { width: 300, height: 300 },
@@ -456,8 +515,11 @@ describe('Dashboard Composition', () => {
   });
 
   // Refresh Scheduling
-  it('should set refresh interval', async () => {
-    const dashboard = await service.createDashboard('Refresh Interval', 'user@example.com');
+  it("should set refresh interval", async () => {
+    const dashboard = await service.createDashboard(
+      "Refresh Interval",
+      "user@example.com",
+    );
 
     const updated = await service.setRefreshInterval(dashboard.id, 300);
 
@@ -465,68 +527,98 @@ describe('Dashboard Composition', () => {
   });
 
   // Export
-  it('should export dashboard as CSV', async () => {
-    const dashboard = await service.createDashboard('Export Test', 'user@example.com');
+  it("should export dashboard as CSV", async () => {
+    const dashboard = await service.createDashboard(
+      "Export Test",
+      "user@example.com",
+    );
 
     const result = await service.exportDashboard(dashboard.id, {
-      format: 'csv',
+      format: "csv",
       includeCharts: true,
-      fileName: 'dashboard.csv',
+      fileName: "dashboard.csv",
     });
 
-    expect(result.fileName).toBe('dashboard.csv');
-    expect(result.mimeType).toBe('text/csv');
+    expect(result.fileName).toBe("dashboard.csv");
+    expect(result.mimeType).toBe("text/csv");
     expect(result.size).toBeGreaterThan(0);
   });
 
-  it('should export dashboard as PDF', async () => {
-    const dashboard = await service.createDashboard('PDF Export', 'user@example.com');
+  it("should export dashboard as PDF", async () => {
+    const dashboard = await service.createDashboard(
+      "PDF Export",
+      "user@example.com",
+    );
 
     const result = await service.exportDashboard(dashboard.id, {
-      format: 'pdf',
+      format: "pdf",
       includeCharts: true,
-      pageOrientation: 'landscape',
-      fileName: 'dashboard.pdf',
+      pageOrientation: "landscape",
+      fileName: "dashboard.pdf",
     });
 
-    expect(result.fileName).toBe('dashboard.pdf');
-    expect(result.mimeType).toBe('application/pdf');
+    expect(result.fileName).toBe("dashboard.pdf");
+    expect(result.mimeType).toBe("application/pdf");
   });
 
   // Sharing
-  it('should share dashboard with view permission', async () => {
-    const dashboard = await service.createDashboard('Share Test', 'user@example.com');
+  it("should share dashboard with view permission", async () => {
+    const dashboard = await service.createDashboard(
+      "Share Test",
+      "user@example.com",
+    );
 
-    const share = await service.shareDashboard(dashboard.id, 'viewer@example.com', 'view');
+    const share = await service.shareDashboard(
+      dashboard.id,
+      "viewer@example.com",
+      "view",
+    );
 
     expect(share.dashboardId).toBe(dashboard.id);
-    expect(share.permission).toBe('view');
+    expect(share.permission).toBe("view");
   });
 
-  it('should update share permission', async () => {
-    const dashboard = await service.createDashboard('Permission Test', 'user@example.com');
+  it("should update share permission", async () => {
+    const dashboard = await service.createDashboard(
+      "Permission Test",
+      "user@example.com",
+    );
 
-    const share = await service.shareDashboard(dashboard.id, 'editor@example.com', 'view');
-    const updated = await service.updateShare(share.id, 'edit');
+    const share = await service.shareDashboard(
+      dashboard.id,
+      "editor@example.com",
+      "view",
+    );
+    const updated = await service.updateShare(share.id, "edit");
 
-    expect(updated.permission).toBe('edit');
+    expect(updated.permission).toBe("edit");
   });
 
-  it('should get all shares for dashboard', async () => {
-    const dashboard = await service.createDashboard('Shares Test', 'user@example.com');
+  it("should get all shares for dashboard", async () => {
+    const dashboard = await service.createDashboard(
+      "Shares Test",
+      "user@example.com",
+    );
 
-    await service.shareDashboard(dashboard.id, 'user1@example.com', 'view');
-    await service.shareDashboard(dashboard.id, 'user2@example.com', 'edit');
+    await service.shareDashboard(dashboard.id, "user1@example.com", "view");
+    await service.shareDashboard(dashboard.id, "user2@example.com", "edit");
 
     const shares = await service.getShares(dashboard.id);
 
     expect(shares).toHaveLength(2);
   });
 
-  it('should remove share', async () => {
-    const dashboard = await service.createDashboard('Remove Share', 'user@example.com');
+  it("should remove share", async () => {
+    const dashboard = await service.createDashboard(
+      "Remove Share",
+      "user@example.com",
+    );
 
-    const share = await service.shareDashboard(dashboard.id, 'user@example.com', 'view');
+    const share = await service.shareDashboard(
+      dashboard.id,
+      "user@example.com",
+      "view",
+    );
     await service.removeShare(share.id);
 
     const shares = await service.getShares(dashboard.id);

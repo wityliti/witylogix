@@ -31,7 +31,11 @@ import {
   type ICourierProvider,
   type CourierAvailability,
 } from "@witylogix/core/integrations/couriers";
-import type { CourierQuote, PackageSpec, LocationInfo } from "@witylogix/core/integrations/couriers";
+import type {
+  CourierQuote,
+  PackageSpec,
+  LocationInfo,
+} from "@witylogix/core/integrations/couriers";
 
 // ─── Courier Provider Bridge ────────────────────────────────────
 // Adapts CourierAdapter (Onfleet, Stuart, UberDirect) to ICourierProvider
@@ -40,7 +44,10 @@ class CourierAdapterProvider implements ICourierProvider {
   private adapter: OnfleetClient | StuartClient | UberDirectClient;
   private providerName: string;
 
-  constructor(adapter: OnfleetClient | StuartClient | UberDirectClient, name: string) {
+  constructor(
+    adapter: OnfleetClient | StuartClient | UberDirectClient,
+    name: string,
+  ) {
     this.adapter = adapter;
     this.providerName = name;
   }
@@ -65,11 +72,16 @@ class CourierAdapterProvider implements ICourierProvider {
       dropoff: delivery.dropoff,
       package: delivery.package,
       scheduledFor: delivery.scheduledFor,
-      options: delivery.serviceLevel ? { serviceLevel: delivery.serviceLevel } : undefined,
+      options: delivery.serviceLevel
+        ? { serviceLevel: delivery.serviceLevel }
+        : undefined,
     });
   }
 
-  async canServiceArea(_pickup: LocationInfo, _dropoff: LocationInfo): Promise<boolean> {
+  async canServiceArea(
+    _pickup: LocationInfo,
+    _dropoff: LocationInfo,
+  ): Promise<boolean> {
     return this.adapter.healthCheck();
   }
 
@@ -81,7 +93,10 @@ class CourierAdapterProvider implements ICourierProvider {
 
 // Per-tenant SmartRouter cache — avoid a full DB query + adapter instantiation on every
 // routing request. Cached for 30 seconds; invalidated automatically on expiry.
-const _routerCache = new Map<string, { router: SmartRouter; expiresAt: number }>();
+const _routerCache = new Map<
+  string,
+  { router: SmartRouter; expiresAt: number }
+>();
 const ROUTER_CACHE_TTL_MS = 30_000;
 
 /**
@@ -108,7 +123,8 @@ async function buildTenantSmartRouter(tenantId: string): Promise<SmartRouter> {
 
     try {
       const providerKey = partner.provider.toLowerCase().replace(/[_-]/g, "");
-      let adapter: OnfleetClient | StuartClient | UberDirectClient | null = null;
+      let adapter: OnfleetClient | StuartClient | UberDirectClient | null =
+        null;
 
       if (providerKey === "onfleet") {
         adapter = new OnfleetClient(courierConfig);
@@ -119,14 +135,20 @@ async function buildTenantSmartRouter(tenantId: string): Promise<SmartRouter> {
       }
 
       if (adapter) {
-        router.registerProvider(partner.provider, new CourierAdapterProvider(adapter, partner.provider));
+        router.registerProvider(
+          partner.provider,
+          new CourierAdapterProvider(adapter, partner.provider),
+        );
       }
     } catch {
       // Skip misconfigured partners
     }
   }
 
-  _routerCache.set(tenantId, { router, expiresAt: Date.now() + ROUTER_CACHE_TTL_MS });
+  _routerCache.set(tenantId, {
+    router,
+    expiresAt: Date.now() + ROUTER_CACHE_TTL_MS,
+  });
   return router;
 }
 
@@ -159,7 +181,9 @@ const deliveryRequestSchema = z.object({
   package: z
     .object({
       weight: z.number().optional(),
-      dimensions: z.object({ length: z.number(), width: z.number(), height: z.number() }).optional(),
+      dimensions: z
+        .object({ length: z.number(), width: z.number(), height: z.number() })
+        .optional(),
       transportType: z.enum(["bike", "car", "van"]).optional(),
       itemCount: z.number().optional(),
       fragile: z.boolean().optional(),
@@ -223,17 +247,25 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
 
         const smartRouter = await buildTenantSmartRouter(tenantId);
 
-        const result = await smartRouter.routeDelivery(body as DeliveryRequest, {
-          providers: options.providers as string[] | undefined,
-          prioritizeSpeed: options.prioritizeSpeed === "true",
-          prioritizeCost: options.prioritizeCost === "true",
-          maxOptions: options.maxOptions ? parseInt(options.maxOptions as string) : undefined,
-        });
+        const result = await smartRouter.routeDelivery(
+          body as DeliveryRequest,
+          {
+            providers: options.providers as string[] | undefined,
+            prioritizeSpeed: options.prioritizeSpeed === "true",
+            prioritizeCost: options.prioritizeCost === "true",
+            maxOptions: options.maxOptions
+              ? parseInt(options.maxOptions as string)
+              : undefined,
+          },
+        );
 
         let costComparison = null;
         if (result.options.length > 0) {
           try {
-            costComparison = costOptimizer.compareCosts(body as DeliveryRequest, result.options);
+            costComparison = costOptimizer.compareCosts(
+              body as DeliveryRequest,
+              result.options,
+            );
           } catch {
             // Not enough viable options for comparison
           }
@@ -278,15 +310,20 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
           return reply.status(400).send({ error: "Invalid deliveries array" });
         }
 
-        const validDeliveries = deliveries.map((d) => deliveryRequestSchema.parse(d));
+        const validDeliveries = deliveries.map((d) =>
+          deliveryRequestSchema.parse(d),
+        );
 
         const smartRouter = await buildTenantSmartRouter(tenantId);
 
-        const result = await smartRouter.routeBatch(validDeliveries as DeliveryRequest[], {
-          optimizeForCost: options?.optimizeForCost === "true",
-          optimizeForTime: options?.optimizeForTime === "true",
-          allowSplitDeliveries: options?.allowSplitDeliveries === "true",
-        });
+        const result = await smartRouter.routeBatch(
+          validDeliveries as DeliveryRequest[],
+          {
+            optimizeForCost: options?.optimizeForCost === "true",
+            optimizeForTime: options?.optimizeForTime === "true",
+            allowSplitDeliveries: options?.allowSplitDeliveries === "true",
+          },
+        );
 
         let batchCostOptimization = null;
         try {
@@ -342,22 +379,30 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
           const deliveries = await (prisma as any).courierDelivery?.findMany?.({
             where: {
               partnerId: partner.id,
-              createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+              createdAt: {
+                gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+              },
             },
             select: { status: true, quote: true },
           });
 
           if (deliveries && deliveries.length > 0) {
-            const onTimeDeliveries = deliveries.filter((d: any) => d.status === "DELIVERED").length;
-            const damagedDeliveries = deliveries.filter((d: any) => d.status === "FAILED").length;
+            const onTimeDeliveries = deliveries.filter(
+              (d: any) => d.status === "DELIVERED",
+            ).length;
+            const damagedDeliveries = deliveries.filter(
+              (d: any) => d.status === "FAILED",
+            ).length;
 
             const metrics = {
               onTimeRate: (onTimeDeliveries / deliveries.length) * 100,
               damageRate: (damagedDeliveries / deliveries.length) * 100,
               customerRating: 4.0,
               costPerDelivery:
-                deliveries.reduce((sum: number, d: any) => sum + ((d.quote as any)?.price || 0), 0) /
-                deliveries.length,
+                deliveries.reduce(
+                  (sum: number, d: any) => sum + ((d.quote as any)?.price || 0),
+                  0,
+                ) / deliveries.length,
               pickupSpeed: 15,
               communicationScore: 85,
               totalDeliveries: deliveries.length,
@@ -385,7 +430,9 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
         return reply.send({ performances });
       } catch (error) {
         fastify.log.error(error);
-        return reply.status(500).send({ error: "Failed to fetch performance data" });
+        return reply
+          .status(500)
+          .send({ error: "Failed to fetch performance data" });
       }
     },
   );
@@ -425,22 +472,31 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
           const deliveries = await (prisma as any).courierDelivery?.findMany?.({
             where: {
               partnerId,
-              createdAt: { gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000) },
+              createdAt: {
+                gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000),
+              },
             },
             select: { status: true, quote: true },
           });
 
           if (!deliveries || deliveries.length === 0) return null;
 
-          const onTimeDeliveries = deliveries.filter((d: any) => d.status === "DELIVERED").length;
-          const damagedDeliveries = deliveries.filter((d: any) => d.status === "FAILED").length;
+          const onTimeDeliveries = deliveries.filter(
+            (d: any) => d.status === "DELIVERED",
+          ).length;
+          const damagedDeliveries = deliveries.filter(
+            (d: any) => d.status === "FAILED",
+          ).length;
 
           return {
             onTimeRate: (onTimeDeliveries / deliveries.length) * 100,
             damageRate: (damagedDeliveries / deliveries.length) * 100,
             customerRating: 4.0,
             costPerDelivery:
-              deliveries.reduce((sum: number, d: any) => sum + ((d.quote as any)?.price || 0), 0) / deliveries.length,
+              deliveries.reduce(
+                (sum: number, d: any) => sum + ((d.quote as any)?.price || 0),
+                0,
+              ) / deliveries.length,
             pickupSpeed: 15,
             communicationScore: 85,
             totalDeliveries: deliveries.length,
@@ -448,7 +504,10 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
             damagedDeliveries,
             ratingsCount: 0,
             ratingsSum: 0,
-            period: (days === 7 ? "7d" : days === 30 ? "30d" : "90d") as "7d" | "30d" | "90d",
+            period: (days === 7 ? "7d" : days === 30 ? "30d" : "90d") as
+              | "7d"
+              | "30d"
+              | "90d",
             startDate: new Date(Date.now() - days * 24 * 60 * 60 * 1000),
             endDate: new Date(),
           };
@@ -459,7 +518,9 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
         const metrics90d = await getPeriodMetrics(90);
 
         if (!metrics7d) {
-          return reply.status(404).send({ error: "Insufficient performance data" });
+          return reply
+            .status(404)
+            .send({ error: "Insufficient performance data" });
         }
 
         return reply.send({
@@ -469,7 +530,9 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
         });
       } catch (error) {
         fastify.log.error(error);
-        return reply.status(500).send({ error: "Failed to fetch performance report" });
+        return reply
+          .status(500)
+          .send({ error: "Failed to fetch performance report" });
       }
     },
   );
@@ -494,11 +557,18 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
           return reply.status(401).send({ error: "Unauthorized" });
         }
 
-        const { pickup_lat, pickup_lng, dropoff_lat, dropoff_lng } = request.query as any;
+        const { pickup_lat, pickup_lng, dropoff_lat, dropoff_lng } =
+          request.query as any;
 
         const delivery: DeliveryRequest = {
-          pickup: { latitude: parseFloat(pickup_lat), longitude: parseFloat(pickup_lng) },
-          dropoff: { latitude: parseFloat(dropoff_lat), longitude: parseFloat(dropoff_lng) },
+          pickup: {
+            latitude: parseFloat(pickup_lat),
+            longitude: parseFloat(pickup_lng),
+          },
+          dropoff: {
+            latitude: parseFloat(dropoff_lat),
+            longitude: parseFloat(dropoff_lng),
+          },
         };
 
         const smartRouter = await buildTenantSmartRouter(tenantId);
@@ -507,7 +577,10 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
         let costComparison = null;
         if (result.options.length > 0) {
           try {
-            costComparison = costOptimizer.compareCosts(delivery, result.options);
+            costComparison = costOptimizer.compareCosts(
+              delivery,
+              result.options,
+            );
           } catch {
             // Not enough viable options
           }
@@ -552,7 +625,9 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
           (await (prisma as any).courierDelivery?.findMany?.({
             where: {
               tenantId,
-              createdAt: { gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000) },
+              createdAt: {
+                gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000),
+              },
             },
             select: { quote: true, status: true },
           })) ?? [];
@@ -561,7 +636,9 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
           (sum: number, d: any) => sum + ((d.quote as any)?.price || 0),
           0,
         );
-        const delivered = deliveries.filter((d: any) => d.status === "DELIVERED").length;
+        const delivered = deliveries.filter(
+          (d: any) => d.status === "DELIVERED",
+        ).length;
 
         return reply.send({
           period,
@@ -569,13 +646,17 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
           totalDeliveries: deliveries.length,
           successfulDeliveries: delivered,
           avgCostPerDelivery:
-            deliveries.length > 0 ? Math.round((totalCost / deliveries.length) * 100) / 100 : 0,
+            deliveries.length > 0
+              ? Math.round((totalCost / deliveries.length) * 100) / 100
+              : 0,
           roi: 0,
           totalSavings: 0,
         });
       } catch (error) {
         fastify.log.error(error);
-        return reply.status(500).send({ error: "Cost report generation failed" });
+        return reply
+          .status(500)
+          .send({ error: "Cost report generation failed" });
       }
     },
   );
@@ -649,7 +730,9 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
         }
 
         const { partnerId } = request.params as { partnerId: string };
-        const periodDays = parseInt(((request.query as any)?.period_days as string) || "30");
+        const periodDays = parseInt(
+          ((request.query as any)?.period_days as string) || "30",
+        );
 
         const sla = slaEnforcer.getSLA(partnerId);
         if (!sla) {
@@ -667,7 +750,9 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
         return reply.send(report);
       } catch (error) {
         fastify.log.error(error);
-        return reply.status(500).send({ error: "Compliance report generation failed" });
+        return reply
+          .status(500)
+          .send({ error: "Compliance report generation failed" });
       }
     },
   );

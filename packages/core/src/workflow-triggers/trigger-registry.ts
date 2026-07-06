@@ -39,7 +39,9 @@ export interface TriggerContext {
 /**
  * Predicate function for trigger conditions
  */
-export type TriggerCondition = (context: TriggerContext) => boolean | Promise<boolean>;
+export type TriggerCondition = (
+  context: TriggerContext,
+) => boolean | Promise<boolean>;
 
 /**
  * Workflow trigger definition
@@ -168,7 +170,10 @@ export class TriggerRegistry {
    * Match triggers to a context
    * Returns matching triggers sorted by priority
    */
-  async match(eventType: TriggerEventType, context: Partial<TriggerContext>): Promise<MatchedTrigger[]> {
+  async match(
+    eventType: TriggerEventType,
+    context: Partial<TriggerContext>,
+  ): Promise<MatchedTrigger[]> {
     const triggers = this.getTriggersByEvent(eventType);
     const matched: MatchedTrigger[] = [];
 
@@ -194,7 +199,10 @@ export class TriggerRegistry {
             break;
           }
         } catch (error) {
-          console.error(`Error evaluating condition for trigger ${trigger.id}:`, error);
+          console.error(
+            `Error evaluating condition for trigger ${trigger.id}:`,
+            error,
+          );
           allConditionsMet = false;
           break;
         }
@@ -229,7 +237,9 @@ export class TriggerRegistry {
     // Throttle check
     if (trigger.throttleMs && debounceState) {
       if (now - debounceState.lastFired < trigger.throttleMs) {
-        console.debug(`Trigger ${trigger.id} throttled for ${context.entityId}`);
+        console.debug(
+          `Trigger ${trigger.id} throttled for ${context.entityId}`,
+        );
         return;
       }
     }
@@ -277,7 +287,10 @@ export class TriggerRegistry {
       if (handler) {
         const promise = handler(context);
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Trigger execution timeout")), timeout),
+          setTimeout(
+            () => reject(new Error("Trigger execution timeout")),
+            timeout,
+          ),
         );
 
         await Promise.race([promise, timeoutPromise]);

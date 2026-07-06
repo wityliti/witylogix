@@ -1,27 +1,32 @@
-'use client';
+"use client";
 
-import { Bell, User, Menu } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Bell, User, Menu } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface HeaderProps {
   customerName?: string;
   onMenuClick?: () => void;
 }
 
-export function Header({ customerName = 'John Doe', onMenuClick }: HeaderProps) {
+export function Header({
+  customerName = "John Doe",
+  onMenuClick,
+}: HeaderProps) {
   const initials = customerName
-    .split(' ')
-    .map(n => n[0])
-    .join('')
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
     .toUpperCase();
 
   return (
-    <header className={cn(
-      'sticky top-0 z-40',
-      'bg-wl-bg-root/80 backdrop-blur-md',
-      'border-b border-wl-border-subtle',
-      'px-4 sm:px-6 lg:px-8'
-    )}>
+    <header
+      className={cn(
+        "sticky top-0 z-40",
+        "bg-wl-bg-root/80 backdrop-blur-md",
+        "border-b border-wl-border-subtle",
+        "px-4 sm:px-6 lg:px-8",
+      )}
+    >
       <div className="flex items-center justify-between h-14 gap-4">
         {/* Mobile menu */}
         <button
@@ -46,16 +51,18 @@ export function Header({ customerName = 'John Doe', onMenuClick }: HeaderProps) 
 
           <button
             className={cn(
-              'flex items-center gap-2.5 p-1.5 pr-3 rounded-full',
-              'hover:bg-wl-bg-elevated transition-colors'
+              "flex items-center gap-2.5 p-1.5 pr-3 rounded-full",
+              "hover:bg-wl-bg-elevated transition-colors",
             )}
             aria-label="Profile menu"
           >
-            <div className={cn(
-              'w-7 h-7 rounded-full',
-              'bg-wl-neutral-700 flex items-center justify-center',
-              'text-xs font-semibold text-wl-text-primary'
-            )}>
+            <div
+              className={cn(
+                "w-7 h-7 rounded-full",
+                "bg-wl-neutral-700 flex items-center justify-center",
+                "text-xs font-semibold text-wl-text-primary",
+              )}
+            >
               {initials}
             </div>
             <span className="hidden sm:block text-sm font-medium text-wl-text-primary">

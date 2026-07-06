@@ -1,6 +1,6 @@
-import type { BenchConfig } from './config.js';
+import type { BenchConfig } from "./config.js";
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export type LogLevel = "debug" | "info" | "warn" | "error";
 
 export interface Logger {
   debug(msg: string, meta?: Record<string, unknown>): void;
@@ -34,7 +34,7 @@ export interface Plan {
 
 export interface PlanOperation {
   id: string;
-  kind: 'create' | 'update' | 'delete' | 'noop';
+  kind: "create" | "update" | "delete" | "noop";
   target: string;
   description: string;
   dangerous: boolean;
@@ -56,7 +56,7 @@ export interface DeployResult {
 export interface StatusReport {
   services: Array<{
     name: string;
-    state: 'running' | 'stopped' | 'degraded' | 'unknown';
+    state: "running" | "stopped" | "degraded" | "unknown";
     healthy: boolean;
     version?: string;
     lastDeployAt?: string;
@@ -77,7 +77,7 @@ export interface LogLine {
 }
 
 export interface BackupTarget {
-  kind: 'local-file' | 's3' | 'provider-native';
+  kind: "local-file" | "s3" | "provider-native";
   path?: string;
   bucket?: string;
   key?: string;
@@ -130,4 +130,4 @@ export type {
   BenchConfigProvider,
   BenchConfigDatabase,
   BenchConfigServices,
-} from './config.js';
+} from "./config.js";

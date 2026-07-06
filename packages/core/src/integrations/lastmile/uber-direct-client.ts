@@ -17,7 +17,7 @@
  * Documentation: https://developer.uber.com/docs/delivery/
  */
 
-import { createHmac } from 'crypto';
+import { createHmac } from "crypto";
 import type {
   LastMileDelivery,
   LastMileDriver,
@@ -29,8 +29,8 @@ import type {
   Contact,
   LastMileWebhookEvent,
   ProofOfDelivery,
-} from './types';
-import { LastMileAdapter } from './lastmile-adapter';
+} from "./types";
+import { LastMileAdapter } from "./lastmile-adapter";
 
 interface UberDirectDeliveryRequest {
   external_delivery_id: string;
@@ -143,9 +143,9 @@ export class UberDirectClient extends LastMileAdapter {
     client_secret: string,
     organization_id: string,
     webhook_secret: string,
-    sandbox_mode: boolean = false
+    sandbox_mode: boolean = false,
   ) {
-    super('uberdirect', undefined);
+    super("uberdirect", undefined);
     this.client_id = client_id;
     this.client_secret = client_secret;
     this.organization_id = organization_id;
@@ -153,11 +153,11 @@ export class UberDirectClient extends LastMileAdapter {
     this.sandbox_mode = sandbox_mode;
 
     if (sandbox_mode) {
-      this.base_url = 'https://sandbox.uber.com';
-      this.auth_url = 'https://sandbox.uber.com';
+      this.base_url = "https://sandbox.uber.com";
+      this.auth_url = "https://sandbox.uber.com";
     } else {
-      this.base_url = 'https://api.uber.com/v1';
-      this.auth_url = 'https://auth.uber.com';
+      this.base_url = "https://api.uber.com/v1";
+      this.auth_url = "https://auth.uber.com";
     }
   }
 
@@ -172,16 +172,16 @@ export class UberDirectClient extends LastMileAdapter {
 
     try {
       const response = await fetch(`${this.auth_url}/oauth/v2/token`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json',
+          "Content-Type": "application/x-www-form-urlencoded",
+          Accept: "application/json",
         },
         body: new URLSearchParams({
-          grant_type: 'client_credentials',
+          grant_type: "client_credentials",
           client_id: this.client_id,
           client_secret: this.client_secret,
-          scope: 'delivery',
+          scope: "delivery",
         }).toString(),
       });
 
@@ -191,12 +191,12 @@ export class UberDirectClient extends LastMileAdapter {
 
       const data = (await response.json()) as OAuthTokenResponse;
       this.access_token = data.access_token;
-      this.token_expires_at = Date.now() + (data.expires_in * 1000);
+      this.token_expires_at = Date.now() + data.expires_in * 1000;
 
       return this.access_token;
     } catch (error) {
       throw new Error(
-        `Failed to get Uber Direct access token: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to get Uber Direct access token: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -204,16 +204,18 @@ export class UberDirectClient extends LastMileAdapter {
   /**
    * Create a delivery with Uber Direct
    */
-  async createDelivery(delivery: Partial<LastMileDelivery>): Promise<LastMileDelivery> {
+  async createDelivery(
+    delivery: Partial<LastMileDelivery>,
+  ): Promise<LastMileDelivery> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('uber-delivery-create');
+      await this.checkRateLimit("uber-delivery-create");
 
       if (!delivery.pickup_location || !delivery.dropoff_location) {
-        throw new Error('Pickup and dropoff locations are required');
+        throw new Error("Pickup and dropoff locations are required");
       }
 
       if (!delivery.pickup_contact || !delivery.dropoff_contact) {
-        throw new Error('Pickup and dropoff contacts are required');
+        throw new Error("Pickup and dropoff contacts are required");
       }
 
       const request_id = this.generateRequestId();
@@ -221,14 +223,19 @@ export class UberDirectClient extends LastMileAdapter {
 
       const ud_request: UberDirectDeliveryRequest = {
         external_delivery_id: delivery.order_id || request_id,
-        pickup_address: this.locationToAddress(delivery.pickup_location, delivery.pickup_contact),
+        pickup_address: this.locationToAddress(
+          delivery.pickup_location,
+          delivery.pickup_contact,
+        ),
         dropoff_address: this.locationToAddress(
           delivery.dropoff_location,
-          delivery.dropoff_contact
+          delivery.dropoff_contact,
         ),
         dropoff_notes: delivery.special_instructions,
         pickup_notes: delivery.notes,
-        items: delivery.notes ? [{ title: delivery.notes, quantity: 1, unit_price: 0 }] : [],
+        items: delivery.notes
+          ? [{ title: delivery.notes, quantity: 1, unit_price: 0 }]
+          : [],
         order_value: 0,
         tip_amount: delivery.tip_amount,
       };
@@ -237,14 +244,14 @@ export class UberDirectClient extends LastMileAdapter {
         const response = await fetch(
           `${this.base_url}/customers/${this.organization_id}/deliveries`,
           {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-              'X-Request-ID': request_id,
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+              "X-Request-ID": request_id,
             },
             body: JSON.stringify(ud_request),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -255,7 +262,7 @@ export class UberDirectClient extends LastMileAdapter {
 
         return {
           id: data.delivery_id,
-          platform: 'uberdirect',
+          platform: "uberdirect",
           external_id: data.external_delivery_id,
           status: this.mapStatusToUnified(data.status),
           order_id: delivery.order_id || request_id,
@@ -282,7 +289,7 @@ export class UberDirectClient extends LastMileAdapter {
         };
       } catch (error) {
         throw new Error(
-          `Failed to create Uber Direct delivery: ${error instanceof Error ? error.message : String(error)}`
+          `Failed to create Uber Direct delivery: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     });
@@ -293,7 +300,7 @@ export class UberDirectClient extends LastMileAdapter {
    */
   async getDelivery(delivery_id: string): Promise<LastMileDelivery | null> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('uber-delivery-get');
+      await this.checkRateLimit("uber-delivery-get");
 
       const token = await this.getAccessToken();
 
@@ -301,11 +308,11 @@ export class UberDirectClient extends LastMileAdapter {
         const response = await fetch(
           `${this.base_url}/customers/${this.organization_id}/deliveries/${delivery_id}`,
           {
-            method: 'GET',
+            method: "GET",
             headers: {
-              'Authorization': `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         if (response.status === 404) {
@@ -320,15 +327,15 @@ export class UberDirectClient extends LastMileAdapter {
 
         return {
           id: data.delivery_id,
-          platform: 'uberdirect',
+          platform: "uberdirect",
           external_id: data.external_delivery_id,
           status: this.mapStatusToUnified(data.status),
           order_id: data.external_delivery_id,
 
           pickup_location: this.addressToLocation(data.pickup_address),
           dropoff_location: this.addressToLocation(data.dropoff_address),
-          pickup_contact: { name: '', phone: '' },
-          dropoff_contact: { name: '', phone: '' },
+          pickup_contact: { name: "", phone: "" },
+          dropoff_contact: { name: "", phone: "" },
 
           estimated_pickup_time: new Date(data.estimated_pickup_time),
           estimated_dropoff_time: new Date(data.estimated_dropoff_time),
@@ -340,7 +347,7 @@ export class UberDirectClient extends LastMileAdapter {
         };
       } catch (error) {
         throw new Error(
-          `Failed to get Uber Direct delivery: ${error instanceof Error ? error.message : String(error)}`
+          `Failed to get Uber Direct delivery: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     });
@@ -351,10 +358,10 @@ export class UberDirectClient extends LastMileAdapter {
    */
   async updateDelivery(
     delivery_id: string,
-    updates: Partial<LastMileDelivery>
+    updates: Partial<LastMileDelivery>,
   ): Promise<LastMileDelivery> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('uber-delivery-update');
+      await this.checkRateLimit("uber-delivery-update");
 
       const token = await this.getAccessToken();
       const update_body: Record<string, any> = {};
@@ -371,13 +378,13 @@ export class UberDirectClient extends LastMileAdapter {
         const response = await fetch(
           `${this.base_url}/customers/${this.organization_id}/deliveries/${delivery_id}`,
           {
-            method: 'PATCH',
+            method: "PATCH",
             headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
             },
             body: JSON.stringify(update_body),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -388,15 +395,15 @@ export class UberDirectClient extends LastMileAdapter {
 
         return {
           id: data.delivery_id,
-          platform: 'uberdirect',
+          platform: "uberdirect",
           external_id: data.external_delivery_id,
           status: this.mapStatusToUnified(data.status),
           order_id: data.external_delivery_id,
 
           pickup_location: this.addressToLocation(data.pickup_address),
           dropoff_location: this.addressToLocation(data.dropoff_address),
-          pickup_contact: { name: '', phone: '' },
-          dropoff_contact: { name: '', phone: '' },
+          pickup_contact: { name: "", phone: "" },
+          dropoff_contact: { name: "", phone: "" },
 
           estimated_pickup_time: new Date(data.estimated_pickup_time),
           estimated_dropoff_time: new Date(data.estimated_dropoff_time),
@@ -408,7 +415,7 @@ export class UberDirectClient extends LastMileAdapter {
         };
       } catch (error) {
         throw new Error(
-          `Failed to update Uber Direct delivery: ${error instanceof Error ? error.message : String(error)}`
+          `Failed to update Uber Direct delivery: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     });
@@ -417,24 +424,27 @@ export class UberDirectClient extends LastMileAdapter {
   /**
    * Cancel a delivery
    */
-  async cancelDelivery(delivery_id: string, reason?: string): Promise<LastMileDelivery> {
+  async cancelDelivery(
+    delivery_id: string,
+    reason?: string,
+  ): Promise<LastMileDelivery> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('uber-delivery-cancel');
+      await this.checkRateLimit("uber-delivery-cancel");
 
       const token = await this.getAccessToken();
-      const cancel_body = { reason_code: reason || 'MERCHANT_REQUESTED' };
+      const cancel_body = { reason_code: reason || "MERCHANT_REQUESTED" };
 
       try {
         const response = await fetch(
           `${this.base_url}/customers/${this.organization_id}/deliveries/${delivery_id}/cancel`,
           {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
             },
             body: JSON.stringify(cancel_body),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -445,15 +455,15 @@ export class UberDirectClient extends LastMileAdapter {
 
         return {
           id: data.delivery_id,
-          platform: 'uberdirect',
+          platform: "uberdirect",
           external_id: data.external_delivery_id,
           status: this.mapStatusToUnified(data.status),
           order_id: data.external_delivery_id,
 
           pickup_location: this.addressToLocation(data.pickup_address),
           dropoff_location: this.addressToLocation(data.dropoff_address),
-          pickup_contact: { name: '', phone: '' },
-          dropoff_contact: { name: '', phone: '' },
+          pickup_contact: { name: "", phone: "" },
+          dropoff_contact: { name: "", phone: "" },
 
           estimated_pickup_time: new Date(data.estimated_pickup_time),
           estimated_dropoff_time: new Date(data.estimated_dropoff_time),
@@ -465,7 +475,7 @@ export class UberDirectClient extends LastMileAdapter {
         };
       } catch (error) {
         throw new Error(
-          `Failed to cancel Uber Direct delivery: ${error instanceof Error ? error.message : String(error)}`
+          `Failed to cancel Uber Direct delivery: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     });
@@ -474,49 +484,53 @@ export class UberDirectClient extends LastMileAdapter {
   /**
    * List deliveries
    */
-  async listDeliveries(filters?: DeliveryFilterOptions): Promise<LastMileDelivery[]> {
+  async listDeliveries(
+    filters?: DeliveryFilterOptions,
+  ): Promise<LastMileDelivery[]> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('uber-delivery-list');
+      await this.checkRateLimit("uber-delivery-list");
 
       const token = await this.getAccessToken();
       const params = new URLSearchParams();
 
       if (filters?.limit) {
-        params.append('limit', String(filters.limit));
+        params.append("limit", String(filters.limit));
       }
 
       if (filters?.offset) {
-        params.append('offset', String(filters.offset));
+        params.append("offset", String(filters.offset));
       }
 
       try {
         const response = await fetch(
           `${this.base_url}/customers/${this.organization_id}/deliveries?${params.toString()}`,
           {
-            method: 'GET',
+            method: "GET",
             headers: {
-              'Authorization': `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         if (!response.ok) {
           throw new Error(`Uber Direct API error: ${response.statusText}`);
         }
 
-        const data = (await response.json()) as { deliveries: UberDirectDeliveryResponse[] };
+        const data = (await response.json()) as {
+          deliveries: UberDirectDeliveryResponse[];
+        };
 
         return data.deliveries.map((ud_delivery) => ({
           id: ud_delivery.delivery_id,
-          platform: 'uberdirect',
+          platform: "uberdirect",
           external_id: ud_delivery.external_delivery_id,
           status: this.mapStatusToUnified(ud_delivery.status),
           order_id: ud_delivery.external_delivery_id,
 
           pickup_location: this.addressToLocation(ud_delivery.pickup_address),
           dropoff_location: this.addressToLocation(ud_delivery.dropoff_address),
-          pickup_contact: { name: '', phone: '' },
-          dropoff_contact: { name: '', phone: '' },
+          pickup_contact: { name: "", phone: "" },
+          dropoff_contact: { name: "", phone: "" },
 
           estimated_pickup_time: new Date(ud_delivery.estimated_pickup_time),
           estimated_dropoff_time: new Date(ud_delivery.estimated_dropoff_time),
@@ -528,7 +542,7 @@ export class UberDirectClient extends LastMileAdapter {
         }));
       } catch (error) {
         throw new Error(
-          `Failed to list Uber Direct deliveries: ${error instanceof Error ? error.message : String(error)}`
+          `Failed to list Uber Direct deliveries: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     });
@@ -540,10 +554,10 @@ export class UberDirectClient extends LastMileAdapter {
   async getQuote(
     pickup: Location,
     dropoff: Location,
-    options?: QuoteOptions
+    options?: QuoteOptions,
   ): Promise<LastMileQuote> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('uber-quote');
+      await this.checkRateLimit("uber-quote");
 
       const request_id = this.generateRequestId();
       const token = await this.getAccessToken();
@@ -560,14 +574,14 @@ export class UberDirectClient extends LastMileAdapter {
         const response = await fetch(
           `${this.base_url}/customers/${this.organization_id}/delivery_quotes`,
           {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-              'X-Request-ID': request_id,
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+              "X-Request-ID": request_id,
             },
             body: JSON.stringify(quote_request),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -582,7 +596,7 @@ export class UberDirectClient extends LastMileAdapter {
 
         return {
           id: data.quote_id,
-          platform: 'uberdirect',
+          platform: "uberdirect",
 
           pickup_location: pickup,
           dropoff_location: dropoff,
@@ -601,11 +615,11 @@ export class UberDirectClient extends LastMileAdapter {
           tax: Math.round(data.fee * 0.0875),
           total: data.fee + Math.round(data.fee * 0.0875),
 
-          currency: data.currency || 'USD',
+          currency: data.currency || "USD",
 
           estimated_pickup_time: new Date(data.estimated_pickup_time),
           estimated_dropoff_time: new Date(
-            Date.now() + data.estimated_duration_seconds * 1000
+            Date.now() + data.estimated_duration_seconds * 1000,
           ),
 
           valid_until: new Date(data.expires_at),
@@ -616,7 +630,7 @@ export class UberDirectClient extends LastMileAdapter {
         };
       } catch (error) {
         throw new Error(
-          `Failed to get Uber Direct quote: ${error instanceof Error ? error.message : String(error)}`
+          `Failed to get Uber Direct quote: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     });
@@ -627,7 +641,7 @@ export class UberDirectClient extends LastMileAdapter {
    */
   async getTracking(delivery_id: string): Promise<LastMileTracking> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('uber-tracking');
+      await this.checkRateLimit("uber-tracking");
 
       const delivery = await this.getDelivery(delivery_id);
       if (!delivery) {
@@ -641,7 +655,9 @@ export class UberDirectClient extends LastMileAdapter {
   /**
    * Get tracking by external ID
    */
-  async getTrackingByExternalId(external_id: string): Promise<LastMileTracking> {
+  async getTrackingByExternalId(
+    external_id: string,
+  ): Promise<LastMileTracking> {
     const deliveries = await this.listDeliveries();
     const delivery = deliveries.find((d) => d.external_id === external_id);
 
@@ -657,7 +673,7 @@ export class UberDirectClient extends LastMileAdapter {
    */
   async getDriver(driver_id: string): Promise<LastMileDriver | null> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('uber-driver-get');
+      await this.checkRateLimit("uber-driver-get");
 
       const token = await this.getAccessToken();
 
@@ -665,11 +681,11 @@ export class UberDirectClient extends LastMileAdapter {
         const response = await fetch(
           `${this.base_url}/customers/${this.organization_id}/couriers/${driver_id}`,
           {
-            method: 'GET',
+            method: "GET",
             headers: {
-              'Authorization': `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         if (response.status === 404) {
@@ -684,11 +700,11 @@ export class UberDirectClient extends LastMileAdapter {
 
         return {
           id: driver_id,
-          platform: 'uberdirect',
+          platform: "uberdirect",
           external_id: data.external_id || driver_id,
-          first_name: data.first_name || '',
-          last_name: data.last_name || '',
-          phone: data.phone_number || '',
+          first_name: data.first_name || "",
+          last_name: data.last_name || "",
+          phone: data.phone_number || "",
           email: data.email,
 
           current_location: data.location
@@ -699,11 +715,11 @@ export class UberDirectClient extends LastMileAdapter {
             : undefined,
 
           rating: data.rating,
-          status: 'available',
+          status: "available",
         };
       } catch (error) {
         throw new Error(
-          `Failed to get Uber Direct driver: ${error instanceof Error ? error.message : String(error)}`
+          `Failed to get Uber Direct driver: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     });
@@ -712,7 +728,10 @@ export class UberDirectClient extends LastMileAdapter {
   /**
    * List available drivers in an area
    */
-  async listAvailableDrivers(location: Location, radius_meters: number = 5000): Promise<LastMileDriver[]> {
+  async listAvailableDrivers(
+    location: Location,
+    radius_meters: number = 5000,
+  ): Promise<LastMileDriver[]> {
     // Uber Direct doesn't expose driver list API, returning empty
     return [];
   }
@@ -722,7 +741,7 @@ export class UberDirectClient extends LastMileAdapter {
    */
   async getProofOfDelivery(delivery_id: string): Promise<ProofOfDelivery> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('uber-pod-get');
+      await this.checkRateLimit("uber-pod-get");
 
       const token = await this.getAccessToken();
 
@@ -730,11 +749,11 @@ export class UberDirectClient extends LastMileAdapter {
         const response = await fetch(
           `${this.base_url}/customers/${this.organization_id}/deliveries/${delivery_id}/proof_of_delivery`,
           {
-            method: 'GET',
+            method: "GET",
             headers: {
-              'Authorization': `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         if (!response.ok) {
@@ -746,7 +765,11 @@ export class UberDirectClient extends LastMileAdapter {
         return {
           delivery_id: data.delivery_id,
           external_id: data.external_delivery_id,
-          type: data.signature_url ? 'signature' : data.photo_urls ? 'photo' : 'none',
+          type: data.signature_url
+            ? "signature"
+            : data.photo_urls
+              ? "photo"
+              : "none",
           photo_urls: data.photo_urls,
           signature_url: data.signature_url,
           recipient_name: data.recipient_name,
@@ -757,7 +780,7 @@ export class UberDirectClient extends LastMileAdapter {
         };
       } catch (error) {
         throw new Error(
-          `Failed to get Uber Direct POD: ${error instanceof Error ? error.message : String(error)}`
+          `Failed to get Uber Direct POD: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     });
@@ -778,8 +801,8 @@ export class UberDirectClient extends LastMileAdapter {
 
     return {
       id: data.delivery_id || this.generateRequestId(),
-      platform: 'uberdirect',
-      event_type: data.event_type || 'delivery.status.changed',
+      platform: "uberdirect",
+      event_type: data.event_type || "delivery.status.changed",
       external_id: data.external_delivery_id,
 
       delivery_id: data.delivery_id,
@@ -807,7 +830,7 @@ export class UberDirectClient extends LastMileAdapter {
    */
   async getOrganizationInfo(): Promise<Record<string, unknown>> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('uber-org-info');
+      await this.checkRateLimit("uber-org-info");
 
       const token = await this.getAccessToken();
 
@@ -815,11 +838,11 @@ export class UberDirectClient extends LastMileAdapter {
         const response = await fetch(
           `${this.base_url}/customers/${this.organization_id}`,
           {
-            method: 'GET',
+            method: "GET",
             headers: {
-              'Authorization': `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         if (!response.ok) {
@@ -829,7 +852,7 @@ export class UberDirectClient extends LastMileAdapter {
         return (await response.json()) as Record<string, unknown>;
       } catch (error) {
         throw new Error(
-          `Failed to get Uber Direct org info: ${error instanceof Error ? error.message : String(error)}`
+          `Failed to get Uber Direct org info: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     });
@@ -837,13 +860,16 @@ export class UberDirectClient extends LastMileAdapter {
 
   // Helper methods
 
-  private locationToAddress(location: Location, contact?: Contact): UberDirectAddress {
+  private locationToAddress(
+    location: Location,
+    contact?: Contact,
+  ): UberDirectAddress {
     return {
-      street_address: location.address || '',
-      city: location.city || '',
-      state: location.state || '',
-      zip_code: location.zip_code || '',
-      country_code: location.country_code || 'US',
+      street_address: location.address || "",
+      city: location.city || "",
+      state: location.state || "",
+      zip_code: location.zip_code || "",
+      country_code: location.country_code || "US",
       latitude: location.latitude,
       longitude: location.longitude,
       contact: contact
@@ -871,7 +897,7 @@ export class UberDirectClient extends LastMileAdapter {
   private buildTracking(delivery: LastMileDelivery): LastMileTracking {
     return {
       delivery_id: delivery.id,
-      platform: 'uberdirect',
+      platform: "uberdirect",
 
       current_location: delivery.dropoff_location,
       current_latitude: delivery.dropoff_location.latitude,
@@ -897,8 +923,8 @@ export class UberDirectClient extends LastMileAdapter {
       events: [
         {
           timestamp: delivery.created_at,
-          status: 'created',
-          description: 'Delivery created',
+          status: "created",
+          description: "Delivery created",
         },
       ],
     };

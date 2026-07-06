@@ -8,28 +8,28 @@
  * - Edge cases and prediction accuracy
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   predictDeliveryWindow,
   predictDeliveryWindowBatch,
   recordDelivery,
   getCalibrationInfo,
-} from '../delivery-predictor.js';
-import type { DeliveryContext } from '../types.js';
+} from "../delivery-predictor.js";
+import type { DeliveryContext } from "../types.js";
 
-describe('Delivery Time Predictor', () => {
+describe("Delivery Time Predictor", () => {
   // ─── Setup ──────────────────────────────────────────────────────
 
   const createMockContext = (
     overrides: Partial<DeliveryContext> = {},
   ): DeliveryContext => ({
-    orderId: 'ord_1',
+    orderId: "ord_1",
     distanceRemaining: 5000, // 5km
     currentTrafficFactor: 1.0,
     driverHistoricalSpeed: 40, // 40 km/h
     timeOfDay: 14, // 2 PM
     dayOfWeek: 3, // Wednesday
-    stopComplexity: 'house',
+    stopComplexity: "house",
     ...overrides,
   });
 
@@ -46,8 +46,8 @@ describe('Delivery Time Predictor', () => {
 
   // ─── Prediction Structure Tests ─────────────────────────────────
 
-  describe('Prediction Structure', () => {
-    it('should return valid prediction object', () => {
+  describe("Prediction Structure", () => {
+    it("should return valid prediction object", () => {
       const context = createMockContext();
 
       const prediction = predictDeliveryWindow(context);
@@ -59,7 +59,7 @@ describe('Delivery Time Predictor', () => {
       expect(prediction.models).toBeTruthy();
     });
 
-    it('should provide confidence bounds', () => {
+    it("should provide confidence bounds", () => {
       const context = createMockContext();
 
       const prediction = predictDeliveryWindow(context);
@@ -75,7 +75,7 @@ describe('Delivery Time Predictor', () => {
       );
     });
 
-    it('should return model predictions', () => {
+    it("should return model predictions", () => {
       const context = createMockContext();
 
       const prediction = predictDeliveryWindow(context);
@@ -88,8 +88,8 @@ describe('Delivery Time Predictor', () => {
 
   // ─── Distance-Based Model Tests ─────────────────────────────────
 
-  describe('Distance-Based Model', () => {
-    it('should predict realistic travel time', () => {
+  describe("Distance-Based Model", () => {
+    it("should predict realistic travel time", () => {
       const context = createMockContext({
         distanceRemaining: 10000, // 10km
         driverHistoricalSpeed: 50, // 50 km/h
@@ -104,7 +104,7 @@ describe('Delivery Time Predictor', () => {
       expect(distanceModel).toBeLessThan(30); // Less than 30 minutes
     });
 
-    it('should account for traffic factor', () => {
+    it("should account for traffic factor", () => {
       const normalTraffic = predictDeliveryWindow(
         createMockContext({
           distanceRemaining: 10000,
@@ -124,7 +124,7 @@ describe('Delivery Time Predictor', () => {
       );
     });
 
-    it('should handle short distances', () => {
+    it("should handle short distances", () => {
       const context = createMockContext({
         distanceRemaining: 500, // 500 meters
         driverHistoricalSpeed: 30,
@@ -136,7 +136,7 @@ describe('Delivery Time Predictor', () => {
       expect(prediction.models.distanceModel).toBeLessThan(5); // Less than 5 minutes
     });
 
-    it('should handle long distances', () => {
+    it("should handle long distances", () => {
       const context = createMockContext({
         distanceRemaining: 50000, // 50km
         driverHistoricalSpeed: 60,
@@ -151,19 +151,19 @@ describe('Delivery Time Predictor', () => {
 
   // ─── Contextual Model Tests ─────────────────────────────────────
 
-  describe('Contextual Model', () => {
-    it('should account for weather conditions', () => {
+  describe("Contextual Model", () => {
+    it("should account for weather conditions", () => {
       const clearWeather = predictDeliveryWindow(
         createMockContext({
           distanceRemaining: 5000,
-          weather: { condition: 'clear', temperature: 25 },
+          weather: { condition: "clear", temperature: 25 },
         }),
       );
 
       const rainWeather = predictDeliveryWindow(
         createMockContext({
           distanceRemaining: 5000,
-          weather: { condition: 'rain', temperature: 15 },
+          weather: { condition: "rain", temperature: 15 },
         }),
       );
 
@@ -172,7 +172,7 @@ describe('Delivery Time Predictor', () => {
       );
     });
 
-    it('should account for time of day (peak hours)', () => {
+    it("should account for time of day (peak hours)", () => {
       const offPeak = predictDeliveryWindow(
         createMockContext({
           distanceRemaining: 5000,
@@ -192,22 +192,22 @@ describe('Delivery Time Predictor', () => {
       );
     });
 
-    it('should account for stop complexity', () => {
+    it("should account for stop complexity", () => {
       const house = predictDeliveryWindow(
         createMockContext({
-          stopComplexity: 'house',
+          stopComplexity: "house",
         }),
       );
 
       const apartment = predictDeliveryWindow(
         createMockContext({
-          stopComplexity: 'apartment',
+          stopComplexity: "apartment",
         }),
       );
 
       const warehouse = predictDeliveryWindow(
         createMockContext({
-          stopComplexity: 'warehouse',
+          stopComplexity: "warehouse",
         }),
       );
 
@@ -223,8 +223,8 @@ describe('Delivery Time Predictor', () => {
 
   // ─── Ensemble Weighting Tests ──────────────────────────────────
 
-  describe('Ensemble Weighting', () => {
-    it('should balance multiple models', () => {
+  describe("Ensemble Weighting", () => {
+    it("should balance multiple models", () => {
       const context = createMockContext();
 
       const prediction = predictDeliveryWindow(context);
@@ -248,12 +248,12 @@ describe('Delivery Time Predictor', () => {
       expect(estimatedMinutes).toBeLessThanOrEqual(max + 2);
     });
 
-    it('should increase ensemble confidence when models agree', () => {
+    it("should increase ensemble confidence when models agree", () => {
       const agreeingContext = createMockContext({
         distanceRemaining: 10000,
         driverHistoricalSpeed: 50,
         currentTrafficFactor: 1.0,
-        stopComplexity: 'house',
+        stopComplexity: "house",
       });
 
       const prediction = predictDeliveryWindow(agreeingContext);
@@ -261,12 +261,12 @@ describe('Delivery Time Predictor', () => {
       expect(prediction.confidence).toBeGreaterThan(50);
     });
 
-    it('should decrease ensemble confidence when models disagree', () => {
+    it("should decrease ensemble confidence when models disagree", () => {
       const disagreeingContext = createMockContext({
         distanceRemaining: 100000, // Very long
         driverHistoricalSpeed: 20, // Very slow
         currentTrafficFactor: 2.5, // Heavy traffic
-        stopComplexity: 'warehouse',
+        stopComplexity: "warehouse",
       });
 
       const prediction = predictDeliveryWindow(disagreeingContext);
@@ -278,8 +278,8 @@ describe('Delivery Time Predictor', () => {
 
   // ─── Confidence Interval Tests ──────────────────────────────────
 
-  describe('Confidence Intervals', () => {
-    it('should provide 80% and 95% bounds', () => {
+  describe("Confidence Intervals", () => {
+    it("should provide 80% and 95% bounds", () => {
       const context = createMockContext();
 
       const prediction = predictDeliveryWindow(context);
@@ -294,7 +294,7 @@ describe('Delivery Time Predictor', () => {
       ).toBeGreaterThan(0);
     });
 
-    it('should have narrower 80% bounds than 95% bounds', () => {
+    it("should have narrower 80% bounds than 95% bounds", () => {
       const context = createMockContext();
 
       const prediction = predictDeliveryWindow(context);
@@ -309,7 +309,7 @@ describe('Delivery Time Predictor', () => {
       expect(bounds95Width).toBeGreaterThan(bounds80Width);
     });
 
-    it('should adjust bounds based on confidence', () => {
+    it("should adjust bounds based on confidence", () => {
       const highConfidenceContext = createMockContext({
         distanceRemaining: 5000,
         driverHistoricalSpeed: 40,
@@ -333,8 +333,8 @@ describe('Delivery Time Predictor', () => {
 
   // ─── Calibration Tests ──────────────────────────────────────────
 
-  describe('Model Calibration', () => {
-    it('should track prediction accuracy', () => {
+  describe("Model Calibration", () => {
+    it("should track prediction accuracy", () => {
       // Record several predictions with actual outcomes
       for (let i = 0; i < 10; i++) {
         recordDelivery(15, 14 + Math.random() * 2, createMockContext());
@@ -347,7 +347,7 @@ describe('Delivery Time Predictor', () => {
       expect(calibration.adjustmentFactor).toBeGreaterThan(0);
     });
 
-    it('should adjust weights based on accuracy', () => {
+    it("should adjust weights based on accuracy", () => {
       const calibration1 = getCalibrationInfo();
 
       // Record predictions where distance model is most accurate
@@ -366,7 +366,7 @@ describe('Delivery Time Predictor', () => {
       expect(calibration2.modelWeights).toBeTruthy();
     });
 
-    it('should provide calibration info', () => {
+    it("should provide calibration info", () => {
       const calibration = getCalibrationInfo();
 
       expect(calibration.recentAccuracyMAPE).toBeTruthy();
@@ -380,12 +380,12 @@ describe('Delivery Time Predictor', () => {
 
   // ─── Batch Prediction Tests ────────────────────────────────────
 
-  describe('Batch Predictions', () => {
-    it('should predict for multiple deliveries', () => {
+  describe("Batch Predictions", () => {
+    it("should predict for multiple deliveries", () => {
       const contexts = [
-        createMockContext({ orderId: 'ord_1', distanceRemaining: 5000 }),
-        createMockContext({ orderId: 'ord_2', distanceRemaining: 10000 }),
-        createMockContext({ orderId: 'ord_3', distanceRemaining: 3000 }),
+        createMockContext({ orderId: "ord_1", distanceRemaining: 5000 }),
+        createMockContext({ orderId: "ord_2", distanceRemaining: 10000 }),
+        createMockContext({ orderId: "ord_3", distanceRemaining: 3000 }),
       ];
 
       const predictions = predictDeliveryWindowBatch(contexts);
@@ -395,13 +395,13 @@ describe('Delivery Time Predictor', () => {
       expect(predictions.every((p) => p.estimatedArrival)).toBe(true);
     });
 
-    it('should handle empty batch', () => {
+    it("should handle empty batch", () => {
       const predictions = predictDeliveryWindowBatch([]);
 
       expect(predictions).toHaveLength(0);
     });
 
-    it('should predict different times for different distances', () => {
+    it("should predict different times for different distances", () => {
       const shortDistance = predictDeliveryWindow(
         createMockContext({ distanceRemaining: 2000 }),
       );
@@ -418,8 +418,8 @@ describe('Delivery Time Predictor', () => {
 
   // ─── Edge Cases ─────────────────────────────────────────────────
 
-  describe('Edge Cases', () => {
-    it('should handle zero distance', () => {
+  describe("Edge Cases", () => {
+    it("should handle zero distance", () => {
       const context = createMockContext({
         distanceRemaining: 0,
       });
@@ -430,7 +430,7 @@ describe('Delivery Time Predictor', () => {
       expect(prediction.confidence).toBeGreaterThanOrEqual(0);
     });
 
-    it('should handle very high traffic factor', () => {
+    it("should handle very high traffic factor", () => {
       const context = createMockContext({
         currentTrafficFactor: 5.0,
       });
@@ -441,7 +441,7 @@ describe('Delivery Time Predictor', () => {
       expect(prediction.confidence).toBeGreaterThanOrEqual(30);
     });
 
-    it('should handle very low driver speed', () => {
+    it("should handle very low driver speed", () => {
       const context = createMockContext({
         driverHistoricalSpeed: 5,
       });
@@ -452,9 +452,9 @@ describe('Delivery Time Predictor', () => {
       expect(prediction.models.distanceModel).toBeGreaterThan(30);
     });
 
-    it('should handle extreme weather', () => {
+    it("should handle extreme weather", () => {
       const context = createMockContext({
-        weather: { condition: 'snow', temperature: -10 },
+        weather: { condition: "snow", temperature: -10 },
       });
 
       const prediction = predictDeliveryWindow(context);
@@ -463,7 +463,7 @@ describe('Delivery Time Predictor', () => {
       expect(prediction.models.contextualModel).toBeGreaterThan(5);
     });
 
-    it('should handle midnight prediction', () => {
+    it("should handle midnight prediction", () => {
       const context = createMockContext({
         timeOfDay: 0,
       });
@@ -473,7 +473,7 @@ describe('Delivery Time Predictor', () => {
       expect(prediction.estimatedArrival).toBeTruthy();
     });
 
-    it('should handle sparse historical data', () => {
+    it("should handle sparse historical data", () => {
       const context = createMockContext();
 
       // Even with minimal calibration data
@@ -486,15 +486,15 @@ describe('Delivery Time Predictor', () => {
 
   // ─── Realistic Scenario Tests ──────────────────────────────────
 
-  describe('Realistic Scenarios', () => {
-    it('should predict urban delivery', () => {
+  describe("Realistic Scenarios", () => {
+    it("should predict urban delivery", () => {
       const context = createMockContext({
         distanceRemaining: 2000,
         driverHistoricalSpeed: 20,
         currentTrafficFactor: 1.8,
         timeOfDay: 17, // Rush hour
-        stopComplexity: 'apartment',
-        weather: { condition: 'rain', temperature: 10 },
+        stopComplexity: "apartment",
+        weather: { condition: "rain", temperature: 10 },
       });
 
       const prediction = predictDeliveryWindow(context);
@@ -507,13 +507,13 @@ describe('Delivery Time Predictor', () => {
       expect(prediction.confidence).toBeLessThan(90); // Less confidence due to complexity
     });
 
-    it('should predict highway delivery', () => {
+    it("should predict highway delivery", () => {
       const context = createMockContext({
         distanceRemaining: 30000,
         driverHistoricalSpeed: 80,
         currentTrafficFactor: 0.9,
         timeOfDay: 2, // Night time
-        stopComplexity: 'warehouse',
+        stopComplexity: "warehouse",
       });
 
       const prediction = predictDeliveryWindow(context);

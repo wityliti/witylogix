@@ -49,7 +49,7 @@ export class WorkflowRegistry {
     if (this.definitions.has(definition.name)) {
       throw new Error(
         `Workflow "${definition.name}" is already registered. ` +
-          `Did you register it twice, or have a naming conflict?`
+          `Did you register it twice, or have a naming conflict?`,
       );
     }
 
@@ -147,14 +147,14 @@ export class WorkflowRegistry {
 
     if (!/^[a-zA-Z0-9_-]+$/.test(definition.name)) {
       throw new Error(
-        `WorkflowDefinition name "${definition.name}" must contain only alphanumerics, hyphens, underscores`
+        `WorkflowDefinition name "${definition.name}" must contain only alphanumerics, hyphens, underscores`,
       );
     }
 
     // Validate steps
     if (!Array.isArray(definition.steps) || definition.steps.length === 0) {
       throw new Error(
-        `WorkflowDefinition "${definition.name}" must have at least one step`
+        `WorkflowDefinition "${definition.name}" must have at least one step`,
       );
     }
 
@@ -164,7 +164,7 @@ export class WorkflowRegistry {
       const id = step.id || `step_${stepIds.size}`;
       if (stepIds.has(id)) {
         throw new Error(
-          `WorkflowDefinition "${definition.name}" has duplicate step ID: "${id}"`
+          `WorkflowDefinition "${definition.name}" has duplicate step ID: "${id}"`,
         );
       }
       stepIds.add(id);
@@ -172,41 +172,47 @@ export class WorkflowRegistry {
       // Validate step properties
       if (!step.name || step.name.trim() === "") {
         throw new Error(
-          `WorkflowDefinition "${definition.name}" has a step without a name`
+          `WorkflowDefinition "${definition.name}" has a step without a name`,
         );
       }
 
       if (typeof step.invoke !== "function") {
         throw new Error(
-          `Step "${step.name}" in workflow "${definition.name}" must have an invoke function`
+          `Step "${step.name}" in workflow "${definition.name}" must have an invoke function`,
         );
       }
 
       // Validate timeouts
       if (step.timeout !== undefined && step.timeout <= 0) {
         throw new Error(
-          `Step "${step.name}" has invalid timeout (must be > 0): ${step.timeout}`
+          `Step "${step.name}" has invalid timeout (must be > 0): ${step.timeout}`,
         );
       }
 
       // Validate retries
       if (step.retries !== undefined && step.retries < 0) {
         throw new Error(
-          `Step "${step.name}" has invalid retries (must be >= 0): ${step.retries}`
+          `Step "${step.name}" has invalid retries (must be >= 0): ${step.retries}`,
         );
       }
     }
 
     // Validate options
-    if (definition.options?.timeout !== undefined && definition.options.timeout <= 0) {
+    if (
+      definition.options?.timeout !== undefined &&
+      definition.options.timeout <= 0
+    ) {
       throw new Error(
-        `WorkflowDefinition "${definition.name}" has invalid timeout (must be > 0)`
+        `WorkflowDefinition "${definition.name}" has invalid timeout (must be > 0)`,
       );
     }
 
-    if (definition.options?.retries !== undefined && definition.options.retries < 0) {
+    if (
+      definition.options?.retries !== undefined &&
+      definition.options.retries < 0
+    ) {
       throw new Error(
-        `WorkflowDefinition "${definition.name}" has invalid retries (must be >= 0)`
+        `WorkflowDefinition "${definition.name}" has invalid retries (must be >= 0)`,
       );
     }
   }

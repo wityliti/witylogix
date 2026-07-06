@@ -11,4 +11,4 @@ export {
   type ICredentialPersistence,
   type MaskedCredential,
   type VaultEvent,
-} from './credential-vault.js';
+} from "./credential-vault.js";

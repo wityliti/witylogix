@@ -53,10 +53,7 @@ export class SpatialQueryError extends Error {
  */
 function validatePoint(point: GeoJSONPoint): void {
   if (!point || point.type !== "Point" || !Array.isArray(point.coordinates)) {
-    throw new SpatialQueryError(
-      "Invalid GeoJSON Point",
-      "INVALID_POINT",
-    );
+    throw new SpatialQueryError("Invalid GeoJSON Point", "INVALID_POINT");
   }
 
   const [lng, lat] = point.coordinates;
@@ -83,11 +80,12 @@ function validatePoint(point: GeoJSONPoint): void {
  * @throws SpatialQueryError if invalid
  */
 function validatePolygon(polygon: GeoJSONPolygon): void {
-  if (!polygon || polygon.type !== "Polygon" || !Array.isArray(polygon.coordinates)) {
-    throw new SpatialQueryError(
-      "Invalid GeoJSON Polygon",
-      "INVALID_POLYGON",
-    );
+  if (
+    !polygon ||
+    polygon.type !== "Polygon" ||
+    !Array.isArray(polygon.coordinates)
+  ) {
+    throw new SpatialQueryError("Invalid GeoJSON Polygon", "INVALID_POLYGON");
   }
 
   const rings = polygon.coordinates;
@@ -112,10 +110,7 @@ function validatePolygon(polygon: GeoJSONPolygon): void {
   const first = outerRing[0];
   const last = outerRing[outerRing.length - 1];
 
-  if (
-    first[0] !== last[0] ||
-    first[1] !== last[1]
-  ) {
+  if (first[0] !== last[0] || first[1] !== last[1]) {
     throw new SpatialQueryError(
       "Polygon ring must be closed (first and last points must match)",
       "NOT_CLOSED",
@@ -142,9 +137,7 @@ function pointToWKT(point: GeoJSONPoint): string {
  */
 function polygonToWKT(polygon: GeoJSONPolygon): string {
   const rings = polygon.coordinates
-    .map((ring) =>
-      `(${ring.map(([lng, lat]) => `${lng} ${lat}`).join(", ")})`,
-    )
+    .map((ring) => `(${ring.map(([lng, lat]) => `${lng} ${lat}`).join(", ")})`)
     .join(", ");
 
   return `POLYGON(${rings})`;
@@ -623,7 +616,8 @@ export function buildRouteOptimizationQuery(
   return {
     sql: sql.trim(),
     params: [depotLng, depotLat, companyId, maxStops],
-    description: "Get orders sorted by distance from depot for route optimization",
+    description:
+      "Get orders sorted by distance from depot for route optimization",
   };
 }
 

@@ -19,6 +19,7 @@ Witylogix is implementing a **production-grade event bus system** with **Redis S
 5. **Developer experience** — Strongly-typed event emitters/subscribers with wildcard pattern matching
 
 **Key Design:**
+
 - `TypedEventBus<TEvents>` generic class (500 lines) with Redis Streams backend
 - `StreamAdapter` interface enabling pluggable backends (Redis, In-Memory for testing)
 - Consumer group management for horizontal scaling
@@ -35,31 +36,34 @@ Witylogix is implementing a **production-grade event bus system** with **Redis S
 The Medusa v2-inspired architecture (ADR-009) requires a **decoupling mechanism** between modules:
 
 **Before (Tightly Coupled):**
+
 ```typescript
 // Service layer calls another service directly
-const orderSvc = container.resolve('orderService');
+const orderSvc = container.resolve("orderService");
 const order = await orderSvc.create(data);
 
 // Notification sent synchronously (blocks order creation)
-const notificationSvc = container.resolve('notificationService');
+const notificationSvc = container.resolve("notificationService");
 await notificationSvc.send(order);
 ```
 
 **After (Event-Driven):**
+
 ```typescript
 // Workflow emits order.created event as an explicit step
-const workflow = container.resolve('createOrderWorkflow');
+const workflow = container.resolve("createOrderWorkflow");
 const { order } = await workflow.run({ input: data });
 // Event is published to Redis Streams asynchronously
 
 // Separate notification consumer subscribes to order.created
 // Can fail independently without blocking order creation
-busNotification.subscribe('order.created', async (envelope) => {
+busNotification.subscribe("order.created", async (envelope) => {
   await notificationSvc.send(envelope.data);
 });
 ```
 
 **Benefits:**
+
 1. **Module isolation** — Services don't import each other; communication is event-based
 2. **Resilience** — Failed subscribers don't block publishers
 3. **Audit trail** — All domain events are persisted for compliance, analytics, replay
@@ -73,30 +77,32 @@ ADR-009 defines workflows as the primary orchestration mechanism:
 ```typescript
 // Example: OrderCreationWorkflow
 export const orderCreationWorkflow = createWorkflow(
-  'order-creation',
-  async (input: { orderId; shopId; }) => {
+  "order-creation",
+  async (input: { orderId; shopId }) => {
     // Step 1: Create order in database
     const order = await orderStep(input);
 
     // Step 2: Emit order.created event
     await emitEventStep({
-      type: 'order.created',
+      type: "order.created",
       data: order,
     });
 
     // Step 3: Optional side effects triggered by event subscribers
     // (validation, notifications, webhooks, routing, etc.)
-  }
+  },
 );
 ```
 
 The event bus is the **bridge between workflow steps and side-effect subscribers**. This separates:
+
 - **Core business logic** (workflows create/update domain entities)
 - **Side effects** (notifications, webhooks, analytics) handled via event subscriptions
 
 ### Medusa v2's Proven Pattern
 
 Medusa uses **Event Emitter API** (Node.js stdlib) with **BullMQ** for job distribution. Witylogix adapts this:
+
 - Medusa: `eventBus.emit(type, data)` → BullMQ job
 - Witylogix: `eventBus.emit(type, data)` → Redis Stream message
 
@@ -112,17 +118,18 @@ Redis Streams offers superior guarantees for durability and replay.
 
 #### 1. Why Redis Streams (Not Kafka, BullMQ Events, RabbitMQ)?
 
-| Aspect | Redis Streams | Kafka | BullMQ Events | RabbitMQ |
-|--------|--------------|-------|---------------|----------|
-| **Consistency** | Strong ordering per stream | Partition-based | Job-queue semantics | Message-queue semantics |
-| **Replay** | Built-in (XRANGE, consumer groups) | Native | Via job archives | Via dead-letter |
-| **Acknowledgment** | XACK per message | Offset-based | Jobs tracked by status | Manual ACK required |
-| **Scaling** | Consumer groups (simple) | Partitions (complex rebalancing) | Workers (job-centric) | Fanout exchanges (loose coupling) |
-| **TTL/Retention** | MAXLEN/MINID (configurable) | Time-based (log retention) | Job TTL | Indefinite |
-| **Operational Overhead** | Low (Redis only) | High (cluster, ZK) | Medium (Redis + BullMQ) | Medium (RabbitMQ broker) |
-| **Delivery Guarantees** | At-least-once (XACK) | At-least-once (offset commit) | At-least-once (job retry) | At-least-once (requeue) |
+| Aspect                   | Redis Streams                      | Kafka                            | BullMQ Events             | RabbitMQ                          |
+| ------------------------ | ---------------------------------- | -------------------------------- | ------------------------- | --------------------------------- |
+| **Consistency**          | Strong ordering per stream         | Partition-based                  | Job-queue semantics       | Message-queue semantics           |
+| **Replay**               | Built-in (XRANGE, consumer groups) | Native                           | Via job archives          | Via dead-letter                   |
+| **Acknowledgment**       | XACK per message                   | Offset-based                     | Jobs tracked by status    | Manual ACK required               |
+| **Scaling**              | Consumer groups (simple)           | Partitions (complex rebalancing) | Workers (job-centric)     | Fanout exchanges (loose coupling) |
+| **TTL/Retention**        | MAXLEN/MINID (configurable)        | Time-based (log retention)       | Job TTL                   | Indefinite                        |
+| **Operational Overhead** | Low (Redis only)                   | High (cluster, ZK)               | Medium (Redis + BullMQ)   | Medium (RabbitMQ broker)          |
+| **Delivery Guarantees**  | At-least-once (XACK)               | At-least-once (offset commit)    | At-least-once (job retry) | At-least-once (requeue)           |
 
 **Decision Rationale:**
+
 - **Strong ordering per event type** — Delivery.completed must be processed after delivery.started
 - **Consumer groups built-in** — Horizontal scaling without partition rebalancing complexity
 - **Low operational overhead** — Reuses existing Redis infrastructure
@@ -137,15 +144,15 @@ BullMQ events would require wrapping job semantics around events (impedance mism
 const bus = new TypedEventBus<WitylogixEvents>(config);
 
 // Type-safe emit
-await bus.emit('order.created', {
-  orderId: 'order_123',
-  shopId: 'shop_456',
+await bus.emit("order.created", {
+  orderId: "order_123",
+  shopId: "shop_456",
   // ✅ TypeScript error: customerId required
   // ❌ customerId: undefined,
 });
 
 // Type-safe subscribe
-bus.subscribe('order.created', async (envelope) => {
+bus.subscribe("order.created", async (envelope) => {
   // ✅ envelope.data.customerId is string
   const customerId = envelope.data.customerId;
 });
@@ -158,13 +165,20 @@ Strongly-typed events prevent serialization bugs and improve IDE autocomplete.
 ```typescript
 interface StreamAdapter {
   publish(streamKey, envelope): Promise<string>;
-  readGroup(streamKey, groupName, consumerId, count, timeoutMs): Promise<Message[]>;
+  readGroup(
+    streamKey,
+    groupName,
+    consumerId,
+    count,
+    timeoutMs,
+  ): Promise<Message[]>;
   acknowledge(streamKey, groupName, messageId): Promise<void>;
   // + more methods
 }
 ```
 
 Enables:
+
 - **Redis Streams** for production
 - **In-Memory** for unit tests (no Redis required)
 - **Future backends** (Kafka, DynamoDB streams) without changing application code
@@ -173,17 +187,18 @@ Enables:
 
 ```typescript
 // Subscribe to all order events
-bus.subscribe('order.*', async (envelope) => {
+bus.subscribe("order.*", async (envelope) => {
   analytics.track(envelope.type, envelope.data);
 });
 
 // Subscribe to all .completed events
-bus.subscribe('*.completed', async (envelope) => {
+bus.subscribe("*.completed", async (envelope) => {
   metrics.recordSuccess(envelope.type);
 });
 ```
 
 Enables:
+
 - Bulk handlers (analytics, logging)
 - Cross-cutting concerns (metrics, tracing)
 - Loose coupling between event emitters and subscribers
@@ -205,7 +220,9 @@ const bus = new TypedEventBus({
       },
       onError: async (envelope, error) => {
         // Alert on handler failures
-        await alerting.notify(`Handler failed for ${envelope.type}: ${error.message}`);
+        await alerting.notify(
+          `Handler failed for ${envelope.type}: ${error.message}`,
+        );
       },
     },
   ],
@@ -221,33 +238,36 @@ Separates business logic from cross-cutting concerns (logging, metrics, validati
 ### Core Classes (500 lines)
 
 **`TypedEventBus<TEvents>`** — Main event bus
+
 ```typescript
 class TypedEventBus<TEvents> {
   async emit<K extends keyof TEvents>(
     type: K,
     data: TEvents[K],
-    metadata?: Partial<EventMetadata>
-  ): Promise<void>
+    metadata?: Partial<EventMetadata>,
+  ): Promise<void>;
 
   async subscribe<K extends keyof TEvents>(
     pattern: K | string,
     handler: EventHandler<TEvents[K]>,
-    options?: SubscribeOptions
-  ): Promise<string>
+    options?: SubscribeOptions,
+  ): Promise<string>;
 
-  async startConsuming(): Promise<void>
-  async shutdown(timeoutMs): Promise<void>
-  async getMetrics(): Promise<EventBusMetrics>
+  async startConsuming(): Promise<void>;
+  async shutdown(timeoutMs): Promise<void>;
+  async getMetrics(): Promise<EventBusMetrics>;
 }
 ```
 
 **`RedisStreamAdapter`** (350 lines) — Redis backend
+
 - XADD for publishing
 - XREADGROUP + XACK for consumer groups
 - XPENDING + XCLAIM for dead-letter recovery
 - XTRIM for housekeeping
 
 **`InMemoryStreamAdapter`** (150 lines) — Testing backend
+
 - Map-based in-memory streams
 - Identical interface to Redis adapter
 - Useful for unit tests (no Docker required)
@@ -256,7 +276,7 @@ class TypedEventBus<TEvents> {
 
 ```typescript
 interface WitylogixEvents {
-  'order.created': {
+  "order.created": {
     orderId: string;
     shopId: string;
     customerId: string;
@@ -264,47 +284,77 @@ interface WitylogixEvents {
     currency: string;
     createdAt: string;
   };
-  'order.confirmed': { /* ... */ };
-  'order.cancelled': { /* ... */ };
+  "order.confirmed": {
+    /* ... */
+  };
+  "order.cancelled": {
+    /* ... */
+  };
 
-  'delivery.started': { /* ... */ };
-  'delivery.completed': { /* ... */ };
-  'delivery.failed': { /* ... */ };
+  "delivery.started": {
+    /* ... */
+  };
+  "delivery.completed": {
+    /* ... */
+  };
+  "delivery.failed": {
+    /* ... */
+  };
 
-  'driver.assigned': { /* ... */ };
-  'driver.location_updated': { /* ... */ };
+  "driver.assigned": {
+    /* ... */
+  };
+  "driver.location_updated": {
+    /* ... */
+  };
 
-  'workflow.started': { /* ... */ };
-  'workflow.completed': { /* ... */ };
-  'workflow.failed': { /* ... */ };
+  "workflow.started": {
+    /* ... */
+  };
+  "workflow.completed": {
+    /* ... */
+  };
+  "workflow.failed": {
+    /* ... */
+  };
 
-  'webhook.delivered': { /* ... */ };
-  'webhook.failed': { /* ... */ };
+  "webhook.delivered": {
+    /* ... */
+  };
+  "webhook.failed": {
+    /* ... */
+  };
 
-  'billing.invoice_created': { /* ... */ };
-  'billing.payment_received': { /* ... */ };
+  "billing.invoice_created": {
+    /* ... */
+  };
+  "billing.payment_received": {
+    /* ... */
+  };
 }
 ```
 
 ### Event Metadata
 
 All events carry structured metadata:
+
 ```typescript
 interface EventMetadata {
-  id: string;                  // UUID
-  type: string;                // e.g., "order.created"
-  source: string;              // e.g., "order-service"
-  timestamp: string;           // ISO 8601
-  tenantId: string;            // For multi-tenancy
-  correlationId: string;       // For tracing workflows
-  version: number;             // Schema version
-  userId?: string;             // Who triggered the event
-  requestId?: string;          // HTTP request ID
+  id: string; // UUID
+  type: string; // e.g., "order.created"
+  source: string; // e.g., "order-service"
+  timestamp: string; // ISO 8601
+  tenantId: string; // For multi-tenancy
+  correlationId: string; // For tracing workflows
+  version: number; // Schema version
+  userId?: string; // Who triggered the event
+  requestId?: string; // HTTP request ID
   tags?: Record<string, string>;
 }
 ```
 
 **Benefits:**
+
 - Tracing: correlationId links order.created → workflow steps → notifications
 - Compliance: audit trail with timestamps, user IDs
 - Multi-tenancy: tenantId ensures data isolation
@@ -313,14 +363,18 @@ interface EventMetadata {
 ### Configuration Example
 
 ```typescript
-import Redis from 'ioredis';
-import { TypedEventBus, RedisStreamAdapter, WitylogixEvents } from '@witylogix/core/event-bus';
+import Redis from "ioredis";
+import {
+  TypedEventBus,
+  RedisStreamAdapter,
+  WitylogixEvents,
+} from "@witylogix/core/event-bus";
 
-const redisClient = new Redis({ host: 'localhost', port: 6379 });
+const redisClient = new Redis({ host: "localhost", port: 6379 });
 const adapter = new RedisStreamAdapter(redisClient);
 
 const bus = new TypedEventBus<WitylogixEvents>({
-  name: 'witylogix-events',
+  name: "witylogix-events",
   adapter,
   retryPolicy: {
     maxAttempts: 3,
@@ -330,7 +384,7 @@ const bus = new TypedEventBus<WitylogixEvents>({
     jitterFactor: 0.1,
   },
   consumerGroup: {
-    name: 'notification-service',
+    name: "notification-service",
     consumerId: process.env.WORKER_ID,
     batchSize: 10,
     blockTimeoutMs: 1000,
@@ -338,21 +392,17 @@ const bus = new TypedEventBus<WitylogixEvents>({
   },
   deadLetter: {
     enabled: true,
-    streamKey: 'events:dead-letter',
-    consumerGroup: 'dead-letter-processor',
+    streamKey: "events:dead-letter",
+    consumerGroup: "dead-letter-processor",
   },
-  middleware: [
-    loggingMiddleware,
-    metricsMiddleware,
-    validationMiddleware,
-  ],
+  middleware: [loggingMiddleware, metricsMiddleware, validationMiddleware],
   maxStreamLength: 10000,
   enableMetrics: true,
 });
 
 await bus.connect();
-await bus.subscribe('order.*', handleOrderEvent, {
-  consumerGroup: 'notification-service',
+await bus.subscribe("order.*", handleOrderEvent, {
+  consumerGroup: "notification-service",
 });
 await bus.startConsuming();
 ```
@@ -363,8 +413,8 @@ await bus.startConsuming();
 // Worker 1
 const bus1 = new TypedEventBus({
   consumerGroup: {
-    name: 'notification-service',  // Same group
-    consumerId: 'worker-1',          // Different ID
+    name: "notification-service", // Same group
+    consumerId: "worker-1", // Different ID
   },
 });
 await bus1.startConsuming();
@@ -372,8 +422,8 @@ await bus1.startConsuming();
 // Worker 2
 const bus2 = new TypedEventBus({
   consumerGroup: {
-    name: 'notification-service',  // Same group
-    consumerId: 'worker-2',          // Different ID
+    name: "notification-service", // Same group
+    consumerId: "worker-2", // Different ID
   },
 });
 await bus2.startConsuming();
@@ -432,19 +482,21 @@ await bus2.startConsuming();
 ### Why Not BullMQ?
 
 BullMQ is excellent for **job queues** (with retries, backoff, job status). However, its events system is a **wrapper around jobs**, requiring:
+
 - Publishing → BullMQ event (internal)
 - Subscribing → BullMQ event handler (resolved from job metadata)
 
 This adds impedance:
+
 ```typescript
 // BullMQ events
-bus.on('order.created', (jobData) => {
+bus.on("order.created", (jobData) => {
   // jobData is a Job object, not a pure event
   console.log(jobData.data); // extra nesting
 });
 
 // Redis Streams (direct)
-bus.subscribe('order.created', (envelope) => {
+bus.subscribe("order.created", (envelope) => {
   console.log(envelope.data); // direct access
 });
 ```
@@ -454,6 +506,7 @@ Additionally, BullMQ's consumer groups are managed implicitly by the library; ou
 ### Why Not Custom Event Broker?
 
 Building a custom event bus on top of Redis Pub/Sub:
+
 - **Pros:** Minimal code
 - **Cons:**
   - Pub/Sub doesn't persist messages (subscribers miss events if offline)
@@ -465,6 +518,7 @@ Building a custom event bus on top of Redis Pub/Sub:
 ### Why Not EventEmitter (Node.js stdlib)?
 
 EventEmitter is for **in-process** events. We need:
+
 - **Cross-process** communication (multiple workers)
 - **Persistence** (replay, audit)
 - **Consumer groups** (load balancing)
@@ -479,15 +533,16 @@ ADR-009 defines workflows as the orchestration mechanism. Events are **workflow 
 
 ```typescript
 export const orderCreationWorkflow = createWorkflow(
-  'create-delivery-order',
+  "create-delivery-order",
   async (input) => {
     const order = await createOrderStep(input);
-    await emitEventStep({ // ← Event is a workflow step
-      type: 'order.created',
+    await emitEventStep({
+      // ← Event is a workflow step
+      type: "order.created",
       data: order,
-      source: 'order-service',
+      source: "order-service",
     });
-  }
+  },
 );
 ```
 
@@ -504,10 +559,12 @@ Not directly related. Auth providers handle authentication; events handle domain
 ### 1. AWS SQS / SNS
 
 **Pros:**
+
 - Managed service (no ops)
 - Integrates with AWS ecosystem
 
 **Cons:**
+
 - Vendor lock-in
 - Higher latency (network calls)
 - Message ordering requires FIFO queues (limited throughput)
@@ -518,11 +575,13 @@ Not directly related. Auth providers handle authentication; events handle domain
 ### 2. Apache Kafka
 
 **Pros:**
+
 - Designed for streaming
 - Exactly-once semantics (with exactly-once producer config)
 - Mature ecosystem
 
 **Cons:**
+
 - Operational complexity (cluster, ZooKeeper, rebalancing)
 - Overkill for current scale
 - Higher learning curve
@@ -532,11 +591,13 @@ Not directly related. Auth providers handle authentication; events handle domain
 ### 3. RabbitMQ
 
 **Pros:**
+
 - Message queuing veteran
 - Flexible routing (exchanges, bindings)
 - Good for microservices
 
 **Cons:**
+
 - Pub/Sub model less suitable for ordered event streams
 - Consumer group semantics less intuitive
 - Requires separate broker
@@ -546,10 +607,12 @@ Not directly related. Auth providers handle authentication; events handle domain
 ### 4. Temporal / Cadence Workflow Engine
 
 **Pros:**
+
 - Purpose-built for distributed workflows
 - Handles retries, compensation, etc.
 
 **Cons:**
+
 - Overkill for our use case (we have ADR-009 workflows)
 - Adds another dependency
 - Tight coupling to Temporal
@@ -561,6 +624,7 @@ Not directly related. Auth providers handle authentication; events handle domain
 ## Migration Plan
 
 ### Phase 1: Event Bus Foundation (Sprint 3.0)
+
 - [x] Implement `TypedEventBus` with Redis backend
 - [x] Implement `InMemoryStreamAdapter` for testing
 - [x] Define `WitylogixEvents` type map
@@ -568,17 +632,20 @@ Not directly related. Auth providers handle authentication; events handle domain
 - [x] Update `package.json` exports
 
 ### Phase 2: Workflow Integration (Sprint 3.1)
+
 - Emit events from order creation workflow
 - Subscribe notification service to `order.created`
 - Test end-to-end flow
 
 ### Phase 3: Full Migration (Sprint 3.2+)
+
 - Emit events from all workflows (delivery, payment, etc.)
 - Migrate notification engine to event subscribers
 - Migrate webhook dispatcher to event subscribers
 - Migrate analytics to event subscribers
 
 ### Testing Strategy
+
 - **Unit tests:** InMemoryStreamAdapter (no external dependencies)
 - **Integration tests:** Real Redis container (docker-compose)
 - **E2E tests:** Full workflow → event → subscriber flow
@@ -588,15 +655,18 @@ Not directly related. Auth providers handle authentication; events handle domain
 ## References
 
 ### Redis Streams Documentation
+
 - [Redis Streams Documentation](https://redis.io/docs/data-types/streams/)
 - Consumer Groups: [XGROUP CREATE](https://redis.io/commands/xgroup-create/)
 - Reading: [XREADGROUP](https://redis.io/commands/xreadgroup/)
 
 ### Medusa v2
+
 - [Medusa v2 Events API](https://docs.medusajs.com/development/events/events/)
 - [Medusa v2 Architecture](https://docs.medusajs.com/development/fundamentals/)
 
 ### Related ADRs
+
 - **ADR-009:** Medusa-Inspired Architecture Evolution
 - **ADR-008:** Auth Provider Abstraction Layer
 
@@ -605,47 +675,64 @@ Not directly related. Auth providers handle authentication; events handle domain
 ## Appendix: Event Bus API Quick Reference
 
 ### Emit an Event
+
 ```typescript
-await bus.emit('order.created', {
-  orderId: 'order_123',
-  shopId: 'shop_456',
-  customerId: 'cust_789',
-  totalAmount: 99.99,
-  currency: 'USD',
-  createdAt: new Date().toISOString(),
-}, {
-  tenantId: 'shop_456',
-  correlationId: 'req_uuid',
-  userId: 'user_123',
-});
+await bus.emit(
+  "order.created",
+  {
+    orderId: "order_123",
+    shopId: "shop_456",
+    customerId: "cust_789",
+    totalAmount: 99.99,
+    currency: "USD",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    tenantId: "shop_456",
+    correlationId: "req_uuid",
+    userId: "user_123",
+  },
+);
 ```
 
 ### Subscribe to Events
+
 ```typescript
-const subId = await bus.subscribe('order.created', async (envelope) => {
-  console.log('Order created:', envelope.data);
-}, {
-  consumerGroup: 'notification-service',
-  replay: false,
-});
+const subId = await bus.subscribe(
+  "order.created",
+  async (envelope) => {
+    console.log("Order created:", envelope.data);
+  },
+  {
+    consumerGroup: "notification-service",
+    replay: false,
+  },
+);
 ```
 
 ### Subscribe with Wildcard
+
 ```typescript
-await bus.subscribe('order.*', async (envelope) => {
-  console.log('Order event:', envelope.type);
-}, {
-  consumerGroup: 'analytics-service',
-});
+await bus.subscribe(
+  "order.*",
+  async (envelope) => {
+    console.log("Order event:", envelope.type);
+  },
+  {
+    consumerGroup: "analytics-service",
+  },
+);
 ```
 
 ### Start Consuming (Blocking)
+
 ```typescript
 // In a background task or worker process
 bus.startConsuming();
 ```
 
 ### Get Metrics
+
 ```typescript
 const metrics = await bus.getMetrics();
 console.log(`Published: ${metrics.publishedCount}`);
@@ -655,8 +742,9 @@ console.log(`P95 latency: ${metrics.p95LatencyMs}ms`);
 ```
 
 ### Graceful Shutdown
+
 ```typescript
-process.on('SIGTERM', async () => {
+process.on("SIGTERM", async () => {
   await bus.shutdown(30000); // 30 second timeout
   process.exit(0);
 });

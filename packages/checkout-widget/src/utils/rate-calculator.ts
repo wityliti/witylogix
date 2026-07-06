@@ -3,7 +3,7 @@
  * Calculates delivery rates based on zone, order value, and weight
  */
 
-import type { ZoneRate } from '../types';
+import type { ZoneRate } from "../types";
 
 /**
  * Calculate delivery cost for an order
@@ -12,7 +12,7 @@ export const calculateDeliveryCost = (
   zoneRate: ZoneRate,
   orderValue: number,
   distanceKm: number = 0,
-  weightKg: number = 0
+  weightKg: number = 0,
 ): number => {
   // Check if order qualifies for free delivery
   if (orderValue >= zoneRate.freeDeliveryThreshold) {
@@ -41,9 +41,14 @@ export const calculateTotalCost = (
   subtotal: number,
   zoneRate: ZoneRate,
   distanceKm: number = 0,
-  weightKg: number = 0
+  weightKg: number = 0,
 ): number => {
-  const deliveryCost = calculateDeliveryCost(zoneRate, subtotal, distanceKm, weightKg);
+  const deliveryCost = calculateDeliveryCost(
+    zoneRate,
+    subtotal,
+    distanceKm,
+    weightKg,
+  );
   return Math.round((subtotal + deliveryCost) * 100) / 100;
 };
 
@@ -52,10 +57,10 @@ export const calculateTotalCost = (
  */
 export const getFreeDeliveryMessage = (
   zoneRate: ZoneRate,
-  currentOrderValue: number
+  currentOrderValue: number,
 ): string => {
   if (currentOrderValue >= zoneRate.freeDeliveryThreshold) {
-    return 'Free delivery applied!';
+    return "Free delivery applied!";
   }
 
   const remaining = zoneRate.freeDeliveryThreshold - currentOrderValue;
@@ -79,11 +84,13 @@ export const getCostBreakdown = (
   orderValue: number,
   zoneRate: ZoneRate,
   distanceKm: number = 0,
-  weightKg: number = 0
+  weightKg: number = 0,
 ): CostBreakdown => {
   const baseRate = zoneRate.baseRate;
-  const distanceFee = distanceKm > 0 ? distanceKm * zoneRate.distanceFeePerKm : 0;
-  const weightSurcharge = weightKg > 0 ? weightKg * zoneRate.weightSurchargePerKg : 0;
+  const distanceFee =
+    distanceKm > 0 ? distanceKm * zoneRate.distanceFeePerKm : 0;
+  const weightSurcharge =
+    weightKg > 0 ? weightKg * zoneRate.weightSurchargePerKg : 0;
 
   let deliveryFee = baseRate + distanceFee + weightSurcharge;
 
@@ -109,14 +116,17 @@ export const getCostBreakdown = (
 /**
  * Format price for display
  */
-export const formatPrice = (price: number, currency: string = 'USD'): string => {
+export const formatPrice = (
+  price: number,
+  currency: string = "USD",
+): string => {
   const currencySymbols: Record<string, string> = {
-    USD: '$',
-    EUR: '€',
-    GBP: '£',
-    INR: '₹',
-    AUD: 'A$',
-    CAD: 'C$',
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    INR: "₹",
+    AUD: "A$",
+    CAD: "C$",
   };
 
   const symbol = currencySymbols[currency] || currency;
@@ -126,7 +136,10 @@ export const formatPrice = (price: number, currency: string = 'USD'): string => 
 /**
  * Check if order qualifies for free delivery
  */
-export const qualifiesForFreeDelivery = (orderValue: number, threshold: number): boolean => {
+export const qualifiesForFreeDelivery = (
+  orderValue: number,
+  threshold: number,
+): boolean => {
   return orderValue >= threshold;
 };
 
@@ -135,7 +148,7 @@ export const qualifiesForFreeDelivery = (orderValue: number, threshold: number):
  */
 export const getSavingsMessage = (
   orderValue: number,
-  zoneRate: ZoneRate
+  zoneRate: ZoneRate,
 ): string | null => {
   if (!qualifiesForFreeDelivery(orderValue, zoneRate.freeDeliveryThreshold)) {
     return null;
@@ -150,7 +163,7 @@ export const getSavingsMessage = (
  */
 export const calculateDistanceRate = (
   baseZoneRate: ZoneRate,
-  distanceKm: number
+  distanceKm: number,
 ): number => {
   return baseZoneRate.baseRate + distanceKm * baseZoneRate.distanceFeePerKm;
 };

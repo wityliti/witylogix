@@ -43,7 +43,7 @@ describe("SamsaraELDClient", () => {
         new Response(JSON.stringify({ id: "org_123" }), {
           status: 200,
           headers: { "content-type": "application/json" },
-        })
+        }),
       );
 
       await expect(client.initialize()).resolves.not.toThrow();
@@ -62,12 +62,12 @@ describe("SamsaraELDClient", () => {
     });
 
     it("should throw error on connection failure", async () => {
-      const mockFetch = vi.spyOn(global, "fetch").mockRejectedValueOnce(
-        new Error("Network error")
-      );
+      const mockFetch = vi
+        .spyOn(global, "fetch")
+        .mockRejectedValueOnce(new Error("Network error"));
 
       await expect(client.initialize()).rejects.toThrow(
-        "Failed to initialize Samsara"
+        "Failed to initialize Samsara",
       );
 
       mockFetch.mockRestore();
@@ -96,8 +96,8 @@ describe("SamsaraELDClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.listDrivers(10);
@@ -122,8 +122,8 @@ describe("SamsaraELDClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.createDriver({
@@ -161,14 +161,18 @@ describe("SamsaraELDClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const startDate = new Date("2026-03-17");
       const endDate = new Date("2026-03-18");
 
-      const result = await client.getDriverLogs("driver_001", startDate, endDate);
+      const result = await client.getDriverLogs(
+        "driver_001",
+        startDate,
+        endDate,
+      );
 
       expect(result).toHaveLength(1);
       expect(result[0].dutyStatus).toBe("driving");
@@ -189,8 +193,8 @@ describe("SamsaraELDClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.getHOSSummary("driver_001", new Date());
@@ -222,8 +226,8 @@ describe("SamsaraELDClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.getViolations("driver_001", 30);
@@ -238,7 +242,8 @@ describe("SamsaraELDClient", () => {
 
   describe("vehicles", () => {
     it("should retrieve vehicle information", async () => {
-      const mockFetch = vi.spyOn(global, "fetch")
+      const mockFetch = vi
+        .spyOn(global, "fetch")
         .mockResolvedValueOnce(
           new Response(
             JSON.stringify({
@@ -257,8 +262,8 @@ describe("SamsaraELDClient", () => {
             {
               status: 200,
               headers: { "content-type": "application/json" },
-            }
-          )
+            },
+          ),
         )
         .mockResolvedValueOnce(
           new Response(
@@ -271,8 +276,8 @@ describe("SamsaraELDClient", () => {
             {
               status: 200,
               headers: { "content-type": "application/json" },
-            }
-          )
+            },
+          ),
         )
         .mockResolvedValueOnce(
           new Response(
@@ -282,8 +287,8 @@ describe("SamsaraELDClient", () => {
             {
               status: 200,
               headers: { "content-type": "application/json" },
-            }
-          )
+            },
+          ),
         );
 
       const result = await client.getVehicle("vehicle_001");
@@ -320,8 +325,8 @@ describe("SamsaraELDClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.submitDVIR({
@@ -375,7 +380,7 @@ describe("SamsaraELDClient", () => {
         new Response(JSON.stringify({ id: "org_123" }), {
           status: 200,
           headers: { "content-type": "application/json" },
-        })
+        }),
       );
 
       const result = await client.healthCheck();
@@ -386,9 +391,9 @@ describe("SamsaraELDClient", () => {
     });
 
     it("should return false on health check failure", async () => {
-      const mockFetch = vi.spyOn(global, "fetch").mockRejectedValueOnce(
-        new Error("API unreachable")
-      );
+      const mockFetch = vi
+        .spyOn(global, "fetch")
+        .mockRejectedValueOnce(new Error("API unreachable"));
 
       const result = await client.healthCheck();
 

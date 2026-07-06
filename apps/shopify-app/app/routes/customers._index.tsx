@@ -78,7 +78,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     // Fetch customers from API with filters
     const response = await client.get<{ data: CustomersPageData }>(
-      `/api/v4/customers?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&status=${status}&segment=${segment}`
+      `/api/v4/customers?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&status=${status}&segment=${segment}`,
     );
 
     return response.data;
@@ -157,7 +157,9 @@ export default function CustomersIndex() {
     });
   };
 
-  const getSegmentBadgeTone = (segment: string): "warning" | "success" | "critical" | undefined => {
+  const getSegmentBadgeTone = (
+    segment: string,
+  ): "warning" | "success" | "critical" | undefined => {
     switch (segment) {
       case "vip":
         return "warning";
@@ -183,7 +185,9 @@ export default function CustomersIndex() {
     }
   };
 
-  const getSyncStatusBadgeTone = (status: string): "success" | "warning" | "critical" | undefined => {
+  const getSyncStatusBadgeTone = (
+    status: string,
+  ): "success" | "warning" | "critical" | undefined => {
     switch (status) {
       case "synced":
         return "success";
@@ -213,7 +217,8 @@ export default function CustomersIndex() {
               onAction: () => {
                 const form = document.createElement("form");
                 form.method = "post";
-                form.innerHTML = '<input type="hidden" name="intent" value="sync-customers">';
+                form.innerHTML =
+                  '<input type="hidden" name="intent" value="sync-customers">';
                 document.body.appendChild(form);
                 form.submit();
               },
@@ -277,14 +282,12 @@ export default function CustomersIndex() {
         </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Badge
-          tone={getSyncStatusBadgeTone(customer.syncStatus)}
-        >
+        <Badge tone={getSyncStatusBadgeTone(customer.syncStatus)}>
           {customer.syncStatus === "synced"
             ? "Synced"
             : customer.syncStatus === "pending"
-            ? "Pending"
-            : "Failed"}
+              ? "Pending"
+              : "Failed"}
         </Badge>
       </IndexTable.Cell>
     </IndexTable.Row>
@@ -338,10 +341,10 @@ export default function CustomersIndex() {
                   {segment === "all"
                     ? "All"
                     : segment === "vip"
-                    ? "VIP"
-                    : segment === "new"
-                    ? "New"
-                    : "At Risk"}
+                      ? "VIP"
+                      : segment === "new"
+                        ? "New"
+                        : "At Risk"}
                 </Button>
               ))}
             </ButtonGroup>

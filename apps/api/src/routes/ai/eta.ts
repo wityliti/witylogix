@@ -9,11 +9,11 @@
  *   GET    /api/ai/eta/statistics      Get engine statistics
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { z } from 'zod';
-import { requireAuth, requireRole } from '../../middleware/auth.js';
-import { tenantContext } from '../../middleware/tenant.js';
-import { etaEngine } from '@witylogix/core/ai-eta';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { z } from "zod";
+import { requireAuth, requireRole } from "../../middleware/auth.js";
+import { tenantContext } from "../../middleware/tenant.js";
+import { etaEngine } from "@witylogix/core/ai-eta";
 
 // ─── Zod Schemas ────────────────────────────────────────────
 
@@ -26,7 +26,10 @@ const predictETASchema = z.object({
   origin: coordinatesSchema,
   destination: coordinatesSchema,
   distanceKm: z.number().positive(),
-  departureTime: z.string().datetime().transform((s) => new Date(s)),
+  departureTime: z
+    .string()
+    .datetime()
+    .transform((s) => new Date(s)),
   zoneId: z.string().uuid().optional(),
   orderId: z.string().optional(),
 });
@@ -38,14 +41,20 @@ const batchETASchema = z.object({
       origin: coordinatesSchema,
       destination: coordinatesSchema,
       distanceKm: z.number().positive(),
-      departureTime: z.string().datetime().transform((s) => new Date(s)),
+      departureTime: z
+        .string()
+        .datetime()
+        .transform((s) => new Date(s)),
     }),
   ),
 });
 
 const recordDeliverySchema = z.object({
   orderId: z.string(),
-  actualTime: z.string().datetime().transform((s) => new Date(s)),
+  actualTime: z
+    .string()
+    .datetime()
+    .transform((s) => new Date(s)),
 });
 
 // ─── Route Plugin ───────────────────────────────────────────
@@ -54,13 +63,13 @@ export default async function aiETARoutes(
   fastify: FastifyInstance,
 ): Promise<void> {
   // All routes require authentication + tenant context
-  fastify.addHook('preHandler', requireAuth);
-  fastify.addHook('preHandler', tenantContext);
+  fastify.addHook("preHandler", requireAuth);
+  fastify.addHook("preHandler", tenantContext);
 
   // ── POST /api/ai/eta — Predict ETA ────────────────────────
 
   fastify.post<{ Body: z.infer<typeof predictETASchema> }>(
-    '/',
+    "/",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = predictETASchema.parse(request.body);
 
@@ -79,9 +88,9 @@ export default async function aiETARoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error predicting ETA:');
+        fastify.log.error({ err: error }, "Error predicting ETA:");
         return reply.status(500).send({
-          error: 'Failed to predict ETA',
+          error: "Failed to predict ETA",
         });
       }
     },
@@ -90,7 +99,7 @@ export default async function aiETARoutes(
   // ── POST /api/ai/eta/batch — Batch predictions ─────────────
 
   fastify.post<{ Body: z.infer<typeof batchETASchema> }>(
-    '/batch',
+    "/batch",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = batchETASchema.parse(request.body);
 
@@ -106,9 +115,9 @@ export default async function aiETARoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error in batch ETA prediction:');
+        fastify.log.error({ err: error }, "Error in batch ETA prediction:");
         return reply.status(500).send({
-          error: 'Failed to predict batch ETAs',
+          error: "Failed to predict batch ETAs",
         });
       }
     },
@@ -117,7 +126,7 @@ export default async function aiETARoutes(
   // ── GET /api/ai/eta/accuracy — Model accuracy ───────────────
 
   fastify.get<{ Querystring: { modelName?: string } }>(
-    '/accuracy',
+    "/accuracy",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { modelName } = request.query as { modelName?: string };
 
@@ -130,9 +139,9 @@ export default async function aiETARoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error getting accuracy metrics:');
+        fastify.log.error({ err: error }, "Error getting accuracy metrics:");
         return reply.status(500).send({
-          error: 'Failed to get accuracy metrics',
+          error: "Failed to get accuracy metrics",
         });
       }
     },
@@ -141,7 +150,7 @@ export default async function aiETARoutes(
   // ── POST /api/ai/eta/record — Record actual delivery ─────────
 
   fastify.post<{ Body: z.infer<typeof recordDeliverySchema> }>(
-    '/record',
+    "/record",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = recordDeliverySchema.parse(request.body);
 
@@ -154,12 +163,12 @@ export default async function aiETARoutes(
           success: true,
           orderId: body.orderId,
           recordedAt: new Date().toISOString(),
-          message: 'Delivery time recorded for model training',
+          message: "Delivery time recorded for model training",
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error recording delivery:');
+        fastify.log.error({ err: error }, "Error recording delivery:");
         return reply.status(500).send({
-          error: 'Failed to record delivery time',
+          error: "Failed to record delivery time",
         });
       }
     },
@@ -168,7 +177,7 @@ export default async function aiETARoutes(
   // ── GET /api/ai/eta/statistics — Engine statistics ──────────
 
   fastify.get(
-    '/statistics',
+    "/statistics",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const stats = etaEngine.getStatistics();
@@ -178,9 +187,9 @@ export default async function aiETARoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error getting statistics:');
+        fastify.log.error({ err: error }, "Error getting statistics:");
         return reply.status(500).send({
-          error: 'Failed to get statistics',
+          error: "Failed to get statistics",
         });
       }
     },
@@ -189,7 +198,7 @@ export default async function aiETARoutes(
   // ── GET /api/ai/eta/health — Health check ──────────────────
 
   fastify.get(
-    '/health',
+    "/health",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const stats = etaEngine.getStatistics();
@@ -208,23 +217,23 @@ export default async function aiETARoutes(
 
         return reply.send({
           healthy,
-          status: healthy ? 'operational' : 'degraded',
+          status: healthy ? "operational" : "degraded",
           models: {
             registered: stats.registeredModels,
             enabled: stats.enabledModels,
           },
           performance: {
-            averageAccuracy: (avgAccuracy * 100).toFixed(2) + '%',
+            averageAccuracy: (avgAccuracy * 100).toFixed(2) + "%",
             predictionsRecorded: stats.predictionsRecorded,
           },
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error checking health:');
+        fastify.log.error({ err: error }, "Error checking health:");
         return reply.status(500).send({
           healthy: false,
-          status: 'error',
-          error: 'Health check failed',
+          status: "error",
+          error: "Health check failed",
         });
       }
     },
@@ -239,9 +248,9 @@ export default async function aiETARoutes(
       enabled?: boolean;
     };
   }>(
-    '/config',
+    "/config",
     {
-      preHandler: [requireRole('ADMIN')],
+      preHandler: [requireRole("ADMIN")],
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { model, weight, enabled } = request.body as any;
@@ -268,9 +277,9 @@ export default async function aiETARoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error updating configuration:');
+        fastify.log.error({ err: error }, "Error updating configuration:");
         return reply.status(500).send({
-          error: 'Failed to update configuration',
+          error: "Failed to update configuration",
         });
       }
     },

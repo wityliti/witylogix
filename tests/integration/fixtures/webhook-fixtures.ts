@@ -68,7 +68,7 @@ export interface DLQEntry {
  * Factory: Create webhook endpoint
  */
 export function createWebhookEndpoint(
-  overrides?: Partial<WebhookEndpoint>
+  overrides?: Partial<WebhookEndpoint>,
 ): WebhookEndpoint {
   const now = new Date();
   return {
@@ -89,7 +89,7 @@ export function createWebhookEndpoint(
  */
 export function createWebhookEventType(
   name: string,
-  overrides?: Partial<WebhookEventType>
+  overrides?: Partial<WebhookEventType>,
 ): WebhookEventType {
   return {
     name,
@@ -109,7 +109,7 @@ export function createWebhookEventType(
  */
 export function createWebhookEvent(
   type: string,
-  overrides?: Partial<WebhookEvent>
+  overrides?: Partial<WebhookEvent>,
 ): WebhookEvent {
   return {
     id: `event-${Date.now()}`,
@@ -132,7 +132,7 @@ export function createWebhookEvent(
 export function createWebhookDelivery(
   eventId: string,
   endpointId: string,
-  overrides?: Partial<WebhookDelivery>
+  overrides?: Partial<WebhookDelivery>,
 ): WebhookDelivery {
   return {
     id: `delivery-${Date.now()}`,
@@ -153,7 +153,7 @@ export function createWebhookDelivery(
 export function createFailedWebhookDelivery(
   eventId: string,
   endpointId: string,
-  attempt: number = 1
+  attempt: number = 1,
 ): WebhookDelivery {
   return {
     id: `delivery-fail-${Date.now()}`,
@@ -175,7 +175,7 @@ export function createFailedWebhookDelivery(
 export function createWebhookSubscription(
   endpointId: string,
   eventTypes: string[],
-  overrides?: Partial<WebhookSubscription>
+  overrides?: Partial<WebhookSubscription>,
 ): WebhookSubscription {
   return {
     id: `sub-${Date.now()}`,
@@ -194,7 +194,7 @@ export function createWebhookSubscription(
 export function createDLQEntry(
   eventId: string,
   endpointId: string,
-  overrides?: Partial<DLQEntry>
+  overrides?: Partial<DLQEntry>,
 ): DLQEntry {
   return {
     id: `dlq-${Date.now()}`,
@@ -211,14 +211,12 @@ export function createDLQEntry(
 /**
  * Factory: Create batch delivery payload
  */
-export function createBatchDeliveryPayload(
-  eventCount: number = 10
-) {
+export function createBatchDeliveryPayload(eventCount: number = 10) {
   return {
     batchId: `batch-${Date.now()}`,
     timestamp: new Date().toISOString(),
     events: Array.from({ length: eventCount }, (_, i) =>
-      createWebhookEvent(`event.type.${i}`)
+      createWebhookEvent(`event.type.${i}`),
     ),
   };
 }
@@ -228,13 +226,10 @@ export function createBatchDeliveryPayload(
  */
 export function createHMACSHA256Signature(
   payload: string,
-  secret: string
+  secret: string,
 ): string {
   const crypto = require("crypto");
-  return crypto
-    .createHmac("sha256", secret)
-    .update(payload)
-    .digest("hex");
+  return crypto.createHmac("sha256", secret).update(payload).digest("hex");
 }
 
 /**
@@ -242,7 +237,7 @@ export function createHMACSHA256Signature(
  */
 export function createRSASignature(
   payload: string,
-  privateKey: string
+  privateKey: string,
 ): string {
   const crypto = require("crypto");
   const sign = crypto.createSign("sha256");
@@ -255,7 +250,7 @@ export function createRSASignature(
  */
 export function createJWTToken(
   payload: Record<string, unknown>,
-  secret: string
+  secret: string,
 ): string {
   const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" }))
     .toString("base64")

@@ -55,12 +55,12 @@ Replaces the ad-hoc `<div className="space-y-8">` + header blocks each sub-page 
 
 ```tsx
 interface PageShellProps {
-  title: string
-  description?: string
-  primaryAction?: ReactNode       // at most one
-  secondaryActions?: ReactNode[]  // zero or more, de-emphasized
-  kpis?: ReactNode                // slot for a single <KpiRow />
-  children: ReactNode             // the page body
+  title: string;
+  description?: string;
+  primaryAction?: ReactNode; // at most one
+  secondaryActions?: ReactNode[]; // zero or more, de-emphasized
+  kpis?: ReactNode; // slot for a single <KpiRow />
+  children: ReactNode; // the page body
 }
 ```
 
@@ -76,15 +76,15 @@ Rules the component enforces (via JSDoc + defaults, not runtime asserts):
 Single source of truth for the stat-card pattern every integrations page currently duplicates.
 
 ```tsx
-type KpiTone = 'default' | 'success' | 'warning' | 'danger' | 'info'
+type KpiTone = "default" | "success" | "warning" | "danger" | "info";
 
 interface KpiCardProps {
-  label: string
-  value: string | number
-  tone?: KpiTone          // maps to wl-* semantic tokens
-  delta?: { value: string; direction: 'up' | 'down' | 'flat' }
-  icon?: ReactNode
-  href?: string           // makes the whole card a link
+  label: string;
+  value: string | number;
+  tone?: KpiTone; // maps to wl-* semantic tokens
+  delta?: { value: string; direction: "up" | "down" | "flat" };
+  icon?: ReactNode;
+  href?: string; // makes the whole card a link
 }
 ```
 
@@ -126,12 +126,12 @@ Four surgical changes; no behavioral regression.
 
 Each of these four pages adopts `<PageShell>` + `<KpiRow>` and swaps raw colors for tokens. The data, logic, and routes do not change.
 
-| Page | Current hero | After | KPI count |
-|------|--------------|-------|-----------|
-| `integrations/payments` | Gradient hero card + 4 KPIs + tabs | `<PageShell>` + `<KpiRow>` (4 tones: info / success / warning / default) | 4 |
-| `integrations/shipping` | Sub-tab bar + stat row | `<PageShell>` + `<KpiRow>` with the sub-tab bar moved into the page body as a `<Tabs>` component | 4 |
-| `integrations/erp` | Blue hero strip + 5 KPIs | `<PageShell>` + `<KpiRow>` capped at 4, 5th metric demoted into a "Sync status" section card | 4 |
-| `integrations/messaging` | Purple hero strip + 4 KPIs | `<PageShell>` + `<KpiRow>` | 4 |
+| Page                     | Current hero                       | After                                                                                            | KPI count |
+| ------------------------ | ---------------------------------- | ------------------------------------------------------------------------------------------------ | --------- |
+| `integrations/payments`  | Gradient hero card + 4 KPIs + tabs | `<PageShell>` + `<KpiRow>` (4 tones: info / success / warning / default)                         | 4         |
+| `integrations/shipping`  | Sub-tab bar + stat row             | `<PageShell>` + `<KpiRow>` with the sub-tab bar moved into the page body as a `<Tabs>` component | 4         |
+| `integrations/erp`       | Blue hero strip + 5 KPIs           | `<PageShell>` + `<KpiRow>` capped at 4, 5th metric demoted into a "Sync status" section card     | 4         |
+| `integrations/messaging` | Purple hero strip + 4 KPIs         | `<PageShell>` + `<KpiRow>`                                                                       | 4         |
 
 Each conversion is:
 
@@ -180,12 +180,12 @@ No page-body logic changes. If a conversion starts to require behavioral changes
 
 ## 6. Risks & Mitigations
 
-| Risk | Mitigation |
-|------|------------|
-| Shared `<PageShell>` becomes a god-component as sub-pages request new slots. | Props are frozen to the six above. Any addition requires explicit spec update; additions < 2 so far is the bar. |
-| Removing the 3-color tab accent makes group boundaries harder to see. | Group labels + existing dividers replace the color signal. Reviewed in Phase 1 PR screenshots before merge. |
-| Phase 2 page conversions accidentally change behavior. | Each page PR limited to layout/token swaps. No data-flow or state changes. PR description must include "no behavioral change" checkbox. |
-| Raw-color creep after Phase 1 ships. | Optional Phase 3: eslint rule forbidding `text-gray-*`, `bg-emerald-*`, `text-red-*`, `border-white/` inside `integrations/**`. Not part of this spec; logged as follow-up. |
+| Risk                                                                         | Mitigation                                                                                                                                                                  |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shared `<PageShell>` becomes a god-component as sub-pages request new slots. | Props are frozen to the six above. Any addition requires explicit spec update; additions < 2 so far is the bar.                                                             |
+| Removing the 3-color tab accent makes group boundaries harder to see.        | Group labels + existing dividers replace the color signal. Reviewed in Phase 1 PR screenshots before merge.                                                                 |
+| Phase 2 page conversions accidentally change behavior.                       | Each page PR limited to layout/token swaps. No data-flow or state changes. PR description must include "no behavioral change" checkbox.                                     |
+| Raw-color creep after Phase 1 ships.                                         | Optional Phase 3: eslint rule forbidding `text-gray-*`, `bg-emerald-*`, `text-red-*`, `border-white/` inside `integrations/**`. Not part of this spec; logged as follow-up. |
 
 ---
 

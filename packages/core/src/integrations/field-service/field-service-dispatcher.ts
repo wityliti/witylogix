@@ -13,7 +13,7 @@ import type {
   DispatchOptimizationResult,
   DispatchConstraints,
   DispatchMetrics,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Field service dispatch engine
@@ -46,7 +46,10 @@ export class FieldServiceDispatcher {
   /**
    * Check if technician has required skills
    */
-  private hasRequiredSkills(technician: Technician, requiredSkills: string[]): boolean {
+  private hasRequiredSkills(
+    technician: Technician,
+    requiredSkills: string[],
+  ): boolean {
     if (requiredSkills.length === 0) return true;
     const techSkills = new Set(technician.skills || []);
     return requiredSkills.every((skill) => techSkills.has(skill));
@@ -61,7 +64,7 @@ export class FieldServiceDispatcher {
     territoryRestrictions: Map<string, string> | undefined,
   ): boolean {
     if (!jobTerritory || !territoryRestrictions) return true;
-    const assignedTerritory = territoryRestrictions.get(technician.id || '');
+    const assignedTerritory = territoryRestrictions.get(technician.id || "");
     return !assignedTerritory || assignedTerritory === jobTerritory;
   }
 
@@ -73,13 +76,14 @@ export class FieldServiceDispatcher {
     existingAssignments: DispatchAssignment[],
     unassignedJobs: Job[],
   ): { jobCount: number; estimatedHours: number } {
-    const techAssignments = existingAssignments.filter((a) => a.technicianId === technicianId);
+    const techAssignments = existingAssignments.filter(
+      (a) => a.technicianId === technicianId,
+    );
     const jobCount = techAssignments.length;
-    const estimatedHours =
-      techAssignments.reduce((sum, a) => {
-        const job = unassignedJobs.find((j) => j.id === a.jobId);
-        return sum + ((job?.duration || 60) / 60);
-      }, 0);
+    const estimatedHours = techAssignments.reduce((sum, a) => {
+      const job = unassignedJobs.find((j) => j.id === a.jobId);
+      return sum + (job?.duration || 60) / 60;
+    }, 0);
 
     return { jobCount, estimatedHours };
   }
@@ -92,7 +96,8 @@ export class FieldServiceDispatcher {
     jobStart: Date,
     jobDuration: number,
   ): boolean {
-    if (!technician.availability || technician.availability.length === 0) return true;
+    if (!technician.availability || technician.availability.length === 0)
+      return true;
 
     const dayOfWeek = jobStart.getDay();
     const jobStartMinutes = jobStart.getHours() * 60 + jobStart.getMinutes();
@@ -100,10 +105,12 @@ export class FieldServiceDispatcher {
 
     return technician.availability.some((avail) => {
       if (avail.dayOfWeek !== dayOfWeek) return false;
-      const availStart = parseInt(avail.startTime.split(':')[0] || '0') * 60 +
-        parseInt(avail.startTime.split(':')[1] || '0');
-      const availEnd = parseInt(avail.endTime.split(':')[0] || '0') * 60 +
-        parseInt(avail.endTime.split(':')[1] || '0');
+      const availStart =
+        parseInt(avail.startTime.split(":")[0] || "0") * 60 +
+        parseInt(avail.startTime.split(":")[1] || "0");
+      const availEnd =
+        parseInt(avail.endTime.split(":")[0] || "0") * 60 +
+        parseInt(avail.endTime.split(":")[1] || "0");
       return jobStartMinutes >= availStart && jobEndMinutes <= availEnd;
     });
   }
@@ -122,7 +129,7 @@ export class FieldServiceDispatcher {
 
     // Penalize based on workload balance
     const { jobCount: currentJobs } = this.calculateWorkload(
-      technician.id || '',
+      technician.id || "",
       existingAssignments,
       unassignedJobs,
     );
@@ -190,22 +197,36 @@ export class FieldServiceDispatcher {
 
       for (const tech of request.technicians) {
         // Check basic constraints
-        if (tech.status !== 'available') continue;
-        if (!this.hasRequiredSkills(tech, request.constraints?.skillRequirements?.get(job.id || '') || [])) {
-          continue;
-        }
+        if (tech.status !== "available") continue;
         if (
-          !this.isInTerritory(tech, job.serviceType, request.constraints?.territoryRestrictions)
+          !this.hasRequiredSkills(
+            tech,
+            request.constraints?.skillRequirements?.get(job.id || "") || [],
+          )
         ) {
           continue;
         }
-        if (job.scheduledStart && !this.isAvailable(tech, job.scheduledStart, job.duration || 60)) {
+        if (
+          !this.isInTerritory(
+            tech,
+            job.serviceType,
+            request.constraints?.territoryRestrictions,
+          )
+        ) {
+          continue;
+        }
+        if (
+          job.scheduledStart &&
+          !this.isAvailable(tech, job.scheduledStart, job.duration || 60)
+        ) {
           continue;
         }
 
         // Check max jobs constraint
         const maxJobs = request.constraints?.maxJobsPerTechnician || 10;
-        const currentAssignmentCount = assignments.filter((a) => a.technicianId === tech.id).length;
+        const currentAssignmentCount = assignments.filter(
+          (a) => a.technicianId === tech.id,
+        ).length;
         if (currentAssignmentCount >= maxJobs) continue;
 
         // Score technician
@@ -245,9 +266,9 @@ export class FieldServiceDispatcher {
         const assignment: DispatchAssignment = {
           id: `assign-${job.id}-${Date.now()}`,
           externalId: `assign-${job.id}-${Date.now()}`,
-          jobId: job.id || '',
-          technicianId: bestTechnician.id || '',
-          status: 'assigned',
+          jobId: job.id || "",
+          technicianId: bestTechnician.id || "",
+          status: "assigned",
           assignedAt: new Date(),
           priority: job.priority,
           travelTime,
@@ -259,21 +280,26 @@ export class FieldServiceDispatcher {
         totalTravelTime += travelTime;
         totalTravelDistance += travelDistance;
       } else {
-        unassignedJobs.push(job.id || '');
+        unassignedJobs.push(job.id || "");
       }
     }
 
     // Calculate balance score
     const technicianWorkloads = request.technicians.map((tech) => {
-      const techAssignments = assignments.filter((a) => a.technicianId === tech.id);
+      const techAssignments = assignments.filter(
+        (a) => a.technicianId === tech.id,
+      );
       return techAssignments.length;
     });
 
-    const avgWorkload = technicianWorkloads.reduce((a, b) => a + b, 0) / request.technicians.length || 0;
-    const workloadVariance = technicianWorkloads.reduce(
-      (sum, wl) => sum + Math.pow(wl - avgWorkload, 2),
-      0,
-    ) / request.technicians.length;
+    const avgWorkload =
+      technicianWorkloads.reduce((a, b) => a + b, 0) /
+        request.technicians.length || 0;
+    const workloadVariance =
+      technicianWorkloads.reduce(
+        (sum, wl) => sum + Math.pow(wl - avgWorkload, 2),
+        0,
+      ) / request.technicians.length;
     const balanceScore = Math.max(0, 100 - Math.sqrt(workloadVariance) * 10);
 
     const metrics: DispatchMetrics = {
@@ -327,8 +353,10 @@ export class FieldServiceDispatcher {
       const workloads = new Map<string, number>();
 
       for (const tech of request.technicians) {
-        const count = result.assignments.filter((a) => a.technicianId === tech.id).length;
-        workloads.set(tech.id || '', count);
+        const count = result.assignments.filter(
+          (a) => a.technicianId === tech.id,
+        ).length;
+        workloads.set(tech.id || "", count);
       }
 
       const maxWorkload = Math.max(...workloads.values());
@@ -348,7 +376,9 @@ export class FieldServiceDispatcher {
       // Try to move some assignments
       for (const overloadedTechId of overloaded) {
         for (const underloadedTechId of underloaded) {
-          const assignmentToMove = result.assignments.find((a) => a.technicianId === overloadedTechId);
+          const assignmentToMove = result.assignments.find(
+            (a) => a.technicianId === overloadedTechId,
+          );
           if (assignmentToMove) {
             assignmentToMove.technicianId = underloadedTechId;
             break;
@@ -359,8 +389,14 @@ export class FieldServiceDispatcher {
 
     // Recalculate metrics
     const metrics: DispatchMetrics = {
-      totalTravelTime: result.assignments.reduce((sum, a) => sum + (a.travelTime || 0), 0),
-      totalTravelDistance: result.assignments.reduce((sum, a) => sum + (a.travelDistance || 0), 0),
+      totalTravelTime: result.assignments.reduce(
+        (sum, a) => sum + (a.travelTime || 0),
+        0,
+      ),
+      totalTravelDistance: result.assignments.reduce(
+        (sum, a) => sum + (a.travelDistance || 0),
+        0,
+      ),
       jobsCovered: result.assignments.length,
       jobsUncovered: result.unassignedJobs.length,
       averageJobsPerTechnician:
@@ -387,7 +423,9 @@ export class FieldServiceDispatcher {
         ((assignment.travelTime || 0) + (job.duration || 60)) * 60000,
     );
 
-    const targetTime = new Date(assignment.assignedAt.getTime() + targetCompletionTime * 60000);
+    const targetTime = new Date(
+      assignment.assignedAt.getTime() + targetCompletionTime * 60000,
+    );
     const compliant = estimatedCompletion <= targetTime;
 
     const slackTimeMs = targetTime.getTime() - estimatedCompletion.getTime();
@@ -436,7 +474,9 @@ export class FieldServiceDispatcher {
     territory: ServiceTerritory,
     technicians: Technician[],
   ): Promise<{ covered: boolean; coveringTechnicians: Technician[] }> {
-    const coveringTechnicians = technicians.filter((tech) => tech.serviceTerritory === territory.id);
+    const coveringTechnicians = technicians.filter(
+      (tech) => tech.serviceTerritory === territory.id,
+    );
     return {
       covered: coveringTechnicians.length > 0,
       coveringTechnicians,
@@ -446,7 +486,9 @@ export class FieldServiceDispatcher {
   /**
    * Estimate route duration
    */
-  estimateRouteDuration(stops: Array<{ latitude?: number; longitude?: number }>): number {
+  estimateRouteDuration(
+    stops: Array<{ latitude?: number; longitude?: number }>,
+  ): number {
     let totalTime = 0;
 
     for (let i = 0; i < stops.length - 1; i++) {

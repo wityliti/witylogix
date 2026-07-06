@@ -4,9 +4,9 @@
  * Integrates cost calculator, number generator, and discount/tax application.
  */
 
-import { PrismaClient } from '@witylogix/db';
-import { generateInvoiceNumber } from './invoice-number.js';
-import { calculateDeliveryCost } from './cost-calculator.js';
+import { PrismaClient } from "@witylogix/db";
+import { generateInvoiceNumber } from "./invoice-number.js";
+import { calculateDeliveryCost } from "./cost-calculator.js";
 import type {
   Invoice,
   InvoiceStatus,
@@ -24,14 +24,14 @@ import type {
   PaymentRecord,
   CostBreakdown,
   ManualLineItemInput,
-} from './types.js';
+} from "./types.js";
 import {
   InvoiceError,
   InvoiceNotFoundError,
   InvalidInvoiceStateError,
   RateCardNotFoundError,
   DeliveryNotFoundError,
-} from './types.js';
+} from "./types.js";
 
 export class InvoiceService {
   private prisma: PrismaClient;
@@ -54,7 +54,7 @@ export class InvoiceService {
       routeIds = [],
       manualLineItems,
       dueDate,
-      currency = 'USD',
+      currency = "USD",
       notes,
       terms,
       status: requestedStatus,
@@ -70,53 +70,75 @@ export class InvoiceService {
 
     // ─── VALIDATE INPUTS ────────────────────────────────────────────
     if (!isManual && deliveryIds.length === 0 && routeIds.length === 0) {
-      throw new InvoiceError('Must provide either deliveryIds, routeIds, or manualLineItems');
+      throw new InvoiceError(
+        "Must provide either deliveryIds, routeIds, or manualLineItems",
+      );
     }
 
     // ─── MANUAL LINE ITEMS PATH ─────────────────────────────────────
     if (isManual) {
-      const lineItems: Omit<InvoiceLineItem, 'id' | 'invoiceId' | 'createdAt'>[] =
-        (manualLineItems as ManualLineItemInput[]).map((item) => ({
-          description: item.description,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          amount: item.quantity * item.unitPrice,
-        }));
+      const lineItems: Omit<
+        InvoiceLineItem,
+        "id" | "invoiceId" | "createdAt"
+      >[] = (manualLineItems as ManualLineItemInput[]).map((item) => ({
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        amount: item.quantity * item.unitPrice,
+      }));
 
       const subtotal = lineItems.reduce((sum, item) => sum + item.amount, 0);
 
       // Normalize simple discountPercentage into discounts array
-      const effectiveDiscounts = discounts.length > 0
-        ? discounts
-        : discountPercentage && discountPercentage > 0
-          ? [{ description: 'Discount', type: 'percentage' as const, value: discountPercentage }]
-          : [];
+      const effectiveDiscounts =
+        discounts.length > 0
+          ? discounts
+          : discountPercentage && discountPercentage > 0
+            ? [
+                {
+                  description: "Discount",
+                  type: "percentage" as const,
+                  value: discountPercentage,
+                },
+              ]
+            : [];
 
-      const discountItems: Omit<InvoiceDiscount, 'id' | 'invoiceId' | 'createdAt'>[] = [];
+      const discountItems: Omit<
+        InvoiceDiscount,
+        "id" | "invoiceId" | "createdAt"
+      >[] = [];
       let discountTotal = 0;
       for (const discount of effectiveDiscounts) {
-        const amount = discount.type === 'percentage'
-          ? subtotal * (discount.value / 100)
-          : discount.value;
+        const amount =
+          discount.type === "percentage"
+            ? subtotal * (discount.value / 100)
+            : discount.value;
         discountTotal += amount;
-        discountItems.push({ description: discount.description, type: discount.type, value: discount.value, amount });
+        discountItems.push({
+          description: discount.description,
+          type: discount.type,
+          value: discount.value,
+          amount,
+        });
       }
 
       // Normalize simple taxRate into taxConfig
-      const effectiveTaxConfig: TaxConfig[] = taxConfig.length > 0
-        ? taxConfig
-        : taxRate != null && taxRate > 0
-          ? [{ jurisdiction: 'standard', rate: taxRate }]
-          : [];
+      const effectiveTaxConfig: TaxConfig[] =
+        taxConfig.length > 0
+          ? taxConfig
+          : taxRate != null && taxRate > 0
+            ? [{ jurisdiction: "standard", rate: taxRate }]
+            : [];
 
-      const taxItems: Omit<InvoiceTax, 'id' | 'invoiceId' | 'createdAt'>[] = [];
+      const taxItems: Omit<InvoiceTax, "id" | "invoiceId" | "createdAt">[] = [];
       const taxableAmount = subtotal - discountTotal;
       let taxTotal = 0;
       for (const tax of effectiveTaxConfig) {
         const amount = taxableAmount * (tax.rate / 100);
         taxTotal += amount;
         taxItems.push({
-          description: tax.description || `Tax (${tax.jurisdiction || 'Standard'})`,
+          description:
+            tax.description || `Tax (${tax.jurisdiction || "Standard"})`,
           rate: tax.rate,
           amount,
           jurisdiction: tax.jurisdiction,
@@ -124,15 +146,18 @@ export class InvoiceService {
       }
 
       const issuedAt = new Date();
-      const dueAtDate = dueDate || new Date(issuedAt.getTime() + 30 * 24 * 60 * 60 * 1000);
-      const dbStatus = requestedStatus === 'sent' ? 'SENT' : 'DRAFT';
-      const notesValue = terms ? `${notes || ''}\n\n${terms}`.trim() : (notes || null);
+      const dueAtDate =
+        dueDate || new Date(issuedAt.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const dbStatus = requestedStatus === "sent" ? "SENT" : "DRAFT";
+      const notesValue = terms
+        ? `${notes || ""}\n\n${terms}`.trim()
+        : notes || null;
 
       const dbInvoice = await (this.prisma.invoice as any).create({
         data: {
           tenantId,
           customerId: customerId || null,
-          invoiceNumber: 'DRAFT-TEMP',
+          invoiceNumber: "DRAFT-TEMP",
           status: dbStatus,
           subtotal,
           discountTotal,
@@ -142,12 +167,17 @@ export class InvoiceService {
           issuedAt,
           dueAt: dueAtDate,
           notes: notesValue,
-          metadata: { ...metadata, createdFrom: 'manual' },
+          metadata: { ...metadata, createdFrom: "manual" },
           lineItems: { create: lineItems },
           discounts: { create: discountItems },
           taxes: { create: taxItems },
         },
-        include: { lineItems: true, discounts: true, taxes: true, payments: true },
+        include: {
+          lineItems: true,
+          discounts: true,
+          taxes: true,
+          payments: true,
+        },
       });
 
       return this.mapDbInvoice(dbInvoice);
@@ -167,10 +197,12 @@ export class InvoiceService {
       // Get default rate card
       const dbRateCard = await (this.prisma.rateCard as any).findFirst({
         where: { tenantId, isDefault: true },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       });
       if (!dbRateCard) {
-        throw new RateCardNotFoundError('No default rate card found for tenant');
+        throw new RateCardNotFoundError(
+          "No default rate card found for tenant",
+        );
       }
       rateCard = this.mapDbRateCard(dbRateCard);
     }
@@ -214,26 +246,28 @@ export class InvoiceService {
     }
 
     // ─── CALCULATE SUBTOTAL ─────────────────────────────────────────
-    const lineItems: Omit<InvoiceLineItem, 'id' | 'invoiceId' | 'createdAt'>[] = deliveryData.map(
-      (delivery) => ({
+    const lineItems: Omit<InvoiceLineItem, "id" | "invoiceId" | "createdAt">[] =
+      deliveryData.map((delivery) => ({
         description: `Delivery ${delivery.id.slice(0, 8)}`,
         deliveryId: delivery.id,
         quantity: 1,
         unitPrice: delivery.cost.finalCharge,
         amount: delivery.cost.finalCharge,
         metadata: delivery.cost,
-      }),
-    );
+      }));
 
     const subtotal = lineItems.reduce((sum, item) => sum + item.amount, 0);
 
     // ─── APPLY DISCOUNTS ────────────────────────────────────────────
-    const discountItems: Omit<InvoiceDiscount, 'id' | 'invoiceId' | 'createdAt'>[] = [];
+    const discountItems: Omit<
+      InvoiceDiscount,
+      "id" | "invoiceId" | "createdAt"
+    >[] = [];
     let discountTotal = 0;
 
     for (const discount of discounts) {
       let amount = 0;
-      if (discount.type === 'percentage') {
+      if (discount.type === "percentage") {
         amount = subtotal * (discount.value / 100);
       } else {
         amount = discount.value;
@@ -248,7 +282,7 @@ export class InvoiceService {
     }
 
     // ─── CALCULATE TAXES ────────────────────────────────────────────
-    const taxItems: Omit<InvoiceTax, 'id' | 'invoiceId' | 'createdAt'>[] = [];
+    const taxItems: Omit<InvoiceTax, "id" | "invoiceId" | "createdAt">[] = [];
     const taxableAmount = subtotal - discountTotal;
     let taxTotal = 0;
 
@@ -256,7 +290,8 @@ export class InvoiceService {
       const amount = taxableAmount * (tax.rate / 100);
       taxTotal += amount;
       taxItems.push({
-        description: tax.description || `Tax (${tax.jurisdiction || 'Standard'})`,
+        description:
+          tax.description || `Tax (${tax.jurisdiction || "Standard"})`,
         rate: tax.rate,
         amount,
         jurisdiction: tax.jurisdiction,
@@ -265,14 +300,15 @@ export class InvoiceService {
 
     // ─── CREATE INVOICE IN DATABASE ─────────────────────────────────
     const issuedAt = new Date();
-    const dueAtDate = dueDate || new Date(issuedAt.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days default
+    const dueAtDate =
+      dueDate || new Date(issuedAt.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days default
 
     const dbInvoice = await (this.prisma.invoice as any).create({
       data: {
         tenantId,
         customerId: customerId || null,
-        invoiceNumber: 'DRAFT-TEMP', // Will be updated on finalize
-        status: 'DRAFT',
+        invoiceNumber: "DRAFT-TEMP", // Will be updated on finalize
+        status: "DRAFT",
         subtotal,
         discountTotal,
         taxTotal,
@@ -284,7 +320,7 @@ export class InvoiceService {
         metadata: {
           ...metadata,
           rateCardId,
-          createdFrom: deliveryIds.length > 0 ? 'deliveries' : 'routes',
+          createdFrom: deliveryIds.length > 0 ? "deliveries" : "routes",
         },
         lineItems: {
           create: lineItems,
@@ -316,8 +352,8 @@ export class InvoiceService {
   async finalizeInvoice(invoiceId: string, tenantId: string): Promise<Invoice> {
     const invoice = await this.getInvoice(invoiceId, tenantId);
 
-    if (invoice.status !== 'draft') {
-      throw new InvalidInvoiceStateError(invoiceId, invoice.status, 'finalize');
+    if (invoice.status !== "draft") {
+      throw new InvalidInvoiceStateError(invoiceId, invoice.status, "finalize");
     }
 
     // Generate unique invoice number
@@ -327,7 +363,7 @@ export class InvoiceService {
       where: { id: invoiceId },
       data: {
         invoiceNumber: numberResult.invoiceNumber,
-        status: 'FINALIZED',
+        status: "FINALIZED",
         issuedAt: new Date(),
       },
       include: {
@@ -350,18 +386,18 @@ export class InvoiceService {
   async sendInvoice(invoiceId: string, tenantId: string): Promise<Invoice> {
     const invoice = await this.getInvoice(invoiceId, tenantId);
 
-    if (invoice.status === 'draft') {
-      throw new InvalidInvoiceStateError(invoiceId, invoice.status, 'send');
+    if (invoice.status === "draft") {
+      throw new InvalidInvoiceStateError(invoiceId, invoice.status, "send");
     }
 
-    if (invoice.status === 'voided') {
-      throw new InvalidInvoiceStateError(invoiceId, invoice.status, 'send');
+    if (invoice.status === "voided") {
+      throw new InvalidInvoiceStateError(invoiceId, invoice.status, "send");
     }
 
     const updated = await (this.prisma.invoice as any).update({
       where: { id: invoiceId },
       data: {
-        status: 'SENT',
+        status: "SENT",
       },
       include: {
         lineItems: true,
@@ -381,17 +417,21 @@ export class InvoiceService {
    * @param reason - Reason for void
    * @returns Invoice - Voided invoice
    */
-  async voidInvoice(invoiceId: string, tenantId: string, reason: string): Promise<Invoice> {
+  async voidInvoice(
+    invoiceId: string,
+    tenantId: string,
+    reason: string,
+  ): Promise<Invoice> {
     const invoice = await this.getInvoice(invoiceId, tenantId);
 
-    if (invoice.status === 'voided') {
-      throw new InvalidInvoiceStateError(invoiceId, invoice.status, 'void');
+    if (invoice.status === "voided") {
+      throw new InvalidInvoiceStateError(invoiceId, invoice.status, "void");
     }
 
     const updated = await (this.prisma.invoice as any).update({
       where: { id: invoiceId },
       data: {
-        status: 'VOIDED',
+        status: "VOIDED",
         voidedAt: new Date(),
         voidReason: reason,
       },
@@ -420,8 +460,12 @@ export class InvoiceService {
   ): Promise<Invoice> {
     const invoice = await this.getInvoice(invoiceId, tenantId);
 
-    if (invoice.status === 'voided') {
-      throw new InvalidInvoiceStateError(invoiceId, invoice.status, 'record payment for');
+    if (invoice.status === "voided") {
+      throw new InvalidInvoiceStateError(
+        invoiceId,
+        invoice.status,
+        "record payment for",
+      );
     }
 
     // Create payment record
@@ -441,10 +485,13 @@ export class InvoiceService {
       where: { invoiceId },
     });
 
-    const totalPaid = payments.reduce((sum: number, p: any) => sum + parseFloat(p.amount), 0);
+    const totalPaid = payments.reduce(
+      (sum: number, p: any) => sum + parseFloat(p.amount),
+      0,
+    );
 
     // Update status if fully paid
-    const newStatus = totalPaid >= invoice.total ? 'PAID' : invoice.status;
+    const newStatus = totalPaid >= invoice.total ? "PAID" : invoice.status;
 
     const updated = await (this.prisma.invoice as any).update({
       where: { id: invoiceId },
@@ -493,7 +540,10 @@ export class InvoiceService {
    * @param tenantId - Tenant ID
    * @returns Invoice
    */
-  async getInvoiceByNumber(invoiceNumber: string, tenantId: string): Promise<Invoice> {
+  async getInvoiceByNumber(
+    invoiceNumber: string,
+    tenantId: string,
+  ): Promise<Invoice> {
     const dbInvoice = await (this.prisma.invoice as any).findFirst({
       where: { invoiceNumber, tenantId },
       include: {
@@ -568,7 +618,7 @@ export class InvoiceService {
         },
         take: pagination?.limit || 50,
         skip: pagination?.offset || 0,
-        orderBy: { issuedAt: 'desc' },
+        orderBy: { issuedAt: "desc" },
       }),
       (this.prisma.invoice as any).count({ where }),
     ]);
@@ -608,37 +658,48 @@ export class InvoiceService {
     });
 
     const totalInvoices = invoices.length;
-    const totalBilled = invoices.reduce((sum: number, inv: any) => sum + parseFloat(inv.total), 0);
+    const totalBilled = invoices.reduce(
+      (sum: number, inv: any) => sum + parseFloat(inv.total),
+      0,
+    );
     const totalPaid = invoices
-      .filter((inv: any) => inv.status === 'PAID')
+      .filter((inv: any) => inv.status === "PAID")
       .reduce((sum: number, inv: any) => sum + parseFloat(inv.total), 0);
     const totalOutstanding = invoices
-      .filter((inv: any) => ['FINALIZED', 'SENT', 'OVERDUE'].includes(inv.status))
+      .filter((inv: any) =>
+        ["FINALIZED", "SENT", "OVERDUE"].includes(inv.status),
+      )
       .reduce((sum: number, inv: any) => sum + parseFloat(inv.total), 0);
     const totalOverdue = invoices
-      .filter((inv: any) => inv.status === 'OVERDUE')
+      .filter((inv: any) => inv.status === "OVERDUE")
       .reduce((sum: number, inv: any) => sum + parseFloat(inv.total), 0);
     const totalVoided = invoices
-      .filter((inv: any) => inv.status === 'VOIDED')
+      .filter((inv: any) => inv.status === "VOIDED")
       .reduce((sum: number, inv: any) => sum + parseFloat(inv.total), 0);
 
     const byStatus = {
-      draft: invoices.filter((inv: any) => inv.status === 'DRAFT').length,
-      finalized: invoices.filter((inv: any) => inv.status === 'FINALIZED').length,
-      sent: invoices.filter((inv: any) => inv.status === 'SENT').length,
-      paid: invoices.filter((inv: any) => inv.status === 'PAID').length,
-      overdue: invoices.filter((inv: any) => inv.status === 'OVERDUE').length,
-      voided: invoices.filter((inv: any) => inv.status === 'VOIDED').length,
+      draft: invoices.filter((inv: any) => inv.status === "DRAFT").length,
+      finalized: invoices.filter((inv: any) => inv.status === "FINALIZED")
+        .length,
+      sent: invoices.filter((inv: any) => inv.status === "SENT").length,
+      paid: invoices.filter((inv: any) => inv.status === "PAID").length,
+      overdue: invoices.filter((inv: any) => inv.status === "OVERDUE").length,
+      voided: invoices.filter((inv: any) => inv.status === "VOIDED").length,
     };
 
     const byCurrency: Record<string, number> = {};
     invoices.forEach((inv: any) => {
-      byCurrency[inv.currency] = (byCurrency[inv.currency] || 0) + parseFloat(inv.total);
+      byCurrency[inv.currency] =
+        (byCurrency[inv.currency] || 0) + parseFloat(inv.total);
     });
 
-    const averageInvoiceAmount = totalInvoices > 0 ? totalBilled / totalInvoices : 0;
-    const finalizedCount = invoices.filter((inv: any) => inv.status !== 'DRAFT').length;
-    const paymentRate = finalizedCount > 0 ? (byStatus.paid / finalizedCount) * 100 : 0;
+    const averageInvoiceAmount =
+      totalInvoices > 0 ? totalBilled / totalInvoices : 0;
+    const finalizedCount = invoices.filter(
+      (inv: any) => inv.status !== "DRAFT",
+    ).length;
+    const paymentRate =
+      finalizedCount > 0 ? (byStatus.paid / finalizedCount) * 100 : 0;
 
     return {
       tenantId,
@@ -661,7 +722,9 @@ export class InvoiceService {
   /**
    * Fetch a delivery/order for costing
    */
-  private async getDeliveryForCosting(deliveryId: string): Promise<DeliveryForCosting | null> {
+  private async getDeliveryForCosting(
+    deliveryId: string,
+  ): Promise<DeliveryForCosting | null> {
     // For MVP: fetch from Order/RouteStop with distance/weight data
     const order = await (this.prisma.order as any).findUnique({
       where: { id: deliveryId },
@@ -688,7 +751,9 @@ export class InvoiceService {
   /**
    * Fetch all stops in a route for costing
    */
-  private async getRouteStopsForCosting(routeId: string): Promise<DeliveryForCosting[]> {
+  private async getRouteStopsForCosting(
+    routeId: string,
+  ): Promise<DeliveryForCosting[]> {
     const route = await (this.prisma.route as any).findUnique({
       where: { id: routeId },
       include: { stops: true },
@@ -771,7 +836,7 @@ export class InvoiceService {
         id: disc.id,
         invoiceId: disc.invoiceId,
         description: disc.description,
-        type: disc.type.toLowerCase() as 'percentage' | 'fixed',
+        type: disc.type.toLowerCase() as "percentage" | "fixed",
         value: parseFloat(disc.value),
         amount: parseFloat(disc.amount),
         createdAt: disc.createdAt,

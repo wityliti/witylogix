@@ -3,6 +3,7 @@
 ## 5-Minute Setup
 
 ### 1. Install K6
+
 ```bash
 # macOS
 brew install k6
@@ -14,17 +15,20 @@ sudo apt-get install k6
 ```
 
 ### 2. Verify Installation
+
 ```bash
 k6 version
 ```
 
 ### 3. Run First Test
+
 ```bash
 cd tests/performance
 ./scripts/run-perf-suite.sh --test-type auth
 ```
 
 ### 4. View Results
+
 Open the HTML report in `results/report-*.html`
 
 ---
@@ -32,11 +36,13 @@ Open the HTML report in `results/report-*.html`
 ## Common Commands
 
 ### Run All Tests
+
 ```bash
 ./scripts/run-perf-suite.sh
 ```
 
 ### Run Specific Test
+
 ```bash
 # Auth only
 ./scripts/run-perf-suite.sh --test-type auth
@@ -55,6 +61,7 @@ Open the HTML report in `results/report-*.html`
 ```
 
 ### Against Staging
+
 ```bash
 ./scripts/run-perf-suite.sh \
   --environment staging \
@@ -64,6 +71,7 @@ Open the HTML report in `results/report-*.html`
 ```
 
 ### Direct K6 Run
+
 ```bash
 # Basic run
 k6 run k6/auth-load.js
@@ -82,29 +90,34 @@ k6 run -e API_BASE_URL=https://api.example.com k6/auth-load.js
 
 ## Test Scenarios at a Glance
 
-| Test | File | VUs | Duration | Focus |
-|------|------|-----|----------|-------|
-| Auth | auth-load.js | 50 | 3m | Login, tokens, registration |
-| Onboarding | onboarding-load.js | 20 | 3m | 5-step wizard completion |
-| CRUD | api-crud-load.js | 50 | 3m | Read/write operations |
-| Webhooks | webhook-load.js | 100 | 6m | Event delivery & retries |
-| Tenant | tenant-isolation-load.js | 50 | 4m | Multi-tenant isolation |
+| Test       | File                     | VUs | Duration | Focus                       |
+| ---------- | ------------------------ | --- | -------- | --------------------------- |
+| Auth       | auth-load.js             | 50  | 3m       | Login, tokens, registration |
+| Onboarding | onboarding-load.js       | 20  | 3m       | 5-step wizard completion    |
+| CRUD       | api-crud-load.js         | 50  | 3m       | Read/write operations       |
+| Webhooks   | webhook-load.js          | 100 | 6m       | Event delivery & retries    |
+| Tenant     | tenant-isolation-load.js | 50  | 4m       | Multi-tenant isolation      |
 
 ---
 
 ## Troubleshooting
 
 ### "k6: command not found"
+
 Install k6: https://k6.io/docs/getting-started/installation/
 
 ### "Connection refused"
+
 Verify API is running:
+
 ```bash
 curl http://localhost:3000/api/v4/health
 ```
 
 ### "Unauthorized (401)"
+
 Update test credentials:
+
 ```bash
 export TEST_EMAIL=valid@example.com
 export TEST_PASSWORD=YourPassword123!
@@ -112,7 +125,9 @@ export TEST_PASSWORD=YourPassword123!
 ```
 
 ### "Script errors"
+
 Check K6 version:
+
 ```bash
 k6 version
 # Should be v0.45.0 or higher

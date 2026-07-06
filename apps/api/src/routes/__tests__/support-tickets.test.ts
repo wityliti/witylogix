@@ -72,7 +72,8 @@ describe("Support Tickets Routes", () => {
     it("should create a new support ticket", async () => {
       mockRequest.body = {
         subject: "Cannot login to account",
-        description: "I am unable to login with my credentials. Getting error 403.",
+        description:
+          "I am unable to login with my credentials. Getting error 403.",
         priority: "HIGH",
         category: "Account",
       };
@@ -80,22 +81,27 @@ describe("Support Tickets Routes", () => {
       const createdTicket = {
         id: "ticket-1",
         subject: "Cannot login to account",
-        description: "I am unable to login with my credentials. Getting error 403.",
+        description:
+          "I am unable to login with my credentials. Getting error 403.",
         priority: "HIGH",
         category: "Account",
         status: "OPEN",
         createdBy: "user-123",
-        creator: { id: "user-123", email: "user@example.com", name: "User One" },
+        creator: {
+          id: "user-123",
+          email: "user@example.com",
+          name: "User One",
+        },
         assignee: null,
       };
 
       (mockRequest.tenantDb as any).supportTicket.create.mockResolvedValue(
-        createdTicket
+        createdTicket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -117,17 +123,21 @@ describe("Support Tickets Routes", () => {
         description: "I have a general question about the service.",
         priority: "MEDIUM",
         status: "OPEN",
-        creator: { id: "user-123", email: "user@example.com", name: "User One" },
+        creator: {
+          id: "user-123",
+          email: "user@example.com",
+          name: "User One",
+        },
         assignee: null,
       };
 
       (mockRequest.tenantDb as any).supportTicket.create.mockResolvedValue(
-        createdTicket
+        createdTicket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -143,11 +153,11 @@ describe("Support Tickets Routes", () => {
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
 
@@ -158,11 +168,11 @@ describe("Support Tickets Routes", () => {
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
 
@@ -175,11 +185,11 @@ describe("Support Tickets Routes", () => {
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
 
@@ -195,17 +205,21 @@ describe("Support Tickets Routes", () => {
         description: "Test description for ticket",
         priority: "MEDIUM",
         status: "OPEN",
-        creator: { id: "user-123", email: "user@example.com", name: "User One" },
+        creator: {
+          id: "user-123",
+          email: "user@example.com",
+          name: "User One",
+        },
         assignee: null,
       };
 
       (mockRequest.tenantDb as any).supportTicket.create.mockResolvedValue(
-        createdTicket
+        createdTicket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await handler(mockRequest, mockReply);
@@ -216,7 +230,7 @@ describe("Support Tickets Routes", () => {
           ticketId: "ticket-1",
           subject: "Test Subject",
         }),
-        "Support ticket created"
+        "Support ticket created",
       );
     });
   });
@@ -231,7 +245,11 @@ describe("Support Tickets Routes", () => {
           subject: "Issue One",
           priority: "HIGH",
           status: "OPEN",
-          creator: { id: "user-1", email: "user1@example.com", name: "User One" },
+          creator: {
+            id: "user-1",
+            email: "user1@example.com",
+            name: "User One",
+          },
           assignee: null,
           messages: [],
         },
@@ -240,20 +258,28 @@ describe("Support Tickets Routes", () => {
           subject: "Issue Two",
           priority: "MEDIUM",
           status: "IN_PROGRESS",
-          creator: { id: "user-2", email: "user2@example.com", name: "User Two" },
-          assignee: { id: "agent-1", email: "agent@example.com", name: "Agent" },
+          creator: {
+            id: "user-2",
+            email: "user2@example.com",
+            name: "User Two",
+          },
+          assignee: {
+            id: "agent-1",
+            email: "agent@example.com",
+            name: "Agent",
+          },
           messages: [{ id: "msg-1", createdAt: new Date() }],
         },
       ];
 
       (mockRequest.tenantDb as any).supportTicket.findMany.mockResolvedValue(
-        tickets
+        tickets,
       );
       (mockRequest.tenantDb as any).supportTicket.count.mockResolvedValue(50);
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -267,83 +293,99 @@ describe("Support Tickets Routes", () => {
     it("should filter tickets by status", async () => {
       mockRequest.query = { page: 1, limit: 20, status: "OPEN" };
 
-      (mockRequest.tenantDb as any).supportTicket.findMany.mockResolvedValue([]);
+      (mockRequest.tenantDb as any).supportTicket.findMany.mockResolvedValue(
+        [],
+      );
       (mockRequest.tenantDb as any).supportTicket.count.mockResolvedValue(0);
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await handler(mockRequest, mockReply);
 
-      expect((mockRequest.tenantDb as any).supportTicket.findMany).toHaveBeenCalledWith(
+      expect(
+        (mockRequest.tenantDb as any).supportTicket.findMany,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             status: "OPEN",
           }),
-        })
+        }),
       );
     });
 
     it("should filter tickets by priority", async () => {
       mockRequest.query = { page: 1, limit: 20, priority: "URGENT" };
 
-      (mockRequest.tenantDb as any).supportTicket.findMany.mockResolvedValue([]);
+      (mockRequest.tenantDb as any).supportTicket.findMany.mockResolvedValue(
+        [],
+      );
       (mockRequest.tenantDb as any).supportTicket.count.mockResolvedValue(0);
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await handler(mockRequest, mockReply);
 
-      expect((mockRequest.tenantDb as any).supportTicket.findMany).toHaveBeenCalledWith(
+      expect(
+        (mockRequest.tenantDb as any).supportTicket.findMany,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             priority: "URGENT",
           }),
-        })
+        }),
       );
     });
 
     it("should filter tickets by category", async () => {
       mockRequest.query = { page: 1, limit: 20, category: "Billing" };
 
-      (mockRequest.tenantDb as any).supportTicket.findMany.mockResolvedValue([]);
+      (mockRequest.tenantDb as any).supportTicket.findMany.mockResolvedValue(
+        [],
+      );
       (mockRequest.tenantDb as any).supportTicket.count.mockResolvedValue(0);
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await handler(mockRequest, mockReply);
 
-      expect((mockRequest.tenantDb as any).supportTicket.findMany).toHaveBeenCalledWith(
+      expect(
+        (mockRequest.tenantDb as any).supportTicket.findMany,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             category: "Billing",
           }),
-        })
+        }),
       );
     });
 
     it("should search tickets by subject or description", async () => {
       mockRequest.query = { page: 1, limit: 20, search: "cannot login" };
 
-      (mockRequest.tenantDb as any).supportTicket.findMany.mockResolvedValue([]);
+      (mockRequest.tenantDb as any).supportTicket.findMany.mockResolvedValue(
+        [],
+      );
       (mockRequest.tenantDb as any).supportTicket.count.mockResolvedValue(0);
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await handler(mockRequest, mockReply);
 
-      expect((mockRequest.tenantDb as any).supportTicket.findMany).toHaveBeenCalledWith(
+      expect(
+        (mockRequest.tenantDb as any).supportTicket.findMany,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             OR: expect.arrayContaining([
@@ -352,67 +394,84 @@ describe("Support Tickets Routes", () => {
               }),
             ]),
           }),
-        })
+        }),
       );
     });
 
     it("should sort tickets by creation date descending by default", async () => {
       mockRequest.query = { page: 1, limit: 20 };
 
-      (mockRequest.tenantDb as any).supportTicket.findMany.mockResolvedValue([]);
+      (mockRequest.tenantDb as any).supportTicket.findMany.mockResolvedValue(
+        [],
+      );
       (mockRequest.tenantDb as any).supportTicket.count.mockResolvedValue(0);
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await handler(mockRequest, mockReply);
 
-      expect((mockRequest.tenantDb as any).supportTicket.findMany).toHaveBeenCalledWith(
+      expect(
+        (mockRequest.tenantDb as any).supportTicket.findMany,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { createdAt: "desc" },
-        })
+        }),
       );
     });
 
     it("should allow sorting by priority", async () => {
       mockRequest.query = { page: 1, limit: 20, sortBy: "priority" };
 
-      (mockRequest.tenantDb as any).supportTicket.findMany.mockResolvedValue([]);
+      (mockRequest.tenantDb as any).supportTicket.findMany.mockResolvedValue(
+        [],
+      );
       (mockRequest.tenantDb as any).supportTicket.count.mockResolvedValue(0);
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await handler(mockRequest, mockReply);
 
-      expect((mockRequest.tenantDb as any).supportTicket.findMany).toHaveBeenCalledWith(
+      expect(
+        (mockRequest.tenantDb as any).supportTicket.findMany,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { priority: "desc" },
-        })
+        }),
       );
     });
 
     it("should allow custom sort order", async () => {
-      mockRequest.query = { page: 1, limit: 20, sortBy: "createdAt", sortOrder: "asc" };
+      mockRequest.query = {
+        page: 1,
+        limit: 20,
+        sortBy: "createdAt",
+        sortOrder: "asc",
+      };
 
-      (mockRequest.tenantDb as any).supportTicket.findMany.mockResolvedValue([]);
+      (mockRequest.tenantDb as any).supportTicket.findMany.mockResolvedValue(
+        [],
+      );
       (mockRequest.tenantDb as any).supportTicket.count.mockResolvedValue(0);
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await handler(mockRequest, mockReply);
 
-      expect((mockRequest.tenantDb as any).supportTicket.findMany).toHaveBeenCalledWith(
+      expect(
+        (mockRequest.tenantDb as any).supportTicket.findMany,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { createdAt: "asc" },
-        })
+        }),
       );
     });
 
@@ -421,11 +480,11 @@ describe("Support Tickets Routes", () => {
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
   });
@@ -448,19 +507,23 @@ describe("Support Tickets Routes", () => {
             id: "msg-1",
             content: "We are looking into this.",
             isInternal: false,
-            author: { id: "agent-1", email: "agent@example.com", name: "Agent" },
+            author: {
+              id: "agent-1",
+              email: "agent@example.com",
+              name: "Agent",
+            },
             createdAt: new Date(),
           },
         ],
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/:id"
+        (call) => call[0] === "/:id",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -473,16 +536,16 @@ describe("Support Tickets Routes", () => {
       mockRequest.params = { id: "nonexistent" };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        null
+        null,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/:id"
+        (call) => call[0] === "/:id",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        NotFoundError
+        NotFoundError,
       );
     });
 
@@ -496,16 +559,16 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/:id"
+        (call) => call[0] === "/:id",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ForbiddenError
+        ForbiddenError,
       );
     });
 
@@ -520,24 +583,26 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/:id"
+        (call) => call[0] === "/:id",
       )?.[1];
 
       await handler(mockRequest, mockReply);
 
-      expect((mockRequest.tenantDb as any).supportTicket.findUnique).toHaveBeenCalledWith(
+      expect(
+        (mockRequest.tenantDb as any).supportTicket.findUnique,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           include: expect.objectContaining({
             messages: expect.objectContaining({
               orderBy: { createdAt: "asc" },
             }),
           }),
-        })
+        }),
       );
     });
   });
@@ -566,15 +631,15 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        existingTicket
+        existingTicket,
       );
       (mockRequest.tenantDb as any).supportTicket.update.mockResolvedValue(
-        updatedTicket
+        updatedTicket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id"
+        (call) => call[0] === "/:id",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -594,16 +659,16 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        existingTicket
+        existingTicket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id"
+        (call) => call[0] === "/:id",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
 
@@ -625,15 +690,15 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        existingTicket
+        existingTicket,
       );
       (mockRequest.tenantDb as any).supportTicket.update.mockResolvedValue(
-        updatedTicket
+        updatedTicket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id"
+        (call) => call[0] === "/:id",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -659,15 +724,15 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        existingTicket
+        existingTicket,
       );
       (mockRequest.tenantDb as any).supportTicket.update.mockResolvedValue(
-        updatedTicket
+        updatedTicket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id"
+        (call) => call[0] === "/:id",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -685,16 +750,16 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id"
+        (call) => call[0] === "/:id",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ForbiddenError
+        ForbiddenError,
       );
     });
 
@@ -704,7 +769,7 @@ describe("Support Tickets Routes", () => {
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id"
+        (call) => call[0] === "/:id",
       )?.[1];
 
       expect(handler).toBeDefined();
@@ -728,15 +793,15 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        existingTicket
+        existingTicket,
       );
       (mockRequest.tenantDb as any).supportTicket.update.mockResolvedValue(
-        updatedTicket
+        updatedTicket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id"
+        (call) => call[0] === "/:id",
       )?.[1];
 
       await handler(mockRequest, mockReply);
@@ -746,7 +811,7 @@ describe("Support Tickets Routes", () => {
           shopId: "shop-1",
           ticketId: "ticket-1",
         }),
-        "Support ticket updated"
+        "Support ticket updated",
       );
     });
   });
@@ -774,22 +839,22 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
       (mockRequest.tenantDb as any).ticketMessage.create.mockResolvedValue(
-        message
+        message,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/:id/messages"
+        (call) => call[0] === "/:id/messages",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
 
       expect(mockReply.status).toHaveBeenCalledWith(201);
       expect(result.data.content).toBe(
-        "Thank you for contacting us. We will look into this."
+        "Thank you for contacting us. We will look into this.",
       );
     });
 
@@ -813,15 +878,15 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
       (mockRequest.tenantDb as any).ticketMessage.create.mockResolvedValue(
-        message
+        message,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/:id/messages"
+        (call) => call[0] === "/:id/messages",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -848,28 +913,28 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
       (mockRequest.tenantDb as any).ticketMessage.create.mockResolvedValue(
-        message
+        message,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/:id/messages"
+        (call) => call[0] === "/:id/messages",
       )?.[1];
 
       await handler(mockRequest, mockReply);
 
       expect(
-        (mockRequest.tenantDb as any).supportTicket.update
+        (mockRequest.tenantDb as any).supportTicket.update,
       ).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: "ticket-1" },
           data: expect.objectContaining({
             updatedAt: expect.any(Date),
           }),
-        })
+        }),
       );
     });
 
@@ -879,11 +944,11 @@ describe("Support Tickets Routes", () => {
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/:id/messages"
+        (call) => call[0] === "/:id/messages",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
 
@@ -897,16 +962,16 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/:id/messages"
+        (call) => call[0] === "/:id/messages",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ForbiddenError
+        ForbiddenError,
       );
     });
 
@@ -927,15 +992,15 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
       (mockRequest.tenantDb as any).ticketMessage.create.mockResolvedValue(
-        message
+        message,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/:id/messages"
+        (call) => call[0] === "/:id/messages",
       )?.[1];
 
       await handler(mockRequest, mockReply);
@@ -946,7 +1011,7 @@ describe("Support Tickets Routes", () => {
           ticketId: "ticket-1",
           messageId: "msg-1",
         }),
-        "Ticket message added"
+        "Ticket message added",
       );
     });
   });
@@ -976,16 +1041,16 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
       (mockRequest.tenantDb as any).user.findUnique.mockResolvedValue(assignee);
       (mockRequest.tenantDb as any).supportTicket.update.mockResolvedValue(
-        updatedTicket
+        updatedTicket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id/assign"
+        (call) => call[0] === "/:id/assign",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -1004,17 +1069,17 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
       (mockRequest.tenantDb as any).user.findUnique.mockResolvedValue(null);
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id/assign"
+        (call) => call[0] === "/:id/assign",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        NotFoundError
+        NotFoundError,
       );
     });
 
@@ -1034,17 +1099,17 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
       (mockRequest.tenantDb as any).user.findUnique.mockResolvedValue(assignee);
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id/assign"
+        (call) => call[0] === "/:id/assign",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        NotFoundError
+        NotFoundError,
       );
     });
 
@@ -1054,7 +1119,7 @@ describe("Support Tickets Routes", () => {
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id/assign"
+        (call) => call[0] === "/:id/assign",
       )?.[1];
 
       expect(handler).toBeDefined();
@@ -1083,16 +1148,16 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
       (mockRequest.tenantDb as any).user.findUnique.mockResolvedValue(assignee);
       (mockRequest.tenantDb as any).supportTicket.update.mockResolvedValue(
-        updatedTicket
+        updatedTicket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id/assign"
+        (call) => call[0] === "/:id/assign",
       )?.[1];
 
       await handler(mockRequest, mockReply);
@@ -1103,7 +1168,7 @@ describe("Support Tickets Routes", () => {
           ticketId: "ticket-1",
           assigneeId: logAgentId,
         }),
-        "Ticket assigned"
+        "Ticket assigned",
       );
     });
   });
@@ -1127,15 +1192,15 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
       (mockRequest.tenantDb as any).supportTicket.update.mockResolvedValue(
-        resolvedTicket
+        resolvedTicket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id/resolve"
+        (call) => call[0] === "/:id/resolve",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -1154,16 +1219,16 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id/resolve"
+        (call) => call[0] === "/:id/resolve",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ConflictError
+        ConflictError,
       );
     });
 
@@ -1172,7 +1237,7 @@ describe("Support Tickets Routes", () => {
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id/resolve"
+        (call) => call[0] === "/:id/resolve",
       )?.[1];
 
       expect(handler).toBeDefined();
@@ -1196,15 +1261,15 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
       (mockRequest.tenantDb as any).supportTicket.update.mockResolvedValue(
-        resolvedTicket
+        resolvedTicket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id/resolve"
+        (call) => call[0] === "/:id/resolve",
       )?.[1];
 
       await handler(mockRequest, mockReply);
@@ -1214,7 +1279,7 @@ describe("Support Tickets Routes", () => {
           shopId: "shop-1",
           ticketId: "ticket-1",
         }),
-        "Ticket marked resolved"
+        "Ticket marked resolved",
       );
     });
   });
@@ -1238,15 +1303,15 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
       (mockRequest.tenantDb as any).supportTicket.update.mockResolvedValue(
-        closedTicket
+        closedTicket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id/close"
+        (call) => call[0] === "/:id/close",
       )?.[1];
 
       const result = await handler(mockRequest, mockReply);
@@ -1260,7 +1325,7 @@ describe("Support Tickets Routes", () => {
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id/close"
+        (call) => call[0] === "/:id/close",
       )?.[1];
 
       expect(handler).toBeDefined();
@@ -1275,16 +1340,16 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id/close"
+        (call) => call[0] === "/:id/close",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ForbiddenError
+        ForbiddenError,
       );
     });
 
@@ -1306,15 +1371,15 @@ describe("Support Tickets Routes", () => {
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
-        ticket
+        ticket,
       );
       (mockRequest.tenantDb as any).supportTicket.update.mockResolvedValue(
-        closedTicket
+        closedTicket,
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id/close"
+        (call) => call[0] === "/:id/close",
       )?.[1];
 
       await handler(mockRequest, mockReply);
@@ -1324,7 +1389,7 @@ describe("Support Tickets Routes", () => {
           shopId: "shop-1",
           ticketId: "ticket-1",
         }),
-        "Ticket closed"
+        "Ticket closed",
       );
     });
   });
@@ -1337,10 +1402,22 @@ describe("Support Tickets Routes", () => {
       expect(fastify.get).toHaveBeenCalledWith("/", expect.any(Function));
       expect(fastify.get).toHaveBeenCalledWith("/:id", expect.any(Function));
       expect(fastify.put).toHaveBeenCalledWith("/:id", expect.any(Function));
-      expect(fastify.post).toHaveBeenCalledWith("/:id/messages", expect.any(Function));
-      expect(fastify.put).toHaveBeenCalledWith("/:id/assign", expect.any(Function));
-      expect(fastify.put).toHaveBeenCalledWith("/:id/resolve", expect.any(Function));
-      expect(fastify.put).toHaveBeenCalledWith("/:id/close", expect.any(Function));
+      expect(fastify.post).toHaveBeenCalledWith(
+        "/:id/messages",
+        expect.any(Function),
+      );
+      expect(fastify.put).toHaveBeenCalledWith(
+        "/:id/assign",
+        expect.any(Function),
+      );
+      expect(fastify.put).toHaveBeenCalledWith(
+        "/:id/resolve",
+        expect.any(Function),
+      );
+      expect(fastify.put).toHaveBeenCalledWith(
+        "/:id/close",
+        expect.any(Function),
+      );
     });
 
     it("should add auth and tenant context hooks", async () => {
@@ -1348,7 +1425,7 @@ describe("Support Tickets Routes", () => {
 
       expect(fastify.addHook).toHaveBeenCalledWith(
         "preHandler",
-        expect.any(Function)
+        expect.any(Function),
       );
     });
   });
@@ -1358,12 +1435,12 @@ describe("Support Tickets Routes", () => {
       mockRequest.query = { page: 1, limit: 20 };
 
       (mockRequest.tenantDb as any).supportTicket.findMany.mockRejectedValue(
-        new Error("Database connection error")
+        new Error("Database connection error"),
       );
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.get as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow();
@@ -1377,11 +1454,11 @@ describe("Support Tickets Routes", () => {
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
   });
@@ -1395,7 +1472,7 @@ describe("Support Tickets Routes", () => {
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow();
@@ -1409,7 +1486,7 @@ describe("Support Tickets Routes", () => {
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow();
@@ -1424,7 +1501,7 @@ describe("Support Tickets Routes", () => {
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/"
+        (call) => call[0] === "/",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow();
@@ -1436,11 +1513,11 @@ describe("Support Tickets Routes", () => {
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
-        (call) => call[0] === "/:id/assign"
+        (call) => call[0] === "/:id/assign",
       )?.[1];
 
       await expect(handler(mockRequest, mockReply)).rejects.toThrow(
-        ValidationError
+        ValidationError,
       );
     });
   });

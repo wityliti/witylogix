@@ -147,7 +147,7 @@ export class WEXClient extends FuelFleetAdapter {
               scope: "fleet_cards transactions",
             }).toString(),
           }),
-        "WEX authentication"
+        "WEX authentication",
       );
 
       if (!response.ok) {
@@ -163,7 +163,7 @@ export class WEXClient extends FuelFleetAdapter {
     } catch (error) {
       this.circuitBreaker.recordFailure();
       throw new Error(
-        `WEX authentication error: ${error instanceof Error ? error.message : String(error)}`
+        `WEX authentication error: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -180,7 +180,7 @@ export class WEXClient extends FuelFleetAdapter {
   private async apiRequest<T>(
     endpoint: string,
     method: string = "GET",
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     await this.preRequestCheck();
 
@@ -199,7 +199,7 @@ export class WEXClient extends FuelFleetAdapter {
             },
             body: body ? JSON.stringify(body) : undefined,
           }),
-        `WEX ${method} ${endpoint}`
+        `WEX ${method} ${endpoint}`,
       )) as Response;
 
       if (!response.ok) {
@@ -238,7 +238,7 @@ export class WEXClient extends FuelFleetAdapter {
         vehicleId: cardData.vehicleId,
         dailyLimit: cardData.dailyLimit,
         monthlyLimit: cardData.monthlyLimit,
-      }
+      },
     );
 
     return this.mapWEXCardToFuelCard(response);
@@ -254,7 +254,7 @@ export class WEXClient extends FuelFleetAdapter {
     const response = await this.apiRequest<WEXCardResponse>(
       `/api/v1/cards/${cardId}/activate`,
       "POST",
-      {}
+      {},
     );
 
     return this.mapWEXCardToFuelCard(response);
@@ -270,7 +270,7 @@ export class WEXClient extends FuelFleetAdapter {
     const response = await this.apiRequest<WEXCardResponse>(
       `/api/v1/cards/${cardId}/suspend`,
       "POST",
-      {}
+      {},
     );
 
     return this.mapWEXCardToFuelCard(response);
@@ -286,7 +286,7 @@ export class WEXClient extends FuelFleetAdapter {
     const response = await this.apiRequest<WEXCardResponse>(
       `/api/v1/cards/${cardId}/close`,
       "POST",
-      {}
+      {},
     );
 
     return this.mapWEXCardToFuelCard(response);
@@ -300,7 +300,7 @@ export class WEXClient extends FuelFleetAdapter {
    */
   async getCard(cardId: string): Promise<FuelCard> {
     const response = await this.apiRequest<WEXCardResponse>(
-      `/api/v1/cards/${cardId}`
+      `/api/v1/cards/${cardId}`,
     );
 
     return this.mapWEXCardToFuelCard(response);
@@ -315,7 +315,7 @@ export class WEXClient extends FuelFleetAdapter {
    */
   async getTransactions(
     cardId: string,
-    criteria?: Record<string, unknown>
+    criteria?: Record<string, unknown>,
   ): Promise<FuelTransaction[]> {
     const params = new URLSearchParams();
 
@@ -331,7 +331,7 @@ export class WEXClient extends FuelFleetAdapter {
     const responses = await this.apiRequest<WEXTransactionResponse[]>(endpoint);
 
     return responses.map((response) =>
-      this.mapWEXTransactionToFuelTransaction(response)
+      this.mapWEXTransactionToFuelTransaction(response),
     );
   }
 
@@ -343,7 +343,7 @@ export class WEXClient extends FuelFleetAdapter {
    */
   async getTransaction(transactionId: string): Promise<FuelTransaction> {
     const response = await this.apiRequest<WEXTransactionResponse>(
-      `/api/v1/transactions/${transactionId}`
+      `/api/v1/transactions/${transactionId}`,
     );
 
     return this.mapWEXTransactionToFuelTransaction(response);
@@ -356,11 +356,7 @@ export class WEXClient extends FuelFleetAdapter {
    * @returns Created/updated policy
    */
   async setPolicy(policy: Partial<FuelPolicy>): Promise<FuelPolicy> {
-    const response = await this.apiRequest(
-      "/api/v1/policies",
-      "POST",
-      policy
-    );
+    const response = await this.apiRequest("/api/v1/policies", "POST", policy);
 
     return response as FuelPolicy;
   }
@@ -372,9 +368,7 @@ export class WEXClient extends FuelFleetAdapter {
    * @returns Policy data
    */
   async getPolicy(policyId: string): Promise<FuelPolicy> {
-    const response = await this.apiRequest(
-      `/api/v1/policies/${policyId}`
-    );
+    const response = await this.apiRequest(`/api/v1/policies/${policyId}`);
 
     return response as FuelPolicy;
   }
@@ -385,7 +379,9 @@ export class WEXClient extends FuelFleetAdapter {
    * @param criteria - Filter criteria
    * @returns Array of station locations
    */
-  async listStations(criteria?: Record<string, unknown>): Promise<StationLocation[]> {
+  async listStations(
+    criteria?: Record<string, unknown>,
+  ): Promise<StationLocation[]> {
     const params = new URLSearchParams();
 
     if (criteria) {
@@ -425,7 +421,7 @@ export class WEXClient extends FuelFleetAdapter {
    */
   async detectFraud(cardId: string): Promise<FraudAlert[]> {
     const response = await this.apiRequest<FraudAlert[]>(
-      `/api/v1/cards/${cardId}/fraud-alerts`
+      `/api/v1/cards/${cardId}/fraud-alerts`,
     );
 
     return response;
@@ -437,11 +433,13 @@ export class WEXClient extends FuelFleetAdapter {
    * @param assignment - Assignment data
    * @returns Created assignment
    */
-  async assignCard(assignment: Partial<CardAssignment>): Promise<CardAssignment> {
+  async assignCard(
+    assignment: Partial<CardAssignment>,
+  ): Promise<CardAssignment> {
     const response = await this.apiRequest(
       "/api/v1/cards/assign",
       "POST",
-      assignment
+      assignment,
     );
 
     return response as CardAssignment;
@@ -468,12 +466,10 @@ export class WEXClient extends FuelFleetAdapter {
    * @param limit - Limit configuration
    * @returns Created/updated limit
    */
-  async setPurchaseLimit(limit: Partial<PurchaseLimit>): Promise<PurchaseLimit> {
-    const response = await this.apiRequest(
-      "/api/v1/limits",
-      "POST",
-      limit
-    );
+  async setPurchaseLimit(
+    limit: Partial<PurchaseLimit>,
+  ): Promise<PurchaseLimit> {
+    const response = await this.apiRequest("/api/v1/limits", "POST", limit);
 
     return response as PurchaseLimit;
   }
@@ -486,7 +482,7 @@ export class WEXClient extends FuelFleetAdapter {
    */
   async getPurchaseLimits(cardId: string): Promise<PurchaseLimit[]> {
     const limits = await this.apiRequest<PurchaseLimit[]>(
-      `/api/v1/cards/${cardId}/limits`
+      `/api/v1/cards/${cardId}/limits`,
     );
 
     return limits;
@@ -500,7 +496,7 @@ export class WEXClient extends FuelFleetAdapter {
    */
   async getRealTimeAlerts(cardId: string): Promise<Record<string, unknown>> {
     const alerts = await this.apiRequest<Record<string, unknown>>(
-      `/api/v1/cards/${cardId}/alerts/realtime`
+      `/api/v1/cards/${cardId}/alerts/realtime`,
     );
 
     return alerts;
@@ -512,7 +508,9 @@ export class WEXClient extends FuelFleetAdapter {
    * @param criteria - Reporting criteria
    * @returns Analytics data
    */
-  async getAnalytics(criteria: Record<string, unknown>): Promise<Record<string, unknown>> {
+  async getAnalytics(
+    criteria: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
     const params = new URLSearchParams();
 
     Object.entries(criteria).forEach(([key, value]) => {
@@ -559,7 +557,7 @@ export class WEXClient extends FuelFleetAdapter {
    * @returns FuelTransaction object
    */
   private mapWEXTransactionToFuelTransaction(
-    response: WEXTransactionResponse
+    response: WEXTransactionResponse,
   ): FuelTransaction {
     return {
       transactionId: response.transactionId,

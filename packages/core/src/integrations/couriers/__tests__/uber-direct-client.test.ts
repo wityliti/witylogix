@@ -7,7 +7,11 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { UberDirectClient } from "../uber-direct-client.js";
-import type { CourierConfig, QuoteRequest, CreateDeliveryRequest } from "../types.js";
+import type {
+  CourierConfig,
+  QuoteRequest,
+  CreateDeliveryRequest,
+} from "../types.js";
 import { DeliveryStatus, WebhookEvent } from "../types.js";
 
 describe("UberDirectClient", () => {
@@ -26,14 +30,29 @@ describe("UberDirectClient", () => {
 
   describe("validateConfig", () => {
     it("should require client ID, secret, and customer ID", async () => {
-      const missingId = new UberDirectClient({ clientSecret: "secret", tenantId: "cust" });
-      await expect(missingId.validateConfig()).rejects.toThrow("Uber Direct client ID is required");
+      const missingId = new UberDirectClient({
+        clientSecret: "secret",
+        tenantId: "cust",
+      });
+      await expect(missingId.validateConfig()).rejects.toThrow(
+        "Uber Direct client ID is required",
+      );
 
-      const missingSecret = new UberDirectClient({ clientId: "id", tenantId: "cust" });
-      await expect(missingSecret.validateConfig()).rejects.toThrow("Uber Direct client secret is required");
+      const missingSecret = new UberDirectClient({
+        clientId: "id",
+        tenantId: "cust",
+      });
+      await expect(missingSecret.validateConfig()).rejects.toThrow(
+        "Uber Direct client secret is required",
+      );
 
-      const missingCustomer = new UberDirectClient({ clientId: "id", clientSecret: "secret" });
-      await expect(missingCustomer.validateConfig()).rejects.toThrow("Uber Direct customer ID is required");
+      const missingCustomer = new UberDirectClient({
+        clientId: "id",
+        clientSecret: "secret",
+      });
+      await expect(missingCustomer.validateConfig()).rejects.toThrow(
+        "Uber Direct customer ID is required",
+      );
     });
 
     it("should validate OAuth2 credentials and customer access", async () => {
@@ -58,7 +77,9 @@ describe("UberDirectClient", () => {
       };
 
       // INTEGRATION: Mock delivery_quotes endpoint
-      await expect(client.getQuote(request)).rejects.toThrow("OAuth2 integration required");
+      await expect(client.getQuote(request)).rejects.toThrow(
+        "OAuth2 integration required",
+      );
     });
 
     it("should convert price from cents to USD", async () => {
@@ -108,7 +129,9 @@ describe("UberDirectClient", () => {
       };
 
       // INTEGRATION: Mock deliveries POST endpoint
-      await expect(client.createDelivery(request)).rejects.toThrow("OAuth2 integration required");
+      await expect(client.createDelivery(request)).rejects.toThrow(
+        "OAuth2 integration required",
+      );
     });
 
     it("should support scheduled deliveries", async () => {
@@ -153,7 +176,9 @@ describe("UberDirectClient", () => {
   describe("getDeliveryStatus", () => {
     it("should return delivery status with courier information", async () => {
       // INTEGRATION: Mock deliveries GET endpoint
-      await expect(client.getDeliveryStatus("delivery_uuid_123")).rejects.toThrow("OAuth2 integration required");
+      await expect(
+        client.getDeliveryStatus("delivery_uuid_123"),
+      ).rejects.toThrow("OAuth2 integration required");
     });
 
     it("should map Uber delivery statuses to normalized status", async () => {
@@ -184,7 +209,9 @@ describe("UberDirectClient", () => {
 
     it("should include courier location when available", async () => {
       // INTEGRATION: Verify courier.location extraction
-      await expect(client.getDeliveryStatus("delivery_uuid_123")).rejects.toThrow();
+      await expect(
+        client.getDeliveryStatus("delivery_uuid_123"),
+      ).rejects.toThrow();
     });
 
     it("should calculate ETA from estimated_dropoff_time_seconds", async () => {
@@ -198,36 +225,48 @@ describe("UberDirectClient", () => {
   describe("cancelDelivery", () => {
     it("should cancel delivery and return CANCELLED status", async () => {
       // INTEGRATION: Mock deliveries cancel endpoint
-      await expect(client.cancelDelivery("delivery_uuid_123")).rejects.toThrow("OAuth2 integration required");
+      await expect(client.cancelDelivery("delivery_uuid_123")).rejects.toThrow(
+        "OAuth2 integration required",
+      );
     });
 
     it("should fetch updated status after cancellation", async () => {
       // INTEGRATION: Verify follow-up getDeliveryStatus call
-      await expect(client.cancelDelivery("delivery_uuid_123")).rejects.toThrow();
+      await expect(
+        client.cancelDelivery("delivery_uuid_123"),
+      ).rejects.toThrow();
     });
   });
 
   describe("getDriverLocation", () => {
     it("should return current driver location", async () => {
       // INTEGRATION: Extract location from delivery status
-      await expect(client.getDriverLocation("delivery_uuid_123")).rejects.toThrow("OAuth2 integration required");
+      await expect(
+        client.getDriverLocation("delivery_uuid_123"),
+      ).rejects.toThrow("OAuth2 integration required");
     });
 
     it("should throw error if location unavailable", async () => {
       // INTEGRATION: Test location-missing case
-      await expect(client.getDriverLocation("pending_delivery")).rejects.toThrow();
+      await expect(
+        client.getDriverLocation("pending_delivery"),
+      ).rejects.toThrow();
     });
 
     it("should include last update timestamp", async () => {
       // INTEGRATION: Verify updated_at timestamp
-      await expect(client.getDriverLocation("delivery_uuid_123")).rejects.toThrow();
+      await expect(
+        client.getDriverLocation("delivery_uuid_123"),
+      ).rejects.toThrow();
     });
   });
 
   describe("listWebhooks", () => {
     it("should return list of registered webhooks", async () => {
       // INTEGRATION: Mock webhooks GET endpoint
-      await expect(client.listWebhooks()).rejects.toThrow("OAuth2 integration required");
+      await expect(client.listWebhooks()).rejects.toThrow(
+        "OAuth2 integration required",
+      );
     });
 
     it("should parse webhook event types", async () => {
@@ -249,7 +288,10 @@ describe("UberDirectClient", () => {
       await expect(
         client.registerWebhook({
           url: "https://example.com/webhooks/uber",
-          events: [WebhookEvent.DELIVERY_CREATED, WebhookEvent.DELIVERY_DELIVERED],
+          events: [
+            WebhookEvent.DELIVERY_CREATED,
+            WebhookEvent.DELIVERY_DELIVERED,
+          ],
         }),
       ).rejects.toThrow("OAuth2 integration required");
     });
@@ -268,12 +310,16 @@ describe("UberDirectClient", () => {
   describe("deregisterWebhook", () => {
     it("should deregister webhook by ID", async () => {
       // INTEGRATION: Mock webhooks DELETE endpoint
-      await expect(client.deregisterWebhook("webhook_uuid_123")).rejects.toThrow("OAuth2 integration required");
+      await expect(
+        client.deregisterWebhook("webhook_uuid_123"),
+      ).rejects.toThrow("OAuth2 integration required");
     });
 
     it("should throw error for non-existent webhook", async () => {
       // INTEGRATION: Test 404 handling
-      await expect(client.deregisterWebhook("invalid_webhook")).rejects.toThrow();
+      await expect(
+        client.deregisterWebhook("invalid_webhook"),
+      ).rejects.toThrow();
     });
   });
 

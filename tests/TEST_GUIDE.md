@@ -42,12 +42,14 @@ Located in: `tests/unit/`
 Test individual functions, classes, and components in isolation.
 
 **Characteristics:**
+
 - No external dependencies (databases, APIs, file system)
 - Mocked when external calls are needed
 - Run in < 100ms typically
 - Highest coverage target: 85%
 
 **Examples:**
+
 - Service logic (calculations, transformations)
 - Utility functions
 - State management (reducers, hooks)
@@ -60,6 +62,7 @@ Located in: `tests/integration/`
 Test multiple components working together, including with databases and services.
 
 **Characteristics:**
+
 - Uses test database or mocked services
 - Tests actual business flows
 - May involve multiple modules
@@ -67,6 +70,7 @@ Test multiple components working together, including with databases and services
 - Coverage target: 60%
 
 **Examples:**
+
 - API endpoint flows
 - Database operations with validation
 - Multi-step workflows
@@ -79,6 +83,7 @@ Located in: `tests/e2e/`
 Test complete user workflows through the browser.
 
 **Characteristics:**
+
 - Uses real browser automation (Playwright)
 - Tests full feature flows
 - Runs against staging/test environment
@@ -86,6 +91,7 @@ Test complete user workflows through the browser.
 - Coverage target: 40%
 
 **Examples:**
+
 - User signup/login flows
 - Complete delivery workflows
 - UI interactions
@@ -98,12 +104,14 @@ Located in: `tests/load/`
 Test system performance under load.
 
 **Characteristics:**
+
 - Simulates concurrent users
 - Measures response times
 - Identifies bottlenecks
 - No coverage requirements
 
 **Examples:**
+
 - API capacity testing
 - Database connection pool limits
 - Concurrent delivery operations
@@ -116,12 +124,14 @@ Located in: `tests/performance/`
 Benchmark critical operations.
 
 **Characteristics:**
+
 - Measures execution time
 - Tracks performance regressions
 - Runs on isolated environment
 - No coverage requirements
 
 **Examples:**
+
 - Route calculation performance
 - Search query performance
 - Large list rendering
@@ -425,7 +435,7 @@ import { http, HttpResponse } from "msw";
 const server = setupServer(
   http.get("/api/delivery/:id", () => {
     return HttpResponse.json({ id: "1", status: "delivered" });
-  })
+  }),
 );
 
 beforeAll(() => server.listen());
@@ -454,7 +464,7 @@ export const deliveryFactory = {
 
   createMany(count: number): Delivery[] {
     return Array.from({ length: count }, (_, i) =>
-      this.create({ id: `delivery-${i}` })
+      this.create({ id: `delivery-${i}` }),
     );
   },
 

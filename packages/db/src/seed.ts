@@ -182,16 +182,66 @@ async function main() {
     log(colors.blue, "○", "Seeding Users...");
 
     const userEmails = [
-      { shop: 0, email: "admin@acme-logistics.com", name: "Alice Johnson", role: "ADMIN" },
-      { shop: 0, email: "dispatcher@acme-logistics.com", name: "Bob Smith", role: "DISPATCHER" },
-      { shop: 0, email: "viewer@acme-logistics.com", name: "Charlie Davis", role: "VIEWER" },
-      { shop: 1, email: "admin@metro-delivery.com", name: "Diana Wilson", role: "ADMIN" },
-      { shop: 1, email: "dispatcher@metro-delivery.com", name: "Eve Martinez", role: "DISPATCHER" },
-      { shop: 1, email: "viewer@metro-delivery.com", name: "Frank Anderson", role: "VIEWER" },
-      { shop: 2, email: "admin@fastship.com", name: "Grace Lee", role: "ADMIN" },
-      { shop: 2, email: "dispatcher@fastship.com", name: "Henry Brown", role: "DISPATCHER" },
-      { shop: 2, email: "viewer@fastship.com", name: "Ivy Taylor", role: "VIEWER" },
-      { shop: 2, email: "super@fastship.com", name: "Jack Miller", role: "SUPER_ADMIN" },
+      {
+        shop: 0,
+        email: "admin@acme-logistics.com",
+        name: "Alice Johnson",
+        role: "ADMIN",
+      },
+      {
+        shop: 0,
+        email: "dispatcher@acme-logistics.com",
+        name: "Bob Smith",
+        role: "DISPATCHER",
+      },
+      {
+        shop: 0,
+        email: "viewer@acme-logistics.com",
+        name: "Charlie Davis",
+        role: "VIEWER",
+      },
+      {
+        shop: 1,
+        email: "admin@metro-delivery.com",
+        name: "Diana Wilson",
+        role: "ADMIN",
+      },
+      {
+        shop: 1,
+        email: "dispatcher@metro-delivery.com",
+        name: "Eve Martinez",
+        role: "DISPATCHER",
+      },
+      {
+        shop: 1,
+        email: "viewer@metro-delivery.com",
+        name: "Frank Anderson",
+        role: "VIEWER",
+      },
+      {
+        shop: 2,
+        email: "admin@fastship.com",
+        name: "Grace Lee",
+        role: "ADMIN",
+      },
+      {
+        shop: 2,
+        email: "dispatcher@fastship.com",
+        name: "Henry Brown",
+        role: "DISPATCHER",
+      },
+      {
+        shop: 2,
+        email: "viewer@fastship.com",
+        name: "Ivy Taylor",
+        role: "VIEWER",
+      },
+      {
+        shop: 2,
+        email: "super@fastship.com",
+        name: "Jack Miller",
+        role: "SUPER_ADMIN",
+      },
     ];
 
     const users = await Promise.all(
@@ -207,8 +257,8 @@ async function main() {
             password: hashPassword("demo123456"),
             isActive: true,
           },
-        })
-      )
+        }),
+      ),
     );
 
     log(colors.green, "✓", `Created ${users.length} users`);
@@ -223,22 +273,42 @@ async function main() {
       db.orgMember.upsert({
         where: { orgId_userId: { orgId: orgs[0].id, userId: users[0].id } },
         update: {},
-        create: { orgId: orgs[0].id, userId: users[0].id, role: "OWNER", shopIds: [] },
+        create: {
+          orgId: orgs[0].id,
+          userId: users[0].id,
+          role: "OWNER",
+          shopIds: [],
+        },
       }),
       db.orgMember.upsert({
         where: { orgId_userId: { orgId: orgs[0].id, userId: users[1].id } },
         update: {},
-        create: { orgId: orgs[0].id, userId: users[1].id, role: "ADMIN", shopIds: [] },
+        create: {
+          orgId: orgs[0].id,
+          userId: users[1].id,
+          role: "ADMIN",
+          shopIds: [],
+        },
       }),
       db.orgMember.upsert({
         where: { orgId_userId: { orgId: orgs[1].id, userId: users[3].id } },
         update: {},
-        create: { orgId: orgs[1].id, userId: users[3].id, role: "OWNER", shopIds: [] },
+        create: {
+          orgId: orgs[1].id,
+          userId: users[3].id,
+          role: "OWNER",
+          shopIds: [],
+        },
       }),
       db.orgMember.upsert({
         where: { orgId_userId: { orgId: orgs[2].id, userId: users[6].id } },
         update: {},
-        create: { orgId: orgs[2].id, userId: users[6].id, role: "OWNER", shopIds: [] },
+        create: {
+          orgId: orgs[2].id,
+          userId: users[6].id,
+          role: "OWNER",
+          shopIds: [],
+        },
       }),
     ]);
 
@@ -362,13 +432,15 @@ async function main() {
           name: "Manhattan Zone",
           boundary: {
             type: "Polygon",
-            coordinates: [[
-              [-74.02, 40.7],
-              [-73.93, 40.7],
-              [-73.93, 40.78],
-              [-74.02, 40.78],
-              [-74.02, 40.7],
-            ]],
+            coordinates: [
+              [
+                [-74.02, 40.7],
+                [-73.93, 40.7],
+                [-73.93, 40.78],
+                [-74.02, 40.78],
+                [-74.02, 40.7],
+              ],
+            ],
           },
           baseRate: 5.0,
           perKmRate: 1.5,
@@ -388,13 +460,15 @@ async function main() {
           name: "Brooklyn Zone",
           boundary: {
             type: "Polygon",
-            coordinates: [[
-              [-73.95, 40.58],
-              [-73.87, 40.58],
-              [-73.87, 40.68],
-              [-73.95, 40.68],
-              [-73.95, 40.58],
-            ]],
+            coordinates: [
+              [
+                [-73.95, 40.58],
+                [-73.87, 40.58],
+                [-73.87, 40.68],
+                [-73.95, 40.68],
+                [-73.95, 40.58],
+              ],
+            ],
           },
           baseRate: 4.0,
           perKmRate: 1.2,
@@ -414,13 +488,15 @@ async function main() {
           name: "Chicago Downtown",
           boundary: {
             type: "Polygon",
-            coordinates: [[
-              [-87.64, 41.87],
-              [-87.62, 41.87],
-              [-87.62, 41.89],
-              [-87.64, 41.89],
-              [-87.64, 41.87],
-            ]],
+            coordinates: [
+              [
+                [-87.64, 41.87],
+                [-87.62, 41.87],
+                [-87.62, 41.89],
+                [-87.64, 41.89],
+                [-87.64, 41.87],
+              ],
+            ],
           },
           baseRate: 3.5,
           perKmRate: 1.0,
@@ -440,13 +516,15 @@ async function main() {
           name: "San Francisco Bay",
           boundary: {
             type: "Polygon",
-            coordinates: [[
-              [-122.51, 37.7],
-              [-122.36, 37.7],
-              [-122.36, 37.84],
-              [-122.51, 37.84],
-              [-122.51, 37.7],
-            ]],
+            coordinates: [
+              [
+                [-122.51, 37.7],
+                [-122.36, 37.7],
+                [-122.36, 37.84],
+                [-122.51, 37.84],
+                [-122.51, 37.7],
+              ],
+            ],
           },
           baseRate: 6.0,
           perKmRate: 2.0,
@@ -466,13 +544,15 @@ async function main() {
           name: "Silicon Valley",
           boundary: {
             type: "Polygon",
-            coordinates: [[
-              [-122.15, 37.25],
-              [-122.0, 37.25],
-              [-122.0, 37.5],
-              [-122.15, 37.5],
-              [-122.15, 37.25],
-            ]],
+            coordinates: [
+              [
+                [-122.15, 37.25],
+                [-122.0, 37.25],
+                [-122.0, 37.5],
+                [-122.15, 37.5],
+                [-122.15, 37.25],
+              ],
+            ],
           },
           baseRate: 5.5,
           perKmRate: 1.8,
@@ -571,10 +651,26 @@ async function main() {
     log(colors.blue, "○", "Seeding Drivers...");
 
     const driverNames = [
-      "John Smith", "Maria Garcia", "James Wilson", "Sarah Johnson", "Michael Brown",
-      "Jessica Davis", "Robert Martinez", "Emily Taylor", "David Anderson", "Lisa White",
-      "Christopher Lee", "Amanda Harris", "Daniel Clark", "Rachel Lewis", "Joseph Walker",
-      "Jennifer Hall", "Matthew Young", "Lauren King", "Andrew Wright", "Michelle Scott",
+      "John Smith",
+      "Maria Garcia",
+      "James Wilson",
+      "Sarah Johnson",
+      "Michael Brown",
+      "Jessica Davis",
+      "Robert Martinez",
+      "Emily Taylor",
+      "David Anderson",
+      "Lisa White",
+      "Christopher Lee",
+      "Amanda Harris",
+      "Daniel Clark",
+      "Rachel Lewis",
+      "Joseph Walker",
+      "Jennifer Hall",
+      "Matthew Young",
+      "Lauren King",
+      "Andrew Wright",
+      "Michelle Scott",
     ];
 
     const vehicleTypes = ["CAR", "VAN", "TRUCK", "MOTORCYCLE", "BICYCLE"];
@@ -583,7 +679,12 @@ async function main() {
       driverNames.map((name, i) => {
         const orgIndex = i % 3;
         return db.driver.upsert({
-          where: { orgId_phone: { orgId: orgs[orgIndex].id, phone: `+1-555-000${String(i).padStart(4, "0")}` } },
+          where: {
+            orgId_phone: {
+              orgId: orgs[orgIndex].id,
+              phone: `+1-555-000${String(i).padStart(4, "0")}`,
+            },
+          },
           update: {},
           create: {
             orgId: orgs[orgIndex].id,
@@ -594,7 +695,9 @@ async function main() {
             vehiclePlate: `DRV${String(i + 1).padStart(5, "0")}`,
             maxCapacity: 20 + Math.floor(Math.random() * 20),
             maxWeight: Math.floor(500 + Math.random() * 1000) / 10,
-            status: ["OFFLINE", "AVAILABLE", "ON_ROUTE"][Math.floor(Math.random() * 3)],
+            status: ["OFFLINE", "AVAILABLE", "ON_ROUTE"][
+              Math.floor(Math.random() * 3)
+            ],
             isActive: true,
             currentLocation: {
               lat: 40.7128 + (Math.random() - 0.5) * 0.5,
@@ -603,7 +706,7 @@ async function main() {
             password: hashPassword("driver123456"),
           },
         });
-      })
+      }),
     );
 
     log(colors.green, "✓", `Created ${drivers.length} drivers`);
@@ -613,24 +716,57 @@ async function main() {
     // ─────────────────────────────────────────────────────────
     log(colors.blue, "○", "Seeding Orders...");
 
-    const orderStatuses = ["PENDING", "ACCEPTED", "ASSIGNED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"];
+    const orderStatuses = [
+      "PENDING",
+      "ACCEPTED",
+      "ASSIGNED",
+      "OUT_FOR_DELIVERY",
+      "DELIVERED",
+      "CANCELLED",
+    ];
     const orderCustomers = [
       { name: "Acme Corp", email: "orders@acme.com", phone: "+1-212-555-1000" },
-      { name: "Metro LLC", email: "orders@metro.com", phone: "+1-312-555-1000" },
-      { name: "Tech Startup", email: "orders@tech.com", phone: "+1-415-555-1000" },
-      { name: "Fashion House", email: "orders@fashion.com", phone: "+1-212-555-2000" },
-      { name: "Food Court", email: "orders@food.com", phone: "+1-312-555-2000" },
+      {
+        name: "Metro LLC",
+        email: "orders@metro.com",
+        phone: "+1-312-555-1000",
+      },
+      {
+        name: "Tech Startup",
+        email: "orders@tech.com",
+        phone: "+1-415-555-1000",
+      },
+      {
+        name: "Fashion House",
+        email: "orders@fashion.com",
+        phone: "+1-212-555-2000",
+      },
+      {
+        name: "Food Court",
+        email: "orders@food.com",
+        phone: "+1-312-555-2000",
+      },
     ];
 
     const orders = await Promise.all(
       Array.from({ length: 50 }, (_, i) => {
         const shopIndex = i % 3;
         const customer = orderCustomers[i % orderCustomers.length];
-        const status = orderStatuses[Math.floor(Math.random() * orderStatuses.length)];
-        const driver = status !== "PENDING" && status !== "CANCELLED" ? drivers[Math.floor(Math.random() * drivers.length)] : null;
+        const status =
+          orderStatuses[Math.floor(Math.random() * orderStatuses.length)];
+        const driver =
+          status !== "PENDING" && status !== "CANCELLED"
+            ? drivers[Math.floor(Math.random() * drivers.length)]
+            : null;
 
         return db.order.upsert({
-          where: { shopId_externalOrderId_source: { shopId: shops[shopIndex].id, externalOrderId: `ext-order-${i + 1}`, source: "SHOPIFY" } },
+          where: {
+            shopId_externalOrderId_source: {
+              shopId: shops[shopIndex].id,
+              externalOrderId: `ext-order-${i + 1}`,
+              source: "SHOPIFY",
+            },
+          },
           update: {},
           create: {
             shopId: shops[shopIndex].id,
@@ -647,8 +783,12 @@ async function main() {
             postalCode: `${10000 + i}`,
             country: "US",
             deliveryLocation: {
-              lat: [40.7128, 41.8781, 37.7749][shopIndex] + (Math.random() - 0.5) * 0.2,
-              lng: [-74.006, -87.6298, -122.4194][shopIndex] + (Math.random() - 0.5) * 0.2,
+              lat:
+                [40.7128, 41.8781, 37.7749][shopIndex] +
+                (Math.random() - 0.5) * 0.2,
+              lng:
+                [-74.006, -87.6298, -122.4194][shopIndex] +
+                (Math.random() - 0.5) * 0.2,
             },
             deliveryDate: new Date(Date.now() + (i % 7) * 24 * 60 * 60 * 1000),
             timeSlotId: timeSlots[shopIndex].id,
@@ -670,7 +810,7 @@ async function main() {
             metadata: { source: "demo_seed", testData: true },
           },
         });
-      })
+      }),
     );
 
     log(colors.green, "✓", `Created ${orders.length} orders`);
@@ -680,16 +820,32 @@ async function main() {
     // ─────────────────────────────────────────────────────────
     log(colors.blue, "○", "Seeding Shipments...");
 
-    const shipmentStatuses = ["PENDING", "PROCESSING", "PICKED_UP", "IN_TRANSIT", "DELIVERED", "CANCELLED"];
+    const shipmentStatuses = [
+      "PENDING",
+      "PROCESSING",
+      "PICKED_UP",
+      "IN_TRANSIT",
+      "DELIVERED",
+      "CANCELLED",
+    ];
 
     const shipments = await Promise.all(
       Array.from({ length: 30 }, (_, i) => {
         const order = orders[i % orders.length];
-        const status = shipmentStatuses[Math.floor(Math.random() * shipmentStatuses.length)];
-        const driver = status !== "PENDING" && status !== "CANCELLED" ? drivers[Math.floor(Math.random() * drivers.length)] : null;
+        const status =
+          shipmentStatuses[Math.floor(Math.random() * shipmentStatuses.length)];
+        const driver =
+          status !== "PENDING" && status !== "CANCELLED"
+            ? drivers[Math.floor(Math.random() * drivers.length)]
+            : null;
 
         return db.shipment.upsert({
-          where: { shopId_shipmentNumber: { shopId: order.shopId, shipmentNumber: `SHP-${String(i + 1).padStart(5, "0")}` } },
+          where: {
+            shopId_shipmentNumber: {
+              shopId: order.shopId,
+              shipmentNumber: `SHP-${String(i + 1).padStart(5, "0")}`,
+            },
+          },
           update: {},
           create: {
             shopId: order.shopId,
@@ -699,7 +855,9 @@ async function main() {
             shipmentNumber: `SHP-${String(i + 1).padStart(5, "0")}`,
             trackingNumber: `TRACK${String(i + 1).padStart(8, "0")}`,
             status,
-            deliveryMethod: ["LOCAL_DELIVERY", "SAME_DAY", "STANDARD_SHIPPING"][i % 3],
+            deliveryMethod: ["LOCAL_DELIVERY", "SAME_DAY", "STANDARD_SHIPPING"][
+              i % 3
+            ],
             recipientName: order.customerName,
             recipientPhone: order.customerPhone,
             recipientEmail: order.customerEmail,
@@ -735,7 +893,7 @@ async function main() {
             metadata: { demo: true, testData: true },
           },
         });
-      })
+      }),
     );
 
     log(colors.green, "✓", `Created ${shipments.length} shipments`);
@@ -747,7 +905,14 @@ async function main() {
 
     const notificationTemplates = await Promise.all([
       db.notificationTemplate.upsert({
-        where: { shopId_channel_eventType_language: { shopId: shops[0].id, channel: "EMAIL", eventType: "order.confirmed", language: "en" } },
+        where: {
+          shopId_channel_eventType_language: {
+            shopId: shops[0].id,
+            channel: "EMAIL",
+            eventType: "order.confirmed",
+            language: "en",
+          },
+        },
         update: {},
         create: {
           shopId: shops[0].id,
@@ -757,8 +922,16 @@ async function main() {
           subject: "Your order {{order.number}} has been confirmed",
           body: "Thank you for your order. Your order #{{order.number}} has been confirmed and will be delivered soon.",
           variables: [
-            { key: "order.number", description: "Order number", example: "#1001" },
-            { key: "customer.name", description: "Customer name", example: "John Doe" },
+            {
+              key: "order.number",
+              description: "Order number",
+              example: "#1001",
+            },
+            {
+              key: "customer.name",
+              description: "Customer name",
+              example: "John Doe",
+            },
           ],
           language: "en",
           version: 1,
@@ -767,7 +940,14 @@ async function main() {
         },
       }),
       db.notificationTemplate.upsert({
-        where: { shopId_channel_eventType_language: { shopId: shops[0].id, channel: "SMS", eventType: "delivery.assigned", language: "en" } },
+        where: {
+          shopId_channel_eventType_language: {
+            shopId: shops[0].id,
+            channel: "SMS",
+            eventType: "delivery.assigned",
+            language: "en",
+          },
+        },
         update: {},
         create: {
           shopId: shops[0].id,
@@ -776,9 +956,21 @@ async function main() {
           name: "Delivery Assigned",
           body: "Your order {{order.number}} has been assigned to driver {{driver.name}}. Track it here: {{tracking.url}}",
           variables: [
-            { key: "order.number", description: "Order number", example: "#1001" },
-            { key: "driver.name", description: "Driver name", example: "John Smith" },
-            { key: "tracking.url", description: "Tracking URL", example: "https://track.example.com/123" },
+            {
+              key: "order.number",
+              description: "Order number",
+              example: "#1001",
+            },
+            {
+              key: "driver.name",
+              description: "Driver name",
+              example: "John Smith",
+            },
+            {
+              key: "tracking.url",
+              description: "Tracking URL",
+              example: "https://track.example.com/123",
+            },
           ],
           language: "en",
           version: 1,
@@ -787,7 +979,14 @@ async function main() {
         },
       }),
       db.notificationTemplate.upsert({
-        where: { shopId_channel_eventType_language: { shopId: shops[0].id, channel: "PUSH", eventType: "delivery.out_for_delivery", language: "en" } },
+        where: {
+          shopId_channel_eventType_language: {
+            shopId: shops[0].id,
+            channel: "PUSH",
+            eventType: "delivery.out_for_delivery",
+            language: "en",
+          },
+        },
         update: {},
         create: {
           shopId: shops[0].id,
@@ -797,8 +996,16 @@ async function main() {
           subject: "On the way!",
           body: "Your order {{order.number}} is out for delivery. Driver {{driver.name}} will arrive soon.",
           variables: [
-            { key: "order.number", description: "Order number", example: "#1001" },
-            { key: "driver.name", description: "Driver name", example: "John Smith" },
+            {
+              key: "order.number",
+              description: "Order number",
+              example: "#1001",
+            },
+            {
+              key: "driver.name",
+              description: "Driver name",
+              example: "John Smith",
+            },
           ],
           language: "en",
           version: 1,
@@ -807,7 +1014,14 @@ async function main() {
         },
       }),
       db.notificationTemplate.upsert({
-        where: { shopId_channel_eventType_language: { shopId: shops[0].id, channel: "EMAIL", eventType: "delivery.delivered", language: "en" } },
+        where: {
+          shopId_channel_eventType_language: {
+            shopId: shops[0].id,
+            channel: "EMAIL",
+            eventType: "delivery.delivered",
+            language: "en",
+          },
+        },
         update: {},
         create: {
           shopId: shops[0].id,
@@ -817,8 +1031,16 @@ async function main() {
           subject: "Your order {{order.number}} has been delivered",
           body: "Great news! Your order {{order.number}} has been successfully delivered at {{delivery.time}}.",
           variables: [
-            { key: "order.number", description: "Order number", example: "#1001" },
-            { key: "delivery.time", description: "Delivery time", example: "2024-03-10 14:30" },
+            {
+              key: "order.number",
+              description: "Order number",
+              example: "#1001",
+            },
+            {
+              key: "delivery.time",
+              description: "Delivery time",
+              example: "2024-03-10 14:30",
+            },
           ],
           language: "en",
           version: 1,
@@ -828,7 +1050,11 @@ async function main() {
       }),
     ]);
 
-    log(colors.green, "✓", `Created ${notificationTemplates.length} notification templates`);
+    log(
+      colors.green,
+      "✓",
+      `Created ${notificationTemplates.length} notification templates`,
+    );
 
     // ─────────────────────────────────────────────────────────
     // 12. Create Webhook Subscriptions
@@ -837,7 +1063,9 @@ async function main() {
 
     const webhooks = await Promise.all([
       db.webhookSubscription.upsert({
-        where: { shopId_topic: { shopId: shops[0].id, topic: "orders/create" } },
+        where: {
+          shopId_topic: { shopId: shops[0].id, topic: "orders/create" },
+        },
         update: {},
         create: {
           shopId: shops[0].id,
@@ -847,7 +1075,9 @@ async function main() {
         },
       }),
       db.webhookSubscription.upsert({
-        where: { shopId_topic: { shopId: shops[0].id, topic: "orders/updated" } },
+        where: {
+          shopId_topic: { shopId: shops[0].id, topic: "orders/updated" },
+        },
         update: {},
         create: {
           shopId: shops[0].id,
@@ -857,7 +1087,9 @@ async function main() {
         },
       }),
       db.webhookSubscription.upsert({
-        where: { shopId_topic: { shopId: shops[1].id, topic: "orders/create" } },
+        where: {
+          shopId_topic: { shopId: shops[1].id, topic: "orders/create" },
+        },
         update: {},
         create: {
           shopId: shops[1].id,
@@ -867,7 +1099,9 @@ async function main() {
         },
       }),
       db.webhookSubscription.upsert({
-        where: { shopId_topic: { shopId: shops[2].id, topic: "orders/create" } },
+        where: {
+          shopId_topic: { shopId: shops[2].id, topic: "orders/create" },
+        },
         update: {},
         create: {
           shopId: shops[2].id,
@@ -1030,26 +1264,50 @@ async function main() {
       }),
     ]);
 
-    log(colors.green, "✓", `Created ${subscriptions.length} billing subscriptions`);
+    log(
+      colors.green,
+      "✓",
+      `Created ${subscriptions.length} billing subscriptions`,
+    );
 
     // ─────────────────────────────────────────────────────────
     // Summary
     // ─────────────────────────────────────────────────────────
     log(colors.cyan, "▶", "\nSeed Complete! Summary:");
-    console.log(`${colors.green}✓${colors.reset} Organizations: ${orgs.length}`);
+    console.log(
+      `${colors.green}✓${colors.reset} Organizations: ${orgs.length}`,
+    );
     console.log(`${colors.green}✓${colors.reset} Shops: ${shops.length}`);
     console.log(`${colors.green}✓${colors.reset} Users: ${users.length}`);
-    console.log(`${colors.green}✓${colors.reset} Locations: ${locations.length}`);
-    console.log(`${colors.green}✓${colors.reset} Delivery Zones: ${zones.length}`);
-    console.log(`${colors.green}✓${colors.reset} Time Slots: ${timeSlots.length}`);
+    console.log(
+      `${colors.green}✓${colors.reset} Locations: ${locations.length}`,
+    );
+    console.log(
+      `${colors.green}✓${colors.reset} Delivery Zones: ${zones.length}`,
+    );
+    console.log(
+      `${colors.green}✓${colors.reset} Time Slots: ${timeSlots.length}`,
+    );
     console.log(`${colors.green}✓${colors.reset} Drivers: ${drivers.length}`);
     console.log(`${colors.green}✓${colors.reset} Orders: ${orders.length}`);
-    console.log(`${colors.green}✓${colors.reset} Shipments: ${shipments.length}`);
-    console.log(`${colors.green}✓${colors.reset} Notification Templates: ${notificationTemplates.length}`);
-    console.log(`${colors.green}✓${colors.reset} Webhook Subscriptions: ${webhooks.length}`);
-    console.log(`${colors.green}✓${colors.reset} Billing Plans: ${billingPlans.length}`);
-    console.log(`${colors.green}✓${colors.reset} Billing Subscriptions: ${subscriptions.length}`);
-    console.log(`\n${colors.cyan}✓ Database seeded successfully!${colors.reset}\n`);
+    console.log(
+      `${colors.green}✓${colors.reset} Shipments: ${shipments.length}`,
+    );
+    console.log(
+      `${colors.green}✓${colors.reset} Notification Templates: ${notificationTemplates.length}`,
+    );
+    console.log(
+      `${colors.green}✓${colors.reset} Webhook Subscriptions: ${webhooks.length}`,
+    );
+    console.log(
+      `${colors.green}✓${colors.reset} Billing Plans: ${billingPlans.length}`,
+    );
+    console.log(
+      `${colors.green}✓${colors.reset} Billing Subscriptions: ${subscriptions.length}`,
+    );
+    console.log(
+      `\n${colors.cyan}✓ Database seeded successfully!${colors.reset}\n`,
+    );
   } catch (error) {
     log(colors.yellow, "✗", `Seed failed: ${error}`);
     console.error(error);

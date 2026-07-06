@@ -3,8 +3,8 @@
  * Utilities for creating, managing, and validating custom forms
  */
 
-import { prisma } from '@witylogix/db';
-import type { PosFormInput, CustomFormField } from './types';
+import { prisma } from "@witylogix/db";
+import type { PosFormInput, CustomFormField } from "./types";
 
 /**
  * Creates a new custom form
@@ -13,15 +13,18 @@ import type { PosFormInput, CustomFormField } from './types';
  * @returns Created form
  * @throws Error if validation fails
  */
-export async function createForm(prisma: any, input: PosFormInput): Promise<any> {
+export async function createForm(
+  prisma: any,
+  input: PosFormInput,
+): Promise<any> {
   if (!input.shopId) {
-    throw new Error('shopId is required');
+    throw new Error("shopId is required");
   }
   if (!input.name) {
-    throw new Error('name is required');
+    throw new Error("name is required");
   }
   if (!input.fields || input.fields.length === 0) {
-    throw new Error('fields must contain at least one field');
+    throw new Error("fields must contain at least one field");
   }
 
   // Validate all fields
@@ -35,7 +38,10 @@ export async function createForm(prisma: any, input: PosFormInput): Promise<any>
     if (!field.label) {
       throw new Error(`Field ${index}: label is required`);
     }
-    if (field.type === 'select' && (!field.options || field.options.length === 0)) {
+    if (
+      field.type === "select" &&
+      (!field.options || field.options.length === 0)
+    ) {
       throw new Error(`Field ${index}: select type requires options`);
     }
   });
@@ -51,7 +57,9 @@ export async function createForm(prisma: any, input: PosFormInput): Promise<any>
     });
     return form;
   } catch (error) {
-    throw new Error(`Failed to create custom form: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to create custom form: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   }
 }
 
@@ -63,7 +71,7 @@ export async function createForm(prisma: any, input: PosFormInput): Promise<any>
  */
 export async function getForm(prisma: any, formId: string): Promise<any> {
   if (!formId) {
-    throw new Error('formId is required');
+    throw new Error("formId is required");
   }
 
   try {
@@ -72,7 +80,9 @@ export async function getForm(prisma: any, formId: string): Promise<any> {
     });
     return form;
   } catch (error) {
-    throw new Error(`Failed to get custom form: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to get custom form: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   }
 }
 
@@ -84,17 +94,19 @@ export async function getForm(prisma: any, formId: string): Promise<any> {
  */
 export async function listForms(prisma: any, shopId: string): Promise<any[]> {
   if (!shopId) {
-    throw new Error('shopId is required');
+    throw new Error("shopId is required");
   }
 
   try {
     const forms = await db.posCustomForm.findMany({
       where: { shopId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
     return forms;
   } catch (error) {
-    throw new Error(`Failed to list custom forms: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to list custom forms: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   }
 }
 
@@ -111,13 +123,13 @@ export async function updateForm(
   updates: Partial<PosFormInput>,
 ): Promise<any> {
   if (!formId) {
-    throw new Error('formId is required');
+    throw new Error("formId is required");
   }
 
   // Validate fields if provided
   if (updates.fields) {
     if (updates.fields.length === 0) {
-      throw new Error('fields must contain at least one field');
+      throw new Error("fields must contain at least one field");
     }
 
     updates.fields.forEach((field, index) => {
@@ -130,7 +142,10 @@ export async function updateForm(
       if (!field.label) {
         throw new Error(`Field ${index}: label is required`);
       }
-      if (field.type === 'select' && (!field.options || field.options.length === 0)) {
+      if (
+        field.type === "select" &&
+        (!field.options || field.options.length === 0)
+      ) {
         throw new Error(`Field ${index}: select type requires options`);
       }
     });
@@ -142,12 +157,16 @@ export async function updateForm(
       data: {
         ...(updates.name && { name: updates.name }),
         ...(updates.fields && { fields: updates.fields }),
-        ...(updates.isDefault !== undefined && { isDefault: updates.isDefault }),
+        ...(updates.isDefault !== undefined && {
+          isDefault: updates.isDefault,
+        }),
       },
     });
     return form;
   } catch (error) {
-    throw new Error(`Failed to update custom form: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to update custom form: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   }
 }
 
@@ -158,7 +177,7 @@ export async function updateForm(
  */
 export async function deleteForm(prisma: any, formId: string): Promise<void> {
   if (!formId) {
-    throw new Error('formId is required');
+    throw new Error("formId is required");
   }
 
   try {
@@ -166,7 +185,9 @@ export async function deleteForm(prisma: any, formId: string): Promise<void> {
       where: { id: formId },
     });
   } catch (error) {
-    throw new Error(`Failed to delete custom form: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to delete custom form: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   }
 }
 
@@ -183,7 +204,7 @@ export function validateSubmission(
   const errors: string[] = [];
 
   if (!form || !form.fields) {
-    return { valid: false, errors: ['Invalid form definition'] };
+    return { valid: false, errors: ["Invalid form definition"] };
   }
 
   const fields = form.fields as CustomFormField[];
@@ -193,65 +214,68 @@ export function validateSubmission(
 
     // Check required fields
     if (field.required) {
-      if (value === undefined || value === null || value === '') {
+      if (value === undefined || value === null || value === "") {
         errors.push(`${field.label} is required`);
         return;
       }
     }
 
     // Skip validation if not required and empty
-    if (!field.required && (value === undefined || value === null || value === '')) {
+    if (
+      !field.required &&
+      (value === undefined || value === null || value === "")
+    ) {
       return;
     }
 
     // Type-specific validation
     switch (field.type) {
-      case 'email':
-        if (typeof value !== 'string' || !isValidEmail(value)) {
+      case "email":
+        if (typeof value !== "string" || !isValidEmail(value)) {
           errors.push(`${field.label} must be a valid email address`);
         }
         break;
 
-      case 'phone':
-        if (typeof value !== 'string' || !isValidPhone(value)) {
+      case "phone":
+        if (typeof value !== "string" || !isValidPhone(value)) {
           errors.push(`${field.label} must be a valid phone number`);
         }
         break;
 
-      case 'number':
-        if (typeof value !== 'number' && isNaN(Number(value))) {
+      case "number":
+        if (typeof value !== "number" && isNaN(Number(value))) {
           errors.push(`${field.label} must be a number`);
         }
         break;
 
-      case 'date':
+      case "date":
         if (!(value instanceof Date) && isNaN(Date.parse(String(value)))) {
           errors.push(`${field.label} must be a valid date`);
         }
         break;
 
-      case 'select':
+      case "select":
         if (!field.options?.includes(String(value))) {
           errors.push(`${field.label} has an invalid value`);
         }
         break;
 
-      case 'checkbox':
-        if (typeof value !== 'boolean') {
+      case "checkbox":
+        if (typeof value !== "boolean") {
           errors.push(`${field.label} must be a boolean value`);
         }
         break;
 
-      case 'text':
-      case 'textarea':
-        if (typeof value !== 'string') {
+      case "text":
+      case "textarea":
+        if (typeof value !== "string") {
           errors.push(`${field.label} must be text`);
         }
         break;
     }
 
     // Custom validation regex
-    if (field.validation && typeof value === 'string') {
+    if (field.validation && typeof value === "string") {
       try {
         const regex = new RegExp(field.validation);
         if (!regex.test(value)) {
@@ -275,9 +299,12 @@ export function validateSubmission(
  * @param shopId - Shop ID
  * @returns Default form or null
  */
-export async function getDefaultForm(prisma: any, shopId: string): Promise<any> {
+export async function getDefaultForm(
+  prisma: any,
+  shopId: string,
+): Promise<any> {
   if (!shopId) {
-    throw new Error('shopId is required');
+    throw new Error("shopId is required");
   }
 
   try {
@@ -289,7 +316,9 @@ export async function getDefaultForm(prisma: any, shopId: string): Promise<any> 
     });
     return form;
   } catch (error) {
-    throw new Error(`Failed to get default form: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to get default form: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   }
 }
 
@@ -310,5 +339,5 @@ function isValidEmail(email: string): boolean {
  */
 function isValidPhone(phone: string): boolean {
   const phoneRegex = /^\+?[\d\s\-()]{7,}$/;
-  return phoneRegex.test(phone.replace(/\s/g, ''));
+  return phoneRegex.test(phone.replace(/\s/g, ""));
 }

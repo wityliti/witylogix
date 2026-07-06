@@ -329,9 +329,15 @@ export class PartnerPerformance {
     metrics30d?: PerformanceMetrics,
     metrics90d?: PerformanceMetrics,
   ): PerformanceTrend {
-    const score7d = metrics7d ? this.calculatePerformanceScore(metrics7d) : null;
-    const score30d = metrics30d ? this.calculatePerformanceScore(metrics30d) : null;
-    const score90d = metrics90d ? this.calculatePerformanceScore(metrics90d) : null;
+    const score7d = metrics7d
+      ? this.calculatePerformanceScore(metrics7d)
+      : null;
+    const score30d = metrics30d
+      ? this.calculatePerformanceScore(metrics30d)
+      : null;
+    const score90d = metrics90d
+      ? this.calculatePerformanceScore(metrics90d)
+      : null;
 
     // Determine trend direction
     let trend: "up" | "down" | "stable" = "stable";
@@ -364,7 +370,11 @@ export class PartnerPerformance {
     }
 
     return {
-      partnerId: metrics7d?.period || metrics30d?.period || metrics90d?.period || "unknown",
+      partnerId:
+        metrics7d?.period ||
+        metrics30d?.period ||
+        metrics90d?.period ||
+        "unknown",
       period7d: score7d,
       period30d: score30d,
       period90d: score90d,
@@ -381,17 +391,28 @@ export class PartnerPerformance {
    * @param allScores Array of all partner scores
    * @returns Benchmarking result
    */
-  benchmarkAgainstPeers(score: PerformanceScore, allScores: PerformanceScore[]): BenchmarkResult {
+  benchmarkAgainstPeers(
+    score: PerformanceScore,
+    allScores: PerformanceScore[],
+  ): BenchmarkResult {
     const sortedScores = [...allScores].sort((a, b) => b.score - a.score);
     const rank = sortedScores.findIndex((s) => s.score === score.score) + 1;
-    const percentile = Math.round(((sortedScores.length - rank) / sortedScores.length) * 100);
+    const percentile = Math.round(
+      ((sortedScores.length - rank) / sortedScores.length) * 100,
+    );
 
-    const avgScore = sortedScores.reduce((sum, s) => sum + s.score, 0) / sortedScores.length;
+    const avgScore =
+      sortedScores.reduce((sum, s) => sum + s.score, 0) / sortedScores.length;
     const medianScore =
       sortedScores.length % 2 === 0
-        ? (sortedScores[sortedScores.length / 2 - 1].score + sortedScores[sortedScores.length / 2].score) / 2
+        ? (sortedScores[sortedScores.length / 2 - 1].score +
+            sortedScores[sortedScores.length / 2].score) /
+          2
         : sortedScores[Math.floor(sortedScores.length / 2)].score;
-    const top10Score = sortedScores.slice(0, Math.ceil(sortedScores.length * 0.1)).reduce((sum, s) => sum + s.score, 0) /
+    const top10Score =
+      sortedScores
+        .slice(0, Math.ceil(sortedScores.length * 0.1))
+        .reduce((sum, s) => sum + s.score, 0) /
       Math.ceil(sortedScores.length * 0.1);
 
     return {
@@ -414,7 +435,9 @@ export class PartnerPerformance {
    * @param metrics Performance metrics
    * @returns Analysis of strengths and weaknesses
    */
-  identifyStrengthsAndWeaknesses(metrics: PerformanceMetrics): PerformanceAnalysis {
+  identifyStrengthsAndWeaknesses(
+    metrics: PerformanceMetrics,
+  ): PerformanceAnalysis {
     const scores = {
       onTime: metrics.onTimeRate,
       damage: 100 - metrics.damageRate,
@@ -434,32 +457,39 @@ export class PartnerPerformance {
     // Identify risk level
     let riskLevel: "low" | "medium" | "high" = "low";
     if (metrics.onTimeRate < 75 || metrics.damageRate > 3) riskLevel = "high";
-    else if (metrics.onTimeRate < 85 || metrics.damageRate > 1.5) riskLevel = "medium";
+    else if (metrics.onTimeRate < 85 || metrics.damageRate > 1.5)
+      riskLevel = "medium";
 
     // Generate recommendations
     const recommendations: string[] = [];
     if (metrics.onTimeRate < 85) {
-      recommendations.push("Implement pickup schedule optimization to improve on-time delivery");
+      recommendations.push(
+        "Implement pickup schedule optimization to improve on-time delivery",
+      );
     }
     if (metrics.damageRate > 1) {
-      recommendations.push("Review packaging standards and driver training protocols");
+      recommendations.push(
+        "Review packaging standards and driver training protocols",
+      );
     }
     if (metrics.customerRating < 4.2) {
-      recommendations.push("Enhance communication with customers and resolve complaints promptly");
+      recommendations.push(
+        "Enhance communication with customers and resolve complaints promptly",
+      );
     }
     if (metrics.pickupSpeed > 30) {
-      recommendations.push("Increase local pickup capacity or reduce service areas");
+      recommendations.push(
+        "Increase local pickup capacity or reduce service areas",
+      );
     }
 
     return {
       partnerId: "unknown",
-      strengths: sorted
-        .slice(0, 3)
-        .map(({ metric, value }) => ({
-          metric: metric as keyof PerformanceMetrics,
-          value: Math.round(value * 10) / 10,
-          description: this.getMetricDescription(metric, value, true),
-        })),
+      strengths: sorted.slice(0, 3).map(({ metric, value }) => ({
+        metric: metric as keyof PerformanceMetrics,
+        value: Math.round(value * 10) / 10,
+        description: this.getMetricDescription(metric, value, true),
+      })),
       weaknesses: sorted
         .slice(-3)
         .reverse()
@@ -494,7 +524,10 @@ export class PartnerPerformance {
   ): PerformanceReport {
     const current = this.calculatePerformanceScore(metrics7d);
     const trend = this.getPerformanceTrend(metrics7d, metrics30d, metrics90d);
-    const benchmark = this.benchmarkAgainstPeers(current, allScores.length > 0 ? allScores : [current]);
+    const benchmark = this.benchmarkAgainstPeers(
+      current,
+      allScores.length > 0 ? allScores : [current],
+    );
     const analysis = this.identifyStrengthsAndWeaknesses(metrics7d);
 
     // Update IDs in nested objects
@@ -551,36 +584,45 @@ export class PartnerPerformance {
    * @param isStrength True if strength, false if weakness
    * @returns Description
    */
-  private getMetricDescription(metric: string, value: number, isStrength: boolean): string {
-    const descriptions: Record<string, { strength: string; weakness: string }> = {
-      onTime: {
-        strength: "Consistently delivers on time",
-        weakness: "Frequent delays in delivery",
-      },
-      damage: {
-        strength: "Excellent package handling",
-        weakness: "High damage/incident rates",
-      },
-      rating: {
-        strength: "Outstanding customer satisfaction",
-        weakness: "Low customer satisfaction scores",
-      },
-      cost: {
-        strength: "Competitive pricing",
-        weakness: "Above-market pricing",
-      },
-      pickup: {
-        strength: "Rapid pickup times",
-        weakness: "Slow pickup response",
-      },
-      communication: {
-        strength: "Excellent customer communication",
-        weakness: "Poor communication with customers",
-      },
-    };
+  private getMetricDescription(
+    metric: string,
+    value: number,
+    isStrength: boolean,
+  ): string {
+    const descriptions: Record<string, { strength: string; weakness: string }> =
+      {
+        onTime: {
+          strength: "Consistently delivers on time",
+          weakness: "Frequent delays in delivery",
+        },
+        damage: {
+          strength: "Excellent package handling",
+          weakness: "High damage/incident rates",
+        },
+        rating: {
+          strength: "Outstanding customer satisfaction",
+          weakness: "Low customer satisfaction scores",
+        },
+        cost: {
+          strength: "Competitive pricing",
+          weakness: "Above-market pricing",
+        },
+        pickup: {
+          strength: "Rapid pickup times",
+          weakness: "Slow pickup response",
+        },
+        communication: {
+          strength: "Excellent customer communication",
+          weakness: "Poor communication with customers",
+        },
+      };
 
     const desc = descriptions[metric];
-    return desc ? (isStrength ? desc.strength : desc.weakness) : `${metric} score: ${value.toFixed(1)}`;
+    return desc
+      ? isStrength
+        ? desc.strength
+        : desc.weakness
+      : `${metric} score: ${value.toFixed(1)}`;
   }
 }
 

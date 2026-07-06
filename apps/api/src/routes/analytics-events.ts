@@ -112,32 +112,31 @@ async function analyticsV2Routes(fastify: FastifyInstance): Promise<void> {
    *     generationTimeMs: number
    *   }
    */
-  fastify.get(
-    "/dashboard",
-    async (request: any, reply: FastifyReply) => {
-      try {
-        const query = dashboardQuerySchema.parse(request.query);
-        const { from, to } = parseDateRange(query.from, query.to);
-        const tenantId = request.tenantId as string;
+  fastify.get("/dashboard", async (request: any, reply: FastifyReply) => {
+    try {
+      const query = dashboardQuerySchema.parse(request.query);
+      const { from, to } = parseDateRange(query.from, query.to);
+      const tenantId = request.tenantId as string;
 
-        // Inject dashboard provider from container
-        const provider = (fastify as any).diContainer.get("dashboardDataProvider");
-        const dashboard = await provider.getDashboardSummary(tenantId, {
-          from,
-          to,
-        });
+      // Inject dashboard provider from container
+      const provider = (fastify as any).diContainer.get(
+        "dashboardDataProvider",
+      );
+      const dashboard = await provider.getDashboardSummary(tenantId, {
+        from,
+        to,
+      });
 
-        reply.code(200).send(dashboard);
-      } catch (err) {
-        if (err instanceof z.ZodError) {
-          reply.code(400).send(errorResponse(err.message, 400));
-        } else {
-          console.error("[Analytics] Dashboard error:", err);
-          reply.code(500).send(errorResponse("Failed to fetch dashboard", 500));
-        }
+      reply.code(200).send(dashboard);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        reply.code(400).send(errorResponse(err.message, 400));
+      } else {
+        console.error("[Analytics] Dashboard error:", err);
+        reply.code(500).send(errorResponse("Failed to fetch dashboard", 500));
       }
-    },
-  );
+    }
+  });
 
   // ── GET /analytics/events ───────────────────────────────────────────
   /**
@@ -159,40 +158,37 @@ async function analyticsV2Routes(fastify: FastifyInstance): Promise<void> {
    *     hasMore: boolean
    *   }
    */
-  fastify.get(
-    "/events",
-    async (request: any, reply: FastifyReply) => {
-      try {
-        const query = eventStreamQuerySchema.parse(request.query);
-        const tenantId = request.tenantId as string;
+  fastify.get("/events", async (request: any, reply: FastifyReply) => {
+    try {
+      const query = eventStreamQuerySchema.parse(request.query);
+      const tenantId = request.tenantId as string;
 
-        // Inject event repository from container
-        const repo = (fastify as any).diContainer.get("analyticsEventRepository");
-        const { events, totalCount } = await repo.findEvents({
-          tenantId,
-          eventType: query.eventType,
-          userId: query.userId,
-          limit: query.limit,
-          offset: query.offset,
-        });
+      // Inject event repository from container
+      const repo = (fastify as any).diContainer.get("analyticsEventRepository");
+      const { events, totalCount } = await repo.findEvents({
+        tenantId,
+        eventType: query.eventType,
+        userId: query.userId,
+        limit: query.limit,
+        offset: query.offset,
+      });
 
-        reply.code(200).send({
-          events,
-          totalCount,
-          limit: query.limit,
-          offset: query.offset,
-          hasMore: query.offset + query.limit < totalCount,
-        });
-      } catch (err) {
-        if (err instanceof z.ZodError) {
-          reply.code(400).send(errorResponse(err.message, 400));
-        } else {
-          console.error("[Analytics] Event stream error:", err);
-          reply.code(500).send(errorResponse("Failed to fetch events", 500));
-        }
+      reply.code(200).send({
+        events,
+        totalCount,
+        limit: query.limit,
+        offset: query.offset,
+        hasMore: query.offset + query.limit < totalCount,
+      });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        reply.code(400).send(errorResponse(err.message, 400));
+      } else {
+        console.error("[Analytics] Event stream error:", err);
+        reply.code(500).send(errorResponse("Failed to fetch events", 500));
       }
-    },
-  );
+    }
+  });
 
   // ── GET /analytics/metrics/:metric ──────────────────────────────────
   /**
@@ -217,57 +213,56 @@ async function analyticsV2Routes(fastify: FastifyInstance): Promise<void> {
    *     fromCache: boolean
    *   }
    */
-  fastify.get(
-    "/metrics/:metric",
-    async (request: any, reply: FastifyReply) => {
-      try {
-        const { metric: metricId } = request.params;
-        const query = metricsQuerySchema.parse(request.query);
-        const { from, to } = parseDateRange(query.from, query.to);
-        const tenantId = request.tenantId as string;
+  fastify.get("/metrics/:metric", async (request: any, reply: FastifyReply) => {
+    try {
+      const { metric: metricId } = request.params;
+      const query = metricsQuerySchema.parse(request.query);
+      const { from, to } = parseDateRange(query.from, query.to);
+      const tenantId = request.tenantId as string;
 
-        // Parse groupBy dimensions
-        const groupBy = query.groupBy
-          ? query.groupBy.split(",").map((f) => ({ field: f.trim() }))
-          : undefined;
+      // Parse groupBy dimensions
+      const groupBy = query.groupBy
+        ? query.groupBy.split(",").map((f) => ({ field: f.trim() }))
+        : undefined;
 
-        // Parse filters
-        let filters;
-        if (query.filters) {
-          try {
-            filters = JSON.parse(query.filters);
-          } catch {
-            return reply.code(400).send(
-              errorResponse("Invalid filters JSON format", 400),
-            );
-          }
-        }
-
-        // Inject aggregator from container
-        const aggregator = (fastify as any).diContainer.get("analyticsAggregator");
-        const result = await aggregator.aggregate({
-          id: metricId,
-          name: metricId,
-          eventTypes: [], // Map metric ID to event types
-          aggregations: ["count"],
-          timeRange: { from, to },
-          granularity: query.granularity,
-          groupBy,
-          filters,
-          tenantId,
-        });
-
-        reply.code(200).send(result);
-      } catch (err) {
-        if (err instanceof z.ZodError) {
-          reply.code(400).send(errorResponse(err.message, 400));
-        } else {
-          console.error("[Analytics] Metric error:", err);
-          reply.code(500).send(errorResponse("Failed to fetch metric", 500));
+      // Parse filters
+      let filters;
+      if (query.filters) {
+        try {
+          filters = JSON.parse(query.filters);
+        } catch {
+          return reply
+            .code(400)
+            .send(errorResponse("Invalid filters JSON format", 400));
         }
       }
-    },
-  );
+
+      // Inject aggregator from container
+      const aggregator = (fastify as any).diContainer.get(
+        "analyticsAggregator",
+      );
+      const result = await aggregator.aggregate({
+        id: metricId,
+        name: metricId,
+        eventTypes: [], // Map metric ID to event types
+        aggregations: ["count"],
+        timeRange: { from, to },
+        granularity: query.granularity,
+        groupBy,
+        filters,
+        tenantId,
+      });
+
+      reply.code(200).send(result);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        reply.code(400).send(errorResponse(err.message, 400));
+      } else {
+        console.error("[Analytics] Metric error:", err);
+        reply.code(500).send(errorResponse("Failed to fetch metric", 500));
+      }
+    }
+  });
 
   // ── GET /analytics/compare ──────────────────────────────────────────
   /**
@@ -290,40 +285,42 @@ async function analyticsV2Routes(fastify: FastifyInstance): Promise<void> {
    *     trend: "up" | "down" | "neutral"
    *   }
    */
-  fastify.get(
-    "/compare",
-    async (request: any, reply: FastifyReply) => {
-      try {
-        const query = compareQuerySchema.parse(request.query);
-        const { from, to } = parseDateRange(query.from, query.to);
-        const tenantId = request.tenantId as string;
+  fastify.get("/compare", async (request: any, reply: FastifyReply) => {
+    try {
+      const query = compareQuerySchema.parse(request.query);
+      const { from, to } = parseDateRange(query.from, query.to);
+      const tenantId = request.tenantId as string;
 
-        // Inject aggregator from container
-        const aggregator = (fastify as any).diContainer.get("analyticsAggregator");
-        const metricDef = {
-          id: query.metric,
-          name: query.metric,
-          eventTypes: [],
-          aggregations: ["count"],
-          timeRange: { from, to },
-          tenantId,
-        };
-        const result = await aggregator.comparePeriods(metricDef, query.previousPeriodDays);
+      // Inject aggregator from container
+      const aggregator = (fastify as any).diContainer.get(
+        "analyticsAggregator",
+      );
+      const metricDef = {
+        id: query.metric,
+        name: query.metric,
+        eventTypes: [],
+        aggregations: ["count"],
+        timeRange: { from, to },
+        tenantId,
+      };
+      const result = await aggregator.comparePeriods(
+        metricDef,
+        query.previousPeriodDays,
+      );
 
-        reply.code(200).send({
-          metric: query.metric,
-          ...result,
-        });
-      } catch (err) {
-        if (err instanceof z.ZodError) {
-          reply.code(400).send(errorResponse(err.message, 400));
-        } else {
-          console.error("[Analytics] Compare error:", err);
-          reply.code(500).send(errorResponse("Failed to compare metrics", 500));
-        }
+      reply.code(200).send({
+        metric: query.metric,
+        ...result,
+      });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        reply.code(400).send(errorResponse(err.message, 400));
+      } else {
+        console.error("[Analytics] Compare error:", err);
+        reply.code(500).send(errorResponse("Failed to compare metrics", 500));
       }
-    },
-  );
+    }
+  });
 
   // ── GET /analytics/export ───────────────────────────────────────────
   /**
@@ -341,86 +338,89 @@ async function analyticsV2Routes(fastify: FastifyInstance): Promise<void> {
    *   - Content-Type: text/csv or application/json
    *   - Content-Disposition: attachment; filename="analytics_export.csv"
    */
-  fastify.get(
-    "/export",
-    async (request: any, reply: FastifyReply) => {
-      try {
-        const query = exportQuerySchema.parse(request.query);
-        const { from, to } = parseDateRange(query.from, query.to);
-        const tenantId = request.tenantId as string;
+  fastify.get("/export", async (request: any, reply: FastifyReply) => {
+    try {
+      const query = exportQuerySchema.parse(request.query);
+      const { from, to } = parseDateRange(query.from, query.to);
+      const tenantId = request.tenantId as string;
 
-        // Implement export logic via event repository
-        const repo = (fastify as any).diContainer.get("analyticsEventRepository");
-        const events = await repo.findEventsForExport({
-          tenantId,
-          timeRange: { from, to },
-          limit: query.limit,
+      // Implement export logic via event repository
+      const repo = (fastify as any).diContainer.get("analyticsEventRepository");
+      const events = await repo.findEventsForExport({
+        tenantId,
+        timeRange: { from, to },
+        limit: query.limit,
+      });
+
+      const timestamp = new Date().toISOString().split("T")[0];
+      const filename = `analytics_${query.metric}_${timestamp}.${query.format}`;
+
+      reply.header("Content-Disposition", `attachment; filename="${filename}"`);
+
+      if (query.format === "csv") {
+        reply.header("Content-Type", "text/csv");
+
+        // CSV headers
+        const headers = [
+          "id",
+          "type",
+          "timestamp",
+          "userId",
+          "correlationId",
+          "metadata",
+          "statusCode",
+          "durationMs",
+          "errorMessage",
+        ];
+        let csv = headers.join(",") + "\n";
+
+        // CSV rows
+        for (const event of events) {
+          const row = [
+            event.id,
+            event.type,
+            event.timestamp,
+            event.userId || "",
+            event.correlationId || "",
+            JSON.stringify(event.metadata || {}),
+            event.statusCode || "",
+            event.durationMs || "",
+            event.errorMessage || "",
+          ];
+          csv +=
+            row.map((val) => `"${String(val).replace(/"/g, '""')}"`).join(",") +
+            "\n";
+        }
+
+        reply.send(csv);
+      } else {
+        reply.header("Content-Type", "application/json");
+        reply.send({
+          data: events,
+          totalRows: events.length,
+          generatedAt: new Date().toISOString(),
         });
-
-        const timestamp = new Date().toISOString().split("T")[0];
-        const filename = `analytics_${query.metric}_${timestamp}.${query.format}`;
-
-        reply.header(
-          "Content-Disposition",
-          `attachment; filename="${filename}"`,
-        );
-
-        if (query.format === "csv") {
-          reply.header("Content-Type", "text/csv");
-
-          // CSV headers
-          const headers = ["id", "type", "timestamp", "userId", "correlationId", "metadata", "statusCode", "durationMs", "errorMessage"];
-          let csv = headers.join(",") + "\n";
-
-          // CSV rows
-          for (const event of events) {
-            const row = [
-              event.id,
-              event.type,
-              event.timestamp,
-              event.userId || "",
-              event.correlationId || "",
-              JSON.stringify(event.metadata || {}),
-              event.statusCode || "",
-              event.durationMs || "",
-              event.errorMessage || "",
-            ];
-            csv += row.map((val) => `"${String(val).replace(/"/g, '""')}"`).join(",") + "\n";
-          }
-
-          reply.send(csv);
-        } else {
-          reply.header("Content-Type", "application/json");
-          reply.send({
-            data: events,
-            totalRows: events.length,
-            generatedAt: new Date().toISOString(),
-          });
-        }
-      } catch (err) {
-        if (err instanceof z.ZodError) {
-          reply.code(400).send(errorResponse(err.message, 400));
-        } else {
-          console.error("[Analytics] Export error:", err);
-          reply.code(500).send(errorResponse("Failed to export data", 500));
-        }
       }
-    },
-  );
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        reply.code(400).send(errorResponse(err.message, 400));
+      } else {
+        console.error("[Analytics] Export error:", err);
+        reply.code(500).send(errorResponse("Failed to export data", 500));
+      }
+    }
+  });
 
   // ── Health check ─────────────────────────────────────────────────────
   /**
    * Simple endpoint to verify analytics API is available.
    */
-  fastify.get(
-    "/health",
-    async (_request: any, reply: FastifyReply) => {
-      reply.code(200).send({
-        status: "ok",
-        timestamp: new Date().toISOString(),
-      });
-    },
-  );
+  fastify.get("/health", async (_request: any, reply: FastifyReply) => {
+    reply.code(200).send({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+    });
+  });
 }
 
 // Export the plugin

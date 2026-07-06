@@ -124,7 +124,14 @@ export interface NormalizedPatient extends FHIRResource {
     use?: string;
   }>;
   name: Array<{
-    use?: "usual" | "official" | "temp" | "nickname" | "anonymous" | "old" | "maiden";
+    use?:
+      | "usual"
+      | "official"
+      | "temp"
+      | "nickname"
+      | "anonymous"
+      | "old"
+      | "maiden";
     given?: string[];
     family?: string;
     prefix?: string[];
@@ -200,7 +207,14 @@ export interface NormalizedEncounter extends FHIRResource {
     system: string;
     value: string;
   }>;
-  status: "planned" | "arrived" | "triaged" | "in-progress" | "onleave" | "finished" | "cancelled";
+  status:
+    | "planned"
+    | "arrived"
+    | "triaged"
+    | "in-progress"
+    | "onleave"
+    | "finished"
+    | "cancelled";
   class: {
     system: string;
     code: string;
@@ -264,7 +278,14 @@ export interface NormalizedObservation extends FHIRResource {
     system: string;
     value: string;
   }>;
-  status: "registered" | "preliminary" | "final" | "amended" | "cancelled" | "entered-in-error" | "unknown";
+  status:
+    | "registered"
+    | "preliminary"
+    | "final"
+    | "amended"
+    | "cancelled"
+    | "entered-in-error"
+    | "unknown";
   category?: Array<{
     coding: Array<{
       system: string;
@@ -426,8 +447,23 @@ export interface NormalizedMedication extends FHIRResource {
     system: string;
     value: string;
   }>;
-  status: "active" | "on-hold" | "cancelled" | "completed" | "entered-in-error" | "draft" | "stopped" | "unknown";
-  intent?: "proposal" | "plan" | "order" | "original-order" | "reflex-order" | "filler-order" | "instance-order";
+  status:
+    | "active"
+    | "on-hold"
+    | "cancelled"
+    | "completed"
+    | "entered-in-error"
+    | "draft"
+    | "stopped"
+    | "unknown";
+  intent?:
+    | "proposal"
+    | "plan"
+    | "order"
+    | "original-order"
+    | "reflex-order"
+    | "filler-order"
+    | "instance-order";
   medication: {
     reference?: string;
     concept?: {

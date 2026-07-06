@@ -16,21 +16,31 @@ export type {
   AccountingSyncResult,
   RateLimitInfo,
   AccountingError,
-} from './types.js';
+} from "./types.js";
 
 // ─── ADAPTERS ───────────────────────────────────────────────────────
 
-export { QuickBooksAdapter, createQuickBooksConfig } from './quickbooks-adapter.js';
+export {
+  QuickBooksAdapter,
+  createQuickBooksConfig,
+} from "./quickbooks-adapter.js";
 
-export type { QuickBooksConfig, QBAuthResponse } from './quickbooks-adapter.js';
+export type { QuickBooksConfig, QBAuthResponse } from "./quickbooks-adapter.js";
 
-export { XeroAdapter, createXeroConfig } from './xero-adapter.js';
+export { XeroAdapter, createXeroConfig } from "./xero-adapter.js";
 
-export type { XeroConfig, XeroAuthResponse, XeroTenant } from './xero-adapter.js';
+export type {
+  XeroConfig,
+  XeroAuthResponse,
+  XeroTenant,
+} from "./xero-adapter.js";
 
 // ─── SDK CLIENTS ────────────────────────────────────────────────────
 
-export { QuickBooksSDKClient, QuickBooksError } from './quickbooks-sdk-client.js';
+export {
+  QuickBooksSDKClient,
+  QuickBooksError,
+} from "./quickbooks-sdk-client.js";
 
 export type {
   QBInvoice,
@@ -43,9 +53,9 @@ export type {
   QBEstimate,
   QBCompanyInfo,
   QBRateLimitInfo,
-} from './quickbooks-sdk-client.js';
+} from "./quickbooks-sdk-client.js";
 
-export { XeroSDKClient, XeroError } from './xero-sdk-client.js';
+export { XeroSDKClient, XeroError } from "./xero-sdk-client.js";
 
 export type {
   XeroInvoice as XeroSDKInvoice,
@@ -58,7 +68,7 @@ export type {
   XeroQuote,
   XeroTenant as XeroTenantInfo,
   XeroRateLimitInfo,
-} from './xero-sdk-client.js';
+} from "./xero-sdk-client.js";
 
 // ─── NORMALIZER ─────────────────────────────────────────────────────
 
@@ -79,7 +89,7 @@ export {
   normalizeTaxRate,
   calculateEffectiveTaxRate,
   calculateTaxFromRate,
-} from './accounting-normalizer.js';
+} from "./accounting-normalizer.js";
 
 export type {
   UnifiedInvoice,
@@ -88,10 +98,10 @@ export type {
   UnifiedItem,
   UnifiedAccount,
   UnifiedLineItem,
-} from './accounting-normalizer.js';
+} from "./accounting-normalizer.js";
 
 // ─── SYNC SERVICE ───────────────────────────────────────────────────
 
-export { AccountingSyncService } from './accounting-sync.js';
+export { AccountingSyncService } from "./accounting-sync.js";
 
-export type { SyncOptions, ReconciliationResult } from './accounting-sync.js';
+export type { SyncOptions, ReconciliationResult } from "./accounting-sync.js";

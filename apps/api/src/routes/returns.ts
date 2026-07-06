@@ -72,7 +72,9 @@ const createReturnSchema = z.object({
         productName: z.string(),
         quantity: z.number().int().positive(),
         unitPrice: z.number().nonnegative(),
-        returnReason: z.enum(Object.values(ReturnReason) as [string, ...string[]]).optional(),
+        returnReason: z
+          .enum(Object.values(ReturnReason) as [string, ...string[]])
+          .optional(),
         condition: z.enum(["new", "opened", "damaged", "defective"]),
       }),
     )
@@ -110,7 +112,16 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.get("/", async (request: FastifyRequest) => {
     const query = listReturnsQuery.parse(request.query);
-    const { page, limit, status, customerId, dateFrom, dateTo, sortBy, sortOrder } = query;
+    const {
+      page,
+      limit,
+      status,
+      customerId,
+      dateFrom,
+      dateTo,
+      sortBy,
+      sortOrder,
+    } = query;
     const shopId = (request as any).tenantId as string;
 
     const where: any = { shopId };
@@ -184,7 +195,9 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
     const body = createReturnSchema.parse(request.body);
     const shopId = (request as any).tenantId as string;
 
-    const order = await prisma.order.findUnique({ where: { id: body.orderId } });
+    const order = await prisma.order.findUnique({
+      where: { id: body.orderId },
+    });
     if (!order || order.shopId !== shopId) {
       throw new NotFoundError("Order", body.orderId);
     }
@@ -234,12 +247,16 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
     const body = approveReturnSchema.parse(request.body);
     const shopId = (request as any).tenantId as string;
 
-    const returnRequest = await prisma.returnRequest.findUnique({ where: { id } });
+    const returnRequest = await prisma.returnRequest.findUnique({
+      where: { id },
+    });
     if (!returnRequest || returnRequest.shopId !== shopId) {
       throw new NotFoundError("Return", id);
     }
     if (!canTransition(returnRequest.status, ReturnStatus.APPROVED)) {
-      throw new ValidationError(`Cannot approve return in '${returnRequest.status}' status`);
+      throw new ValidationError(
+        `Cannot approve return in '${returnRequest.status}' status`,
+      );
     }
 
     const updated = await prisma.returnRequest.update({
@@ -265,12 +282,16 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
     const body = rejectReturnSchema.parse(request.body);
     const shopId = (request as any).tenantId as string;
 
-    const returnRequest = await prisma.returnRequest.findUnique({ where: { id } });
+    const returnRequest = await prisma.returnRequest.findUnique({
+      where: { id },
+    });
     if (!returnRequest || returnRequest.shopId !== shopId) {
       throw new NotFoundError("Return", id);
     }
     if (!canTransition(returnRequest.status, ReturnStatus.REJECTED)) {
-      throw new ValidationError(`Cannot reject return in '${returnRequest.status}' status`);
+      throw new ValidationError(
+        `Cannot reject return in '${returnRequest.status}' status`,
+      );
     }
 
     const updated = await prisma.returnRequest.update({
@@ -292,12 +313,16 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
     const { id } = request.params as { id: string };
     const shopId = (request as any).tenantId as string;
 
-    const returnRequest = await prisma.returnRequest.findUnique({ where: { id } });
+    const returnRequest = await prisma.returnRequest.findUnique({
+      where: { id },
+    });
     if (!returnRequest || returnRequest.shopId !== shopId) {
       throw new NotFoundError("Return", id);
     }
     if (!canTransition(returnRequest.status, ReturnStatus.RECEIVED)) {
-      throw new ValidationError(`Cannot mark return as received in '${returnRequest.status}' status`);
+      throw new ValidationError(
+        `Cannot mark return as received in '${returnRequest.status}' status`,
+      );
     }
 
     const updated = await prisma.returnRequest.update({
@@ -315,16 +340,23 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
     const body = inspectItemsSchema.parse(request.body);
     const shopId = (request as any).tenantId as string;
 
-    const returnRequest = await prisma.returnRequest.findUnique({ where: { id } });
+    const returnRequest = await prisma.returnRequest.findUnique({
+      where: { id },
+    });
     if (!returnRequest || returnRequest.shopId !== shopId) {
       throw new NotFoundError("Return", id);
     }
     if (!canTransition(returnRequest.status, ReturnStatus.INSPECTED)) {
-      throw new ValidationError(`Cannot inspect return in '${returnRequest.status}' status`);
+      throw new ValidationError(
+        `Cannot inspect return in '${returnRequest.status}' status`,
+      );
     }
 
     const updatedItems = Array.isArray(returnRequest.items)
-      ? (returnRequest.items as any[]).map((item: any) => ({ ...item, condition: body.condition }))
+      ? (returnRequest.items as any[]).map((item: any) => ({
+          ...item,
+          condition: body.condition,
+        }))
       : [];
 
     const updated = await prisma.returnRequest.update({
@@ -361,9 +393,12 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
     }
 
     // Compute refund from items total; apply 10% restocking fee for damaged/opened
-    const itemsList = Array.isArray(returnRequest.items) ? (returnRequest.items as any[]) : [];
+    const itemsList = Array.isArray(returnRequest.items)
+      ? (returnRequest.items as any[])
+      : [];
     const itemsTotal = itemsList.reduce(
-      (sum: number, item: any) => sum + (item.quantity ?? 1) * (item.unitPrice ?? 0),
+      (sum: number, item: any) =>
+        sum + (item.quantity ?? 1) * (item.unitPrice ?? 0),
       0,
     );
     const hasDeduction = itemsList.some((i: any) =>
@@ -393,21 +428,29 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
     const shopId = (request as any).tenantId as string;
     const where = { shopId };
 
-    const [pending, approved, rejected, received, inspected, refunded, aggregate] =
-      await Promise.all([
-        prisma.returnRequest.count({ where: { ...where, status: "pending" } }),
-        prisma.returnRequest.count({ where: { ...where, status: "approved" } }),
-        prisma.returnRequest.count({ where: { ...where, status: "rejected" } }),
-        prisma.returnRequest.count({ where: { ...where, status: "received" } }),
-        prisma.returnRequest.count({ where: { ...where, status: "inspected" } }),
-        prisma.returnRequest.count({ where: { ...where, status: "refunded" } }),
-        prisma.returnRequest.aggregate({
-          where: { ...where, status: "refunded" },
-          _sum: { refundAmount: true },
-        }),
-      ]);
+    const [
+      pending,
+      approved,
+      rejected,
+      received,
+      inspected,
+      refunded,
+      aggregate,
+    ] = await Promise.all([
+      prisma.returnRequest.count({ where: { ...where, status: "pending" } }),
+      prisma.returnRequest.count({ where: { ...where, status: "approved" } }),
+      prisma.returnRequest.count({ where: { ...where, status: "rejected" } }),
+      prisma.returnRequest.count({ where: { ...where, status: "received" } }),
+      prisma.returnRequest.count({ where: { ...where, status: "inspected" } }),
+      prisma.returnRequest.count({ where: { ...where, status: "refunded" } }),
+      prisma.returnRequest.aggregate({
+        where: { ...where, status: "refunded" },
+        _sum: { refundAmount: true },
+      }),
+    ]);
 
-    const total = pending + approved + rejected + received + inspected + refunded;
+    const total =
+      pending + approved + rejected + received + inspected + refunded;
 
     return {
       data: {

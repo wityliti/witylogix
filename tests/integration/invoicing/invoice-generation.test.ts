@@ -21,7 +21,7 @@ class InvoiceService {
     billingModel: string,
     billingPeriod: { start: Date; end: Date },
     currency: string = "USD",
-    taxJurisdiction: string = "US-CA"
+    taxJurisdiction: string = "US-CA",
   ): fixtures.InvoiceData {
     if (deliveries.length === 0) {
       return this.createZeroInvoice(customerId, billingPeriod, currency);
@@ -55,7 +55,10 @@ class InvoiceService {
     return invoice;
   }
 
-  applyVolumeDiscount(invoiceNumber: string, deliveryCount: number): fixtures.InvoiceData {
+  applyVolumeDiscount(
+    invoiceNumber: string,
+    deliveryCount: number,
+  ): fixtures.InvoiceData {
     const invoice = this.invoices.get(invoiceNumber);
     if (!invoice) throw new Error("Invoice not found");
 
@@ -72,7 +75,10 @@ class InvoiceService {
     return invoice;
   }
 
-  applyFixedDiscount(invoiceNumber: string, amount: number): fixtures.InvoiceData {
+  applyFixedDiscount(
+    invoiceNumber: string,
+    amount: number,
+  ): fixtures.InvoiceData {
     const invoice = this.invoices.get(invoiceNumber);
     if (!invoice) throw new Error("Invoice not found");
 
@@ -83,7 +89,10 @@ class InvoiceService {
     return invoice;
   }
 
-  applyPercentageDiscount(invoiceNumber: string, percent: number): fixtures.InvoiceData {
+  applyPercentageDiscount(
+    invoiceNumber: string,
+    percent: number,
+  ): fixtures.InvoiceData {
     const invoice = this.invoices.get(invoiceNumber);
     if (!invoice) throw new Error("Invoice not found");
 
@@ -136,7 +145,7 @@ class InvoiceService {
 
   private calculateLineItems(
     deliveries: fixtures.DeliveryRecord[],
-    billingModel: string
+    billingModel: string,
   ): fixtures.InvoiceLineItem[] {
     switch (billingModel) {
       case "per-delivery":
@@ -219,9 +228,14 @@ class InvoiceService {
   }
 
   private calculateSubtotal(lineItems: fixtures.InvoiceLineItem[]): number {
-    return Math.round(
-      lineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0) * 100
-    ) / 100;
+    return (
+      Math.round(
+        lineItems.reduce(
+          (sum, item) => sum + item.quantity * item.unitPrice,
+          0,
+        ) * 100,
+      ) / 100
+    );
   }
 
   private calculateTax(subtotal: number, jurisdiction: string): number {
@@ -232,7 +246,7 @@ class InvoiceService {
   private createZeroInvoice(
     customerId: string,
     billingPeriod: { start: Date; end: Date },
-    currency: string
+    currency: string,
   ): fixtures.InvoiceData {
     const invoiceNumber = `INV-${++this.invoiceCounter}`;
 
@@ -283,7 +297,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
 
       expect(invoice.lineItems[0].quantity).toBe(50);
@@ -292,12 +306,14 @@ describe("Invoice Generation Integration Tests", () => {
     });
 
     it("should handle single delivery", () => {
-      const deliveries = [fixtures.createDeliveryRecord({ billingModel: "per-delivery" })];
+      const deliveries = [
+        fixtures.createDeliveryRecord({ billingModel: "per-delivery" }),
+      ];
       const invoice = service.createFromDeliveries(
         customerId,
         deliveries,
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
 
       expect(invoice.subtotal).toBe(10);
@@ -310,7 +326,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
 
       expect(invoice.lineItems[0].quantity).toBe(1200);
@@ -325,7 +341,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "per-mile",
-        billingPeriod
+        billingPeriod,
       );
 
       const totalMiles = deliveries.reduce((sum, d) => sum + d.distance, 0);
@@ -335,15 +351,24 @@ describe("Invoice Generation Integration Tests", () => {
 
     it("should accumulate distances from multiple deliveries", () => {
       const deliveries = [
-        fixtures.createDeliveryRecord({ distance: 5, billingModel: "per-mile" }),
-        fixtures.createDeliveryRecord({ distance: 10, billingModel: "per-mile" }),
-        fixtures.createDeliveryRecord({ distance: 7.5, billingModel: "per-mile" }),
+        fixtures.createDeliveryRecord({
+          distance: 5,
+          billingModel: "per-mile",
+        }),
+        fixtures.createDeliveryRecord({
+          distance: 10,
+          billingModel: "per-mile",
+        }),
+        fixtures.createDeliveryRecord({
+          distance: 7.5,
+          billingModel: "per-mile",
+        }),
       ];
       const invoice = service.createFromDeliveries(
         customerId,
         deliveries,
         "per-mile",
-        billingPeriod
+        billingPeriod,
       );
 
       expect(invoice.lineItems[0].quantity).toBe(22.5);
@@ -357,7 +382,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "per-hour",
-        billingPeriod
+        billingPeriod,
       );
 
       const totalHours = deliveries.reduce((sum, d) => sum + d.duration, 0);
@@ -374,13 +399,13 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         smallBatch,
         "flat-rate",
-        billingPeriod
+        billingPeriod,
       );
       const invoice2 = service.createFromDeliveries(
         customerId + "_2",
         largeBatch,
         "flat-rate",
-        billingPeriod
+        billingPeriod,
       );
 
       expect(invoice1.subtotal).toBe(100);
@@ -395,7 +420,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "tiered",
-        billingPeriod
+        billingPeriod,
       );
 
       expect(invoice.lineItems[0].unitPrice).toBe(10);
@@ -408,7 +433,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "tiered",
-        billingPeriod
+        billingPeriod,
       );
 
       expect(invoice.lineItems[0].unitPrice).toBe(8);
@@ -421,7 +446,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "tiered",
-        billingPeriod
+        billingPeriod,
       );
 
       expect(invoice.lineItems[0].unitPrice).toBe(6);
@@ -436,7 +461,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "subscription",
-        billingPeriod
+        billingPeriod,
       );
 
       expect(invoice.lineItems[0].unitPrice).toBe(499);
@@ -449,7 +474,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "subscription",
-        billingPeriod
+        billingPeriod,
       );
 
       expect(invoice.lineItems[0].unitPrice).toBe(499);
@@ -465,7 +490,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
 
       service.applyVolumeDiscount(invoice.invoiceNumber, 100);
@@ -481,7 +506,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
 
       service.applyVolumeDiscount(invoice.invoiceNumber, 300);
@@ -496,7 +521,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
 
       service.applyVolumeDiscount(invoice.invoiceNumber, 600);
@@ -515,7 +540,7 @@ describe("Invoice Generation Integration Tests", () => {
         "per-delivery",
         billingPeriod,
         "USD",
-        "US-CA"
+        "US-CA",
       );
 
       const expectedTax = Math.round(100 * 0.0725 * 100) / 100;
@@ -530,7 +555,7 @@ describe("Invoice Generation Integration Tests", () => {
         "per-delivery",
         billingPeriod,
         "USD",
-        "US-NY"
+        "US-NY",
       );
 
       const expectedTax = Math.round(100 * 0.08 * 100) / 100;
@@ -545,7 +570,7 @@ describe("Invoice Generation Integration Tests", () => {
         "per-delivery",
         billingPeriod,
         "GBP",
-        "GB-ENG"
+        "GB-ENG",
       );
 
       const expectedTax = Math.round(100 * 0.2 * 100) / 100;
@@ -561,7 +586,7 @@ describe("Invoice Generation Integration Tests", () => {
         deliveries,
         "per-delivery",
         billingPeriod,
-        "EUR"
+        "EUR",
       );
 
       expect(invoice.currency).toBe("EUR");
@@ -574,7 +599,7 @@ describe("Invoice Generation Integration Tests", () => {
         deliveries,
         "per-delivery",
         billingPeriod,
-        "GBP"
+        "GBP",
       );
 
       expect(invoice.currency).toBe("GBP");
@@ -588,13 +613,13 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
       const invoice2 = service.createFromDeliveries(
         customerId + "_2",
         deliveries,
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
 
       const num1 = parseInt(invoice1.invoiceNumber.split("-")[1]);
@@ -612,7 +637,7 @@ describe("Invoice Generation Integration Tests", () => {
           customerId + `_${i}`,
           deliveries,
           "per-delivery",
-          billingPeriod
+          billingPeriod,
         );
         invoices.add(invoice.invoiceNumber);
       }
@@ -628,7 +653,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
 
       expect(invoice.status).toBe("draft");
@@ -648,7 +673,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
 
       invoice = service.sendInvoice(invoice.invoiceNumber);
@@ -669,7 +694,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
 
       invoice = service.voidInvoice(invoice.invoiceNumber);
@@ -683,14 +708,14 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
 
       invoice = service.sendInvoice(invoice.invoiceNumber);
       invoice = service.recordPayment(invoice.invoiceNumber, invoice.total);
 
       expect(() => service.voidInvoice(invoice.invoiceNumber)).toThrow(
-        "Cannot void paid invoice"
+        "Cannot void paid invoice",
       );
     });
   });
@@ -702,7 +727,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
 
       invoice = service.applyFixedDiscount(invoice.invoiceNumber, 50);
@@ -717,7 +742,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
 
       invoice = service.applyPercentageDiscount(invoice.invoiceNumber, 10);
@@ -732,7 +757,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         deliveries,
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
 
       invoice = service.applyFixedDiscount(invoice.invoiceNumber, 1000);
@@ -746,7 +771,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         [],
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
 
       expect(invoice.subtotal).toBe(0);
@@ -760,7 +785,7 @@ describe("Invoice Generation Integration Tests", () => {
         customerId,
         [],
         "per-delivery",
-        billingPeriod
+        billingPeriod,
       );
 
       const sent = service.sendInvoice(invoice.invoiceNumber);

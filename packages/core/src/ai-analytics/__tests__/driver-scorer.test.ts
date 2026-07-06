@@ -8,15 +8,15 @@
  * - Badge assignment logic
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   calculateDriverScore,
   calculateDriverScoreBatch,
   recordPeerScore,
-} from '../driver-scorer.js';
-import type { DriverMetrics } from '../types.js';
+} from "../driver-scorer.js";
+import type { DriverMetrics } from "../types.js";
 
-describe('Driver Performance Scorer', () => {
+describe("Driver Performance Scorer", () => {
   // ─── Setup ──────────────────────────────────────────────────────
 
   const createMockMetrics = (
@@ -45,23 +45,23 @@ describe('Driver Performance Scorer', () => {
       percentWithinLimit: 90,
       averageExcessKmh: 2,
     },
-    zoneId: 'zone_1',
-    tenantId: 'tenant_1',
+    zoneId: "zone_1",
+    tenantId: "tenant_1",
     ...overrides,
   });
 
   beforeEach(() => {
     // Record some baseline peer scores
     for (let i = 1; i <= 10; i++) {
-      recordPeerScore(`driver_${i}`, 50 + i * 3, 'zone_1', 'tenant_1');
+      recordPeerScore(`driver_${i}`, 50 + i * 3, "zone_1", "tenant_1");
     }
   });
 
   // ─── Score Calculation Tests ────────────────────────────────────
 
-  describe('Composite Score Calculation', () => {
-    it('should return score between 0 and 100', () => {
-      const metrics = createMockMetrics('driver_1');
+  describe("Composite Score Calculation", () => {
+    it("should return score between 0 and 100", () => {
+      const metrics = createMockMetrics("driver_1");
 
       const score = calculateDriverScore(metrics);
 
@@ -69,8 +69,8 @@ describe('Driver Performance Scorer', () => {
       expect(score.compositeScore).toBeLessThanOrEqual(100);
     });
 
-    it('should weight components correctly', () => {
-      const metrics = createMockMetrics('driver_1', {
+    it("should weight components correctly", () => {
+      const metrics = createMockMetrics("driver_1", {
         deliveries: {
           totalCount: 100,
           onTimeCount: 100, // 100% on-time
@@ -95,8 +95,8 @@ describe('Driver Performance Scorer', () => {
       expect(score.compositeScore).toBe(100);
     });
 
-    it('should handle poor performer', () => {
-      const metrics = createMockMetrics('driver_poor', {
+    it("should handle poor performer", () => {
+      const metrics = createMockMetrics("driver_poor", {
         deliveries: {
           totalCount: 50,
           onTimeCount: 10,
@@ -121,8 +121,8 @@ describe('Driver Performance Scorer', () => {
       expect(score.compositeScore).toBeLessThan(50);
     });
 
-    it('should calculate breakdown for each metric', () => {
-      const metrics = createMockMetrics('driver_1');
+    it("should calculate breakdown for each metric", () => {
+      const metrics = createMockMetrics("driver_1");
 
       const score = calculateDriverScore(metrics);
 
@@ -141,58 +141,58 @@ describe('Driver Performance Scorer', () => {
 
   // ─── Trend Analysis Tests ───────────────────────────────────────
 
-  describe('Trend Analysis', () => {
-    it('should detect improving trend', () => {
-      const metrics = createMockMetrics('driver_1');
+  describe("Trend Analysis", () => {
+    it("should detect improving trend", () => {
+      const metrics = createMockMetrics("driver_1");
 
       // Historical scores showing improvement
       const historicalScores = [60, 65, 70, 75, 80];
 
       const score = calculateDriverScore(metrics, {}, historicalScores);
 
-      expect(score.trendAnalysis.direction).toBe('improving');
+      expect(score.trendAnalysis.direction).toBe("improving");
       expect(score.trendAnalysis.changePercent).toBeGreaterThan(0);
     });
 
-    it('should detect declining trend', () => {
-      const metrics = createMockMetrics('driver_1');
+    it("should detect declining trend", () => {
+      const metrics = createMockMetrics("driver_1");
 
       // Historical scores showing decline
       const historicalScores = [90, 85, 80, 75, 70];
 
       const score = calculateDriverScore(metrics, {}, historicalScores);
 
-      expect(score.trendAnalysis.direction).toBe('declining');
+      expect(score.trendAnalysis.direction).toBe("declining");
       expect(score.trendAnalysis.changePercent).toBeLessThan(0);
     });
 
-    it('should detect stable trend', () => {
-      const metrics = createMockMetrics('driver_1');
+    it("should detect stable trend", () => {
+      const metrics = createMockMetrics("driver_1");
 
       // Stable scores
       const historicalScores = [80, 81, 79, 80, 81];
 
       const score = calculateDriverScore(metrics, {}, historicalScores);
 
-      expect(score.trendAnalysis.direction).toBe('stable');
+      expect(score.trendAnalysis.direction).toBe("stable");
       expect(Math.abs(score.trendAnalysis.changePercent)).toBeLessThan(5);
     });
 
-    it('should handle empty historical data', () => {
-      const metrics = createMockMetrics('driver_1');
+    it("should handle empty historical data", () => {
+      const metrics = createMockMetrics("driver_1");
 
       const score = calculateDriverScore(metrics, {}, []);
 
       expect(score.trendAnalysis.weeksOfData).toBe(0);
-      expect(score.trendAnalysis.direction).toBe('stable');
+      expect(score.trendAnalysis.direction).toBe("stable");
     });
   });
 
   // ─── Peer Comparison Tests ──────────────────────────────────────
 
-  describe('Peer Comparison', () => {
-    it('should calculate peer rank in zone', () => {
-      const metrics = createMockMetrics('driver_5', { zoneId: 'zone_1' });
+  describe("Peer Comparison", () => {
+    it("should calculate peer rank in zone", () => {
+      const metrics = createMockMetrics("driver_5", { zoneId: "zone_1" });
 
       const score = calculateDriverScore(metrics);
 
@@ -202,8 +202,8 @@ describe('Driver Performance Scorer', () => {
       expect(score.peerComparison.percentilRank).toBeLessThanOrEqual(100);
     });
 
-    it('should handle driver with no peers', () => {
-      const metrics = createMockMetrics('driver_new', { zoneId: 'zone_new' });
+    it("should handle driver with no peers", () => {
+      const metrics = createMockMetrics("driver_new", { zoneId: "zone_new" });
 
       const score = calculateDriverScore(metrics);
 
@@ -211,19 +211,19 @@ describe('Driver Performance Scorer', () => {
       expect(score.peerComparison.totalPeersInZone).toBeGreaterThanOrEqual(1);
     });
 
-    it('should improve rank with higher score', () => {
+    it("should improve rank with higher score", () => {
       // Record baseline peers
       for (let i = 1; i <= 5; i++) {
-        recordPeerScore(`peer_${i}`, 50 + i * 5, 'zone_test', 'tenant_1');
+        recordPeerScore(`peer_${i}`, 50 + i * 5, "zone_test", "tenant_1");
       }
 
       // Record driver with high score
-      const metrics = createMockMetrics('driver_high', { zoneId: 'zone_test' });
+      const metrics = createMockMetrics("driver_high", { zoneId: "zone_test" });
       const highScore = calculateDriverScore(metrics);
 
       // Record driver with low score
-      const lowMetrics = createMockMetrics('driver_low', {
-        zoneId: 'zone_test',
+      const lowMetrics = createMockMetrics("driver_low", {
+        zoneId: "zone_test",
         deliveries: {
           totalCount: 50,
           onTimeCount: 10,
@@ -241,15 +241,15 @@ describe('Driver Performance Scorer', () => {
 
   // ─── Badge Assignment Tests ────────────────────────────────────
 
-  describe('Badge Assignment', () => {
-    it('should assign top performer badge for top 10%', () => {
+  describe("Badge Assignment", () => {
+    it("should assign top performer badge for top 10%", () => {
       // Populate peers with baseline scores
       for (let i = 1; i <= 10; i++) {
-        recordPeerScore(`peer_${i}`, 30 + i * 5, 'zone_badge', 'tenant_1');
+        recordPeerScore(`peer_${i}`, 30 + i * 5, "zone_badge", "tenant_1");
       }
 
-      const metrics = createMockMetrics('driver_top', {
-        zoneId: 'zone_badge',
+      const metrics = createMockMetrics("driver_top", {
+        zoneId: "zone_badge",
         deliveries: {
           totalCount: 100,
           onTimeCount: 95,
@@ -262,23 +262,26 @@ describe('Driver Performance Scorer', () => {
 
       const score = calculateDriverScore(metrics);
 
-      expect(score.badges).toContain('top_performer');
+      expect(score.badges).toContain("top_performer");
     });
 
-    it('should assign most improved badge for improving trend', () => {
-      const metrics = createMockMetrics('driver_improved');
+    it("should assign most improved badge for improving trend", () => {
+      const metrics = createMockMetrics("driver_improved");
 
       const historicalScores = [40, 50, 60, 70];
 
       const score = calculateDriverScore(metrics, {}, historicalScores);
 
-      if (score.compositeScore > 50 && score.trendAnalysis.direction === 'improving') {
-        expect(score.badges).toContain('most_improved');
+      if (
+        score.compositeScore > 50 &&
+        score.trendAnalysis.direction === "improving"
+      ) {
+        expect(score.badges).toContain("most_improved");
       }
     });
 
-    it('should assign consistent badge', () => {
-      const metrics = createMockMetrics('driver_consistent', {
+    it("should assign consistent badge", () => {
+      const metrics = createMockMetrics("driver_consistent", {
         deliveries: {
           totalCount: 50,
           onTimeCount: 48,
@@ -293,13 +296,13 @@ describe('Driver Performance Scorer', () => {
 
       const score = calculateDriverScore(metrics, {}, historicalScores);
 
-      if (score.trendAnalysis.direction === 'stable') {
-        expect(score.badges).toContain('consistent');
+      if (score.trendAnalysis.direction === "stable") {
+        expect(score.badges).toContain("consistent");
       }
     });
 
-    it('should assign needs coaching badge for low score', () => {
-      const metrics = createMockMetrics('driver_struggling', {
+    it("should assign needs coaching badge for low score", () => {
+      const metrics = createMockMetrics("driver_struggling", {
         deliveries: {
           totalCount: 50,
           onTimeCount: 15,
@@ -313,37 +316,48 @@ describe('Driver Performance Scorer', () => {
       const score = calculateDriverScore(metrics);
 
       if (score.compositeScore < 50) {
-        expect(score.badges).toContain('needs_coaching');
+        expect(score.badges).toContain("needs_coaching");
       }
     });
   });
 
   // ─── Batch Processing Tests ────────────────────────────────────
 
-  describe('Batch Processing', () => {
-    it('should calculate scores for multiple drivers', () => {
+  describe("Batch Processing", () => {
+    it("should calculate scores for multiple drivers", () => {
       const drivers = [
-        { metrics: createMockMetrics('driver_1'), historicalScores: [70, 75, 80] },
-        { metrics: createMockMetrics('driver_2'), historicalScores: [65, 70, 72] },
-        { metrics: createMockMetrics('driver_3'), historicalScores: [85, 86, 87] },
+        {
+          metrics: createMockMetrics("driver_1"),
+          historicalScores: [70, 75, 80],
+        },
+        {
+          metrics: createMockMetrics("driver_2"),
+          historicalScores: [65, 70, 72],
+        },
+        {
+          metrics: createMockMetrics("driver_3"),
+          historicalScores: [85, 86, 87],
+        },
       ];
 
       const result = calculateDriverScoreBatch(drivers);
 
       expect(result.scores).toHaveLength(3);
-      expect(result.scores.every((s) => s.compositeScore >= 0 && s.compositeScore <= 100)).toBe(
-        true,
-      );
+      expect(
+        result.scores.every(
+          (s) => s.compositeScore >= 0 && s.compositeScore <= 100,
+        ),
+      ).toBe(true);
     });
 
-    it('should identify top performers', () => {
+    it("should identify top performers", () => {
       const drivers = [
         {
-          metrics: createMockMetrics('driver_1'),
+          metrics: createMockMetrics("driver_1"),
           historicalScores: [50, 55, 60],
         },
         {
-          metrics: createMockMetrics('driver_top', {
+          metrics: createMockMetrics("driver_top", {
             deliveries: {
               totalCount: 100,
               onTimeCount: 98,
@@ -367,10 +381,10 @@ describe('Driver Performance Scorer', () => {
       expect(result.topPerformers.length).toBeGreaterThanOrEqual(0);
     });
 
-    it('should identify drivers needing coaching', () => {
+    it("should identify drivers needing coaching", () => {
       const drivers = [
         {
-          metrics: createMockMetrics('driver_struggling', {
+          metrics: createMockMetrics("driver_struggling", {
             deliveries: {
               totalCount: 50,
               onTimeCount: 20,
@@ -382,7 +396,10 @@ describe('Driver Performance Scorer', () => {
           }),
           historicalScores: [30, 32, 35],
         },
-        { metrics: createMockMetrics('driver_2'), historicalScores: [75, 76, 77] },
+        {
+          metrics: createMockMetrics("driver_2"),
+          historicalScores: [75, 76, 77],
+        },
       ];
 
       const result = calculateDriverScoreBatch(drivers);
@@ -390,18 +407,19 @@ describe('Driver Performance Scorer', () => {
       expect(result.needsCoaching.length).toBeGreaterThanOrEqual(1);
     });
 
-    it('should calculate average score across team', () => {
+    it("should calculate average score across team", () => {
       const drivers = [
-        { metrics: createMockMetrics('driver_1'), historicalScores: [80] },
-        { metrics: createMockMetrics('driver_2'), historicalScores: [90] },
-        { metrics: createMockMetrics('driver_3'), historicalScores: [70] },
+        { metrics: createMockMetrics("driver_1"), historicalScores: [80] },
+        { metrics: createMockMetrics("driver_2"), historicalScores: [90] },
+        { metrics: createMockMetrics("driver_3"), historicalScores: [70] },
       ];
 
       const result = calculateDriverScoreBatch(drivers);
 
       // Average should be mean of computed composite scores
       const expectedAvg = Math.round(
-        result.scores.reduce((sum, s) => sum + s.compositeScore, 0) / result.scores.length,
+        result.scores.reduce((sum, s) => sum + s.compositeScore, 0) /
+          result.scores.length,
       );
       expect(result.averageScore).toBe(expectedAvg);
     });
@@ -409,9 +427,9 @@ describe('Driver Performance Scorer', () => {
 
   // ─── Edge Cases ─────────────────────────────────────────────────
 
-  describe('Edge Cases', () => {
-    it('should handle zero deliveries', () => {
-      const metrics = createMockMetrics('driver_no_deliveries', {
+  describe("Edge Cases", () => {
+    it("should handle zero deliveries", () => {
+      const metrics = createMockMetrics("driver_no_deliveries", {
         deliveries: {
           totalCount: 0,
           onTimeCount: 0,
@@ -425,8 +443,8 @@ describe('Driver Performance Scorer', () => {
       expect(score.compositeScore).toBeLessThanOrEqual(100);
     });
 
-    it('should handle perfect metrics', () => {
-      const metrics = createMockMetrics('driver_perfect', {
+    it("should handle perfect metrics", () => {
+      const metrics = createMockMetrics("driver_perfect", {
         deliveries: {
           totalCount: 100,
           onTimeCount: 100,
@@ -442,9 +460,13 @@ describe('Driver Performance Scorer', () => {
       expect(score.compositeScore).toBe(100);
     });
 
-    it('should handle single data point', () => {
-      const metrics = createMockMetrics('driver_single', {
-        deliveries: { totalCount: 1, onTimeCount: 1, firstAttemptSuccessCount: 1 },
+    it("should handle single data point", () => {
+      const metrics = createMockMetrics("driver_single", {
+        deliveries: {
+          totalCount: 1,
+          onTimeCount: 1,
+          firstAttemptSuccessCount: 1,
+        },
         ratings: { average: 5.0, count: 1 },
         routeEfficiency: { average: 100, count: 1 },
       });
@@ -457,9 +479,9 @@ describe('Driver Performance Scorer', () => {
 
   // ─── Custom Weights Tests ──────────────────────────────────────
 
-  describe('Custom Scoring Weights', () => {
-    it('should apply custom weights', () => {
-      const metrics = createMockMetrics('driver_weighted');
+  describe("Custom Scoring Weights", () => {
+    it("should apply custom weights", () => {
+      const metrics = createMockMetrics("driver_weighted");
 
       const customWeights = {
         onTimeDeliveryRate: 0.5, // Higher weight
@@ -475,9 +497,13 @@ describe('Driver Performance Scorer', () => {
       expect(score.compositeScore).toBeLessThanOrEqual(100);
     });
 
-    it('should emphasize different metrics with different weights', () => {
-      const metrics = createMockMetrics('driver_test', {
-        deliveries: { totalCount: 50, onTimeCount: 40, firstAttemptSuccessCount: 50 },
+    it("should emphasize different metrics with different weights", () => {
+      const metrics = createMockMetrics("driver_test", {
+        deliveries: {
+          totalCount: 50,
+          onTimeCount: 40,
+          firstAttemptSuccessCount: 50,
+        },
         ratings: { average: 1.8, count: 50 }, // Low rating
         routeEfficiency: { average: 90, count: 50 },
         speedCompliance: { percentWithinLimit: 95, averageExcessKmh: 1 },

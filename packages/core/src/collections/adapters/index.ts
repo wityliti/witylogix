@@ -6,4 +6,4 @@ export {
   ShopifyCollectionAdapter,
   createShopifyAdapter,
   createShopifyAdapterFromCredentials,
-} from './shopify-adapter';
+} from "./shopify-adapter";

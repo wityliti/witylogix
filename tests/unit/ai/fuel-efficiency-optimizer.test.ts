@@ -21,7 +21,7 @@ import {
 // ─── TEST DATA ──────────────────────────────────────────────────────────────
 
 const createMockDriverMetrics = (
-  overrides?: Partial<DriverBehaviorMetrics>
+  overrides?: Partial<DriverBehaviorMetrics>,
 ): DriverBehaviorMetrics => ({
   driverId: "drv-001",
   hardAccelerations: 5,
@@ -35,7 +35,7 @@ const createMockDriverMetrics = (
 });
 
 const createMockVehicleProfile = (
-  overrides?: Partial<FuelProfileType>
+  overrides?: Partial<FuelProfileType>,
 ): FuelProfileType => ({
   vehicleId: "veh-001",
   vehicleNumber: "VH-001",
@@ -44,9 +44,21 @@ const createMockVehicleProfile = (
   degradationTrend: -0.5,
   mileage: 45000,
   fuelSamples: [
-    { date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), mpg: 20.5, distance: 250 },
-    { date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), mpg: 20.2, distance: 245 },
-    { date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), mpg: 19.8, distance: 240 },
+    {
+      date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      mpg: 20.5,
+      distance: 250,
+    },
+    {
+      date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+      mpg: 20.2,
+      distance: 245,
+    },
+    {
+      date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      mpg: 19.8,
+      distance: 240,
+    },
   ],
   expectedVsActual: -9,
   anomalies: [],
@@ -55,7 +67,7 @@ const createMockVehicleProfile = (
 });
 
 const createMockRouteSegment = (
-  overrides?: Partial<RouteSegment>
+  overrides?: Partial<RouteSegment>,
 ): RouteSegment => ({
   id: "seg-001",
   startPoint: { latitude: 40.7128, longitude: -74.006 },
@@ -67,9 +79,7 @@ const createMockRouteSegment = (
   ...overrides,
 });
 
-const createMockFuelStop = (
-  overrides?: Partial<FuelStop>
-): FuelStop => ({
+const createMockFuelStop = (overrides?: Partial<FuelStop>): FuelStop => ({
   stationId: "fs-001",
   name: "Shell Station",
   location: { latitude: 40.758, longitude: -73.985 },
@@ -153,7 +163,7 @@ describe("DriverBehaviorScorer", () => {
     const poorScore = scorer.scoreDriver(poorMetrics);
 
     expect(poorScore.estimatedMpgImprovement).toBeGreaterThan(
-      goodScore.estimatedMpgImprovement
+      goodScore.estimatedMpgImprovement,
     );
   });
 
@@ -185,7 +195,7 @@ describe("VehicleFuelProfile", () => {
     const profile = createMockVehicleProfile();
 
     const mpg = profileCalc.calculateCurrentMpg(
-      profile.fuelSamples.map((s) => ({ mpg: s.mpg, distance: s.distance }))
+      profile.fuelSamples.map((s) => ({ mpg: s.mpg, distance: s.distance })),
     );
 
     expect(mpg).toBeGreaterThan(0);
@@ -195,10 +205,26 @@ describe("VehicleFuelProfile", () => {
   it("should detect degradation trend", () => {
     const profile = createMockVehicleProfile({
       fuelSamples: [
-        { date: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000), mpg: 22, distance: 300 },
-        { date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), mpg: 21.5, distance: 300 },
-        { date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), mpg: 21, distance: 300 },
-        { date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), mpg: 20.5, distance: 300 },
+        {
+          date: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
+          mpg: 22,
+          distance: 300,
+        },
+        {
+          date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+          mpg: 21.5,
+          distance: 300,
+        },
+        {
+          date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+          mpg: 21,
+          distance: 300,
+        },
+        {
+          date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+          mpg: 20.5,
+          distance: 300,
+        },
         { date: new Date(), mpg: 20, distance: 300 },
       ],
     });
@@ -263,9 +289,7 @@ describe("RouteFuelOptimizer", () => {
   });
 
   it("should recommend reasonable MPG improvements (5-8%)", () => {
-    const route: RouteSegment[] = [
-      createMockRouteSegment({ distance: 50 }),
-    ];
+    const route: RouteSegment[] = [createMockRouteSegment({ distance: 50 })];
 
     const optimized = optimizer.optimizeRoute(route, 20, 1.5);
 
@@ -293,8 +317,8 @@ describe("FuelStopPlanner", () => {
   });
 
   it("should prefer cheaper fuel stops", () => {
-    const cheap = createMockFuelStop({ pricePerLiter: 1.30 });
-    const expensive = createMockFuelStop({ pricePerLiter: 1.70 });
+    const cheap = createMockFuelStop({ pricePerLiter: 1.3 });
+    const expensive = createMockFuelStop({ pricePerLiter: 1.7 });
 
     const cheapScored = planner.scoreFuelStop(cheap, 1.5, 60, 30);
     const expensiveScored = planner.scoreFuelStop(expensive, 1.5, 60, 30);
@@ -314,8 +338,8 @@ describe("FuelStopPlanner", () => {
 
   it("should plan stops when tank capacity exceeded", () => {
     const stops = [
-      createMockFuelStop({ stationId: "fs-1", pricePerLiter: 1.40 }),
-      createMockFuelStop({ stationId: "fs-2", pricePerLiter: 1.50 }),
+      createMockFuelStop({ stationId: "fs-1", pricePerLiter: 1.4 }),
+      createMockFuelStop({ stationId: "fs-2", pricePerLiter: 1.5 }),
       createMockFuelStop({ stationId: "fs-3", pricePerLiter: 1.35 }),
     ];
 
@@ -359,7 +383,11 @@ describe("FleetFuelBenchmark", () => {
       },
     ];
 
-    const report = benchmark.generateBenchmarkReport(vehicles, drivers, "monthly");
+    const report = benchmark.generateBenchmarkReport(
+      vehicles,
+      drivers,
+      "monthly",
+    );
 
     expect(report.fleetAverageMpg).toBeGreaterThan(0);
     expect(report.topPerformers.length).toBeGreaterThan(0);
@@ -375,7 +403,11 @@ describe("FleetFuelBenchmark", () => {
     ];
 
     const drivers: any[] = [];
-    const report = benchmark.generateBenchmarkReport(vehicles, drivers, "weekly");
+    const report = benchmark.generateBenchmarkReport(
+      vehicles,
+      drivers,
+      "weekly",
+    );
 
     const topMpg = report.topPerformers[0]?.mpg || 0;
     const bottomMpg = report.bottomPerformers[0]?.mpg || 0;
@@ -398,25 +430,19 @@ describe("SavingsCalculator", () => {
       10000, // miles
       20, // current MPG
       22, // improved MPG
-      3.5 // fuel price
+      3.5, // fuel price
     );
 
     expect(savings.baselineScenario.totalGallons).toBeGreaterThan(0);
     expect(savings.improvementScenario.totalGallons).toBeLessThan(
-      savings.baselineScenario.totalGallons
+      savings.baselineScenario.totalGallons,
     );
     expect(savings.savings.gallonsSaved).toBeGreaterThan(0);
     expect(savings.savings.costSaved).toBeGreaterThan(0);
   });
 
   it("should calculate 10% improvement correctly", () => {
-    const savings = calculator.calculateSavings(
-      10000,
-      20,
-      22,
-      3.5,
-      1
-    );
+    const savings = calculator.calculateSavings(10000, 20, 22, 3.5, 1);
 
     expect(savings.savings.percentMpgImprovement).toBeCloseTo(10, 1);
   });
@@ -425,23 +451,17 @@ describe("SavingsCalculator", () => {
     const savings = calculator.calculateSavings(10000, 20, 22, 3.5);
 
     expect(savings.savings.annualizedCostSavings).toBeGreaterThan(
-      savings.savings.costSaved
+      savings.savings.costSaved,
     );
   });
 
   it("should scale savings by fleet size", () => {
     const savings1Vehicle = calculator.calculateSavings(10000, 20, 22, 3.5, 1);
-    const savings5Vehicles = calculator.calculateSavings(
-      10000,
-      20,
-      22,
-      3.5,
-      5
-    );
+    const savings5Vehicles = calculator.calculateSavings(10000, 20, 22, 3.5, 5);
 
     expect(savings5Vehicles.savings.costSaved).toBeCloseTo(
       savings1Vehicle.savings.costSaved * 5,
-      -1
+      -1,
     );
   });
 

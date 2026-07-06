@@ -3,11 +3,20 @@
  * Domain-specific types for the customer self-service portal
  */
 
-export type OrderStatus = 'pending' | 'confirmed' | 'out-for-delivery' | 'delivered' | 'cancelled';
+export type OrderStatus =
+  | "pending"
+  | "confirmed"
+  | "out-for-delivery"
+  | "delivered"
+  | "cancelled";
 
-export type NotificationChannel = 'email' | 'sms' | 'push' | 'whatsapp';
+export type NotificationChannel = "email" | "sms" | "push" | "whatsapp";
 
-export type SafePlaceInstruction = 'front-door' | 'back-door' | 'garage' | 'neighbor';
+export type SafePlaceInstruction =
+  | "front-door"
+  | "back-door"
+  | "garage"
+  | "neighbor";
 
 export interface Order {
   id: string;
@@ -43,8 +52,8 @@ export interface Address {
 }
 
 export interface DeliveryTimestep {
-  step: 'ordered' | 'confirmed' | 'out-for-delivery' | 'delivered';
-  status: 'pending' | 'completed';
+  step: "ordered" | "confirmed" | "out-for-delivery" | "delivered";
+  status: "pending" | "completed";
   timestamp?: Date;
   details?: string;
 }
@@ -115,11 +124,17 @@ export interface RescheduleRequest {
 }
 
 // Sprint 4.6 Real-time Tracking Types
-export type DeliveryStep = 'ordered' | 'confirmed' | 'dispatched' | 'out-for-delivery' | 'nearby' | 'delivered';
+export type DeliveryStep =
+  | "ordered"
+  | "confirmed"
+  | "dispatched"
+  | "out-for-delivery"
+  | "nearby"
+  | "delivered";
 
 export interface DeliveryStepDetail {
   step: DeliveryStep;
-  status: 'pending' | 'completed' | 'current';
+  status: "pending" | "completed" | "current";
   timestamp?: Date;
   details?: string;
   expandedInfo?: {

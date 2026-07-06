@@ -117,7 +117,8 @@ async function shopsRoutes(fastify: FastifyInstance): Promise<void> {
       // Strip any routing credentials from the top-level response
       if (safe.routing && typeof safe.routing === "object") {
         const routing = { ...(safe.routing as Record<string, unknown>) };
-        if (routing.apiKey) routing.apiKey = maskToken(routing.apiKey as string);
+        if (routing.apiKey)
+          routing.apiKey = maskToken(routing.apiKey as string);
         safe.routing = routing;
       }
       // Legacy: strip old mapboxAccessToken if it exists
@@ -162,7 +163,7 @@ async function shopsRoutes(fastify: FastifyInstance): Promise<void> {
         select: { settings: true },
       });
       data.settings = {
-        ...(current?.settings as any || {}),
+        ...((current?.settings as any) || {}),
         ...body.settings,
       };
     }
@@ -186,217 +187,243 @@ async function shopsRoutes(fastify: FastifyInstance): Promise<void> {
   // PATCH /me/routing — Allows tenants to set their own provider + credentials
   //                     (only when ROUTING_BYOK=true).
 
-  fastify.get("/me/routing", async (request: FastifyRequest, reply: FastifyReply) => {
-    const config = getConfig();
-    const shop = await request.tenantDb.shop.findUnique({
-      where: { id: request.shopId },
-      select: { settings: true },
-    });
-
-    const settings = (shop?.settings ?? {}) as Record<string, unknown>;
-
-    // Read tenant routing config from settings.routing (new format)
-    // or fall back to legacy settings.mapboxAccessToken
-    const tenantRouting = (settings.routing ?? {}) as Record<string, unknown>;
-    const legacyToken = settings.mapboxAccessToken as string | undefined;
-
-    const tenantProvider = tenantRouting.provider as RoutingProviderSlug | undefined;
-    const hasTenantKey = Boolean(tenantRouting.apiKey || legacyToken);
-    const hasTenantBaseUrl = Boolean(tenantRouting.baseUrl);
-
-    // Determine effective token to show masked
-    const effectiveKey = (tenantRouting.apiKey || legacyToken) as string | undefined;
-
-    return {
-      data: {
-        // Deployer-controlled settings (read-only for tenant)
-        deployerDefault: config.ROUTING_PROVIDER,
-        byokEnabled: config.ROUTING_BYOK,
-        hasPlatformFallback: Boolean(resolveDeployerHasCredential(config.ROUTING_PROVIDER)),
-
-        // Tenant-specific (writable when BYOK=true)
-        tenant: {
-          provider: tenantProvider || null,
-          hasApiKey: hasTenantKey,
-          hasBaseUrl: hasTenantBaseUrl,
-          apiKeyMasked: effectiveKey ? maskToken(effectiveKey) : null,
-          baseUrl: tenantRouting.baseUrl || null,
-        },
-
-        // Full provider registry for Settings UI
-        registry: getProviderRegistry().map((p) => ({
-          slug: p.slug,
-          displayName: p.displayName,
-          description: p.description,
-          authType: p.authType,
-          credentialLabel: p.credentialLabel,
-          credentialPlaceholder: p.credentialPlaceholder,
-          credentialHelpUrl: p.credentialHelpUrl ?? null,
-          requiresBaseUrl: p.requiresBaseUrl,
-          capabilities: p.capabilities,
-          status: p.status,
-        })),
-      },
-    };
-  });
-
-  fastify.patch("/me/routing", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
-
-    const config = getConfig();
-
-    // Only allow credential changes when deployer has enabled BYOK
-    if (!config.ROUTING_BYOK) {
-      return reply.status(403).send({
-        statusCode: 403,
-        error: "Forbidden",
-        message:
-          "Routing credentials are managed by the platform administrator. " +
-          "BYOK (Bring Your Own Key) mode is not enabled for this deployment.",
+  fastify.get(
+    "/me/routing",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const config = getConfig();
+      const shop = await request.tenantDb.shop.findUnique({
+        where: { id: request.shopId },
+        select: { settings: true },
       });
-    }
 
-    const body = updateRoutingSchema.parse(request.body);
+      const settings = (shop?.settings ?? {}) as Record<string, unknown>;
 
-    const current = await request.tenantDb.shop.findUnique({
-      where: { id: request.shopId },
-      select: { settings: true },
-    });
+      // Read tenant routing config from settings.routing (new format)
+      // or fall back to legacy settings.mapboxAccessToken
+      const tenantRouting = (settings.routing ?? {}) as Record<string, unknown>;
+      const legacyToken = settings.mapboxAccessToken as string | undefined;
 
-    const settings = { ...((current?.settings ?? {}) as Record<string, unknown>) };
+      const tenantProvider = tenantRouting.provider as
+        | RoutingProviderSlug
+        | undefined;
+      const hasTenantKey = Boolean(tenantRouting.apiKey || legacyToken);
+      const hasTenantBaseUrl = Boolean(tenantRouting.baseUrl);
 
-    if (body.removeCredentials) {
-      // Clear all routing credentials
-      delete settings.routing;
-      // Also clear legacy key if it exists
-      delete settings.mapboxAccessToken;
-    } else {
-      // Validate credential format if provider-specific pattern exists
-      if (body.provider && body.apiKey) {
-        const meta = getProviderMeta(body.provider as RoutingProviderSlug);
-        if (meta?.credentialPattern && !meta.credentialPattern.test(body.apiKey)) {
-          return reply.status(400).send({
-            statusCode: 400,
-            error: "Bad Request",
-            message: `Invalid ${meta.displayName} credential format. Expected format matching: ${meta.credentialPlaceholder}`,
-          });
-        }
+      // Determine effective token to show masked
+      const effectiveKey = (tenantRouting.apiKey || legacyToken) as
+        | string
+        | undefined;
 
-        // Verify provider is available (not "coming_soon")
-        if (meta?.status !== "available") {
-          return reply.status(400).send({
-            statusCode: 400,
-            error: "Bad Request",
-            message: `${meta?.displayName ?? body.provider} provider is not yet available. Coming soon!`,
-          });
-        }
+      return {
+        data: {
+          // Deployer-controlled settings (read-only for tenant)
+          deployerDefault: config.ROUTING_PROVIDER,
+          byokEnabled: config.ROUTING_BYOK,
+          hasPlatformFallback: Boolean(
+            resolveDeployerHasCredential(config.ROUTING_PROVIDER),
+          ),
+
+          // Tenant-specific (writable when BYOK=true)
+          tenant: {
+            provider: tenantProvider || null,
+            hasApiKey: hasTenantKey,
+            hasBaseUrl: hasTenantBaseUrl,
+            apiKeyMasked: effectiveKey ? maskToken(effectiveKey) : null,
+            baseUrl: tenantRouting.baseUrl || null,
+          },
+
+          // Full provider registry for Settings UI
+          registry: getProviderRegistry().map((p) => ({
+            slug: p.slug,
+            displayName: p.displayName,
+            description: p.description,
+            authType: p.authType,
+            credentialLabel: p.credentialLabel,
+            credentialPlaceholder: p.credentialPlaceholder,
+            credentialHelpUrl: p.credentialHelpUrl ?? null,
+            requiresBaseUrl: p.requiresBaseUrl,
+            capabilities: p.capabilities,
+            status: p.status,
+          })),
+        },
+      };
+    },
+  );
+
+  fastify.patch(
+    "/me/routing",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+
+      const config = getConfig();
+
+      // Only allow credential changes when deployer has enabled BYOK
+      if (!config.ROUTING_BYOK) {
+        return reply.status(403).send({
+          statusCode: 403,
+          error: "Forbidden",
+          message:
+            "Routing credentials are managed by the platform administrator. " +
+            "BYOK (Bring Your Own Key) mode is not enabled for this deployment.",
+        });
       }
 
-      // Build the new routing config
-      const routing: Record<string, unknown> = {
-        ...((settings.routing ?? {}) as Record<string, unknown>),
+      const body = updateRoutingSchema.parse(request.body);
+
+      const current = await request.tenantDb.shop.findUnique({
+        where: { id: request.shopId },
+        select: { settings: true },
+      });
+
+      const settings = {
+        ...((current?.settings ?? {}) as Record<string, unknown>),
       };
 
-      if (body.provider) routing.provider = body.provider;
-      if (body.apiKey) routing.apiKey = body.apiKey;
-      if (body.baseUrl) routing.baseUrl = body.baseUrl;
-
-      settings.routing = routing;
-
-      // Clear legacy key if migrating to new format
-      if (body.provider && settings.mapboxAccessToken) {
+      if (body.removeCredentials) {
+        // Clear all routing credentials
+        delete settings.routing;
+        // Also clear legacy key if it exists
         delete settings.mapboxAccessToken;
+      } else {
+        // Validate credential format if provider-specific pattern exists
+        if (body.provider && body.apiKey) {
+          const meta = getProviderMeta(body.provider as RoutingProviderSlug);
+          if (
+            meta?.credentialPattern &&
+            !meta.credentialPattern.test(body.apiKey)
+          ) {
+            return reply.status(400).send({
+              statusCode: 400,
+              error: "Bad Request",
+              message: `Invalid ${meta.displayName} credential format. Expected format matching: ${meta.credentialPlaceholder}`,
+            });
+          }
+
+          // Verify provider is available (not "coming_soon")
+          if (meta?.status !== "available") {
+            return reply.status(400).send({
+              statusCode: 400,
+              error: "Bad Request",
+              message: `${meta?.displayName ?? body.provider} provider is not yet available. Coming soon!`,
+            });
+          }
+        }
+
+        // Build the new routing config
+        const routing: Record<string, unknown> = {
+          ...((settings.routing ?? {}) as Record<string, unknown>),
+        };
+
+        if (body.provider) routing.provider = body.provider;
+        if (body.apiKey) routing.apiKey = body.apiKey;
+        if (body.baseUrl) routing.baseUrl = body.baseUrl;
+
+        settings.routing = routing;
+
+        // Clear legacy key if migrating to new format
+        if (body.provider && settings.mapboxAccessToken) {
+          delete settings.mapboxAccessToken;
+        }
       }
-    }
 
-    await request.tenantDb.shop.update({
-      where: { id: request.shopId },
-      data: { settings },
-    });
+      await request.tenantDb.shop.update({
+        where: { id: request.shopId },
+        data: { settings },
+      });
 
-    // Re-read to return current state
-    const updated = await request.tenantDb.shop.findUnique({
-      where: { id: request.shopId },
-      select: { settings: true },
-    });
-    const updatedSettings = (updated?.settings ?? {}) as Record<string, unknown>;
-    const updatedRouting = (updatedSettings.routing ?? {}) as Record<string, unknown>;
+      // Re-read to return current state
+      const updated = await request.tenantDb.shop.findUnique({
+        where: { id: request.shopId },
+        select: { settings: true },
+      });
+      const updatedSettings = (updated?.settings ?? {}) as Record<
+        string,
+        unknown
+      >;
+      const updatedRouting = (updatedSettings.routing ?? {}) as Record<
+        string,
+        unknown
+      >;
 
-    return {
-      data: {
-        provider: updatedRouting.provider || null,
-        hasApiKey: Boolean(updatedRouting.apiKey),
-        hasBaseUrl: Boolean(updatedRouting.baseUrl),
-        apiKeyMasked: updatedRouting.apiKey
-          ? maskToken(updatedRouting.apiKey as string)
-          : null,
-      },
-    };
-  });
+      return {
+        data: {
+          provider: updatedRouting.provider || null,
+          hasApiKey: Boolean(updatedRouting.apiKey),
+          hasBaseUrl: Boolean(updatedRouting.baseUrl),
+          apiKeyMasked: updatedRouting.apiKey
+            ? maskToken(updatedRouting.apiKey as string)
+            : null,
+        },
+      };
+    },
+  );
 
   // ── ROUTING METERING STATS ──────────────────────────────────
 
-  fastify.get("/me/routing/meter", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+  fastify.get(
+    "/me/routing/meter",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    try {
-      // Total fallback calls in last 30 days
-      const total = await request.tenantDb.routingMeterEvent.count({
-        where: {
-          shopId: request.shopId,
-          timestamp: { gte: thirtyDaysAgo },
-        },
-      });
+      try {
+        // Total fallback calls in last 30 days
+        const total = await request.tenantDb.routingMeterEvent.count({
+          where: {
+            shopId: request.shopId,
+            timestamp: { gte: thirtyDaysAgo },
+          },
+        });
 
-      // Breakdown by operation
-      const byOperation = await request.tenantDb.routingMeterEvent.groupBy({
-        by: ["operation"],
-        where: {
-          shopId: request.shopId,
-          timestamp: { gte: thirtyDaysAgo },
-        },
-        _count: true,
-      });
+        // Breakdown by operation
+        const byOperation = await request.tenantDb.routingMeterEvent.groupBy({
+          by: ["operation"],
+          where: {
+            shopId: request.shopId,
+            timestamp: { gte: thirtyDaysAgo },
+          },
+          _count: true,
+        });
 
-      // Breakdown by provider
-      const byProvider = await request.tenantDb.routingMeterEvent.groupBy({
-        by: ["provider"],
-        where: {
-          shopId: request.shopId,
-          timestamp: { gte: thirtyDaysAgo },
-        },
-        _count: true,
-      });
+        // Breakdown by provider
+        const byProvider = await request.tenantDb.routingMeterEvent.groupBy({
+          by: ["provider"],
+          where: {
+            shopId: request.shopId,
+            timestamp: { gte: thirtyDaysAgo },
+          },
+          _count: true,
+        });
 
-      return {
-        data: {
-          period: "30d",
-          totalFallbackCalls: total,
-          byOperation: byOperation.map((row) => ({
-            operation: row.operation,
-            count: row._count,
-          })),
-          byProvider: byProvider.map((row) => ({
-            provider: row.provider,
-            count: row._count,
-          })),
-        },
-      };
-    } catch {
-      // Table may not exist yet
-      return {
-        data: {
-          period: "30d",
-          totalFallbackCalls: 0,
-          byOperation: [],
-          byProvider: [],
-        },
-      };
-    }
-  });
+        return {
+          data: {
+            period: "30d",
+            totalFallbackCalls: total,
+            byOperation: byOperation.map((row) => ({
+              operation: row.operation,
+              count: row._count,
+            })),
+            byProvider: byProvider.map((row) => ({
+              provider: row.provider,
+              count: row._count,
+            })),
+          },
+        };
+      } catch {
+        // Table may not exist yet
+        return {
+          data: {
+            period: "30d",
+            totalFallbackCalls: 0,
+            byOperation: [],
+            byProvider: [],
+          },
+        };
+      }
+    },
+  );
 
   // ── NOTIFICATION CONFIG ──────────────────────────────────────
   //
@@ -407,60 +434,69 @@ async function shopsRoutes(fastify: FastifyInstance): Promise<void> {
   // PATCH /me/notifications/:channel — Update tenant credentials for a channel
   // GET  /me/notifications/meter     — Metering stats for fallback usage
 
-  fastify.get("/me/notifications", async (request: FastifyRequest, reply: FastifyReply) => {
-    const config = getConfig();
-    const shop = await request.tenantDb.shop.findUnique({
-      where: { id: request.shopId },
-      select: { settings: true },
-    });
+  fastify.get(
+    "/me/notifications",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const config = getConfig();
+      const shop = await request.tenantDb.shop.findUnique({
+        where: { id: request.shopId },
+        select: { settings: true },
+      });
 
-    const settings = (shop?.settings ?? {}) as Record<string, unknown>;
-    const tenantNotifs = (settings.notifications ?? {}) as Record<string, Record<string, unknown>>;
+      const settings = (shop?.settings ?? {}) as Record<string, unknown>;
+      const tenantNotifs = (settings.notifications ?? {}) as Record<
+        string,
+        Record<string, unknown>
+      >;
 
-    // Build per-channel tenant state
-    const channels: Record<string, {
-      provider: string | null;
-      hasCredentials: boolean;
-      credentialsMasked: Record<string, string>;
-    }> = {};
-
-    for (const ch of VALID_CHANNELS) {
-      const channelConf = tenantNotifs[ch] ?? {};
-      const creds: Record<string, string> = {};
-      let hasCreds = false;
-
-      for (const [k, v] of Object.entries(channelConf)) {
-        if (k !== "provider" && typeof v === "string" && v.length > 0) {
-          creds[k] = maskToken(v);
-          hasCreds = true;
+      // Build per-channel tenant state
+      const channels: Record<
+        string,
+        {
+          provider: string | null;
+          hasCredentials: boolean;
+          credentialsMasked: Record<string, string>;
         }
+      > = {};
+
+      for (const ch of VALID_CHANNELS) {
+        const channelConf = tenantNotifs[ch] ?? {};
+        const creds: Record<string, string> = {};
+        let hasCreds = false;
+
+        for (const [k, v] of Object.entries(channelConf)) {
+          if (k !== "provider" && typeof v === "string" && v.length > 0) {
+            creds[k] = maskToken(v);
+            hasCreds = true;
+          }
+        }
+
+        channels[ch] = {
+          provider: (channelConf.provider as string) || null,
+          hasCredentials: hasCreds,
+          credentialsMasked: creds,
+        };
       }
 
-      channels[ch] = {
-        provider: (channelConf.provider as string) || null,
-        hasCredentials: hasCreds,
-        credentialsMasked: creds,
+      // Determine deployer defaults for each channel
+      const deployerDefaults: Record<string, string> = {
+        email: config.EMAIL_PROVIDER,
+        sms: config.SMS_PROVIDER,
+        whatsapp: config.WHATSAPP_PROVIDER,
+        push: config.PUSH_PROVIDER,
       };
-    }
 
-    // Determine deployer defaults for each channel
-    const deployerDefaults: Record<string, string> = {
-      email: config.EMAIL_PROVIDER,
-      sms: config.SMS_PROVIDER,
-      whatsapp: config.WHATSAPP_PROVIDER,
-      push: config.PUSH_PROVIDER,
-    };
-
-    return {
-      data: {
-        byokEnabled: config.NOTIFICATIONS_BYOK,
-        deployerDefaults,
-        channels,
-        // Full per-channel registries for the Settings UI
-        registries: serializeNotificationRegistries(),
-      },
-    };
-  });
+      return {
+        data: {
+          byokEnabled: config.NOTIFICATIONS_BYOK,
+          deployerDefaults,
+          channels,
+          // Full per-channel registries for the Settings UI
+          registries: serializeNotificationRegistries(),
+        },
+      };
+    },
+  );
 
   fastify.patch(
     "/me/notifications/:channel",
@@ -500,8 +536,12 @@ async function shopsRoutes(fastify: FastifyInstance): Promise<void> {
         select: { settings: true },
       });
 
-      const settings = { ...((current?.settings ?? {}) as Record<string, unknown>) };
-      const notifications = { ...((settings.notifications ?? {}) as Record<string, unknown>) };
+      const settings = {
+        ...((current?.settings ?? {}) as Record<string, unknown>),
+      };
+      const notifications = {
+        ...((settings.notifications ?? {}) as Record<string, unknown>),
+      };
 
       if (body.removeCredentials) {
         delete notifications[channel];
@@ -555,9 +595,18 @@ async function shopsRoutes(fastify: FastifyInstance): Promise<void> {
         where: { id: request.shopId },
         select: { settings: true },
       });
-      const updatedSettings = (updated?.settings ?? {}) as Record<string, unknown>;
-      const updatedNotifs = (updatedSettings.notifications ?? {}) as Record<string, unknown>;
-      const updatedChannel = (updatedNotifs[channel] ?? {}) as Record<string, unknown>;
+      const updatedSettings = (updated?.settings ?? {}) as Record<
+        string,
+        unknown
+      >;
+      const updatedNotifs = (updatedSettings.notifications ?? {}) as Record<
+        string,
+        unknown
+      >;
+      const updatedChannel = (updatedNotifs[channel] ?? {}) as Record<
+        string,
+        unknown
+      >;
 
       const maskedCreds: Record<string, string> = {};
       for (const [k, v] of Object.entries(updatedChannel)) {
@@ -579,124 +628,135 @@ async function shopsRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── NOTIFICATION METERING STATS ──────────────────────────────
 
-  fastify.get("/me/notifications/meter", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+  fastify.get(
+    "/me/notifications/meter",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    try {
-      const total = await request.tenantDb.notificationMeterEvent.count({
-        where: {
-          shopId: request.shopId,
-          timestamp: { gte: thirtyDaysAgo },
-        },
-      });
+      try {
+        const total = await request.tenantDb.notificationMeterEvent.count({
+          where: {
+            shopId: request.shopId,
+            timestamp: { gte: thirtyDaysAgo },
+          },
+        });
 
-      const byChannel = await request.tenantDb.notificationMeterEvent.groupBy({
-        by: ["channel"],
-        where: {
-          shopId: request.shopId,
-          timestamp: { gte: thirtyDaysAgo },
-        },
-        _count: true,
-      });
+        const byChannel = await request.tenantDb.notificationMeterEvent.groupBy(
+          {
+            by: ["channel"],
+            where: {
+              shopId: request.shopId,
+              timestamp: { gte: thirtyDaysAgo },
+            },
+            _count: true,
+          },
+        );
 
-      const byProvider = await request.tenantDb.notificationMeterEvent.groupBy({
-        by: ["provider"],
-        where: {
-          shopId: request.shopId,
-          timestamp: { gte: thirtyDaysAgo },
-        },
-        _count: true,
-      });
+        const byProvider =
+          await request.tenantDb.notificationMeterEvent.groupBy({
+            by: ["provider"],
+            where: {
+              shopId: request.shopId,
+              timestamp: { gte: thirtyDaysAgo },
+            },
+            _count: true,
+          });
 
-      return {
-        data: {
-          period: "30d",
-          totalFallbackCalls: total,
-          byChannel: byChannel.map((row) => ({
-            channel: row.channel,
-            count: row._count,
-          })),
-          byProvider: byProvider.map((row) => ({
-            provider: row.provider,
-            count: row._count,
-          })),
-        },
-      };
-    } catch {
-      return {
-        data: {
-          period: "30d",
-          totalFallbackCalls: 0,
-          byChannel: [],
-          byProvider: [],
-        },
-      };
-    }
-  });
+        return {
+          data: {
+            period: "30d",
+            totalFallbackCalls: total,
+            byChannel: byChannel.map((row) => ({
+              channel: row.channel,
+              count: row._count,
+            })),
+            byProvider: byProvider.map((row) => ({
+              provider: row.provider,
+              count: row._count,
+            })),
+          },
+        };
+      } catch {
+        return {
+          data: {
+            period: "30d",
+            totalFallbackCalls: 0,
+            byChannel: [],
+            byProvider: [],
+          },
+        };
+      }
+    },
+  );
 
   // ── DASHBOARD STATS ───────────────────────────────────────
 
-  fastify.get("/me/stats", async (request: FastifyRequest, reply: FastifyReply) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+  fastify.get(
+    "/me/stats",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const [
-      totalOrders,
-      todayOrders,
-      pendingOrders,
-      inTransitOrders,
-      deliveredToday,
-      activeDrivers,
-      totalDrivers,
-      activeZones,
-    ] = await Promise.all([
-      request.tenantDb.order.count(),
-      request.tenantDb.order.count({
-        where: { createdAt: { gte: today, lt: tomorrow } },
-      }),
-      request.tenantDb.order.count({
-        where: { status: { in: ["PENDING", "ACCEPTED"] } },
-      }),
-      request.tenantDb.order.count({
-        where: { status: { in: ["PICKED_UP", "OUT_FOR_DELIVERY", "ARRIVED"] } },
-      }),
-      request.tenantDb.order.count({
-        where: {
-          status: "DELIVERED",
-          actualDelivery: { gte: today, lt: tomorrow },
-        },
-      }),
-      request.tenantDb.driver.count({
-        where: { status: { in: ["AVAILABLE", "ON_ROUTE"] }, isActive: true },
-      }),
-      request.tenantDb.driver.count({ where: { isActive: true } }),
-      request.tenantDb.deliveryZone.count({ where: { isActive: true } }),
-    ]);
+      const [
+        totalOrders,
+        todayOrders,
+        pendingOrders,
+        inTransitOrders,
+        deliveredToday,
+        activeDrivers,
+        totalDrivers,
+        activeZones,
+      ] = await Promise.all([
+        request.tenantDb.order.count(),
+        request.tenantDb.order.count({
+          where: { createdAt: { gte: today, lt: tomorrow } },
+        }),
+        request.tenantDb.order.count({
+          where: { status: { in: ["PENDING", "ACCEPTED"] } },
+        }),
+        request.tenantDb.order.count({
+          where: {
+            status: { in: ["PICKED_UP", "OUT_FOR_DELIVERY", "ARRIVED"] },
+          },
+        }),
+        request.tenantDb.order.count({
+          where: {
+            status: "DELIVERED",
+            actualDelivery: { gte: today, lt: tomorrow },
+          },
+        }),
+        request.tenantDb.driver.count({
+          where: { status: { in: ["AVAILABLE", "ON_ROUTE"] }, isActive: true },
+        }),
+        request.tenantDb.driver.count({ where: { isActive: true } }),
+        request.tenantDb.deliveryZone.count({ where: { isActive: true } }),
+      ]);
 
-    return {
-      data: {
-        orders: {
-          total: totalOrders,
-          today: todayOrders,
-          pending: pendingOrders,
-          inTransit: inTransitOrders,
-          deliveredToday,
+      return {
+        data: {
+          orders: {
+            total: totalOrders,
+            today: todayOrders,
+            pending: pendingOrders,
+            inTransit: inTransitOrders,
+            deliveredToday,
+          },
+          drivers: {
+            active: activeDrivers,
+            total: totalDrivers,
+          },
+          zones: {
+            active: activeZones,
+          },
         },
-        drivers: {
-          active: activeDrivers,
-          total: totalDrivers,
-        },
-        zones: {
-          active: activeZones,
-        },
-      },
-    };
-  });
+      };
+    },
+  );
 }
 
 // ─── Helpers ───────────────────────────────────────────────

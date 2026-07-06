@@ -2,8 +2,14 @@
  * Shipments resource - track and manage shipments
  */
 
-import type { WitylogixClient } from '../client';
-import type { Shipment, ShipmentTracking, ListParams, PaginatedResponse, ShipmentStatus } from '../types';
+import type { WitylogixClient } from "../client";
+import type {
+  Shipment,
+  ShipmentTracking,
+  ListParams,
+  PaginatedResponse,
+  ShipmentStatus,
+} from "../types";
 
 export interface CreateShipmentData {
   order_id: string;
@@ -28,7 +34,10 @@ export class ShipmentsResource {
    * const shipments = await client.shipments.list({ page: 1, limit: 50 });
    */
   public async list(params?: ListParams): Promise<PaginatedResponse<Shipment>> {
-    return this.client.get<PaginatedResponse<Shipment>>('/v1/shipments', params);
+    return this.client.get<PaginatedResponse<Shipment>>(
+      "/v1/shipments",
+      params,
+    );
   }
 
   /**
@@ -51,7 +60,7 @@ export class ShipmentsResource {
    * });
    */
   public async create(data: CreateShipmentData): Promise<Shipment> {
-    return this.client.post<Shipment>('/v1/shipments', data);
+    return this.client.post<Shipment>("/v1/shipments", data);
   }
 
   /**
@@ -85,7 +94,10 @@ export class ShipmentsResource {
    *   'out_for_delivery'
    * );
    */
-  public async updateStatus(id: string, status: ShipmentStatus): Promise<Shipment> {
+  public async updateStatus(
+    id: string,
+    status: ShipmentStatus,
+  ): Promise<Shipment> {
     return this.client.patch<Shipment>(`/v1/shipments/${id}/status`, {
       status,
     });
@@ -111,9 +123,9 @@ export class ShipmentsResource {
    */
   public async getByStatus(
     status: ShipmentStatus,
-    params?: ListParams
+    params?: ListParams,
   ): Promise<PaginatedResponse<Shipment>> {
-    return this.client.get<PaginatedResponse<Shipment>>('/v1/shipments', {
+    return this.client.get<PaginatedResponse<Shipment>>("/v1/shipments", {
       ...params,
       status,
     });
@@ -125,8 +137,11 @@ export class ShipmentsResource {
    * @example
    * const orderShipments = await client.shipments.getByOrder('order-123');
    */
-  public async getByOrder(orderId: string, params?: ListParams): Promise<PaginatedResponse<Shipment>> {
-    return this.client.get<PaginatedResponse<Shipment>>('/v1/shipments', {
+  public async getByOrder(
+    orderId: string,
+    params?: ListParams,
+  ): Promise<PaginatedResponse<Shipment>> {
+    return this.client.get<PaginatedResponse<Shipment>>("/v1/shipments", {
       ...params,
       order_id: orderId,
     });
@@ -140,9 +155,9 @@ export class ShipmentsResource {
    */
   public async getByDriver(
     driverId: string,
-    params?: ListParams
+    params?: ListParams,
   ): Promise<PaginatedResponse<Shipment>> {
-    return this.client.get<PaginatedResponse<Shipment>>('/v1/shipments', {
+    return this.client.get<PaginatedResponse<Shipment>>("/v1/shipments", {
       ...params,
       driver_id: driverId,
     });
@@ -154,8 +169,10 @@ export class ShipmentsResource {
    * @example
    * const tracking = await client.shipments.trackByNumber('TRK-123456');
    */
-  public async trackByNumber(trackingNumber: string): Promise<ShipmentTracking> {
-    return this.client.get<ShipmentTracking>('/v1/shipments/track', {
+  public async trackByNumber(
+    trackingNumber: string,
+  ): Promise<ShipmentTracking> {
+    return this.client.get<ShipmentTracking>("/v1/shipments/track", {
       tracking_number: trackingNumber,
     });
   }
@@ -171,14 +188,14 @@ export class ShipmentsResource {
    */
   public async bulkUpdateStatus(
     ids: string[],
-    status: ShipmentStatus
+    status: ShipmentStatus,
   ): Promise<{ updated: number; failed: number }> {
     return this.client.post<{ updated: number; failed: number }>(
-      '/v1/shipments/bulk-update-status',
+      "/v1/shipments/bulk-update-status",
       {
         shipment_ids: ids,
         status,
-      }
+      },
     );
   }
 }

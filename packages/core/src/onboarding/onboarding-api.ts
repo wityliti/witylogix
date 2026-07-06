@@ -154,7 +154,10 @@ function handleError(err: unknown, res: Response): void {
  * POST /onboarding/start
  * Initiates a new onboarding session.
  */
-async function handleStartOnboarding(req: Request, res: Response): Promise<void> {
+async function handleStartOnboarding(
+  req: Request,
+  res: Response,
+): Promise<void> {
   try {
     const input = validateBody(startOnboardingSchema, req.body);
     const progress = await onboardingService.startOnboarding(input);
@@ -174,7 +177,7 @@ async function handleVerifyEmail(req: Request, res: Response): Promise<void> {
     const result = emailVerificationService.verifyOTP(input.email, input.code);
 
     // If OTP verification succeeded, update onboarding progress
-    const progression = await req.body.progressId
+    const progression = (await req.body.progressId)
       ? onboardingService.updateStep({
           progressId: req.body.progressId,
           step: OnboardingStep.EMAIL_VERIFICATION,
@@ -265,7 +268,10 @@ async function handleGetProgress(req: Request, res: Response): Promise<void> {
  * POST /onboarding/complete
  * Completes onboarding and triggers workspace provisioning.
  */
-async function handleCompleteOnboarding(req: Request, res: Response): Promise<void> {
+async function handleCompleteOnboarding(
+  req: Request,
+  res: Response,
+): Promise<void> {
   try {
     const input = validateBody(completeOnboardingSchema, req.body);
 
@@ -277,13 +283,17 @@ async function handleCompleteOnboarding(req: Request, res: Response): Promise<vo
       name: (progress.data.workspaceName as string) || "Default Workspace",
       slug: (progress.data.workspaceSlug as string) || "default",
       orgId: progress.orgId || "",
-      deploymentType: (progress.data.deploymentType as DeploymentType) || DeploymentType.CLOUD,
+      deploymentType:
+        (progress.data.deploymentType as DeploymentType) ||
+        DeploymentType.CLOUD,
       industry: (progress.data.industry as Industry) || Industry.OTHER,
       goals: (progress.data.goals as any[]) || [],
-      selectedIntegrations: (progress.data.selectedIntegrations as string[]) || [],
+      selectedIntegrations:
+        (progress.data.selectedIntegrations as string[]) || [],
       timezone: (progress.data.timezone as string) || "UTC",
       currency: (progress.data.currency as string) || "USD",
-      distanceUnit: (progress.data.distanceUnit as DistanceUnit) || DistanceUnit.KM,
+      distanceUnit:
+        (progress.data.distanceUnit as DistanceUnit) || DistanceUnit.KM,
       weightUnit: (progress.data.weightUnit as WeightUnit) || WeightUnit.KG,
       dateFormat: (progress.data.dateFormat as string) || "YYYY-MM-DD",
       locale: (progress.data.locale as string) || "en-US",
@@ -308,7 +318,10 @@ async function handleCompleteOnboarding(req: Request, res: Response): Promise<vo
  * POST /onboarding/invitation
  * Creates and sends an invitation to team member.
  */
-async function handleCreateInvitation(req: Request, res: Response): Promise<void> {
+async function handleCreateInvitation(
+  req: Request,
+  res: Response,
+): Promise<void> {
   try {
     const input = validateBody(createInvitationSchema, req.body);
     const invitation = await invitationService.createInvitation(input);
@@ -323,7 +336,10 @@ async function handleCreateInvitation(req: Request, res: Response): Promise<void
  * POST /onboarding/invitation/accept
  * Accepts an invitation and creates OrgMember.
  */
-async function handleAcceptInvitation(req: Request, res: Response): Promise<void> {
+async function handleAcceptInvitation(
+  req: Request,
+  res: Response,
+): Promise<void> {
   try {
     const input = validateBody(acceptInvitationSchema, req.body);
     const result = await invitationService.acceptInvitation(input);
@@ -338,7 +354,10 @@ async function handleAcceptInvitation(req: Request, res: Response): Promise<void
  * GET /onboarding/invitations/:orgId
  * Lists all invitations for an organization.
  */
-async function handleListInvitations(req: Request, res: Response): Promise<void> {
+async function handleListInvitations(
+  req: Request,
+  res: Response,
+): Promise<void> {
   try {
     const { orgId } = req.params;
     const status = req.query.status as string | undefined;
@@ -351,7 +370,10 @@ async function handleListInvitations(req: Request, res: Response): Promise<void>
       );
     }
 
-    const invitations = await invitationService.listInvitations(orgId, status as any);
+    const invitations = await invitationService.listInvitations(
+      orgId,
+      status as any,
+    );
 
     res.status(200).json(invitations);
   } catch (err) {
@@ -363,7 +385,10 @@ async function handleListInvitations(req: Request, res: Response): Promise<void>
  * DELETE /onboarding/invitation/:invitationId
  * Revokes an invitation.
  */
-async function handleRevokeInvitation(req: Request, res: Response): Promise<void> {
+async function handleRevokeInvitation(
+  req: Request,
+  res: Response,
+): Promise<void> {
   try {
     const { invitationId } = req.params;
 

@@ -541,7 +541,8 @@ describe("Dynamics 365 Client", () => {
 
   describe("Invoices", () => {
     it("should list invoices", () => {
-      const invoiceUrl = "https://example.crm.dynamics.com/api/data/v9.2/invoices";
+      const invoiceUrl =
+        "https://example.crm.dynamics.com/api/data/v9.2/invoices";
       expect(invoiceUrl).toContain("invoices");
     });
 
@@ -754,7 +755,7 @@ describe("Sage Client", () => {
     it("should handle tax calculations", () => {
       const taxRequest = {
         amount: 1000,
-        tax_rate: 0.20,
+        tax_rate: 0.2,
       };
 
       expect(taxRequest).toHaveProperty("tax_rate");
@@ -847,7 +848,8 @@ describe("ERP Sync Engine", () => {
       const localRecord = { updatedAt: 1710247800000 };
       const erpRecord = { updatedAt: 1710251400000 };
 
-      const winner = erpRecord.updatedAt > localRecord.updatedAt ? "erp" : "local";
+      const winner =
+        erpRecord.updatedAt > localRecord.updatedAt ? "erp" : "local";
       expect(winner).toBe("erp");
     });
 

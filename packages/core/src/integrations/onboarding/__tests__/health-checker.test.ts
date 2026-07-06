@@ -9,15 +9,15 @@
  * - Cache management
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   HealthChecker,
   checkHealth,
   HealthCheckScheduler,
-} from '../health-checker';
-import { HealthStatus, HealthCheckResult } from '../types';
+} from "../health-checker";
+import { HealthStatus, HealthCheckResult } from "../types";
 
-describe('HealthChecker', () => {
+describe("HealthChecker", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     HealthChecker.clearAllCache();
@@ -28,16 +28,15 @@ describe('HealthChecker', () => {
     vi.restoreAllMocks();
   });
 
-  describe('checkIntegrationHealth', () => {
-    it('should return HEALTHY status for working integration', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
-        new Response(JSON.stringify({}), { status: 200 })
+  describe("checkIntegrationHealth", () => {
+    it("should return HEALTHY status for working integration", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
+        new Response(JSON.stringify({}), { status: 200 }),
       );
 
-      const result = await HealthChecker.checkIntegrationHealth(
-        'stripe',
-        { secretKey: 'sk_test_123' }
-      );
+      const result = await HealthChecker.checkIntegrationHealth("stripe", {
+        secretKey: "sk_test_123",
+      });
 
       expect(result.status).toBe(HealthStatus.HEALTHY);
       expect(result.checks.authentication).toBe(true);
@@ -45,217 +44,252 @@ describe('HealthChecker', () => {
       expect(result.timestamp).toBeInstanceOf(Date);
     });
 
-    it('should return UNAUTHORIZED status for auth failure', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
-        new Response(JSON.stringify({}), { status: 401 })
+    it("should return UNAUTHORIZED status for auth failure", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
+        new Response(JSON.stringify({}), { status: 401 }),
       );
 
-      const result = await HealthChecker.checkIntegrationHealth(
-        'stripe',
-        { secretKey: 'invalid' }
-      );
+      const result = await HealthChecker.checkIntegrationHealth("stripe", {
+        secretKey: "invalid",
+      });
 
       expect(result.status).toBe(HealthStatus.UNAUTHORIZED);
       expect(result.checks.authentication).toBe(false);
     });
 
-    it('should return DOWN status for network errors', async () => {
-      vi.spyOn(global, 'fetch').mockRejectedValueOnce(
-        new Error('Network error')
+    it("should return DOWN status for network errors", async () => {
+      vi.spyOn(global, "fetch").mockRejectedValueOnce(
+        new Error("Network error"),
       );
 
-      const result = await HealthChecker.checkIntegrationHealth(
-        'stripe',
-        { secretKey: 'test' }
-      );
+      const result = await HealthChecker.checkIntegrationHealth("stripe", {
+        secretKey: "test",
+      });
 
       expect(result.status).toBe(HealthStatus.DOWN);
       expect(result.checks.apiAvailability).toBe(false);
     });
 
-    it('should return DOWN for unknown provider', async () => {
+    it("should return DOWN for unknown provider", async () => {
       const result = await HealthChecker.checkIntegrationHealth(
-        'unknown-provider',
-        { apiKey: 'test' }
+        "unknown-provider",
+        { apiKey: "test" },
       );
 
       expect(result.status).toBe(HealthStatus.DOWN);
-      expect(result.details?.error).toContain('No configuration');
+      expect(result.details?.error).toContain("No configuration");
     });
 
-    it('should include rate limit information', async () => {
-      HealthChecker.recordRateLimit('stripe', 95, 100, new Date(Date.now() + 60000));
-
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
-        new Response(JSON.stringify({}), { status: 200 })
+    it("should include rate limit information", async () => {
+      HealthChecker.recordRateLimit(
+        "stripe",
+        95,
+        100,
+        new Date(Date.now() + 60000),
       );
 
-      const result = await HealthChecker.checkIntegrationHealth(
-        'stripe',
-        { secretKey: 'test' }
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
+        new Response(JSON.stringify({}), { status: 200 }),
       );
+
+      const result = await HealthChecker.checkIntegrationHealth("stripe", {
+        secretKey: "test",
+      });
 
       expect(result.checks.rateLimit).toBeDefined();
       expect(result.checks.rateLimit?.remaining).toBe(95);
       expect(result.checks.rateLimit?.limit).toBe(100);
     });
 
-    it('should return RATE_LIMITED when approaching limits', async () => {
-      HealthChecker.recordRateLimit('stripe', 5, 100, new Date(Date.now() + 60000));
-
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
-        new Response(JSON.stringify({}), { status: 200 })
+    it("should return RATE_LIMITED when approaching limits", async () => {
+      HealthChecker.recordRateLimit(
+        "stripe",
+        5,
+        100,
+        new Date(Date.now() + 60000),
       );
 
-      const result = await HealthChecker.checkIntegrationHealth(
-        'stripe',
-        { secretKey: 'test' }
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
+        new Response(JSON.stringify({}), { status: 200 }),
       );
+
+      const result = await HealthChecker.checkIntegrationHealth("stripe", {
+        secretKey: "test",
+      });
 
       expect(result.status).toBe(HealthStatus.RATE_LIMITED);
     });
 
-    it('should include next check time', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
-        new Response(JSON.stringify({}), { status: 200 })
+    it("should include next check time", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
+        new Response(JSON.stringify({}), { status: 200 }),
       );
 
-      const result = await HealthChecker.checkIntegrationHealth(
-        'stripe',
-        { secretKey: 'test' }
-      );
+      const result = await HealthChecker.checkIntegrationHealth("stripe", {
+        secretKey: "test",
+      });
 
       expect(result.nextCheckAt).toBeDefined();
       expect(result.nextCheckAt).toBeInstanceOf(Date);
       expect(result.nextCheckAt!.getTime()).toBeGreaterThan(Date.now());
     });
 
-    it('should cache health check results', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
-        new Response(JSON.stringify({}), { status: 200 })
+    it("should cache health check results", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
+        new Response(JSON.stringify({}), { status: 200 }),
       );
 
-      const result1 = await HealthChecker.checkIntegrationHealth(
-        'stripe',
-        { secretKey: 'test' }
-      );
+      const result1 = await HealthChecker.checkIntegrationHealth("stripe", {
+        secretKey: "test",
+      });
 
       // Second call should use cache (no additional fetch)
       const result2 = await HealthChecker.checkIntegrationHealth(
-        'stripe',
-        { secretKey: 'test' },
-        false // Don't force refresh
+        "stripe",
+        { secretKey: "test" },
+        false, // Don't force refresh
       );
 
       expect(result1.timestamp.getTime()).toBe(result2.timestamp.getTime());
       expect((global.fetch as any).mock.calls.length).toBe(1); // Only one fetch
     });
 
-    it('should respect force refresh flag', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValue(
-        new Response(JSON.stringify({}), { status: 200 })
+    it("should respect force refresh flag", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValue(
+        new Response(JSON.stringify({}), { status: 200 }),
       );
 
-      await HealthChecker.checkIntegrationHealth('stripe', { secretKey: 'test' });
+      await HealthChecker.checkIntegrationHealth("stripe", {
+        secretKey: "test",
+      });
 
       const result = await HealthChecker.checkIntegrationHealth(
-        'stripe',
-        { secretKey: 'test' },
-        true // Force refresh
+        "stripe",
+        { secretKey: "test" },
+        true, // Force refresh
       );
 
       expect(result.status).toBe(HealthStatus.HEALTHY);
       expect((global.fetch as any).mock.calls.length).toBe(2); // Two fetches
     });
 
-    it('should include cache expiration time', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
-        new Response(JSON.stringify({}), { status: 200 })
+    it("should include cache expiration time", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
+        new Response(JSON.stringify({}), { status: 200 }),
       );
 
-      const result = await HealthChecker.checkIntegrationHealth(
-        'stripe',
-        { secretKey: 'test' }
-      );
+      const result = await HealthChecker.checkIntegrationHealth("stripe", {
+        secretKey: "test",
+      });
 
       expect(result.cachedUntil).toBeDefined();
       expect(result.cachedUntil!.getTime()).toBeGreaterThan(Date.now());
     });
   });
 
-  describe('checkAllIntegrations', () => {
-    it('should check multiple integrations in parallel', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValue(
-        new Response(JSON.stringify({}), { status: 200 })
+  describe("checkAllIntegrations", () => {
+    it("should check multiple integrations in parallel", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValue(
+        new Response(JSON.stringify({}), { status: 200 }),
       );
 
       const integrations = [
-        { providerId: 'stripe', credentials: { secretKey: 'test' } },
-        { providerId: 'slack', credentials: { accessToken: 'test' } },
-        { providerId: 'shopify', credentials: { shopDomain: 'test.myshopify.com', accessToken: 'test' } },
+        { providerId: "stripe", credentials: { secretKey: "test" } },
+        { providerId: "slack", credentials: { accessToken: "test" } },
+        {
+          providerId: "shopify",
+          credentials: {
+            shopDomain: "test.myshopify.com",
+            accessToken: "test",
+          },
+        },
       ];
 
       const results = await HealthChecker.checkAllIntegrations(
-        'org-123',
+        "org-123",
         integrations,
         3, // concurrency
-        true // forceRefresh to avoid cache-related race conditions
+        true, // forceRefresh to avoid cache-related race conditions
       );
 
       expect(results).toHaveLength(3);
-      expect(results.every((r) => r.status === HealthStatus.HEALTHY)).toBe(true);
+      expect(results.every((r) => r.status === HealthStatus.HEALTHY)).toBe(
+        true,
+      );
     });
 
-    it('should respect concurrency limit', async () => {
-      vi.spyOn(global, 'fetch').mockImplementation(
+    it("should respect concurrency limit", async () => {
+      vi.spyOn(global, "fetch").mockImplementation(
         () =>
           new Promise((resolve) => {
             setTimeout(
-              () =>
-                resolve(
-                  new Response(JSON.stringify({}), { status: 200 })
-                ),
-              50
+              () => resolve(new Response(JSON.stringify({}), { status: 200 })),
+              50,
             );
-          })
+          }),
       );
 
       // Use real provider IDs so checkIntegrationHealth actually calls fetch
       // Each needs unique credentials to avoid cache hits
       const integrations = [
-        { providerId: 'stripe', credentials: { secretKey: 'test_0' } },
-        { providerId: 'slack', credentials: { accessToken: 'test_1' } },
-        { providerId: 'shopify', credentials: { shopDomain: 'test2.myshopify.com', accessToken: 'test_2' } },
-        { providerId: 'salesforce', credentials: { accessToken: 'test_3', instanceUrl: 'https://test3.salesforce.com' } },
+        { providerId: "stripe", credentials: { secretKey: "test_0" } },
+        { providerId: "slack", credentials: { accessToken: "test_1" } },
+        {
+          providerId: "shopify",
+          credentials: {
+            shopDomain: "test2.myshopify.com",
+            accessToken: "test_2",
+          },
+        },
+        {
+          providerId: "salesforce",
+          credentials: {
+            accessToken: "test_3",
+            instanceUrl: "https://test3.salesforce.com",
+          },
+        },
       ];
 
       const start = Date.now();
-      await HealthChecker.checkAllIntegrations('org-123', integrations, 2, true);
+      await HealthChecker.checkAllIntegrations(
+        "org-123",
+        integrations,
+        2,
+        true,
+      );
       const elapsed = Date.now() - start;
 
       // With concurrency of 2 and 50ms delay, 2 batches: should take at least 50ms
       expect(elapsed).toBeGreaterThanOrEqual(50);
     });
 
-    it('should handle partial failures in batch', async () => {
+    it("should handle partial failures in batch", async () => {
       let callCount = 0;
-      vi.spyOn(global, 'fetch').mockImplementation(() => {
+      vi.spyOn(global, "fetch").mockImplementation(() => {
         callCount++;
         if (callCount === 2) {
-          return Promise.reject(new Error('Network error'));
+          return Promise.reject(new Error("Network error"));
         }
         return Promise.resolve(
-          new Response(JSON.stringify({}), { status: 200 })
+          new Response(JSON.stringify({}), { status: 200 }),
         );
       });
 
       const integrations = [
-        { providerId: 'stripe', credentials: { secretKey: 'test1' } },
-        { providerId: 'slack', credentials: { accessToken: 'test2' } },
-        { providerId: 'shopify', credentials: { shopDomain: 'test', accessToken: 'test3' } },
+        { providerId: "stripe", credentials: { secretKey: "test1" } },
+        { providerId: "slack", credentials: { accessToken: "test2" } },
+        {
+          providerId: "shopify",
+          credentials: { shopDomain: "test", accessToken: "test3" },
+        },
       ];
 
-      const results = await HealthChecker.checkAllIntegrations('org-123', integrations, 5, true);
+      const results = await HealthChecker.checkAllIntegrations(
+        "org-123",
+        integrations,
+        5,
+        true,
+      );
 
       expect(results).toHaveLength(3);
       const healthy = results.filter((r) => r.status === HealthStatus.HEALTHY);
@@ -263,40 +297,45 @@ describe('HealthChecker', () => {
       expect(healthy.length + down.length).toBe(3);
     });
 
-    it('should return results in expected order', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValue(
-        new Response(JSON.stringify({}), { status: 200 })
+    it("should return results in expected order", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValue(
+        new Response(JSON.stringify({}), { status: 200 }),
       );
 
       const integrations = [
-        { providerId: 'stripe', credentials: { secretKey: 'test' } },
-        { providerId: 'slack', credentials: { accessToken: 'test' } },
+        { providerId: "stripe", credentials: { secretKey: "test" } },
+        { providerId: "slack", credentials: { accessToken: "test" } },
       ];
 
-      const results = await HealthChecker.checkAllIntegrations('org-123', integrations, 5, true);
+      const results = await HealthChecker.checkAllIntegrations(
+        "org-123",
+        integrations,
+        5,
+        true,
+      );
 
-      expect(results[0].providerId).toBe('stripe');
-      expect(results[1].providerId).toBe('slack');
+      expect(results[0].providerId).toBe("stripe");
+      expect(results[1].providerId).toBe("slack");
     });
   });
 
-  describe('getHealthSummary', () => {
-    it('should summarize health check results', () => {
+  describe("getHealthSummary", () => {
+    it("should summarize health check results", () => {
       const results: HealthCheckResult[] = [
         {
-          providerId: 'stripe',
+          providerId: "stripe",
           status: HealthStatus.HEALTHY,
           timestamp: new Date(),
           checks: { authentication: true, apiAvailability: true },
         },
         {
-          providerId: 'slack',
+          providerId: "slack",
           status: HealthStatus.DOWN,
           timestamp: new Date(),
           checks: { authentication: false, apiAvailability: false },
         },
         {
-          providerId: 'shopify',
+          providerId: "shopify",
           status: HealthStatus.HEALTHY,
           timestamp: new Date(),
           checks: { authentication: true, apiAvailability: true },
@@ -310,29 +349,29 @@ describe('HealthChecker', () => {
       expect(summary.down).toBe(1);
     });
 
-    it('should count all status types', () => {
+    it("should count all status types", () => {
       const results: HealthCheckResult[] = [
         {
-          providerId: 'a',
+          providerId: "a",
           status: HealthStatus.HEALTHY,
           timestamp: new Date(),
           checks: { authentication: true, apiAvailability: true },
         },
         {
-          providerId: 'b',
+          providerId: "b",
           status: HealthStatus.DEGRADED,
           timestamp: new Date(),
           checks: { authentication: true, apiAvailability: true },
         },
         {
-          providerId: 'c',
+          providerId: "c",
           status: HealthStatus.RATE_LIMITED,
           timestamp: new Date(),
           checks: { authentication: true, apiAvailability: true },
           checks: { authentication: true, apiAvailability: true },
         },
         {
-          providerId: 'd',
+          providerId: "d",
           status: HealthStatus.UNAUTHORIZED,
           timestamp: new Date(),
           checks: { authentication: false, apiAvailability: false },
@@ -347,49 +386,51 @@ describe('HealthChecker', () => {
     });
   });
 
-  describe('Rate Limit Tracking', () => {
-    it('should record rate limit status', () => {
+  describe("Rate Limit Tracking", () => {
+    it("should record rate limit status", () => {
       const resetTime = new Date(Date.now() + 60000);
-      HealthChecker.recordRateLimit('stripe', 90, 100, resetTime);
+      HealthChecker.recordRateLimit("stripe", 90, 100, resetTime);
 
-      const status = HealthChecker.getRateLimitStatus('stripe');
+      const status = HealthChecker.getRateLimitStatus("stripe");
 
       expect(status?.remaining).toBe(90);
       expect(status?.limit).toBe(100);
       expect(status?.resetAt).toEqual(resetTime);
     });
 
-    it('should return undefined for expired rate limit', () => {
+    it("should return undefined for expired rate limit", () => {
       const pastTime = new Date(Date.now() - 60000); // 1 minute ago
-      HealthChecker.recordRateLimit('stripe', 90, 100, pastTime);
+      HealthChecker.recordRateLimit("stripe", 90, 100, pastTime);
 
-      const status = HealthChecker.getRateLimitStatus('stripe');
+      const status = HealthChecker.getRateLimitStatus("stripe");
 
       expect(status).toBeUndefined();
     });
 
-    it('should track multiple providers separately', () => {
+    it("should track multiple providers separately", () => {
       const resetTime = new Date(Date.now() + 60000);
-      HealthChecker.recordRateLimit('stripe', 90, 100, resetTime);
-      HealthChecker.recordRateLimit('slack', 45, 60, resetTime);
+      HealthChecker.recordRateLimit("stripe", 90, 100, resetTime);
+      HealthChecker.recordRateLimit("slack", 45, 60, resetTime);
 
-      const stripeStatus = HealthChecker.getRateLimitStatus('stripe');
-      const slackStatus = HealthChecker.getRateLimitStatus('slack');
+      const stripeStatus = HealthChecker.getRateLimitStatus("stripe");
+      const slackStatus = HealthChecker.getRateLimitStatus("slack");
 
       expect(stripeStatus?.remaining).toBe(90);
       expect(slackStatus?.remaining).toBe(45);
     });
   });
 
-  describe('Cache Management', () => {
-    it('should clear expired cache entries', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValue(
-        new Response(JSON.stringify({}), { status: 200 })
+  describe("Cache Management", () => {
+    it("should clear expired cache entries", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValue(
+        new Response(JSON.stringify({}), { status: 200 }),
       );
 
       const initialSize = HealthChecker.getCacheStats().size;
 
-      await HealthChecker.checkIntegrationHealth('stripe', { secretKey: 'test' });
+      await HealthChecker.checkIntegrationHealth("stripe", {
+        secretKey: "test",
+      });
 
       HealthChecker.clearExpiredCache();
 
@@ -397,7 +438,7 @@ describe('HealthChecker', () => {
       expect(finalSize).toBeGreaterThanOrEqual(initialSize);
     });
 
-    it('should provide cache statistics', () => {
+    it("should provide cache statistics", () => {
       const stats = HealthChecker.getCacheStats();
 
       expect(stats.size).toBeGreaterThanOrEqual(0);
@@ -405,12 +446,12 @@ describe('HealthChecker', () => {
     });
   });
 
-  describe('Health Check Scheduler', () => {
-    it('should schedule periodic health checks', async () => {
+  describe("Health Check Scheduler", () => {
+    it("should schedule periodic health checks", async () => {
       const checkFn = vi.fn();
       const scheduler = new HealthCheckScheduler(checkFn);
 
-      scheduler.scheduleCheck('stripe', { secretKey: 'test' }, 100);
+      scheduler.scheduleCheck("stripe", { secretKey: "test" }, 100);
 
       await new Promise((resolve) => setTimeout(resolve, 250));
 
@@ -420,16 +461,16 @@ describe('HealthChecker', () => {
       expect(checkFn.mock.calls.length).toBeGreaterThanOrEqual(2);
     });
 
-    it('should stop scheduled checks', async () => {
+    it("should stop scheduled checks", async () => {
       const checkFn = vi.fn();
       const scheduler = new HealthCheckScheduler(checkFn);
 
-      scheduler.scheduleCheck('stripe', { secretKey: 'test' }, 100);
+      scheduler.scheduleCheck("stripe", { secretKey: "test" }, 100);
 
       await new Promise((resolve) => setTimeout(resolve, 150));
 
       const callsBefore = checkFn.mock.calls.length;
-      scheduler.stopCheck('stripe', { secretKey: 'test' });
+      scheduler.stopCheck("stripe", { secretKey: "test" });
 
       await new Promise((resolve) => setTimeout(resolve, 150));
 
@@ -438,12 +479,12 @@ describe('HealthChecker', () => {
       expect(callsAfter).toBe(callsBefore); // No new calls
     });
 
-    it('should track active check count', () => {
+    it("should track active check count", () => {
       const checkFn = vi.fn();
       const scheduler = new HealthCheckScheduler(checkFn);
 
-      scheduler.scheduleCheck('stripe', { secretKey: 'test' }, 1000);
-      scheduler.scheduleCheck('slack', { accessToken: 'test' }, 1000);
+      scheduler.scheduleCheck("stripe", { secretKey: "test" }, 1000);
+      scheduler.scheduleCheck("slack", { accessToken: "test" }, 1000);
 
       expect(scheduler.getActiveCheckCount()).toBe(2);
 
@@ -452,14 +493,14 @@ describe('HealthChecker', () => {
       expect(scheduler.getActiveCheckCount()).toBe(0);
     });
 
-    it('should replace existing schedule for same provider', async () => {
+    it("should replace existing schedule for same provider", async () => {
       const checkFn = vi.fn();
       const scheduler = new HealthCheckScheduler(checkFn);
 
-      scheduler.scheduleCheck('stripe', { secretKey: 'test' }, 1000);
+      scheduler.scheduleCheck("stripe", { secretKey: "test" }, 1000);
       const initialCount = scheduler.getActiveCheckCount();
 
-      scheduler.scheduleCheck('stripe', { secretKey: 'test' }, 100);
+      scheduler.scheduleCheck("stripe", { secretKey: "test" }, 100);
       const finalCount = scheduler.getActiveCheckCount();
 
       expect(initialCount).toBe(1);
@@ -468,11 +509,11 @@ describe('HealthChecker', () => {
       scheduler.stopAll();
     });
 
-    it('should handle check errors gracefully', async () => {
-      const checkFn = vi.fn().mockRejectedValue(new Error('Check failed'));
+    it("should handle check errors gracefully", async () => {
+      const checkFn = vi.fn().mockRejectedValue(new Error("Check failed"));
       const scheduler = new HealthCheckScheduler(checkFn);
 
-      scheduler.scheduleCheck('stripe', { secretKey: 'test' }, 50);
+      scheduler.scheduleCheck("stripe", { secretKey: "test" }, 50);
 
       await new Promise((resolve) => setTimeout(resolve, 150));
 
@@ -483,44 +524,41 @@ describe('HealthChecker', () => {
     });
   });
 
-  describe('Health Check Result Details', () => {
-    it('should include latency in result', async () => {
-      vi.spyOn(global, 'fetch').mockImplementationOnce(
+  describe("Health Check Result Details", () => {
+    it("should include latency in result", async () => {
+      vi.spyOn(global, "fetch").mockImplementationOnce(
         () =>
           new Promise((resolve) => {
             setTimeout(
-              () =>
-                resolve(
-                  new Response(JSON.stringify({}), { status: 200 })
-                ),
-              50
+              () => resolve(new Response(JSON.stringify({}), { status: 200 })),
+              50,
             );
-          })
+          }),
       );
 
       const result = await HealthChecker.checkIntegrationHealth(
-        'stripe',
-        { secretKey: 'test' },
-        true // force refresh to avoid cache
+        "stripe",
+        { secretKey: "test" },
+        true, // force refresh to avoid cache
       );
 
       expect(result.details?.authLatencyMs).toBeGreaterThanOrEqual(0);
     });
 
-    it('should include error details on failure', async () => {
-      vi.spyOn(global, 'fetch').mockRejectedValueOnce(
-        new Error('Connection refused')
+    it("should include error details on failure", async () => {
+      vi.spyOn(global, "fetch").mockRejectedValueOnce(
+        new Error("Connection refused"),
       );
 
       const result = await HealthChecker.checkIntegrationHealth(
-        'stripe',
-        { secretKey: 'test' },
-        true // force refresh to avoid cache
+        "stripe",
+        { secretKey: "test" },
+        true, // force refresh to avoid cache
       );
 
       // The error may appear in details.error or details.authError depending on error path
-      const errorStr = result.details?.error || result.details?.authError || '';
-      expect(errorStr).toContain('Connection refused');
+      const errorStr = result.details?.error || result.details?.authError || "";
+      expect(errorStr).toContain("Connection refused");
     });
   });
 });

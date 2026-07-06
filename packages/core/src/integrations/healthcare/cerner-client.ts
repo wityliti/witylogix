@@ -70,7 +70,9 @@ export class CernerClient extends HealthcareAdapter {
     try {
       await this.request("GET", "/metadata", {});
     } catch (error) {
-      throw new Error(`Failed to validate Cerner configuration: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to validate Cerner configuration: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -84,7 +86,7 @@ export class CernerClient extends HealthcareAdapter {
       body?: unknown;
       query?: Record<string, string | string[] | number>;
       headers?: Record<string, string>;
-    }
+    },
   ): Promise<unknown> {
     await this.applyRateLimit();
 
@@ -124,38 +126,68 @@ export class CernerClient extends HealthcareAdapter {
         }
 
         return response.json();
-      })
+      }),
     );
   }
 
   // ─── FHIR CRUD Operations ───────────────────────────────────────────────
 
-  async create<T extends FHIRResource>(resourceType: string, resource: Omit<T, "id">): Promise<T> {
-    const result = (await this.request("POST", `/${resourceType}`, { body: resource })) as T;
-    await this.auditOperation("CREATE", resourceType, result.id || "unknown", undefined, { resourceType });
+  async create<T extends FHIRResource>(
+    resourceType: string,
+    resource: Omit<T, "id">,
+  ): Promise<T> {
+    const result = (await this.request("POST", `/${resourceType}`, {
+      body: resource,
+    })) as T;
+    await this.auditOperation(
+      "CREATE",
+      resourceType,
+      result.id || "unknown",
+      undefined,
+      { resourceType },
+    );
     return result;
   }
 
-  async read<T extends FHIRResource>(resourceType: string, id: string): Promise<T> {
-    const result = (await this.request("GET", `/${resourceType}/${id}`, {})) as T;
-    await this.auditOperation("READ", resourceType, id, undefined, { resourceType });
+  async read<T extends FHIRResource>(
+    resourceType: string,
+    id: string,
+  ): Promise<T> {
+    const result = (await this.request(
+      "GET",
+      `/${resourceType}/${id}`,
+      {},
+    )) as T;
+    await this.auditOperation("READ", resourceType, id, undefined, {
+      resourceType,
+    });
     return result;
   }
 
-  async update<T extends FHIRResource>(resourceType: string, id: string, resource: Partial<T>): Promise<T> {
-    const result = (await this.request("PUT", `/${resourceType}/${id}`, { body: resource })) as T;
-    await this.auditOperation("UPDATE", resourceType, id, undefined, { resourceType });
+  async update<T extends FHIRResource>(
+    resourceType: string,
+    id: string,
+    resource: Partial<T>,
+  ): Promise<T> {
+    const result = (await this.request("PUT", `/${resourceType}/${id}`, {
+      body: resource,
+    })) as T;
+    await this.auditOperation("UPDATE", resourceType, id, undefined, {
+      resourceType,
+    });
     return result;
   }
 
   async delete(resourceType: string, id: string): Promise<void> {
     await this.request("DELETE", `/${resourceType}/${id}`, {});
-    await this.auditOperation("DELETE", resourceType, id, undefined, { resourceType });
+    await this.auditOperation("DELETE", resourceType, id, undefined, {
+      resourceType,
+    });
   }
 
   async search<T extends FHIRResource>(
     resourceType: string,
-    params: FHIRSearchParams
+    params: FHIRSearchParams,
   ): Promise<FHIRSearchResult<T>> {
     const query: Record<string, string | string[] | number> = {};
 
@@ -173,8 +205,12 @@ export class CernerClient extends HealthcareAdapter {
       query._sort = params.sort;
     }
 
-    const result = (await this.request("GET", `/${resourceType}`, { query })) as FHIRSearchResult<T>;
-    await this.auditOperation("QUERY", resourceType, "", undefined, { filters: params.filters });
+    const result = (await this.request("GET", `/${resourceType}`, {
+      query,
+    })) as FHIRSearchResult<T>;
+    await this.auditOperation("QUERY", resourceType, "", undefined, {
+      filters: params.filters,
+    });
     return result;
   }
 
@@ -222,7 +258,10 @@ export class CernerClient extends HealthcareAdapter {
 
   // ─── Clinical Document Operations ───────────────────────────────────────
 
-  async getDocuments(patientId: string, params?: FHIRSearchParams): Promise<ClinicalDocument[]> {
+  async getDocuments(
+    patientId: string,
+    params?: FHIRSearchParams,
+  ): Promise<ClinicalDocument[]> {
     // FHIR DocumentReference resource
     const result = await this.search<any>("DocumentReference", {
       ...params,
@@ -244,7 +283,10 @@ export class CernerClient extends HealthcareAdapter {
     }));
   }
 
-  async getDocument(documentId: string, format: "pdf" | "xml" | "json" = "pdf"): Promise<ClinicalDocument> {
+  async getDocument(
+    documentId: string,
+    format: "pdf" | "xml" | "json" = "pdf",
+  ): Promise<ClinicalDocument> {
     const doc = await this.read<any>("DocumentReference", documentId);
 
     return {
@@ -253,7 +295,12 @@ export class CernerClient extends HealthcareAdapter {
       patientId: doc.subject?.reference?.split("/")[1] || "",
       title: doc.description || "Document",
       content: "", // Would fetch actual content
-      contentType: format === "pdf" ? "application/pdf" : format === "xml" ? "application/xml" : "text/plain",
+      contentType:
+        format === "pdf"
+          ? "application/pdf"
+          : format === "xml"
+            ? "application/xml"
+            : "text/plain",
       createdAt: doc.date,
       metadata: doc,
     };
@@ -272,14 +319,19 @@ export class CernerClient extends HealthcareAdapter {
     return result.entry.map((entry) => ({
       id: entry.resource.id,
       patientId,
-      consentType: entry.resource.category?.[0]?.coding?.[0]?.code === "OPTIN" ? "OPT_IN" : "OPT_OUT",
+      consentType:
+        entry.resource.category?.[0]?.coding?.[0]?.code === "OPTIN"
+          ? "OPT_IN"
+          : "OPT_OUT",
       purpose: "TREATMENT",
       validFrom: entry.resource.dateTime,
       createdAt: entry.resource.dateTime,
     }));
   }
 
-  async createConsent(consent: Omit<ConsentRecord, "id" | "createdAt">): Promise<ConsentRecord> {
+  async createConsent(
+    consent: Omit<ConsentRecord, "id" | "createdAt">,
+  ): Promise<ConsentRecord> {
     const resource = {
       resourceType: "Consent",
       status: "active",
@@ -307,12 +359,17 @@ export class CernerClient extends HealthcareAdapter {
       dateTime: consent.validFrom,
     };
 
-    const result = await this.create<FHIRResource>("Consent", resource as Omit<FHIRResource, "id">);
+    const result = await this.create<FHIRResource>(
+      "Consent",
+      resource as Omit<FHIRResource, "id">,
+    );
     return result as unknown as ConsentRecord;
   }
 
   async revokeConsent(consentId: string): Promise<ConsentRecord> {
-    const updated = await this.update<any>("Consent", consentId, { status: "inactive" });
+    const updated = await this.update<any>("Consent", consentId, {
+      status: "inactive",
+    });
     return {
       id: updated.id || consentId,
       patientId: updated.patient?.reference?.split("/")[1] || "",
@@ -326,7 +383,9 @@ export class CernerClient extends HealthcareAdapter {
 
   // ─── PHI Audit Logging (HIPAA) ──────────────────────────────────────────
 
-  async logAuditEntry(entry: Omit<AuditEntry, "id" | "timestamp">): Promise<AuditEntry> {
+  async logAuditEntry(
+    entry: Omit<AuditEntry, "id" | "timestamp">,
+  ): Promise<AuditEntry> {
     const auditEvent: AuditEntry = {
       id: `audit-${Date.now()}`,
       timestamp: new Date().toISOString(),
@@ -341,7 +400,11 @@ export class CernerClient extends HealthcareAdapter {
     return auditEvent;
   }
 
-  async getAuditLogs(patientId: string, startDate?: string, endDate?: string): Promise<AuditEntry[]> {
+  async getAuditLogs(
+    patientId: string,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<AuditEntry[]> {
     // INTEGRATION: Retrieve from audit log destination
     return [];
   }
@@ -351,7 +414,7 @@ export class CernerClient extends HealthcareAdapter {
   async getTerminologyMapping(
     sourceSystem: CodeSystem,
     sourceCode: string,
-    targetSystem: CodeSystem
+    targetSystem: CodeSystem,
   ): Promise<TerminologyMapping | null> {
     try {
       // Call ConceptMap $translate operation
@@ -365,7 +428,9 @@ export class CernerClient extends HealthcareAdapter {
       })) as any;
 
       if (result.parameter) {
-        const codeParam = result.parameter.find((p: any) => p.name === "result");
+        const codeParam = result.parameter.find(
+          (p: any) => p.name === "result",
+        );
         if (codeParam?.valueCode) {
           return {
             sourceSystem,
@@ -383,7 +448,9 @@ export class CernerClient extends HealthcareAdapter {
     }
   }
 
-  async createTerminologyMapping(mapping: Omit<TerminologyMapping, "createdAt">): Promise<TerminologyMapping> {
+  async createTerminologyMapping(
+    mapping: Omit<TerminologyMapping, "createdAt">,
+  ): Promise<TerminologyMapping> {
     return {
       ...mapping,
       createdAt: new Date().toISOString(),
@@ -404,7 +471,10 @@ export class CernerClient extends HealthcareAdapter {
     }
 
     if (params.outputFormat) {
-      query._outputFormat = params.outputFormat === "ndjson" ? "application/fhir+ndjson" : "text/csv";
+      query._outputFormat =
+        params.outputFormat === "ndjson"
+          ? "application/fhir+ndjson"
+          : "text/csv";
     }
 
     const response = (await this.request("GET", "/$export", { query })) as any;
@@ -419,7 +489,11 @@ export class CernerClient extends HealthcareAdapter {
   }
 
   async getBulkExportStatus(exportId: string): Promise<BulkExportResult> {
-    const response = (await this.request("GET", `/$export/${exportId}`, {})) as any;
+    const response = (await this.request(
+      "GET",
+      `/$export/${exportId}`,
+      {},
+    )) as any;
 
     return {
       transactionTime: response.transactionTime,
@@ -438,7 +512,8 @@ export class CernerClient extends HealthcareAdapter {
 
   generateSMARTLaunchUrl(params: SMARTLaunchParams): string {
     const metadata = this.config.metadata as Record<string, any> | undefined;
-    const authorizeEndpoint = metadata?.authorizeEndpoint || `${this.baseUrl}authorize`;
+    const authorizeEndpoint =
+      metadata?.authorizeEndpoint || `${this.baseUrl}authorize`;
 
     const url = new URL(authorizeEndpoint);
     url.searchParams.set("response_type", "code");
@@ -458,9 +533,19 @@ export class CernerClient extends HealthcareAdapter {
     return url.toString();
   }
 
-  async exchangeAuthorizationCode(code: string, codeVerifier?: string): Promise<{ accessToken: string; expiresIn: number; context?: SMARTContext }> {
+  async exchangeAuthorizationCode(
+    code: string,
+    codeVerifier?: string,
+  ): Promise<{
+    accessToken: string;
+    expiresIn: number;
+    context?: SMARTContext;
+  }> {
     const metadata = this.config.metadata as Record<string, any> | undefined;
-    const tokenEndpoint = metadata?.tokenEndpoint || this.config.tokenEndpoint || `${this.baseUrl}token`;
+    const tokenEndpoint =
+      metadata?.tokenEndpoint ||
+      this.config.tokenEndpoint ||
+      `${this.baseUrl}token`;
 
     const body = {
       grant_type: "authorization_code",
@@ -486,7 +571,9 @@ export class CernerClient extends HealthcareAdapter {
     return {
       accessToken: response.access_token,
       expiresIn: response.expires_in,
-      context: response.patient ? { patientId: String(response.patient), scope: [] } : undefined,
+      context: response.patient
+        ? { patientId: String(response.patient), scope: [] }
+        : undefined,
     };
   }
 

@@ -264,9 +264,7 @@ export {
   getConnectionManager,
 } from "./connection-manager.js";
 
-export {
-  EventBroadcaster,
-} from "./event-broadcaster.js";
+export { EventBroadcaster } from "./event-broadcaster.js";
 
 export {
   DashboardHub,

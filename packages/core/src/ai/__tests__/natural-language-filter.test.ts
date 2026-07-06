@@ -128,7 +128,7 @@ describe("Natural Language Filter Parser", () => {
     it("should have proper date boundaries", () => {
       const filter = parser.parse("today orders");
       expect(filter.dateRange?.startDate?.getTime()).toBeLessThanOrEqual(
-        (filter.dateRange?.endDate || new Date()).getTime()
+        (filter.dateRange?.endDate || new Date()).getTime(),
       );
     });
 
@@ -271,7 +271,7 @@ describe("Natural Language Filter Parser", () => {
 
     it("should parse with all components", () => {
       const filter = parser.parse(
-        'overdue orders from last week over $500 near downtown #urgent "rush delivery"'
+        'overdue orders from last week over $500 near downtown #urgent "rush delivery"',
       );
       expect(filter.entity).toBe("order");
       expect(filter.status).toBe("overdue");

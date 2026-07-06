@@ -25,8 +25,10 @@ import {
  */
 class AnalyticsStore {
   private events: OnboardingAnalyticsEvent[] = [];
-  private sessionData: Map<string, { startedAt: Date; userId: string; orgId?: string }> =
-    new Map();
+  private sessionData: Map<
+    string,
+    { startedAt: Date; userId: string; orgId?: string }
+  > = new Map();
 
   addEvent(event: OnboardingAnalyticsEvent): void {
     this.events.push(event);
@@ -53,7 +55,9 @@ class AnalyticsStore {
     return this.events.filter((e) => e.sessionId === sessionId);
   }
 
-  getEventsByType(type: OnboardingAnalyticsEventType): OnboardingAnalyticsEvent[] {
+  getEventsByType(
+    type: OnboardingAnalyticsEventType,
+  ): OnboardingAnalyticsEvent[] {
     return this.events.filter((e) => e.eventType === type);
   }
 
@@ -85,8 +89,12 @@ export function trackEvent(event: OnboardingAnalyticsEvent): void {
  * @returns Completion metrics for each step
  */
 export function getStepCompletionRates(): StepCompletionMetrics[] {
-  const startedEvents = store.getEventsByType(OnboardingAnalyticsEventType.STEP_STARTED);
-  const completedEvents = store.getEventsByType(OnboardingAnalyticsEventType.STEP_COMPLETED);
+  const startedEvents = store.getEventsByType(
+    OnboardingAnalyticsEventType.STEP_STARTED,
+  );
+  const completedEvents = store.getEventsByType(
+    OnboardingAnalyticsEventType.STEP_COMPLETED,
+  );
 
   const stepMetrics = new Map<string, StepCompletionMetrics>();
 
@@ -139,7 +147,9 @@ export function getStepCompletionRates(): StepCompletionMetrics[] {
     for (const event of store.getEventsByStep(metric.step)) {
       if (event.eventType === OnboardingAnalyticsEventType.STEP_STARTED) {
         stepStartedBySession.set(event.sessionId, event.timestamp);
-      } else if (event.eventType === OnboardingAnalyticsEventType.STEP_COMPLETED) {
+      } else if (
+        event.eventType === OnboardingAnalyticsEventType.STEP_COMPLETED
+      ) {
         const startTime = stepStartedBySession.get(event.sessionId);
         if (startTime) {
           stepStartEnd.push({ start: startTime, end: event.timestamp });
@@ -152,7 +162,8 @@ export function getStepCompletionRates(): StepCompletionMetrics[] {
       const times = stepStartEnd.map(
         (se) => (se.end?.getTime() ?? 0 - se.start.getTime()) / 1000 / 60,
       );
-      metric.averageTimeMinutes = times.reduce((a, b) => a + b, 0) / times.length;
+      metric.averageTimeMinutes =
+        times.reduce((a, b) => a + b, 0) / times.length;
       metric.medianTimeMinutes = times.sort((a, b) => a - b)[
         Math.floor(times.length / 2)
       ];
@@ -196,7 +207,10 @@ export function getDropOffPoints(): Array<{
       step: m.step,
       abandonmentRate: m.abandonmentRate,
       userCount: m.totalStarted,
-      suggestedImprovements: getImprovementSuggestions(m.step, m.averageTimeMinutes),
+      suggestedImprovements: getImprovementSuggestions(
+        m.step,
+        m.averageTimeMinutes,
+      ),
     }))
     .sort((a, b) => b.abandonmentRate - a.abandonmentRate);
 
@@ -210,7 +224,9 @@ function getImprovementSuggestions(step: string, avgTime: number): string[] {
   const suggestions: string[] = [];
 
   if (avgTime > 20) {
-    suggestions.push("Step takes too long — consider breaking into substeps or simplifying");
+    suggestions.push(
+      "Step takes too long — consider breaking into substeps or simplifying",
+    );
   }
 
   if (step === "INTEGRATION_SETUP") {
@@ -272,7 +288,9 @@ export function getPopularIntegrations(limit: number = 10): PopularSelection[] {
  * @returns Popular goals ranked by selection count
  */
 export function getPopularGoals(limit: number = 10): PopularSelection[] {
-  const goalEvents = store.getEventsByType(OnboardingAnalyticsEventType.GOAL_SELECTED);
+  const goalEvents = store.getEventsByType(
+    OnboardingAnalyticsEventType.GOAL_SELECTED,
+  );
 
   const goals = new Map<string, number>();
 
@@ -322,7 +340,9 @@ export function getConversionFunnel(): ConversionFunnelStep[] {
         startedByStep.set(event.step, new Set());
       }
       startedByStep.get(event.step)?.add(event.userId);
-    } else if (event.eventType === OnboardingAnalyticsEventType.STEP_COMPLETED) {
+    } else if (
+      event.eventType === OnboardingAnalyticsEventType.STEP_COMPLETED
+    ) {
       if (!completedByStep.has(event.step)) {
         completedByStep.set(event.step, new Set());
       }
@@ -347,7 +367,8 @@ export function getConversionFunnel(): ConversionFunnelStep[] {
       usersReached,
       usersCompleted,
       conversionRate,
-      dropOffPercentage: usersReached > 0 ? 1 - usersCompleted / usersReached : 0,
+      dropOffPercentage:
+        usersReached > 0 ? 1 - usersCompleted / usersReached : 0,
     });
 
     previousStepUsers = usersCompleted;
@@ -387,7 +408,9 @@ export function getCohortAnalysisByIndustry(): Record<
 
     if (event.eventType === OnboardingAnalyticsEventType.STEP_STARTED) {
       cohort.started += 1;
-    } else if (event.eventType === OnboardingAnalyticsEventType.STEP_COMPLETED) {
+    } else if (
+      event.eventType === OnboardingAnalyticsEventType.STEP_COMPLETED
+    ) {
       cohort.completed += 1;
     }
   }
@@ -434,7 +457,8 @@ export function exportAnalyticsJSON(): Record<string, unknown> {
 export function exportAnalyticsCSV(): string {
   const completionRates = getStepCompletionRates();
 
-  let csv = "Step,Total Started,Total Completed,Completion Rate,Avg Time (min),Abandonment Rate\n";
+  let csv =
+    "Step,Total Started,Total Completed,Completion Rate,Avg Time (min),Abandonment Rate\n";
 
   for (const metric of completionRates) {
     csv += `"${metric.step}",${metric.totalStarted},${metric.totalCompleted},${metric.completionRate.toFixed(2)},${metric.averageTimeMinutes.toFixed(1)},${metric.abandonmentRate.toFixed(2)}\n`;
@@ -476,16 +500,21 @@ export function getAnalyticsSummary(): {
     OnboardingAnalyticsEventType.ONBOARDING_ABANDONED,
   );
 
-  const completionRate = (completionEvents.length + abandonmentEvents.length) > 0
-    ? completionEvents.length / (completionEvents.length + abandonmentEvents.length)
-    : 0;
+  const completionRate =
+    completionEvents.length + abandonmentEvents.length > 0
+      ? completionEvents.length /
+        (completionEvents.length + abandonmentEvents.length)
+      : 0;
 
   // Get average time across all sessions
   const sessionTimes = new Map<string, { start: Date; end: Date }>();
 
   for (const event of allEvents) {
     if (!sessionTimes.has(event.sessionId)) {
-      sessionTimes.set(event.sessionId, { start: event.timestamp, end: event.timestamp });
+      sessionTimes.set(event.sessionId, {
+        start: event.timestamp,
+        end: event.timestamp,
+      });
     } else {
       const session = sessionTimes.get(event.sessionId)!;
       if (event.timestamp > session.end) {
@@ -499,7 +528,8 @@ export function getAnalyticsSummary(): {
     totalMinutes += (end.getTime() - start.getTime()) / 1000 / 60;
   }
 
-  const averageTimeMinutes = sessionTimes.size > 0 ? totalMinutes / sessionTimes.size : 0;
+  const averageTimeMinutes =
+    sessionTimes.size > 0 ? totalMinutes / sessionTimes.size : 0;
 
   return {
     totalUsers: uniqueUsers,

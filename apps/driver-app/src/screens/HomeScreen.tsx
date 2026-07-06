@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,11 +9,11 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
-} from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { api } from '../services/api';
-import { useOfflineSync } from '../hooks/useOfflineSync';
-import OfflineIndicator from '../components/OfflineIndicator';
+} from "react-native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { api } from "../services/api";
+import { useOfflineSync } from "../hooks/useOfflineSync";
+import OfflineIndicator from "../components/OfflineIndicator";
 
 interface DeliveryStats {
   ordersRemaining: number;
@@ -33,7 +33,9 @@ interface ActiveDelivery {
 
 const HomeScreen: React.FC = () => {
   const [stats, setStats] = useState<DeliveryStats | null>(null);
-  const [activeDelivery, setActiveDelivery] = useState<ActiveDelivery | null>(null);
+  const [activeDelivery, setActiveDelivery] = useState<ActiveDelivery | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation<any>();
@@ -42,21 +44,21 @@ const HomeScreen: React.FC = () => {
   useFocusEffect(
     React.useCallback(() => {
       fetchTodayData();
-    }, [])
+    }, []),
   );
 
   const fetchTodayData = async () => {
     try {
       setIsLoading(true);
       const [statsData, deliveryData] = await Promise.all([
-        api.get('/api/v4/drivers/me/stats/today'),
-        api.get('/api/v4/drivers/me/active-delivery'),
+        api.get("/api/v4/drivers/me/stats/today"),
+        api.get("/api/v4/drivers/me/active-delivery"),
       ]);
       setStats(statsData);
       setActiveDelivery(deliveryData || null);
     } catch (error) {
-      console.error('Failed to fetch today data:', error);
-      Alert.alert('Error', 'Failed to load today\'s data');
+      console.error("Failed to fetch today data:", error);
+      Alert.alert("Error", "Failed to load today's data");
     } finally {
       setIsLoading(false);
     }
@@ -70,18 +72,18 @@ const HomeScreen: React.FC = () => {
 
   const handleStartRoute = () => {
     if (activeDelivery) {
-      navigation.navigate('Delivery', { deliveryId: activeDelivery.id });
+      navigation.navigate("Delivery", { deliveryId: activeDelivery.id });
     } else {
-      Alert.alert('No Active Delivery', 'No delivery assigned at this time');
+      Alert.alert("No Active Delivery", "No delivery assigned at this time");
     }
   };
 
   const handleViewSchedule = () => {
-    navigation.navigate('Routes');
+    navigation.navigate("Routes");
   };
 
   const handleScanPackage = () => {
-    Alert.alert('Scan Package', 'Package scanning feature coming soon');
+    Alert.alert("Scan Package", "Package scanning feature coming soon");
   };
 
   if (isLoading && !stats) {
@@ -104,7 +106,7 @@ const HomeScreen: React.FC = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={['#3b82f6']}
+            colors={["#3b82f6"]}
             tintColor="#3b82f6"
           />
         }
@@ -126,7 +128,9 @@ const HomeScreen: React.FC = () => {
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>Completed</Text>
             <Text style={styles.statNumber}>{stats?.completed || 0}</Text>
-            <Text style={styles.statSubtext}>of {(stats?.completed || 0) + (stats?.ordersRemaining || 0)}</Text>
+            <Text style={styles.statSubtext}>
+              of {(stats?.completed || 0) + (stats?.ordersRemaining || 0)}
+            </Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>Distance</Text>
@@ -151,9 +155,16 @@ const HomeScreen: React.FC = () => {
             <View style={styles.deliveryHeader}>
               <View>
                 <Text style={styles.deliveryLabel}>Active Delivery</Text>
-                <Text style={styles.deliveryCustomer}>{activeDelivery.customerName}</Text>
+                <Text style={styles.deliveryCustomer}>
+                  {activeDelivery.customerName}
+                </Text>
               </View>
-              <View style={[styles.statusBadge, getStatusColor(activeDelivery.status)]}>
+              <View
+                style={[
+                  styles.statusBadge,
+                  getStatusColor(activeDelivery.status),
+                ]}
+              >
                 <Text style={styles.statusText}>{activeDelivery.status}</Text>
               </View>
             </View>
@@ -171,7 +182,10 @@ const HomeScreen: React.FC = () => {
               </View>
             </View>
 
-            <TouchableOpacity style={styles.startButton} onPress={handleStartRoute}>
+            <TouchableOpacity
+              style={styles.startButton}
+              onPress={handleStartRoute}
+            >
               <Text style={styles.startButtonText}>Start Route</Text>
             </TouchableOpacity>
           </View>
@@ -210,8 +224,13 @@ const HomeScreen: React.FC = () => {
           <View style={styles.emptyStateCard}>
             <Text style={styles.emptyIcon}>📭</Text>
             <Text style={styles.emptyTitle}>No Active Deliveries</Text>
-            <Text style={styles.emptySubtitle}>Check your schedule for upcoming deliveries</Text>
-            <TouchableOpacity style={styles.viewScheduleButton} onPress={handleViewSchedule}>
+            <Text style={styles.emptySubtitle}>
+              Check your schedule for upcoming deliveries
+            </Text>
+            <TouchableOpacity
+              style={styles.viewScheduleButton}
+              onPress={handleViewSchedule}
+            >
               <Text style={styles.viewScheduleButtonText}>View Schedule</Text>
             </TouchableOpacity>
           </View>
@@ -225,147 +244,147 @@ const HomeScreen: React.FC = () => {
 
 const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
-    case 'in_transit':
-      return { backgroundColor: '#3b82f6' };
-    case 'out_for_delivery':
-      return { backgroundColor: '#f59e0b' };
-    case 'pending':
-      return { backgroundColor: '#6b7280' };
+    case "in_transit":
+      return { backgroundColor: "#3b82f6" };
+    case "out_for_delivery":
+      return { backgroundColor: "#f59e0b" };
+    case "pending":
+      return { backgroundColor: "#6b7280" };
     default:
-      return { backgroundColor: '#3b82f6' };
+      return { backgroundColor: "#3b82f6" };
   }
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: "#0f172a",
   },
   centerContent: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 20,
-    backgroundColor: '#1a2332',
+    backgroundColor: "#1a2332",
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
+    borderBottomColor: "#334155",
   },
   headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: '700',
-    color: '#e2e8f0',
+    fontWeight: "700",
+    color: "#e2e8f0",
     marginBottom: 4,
   },
   pendingBadge: {
-    backgroundColor: '#f59e0b',
+    backgroundColor: "#f59e0b",
     borderRadius: 12,
     minWidth: 24,
     height: 24,
     paddingHorizontal: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 4,
   },
   pendingBadgeText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#94a3b8',
-    fontWeight: '500',
+    color: "#94a3b8",
+    fontWeight: "500",
   },
   statsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     paddingHorizontal: 12,
     paddingVertical: 16,
     gap: 12,
   },
   statCard: {
     flex: 1,
-    minWidth: '48%',
-    backgroundColor: '#1e293b',
+    minWidth: "48%",
+    backgroundColor: "#1e293b",
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#334155',
-    alignItems: 'center',
+    borderColor: "#334155",
+    alignItems: "center",
   },
   statLabel: {
     fontSize: 12,
-    color: '#94a3b8',
-    fontWeight: '600',
+    color: "#94a3b8",
+    fontWeight: "600",
     marginBottom: 6,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   statNumber: {
     fontSize: 26,
-    fontWeight: '700',
-    color: '#3b82f6',
+    fontWeight: "700",
+    color: "#3b82f6",
     marginBottom: 4,
   },
   statSubtext: {
     fontSize: 11,
-    color: '#64748b',
-    fontWeight: '500',
+    color: "#64748b",
+    fontWeight: "500",
   },
   activeDeliveryCard: {
     marginHorizontal: 12,
     marginVertical: 12,
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     borderRadius: 12,
     padding: 16,
     borderLeftWidth: 4,
-    borderLeftColor: '#3b82f6',
+    borderLeftColor: "#3b82f6",
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: "#334155",
   },
   deliveryHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: 12,
   },
   deliveryLabel: {
     fontSize: 12,
-    color: '#94a3b8',
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    color: "#94a3b8",
+    fontWeight: "600",
+    textTransform: "uppercase",
     letterSpacing: 0.5,
     marginBottom: 4,
   },
   deliveryCustomer: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#e2e8f0',
+    fontWeight: "700",
+    color: "#e2e8f0",
   },
   statusBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
   },
   statusText: {
-    color: '#e2e8f0',
+    color: "#e2e8f0",
     fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    textTransform: "uppercase",
     letterSpacing: 0.3,
   },
   divider: {
     height: 1,
-    backgroundColor: '#334155',
+    backgroundColor: "#334155",
     marginVertical: 12,
   },
   deliveryContent: {
@@ -376,35 +395,35 @@ const styles = StyleSheet.create({
   },
   addressLabel: {
     fontSize: 12,
-    color: '#94a3b8',
-    fontWeight: '600',
+    color: "#94a3b8",
+    fontWeight: "600",
     marginBottom: 4,
   },
   address: {
     fontSize: 14,
-    color: '#cbd5e1',
+    color: "#cbd5e1",
     lineHeight: 20,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   etaRow: {
     marginTop: 8,
   },
   etaLabel: {
     fontSize: 13,
-    color: '#60a5fa',
-    fontWeight: '600',
+    color: "#60a5fa",
+    fontWeight: "600",
   },
   startButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
     borderRadius: 8,
     paddingVertical: 12,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 4,
   },
   startButtonText: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   actionsSection: {
     paddingHorizontal: 16,
@@ -412,22 +431,22 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#e2e8f0',
+    fontWeight: "700",
+    color: "#e2e8f0",
     marginBottom: 12,
   },
   actionsGrid: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   actionCard: {
     flex: 1,
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     borderRadius: 10,
     padding: 14,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: "#334155",
   },
   actionIcon: {
     fontSize: 24,
@@ -435,20 +454,20 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 12,
-    color: '#cbd5e1',
-    fontWeight: '600',
-    textAlign: 'center',
+    color: "#cbd5e1",
+    fontWeight: "600",
+    textAlign: "center",
   },
   emptyStateCard: {
     marginHorizontal: 16,
     marginVertical: 12,
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     borderRadius: 12,
     padding: 24,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#334155',
-    borderStyle: 'dashed',
+    borderColor: "#334155",
+    borderStyle: "dashed",
   },
   emptyIcon: {
     fontSize: 48,
@@ -456,27 +475,27 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#e2e8f0',
+    fontWeight: "700",
+    color: "#e2e8f0",
     marginBottom: 6,
   },
   emptySubtitle: {
     fontSize: 13,
-    color: '#94a3b8',
-    textAlign: 'center',
+    color: "#94a3b8",
+    textAlign: "center",
     marginBottom: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   viewScheduleButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
   viewScheduleButtonText: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   spacing: {
     height: 20,

@@ -46,9 +46,15 @@ interface AdobeSignAgreementRequest {
   name: string;
   message?: string;
   signatureType?: "ESIGN" | "DIGITAL";
-  signatureFlow?: "SENDER_SIGNATURE_NOT_REQUIRED" | "SENDER_SIGNS_FIRST" | "SENDER_SIGNS_LAST";
+  signatureFlow?:
+    | "SENDER_SIGNATURE_NOT_REQUIRED"
+    | "SENDER_SIGNS_FIRST"
+    | "SENDER_SIGNS_LAST";
   state?: "IN_PROCESS" | "DRAFT";
-  reminderFrequency?: "DAILY_UNTIL_SIGNED" | "WEEKLY_UNTIL_SIGNED" | "BI_WEEKLY_UNTIL_SIGNED";
+  reminderFrequency?:
+    | "DAILY_UNTIL_SIGNED"
+    | "WEEKLY_UNTIL_SIGNED"
+    | "BI_WEEKLY_UNTIL_SIGNED";
 }
 
 /**
@@ -69,7 +75,10 @@ export class AdobeSignClient extends ESignatureAdapter {
       throw new Error("Adobe Sign: accountId is required");
     }
 
-    this.baseUrl = (config.apiUrl || "https://api.adobesign.com").replace(/\/$/, "");
+    this.baseUrl = (config.apiUrl || "https://api.adobesign.com").replace(
+      /\/$/,
+      "",
+    );
     this.accountId = config.accountId;
 
     if (config.authType === "oauth2") {
@@ -105,8 +114,14 @@ export class AdobeSignClient extends ESignatureAdapter {
    * Refresh OAuth2 token.
    */
   async refreshToken(): Promise<void> {
-    if (!this.config?.clientId || !this.config?.clientSecret || !this.config?.refreshToken) {
-      throw new Error("Adobe Sign: OAuth2 requires clientId, clientSecret, and refreshToken");
+    if (
+      !this.config?.clientId ||
+      !this.config?.clientSecret ||
+      !this.config?.refreshToken
+    ) {
+      throw new Error(
+        "Adobe Sign: OAuth2 requires clientId, clientSecret, and refreshToken",
+      );
     }
 
     const response = await fetch("https://api.adobesign.com/oauth/token", {
@@ -122,7 +137,10 @@ export class AdobeSignClient extends ESignatureAdapter {
       }).toString(),
     });
 
-    const data = (await response.json()) as { access_token: string; expires_in: number };
+    const data = (await response.json()) as {
+      access_token: string;
+      expires_in: number;
+    };
     this.setAccessToken(data.access_token, data.expires_in);
   }
 
@@ -148,25 +166,28 @@ export class AdobeSignClient extends ESignatureAdapter {
               Authorization: `Bearer ${token}`,
             },
             body: formData,
-          }
+          },
         );
 
         if (!uploadResponse.ok) {
-          throw new Error(`Adobe Sign: Failed to upload document: ${uploadResponse.statusText}`);
+          throw new Error(
+            `Adobe Sign: Failed to upload document: ${uploadResponse.statusText}`,
+          );
         }
 
-        const uploadData = (await uploadResponse.json()) as { transientDocumentId: string };
+        const uploadData = (await uploadResponse.json()) as {
+          transientDocumentId: string;
+        };
         transientDocumentIds.push(uploadData.transientDocumentId);
       }
 
       // Create participant sets
-      const participantSetsInfo: AdobeSignParticipantSet[] = prepared.signers.map(
-        (signer) => ({
+      const participantSetsInfo: AdobeSignParticipantSet[] =
+        prepared.signers.map((signer) => ({
           memberInfos: [{ email: signer.email }],
           role: "SIGNER",
           order: signer.order,
-        })
-      );
+        }));
 
       const request: AdobeSignAgreementRequest = {
         fileInfos: transientDocumentIds.map((id) => ({
@@ -189,7 +210,9 @@ export class AdobeSignClient extends ESignatureAdapter {
       });
 
       if (!response.ok) {
-        throw new Error(`Adobe Sign: Failed to create agreement: ${response.statusText}`);
+        throw new Error(
+          `Adobe Sign: Failed to create agreement: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as { id: string };
@@ -218,11 +241,13 @@ export class AdobeSignClient extends ESignatureAdapter {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ state: "OUT_FOR_SIGNATURE" }),
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`Adobe Sign: Failed to send agreement: ${response.statusText}`);
+        throw new Error(
+          `Adobe Sign: Failed to send agreement: ${response.statusText}`,
+        );
       }
 
       return {
@@ -249,11 +274,13 @@ export class AdobeSignClient extends ESignatureAdapter {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ state: "CANCELLED", comment: reason }),
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`Adobe Sign: Failed to cancel agreement: ${response.statusText}`);
+        throw new Error(
+          `Adobe Sign: Failed to cancel agreement: ${response.statusText}`,
+        );
       }
     });
   }
@@ -273,11 +300,13 @@ export class AdobeSignClient extends ESignatureAdapter {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`Adobe Sign: Failed to get agreement: ${response.statusText}`);
+        throw new Error(
+          `Adobe Sign: Failed to get agreement: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -338,11 +367,13 @@ export class AdobeSignClient extends ESignatureAdapter {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`Adobe Sign: Failed to get agreement status: ${response.statusText}`);
+        throw new Error(
+          `Adobe Sign: Failed to get agreement status: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -363,14 +394,20 @@ export class AdobeSignClient extends ESignatureAdapter {
         signedAt: p.signedDate ? new Date(p.signedDate) : undefined,
       }));
 
-      const completedSigners = signerStatuses.filter((s: { status: EnvelopeStatus }) => s.status === "completed" || s.status === "signed").length;
+      const completedSigners = signerStatuses.filter(
+        (s: { status: EnvelopeStatus }) =>
+          s.status === "completed" || s.status === "signed",
+      ).length;
       const totalSigners = signerStatuses.length;
 
       return {
         envelopeId,
         status: statusMap[data.status] || "created",
         signerStatuses,
-        completionPercentage: totalSigners > 0 ? Math.round((completedSigners / totalSigners) * 100) : 0,
+        completionPercentage:
+          totalSigners > 0
+            ? Math.round((completedSigners / totalSigners) * 100)
+            : 0,
         lastUpdated: new Date(),
       };
     });
@@ -408,11 +445,13 @@ export class AdobeSignClient extends ESignatureAdapter {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`Adobe Sign: Failed to list agreements: ${response.statusText}`);
+        throw new Error(
+          `Adobe Sign: Failed to list agreements: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -426,17 +465,19 @@ export class AdobeSignClient extends ESignatureAdapter {
         CANCELLED: "voided",
       };
 
-      const envelopes = (data.userAgreementList || []).map((agreement: any) => ({
-        id: agreement.agreementId,
-        name: agreement.name || "Document",
-        status: statusMap[agreement.status] || "created",
-        documents: [],
-        signers: [],
-        fields: [],
-        createdAt: new Date(agreement.created),
-        workflowMode: "sequential" as const,
-        createdBy: "unknown",
-      }));
+      const envelopes = (data.userAgreementList || []).map(
+        (agreement: any) => ({
+          id: agreement.agreementId,
+          name: agreement.name || "Document",
+          status: statusMap[agreement.status] || "created",
+          documents: [],
+          signers: [],
+          fields: [],
+          createdAt: new Date(agreement.created),
+          workflowMode: "sequential" as const,
+          createdBy: "unknown",
+        }),
+      );
 
       return {
         envelopes,
@@ -448,7 +489,10 @@ export class AdobeSignClient extends ESignatureAdapter {
   /**
    * Resend agreement.
    */
-  async resendEnvelope(envelopeId: string, signerEmails?: string[]): Promise<void> {
+  async resendEnvelope(
+    envelopeId: string,
+    signerEmails?: string[],
+  ): Promise<void> {
     return this.rateLimitedRequest(async () => {
       const token = await this.getAccessToken();
 
@@ -463,11 +507,13 @@ export class AdobeSignClient extends ESignatureAdapter {
           body: JSON.stringify({
             reminders: signerEmails?.map((email) => ({ email })) || [],
           }),
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`Adobe Sign: Failed to resend agreement: ${response.statusText}`);
+        throw new Error(
+          `Adobe Sign: Failed to resend agreement: ${response.statusText}`,
+        );
       }
     });
   }
@@ -491,11 +537,13 @@ export class AdobeSignClient extends ESignatureAdapter {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`Adobe Sign: Failed to list templates: ${response.statusText}`);
+        throw new Error(
+          `Adobe Sign: Failed to list templates: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -531,11 +579,13 @@ export class AdobeSignClient extends ESignatureAdapter {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`Adobe Sign: Failed to get template: ${response.statusText}`);
+        throw new Error(
+          `Adobe Sign: Failed to get template: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -556,16 +606,17 @@ export class AdobeSignClient extends ESignatureAdapter {
    */
   async createEnvelopeFromTemplate(
     templateId: string,
-    envelope: Partial<Envelope>
+    envelope: Partial<Envelope>,
   ): Promise<EnvelopeResult> {
     return this.rateLimitedRequest(async () => {
       const token = await this.getAccessToken();
 
-      const participantSetsInfo = envelope.signers?.map((signer) => ({
-        memberInfos: [{ email: signer.email }],
-        role: "SIGNER" as const,
-        order: signer.order,
-      })) || [];
+      const participantSetsInfo =
+        envelope.signers?.map((signer) => ({
+          memberInfos: [{ email: signer.email }],
+          role: "SIGNER" as const,
+          order: signer.order,
+        })) || [];
 
       const request = {
         fileInfos: [{ libraryDocumentId: templateId }],
@@ -585,7 +636,9 @@ export class AdobeSignClient extends ESignatureAdapter {
       });
 
       if (!response.ok) {
-        throw new Error(`Adobe Sign: Failed to create agreement from template: ${response.statusText}`);
+        throw new Error(
+          `Adobe Sign: Failed to create agreement from template: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as { id: string };
@@ -601,7 +654,10 @@ export class AdobeSignClient extends ESignatureAdapter {
   /**
    * Download document.
    */
-  async downloadDocument(envelopeId: string, documentId: string): Promise<DocumentDownloadResult> {
+  async downloadDocument(
+    envelopeId: string,
+    documentId: string,
+  ): Promise<DocumentDownloadResult> {
     return this.rateLimitedRequest(async () => {
       const token = await this.getAccessToken();
 
@@ -612,11 +668,13 @@ export class AdobeSignClient extends ESignatureAdapter {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`Adobe Sign: Failed to download document: ${response.statusText}`);
+        throw new Error(
+          `Adobe Sign: Failed to download document: ${response.statusText}`,
+        );
       }
 
       const buffer = await response.arrayBuffer();
@@ -637,7 +695,7 @@ export class AdobeSignClient extends ESignatureAdapter {
    * Download all documents.
    */
   async downloadEnvelopeDocuments(
-    envelopeId: string
+    envelopeId: string,
   ): Promise<{ content: string; mimeType: string; fileName: string }> {
     return this.rateLimitedRequest(async () => {
       const token = await this.getAccessToken();
@@ -649,11 +707,13 @@ export class AdobeSignClient extends ESignatureAdapter {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`Adobe Sign: Failed to download documents: ${response.statusText}`);
+        throw new Error(
+          `Adobe Sign: Failed to download documents: ${response.statusText}`,
+        );
       }
 
       const buffer = await response.arrayBuffer();
@@ -673,7 +733,7 @@ export class AdobeSignClient extends ESignatureAdapter {
   async getEmbeddedSigningUrl(
     envelopeId: string,
     signerEmail: string,
-    returnUrl: string
+    returnUrl: string,
   ): Promise<EmbedSigningResult> {
     return this.rateLimitedRequest(async () => {
       const token = await this.getAccessToken();
@@ -686,11 +746,13 @@ export class AdobeSignClient extends ESignatureAdapter {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`Adobe Sign: Failed to get signing URL: ${response.statusText}`);
+        throw new Error(
+          `Adobe Sign: Failed to get signing URL: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as { signingUrl: string };
@@ -705,7 +767,10 @@ export class AdobeSignClient extends ESignatureAdapter {
   /**
    * Mark document as viewed.
    */
-  async markDocumentViewed(envelopeId: string, signerEmail: string): Promise<void> {
+  async markDocumentViewed(
+    envelopeId: string,
+    signerEmail: string,
+  ): Promise<void> {
     // Adobe Sign tracks viewing automatically
   }
 
@@ -724,11 +789,13 @@ export class AdobeSignClient extends ESignatureAdapter {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`Adobe Sign: Failed to get events: ${response.statusText}`);
+        throw new Error(
+          `Adobe Sign: Failed to get events: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -773,9 +840,12 @@ export class AdobeSignClient extends ESignatureAdapter {
    */
   async parseWebhookEvent(
     payload: Record<string, unknown>,
-    headers: Record<string, string>
+    headers: Record<string, string>,
   ): Promise<ESignatureWebhookEvent> {
-    const isValid = this.verifyWebhookSignature(JSON.stringify(payload), headers["x-adobe-signature"] || "");
+    const isValid = this.verifyWebhookSignature(
+      JSON.stringify(payload),
+      headers["x-adobe-signature"] || "",
+    );
 
     const envelopeId = (payload as any).agreementId || "";
     const eventType = (payload as any).eventType || "unknown";
@@ -795,7 +865,7 @@ export class AdobeSignClient extends ESignatureAdapter {
       id: `${envelopeId}_${Date.now()}`,
       envelopeId,
       type: "status_changed" as const,
-      previousStatus: ("created" as EnvelopeStatus),
+      previousStatus: "created" as EnvelopeStatus,
       newStatus: statusMap[eventType] || ("created" as EnvelopeStatus),
       timestamp: new Date(),
     };
@@ -837,7 +907,9 @@ export class AdobeSignClient extends ESignatureAdapter {
       const verified = await this.verifyCredentials();
       return {
         healthy: verified,
-        message: verified ? "Adobe Sign connection is healthy" : "Failed to verify credentials",
+        message: verified
+          ? "Adobe Sign connection is healthy"
+          : "Failed to verify credentials",
       };
     } catch (error) {
       return {

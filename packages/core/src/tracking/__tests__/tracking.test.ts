@@ -5,13 +5,21 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { ETACalculator, type ETAResult, type DeliveryRecord } from "../eta-calculator";
+import {
+  ETACalculator,
+  type ETAResult,
+  type DeliveryRecord,
+} from "../eta-calculator";
 import {
   GeofenceManager,
   type Geofence,
   type GeofenceEvent,
 } from "../geofence";
-import { GPSTrackingService, type GPSUpdate, type DriverLocation } from "../gps-service";
+import {
+  GPSTrackingService,
+  type GPSUpdate,
+  type DriverLocation,
+} from "../gps-service";
 
 // ============================================================================
 // ETA Calculator Tests
@@ -114,17 +122,17 @@ describe("ETACalculator", () => {
       const basicResult = calculator.calculateBasicETA(
         current,
         destination,
-        speed
+        speed,
       );
       const trafficResult = calculator.calculateTrafficAwareETA(
         current,
         destination,
-        speed
+        speed,
       );
 
       // Traffic-aware should have factors mentioning traffic multiplier
       expect(trafficResult.factors.some((f) => f.includes("multiplier"))).toBe(
-        true
+        true,
       );
     });
 
@@ -140,11 +148,13 @@ describe("ETACalculator", () => {
       const result = calculator.calculateTrafficAwareETA(
         current,
         destination,
-        speed
+        speed,
       );
 
       // Should have heavy traffic warning
-      const hasWarning = result.factors.some((f) => f.includes("Heavy traffic"));
+      const hasWarning = result.factors.some((f) =>
+        f.includes("Heavy traffic"),
+      );
       expect(hasWarning).toBe(true);
       expect(result.estimatedMinutes).toBeGreaterThan(0);
 
@@ -163,11 +173,11 @@ describe("ETACalculator", () => {
       const result = calculator.calculateTrafficAwareETA(
         current,
         destination,
-        speed
+        speed,
       );
 
       const hasLightTraffic = result.factors.some((f) =>
-        f.includes("Light traffic")
+        f.includes("Light traffic"),
       );
       expect(hasLightTraffic).toBe(true);
 
@@ -185,12 +195,12 @@ describe("ETACalculator", () => {
         current,
         destination,
         speed,
-        "downtown"
+        "downtown",
       );
 
       expect(result.estimatedMinutes).toBeGreaterThan(0);
       // Without historical data, it returns basic ETA which may be high for short distances
-      expect(result.factors.some(f => !f.includes("Historical"))).toBe(true);
+      expect(result.factors.some((f) => !f.includes("Historical"))).toBe(true);
     });
 
     it("should improve confidence with historical data", () => {
@@ -213,7 +223,7 @@ describe("ETACalculator", () => {
         current,
         destination,
         speed,
-        "downtown"
+        "downtown",
       );
 
       expect(result.confidence).toBe("high");
@@ -239,7 +249,7 @@ describe("ETACalculator", () => {
         current,
         destination,
         30,
-        "fast-zone"
+        "fast-zone",
       );
 
       expect(result.factors.some((f) => f.includes("deliveries"))).toBe(true);
@@ -265,8 +275,9 @@ describe("ETACalculator", () => {
       const result = calculator.calculateMultiStopETA(current, stops, speed, 1);
 
       expect(result.estimatedMinutes).toBeGreaterThan(0);
-      expect(result.factors.some((f) => f.includes("Remaining stops: 1")))
-        .toBe(true);
+      expect(result.factors.some((f) => f.includes("Remaining stops: 1"))).toBe(
+        true,
+      );
     });
 
     it("should account for service time at each stop", () => {
@@ -286,7 +297,7 @@ describe("ETACalculator", () => {
         current,
         stops,
         speed,
-        2
+        2,
       );
 
       // Should include service time
@@ -300,12 +311,7 @@ describe("ETACalculator", () => {
         lng: -74.0 + i * 0.01,
       }));
 
-      const result = calculator.calculateMultiStopETA(
-        current,
-        stops,
-        40,
-        5
-      );
+      const result = calculator.calculateMultiStopETA(current, stops, 40, 5);
 
       expect(result.confidence).toBe("medium");
       expect(result.factors.some((f) => f.includes("Congestion"))).toBe(true);
@@ -322,8 +328,9 @@ describe("ETACalculator", () => {
       const result = calculator.calculateMultiStopETA(current, stops, 40, 3);
 
       expect(result.distanceRemaining).toBeGreaterThan(0);
-      expect(result.factors.some((f) => f.includes("Remaining stops: 3")))
-        .toBe(true);
+      expect(result.factors.some((f) => f.includes("Remaining stops: 3"))).toBe(
+        true,
+      );
     });
   });
 
@@ -337,13 +344,13 @@ describe("ETACalculator", () => {
         current,
         destination,
         speed,
-        "clear"
+        "clear",
       );
 
       const baseResult = calculator.calculateBasicETA(
         current,
         destination,
-        speed
+        speed,
       );
       expect(result.estimatedMinutes).toBe(baseResult.estimatedMinutes);
     });
@@ -357,17 +364,17 @@ describe("ETACalculator", () => {
         current,
         destination,
         speed,
-        "clear"
+        "clear",
       );
       const rainResult = calculator.calculateWithWeather(
         current,
         destination,
         speed,
-        "rain"
+        "rain",
       );
 
       expect(rainResult.estimatedMinutes).toBeGreaterThan(
-        clearResult.estimatedMinutes
+        clearResult.estimatedMinutes,
       );
     });
 
@@ -380,17 +387,17 @@ describe("ETACalculator", () => {
         current,
         destination,
         speed,
-        "clear"
+        "clear",
       );
       const snowResult = calculator.calculateWithWeather(
         current,
         destination,
         speed,
-        "snow"
+        "snow",
       );
 
       expect(snowResult.estimatedMinutes).toBeGreaterThan(
-        clearResult.estimatedMinutes * 1.4
+        clearResult.estimatedMinutes * 1.4,
       );
     });
 
@@ -403,7 +410,7 @@ describe("ETACalculator", () => {
         current,
         destination,
         speed,
-        "fog"
+        "fog",
       );
 
       expect(result.factors.some((f) => f.includes("fog"))).toBe(true);
@@ -516,16 +523,8 @@ describe("ETACalculator", () => {
       const destination = { lat: 40.758, lng: -73.9855 };
       const speed = 40;
 
-      const result1 = calculator.calculateBasicETA(
-        current,
-        destination,
-        speed
-      );
-      const result2 = calculator.calculateBasicETA(
-        current,
-        destination,
-        speed
-      );
+      const result1 = calculator.calculateBasicETA(current, destination, speed);
+      const result2 = calculator.calculateBasicETA(current, destination, speed);
 
       expect(result1.estimatedMinutes).toBe(result2.estimatedMinutes);
       expect(result1.distanceRemaining).toBe(result2.distanceRemaining);
@@ -539,7 +538,7 @@ describe("ETACalculator", () => {
       const result20 = calculator.calculateBasicETA(current, destination, 20);
 
       expect(result20.estimatedMinutes).toBeGreaterThan(
-        result40.estimatedMinutes
+        result40.estimatedMinutes,
       );
     });
 
@@ -549,15 +548,11 @@ describe("ETACalculator", () => {
       const far = { lat: 40.8, lng: -73.95 };
       const speed = 40;
 
-      const resultNear = calculator.calculateBasicETA(
-        current,
-        near,
-        speed
-      );
+      const resultNear = calculator.calculateBasicETA(current, near, speed);
       const resultFar = calculator.calculateBasicETA(current, far, speed);
 
       expect(resultFar.estimatedMinutes).toBeGreaterThan(
-        resultNear.estimatedMinutes
+        resultNear.estimatedMinutes,
       );
     });
   });
@@ -718,11 +713,10 @@ describe("GeofenceManager", () => {
       };
 
       manager.addGeofence(geofence);
-      manager.checkGeofence(
-        "driver-1",
-        "shop-1",
-        { lat: 40.7128, lng: -74.006 }
-      );
+      manager.checkGeofence("driver-1", "shop-1", {
+        lat: 40.7128,
+        lng: -74.006,
+      });
 
       manager.removeGeofence("store-1");
 
@@ -754,7 +748,7 @@ describe("GeofenceManager", () => {
         "driver-1",
         "shop-1",
         currentPos,
-        previousPos
+        previousPos,
       );
 
       expect(events.length).toBeGreaterThan(0);
@@ -764,11 +758,10 @@ describe("GeofenceManager", () => {
 
     it("should detect exit event when moving out of geofence", () => {
       // First move in
-      manager.checkGeofence(
-        "driver-1",
-        "shop-1",
-        { lat: 40.7128, lng: -74.006 }
-      );
+      manager.checkGeofence("driver-1", "shop-1", {
+        lat: 40.7128,
+        lng: -74.006,
+      });
 
       // Then move out
       const currentPos = { lat: 40.7, lng: -74.0 };
@@ -778,7 +771,7 @@ describe("GeofenceManager", () => {
         "driver-1",
         "shop-1",
         currentPos,
-        previousPos
+        previousPos,
       );
 
       expect(events.length).toBeGreaterThan(0);
@@ -798,38 +791,35 @@ describe("GeofenceManager", () => {
       manager.addGeofence(enterOnlyGeofence);
 
       // First enter
-      manager.checkGeofence(
-        "driver-1",
-        "shop-1",
-        { lat: 40.7128, lng: -74.006 }
-      );
+      manager.checkGeofence("driver-1", "shop-1", {
+        lat: 40.7128,
+        lng: -74.006,
+      });
 
       // Then exit
       const events = manager.checkGeofence(
         "driver-1",
         "shop-1",
         { lat: 40.7, lng: -74.0 },
-        { lat: 40.7128, lng: -74.006 }
+        { lat: 40.7128, lng: -74.006 },
       );
 
       const exitEvent = events.find(
-        (e) => e.geofenceId === "enter-only" && e.eventType === "exit"
+        (e) => e.geofenceId === "enter-only" && e.eventType === "exit",
       );
       expect(exitEvent).toBeUndefined();
     });
 
     it("should not trigger event when inside and stationary", () => {
-      manager.checkGeofence(
-        "driver-1",
-        "shop-1",
-        { lat: 40.7128, lng: -74.006 }
-      );
+      manager.checkGeofence("driver-1", "shop-1", {
+        lat: 40.7128,
+        lng: -74.006,
+      });
 
-      const events = manager.checkGeofence(
-        "driver-1",
-        "shop-1",
-        { lat: 40.7128, lng: -74.006 }
-      );
+      const events = manager.checkGeofence("driver-1", "shop-1", {
+        lat: 40.7128,
+        lng: -74.006,
+      });
 
       expect(events.length).toBe(0);
     });
@@ -842,7 +832,7 @@ describe("GeofenceManager", () => {
         "driver-1",
         "shop-1",
         position,
-        previousPosition
+        previousPosition,
       );
 
       expect(events[0].position).toEqual(position);
@@ -855,16 +845,16 @@ describe("GeofenceManager", () => {
         "driver-1",
         "shop-1",
         { lat: 40.7128, lng: -74.006 },
-        { lat: 40.7, lng: -74.0 } // Need previous position to trigger entry event
+        { lat: 40.7, lng: -74.0 }, // Need previous position to trigger entry event
       );
 
       const after = new Date();
 
       expect(events[0].timestamp.getTime()).toBeGreaterThanOrEqual(
-        before.getTime()
+        before.getTime(),
       );
       expect(events[0].timestamp.getTime()).toBeLessThanOrEqual(
-        after.getTime()
+        after.getTime(),
       );
     });
   });
@@ -905,11 +895,10 @@ describe("GeofenceManager", () => {
 
       manager.addGeofence(polygonGeofence);
 
-      const events = manager.checkProximity(
-        "driver-1",
-        "shop-1",
-        { lat: 40.705, lng: -74.005 }
-      );
+      const events = manager.checkProximity("driver-1", "shop-1", {
+        lat: 40.705,
+        lng: -74.005,
+      });
 
       expect(events.length).toBe(0);
     });
@@ -926,11 +915,10 @@ describe("GeofenceManager", () => {
 
       manager.addGeofence(geofence);
 
-      const events = manager.checkProximity(
-        "driver-1",
-        "shop-1",
-        { lat: 40.7145, lng: -74.006 }
-      );
+      const events = manager.checkProximity("driver-1", "shop-1", {
+        lat: 40.7145,
+        lng: -74.006,
+      });
 
       expect(events[0].proximityDistance).toBeGreaterThan(0);
       expect(events[0].proximityDistance).toBeLessThan(1000);
@@ -949,15 +937,12 @@ describe("GeofenceManager", () => {
       };
 
       manager.addGeofence(geofence);
-      manager.checkGeofence(
-        "driver-1",
-        "shop-1",
-        { lat: 40.7128, lng: -74.006 }
-      );
+      manager.checkGeofence("driver-1", "shop-1", {
+        lat: 40.7128,
+        lng: -74.006,
+      });
 
-      expect(
-        manager.isDriverInsideGeofence("driver-1", "store-1")
-      ).toBe(true);
+      expect(manager.isDriverInsideGeofence("driver-1", "store-1")).toBe(true);
     });
 
     it("should return false when driver is outside", () => {
@@ -972,9 +957,7 @@ describe("GeofenceManager", () => {
 
       manager.addGeofence(geofence);
 
-      expect(
-        manager.isDriverInsideGeofence("driver-1", "store-1")
-      ).toBe(false);
+      expect(manager.isDriverInsideGeofence("driver-1", "store-1")).toBe(false);
     });
 
     it("should return false for non-existent driver", () => {
@@ -989,9 +972,9 @@ describe("GeofenceManager", () => {
 
       manager.addGeofence(geofence);
 
-      expect(
-        manager.isDriverInsideGeofence("non-existent", "store-1")
-      ).toBe(false);
+      expect(manager.isDriverInsideGeofence("non-existent", "store-1")).toBe(
+        false,
+      );
     });
   });
 
@@ -1018,11 +1001,10 @@ describe("GeofenceManager", () => {
       manager.addGeofence(geofence1);
       manager.addGeofence(geofence2);
 
-      manager.checkGeofence(
-        "driver-1",
-        "shop-1",
-        { lat: 40.7128, lng: -74.006 }
-      );
+      manager.checkGeofence("driver-1", "shop-1", {
+        lat: 40.7128,
+        lng: -74.006,
+      });
 
       const inside = manager.getDriverInsideGeofences("driver-1");
       expect(inside).toContain("store-1");
@@ -1066,7 +1048,7 @@ describe("GeofenceManager", () => {
         "driver-1",
         "shop-1",
         { lat: 40.71, lng: -74.01 },
-        { lat: 40.6, lng: -73.9 } // Previous position outside the polygon
+        { lat: 40.6, lng: -73.9 }, // Previous position outside the polygon
       );
 
       expect(events.length).toBeGreaterThan(0);
@@ -1088,11 +1070,10 @@ describe("GeofenceManager", () => {
 
       manager.addGeofence(geofence);
 
-      const events = manager.checkGeofence(
-        "driver-1",
-        "shop-1",
-        { lat: 40.65, lng: -74.05 }
-      );
+      const events = manager.checkGeofence("driver-1", "shop-1", {
+        lat: 40.65,
+        lng: -74.05,
+      });
 
       expect(events.length).toBe(0);
     });
@@ -1382,7 +1363,7 @@ describe("GPSTrackingService", () => {
         geofences,
         previousPos,
         "driver-1",
-        "shop-1"
+        "shop-1",
       );
 
       expect(events.length).toBeGreaterThan(0);
@@ -1409,7 +1390,7 @@ describe("GPSTrackingService", () => {
         geofences,
         previousPos,
         "driver-1",
-        "shop-1"
+        "shop-1",
       );
 
       expect(events.length).toBeGreaterThan(0);
@@ -1436,7 +1417,7 @@ describe("GPSTrackingService", () => {
         geofences,
         previousPos,
         "driver-1",
-        "shop-1"
+        "shop-1",
       );
 
       expect(events.length).toBe(0);
@@ -1469,7 +1450,7 @@ describe("GPSTrackingService", () => {
       const history = service.getLocationHistory(
         "non-existent",
         now,
-        new Date(now.getTime() + 1000)
+        new Date(now.getTime() + 1000),
       );
 
       expect(history).toEqual([]);
@@ -1598,7 +1579,7 @@ describe("Tracking Module Integration", () => {
     const eta = gpsService.calculateETA(
       location.currentPosition,
       destination,
-      location.speed
+      location.speed,
     );
 
     expect(eta.estimatedMinutes).toBeGreaterThan(0);
@@ -1644,7 +1625,7 @@ describe("Tracking Module Integration", () => {
       "driver-1",
       "shop-1",
       location.currentPosition,
-      previousLocation
+      previousLocation,
     );
 
     expect(events.length).toBeGreaterThan(0);
@@ -1681,7 +1662,7 @@ describe("Tracking Module Integration", () => {
     const initialETA = calculator.calculateBasicETA(
       startPos,
       { lat: 40.758, lng: -73.9855 },
-      40
+      40,
     );
     expect(initialETA.estimatedMinutes).toBeGreaterThan(0);
 
@@ -1704,7 +1685,7 @@ describe("Tracking Module Integration", () => {
       "driver-1",
       "shop-1",
       currentPos,
-      { lat: 40.735, lng: -73.995 }
+      { lat: 40.735, lng: -73.995 },
     );
 
     // Should have entry event to destination geofence

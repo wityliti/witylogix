@@ -77,7 +77,9 @@ describe("benchApi", () => {
       }),
     );
     try {
-      await benchApi(makeCtx(), "POST", "/internal/bench/tenants", { slug: "a" });
+      await benchApi(makeCtx(), "POST", "/internal/bench/tenants", {
+        slug: "a",
+      });
       expect.fail("should have thrown");
     } catch (err) {
       expect(err).toBeInstanceOf(BenchApiRequestError);
@@ -105,7 +107,9 @@ describe("benchApi", () => {
     await benchApi(makeCtx(), "POST", "/internal/bench/tenants", {
       slug: "acme",
     });
-    expect(fetchMock.mock.calls[0][1].body).toBe(JSON.stringify({ slug: "acme" }));
+    expect(fetchMock.mock.calls[0][1].body).toBe(
+      JSON.stringify({ slug: "acme" }),
+    );
   });
 
   it("returns undefined on 204 No Content", async () => {

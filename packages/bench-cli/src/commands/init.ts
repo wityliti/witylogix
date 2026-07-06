@@ -1,14 +1,14 @@
-import type { Command } from 'commander';
-import { mkdirSync, writeFileSync, existsSync, chmodSync } from 'node:fs';
-import { randomBytes } from 'node:crypto';
-import { resolve, join, basename, relative } from 'node:path';
-import pc from 'picocolors';
-import { DEFAULT_CONFIG_FILENAME } from '@witylogix/bench-core';
+import type { Command } from "commander";
+import { mkdirSync, writeFileSync, existsSync, chmodSync } from "node:fs";
+import { randomBytes } from "node:crypto";
+import { resolve, join, basename, relative } from "node:path";
+import pc from "picocolors";
+import { DEFAULT_CONFIG_FILENAME } from "@witylogix/bench-core";
 
 const VALID_NAME = /^[a-z0-9][a-z0-9-_]*$/;
 
 function generateSecret(bytes: number): string {
-  return randomBytes(bytes).toString('base64url');
+  return randomBytes(bytes).toString("base64url");
 }
 
 const DOTENV_TEMPLATE = (secrets: {
@@ -101,9 +101,9 @@ See \`${DEFAULT_CONFIG_FILENAME}\` for the full configuration.
 
 export function registerInitCommand(program: Command): void {
   program
-    .command('init <name>')
-    .description('Scaffold a new Witylogix installation directory')
-    .option('--force', 'overwrite an existing directory', false)
+    .command("init <name>")
+    .description("Scaffold a new Witylogix installation directory")
+    .option("--force", "overwrite an existing directory", false)
     .action((pathArg: string, opts: { force: boolean }) => {
       const target = resolve(process.cwd(), pathArg);
       const installationName = basename(target);
@@ -128,53 +128,53 @@ export function registerInitCommand(program: Command): void {
       }
 
       mkdirSync(target, { recursive: true });
-      mkdirSync(join(target, 'secrets'), { recursive: true });
-      chmodSync(join(target, 'secrets'), 0o700);
+      mkdirSync(join(target, "secrets"), { recursive: true });
+      chmodSync(join(target, "secrets"), 0o700);
 
       writeFileSync(
         join(target, DEFAULT_CONFIG_FILENAME),
         TEMPLATE(installationName),
       );
-      writeFileSync(join(target, '.gitignore'), GITIGNORE);
-      writeFileSync(join(target, 'README.md'), README(installationName));
+      writeFileSync(join(target, ".gitignore"), GITIGNORE);
+      writeFileSync(join(target, "README.md"), README(installationName));
 
       const postgresPassword = generateSecret(24);
       const jwtSecret = generateSecret(48);
       const benchServiceToken = generateSecret(32);
 
       writeFileSync(
-        join(target, 'secrets', 'postgres-password'),
+        join(target, "secrets", "postgres-password"),
         `${postgresPassword}\n`,
         { mode: 0o600 },
       );
+      writeFileSync(join(target, "secrets", "jwt-secret"), `${jwtSecret}\n`, {
+        mode: 0o600,
+      });
       writeFileSync(
-        join(target, 'secrets', 'jwt-secret'),
-        `${jwtSecret}\n`,
-        { mode: 0o600 },
-      );
-      writeFileSync(
-        join(target, 'secrets', 'bench-service-token'),
+        join(target, "secrets", "bench-service-token"),
         `${benchServiceToken}\n`,
         { mode: 0o600 },
       );
       writeFileSync(
-        join(target, '.env'),
+        join(target, ".env"),
         DOTENV_TEMPLATE({ postgresPassword, jwtSecret, benchServiceToken }),
         { mode: 0o600 },
       );
 
-      const displayPath = relative(process.cwd(), target) || '.';
+      const displayPath = relative(process.cwd(), target) || ".";
 
       process.stdout.write(
         [
-          pc.green(`✓ Initialized Witylogix installation "${installationName}" at ${displayPath}`),
-          '',
-          '  Next steps:',
+          pc.green(
+            `✓ Initialized Witylogix installation "${installationName}" at ${displayPath}`,
+          ),
+          "",
+          "  Next steps:",
           pc.dim(`    cd ${displayPath}`),
-          pc.dim('    bench doctor'),
-          pc.dim('    bench start'),
-          '',
-        ].join('\n'),
+          pc.dim("    bench doctor"),
+          pc.dim("    bench start"),
+          "",
+        ].join("\n"),
       );
     });
 }

@@ -121,7 +121,11 @@ describe("Pre-Trip Inspection Completion Flow", () => {
 describe("Defect Reporting and Categorization", () => {
   it("should categorize defects by severity level", () => {
     const defects: Defect[] = [
-      { code: "BRAKE", severity: "CRITICAL", description: "Brake failure risk" },
+      {
+        code: "BRAKE",
+        severity: "CRITICAL",
+        description: "Brake failure risk",
+      },
       { code: "TIRE", severity: "MAJOR", description: "Significant wear" },
       { code: "LIGHT", severity: "MINOR", description: "Tail light dim" },
     ];
@@ -134,7 +138,11 @@ describe("Defect Reporting and Categorization", () => {
   it("should flag critical defects immediately", () => {
     const dvir = createMockDVIR({
       defects: [
-        { code: "BRAKE", severity: "CRITICAL", description: "Complete brake failure" },
+        {
+          code: "BRAKE",
+          severity: "CRITICAL",
+          description: "Complete brake failure",
+        },
       ],
     });
 
@@ -168,7 +176,9 @@ describe("Defect Reporting and Categorization", () => {
     ];
 
     const dvir = createMockDVIR({
-      defects: [{ code: "BRAKE", severity: "CRITICAL", description: "Brake issue" }],
+      defects: [
+        { code: "BRAKE", severity: "CRITICAL", description: "Brake issue" },
+      ],
     });
 
     const defectCode = dvir.defects[0].code;
@@ -196,7 +206,9 @@ describe("Defect Reporting and Categorization", () => {
 describe("Mechanic Assignment and Repair Workflow", () => {
   it("should create repair work order for defect", () => {
     const dvir = createMockDVIR({
-      defects: [{ code: "BRAKE", severity: "CRITICAL", description: "Brake failure" }],
+      defects: [
+        { code: "BRAKE", severity: "CRITICAL", description: "Brake failure" },
+      ],
     });
 
     const defect = dvir.defects[0];
@@ -274,11 +286,19 @@ describe("Mechanic Assignment and Repair Workflow", () => {
 describe("Vehicle Out-of-Service Determination", () => {
   it("should place vehicle out-of-service for critical defects", () => {
     const dvir = createMockDVIR({
-      defects: [{ code: "BRAKE", severity: "CRITICAL", description: "Complete brake failure" }],
+      defects: [
+        {
+          code: "BRAKE",
+          severity: "CRITICAL",
+          description: "Complete brake failure",
+        },
+      ],
       status: "flagged",
     });
 
-    const hasCriticalDefect = dvir.defects.some((d) => d.severity === "CRITICAL");
+    const hasCriticalDefect = dvir.defects.some(
+      (d) => d.severity === "CRITICAL",
+    );
     const outOfService = hasCriticalDefect;
 
     expect(outOfService).toBe(true);
@@ -289,11 +309,17 @@ describe("Vehicle Out-of-Service Determination", () => {
       defects: [
         { code: "TIRE", severity: "MAJOR", description: "Bald tires" },
         { code: "STEERING", severity: "MAJOR", description: "Steering play" },
-        { code: "SUSPENSION", severity: "MAJOR", description: "Sagging suspension" },
+        {
+          code: "SUSPENSION",
+          severity: "MAJOR",
+          description: "Sagging suspension",
+        },
       ],
     });
 
-    const majorDefects = dvir.defects.filter((d) => d.severity === "MAJOR").length;
+    const majorDefects = dvir.defects.filter(
+      (d) => d.severity === "MAJOR",
+    ).length;
     const outOfService = majorDefects >= 2;
 
     expect(outOfService).toBe(true);
@@ -301,7 +327,9 @@ describe("Vehicle Out-of-Service Determination", () => {
 
   it("should allow vehicle in service with only minor defects", () => {
     const dvir = createMockDVIR({
-      defects: [{ code: "LIGHT", severity: "MINOR", description: "Tail light dim" }],
+      defects: [
+        { code: "LIGHT", severity: "MINOR", description: "Tail light dim" },
+      ],
     });
 
     const hasCritical = dvir.defects.some((d) => d.severity === "CRITICAL");
@@ -368,11 +396,15 @@ describe("Post-Trip Inspection With Comparison", () => {
   });
 
   it("should verify defect resolution between inspections", () => {
-    const preTrip = [{ code: "BRAKE", severity: "MAJOR", description: "Brake issue" }];
+    const preTrip = [
+      { code: "BRAKE", severity: "MAJOR", description: "Brake issue" },
+    ];
 
     const postTrip = []; // Issue was resolved
 
-    const resolved = preTrip.filter((pre) => !postTrip.some((post) => post.code === pre.code));
+    const resolved = preTrip.filter(
+      (pre) => !postTrip.some((post) => post.code === pre.code),
+    );
 
     expect(resolved).toHaveLength(1);
   });
@@ -388,14 +420,20 @@ describe("Post-Trip Inspection With Comparison", () => {
       completedAt: new Date("2024-03-15T18:30:00Z"),
     };
 
-    const daysDiff = (postTrip.completedAt.getTime() - preTrip.completedAt.getTime()) / (1000 * 60 * 60 * 24);
+    const daysDiff =
+      (postTrip.completedAt.getTime() - preTrip.completedAt.getTime()) /
+      (1000 * 60 * 60 * 24);
 
     expect(daysDiff).toBeCloseTo(0.52, 1); // ~12.5 hours apart
   });
 
   it("should flag vehicle if new critical defects appear post-trip", () => {
     const postTripDefects = [
-      { code: "BRAKE", severity: "CRITICAL", description: "Brake failure during trip" },
+      {
+        code: "BRAKE",
+        severity: "CRITICAL",
+        description: "Brake failure during trip",
+      },
     ];
 
     const hasCritical = postTripDefects.some((d) => d.severity === "CRITICAL");
@@ -465,7 +503,8 @@ describe("Regulatory Compliance (FMCSA 396.11, 396.13)", () => {
     const createdAt = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000); // 1 year ago
     const today = new Date();
 
-    const retentionDays = (today.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
+    const retentionDays =
+      (today.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
 
     expect(retentionDays).toBeGreaterThanOrEqual(365);
   });

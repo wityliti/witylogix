@@ -20,7 +20,10 @@
 
 import { Worker, type Job } from "bullmq";
 import { forTenant } from "@witylogix/db";
-import { createRoutingProvider, type RoutingCredentials } from "@witylogix/core/routing";
+import {
+  createRoutingProvider,
+  type RoutingCredentials,
+} from "@witylogix/core/routing";
 import { getConfig } from "../lib/config.js";
 import type { OptimizationJobData } from "../lib/queue.js";
 import { registerWorker } from "../lib/queue.js";
@@ -206,7 +209,10 @@ export function startOptimizationWorker(): Worker {
       for (let i = 0; i < optimizedIndices.length - 1; i++) {
         totalDuration += matrix[optimizedIndices[i]][optimizedIndices[i + 1]];
         // Distance estimation (duration * avg speed 40km/h)
-        totalDistance += (matrix[optimizedIndices[i]][optimizedIndices[i + 1]] / 3600) * 40 * 1000;
+        totalDistance +=
+          (matrix[optimizedIndices[i]][optimizedIndices[i + 1]] / 3600) *
+          40 *
+          1000;
       }
 
       // 8. Update route

@@ -115,7 +115,10 @@ export class TelematicsNormalizer {
   /**
    * Normalize Samsara position response
    */
-  normalizePosition(location: SamsaraLocation, vehicleId: string): NormalizedPosition {
+  normalizePosition(
+    location: SamsaraLocation,
+    vehicleId: string,
+  ): NormalizedPosition {
     return {
       externalVehicleId: vehicleId,
       latitude: location.latitude,
@@ -134,10 +137,14 @@ export class TelematicsNormalizer {
   /**
    * Normalize Samsara diagnostic response
    */
-  normalizeDiagnostic(stats: SamsaraStats, vehicleId: string): NormalizedDiagnostic {
+  normalizeDiagnostic(
+    stats: SamsaraStats,
+    vehicleId: string,
+  ): NormalizedDiagnostic {
     return {
       externalVehicleId: vehicleId,
-      engineRunning: stats.engineState === "Running" || stats.engineState === "running",
+      engineRunning:
+        stats.engineState === "Running" || stats.engineState === "running",
       faultCodes: (stats.faultCodes || []).map((code) => ({
         code: `SPN${code.spnId}_FMI${code.fmiId}`,
         description: code.description,
@@ -162,8 +169,13 @@ export class TelematicsNormalizer {
       externalEventId: event.id,
       externalVehicleId: event.vehicleId,
       externalDriverId: event.driverId,
-      eventType: this.mapSamsaraBehaviorType(event.eventType, event.eventSubType),
-      severity: (event.severity?.toLowerCase() as "info" | "warning" | "critical") || "warning",
+      eventType: this.mapSamsaraBehaviorType(
+        event.eventType,
+        event.eventSubType,
+      ),
+      severity:
+        (event.severity?.toLowerCase() as "info" | "warning" | "critical") ||
+        "warning",
       latitude: event.latitude,
       longitude: event.longitude,
       speed: event.speed
@@ -217,9 +229,10 @@ export class TelematicsNormalizer {
    * Normalize Geotab device status info to position
    */
   normalizeGeotabPosition(status: GeotabDeviceStatusInfo): NormalizedPosition {
-    const dateTime = typeof status.dateTime === "string"
-      ? new Date(status.dateTime)
-      : new Date(status.dateTime);
+    const dateTime =
+      typeof status.dateTime === "string"
+        ? new Date(status.dateTime)
+        : new Date(status.dateTime);
 
     return {
       externalVehicleId: status.device.id,
@@ -253,7 +266,9 @@ export class TelematicsNormalizer {
         return bTime - aTime;
       })[0];
 
-    const engineRunning = engineStatus ? this.parseGeotabEngineStatus(engineStatus.value) : false;
+    const engineRunning = engineStatus
+      ? this.parseGeotabEngineStatus(engineStatus.value)
+      : false;
 
     // Get odometer from status data if available
     const odometerStatus = statusData
@@ -288,13 +303,17 @@ export class TelematicsNormalizer {
   /**
    * Normalize Geotab exception event to behavior event
    */
-  normalizeGeotabBehaviorEvent(event: GeotabExceptionEvent): NormalizedBehaviorEvent {
+  normalizeGeotabBehaviorEvent(
+    event: GeotabExceptionEvent,
+  ): NormalizedBehaviorEvent {
     return {
       externalEventId: event.id,
       externalVehicleId: event.device?.id || "",
       externalDriverId: event.driver?.id,
       eventType: this.mapGeotabBehaviorType(event.type, event.exceptionType),
-      severity: (event.severity?.toLowerCase() as "info" | "warning" | "critical") || "warning",
+      severity:
+        (event.severity?.toLowerCase() as "info" | "warning" | "critical") ||
+        "warning",
       latitude: event.latitude,
       longitude: event.longitude,
       speed: event.speed
@@ -399,7 +418,8 @@ export class TelematicsNormalizer {
     description: string,
   ): "info" | "warning" | "error" | "critical" {
     const lower = description.toLowerCase();
-    if (lower.includes("critical") || lower.includes("fatal")) return "critical";
+    if (lower.includes("critical") || lower.includes("fatal"))
+      return "critical";
     if (lower.includes("error") || lower.includes("severe")) return "error";
     if (lower.includes("warning")) return "warning";
     return "info";
@@ -408,10 +428,13 @@ export class TelematicsNormalizer {
   /**
    * Map Geotab device status to normalized status
    */
-  private mapGeotabDeviceStatus(status?: string): "ACTIVE" | "INACTIVE" | "DELETED" {
+  private mapGeotabDeviceStatus(
+    status?: string,
+  ): "ACTIVE" | "INACTIVE" | "DELETED" {
     if (!status) return "ACTIVE";
     const lower = status.toLowerCase();
-    if (lower.includes("inactive") || lower.includes("disabled")) return "INACTIVE";
+    if (lower.includes("inactive") || lower.includes("disabled"))
+      return "INACTIVE";
     if (lower.includes("delete")) return "DELETED";
     return "ACTIVE";
   }

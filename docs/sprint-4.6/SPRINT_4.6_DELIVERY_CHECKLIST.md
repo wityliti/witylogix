@@ -1,6 +1,7 @@
 # Sprint 4.6 Delivery Checklist
 
 ## Architecture & Planning
+
 - [x] ADR-025 written (9.8 KB) — comprehensive architecture decision record
 - [x] Design documents complete — metric definitions, aggregation strategy, component design
 - [x] API contract defined — 6 endpoints with Zod validation
@@ -8,6 +9,7 @@
 - [x] Testing strategy defined — unit tests for all metric calculations
 
 ## Core Analytics Service
+
 - [x] `route-analytics.ts` — 6 core functions implemented
   - [x] `calculateOnTimePercentage()` — on-time delivery % with 5-min buffer
   - [x] `calculatePlannedVsActual()` — variance analysis (absolute + percentage)
@@ -25,6 +27,7 @@
 - [x] `index.ts` updated — public API exports for route analytics
 
 ## Testing
+
 - [x] Unit tests created (`route-analytics.test.ts`) — 15 test cases
   - [x] On-time percentage tests (100%, 0%, mixed, exclusions)
   - [x] Planned vs actual variance tests (positive, negative, thresholds)
@@ -36,6 +39,7 @@
 - [x] Edge cases handled — zero metrics, empty data, invalid inputs
 
 ## API Implementation
+
 - [x] 6 Fastify routes implemented in `route-performance.ts`
   - [x] GET /route-performance (summary metrics)
   - [x] GET /route-performance/planned-vs-actual (time series)
@@ -51,6 +55,7 @@
 - [x] Type-safe response objects
 
 ## React Dashboard Components
+
 - [x] `planned-actual-chart.tsx` — dual-line time-series with variance
   - [x] Recharts ComposedChart integration
   - [x] Dual Line datasets (planned + actual)
@@ -106,6 +111,7 @@
   - [x] Dark theme styling
 
 ## Design System Compliance
+
 - [x] Button variants used correctly (primary, secondary)
 - [x] Badge variants applied (success, warning, danger, info, primary)
 - [x] Color scheme (--wl-primary, --wl-success, --wl-warning, --wl-danger, --wl-info)
@@ -117,6 +123,7 @@
 - [x] Responsive grid system
 
 ## Import & Type Safety
+
 - [x] Named imports only (no default exports)
 - [x] Utilities imported from @/lib/utils (cn function)
 - [x] Analytics types imported from @witylogix/core/analytics
@@ -125,6 +132,7 @@
 - [x] No any types (except where necessary for Prisma mock)
 
 ## Documentation
+
 - [x] ADR-025 complete (9.8 KB)
   - [x] Context & problem statement
   - [x] Decision & rationale
@@ -157,11 +165,12 @@
   - [x] Next steps for Sprint 4.7
 
 ## File Checklist
+
 - [x] docs/adr/ADR-025-route-analytics.md (9.8 KB)
 - [x] packages/core/src/analytics/route-analytics.ts (14.8 KB)
 - [x] packages/core/src/analytics/route-analytics-types.ts (5.4 KB)
 - [x] packages/core/src/analytics/index.ts (updated)
-- [x] packages/core/src/analytics/__tests__/route-analytics.test.ts (13.1 KB)
+- [x] packages/core/src/analytics/**tests**/route-analytics.test.ts (13.1 KB)
 - [x] apps/api/src/routes/analytics/route-performance.ts (22.5 KB)
 - [x] apps/dashboard/src/app/(dashboard)/analytics/route-performance/page.tsx (13.2 KB)
 - [x] apps/dashboard/src/app/(dashboard)/analytics/route-performance/components/planned-actual-chart.tsx (4.8 KB)
@@ -176,6 +185,7 @@
 **Total: 15 files, ~104 KB production code + comprehensive documentation**
 
 ## Quality Assurance
+
 - [x] All components render without console errors
 - [x] API endpoints return correct JSON structures
 - [x] Responsive design works on mobile/tablet/desktop
@@ -188,6 +198,7 @@
 - [x] No breaking changes to existing code
 
 ## Code Review Checklist
+
 - [x] All imports are named (no default exports)
 - [x] All types are exported/imported correctly
 - [x] No linting errors or warnings
@@ -198,6 +209,7 @@
 - [x] Proper error handling
 
 ## Integration Points
+
 - [x] Sidebar navigation ready (route path defined)
 - [x] Auth middleware compatible (requireAuth, tenantContext)
 - [x] Prisma types prepared (ready for database connection)
@@ -206,6 +218,7 @@
 - [x] No breaking changes to existing modules
 
 ## Performance & Optimization
+
 - [x] Components use React hooks efficiently
 - [x] Memoization ready for Sprint 4.7
 - [x] Chart rendering optimized (lazy data loading)
@@ -216,6 +229,7 @@
 - [x] Responsive images with proper sizes
 
 ## Security
+
 - [x] Input validation with Zod
 - [x] Query parameters sanitized
 - [x] No SQL injection vectors (using Prisma)
@@ -225,6 +239,7 @@
 - [x] Mock data uses realistic but safe values
 
 ## Browser Compatibility
+
 - [x] Works on Chrome/Edge (latest)
 - [x] Works on Firefox (latest)
 - [x] Works on Safari (latest)
@@ -233,6 +248,7 @@
 - [x] Recharts compatible with all modern browsers
 
 ## Accessibility (A11y)
+
 - [x] Color contrast meets WCAG AA standards
 - [x] Interactive elements keyboard accessible
 - [x] Chart tooltips are readable
@@ -241,6 +257,7 @@
 - [x] Alt text on images
 
 ## Deployment Readiness
+
 - [x] No external dependency security issues
 - [x] Environment variables documented
 - [x] Build process verified
@@ -249,6 +266,7 @@
 - [x] Tree-shakeable exports
 
 ## Documentation Complete
+
 - [x] Code comments on complex logic
 - [x] README files in component directories
 - [x] API endpoint documentation with examples
@@ -258,6 +276,7 @@
 - [x] Troubleshooting guide included
 
 ## Handoff & Knowledge Transfer
+
 - [x] All code is self-documenting
 - [x] Comments explain "why", not "what"
 - [x] Examples provided for all major functions
@@ -276,6 +295,7 @@
 All deliverables completed. System is production-ready for Sprint 4.6 deployment.
 
 **Next Phase:** Sprint 4.7 will focus on:
+
 - Real database integration
 - Advanced filtering & date picker
 - CSV/PDF export functionality

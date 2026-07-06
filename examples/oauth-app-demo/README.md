@@ -44,16 +44,16 @@ cp .env.example .env
 
 Key variables:
 
-| Variable | Purpose |
-|----------|---------|
-| `WITYLOGIX_API_URL` | Base URL of the Witylogix API, no trailing slash. |
-| `OAUTH_CLIENT_ID` | Client ID returned by `POST /api/v4/oauth/clients`. |
-| `OAUTH_CLIENT_SECRET` | Required for confidential clients; leave blank for public. |
-| `APP_BASE_URL` | Where this demo listens. |
-| `OAUTH_REDIRECT_URI` | Must exactly match one of the client's `redirectUris`. |
-| `OAUTH_SCOPES` | Space-separated subset of the client's `allowedScopes`. |
-| `PUBLIC_WEBHOOK_URL` | Optional. Public URL that forwards to `/hooks/witylogix`. |
-| `WEBHOOK_SECRET` | Optional. Must equal the secret returned by `POST /api/webhooks`. |
+| Variable              | Purpose                                                           |
+| --------------------- | ----------------------------------------------------------------- |
+| `WITYLOGIX_API_URL`   | Base URL of the Witylogix API, no trailing slash.                 |
+| `OAUTH_CLIENT_ID`     | Client ID returned by `POST /api/v4/oauth/clients`.               |
+| `OAUTH_CLIENT_SECRET` | Required for confidential clients; leave blank for public.        |
+| `APP_BASE_URL`        | Where this demo listens.                                          |
+| `OAUTH_REDIRECT_URI`  | Must exactly match one of the client's `redirectUris`.            |
+| `OAUTH_SCOPES`        | Space-separated subset of the client's `allowedScopes`.           |
+| `PUBLIC_WEBHOOK_URL`  | Optional. Public URL that forwards to `/hooks/witylogix`.         |
+| `WEBHOOK_SECRET`      | Optional. Must equal the secret returned by `POST /api/webhooks`. |
 
 ## Run
 
@@ -78,7 +78,7 @@ redirects back to `/oauth/callback`, the demo exchanges the code for tokens
   raw body to stdout. If `WEBHOOK_SECRET` is set, the HMAC signature header
   `X-Witylogix-Signature` is verified before acceptance.
 - **Advance a shipment:** `curl -X POST
-  'http://localhost:4001/transition?id=SHIPMENT_ID&toStage=STAGE_KEY'`.
+'http://localhost:4001/transition?id=SHIPMENT_ID&toStage=STAGE_KEY'`.
   Uses the `shipments:transition` scope and calls
   `POST /api/v4/operations/shipments/:id/transition`.
 

@@ -15,29 +15,29 @@
  * Supported shipping carriers
  */
 export enum CarrierCode {
-  EASYPOST = 'easypost',
-  SHIPPO = 'shippo',
-  SHIPSTATION = 'shipstation',
-  DHL = 'dhl',
-  USPS = 'usps',
-  UPS = 'ups',
-  FEDEX = 'fedex',
-  DOORDASH = 'doordash',
-  UBER = 'uber',
+  EASYPOST = "easypost",
+  SHIPPO = "shippo",
+  SHIPSTATION = "shipstation",
+  DHL = "dhl",
+  USPS = "usps",
+  UPS = "ups",
+  FEDEX = "fedex",
+  DOORDASH = "doordash",
+  UBER = "uber",
 }
 
 /**
  * Shipment lifecycle status
  */
 export enum ShipmentStatus {
-  PENDING = 'PENDING',
-  LABEL_CREATED = 'LABEL_CREATED',
-  PICKED_UP = 'PICKED_UP',
-  IN_TRANSIT = 'IN_TRANSIT',
-  OUT_FOR_DELIVERY = 'OUT_FOR_DELIVERY',
-  DELIVERED = 'DELIVERED',
-  EXCEPTION = 'EXCEPTION',
-  RETURNED = 'RETURNED',
+  PENDING = "PENDING",
+  LABEL_CREATED = "LABEL_CREATED",
+  PICKED_UP = "PICKED_UP",
+  IN_TRANSIT = "IN_TRANSIT",
+  OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
+  DELIVERED = "DELIVERED",
+  EXCEPTION = "EXCEPTION",
+  RETURNED = "RETURNED",
 }
 
 /**
@@ -45,11 +45,11 @@ export enum ShipmentStatus {
  */
 export enum RankingStrategy {
   /** Sort by lowest cost */
-  CHEAPEST = 'cheapest',
+  CHEAPEST = "cheapest",
   /** Sort by fastest delivery */
-  FASTEST = 'fastest',
+  FASTEST = "fastest",
   /** Sort by best value (cost × speed weighted) */
-  BEST_VALUE = 'best_value',
+  BEST_VALUE = "best_value",
 }
 
 // ============================================================================
@@ -107,7 +107,7 @@ export interface Package {
   weight: number;
 
   /** Weight unit: 'lb' (pounds) or 'kg' (kilograms) */
-  weightUnit: 'lb' | 'kg';
+  weightUnit: "lb" | "kg";
 
   /** Length value */
   length?: number;
@@ -119,7 +119,7 @@ export interface Package {
   height?: number;
 
   /** Dimension unit: 'in' (inches) or 'cm' (centimeters) */
-  dimensionUnit?: 'in' | 'cm';
+  dimensionUnit?: "in" | "cm";
 
   /** Declared value for customs/insurance */
   declaredValue?: number;
@@ -305,7 +305,7 @@ export interface ShipmentLabel {
   labelData?: string;
 
   /** Label format: PDF, ZPL (thermal printer), or PNG */
-  labelFormat: 'PDF' | 'ZPL' | 'PNG';
+  labelFormat: "PDF" | "ZPL" | "PNG";
 
   /** Service name */
   service: string;
@@ -401,7 +401,7 @@ export interface TrackingInfo {
   exception?: {
     code: string;
     message: string;
-    severity: 'info' | 'warning' | 'error';
+    severity: "info" | "warning" | "error";
   };
 
   /** Last update timestamp */
@@ -423,7 +423,7 @@ export interface CarrierCredentials {
   tenantId: string;
 
   /** Authentication method */
-  authMethod: 'oauth2' | 'api_key' | 'basic_auth' | 'none';
+  authMethod: "oauth2" | "api_key" | "basic_auth" | "none";
 
   /** API key (for API key auth) */
   apiKey?: string;
@@ -481,7 +481,7 @@ export class ShippingError extends Error {
     public originalError?: Error,
   ) {
     super(message);
-    this.name = 'ShippingError';
+    this.name = "ShippingError";
     Object.setPrototypeOf(this, ShippingError.prototype);
   }
 }

@@ -4,7 +4,7 @@
  * Handles widget CRUD operations, positioning, and layout management
  */
 
-import type { PrismaClient } from '@witylogix/db';
+import type { PrismaClient } from "@witylogix/db";
 import {
   Widget,
   CreateWidgetRequest,
@@ -17,7 +17,7 @@ import {
   DEFAULT_GRID_HEIGHT,
   WidgetNotFoundError,
   WidgetValidationError,
-} from './types';
+} from "./types";
 
 /**
  * Widget Manager - Manages dashboard widgets for users
@@ -41,7 +41,7 @@ export class WidgetManager {
   async addWidget(
     shopId: string,
     userId: string,
-    data: CreateWidgetRequest
+    data: CreateWidgetRequest,
   ): Promise<Widget> {
     // Validate widget type
     const catalogEntry = this.getCatalogEntry(data.type);
@@ -61,7 +61,7 @@ export class WidgetManager {
     // Get highest sort order
     const lastWidget = await (this.prisma as any).widget.findFirst({
       where: { shopId, userId },
-      orderBy: { sortOrder: 'desc' },
+      orderBy: { sortOrder: "desc" },
     });
     const sortOrder = (lastWidget?.sortOrder || 0) + 1;
 
@@ -76,7 +76,7 @@ export class WidgetManager {
         position,
         styling: data.styling || {},
         isActive: true,
-        targetPages: data.targetPages || ['/'],
+        targetPages: data.targetPages || ["/"],
         sortOrder,
       },
     });
@@ -96,7 +96,7 @@ export class WidgetManager {
   async updateWidget(
     widgetId: string,
     userId: string,
-    data: UpdateWidgetRequest
+    data: UpdateWidgetRequest,
   ): Promise<Widget> {
     // Get and verify ownership
     const widget = await (this.prisma as any).widget.findUnique({
@@ -109,7 +109,7 @@ export class WidgetManager {
 
     if (widget.userId !== userId) {
       throw new WidgetValidationError(
-        'You do not have permission to update this widget'
+        "You do not have permission to update this widget",
       );
     }
 
@@ -127,7 +127,8 @@ export class WidgetManager {
         config: data.config !== undefined ? data.config : undefined,
         position: data.position || undefined,
         styling: data.styling !== undefined ? data.styling : undefined,
-        targetPages: data.targetPages !== undefined ? data.targetPages : undefined,
+        targetPages:
+          data.targetPages !== undefined ? data.targetPages : undefined,
         isActive: data.isActive !== undefined ? data.isActive : undefined,
       },
     });
@@ -152,7 +153,7 @@ export class WidgetManager {
 
     if (widget.userId !== userId) {
       throw new WidgetValidationError(
-        'You do not have permission to remove this widget'
+        "You do not have permission to remove this widget",
       );
     }
 
@@ -171,7 +172,7 @@ export class WidgetManager {
    */
   async reorderWidgets(
     userId: string,
-    items: Array<{ widgetId: string; position: number }>
+    items: Array<{ widgetId: string; position: number }>,
   ): Promise<void> {
     // Verify all widgets belong to user
     const widgets = await (this.prisma as any).widget.findMany({
@@ -183,7 +184,7 @@ export class WidgetManager {
     for (const widget of widgets) {
       if (widget.userId !== userId) {
         throw new WidgetValidationError(
-          'You do not have permission to reorder these widgets'
+          "You do not have permission to reorder these widgets",
         );
       }
     }
@@ -194,8 +195,8 @@ export class WidgetManager {
         (this.prisma as any).widget.update({
           where: { id: item.widgetId },
           data: { sortOrder: item.position },
-        })
-      )
+        }),
+      ),
     );
   }
 
@@ -217,7 +218,7 @@ export class WidgetManager {
 
     if (widget.userId !== userId) {
       throw new WidgetValidationError(
-        'You do not have permission to toggle this widget'
+        "You do not have permission to toggle this widget",
       );
     }
 
@@ -240,7 +241,7 @@ export class WidgetManager {
   async getActiveWidgets(
     shopId: string,
     userId: string,
-    page: string = '/'
+    page: string = "/",
   ): Promise<Widget[]> {
     const widgets = await (this.prisma as any).widget.findMany({
       where: {
@@ -251,7 +252,7 @@ export class WidgetManager {
           has: page,
         },
       },
-      orderBy: { sortOrder: 'asc' },
+      orderBy: { sortOrder: "asc" },
     });
 
     return widgets.map((widget: any) => this.formatWidget(widget));
@@ -267,7 +268,7 @@ export class WidgetManager {
   async getAllWidgets(shopId: string, userId: string): Promise<Widget[]> {
     const widgets = await (this.prisma as any).widget.findMany({
       where: { shopId, userId },
-      orderBy: { sortOrder: 'asc' },
+      orderBy: { sortOrder: "asc" },
     });
 
     return widgets.map((widget: any) => this.formatWidget(widget));
@@ -299,24 +300,24 @@ export class WidgetManager {
     // Create default widgets
     const defaultWidgets: CreateWidgetRequest[] = [
       {
-        type: 'stat_card',
-        name: 'Total Revenue',
-        targetPages: ['/'],
+        type: "stat_card",
+        name: "Total Revenue",
+        targetPages: ["/"],
       },
       {
-        type: 'stat_card',
-        name: 'Today\'s Orders',
-        targetPages: ['/'],
+        type: "stat_card",
+        name: "Today's Orders",
+        targetPages: ["/"],
       },
       {
-        type: 'chart_line',
-        name: 'Revenue Trend',
-        targetPages: ['/'],
+        type: "chart_line",
+        name: "Revenue Trend",
+        targetPages: ["/"],
       },
       {
-        type: 'table',
-        name: 'Recent Orders',
-        targetPages: ['/'],
+        type: "table",
+        name: "Recent Orders",
+        targetPages: ["/"],
       },
     ];
 
@@ -348,17 +349,20 @@ export class WidgetManager {
 
     if (widget.userId !== userId) {
       throw new WidgetValidationError(
-        'You do not have permission to duplicate this widget'
+        "You do not have permission to duplicate this widget",
       );
     }
 
     // Find next available position
-    const position = await this.findNextAvailablePosition(widget.shopId, userId);
+    const position = await this.findNextAvailablePosition(
+      widget.shopId,
+      userId,
+    );
 
     // Get highest sort order
     const lastWidget = await (this.prisma as any).widget.findFirst({
       where: { shopId: widget.shopId, userId },
-      orderBy: { sortOrder: 'desc' },
+      orderBy: { sortOrder: "desc" },
     });
     const sortOrder = (lastWidget?.sortOrder || 0) + 1;
 
@@ -391,7 +395,7 @@ export class WidgetManager {
    */
   private async findNextAvailablePosition(
     shopId: string,
-    userId: string
+    userId: string,
   ): Promise<GridPosition> {
     const existingWidgets = await (this.prisma as any).widget.findMany({
       where: { shopId, userId },
@@ -428,7 +432,11 @@ export class WidgetManager {
           if (!available) break;
         }
 
-        if (available && x + defaultW <= this.GRID_COLS && y + defaultH <= this.GRID_ROWS) {
+        if (
+          available &&
+          x + defaultW <= this.GRID_COLS &&
+          y + defaultH <= this.GRID_ROWS
+        ) {
           return {
             x,
             y,
@@ -453,16 +461,18 @@ export class WidgetManager {
    */
   private validatePosition(position: GridPosition): void {
     if (position.x < 0 || position.y < 0) {
-      throw new WidgetValidationError('Position coordinates must be non-negative');
+      throw new WidgetValidationError(
+        "Position coordinates must be non-negative",
+      );
     }
 
     if (position.w <= 0 || position.h <= 0) {
-      throw new WidgetValidationError('Widget dimensions must be positive');
+      throw new WidgetValidationError("Widget dimensions must be positive");
     }
 
     if (position.x + position.w > this.GRID_COLS) {
       throw new WidgetValidationError(
-        `Widget extends beyond grid width (max x+w = ${this.GRID_COLS})`
+        `Widget extends beyond grid width (max x+w = ${this.GRID_COLS})`,
       );
     }
   }
@@ -488,7 +498,7 @@ export class WidgetManager {
       position: (widget.position as GridPosition) || { x: 0, y: 0, w: 1, h: 1 },
       styling: (widget.styling as any) || {},
       isActive: widget.isActive,
-      targetPages: widget.targetPages || ['/'],
+      targetPages: widget.targetPages || ["/"],
       sortOrder: widget.sortOrder,
       createdAt: widget.createdAt,
       updatedAt: widget.updatedAt,

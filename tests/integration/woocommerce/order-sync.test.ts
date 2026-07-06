@@ -6,7 +6,11 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { OrderSyncService } from "../../../packages/core/src/integrations/woocommerce/order-sync.js";
-import type { WCOrder, WCOrderStatus, WLOrderStatus } from "../../../packages/core/src/integrations/woocommerce/types.js";
+import type {
+  WCOrder,
+  WCOrderStatus,
+  WLOrderStatus,
+} from "../../../packages/core/src/integrations/woocommerce/types.js";
 
 describe("OrderSyncService", () => {
   describe("WC to WL Status Mapping", () => {
@@ -28,7 +32,9 @@ describe("OrderSyncService", () => {
     });
 
     it("should default to pending for unknown WC status", () => {
-      const mapped = OrderSyncService.mapWCStatusToWL("unknown" as WCOrderStatus);
+      const mapped = OrderSyncService.mapWCStatusToWL(
+        "unknown" as WCOrderStatus,
+      );
       expect(mapped).toBe("pending");
     });
   });
@@ -52,7 +58,9 @@ describe("OrderSyncService", () => {
     });
 
     it("should default to pending for unknown WL status", () => {
-      const mapped = OrderSyncService.mapWLStatusToWC("unknown" as WLOrderStatus);
+      const mapped = OrderSyncService.mapWLStatusToWC(
+        "unknown" as WLOrderStatus,
+      );
       expect(mapped).toBe("pending");
     });
   });
@@ -171,7 +179,10 @@ describe("OrderSyncService", () => {
     });
 
     it("should map customer information", () => {
-      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<string, any>;
+      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<
+        string,
+        any
+      >;
 
       expect(synced.customer.firstName).toBe("John");
       expect(synced.customer.lastName).toBe("Doe");
@@ -180,7 +191,10 @@ describe("OrderSyncService", () => {
     });
 
     it("should map delivery address", () => {
-      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<string, any>;
+      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<
+        string,
+        any
+      >;
 
       expect(synced.deliveryAddress.street).toBe("456 Oak Ave");
       expect(synced.deliveryAddress.street2).toBe("Apt 200");
@@ -191,7 +205,10 @@ describe("OrderSyncService", () => {
     });
 
     it("should map billing address", () => {
-      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<string, any>;
+      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<
+        string,
+        any
+      >;
 
       expect(synced.billingAddress.street).toBe("123 Main St");
       expect(synced.billingAddress.street2).toBe("Suite 100");
@@ -202,7 +219,10 @@ describe("OrderSyncService", () => {
     });
 
     it("should map all line items with correct properties", () => {
-      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<string, any>;
+      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<
+        string,
+        any
+      >;
 
       expect(synced.items).toHaveLength(2);
       expect(synced.items[0]).toMatchObject({
@@ -226,7 +246,10 @@ describe("OrderSyncService", () => {
     });
 
     it("should map financial totals", () => {
-      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<string, any>;
+      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<
+        string,
+        any
+      >;
 
       expect(synced.subtotal).toBe(100);
       expect(synced.shippingCost).toBe(10);
@@ -235,7 +258,10 @@ describe("OrderSyncService", () => {
     });
 
     it("should map payment information", () => {
-      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<string, any>;
+      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<
+        string,
+        any
+      >;
 
       expect(synced.paymentMethod).toBe("Credit Card");
       expect(synced.metadata.paymentMethod).toBe("credit_card");
@@ -243,7 +269,10 @@ describe("OrderSyncService", () => {
     });
 
     it("should extract non-system meta fields", () => {
-      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<string, any>;
+      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<
+        string,
+        any
+      >;
 
       expect(synced.metaFields).toHaveProperty("delivery_date", "2024-03-02");
       expect(synced.metaFields).toHaveProperty("time_slot", "09:00-11:00");
@@ -251,7 +280,10 @@ describe("OrderSyncService", () => {
     });
 
     it("should map dates correctly", () => {
-      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<string, any>;
+      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<
+        string,
+        any
+      >;
 
       expect(synced.createdAt).toBeInstanceOf(Date);
       expect(synced.updatedAt).toBeInstanceOf(Date);
@@ -270,7 +302,10 @@ describe("OrderSyncService", () => {
         country: "",
       };
 
-      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<string, any>;
+      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<
+        string,
+        any
+      >;
 
       expect(synced.customer.email).toBe("");
       expect(synced.billingAddress.street).toBe("");
@@ -282,7 +317,10 @@ describe("OrderSyncService", () => {
         { id: 2, key: "another_field", value: { nested: "object" } },
       ];
 
-      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<string, any>;
+      const synced = OrderSyncService.syncOrderFromWC(mockWCOrder) as Record<
+        string,
+        any
+      >;
 
       expect(synced.metaFields.custom_field).toBe("test");
       expect(synced.metaFields.another_field).toEqual({ nested: "object" });
@@ -339,7 +377,7 @@ describe("OrderSyncService", () => {
       const result = OrderSyncService.handleOrderStatusChange(
         "123",
         "delivered",
-        new Date()
+        new Date(),
       );
 
       expect(result.wcStatus).toBe("completed");
@@ -350,7 +388,7 @@ describe("OrderSyncService", () => {
       const result = OrderSyncService.handleOrderStatusChange(
         "456",
         "cancelled",
-        new Date()
+        new Date(),
       );
 
       expect(result.reason).toContain("456");
@@ -372,7 +410,7 @@ describe("OrderSyncService", () => {
         const result = OrderSyncService.handleOrderStatusChange(
           "999",
           status,
-          new Date()
+          new Date(),
         );
         expect(result.wcStatus).toBeDefined();
         expect(result.shouldUpdate).toBe(true);
@@ -385,11 +423,7 @@ describe("OrderSyncService", () => {
       const wlDate = new Date("2024-03-02T12:00:00");
       const wcDate = new Date("2024-03-01T12:00:00");
 
-      const result = OrderSyncService.resolveConflict(
-        wlDate,
-        wcDate,
-        "status"
-      );
+      const result = OrderSyncService.resolveConflict(wlDate, wcDate, "status");
 
       expect(result.winner).toBe("wl");
       expect(result.reason).toContain("newer");
@@ -402,7 +436,7 @@ describe("OrderSyncService", () => {
       const result = OrderSyncService.resolveConflict(
         wlDate,
         wcDate,
-        "customer_note"
+        "customer_note",
       );
 
       expect(result.winner).toBe("wc");
@@ -412,11 +446,7 @@ describe("OrderSyncService", () => {
     it("should resolve to WC when dates are equal", () => {
       const date = new Date("2024-03-01T12:00:00");
 
-      const result = OrderSyncService.resolveConflict(
-        date,
-        date,
-        "some_field"
-      );
+      const result = OrderSyncService.resolveConflict(date, date, "some_field");
 
       expect(result.winner).toBe("wc");
     });
@@ -428,7 +458,7 @@ describe("OrderSyncService", () => {
       const result = OrderSyncService.resolveConflict(
         wlDate,
         wcDate,
-        "delivery_address"
+        "delivery_address",
       );
 
       expect(result.reason).toContain("delivery_address");
@@ -438,11 +468,7 @@ describe("OrderSyncService", () => {
       const wlDate = new Date("2024-03-01T12:00:00.999");
       const wcDate = new Date("2024-03-01T12:00:00.001");
 
-      const result = OrderSyncService.resolveConflict(
-        wlDate,
-        wcDate,
-        "notes"
-      );
+      const result = OrderSyncService.resolveConflict(wlDate, wcDate, "notes");
 
       expect(result.winner).toBe("wl");
     });
@@ -662,7 +688,9 @@ describe("OrderSyncService", () => {
       const result = OrderSyncService.validateOrder(validOrder);
 
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain("Order must contain at least one line item");
+      expect(result.errors).toContain(
+        "Order must contain at least one line item",
+      );
     });
 
     it("should accumulate multiple errors", () => {

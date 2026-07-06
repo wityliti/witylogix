@@ -25,9 +25,9 @@
  *   POST   /geocode        Geocode address and get coordinates
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { z } from 'zod';
-import { NotFoundError, ValidationError } from '../lib/errors.js';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { z } from "zod";
+import { NotFoundError, ValidationError } from "../lib/errors.js";
 
 // ─── SCHEMAS ────────────────────────────────────────────────
 
@@ -48,13 +48,15 @@ const workingHoursSchema = z.object({
 
 const createLocationSchema = z.object({
   name: z.string().min(1),
-  type: z.enum(['WAREHOUSE', 'STORE', 'HUB', 'DEPOT', 'PICKUP_POINT']).default('WAREHOUSE'),
+  type: z
+    .enum(["WAREHOUSE", "STORE", "HUB", "DEPOT", "PICKUP_POINT"])
+    .default("WAREHOUSE"),
   addressLine1: z.string(),
   addressLine2: z.string().optional(),
   city: z.string(),
   province: z.string().optional(),
   postalCode: z.string().optional(),
-  country: z.string().default('US'),
+  country: z.string().default("US"),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   phone: z.string().optional(),
@@ -63,7 +65,7 @@ const createLocationSchema = z.object({
   allowDelivery: z.boolean().default(true),
   maxPickupHour: z.number().int().min(0).max(23).optional(),
   minDeliveryDay: z.number().int().min(0).optional(),
-  serviceLevel: z.enum(['standard', 'premium', 'express']).default('standard'),
+  serviceLevel: z.enum(["standard", "premium", "express"]).default("standard"),
   operatingHours: workingHoursSchema.optional(),
   capacity: z
     .object({
@@ -93,7 +95,9 @@ const nearestLocationSchema = z.object({
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   maxDistance: z.number().positive().default(50), // km
-  type: z.enum(['WAREHOUSE', 'STORE', 'HUB', 'DEPOT', 'PICKUP_POINT']).optional(),
+  type: z
+    .enum(["WAREHOUSE", "STORE", "HUB", "DEPOT", "PICKUP_POINT"])
+    .optional(),
   limit: z.number().int().positive().default(5),
 });
 
@@ -103,7 +107,7 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
   // Pre-handler: auth + tenant context
   const requireAuth = async (request: any, reply: any) => {
     if (!request.userId) {
-      return reply.code(401).send({ error: 'Unauthorized' });
+      return reply.code(401).send({ error: "Unauthorized" });
     }
   };
 
@@ -112,20 +116,29 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
     request.tenantDb = request.server.db; // Use main db with RLS
   };
 
-  fastify.addHook('preHandler', requireAuth);
-  fastify.addHook('preHandler', tenantContext);
+  fastify.addHook("preHandler", requireAuth);
+  fastify.addHook("preHandler", tenantContext);
 
   // ── LIST LOCATIONS ──────────────────────────────────────────
 
-  fastify.get('/', async (request: any, reply: FastifyReply) => {
+  fastify.get("/", async (request: any, reply: FastifyReply) => {
     try {
-      const { page = 1, limit = 20, type, isActive = 'true', search, lat, lng, maxDistance } = request.query as any;
+      const {
+        page = 1,
+        limit = 20,
+        type,
+        isActive = "true",
+        search,
+        lat,
+        lng,
+        maxDistance,
+      } = request.query as any;
 
       const pageNum = Math.max(1, parseInt(page) || 1);
       const pageSize = Math.min(100, Math.max(1, parseInt(limit) || 20));
       const skip = (pageNum - 1) * pageSize;
 
-      let whereClause = 'WHERE shop_id = $1::uuid AND is_active = true';
+      let whereClause = "WHERE shop_id = $1::uuid AND is_active = true";
       const params: any[] = [request.shopId];
 
       let paramCount = 1;
@@ -167,7 +180,7 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
       // Get total count
       const countResult: any[] = await request.tenantDb.$queryRawUnsafe(
         `SELECT COUNT(*) as count FROM locations ${whereClause}`,
-        ...params
+        ...params,
       );
       const total = Number(countResult[0]?.count || 0);
 
@@ -189,7 +202,7 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
         `,
         ...params,
         pageSize,
-        skip
+        skip,
       );
 
       return {
@@ -203,13 +216,13 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
       };
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to list locations' });
+      return reply.code(500).send({ error: "Failed to list locations" });
     }
   });
 
   // ── GET SINGLE LOCATION ─────────────────────────────────────
 
-  fastify.get('/:id', async (request: any, reply: FastifyReply) => {
+  fastify.get("/:id", async (request: any, reply: FastifyReply) => {
     try {
       const { id } = request.params as any;
 
@@ -220,11 +233,11 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
           WHERE id = $1::uuid AND shop_id = $2::uuid
         `,
         id,
-        request.shopId
+        request.shopId,
       );
 
       if (!location || location.length === 0) {
-        throw new NotFoundError('Location not found');
+        throw new NotFoundError("Location not found");
       }
 
       // Get working hours
@@ -235,7 +248,7 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
           WHERE location_id = $1::uuid
           ORDER BY day_of_week ASC
         `,
-        id
+        id,
       );
 
       // Get capacity
@@ -245,7 +258,7 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
           FROM location_capacity
           WHERE location_id = $1::uuid
         `,
-        id
+        id,
       );
 
       // Get zone associations
@@ -257,7 +270,7 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
           WHERE lzl.location_id = $1::uuid
           ORDER BY lzl.priority ASC
         `,
-        id
+        id,
       );
 
       return {
@@ -271,13 +284,13 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
         return reply.code(404).send({ error: error.message });
       }
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to get location' });
+      return reply.code(500).send({ error: "Failed to get location" });
     }
   });
 
   // ── CREATE LOCATION ─────────────────────────────────────────
 
-  fastify.post('/', async (request: any, reply: FastifyReply) => {
+  fastify.post("/", async (request: any, reply: FastifyReply) => {
     try {
       const body = createLocationSchema.parse(request.body);
 
@@ -312,7 +325,7 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
         body.minDeliveryDay || null,
         body.serviceLevel,
         body.operatingHours ? JSON.stringify(body.operatingHours) : null,
-        body.metadata ? JSON.stringify(body.metadata) : '{}'
+        body.metadata ? JSON.stringify(body.metadata) : "{}",
       );
 
       const locationId = result[0]?.id;
@@ -329,23 +342,25 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
           body.capacity.totalSlots,
           0,
           0,
-          body.capacity.category || null
+          body.capacity.category || null,
         );
       }
 
       return reply.code(201).send(result[0]);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return reply.code(400).send({ error: 'Validation failed', details: error.issues });
+        return reply
+          .code(400)
+          .send({ error: "Validation failed", details: error.issues });
       }
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to create location' });
+      return reply.code(500).send({ error: "Failed to create location" });
     }
   });
 
   // ── UPDATE LOCATION ─────────────────────────────────────────
 
-  fastify.patch('/:id', async (request: any, reply: FastifyReply) => {
+  fastify.patch("/:id", async (request: any, reply: FastifyReply) => {
     try {
       const { id } = request.params as any;
       const body = updateLocationSchema.parse(request.body);
@@ -355,23 +370,23 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
       let paramCount = 2;
 
       const fieldMap: Record<string, string> = {
-        name: 'name',
-        type: 'type',
-        addressLine1: 'address_line1',
-        addressLine2: 'address_line2',
-        city: 'city',
-        province: 'province',
-        postalCode: 'postal_code',
-        country: 'country',
-        latitude: 'latitude',
-        longitude: 'longitude',
-        phone: 'phone',
-        email: 'email',
-        allowPickup: 'allow_pickup',
-        allowDelivery: 'allow_delivery',
-        maxPickupHour: 'max_pickup_hour',
-        minDeliveryDay: 'min_delivery_day',
-        serviceLevel: 'service_level',
+        name: "name",
+        type: "type",
+        addressLine1: "address_line1",
+        addressLine2: "address_line2",
+        city: "city",
+        province: "province",
+        postalCode: "postal_code",
+        country: "country",
+        latitude: "latitude",
+        longitude: "longitude",
+        phone: "phone",
+        email: "email",
+        allowPickup: "allow_pickup",
+        allowDelivery: "allow_delivery",
+        maxPickupHour: "max_pickup_hour",
+        minDeliveryDay: "min_delivery_day",
+        serviceLevel: "service_level",
       };
 
       for (const [key, dbField] of Object.entries(fieldMap)) {
@@ -395,21 +410,21 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
       }
 
       if (fields.length === 0) {
-        return reply.code(400).send({ error: 'No fields to update' });
+        return reply.code(400).send({ error: "No fields to update" });
       }
 
       const result: any[] = await request.tenantDb.$queryRawUnsafe(
         `
           UPDATE locations
-          SET ${fields.join(', ')}, updated_at = NOW()
+          SET ${fields.join(", ")}, updated_at = NOW()
           WHERE id = $1::uuid AND shop_id = $2::uuid
           RETURNING *
         `,
-        ...values
+        ...values,
       );
 
       if (!result || result.length === 0) {
-        throw new NotFoundError('Location not found');
+        throw new NotFoundError("Location not found");
       }
 
       return result[0];
@@ -418,16 +433,18 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
         return reply.code(404).send({ error: error.message });
       }
       if (error instanceof z.ZodError) {
-        return reply.code(400).send({ error: 'Validation failed', details: error.issues });
+        return reply
+          .code(400)
+          .send({ error: "Validation failed", details: error.issues });
       }
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to update location' });
+      return reply.code(500).send({ error: "Failed to update location" });
     }
   });
 
   // ── DELETE LOCATION (soft-deactivate) ────────────────────────
 
-  fastify.delete('/:id', async (request: any, reply: FastifyReply) => {
+  fastify.delete("/:id", async (request: any, reply: FastifyReply) => {
     try {
       const { id } = request.params as any;
 
@@ -439,26 +456,26 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
           RETURNING *
         `,
         id,
-        request.shopId
+        request.shopId,
       );
 
       if (!result || result.length === 0) {
-        throw new NotFoundError('Location not found');
+        throw new NotFoundError("Location not found");
       }
 
-      return { message: 'Location deactivated', location: result[0] };
+      return { message: "Location deactivated", location: result[0] };
     } catch (error) {
       if (error instanceof NotFoundError) {
         return reply.code(404).send({ error: error.message });
       }
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to delete location' });
+      return reply.code(500).send({ error: "Failed to delete location" });
     }
   });
 
   // ── GET WORKING HOURS ───────────────────────────────────────
 
-  fastify.get('/:id/hours', async (request: any, reply: FastifyReply) => {
+  fastify.get("/:id/hours", async (request: any, reply: FastifyReply) => {
     try {
       const { id } = request.params as any;
 
@@ -469,19 +486,19 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
           WHERE location_id = $1::uuid
           ORDER BY day_of_week ASC
         `,
-        id
+        id,
       );
 
       return hours;
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to get working hours' });
+      return reply.code(500).send({ error: "Failed to get working hours" });
     }
   });
 
   // ── SET WORKING HOURS ───────────────────────────────────────
 
-  fastify.post('/:id/hours', async (request: any, reply: FastifyReply) => {
+  fastify.post("/:id/hours", async (request: any, reply: FastifyReply) => {
     try {
       const { id } = request.params as any;
       const body = request.body as any;
@@ -489,11 +506,19 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
       // Delete existing hours
       await request.tenantDb.$queryRawUnsafe(
         `DELETE FROM location_working_hours WHERE location_id = $1::uuid`,
-        id
+        id,
       );
 
       // Insert new hours
-      const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      const days = [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+      ];
 
       for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
         const dayName = days[dayOfWeek];
@@ -509,21 +534,21 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
             dayOfWeek,
             dayData.open || null,
             dayData.close || null,
-            dayData.isClosed || false
+            dayData.isClosed || false,
           );
         }
       }
 
-      return { message: 'Working hours updated' };
+      return { message: "Working hours updated" };
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to update working hours' });
+      return reply.code(500).send({ error: "Failed to update working hours" });
     }
   });
 
   // ── GET CAPACITY ────────────────────────────────────────────
 
-  fastify.get('/:id/capacity', async (request: any, reply: FastifyReply) => {
+  fastify.get("/:id/capacity", async (request: any, reply: FastifyReply) => {
     try {
       const { id } = request.params as any;
 
@@ -535,23 +560,23 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
           FROM location_capacity
           WHERE location_id = $1::uuid
         `,
-        id
+        id,
       );
 
       if (!capacity || capacity.length === 0) {
-        return reply.code(404).send({ error: 'Capacity not found' });
+        return reply.code(404).send({ error: "Capacity not found" });
       }
 
       return capacity[0];
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to get capacity' });
+      return reply.code(500).send({ error: "Failed to get capacity" });
     }
   });
 
   // ── UPDATE CAPACITY ─────────────────────────────────────────
 
-  fastify.patch('/:id/capacity', async (request: any, reply: FastifyReply) => {
+  fastify.patch("/:id/capacity", async (request: any, reply: FastifyReply) => {
     try {
       const { id } = request.params as any;
       const body = capacityUpdateSchema.parse(request.body);
@@ -572,22 +597,24 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
         body.totalSlots,
         body.usedSlots,
         body.reservedSlots,
-        body.category || null
+        body.category || null,
       );
 
       return result[0];
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return reply.code(400).send({ error: 'Validation failed', details: error.issues });
+        return reply
+          .code(400)
+          .send({ error: "Validation failed", details: error.issues });
       }
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to update capacity' });
+      return reply.code(500).send({ error: "Failed to update capacity" });
     }
   });
 
   // ── GET ZONE ASSOCIATIONS ───────────────────────────────────
 
-  fastify.get('/:id/zones', async (request: any, reply: FastifyReply) => {
+  fastify.get("/:id/zones", async (request: any, reply: FastifyReply) => {
     try {
       const { id } = request.params as any;
 
@@ -599,19 +626,19 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
           WHERE lzl.location_id = $1::uuid
           ORDER BY lzl.priority ASC
         `,
-        id
+        id,
       );
 
       return zones;
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to get zones' });
+      return reply.code(500).send({ error: "Failed to get zones" });
     }
   });
 
   // ── ASSOCIATE ZONE ──────────────────────────────────────────
 
-  fastify.post('/:id/zones', async (request: any, reply: FastifyReply) => {
+  fastify.post("/:id/zones", async (request: any, reply: FastifyReply) => {
     try {
       const { id } = request.params as any;
       const body = zoneAssociationSchema.parse(request.body);
@@ -628,44 +655,51 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
         id,
         body.zoneId,
         body.priority,
-        body.isDefault
+        body.isDefault,
       );
 
       return reply.code(201).send(result[0]);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return reply.code(400).send({ error: 'Validation failed', details: error.issues });
+        return reply
+          .code(400)
+          .send({ error: "Validation failed", details: error.issues });
       }
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to associate zone' });
+      return reply.code(500).send({ error: "Failed to associate zone" });
     }
   });
 
   // ── UNASSOCIATE ZONE ────────────────────────────────────────
 
-  fastify.delete('/:id/zones/:zoneId', async (request: any, reply: FastifyReply) => {
-    try {
-      const { id, zoneId } = request.params as any;
+  fastify.delete(
+    "/:id/zones/:zoneId",
+    async (request: any, reply: FastifyReply) => {
+      try {
+        const { id, zoneId } = request.params as any;
 
-      await request.tenantDb.$queryRawUnsafe(
-        `
+        await request.tenantDb.$queryRawUnsafe(
+          `
           DELETE FROM location_zone_links
           WHERE location_id = $1::uuid AND zone_id = $2::uuid
         `,
-        id,
-        zoneId
-      );
+          id,
+          zoneId,
+        );
 
-      return { message: 'Zone association removed' };
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to remove zone association' });
-    }
-  });
+        return { message: "Zone association removed" };
+      } catch (error) {
+        fastify.log.error(error);
+        return reply
+          .code(500)
+          .send({ error: "Failed to remove zone association" });
+      }
+    },
+  );
 
   // ── FIND NEAREST LOCATION ───────────────────────────────────
 
-  fastify.get('/nearest', async (request: any, reply: FastifyReply) => {
+  fastify.get("/nearest", async (request: any, reply: FastifyReply) => {
     try {
       const query = nearestLocationSchema.parse(request.query);
 
@@ -682,32 +716,34 @@ async function locationsV2Routes(fastify: FastifyInstance): Promise<void> {
             ) as distance_km
           FROM locations
           WHERE shop_id = $3::uuid AND is_active = true
-            ${query.type ? `AND type = $4::text` : ''}
+            ${query.type ? `AND type = $4::text` : ""}
             AND 2 * 6371 * asin(
               sqrt(
                 power(sin(radians((latitude - $1::float8) / 2)), 2) +
                 cos(radians($1::float8)) * cos(radians(latitude)) *
                 power(sin(radians((longitude - $2::float8) / 2)), 2)
               )
-            ) <= $${query.type ? '5' : '4'}::float8
+            ) <= $${query.type ? "5" : "4"}::float8
           ORDER BY distance_km ASC
-          LIMIT $${query.type ? '6' : '5'}::int
+          LIMIT $${query.type ? "6" : "5"}::int
         `,
         query.latitude,
         query.longitude,
         request.shopId,
         ...(query.type ? [query.type] : []),
         query.maxDistance,
-        query.limit
+        query.limit,
       );
 
       return locations;
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return reply.code(400).send({ error: 'Validation failed', details: error.issues });
+        return reply
+          .code(400)
+          .send({ error: "Validation failed", details: error.issues });
       }
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to find nearest location' });
+      return reply.code(500).send({ error: "Failed to find nearest location" });
     }
   });
 }

@@ -72,7 +72,7 @@ export class SamsaraELDClient extends ELDAdapter {
 
     try {
       await this.executeWithRetry(() =>
-        this.makeRequest<{ id: string }>("GET", "/organization")
+        this.makeRequest<{ id: string }>("GET", "/organization"),
       );
       this.logEvent({
         type: "diagnostic-event",
@@ -89,7 +89,7 @@ export class SamsaraELDClient extends ELDAdapter {
   async getDriverLogs(
     driverId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<ELDDriverLog[]> {
     const logs = await this.executeWithRetry(() =>
       this.makeRequest<{ data: SamsaraHOSLog[] }>(
@@ -98,8 +98,8 @@ export class SamsaraELDClient extends ELDAdapter {
         {
           startTime: startDate.toISOString(),
           endTime: endDate.toISOString(),
-        }
-      )
+        },
+      ),
     );
 
     return logs.data.map((log, idx) => ({
@@ -127,7 +127,7 @@ export class SamsaraELDClient extends ELDAdapter {
    */
   async getDutyStatus(driverId: string): Promise<ELDDutyStatus> {
     const driver = await this.executeWithRetry(() =>
-      this.makeRequest<SamsaraDriver>("GET", `/drivers/${driverId}`)
+      this.makeRequest<SamsaraDriver>("GET", `/drivers/${driverId}`),
     );
 
     const hosSummary = await this.executeWithRetry(() =>
@@ -138,7 +138,7 @@ export class SamsaraELDClient extends ELDAdapter {
         hours70: number;
       }>("GET", `/drivers/${driverId}/hos-availability`, {
         date: new Date().toISOString().split("T")[0],
-      })
+      }),
     );
 
     return {
@@ -161,7 +161,7 @@ export class SamsaraELDClient extends ELDAdapter {
   async setDutyStatus(
     driverId: string,
     status: DutyStatus,
-    location?: { latitude: number; longitude: number }
+    location?: { latitude: number; longitude: number },
   ): Promise<ELDDutyStatus> {
     const payload = {
       dutyStatus: this.mapDutyStatusReverse(status),
@@ -170,7 +170,7 @@ export class SamsaraELDClient extends ELDAdapter {
     };
 
     await this.executeWithRetry(() =>
-      this.makeRequest("POST", `/drivers/${driverId}/duty-status`, payload)
+      this.makeRequest("POST", `/drivers/${driverId}/duty-status`, payload),
     );
 
     this.logEvent({
@@ -187,7 +187,7 @@ export class SamsaraELDClient extends ELDAdapter {
    */
   async getViolations(
     driverId: string,
-    days: number = 30
+    days: number = 30,
   ): Promise<ELDViolation[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -196,8 +196,8 @@ export class SamsaraELDClient extends ELDAdapter {
       this.makeRequest<{ data: SamsaraHOSViolation[] }>(
         "GET",
         `/drivers/${driverId}/hos-violations`,
-        { startTime: startDate.toISOString() }
-      )
+        { startTime: startDate.toISOString() },
+      ),
     );
 
     return violations.data.map((v) => ({
@@ -225,18 +225,21 @@ export class SamsaraELDClient extends ELDAdapter {
    */
   async getVehicle(vehicleId: string): Promise<ELDVehicle> {
     const vehicle = await this.executeWithRetry(() =>
-      this.makeRequest<SamsaraVehicle>("GET", `/vehicles/${vehicleId}`)
+      this.makeRequest<SamsaraVehicle>("GET", `/vehicles/${vehicleId}`),
     );
 
     const location = await this.executeWithRetry(() =>
-      this.makeRequest<SamsaraLocation>("GET", `/vehicles/${vehicleId}/locations`)
+      this.makeRequest<SamsaraLocation>(
+        "GET",
+        `/vehicles/${vehicleId}/locations`,
+      ),
     );
 
     const stats = await this.executeWithRetry(() =>
       this.makeRequest<SamsaraVehicleStats>(
         "GET",
-        `/vehicles/${vehicleId}/stats`
-      )
+        `/vehicles/${vehicleId}/stats`,
+      ),
     );
 
     return {
@@ -249,7 +252,9 @@ export class SamsaraELDClient extends ELDAdapter {
       year: vehicle.year,
       group: undefined,
       odometerMiles: stats.odometer?.miles,
-      fuelType: (vehicle.fuelType as "diesel" | "gasoline" | "electric" | "hybrid") || undefined,
+      fuelType:
+        (vehicle.fuelType as "diesel" | "gasoline" | "electric" | "hybrid") ||
+        undefined,
       capacityLbs: vehicle.gvwr,
       currentLocation: location
         ? {
@@ -276,8 +281,8 @@ export class SamsaraELDClient extends ELDAdapter {
     const response = await this.executeWithRetry(() =>
       this.makeRequest<SamsaraCursorPaginationResponse<SamsaraVehicle>>(
         "GET",
-        "/vehicles"
-      )
+        "/vehicles",
+      ),
     );
 
     const vehicles: ELDVehicle[] = [];
@@ -304,7 +309,7 @@ export class SamsaraELDClient extends ELDAdapter {
    */
   async getHOSDailyLog(
     driverId: string,
-    date: Date
+    date: Date,
   ): Promise<{ data: SamsaraHOSLog[] }> {
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
@@ -318,17 +323,15 @@ export class SamsaraELDClient extends ELDAdapter {
         {
           startTime: startOfDay.toISOString(),
           endTime: endOfDay.toISOString(),
-        }
-      )
+        },
+      ),
     );
   }
 
   /**
    * Get HOS clocks (current driving/on-duty/cycle/break status)
    */
-  async getHOSClocks(
-    driverId: string
-  ): Promise<{
+  async getHOSClocks(driverId: string): Promise<{
     drivingClock: number;
     onDutyClock: number;
     cycleClock: number;
@@ -340,7 +343,7 @@ export class SamsaraELDClient extends ELDAdapter {
         onDutyClock: number;
         cycleClock: number;
         breakClock: number;
-      }>("GET", `/drivers/${driverId}/hos-clocks`)
+      }>("GET", `/drivers/${driverId}/hos-clocks`),
     );
 
     return response;
@@ -353,8 +356,8 @@ export class SamsaraELDClient extends ELDAdapter {
     const response = await this.executeWithRetry(() =>
       this.makeRequest<{ data: any[] }>(
         "GET",
-        `/drivers/${driverId}/hos-edit-requests`
-      )
+        `/drivers/${driverId}/hos-edit-requests`,
+      ),
     );
 
     return response.data;
@@ -381,7 +384,7 @@ export class SamsaraELDClient extends ELDAdapter {
     };
 
     const response = await this.executeWithRetry(() =>
-      this.makeRequest<SamsaraDVIR>("POST", "/dvirs", payload)
+      this.makeRequest<SamsaraDVIR>("POST", "/dvirs", payload),
     );
 
     return this.mapSamsaraDVIRtoELDDVIR(response);
@@ -398,7 +401,7 @@ export class SamsaraELDClient extends ELDAdapter {
       this.makeRequest<{ data: SamsaraDVIR[] }>("GET", "/dvirs", {
         vehicleId,
         startTime: startDate.toISOString(),
-      })
+      }),
     );
 
     return response.data.map((d) => this.mapSamsaraDVIRtoELDDVIR(d));
@@ -407,7 +410,10 @@ export class SamsaraELDClient extends ELDAdapter {
   /**
    * Get harsh events for driver
    */
-  async getHarshEvents(driverId: string, days: number = 30): Promise<SamsaraHarshEvent[]> {
+  async getHarshEvents(
+    driverId: string,
+    days: number = 30,
+  ): Promise<SamsaraHarshEvent[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -415,8 +421,8 @@ export class SamsaraELDClient extends ELDAdapter {
       this.makeRequest<{ data: SamsaraHarshEvent[] }>(
         "GET",
         `/drivers/${driverId}/harsh-events`,
-        { startTime: startDate.toISOString() }
-      )
+        { startTime: startDate.toISOString() },
+      ),
     );
 
     return response.data;
@@ -425,56 +431,71 @@ export class SamsaraELDClient extends ELDAdapter {
   /**
    * Get safety score for driver
    */
-  async getSafetyScore(driverId: string): Promise<{ score: number; percentile: number }> {
+  async getSafetyScore(
+    driverId: string,
+  ): Promise<{ score: number; percentile: number }> {
     return this.executeWithRetry(() =>
       this.makeRequest<{ score: number; percentile: number }>(
         "GET",
-        `/drivers/${driverId}/safety-score`
-      )
+        `/drivers/${driverId}/safety-score`,
+      ),
     );
   }
 
   /**
    * List all drivers
    */
-  async listDrivers(limit: number = 100, after?: string): Promise<{ data: SamsaraDriver[]; pagination: any }> {
+  async listDrivers(
+    limit: number = 100,
+    after?: string,
+  ): Promise<{ data: SamsaraDriver[]; pagination: any }> {
     return this.executeWithRetry(() =>
       this.makeRequest<{ data: SamsaraDriver[]; pagination: any }>(
         "GET",
         "/drivers",
-        { limit, after }
-      )
+        { limit, after },
+      ),
     );
   }
 
   /**
    * Create driver
    */
-  async createDriver(data: { name: string; email: string; phone?: string }): Promise<SamsaraDriver> {
+  async createDriver(data: {
+    name: string;
+    email: string;
+    phone?: string;
+  }): Promise<SamsaraDriver> {
     return this.executeWithRetry(() =>
-      this.makeRequest<SamsaraDriver>("POST", "/drivers", data)
+      this.makeRequest<SamsaraDriver>("POST", "/drivers", data),
     );
   }
 
   /**
    * Update driver
    */
-  async updateDriver(driverId: string, data: Partial<SamsaraDriver>): Promise<SamsaraDriver> {
+  async updateDriver(
+    driverId: string,
+    data: Partial<SamsaraDriver>,
+  ): Promise<SamsaraDriver> {
     return this.executeWithRetry(() =>
-      this.makeRequest<SamsaraDriver>("PATCH", `/drivers/${driverId}`, data)
+      this.makeRequest<SamsaraDriver>("PATCH", `/drivers/${driverId}`, data),
     );
   }
 
   /**
    * List all vehicles
    */
-  async listVehicles(limit: number = 100, after?: string): Promise<{ data: SamsaraVehicle[]; pagination: any }> {
+  async listVehicles(
+    limit: number = 100,
+    after?: string,
+  ): Promise<{ data: SamsaraVehicle[]; pagination: any }> {
     return this.executeWithRetry(() =>
       this.makeRequest<{ data: SamsaraVehicle[]; pagination: any }>(
         "GET",
         "/vehicles",
-        { limit, after }
-      )
+        { limit, after },
+      ),
     );
   }
 
@@ -487,16 +508,19 @@ export class SamsaraELDClient extends ELDAdapter {
     licensePlate: string;
   }): Promise<SamsaraVehicle> {
     return this.executeWithRetry(() =>
-      this.makeRequest<SamsaraVehicle>("POST", "/vehicles", data)
+      this.makeRequest<SamsaraVehicle>("POST", "/vehicles", data),
     );
   }
 
   /**
    * Update vehicle
    */
-  async updateVehicle(vehicleId: string, data: Partial<SamsaraVehicle>): Promise<SamsaraVehicle> {
+  async updateVehicle(
+    vehicleId: string,
+    data: Partial<SamsaraVehicle>,
+  ): Promise<SamsaraVehicle> {
     return this.executeWithRetry(() =>
-      this.makeRequest<SamsaraVehicle>("PATCH", `/vehicles/${vehicleId}`, data)
+      this.makeRequest<SamsaraVehicle>("PATCH", `/vehicles/${vehicleId}`, data),
     );
   }
 
@@ -506,7 +530,7 @@ export class SamsaraELDClient extends ELDAdapter {
   async getVehicleLocationHistory(
     vehicleId: string,
     startTime: Date,
-    endTime: Date
+    endTime: Date,
   ): Promise<SamsaraLocation[]> {
     const response = await this.executeWithRetry(() =>
       this.makeRequest<{ data: SamsaraLocation[] }>(
@@ -515,8 +539,8 @@ export class SamsaraELDClient extends ELDAdapter {
         {
           startTime: startTime.toISOString(),
           endTime: endTime.toISOString(),
-        }
-      )
+        },
+      ),
     );
 
     return response.data;
@@ -531,7 +555,7 @@ export class SamsaraELDClient extends ELDAdapter {
     speedMph?: number;
   }> {
     return this.executeWithRetry(() =>
-      this.makeRequest<any>("GET", `/vehicles/${vehicleId}/energy-stats`)
+      this.makeRequest<any>("GET", `/vehicles/${vehicleId}/energy-stats`),
     );
   }
 
@@ -540,7 +564,7 @@ export class SamsaraELDClient extends ELDAdapter {
    */
   async listRoutes(limit: number = 100): Promise<SamsaraRoute[]> {
     const response = await this.executeWithRetry(() =>
-      this.makeRequest<{ data: SamsaraRoute[] }>("GET", "/routes", { limit })
+      this.makeRequest<{ data: SamsaraRoute[] }>("GET", "/routes", { limit }),
     );
 
     return response.data;
@@ -551,7 +575,7 @@ export class SamsaraELDClient extends ELDAdapter {
    */
   async getRoute(routeId: string): Promise<SamsaraRoute> {
     return this.executeWithRetry(() =>
-      this.makeRequest<SamsaraRoute>("GET", `/routes/${routeId}`)
+      this.makeRequest<SamsaraRoute>("GET", `/routes/${routeId}`),
     );
   }
 
@@ -560,7 +584,7 @@ export class SamsaraELDClient extends ELDAdapter {
    */
   async listAssets(): Promise<SamsaraAsset[]> {
     const response = await this.executeWithRetry(() =>
-      this.makeRequest<{ data: SamsaraAsset[] }>("GET", "/assets")
+      this.makeRequest<{ data: SamsaraAsset[] }>("GET", "/assets"),
     );
 
     return response.data;
@@ -573,8 +597,8 @@ export class SamsaraELDClient extends ELDAdapter {
     const response = await this.executeWithRetry(() =>
       this.makeRequest<{ data: SamsaraLocation[] }>(
         "GET",
-        `/assets/${assetId}/locations`
-      )
+        `/assets/${assetId}/locations`,
+      ),
     );
 
     return response.data;
@@ -589,7 +613,7 @@ export class SamsaraELDClient extends ELDAdapter {
     runHours?: number;
   }> {
     return this.executeWithRetry(() =>
-      this.makeRequest<any>("GET", `/vehicles/${vehicleId}/reefer-stats`)
+      this.makeRequest<any>("GET", `/vehicles/${vehicleId}/reefer-stats`),
     );
   }
 
@@ -599,13 +623,17 @@ export class SamsaraELDClient extends ELDAdapter {
   async uploadDocument(
     driverId: string,
     docType: string,
-    fileUrl: string
+    fileUrl: string,
   ): Promise<SamsaraDocument> {
     return this.executeWithRetry(() =>
-      this.makeRequest<SamsaraDocument>("POST", `/drivers/${driverId}/documents`, {
-        type: docType,
-        documentUrl: fileUrl,
-      })
+      this.makeRequest<SamsaraDocument>(
+        "POST",
+        `/drivers/${driverId}/documents`,
+        {
+          type: docType,
+          documentUrl: fileUrl,
+        },
+      ),
     );
   }
 
@@ -616,8 +644,8 @@ export class SamsaraELDClient extends ELDAdapter {
     const response = await this.executeWithRetry(() =>
       this.makeRequest<{ data: SamsaraDocument[] }>(
         "GET",
-        `/drivers/${driverId}/documents`
-      )
+        `/drivers/${driverId}/documents`,
+      ),
     );
 
     return response.data;
@@ -626,14 +654,11 @@ export class SamsaraELDClient extends ELDAdapter {
   /**
    * Get HOS summary
    */
-  async getHOSSummary(
-    driverId: string,
-    date: Date
-  ): Promise<HOSSummary> {
+  async getHOSSummary(driverId: string, date: Date): Promise<HOSSummary> {
     const summary = await this.executeWithRetry(() =>
       this.makeRequest<any>("GET", `/drivers/${driverId}/hos-summary`, {
         date: date.toISOString().split("T")[0],
-      })
+      }),
     );
 
     return {
@@ -652,10 +677,7 @@ export class SamsaraELDClient extends ELDAdapter {
   /**
    * Verify webhook signature
    */
-  verifyWebhookSignature(
-    payload: string,
-    signature: string
-  ): boolean {
+  verifyWebhookSignature(payload: string, signature: string): boolean {
     if (!this.webhookSecret) {
       return false;
     }
@@ -703,7 +725,9 @@ export class SamsaraELDClient extends ELDAdapter {
       default:
         this.logEvent({
           type: "diagnostic-event",
-          data: { message: `Unhandled webhook event type: ${payload.eventType}` },
+          data: {
+            message: `Unhandled webhook event type: ${payload.eventType}`,
+          },
         });
     }
   }
@@ -714,7 +738,7 @@ export class SamsaraELDClient extends ELDAdapter {
   async healthCheck(): Promise<boolean> {
     try {
       await this.executeWithRetry(() =>
-        this.makeRequest<{ id: string }>("GET", "/organization")
+        this.makeRequest<{ id: string }>("GET", "/organization"),
       );
       return true;
     } catch {
@@ -727,7 +751,7 @@ export class SamsaraELDClient extends ELDAdapter {
   private async makeRequest<T>(
     method: string,
     path: string,
-    params?: Record<string, any>
+    params?: Record<string, any>,
   ): Promise<T> {
     const url = new URL(`${this.baseUrl}${path}`);
 
@@ -742,7 +766,7 @@ export class SamsaraELDClient extends ELDAdapter {
     const options: RequestInit = {
       method,
       headers: {
-        "Authorization": `Bearer ${this.apiKey}`,
+        Authorization: `Bearer ${this.apiKey}`,
         "Content-Type": "application/json",
       },
     };
@@ -823,7 +847,7 @@ export class SamsaraELDClient extends ELDAdapter {
 export class SamsaraAPIError extends Error {
   constructor(
     public statusCode: number,
-    public body: string
+    public body: string,
   ) {
     super(`Samsara API Error ${statusCode}: ${body}`);
   }

@@ -41,7 +41,7 @@ export interface ProviderMapping {
 export type TransformFunction = (
   value: unknown,
   sourceContext?: Record<string, unknown>,
-  targetContext?: Record<string, unknown>
+  targetContext?: Record<string, unknown>,
 ) => unknown;
 
 /** Mapping configuration for a single field between schemas. */

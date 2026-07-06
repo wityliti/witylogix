@@ -3,12 +3,14 @@
 ## Getting Started
 
 ### 1. Install Dependencies
+
 ```bash
 cd apps/customer-portal
 npm install
 ```
 
 ### 2. Run Development Server
+
 ```bash
 npm run dev
 ```
@@ -18,18 +20,21 @@ The app will start at `http://localhost:3004`
 ### 3. Test Routes
 
 #### Live Tracking Page (Main Feature)
+
 - **URL:** `http://localhost:3004/track/ORD-2024-001`
 - **Feature:** Real-time delivery tracking with live map
 - **Device:** Test on both desktop and mobile
 - **Action:** Watch the map, ETA timer, and status timeline
 
 #### Delivery History
+
 - **URL:** `http://localhost:3004/deliveries`
 - **Feature:** Past deliveries with filtering
 - **Test:** Try date range and status filters
 - **Links:** Click any delivery card to see order details
 
 #### Enhanced Rating Page
+
 - **URL:** `http://localhost:3004/orders/ORD-2024-001/rate`
 - **Feature:** Multi-step rating flow
 - **Test:** Complete all 4 steps (rating → categories → feedback → success)
@@ -42,6 +47,7 @@ The app will start at `http://localhost:3004`
 ### 1. Live Tracking Page
 
 #### Desktop Layout (> 1024px)
+
 ```
 Browser Width: 1280px or larger
 
@@ -60,6 +66,7 @@ Expected Layout:
 ```
 
 **Test Checklist:**
+
 - [ ] Map renders with grid pattern background
 - [ ] Driver marker appears as amber circle
 - [ ] Driver marker has arrow pointing northeast (bearing 45°)
@@ -79,6 +86,7 @@ Expected Layout:
 - [ ] Recenter button appears after panning
 
 #### Mobile Layout (< 768px)
+
 ```
 Browser Width: 375px (iPhone size)
 
@@ -102,6 +110,7 @@ Expected Layout:
 ```
 
 **Test Checklist:**
+
 - [ ] Map takes full screen (no sidebar visible)
 - [ ] "Details" button appears in top-left
 - [ ] "Share" button appears in top-right
@@ -118,6 +127,7 @@ Expected Layout:
 ### 2. ETA Countdown Component
 
 **Visual Check:**
+
 ```
 ┌─────────────────────┐
 │  12 min             │
@@ -129,6 +139,7 @@ Expected Layout:
 ```
 
 **Test Checklist:**
+
 - [ ] Large "12" number visible
 - [ ] Countdown updates every 1 second
 - [ ] Progress bar fills from left to right
@@ -142,6 +153,7 @@ Expected Layout:
 ### 3. Delivery Status Timeline
 
 **Visual Check (First 4 Steps Visible):**
+
 ```
 ┌─────────────────────────────────────┐
 │ ◉ Ordered              ✓ 2:15 PM    │
@@ -162,6 +174,7 @@ Expected Layout:
 ```
 
 **Test Checklist:**
+
 - [ ] All 6 steps visible in vertical line
 - [ ] Circle indicators show correct states
 - [ ] Green circle = completed steps
@@ -179,6 +192,7 @@ Expected Layout:
 ### 4. Driver Info Card
 
 **Visual Check:**
+
 ```
 ┌──────────────────────────┐
 │  [Driver Photo Area]     │
@@ -198,6 +212,7 @@ Expected Layout:
 ```
 
 **Test Checklist:**
+
 - [ ] Driver photo displays (or emoji fallback)
 - [ ] Connection status dot shows green
 - [ ] Driver name "John Martinez" visible
@@ -214,6 +229,7 @@ Expected Layout:
 ### 5. Bottom Sheet (Mobile)
 
 **Test Steps:**
+
 1. Open mobile layout
 2. Click "Details" button
 3. Sheet appears at bottom with handle bar
@@ -226,6 +242,7 @@ Expected Layout:
 10. Click backdrop (gray area) → close
 
 **Expected Snap Points:**
+
 - Peek: 120px (shows title only)
 - Half: 280px (shows main content)
 - Full: 500px (max height)
@@ -233,6 +250,7 @@ Expected Layout:
 ### 6. Delivery History Page
 
 **Visual Check:**
+
 ```
 Delivery History
 
@@ -250,6 +268,7 @@ Search: [All Time ▼] [All Status ▼]
 ```
 
 **Test Checklist:**
+
 - [ ] Page title "Delivery History" visible
 - [ ] Shows count: "4 deliveries found"
 - [ ] Filter button with dropdown works
@@ -271,6 +290,7 @@ Search: [All Time ▼] [All Status ▼]
 ### 7. Enhanced Rating Page
 
 **Step 1: Initial Ratings**
+
 ```
 Progress: [████░░░░]
 
@@ -286,6 +306,7 @@ Rating 1-5 stars: ☆☆☆☆☆
 ```
 
 **Test Checklist (Step 1):**
+
 - [ ] Progress bar shows 25% (1 of 4 steps)
 - [ ] First question clearly visible
 - [ ] Star icons clickable
@@ -299,6 +320,7 @@ Rating 1-5 stars: ☆☆☆☆☆
 - [ ] Click Continue → moves to Step 2
 
 **Step 2: Category Ratings**
+
 ```
 Progress: [████████░░░░]
 
@@ -319,6 +341,7 @@ Rate Item Condition (Items in good condition?)
 ```
 
 **Test Checklist (Step 2):**
+
 - [ ] Progress bar shows 50% (2 of 4 steps)
 - [ ] Shows summary of previous ratings
 - [ ] Three new rating questions visible
@@ -329,6 +352,7 @@ Rate Item Condition (Items in good condition?)
 - [ ] Continue button disabled until all 3 rated
 
 **Step 3: Feedback**
+
 ```
 Progress: [████████████░░░░]
 
@@ -353,6 +377,7 @@ Add Photos (Optional)
 ```
 
 **Test Checklist (Step 3):**
+
 - [ ] Progress bar shows 75% (3 of 4 steps)
 - [ ] All 5 previous ratings shown (readonly)
 - [ ] Feedback textarea is large and scrollable
@@ -368,6 +393,7 @@ Add Photos (Optional)
 - [ ] Submit button enabled immediately
 
 **Step 4: Success**
+
 ```
 Progress: [████████████████] 100%
 
@@ -386,6 +412,7 @@ Order Again: ✓ Yes
 ```
 
 **Test Checklist (Step 4):**
+
 - [ ] Progress bar shows 100%
 - [ ] Green checkmark icon visible
 - [ ] "Thank You!" message prominent
@@ -402,6 +429,7 @@ Order Again: ✓ Yes
 ## Browser DevTools Testing
 
 ### Mobile Simulation
+
 1. Open Chrome DevTools (F12)
 2. Click device toolbar icon
 3. Select "iPhone 12" or similar
@@ -409,6 +437,7 @@ Order Again: ✓ Yes
 5. Check touch interactions
 
 ### Performance
+
 1. Open DevTools → Performance tab
 2. Record page load
 3. Check for smooth animations
@@ -416,12 +445,14 @@ Order Again: ✓ Yes
 5. Monitor FPS (should be 60)
 
 ### Network
+
 1. Open DevTools → Network tab
 2. Should see minimal requests (mock data)
 3. Check image sizes
 4. Verify CSS/JS bundle sizes
 
 ### Accessibility
+
 1. Open DevTools → Accessibility tab
 2. Check contrast ratios (WCAG AA standard)
 3. Verify proper heading hierarchy
@@ -432,31 +463,39 @@ Order Again: ✓ Yes
 ## Common Issues & Solutions
 
 ### Map Doesn't Show
+
 **Problem:** Black/empty rectangle where map should be
 **Solution:**
+
 - Check canvas is not hidden by CSS
 - Verify browser supports Canvas API
 - Try different browser
 
 ### Bottom Sheet Won't Snap
+
 **Problem:** Sheet stuck between positions
 **Solution:**
+
 - Clear browser cache
 - Reload page
 - Try different touch points
 - Check browser console for errors
 
 ### Buttons Don't Work
+
 **Problem:** Click events not firing
 **Solution:**
+
 - Check in DevTools → disabled state
 - Verify form validation passed
 - Try refreshing page
 - Check browser supports required features
 
 ### Wrong Colors
+
 **Problem:** Colors don't match design
 **Solution:**
+
 - Verify CSS variables are defined
 - Check dark theme is enabled
 - Inspect element in DevTools
@@ -467,6 +506,7 @@ Order Again: ✓ Yes
 ## File Locations for Quick Reference
 
 ### Main Feature Files
+
 ```
 📁 apps/customer-portal/src/
 ├── 📄 app/track/[id]/page.tsx      ← MAIN TRACKING PAGE
@@ -488,6 +528,7 @@ Order Again: ✓ Yes
 ```
 
 ### Documentation
+
 ```
 📁 apps/customer-portal/
 ├── 📄 SPRINT_4_6_README.md          ← FEATURE DOCS

@@ -529,12 +529,16 @@ describe("File Storage System", () => {
       mockS3Client.putObject.mockReset();
       mockS3Client.getObject.mockReset();
       mockS3Client.putObject.mockResolvedValue({});
-      mockS3Client.getObject.mockResolvedValue({ Body: Buffer.from("file content") });
+      mockS3Client.getObject.mockResolvedValue({
+        Body: Buffer.from("file content"),
+      });
     });
 
     it("should handle S3 permission errors", async () => {
       mockS3Client.putObject.mockRejectedValueOnce(
-        new Error("AccessDenied: User is not authorized to perform: s3:PutObject")
+        new Error(
+          "AccessDenied: User is not authorized to perform: s3:PutObject",
+        ),
       );
 
       await expect(
@@ -542,7 +546,7 @@ describe("File Storage System", () => {
           Bucket: "bucket",
           Key: "file.txt",
           Body: Buffer.from("test"),
-        })
+        }),
       ).rejects.toThrow("AccessDenied");
     });
 
@@ -558,14 +562,14 @@ describe("File Storage System", () => {
 
     it("should handle network timeout errors", async () => {
       mockS3Client.getObject.mockRejectedValueOnce(
-        new Error("RequestTimeout: Request has expired")
+        new Error("RequestTimeout: Request has expired"),
       );
 
       await expect(
         mockS3Client.getObject({
           Bucket: "bucket",
           Key: "file.txt",
-        })
+        }),
       ).rejects.toThrow("RequestTimeout");
     });
   });
@@ -600,8 +604,8 @@ describe("File Storage System", () => {
             Key: f.key,
             Body: f.data,
             ContentType: "text/plain",
-          })
-        )
+          }),
+        ),
       );
 
       expect(mockS3Client.putObject).toHaveBeenCalledTimes(10);
@@ -649,7 +653,7 @@ describe("File Storage System", () => {
         expect(mockS3Client.putObject).toHaveBeenCalledWith(
           expect.objectContaining({
             ContentType: expectedMime,
-          })
+          }),
         );
       }
     });

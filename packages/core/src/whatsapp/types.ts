@@ -56,11 +56,11 @@ export interface WhatsAppTemplate {
  */
 export interface TemplateComponent {
   /** Component type: body, header, footer, buttons */
-  type: 'body' | 'header' | 'footer' | 'buttons';
+  type: "body" | "header" | "footer" | "buttons";
   /** Text content for the component */
   text?: string;
   /** Parameters to fill template variables */
-  parameters?: Array<{ type: 'text'; text: string }>;
+  parameters?: Array<{ type: "text"; text: string }>;
   /** Buttons for button components */
   buttons?: TemplateButton[];
 }
@@ -70,7 +70,7 @@ export interface TemplateComponent {
  */
 export interface TemplateButton {
   /** Button type: quick_reply, url, phone_number, copy_code */
-  type: 'quick_reply' | 'url' | 'phone_number' | 'copy_code';
+  type: "quick_reply" | "url" | "phone_number" | "copy_code";
   /** Button text displayed to user */
   text: string;
   /** URL for url type buttons */
@@ -86,7 +86,7 @@ export interface TemplateButton {
  */
 export interface WhatsAppMedia {
   /** Media type: image, document, video, audio */
-  type: 'image' | 'document' | 'video' | 'audio';
+  type: "image" | "document" | "video" | "audio";
   /** URL to media file */
   url: string;
   /** Optional caption for media */
@@ -100,7 +100,7 @@ export interface WhatsAppMedia {
  */
 export interface WhatsAppInteractive {
   /** Message type: button or list */
-  type: 'button' | 'list';
+  type: "button" | "list";
   /** Header section */
   header?: InteractiveHeader;
   /** Body text content */
@@ -116,7 +116,7 @@ export interface WhatsAppInteractive {
  */
 export interface InteractiveHeader {
   /** Header type: text, image, video, document */
-  type: 'text' | 'image' | 'video' | 'document';
+  type: "text" | "image" | "video" | "document";
   /** Header text or media URL */
   text?: string;
   image?: { link: string };
@@ -155,7 +155,7 @@ export interface InteractiveAction {
  */
 export interface InteractiveButton {
   /** Button type (typically 'reply') */
-  type: 'reply';
+  type: "reply";
   /** Button reply object */
   reply: {
     /** Button ID (unique identifier) */
@@ -192,13 +192,13 @@ export interface InteractiveRow {
  */
 export enum MessageStatus {
   /** Message sent to WhatsApp servers */
-  SENT = 'sent',
+  SENT = "sent",
   /** Message delivered to recipient device */
-  DELIVERED = 'delivered',
+  DELIVERED = "delivered",
   /** Message read by recipient */
-  READ = 'read',
+  READ = "read",
   /** Message failed to send */
-  FAILED = 'failed',
+  FAILED = "failed",
 }
 
 /**
@@ -317,7 +317,7 @@ export interface WebhookChangeValue {
   /** Array of message status updates */
   statuses?: Array<{
     id: string;
-    status: 'sent' | 'delivered' | 'read' | 'failed';
+    status: "sent" | "delivered" | "read" | "failed";
     timestamp: string;
     recipient_id: string;
     errors?: Array<{

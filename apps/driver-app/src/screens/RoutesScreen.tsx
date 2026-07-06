@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,9 +8,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-} from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { api } from '../services/api';
+} from "react-native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { api } from "../services/api";
 
 interface Route {
   id: string;
@@ -28,28 +28,31 @@ const RoutesScreen: React.FC = () => {
   useFocusEffect(
     React.useCallback(() => {
       fetchRoutes();
-    }, [])
+    }, []),
   );
 
   const fetchRoutes = async () => {
     try {
       setIsLoading(true);
-      const data = await api.get('/api/v4/drivers/me/routes');
+      const data = await api.get("/api/v4/drivers/me/routes");
       setRoutes(data);
     } catch (error) {
-      console.error('Failed to fetch routes:', error);
-      Alert.alert('Error', 'Failed to load routes');
+      console.error("Failed to fetch routes:", error);
+      Alert.alert("Error", "Failed to load routes");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleRoutePress = (routeId: string) => {
-    navigation.navigate('RouteDetail', { routeId });
+    navigation.navigate("RouteDetail", { routeId });
   };
 
   const renderRoute = ({ item }: { item: Route }) => (
-    <TouchableOpacity style={styles.routeCard} onPress={() => handleRoutePress(item.id)}>
+    <TouchableOpacity
+      style={styles.routeCard}
+      onPress={() => handleRoutePress(item.id)}
+    >
       <View style={styles.routeHeader}>
         <Text style={styles.routeName}>{item.name}</Text>
         <View style={[styles.statusBadge, getStatusColor(item.status)]}>
@@ -82,7 +85,9 @@ const RoutesScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Your Routes</Text>
-        <Text style={styles.headerSubtext}>{routes.length} routes assigned</Text>
+        <Text style={styles.headerSubtext}>
+          {routes.length} routes assigned
+        </Text>
       </View>
 
       {routes.length === 0 ? (
@@ -104,40 +109,40 @@ const RoutesScreen: React.FC = () => {
 
 const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
-    case 'completed':
-      return { backgroundColor: '#e8f5e9' };
-    case 'in_progress':
-      return { backgroundColor: '#e3f2fd' };
+    case "completed":
+      return { backgroundColor: "#e8f5e9" };
+    case "in_progress":
+      return { backgroundColor: "#e3f2fd" };
     default:
-      return { backgroundColor: '#f5f5f5' };
+      return { backgroundColor: "#f5f5f5" };
   }
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   centerContent: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   headerText: {
     fontSize: 24,
-    fontWeight: '700',
-    color: '#202223',
+    fontWeight: "700",
+    color: "#202223",
   },
   headerSubtext: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginTop: 4,
   },
   listContent: {
@@ -145,26 +150,26 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   routeCard: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
   },
   routeHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
   routeName: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#202223',
+    fontWeight: "600",
+    color: "#202223",
     flex: 1,
   },
   statusBadge: {
@@ -174,45 +179,45 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#005bd3',
+    fontWeight: "600",
+    color: "#005bd3",
   },
   stopCount: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 12,
   },
   progressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   progressBar: {
     flex: 1,
     height: 8,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: "#e0e0e0",
     borderRadius: 4,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   progressFill: {
-    height: '100%',
-    backgroundColor: '#008060',
+    height: "100%",
+    backgroundColor: "#008060",
   },
   progressText: {
     fontSize: 12,
-    color: '#666',
-    fontWeight: '600',
+    color: "#666",
+    fontWeight: "600",
     minWidth: 35,
-    textAlign: 'right',
+    textAlign: "right",
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   emptyText: {
     fontSize: 16,
-    color: '#999',
+    color: "#999",
   },
 });
 
