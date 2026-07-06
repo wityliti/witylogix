@@ -18,11 +18,9 @@ import {
   Crown,
   Zap,
   RefreshCw,
-  Truck,
-  Trash2,
 } from "lucide-react";
-import { useApiQuery, useApiList } from '@/hooks/use-api';
-import { api } from '@/lib/api';
+import { useApiQuery, useApiList } from "@/hooks/use-api";
+import { api } from "@/lib/api";
 
 interface ShopApiData {
   id: string;
@@ -68,40 +66,55 @@ export default function AdminShopDetail() {
   const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const { data: shopData, loading, error, refetch } = useApiQuery<{ data: ShopApiData }>(
+  const {
+    data: shopData,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<{ data: ShopApiData }>(
     shopId ? `/api/v4/admin/stores/${shopId}` : null,
   );
 
-  const { items: activityLogs, loading: activityLoading } = useApiList<ActivityItem>(
-    shopId ? `/api/v4/admin/activity?limit=20` : null,
-  );
+  const { items: activityLogs, loading: activityLoading } =
+    useApiList<ActivityItem>(shopId ? `/api/v4/admin/activity?limit=20` : null);
 
   const shop = shopData?.data;
 
   const getStatusColor = (status: string) => {
     const s = (status || "").toLowerCase();
     switch (s) {
-      case "active": return "var(--wl-chart-green)";
-      case "suspended": return "var(--wl-danger-500)";
-      case "trial": return "var(--wl-warning-500)";
-      default: return "var(--wl-chart-violet)";
+      case "active":
+        return "var(--wl-chart-green)";
+      case "suspended":
+        return "var(--wl-danger-500)";
+      case "trial":
+        return "var(--wl-warning-500)";
+      default:
+        return "var(--wl-chart-violet)";
     }
   };
 
   const getPlanColor = (plan?: string) => {
     switch ((plan || "").toLowerCase()) {
-      case "free": return "var(--wl-chart-slate)";
-      case "starter": return "var(--wl-info-500)";
-      case "growth": return "var(--wl-chart-purple)";
-      case "enterprise": return "var(--wl-chart-rose)";
-      default: return "var(--wl-chart-violet)";
+      case "free":
+        return "var(--wl-chart-slate)";
+      case "starter":
+        return "var(--wl-info-500)";
+      case "growth":
+        return "var(--wl-chart-purple)";
+      case "enterprise":
+        return "var(--wl-chart-rose)";
+      default:
+        return "var(--wl-chart-violet)";
     }
   };
 
   const handleSuspend = async () => {
     setActionLoading("suspend");
     try {
-      await api.put(`/api/v4/admin/stores/${shopId}/suspend`, { reason: "Manual suspension by admin" });
+      await api.put(`/api/v4/admin/stores/${shopId}/suspend`, {
+        reason: "Manual suspension by admin",
+      });
       await refetch();
       setShowSuspendConfirm(false);
     } catch {
@@ -134,7 +147,10 @@ export default function AdminShopDetail() {
   if (error || !shop) {
     return (
       <div className="p-6">
-        <ErrorState message={error?.message || "Shop not found"} onRetry={refetch} />
+        <ErrorState
+          message={error?.message || "Shop not found"}
+          onRetry={refetch}
+        />
       </div>
     );
   }
@@ -198,18 +214,28 @@ export default function AdminShopDetail() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-wl-border-default">
               <div>
                 <p className="text-wl-text-secondary mb-1 text-xs">Store ID</p>
-                <p className="text-white text-sm font-medium font-mono">{shop.id.slice(0, 8)}…</p>
+                <p className="text-white text-sm font-medium font-mono">
+                  {shop.id.slice(0, 8)}…
+                </p>
               </div>
               <div>
                 <p className="text-wl-text-secondary mb-1 text-xs">Email</p>
-                <p className="text-white text-sm font-medium">{shop.email || "—"}</p>
+                <p className="text-white text-sm font-medium">
+                  {shop.email || "—"}
+                </p>
               </div>
               <div>
-                <p className="text-wl-text-secondary mb-1 text-xs">Plan Status</p>
-                <p className="text-white text-sm font-medium">{shop.subscription?.status || "—"}</p>
+                <p className="text-wl-text-secondary mb-1 text-xs">
+                  Plan Status
+                </p>
+                <p className="text-white text-sm font-medium">
+                  {shop.subscription?.status || "—"}
+                </p>
               </div>
               <div>
-                <p className="text-wl-text-secondary mb-1 text-xs">Member Since</p>
+                <p className="text-wl-text-secondary mb-1 text-xs">
+                  Member Since
+                </p>
                 <p className="text-white text-sm font-medium">
                   {new Date(shop.createdAt).toLocaleDateString()}
                 </p>
@@ -217,7 +243,9 @@ export default function AdminShopDetail() {
               {shop.usage.suspension && (
                 <div>
                   <p className="text-gray-400 mb-1 text-xs">Suspended</p>
-                  <p className="text-red-400 text-xs">{shop.usage.suspension.reason ?? 'No reason given'}</p>
+                  <p className="text-red-400 text-xs">
+                    {shop.usage.suspension.reason ?? "No reason given"}
+                  </p>
                 </div>
               )}
             </div>
@@ -226,10 +254,13 @@ export default function AdminShopDetail() {
               <div className="mt-4 p-3 bg-red-900/20 border border-red-900/40 rounded-lg">
                 <p className="text-red-400 text-sm font-medium">Suspended</p>
                 {shop.usage.suspension.reason && (
-                  <p className="text-red-300 text-xs mt-1">{shop.usage.suspension.reason}</p>
+                  <p className="text-red-300 text-xs mt-1">
+                    {shop.usage.suspension.reason}
+                  </p>
                 )}
                 <p className="text-wl-text-secondary text-xs mt-1">
-                  Since: {new Date(shop.usage.suspension.suspendedAt).toLocaleString()}
+                  Since:{" "}
+                  {new Date(shop.usage.suspension.suspendedAt).toLocaleString()}
                 </p>
               </div>
             )}
@@ -242,7 +273,9 @@ export default function AdminShopDetail() {
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-wl-text-secondary mb-2 text-xs">Total Orders</p>
+                  <p className="text-wl-text-secondary mb-2 text-xs">
+                    Total Orders
+                  </p>
                   <p className="text-2xl font-bold text-white">
                     {shop.usage.orders.toLocaleString()}
                   </p>
@@ -256,7 +289,9 @@ export default function AdminShopDetail() {
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-wl-text-secondary mb-2 text-xs">Team Users</p>
+                  <p className="text-wl-text-secondary mb-2 text-xs">
+                    Team Users
+                  </p>
                   <p className="text-2xl font-bold text-white">
                     {shop.usage.users.toLocaleString()}
                   </p>
@@ -284,10 +319,14 @@ export default function AdminShopDetail() {
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-wl-text-secondary mb-2 text-xs">Next Billing</p>
+                  <p className="text-wl-text-secondary mb-2 text-xs">
+                    Next Billing
+                  </p>
                   <p className="text-sm font-bold text-white">
                     {shop.subscription?.billingCycleEnd
-                      ? new Date(shop.subscription.billingCycleEnd).toLocaleDateString()
+                      ? new Date(
+                          shop.subscription.billingCycleEnd,
+                        ).toLocaleDateString()
                       : "—"}
                   </p>
                 </div>
@@ -300,7 +339,9 @@ export default function AdminShopDetail() {
         {/* Admin Actions */}
         <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
           <CardContent className="p-5">
-            <h3 className="text-base font-semibold text-white mb-4">Admin Actions</h3>
+            <h3 className="text-base font-semibold text-white mb-4">
+              Admin Actions
+            </h3>
             <div className="flex gap-3 flex-wrap">
               <Button className="bg-blue-600 text-white border-none px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-90">
                 <Crown size={16} />
@@ -346,9 +387,13 @@ export default function AdminShopDetail() {
             {showSuspendConfirm && (
               <div className="mt-4 p-3 bg-amber-900/20 border border-amber-900/40 rounded">
                 <div className="flex gap-2 items-start mb-3">
-                  <AlertTriangle size={16} className="text-amber-500 flex-shrink-0" />
+                  <AlertTriangle
+                    size={16}
+                    className="text-amber-500 flex-shrink-0"
+                  />
                   <p className="text-white m-0 text-sm">
-                    Suspending this shop will disable all access and API calls. This action can be reversed.
+                    Suspending this shop will disable all access and API calls.
+                    This action can be reversed.
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -357,7 +402,9 @@ export default function AdminShopDetail() {
                     disabled={actionLoading === "suspend"}
                     className="bg-amber-500 text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90 disabled:opacity-50"
                   >
-                    {actionLoading === "suspend" ? "Suspending…" : "Confirm Suspension"}
+                    {actionLoading === "suspend"
+                      ? "Suspending…"
+                      : "Confirm Suspension"}
                   </button>
                   <button
                     onClick={() => setShowSuspendConfirm(false)}
@@ -372,9 +419,13 @@ export default function AdminShopDetail() {
             {showDeleteConfirm && (
               <div className="mt-4 p-3 bg-red-900/20 border border-red-900/40 rounded">
                 <div className="flex gap-2 items-start mb-3">
-                  <AlertTriangle size={16} className="text-red-500 flex-shrink-0" />
+                  <AlertTriangle
+                    size={16}
+                    className="text-red-500 flex-shrink-0"
+                  />
                   <p className="text-white m-0 text-sm">
-                    Deleting this account is permanent and cannot be undone. All data will be lost.
+                    Deleting this account is permanent and cannot be undone. All
+                    data will be lost.
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -396,23 +447,33 @@ export default function AdminShopDetail() {
         {/* Activity Log */}
         <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardContent className="p-5">
-            <h3 className="text-base font-semibold text-white mb-4">Platform Activity Log</h3>
+            <h3 className="text-base font-semibold text-white mb-4">
+              Platform Activity Log
+            </h3>
             {activityLoading ? (
               <LoadingSkeleton />
             ) : activityLogs.length === 0 ? (
-              <p className="text-wl-text-secondary text-sm text-center py-8">No activity records found</p>
+              <p className="text-wl-text-secondary text-sm text-center py-8">
+                No activity records found
+              </p>
             ) : (
               <div className="max-h-96 overflow-y-auto">
                 {activityLogs.map((log, index) => (
                   <div
                     key={log.id}
-                    className={cn("py-3 flex gap-3", index < activityLogs.length - 1 && "border-b border-wl-border-default")}
+                    className={cn(
+                      "py-3 flex gap-3",
+                      index < activityLogs.length - 1 &&
+                        "border-b border-wl-border-default",
+                    )}
                   >
                     <div className="flex-shrink-0 rounded-full w-2 h-2 mt-1.5 bg-blue-500" />
                     <div className="flex-1 min-w-0">
                       <p className="text-white mb-1 text-sm">{log.action}</p>
                       <div className="flex gap-3 items-center">
-                        <span className="text-wl-text-secondary text-xs">By: {log.userName}</span>
+                        <span className="text-wl-text-secondary text-xs">
+                          By: {log.userName}
+                        </span>
                         <span className="text-wl-text-secondary text-xs">
                           {new Date(log.timestamp).toLocaleString()}
                         </span>

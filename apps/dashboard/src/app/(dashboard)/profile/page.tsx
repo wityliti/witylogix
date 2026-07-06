@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiQuery } from '@/hooks/use-api';
+import { useState } from "react";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiQuery } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -32,16 +32,21 @@ interface User {
 }
 
 const DEFAULT_PROFILE = {
-  firstName: '',
-  lastName: '',
-  email: '',
-  phone: '',
-  timezone: 'America/New_York',
-  role: 'User',
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  timezone: "America/New_York",
+  role: "User",
 };
 
 export default function ProfilePage() {
-  const { data: userProfile, loading, error, refetch } = useApiQuery<User>('/api/v4/users/me');
+  const {
+    data: userProfile,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<User>("/api/v4/users/me");
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -51,7 +56,10 @@ export default function ProfilePage() {
   // Sync edit form when profile loads
   useEffect(() => {
     if (userProfile) {
-      setEditForm({ name: userProfile.name ?? '', email: userProfile.email ?? '' });
+      setEditForm({
+        name: userProfile.name ?? "",
+        email: userProfile.email ?? "",
+      });
     }
   }, [userProfile]);
 
@@ -60,47 +68,55 @@ export default function ProfilePage() {
     setSaveError(null);
     setSaveSuccess(false);
     try {
-      await api.patch('/api/v4/users/me', editForm);
+      await api.patch("/api/v4/users/me", editForm);
       await refetch();
       setSaveSuccess(true);
       setIsEditing(false);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'Failed to save profile');
+      setSaveError(
+        err instanceof Error ? err.message : "Failed to save profile",
+      );
     } finally {
       setSaveLoading(false);
     }
   }, [editForm, refetch]);
 
   const handleCancelEdit = useCallback(() => {
-    if (userProfile) setEditForm({ name: userProfile.name ?? '', email: userProfile.email ?? '' });
+    if (userProfile)
+      setEditForm({
+        name: userProfile.name ?? "",
+        email: userProfile.email ?? "",
+      });
     setIsEditing(false);
     setSaveError(null);
   }, [userProfile]);
 
   const handleChangePassword = useCallback(async () => {
     if (passwordForm.new !== passwordForm.confirm) {
-      setPwError('New passwords do not match');
+      setPwError("New passwords do not match");
       return;
     }
     if (passwordForm.new.length < 8) {
-      setPwError('New password must be at least 8 characters');
+      setPwError("New password must be at least 8 characters");
       return;
     }
     setPwLoading(true);
     setPwError(null);
     setPwSuccess(false);
     try {
-      if (!userProfile?.id) throw new Error('User not loaded');
+      if (!userProfile?.id) throw new Error("User not loaded");
       await api.patch(`/api/v4/users/${userProfile.id}/password`, {
         password: passwordForm.new,
         currentPassword: passwordForm.current,
       });
       setPwSuccess(true);
-      setPasswordForm({ current: '', new: '', confirm: '' });
+      setPasswordForm({ current: "", new: "", confirm: "" });
       setTimeout(() => setPwSuccess(false), 3000);
     } catch (err) {
-      setPwError(err instanceof Error ? err.message : 'Failed to change password');
+      setPwError(
+        err instanceof Error ? err.message : "Failed to change password",
+      );
     } finally {
       setPwLoading(false);
     }
@@ -108,15 +124,16 @@ export default function ProfilePage() {
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-  if (!userProfile) return <ErrorState message="User profile unavailable" onRetry={refetch} />;
+  if (!userProfile)
+    return <ErrorState message="User profile unavailable" onRetry={refetch} />;
 
   const profile = userProfile || {
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    timezone: 'America/New_York',
-    role: 'User',
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    timezone: "America/New_York",
+    role: "User",
   };
 
   const handleEditChange = (field: string, value: string) => {
@@ -128,7 +145,10 @@ export default function ProfilePage() {
 
   return (
     <div className="bg-wl-bg-primary min-h-screen">
-      <Header title="Profile Settings" subtitle="Manage your account and security settings" />
+      <Header
+        title="Profile Settings"
+        subtitle="Manage your account and security settings"
+      />
 
       <main className="flex-1 p-6 max-w-4xl mx-auto">
         {/* Personal Information */}
@@ -156,7 +176,9 @@ export default function ProfilePage() {
                   <input
                     type="text"
                     value={editForm.firstName}
-                    onChange={(e) => handleEditChange("firstName", e.target.value)}
+                    onChange={(e) =>
+                      handleEditChange("firstName", e.target.value)
+                    }
                     className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                   />
                 ) : (
@@ -172,7 +194,9 @@ export default function ProfilePage() {
                   <input
                     type="text"
                     value={editForm.lastName}
-                    onChange={(e) => handleEditChange("lastName", e.target.value)}
+                    onChange={(e) =>
+                      handleEditChange("lastName", e.target.value)
+                    }
                     className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                   />
                 ) : (
@@ -219,7 +243,9 @@ export default function ProfilePage() {
                 {isEditing ? (
                   <select
                     value={editForm.timezone}
-                    onChange={(e) => handleEditChange("timezone", e.target.value)}
+                    onChange={(e) =>
+                      handleEditChange("timezone", e.target.value)
+                    }
                     className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 cursor-pointer transition-colors"
                   >
                     <option>America/New_York</option>
@@ -257,11 +283,11 @@ export default function ProfilePage() {
                   ) : (
                     <Save className="w-4 h-4" />
                   )}
-                  {profileMutation.loading ? 'Saving…' : 'Save Changes'}
+                  {profileMutation.loading ? "Saving…" : "Save Changes"}
                 </button>
                 <Button variant="ghost" size="md" onClick={handleCancelEdit}>
                   Cancel
-                </button>
+                </Button>
               </div>
             )}
           </CardContent>
@@ -291,7 +317,10 @@ export default function ProfilePage() {
                       type={showPassword ? "text" : "password"}
                       value={passwordForm.current}
                       onChange={(e) =>
-                        setPasswordForm((prev) => ({ ...prev, current: e.target.value }))
+                        setPasswordForm((prev) => ({
+                          ...prev,
+                          current: e.target.value,
+                        }))
                       }
                       className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm pr-10 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                     />
@@ -313,7 +342,10 @@ export default function ProfilePage() {
                       type={showNewPassword ? "text" : "password"}
                       value={passwordForm.new}
                       onChange={(e) =>
-                        setPasswordForm((prev) => ({ ...prev, new: e.target.value }))
+                        setPasswordForm((prev) => ({
+                          ...prev,
+                          new: e.target.value,
+                        }))
                       }
                       className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm pr-10 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                     />
@@ -321,7 +353,11 @@ export default function ProfilePage() {
                       onClick={() => setShowNewPassword(!showNewPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-wl-text-tertiary cursor-pointer hover:text-wl-text-secondary transition-colors"
                     >
-                      {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      {showNewPassword ? (
+                        <EyeOff size={16} />
+                      ) : (
+                        <Eye size={16} />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -335,15 +371,24 @@ export default function ProfilePage() {
                       type={showConfirmPassword ? "text" : "password"}
                       value={passwordForm.confirm}
                       onChange={(e) =>
-                        setPasswordForm((prev) => ({ ...prev, confirm: e.target.value }))
+                        setPasswordForm((prev) => ({
+                          ...prev,
+                          confirm: e.target.value,
+                        }))
                       }
                       className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm pr-10 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                     />
                     <button
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-wl-text-tertiary cursor-pointer hover:text-wl-text-secondary transition-colors"
                     >
-                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      {showConfirmPassword ? (
+                        <EyeOff size={16} />
+                      ) : (
+                        <Eye size={16} />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -369,7 +414,7 @@ export default function ProfilePage() {
                   onClick={() => setTwoFAEnabled(!twoFAEnabled)}
                   className={cn(
                     "w-12 h-7 rounded-full border-none cursor-pointer transition-colors",
-                    twoFAEnabled ? "bg-emerald-500" : "bg-wl-bg-elevated"
+                    twoFAEnabled ? "bg-emerald-500" : "bg-wl-bg-elevated",
                   )}
                 />
               </div>
@@ -391,10 +436,16 @@ export default function ProfilePage() {
                 <Smartphone size={20} className="text-blue-400 flex-shrink-0" />
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-medium text-white">Current session</p>
-                    <Badge variant="success" className="text-xs">Active</Badge>
+                    <p className="text-sm font-medium text-white">
+                      Current session
+                    </p>
+                    <Badge variant="success" className="text-xs">
+                      Active
+                    </Badge>
                   </div>
-                  <p className="text-xs text-wl-text-muted">Signed in as {profile.email || '—'}</p>
+                  <p className="text-xs text-wl-text-muted">
+                    Signed in as {profile.email || "—"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -411,7 +462,8 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent>
             <p className="text-wl-text-muted text-sm mb-4">
-              Once you delete your account, there is no going back. Please be certain.
+              Once you delete your account, there is no going back. Please be
+              certain.
             </p>
             {!showDeleteConfirm && (
               <button

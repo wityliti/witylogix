@@ -335,8 +335,7 @@ async function customerRoutes(fastify: FastifyInstance): Promise<void> {
   // ── GET SINGLE CUSTOMER ────────────────────────────────────
 
   fastify.get("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const { id } = request.params as { id: string };
+    const { id } = request.params as { id: string };
 
     const customer = await request.tenantDb.customer.findUnique({
       where: { id },

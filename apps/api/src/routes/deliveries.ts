@@ -475,7 +475,6 @@ async function deliveriesRoutes(fastify: FastifyInstance): Promise<void> {
           error: "Cannot modify preferences for a completed delivery",
         });
       }
-    }
 
       const quote = delivery.quote as { estimatedMinutes?: number } | null;
       if (quote?.estimatedMinutes) {
