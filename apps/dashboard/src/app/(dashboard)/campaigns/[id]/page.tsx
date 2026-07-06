@@ -57,8 +57,15 @@ interface Campaign {
   type: CampaignType;
   status: CampaignStatus;
   created_at: string;
+  createdAt?: string;
   sent_at?: string;
   completed_at?: string;
+  startedAt?: string;
+  sentCount?: number;
+  openedCount?: number;
+  deliveredCount?: number;
+  failedCount?: number;
+  clickedCount?: number;
   stats: {
     delivered: number;
     opened: number;
@@ -172,10 +179,10 @@ export default function CampaignDetailPage({
 
   const pieData = useMemo(() => {
     if (!campaign) return [];
-    const s = campaign.sentCount;
-    const o = campaign.openedCount;
-    const d = campaign.deliveredCount;
-    const f = campaign.failedCount;
+    const s = campaign.sentCount ?? 0;
+    const o = campaign.openedCount ?? 0;
+    const d = campaign.deliveredCount ?? 0;
+    const f = campaign.failedCount ?? 0;
     return [
       { label: "Opened", value: o, color: "var(--wl-info-500)", pct: s > 0 ? ((o / s) * 100).toFixed(1) : "0" },
       { label: "Delivered (not opened)", value: Math.max(0, d - o), color: "var(--wl-success-500)", pct: s > 0 ? (((d - o) / s) * 100).toFixed(1) : "0" },
@@ -193,11 +200,11 @@ export default function CampaignDetailPage({
     );
   }
 
-  const sent = campaign.sentCount;
-  const delivered = campaign.deliveredCount;
-  const opened = campaign.openedCount;
-  const clicked = campaign.clickedCount;
-  const failed = campaign.failedCount;
+  const sent = campaign.sentCount ?? 0;
+  const delivered = campaign.deliveredCount ?? 0;
+  const opened = campaign.openedCount ?? 0;
+  const clicked = campaign.clickedCount ?? 0;
+  const failed = campaign.failedCount ?? 0;
   const deliveryRate =
     sent > 0 ? ((delivered / sent) * 100).toFixed(1) : "0.0";
   const openRate =

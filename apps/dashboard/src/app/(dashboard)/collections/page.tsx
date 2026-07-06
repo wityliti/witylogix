@@ -72,20 +72,6 @@ export default function CollectionsPage() {
   const [sortBy, setSortBy] = useState<"title" | "productCount" | "lastUpdated">("title");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const handleRemoveProduct = async (collectionId: string, productId: string) => {
-    setRemovingProductId(productId);
-    try {
-      await api.delete(`/api/v4/collections/${collectionId}/products`, {
-        productIds: [productId],
-      });
-      await refetch();
-    } finally {
-      setRemovingProductId(null);
-    }
-  };
-
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const pageSize = 10;
 
@@ -115,9 +101,6 @@ export default function CollectionsPage() {
 
     return result;
   }, [items, search, typeFilter, sortBy]);
-
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   // Calculate stats
   const totalCollections = items.length;
