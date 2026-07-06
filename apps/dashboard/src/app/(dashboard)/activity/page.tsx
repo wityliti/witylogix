@@ -62,9 +62,6 @@ export default function ActivityPage() {
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
-  const containerRef = useRef<HTMLDivElement>(null);
-
   const uniqueUsers = useMemo(() => {
     const seen = new Set<string>();
     const users: { id: string; name: string }[] = [];
@@ -77,10 +74,6 @@ export default function ActivityPage() {
     return users;
   }, [apiEvents]);
 
-  useEffect(() => {
-    if (apiEvents.length > 0) setEvents(apiEvents);
-  }, [apiEvents]);
-
   // Live mode: poll the real API every 30 seconds
   useEffect(() => {
     if (!isLiveMode) return;
@@ -91,7 +84,24 @@ export default function ActivityPage() {
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const displayedEvents = filteredEvents();
+  const displayedEvents = apiEvents.filter((event: ActivityEvent) => {
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      if (
+        !event.title.toLowerCase().includes(q) &&
+        !event.description.toLowerCase().includes(q) &&
+        !(event.entity?.name ?? '').toLowerCase().includes(q) &&
+        !(event.user?.name ?? '').toLowerCase().includes(q)
+      ) return false;
+    }
+    if (filters.types.length > 0 && !filters.types.includes(event.type)) return false;
+    if (filters.severities.length > 0 && !filters.severities.includes(event.severity)) return false;
+    if (filters.userId && event.user?.id !== filters.userId) return false;
+    if (filters.startDate && new Date(event.timestamp) < filters.startDate) return false;
+    if (filters.endDate && new Date(event.timestamp) > filters.endDate) return false;
+    return true;
+  });
+  const selectedEvent = selectedEventId ? displayedEvents.find((e) => e.id === selectedEventId) : null;
 
   // Debounced search
   const handleSearchChange = (value: string) => {
@@ -166,12 +176,6 @@ export default function ActivityPage() {
         return 'default';
     }
   };
-
-  if (loading && events.length === 0) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const displayedEvents = filteredEvents();
-  const selectedEvent = selectedEventId ? displayedEvents.find((e) => e.id === selectedEventId) : null;
 
   return (
     <div
