@@ -246,7 +246,7 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
           name: (store as any).name,
           domain: (store as any).shopifyDomain ?? "",
           planTier: planTier.toLowerCase() as string,
-          status: (store as any).suspendedAt ? "suspended" : "active",
+          status: (store as any).suspendedAt ? "SUSPENDED" : "ACTIVE",
           owner: {
             name:
               (store as any).users?.[0]?.name ??
@@ -257,9 +257,20 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
             joinDate: (store as any).createdAt?.toISOString() ?? "",
           },
           usage: {
-            orders: (store as any)._count?.orders ?? 0,
-            shipments: (store as any)._count?.orders ?? 0,
-            drivers: (store as any)._count?.drivers ?? 0,
+            orders:
+              (store as any).orders?.length ??
+              (store as any)._count?.orders ??
+              0,
+            shipments:
+              (store as any).orders?.length ??
+              (store as any)._count?.orders ??
+              0,
+            users:
+              (store as any).users?.length ?? (store as any)._count?.users ?? 0,
+            drivers:
+              (store as any).drivers?.length ??
+              (store as any)._count?.drivers ??
+              0,
             apiCalls: 0,
             apiCallsLimit:
               planTier === "ENTERPRISE"
@@ -267,6 +278,12 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
                 : planTier === "GROWTH"
                   ? 500000
                   : 100000,
+            ...((store as any).suspendedAt && {
+              suspension: {
+                suspendedAt: (store as any).suspendedAt?.toISOString(),
+                reason: (store as any).suspensionReason ?? null,
+              },
+            }),
           },
           billing: {
             currentPlan: planTier.charAt(0) + planTier.slice(1).toLowerCase(),

@@ -20,8 +20,8 @@ import {
   RefreshCw,
   Truck,
   Phone,
-  Truck,
   Package,
+  MapPin,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApiQuery } from '@/hooks/use-api';
@@ -50,37 +50,20 @@ interface ScoreBreakdown {
   reliabilityScore: number;
 }
 
-interface DriverScore {
-  driverId: string;
+interface DriverScoreData {
   compositeScore: number;
   breakdown: ScoreBreakdown;
   tier: 'platinum' | 'gold' | 'silver' | 'bronze';
   rank: number;
   trend: 'up' | 'down' | 'stable';
   previousScore: number | null;
-  calculatedAt: string;
-}
-
-interface DriverScoreResponse {
-  score: DriverScore;
-  driver: {
-    id: string;
-    name: string;
-    email: string;
-    phone?: string;
-    vehicleType?: string;
-    joinedAt: string;
-  };
+  driverName: string;
   metrics: {
-    totalDeliveries: number;
-    onTimeCount: number;
-    lateCount: number;
     avgDeliveryMinutes: number;
-    customerRatingSum: number;
-    customerRatingCount: number;
-    podComplianceCount: number;
-    podMissedCount: number;
+    lateCount: number;
     incidentCount: number;
+    avgCustomerRating?: string;
+    podCompliancePercent?: string;
   };
 }
 
@@ -108,7 +91,7 @@ interface DriverProfile {
   lastLocationAt: string | null;
   heading: number | null;
   createdAt: string;
-  orders?: { id: string }[];
+  orders?: { id: string; customerName?: string; externalOrderNumber?: string; addressLine1?: string; city?: string; status?: string }[];
 }
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -239,6 +222,7 @@ export default function DriverDetailPage() {
   );
 
   const history = historyData ?? [];
+  const profile = profileData ?? null;
 
   const currentLat = useMemo(
     () => profile?.currentLocation?.latitude ?? null,
@@ -255,10 +239,18 @@ export default function DriverDetailPage() {
         driverName: profile.name,
         driverStatus: profile.status,
         vehicleType: profile.vehicleType,
-        activeDeliveries: profile.orders.length,
+        activeDeliveries: profile.orders?.length ?? 0,
         currentLat,
         currentLng,
-        activeOrders: profile.orders,
+        activeOrders: (profile.orders ?? []).map((o) => ({
+          id: o.id,
+          externalOrderNumber: o.externalOrderNumber ?? null,
+          status: o.status ?? '',
+          customerName: o.customerName ?? null,
+          addressLine1: o.addressLine1 ?? null,
+          city: o.city ?? null,
+          deliveryLocation: null,
+        })),
       }
     : null;
 
@@ -294,6 +286,9 @@ export default function DriverDetailPage() {
     );
   }
 
+  const score = scoreData;
+  const driver = profileData;
+  const metrics = scoreData.metrics;
   const tier = TIER_STYLE[scoreData.tier] ?? TIER_STYLE.bronze;
   const scoreDelta = scoreData.previousScore != null
     ? scoreData.compositeScore - scoreData.previousScore
@@ -335,13 +330,13 @@ export default function DriverDetailPage() {
                   </span>
                 )}
               </div>
-              <p className="text-sm text-white/35 mt-0.5">{driver.email}</p>
+              <p className="text-sm text-white/35 mt-0.5">{driver?.email ?? ''}</p>
               {/* Vehicle + phone info from profile */}
               <div className="flex flex-wrap items-center gap-3 mt-1.5">
-                {(profile?.phone || driver.phone) && (
+                {(profile?.phone || driver?.phone) && (
                   <span className="inline-flex items-center gap-1 text-xs text-white/25">
                     <Phone className="w-3 h-3" />
-                    {profile?.phone ?? driver.phone}
+                    {profile?.phone ?? driver?.phone}
                   </span>
                 )}
                 {profile?.vehicleType && (
@@ -355,10 +350,10 @@ export default function DriverDetailPage() {
                     {profile.vehiclePlate}
                   </span>
                 )}
-                {profile && profile.orders.length > 0 && (
+                {profile && (profile.orders?.length ?? 0) > 0 && (
                   <span className="inline-flex items-center gap-1 text-xs text-amber-400/70">
                     <Package className="w-3 h-3" />
-                    {profile.orders.length} active order{profile.orders.length !== 1 ? 's' : ''}
+                    {profile.orders!.length} active order{profile.orders!.length !== 1 ? 's' : ''}
                   </span>
                 )}
                 {currentLat != null && (
@@ -419,17 +414,6 @@ export default function DriverDetailPage() {
               )}
             </div>
 
-                {/* Trend */}
-                {scoreDelta !== null && (
-                  <div className={cn('flex items-center gap-1.5 mt-3 text-sm font-mono font-medium',
-                    scoreDelta > 0 ? 'text-emerald-400' : scoreDelta < 0 ? 'text-red-400' : 'text-white/30'
-                  )}>
-                    {scoreDelta > 0 ? <TrendingUp className="w-4 h-4" /> : scoreDelta < 0 ? <TrendingDown className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
-                    {scoreDelta > 0 ? '+' : ''}{scoreDelta.toFixed(1)} vs last period
-                  </div>
-                )}
-              </div>
-
               {/* Score breakdown */}
               <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 space-y-4">
                 <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider">Score Breakdown</h3>
@@ -484,10 +468,10 @@ export default function DriverDetailPage() {
                   {[
                     { label: 'Avg Delivery Time', value: `${metrics.avgDeliveryMinutes} min` },
                     { label: 'Late Deliveries',   value: metrics.lateCount.toString() },
-                    { label: 'POD Missed',         value: metrics.podMissedCount.toString() },
+                    { label: 'POD Compliance',     value: metrics.podCompliancePercent ?? '—' },
                     { label: 'Incidents',          value: metrics.incidentCount.toString() },
-                    { label: 'Vehicle Type',       value: profile?.vehicleType ?? driver.vehicleType ?? '—' },
-                    { label: 'Member Since',       value: new Date(driver.joinedAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) },
+                    { label: 'Vehicle Type',       value: profile?.vehicleType ?? driver?.vehicleType ?? '—' },
+                    { label: 'Member Since',       value: driver?.createdAt ? new Date(driver.createdAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) : '—' },
                   ].map(({ label, value }) => (
                     <div key={label} className="bg-white/[0.02] rounded-lg p-3">
                       <p className="text-[10px] text-white/25 mb-1">{label}</p>
@@ -498,7 +482,7 @@ export default function DriverDetailPage() {
               </div>
 
               {/* Active orders list (if any) */}
-              {profile && profile.orders.length > 0 && (
+              {profile && profile.orders && profile.orders.length > 0 && (
                 <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-semibold text-white/60 tracking-wide">Active Orders</h3>
@@ -558,7 +542,7 @@ export default function DriverDetailPage() {
             )}
 
             {/* Active orders summary below map */}
-            {profile && profile.orders.length > 0 && (
+            {profile && profile.orders && profile.orders.length > 0 && (
               <div className="rounded-xl bg-wl-bg-surface border border-wl-border-default p-4">
                 <p className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-3">
                   Active Deliveries

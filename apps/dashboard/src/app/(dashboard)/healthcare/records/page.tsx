@@ -38,6 +38,7 @@ export default function RecordsPage() {
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
+  const records = apiRecords;
   const recordTypes = ['ALL', 'PROGRESS_NOTE', 'LAB_RESULT', 'IMAGING_REPORT', 'PRESCRIPTION', 'DISCHARGE_SUMMARY'];
   const filteredRecords = recordTypeFilter === 'ALL' ? records : records.filter((r) => r.type === recordTypeFilter);
   const selectedRecord = records.find((r) => r.id === selectedRecordId);

@@ -24,6 +24,16 @@ import {
 import { useApiQuery } from '@/hooks/use-api';
 import { api } from '@/lib/api';
 
+const formatDuration = (ms: number | null | undefined): string => {
+  if (ms == null) return "—";
+  if (ms < 1000) return `${ms}ms`;
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  return `${m}m ${rem}s`;
+};
+
 interface WorkflowStep {
   id: string;
   number: number;

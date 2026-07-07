@@ -89,6 +89,11 @@ const truncateAddress = (address: string, maxLength: number = 40): string => {
   return address.length > maxLength ? `${address.slice(0, maxLength)}…` : address;
 };
 
+const avatarColor = getAvatarBgColor;
+const avatarInitials = getAvatarInitials;
+const statusVariant = getStatusVariant;
+const truncate = truncateAddress;
+
 type OrderDisplay = Order;
 
 export default function OrdersPage() {
@@ -127,31 +132,11 @@ export default function OrdersPage() {
     return result;
   }, [orders, statusFilter, dateRange]);
 
-    if (statusFilter !== 'all') {
-      result = result.filter(
-        (o) => o.status.toLowerCase() === statusFilter.toLowerCase()
-      );
-    }
-
-    if (dateRange?.from || dateRange?.to) {
-      const fromDate = dateRange?.from ? new Date(dateRange.from) : null;
-      const toDate = dateRange?.to ? new Date(dateRange.to) : null;
-
-      result = result.filter((o) => {
-        const createdDate = new Date(o.createdAt);
-        if (fromDate && createdDate < fromDate) return false;
-        if (toDate && createdDate > toDate) return false;
-        return true;
-      });
-    }
-
-    return result;
-  }, [statusFilter, orders, dateRange]);
-
   // Pagination
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const startIdx = (currentPage - 1) * itemsPerPage;
-  const paginatedOrders = filtered.slice(startIdx, startIdx + itemsPerPage);
+  const endIdx = startIdx + itemsPerPage;
+  const paginatedOrders = filtered.slice(startIdx, endIdx);
 
   // Map pins — only orders that have delivery coordinates
   const orderPins = useMemo<OrderPin[]>(() =>
@@ -312,13 +297,13 @@ export default function OrdersPage() {
               <input
                 type="date"
                 value={dateRange?.from ?? ''}
-                onChange={(e) => { setDateRange((p) => ({ ...p, from: e.target.value })); setCurrentPage(1); }}
+                onChange={(e) => { setDateRange((p) => ({ from: e.target.value, to: p?.to ?? '' })); setCurrentPage(1); }}
                 className="px-3 py-2 rounded-lg text-sm bg-zinc-800/50 border border-zinc-700 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
               />
               <input
                 type="date"
                 value={dateRange?.to ?? ''}
-                onChange={(e) => { setDateRange((p) => ({ ...p, to: e.target.value })); setCurrentPage(1); }}
+                onChange={(e) => { setDateRange((p) => ({ from: p?.from ?? '', to: e.target.value })); setCurrentPage(1); }}
                 className="px-3 py-2 rounded-lg text-sm bg-zinc-800/50 border border-zinc-700 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
               />
             </div>

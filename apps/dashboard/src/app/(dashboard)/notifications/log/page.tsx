@@ -36,6 +36,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useApiList } from "@/hooks/use-api";
+import { Input } from "@/components/ui/input";
 import Link from "next/link";
 
 // ── API types matching notifications-v2 /log response ─────────────────────
