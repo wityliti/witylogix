@@ -318,9 +318,8 @@ export function EventFilters({
               ))}
             </div>
           </div>
-          )}
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

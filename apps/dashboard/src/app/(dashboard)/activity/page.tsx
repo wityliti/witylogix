@@ -62,9 +62,6 @@ export default function ActivityPage() {
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
-  const containerRef = useRef<HTMLDivElement>(null);
-
   const uniqueUsers = useMemo(() => {
     const seen = new Set<string>();
     const users: { id: string; name: string }[] = [];
@@ -77,9 +74,6 @@ export default function ActivityPage() {
     return users;
   }, [apiEvents]);
 
-  useEffect(() => {
-    if (apiEvents.length > 0) setEvents(apiEvents);
-  }, [apiEvents]);
 
   // Live mode: poll the real API every 30 seconds
   useEffect(() => {
@@ -91,7 +85,16 @@ export default function ActivityPage() {
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const displayedEvents = filteredEvents();
+  const displayedEvents = apiEvents.filter((e) => {
+    if (filters.types.length > 0 && !filters.types.includes(e.type)) return false;
+    if (filters.severities.length > 0 && !filters.severities.includes(e.severity)) return false;
+    if (filters.userId && e.user?.id !== filters.userId) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      if (!e.title.toLowerCase().includes(q) && !e.description?.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
 
   // Debounced search
   const handleSearchChange = (value: string) => {
@@ -108,7 +111,7 @@ export default function ActivityPage() {
   const handleExport = () => {
     const csvContent = [
       ["ID", "Type", "Severity", "Title", "Description", "Timestamp", "User"],
-      ...displayedEvents.map((event) => [
+      ...displayedEvents.map((event: ActivityEvent) => [
         event.id,
         event.type,
         event.severity,
@@ -118,7 +121,7 @@ export default function ActivityPage() {
         event.user?.name || "System",
       ]),
     ]
-      .map((row) => row.map((cell) => `"${cell}"`).join(","))
+      .map((row) => row.map((cell: string | undefined) => `"${cell ?? ''}"`).join(","))
       .join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv" });
@@ -167,11 +170,7 @@ export default function ActivityPage() {
     }
   };
 
-  if (loading && events.length === 0) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const displayedEvents = filteredEvents();
-  const selectedEvent = selectedEventId ? displayedEvents.find((e) => e.id === selectedEventId) : null;
+  const selectedEvent = selectedEventId ? displayedEvents.find((e: ActivityEvent) => e.id === selectedEventId) : null;
 
   return (
     <div

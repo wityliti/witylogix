@@ -91,6 +91,15 @@ const formatDateTime = (isoStr: string): string => {
 }
 
 
+function formatDuration(ms: number | undefined): string {
+  if (!ms) return '—';
+  const totalSeconds = Math.round(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  if (minutes > 0) return `${minutes}m ${seconds}s`;
+  return `${seconds}s`;
+}
+
 function JsonViewer({ data }: { data: Record<string, any> }) {
   return (
     <pre className="bg-wl-bg-elevated border border-wl-border-default rounded-lg p-3 text-xs text-wl-text-secondary overflow-auto font-mono leading-relaxed">
@@ -276,7 +285,7 @@ export default function WorkflowExecutionDetailPage() {
           <StatCard label="Total Steps" value={steps.length} index={0} />
           <StatCard label="Completed" value={completedSteps} accentColor="var(--wl-success-500)" index={1} />
           <StatCard label="Failed" value={failedSteps} accentColor="var(--wl-danger-500)" index={2} />
-          <StatCard label="Duration" value={formatDuration(execution.durationMs)} index={3} />
+          <StatCard label="Duration" value={formatDuration(execution.durationMs ?? 0)} index={3} />
         </div>
 
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">

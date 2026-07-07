@@ -54,9 +54,9 @@ const STATUS_OPTIONS = ['All', 'Received', 'Picked', 'Packed', 'Shipped', 'Deliv
 export default function OrdersPage() {
   const orders = useOrders();
   const fulfillment = useFulfillment();
-  const { items: wavePlans } = useApiList<WavePlan>('/api/v4/supply-chain/waves');
-  const { items: batchPicking } = useApiList<BatchPickingTask>('/api/v4/supply-chain/batches');
-  const { items: returnQueue } = useApiList<RawReturn>('/api/v4/returns');
+  const { items: wavePlans, loading: wavesLoading, error: wavesError } = useApiList<WavePlan>('/api/v4/supply-chain/waves');
+  const { items: batchPicking, loading: batchesLoading, error: batchesError } = useApiList<BatchPickingTask>('/api/v4/supply-chain/batches');
+  const { items: returnQueue, refetch: refetchReturns, loading: returnsLoading, error: returnsError } = useApiList<ReturnItem>('/api/v4/returns');
   const { items: warehouseItems } = useApiList<{ name: string }>('/api/v4/supply-chain/warehouses');
   const [returnsActionLoading, setReturnsActionLoading] = useState<string | null>(null);
 
@@ -498,10 +498,10 @@ export default function OrdersPage() {
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h4 className="text-sm font-semibold text-white">
-                      {returnItem.order?.externalOrderNumber ?? returnItem.id}
+                      {returnItem.orderNumber ?? returnItem.id}
                     </h4>
                     <p className="text-xs text-gray-400 mt-1">
-                      {returnItem.order?.customerName ?? 'Unknown'}
+                      {returnItem.customerName}
                     </p>
                   </div>
                 </div>
