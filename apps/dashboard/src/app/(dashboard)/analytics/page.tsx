@@ -14,7 +14,6 @@ import {
   Truck,
   Users,
   Clock,
-  ArrowUpRight,
   BarChart3,
   Activity,
   Zap,

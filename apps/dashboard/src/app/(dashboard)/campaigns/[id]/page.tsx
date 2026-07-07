@@ -172,10 +172,10 @@ export default function CampaignDetailPage({
 
   const pieData = useMemo(() => {
     if (!campaign) return [];
-    const s = campaign.sentCount;
-    const o = campaign.openedCount;
-    const d = campaign.deliveredCount;
-    const f = campaign.failedCount;
+    const s = campaign.stats?.total_events ?? 0;
+    const o = campaign.stats?.opened ?? 0;
+    const d = campaign.stats?.delivered ?? 0;
+    const f = campaign.stats?.failed ?? 0;
     return [
       { label: "Opened", value: o, color: "var(--wl-info-500)", pct: s > 0 ? ((o / s) * 100).toFixed(1) : "0" },
       { label: "Delivered (not opened)", value: Math.max(0, d - o), color: "var(--wl-success-500)", pct: s > 0 ? (((d - o) / s) * 100).toFixed(1) : "0" },
@@ -193,11 +193,11 @@ export default function CampaignDetailPage({
     );
   }
 
-  const sent = campaign.sentCount;
-  const delivered = campaign.deliveredCount;
-  const opened = campaign.openedCount;
-  const clicked = campaign.clickedCount;
-  const failed = campaign.failedCount;
+  const sent = campaign.stats?.total_events ?? 0;
+  const delivered = campaign.stats?.delivered ?? 0;
+  const opened = campaign.stats?.opened ?? 0;
+  const clicked = campaign.stats?.clicked ?? 0;
+  const failed = campaign.stats?.failed ?? 0;
   const deliveryRate =
     sent > 0 ? ((delivered / sent) * 100).toFixed(1) : "0.0";
   const openRate =
@@ -216,7 +216,7 @@ export default function CampaignDetailPage({
     <div className="min-h-screen bg-wl-bg-root">
       <Header
         title={campaign.name}
-        subtitle={`${campaign.type} campaign • Created ${formatRelativeTime(campaign.createdAt)}`}
+        subtitle={`${campaign.type} campaign • Created ${formatRelativeTime(campaign.created_at)}`}
       />
 
       <div className="p-6 max-w-7xl mx-auto">
@@ -236,9 +236,9 @@ export default function CampaignDetailPage({
             <Badge variant={statusVariant(campaign.status)}>
               {campaign.status}
             </Badge>
-            {campaign.startedAt && (
+            {campaign.sent_at && (
               <span className="text-sm text-wl-text-secondary">
-                Sent {formatRelativeTime(campaign.startedAt)}
+                Sent {formatRelativeTime(campaign.sent_at)}
               </span>
             )}
           </div>

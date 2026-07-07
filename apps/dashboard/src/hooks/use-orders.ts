@@ -41,6 +41,9 @@ export interface Order {
   notes?: string;
   deliveryLat: number | null;
   deliveryLng: number | null;
+  orderNumber?: string;
+  city?: string;
+  itemCount?: number;
 }
 
 /**

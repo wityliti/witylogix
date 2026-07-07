@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useIntegrationStatus } from "@/hooks/use-integration-status";
+import { useApiQuery } from "@/hooks/use-api";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

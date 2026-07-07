@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { useApiQuery } from '@/hooks/use-api';
+import { api } from '@/lib/api';
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -47,11 +48,20 @@ export default function ProfilePage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editForm, setEditForm] = useState({ firstName: '', lastName: '', email: '', phone: '', timezone: '' });
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
+  const [pwError, setPwError] = useState<string | null>(null);
+  const [pwLoading, setPwLoading] = useState(false);
+  const [pwSuccess, setPwSuccess] = useState(false);
+  const [twoFAEnabled, setTwoFAEnabled] = useState(false);
 
   // Sync edit form when profile loads
   useEffect(() => {
     if (userProfile) {
-      setEditForm({ name: userProfile.name ?? '', email: userProfile.email ?? '' });
+      setEditForm({ firstName: userProfile.firstName ?? '', lastName: userProfile.lastName ?? '', email: userProfile.email ?? '', phone: userProfile.phone ?? '', timezone: userProfile.timezone ?? '' });
     }
   }, [userProfile]);
 
@@ -73,7 +83,7 @@ export default function ProfilePage() {
   }, [editForm, refetch]);
 
   const handleCancelEdit = useCallback(() => {
-    if (userProfile) setEditForm({ name: userProfile.name ?? '', email: userProfile.email ?? '' });
+    if (userProfile) setEditForm({ firstName: userProfile.firstName ?? '', lastName: userProfile.lastName ?? '', email: userProfile.email ?? '', phone: userProfile.phone ?? '', timezone: userProfile.timezone ?? '' });
     setIsEditing(false);
     setSaveError(null);
   }, [userProfile]);
@@ -244,24 +254,14 @@ export default function ProfilePage() {
               <div className="flex gap-3 pt-4 border-t border-wl-border-default">
                 <button
                   onClick={handleSaveProfile}
-                  className="px-4 py-2 bg-blue-500 text-white rounded text-sm font-medium cursor-pointer hover:bg-blue-600 transition-colors"
+                  disabled={saveLoading}
+                  className="px-4 py-2 bg-blue-500 text-white rounded text-sm font-medium cursor-pointer hover:bg-blue-600 transition-colors disabled:opacity-50"
                 >
-                  Save Changes
-                </button>
-                <button
-                  onClick={handleCancelEdit}
-                  className="px-4 py-2 bg-wl-bg-elevated text-wl-text-secondary rounded text-sm font-medium cursor-pointer hover:bg-wl-bg-surface transition-colors"
-                >
-                  {profileMutation.loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4" />
-                  )}
-                  {profileMutation.loading ? 'Saving…' : 'Save Changes'}
+                  {saveLoading ? 'Saving…' : 'Save Changes'}
                 </button>
                 <Button variant="ghost" size="md" onClick={handleCancelEdit}>
                   Cancel
-                </button>
+                </Button>
               </div>
             )}
           </CardContent>
