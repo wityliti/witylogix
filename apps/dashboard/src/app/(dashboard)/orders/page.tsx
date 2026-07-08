@@ -26,7 +26,7 @@ function toOrderPinStatus(status: string): OrderPinStatus {
 
 const OrderLayer = dynamic(
   () => import('@/components/map/order-layer').then((m) => m.OrderLayer),
-  { ssr: false, loading: () => <div className="h-[480px] bg-zinc-900 rounded-lg animate-pulse" /> }
+  { ssr: false, loading: () => <div className="h-[480px] bg-wl-bg-root rounded-lg animate-pulse" /> }
 );
 
 const STATUS_TABS = [
@@ -298,13 +298,13 @@ export default function OrdersPage() {
                 type="date"
                 value={dateRange?.from ?? ''}
                 onChange={(e) => { setDateRange((p) => ({ from: e.target.value, to: p?.to ?? '' })); setCurrentPage(1); }}
-                className="px-3 py-2 rounded-lg text-sm bg-zinc-800/50 border border-zinc-700 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
+                className="px-3 py-2 rounded-lg text-sm bg-wl-bg-elevated/50 border border-wl-border-default text-wl-text-primary focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
               />
               <input
                 type="date"
                 value={dateRange?.to ?? ''}
                 onChange={(e) => { setDateRange((p) => ({ from: p?.from ?? '', to: e.target.value })); setCurrentPage(1); }}
-                className="px-3 py-2 rounded-lg text-sm bg-zinc-800/50 border border-zinc-700 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
+                className="px-3 py-2 rounded-lg text-sm bg-wl-bg-elevated/50 border border-wl-border-default text-wl-text-primary focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
               />
             </div>
 
@@ -409,11 +409,11 @@ export default function OrdersPage() {
                     <tr>
                       <td colSpan={8}>
                         <div className="flex flex-col items-center justify-center py-16 px-6">
-                          <div className="w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center mb-4">
-                            <Search className="w-6 h-6 text-zinc-600" />
+                          <div className="w-12 h-12 rounded-full bg-wl-bg-elevated/50 flex items-center justify-center mb-4">
+                            <Search className="w-6 h-6 text-wl-text-tertiary" />
                           </div>
-                          <h3 className="text-lg font-semibold text-zinc-200 mb-1">No orders found</h3>
-                          <p className="text-sm text-zinc-500 text-center max-w-sm">
+                          <h3 className="text-lg font-semibold text-wl-text-primary mb-1">No orders found</h3>
+                          <p className="text-sm text-wl-text-tertiary text-center max-w-sm">
                             {search || dateRange?.from || dateRange?.to
                               ? 'Try adjusting your filters or search terms'
                               : 'No orders yet. Create your first order to get started.'}
@@ -426,7 +426,7 @@ export default function OrdersPage() {
                       <tr
                         key={order.id}
                         className={cn(
-                          'border-b border-zinc-800/50 last:border-b-0 hover:bg-zinc-800/30 transition-colors cursor-pointer',
+                          'border-b border-wl-border-subtle last:border-b-0 hover:bg-wl-bg-elevated/30 transition-colors cursor-pointer',
                           selectedOrderId === order.id && 'bg-violet-950/20'
                         )}
                         onClick={() => setSelectedOrderId((p) => (p === order.id ? null : order.id))}
@@ -445,11 +445,11 @@ export default function OrdersPage() {
                             <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white', avatarColor(order.customerName))}>
                               {avatarInitials(order.customerName)}
                             </div>
-                            <span className="text-zinc-100 font-medium text-sm">{order.customerName}</span>
+                            <span className="text-wl-text-primary font-medium text-sm">{order.customerName}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-zinc-300 text-sm" title={`${order.deliveryAddress.street}, ${order.deliveryAddress.city}`}>
+                          <span className="text-wl-text-secondary text-sm" title={`${order.deliveryAddress.street}, ${order.deliveryAddress.city}`}>
                             {truncate(`${order.deliveryAddress.street}, ${order.city || order.deliveryAddress.city}`, 38)}
                           </span>
                         </td>
@@ -459,17 +459,17 @@ export default function OrdersPage() {
                           </Badge>
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-800 text-xs font-semibold text-zinc-200">
+                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-wl-bg-elevated text-xs font-semibold text-wl-text-primary">
                             {order.itemCount || order.items.length}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <span className="font-mono font-semibold text-zinc-100 text-sm">
+                          <span className="font-mono font-semibold text-wl-text-primary text-sm">
                             {formatCurrency(order.totalAmount)}
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-zinc-400 text-sm">
+                          <span className="text-wl-text-secondary text-sm">
                             {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                           </span>
                         </td>
@@ -479,7 +479,7 @@ export default function OrdersPage() {
                               href={`/orders/${order.id}`}
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50">
+                              <Button variant="ghost" size="sm" className="text-wl-text-secondary hover:text-wl-text-primary hover:bg-wl-bg-elevated">
                                 View
                               </Button>
                             </Link>
