@@ -250,29 +250,21 @@ function DriverStatusCard({
 
 export default function HomePage() {
   const { data: orderStats, loading: statsLoading } = useOrderStats();
-  const { data: dashStats, loading: dashLoading } = useDashboardStats();
+  const { data: dashStats, loading: dashLoading, error: statsError } = useDashboardStats();
   const { items: recentApiOrders, loading: ordersLoading } = useOrders({
     limit: 5,
     sort: "-createdAt",
   } as any);
   const { items: drivers, loading: driversLoading } = useDrivers({ limit: 4 });
 
-  const recentOrders: Order[] = recentApiOrders.map((o: any) => ({
+  const recentOrders: ApiOrder[] = recentApiOrders.map((o) => ({
     id: o.id,
-    customerId: o.customerId,
-    status: (o.status as Order["status"]) ?? "pending",
-    eta: o.estimatedDelivery
-      ? new Date(o.estimatedDelivery).toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      : undefined,
-    destination: o.deliveryAddress
-      ? `${o.deliveryAddress.street ?? ""}, ${o.deliveryAddress.city ?? ""}`
-          .trim()
-          .replace(/^,\s*/, "")
-      : undefined,
-    createdAt: new Date(o.createdAt),
+    customerName: o.customerName || null,
+    status: o.status,
+    addressLine1: o.deliveryAddress?.street || null,
+    city: o.city || null,
+    estimatedArrival: o.estimatedDelivery || null,
+    createdAt: o.createdAt,
   }));
 
   const displayDrivers: Driver[] = drivers.map((d: any) => ({
