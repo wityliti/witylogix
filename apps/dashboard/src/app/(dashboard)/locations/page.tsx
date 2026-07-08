@@ -115,7 +115,7 @@ export default function LocationsPage() {
         subtitle={`${stats.totalLocations} total · ${stats.activeLocations} active`}
         actions={
           <div className={cn("flex gap-2 items-center")}>
-            <div className={cn("flex rounded-lg border border-[#1e1e2e] overflow-hidden")}>
+            <div className={cn("flex rounded-lg border border-wl-border-default overflow-hidden")}>
               {(["grid", "map"] as const).map((v) => (
                 <button
                   key={v}
@@ -125,7 +125,7 @@ export default function LocationsPage() {
                     "px-3 py-1.5 text-xs font-semibold transition-colors capitalize",
                     viewMode === v
                       ? "bg-blue-600 text-white"
-                      : "bg-[#12121a] text-gray-400 hover:text-white"
+                      : "bg-wl-bg-surface text-wl-text-secondary hover:text-white"
                   )}
                 >
                   {v}

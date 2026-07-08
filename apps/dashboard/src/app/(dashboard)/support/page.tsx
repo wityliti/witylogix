@@ -194,7 +194,7 @@ export default function SupportPage() {
                           )}
                         </button>
                         {expandedFaq === item.id && (
-                          <div className="bg-wl-bg-elevated border-l-4 border-l-blue-500 border-r border-r-[#1e1e2e] border-b border-b-[#1e1e2e] rounded-bl rounded-br p-3 -mt-0.5 text-wl-text-secondary text-sm leading-relaxed">
+                          <div className="bg-wl-bg-elevated border-l-4 border-l-blue-500 border-r border-r-wl-border-default border-b border-b-wl-border-default rounded-bl rounded-br p-3 -mt-0.5 text-wl-text-secondary text-sm leading-relaxed">
                             {item.a}
                           </div>
                         )}
@@ -304,7 +304,7 @@ export default function SupportPage() {
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
-                  <tr className="border-b-2 border-b-[#1e1e2e]">
+                  <tr className="border-b-2 border-b-wl-border-default">
                     <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">
                       Ticket ID
                     </th>
@@ -318,7 +318,7 @@ export default function SupportPage() {
                 <tbody>
                   {loading ? (
                     Array.from({ length: 3 }).map((_, i) => (
-                      <tr key={i} className="border-b border-b-[#1e1e2e]">
+                      <tr key={i} className="border-b border-b-wl-border-default">
                         <td
                           colSpan={6}
                           className="px-3 py-4 h-12 bg-wl-bg-elevated/30 animate-pulse"
@@ -336,7 +336,7 @@ export default function SupportPage() {
                       <tr
                         key={ticket.id}
                         className={cn(
-                          "border-b border-b-[#1e1e2e] hover:bg-wl-bg-elevated/40 transition-colors"
+                          "border-b border-b-wl-border-default hover:bg-wl-bg-elevated/40 transition-colors"
                         )}
                       >
                         <td className="p-3 text-white text-sm font-medium font-mono">

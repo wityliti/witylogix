@@ -333,7 +333,7 @@ export default function POSPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1e1e2e]">
+                <tbody className="divide-y divide-wl-border-default">
                   {topItems.map((item, idx) => (
                     <tr key={item.id} className="hover:bg-wl-bg-elevated transition-colors">
                       <td className="px-4 py-3">
