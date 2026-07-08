@@ -73,7 +73,7 @@ export function EnvelopeCard({ envelope }: EnvelopeCardProps) {
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <h3 className="text-base font-semibold text-white">{envelope.documentName}</h3>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-wl-text-tertiary mt-1">
               Created {envelope.createdAt}
               {envelope.dueDate && ` • Due ${envelope.dueDate}`}
             </p>
@@ -87,7 +87,7 @@ export function EnvelopeCard({ envelope }: EnvelopeCardProps) {
                 : envelope.status === "viewed"
                   ? "bg-blue-500/20 text-blue-400"
                   : envelope.status === "sent"
-                    ? "bg-gray-500/20 text-gray-400"
+                    ? "bg-wl-bg-overlay/20 text-wl-text-secondary"
                       : "bg-red-500/20 text-red-400"
             )}
           >
@@ -98,7 +98,7 @@ export function EnvelopeCard({ envelope }: EnvelopeCardProps) {
 
         <div className="mb-6 pb-6 border-b border-wl-border-default">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-medium text-gray-500 uppercase">Completion</p>
+            <p className="text-xs font-medium text-wl-text-tertiary uppercase">Completion</p>
             <p className="text-sm font-bold text-white">{envelope.progress}%</p>
           </div>
           <div className="w-full h-2 bg-wl-bg-surface rounded-full overflow-hidden">
@@ -107,7 +107,7 @@ export function EnvelopeCard({ envelope }: EnvelopeCardProps) {
         </div>
 
         <div className="mb-4">
-          <p className="text-xs font-medium text-gray-500 uppercase mb-3">Signing Order</p>
+          <p className="text-xs font-medium text-wl-text-tertiary uppercase mb-3">Signing Order</p>
           <div className="space-y-2">
             {envelope.signers.map((signer) => (
               <div key={signer.id} className="flex items-center justify-between text-sm">
@@ -117,7 +117,7 @@ export function EnvelopeCard({ envelope }: EnvelopeCardProps) {
                   </div>
                   <div>
                     <p className="font-medium text-white">{signer.name}</p>
-                    <p className="text-xs text-gray-500">{signer.email}</p>
+                    <p className="text-xs text-wl-text-tertiary">{signer.email}</p>
                   </div>
                 </div>
                 <div className={cn("px-2 py-1 rounded text-xs font-semibold capitalize",
@@ -127,7 +127,7 @@ export function EnvelopeCard({ envelope }: EnvelopeCardProps) {
                       ? "bg-blue-500/20 text-blue-400"
                       : signer.status === "declined"
                         ? "bg-red-500/20 text-red-400"
-                        : "bg-gray-500/20 text-gray-400"
+                        : "bg-wl-bg-overlay/20 text-wl-text-secondary"
                 )}>
                   {signer.status}
                 </div>

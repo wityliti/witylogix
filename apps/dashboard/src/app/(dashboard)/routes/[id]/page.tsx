@@ -205,7 +205,7 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
                 ? 'bg-red-500 text-white'
                 : stop.status === 'EN_ROUTE' || stop.status === 'ARRIVED'
                   ? 'bg-blue-500 text-white'
-                  : 'bg-wl-bg-overlay text-gray-300',
+                  : 'bg-wl-bg-overlay text-wl-text-secondary',
           )}
         >
           {stop.status === 'COMPLETED' ? (
@@ -238,7 +238,7 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
 
         {/* Expand */}
         <button
-          className="text-gray-500 hover:text-gray-300 ml-1 flex-shrink-0"
+          className="text-wl-text-tertiary hover:text-wl-text-secondary ml-1 flex-shrink-0"
           onClick={(e) => {
             e.stopPropagation();
             setExpanded((v) => !v);
@@ -254,23 +254,23 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
           <div className="grid grid-cols-2 gap-2 text-xs text-wl-text-secondary mb-2">
             {stop.timeWindowStart && (
               <div>
-                <span className="text-gray-500">Window:</span>{' '}
+                <span className="text-wl-text-tertiary">Window:</span>{' '}
                 {formatTime(stop.timeWindowStart)} – {formatTime(stop.timeWindowEnd)}
               </div>
             )}
             {stop.actualArrival && (
               <div>
-                <span className="text-gray-500">Arrived:</span>{' '}
+                <span className="text-wl-text-tertiary">Arrived:</span>{' '}
                 {formatTime(stop.actualArrival)}
               </div>
             )}
             {stop.orderNumber && (
               <div>
-                <span className="text-gray-500">Order:</span> #{stop.orderNumber}
+                <span className="text-wl-text-tertiary">Order:</span> #{stop.orderNumber}
               </div>
             )}
             <div>
-              <span className="text-gray-500">Type:</span> {stop.stopType}
+              <span className="text-wl-text-tertiary">Type:</span> {stop.stopType}
             </div>
           </div>
           {stop.notes && (
@@ -490,10 +490,10 @@ export default function RouteDetailPage() {
                 />
               </WLMap>
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 gap-3">
+              <div className="w-full h-full flex flex-col items-center justify-center text-wl-text-tertiary gap-3">
                 <MapPin className="w-10 h-10 opacity-30" />
                 <div className="text-sm">No geocoordinates on stops yet.</div>
-                <div className="text-xs text-gray-600 max-w-xs text-center">
+                <div className="text-xs text-wl-text-tertiary max-w-xs text-center">
                   Stops will appear on the map once their orders have delivery
                   location data.
                 </div>
@@ -529,7 +529,7 @@ export default function RouteDetailPage() {
             <div className="text-sm font-semibold text-white mb-3">Stop Sequence</div>
             <div className="flex flex-col gap-2 max-h-72 overflow-y-auto pr-1">
               {route.stops.length === 0 ? (
-                <div className="text-sm text-gray-500 text-center py-4">No stops on this route.</div>
+                <div className="text-sm text-wl-text-tertiary text-center py-4">No stops on this route.</div>
               ) : (
                 route.stops.map((stop) => (
                   <StopListItem
@@ -583,7 +583,7 @@ export default function RouteDetailPage() {
                 </div>
               </div>
             ) : (
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-wl-text-tertiary">
                 No driver assigned.{' '}
                 <Link href={`/routes/${id}/assign`} className="text-blue-400 hover:underline">
                   Assign one
@@ -633,14 +633,14 @@ export default function RouteDetailPage() {
                         setSelectedStopId(selectedStopId === stop.id ? null : stop.id)
                       }
                     >
-                      <div className="text-xs text-gray-500 mb-0.5">
+                      <div className="text-xs text-wl-text-tertiary mb-0.5">
                         {formatTime(stop.estimatedArrival)}
                       </div>
                       <div className="text-sm font-medium text-white">
                         {stop.customerName ?? stop.address ?? `Stop ${stop.sequence + 1}`}
                       </div>
                       {stop.address && stop.customerName && (
-                        <div className="text-xs text-gray-500 mt-0.5 truncate max-w-[260px]">
+                        <div className="text-xs text-wl-text-tertiary mt-0.5 truncate max-w-[260px]">
                           {stop.address}
                         </div>
                       )}
@@ -657,7 +657,7 @@ export default function RouteDetailPage() {
               })}
 
               {route.stops.length === 0 && (
-                <div className="text-sm text-gray-500">No stops added yet.</div>
+                <div className="text-sm text-wl-text-tertiary">No stops added yet.</div>
               )}
             </div>
           </div>

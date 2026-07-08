@@ -117,7 +117,7 @@ export default function PreferencesPage() {
                 <MapPin className="w-5 h-5" />
                 Location & Timezone
               </CardTitle>
-              <CardDescription className="text-gray-400">Set your timezone for accurate scheduling</CardDescription>
+              <CardDescription className="text-wl-text-secondary">Set your timezone for accurate scheduling</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -153,7 +153,7 @@ export default function PreferencesPage() {
                 <Globe className="w-5 h-5" />
                 Language & Regional
               </CardTitle>
-              <CardDescription className="text-gray-400">Choose your preferred language and date format</CardDescription>
+              <CardDescription className="text-wl-text-secondary">Choose your preferred language and date format</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -199,7 +199,7 @@ export default function PreferencesPage() {
                 <Weight className="w-5 h-5" />
                 Units & Measurements
               </CardTitle>
-              <CardDescription className="text-gray-400">Set your preferred units for distance and weight</CardDescription>
+              <CardDescription className="text-wl-text-secondary">Set your preferred units for distance and weight</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -220,7 +220,7 @@ export default function PreferencesPage() {
                         onChange={(e) => setPreferences({ ...preferences, distanceUnit: e.target.value })}
                         className="w-4 h-4 cursor-pointer"
                       />
-                      <span className="text-sm text-gray-400">
+                      <span className="text-sm text-wl-text-secondary">
                         {option.label}
                       </span>
                     </label>
@@ -246,7 +246,7 @@ export default function PreferencesPage() {
                         onChange={(e) => setPreferences({ ...preferences, weightUnit: e.target.value })}
                         className="w-4 h-4 cursor-pointer"
                       />
-                      <span className="text-sm text-gray-400">
+                      <span className="text-sm text-wl-text-secondary">
                         {option.label}
                       </span>
                     </label>
@@ -263,7 +263,7 @@ export default function PreferencesPage() {
                 <Calendar className="w-5 h-5" />
                 Dashboard Display
               </CardTitle>
-              <CardDescription className="text-gray-400">Customize your default dashboard view</CardDescription>
+              <CardDescription className="text-wl-text-secondary">Customize your default dashboard view</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -283,7 +283,7 @@ export default function PreferencesPage() {
                         "p-3 border border-wl-border-default rounded-lg cursor-pointer transition-all",
                         preferences.dashboardView === option.value
                           ? "border-blue-500 bg-blue-500/10"
-                          : "hover:border-gray-400"
+                          : "hover:border-wl-border-subtle"
                       )}
                     >
                       <input

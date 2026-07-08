@@ -38,18 +38,18 @@ export function DeliveryStatsCard({
   return (
     <Card className={`bg-wl-bg-elevated border-wl-border-default ${cardBorders[variant]}`}>
       <CardContent className="pt-6">
-        <h4 className="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-3">
+        <h4 className="text-xs uppercase tracking-wide text-wl-text-tertiary font-semibold mb-3">
           {title}
         </h4>
         <div className={`text-3xl font-bold ${variantClasses[variant]}`}>
           {value}
         </div>
-        <div className="text-xs text-gray-500 mt-2">{subtitle}</div>
+        <div className="text-xs text-wl-text-tertiary mt-2">{subtitle}</div>
         {action && (
           <Button
             variant="ghost"
             size="sm"
-            className="w-full mt-3 text-gray-500"
+            className="w-full mt-3 text-wl-text-tertiary"
             onClick={action.onClick}
           >
             {action.label}

@@ -51,10 +51,10 @@ export default function CustomersMapView({ customers }: CustomersMapViewProps) {
     <div className="relative w-full h-full rounded-xl overflow-hidden border border-wl-border-default">
       {customers.length === 0 ? (
         <div className="w-full h-full bg-wl-bg-root flex flex-col items-center justify-center gap-3">
-          <MapIcon className="w-10 h-10 text-gray-600" />
+          <MapIcon className="w-10 h-10 text-wl-text-tertiary" />
           <div className="text-center">
-            <p className="text-sm font-medium text-gray-300">No geo-located customers yet</p>
-            <p className="text-xs text-gray-500 mt-1 max-w-xs">
+            <p className="text-sm font-medium text-wl-text-secondary">No geo-located customers yet</p>
+            <p className="text-xs text-wl-text-tertiary mt-1 max-w-xs">
               Sync customers with addresses that include latitude/longitude to see the map
             </p>
           </div>
@@ -71,7 +71,7 @@ export default function CustomersMapView({ customers }: CustomersMapViewProps) {
 
           {/* Legend */}
           <div className="absolute bottom-4 left-4 bg-wl-bg-root/90 backdrop-blur-sm border border-wl-border-default rounded-lg p-3 z-10">
-            <p className="text-[10px] font-semibold text-gray-500 uppercase mb-2 tracking-wide">Tier</p>
+            <p className="text-[10px] font-semibold text-wl-text-tertiary uppercase mb-2 tracking-wide">Tier</p>
             <div className="space-y-1.5">
               {(['enterprise', 'premium', 'standard'] as const).map((tier) => {
                 const count = customers.filter((c) => c.tier === tier).length;
@@ -79,8 +79,8 @@ export default function CustomersMapView({ customers }: CustomersMapViewProps) {
                 return (
                   <div key={tier} className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: TIER_DOT[tier] }} />
-                    <span className="text-xs text-gray-300 capitalize">{tier}</span>
-                    <span className="text-xs font-mono text-gray-500 ml-auto pl-3">{count}</span>
+                    <span className="text-xs text-wl-text-secondary capitalize">{tier}</span>
+                    <span className="text-xs font-mono text-wl-text-tertiary ml-auto pl-3">{count}</span>
                   </div>
                 );
               })}
@@ -89,7 +89,7 @@ export default function CustomersMapView({ customers }: CustomersMapViewProps) {
 
           {/* Count badge */}
           <div className="absolute top-4 left-4 bg-wl-bg-root/90 backdrop-blur-sm border border-wl-border-default rounded-lg px-3 py-1.5 z-10">
-            <span className="text-xs font-semibold text-gray-300">
+            <span className="text-xs font-semibold text-wl-text-secondary">
               {customers.length} customer{customers.length !== 1 ? 's' : ''} on map
             </span>
           </div>
@@ -101,14 +101,14 @@ export default function CustomersMapView({ customers }: CustomersMapViewProps) {
                 <p className="text-sm font-semibold text-white">{selectedCustomer.name}</p>
                 <button
                   onClick={() => setSelectedId(null)}
-                  className="text-gray-500 hover:text-gray-300 transition-colors ml-2 leading-none"
+                  className="text-wl-text-tertiary hover:text-wl-text-secondary transition-colors ml-2 leading-none"
                   aria-label="Close"
                 >
                   ×
                 </button>
               </div>
               {selectedCustomer.city && (
-                <p className="text-xs text-gray-400 mb-2">
+                <p className="text-xs text-wl-text-secondary mb-2">
                   {[selectedCustomer.city, selectedCustomer.country].filter(Boolean).join(', ')}
                 </p>
               )}
@@ -123,13 +123,13 @@ export default function CustomersMapView({ customers }: CustomersMapViewProps) {
                     {selectedCustomer.tier}
                   </span>
                 </div>
-                <div className="flex justify-between text-gray-400">
+                <div className="flex justify-between text-wl-text-secondary">
                   <span>Orders</span>
-                  <span className="text-gray-200 font-semibold">{selectedCustomer.totalOrders}</span>
+                  <span className="text-wl-text-primary font-semibold">{selectedCustomer.totalOrders}</span>
                 </div>
-                <div className="flex justify-between text-gray-400">
+                <div className="flex justify-between text-wl-text-secondary">
                   <span>Spent</span>
-                  <span className="text-gray-200 font-semibold">{fmt.format(selectedCustomer.totalSpent)}</span>
+                  <span className="text-wl-text-primary font-semibold">{fmt.format(selectedCustomer.totalSpent)}</span>
                 </div>
               </div>
             </div>

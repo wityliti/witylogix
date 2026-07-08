@@ -356,7 +356,7 @@ export default function MarketplacePage() {
         <div className={cn("flex flex-col gap-4 mb-6")}>
           {/* Search Input */}
           <div className={cn("relative")}>
-            <Search className="w-4 h-4 absolute left-3 top-3 text-gray-500 pointer-events-none" />
+            <Search className="w-4 h-4 absolute left-3 top-3 text-wl-text-tertiary pointer-events-none" />
             <input
               type="text"
               placeholder="Search providers..."
@@ -386,7 +386,7 @@ export default function MarketplacePage() {
                     "p-2 rounded-sm border-none cursor-pointer transition-all",
                     view === v
                       ? "bg-blue-500 text-black"
-                      : "bg-transparent text-gray-500 hover:text-white"
+                      : "bg-transparent text-wl-text-tertiary hover:text-white"
                   )}
                   title={v === "grid" ? "Grid view" : "List view"}
                 >
@@ -445,7 +445,7 @@ export default function MarketplacePage() {
                   setSelectedCategories([]);
                 }}
                 className={cn(
-                  "text-sm text-gray-500 hover:text-white transition-all"
+                  "text-sm text-wl-text-tertiary hover:text-white transition-all"
                 )}
               >
                 Clear filters
@@ -511,7 +511,7 @@ export default function MarketplacePage() {
                       <span className={cn("text-sm text-white flex-1")}>
                         {cat.label}
                       </span>
-                      <span className={cn("text-xs text-gray-500")}>
+                      <span className={cn("text-xs text-wl-text-tertiary")}>
                         {cat.count}
                       </span>
                     </label>
@@ -526,7 +526,7 @@ export default function MarketplacePage() {
             {filtered.length === 0 ? (
               <div
                 className={cn(
-                  "text-center py-20 text-gray-500"
+                  "text-center py-20 text-wl-text-tertiary"
                 )}
               >
                 <div className="text-base font-semibold mb-2">
@@ -603,7 +603,7 @@ function ProviderCard({ provider, index, layout, isConnected = false }: Provider
             <h3 className={cn("text-sm font-semibold text-white")}>
               {provider.name}
             </h3>
-            <p className={cn("text-xs text-gray-500 truncate")}>
+            <p className={cn("text-xs text-wl-text-tertiary truncate")}>
               {provider.description}
             </p>
             <div className={cn("flex gap-2 mt-2 flex-wrap")}>
@@ -658,7 +658,7 @@ function ProviderCard({ provider, index, layout, isConnected = false }: Provider
             </div>
           </div>
 
-          <p className={cn("text-xs text-gray-500 mb-3 line-clamp-2")}>
+          <p className={cn("text-xs text-wl-text-tertiary mb-3 line-clamp-2")}>
             {provider.description}
           </p>
 

@@ -125,7 +125,7 @@ export default function ChaosDashboard() {
                 'border-b-2 px-1 py-4 text-sm font-medium transition-colors',
                 activeTab === tab
                   ? 'border-blue-500 text-blue-500'
-                  : 'border-transparent text-gray-400 hover:text-white'
+                  : 'border-transparent text-wl-text-secondary hover:text-white'
               )}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}

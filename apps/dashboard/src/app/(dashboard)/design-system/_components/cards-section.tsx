@@ -18,7 +18,7 @@ export function CardsSection() {
         <h2 className="text-2xl font-bold text-white mb-2">
           Cards
         </h2>
-        <p className="text-gray-300 mb-8">
+        <p className="text-wl-text-secondary mb-8">
           Card component with optional header, content, and footer sections.
           Supports hover and glow effects.
         </p>

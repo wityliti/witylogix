@@ -79,7 +79,7 @@ const SyncProgressBar = forwardRef<HTMLDivElement, SyncProgressBarProps>(
         className={cn(
           'flex flex-col gap-3',
           'p-4 rounded-lg',
-          'bg-gray-50 dark:bg-gray-900/30',
+          'bg-wl-bg-surface dark:bg-wl-bg-root/30',
           'border border-gray-200 dark:border-gray-800',
           state === 'error' && 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-900/50',
           state === 'success' && 'bg-green-50 dark:bg-green-500/10 border-green-200 dark:border-green-900/50',
@@ -109,7 +109,7 @@ const SyncProgressBar = forwardRef<HTMLDivElement, SyncProgressBarProps>(
                   'text-sm font-semibold truncate',
                   state === 'error' && 'text-red-700 dark:text-red-400',
                   state === 'success' && 'text-green-700 dark:text-green-400',
-                  state !== 'error' && state !== 'success' && 'text-gray-700 dark:text-gray-300'
+                  state !== 'error' && state !== 'success' && 'text-wl-text-tertiary dark:text-wl-text-secondary'
                 )}
               >
                 {operationLabel || 'Synchronizing...'}
@@ -124,9 +124,9 @@ const SyncProgressBar = forwardRef<HTMLDivElement, SyncProgressBarProps>(
               className={cn(
                 'inline-flex items-center justify-center',
                 'w-6 h-6 p-1',
-                'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200',
+                'text-wl-text-tertiary dark:text-wl-text-secondary hover:text-gray-900 dark:hover:text-wl-text-primary',
                 'rounded transition-colors',
-                'hover:bg-gray-200 dark:hover:bg-gray-800'
+                'hover:bg-wl-bg-surface dark:hover:bg-wl-bg-elevated'
               )}
               aria-label="Cancel sync"
             >
@@ -139,7 +139,7 @@ const SyncProgressBar = forwardRef<HTMLDivElement, SyncProgressBarProps>(
         <div className="w-full">
           <div
             className={cn(
-              'w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden'
+              'w-full h-2 bg-wl-bg-surface dark:bg-wl-bg-overlay rounded-full overflow-hidden'
             )}
           >
             <div
@@ -148,7 +148,7 @@ const SyncProgressBar = forwardRef<HTMLDivElement, SyncProgressBarProps>(
                 state === 'syncing' && 'bg-blue-500 dark:bg-blue-600',
                 state === 'success' && 'bg-green-500 dark:bg-green-600',
                 state === 'error' && 'bg-red-500 dark:bg-red-600',
-                state === 'idle' && 'bg-gray-400'
+                state === 'idle' && 'bg-wl-neutral-400'
               )}
               style={{
                 width: `${Math.max(2, percentage)}%`,
@@ -165,8 +165,8 @@ const SyncProgressBar = forwardRef<HTMLDivElement, SyncProgressBarProps>(
         {/* Stats row */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
           {/* Items count */}
-          <div className="text-xs text-gray-600 dark:text-gray-400">
-            <span className="font-semibold text-gray-900 dark:text-gray-100">
+          <div className="text-xs text-wl-text-tertiary dark:text-wl-text-secondary">
+            <span className="font-semibold text-gray-900 dark:text-wl-text-primary">
               {itemsSynced}
             </span>
             {' / '}
@@ -176,7 +176,7 @@ const SyncProgressBar = forwardRef<HTMLDivElement, SyncProgressBarProps>(
 
           {/* Progress percentage */}
           <div
-            className="text-xs font-semibold text-gray-700 dark:text-gray-300"
+            className="text-xs font-semibold text-wl-text-tertiary dark:text-wl-text-secondary"
             aria-live="polite"
             aria-atomic="true"
           >
@@ -185,7 +185,7 @@ const SyncProgressBar = forwardRef<HTMLDivElement, SyncProgressBarProps>(
 
           {/* Estimated time remaining */}
           {state === 'syncing' && estimatedTimeRemaining && estimatedTimeRemaining > 0 && (
-            <div className="text-xs text-gray-600 dark:text-gray-400">
+            <div className="text-xs text-wl-text-tertiary dark:text-wl-text-secondary">
               <span className="font-semibold">
                 {formatTime(estimatedTimeRemaining)}
               </span>

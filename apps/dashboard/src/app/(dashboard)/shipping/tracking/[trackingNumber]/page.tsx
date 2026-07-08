@@ -107,7 +107,7 @@ export default function TrackingDetailPage() {
         <div className="p-6 bg-wl-bg-root min-h-screen">
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="flex flex-col items-center justify-center h-64 gap-4">
-              <p className="text-gray-400">
+              <p className="text-wl-text-secondary">
                 No shipment found with tracking number{' '}
                 <span className="font-mono text-white">{trackingNumber}</span>
               </p>
@@ -139,23 +139,23 @@ export default function TrackingDetailPage() {
           <CardContent>
             <div className="space-y-4">
               <div>
-                <p className="text-sm text-gray-400">Current Status</p>
+                <p className="text-sm text-wl-text-secondary">Current Status</p>
                 <Badge variant={statusVariant(shipment.status)} className="mt-1">
                   {shipment.status.replace(/_/g, ' ')}
                 </Badge>
               </div>
               <div>
-                <p className="text-sm text-gray-400">Carrier</p>
+                <p className="text-sm text-wl-text-secondary">Carrier</p>
                 <p className="text-white font-medium mt-1">{shipment.carrier ?? '—'}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-400">Last Known Location</p>
+                <p className="text-sm text-wl-text-secondary">Last Known Location</p>
                 <p className="text-white font-medium mt-1">
                   {[shipment.city, shipment.province].filter(Boolean).join(', ') || '—'}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-400">Estimated Delivery</p>
+                <p className="text-sm text-wl-text-secondary">Estimated Delivery</p>
                 <p className="text-white font-medium mt-1">
                   {shipment.estimatedArrival
                     ? new Date(shipment.estimatedArrival).toLocaleDateString()
@@ -164,7 +164,7 @@ export default function TrackingDetailPage() {
               </div>
               {shipment.actualDelivery && (
                 <div>
-                  <p className="text-sm text-gray-400">Delivered At</p>
+                  <p className="text-sm text-wl-text-secondary">Delivered At</p>
                   <p className="text-emerald-400 font-medium mt-1">
                     {new Date(shipment.actualDelivery).toLocaleString()}
                   </p>
@@ -205,7 +205,7 @@ export default function TrackingDetailPage() {
                 />
               </div>
             ) : (
-              <div className="h-48 flex flex-col items-center justify-center gap-2 text-gray-400 px-4 pb-6">
+              <div className="h-48 flex flex-col items-center justify-center gap-2 text-wl-text-secondary px-4 pb-6">
                 <MapPin className="w-7 h-7 opacity-30" />
                 <p className="text-sm font-medium text-wl-text-primary">No location data</p>
                 <p className="text-xs text-center">
@@ -236,10 +236,10 @@ export default function TrackingDetailPage() {
                       <p className="text-sm font-medium text-white">
                         {log.action.replace(/_/g, ' ')}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-wl-text-secondary mt-1">
                         {[shipment.city, shipment.province].filter(Boolean).join(', ') || '—'}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-wl-text-tertiary mt-1">
                         {new Date(log.timestamp).toLocaleString()}
                       </p>
                     </div>

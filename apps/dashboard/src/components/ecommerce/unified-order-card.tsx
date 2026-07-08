@@ -94,8 +94,8 @@ const statusConfig: Record<
     label: 'Cancelled',
   },
   refunded: {
-    bgColor: 'bg-gray-100 dark:bg-gray-500/20',
-    textColor: 'text-gray-700 dark:text-gray-400',
+    bgColor: 'bg-wl-bg-surface dark:bg-wl-bg-overlay/20',
+    textColor: 'text-wl-text-tertiary dark:text-wl-text-secondary',
     label: 'Refunded',
   },
 };
@@ -207,7 +207,7 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
         ref={ref}
         className={cn(
           'flex flex-col',
-          'bg-white dark:bg-gray-900',
+          'bg-white dark:bg-wl-bg-root',
           'border border-gray-200 dark:border-gray-800',
           'rounded-lg overflow-hidden',
           'transition-all duration-200 ease-default',
@@ -222,7 +222,7 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
           onClick={() => setIsExpanded(!isExpanded)}
           className={cn(
             'w-full p-4 text-left',
-            'hover:bg-gray-50 dark:hover:bg-gray-800/50',
+            'hover:bg-wl-bg-surface dark:hover:bg-wl-bg-elevated/50',
             'transition-colors duration-150',
             'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900'
           )}
@@ -232,7 +232,7 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
             {/* Platform badge */}
             <div className="flex items-center gap-2 pt-0.5">
               <PlatformLogo platform={platform} size="sm" showFallback />
-              <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
+              <span className="text-xs font-semibold text-wl-text-tertiary dark:text-wl-text-secondary uppercase">
                 {platform}
               </span>
             </div>
@@ -243,11 +243,11 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                   {orderId}
                 </h3>
-                <span className="text-xs text-gray-500 dark:text-gray-500">
+                <span className="text-xs text-wl-text-tertiary dark:text-wl-text-tertiary">
                   {formatDate(orderDate)}
                 </span>
               </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+              <p className="text-xs text-wl-text-tertiary dark:text-wl-text-secondary mb-2">
                 {customerName}
               </p>
 
@@ -267,7 +267,7 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
                   </span>
 
                   {/* Item count */}
-                  <span className="text-xs text-gray-600 dark:text-gray-400">
+                  <span className="text-xs text-wl-text-tertiary dark:text-wl-text-secondary">
                     <Package className="w-3 h-3 inline mr-1" />
                     {lineItems.length} item{lineItems.length !== 1 ? 's' : ''}
                   </span>
@@ -276,9 +276,9 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
                 {/* Expand/collapse indicator */}
                 <div className="flex-shrink-0">
                   {isExpanded ? (
-                    <ChevronUp className="w-5 h-5 text-gray-400 dark:text-gray-600" />
+                    <ChevronUp className="w-5 h-5 text-wl-text-secondary dark:text-wl-text-tertiary" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-400 dark:text-gray-600" />
+                    <ChevronDown className="w-5 h-5 text-wl-text-secondary dark:text-wl-text-tertiary" />
                   )}
                 </div>
               </div>
@@ -327,20 +327,20 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
 
             {/* Line items preview */}
             <div>
-              <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase">
+              <h4 className="text-xs font-semibold text-wl-text-tertiary dark:text-wl-text-secondary mb-2 uppercase">
                 Items ({lineItems.length})
               </h4>
               <div className="space-y-1">
                 {lineItems.slice(0, 3).map((item, idx) => (
                   <div
                     key={`${item.sku}-${idx}`}
-                    className="text-xs p-2 bg-gray-50 dark:bg-gray-800/50 rounded flex items-start justify-between gap-2"
+                    className="text-xs p-2 bg-wl-bg-surface dark:bg-wl-bg-elevated/50 rounded flex items-start justify-between gap-2"
                   >
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-gray-900 dark:text-white truncate">
                         {item.name}
                       </div>
-                      <div className="text-gray-500 dark:text-gray-400">
+                      <div className="text-wl-text-tertiary dark:text-wl-text-secondary">
                         SKU: {item.sku}
                       </div>
                     </div>
@@ -348,14 +348,14 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
                       <div className="font-semibold text-gray-900 dark:text-white">
                         ×{item.quantity}
                       </div>
-                      <div className="text-gray-600 dark:text-gray-400">
+                      <div className="text-wl-text-tertiary dark:text-wl-text-secondary">
                         {formatCurrency(item.price, currency)}
                       </div>
                     </div>
                   </div>
                 ))}
                 {lineItems.length > 3 && (
-                  <div className="text-xs text-gray-500 dark:text-gray-400 p-2">
+                  <div className="text-xs text-wl-text-tertiary dark:text-wl-text-secondary p-2">
                     +{lineItems.length - 3} more item{lineItems.length - 3 > 1 ? 's' : ''}
                   </div>
                 )}
@@ -365,7 +365,7 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
             {/* Order total */}
             <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-semibold text-wl-text-tertiary dark:text-wl-text-secondary">
                   Total
                 </span>
                 <span className="text-lg font-bold text-gray-900 dark:text-white">
@@ -398,8 +398,8 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
                 className={cn(
                   'flex items-center justify-center gap-1.5',
                   'flex-1 px-3 py-2 text-xs font-semibold rounded',
-                  'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white',
-                  'hover:bg-gray-300 dark:hover:bg-gray-600',
+                  'bg-wl-bg-surface dark:bg-wl-bg-overlay text-gray-900 dark:text-white',
+                  'hover:bg-gray-300 dark:hover:bg-wl-bg-overlay',
                   'disabled:opacity-50 disabled:cursor-not-allowed',
                   'transition-colors duration-150'
                 )}
@@ -414,8 +414,8 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
                 className={cn(
                   'flex items-center justify-center gap-1.5',
                   'flex-1 px-3 py-2 text-xs font-semibold rounded',
-                  'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white',
-                  'hover:bg-gray-300 dark:hover:bg-gray-600',
+                  'bg-wl-bg-surface dark:bg-wl-bg-overlay text-gray-900 dark:text-white',
+                  'hover:bg-gray-300 dark:hover:bg-wl-bg-overlay',
                   'disabled:opacity-50 disabled:cursor-not-allowed',
                   'transition-colors duration-150'
                 )}

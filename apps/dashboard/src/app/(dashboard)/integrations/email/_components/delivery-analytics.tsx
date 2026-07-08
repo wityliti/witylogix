@@ -49,7 +49,7 @@ export function DeliveryAnalytics({ metrics }: DeliveryAnalyticsProps) {
                     <h4 className="font-medium text-white">
                       {metric.template}
                     </h4>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-wl-text-tertiary">
                       {metric.sent.toLocaleString()} sent
                     </span>
                   </div>
@@ -100,25 +100,25 @@ export function DeliveryAnalytics({ metrics }: DeliveryAnalyticsProps) {
                   <div className="grid grid-cols-4 gap-2 mt-3 text-xs">
                     <div>
                       <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full mr-1" />
-                      <span className="text-gray-500">
+                      <span className="text-wl-text-tertiary">
                         Delivered: {metric.delivered}
                       </span>
                     </div>
                     <div>
                       <span className="inline-block w-2 h-2 bg-cyan-500 rounded-full mr-1" />
-                      <span className="text-gray-500">
+                      <span className="text-wl-text-tertiary">
                         Opened: {metric.opened}
                       </span>
                     </div>
                     <div>
                       <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mr-1" />
-                      <span className="text-gray-500">
+                      <span className="text-wl-text-tertiary">
                         Clicked: {metric.clicked}
                       </span>
                     </div>
                     <div>
                       <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-1" />
-                      <span className="text-gray-500">
+                      <span className="text-wl-text-tertiary">
                         Bounced: {metric.bounced}
                       </span>
                     </div>

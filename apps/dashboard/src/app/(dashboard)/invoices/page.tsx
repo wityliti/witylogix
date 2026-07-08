@@ -332,7 +332,7 @@ export default function InvoicesPage() {
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold text-white">Invoices</h1>
-          <p className="text-gray-400">Manage and track your invoices</p>
+          <p className="text-wl-text-secondary">Manage and track your invoices</p>
         </div>
         <Button variant="primary" onClick={handleCreateInvoice}>
           <Plus className="w-4 h-4 mr-2" />
@@ -344,25 +344,25 @@ export default function InvoicesPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-gray-400 mb-2">Total Outstanding</p>
+            <p className="text-sm font-medium text-wl-text-secondary mb-2">Total Outstanding</p>
             <p className="text-3xl font-bold text-white">${stats.totalOutstanding.toFixed(2)}</p>
           </CardContent>
         </Card>
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-gray-400 mb-2">Total Overdue</p>
+            <p className="text-sm font-medium text-wl-text-secondary mb-2">Total Overdue</p>
             <p className="text-3xl font-bold text-red-400">${stats.totalOverdue.toFixed(2)}</p>
           </CardContent>
         </Card>
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-gray-400 mb-2">Paid This Month</p>
+            <p className="text-sm font-medium text-wl-text-secondary mb-2">Paid This Month</p>
             <p className="text-3xl font-bold text-emerald-400">${stats.paidThisMonth.toFixed(2)}</p>
           </CardContent>
         </Card>
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-gray-400 mb-2">Avg Days to Pay</p>
+            <p className="text-sm font-medium text-wl-text-secondary mb-2">Avg Days to Pay</p>
             <p className="text-3xl font-bold text-blue-400">{stats.avgDaysToPay} days</p>
           </CardContent>
         </Card>
@@ -460,7 +460,7 @@ export default function InvoicesPage() {
                 variant="ghost"
                 size="sm"
                 onClick={handleClearFilters}
-                className="text-gray-400 hover:text-white"
+                className="text-wl-text-secondary hover:text-white"
               >
                 <FilterX className="w-4 h-4 mr-2" />
                 Clear
@@ -471,7 +471,7 @@ export default function InvoicesPage() {
           {/* Additional Filters */}
           <div className="flex gap-3 flex-wrap items-end border-t border-wl-border-default pt-4 mt-4">
             <div className="flex gap-2 items-end">
-              <label className="text-xs font-semibold uppercase text-gray-400">Date Range</label>
+              <label className="text-xs font-semibold uppercase text-wl-text-secondary">Date Range</label>
               <input
                 type="date"
                 value={dateFrom}
@@ -481,7 +481,7 @@ export default function InvoicesPage() {
                 }}
                 className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white"
               />
-              <span className="text-gray-400">to</span>
+              <span className="text-wl-text-secondary">to</span>
               <input
                 type="date"
                 value={dateTo}
@@ -494,7 +494,7 @@ export default function InvoicesPage() {
             </div>
 
             <div className="flex gap-2 items-end">
-              <label className="text-xs font-semibold uppercase text-gray-400">Amount</label>
+              <label className="text-xs font-semibold uppercase text-wl-text-secondary">Amount</label>
               <input
                 type="number"
                 placeholder="Min"
@@ -505,7 +505,7 @@ export default function InvoicesPage() {
                 }}
                 className="w-20 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white placeholder-gray-500"
               />
-              <span className="text-gray-400">-</span>
+              <span className="text-wl-text-secondary">-</span>
               <input
                 type="number"
                 placeholder="Max"
@@ -524,10 +524,10 @@ export default function InvoicesPage() {
       {/* Invoices Table */}
       {filtered.length === 0 ? (
         <Card className="bg-wl-bg-surface border-wl-border-default flex flex-col items-center justify-center gap-4 py-16">
-          <Search className="w-12 h-12 text-gray-600" />
+          <Search className="w-12 h-12 text-wl-text-tertiary" />
           <div className="flex flex-col items-center gap-2">
-            <h3 className="text-lg font-semibold text-gray-300">No invoices found</h3>
-            <p className="text-sm text-gray-500">Try adjusting your search or filters</p>
+            <h3 className="text-lg font-semibold text-wl-text-secondary">No invoices found</h3>
+            <p className="text-sm text-wl-text-tertiary">Try adjusting your search or filters</p>
           </div>
         </Card>
       ) : (
@@ -571,7 +571,7 @@ export default function InvoicesPage() {
                   header: "Customer",
                   sortable: true,
                   width: 180,
-                  render: (item: Invoice) => <span className="text-gray-300">{item.customerName}</span>,
+                  render: (item: Invoice) => <span className="text-wl-text-secondary">{item.customerName}</span>,
                 },
                 {
                   key: "amount",
@@ -599,7 +599,7 @@ export default function InvoicesPage() {
                   key: "dueDate",
                   header: "Due Date",
                   render: (item: Invoice) => (
-                    <div className="text-sm text-gray-300">
+                    <div className="text-sm text-wl-text-secondary">
                       {new Date(item.dueDate).toLocaleDateString()}
                     </div>
                   ),
@@ -610,7 +610,7 @@ export default function InvoicesPage() {
                   key: "sentDate",
                   header: "Sent Date",
                   render: (item: Invoice) => (
-                    <div className="text-sm text-gray-400">
+                    <div className="text-sm text-wl-text-secondary">
                       {item.sentDate ? new Date(item.sentDate).toLocaleDateString() : '-'}
                     </div>
                   ),
@@ -624,7 +624,7 @@ export default function InvoicesPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleViewInvoice(item.id)}
-                      className="text-gray-400 hover:text-white"
+                      className="text-wl-text-secondary hover:text-white"
                     >
                       <Eye className="w-4 h-4" />
                     </Button>
@@ -640,7 +640,7 @@ export default function InvoicesPage() {
           {/* Pagination */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-400">
+              <span className="text-sm text-wl-text-secondary">
                 Showing {(currentPage - 1) * pageSize + 1}-
                 {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length}
               </span>
@@ -684,7 +684,7 @@ export default function InvoicesPage() {
                     </Button>
                   );
                 })}
-                {totalPages > 5 && <span className="text-gray-500">...</span>}
+                {totalPages > 5 && <span className="text-wl-text-tertiary">...</span>}
               </div>
               <Button
                 variant="secondary"

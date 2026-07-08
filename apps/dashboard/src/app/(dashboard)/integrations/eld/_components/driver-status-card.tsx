@@ -80,7 +80,7 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
                 {driver.driverId}
               </Badge>
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-wl-text-tertiary">
               Vehicle: {driver.vehicle} • {driver.location}
             </p>
           </div>
@@ -96,7 +96,7 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
         {/* HOS Stats Grid */}
         <div className="grid grid-cols-4 gap-3 mb-6 pb-6 border-b border-wl-border-default">
           <div className="text-center">
-            <p className="text-xs font-medium text-gray-500 uppercase">
+            <p className="text-xs font-medium text-wl-text-tertiary uppercase">
               Driving
             </p>
             <p className="text-lg font-bold text-blue-400 mt-1">
@@ -104,7 +104,7 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
             </p>
           </div>
           <div className="text-center">
-            <p className="text-xs font-medium text-gray-500 uppercase">
+            <p className="text-xs font-medium text-wl-text-tertiary uppercase">
               On-Duty
             </p>
             <p className="text-lg font-bold text-yellow-400 mt-1">
@@ -112,7 +112,7 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
             </p>
           </div>
           <div className="text-center">
-            <p className="text-xs font-medium text-gray-500 uppercase">
+            <p className="text-xs font-medium text-wl-text-tertiary uppercase">
               Sleeper
             </p>
             <p className="text-lg font-bold text-purple-400 mt-1">
@@ -120,7 +120,7 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
             </p>
           </div>
           <div className="text-center">
-            <p className="text-xs font-medium text-gray-500 uppercase">
+            <p className="text-xs font-medium text-wl-text-tertiary uppercase">
               Off-Duty
             </p>
             <p className="text-lg font-bold text-green-400 mt-1">
@@ -132,7 +132,7 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
         {/* Break Status */}
         <div className="mb-4 pb-4 border-b border-wl-border-default">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-medium text-gray-500 uppercase">
+            <p className="text-xs font-medium text-wl-text-tertiary uppercase">
               Break Status
             </p>
             <p className={cn("text-sm font-semibold",

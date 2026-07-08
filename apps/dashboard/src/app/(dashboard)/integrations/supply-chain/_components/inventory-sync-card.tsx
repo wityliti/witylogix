@@ -26,7 +26,7 @@ export function InventorySyncCard({ sync }: InventorySyncCardProps) {
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <h3 className="text-base font-semibold text-white">{sync.warehouse}</h3>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-wl-text-tertiary mt-1">
               {sync.mode} sync
               {sync.interval && ` • ${sync.interval}`}
             </p>
@@ -38,18 +38,18 @@ export function InventorySyncCard({ sync }: InventorySyncCardProps) {
 
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <p className="text-xs font-medium text-gray-500 uppercase">Items Tracked</p>
+            <p className="text-xs font-medium text-wl-text-tertiary uppercase">Items Tracked</p>
             <p className="text-lg font-bold text-white mt-1">{sync.itemsTracked.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-xs font-medium text-gray-500 uppercase">Success Rate</p>
+            <p className="text-xs font-medium text-wl-text-tertiary uppercase">Success Rate</p>
             <p className="text-lg font-bold text-white mt-1">{sync.successRate}%</p>
           </div>
         </div>
 
         <div className="pt-4 border-t border-wl-border-default">
-          <p className="text-xs font-medium text-gray-500 uppercase">Last Update</p>
-          <p className="text-xs text-gray-400 mt-1">{sync.lastUpdate}</p>
+          <p className="text-xs font-medium text-wl-text-tertiary uppercase">Last Update</p>
+          <p className="text-xs text-wl-text-secondary mt-1">{sync.lastUpdate}</p>
         </div>
       </CardContent>
     </Card>

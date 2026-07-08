@@ -166,7 +166,7 @@ export default function NotificationsConfigPage() {
                         {channel.name}
                       </h4>
                     </div>
-                    <p className="text-xs text-gray-400 mb-4">
+                    <p className="text-xs text-wl-text-secondary mb-4">
                       {channel.description}
                     </p>
                     <div className="flex items-center gap-2">
@@ -236,7 +236,7 @@ export default function NotificationsConfigPage() {
                           <p className="font-medium text-white">
                             {event.name}
                           </p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-wl-text-secondary">
                             {event.description}
                           </p>
                         </div>

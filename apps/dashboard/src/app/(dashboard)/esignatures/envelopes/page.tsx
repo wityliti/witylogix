@@ -66,7 +66,7 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
             </CardTitle>
             {selectedIds.size > 0 && (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-wl-text-secondary">
                   {selectedIds.size} selected
                 </span>
                 <Button variant="secondary" size="sm" className="flex items-center gap-2">
@@ -92,12 +92,12 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                       className="w-4 h-4 rounded border-wl-border-default accent-blue-500"
                     />
                   </th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Name</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Sender</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Status</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Signers</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Completion</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Created</th>
+                  <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Name</th>
+                  <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Sender</th>
+                  <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Status</th>
+                  <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Signers</th>
+                  <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Completion</th>
+                  <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Created</th>
                 </tr>
               </thead>
               <tbody>
@@ -122,7 +122,7 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                         {env.name}
                       </button>
                     </td>
-                    <td className="py-3 px-4 text-gray-400">
+                    <td className="py-3 px-4 text-wl-text-secondary">
                       {env.sender.name}
                     </td>
                     <td className="py-3 px-4">
@@ -142,7 +142,7 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                         {env.status}
                       </Badge>
                     </td>
-                    <td className="py-3 px-4 text-gray-400">
+                    <td className="py-3 px-4 text-wl-text-secondary">
                       {env.recipients.length}
                     </td>
                     <td className="py-3 px-4">
@@ -153,12 +153,12 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                             style={{ width: `${env.completionRate}%` }}
                           />
                         </div>
-                        <span className="text-xs text-gray-400 min-w-fit">
+                        <span className="text-xs text-wl-text-secondary min-w-fit">
                           {env.completionRate}%
                         </span>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-gray-400 text-xs">
+                    <td className="py-3 px-4 text-wl-text-secondary text-xs">
                       {new Date(env.createdDate).toLocaleDateString()}
                     </td>
                   </tr>
@@ -177,13 +177,13 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
               <CardTitle className="text-base text-white">
                 {selectedEnvelope.name}
               </CardTitle>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-wl-text-secondary mt-1">
                 ID: {selectedEnvelope.id}
               </p>
             </div>
             <button
               onClick={() => setDetailEnvelopeId(null)}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-wl-text-secondary hover:text-white transition-colors"
             >
               ✕
             </button>
@@ -193,7 +193,7 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
               {/* Left Column */}
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-400 mb-3">
+                  <h3 className="text-sm font-semibold text-wl-text-secondary mb-3">
                     Recipients
                   </h3>
                   <div className="space-y-2">
@@ -210,9 +210,9 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                             {r.status}
                           </Badge>
                         </div>
-                        <p className="text-xs text-gray-400">{r.email}</p>
+                        <p className="text-xs text-wl-text-secondary">{r.email}</p>
                         {r.role && (
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="text-xs text-wl-text-secondary mt-1">
                             Role: {r.role}
                           </p>
                         )}
@@ -222,19 +222,19 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-400 mb-3">
+                  <h3 className="text-sm font-semibold text-wl-text-secondary mb-3">
                     Details
                   </h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Created:</span>
+                      <span className="text-wl-text-secondary">Created:</span>
                       <span className="text-white font-medium">
                         {new Date(selectedEnvelope.createdDate).toLocaleDateString()}
                       </span>
                     </div>
                     {selectedEnvelope.sentDate && (
                       <div className="flex justify-between">
-                        <span className="text-gray-400">Sent:</span>
+                        <span className="text-wl-text-secondary">Sent:</span>
                         <span className="text-white font-medium">
                           {new Date(selectedEnvelope.sentDate).toLocaleDateString()}
                         </span>
@@ -242,14 +242,14 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                     )}
                     {selectedEnvelope.completedDate && (
                       <div className="flex justify-between">
-                        <span className="text-gray-400">Completed:</span>
+                        <span className="text-wl-text-secondary">Completed:</span>
                         <span className="text-white font-medium">
                           {new Date(selectedEnvelope.completedDate).toLocaleDateString()}
                         </span>
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Documents:</span>
+                      <span className="text-wl-text-secondary">Documents:</span>
                       <span className="text-white font-medium">
                         {selectedEnvelope.documentCount}
                       </span>
@@ -260,7 +260,7 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
 
               {/* Right Column - Actions */}
               <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-gray-400 mb-3">
+                <h3 className="text-sm font-semibold text-wl-text-secondary mb-3">
                   Actions
                 </h3>
                 <Button variant="primary" className="w-full text-xs">
@@ -310,7 +310,7 @@ export default function EnvelopesPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">Envelope Management</h1>
-            <p className="text-gray-400">Create, send, and track document envelopes</p>
+            <p className="text-wl-text-secondary">Create, send, and track document envelopes</p>
           </div>
           <Button variant="primary" className="flex items-center gap-2">
             <Plus size={16} /> Create Envelope
@@ -323,7 +323,7 @@ export default function EnvelopesPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Total Envelopes</span>
+              <span className="text-wl-text-secondary text-sm font-medium">Total Envelopes</span>
               <FileText className="text-blue-500" size={20} />
             </div>
             <p className="text-3xl font-bold text-white">{data.length}</p>
@@ -333,7 +333,7 @@ export default function EnvelopesPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Completed</span>
+              <span className="text-wl-text-secondary text-sm font-medium">Completed</span>
               <div className="w-5 h-5 rounded-full bg-emerald-500"></div>
             </div>
             <p className="text-3xl font-bold text-white">
@@ -345,7 +345,7 @@ export default function EnvelopesPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Pending</span>
+              <span className="text-wl-text-secondary text-sm font-medium">Pending</span>
               <div className="w-5 h-5 rounded-full bg-amber-500"></div>
             </div>
             <p className="text-3xl font-bold text-white">
@@ -357,7 +357,7 @@ export default function EnvelopesPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Avg. Completion</span>
+              <span className="text-wl-text-secondary text-sm font-medium">Avg. Completion</span>
               <div className="w-5 h-5 rounded-full bg-blue-500"></div>
             </div>
             <p className="text-3xl font-bold text-white">
@@ -371,7 +371,7 @@ export default function EnvelopesPage() {
       <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
-            <label className="text-sm font-medium text-gray-400">
+            <label className="text-sm font-medium text-wl-text-secondary">
               Filter by Status:
             </label>
             <div className="flex gap-2 flex-wrap">
@@ -383,7 +383,7 @@ export default function EnvelopesPage() {
                     "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
                     filterStatus === status
                       ? "bg-blue-500 text-white"
-                      : "bg-wl-bg-elevated text-gray-400 hover:text-white"
+                      : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white"
                   )}
                 >
                   {status}
@@ -405,7 +405,7 @@ export default function EnvelopesPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ol className="space-y-2 text-sm text-gray-400">
+          <ol className="space-y-2 text-sm text-wl-text-secondary">
             <li>
               <strong>Step 1:</strong> Upload documents (PDF, DOCX, or images)
             </li>
@@ -419,7 +419,7 @@ export default function EnvelopesPage() {
               <strong>Step 4:</strong> Review settings and send envelope
             </li>
           </ol>
-          <p className="text-xs text-gray-400 mt-4">
+          <p className="text-xs text-wl-text-secondary mt-4">
             Click "Create Envelope" button above to start the process.
           </p>
         </CardContent>

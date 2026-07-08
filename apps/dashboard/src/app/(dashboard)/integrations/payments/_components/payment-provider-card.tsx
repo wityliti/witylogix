@@ -66,19 +66,19 @@ export function PaymentProviderCard({
       {provider.status === 'connected' && (
         <div className="space-y-2 mb-4 text-xs">
           <div className="flex justify-between">
-            <span className="text-gray-400">Transactions:</span>
+            <span className="text-wl-text-secondary">Transactions:</span>
             <span className="text-white font-medium">{provider.transactions}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-400">Volume:</span>
+            <span className="text-wl-text-secondary">Volume:</span>
             <span className="text-white font-medium">{provider.volume}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-400">Fees:</span>
+            <span className="text-wl-text-secondary">Fees:</span>
             <span className="text-white font-medium">{provider.fees}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-400">Last Sync:</span>
+            <span className="text-wl-text-secondary">Last Sync:</span>
             <span className="text-white font-medium">{provider.lastSync}</span>
           </div>
         </div>

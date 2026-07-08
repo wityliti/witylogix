@@ -141,7 +141,7 @@ export default function OrdersPage() {
             <Card key={stat.label}>
               <CardContent className="pt-4 text-center">
                 <div className="text-2xl font-bold text-white">{stat.value}</div>
-                <p className="text-xs text-gray-300 mt-1">{stat.label}</p>
+                <p className="text-xs text-wl-text-secondary mt-1">{stat.label}</p>
               </CardContent>
             </Card>
           ))}
@@ -158,7 +158,7 @@ export default function OrdersPage() {
                   'px-1 py-3 text-sm font-medium border-b-2 transition-colors capitalize',
                   selectedTab === tab
                     ? 'border-blue-500 text-blue-500'
-                    : 'border-transparent text-gray-300 hover:text-white',
+                    : 'border-transparent text-wl-text-secondary hover:text-white',
                 )}
               >
                 {tab}
@@ -222,7 +222,7 @@ export default function OrdersPage() {
             </Card>
 
             {filteredOrders.length === 0 ? (
-              <Card><CardContent className="pt-10 pb-10 text-center text-gray-400">No orders match your filters.</CardContent></Card>
+              <Card><CardContent className="pt-10 pb-10 text-center text-wl-text-secondary">No orders match your filters.</CardContent></Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredOrders.map((order) => (
@@ -235,7 +235,7 @@ export default function OrdersPage() {
                       <div className="flex items-start justify-between">
                         <div>
                           <CardTitle className="text-base">{order.orderNumber}</CardTitle>
-                          <p className="text-xs text-gray-400 mt-1">{order.customer}</p>
+                          <p className="text-xs text-wl-text-secondary mt-1">{order.customer}</p>
                         </div>
                         <Badge variant={order.status === 'delivered' ? 'success' : order.status === 'shipped' ? 'info' : 'warning'}>
                           {order.status}
@@ -245,27 +245,27 @@ export default function OrdersPage() {
                     <CardContent>
                       <div className="space-y-2 text-xs mb-4">
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-300">Items:</span>
+                          <span className="text-wl-text-secondary">Items:</span>
                           <span className="font-semibold text-white">{order.items}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-300">Total:</span>
+                          <span className="text-wl-text-secondary">Total:</span>
                           <span className="font-semibold text-white">${order.total.toFixed(2)}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-300">Priority:</span>
+                          <span className="text-wl-text-secondary">Priority:</span>
                           <Badge variant={order.priority === 'expedited' ? 'danger' : order.priority === 'backorder' ? 'warning' : 'default'}>
                             {order.priority}
                           </Badge>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-300">Created:</span>
-                          <span className="text-gray-400">{new Date(order.createdDate).toLocaleDateString()}</span>
+                          <span className="text-wl-text-secondary">Created:</span>
+                          <span className="text-wl-text-secondary">{new Date(order.createdDate).toLocaleDateString()}</span>
                         </div>
                         {order.dueDate && (
                           <div className="flex items-center justify-between">
-                            <span className="text-gray-300">Due:</span>
-                            <span className="text-gray-400">{new Date(order.dueDate).toLocaleDateString()}</span>
+                            <span className="text-wl-text-secondary">Due:</span>
+                            <span className="text-wl-text-secondary">{new Date(order.dueDate).toLocaleDateString()}</span>
                           </div>
                         )}
                       </div>
@@ -301,7 +301,7 @@ export default function OrdersPage() {
             </div>
 
             {wavePlans.length === 0 ? (
-              <div className="text-center py-10 text-gray-400">No wave plans found. Create a wave to start batch fulfillment.</div>
+              <div className="text-center py-10 text-wl-text-secondary">No wave plans found. Create a wave to start batch fulfillment.</div>
             ) : null}
             {wavePlans.map((wave) => (
               <Card key={wave.waveId}>
@@ -311,7 +311,7 @@ export default function OrdersPage() {
                       <CardTitle className="text-base">
                         {wave.waveId}
                       </CardTitle>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-wl-text-secondary mt-1">
                         {new Date(wave.createdDate).toLocaleString()}
                       </p>
                     </div>
@@ -320,15 +320,15 @@ export default function OrdersPage() {
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                     <div>
-                      <p className="text-xs text-gray-300">Orders</p>
+                      <p className="text-xs text-wl-text-secondary">Orders</p>
                       <p className="text-xl font-bold text-white">{wave.ordersCount}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-300">Items</p>
+                      <p className="text-xs text-wl-text-secondary">Items</p>
                       <p className="text-xl font-bold text-white">{wave.itemsCount}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-300">Est. Completion</p>
+                      <p className="text-xs text-wl-text-secondary">Est. Completion</p>
                       <p className="text-sm text-white">{new Date(wave.estimatedCompletionTime).toLocaleTimeString()}</p>
                     </div>
                     <div>
@@ -347,7 +347,7 @@ export default function OrdersPage() {
             <h3 className="text-lg font-semibold text-white">Batch Picking Tasks</h3>
 
             {batchPicking.length === 0 ? (
-              <div className="text-center py-10 text-gray-400">No batch picking tasks found.</div>
+              <div className="text-center py-10 text-wl-text-secondary">No batch picking tasks found.</div>
             ) : null}
             {batchPicking.map((batch) => (
               <Card key={batch.batchId}>
@@ -357,11 +357,11 @@ export default function OrdersPage() {
                       <h4 className="text-sm font-semibold text-white">
                         {batch.batchId}
                       </h4>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-wl-text-secondary mt-1">
                         {batch.location}
                       </p>
                       {batch.assignedTo && (
-                        <p className="text-xs text-gray-300 mt-1">
+                        <p className="text-xs text-wl-text-secondary mt-1">
                           Assigned to: {batch.assignedTo}
                         </p>
                       )}
@@ -379,7 +379,6 @@ export default function OrdersPage() {
                       style={{ width: `${batch.completionRate}%` }}
                     />
                   </div>
-                </div>
 
                 {batch.status !== 'completed' && (
                   <Button variant="secondary" size="sm" className="w-full">
@@ -392,57 +391,13 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* Returns Queue Tab */}
-      {selectedTab === 'returns' && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">Returns Queue</h3>
-
-          {returnQueue.length === 0 ? (
-            <div className="text-center py-10 text-gray-400">No returns in queue.</div>
-          ) : null}
-          {returnQueue.map((returnItem) => (
-            <Card key={returnItem.id}>
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h4 className="text-sm font-semibold text-white">
-                      {returnItem.orderNumber}
-                    </h4>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {returnItem.customerName}
-                    </p>
-                    {status === 'pending-approval' && (
-                      <div className="flex gap-2">
-                        <Button variant="secondary" size="sm" className="flex-1">Reject</Button>
-                        <Button variant="primary" size="sm" className="flex-1">Approve</Button>
-                      </div>
-                      <div className="w-full bg-[#1a1a2e] rounded-full h-2">
-                        <div
-                          className="h-full rounded-full bg-blue-500 transition-all"
-                          style={{ width: `${batch.completionRate}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {batch.status !== 'completed' && (
-                    <Button variant="secondary" size="sm" className="w-full">
-                      Update Progress
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
         {/* Returns Queue Tab */}
         {selectedTab === 'returns' && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-white">Returns Queue</h3>
 
             {returnQueue.length === 0 ? (
-              <div className="text-center py-10 text-gray-400">No returns in queue.</div>
+              <div className="text-center py-10 text-wl-text-secondary">No returns in queue.</div>
             ) : null}
             {returnQueue.map((returnItem) => (
               <Card key={returnItem.id}>
@@ -452,7 +407,7 @@ export default function OrdersPage() {
                       <h4 className="text-sm font-semibold text-white">
                         {returnItem.orderNumber}
                       </h4>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-wl-text-secondary mt-1">
                         {returnItem.customerName}
                       </p>
                     </div>
@@ -465,7 +420,7 @@ export default function OrdersPage() {
                     </Badge>
                   </div>
                   {returnItem.reason && (
-                    <p className="text-xs text-gray-400 mb-3">Reason: {returnItem.reason}</p>
+                    <p className="text-xs text-wl-text-secondary mb-3">Reason: {returnItem.reason}</p>
                   )}
                   {returnItem.status === 'pending-approval' && (
                     <div className="flex gap-2">

@@ -229,7 +229,7 @@ function TeamCollaborationPage() {
                 #{collaboration.currentChannel.name}
               </h1>
               {collaboration.currentChannel.description && (
-                <p className="text-sm text-gray-400 mt-1">
+                <p className="text-sm text-wl-text-secondary mt-1">
                   {collaboration.currentChannel.description}
                 </p>
               )}
@@ -288,7 +288,7 @@ function TeamCollaborationPage() {
 
             {/* Typing Indicators */}
             {collaboration.typingUsers.length > 0 && (
-              <div className="px-4 py-2 text-xs text-gray-400 border-t border-wl-border-default">
+              <div className="px-4 py-2 text-xs text-wl-text-secondary border-t border-wl-border-default">
                 {collaboration.typingUsers
                   .map((u) => u.userName)
                   .join(", ")} {collaboration.typingUsers.length === 1 ? "is" : "are"} typing...
@@ -304,7 +304,7 @@ function TeamCollaborationPage() {
                 <ComposerToolbar />
                 <ComposerAttachments />
                 <div className="px-3 py-2 flex items-center justify-between">
-                  <div className="text-xs text-gray-400">
+                  <div className="text-xs text-wl-text-secondary">
                     Shift+Enter for new line
                   </div>
                   <Button
@@ -437,7 +437,7 @@ function RightSidebar({
         <h2 className="text-sm font-semibold text-white mb-3">
           {channel.name}
         </h2>
-        <div className="space-y-2 text-xs text-gray-300">
+        <div className="space-y-2 text-xs text-wl-text-secondary">
           <p>
             <strong>Members:</strong> {memberCount}
           </p>
@@ -464,10 +464,10 @@ function RightSidebar({
                 key={msg.id}
                 className="p-2 rounded bg-wl-bg-elevated border border-wl-border-default text-xs"
               >
-                <p className="font-medium text-gray-300">
+                <p className="font-medium text-wl-text-secondary">
                   {msg.userName}
                 </p>
-                <p className="text-gray-400 truncate">{msg.content}</p>
+                <p className="text-wl-text-secondary truncate">{msg.content}</p>
               </div>
             ))}
           </div>
@@ -528,7 +528,7 @@ function ThreadPanel({
         </h2>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-white"
+          className="text-wl-text-secondary hover:text-white"
         >
           ✕
         </button>
@@ -539,8 +539,8 @@ function ThreadPanel({
         {messages.map((msg) => (
           <div key={msg.id} className="text-xs">
             <p className="font-medium text-white">{msg.userName}</p>
-            <p className="text-gray-300">{msg.content}</p>
-            <p className="text-gray-400 mt-1">
+            <p className="text-wl-text-secondary">{msg.content}</p>
+            <p className="text-wl-text-secondary mt-1">
               {new Date(msg.createdAt).toLocaleTimeString()}
             </p>
           </div>
@@ -605,7 +605,7 @@ function CreateChannelModal({
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1">
+            <label className="block text-xs font-semibold text-wl-text-secondary mb-1">
               Channel Name
             </label>
             <input
@@ -624,7 +624,7 @@ function CreateChannelModal({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1">
+            <label className="block text-xs font-semibold text-wl-text-secondary mb-1">
               Category
             </label>
             <select

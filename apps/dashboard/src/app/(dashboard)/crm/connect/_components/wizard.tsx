@@ -66,7 +66,7 @@ export function WizardNav({ steps, activeStep, onStepClick }: WizardNavProps) {
       <h3
         className={cn(
           'text-xs font-bold',
-          'text-gray-300 uppercase',
+          'text-wl-text-secondary uppercase',
           'tracking-wider mb-4 px-3'
         )}
       >
@@ -100,7 +100,7 @@ export function WizardNav({ steps, activeStep, onStepClick }: WizardNavProps) {
                     ? 'bg-emerald-500 text-white'
                     : step.isActive
                     ? 'bg-blue-500 text-white'
-                    : 'bg-wl-bg-surface border border-wl-border-default text-gray-300'
+                    : 'bg-wl-bg-surface border border-wl-border-default text-wl-text-secondary'
                 )}
               >
                 {step.isComplete ? (
@@ -125,7 +125,7 @@ export function WizardNav({ steps, activeStep, onStepClick }: WizardNavProps) {
                   className={cn(
                     'text-sm font-semibold',
                     'truncate',
-                    step.isActive ? 'text-white' : 'text-gray-300'
+                    step.isActive ? 'text-white' : 'text-wl-text-secondary'
                   )}
                 >
                   {step.title}

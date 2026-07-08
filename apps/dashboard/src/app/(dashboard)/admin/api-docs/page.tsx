@@ -317,7 +317,7 @@ function EndpointCard({
               {endpoint.path}
             </code>
           </div>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-wl-text-secondary">
             {endpoint.description}
           </p>
         </div>
@@ -325,9 +325,9 @@ function EndpointCard({
         <div className="flex items-center gap-2 ml-4 flex-shrink-0">
           <AuthBadge auth={endpoint.authentication} />
           {expanded ? (
-            <ChevronUp className="w-5 h-5 text-gray-400" />
+            <ChevronUp className="w-5 h-5 text-wl-text-secondary" />
           ) : (
-            <ChevronDown className="w-5 h-5 text-gray-400" />
+            <ChevronDown className="w-5 h-5 text-wl-text-secondary" />
           )}
         </div>
       </button>
@@ -350,14 +350,14 @@ function EndpointCard({
                       <code className="text-sm font-mono text-blue-500">
                         {param.name}
                       </code>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-wl-text-secondary">
                         {param.type}
                       </span>
                       {param.required && (
                         <Badge variant="danger">Required</Badge>
                       )}
                     </div>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-wl-text-secondary">
                       {param.description}
                     </p>
                   </div>
@@ -373,7 +373,7 @@ function EndpointCard({
                 Request Body
               </h4>
               <div className="relative">
-                <pre className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default overflow-x-auto text-xs text-gray-400">
+                <pre className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default overflow-x-auto text-xs text-wl-text-secondary">
                   <code>
                     {JSON.stringify(endpoint.requestBody.example, null, 2)}
                   </code>
@@ -386,7 +386,7 @@ function EndpointCard({
                   }
                   className="absolute top-2 right-2 p-2 hover:bg-wl-bg-elevated rounded transition-colors"
                 >
-                  <Copy className="w-4 h-4 text-gray-400 hover:text-white" />
+                  <Copy className="w-4 h-4 text-wl-text-secondary hover:text-white" />
                 </button>
               </div>
             </div>
@@ -420,7 +420,7 @@ function EndpointCard({
                       >
                         {response.code}
                       </span>
-                      <p className="text-sm text-gray-400 mt-0.5">
+                      <p className="text-sm text-wl-text-secondary mt-0.5">
                         {response.description}
                       </p>
                     </div>
@@ -430,10 +430,10 @@ function EndpointCard({
                       }
                       className="p-2 hover:bg-wl-bg-elevated rounded transition-colors"
                     >
-                      <Copy className="w-4 h-4 text-gray-400 hover:text-white" />
+                      <Copy className="w-4 h-4 text-wl-text-secondary hover:text-white" />
                     </button>
                   </div>
-                  <pre className="p-3 bg-wl-bg-elevated rounded text-xs text-gray-400 overflow-x-auto">
+                  <pre className="p-3 bg-wl-bg-elevated rounded text-xs text-wl-text-secondary overflow-x-auto">
                     <code>{JSON.stringify(response.example, null, 2)}</code>
                   </pre>
                 </div>
@@ -450,7 +450,7 @@ function EndpointCard({
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-gray-400 uppercase tracking-wider block mb-2">
+                <label className="text-xs text-wl-text-secondary uppercase tracking-wider block mb-2">
                   Authorization Token
                 </label>
                 <input
@@ -463,18 +463,18 @@ function EndpointCard({
               </div>
 
               <div>
-                <label className="text-xs text-gray-400 uppercase tracking-wider block mb-2">
+                <label className="text-xs text-wl-text-secondary uppercase tracking-wider block mb-2">
                   cURL Command
                 </label>
                 <div className="relative">
-                  <pre className="p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default text-xs text-gray-400 overflow-x-auto">
+                  <pre className="p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default text-xs text-wl-text-secondary overflow-x-auto">
                     <code>{curlCommand}</code>
                   </pre>
                   <button
                     onClick={() => handleCopy(curlCommand)}
                     className="absolute top-2 right-2 p-2 hover:bg-wl-bg-elevated rounded transition-colors"
                   >
-                    <Copy className="w-4 h-4 text-gray-400 hover:text-white" />
+                    <Copy className="w-4 h-4 text-wl-text-secondary hover:text-white" />
                   </button>
                 </div>
               </div>
@@ -534,7 +534,7 @@ export default function ApiDocsPage() {
                   <p className="text-sm font-semibold text-white">
                     REST API
                   </p>
-                  <p className="text-sm text-gray-400 mt-0.5">
+                  <p className="text-sm text-wl-text-secondary mt-0.5">
                     RESTful API for managing orders, routes, drivers, and integrations
                   </p>
                 </div>
@@ -545,7 +545,7 @@ export default function ApiDocsPage() {
                   <p className="text-sm font-semibold text-white">
                     Authentication
                   </p>
-                  <p className="text-sm text-gray-400 mt-0.5">
+                  <p className="text-sm text-wl-text-secondary mt-0.5">
                     Bearer Token or API Key via Authorization header
                   </p>
                 </div>
@@ -556,7 +556,7 @@ export default function ApiDocsPage() {
                   <p className="text-sm font-semibold text-white">
                     Rate Limiting
                   </p>
-                  <p className="text-sm text-gray-400 mt-0.5">
+                  <p className="text-sm text-wl-text-secondary mt-0.5">
                     1000 requests per minute per API key
                   </p>
                 </div>
@@ -573,7 +573,7 @@ export default function ApiDocsPage() {
               "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
               !selectedTag
                 ? "bg-blue-600 text-white"
-                : "bg-wl-bg-elevated text-gray-400 hover:text-white hover:bg-wl-bg-elevated"
+                : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated"
             )}
           >
             All Endpoints ({API_ENDPOINTS.length})
@@ -586,7 +586,7 @@ export default function ApiDocsPage() {
                 "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                 selectedTag === tag
                   ? "bg-blue-600 text-white"
-                  : "bg-wl-bg-elevated text-gray-400 hover:text-white hover:bg-wl-bg-elevated"
+                  : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated"
               )}
             >
               {tag} (
@@ -620,7 +620,7 @@ export default function ApiDocsPage() {
                 <h4 className="text-sm font-semibold text-blue-500">
                   Need Help?
                 </h4>
-                <p className="text-sm text-gray-400 mt-1">
+                <p className="text-sm text-wl-text-secondary mt-1">
                   Visit our <a href="#" className="text-blue-500 hover:underline">full API documentation</a> or contact{" "}
                   <a href="#" className="text-blue-500 hover:underline">support@witylogix.com</a>
                 </p>

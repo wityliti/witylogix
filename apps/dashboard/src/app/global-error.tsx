@@ -56,7 +56,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                     <h1 className="text-xl font-bold text-white">
                       Critical Error
                     </h1>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-wl-text-secondary">
                       Something unexpected happened
                     </p>
                   </div>
@@ -68,7 +68,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                     {error.message || 'An unexpected error occurred'}
                   </p>
                   {error.digest && (
-                    <p className="text-xs text-gray-400 font-mono">
+                    <p className="text-xs text-wl-text-secondary font-mono">
                       Error ID: {error.digest}
                     </p>
                   )}
@@ -82,7 +82,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                       className={cn(
                         'w-full flex items-center justify-between',
                         'px-3 py-2 rounded-md text-sm font-medium',
-                        'text-gray-300 bg-white/5 hover:bg-white/10',
+                        'text-wl-text-secondary bg-white/5 hover:bg-white/10',
                         'border border-white/10 transition-colors'
                       )}
                     >
@@ -97,7 +97,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                         className={cn(
                           'p-3 rounded-md max-h-48 overflow-auto',
                           'bg-red-900/10 border border-red-500/30',
-                          'font-mono text-xs text-gray-400'
+                          'font-mono text-xs text-wl-text-secondary'
                         )}
                       >
                         {error.stack && (
@@ -133,7 +133,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 </div>
 
                 {/* Support info */}
-                <p className="text-xs text-gray-500 text-center mt-4">
+                <p className="text-xs text-wl-text-tertiary text-center mt-4">
                   If this persists, contact{' '}
                   <a
                     href="mailto:support@witylogix.com"

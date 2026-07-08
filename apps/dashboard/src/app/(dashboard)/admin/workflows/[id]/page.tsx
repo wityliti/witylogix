@@ -94,7 +94,7 @@ function getStatusIcon(status: string): React.ReactNode {
 
 function JsonViewer({ data }: { data: Record<string, any> }) {
   return (
-    <pre className="bg-wl-bg-elevated border border-wl-border-default rounded-lg p-3 text-xs text-gray-400 overflow-auto font-mono leading-relaxed">
+    <pre className="bg-wl-bg-elevated border border-wl-border-default rounded-lg p-3 text-xs text-wl-text-secondary overflow-auto font-mono leading-relaxed">
       {JSON.stringify(data, null, 2)}
     </pre>
   );
@@ -105,7 +105,7 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
 
   if (steps.length === 0) {
     return (
-      <p className="text-sm text-gray-400 text-center py-6">
+      <p className="text-sm text-wl-text-secondary text-center py-6">
         No step details available for this execution.
       </p>
     );
@@ -141,17 +141,17 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                 {getStatusIcon(step.status)}
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs text-gray-400 font-semibold">Step {step.number}</span>
+                    <span className="text-xs text-wl-text-secondary font-semibold">Step {step.number}</span>
                     <h4 className="m-0 text-sm font-semibold text-white">{step.name}</h4>
                     <Badge variant={step.status === "completed" ? "success" : step.status === "failed" ? "danger" : step.status === "running" ? "info" : "warning"}>
                       {step.status}
                     </Badge>
                   </div>
-                  <span className="text-xs text-gray-400">Duration: {step.duration}</span>
+                  <span className="text-xs text-wl-text-secondary">Duration: {step.duration}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {expandedStep === step.id ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
+                {expandedStep === step.id ? <ChevronUp size={18} className="text-wl-text-secondary" /> : <ChevronDown size={18} className="text-wl-text-secondary" />}
               </div>
             </div>
 
@@ -159,13 +159,13 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
               <div className="mt-4 pt-4 border-t border-wl-border-default">
                 {step.input && (
                   <div className="mb-4">
-                    <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider">Input</h5>
+                    <h5 className="text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider">Input</h5>
                     <JsonViewer data={step.input} />
                   </div>
                 )}
                 {step.output && (
                   <div className="mb-4">
-                    <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider">Output</h5>
+                    <h5 className="text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider">Output</h5>
                     <JsonViewer data={step.output} />
                   </div>
                 )}
@@ -175,7 +175,7 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                     <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
                       <p className="m-0 mb-2 text-red-500 text-sm font-medium">{step.error.message}</p>
                       {step.error.stack && (
-                        <pre className="text-xs text-gray-400 font-mono overflow-auto whitespace-pre-wrap break-words">
+                        <pre className="text-xs text-wl-text-secondary font-mono overflow-auto whitespace-pre-wrap break-words">
                           {step.error.stack}
                         </pre>
                       )}
@@ -184,7 +184,7 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                 )}
                 {step.compensationStatus && (
                   <div>
-                    <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider">Compensation Status</h5>
+                    <h5 className="text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider">Compensation Status</h5>
                     <Badge variant={step.compensationStatus === "completed" ? "success" : step.compensationStatus === "failed" ? "danger" : "warning"}>
                       {step.compensationStatus}
                     </Badge>
@@ -255,7 +255,7 @@ export default function WorkflowExecutionDetailPage() {
           </Button>
           <div>
             <h1 className="text-xl font-bold text-white m-0 tracking-tight">{execution.workflowName}</h1>
-            <p className="text-sm text-gray-400 m-0 mt-0.5">{execution.executionId}</p>
+            <p className="text-sm text-wl-text-secondary m-0 mt-0.5">{execution.executionId}</p>
           </div>
           <Badge variant={getStatusBadgeVariant(execution.status)}>{execution.status.toUpperCase()}</Badge>
         </div>
@@ -308,7 +308,7 @@ export default function WorkflowExecutionDetailPage() {
                 <div className="flex flex-col gap-3">
                   {Object.entries(execution.metadata).map(([key, value]) => (
                     <div key={key} className="flex gap-2">
-                      <span className="text-xs font-semibold text-gray-400 min-w-20 uppercase tracking-wider">{key}</span>
+                      <span className="text-xs font-semibold text-wl-text-secondary min-w-20 uppercase tracking-wider">{key}</span>
                       <span className="text-sm text-white font-mono">{String(value)}</span>
                     </div>
                   ))}
@@ -323,8 +323,8 @@ export default function WorkflowExecutionDetailPage() {
               <div className="flex flex-col gap-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <Calendar size={14} className="text-gray-400" />
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Started</span>
+                    <Calendar size={14} className="text-wl-text-secondary" />
+                    <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">Started</span>
                   </div>
                   <span className="text-sm text-white block ml-5">{formatDateTime(execution.startedAt)}</span>
                 </div>
@@ -332,15 +332,15 @@ export default function WorkflowExecutionDetailPage() {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <CheckCircle2 size={14} className="text-emerald-500" />
-                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Completed</span>
+                      <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">Completed</span>
                     </div>
                     <span className="text-sm text-white block ml-5">{formatDateTime(execution.completedAt)}</span>
                   </div>
                 )}
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <User size={14} className="text-gray-400" />
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Created</span>
+                    <User size={14} className="text-wl-text-secondary" />
+                    <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">Created</span>
                   </div>
                   <span className="text-sm text-white block ml-5">{formatDateTime(execution.createdAt)}</span>
                 </div>
@@ -375,7 +375,7 @@ export default function WorkflowExecutionDetailPage() {
               {steps.filter(s => s.error).map(step => (
                 <div key={step.id} className="mb-3">
                   <p className="m-0 mb-1 text-red-500 text-sm font-semibold">Step {step.number}: {step.name}</p>
-                  <p className="m-0 text-gray-400 text-sm">{step.error?.message}</p>
+                  <p className="m-0 text-wl-text-secondary text-sm">{step.error?.message}</p>
                 </div>
               ))}
             </CardContent>

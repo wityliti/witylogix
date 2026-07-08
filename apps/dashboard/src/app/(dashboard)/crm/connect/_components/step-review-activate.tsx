@@ -44,7 +44,7 @@ export function StepReviewActivate({
           <CardContent className={cn('space-y-4')}>
             <div className={cn('grid grid-cols-2 gap-4')}>
               <div>
-                <p className={cn('text-sm text-gray-400', 'mb-1')}>
+                <p className={cn('text-sm text-wl-text-secondary', 'mb-1')}>
                   Platform
                 </p>
                 <p className={cn('font-semibold text-white')}>
@@ -52,7 +52,7 @@ export function StepReviewActivate({
                 </p>
               </div>
               <div>
-                <p className={cn('text-sm text-gray-400', 'mb-1')}>
+                <p className={cn('text-sm text-wl-text-secondary', 'mb-1')}>
                   Sync Direction
                 </p>
                 <Badge variant="primary" className="capitalize">
@@ -62,7 +62,7 @@ export function StepReviewActivate({
             </div>
 
             <div>
-              <p className={cn('text-sm text-gray-400', 'mb-2')}>
+              <p className={cn('text-sm text-wl-text-secondary', 'mb-2')}>
                 Objects
               </p>
               <div className={cn('flex gap-2 flex-wrap')}>
@@ -94,7 +94,7 @@ export function StepReviewActivate({
 
             {isEnabled && (
               <div>
-                <label className={cn('block text-sm text-gray-300 mb-2')}>
+                <label className={cn('block text-sm text-wl-text-secondary mb-2')}>
                   Sync Schedule
                 </label>
                 <select

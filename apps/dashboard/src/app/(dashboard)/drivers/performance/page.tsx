@@ -85,7 +85,7 @@ const getTrendLabel = (direction: TrendDirection, prev: number | null, current: 
 const getTrendColor = (direction: TrendDirection): string => {
   if (direction === "up") return "text-emerald-400";
   if (direction === "down") return "text-red-400";
-  return "text-gray-400";
+  return "text-wl-text-secondary";
 };
 
 const PERIOD_LABELS: Record<ScoringPeriod, string> = {
@@ -179,7 +179,7 @@ export default function DriverPerformancePage() {
                 "px-4 py-2 rounded-md text-sm font-medium transition-colors",
                 period === p
                   ? "bg-blue-500 text-white"
-                  : "bg-wl-bg-elevated text-gray-300 hover:text-white"
+                  : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white"
               )}
             >
               {PERIOD_LABELS[p]}
@@ -231,12 +231,12 @@ export default function DriverPerformancePage() {
               <div className="flex gap-4 items-end justify-center flex-wrap">
                 {topThree[1] && (
                   <div className="flex flex-col items-center gap-2">
-                    <div className="w-20 h-28 bg-gradient-to-br from-gray-400 to-gray-600 rounded-t-lg flex items-end justify-center pb-2">
+                    <div className="w-20 h-28 bg-gradient-to-br from-wl-neutral-400 to-wl-neutral-600 rounded-t-lg flex items-end justify-center pb-2">
                       <span className="text-xl font-bold text-white">2</span>
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-semibold text-white">{topThree[1].driverName}</p>
-                      <p className="text-xs text-gray-300">{topThree[1].compositeScore.toFixed(1)}</p>
+                      <p className="text-xs text-wl-text-secondary">{topThree[1].compositeScore.toFixed(1)}</p>
                     </div>
                   </div>
                 )}
@@ -247,7 +247,7 @@ export default function DriverPerformancePage() {
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-semibold text-white">{topThree[0].driverName}</p>
-                      <p className="text-xs text-gray-300">{topThree[0].compositeScore.toFixed(1)}</p>
+                      <p className="text-xs text-wl-text-secondary">{topThree[0].compositeScore.toFixed(1)}</p>
                     </div>
                   </div>
                 )}
@@ -258,7 +258,7 @@ export default function DriverPerformancePage() {
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-semibold text-white">{topThree[2].driverName}</p>
-                      <p className="text-xs text-gray-300">{topThree[2].compositeScore.toFixed(1)}</p>
+                      <p className="text-xs text-wl-text-secondary">{topThree[2].compositeScore.toFixed(1)}</p>
                     </div>
                   </div>
                 )}
@@ -273,34 +273,34 @@ export default function DriverPerformancePage() {
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
-                  <th className="p-3 px-4 text-center font-semibold text-gray-300 w-12">
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary w-12">
                     Rank
                   </th>
-                  <th className="p-3 px-4 text-left font-semibold text-gray-300">
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
                     Driver Name
                   </th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-300">
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                     Composite Score
                   </th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-300">
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                     Tier
                   </th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-300">
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                     On-Time %
                   </th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-300">
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                     Rating
                   </th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-300">
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                     POD %
                   </th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-300">
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                     Trend
                   </th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-300">
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                     Deliveries
                   </th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-300">
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                     Actions
                   </th>
                 </tr>
@@ -326,7 +326,7 @@ export default function DriverPerformancePage() {
                       <span className="font-bold text-white">
                         {driver.compositeScore.toFixed(1)}
                       </span>
-                      <span className="text-xs text-gray-400 ml-1">/100</span>
+                      <span className="text-xs text-wl-text-secondary ml-1">/100</span>
                     </td>
                     <td className="p-3 px-4 text-center">
                       <Badge variant={getTierColor(driver.tier)} className="capitalize">
@@ -341,7 +341,7 @@ export default function DriverPerformancePage() {
                         <span className="text-white font-semibold">
                           {formatRating(driver.customerRating)}
                         </span>
-                        <span className="text-gray-300">⭐</span>
+                        <span className="text-wl-text-secondary">⭐</span>
                       </div>
                     </td>
                     <td className="p-3 px-4 text-center text-white font-semibold">
@@ -383,7 +383,7 @@ export default function DriverPerformancePage() {
                     <span className="font-bold text-white">{selectedDriver.onTimePercent.toFixed(0)}</span>
                   </div>
                 </div>
-                <p className="text-sm font-semibold text-gray-300">On-Time</p>
+                <p className="text-sm font-semibold text-wl-text-secondary">On-Time</p>
               </div>
 
               {/* Rating Score */}
@@ -397,7 +397,7 @@ export default function DriverPerformancePage() {
                     <span className="font-bold text-white">{formatRating(selectedDriver.customerRating)}</span>
                   </div>
                 </div>
-                <p className="text-sm font-semibold text-gray-300">Rating</p>
+                <p className="text-sm font-semibold text-wl-text-secondary">Rating</p>
               </div>
 
               {/* POD Compliance */}
@@ -411,7 +411,7 @@ export default function DriverPerformancePage() {
                     <span className="font-bold text-white">{selectedDriver.podCompliance.toFixed(0)}</span>
                   </div>
                 </div>
-                <p className="text-sm font-semibold text-gray-300">POD %</p>
+                <p className="text-sm font-semibold text-wl-text-secondary">POD %</p>
               </div>
 
               {/* Deliveries */}
@@ -419,7 +419,7 @@ export default function DriverPerformancePage() {
                 <div className="w-24 h-24 rounded-full border-4 border-wl-border-default flex items-center justify-center bg-wl-bg-elevated">
                   <span className="text-2xl font-bold text-white">{selectedDriver.deliveriesCount}</span>
                 </div>
-                <p className="text-sm font-semibold text-gray-300">Deliveries</p>
+                <p className="text-sm font-semibold text-wl-text-secondary">Deliveries</p>
               </div>
 
               {/* Composite Score */}
@@ -431,10 +431,10 @@ export default function DriverPerformancePage() {
                 >
                   <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center flex-col">
                     <span className="font-bold text-white">{selectedDriver.compositeScore.toFixed(0)}</span>
-                    <span className="text-xs text-gray-400">/100</span>
+                    <span className="text-xs text-wl-text-secondary">/100</span>
                   </div>
                 </div>
-                <p className="text-sm font-semibold text-gray-300">Score</p>
+                <p className="text-sm font-semibold text-wl-text-secondary">Score</p>
               </div>
             </div>
           </Card>
@@ -466,7 +466,7 @@ export default function DriverPerformancePage() {
                         <span className="font-bold text-white text-sm">{value.toFixed(0)}</span>
                       </div>
                     </div>
-                    <p className="text-xs font-semibold text-gray-300">{label}</p>
+                    <p className="text-xs font-semibold text-wl-text-secondary">{label}</p>
                   </div>
                 ))}
               </div>

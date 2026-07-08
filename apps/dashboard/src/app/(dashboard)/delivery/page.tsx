@@ -121,10 +121,10 @@ const DeliveryMapView = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-[520px] rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+      <div className="w-full h-[520px] rounded-xl bg-wl-bg-root border border-wl-border-strong flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 rounded-full border-2 border-zinc-600 border-t-white animate-spin mx-auto mb-3" />
-          <p className="text-sm text-zinc-500">Loading map…</p>
+          <div className="w-8 h-8 rounded-full border-2 border-wl-border-default border-t-white animate-spin mx-auto mb-3" />
+          <p className="text-sm text-wl-text-tertiary">Loading map…</p>
         </div>
       </div>
     ),
@@ -161,7 +161,7 @@ function ShipmentDetailPanel({
         <div className="flex items-start justify-between mb-4">
           <div>
             <h3 className="font-semibold text-white text-base">{shipment.shipmentNumber}</h3>
-            <p className="text-sm text-zinc-400 mt-0.5">
+            <p className="text-sm text-wl-text-secondary mt-0.5">
               {shipment.order?.customerName ?? shipment.recipientName ?? 'Unknown recipient'}
             </p>
           </div>
@@ -171,7 +171,7 @@ function ShipmentDetailPanel({
             </Badge>
             <button
               onClick={onClose}
-              className="text-zinc-500 hover:text-white transition-colors text-xs px-2 py-1 rounded border border-zinc-700"
+              className="text-wl-text-tertiary hover:text-white transition-colors text-xs px-2 py-1 rounded border border-wl-border-default"
             >
               ✕
             </button>
@@ -180,40 +180,40 @@ function ShipmentDetailPanel({
 
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div>
-            <p className="text-zinc-500 text-xs uppercase tracking-wide mb-1">Delivery Address</p>
-            <p className="text-zinc-200">{formatAddress(shipment)}</p>
+            <p className="text-wl-text-tertiary text-xs uppercase tracking-wide mb-1">Delivery Address</p>
+            <p className="text-wl-text-primary">{formatAddress(shipment)}</p>
           </div>
           <div>
-            <p className="text-zinc-500 text-xs uppercase tracking-wide mb-1">Est. Delivery</p>
-            <p className="text-zinc-200">
+            <p className="text-wl-text-tertiary text-xs uppercase tracking-wide mb-1">Est. Delivery</p>
+            <p className="text-wl-text-primary">
               {formatDate(shipment.estimatedArrival ?? shipment.deliveryDate)}
             </p>
           </div>
           {shipment.driver && (
             <div>
-              <p className="text-zinc-500 text-xs uppercase tracking-wide mb-1">Driver</p>
+              <p className="text-wl-text-tertiary text-xs uppercase tracking-wide mb-1">Driver</p>
               <div className="flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-zinc-400" />
-                <p className="text-zinc-200">{shipment.driver.name}</p>
+                <User className="w-3.5 h-3.5 text-wl-text-secondary" />
+                <p className="text-wl-text-primary">{shipment.driver.name}</p>
               </div>
             </div>
           )}
           {shipment.trackingNumber && (
             <div>
-              <p className="text-zinc-500 text-xs uppercase tracking-wide mb-1">Tracking #</p>
-              <p className="text-zinc-200 font-mono text-xs">{shipment.trackingNumber}</p>
+              <p className="text-wl-text-tertiary text-xs uppercase tracking-wide mb-1">Tracking #</p>
+              <p className="text-wl-text-primary font-mono text-xs">{shipment.trackingNumber}</p>
             </div>
           )}
           {shipment.order?.externalOrderNumber && (
             <div>
-              <p className="text-zinc-500 text-xs uppercase tracking-wide mb-1">Order</p>
-              <p className="text-zinc-200">#{shipment.order.externalOrderNumber}</p>
+              <p className="text-wl-text-tertiary text-xs uppercase tracking-wide mb-1">Order</p>
+              <p className="text-wl-text-primary">#{shipment.order.externalOrderNumber}</p>
             </div>
           )}
           {(shipment.attemptCount ?? 0) > 0 && (
             <div>
-              <p className="text-zinc-500 text-xs uppercase tracking-wide mb-1">Attempts</p>
-              <p className="text-zinc-200">{shipment.attemptCount}</p>
+              <p className="text-wl-text-tertiary text-xs uppercase tracking-wide mb-1">Attempts</p>
+              <p className="text-wl-text-primary">{shipment.attemptCount}</p>
             </div>
           )}
         </div>
@@ -429,7 +429,7 @@ export default function DeliveryPage() {
               />
             )}
             {stats.withLocation === 0 && !loading && (
-              <p className="text-center text-sm text-zinc-500 mt-4">
+              <p className="text-center text-sm text-wl-text-tertiary mt-4">
                 No deliveries have geographic coordinates yet. Coordinates are set when drivers
                 confirm delivery or when the address is geocoded.
               </p>
@@ -487,14 +487,14 @@ export default function DeliveryPage() {
                       </div>
 
                       {/* Shipment number */}
-                      <p className="text-xs text-zinc-500 mb-1.5 font-mono">
+                      <p className="text-xs text-wl-text-tertiary mb-1.5 font-mono">
                         {shipment.shipmentNumber}
                         {shipment.order?.externalOrderNumber &&
                           ` · Order #${shipment.order.externalOrderNumber}`}
                       </p>
 
                       {/* Address + driver */}
-                      <div className="flex items-center gap-4 text-xs text-zinc-500 flex-wrap">
+                      <div className="flex items-center gap-4 text-xs text-wl-text-tertiary flex-wrap">
                         {(shipment.addressLine1 || shipment.city) && (
                           <span className="flex items-center gap-1">
                             <MapPin className="w-3 h-3 flex-shrink-0" />
@@ -515,20 +515,20 @@ export default function DeliveryPage() {
                       <div className="text-right">
                         {(shipment.estimatedArrival ?? shipment.deliveryDate) ? (
                           <>
-                            <p className="text-xs font-medium text-zinc-300">
+                            <p className="text-xs font-medium text-wl-text-secondary">
                               {formatDate(shipment.estimatedArrival ?? shipment.deliveryDate)}
                             </p>
-                            <p className="text-[10px] text-zinc-600">
+                            <p className="text-[10px] text-wl-text-tertiary">
                               {shipment.actualDelivery ? 'Delivered' : 'Est. delivery'}
                             </p>
                           </>
                         ) : (
-                          <p className="text-[10px] text-zinc-600">No date</p>
+                          <p className="text-[10px] text-wl-text-tertiary">No date</p>
                         )}
                       </div>
                       <ChevronRight
                         className={cn(
-                          'w-4 h-4 text-zinc-600 transition-transform',
+                          'w-4 h-4 text-wl-text-tertiary transition-transform',
                           selectedId === shipment.id && 'rotate-90',
                         )}
                       />

@@ -65,7 +65,7 @@ const generateEightDayRecap = (cycleHoursUsed = 0, drivingRemaining = 660): Eigh
 
 const dutyStatusColor = (status: DutyStatus): string => {
   const colors: Record<DutyStatus, string> = {
-    OFF_DUTY: "bg-gray-600/40",
+    OFF_DUTY: "bg-wl-bg-overlay/40",
     SLEEPER: "bg-amber-500/40",
     DRIVING: "bg-red-500/40",
     ON_DUTY: "bg-blue-500/40",
@@ -139,7 +139,7 @@ export default function HOSPage() {
               <span className="text-sm font-medium">{selectedDriver?.name}</span>
               <ChevronDown
                 className={cn(
-                  "w-4 h-4 text-gray-400 transition-transform",
+                  "w-4 h-4 text-wl-text-secondary transition-transform",
                   showSearch && "rotate-180"
                 )}
               />
@@ -168,7 +168,7 @@ export default function HOSPage() {
                         "w-full text-left px-3 py-2 text-xs transition-colors border-b border-wl-border-default last:border-0",
                         selectedDriverId === driver.driverId
                           ? "bg-blue-500/10 text-blue-400"
-                          : "text-gray-400 hover:bg-wl-bg-root"
+                          : "text-wl-text-secondary hover:bg-wl-bg-root"
                       )}
                     >
                       {driver.name}
@@ -206,7 +206,7 @@ export default function HOSPage() {
 
               <CardContent className="space-y-3">
                 <div>
-                  <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-1">Duty Status</p>
+                  <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold mb-1">Duty Status</p>
                   <div className="flex items-center gap-2">
                     <div
                       className={cn(
@@ -217,7 +217,7 @@ export default function HOSPage() {
                             ? "bg-blue-500"
                             : hos.currentStatus === "SLEEPER"
                               ? "bg-amber-500"
-                              : "bg-gray-400"
+                              : "bg-wl-neutral-400"
                       )}
                     />
                     <p className="text-sm font-semibold text-white">{hos.currentStatus.replace(/_/g, " ")}</p>
@@ -225,14 +225,14 @@ export default function HOSPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-1">Break Status</p>
+                  <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold mb-1">Break Status</p>
                   <Badge variant={hos.breakStatus === "TAKEN" ? "success" : "warning"}>
                     {hos.breakStatus === "TAKEN" ? "✓ Taken" : "⚠ Required"}
                   </Badge>
                 </div>
 
                 <div>
-                  <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-1">Last Updated</p>
+                  <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold mb-1">Last Updated</p>
                   <p className="text-xs text-white">
                     {new Date(hos.lastStatusChange).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </p>
@@ -267,7 +267,7 @@ export default function HOSPage() {
                   <span className="text-xs text-white font-medium">Yard Move</span>
                 </label>
 
-                <p className="text-xs text-gray-400 pt-2 border-t border-wl-border-default">
+                <p className="text-xs text-wl-text-secondary pt-2 border-t border-wl-border-default">
                   These HOS exemptions apply only with proper authorization
                 </p>
               </CardContent>
@@ -303,7 +303,7 @@ export default function HOSPage() {
                 </CardTitle>
               </CardHeader>
 
-              <CardContent className="text-xs text-gray-400">
+              <CardContent className="text-xs text-wl-text-secondary">
                 {hosStatus === "compliant" && "Driver is within safe HOS limits. Continue monitoring."}
                 {hosStatus === "warning" && "Driving hours approaching limit. Schedule break soon."}
                 {hosStatus === "critical" && "URGENT: Driver must stop driving immediately. HOS violation imminent."}
@@ -316,18 +316,18 @@ export default function HOSPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg text-white">24-Hour Daily Log</CardTitle>
-                <span className="text-xs text-gray-400">{new Date().toLocaleDateString()}</span>
+                <span className="text-xs text-wl-text-secondary">{new Date().toLocaleDateString()}</span>
               </div>
             </CardHeader>
 
             <CardContent>
               <div className="space-y-2">
                 {/* Hour labels */}
-                <div className="flex text-xs text-gray-400">
+                <div className="flex text-xs text-wl-text-secondary">
                   <div className="w-12" />
                   <div className="flex-1 flex gap-2">
                     {Array.from({ length: 24 }, (_, i) => (
-                      <div key={i} className="flex-1 text-center text-gray-400">
+                      <div key={i} className="flex-1 text-center text-wl-text-secondary">
                         {String(i).padStart(2, "0")}
                       </div>
                     ))}
@@ -337,7 +337,7 @@ export default function HOSPage() {
                 {/* Status bars */}
                 {[hos.currentStatus].map((statusType) => (
                   <div key={statusType} className="flex items-center gap-2">
-                    <div className="w-12 text-xs font-semibold text-gray-400">{dutyStatusLabel[statusType]}</div>
+                    <div className="w-12 text-xs font-semibold text-wl-text-secondary">{dutyStatusLabel[statusType]}</div>
                     <div className="flex-1 flex gap-2 h-8">
                       {dailyLog.map((entry) => (
                         <div
@@ -354,7 +354,7 @@ export default function HOSPage() {
                 ))}
 
                 {/* Legend */}
-                <div className="pt-4 flex flex-wrap gap-4 text-xs text-gray-400 border-t border-wl-border-default">
+                <div className="pt-4 flex flex-wrap gap-4 text-xs text-wl-text-secondary border-t border-wl-border-default">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-sm bg-red-500/40" />
                     Driving
@@ -368,7 +368,7 @@ export default function HOSPage() {
                     Sleeper
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm bg-gray-600/40" />
+                    <div className="w-3 h-3 rounded-sm bg-wl-bg-overlay/40" />
                     Off-Duty
                   </div>
                 </div>
@@ -387,11 +387,11 @@ export default function HOSPage() {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-wl-border-default">
-                      <th className="text-left py-2 px-3 text-gray-400 font-semibold">Day</th>
-                      <th className="text-center py-2 px-3 text-gray-400 font-semibold">Driving</th>
-                      <th className="text-center py-2 px-3 text-gray-400 font-semibold">On-Duty</th>
-                      <th className="text-center py-2 px-3 text-gray-400 font-semibold">Total Hours</th>
-                      <th className="text-center py-2 px-3 text-gray-400 font-semibold">Cycle Usage</th>
+                      <th className="text-left py-2 px-3 text-wl-text-secondary font-semibold">Day</th>
+                      <th className="text-center py-2 px-3 text-wl-text-secondary font-semibold">Driving</th>
+                      <th className="text-center py-2 px-3 text-wl-text-secondary font-semibold">On-Duty</th>
+                      <th className="text-center py-2 px-3 text-wl-text-secondary font-semibold">Total Hours</th>
+                      <th className="text-center py-2 px-3 text-wl-text-secondary font-semibold">Cycle Usage</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -448,7 +448,7 @@ export default function HOSPage() {
             <CardContent>
               <div className="space-y-3">
                 <div className="p-3 rounded-lg bg-wl-bg-elevated border border-wl-border-default">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">How It Works</p>
+                  <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-2">How It Works</p>
                   <ol className="space-y-2 text-xs text-white">
                     <li>1. Driver submits log edit request with reason and time</li>
                     <li>2. Fleet manager reviews request and documentation</li>

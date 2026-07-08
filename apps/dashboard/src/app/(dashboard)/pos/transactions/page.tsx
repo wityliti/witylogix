@@ -119,7 +119,7 @@ export default function TransactionsPage() {
                   <CardTitle>Process Refund</CardTitle>
                   <button
                     onClick={() => setShowRefundForm(false)}
-                    className="text-gray-400 hover:text-gray-200 text-xl"
+                    className="text-wl-text-secondary hover:text-wl-text-primary text-xl"
                   >
                     ✕
                   </button>
@@ -128,7 +128,7 @@ export default function TransactionsPage() {
 
               <div className="p-6 space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-300 block mb-1">
+                  <label className="text-sm font-medium text-wl-text-secondary block mb-1">
                     Transaction
                   </label>
                   <div className="px-3 py-2 rounded border border-wl-border-default bg-wl-bg-root text-white text-sm">
@@ -137,7 +137,7 @@ export default function TransactionsPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-300 block mb-1">
+                  <label className="text-sm font-medium text-wl-text-secondary block mb-1">
                     Amount
                   </label>
                   <div className="px-3 py-2 rounded border border-wl-border-default bg-wl-bg-root text-white text-sm font-bold text-emerald-500">
@@ -146,7 +146,7 @@ export default function TransactionsPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-300 block mb-1">
+                  <label className="text-sm font-medium text-wl-text-secondary block mb-1">
                     Refund Reason
                   </label>
                   <select
@@ -213,7 +213,7 @@ export default function TransactionsPage() {
                       "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border",
                       statusFilter === status
                         ? "bg-blue-500 text-white border-blue-500"
-                        : "border-wl-border-default bg-transparent text-gray-400 hover:border-wl-border-strong"
+                        : "border-wl-border-default bg-transparent text-wl-text-secondary hover:border-wl-border-strong"
                     )}
                   >
                     {status === "all" ? "All Status" : status}
@@ -233,7 +233,7 @@ export default function TransactionsPage() {
                       "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border flex items-center gap-1",
                       paymentFilter === method
                         ? "bg-emerald-500 text-white border-emerald-500"
-                        : "border-wl-border-default bg-transparent text-gray-400 hover:border-wl-border-strong"
+                        : "border-wl-border-default bg-transparent text-wl-text-secondary hover:border-wl-border-strong"
                     )}
                   >
                     {method !== "all" && <span>{paymentMethodIcon[method]}</span>}
@@ -247,7 +247,7 @@ export default function TransactionsPage() {
           {/* Amount Range Slider */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-medium text-gray-400 block mb-2">
+              <label className="text-xs font-medium text-wl-text-secondary block mb-2">
                 Min Amount
               </label>
               <input
@@ -261,7 +261,7 @@ export default function TransactionsPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-400 block mb-2">
+              <label className="text-xs font-medium text-wl-text-secondary block mb-2">
                 Max Amount
               </label>
               <input
@@ -293,22 +293,22 @@ export default function TransactionsPage() {
               <table className="w-full text-sm">
                 <thead className="border-b border-wl-border-default bg-wl-bg-root">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary">
                       Transaction ID
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary">
                       Customer
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary">
                       Amount
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary">
                       Payment
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary">
                       Status
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary">
                       Time
                     </th>
                   </tr>
@@ -326,7 +326,7 @@ export default function TransactionsPage() {
                       <td className="px-4 py-3 text-white font-mono text-xs">
                         {txn.transactionId}
                       </td>
-                      <td className="px-4 py-3 text-gray-300">
+                      <td className="px-4 py-3 text-wl-text-secondary">
                         {txn.customerName || "Guest"}
                       </td>
                       <td className="px-4 py-3 text-emerald-500 font-bold">
@@ -342,7 +342,7 @@ export default function TransactionsPage() {
                           {txn.status}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-gray-400 text-xs">
+                      <td className="px-4 py-3 text-wl-text-secondary text-xs">
                         {new Date(txn.timestamp).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -363,7 +363,7 @@ export default function TransactionsPage() {
                   <CardTitle>Transaction Details</CardTitle>
                   <button
                     onClick={() => setSelectedTxn(null)}
-                    className="text-gray-400 hover:text-gray-200 text-xl"
+                    className="text-wl-text-secondary hover:text-wl-text-primary text-xl"
                   >
                     ✕
                   </button>
@@ -385,14 +385,14 @@ export default function TransactionsPage() {
 
                 {/* Customer */}
                 <div>
-                  <div className="text-xs font-semibold text-gray-400 uppercase mb-2">
+                  <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
                     Customer
                   </div>
                   <div className="text-sm text-white">
                     {selectedTxnData.customerName || "Guest"}
                   </div>
                   {selectedTxnData.customerEmail && (
-                    <div className="text-xs text-gray-400 mt-1">
+                    <div className="text-xs text-wl-text-secondary mt-1">
                       {selectedTxnData.customerEmail}
                     </div>
                   )}
@@ -402,13 +402,13 @@ export default function TransactionsPage() {
 
                 {/* Terminal & Time */}
                 <div>
-                  <div className="text-xs font-semibold text-gray-400 uppercase mb-2">
+                  <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
                     Transaction Info
                   </div>
                   <div className="text-sm text-white">
                     {selectedTxnData.terminalName}
                   </div>
-                  <div className="text-xs text-gray-400 mt-1">
+                  <div className="text-xs text-wl-text-secondary mt-1">
                     {new Date(selectedTxnData.timestamp).toLocaleString()}
                   </div>
                 </div>
@@ -419,12 +419,12 @@ export default function TransactionsPage() {
                 {selectedTxnData.items.length > 0 && (
                   <>
                     <div>
-                      <div className="text-xs font-semibold text-gray-400 uppercase mb-2">
+                      <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
                         Items ({selectedTxnData.items.length})
                       </div>
                       <div className="space-y-1">
                         {selectedTxnData.items.map((item) => (
-                          <div key={item.id} className="text-xs text-gray-300 flex justify-between">
+                          <div key={item.id} className="text-xs text-wl-text-secondary flex justify-between">
                             <span>
                               {item.name} x{item.quantity}
                             </span>
@@ -443,21 +443,21 @@ export default function TransactionsPage() {
                 {/* Amounts */}
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Subtotal</span>
+                    <span className="text-wl-text-secondary">Subtotal</span>
                     <span className="text-white">
                       ${selectedTxnData.subtotal.toFixed(2)}
                     </span>
                   </div>
                   {selectedTxnData.discount > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Discount</span>
+                      <span className="text-wl-text-secondary">Discount</span>
                       <span className="text-emerald-500">
                         -${selectedTxnData.discount.toFixed(2)}
                       </span>
                     </div>
                   )}
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Tax</span>
+                    <span className="text-wl-text-secondary">Tax</span>
                     <span className="text-white">
                       ${selectedTxnData.tax.toFixed(2)}
                     </span>
@@ -474,7 +474,7 @@ export default function TransactionsPage() {
 
                 {/* Payment Method */}
                 <div>
-                  <div className="text-xs font-semibold text-gray-400 uppercase mb-2">
+                  <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
                     Payment Method
                   </div>
                   <div className="flex items-center gap-2">
@@ -493,14 +493,14 @@ export default function TransactionsPage() {
                 {selectedTxnData.refundedAmount && (
                   <>
                     <div>
-                      <div className="text-xs font-semibold text-gray-400 uppercase mb-2">
+                      <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
                         Refund
                       </div>
                       <div className="text-sm text-amber-500 font-bold">
                         ${selectedTxnData.refundedAmount.toFixed(2)}
                       </div>
                       {selectedTxnData.refundReason && (
-                        <div className="text-xs text-gray-400 mt-1">
+                        <div className="text-xs text-wl-text-secondary mt-1">
                           Reason: {selectedTxnData.refundReason}
                         </div>
                       )}

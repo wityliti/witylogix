@@ -34,7 +34,7 @@ export function DesignTabs({ activeTab, onTabChange }: DesignTabsProps) {
                 'text-sm font-medium py-4 px-1 border-b-2 transition-all duration-fast whitespace-nowrap',
                 activeTab === tab
                   ? 'text-blue-500 border-b-blue-500'
-                  : 'text-gray-300 border-b-transparent hover:text-white'
+                  : 'text-wl-text-secondary border-b-transparent hover:text-white'
               )}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}

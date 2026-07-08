@@ -146,7 +146,7 @@ export default function OrderDetailPage() {
     <div className="min-h-screen bg-wl-bg-root p-6 flex items-center justify-center">
       <div className="text-center">
         <p className="text-2xl font-bold text-white mb-2">Order not found</p>
-        <p className="text-gray-400 text-sm">This order may have been deleted or moved.</p>
+        <p className="text-wl-text-secondary text-sm">This order may have been deleted or moved.</p>
       </div>
     </div>
   );
@@ -177,9 +177,9 @@ export default function OrderDetailPage() {
       <div className="flex flex-wrap justify-between items-start gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-white">{displayNumber}</h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-sm text-wl-text-secondary mt-1">
             Created {new Date(order.createdAt).toLocaleDateString()} · Source:{' '}
-            <span className="text-gray-300">{order.source}</span>
+            <span className="text-wl-text-secondary">{order.source}</span>
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -192,16 +192,16 @@ export default function OrderDetailPage() {
       {/* Status Banner */}
       <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-5 mb-6 flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-400 font-medium">Status:</span>
+          <span className="text-sm text-wl-text-secondary font-medium">Status:</span>
           <Badge variant={statusVariant}>{statusLabel}</Badge>
         </div>
         {order.deliveryDate && (
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-wl-text-secondary">
             Delivery date:{' '}
-            <span className="text-gray-200">{new Date(order.deliveryDate).toLocaleDateString()}</span>
+            <span className="text-wl-text-primary">{new Date(order.deliveryDate).toLocaleDateString()}</span>
           </p>
         )}
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-wl-text-tertiary">
           Last updated {new Date(order.updatedAt).toLocaleString()}
         </p>
       </div>
@@ -222,8 +222,8 @@ export default function OrderDetailPage() {
             .filter(Boolean)
             .map((row, i) => (
               <div key={i} className="flex justify-between py-2.5 border-b border-wl-border-default text-sm last:border-0">
-                <span className="text-gray-400">{row!.label}</span>
-                <span className="text-gray-200 font-medium truncate max-w-[60%] text-right">
+                <span className="text-wl-text-secondary">{row!.label}</span>
+                <span className="text-wl-text-primary font-medium truncate max-w-[60%] text-right">
                   {row!.value ?? '—'}
                 </span>
               </div>
@@ -241,8 +241,8 @@ export default function OrderDetailPage() {
             { label: 'Country', value: order.country },
           ].map((row, i) => (
             <div key={i} className="flex justify-between py-2 border-b border-wl-border-default text-sm last:border-0">
-              <span className="text-gray-400">{row.label}</span>
-              <span className="text-gray-200 font-medium">{row.value ?? '—'}</span>
+              <span className="text-wl-text-secondary">{row.label}</span>
+              <span className="text-wl-text-primary font-medium">{row.value ?? '—'}</span>
             </div>
           ))}
           {hasMap ? (
@@ -261,7 +261,7 @@ export default function OrderDetailPage() {
               </WLMap>
             </div>
           ) : (
-            <p className="text-xs text-gray-500 mt-3 italic">No map coordinates on record.</p>
+            <p className="text-xs text-wl-text-tertiary mt-3 italic">No map coordinates on record.</p>
           )}
         </div>
 
@@ -282,20 +282,20 @@ export default function OrderDetailPage() {
                 },
               ].map((row, i) => (
                 <div key={i} className="flex justify-between py-2.5 border-b border-wl-border-default text-sm last:border-0">
-                  <span className="text-gray-400">{row.label}</span>
-                  <span className="text-gray-200 font-medium">{row.value ?? '—'}</span>
+                  <span className="text-wl-text-secondary">{row.label}</span>
+                  <span className="text-wl-text-primary font-medium">{row.value ?? '—'}</span>
                 </div>
               ))}
               <div className="flex justify-between py-2.5 text-sm">
-                <span className="text-gray-400">Status</span>
+                <span className="text-wl-text-secondary">Status</span>
                 <Badge variant={shipment.status === 'DELIVERED' ? 'success' : 'default'}>
                   {shipment.status}
                 </Badge>
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-center text-gray-500">
-              <p className="text-sm font-medium text-gray-400 mb-1">No shipment yet</p>
+            <div className="flex flex-col items-center justify-center py-8 text-center text-wl-text-tertiary">
+              <p className="text-sm font-medium text-wl-text-secondary mb-1">No shipment yet</p>
               <p className="text-xs">Create a shipment to start tracking.</p>
             </div>
           )}
@@ -305,10 +305,10 @@ export default function OrderDetailPage() {
       {/* Line Items */}
       <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-6 mb-6">
         <h3 className="text-sm font-semibold text-white mb-4">
-          Line Items <span className="text-gray-500 ml-1">({lineItems.length})</span>
+          Line Items <span className="text-wl-text-tertiary ml-1">({lineItems.length})</span>
         </h3>
         {lineItems.length === 0 ? (
-          <p className="text-gray-500 text-sm py-4 text-center">No line items recorded.</p>
+          <p className="text-wl-text-tertiary text-sm py-4 text-center">No line items recorded.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
@@ -317,7 +317,7 @@ export default function OrderDetailPage() {
                   {['Product', 'SKU', 'Qty', 'Unit Price', 'Total'].map((h) => (
                     <th
                       key={h}
-                      className="bg-wl-bg-root border-b border-wl-border-default p-3 text-left text-xs font-semibold text-gray-400"
+                      className="bg-wl-bg-root border-b border-wl-border-default p-3 text-left text-xs font-semibold text-wl-text-secondary"
                     >
                       {h}
                     </th>
@@ -333,13 +333,13 @@ export default function OrderDetailPage() {
                   const itemTotal = item.total ?? item.lineTotal ?? unit * qty;
                   return (
                     <tr key={item.id ?? idx} className="hover:bg-wl-bg-elevated transition-colors">
-                      <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">{name}</td>
-                      <td className="border-b border-wl-border-default p-3 text-sm text-gray-400">{sku}</td>
-                      <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">{qty}</td>
-                      <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">
+                      <td className="border-b border-wl-border-default p-3 text-sm text-wl-text-secondary">{name}</td>
+                      <td className="border-b border-wl-border-default p-3 text-sm text-wl-text-secondary">{sku}</td>
+                      <td className="border-b border-wl-border-default p-3 text-sm text-wl-text-secondary">{qty}</td>
+                      <td className="border-b border-wl-border-default p-3 text-sm text-wl-text-secondary">
                         {unit ? `₹${Number(unit).toLocaleString()}` : '—'}
                       </td>
-                      <td className="border-b border-wl-border-default p-3 text-sm text-gray-200 font-medium">
+                      <td className="border-b border-wl-border-default p-3 text-sm text-wl-text-primary font-medium">
                         {itemTotal ? `₹${Number(itemTotal).toLocaleString()}` : '—'}
                       </td>
                     </tr>
@@ -352,9 +352,9 @@ export default function OrderDetailPage() {
         {total != null && (
           <div className="mt-4 flex justify-end">
             <div className="text-right">
-              <div className="flex items-center gap-8 py-2 text-sm text-gray-400">
+              <div className="flex items-center gap-8 py-2 text-sm text-wl-text-secondary">
                 <span>Items</span>
-                <span className="text-gray-300">{order.itemCount}</span>
+                <span className="text-wl-text-secondary">{order.itemCount}</span>
               </div>
               <div className="flex items-center gap-8 py-2 border-t border-wl-border-default text-base font-bold text-blue-400">
                 <span>Total</span>
@@ -371,7 +371,7 @@ export default function OrderDetailPage() {
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-6">
           <h3 className="text-sm font-semibold text-white mb-4">Activity Timeline</h3>
           {order.notificationLogs.length === 0 ? (
-            <p className="text-gray-500 text-sm text-center py-6">No activity recorded yet.</p>
+            <p className="text-wl-text-tertiary text-sm text-center py-6">No activity recorded yet.</p>
           ) : (
             <div className="relative pl-6 space-y-4 max-h-72 overflow-y-auto">
               {order.notificationLogs.map((log, idx) => (
@@ -385,12 +385,12 @@ export default function OrderDetailPage() {
                           : 'bg-blue-500'
                     }`}
                   />
-                  <p className="text-xs text-gray-500">{new Date(log.createdAt).toLocaleString()}</p>
-                  <p className="text-sm text-gray-300 font-medium mt-0.5">
+                  <p className="text-xs text-wl-text-tertiary">{new Date(log.createdAt).toLocaleString()}</p>
+                  <p className="text-sm text-wl-text-secondary font-medium mt-0.5">
                     {log.type.replace(/_/g, ' ')}
                   </p>
                   {log.recipient && (
-                    <p className="text-xs text-gray-500 mt-0.5">→ {log.recipient}</p>
+                    <p className="text-xs text-wl-text-tertiary mt-0.5">→ {log.recipient}</p>
                   )}
                 </div>
               ))}
@@ -403,18 +403,18 @@ export default function OrderDetailPage() {
           <h3 className="text-sm font-semibold text-white mb-4">Internal Notes</h3>
           {order.notes ? (
             <div className="bg-wl-bg-root border border-wl-border-default rounded-lg p-4 mb-4">
-              <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
+              <p className="text-sm text-wl-text-secondary leading-relaxed whitespace-pre-wrap">
                 {order.notes}
               </p>
             </div>
           ) : (
-            <p className="text-gray-500 text-sm mb-4 italic">No notes yet.</p>
+            <p className="text-wl-text-tertiary text-sm mb-4 italic">No notes yet.</p>
           )}
-          <label className="block text-xs font-medium text-gray-400 mb-2">
+          <label className="block text-xs font-medium text-wl-text-secondary mb-2">
             {order.notes ? 'Update Notes' : 'Add Notes'}
           </label>
           <textarea
-            className="w-full p-3 bg-wl-bg-root border border-wl-border-default rounded-lg text-gray-300 text-sm min-h-[80px] resize-y focus:outline-none focus:border-blue-500 transition-colors"
+            className="w-full p-3 bg-wl-bg-root border border-wl-border-default rounded-lg text-wl-text-secondary text-sm min-h-[80px] resize-y focus:outline-none focus:border-blue-500 transition-colors"
             placeholder="Add internal notes…"
             value={noteInput}
             onChange={(e) => setNoteInput(e.target.value)}

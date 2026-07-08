@@ -330,7 +330,7 @@ export default function OnboardingPage() {
                     "w-10 h-10 rounded-full flex items-center justify-center mb-2 font-semibold text-sm transition-all duration-200",
                     isCompleted || isActive
                       ? "bg-blue-500 text-white"
-                      : "bg-wl-bg-elevated text-gray-500 border border-wl-border-default"
+                      : "bg-wl-bg-elevated text-wl-text-tertiary border border-wl-border-default"
                   )}
                 >
                   {isCompleted ? <Check size={20} /> : idx + 1}
@@ -339,7 +339,7 @@ export default function OnboardingPage() {
                   <p
                     className={cn(
                       "text-xs font-semibold",
-                      isActive ? "text-white" : "text-gray-400"
+                      isActive ? "text-white" : "text-wl-text-secondary"
                     )}
                   >
                     {step.label}
@@ -377,7 +377,7 @@ export default function OnboardingPage() {
                       ? "bg-blue-500 text-white"
                       : isCompleted
                         ? "bg-emerald-500/20 text-emerald-400 border border-emerald-400/30"
-                        : "bg-wl-bg-elevated text-gray-400 border border-wl-border-default hover:border-wl-border-strong"
+                        : "bg-wl-bg-elevated text-wl-text-secondary border border-wl-border-default hover:border-wl-border-strong"
                   )}
                 >
                   {step.label}
@@ -398,7 +398,7 @@ export default function OnboardingPage() {
             {currentMainStep === "configure-workspace" &&
               (subSteps.find((s) => s.id === currentSubStep)?.label || "")}
           </h1>
-          <p className="text-sm text-gray-400 mt-1 m-0">
+          <p className="text-sm text-wl-text-secondary mt-1 m-0">
             Step {mainStepIndex + 1} of {totalMainSteps}
             {currentMainStep === "configure-workspace" &&
               ` • Sub-step ${subStepIndex} of ${totalSubSteps}`}

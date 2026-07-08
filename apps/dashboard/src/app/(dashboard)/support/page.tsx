@@ -155,7 +155,7 @@ export default function SupportPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">Support & Help Center</h1>
-          <p className="text-gray-400 text-sm">
+          <p className="text-wl-text-secondary text-sm">
             Get help with Witylogix platform and manage support tickets
           </p>
         </div>
@@ -189,7 +189,7 @@ export default function SupportPage() {
                           )}
                         </button>
                         {expandedFaq === item.id && (
-                          <div className="bg-wl-bg-elevated border-l-4 border-l-blue-500 border-r border-r-[#1e1e2e] border-b border-b-[#1e1e2e] rounded-bl rounded-br p-3 -mt-0.5 text-gray-400 text-sm leading-relaxed">
+                          <div className="bg-wl-bg-elevated border-l-4 border-l-blue-500 border-r border-r-[#1e1e2e] border-b border-b-[#1e1e2e] rounded-bl rounded-br p-3 -mt-0.5 text-wl-text-secondary text-sm leading-relaxed">
                             {item.a}
                           </div>
                         )}
@@ -206,7 +206,7 @@ export default function SupportPage() {
             <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Contact Support</CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardDescription className="text-wl-text-secondary">
                   Create a new support ticket
                 </CardDescription>
               </CardHeader>
@@ -278,7 +278,7 @@ export default function SupportPage() {
               <MessageSquare size={20} />
               Your Support Tickets
             </CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardDescription className="text-wl-text-secondary">
               Recent tickets and their status
             </CardDescription>
           </CardHeader>
@@ -300,14 +300,14 @@ export default function SupportPage() {
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b-2 border-b-[#1e1e2e]">
-                    <th className="p-3 text-left text-gray-400 text-xs font-semibold">
+                    <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">
                       Ticket ID
                     </th>
-                    <th className="p-3 text-left text-gray-400 text-xs font-semibold">Subject</th>
-                    <th className="p-3 text-left text-gray-400 text-xs font-semibold">Priority</th>
-                    <th className="p-3 text-left text-gray-400 text-xs font-semibold">Status</th>
-                    <th className="p-3 text-left text-gray-400 text-xs font-semibold">Created</th>
-                    <th className="p-3 text-left text-gray-400 text-xs font-semibold">Updated</th>
+                    <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">Subject</th>
+                    <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">Priority</th>
+                    <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">Status</th>
+                    <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">Created</th>
+                    <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">Updated</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -322,7 +322,7 @@ export default function SupportPage() {
                     ))
                   ) : tickets.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-gray-400 text-sm">
+                      <td colSpan={6} className="py-8 text-center text-wl-text-secondary text-sm">
                         No support tickets yet. Create one above.
                       </td>
                     </tr>
@@ -356,10 +356,10 @@ export default function SupportPage() {
                             {formatStatus(ticket.status)}
                           </Badge>
                         </td>
-                        <td className="p-3 text-gray-400 text-xs">
+                        <td className="p-3 text-wl-text-secondary text-xs">
                           {new Date(ticket.createdAt).toLocaleDateString()}
                         </td>
-                        <td className="p-3 text-gray-400 text-xs">
+                        <td className="p-3 text-wl-text-secondary text-xs">
                           {new Date(ticket.updatedAt).toLocaleDateString()}
                         </td>
                       </tr>

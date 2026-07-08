@@ -45,8 +45,8 @@ const TIER_CONFIG = {
   standard: {
     label: 'Standard',
     color: '#6b7280',
-    bgClass: 'bg-gray-500/10 border-gray-500/30',
-    dotClass: 'bg-gray-500',
+    bgClass: 'bg-wl-bg-overlay/10 border-wl-border-default/30',
+    dotClass: 'bg-wl-bg-overlay',
     badgeVariant: 'default' as const,
     description: 'New or low-frequency customers',
   },
@@ -75,7 +75,7 @@ export default function CustomerSegmentsPage() {
                 onClick={() => setActiveView('cards')}
                 className={cn(
                   'px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors',
-                  activeView === 'cards' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white',
+                  activeView === 'cards' ? 'bg-blue-600 text-white' : 'text-wl-text-secondary hover:text-white',
                 )}
               >
                 <BarChart2 className="w-3.5 h-3.5" /> Tiers
@@ -84,7 +84,7 @@ export default function CustomerSegmentsPage() {
                 onClick={() => setActiveView('geo')}
                 className={cn(
                   'px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors',
-                  activeView === 'geo' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white',
+                  activeView === 'geo' ? 'bg-blue-600 text-white' : 'text-wl-text-secondary hover:text-white',
                 )}
               >
                 <MapIcon className="w-3.5 h-3.5" /> Geography
@@ -128,30 +128,30 @@ export default function CustomerSegmentsPage() {
                         <div className="text-3xl font-bold text-white mb-1">
                           {(seg?.count ?? 0).toLocaleString()}
                         </div>
-                        <div className="text-xs text-gray-500 mb-4">customers</div>
+                        <div className="text-xs text-wl-text-tertiary mb-4">customers</div>
 
                         <div className="space-y-2 text-xs border-t border-white/[0.06] pt-3">
                           <div className="flex justify-between">
-                            <span className="text-gray-500">Total revenue</span>
-                            <span className="text-gray-200 font-semibold">
+                            <span className="text-wl-text-tertiary">Total revenue</span>
+                            <span className="text-wl-text-primary font-semibold">
                               {fmt.format(seg?.totalSpent ?? 0)}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-500">Avg orders</span>
-                            <span className="text-gray-200 font-semibold">
+                            <span className="text-wl-text-tertiary">Avg orders</span>
+                            <span className="text-wl-text-primary font-semibold">
                               {seg && seg.count > 0 ? (seg.totalOrders / seg.count).toFixed(1) : '0'}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-500">Avg spend</span>
-                            <span className="text-gray-200 font-semibold">
+                            <span className="text-wl-text-tertiary">Avg spend</span>
+                            <span className="text-wl-text-primary font-semibold">
                               {seg && seg.count > 0 ? fmt.format(seg.totalSpent / seg.count) : '—'}
                             </span>
                           </div>
                         </div>
 
-                        <p className="text-[11px] text-gray-500 mt-3 leading-relaxed">
+                        <p className="text-[11px] text-wl-text-tertiary mt-3 leading-relaxed">
                           {cfg.description}
                         </p>
                       </>
@@ -164,7 +164,7 @@ export default function CustomerSegmentsPage() {
             {/* Active vs Inactive */}
             <Card className="p-5">
               <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                <Users className="w-4 h-4 text-gray-500" /> Engagement Status
+                <Users className="w-4 h-4 text-wl-text-tertiary" /> Engagement Status
               </h3>
               {loading ? (
                 <div className="flex gap-4">
@@ -182,11 +182,11 @@ export default function CustomerSegmentsPage() {
                           'p-4 rounded-lg border',
                           status === 'active'
                             ? 'bg-green-400/5 border-green-400/20'
-                            : 'bg-gray-500/5 border-gray-500/20',
+                            : 'bg-wl-bg-overlay/5 border-wl-border-default/20',
                         )}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-300 capitalize font-medium">
+                          <span className="text-sm text-wl-text-secondary capitalize font-medium">
                             {status}
                           </span>
                           <Badge variant={status === 'active' ? 'success' : 'default'}>
@@ -196,7 +196,7 @@ export default function CustomerSegmentsPage() {
                         <div className="text-2xl font-bold text-white">
                           {count.toLocaleString()}
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-wl-text-tertiary mt-1">
                           {status === 'active'
                             ? 'Have placed at least one order'
                             : 'No orders on record'}
@@ -206,7 +206,7 @@ export default function CustomerSegmentsPage() {
                           <div
                             className={cn(
                               'h-full rounded-full transition-all',
-                              status === 'active' ? 'bg-green-400' : 'bg-gray-500',
+                              status === 'active' ? 'bg-green-400' : 'bg-wl-bg-overlay',
                             )}
                             style={{ width: fmtPct(count, total) }}
                           />
@@ -227,7 +227,7 @@ export default function CustomerSegmentsPage() {
                 {([
                   { tier: 'enterprise', rule: 'Lifetime spend ≥ $5,000', color: 'text-amber-400' },
                   { tier: 'premium', rule: 'Lifetime spend $1,000 – $4,999', color: 'text-blue-400' },
-                  { tier: 'standard', rule: 'Lifetime spend < $1,000', color: 'text-gray-400' },
+                  { tier: 'standard', rule: 'Lifetime spend < $1,000', color: 'text-wl-text-secondary' },
                 ] as const).map(({ tier, rule, color }) => (
                   <div key={tier} className="flex items-center justify-between py-2 border-b border-wl-border-default last:border-0">
                     <div className="flex items-center gap-2">
@@ -238,7 +238,7 @@ export default function CustomerSegmentsPage() {
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-gray-500 mt-3">
+              <p className="text-xs text-wl-text-tertiary mt-3">
                 Tiers are computed automatically based on cumulative spend synced from your store.
               </p>
             </Card>
@@ -251,7 +251,7 @@ export default function CustomerSegmentsPage() {
             <Card className="overflow-hidden p-0">
               <div className="p-4 border-b border-wl-border-default">
                 <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-gray-500" /> Top Cities
+                  <MapPin className="w-4 h-4 text-wl-text-tertiary" /> Top Cities
                 </h3>
               </div>
               {loading ? (
@@ -262,9 +262,9 @@ export default function CustomerSegmentsPage() {
                 </div>
               ) : !stats?.topCities || stats.topCities.length === 0 ? (
                 <div className="p-10 text-center">
-                  <MapPin className="w-8 h-8 text-gray-600 mx-auto mb-3" />
-                  <p className="text-sm text-gray-400">No city data available</p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <MapPin className="w-8 h-8 text-wl-text-tertiary mx-auto mb-3" />
+                  <p className="text-sm text-wl-text-secondary">No city data available</p>
+                  <p className="text-xs text-wl-text-tertiary mt-1">
                     Sync customers with addresses to see geographic breakdown
                   </p>
                 </div>
@@ -273,11 +273,11 @@ export default function CustomerSegmentsPage() {
                   <table className="w-full border-collapse text-sm">
                     <thead>
                       <tr className="border-b border-wl-border-default bg-wl-bg-surface">
-                        <th className="p-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">#</th>
-                        <th className="p-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">City</th>
-                        <th className="p-3 px-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">Customers</th>
-                        <th className="p-3 px-4 text-right text-xs font-semibold text-gray-400 uppercase tracking-wide">Revenue</th>
-                        <th className="p-3 px-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">Avg Orders</th>
+                        <th className="p-3 px-4 text-left text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">#</th>
+                        <th className="p-3 px-4 text-left text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">City</th>
+                        <th className="p-3 px-4 text-center text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">Customers</th>
+                        <th className="p-3 px-4 text-right text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">Revenue</th>
+                        <th className="p-3 px-4 text-center text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">Avg Orders</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -291,7 +291,7 @@ export default function CustomerSegmentsPage() {
                               i % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-surface/40',
                             )}
                           >
-                            <td className="p-3 px-4 text-xs text-gray-500 font-mono">{i + 1}</td>
+                            <td className="p-3 px-4 text-xs text-wl-text-tertiary font-mono">{i + 1}</td>
                             <td className="p-3 px-4">
                               <div className="flex items-center gap-2">
                                 <div
@@ -307,7 +307,7 @@ export default function CustomerSegmentsPage() {
                             <td className="p-3 px-4 text-right text-white text-xs">
                               {fmt.format(city.totalSpent)}
                             </td>
-                            <td className="p-3 px-4 text-center text-gray-300 text-xs">
+                            <td className="p-3 px-4 text-center text-wl-text-secondary text-xs">
                               {city.avgOrders.toFixed(1)}
                             </td>
                           </tr>
@@ -323,7 +323,7 @@ export default function CustomerSegmentsPage() {
             <div className="space-y-4">
               <Card className="p-5">
                 <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-gray-500" /> Revenue Distribution by Tier
+                  <TrendingUp className="w-4 h-4 text-wl-text-tertiary" /> Revenue Distribution by Tier
                 </h3>
                 {loading ? (
                   <div className="space-y-3">
@@ -342,9 +342,9 @@ export default function CustomerSegmentsPage() {
                             <div className="flex items-center justify-between text-xs mb-1.5">
                               <div className="flex items-center gap-2">
                                 <span className={cn('w-2 h-2 rounded-full', cfg.dotClass)} />
-                                <span className="text-gray-300 capitalize font-medium">{cfg.label}</span>
+                                <span className="text-wl-text-secondary capitalize font-medium">{cfg.label}</span>
                               </div>
-                              <span className="text-gray-400">
+                              <span className="text-wl-text-secondary">
                                 {fmt.format(seg.totalSpent)} ({pct.toFixed(1)}%)
                               </span>
                             </div>
@@ -365,7 +365,7 @@ export default function CustomerSegmentsPage() {
               {/* Customer count by tier */}
               <Card className="p-5">
                 <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-gray-500" /> Customer Count by Tier
+                  <Users className="w-4 h-4 text-wl-text-tertiary" /> Customer Count by Tier
                 </h3>
                 {loading ? (
                   <div className="space-y-3">
@@ -383,9 +383,9 @@ export default function CustomerSegmentsPage() {
                             <div className="flex items-center justify-between text-xs mb-1.5">
                               <div className="flex items-center gap-2">
                                 <span className={cn('w-2 h-2 rounded-full', cfg.dotClass)} />
-                                <span className="text-gray-300 capitalize font-medium">{cfg.label}</span>
+                                <span className="text-wl-text-secondary capitalize font-medium">{cfg.label}</span>
                               </div>
-                              <span className="text-gray-400">
+                              <span className="text-wl-text-secondary">
                                 {seg.count.toLocaleString()} ({pct.toFixed(1)}%)
                               </span>
                             </div>

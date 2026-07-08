@@ -209,7 +209,7 @@ export default function IntegrationHealthPage() {
                 onChange={(e) => setAutoRefresh(e.target.checked)}
                 className={cn('w-4 h-4 cursor-pointer')}
               />
-              <span className={cn('text-gray-400')}>Auto-refresh</span>
+              <span className={cn('text-wl-text-secondary')}>Auto-refresh</span>
             </label>
             <Button
               variant="secondary"
@@ -235,7 +235,7 @@ export default function IntegrationHealthPage() {
             <CardContent className={cn('pt-6')}>
               <div className={cn('flex items-center justify-between')}>
                 <div>
-                  <p className={cn('text-sm text-gray-500 mb-1')}>Healthy</p>
+                  <p className={cn('text-sm text-wl-text-tertiary mb-1')}>Healthy</p>
                   <p className={cn('text-3xl font-bold text-emerald-500')}>{healthyCount}</p>
                 </div>
                 <CheckCircle className={cn('w-10 h-10 text-emerald-500/40')} />
@@ -247,7 +247,7 @@ export default function IntegrationHealthPage() {
             <CardContent className={cn('pt-6')}>
               <div className={cn('flex items-center justify-between')}>
                 <div>
-                  <p className={cn('text-sm text-gray-500 mb-1')}>Degraded</p>
+                  <p className={cn('text-sm text-wl-text-tertiary mb-1')}>Degraded</p>
                   <p className={cn('text-3xl font-bold text-amber-500')}>{degradedCount}</p>
                 </div>
                 <AlertTriangle className={cn('w-10 h-10 text-amber-500/40')} />
@@ -259,7 +259,7 @@ export default function IntegrationHealthPage() {
             <CardContent className={cn('pt-6')}>
               <div className={cn('flex items-center justify-between')}>
                 <div>
-                  <p className={cn('text-sm text-gray-500 mb-1')}>Down</p>
+                  <p className={cn('text-sm text-wl-text-tertiary mb-1')}>Down</p>
                   <p className={cn('text-3xl font-bold text-red-500')}>{downCount}</p>
                 </div>
                 <AlertCircle className={cn('w-10 h-10 text-red-500/40')} />
@@ -272,8 +272,8 @@ export default function IntegrationHealthPage() {
         {integrations.length === 0 ? (
           <Card>
             <CardContent className={cn("pt-12 pb-12 text-center")}>
-              <CheckCircle className={cn("w-12 h-12 text-gray-600 mx-auto mb-4")} />
-              <p className={cn("text-gray-500 text-sm")}>
+              <CheckCircle className={cn("w-12 h-12 text-wl-text-tertiary mx-auto mb-4")} />
+              <p className={cn("text-wl-text-tertiary text-sm")}>
                 No integrations installed yet. Visit the{" "}
                 <a href="/integrations/marketplace" className="text-blue-400 hover:underline">
                   marketplace
@@ -325,21 +325,21 @@ export default function IntegrationHealthPage() {
                   {/* Stats */}
                   <div className={cn("space-y-2")}>
                     <div className={cn("flex items-center justify-between text-xs")}>
-                      <span className={cn("text-gray-500")}>Last Check</span>
-                      <span className={cn("text-gray-400 font-medium")}>
+                      <span className={cn("text-wl-text-tertiary")}>Last Check</span>
+                      <span className={cn("text-wl-text-secondary font-medium")}>
                         {integration.lastCheck.toLocaleTimeString()}
                       </span>
                     </div>
 
                     <div className={cn("flex items-center justify-between text-xs")}>
-                      <span className={cn("text-gray-500")}>Response Time</span>
-                      <span className={cn("text-gray-400 font-medium font-mono")}>
+                      <span className={cn("text-wl-text-tertiary")}>Response Time</span>
+                      <span className={cn("text-wl-text-secondary font-medium font-mono")}>
                         {integration.responseTime > 0 ? `${integration.responseTime}ms` : "—"}
                       </span>
                     </div>
 
                     <div className={cn("flex items-center justify-between text-xs")}>
-                      <span className={cn("text-gray-500")}>Uptime (30d)</span>
+                      <span className={cn("text-wl-text-tertiary")}>Uptime (30d)</span>
                       <span
                         className={cn(
                           "font-medium font-mono",
@@ -396,7 +396,7 @@ export default function IntegrationHealthPage() {
         {autoRefresh && (
           <div
             className={cn(
-              "fixed bottom-6 right-6 flex items-center gap-2 px-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-gray-400"
+              "fixed bottom-6 right-6 flex items-center gap-2 px-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-wl-text-secondary"
             )}
           >
             <Clock className="w-4 h-4" />

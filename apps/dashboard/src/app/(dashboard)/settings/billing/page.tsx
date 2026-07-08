@@ -102,7 +102,7 @@ export default function BillingPage() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <Link href="/settings">
-          <Button variant="ghost" className="mb-8 text-gray-400 hover:text-white">
+          <Button variant="ghost" className="mb-8 text-wl-text-secondary hover:text-white">
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back to Settings
           </Button>
@@ -113,12 +113,12 @@ export default function BillingPage() {
           <CardContent className="pt-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
-                <p className="text-sm font-medium text-gray-500 uppercase">Current Plan</p>
+                <p className="text-sm font-medium text-wl-text-tertiary uppercase">Current Plan</p>
                 <h3 className="text-3xl font-bold text-white mt-2">{billing?.plan ?? '—'}</h3>
-                <p className="text-gray-400 mt-2">Professional logistics platform</p>
+                <p className="text-wl-text-secondary mt-2">Professional logistics platform</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500 uppercase">Monthly Cost</p>
+                <p className="text-sm font-medium text-wl-text-tertiary uppercase">Monthly Cost</p>
                 <h3 className="text-3xl font-bold text-white mt-2">
                   {billing?.monthlyPrice != null
                     ? billing.monthlyPrice === 0
@@ -126,16 +126,16 @@ export default function BillingPage() {
                       : `$${billing.monthlyPrice.toFixed(2)}`
                     : '—'}
                 </h3>
-                <p className="text-gray-400 mt-2">Billed on 1st of each month</p>
+                <p className="text-wl-text-secondary mt-2">Billed on 1st of each month</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500 uppercase">Next Renewal</p>
+                <p className="text-sm font-medium text-wl-text-tertiary uppercase">Next Renewal</p>
                 <h3 className="text-3xl font-bold text-white mt-2">
                   {billing?.renewalDate
                     ? new Date(billing.renewalDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                     : '—'}
                 </h3>
-                <p className="text-gray-400 mt-2">Next billing cycle</p>
+                <p className="text-wl-text-secondary mt-2">Next billing cycle</p>
               </div>
             </div>
 
@@ -168,7 +168,7 @@ export default function BillingPage() {
                 <div key={metric.name}>
                   <div className="flex items-center justify-between mb-2">
                     <p className="font-medium text-white">{metric.name}</p>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-wl-text-tertiary">
                       {metric.current.toLocaleString()} / {metric.limit.toLocaleString()} {metric.unit}
                     </span>
                   </div>
@@ -181,7 +181,7 @@ export default function BillingPage() {
                       style={{ width: `${metric.percentage}%` }}
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{metric.percentage.toFixed(1)}% of limit used</p>
+                  <p className="text-xs text-wl-text-tertiary mt-1">{metric.percentage.toFixed(1)}% of limit used</p>
                 </div>
               ))}
             </CardContent>
@@ -197,7 +197,7 @@ export default function BillingPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-sm text-gray-400 mb-4">
+            <div className="text-sm text-wl-text-secondary mb-4">
               Payment method management requires Stripe integration.{' '}
               <Link href="/settings/payments" className="text-blue-400 hover:underline">
                 Configure payment gateways →
@@ -223,7 +223,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.fullName ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,fullName: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Full name"
                   />
                 </div>
@@ -233,7 +233,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.company ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,company: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Company name"
                   />
                 </div>
@@ -244,7 +244,7 @@ export default function BillingPage() {
                   type="text"
                   value={addr.address ?? ''}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,address: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Street address"
                 />
               </div>
@@ -255,7 +255,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.city ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,city: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="City"
                   />
                 </div>
@@ -265,7 +265,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.state ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,state: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="State"
                   />
                 </div>
@@ -275,7 +275,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.postalCode ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,postalCode: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Postal code"
                   />
                 </div>
@@ -302,7 +302,7 @@ export default function BillingPage() {
           </CardHeader>
           <CardContent>
             {invoices.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-8">No invoices yet.</p>
+              <p className="text-sm text-wl-text-secondary text-center py-8">No invoices yet.</p>
             ) : (
               <div className="space-y-2">
                 {invoices.map((invoice) => (
@@ -312,7 +312,7 @@ export default function BillingPage() {
                   >
                     <div className="flex-1">
                       <p className="font-medium text-white">{invoice.period}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-wl-text-tertiary">
                         {new Date(invoice.date).toLocaleDateString()}
                       </p>
                     </div>
@@ -339,7 +339,7 @@ export default function BillingPage() {
         {billing?.renewalDate && (
           <div className="mt-8 p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 flex gap-3">
             <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-gray-400">
+            <div className="text-sm text-wl-text-secondary">
               Your subscription will automatically renew on{' '}
               <strong>{new Date(billing.renewalDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</strong>.
               You can cancel anytime before the renewal date.

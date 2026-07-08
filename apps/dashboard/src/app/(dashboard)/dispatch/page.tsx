@@ -138,8 +138,8 @@ function OrderCard({
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelect(order.id); }}
       className={cn(
         'p-4 rounded-lg border transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
-        'bg-zinc-800/60 border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800',
-        isSelected && 'border-blue-500 ring-1 ring-blue-500/25 bg-zinc-800',
+        'bg-wl-bg-elevated/60 border-wl-border-default hover:border-wl-border-default hover:bg-wl-bg-elevated',
+        isSelected && 'border-blue-500 ring-1 ring-blue-500/25 bg-wl-bg-elevated',
       )}
     >
       {/* Header row */}
@@ -164,16 +164,16 @@ function OrderCard({
       </div>
 
       {/* Customer */}
-      <p className="text-xs text-zinc-300 font-medium truncate mb-1">{order.customerName}</p>
+      <p className="text-xs text-wl-text-secondary font-medium truncate mb-1">{order.customerName}</p>
 
       {/* Address */}
       <div className="flex items-start gap-1.5 mb-2">
-        <MapPin className="w-3 h-3 text-zinc-500 flex-shrink-0 mt-0.5" />
-        <p className="text-xs text-zinc-400 line-clamp-2">{order.address}</p>
+        <MapPin className="w-3 h-3 text-wl-text-tertiary flex-shrink-0 mt-0.5" />
+        <p className="text-xs text-wl-text-secondary line-clamp-2">{order.address}</p>
       </div>
 
       {/* Meta row */}
-      <div className="flex items-center justify-between text-[11px] text-zinc-500 mb-3">
+      <div className="flex items-center justify-between text-[11px] text-wl-text-tertiary mb-3">
         <span>
           <Clock className="inline w-3 h-3 mr-0.5" />{formatElapsed()} ago
         </span>
@@ -192,22 +192,22 @@ function OrderCard({
         </Button>
       ) : isSelected ? (
         <div className="space-y-1.5" onClick={(e) => e.stopPropagation()} role="region" aria-label="Driver selection">
-          <p className="text-[11px] text-zinc-400 font-medium uppercase tracking-wider">Assign driver</p>
+          <p className="text-[11px] text-wl-text-secondary font-medium uppercase tracking-wider">Assign driver</p>
           <div className="max-h-28 overflow-y-auto space-y-1">
             {availableDrivers.length === 0 ? (
-              <p className="text-xs text-zinc-500 py-2 text-center">No available drivers</p>
+              <p className="text-xs text-wl-text-tertiary py-2 text-center">No available drivers</p>
             ) : (
               availableDrivers.map((driver) => (
                 <button
                   key={driver.id}
                   type="button"
                   onClick={() => onAssign(order.id, driver.id)}
-                  className="w-full text-left px-2.5 py-2 text-xs rounded bg-zinc-700 hover:bg-blue-600 text-zinc-100 transition-colors flex items-center justify-between group"
+                  className="w-full text-left px-2.5 py-2 text-xs rounded bg-wl-bg-overlay hover:bg-blue-600 text-wl-text-primary transition-colors flex items-center justify-between group"
                 >
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span>{VEHICLE_ICON[driver.vehicleType] ?? '🚗'}</span>
                     <span className="truncate font-medium">{driver.name}</span>
-                    <span className="text-zinc-400 text-[10px] flex-shrink-0">
+                    <span className="text-wl-text-secondary text-[10px] flex-shrink-0">
                       {driver.activeDeliveries} active
                     </span>
                   </div>
@@ -248,7 +248,7 @@ function DriverCard({ driver, isSelected, onClick }: DriverCardProps) {
     status === 'available' ? 'bg-emerald-500' :
     status === 'busy' ? 'bg-amber-500' :
     status === 'break' ? 'bg-violet-400' :
-    'bg-zinc-500';
+    'bg-wl-bg-overlay';
   const statusLabel =
     status === 'available' ? 'Available' :
     status === 'busy' ? 'In Progress' :
@@ -264,7 +264,7 @@ function DriverCard({ driver, isSelected, onClick }: DriverCardProps) {
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(driver.id); }}
       className={cn(
         'p-3 rounded-lg border transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
-        'bg-zinc-800/60 border-zinc-700 hover:border-zinc-600',
+        'bg-wl-bg-elevated/60 border-wl-border-default hover:border-wl-border-default',
         isSelected && 'border-blue-500 ring-1 ring-blue-500/25',
       )}
     >
@@ -283,18 +283,18 @@ function DriverCard({ driver, isSelected, onClick }: DriverCardProps) {
         {statusLabel}
       </Badge>
 
-      <div className="text-xs text-zinc-400 flex items-center gap-1 mb-1">
+      <div className="text-xs text-wl-text-secondary flex items-center gap-1 mb-1">
         <span>{VEHICLE_ICON[driver.vehicleType] ?? '🚗'}</span>
         <span className="capitalize">{driver.vehicleType}</span>
         {driver.vehiclePlate && (
-          <span className="text-zinc-500 font-mono">· {driver.vehiclePlate}</span>
+          <span className="text-wl-text-tertiary font-mono">· {driver.vehiclePlate}</span>
         )}
       </div>
 
-      <div className="flex justify-between text-[11px] text-zinc-500">
+      <div className="flex justify-between text-[11px] text-wl-text-tertiary">
         <span>{driver.activeDeliveries} active</span>
         {driver.location && (
-          <span className="text-zinc-600 truncate max-w-24" title={driver.location}>{driver.location}</span>
+          <span className="text-wl-text-tertiary truncate max-w-24" title={driver.location}>{driver.location}</span>
         )}
       </div>
     </div>
@@ -304,7 +304,7 @@ function DriverCard({ driver, isSelected, onClick }: DriverCardProps) {
 // ── Skeleton ─────────────────────────────────────────────────
 
 function SkeletonCard({ height = 'h-32' }: { height?: string }) {
-  return <div className={cn(height, 'bg-zinc-800 rounded-lg animate-pulse')} />;
+  return <div className={cn(height, 'bg-wl-bg-elevated rounded-lg animate-pulse')} />;
 }
 
 // ── Stats Skeleton ────────────────────────────────────────────
@@ -312,10 +312,10 @@ function SkeletonCard({ height = 'h-32' }: { height?: string }) {
 function StatSkeleton() {
   return (
     <div className="flex items-center gap-3">
-      <div className="h-8 w-12 bg-zinc-700 rounded animate-pulse" />
+      <div className="h-8 w-12 bg-wl-bg-overlay rounded animate-pulse" />
       <div className="space-y-1">
-        <div className="h-3 w-16 bg-zinc-700 rounded animate-pulse" />
-        <div className="h-3 w-12 bg-zinc-700 rounded animate-pulse" />
+        <div className="h-3 w-16 bg-wl-bg-overlay rounded animate-pulse" />
+        <div className="h-3 w-12 bg-wl-bg-overlay rounded animate-pulse" />
       </div>
     </div>
   );
@@ -470,7 +470,7 @@ export default function DispatchPage() {
 
   if (ordersError || driversError) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-zinc-950">
+      <div className="flex items-center justify-center min-h-screen bg-wl-bg-root">
         <ErrorState
           message={(ordersError ?? driversError)?.message ?? 'Failed to load dispatch data'}
           onRetry={handleRefresh}
@@ -480,10 +480,10 @@ export default function DispatchPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-zinc-950 overflow-hidden">
+    <div className="flex flex-col h-screen bg-wl-bg-root overflow-hidden">
 
       {/* ── Top Bar ── */}
-      <header className="sticky top-0 z-40 flex-shrink-0 border-b border-zinc-800 bg-zinc-900/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-40 flex-shrink-0 border-b border-wl-border-strong bg-wl-bg-root/95 backdrop-blur-sm">
         <div className="h-14 px-5 flex items-center justify-between gap-4">
           {/* Brand + live indicator */}
           <div className="flex items-center gap-3">
@@ -495,15 +495,15 @@ export default function DispatchPage() {
 
           <div className="flex items-center gap-3">
             {/* Clock */}
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-800 border border-zinc-700">
-              <Clock className="w-3.5 h-3.5 text-zinc-400" />
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-wl-bg-elevated border border-wl-border-default">
+              <Clock className="w-3.5 h-3.5 text-wl-text-secondary" />
               <span className="text-xs font-mono font-semibold text-white tabular-nums">
                 {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
               </span>
             </div>
 
             {/* Connection */}
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-800 border border-zinc-700">
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-wl-bg-elevated border border-wl-border-default">
               <Signal className="w-3.5 h-3.5 text-emerald-500" />
               <span className="text-xs font-medium text-emerald-400">Live</span>
             </div>
@@ -513,7 +513,7 @@ export default function DispatchPage() {
               variant="ghost"
               size="sm"
               onClick={handleRefresh}
-              className="h-8 w-8 p-0 text-zinc-400 hover:text-white"
+              className="h-8 w-8 p-0 text-wl-text-secondary hover:text-white"
               aria-label="Refresh dispatch data"
             >
               <RefreshCw className={cn('w-4 h-4', isLoading && 'animate-spin')} />
@@ -526,9 +526,9 @@ export default function DispatchPage() {
       <main className="flex-1 grid grid-cols-12 overflow-hidden min-h-0">
 
         {/* LEFT PANEL — Unassigned Queue (3 cols) */}
-        <aside className="col-span-3 flex flex-col border-r border-zinc-800 bg-zinc-900 overflow-hidden min-h-0">
+        <aside className="col-span-3 flex flex-col border-r border-wl-border-strong bg-wl-bg-root overflow-hidden min-h-0">
           {/* Panel header */}
-          <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-800 bg-zinc-800/30">
+          <div className="flex-shrink-0 px-4 py-3 border-b border-wl-border-strong bg-wl-bg-elevated/30">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Package className="w-4 h-4 text-amber-500" />
@@ -541,14 +541,14 @@ export default function DispatchPage() {
                 <button
                   type="button"
                   onClick={() => setSortType('priority')}
-                  className={cn('text-[10px] px-2 py-0.5 rounded transition-colors', sortType === 'priority' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-zinc-200')}
+                  className={cn('text-[10px] px-2 py-0.5 rounded transition-colors', sortType === 'priority' ? 'bg-blue-600 text-white' : 'text-wl-text-secondary hover:text-wl-text-primary')}
                 >
                   Priority
                 </button>
                 <button
                   type="button"
                   onClick={() => setSortType('time')}
-                  className={cn('text-[10px] px-2 py-0.5 rounded transition-colors', sortType === 'time' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-zinc-200')}
+                  className={cn('text-[10px] px-2 py-0.5 rounded transition-colors', sortType === 'time' ? 'bg-blue-600 text-white' : 'text-wl-text-secondary hover:text-wl-text-primary')}
                 >
                   Time
                 </button>
@@ -565,8 +565,8 @@ export default function DispatchPage() {
                   className={cn(
                     'text-[10px] px-2 py-0.5 rounded-full border transition-colors',
                     filterPriority === f
-                      ? 'bg-zinc-700 border-zinc-500 text-white'
-                      : 'border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600',
+                      ? 'bg-wl-bg-overlay border-wl-border-default text-white'
+                      : 'border-wl-border-default text-wl-text-tertiary hover:text-wl-text-secondary hover:border-wl-border-default',
                   )}
                 >
                   {f === 'all' ? 'All' : f === 'high' ? '🔴 High' : f === 'medium' ? '🟡 Med' : '⚪ Low'}
@@ -584,7 +584,7 @@ export default function DispatchPage() {
                 ))}
               </>
             ) : filteredOrders.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center text-zinc-500 py-12">
+              <div className="flex flex-col items-center justify-center h-full text-center text-wl-text-tertiary py-12">
                 <CheckCircle2 className="w-10 h-10 mb-2 opacity-30" />
                 <p className="text-sm font-medium">All clear</p>
                 <p className="text-xs mt-1">No unassigned orders</p>
@@ -607,26 +607,26 @@ export default function DispatchPage() {
         </aside>
 
         {/* CENTER PANEL — Live Map (6 cols) */}
-        <section className="col-span-6 flex flex-col border-r border-zinc-800 bg-zinc-950 overflow-hidden min-h-0">
+        <section className="col-span-6 flex flex-col border-r border-wl-border-strong bg-wl-bg-root overflow-hidden min-h-0">
           {/* Map header */}
-          <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-800 bg-zinc-900/50">
+          <div className="flex-shrink-0 px-4 py-3 border-b border-wl-border-strong bg-wl-bg-root/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-cyan-400" />
                 <span className="text-xs font-semibold text-white uppercase tracking-wider">Live Map</span>
               </div>
-              <div className="flex items-center gap-3 text-[11px] text-zinc-500">
+              <div className="flex items-center gap-3 text-[11px] text-wl-text-tertiary">
                 <span>
-                  <span className="text-zinc-300 font-semibold">{driverStats.available}</span> available
+                  <span className="text-wl-text-secondary font-semibold">{driverStats.available}</span> available
                 </span>
                 <span>
-                  <span className="text-zinc-300 font-semibold">{activeOrders.length}</span> in transit
+                  <span className="text-wl-text-secondary font-semibold">{activeOrders.length}</span> in transit
                 </span>
                 {(selectedOrderId ?? selectedDriverId) && (
                   <button
                     type="button"
                     onClick={() => { setSelectedOrderId(null); setSelectedDriverId(null); }}
-                    className="flex items-center gap-1 text-zinc-400 hover:text-white transition-colors"
+                    className="flex items-center gap-1 text-wl-text-secondary hover:text-white transition-colors"
                     aria-label="Clear selection"
                   >
                     <X className="w-3.5 h-3.5" /> Clear
@@ -652,9 +652,9 @@ export default function DispatchPage() {
         </section>
 
         {/* RIGHT PANEL — Driver Fleet (3 cols) */}
-        <aside className="col-span-3 flex flex-col bg-zinc-900 overflow-hidden min-h-0">
+        <aside className="col-span-3 flex flex-col bg-wl-bg-root overflow-hidden min-h-0">
           {/* Panel header */}
-          <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-800 bg-zinc-800/30">
+          <div className="flex-shrink-0 px-4 py-3 border-b border-wl-border-strong bg-wl-bg-elevated/30">
             <div className="flex items-center gap-2">
               <Truck className="w-4 h-4 text-blue-400" />
               <span className="text-xs font-semibold text-white uppercase tracking-wider">Fleet</span>
@@ -673,7 +673,7 @@ export default function DispatchPage() {
                 ))}
               </div>
             ) : rawDrivers.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-zinc-500 py-12 text-center">
+              <div className="flex flex-col items-center justify-center h-full text-wl-text-tertiary py-12 text-center">
                 <Truck className="w-10 h-10 mb-2 opacity-30" />
                 <p className="text-sm font-medium">No active drivers</p>
               </div>
@@ -690,23 +690,23 @@ export default function DispatchPage() {
           </div>
 
           {/* Fleet stats footer */}
-          <div className="flex-shrink-0 px-4 py-2.5 border-t border-zinc-800 bg-zinc-800/30">
+          <div className="flex-shrink-0 px-4 py-2.5 border-t border-wl-border-strong bg-wl-bg-elevated/30">
             <div className="grid grid-cols-4 gap-1 text-center">
               <div>
                 <div className="text-sm font-bold text-white">{driverStats.total}</div>
-                <div className="text-[10px] text-zinc-500">Total</div>
+                <div className="text-[10px] text-wl-text-tertiary">Total</div>
               </div>
               <div>
                 <div className="text-sm font-bold text-emerald-400">{driverStats.available}</div>
-                <div className="text-[10px] text-zinc-500">Free</div>
+                <div className="text-[10px] text-wl-text-tertiary">Free</div>
               </div>
               <div>
                 <div className="text-sm font-bold text-amber-400">{driverStats.busy}</div>
-                <div className="text-[10px] text-zinc-500">Busy</div>
+                <div className="text-[10px] text-wl-text-tertiary">Busy</div>
               </div>
               <div>
-                <div className="text-sm font-bold text-zinc-500">{driverStats.offline}</div>
-                <div className="text-[10px] text-zinc-500">Away</div>
+                <div className="text-sm font-bold text-wl-text-tertiary">{driverStats.offline}</div>
+                <div className="text-[10px] text-wl-text-tertiary">Away</div>
               </div>
             </div>
           </div>
@@ -714,7 +714,7 @@ export default function DispatchPage() {
       </main>
 
       {/* ── Bottom Stats Bar ── */}
-      <footer className="flex-shrink-0 border-t border-zinc-800 bg-zinc-900/95">
+      <footer className="flex-shrink-0 border-t border-wl-border-strong bg-wl-bg-root/95">
         <div className="h-14 px-5 flex items-center">
           {statsLoading ? (
             <div className="flex gap-8">
@@ -733,12 +733,12 @@ export default function DispatchPage() {
                   key={stat.label}
                   className={cn(
                     'flex items-center gap-3 px-4',
-                    i > 0 && 'border-l border-zinc-800',
+                    i > 0 && 'border-l border-wl-border-strong',
                   )}
                 >
                   <div className={cn('text-xl font-bold tabular-nums', stat.color)}>{stat.value}</div>
                   <div>
-                    <p className="text-[11px] font-semibold text-zinc-400 leading-tight">{stat.label}</p>
+                    <p className="text-[11px] font-semibold text-wl-text-secondary leading-tight">{stat.label}</p>
                   </div>
                 </div>
               ))}

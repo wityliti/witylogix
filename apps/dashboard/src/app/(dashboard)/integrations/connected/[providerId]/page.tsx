@@ -161,7 +161,7 @@ export default function IntegrationDetailPage() {
               </h2>
               {!isLoading && (
                 <>
-                  <p className="text-gray-400 mb-4">
+                  <p className="text-wl-text-secondary mb-4">
                     The integration you&apos;re looking for doesn&apos;t exist or has been disconnected.
                   </p>
                   <Button variant="primary" asChild>
@@ -204,7 +204,7 @@ export default function IntegrationDetailPage() {
               <Badge variant={isHealthy ? "success" : "danger"}>
                 {connection.status.charAt(0).toUpperCase() + connection.status.slice(1)}
               </Badge>
-              <span className="text-sm text-gray-400">
+              <span className="text-sm text-wl-text-secondary">
                 Uptime: {connection.uptime}%
               </span>
             </div>
@@ -232,13 +232,13 @@ export default function IntegrationDetailPage() {
               className="bg-wl-bg-elevated border-wl-border-default"
             >
               <CardContent className="pt-6">
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+                <div className="text-xs text-wl-text-tertiary uppercase tracking-wide mb-2">
                   {metric.label} ({metric.period})
                 </div>
                 <div className="text-2xl font-bold text-white">
                   {metric.value.toLocaleString()}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs text-wl-text-tertiary mt-1">
                   {metric.unit}
                 </div>
               </CardContent>
@@ -332,7 +332,7 @@ export default function IntegrationDetailPage() {
                     <p className="text-sm text-white">{showTestResult.message}</p>
                     <button
                       onClick={() => setShowTestResult(null)}
-                      className="text-xs text-gray-500 hover:text-gray-400 mt-2"
+                      className="text-xs text-wl-text-tertiary hover:text-wl-text-secondary mt-2"
                     >
                       Dismiss
                     </button>
@@ -357,7 +357,7 @@ export default function IntegrationDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {activityLog.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-4">No activity recorded yet.</p>
+                <p className="text-sm text-wl-text-tertiary text-center py-4">No activity recorded yet.</p>
               ) : (
                 activityLog.map((entry) => {
                   const time = new Date(entry.timestamp);
@@ -384,11 +384,11 @@ export default function IntegrationDetailPage() {
                           <p className="text-sm font-medium text-white">
                             {entry.type.replace(/_/g, " ")}
                           </p>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs text-wl-text-tertiary mt-1">
                             {entry.description}
                           </p>
                         </div>
-                        <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                        <span className="text-xs text-wl-text-tertiary whitespace-nowrap ml-2">
                           {timeStr}
                         </span>
                       </div>
@@ -427,10 +427,10 @@ export default function IntegrationDetailPage() {
                           <div>
                             <p className="text-sm font-medium text-red-500">{error.message}</p>
                             {error.context && (
-                              <p className="text-xs text-gray-500 mt-1">{error.context}</p>
+                              <p className="text-xs text-wl-text-tertiary mt-1">{error.context}</p>
                             )}
                           </div>
-                          <span className="text-xs text-gray-500 ml-2">
+                          <span className="text-xs text-wl-text-tertiary ml-2">
                             {new Date(error.timestamp).toLocaleString()}
                           </span>
                         </div>
@@ -438,7 +438,7 @@ export default function IntegrationDetailPage() {
 
                       {isExpanded && error.stackTrace && (
                         <div className="border-t border-red-500/20 p-3 bg-wl-bg-root">
-                          <pre className="text-xs text-gray-400 font-mono overflow-auto bg-wl-bg-elevated p-2 rounded border border-wl-border-default">
+                          <pre className="text-xs text-wl-text-secondary font-mono overflow-auto bg-wl-bg-elevated p-2 rounded border border-wl-border-default">
                             {error.stackTrace}
                           </pre>
                         </div>
@@ -460,7 +460,7 @@ export default function IntegrationDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-xs text-gray-500 uppercase tracking-wide">
+                <label className="text-xs text-wl-text-tertiary uppercase tracking-wide">
                   Webhook URL
                 </label>
                 <div className="mt-2 flex items-center gap-2">
@@ -468,16 +468,16 @@ export default function IntegrationDetailPage() {
                     type="text"
                     value={`https://api.example.com/webhooks/${connectionId}`}
                     readOnly
-                    className="flex-1 px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-xs text-gray-400 font-mono"
+                    className="flex-1 px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-xs text-wl-text-secondary font-mono"
                   />
                   <button className="p-2 hover:bg-wl-bg-elevated rounded transition-colors">
-                    <Copy className="w-4 h-4 text-gray-500" />
+                    <Copy className="w-4 h-4 text-wl-text-tertiary" />
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-gray-500 uppercase tracking-wide block mb-2">
+                <label className="text-xs text-wl-text-tertiary uppercase tracking-wide block mb-2">
                   Subscribed Events
                 </label>
                 <div className="space-y-2">
@@ -492,7 +492,7 @@ export default function IntegrationDetailPage() {
                           defaultChecked
                           className="w-4 h-4 rounded"
                         />
-                        <span className="text-sm text-gray-400">
+                        <span className="text-sm text-wl-text-secondary">
                           {event}
                         </span>
                       </label>
@@ -510,22 +510,22 @@ export default function IntegrationDetailPage() {
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div>
-                <p className="text-gray-500 mb-1">Provider</p>
+                <p className="text-wl-text-tertiary mb-1">Provider</p>
                 <p className="text-white font-medium">{connection.providerName}</p>
               </div>
               <div>
-                <p className="text-gray-500 mb-1">Category</p>
+                <p className="text-wl-text-tertiary mb-1">Category</p>
                 <p className="text-white font-medium capitalize">
                   {connection.category}
                 </p>
               </div>
               <div>
-                <p className="text-gray-500 mb-1">Status</p>
+                <p className="text-wl-text-tertiary mb-1">Status</p>
                 <Badge variant="success">Connected</Badge>
               </div>
               {connection.credentialsExpireAt && (
                 <div>
-                  <p className="text-gray-500 mb-1">Credentials Expire</p>
+                  <p className="text-wl-text-tertiary mb-1">Credentials Expire</p>
                   <p className="text-white font-medium">
                     {new Date(connection.credentialsExpireAt).toLocaleDateString()}
                   </p>
@@ -545,7 +545,7 @@ export default function IntegrationDetailPage() {
                   type="text"
                   value={`${typeof window !== 'undefined' ? window.location.origin : ''}/api/v4/webhooks/${connectionId}`}
                   readOnly
-                  className="flex-1 px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-xs text-gray-400 font-mono"
+                  className="flex-1 px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-xs text-wl-text-secondary font-mono"
                 />
                 <button
                   className="p-2 hover:bg-wl-bg-elevated rounded transition-colors"
@@ -555,7 +555,7 @@ export default function IntegrationDetailPage() {
                     );
                   }}
                 >
-                  <Copy className="w-4 h-4 text-gray-500" />
+                  <Copy className="w-4 h-4 text-wl-text-tertiary" />
                 </button>
               </div>
             </CardContent>
@@ -564,7 +564,7 @@ export default function IntegrationDetailPage() {
           {/* Documentation */}
           <Card className="bg-blue-500/10 border border-blue-500/20">
             <CardContent className="pt-6">
-              <p className="text-sm text-gray-400 mb-4">
+              <p className="text-sm text-wl-text-secondary mb-4">
                 Need help? Check the integration documentation.
               </p>
               <Button variant="primary" size="sm" className="w-full" asChild>
@@ -588,7 +588,7 @@ export default function IntegrationDetailPage() {
             <h2 className="text-xl font-bold text-white">
               Disconnect {connection.providerName}?
             </h2>
-            <p className="text-gray-400">
+            <p className="text-wl-text-secondary">
               This will stop syncing data from {connection.providerName}. You can reconnect anytime.
             </p>
             <div className="flex gap-3 pt-4">

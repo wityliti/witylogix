@@ -26,7 +26,7 @@ const ShipmentsMapView = dynamic(
     ssr: false,
     loading: () => (
       <div className="h-full bg-wl-bg-surface rounded-xl border border-wl-border-default animate-pulse flex items-center justify-center">
-        <p className="text-sm text-gray-500">Loading map…</p>
+        <p className="text-sm text-wl-text-tertiary">Loading map…</p>
       </div>
     ),
   },
@@ -94,7 +94,7 @@ function ShipmentsTableSkeleton() {
               ].map((h) => (
                 <th
                   key={h}
-                  className="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-wl-border-default bg-wl-bg-elevated sticky top-0 whitespace-nowrap"
+                  className="text-left p-4 text-xs font-semibold text-wl-text-secondary uppercase tracking-wider border-b border-wl-border-default bg-wl-bg-elevated sticky top-0 whitespace-nowrap"
                 >
                   {h}
                 </th>
@@ -130,7 +130,7 @@ function MapLegend() {
   ];
   return (
     <div className="space-y-1.5">
-      <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
+      <p className="text-[10px] font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
         Map Legend
       </p>
       {items.map((item) => (
@@ -141,7 +141,7 @@ function MapLegend() {
               item.colorClass,
             )}
           />
-          <span className="text-xs text-gray-400">{item.label}</span>
+          <span className="text-xs text-wl-text-secondary">{item.label}</span>
         </div>
       ))}
     </div>
@@ -165,13 +165,13 @@ function MapShipmentCard({ shipment, onClose, onView }: MapShipmentCardProps) {
             <div className="font-mono font-bold text-blue-400 text-sm">
               {shipment.trackingNumber ?? shipment.shipmentNumber}
             </div>
-            <div className="text-xs text-gray-500 mt-0.5">
+            <div className="text-xs text-wl-text-tertiary mt-0.5">
               {shipment.shipmentNumber}
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-white transition-colors flex-shrink-0 text-lg"
+            className="text-wl-text-tertiary hover:text-white transition-colors flex-shrink-0 text-lg"
             aria-label="Close"
           >
             ✕
@@ -184,15 +184,15 @@ function MapShipmentCard({ shipment, onClose, onView }: MapShipmentCardProps) {
 
         <div className="space-y-3">
           <div>
-            <div className="text-xs text-gray-500 mb-0.5">Recipient</div>
+            <div className="text-xs text-wl-text-tertiary mb-0.5">Recipient</div>
             <div className="text-sm font-semibold text-white">
               {shipment.recipientName ?? "—"}
             </div>
           </div>
 
           <div>
-            <div className="text-xs text-gray-500 mb-0.5">Delivery Address</div>
-            <div className="text-xs text-gray-400 leading-snug">
+            <div className="text-xs text-wl-text-tertiary mb-0.5">Delivery Address</div>
+            <div className="text-xs text-wl-text-secondary leading-snug">
               {[shipment.addressLine1, shipment.city, shipment.province]
                 .filter(Boolean)
                 .join(", ")}
@@ -201,14 +201,14 @@ function MapShipmentCard({ shipment, onClose, onView }: MapShipmentCardProps) {
 
           {shipment.driver?.name && (
             <div>
-              <div className="text-xs text-gray-500 mb-0.5">Driver</div>
-              <div className="text-xs text-gray-300">{shipment.driver.name}</div>
+              <div className="text-xs text-wl-text-tertiary mb-0.5">Driver</div>
+              <div className="text-xs text-wl-text-secondary">{shipment.driver.name}</div>
             </div>
           )}
 
           {shipment.estimatedArrival && (
             <div>
-              <div className="text-xs text-gray-500 mb-0.5">ETA</div>
+              <div className="text-xs text-wl-text-tertiary mb-0.5">ETA</div>
               <div className="text-xs text-blue-400 font-mono">
                 {formatRelativeTime(shipment.estimatedArrival)}
               </div>
@@ -335,7 +335,7 @@ export default function ShipmentsPage() {
                   "px-3 py-1.5 text-xs font-semibold transition-all",
                   viewMode === "list"
                     ? "bg-blue-500 text-white"
-                    : "text-gray-400 hover:text-white",
+                    : "text-wl-text-secondary hover:text-white",
                 )}
               >
                 List
@@ -346,7 +346,7 @@ export default function ShipmentsPage() {
                   "px-3 py-1.5 text-xs font-semibold transition-all flex items-center gap-1",
                   viewMode === "map"
                     ? "bg-blue-500 text-white"
-                    : "text-gray-400 hover:text-white",
+                    : "text-wl-text-secondary hover:text-white",
                 )}
               >
                 Map
@@ -418,7 +418,7 @@ export default function ShipmentsPage() {
                 "w-full p-2 px-4 bg-wl-bg-surface border border-wl-border-default rounded-md",
                 "text-white text-sm font-sans outline-none",
                 "focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
-                "placeholder:text-gray-500 transition-colors",
+                "placeholder:text-wl-text-tertiary transition-colors",
               )}
             />
           </div>
@@ -437,7 +437,7 @@ export default function ShipmentsPage() {
                     "px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer transition-all",
                     statusFilter === f.key
                       ? "bg-blue-500 text-white border-blue-500"
-                      : "bg-transparent text-gray-400 border-wl-border-default hover:border-wl-border-strong",
+                      : "bg-transparent text-wl-text-secondary border-wl-border-default hover:border-wl-border-strong",
                   )}
                 >
                   {f.label}
@@ -471,7 +471,7 @@ export default function ShipmentsPage() {
                   "flex items-center gap-1 px-3 py-1 rounded border text-xs font-semibold cursor-pointer transition-all",
                   methodFilter === m.key
                     ? "bg-blue-500 text-white border-blue-500"
-                    : "bg-transparent text-gray-400 border-wl-border-default hover:border-wl-border-strong",
+                    : "bg-transparent text-wl-text-secondary border-wl-border-default hover:border-wl-border-strong",
                 )}
               >
                 <span>{iconMap[m.key]}</span>
@@ -490,17 +490,17 @@ export default function ShipmentsPage() {
           <>
             {loading ? (
               <div className="h-[560px] bg-wl-bg-surface rounded-xl border border-wl-border-default animate-pulse flex items-center justify-center">
-                <p className="text-sm text-gray-500">Loading map…</p>
+                <p className="text-sm text-wl-text-tertiary">Loading map…</p>
               </div>
             ) : mappableShipments.length === 0 ? (
               <Card className="bg-wl-bg-surface border-wl-border-default">
                 <CardContent className="h-[480px] flex items-center justify-center">
                   <div className="text-center space-y-2">
                     <div className="text-3xl">🗺️</div>
-                    <p className="text-sm font-semibold text-gray-400">
+                    <p className="text-sm font-semibold text-wl-text-secondary">
                       No mappable shipments
                     </p>
-                    <p className="text-xs text-gray-600 max-w-xs">
+                    <p className="text-xs text-wl-text-tertiary max-w-xs">
                       {filtered.length === 0
                         ? "No shipments match the current filters."
                         : `${filtered.length} shipment(s) matched but none have delivery coordinates.`}
@@ -536,10 +536,10 @@ export default function ShipmentsPage() {
                   ) : (
                     <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-6">
                       <div>
-                        <p className="text-sm font-semibold text-gray-400 mb-1">
+                        <p className="text-sm font-semibold text-wl-text-secondary mb-1">
                           {mappableShipments.length} shipments on map
                         </p>
-                        <p className="text-xs text-gray-600">
+                        <p className="text-xs text-wl-text-tertiary">
                           Click a marker to see details
                         </p>
                       </div>
@@ -577,7 +577,7 @@ export default function ShipmentsPage() {
                           <th
                             key={h}
                             className={cn(
-                              "text-left p-4 text-xs font-semibold text-gray-400",
+                              "text-left p-4 text-xs font-semibold text-wl-text-secondary",
                               "uppercase tracking-wider border-b border-wl-border-default",
                               "bg-wl-bg-elevated sticky top-0 whitespace-nowrap",
                             )}
@@ -634,7 +634,7 @@ export default function ShipmentsPage() {
                             </Badge>
                           </td>
 
-                          <td className="p-4 text-gray-400 text-sm whitespace-nowrap">
+                          <td className="p-4 text-wl-text-secondary text-sm whitespace-nowrap">
                             <span className="mr-1">
                               {deliveryMethodIcon(shipment.deliveryMethod)}
                             </span>
@@ -645,8 +645,8 @@ export default function ShipmentsPage() {
                             className={cn(
                               "p-4 text-xs whitespace-nowrap",
                               shipment.driver?.name || shipment.location?.name
-                                ? "text-gray-400"
-                                : "text-gray-500 italic",
+                                ? "text-wl-text-secondary"
+                                : "text-wl-text-tertiary italic",
                             )}
                           >
                             {shipment.driver?.name ??
@@ -654,7 +654,7 @@ export default function ShipmentsPage() {
                               "—"}
                           </td>
 
-                          <td className="p-4 font-mono text-xs text-gray-400 text-center">
+                          <td className="p-4 font-mono text-xs text-wl-text-secondary text-center">
                             {shipment.itemCount}
                           </td>
 
@@ -671,7 +671,7 @@ export default function ShipmentsPage() {
                                 new Date(shipment.estimatedArrival) >
                                   new Date()
                                 ? "text-blue-400"
-                                : "text-gray-500",
+                                : "text-wl-text-tertiary",
                             )}
                           >
                             {shipment.estimatedArrival
@@ -684,7 +684,7 @@ export default function ShipmentsPage() {
                         <tr>
                           <td
                             colSpan={9}
-                            className="p-12 text-center text-gray-500 text-sm"
+                            className="p-12 text-center text-wl-text-tertiary text-sm"
                           >
                             <div className="flex flex-col items-center gap-2">
                               <span className="text-2xl">📦</span>
@@ -724,7 +724,7 @@ export default function ShipmentsPage() {
                 >
                   Previous
                 </Button>
-                <span className="text-sm text-gray-400 self-center">
+                <span className="text-sm text-wl-text-secondary self-center">
                   Page {pagination.page} of {pagination.totalPages}
                 </span>
                 <Button

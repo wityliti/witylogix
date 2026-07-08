@@ -33,7 +33,7 @@ export function TemplateList({
           )}
         >
           <div className="font-medium text-white">{template.name}</div>
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="text-xs text-wl-text-tertiary mt-1">
             {template.type.replace(/_/g, ' ')}
           </div>
         </button>

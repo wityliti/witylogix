@@ -50,7 +50,7 @@ function VaultStatusCard({
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="font-medium text-white">{name}</p>
-              <p className="text-xs text-gray-400 mt-1">{type}</p>
+              <p className="text-xs text-wl-text-secondary mt-1">{type}</p>
             </div>
             <Badge
               variant={connectionStatus === "connected" ? "success" : "danger"}
@@ -60,7 +60,7 @@ function VaultStatusCard({
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-400">Health Score</span>
+            <span className="text-xs text-wl-text-secondary">Health Score</span>
             <span className="text-sm font-medium text-white">
               {healthScore}%
             </span>
@@ -109,14 +109,14 @@ function RotationTimeline({ schedules }: { schedules: RotationSchedule[] }) {
                 )}
               />
               {idx < sorted.length - 1 && (
-                <div className="w-px h-12 bg-gray-700 my-2" />
+                <div className="w-px h-12 bg-wl-bg-overlay my-2" />
               )}
             </div>
             <div className="flex-1 pt-1">
               <p className="font-medium text-white">
                 {schedule.provider}
               </p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-wl-text-secondary mt-1">
                 {new Date(schedule.scheduledDate).toLocaleString()}
               </p>
               <Badge
@@ -196,7 +196,7 @@ export default function CredentialsPage() {
             <h3 className="font-semibold text-white">
               Failed to load credentials
             </h3>
-            <p className="text-sm text-gray-400 mt-1">{error}</p>
+            <p className="text-sm text-wl-text-secondary mt-1">{error}</p>
             <Button
               onClick={revalidate}
               variant="secondary"
@@ -222,7 +222,7 @@ export default function CredentialsPage() {
               <h3 className="font-semibold text-white">
                 {overdueRotations.length} Credential Rotation{overdueRotations.length !== 1 ? "s" : ""} Overdue
               </h3>
-              <p className="text-sm text-gray-400 mt-1">
+              <p className="text-sm text-wl-text-secondary mt-1">
                 These credentials should have been rotated. Please rotate them as soon as possible.
               </p>
             </div>
@@ -318,21 +318,21 @@ export default function CredentialsPage() {
                         <p className="text-sm font-medium text-white truncate">
                           {credential.provider}
                         </p>
-                        <p className="text-xs text-gray-400 truncate mt-0.5">
+                        <p className="text-xs text-wl-text-secondary truncate mt-0.5">
                           Type: {credential.type.replace(/_/g, " ")}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
                       <div className="text-right text-xs">
-                        <p className="text-gray-400">Health</p>
+                        <p className="text-wl-text-secondary">Health</p>
                         <p className="font-medium text-white">
                           {credential.healthScore}%
                         </p>
                       </div>
                       <ChevronDown
                         className={cn(
-                          "w-4 h-4 text-gray-400 transition-transform",
+                          "w-4 h-4 text-wl-text-secondary transition-transform",
                           expandedCredentials[credential.id] && "rotate-180"
                         )}
                       />
@@ -343,19 +343,19 @@ export default function CredentialsPage() {
                     <div className="border-t border-wl-border-default bg-wl-bg-elevated p-3 space-y-3">
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p className="text-gray-400 mb-1">Vault</p>
+                          <p className="text-wl-text-secondary mb-1">Vault</p>
                           <p className="font-medium text-white">
                             {credential.vault}
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-400 mb-1">Last Rotated</p>
+                          <p className="text-wl-text-secondary mb-1">Last Rotated</p>
                           <p className="font-medium text-white">
                             {new Date(credential.lastRotated).toLocaleDateString()}
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-400 mb-1">Expires In</p>
+                          <p className="text-wl-text-secondary mb-1">Expires In</p>
                           <p className={cn(
                             "font-medium",
                             isExpired
@@ -368,7 +368,7 @@ export default function CredentialsPage() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-400 mb-1">Expiry Date</p>
+                          <p className="text-wl-text-secondary mb-1">Expiry Date</p>
                           <p className="font-medium text-white">
                             {new Date(credential.expiryDate).toLocaleDateString()}
                           </p>
@@ -459,13 +459,13 @@ export default function CredentialsPage() {
                   <p className="font-medium text-white">
                     AWS_SECRET_ACCESS_KEY exposed in commit abc123
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-wl-text-secondary mt-1">
                     Found in repository at line 45
                   </p>
                 </div>
                 <Badge variant="danger">Exposed</Badge>
               </div>
-              <p className="text-xs text-gray-400 mb-3">
+              <p className="text-xs text-wl-text-secondary mb-3">
                 Remediation: Rotate this credential immediately and revoke access.
               </p>
               <div className="flex gap-2">
@@ -485,13 +485,13 @@ export default function CredentialsPage() {
                   <p className="font-medium text-white">
                     STRIPE_API_KEY detected in .env.local
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-wl-text-secondary mt-1">
                     Found in local development environment
                   </p>
                 </div>
                 <Badge variant="warning">Risky</Badge>
               </div>
-              <p className="text-xs text-gray-400 mb-3">
+              <p className="text-xs text-wl-text-secondary mb-3">
                 Remediation: Move this to a secure secrets manager. Ensure .env is in .gitignore.
               </p>
               <Button size="sm" variant="secondary">

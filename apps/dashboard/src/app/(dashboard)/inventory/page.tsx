@@ -103,7 +103,7 @@ export default function InventoryPage() {
             <h1 className={cn("text-3xl font-bold text-white mb-2")}>
               Inventory Management
             </h1>
-            <p className={cn("text-gray-400 text-sm")}>
+            <p className={cn("text-wl-text-secondary text-sm")}>
               Track and manage product inventory across warehouses
             </p>
           </div>
@@ -118,7 +118,7 @@ export default function InventoryPage() {
           <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
             <CardContent className={cn("p-5 flex items-center justify-between")}>
               <div>
-                <p className={cn("text-gray-400 text-xs font-medium")}>Total Quantity</p>
+                <p className={cn("text-wl-text-secondary text-xs font-medium")}>Total Quantity</p>
                 <p className={cn("text-white text-2xl font-bold mt-1")}>{totalQuantity.toLocaleString()}</p>
               </div>
               <Package size={32} className={cn("text-blue-500 opacity-70")} />
@@ -128,7 +128,7 @@ export default function InventoryPage() {
           <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
             <CardContent className={cn("p-5 flex items-center justify-between")}>
               <div>
-                <p className={cn("text-gray-400 text-xs font-medium")}>Low Stock</p>
+                <p className={cn("text-wl-text-secondary text-xs font-medium")}>Low Stock</p>
                 <p className={cn("text-white text-2xl font-bold mt-1")}>{lowStockCount}</p>
               </div>
               <AlertTriangle size={32} className="text-amber-500 opacity-70" />
@@ -138,7 +138,7 @@ export default function InventoryPage() {
           <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
             <CardContent className={cn("p-5 flex items-center justify-between")}>
               <div>
-                <p className={cn("text-gray-400 text-xs font-medium")}>Out of Stock</p>
+                <p className={cn("text-wl-text-secondary text-xs font-medium")}>Out of Stock</p>
                 <p className={cn("text-white text-2xl font-bold mt-1")}>{outOfStockCount}</p>
               </div>
               <TrendingDown size={32} className="text-red-500 opacity-70" />
@@ -148,7 +148,7 @@ export default function InventoryPage() {
           <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
             <CardContent className={cn("p-5 flex items-center justify-between")}>
               <div>
-                <p className={cn("text-gray-400 text-xs font-medium")}>Total SKUs</p>
+                <p className={cn("text-wl-text-secondary text-xs font-medium")}>Total SKUs</p>
                 <p className={cn("text-white text-2xl font-bold mt-1")}>{items.length}</p>
               </div>
               <CheckCircle size={32} className="text-emerald-500 opacity-70" />
@@ -164,7 +164,7 @@ export default function InventoryPage() {
               "flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors",
               view === "list"
                 ? "bg-wl-primary-500 text-white"
-                : "bg-wl-bg-elevated text-gray-400 hover:text-white border border-wl-border-default"
+                : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white border border-wl-border-default"
             )}
           >
             <List size={14} />
@@ -176,7 +176,7 @@ export default function InventoryPage() {
               "flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors",
               view === "map"
                 ? "bg-wl-primary-500 text-white"
-                : "bg-wl-bg-elevated text-gray-400 hover:text-white border border-wl-border-default"
+                : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white border border-wl-border-default"
             )}
           >
             <MapPin size={14} />
@@ -189,7 +189,7 @@ export default function InventoryPage() {
           <Card className={cn("bg-wl-bg-surface border border-wl-border-default mb-6")}>
             <CardHeader>
               <CardTitle className={cn("text-white")}>Warehouse Map</CardTitle>
-              <CardDescription className={cn("text-gray-400")}>
+              <CardDescription className={cn("text-wl-text-secondary")}>
                 Stock levels by warehouse location — bubble size scales with quantity
               </CardDescription>
             </CardHeader>
@@ -198,7 +198,7 @@ export default function InventoryPage() {
                 <div className={cn("h-[480px] flex items-center justify-center bg-wl-bg-elevated")}>
                   <div className={cn("flex flex-col items-center gap-3")}>
                     <div className={cn("w-8 h-8 border-2 border-wl-primary-500 border-t-transparent rounded-full animate-spin")} />
-                    <p className={cn("text-gray-400 text-sm")}>Loading warehouse data…</p>
+                    <p className={cn("text-wl-text-secondary text-sm")}>Loading warehouse data…</p>
                   </div>
                 </div>
               ) : warehouseError ? (
@@ -207,9 +207,9 @@ export default function InventoryPage() {
                 </div>
               ) : warehousePins.length === 0 ? (
                 <div className={cn("h-[480px] flex flex-col items-center justify-center bg-wl-bg-elevated gap-3")}>
-                  <MapPin size={40} className="text-gray-600" />
-                  <p className={cn("text-gray-400 text-sm")}>No warehouse coordinates configured</p>
-                  <p className={cn("text-gray-500 text-xs")}>Add latitude / longitude to your locations to see them here</p>
+                  <MapPin size={40} className="text-wl-text-tertiary" />
+                  <p className={cn("text-wl-text-secondary text-sm")}>No warehouse coordinates configured</p>
+                  <p className={cn("text-wl-text-tertiary text-xs")}>Add latitude / longitude to your locations to see them here</p>
                 </div>
               ) : (
                 <div className={cn("h-[480px]")}>
@@ -221,8 +221,8 @@ export default function InventoryPage() {
 
               {/* Legend */}
               {!warehouseLoading && !warehouseError && warehousePins.length > 0 && (
-                <div className={cn("flex items-center gap-4 px-4 py-3 border-t border-wl-border-default text-xs text-gray-400 flex-wrap")}>
-                  <span className="font-medium text-gray-300">Stock stress:</span>
+                <div className={cn("flex items-center gap-4 px-4 py-3 border-t border-wl-border-default text-xs text-wl-text-secondary flex-wrap")}>
+                  <span className="font-medium text-wl-text-secondary">Stock stress:</span>
                   {[
                     { color: "#3b82f6", label: "Healthy (0%)" },
                     { color: "#22c55e", label: "Moderate (50%)" },
@@ -276,18 +276,18 @@ export default function InventoryPage() {
                   <table className={cn("w-full border-collapse")}>
                     <thead>
                       <tr className={cn("border-b-2 border-wl-border-default")}>
-                        <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>SKU</th>
-                        <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>Product Name</th>
-                        <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>Location</th>
-                        <th className={cn("p-3 text-center text-gray-400 text-xs font-semibold")}>Quantity</th>
-                        <th className={cn("p-3 text-center text-gray-400 text-xs font-semibold")}>Reorder Point</th>
-                        <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>Status</th>
+                        <th className={cn("p-3 text-left text-wl-text-secondary text-xs font-semibold")}>SKU</th>
+                        <th className={cn("p-3 text-left text-wl-text-secondary text-xs font-semibold")}>Product Name</th>
+                        <th className={cn("p-3 text-left text-wl-text-secondary text-xs font-semibold")}>Location</th>
+                        <th className={cn("p-3 text-center text-wl-text-secondary text-xs font-semibold")}>Quantity</th>
+                        <th className={cn("p-3 text-center text-wl-text-secondary text-xs font-semibold")}>Reorder Point</th>
+                        <th className={cn("p-3 text-left text-wl-text-secondary text-xs font-semibold")}>Status</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredItems.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className={cn("p-6 text-center text-gray-400 text-sm")}>
+                          <td colSpan={6} className={cn("p-6 text-center text-wl-text-secondary text-sm")}>
                             No inventory items found
                           </td>
                         </tr>
@@ -296,9 +296,9 @@ export default function InventoryPage() {
                           <tr key={item.id} className={cn("border-b border-wl-border-default hover:bg-wl-bg-elevated/50 transition-colors")}>
                             <td className={cn("p-3 text-white text-xs font-medium font-mono")}>{item.sku}</td>
                             <td className={cn("p-3 text-white text-sm")}>{item.name}</td>
-                            <td className={cn("p-3 text-gray-400 text-xs")}>{item.locationId}</td>
+                            <td className={cn("p-3 text-wl-text-secondary text-xs")}>{item.locationId}</td>
                             <td className={cn("p-3 text-white text-sm text-center font-semibold")}>{item.quantity}</td>
-                            <td className={cn("p-3 text-gray-400 text-xs text-center")}>{item.reorderPoint}</td>
+                            <td className={cn("p-3 text-wl-text-secondary text-xs text-center")}>{item.reorderPoint}</td>
                             <td className={cn("p-3")}>
                               <Badge variant={getStatusVariant(item.status)} className="px-2 py-1 text-xs font-semibold">
                                 {item.status.replace(/-/g, " ").toUpperCase()}
@@ -320,7 +320,7 @@ export default function InventoryPage() {
               </CardHeader>
               <CardContent className={cn("flex flex-col gap-3")}>
                 {lowStockAlerts.length === 0 ? (
-                  <p className={cn("text-gray-400 text-xs text-center py-5")}>
+                  <p className={cn("text-wl-text-secondary text-xs text-center py-5")}>
                     All items well stocked
                   </p>
                 ) : (
@@ -330,7 +330,7 @@ export default function InventoryPage() {
                         <AlertTriangle size={14} className="text-amber-500 mt-0.5 flex-shrink-0" />
                         <div>
                           <p className={cn("text-white text-xs font-medium")}>{item.name}</p>
-                          <p className={cn("text-gray-400 text-xs")}>{item.quantity} / {item.reorderPoint}</p>
+                          <p className={cn("text-wl-text-secondary text-xs")}>{item.quantity} / {item.reorderPoint}</p>
                         </div>
                       </div>
                       <Button variant="primary" size="sm" className={cn("w-full")}>
@@ -349,24 +349,24 @@ export default function InventoryPage() {
           <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
             <CardHeader>
               <CardTitle className={cn("text-white")}>Stock Movement History</CardTitle>
-              <CardDescription className={cn("text-gray-400")}>Recent inventory transactions</CardDescription>
+              <CardDescription className={cn("text-wl-text-secondary")}>Recent inventory transactions</CardDescription>
             </CardHeader>
             <CardContent>
               <div className={cn("overflow-x-auto")}>
                 <table className={cn("w-full border-collapse")}>
                   <thead>
                     <tr className={cn("border-b-2 border-wl-border-default")}>
-                      <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>SKU</th>
-                      <th className={cn("p-3 text-center text-gray-400 text-xs font-semibold")}>Type</th>
-                      <th className={cn("p-3 text-center text-gray-400 text-xs font-semibold")}>Quantity</th>
-                      <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>Reference</th>
-                      <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>Date</th>
+                      <th className={cn("p-3 text-left text-wl-text-secondary text-xs font-semibold")}>SKU</th>
+                      <th className={cn("p-3 text-center text-wl-text-secondary text-xs font-semibold")}>Type</th>
+                      <th className={cn("p-3 text-center text-wl-text-secondary text-xs font-semibold")}>Quantity</th>
+                      <th className={cn("p-3 text-left text-wl-text-secondary text-xs font-semibold")}>Reference</th>
+                      <th className={cn("p-3 text-left text-wl-text-secondary text-xs font-semibold")}>Date</th>
                     </tr>
                   </thead>
                   <tbody>
                     {movements.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className={cn("p-6 text-center text-gray-400 text-sm")}>
+                        <td colSpan={5} className={cn("p-6 text-center text-wl-text-secondary text-sm")}>
                           No recent movements
                         </td>
                       </tr>
@@ -390,8 +390,8 @@ export default function InventoryPage() {
                             </div>
                           </td>
                           <td className={cn("p-3 text-white text-sm text-center font-semibold")}>{movement.quantity}</td>
-                          <td className={cn("p-3 text-gray-400 text-xs")}>{movement.reason}</td>
-                          <td className={cn("p-3 text-gray-400 text-xs")}>{movement.date}</td>
+                          <td className={cn("p-3 text-wl-text-secondary text-xs")}>{movement.reason}</td>
+                          <td className={cn("p-3 text-wl-text-secondary text-xs")}>{movement.date}</td>
                         </tr>
                       ))
                     )}

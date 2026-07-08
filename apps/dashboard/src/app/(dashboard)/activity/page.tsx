@@ -195,7 +195,7 @@ export default function ActivityPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-bold text-white tracking-tight">Activity Log</h1>
-              <p className="text-sm text-gray-300 mt-2">Real-time monitoring of system events and operations</p>
+              <p className="text-sm text-wl-text-secondary mt-2">Real-time monitoring of system events and operations</p>
             </div>
             <div className="flex items-center gap-3">
               {/* Live indicator */}
@@ -211,10 +211,10 @@ export default function ActivityPage() {
                 <div
                   className={cn(
                     'w-2 h-2 rounded-full transition-all duration-500',
-                    isLiveMode ? 'bg-emerald-500 animate-pulse' : 'bg-gray-500',
+                    isLiveMode ? 'bg-emerald-500 animate-pulse' : 'bg-wl-bg-overlay',
                   )}
                 />
-                <span className={cn('text-xs font-medium', isLiveMode ? 'text-emerald-500' : 'text-gray-300')}>
+                <span className={cn('text-xs font-medium', isLiveMode ? 'text-emerald-500' : 'text-wl-text-secondary')}>
                   {isLiveMode ? 'Live' : 'Paused'}
                 </span>
               </button>
@@ -229,7 +229,7 @@ export default function ActivityPage() {
           {/* Search and filters */}
           <div className="space-y-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary pointer-events-none" />
               <Input
                 type="text"
                 placeholder="Search by title, description, entity, or user..."
@@ -246,7 +246,7 @@ export default function ActivityPage() {
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-wl-text-secondary hover:text-wl-text-secondary"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -326,7 +326,7 @@ export default function ActivityPage() {
                     <div>
                       <button
                         onClick={() => setSelectedEventId(null)}
-                        className="text-xs text-gray-300 hover:text-white transition-colors mb-3 flex items-center gap-1"
+                        className="text-xs text-wl-text-secondary hover:text-white transition-colors mb-3 flex items-center gap-1"
                       >
                         <X className="w-3 h-3" /> Close
                       </button>
@@ -340,7 +340,7 @@ export default function ActivityPage() {
                     </div>
 
                     <div className="border-t border-wl-border-default pt-4">
-                      <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                      <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                         Description
                       </p>
                       <p className="text-sm text-white">
@@ -350,7 +350,7 @@ export default function ActivityPage() {
 
                     {selectedEvent.user && (
                       <div className="border-t border-wl-border-default pt-4">
-                        <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
+                        <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-3">
                           Triggered by
                         </p>
                         <div className="flex items-center gap-3">
@@ -359,7 +359,7 @@ export default function ActivityPage() {
                           </Avatar>
                           <div>
                             <p className="text-sm font-medium text-white">{selectedEvent.user.name}</p>
-                            <p className="text-xs text-gray-400">{selectedEvent.user.id}</p>
+                            <p className="text-xs text-wl-text-secondary">{selectedEvent.user.id}</p>
                           </div>
                         </div>
                       </div>
@@ -367,17 +367,17 @@ export default function ActivityPage() {
 
                     {selectedEvent.entity && (
                       <div className="border-t border-wl-border-default pt-4">
-                        <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
+                        <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-3">
                           Related entity
                         </p>
                         <div className="bg-wl-bg-surface rounded-md p-3 border border-wl-border-default">
-                          <p className="text-xs text-gray-300 mb-1">
+                          <p className="text-xs text-wl-text-secondary mb-1">
                             {selectedEvent.entity.type.toUpperCase()}
                           </p>
                           <p className="text-sm font-medium text-blue-400">
                             {selectedEvent.entity.name}
                           </p>
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="text-xs text-wl-text-secondary mt-1">
                             ID: {selectedEvent.entity.id}
                           </p>
                         </div>
@@ -385,7 +385,7 @@ export default function ActivityPage() {
                     )}
 
                     <div className="border-t border-wl-border-default pt-4">
-                      <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                      <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                         Timestamp
                       </p>
                       <p className="text-sm text-white">
@@ -396,14 +396,14 @@ export default function ActivityPage() {
                     {selectedEvent.metadata &&
                       Object.keys(selectedEvent.metadata).length > 0 && (
                         <div className="border-t border-wl-border-default pt-4">
-                          <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
+                          <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-3">
                             Metadata
                           </p>
                           <div className="space-y-2">
                             {Object.entries(selectedEvent.metadata).map(
                               ([key, value]) => (
                                 <div key={key} className="text-xs">
-                                  <span className="text-gray-300">
+                                  <span className="text-wl-text-secondary">
                                     {key}:
                                   </span>
                                   <span className="text-white ml-2">

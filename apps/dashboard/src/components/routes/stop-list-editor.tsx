@@ -85,22 +85,6 @@ export function StopListEditor({
     setSuggestions([]);
   };
 
-    if (value.length < 3) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      setIsSearching(false);
-      return;
-    }
-
-    setIsSearching(true);
-    searchTimerRef.current = setTimeout(async () => {
-      const results = await searchAddresses(value);
-      setSuggestions(results);
-      setShowSuggestions(results.length > 0);
-      setIsSearching(false);
-    }, 500); // 500 ms debounce to respect Nominatim rate limit
-  }, []);
-
   // Cleanup debounce timer on unmount
   useEffect(() => {
     return () => {

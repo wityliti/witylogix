@@ -23,10 +23,10 @@ import dynamic from 'next/dynamic';
 const DriversMapView = dynamic(() => import('./components/drivers-map-view'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-[520px] rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+    <div className="w-full h-[520px] rounded-xl bg-wl-bg-root border border-wl-border-strong flex items-center justify-center">
       <div className="text-center">
-        <div className="w-8 h-8 rounded-full border-2 border-zinc-600 border-t-white animate-spin mx-auto mb-3" />
-        <p className="text-sm text-zinc-500">Loading map…</p>
+        <div className="w-8 h-8 rounded-full border-2 border-wl-border-default border-t-white animate-spin mx-auto mb-3" />
+        <p className="text-sm text-wl-text-tertiary">Loading map…</p>
       </div>
     </div>
   ),
@@ -100,7 +100,7 @@ const DriverCard = ({ driver, onLocate }: { driver: ApiDriver; onLocate?: () => 
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="font-semibold text-white text-sm leading-tight">{driver.name}</h3>
-              <div className="flex items-center gap-1 text-xs text-gray-400 mt-1">
+              <div className="flex items-center gap-1 text-xs text-wl-text-secondary mt-1">
                 <Phone className="w-3 h-3" />
                 <span>{driver.phone}</span>
               </div>
@@ -113,18 +113,18 @@ const DriverCard = ({ driver, onLocate }: { driver: ApiDriver; onLocate?: () => 
 
         <div className="grid grid-cols-3 gap-3 mb-4 pb-4 border-b border-white/[0.05]">
           <div>
-            <div className="text-xs text-gray-400 mb-1">Active Orders</div>
+            <div className="text-xs text-wl-text-secondary mb-1">Active Orders</div>
             <div className="text-sm font-semibold text-white">{driver._count.orders}</div>
           </div>
           <div>
-            <div className="text-xs text-gray-400 mb-1">Vehicle</div>
+            <div className="text-xs text-wl-text-secondary mb-1">Vehicle</div>
             <div className="text-xs font-medium text-white flex items-center gap-1">
               <Truck className="w-3 h-3 text-blue-400" />
               {driver.vehicleType || '—'}
             </div>
           </div>
           <div>
-            <div className="text-xs text-gray-400 mb-1">Plate</div>
+            <div className="text-xs text-wl-text-secondary mb-1">Plate</div>
             <div className="text-sm font-semibold text-white">{driver.vehiclePlate || '—'}</div>
           </div>
         </div>
@@ -150,20 +150,6 @@ const DriverCard = ({ driver, onLocate }: { driver: ApiDriver; onLocate?: () => 
     </Card>
   );
 };
-
-export default function DriversPage() {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('cards');
-
-  const { items: driversData, loading: driversLoading, error: driversError, refetch: refetchDrivers } =
-    useApiList<ApiDriver>('/api/v4/drivers');
-
-  const { items: dispatchDrivers, loading: dispatchLoading } =
-    useApiList<DispatchDriver>('/api/v4/dispatch/drivers');
-
-  const loading = driversLoading;
-  const error = driversError;
 
 function MapLegend() {
   return (
@@ -278,15 +264,15 @@ export default function DriversPage() {
         actions={
           <div className="flex items-center gap-2">
             {/* View toggle */}
-            <div className="flex items-center rounded-lg border border-zinc-700 overflow-hidden">
+            <div className="flex items-center rounded-lg border border-wl-border-default overflow-hidden">
               <button
                 onClick={() => setViewMode('cards')}
                 aria-pressed={viewMode === 'cards'}
                 className={cn(
                   'px-3 py-1.5 text-sm flex items-center gap-1.5 transition-colors',
                   viewMode === 'cards'
-                    ? 'bg-zinc-700 text-white'
-                    : 'bg-transparent text-zinc-400 hover:text-white'
+                    ? 'bg-wl-bg-overlay text-white'
+                    : 'bg-transparent text-wl-text-secondary hover:text-white'
                 )}
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
@@ -298,8 +284,8 @@ export default function DriversPage() {
                 className={cn(
                   'px-3 py-1.5 text-sm flex items-center gap-1.5 transition-colors',
                   viewMode === 'map'
-                    ? 'bg-zinc-700 text-white'
-                    : 'bg-transparent text-zinc-400 hover:text-white'
+                    ? 'bg-wl-bg-overlay text-white'
+                    : 'bg-transparent text-wl-text-secondary hover:text-white'
                 )}
               >
                 <Map className="w-3.5 h-3.5" />
@@ -329,20 +315,20 @@ export default function DriversPage() {
               { label: 'Available', count: driversData.filter((d) => normalizeStatus(d.status) === 'available').length, color: 'text-emerald-400' },
               { label: 'En Route', count: driversData.filter((d) => normalizeStatus(d.status) === 'en_route').length, color: 'text-blue-400' },
               { label: 'Delivering', count: driversData.filter((d) => normalizeStatus(d.status) === 'delivering').length, color: 'text-sky-400' },
-              { label: 'Offline', count: driversData.filter((d) => normalizeStatus(d.status) === 'offline').length, color: 'text-zinc-400' },
+              { label: 'Offline', count: driversData.filter((d) => normalizeStatus(d.status) === 'offline').length, color: 'text-wl-text-secondary' },
             ].map(({ label, count, color }) => (
-              <div key={label} className="rounded-lg bg-zinc-900 border border-zinc-800 px-4 py-3">
-                <p className="text-xs text-zinc-400">{label}</p>
+              <div key={label} className="rounded-lg bg-wl-bg-root border border-wl-border-strong px-4 py-3">
+                <p className="text-xs text-wl-text-secondary">{label}</p>
                 <p className={cn('text-2xl font-bold font-mono', color)}>{count}</p>
               </div>
             ))}
           </div>
 
           {dispatchLoading ? (
-            <div className="w-full h-[520px] rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+            <div className="w-full h-[520px] rounded-xl bg-wl-bg-root border border-wl-border-strong flex items-center justify-center">
               <div className="text-center">
-                <div className="w-8 h-8 rounded-full border-2 border-zinc-600 border-t-white animate-spin mx-auto mb-3" />
-                <p className="text-sm text-zinc-500">Loading driver locations…</p>
+                <div className="w-8 h-8 rounded-full border-2 border-wl-border-default border-t-white animate-spin mx-auto mb-3" />
+                <p className="text-sm text-wl-text-tertiary">Loading driver locations…</p>
               </div>
             </div>
           ) : (
@@ -350,7 +336,7 @@ export default function DriversPage() {
           )}
 
           {driversWithLocation.length === 0 && !dispatchLoading && (
-            <p className="text-center text-sm text-zinc-500 py-2">
+            <p className="text-center text-sm text-wl-text-tertiary py-2">
               No drivers have reported their location yet. Driver locations update automatically from the mobile app.
             </p>
           )}
@@ -374,8 +360,8 @@ export default function DriversPage() {
             ))}
             {filteredDrivers.length === 0 && (
               <div className="col-span-3 text-center py-12">
-                <Truck className="w-10 h-10 mx-auto mb-3 text-zinc-600" />
-                <p className="text-sm text-zinc-400">No drivers in this status</p>
+                <Truck className="w-10 h-10 mx-auto mb-3 text-wl-text-tertiary" />
+                <p className="text-sm text-wl-text-secondary">No drivers in this status</p>
               </div>
             )}
           </div>

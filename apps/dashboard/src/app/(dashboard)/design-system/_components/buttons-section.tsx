@@ -10,7 +10,7 @@ export function ButtonsSection() {
         <h2 className="text-2xl font-bold text-white mb-2">
           Buttons
         </h2>
-        <p className="text-gray-300 mb-8">
+        <p className="text-wl-text-secondary mb-8">
           Button component with 4 variants: primary, secondary, ghost, and danger.
           Supports small, medium, and large sizes.
         </p>

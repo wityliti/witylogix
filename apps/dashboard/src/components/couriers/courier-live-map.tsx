@@ -302,7 +302,7 @@ export function CourierLiveMap({
   const hoveredCourier = couriers.find((c) => c.id === hoveredCourierId);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full bg-gray-900 rounded-lg overflow-hidden">
+    <div ref={containerRef} className="relative w-full h-full bg-wl-bg-root rounded-lg overflow-hidden">
       <canvas
         ref={canvasRef}
         onMouseMove={handleCanvasMouseMove}
@@ -358,7 +358,7 @@ export function CourierLiveMap({
               <span
                 className={cn(
                   "inline-block w-2 h-2 rounded-full",
-                  hoveredCourier.status === "idle" && "bg-gray-500",
+                  hoveredCourier.status === "idle" && "bg-wl-bg-overlay",
                   hoveredCourier.status === "en-route" && "bg-blue-500",
                   hoveredCourier.status === "delivering" && "bg-amber-500",
                   hoveredCourier.status === "returning" && "bg-purple-500"
@@ -392,7 +392,7 @@ export function CourierLiveMap({
             <span className="text-wl-text-secondary">Dropoff Point</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-gray-500" />
+            <div className="w-3 h-3 rounded-full bg-wl-bg-overlay" />
             <span className="text-wl-text-secondary">Idle Courier</span>
           </div>
           <div className="flex items-center gap-2">

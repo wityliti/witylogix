@@ -49,7 +49,7 @@ export function ViolationAlertCard({ alert }: ViolationAlertCardProps) {
               <h4 className="font-semibold text-white">
                 {alert.type}
               </h4>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-wl-text-tertiary mt-1">
                 {alert.driverName} • {alert.timestamp}
               </p>
             </div>
@@ -85,7 +85,7 @@ export function ViolationAlertCard({ alert }: ViolationAlertCardProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="text-gray-400 hover:text-white"
+            className="text-wl-text-secondary hover:text-white"
           >
             Dismiss
           </Button>

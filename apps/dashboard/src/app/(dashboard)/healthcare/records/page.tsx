@@ -49,7 +49,7 @@ export default function RecordsPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">Clinical Records</h1>
-            <p className="text-gray-400">View and manage clinical documents</p>
+            <p className="text-wl-text-secondary">View and manage clinical documents</p>
           </div>
           <div className="flex gap-2">
             <Button variant="secondary" className="flex items-center gap-2">
@@ -67,33 +67,33 @@ export default function RecordsPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Total Records</span>
+              <span className="text-wl-text-secondary text-sm font-medium">Total Records</span>
               <FileText className="text-blue-500" size={20} />
             </div>
             <p className="text-3xl font-bold text-white">{records.length}</p>
-            <p className="text-gray-400 text-xs mt-2">All documents</p>
+            <p className="text-wl-text-secondary text-xs mt-2">All documents</p>
           </CardContent>
         </Card>
 
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Signed Records</span>
+              <span className="text-wl-text-secondary text-sm font-medium">Signed Records</span>
               <div className="w-5 h-5 rounded-full bg-emerald-500"></div>
             </div>
             <p className="text-3xl font-bold text-white">{records.filter(r => r.isSigned).length}</p>
-            <p className="text-gray-400 text-xs mt-2">Completed</p>
+            <p className="text-wl-text-secondary text-xs mt-2">Completed</p>
           </CardContent>
         </Card>
 
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Unsigned</span>
+              <span className="text-wl-text-secondary text-sm font-medium">Unsigned</span>
               <div className="w-5 h-5 rounded-full bg-amber-500"></div>
             </div>
             <p className="text-3xl font-bold text-white">{records.filter(r => !r.isSigned).length}</p>
-            <p className="text-gray-400 text-xs mt-2">Pending review</p>
+            <p className="text-wl-text-secondary text-xs mt-2">Pending review</p>
           </CardContent>
         </Card>
       </div>
@@ -102,7 +102,7 @@ export default function RecordsPage() {
       <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
-            <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+            <label className="text-sm font-medium text-wl-text-secondary flex items-center gap-2">
               <Filter size={16} /> Filter by Type:
             </label>
             <div className="flex gap-2 flex-wrap">
@@ -114,7 +114,7 @@ export default function RecordsPage() {
                     "px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
                     recordTypeFilter === type
                       ? "bg-blue-500 text-white"
-                      : "bg-wl-bg-elevated text-gray-400 hover:text-white"
+                      : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white"
                   )}
                 >
                   {type.replace(/_/g, " ")}
@@ -135,27 +135,27 @@ export default function RecordsPage() {
         <CardContent>
           {filteredRecords.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <FileText className="text-gray-600 mb-4" size={40} />
-              <p className="text-gray-400 font-medium mb-1">No clinical records found</p>
-              <p className="text-gray-500 text-sm">Import records or adjust your filter to see results.</p>
+              <FileText className="text-wl-text-tertiary mb-4" size={40} />
+              <p className="text-wl-text-secondary font-medium mb-1">No clinical records found</p>
+              <p className="text-wl-text-tertiary text-sm">Import records or adjust your filter to see results.</p>
             </div>
           ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-wl-border-default">
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Title</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Type</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Patient</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Author</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Date</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Status</th>
+                  <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Title</th>
+                  <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Type</th>
+                  <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Patient</th>
+                  <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Author</th>
+                  <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Date</th>
+                  <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredRecords.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-gray-400 text-sm">
+                    <td colSpan={6} className="py-12 text-center text-wl-text-secondary text-sm">
                       No clinical records found
                     </td>
                   </tr>
@@ -174,9 +174,9 @@ export default function RecordsPage() {
                         {record.type.replace(/_/g, " ")}
                       </Badge>
                     </td>
-                    <td className="py-3 px-4 text-gray-400">{record.patientName}</td>
-                    <td className="py-3 px-4 text-gray-400 text-xs">{record.author}</td>
-                    <td className="py-3 px-4 text-gray-400 text-xs">
+                    <td className="py-3 px-4 text-wl-text-secondary">{record.patientName}</td>
+                    <td className="py-3 px-4 text-wl-text-secondary text-xs">{record.author}</td>
+                    <td className="py-3 px-4 text-wl-text-secondary text-xs">
                       {new Date(record.date).toLocaleDateString()}
                     </td>
                     <td className="py-3 px-4">
@@ -199,11 +199,11 @@ export default function RecordsPage() {
           <CardHeader className="border-b border-wl-border-default flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base text-white">{selectedRecord.title}</CardTitle>
-              <p className="text-xs text-gray-400 mt-1">ID: {selectedRecord.id}</p>
+              <p className="text-xs text-wl-text-secondary mt-1">ID: {selectedRecord.id}</p>
             </div>
             <button
               onClick={() => setSelectedRecordId(null)}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-wl-text-secondary hover:text-white transition-colors"
             >
               ✕
             </button>
@@ -213,15 +213,15 @@ export default function RecordsPage() {
               {/* Content */}
               <div className="lg:col-span-2 space-y-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-400 mb-2">Summary</h3>
+                  <h3 className="text-sm font-semibold text-wl-text-secondary mb-2">Summary</h3>
                   <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default">
-                    <p className="text-sm text-gray-300 leading-relaxed">{selectedRecord.summary}</p>
+                    <p className="text-sm text-wl-text-secondary leading-relaxed">{selectedRecord.summary}</p>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-400 mb-2">HL7 Message</h3>
-                  <pre className="p-3 bg-wl-bg-root border border-wl-border-default rounded font-mono text-xs text-gray-400 overflow-x-auto">
+                  <h3 className="text-sm font-semibold text-wl-text-secondary mb-2">HL7 Message</h3>
+                  <pre className="p-3 bg-wl-bg-root border border-wl-border-default rounded font-mono text-xs text-wl-text-secondary overflow-x-auto">
 {`MSH|^~\\&|EHR|FACILITY|LAB|REMOTE|202603101430||ORM^O01|20260310143000|P|2.3
 PID|||${selectedRecord.id}||PATIENT^NAME||19650315|M|||123 MAIN STREET^^SPRINGFIELD^IL^62701
 ORC|NW|${selectedRecord.id}|LAB001||CM|
@@ -233,30 +233,30 @@ OBR||${selectedRecord.id}|LAB001|85025^CBC|||202603101430|||||||202603101430|`}
               {/* Details Sidebar */}
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-400 mb-3">Details</h3>
+                  <h3 className="text-sm font-semibold text-wl-text-secondary mb-3">Details</h3>
                   <div className="space-y-3 text-sm">
                     <div>
-                      <p className="text-gray-400 text-xs mb-1">Type</p>
+                      <p className="text-wl-text-secondary text-xs mb-1">Type</p>
                       <Badge variant={recordTypeVariants[selectedRecord.type] || 'default'}>
                         {selectedRecord.type.replace(/_/g, " ")}
                       </Badge>
                     </div>
                     <div>
-                      <p className="text-gray-400 text-xs mb-1">Patient</p>
+                      <p className="text-wl-text-secondary text-xs mb-1">Patient</p>
                       <p className="text-white font-medium">{selectedRecord.patientName}</p>
                     </div>
                     <div>
-                      <p className="text-gray-400 text-xs mb-1">Author</p>
+                      <p className="text-wl-text-secondary text-xs mb-1">Author</p>
                       <p className="text-white font-medium">{selectedRecord.author}</p>
                     </div>
                     <div>
-                      <p className="text-gray-400 text-xs mb-1">Date</p>
+                      <p className="text-wl-text-secondary text-xs mb-1">Date</p>
                       <p className="text-white font-medium">
                         {new Date(selectedRecord.date).toLocaleString()}
                       </p>
                     </div>
                     <div>
-                      <p className="text-gray-400 text-xs mb-1">Status</p>
+                      <p className="text-wl-text-secondary text-xs mb-1">Status</p>
                       <Badge variant={selectedRecord.isSigned ? "success" : "warning"}>
                         {selectedRecord.isSigned ? "Signed" : "Unsigned"}
                       </Badge>

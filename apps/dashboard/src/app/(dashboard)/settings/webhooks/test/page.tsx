@@ -267,7 +267,7 @@ export default function WebhookTestPage() {
               </CardHeader>
               <CardContent>
                 {testSends.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">
+                  <div className="text-center py-8 text-wl-text-secondary">
                     No test sends yet
                   </div>
                 ) : (
@@ -288,7 +288,7 @@ export default function WebhookTestPage() {
                           <div className="flex items-center gap-2 flex-1 text-left">
                             {getStatusIcon(send.status)}
                             <div className="flex-1 min-w-0">
-                              <div className="text-xs font-mono text-gray-400">
+                              <div className="text-xs font-mono text-wl-text-secondary">
                                 {send.timestamp.toLocaleTimeString()}
                               </div>
                               <div className="text-xs truncate text-white">
@@ -320,7 +320,7 @@ export default function WebhookTestPage() {
                         {expandedSendId === send.id && (
                           <div className="border-t border-wl-border-default bg-wl-bg-elevated p-3 text-xs space-y-2">
                             <div>
-                              <div className="font-semibold text-gray-400 mb-1">
+                              <div className="font-semibold text-wl-text-secondary mb-1">
                                 Duration
                               </div>
                               <div className="font-mono text-white">
@@ -329,7 +329,7 @@ export default function WebhookTestPage() {
                             </div>
 
                             <div>
-                              <div className="font-semibold text-gray-400 mb-1">
+                              <div className="font-semibold text-wl-text-secondary mb-1">
                                 Endpoint
                               </div>
                               <div className="font-mono break-all text-white">
@@ -339,7 +339,7 @@ export default function WebhookTestPage() {
 
                             {send.responseBody && (
                               <div>
-                                <div className="font-semibold text-gray-400 mb-1">
+                                <div className="font-semibold text-wl-text-secondary mb-1">
                                   Response
                                 </div>
                                 <pre className="bg-wl-bg-root p-2 rounded overflow-x-auto max-h-32 overflow-y-auto text-white">

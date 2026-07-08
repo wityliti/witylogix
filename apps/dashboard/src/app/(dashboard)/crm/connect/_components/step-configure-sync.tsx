@@ -75,7 +75,7 @@ export function StepConfigureSync({
                     <p className={cn('font-semibold text-white', 'm-0')}>
                       {option.label}
                     </p>
-                    <p className={cn('text-sm text-gray-400', 'mt-0.5')}>
+                    <p className={cn('text-sm text-wl-text-secondary', 'mt-0.5')}>
                       {option.desc}
                     </p>
                   </div>
