@@ -388,15 +388,15 @@ export default function OrdersPage() {
               <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                     <div>
-                      <p className="text-xs text-gray-300">Orders</p>
+                      <p className="text-xs text-wl-text-secondary">Orders</p>
                       <p className="text-xl font-bold text-white">{wave.ordersCount}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-300">Items</p>
+                      <p className="text-xs text-wl-text-secondary">Items</p>
                       <p className="text-xl font-bold text-white">{wave.itemsCount}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-300">Est. Completion</p>
+                      <p className="text-xs text-wl-text-secondary">Est. Completion</p>
                       <p className="text-sm text-white">{new Date(wave.estimatedCompletionTime).toLocaleTimeString()}</p>
                     </div>
                     <div>
@@ -500,7 +500,7 @@ export default function OrdersPage() {
                     <h4 className="text-sm font-semibold text-white">
                       {returnItem.orderNumber ?? returnItem.id}
                     </h4>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-wl-text-secondary mt-1">
                       {returnItem.customerName ?? 'Unknown'}
                     </p>
                   </div>

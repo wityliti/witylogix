@@ -217,7 +217,7 @@ export default function AdminShopDetail() {
               </div>
               {shop.usage.suspension && (
                 <div>
-                  <p className="text-gray-400 mb-1 text-xs">Suspended</p>
+                  <p className="text-wl-text-secondary mb-1 text-xs">Suspended</p>
                   <p className="text-red-400 text-xs">{shop.usage.suspension.reason ?? 'No reason given'}</p>
                 </div>
               )}
