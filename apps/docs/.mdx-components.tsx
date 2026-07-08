@@ -1,6 +1,6 @@
-import type { MDXComponents } from 'mdx/types';
-import { Heading } from 'fumadocs-ui/components/heading';
-import Image from 'next/image';
+import type { MDXComponents } from "mdx/types";
+import { Heading } from "fumadocs-ui/components/heading";
+import Image from "next/image";
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
@@ -77,9 +77,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ),
     table: ({ children }) => (
       <div className="overflow-x-auto my-4">
-        <table className="w-full text-sm border-collapse">
-          {children}
-        </table>
+        <table className="w-full text-sm border-collapse">{children}</table>
       </div>
     ),
     thead: ({ children }) => (

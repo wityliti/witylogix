@@ -45,7 +45,10 @@ export type ScheduledActionType =
 export class EventSchedulerConsumer extends QueueConsumer {
   private eventBus?: TypedEventBus<WitylogixEvents>;
 
-  constructor(config: ConsumerConfig, eventBus?: TypedEventBus<WitylogixEvents>) {
+  constructor(
+    config: ConsumerConfig,
+    eventBus?: TypedEventBus<WitylogixEvents>,
+  ) {
     super(config);
     this.eventBus = eventBus;
   }
@@ -116,10 +119,7 @@ export class EventSchedulerConsumer extends QueueConsumer {
       );
 
       // Step 1: Check trigger conditions from database
-      const shouldExecute = await this.checkTriggerConditions(
-        eventId,
-        payload,
-      );
+      const shouldExecute = await this.checkTriggerConditions(eventId, payload);
 
       if (!shouldExecute) {
         console.log(
@@ -145,15 +145,8 @@ export class EventSchedulerConsumer extends QueueConsumer {
       await this.recordExecution(eventId, actionResult);
 
       // Step 4: Reschedule if recurring
-      if (
-        payload.triggerType !== "once" &&
-        payload.recurrence
-      ) {
-        await this.rescheduleEvent(
-          companyId,
-          eventId,
-          payload,
-        );
+      if (payload.triggerType !== "once" && payload.recurrence) {
+        await this.rescheduleEvent(companyId, eventId, payload);
       }
 
       // Calculate processing time
@@ -178,10 +171,7 @@ export class EventSchedulerConsumer extends QueueConsumer {
         );
       }
 
-      if (
-        error instanceof Error &&
-        error.message.includes("execution")
-      ) {
+      if (error instanceof Error && error.message.includes("execution")) {
         // Transient execution errors should be retried
         throw new QueueTransientError(
           `Error executing action: ${error.message}`,
@@ -262,25 +252,16 @@ export class EventSchedulerConsumer extends QueueConsumer {
 
       switch (actionType) {
         case "send_notification":
-          return await this.executeSendNotification(
-            companyId,
-            payload,
-          );
+          return await this.executeSendNotification(companyId, payload);
 
         case "send_sms":
           return await this.executeSendSMS(companyId, payload);
 
         case "generate_report":
-          return await this.executeGenerateReport(
-            companyId,
-            payload,
-          );
+          return await this.executeGenerateReport(companyId, payload);
 
         case "update_status":
-          return await this.executeUpdateStatus(
-            companyId,
-            payload,
-          );
+          return await this.executeUpdateStatus(companyId, payload);
 
         case "cleanup_data":
           return await this.executeCleanupData(companyId, payload);
@@ -289,15 +270,10 @@ export class EventSchedulerConsumer extends QueueConsumer {
           return await this.executeSyncData(companyId, payload);
 
         case "custom_webhook":
-          return await this.executeCustomWebhook(
-            companyId,
-            payload,
-          );
+          return await this.executeCustomWebhook(companyId, payload);
 
         default:
-          throw new QueuePermanentError(
-            `Unknown action type: ${actionType}`,
-          );
+          throw new QueuePermanentError(`Unknown action type: ${actionType}`);
       }
     } catch (error) {
       throw new QueueTransientError(
@@ -626,9 +602,7 @@ export class EventSchedulerConsumer extends QueueConsumer {
         return;
       }
 
-      console.log(
-        `[EventSchedulerConsumer] Rescheduling event ${eventId}`,
-      );
+      console.log(`[EventSchedulerConsumer] Rescheduling event ${eventId}`);
 
       const nextExecution = this.calculateNextExecution(payload);
 
@@ -664,9 +638,7 @@ export class EventSchedulerConsumer extends QueueConsumer {
    * @param payload Event payload
    * @returns Next execution date
    */
-  private calculateNextExecution(
-    payload: EventSchedulerJob["payload"],
-  ): Date {
+  private calculateNextExecution(payload: EventSchedulerJob["payload"]): Date {
     if (!payload.recurrence) {
       return new Date();
     }
@@ -678,15 +650,11 @@ export class EventSchedulerConsumer extends QueueConsumer {
 
     switch (payload.recurrence.unit) {
       case "minutes":
-        nextExecution = new Date(
-          now.getTime() + interval * 60 * 1000,
-        );
+        nextExecution = new Date(now.getTime() + interval * 60 * 1000);
         break;
 
       case "hours":
-        nextExecution = new Date(
-          now.getTime() + interval * 60 * 60 * 1000,
-        );
+        nextExecution = new Date(now.getTime() + interval * 60 * 60 * 1000);
         break;
 
       case "days":
@@ -702,16 +670,13 @@ export class EventSchedulerConsumer extends QueueConsumer {
         break;
 
       default:
-        nextExecution = new Date(
-          now.getTime() + interval * 60 * 1000,
-        );
+        nextExecution = new Date(now.getTime() + interval * 60 * 1000);
     }
 
     // Check if next execution exceeds end date
     if (
       payload.recurrence.endDate &&
-      nextExecution >
-        new Date(payload.recurrence.endDate)
+      nextExecution > new Date(payload.recurrence.endDate)
     ) {
       nextExecution = new Date(payload.recurrence.endDate);
     }

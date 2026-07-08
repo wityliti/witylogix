@@ -1,10 +1,16 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { AlertTriangle, RefreshCw, ArrowLeft, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
+import { useEffect, useState } from "react";
+import { AlertTriangle, RefreshCw, ArrowLeft, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface DashboardErrorProps {
   error: Error & { digest?: string };
@@ -23,7 +29,7 @@ export default function DashboardError({ error, reset }: DashboardErrorProps) {
   useEffect(() => {
     setIsClient(true);
     // Log error for monitoring/reporting
-    console.error('Dashboard error boundary caught:', {
+    console.error("Dashboard error boundary caught:", {
       message: error.message,
       digest: error.digest,
       stack: error.stack,
@@ -35,13 +41,13 @@ export default function DashboardError({ error, reset }: DashboardErrorProps) {
     return null;
   }
 
-  const isDev = process.env.NODE_ENV === 'development';
+  const isDev = process.env.NODE_ENV === "development";
 
   return (
     <div className="flex min-h-screen bg-wl-bg-root p-6">
       <main className="flex-1">
         <div className="flex items-center justify-center min-h-screen">
-          <Card className={cn('w-full max-w-md')}>
+          <Card className={cn("w-full max-w-md")}>
             <CardHeader>
               <div className="flex items-center gap-3 mb-2">
                 <AlertTriangle className="w-6 h-6 text-wl-danger-400" />
@@ -56,12 +62,12 @@ export default function DashboardError({ error, reset }: DashboardErrorProps) {
               {/* Error message */}
               <div
                 className={cn(
-                  'p-3 rounded-md',
-                  'bg-wl-danger-bg border border-wl-danger-400/30'
+                  "p-3 rounded-md",
+                  "bg-wl-danger-bg border border-wl-danger-400/30",
                 )}
               >
                 <p className="text-sm text-wl-danger-400 font-mono break-all">
-                  {error.message || 'Unknown error'}
+                  {error.message || "Unknown error"}
                 </p>
                 {error.digest && (
                   <p className="text-xs text-wl-danger-300/60 font-mono mt-2">
@@ -76,19 +82,19 @@ export default function DashboardError({ error, reset }: DashboardErrorProps) {
                   <button
                     onClick={() => setShowDetails(!showDetails)}
                     className={cn(
-                      'w-full flex items-center justify-between',
-                      'px-3 py-2 rounded-md',
-                      'text-sm font-medium text-wl-text-secondary',
-                      'bg-wl-bg-surface hover:bg-wl-bg-overlay',
-                      'transition-colors duration-fast ease-default',
-                      'border border-wl-border-subtle'
+                      "w-full flex items-center justify-between",
+                      "px-3 py-2 rounded-md",
+                      "text-sm font-medium text-wl-text-secondary",
+                      "bg-wl-bg-surface hover:bg-wl-bg-overlay",
+                      "transition-colors duration-fast ease-default",
+                      "border border-wl-border-subtle",
                     )}
                   >
                     <span>Error Details</span>
                     <ChevronDown
                       className={cn(
-                        'w-4 h-4 transition-transform duration-300',
-                        showDetails && 'rotate-180'
+                        "w-4 h-4 transition-transform duration-300",
+                        showDetails && "rotate-180",
                       )}
                     />
                   </button>
@@ -96,9 +102,9 @@ export default function DashboardError({ error, reset }: DashboardErrorProps) {
                   {showDetails && (
                     <div
                       className={cn(
-                        'p-3 rounded-md',
-                        'bg-wl-danger-bg border border-wl-danger-400/30',
-                        'max-h-48 overflow-auto'
+                        "p-3 rounded-md",
+                        "bg-wl-danger-bg border border-wl-danger-400/30",
+                        "max-h-48 overflow-auto",
                       )}
                     >
                       {error.stack && (
@@ -140,11 +146,11 @@ export default function DashboardError({ error, reset }: DashboardErrorProps) {
               <div className="pt-2 border-t border-wl-border-subtle">
                 <a
                   href={`mailto:support@witylogix.com?subject=Dashboard Error&body=Error ID: ${
-                    error.digest || 'unknown'
-                  }%0A%0AError: ${encodeURIComponent(error.message || 'Unknown')}`}
+                    error.digest || "unknown"
+                  }%0A%0AError: ${encodeURIComponent(error.message || "Unknown")}`}
                   className={cn(
-                    'inline-flex items-center gap-2 text-xs text-wl-primary-500',
-                    'hover:text-wl-primary-400 transition-colors duration-fast'
+                    "inline-flex items-center gap-2 text-xs text-wl-primary-500",
+                    "hover:text-wl-primary-400 transition-colors duration-fast",
                   )}
                 >
                   📧 Report this issue

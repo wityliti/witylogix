@@ -21,11 +21,11 @@
 interface PlanNode {
   "Node Type": string;
   "Relation Name"?: string;
-  "Filter"?: string;
-  "Rows": number;
+  Filter?: string;
+  Rows: number;
   "Actual Rows"?: number;
   "Total Cost": number;
-  "Plans"?: PlanNode[];
+  Plans?: PlanNode[];
   [key: string]: any;
 }
 
@@ -100,7 +100,7 @@ export class QueryAnalyzer {
         // Execute with raw query for analysis
         const result = await this.prismaClient.$queryRawUnsafe(
           explainSql,
-          ...params
+          ...params,
         );
         plan = result[0].Plan;
       } catch {
@@ -130,7 +130,7 @@ export class QueryAnalyzer {
           issues,
           joins,
           hasSequentialScan,
-          totalCost
+          totalCost,
         ),
       };
     } catch (error) {
@@ -150,7 +150,10 @@ export class QueryAnalyzer {
 
     // Check for sequential scans
     this.walkPlan(plan, (node) => {
-      if (node["Node Type"] === "Seq Scan" && node.rows > this.largeTableThreshold) {
+      if (
+        node["Node Type"] === "Seq Scan" &&
+        node.rows > this.largeTableThreshold
+      ) {
         const table = node["Relation Name"] || "unknown";
         const filter = node.Filter || "";
 
@@ -238,10 +241,7 @@ export class QueryAnalyzer {
    * @param node - Current plan node
    * @param callback - Process function
    */
-  private walkPlan(
-    node: PlanNode,
-    callback: (node: PlanNode) => void
-  ): void {
+  private walkPlan(node: PlanNode, callback: (node: PlanNode) => void): void {
     callback(node);
 
     if (node.Plans && Array.isArray(node.Plans)) {
@@ -301,7 +301,7 @@ export class QueryAnalyzer {
    */
   private calculateSeverity(
     cost: number,
-    hasSequentialScan: boolean
+    hasSequentialScan: boolean,
   ): "low" | "medium" | "high" {
     if (hasSequentialScan && cost > this.costThreshold) {
       return "high";
@@ -327,7 +327,7 @@ export class QueryAnalyzer {
     issues: IndexIssue[],
     joins: JoinAnalysis[],
     hasSequentialScan: boolean,
-    cost: number
+    cost: number,
   ): string[] {
     const suggestions: string[] = [];
 
@@ -341,7 +341,9 @@ export class QueryAnalyzer {
 
     const expensiveJoins = joins.filter((j) => j.isExpensive);
     if (expensiveJoins.length > 0) {
-      suggestions.push("Review join conditions and add missing indexes on join columns");
+      suggestions.push(
+        "Review join conditions and add missing indexes on join columns",
+      );
     }
 
     if (suggestions.length === 0) {
@@ -358,10 +360,7 @@ export class QueryAnalyzer {
    * @param params - Query parameters
    * @returns Basic analysis
    */
-  private createFallbackAnalysis(
-    sql: string,
-    params: any[]
-  ): QueryAnalysis {
+  private createFallbackAnalysis(sql: string, params: any[]): QueryAnalysis {
     return {
       query: sql,
       totalCost: 0,

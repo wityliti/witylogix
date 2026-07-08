@@ -11,7 +11,7 @@
 /**
  * Health status enumeration.
  */
-export type HealthStatus = 'healthy' | 'degraded' | 'down' | 'unknown';
+export type HealthStatus = "healthy" | "degraded" | "down" | "unknown";
 
 /**
  * Provider health information with real-time status.
@@ -58,7 +58,7 @@ export interface SLAConfig {
   errorRateTarget: number; // percentage (e.g., 0.1)
   windowDays: number; // rolling window size
   contractual: boolean; // true if this is contractual SLA
-  severity: 'critical' | 'high' | 'medium' | 'low';
+  severity: "critical" | "high" | "medium" | "low";
 }
 
 /**
@@ -66,7 +66,7 @@ export interface SLAConfig {
  */
 export interface SLAReport {
   providerId: string;
-  period: 'daily' | 'weekly' | 'monthly';
+  period: "daily" | "weekly" | "monthly";
   startDate: Date;
   endDate: Date;
   uptimeAchieved: number;
@@ -82,7 +82,7 @@ export interface SLAReport {
   errorRateTarget: number;
   errorRateMet: boolean;
   breachCount: number;
-  breachSeverity?: 'critical' | 'high' | 'medium' | 'low';
+  breachSeverity?: "critical" | "high" | "medium" | "low";
   creditAmount?: number; // SLA credit value
 }
 
@@ -107,7 +107,7 @@ export interface LatencyBucket {
 /**
  * Time window for latency analysis.
  */
-export type LatencyTimeWindow = '1min' | '5min' | '1hr' | '24hr';
+export type LatencyTimeWindow = "1min" | "5min" | "1hr" | "24hr";
 
 // ─── ERROR TYPES ────────────────────────────────────────────────────────────
 
@@ -115,18 +115,18 @@ export type LatencyTimeWindow = '1min' | '5min' | '1hr' | '24hr';
  * Error classification for categorization and analysis.
  */
 export type ErrorClassification =
-  | 'timeout'
-  | 'auth'
-  | 'rate_limit'
-  | 'server_error'
-  | 'client_error'
-  | 'network'
-  | 'unknown';
+  | "timeout"
+  | "auth"
+  | "rate_limit"
+  | "server_error"
+  | "client_error"
+  | "network"
+  | "unknown";
 
 /**
  * Error trend direction indicator.
  */
-export type ErrorTrend = 'increasing' | 'decreasing' | 'stable' | 'spike';
+export type ErrorTrend = "increasing" | "decreasing" | "stable" | "spike";
 
 /**
  * Error trend analysis and correlation data.
@@ -151,7 +151,7 @@ export interface ErrorTrendData {
 export interface DegradationEvent {
   providerId: string;
   timestamp: Date;
-  severity: 'critical' | 'high' | 'medium' | 'low';
+  severity: "critical" | "high" | "medium" | "low";
   signals: {
     latencyDeviation: number; // std devs from baseline
     errorRateDeviation: number;
@@ -174,17 +174,17 @@ export interface DegradationEvent {
 /**
  * Alert severity level.
  */
-export type AlertSeverity = 'critical' | 'high' | 'medium' | 'low' | 'info';
+export type AlertSeverity = "critical" | "high" | "medium" | "low" | "info";
 
 /**
  * Supported alert notification channels.
  */
-export type AlertChannel = 'slack' | 'email' | 'pagerduty' | 'webhook';
+export type AlertChannel = "slack" | "email" | "pagerduty" | "webhook";
 
 /**
  * Alert rule type for triggering conditions.
  */
-export type AlertRuleType = 'threshold' | 'trend' | 'anomaly' | 'sla_breach';
+export type AlertRuleType = "threshold" | "trend" | "anomaly" | "sla_breach";
 
 /**
  * Alert rule definition with conditions and actions.
@@ -195,8 +195,8 @@ export interface AlertRule {
   name: string;
   type: AlertRuleType;
   condition: {
-    metric: 'latency' | 'error_rate' | 'uptime' | 'volume' | 'sla';
-    operator: '>' | '<' | '>=' | '<=' | '==' | '!=';
+    metric: "latency" | "error_rate" | "uptime" | "volume" | "sla";
+    operator: ">" | "<" | ">=" | "<=" | "==" | "!=";
     threshold: number;
     window?: number; // minutes, for trend detection
   };
@@ -241,7 +241,7 @@ export interface Alert {
   metric: string;
   currentValue: number;
   threshold: number;
-  status: 'firing' | 'acknowledged' | 'resolved';
+  status: "firing" | "acknowledged" | "resolved";
   createdAt: Date;
   firedAt: Date;
   acknowledgedAt?: Date;

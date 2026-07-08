@@ -198,7 +198,10 @@ export interface PlatformAdapter {
    * }
    * ```
    */
-  fetchOrder(externalOrderId: string, credentials: PlatformCredentials): Promise<unknown>;
+  fetchOrder(
+    externalOrderId: string,
+    credentials: PlatformCredentials,
+  ): Promise<unknown>;
 
   /**
    * Fetch products with pagination (REST API call)
@@ -236,7 +239,7 @@ export interface PlatformAdapter {
    */
   fetchProducts(
     credentials: PlatformCredentials,
-    cursor?: string
+    cursor?: string,
   ): Promise<{ products: unknown[]; nextCursor?: string }>;
 
   /**
@@ -262,7 +265,7 @@ export interface PlatformAdapter {
    */
   fetchOrders?(
     credentials: PlatformCredentials,
-    cursor?: string
+    cursor?: string,
   ): Promise<{ orders: unknown[]; nextCursor?: string }>;
 
   /**
@@ -276,7 +279,7 @@ export interface PlatformAdapter {
    */
   fetchCustomers?(
     credentials: PlatformCredentials,
-    cursor?: string
+    cursor?: string,
   ): Promise<{ customers: unknown[]; nextCursor?: string }>;
 
   /**
@@ -651,7 +654,10 @@ export interface CreateCustomerInput {
  */
 export class WebhookValidationError extends Error {
   constructor(
-    public readonly reason: "invalid_signature" | "missing_signature" | "invalid_payload"
+    public readonly reason:
+      | "invalid_signature"
+      | "missing_signature"
+      | "invalid_payload",
   ) {
     super(`Webhook validation failed: ${reason}`);
     this.name = "WebhookValidationError";
@@ -664,7 +670,7 @@ export class WebhookValidationError extends Error {
 export class PlatformError extends Error {
   constructor(
     public readonly platform: PlatformSource,
-    message: string
+    message: string,
   ) {
     super(`[${platform}] ${message}`);
     this.name = "PlatformError";
@@ -677,7 +683,7 @@ export class PlatformError extends Error {
 export class PlatformAuthError extends PlatformError {
   constructor(
     platform: PlatformSource,
-    message: string = "Authentication failed"
+    message: string = "Authentication failed",
   ) {
     super(platform, message);
     this.name = "PlatformAuthError";
@@ -690,7 +696,7 @@ export class PlatformAuthError extends PlatformError {
 export class PlatformRateLimitError extends PlatformError {
   constructor(
     platform: PlatformSource,
-    public readonly retryAfter?: number
+    public readonly retryAfter?: number,
   ) {
     super(platform, `Rate limit exceeded`);
     this.name = "PlatformRateLimitError";
@@ -703,7 +709,7 @@ export class PlatformRateLimitError extends PlatformError {
 export class PlatformNotFoundError extends PlatformError {
   constructor(
     platform: PlatformSource,
-    public readonly resourceId: string
+    public readonly resourceId: string,
   ) {
     super(platform, `Resource not found: ${resourceId}`);
     this.name = "PlatformNotFoundError";

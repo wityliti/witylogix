@@ -38,7 +38,7 @@ export type {
   ValidationWarning,
   RateCalculationRequest,
   ProfileCalculationOptions,
-} from './types';
+} from "./types";
 
 // ─── RATE CALCULATOR EXPORTS ──────────────────────────────────────────────
 
@@ -56,7 +56,7 @@ export {
   calculateRate,
   calculateRatesBatch,
   selectBestLocation,
-} from './rate-calculator';
+} from "./rate-calculator";
 
 // ─── CALENDAR ENGINE EXPORTS ──────────────────────────────────────────────
 
@@ -88,7 +88,7 @@ export {
   getHighestPriorityRule,
   isDeliveryAvailable,
   getAvailabilityCalendar,
-} from './calendar-engine';
+} from "./calendar-engine";
 
 // ─── VALIDATOR EXPORTS ────────────────────────────────────────────────────
 
@@ -101,7 +101,7 @@ export {
   detectCalendarRuleConflicts,
   validateLocationAttachments,
   validateShippingProfile,
-} from './validator';
+} from "./validator";
 
 // ─── MANAGER CLASS ────────────────────────────────────────────────────────
 
@@ -112,16 +112,20 @@ import {
   ProfileValidationResult,
   ProfileCalculationOptions,
   DeliveryTimeSlot,
-} from './types';
-import { calculateRate, calculateRatesBatch, selectBestLocation } from './rate-calculator';
+} from "./types";
+import {
+  calculateRate,
+  calculateRatesBatch,
+  selectBestLocation,
+} from "./rate-calculator";
 import {
   getAvailableTimeSlots,
   getNextAvailableSlot,
   isDeliveryAvailable,
   getAvailabilityCalendar,
   calculateEarliestDeliveryDate,
-} from './calendar-engine';
-import { validateShippingProfile } from './validator';
+} from "./calendar-engine";
+import { validateShippingProfile } from "./validator";
 
 /**
  * ShippingProfileManager - Main entry point for the shipping profile system
@@ -137,10 +141,10 @@ export class ShippingProfileManager {
    */
   constructor(profile: ShippingProfile, options?: ProfileCalculationOptions) {
     this.profile = profile;
-    this.timezone = options?.timezone || 'UTC';
+    this.timezone = options?.timezone || "UTC";
 
     if (!profile.calendarProfiles?.[0]) {
-      throw new Error('Profile must have at least one calendar profile');
+      throw new Error("Profile must have at least one calendar profile");
     }
   }
 
@@ -171,7 +175,9 @@ export class ShippingProfileManager {
    * @returns Calculated shipping rate with all components
    * @throws Error if rate cannot be calculated (no matching zone, etc)
    */
-  async calculateRate(request: RateCalculationRequest): Promise<CalculatedShippingRate> {
+  async calculateRate(
+    request: RateCalculationRequest,
+  ): Promise<CalculatedShippingRate> {
     return calculateRate(this.profile, request, this.exchangeRates);
   }
 
@@ -181,7 +187,7 @@ export class ShippingProfileManager {
    * @returns Array of calculated rates
    */
   async calculateRatesBatch(
-    requests: RateCalculationRequest[]
+    requests: RateCalculationRequest[],
   ): Promise<CalculatedShippingRate[]> {
     return calculateRatesBatch(this.profile, requests, this.exchangeRates);
   }
@@ -217,7 +223,7 @@ export class ShippingProfileManager {
       startDate,
       calendar.blackoutDates,
       this.timezone,
-      maxDaysAhead
+      maxDaysAhead,
     );
   }
 
@@ -230,7 +236,7 @@ export class ShippingProfileManager {
   isDeliveryAvailable(date: Date, timeSlot?: DeliveryTimeSlot) {
     const calendar = this.profile.calendarProfiles[0];
     if (!calendar) {
-      return { available: false, reason: 'No calendar profile configured' };
+      return { available: false, reason: "No calendar profile configured" };
     }
 
     return isDeliveryAvailable(calendar, date, timeSlot);
@@ -273,7 +279,7 @@ export class ShippingProfileManager {
       methodConfig,
       calendar.operatingHours,
       calendar.blackoutDates,
-      this.timezone
+      this.timezone,
     );
   }
 
@@ -333,7 +339,9 @@ export class ShippingProfileManager {
       ...profileUpdates,
     };
 
-    const cloned = new ShippingProfileManager(clonedProfile, { timezone: this.timezone });
+    const cloned = new ShippingProfileManager(clonedProfile, {
+      timezone: this.timezone,
+    });
     if (this.exchangeRates) {
       cloned.setExchangeRates(this.exchangeRates);
     }
@@ -347,7 +355,7 @@ export class ShippingProfileManager {
  */
 export function createShippingProfileManager(
   profile: ShippingProfile,
-  options?: ProfileCalculationOptions
+  options?: ProfileCalculationOptions,
 ): ShippingProfileManager {
   return new ShippingProfileManager(profile, options);
 }

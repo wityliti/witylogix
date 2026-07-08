@@ -1,15 +1,15 @@
-export type PlatformType = 'doordash' | 'ubereats' | 'grubhub' | 'uberdirect';
+export type PlatformType = "doordash" | "ubereats" | "grubhub" | "uberdirect";
 
 export type DeliveryStatus =
-  | 'created'
-  | 'assigned'
-  | 'picked-up'
-  | 'in-transit'
-  | 'delivered'
-  | 'cancelled'
-  | 'failed';
+  | "created"
+  | "assigned"
+  | "picked-up"
+  | "in-transit"
+  | "delivered"
+  | "cancelled"
+  | "failed";
 
-export type ProofOfDeliveryType = 'photo' | 'signature' | 'none';
+export type ProofOfDeliveryType = "photo" | "signature" | "none";
 
 export interface Location {
   latitude: number;
@@ -82,7 +82,14 @@ export interface LastMileOrder {
   total_amount: number;
   currency: string;
 
-  status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'picked_up' | 'delivered' | 'cancelled';
+  status:
+    | "pending"
+    | "confirmed"
+    | "preparing"
+    | "ready"
+    | "picked_up"
+    | "delivered"
+    | "cancelled";
 
   delivery_address: Location;
   delivery_contact: Contact;
@@ -116,7 +123,7 @@ export interface LastMileDriver {
   email?: string;
 
   vehicle?: {
-    type: 'car' | 'bike' | 'scooter' | 'truck';
+    type: "car" | "bike" | "scooter" | "truck";
     make?: string;
     model?: string;
     year?: number;
@@ -131,7 +138,7 @@ export interface LastMileDriver {
   rating?: number;
   total_deliveries?: number;
 
-  status: 'available' | 'on_delivery' | 'offline';
+  status: "available" | "on_delivery" | "offline";
 
   created_at?: Date;
 }
@@ -269,14 +276,26 @@ export interface LastMileWebhookEvent {
 
 export interface LastMileAdapterInterface {
   // Delivery operations
-  createDelivery(delivery: Partial<LastMileDelivery>): Promise<LastMileDelivery>;
+  createDelivery(
+    delivery: Partial<LastMileDelivery>,
+  ): Promise<LastMileDelivery>;
   getDelivery(delivery_id: string): Promise<LastMileDelivery | null>;
-  updateDelivery(delivery_id: string, updates: Partial<LastMileDelivery>): Promise<LastMileDelivery>;
-  cancelDelivery(delivery_id: string, reason?: string): Promise<LastMileDelivery>;
+  updateDelivery(
+    delivery_id: string,
+    updates: Partial<LastMileDelivery>,
+  ): Promise<LastMileDelivery>;
+  cancelDelivery(
+    delivery_id: string,
+    reason?: string,
+  ): Promise<LastMileDelivery>;
   listDeliveries(filters?: DeliveryFilterOptions): Promise<LastMileDelivery[]>;
 
   // Quotes
-  getQuote(pickup: Location, dropoff: Location, options?: QuoteOptions): Promise<LastMileQuote>;
+  getQuote(
+    pickup: Location,
+    dropoff: Location,
+    options?: QuoteOptions,
+  ): Promise<LastMileQuote>;
 
   // Tracking
   getTracking(delivery_id: string): Promise<LastMileTracking>;
@@ -284,7 +303,10 @@ export interface LastMileAdapterInterface {
 
   // Driver operations
   getDriver(driver_id: string): Promise<LastMileDriver | null>;
-  listAvailableDrivers(location: Location, radius_meters?: number): Promise<LastMileDriver[]>;
+  listAvailableDrivers(
+    location: Location,
+    radius_meters?: number,
+  ): Promise<LastMileDriver[]>;
 
   // Webhook
   verifyWebhookSignature(payload: string, signature: string): boolean;
@@ -312,7 +334,7 @@ export interface DeliveryTimeEstimate {
   pickup_eta_minutes: number;
   dropoff_eta_minutes: number;
   total_duration_minutes: number;
-  confidence_level: 'high' | 'medium' | 'low';
+  confidence_level: "high" | "medium" | "low";
 }
 
 export interface DistanceCalculation {

@@ -16,7 +16,11 @@ import { SlotEngine } from "@witylogix/core/slots";
 import { CapacityManager } from "@witylogix/core/slots";
 import { DeadlineEngine } from "@witylogix/core/slots";
 import { BlackoutManager } from "@witylogix/core/slots";
-import { SlotNotFoundError, SlotFullError, BlackoutDateError } from "@witylogix/core/slots";
+import {
+  SlotNotFoundError,
+  SlotFullError,
+  BlackoutDateError,
+} from "@witylogix/core/slots";
 import { NotFoundError, ValidationError } from "../../lib/errors.js";
 
 // ─── SCHEMAS ────────────────────────────────────────────────────
@@ -143,7 +147,9 @@ async function checkoutSlotsRoutes(fastify: FastifyInstance): Promise<void> {
       try {
         await initializeEngines();
 
-        const { start, end, zoneId } = getSlotsByRangeSchema.parse(request.query);
+        const { start, end, zoneId } = getSlotsByRangeSchema.parse(
+          request.query,
+        );
 
         const startDate = new Date(start);
         const endDate = new Date(end);
@@ -259,7 +265,9 @@ async function checkoutSlotsRoutes(fastify: FastifyInstance): Promise<void> {
         }
 
         // Get reservation to extract slotId
-        const reservation = await (fastify as any).prisma.slotReservation.findUnique({
+        const reservation = await (
+          fastify as any
+        ).prisma.slotReservation.findUnique({
           where: { id: reservationId },
         });
 

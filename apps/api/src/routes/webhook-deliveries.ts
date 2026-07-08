@@ -150,47 +150,54 @@ export default async function webhookDeliveriesRoutes(
   });
 
   // POST /:id/retry — Retry a failed delivery
-  app.post("/:id/retry", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { id } = deliveryIdSchema.parse(request.params);
-    const tenantId = request.shopId;
+  app.post(
+    "/:id/retry",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { id } = deliveryIdSchema.parse(request.params);
+      const tenantId = request.shopId;
 
-    const delivery = await request.tenantDb.webhookDelivery.findUnique({
-      where: { id },
-    });
+      const delivery = await request.tenantDb.webhookDelivery.findUnique({
+        where: { id },
+      });
 
-    if (!delivery) {
-      return reply.code(404).send({ error: "Webhook delivery not found" });
-    }
+      if (!delivery) {
+        return reply.code(404).send({ error: "Webhook delivery not found" });
+      }
 
-    if (delivery.tenantId !== tenantId) {
-      return reply.code(403).send({ error: "Forbidden" });
-    }
+      if (delivery.tenantId !== tenantId) {
+        return reply.code(403).send({ error: "Forbidden" });
+      }
 
-    if (!["failed", "pending"].includes(delivery.status)) {
-      return reply.code(400).send({ error: "Cannot retry a non-failed delivery" });
-    }
+      if (!["failed", "pending"].includes(delivery.status)) {
+        return reply
+          .code(400)
+          .send({ error: "Cannot retry a non-failed delivery" });
+      }
 
-    if (delivery.attempt >= delivery.maxAttempts) {
-      return reply.code(400).send({ error: `Maximum retry limit (${delivery.maxAttempts}) reached` });
-    }
+      if (delivery.attempt >= delivery.maxAttempts) {
+        return reply.code(400).send({
+          error: `Maximum retry limit (${delivery.maxAttempts}) reached`,
+        });
+      }
 
-    const updated = await request.tenantDb.webhookDelivery.update({
-      where: { id },
-      data: {
-        status: "pending",
-        nextRetryAt: new Date(Date.now() + 60_000),
-      },
-    });
+      const updated = await request.tenantDb.webhookDelivery.update({
+        where: { id },
+        data: {
+          status: "pending",
+          nextRetryAt: new Date(Date.now() + 60_000),
+        },
+      });
 
-    return reply.code(200).send({
-      data: {
-        id: updated.id,
-        status: updated.status,
-        attempt: updated.attempt,
-        maxAttempts: updated.maxAttempts,
-        nextRetryAt: updated.nextRetryAt,
-        message: `Delivery queued for retry (attempt ${updated.attempt}/${updated.maxAttempts})`,
-      },
-    });
-  });
+      return reply.code(200).send({
+        data: {
+          id: updated.id,
+          status: updated.status,
+          attempt: updated.attempt,
+          maxAttempts: updated.maxAttempts,
+          nextRetryAt: updated.nextRetryAt,
+          message: `Delivery queued for retry (attempt ${updated.attempt}/${updated.maxAttempts})`,
+        },
+      });
+    },
+  );
 }

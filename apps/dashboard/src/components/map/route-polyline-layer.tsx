@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import type { GeoJSONSource, LngLatBoundsLike } from 'maplibre-gl';
-import { useWLMap } from './wl-map-context';
+import { useEffect } from "react";
+import type { GeoJSONSource, LngLatBoundsLike } from "maplibre-gl";
+import { useWLMap } from "./wl-map-context";
 
 export interface RoutePolylineLayerProps {
   /**
@@ -13,7 +13,7 @@ export interface RoutePolylineLayerProps {
   /**
    * Visual variant. 'planned' renders a blue line; 'actual' renders a purple line.
    */
-  variant?: 'planned' | 'actual';
+  variant?: "planned" | "actual";
   /**
    * When true, the map camera fits to the polyline bounds after the layer loads.
    */
@@ -28,25 +28,27 @@ export interface RoutePolylineLayerProps {
   layerId?: string;
 }
 
-const SOURCE_ID_BASE = 'route-polyline';
-const LAYER_ID_BASE = 'route-polyline-line';
-const BORDER_LAYER_ID_BASE = 'route-polyline-border';
+const SOURCE_ID_BASE = "route-polyline";
+const LAYER_ID_BASE = "route-polyline-line";
+const BORDER_LAYER_ID_BASE = "route-polyline-border";
 
 export function RoutePolylineLayer({
   coordinates,
-  variant = 'planned',
+  variant = "planned",
   fitBounds = false,
   fitPadding = 60,
-  layerId = '',
+  layerId = "",
 }: RoutePolylineLayerProps) {
   const map = useWLMap();
 
   const sourceId = layerId ? `${SOURCE_ID_BASE}-${layerId}` : SOURCE_ID_BASE;
-  const borderLayerId = layerId ? `${BORDER_LAYER_ID_BASE}-${layerId}` : BORDER_LAYER_ID_BASE;
+  const borderLayerId = layerId
+    ? `${BORDER_LAYER_ID_BASE}-${layerId}`
+    : BORDER_LAYER_ID_BASE;
   const lineLayerId = layerId ? `${LAYER_ID_BASE}-${layerId}` : LAYER_ID_BASE;
 
-  const lineColor = variant === 'actual' ? '#8b5cf6' : '#3b82f6';
-  const borderColor = variant === 'actual' ? '#4c1d95' : '#1e3a5f';
+  const lineColor = variant === "actual" ? "#8b5cf6" : "#3b82f6";
+  const borderColor = variant === "actual" ? "#4c1d95" : "#1e3a5f";
 
   // Setup source and layers
   useEffect(() => {
@@ -54,46 +56,46 @@ export function RoutePolylineLayer({
       if (map.getSource(sourceId)) return;
 
       map.addSource(sourceId, {
-        type: 'geojson',
+        type: "geojson",
         data: buildGeoJSON(coordinates),
       });
 
       // Soft border layer (slightly wider, darker)
       map.addLayer({
         id: borderLayerId,
-        type: 'line',
+        type: "line",
         source: sourceId,
         layout: {
-          'line-join': 'round',
-          'line-cap': 'round',
+          "line-join": "round",
+          "line-cap": "round",
         },
         paint: {
-          'line-color': borderColor,
-          'line-width': 6,
-          'line-opacity': 0.5,
+          "line-color": borderColor,
+          "line-width": 6,
+          "line-opacity": 0.5,
         },
       });
 
       // Main polyline
       map.addLayer({
         id: lineLayerId,
-        type: 'line',
+        type: "line",
         source: sourceId,
         layout: {
-          'line-join': 'round',
-          'line-cap': 'round',
+          "line-join": "round",
+          "line-cap": "round",
         },
         paint: {
-          'line-color': lineColor,
-          'line-width': 3,
-          'line-opacity': 0.85,
-          'line-dasharray': variant === 'actual' ? [1, 0] : [1, 0],
+          "line-color": lineColor,
+          "line-width": 3,
+          "line-opacity": 0.85,
+          "line-dasharray": variant === "actual" ? [1, 0] : [1, 0],
         },
       });
     };
 
     if (map.isStyleLoaded()) setup();
-    else map.on('load', setup);
+    else map.on("load", setup);
 
     return () => {
       if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId);
@@ -132,24 +134,26 @@ export function RoutePolylineLayer({
 }
 
 type GeoJSONFeatureCollection = {
-  type: 'FeatureCollection';
+  type: "FeatureCollection";
   features: Array<{
-    type: 'Feature';
-    geometry: { type: 'LineString'; coordinates: Array<[number, number]> };
+    type: "Feature";
+    geometry: { type: "LineString"; coordinates: Array<[number, number]> };
     properties: Record<string, never>;
   }>;
 };
 
-function buildGeoJSON(coordinates: Array<[number, number]>): GeoJSONFeatureCollection {
+function buildGeoJSON(
+  coordinates: Array<[number, number]>,
+): GeoJSONFeatureCollection {
   return {
-    type: 'FeatureCollection',
+    type: "FeatureCollection",
     features:
       coordinates.length >= 2
         ? [
             {
-              type: 'Feature',
+              type: "Feature",
               geometry: {
-                type: 'LineString',
+                type: "LineString",
                 coordinates,
               },
               properties: {} as Record<string, never>,

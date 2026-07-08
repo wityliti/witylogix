@@ -45,14 +45,16 @@ const getHealthColor = (score: number) => {
   return "text-wl-danger-400";
 };
 
-const getHealthBadgeVariant = (score: number): "success" | "warning" | "danger" => {
+const getHealthBadgeVariant = (
+  score: number,
+): "success" | "warning" | "danger" => {
   if (score >= 80) return "success";
   if (score >= 50) return "warning";
   return "danger";
 };
 
 const getStatusBadgeVariant = (
-  status: string
+  status: string,
 ): "default" | "success" | "warning" | "danger" => {
   if (status === "active") return "success";
   if (status === "maintenance") return "warning";
@@ -79,7 +81,11 @@ function HealthGauge({ score, size = "md" }: HealthGaugeProps) {
 
   return (
     <div className="relative inline-flex items-center justify-center">
-      <svg width={config.width} height={config.height} className="transform -rotate-90">
+      <svg
+        width={config.width}
+        height={config.height}
+        className="transform -rotate-90"
+      >
         <circle
           cx={config.width / 2}
           cy={config.height / 2}
@@ -128,7 +134,7 @@ const VehicleHealthCard = forwardRef<HTMLDivElement, VehicleHealthCardProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -136,12 +142,13 @@ const VehicleHealthCard = forwardRef<HTMLDivElement, VehicleHealthCardProps>(
     const lastServiceTime = new Date(lastServiceDate);
     const nextServiceTime = new Date(nextServiceDue);
     const daysUntilService = Math.ceil(
-      (nextServiceTime.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+      (nextServiceTime.getTime() - new Date().getTime()) /
+        (1000 * 60 * 60 * 24),
     );
 
     // Sort maintenance history by date (most recent first)
     const sortedHistory = [...(maintenanceHistory || [])].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
 
     const maintenanceTypeColors = {
@@ -157,7 +164,7 @@ const VehicleHealthCard = forwardRef<HTMLDivElement, VehicleHealthCardProps>(
         className={cn(
           "flex flex-col gap-4 transition-all",
           onCardClick && "cursor-pointer hover:shadow-lg",
-          className
+          className,
         )}
         onClick={() => onCardClick?.(id)}
         {...props}
@@ -165,7 +172,9 @@ const VehicleHealthCard = forwardRef<HTMLDivElement, VehicleHealthCardProps>(
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
-            <h3 className="text-sm font-semibold text-wl-text-primary">{name}</h3>
+            <h3 className="text-sm font-semibold text-wl-text-primary">
+              {name}
+            </h3>
             <p className="text-xs text-wl-text-secondary">
               {make} {model} ({year})
             </p>
@@ -241,7 +250,7 @@ const VehicleHealthCard = forwardRef<HTMLDivElement, VehicleHealthCardProps>(
               <ChevronDown
                 className={cn(
                   "w-4 h-4 transition-transform",
-                  isExpanded && "transform rotate-180"
+                  isExpanded && "transform rotate-180",
                 )}
               />
             </button>
@@ -265,7 +274,7 @@ const VehicleHealthCard = forwardRef<HTMLDivElement, VehicleHealthCardProps>(
                                 ? "bg-wl-danger-400"
                                 : event.type === "predictive"
                                   ? "bg-wl-info-400"
-                                  : "bg-wl-warning-400"
+                                  : "bg-wl-warning-400",
                           )}
                         />
                         {idx < sortedHistory.length - 1 && (
@@ -282,7 +291,7 @@ const VehicleHealthCard = forwardRef<HTMLDivElement, VehicleHealthCardProps>(
                             variant="default"
                             className={cn(
                               "text-xs py-0.5",
-                              maintenanceTypeColors[event.type]
+                              maintenanceTypeColors[event.type],
                             )}
                           >
                             ${event.cost}
@@ -326,7 +335,7 @@ const VehicleHealthCard = forwardRef<HTMLDivElement, VehicleHealthCardProps>(
         )}
       </Card>
     );
-  }
+  },
 );
 
 VehicleHealthCard.displayName = "VehicleHealthCard";

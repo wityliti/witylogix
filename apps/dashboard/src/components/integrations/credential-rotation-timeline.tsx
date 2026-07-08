@@ -3,7 +3,12 @@
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
-export type CredentialType = "api-key" | "secret" | "oauth-token" | "certificate" | "password";
+export type CredentialType =
+  | "api-key"
+  | "secret"
+  | "oauth-token"
+  | "certificate"
+  | "password";
 export type RotationStatus = "pending" | "completed" | "overdue";
 export type RotationFilter = "provider" | "status" | "date-range";
 
@@ -28,7 +33,9 @@ export function CredentialRotationTimeline({
   onRotate,
   className,
 }: CredentialRotationTimelineProps) {
-  const [filterStatus, setFilterStatus] = useState<RotationStatus | "all">("all");
+  const [filterStatus, setFilterStatus] = useState<RotationStatus | "all">(
+    "all",
+  );
   const [filterProvider, setFilterProvider] = useState<string | "all">("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isRotating, setIsRotating] = useState<string | null>(null);
@@ -36,14 +43,16 @@ export function CredentialRotationTimeline({
   // Get unique providers
   const providers = useMemo(
     () => [...new Set(entries.map((e) => e.provider))],
-    [entries]
+    [entries],
   );
 
   // Filter entries
   const filteredEntries = useMemo(() => {
     return entries.filter((entry) => {
-      const statusMatch = filterStatus === "all" || entry.status === filterStatus;
-      const providerMatch = filterProvider === "all" || entry.provider === filterProvider;
+      const statusMatch =
+        filterStatus === "all" || entry.status === filterStatus;
+      const providerMatch =
+        filterProvider === "all" || entry.provider === filterProvider;
       return statusMatch && providerMatch;
     });
   }, [entries, filterStatus, filterProvider]);
@@ -125,20 +134,24 @@ export function CredentialRotationTimeline({
               Filter by Status
             </label>
             <div className="flex items-center gap-2">
-              {(["all", "pending", "completed", "overdue"] as const).map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setFilterStatus(status)}
-                  className={cn(
-                    "px-3 py-1.5 rounded text-xs font-medium transition-colors",
-                    filterStatus === status
-                      ? "bg-wl-primary-500 text-white"
-                      : "bg-wl-surface-hover text-wl-text-secondary hover:text-wl-text-primary"
-                  )}
-                >
-                  {status === "all" ? "All" : getStatusLabel(status as RotationStatus)}
-                </button>
-              ))}
+              {(["all", "pending", "completed", "overdue"] as const).map(
+                (status) => (
+                  <button
+                    key={status}
+                    onClick={() => setFilterStatus(status)}
+                    className={cn(
+                      "px-3 py-1.5 rounded text-xs font-medium transition-colors",
+                      filterStatus === status
+                        ? "bg-wl-primary-500 text-white"
+                        : "bg-wl-surface-hover text-wl-text-secondary hover:text-wl-text-primary",
+                    )}
+                  >
+                    {status === "all"
+                      ? "All"
+                      : getStatusLabel(status as RotationStatus)}
+                  </button>
+                ),
+              )}
             </div>
           </div>
 
@@ -154,7 +167,7 @@ export function CredentialRotationTimeline({
                   "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                   filterProvider === "all"
                     ? "bg-wl-primary-500 text-white"
-                    : "bg-wl-surface-hover text-wl-text-secondary hover:text-wl-text-primary"
+                    : "bg-wl-surface-hover text-wl-text-secondary hover:text-wl-text-primary",
                 )}
               >
                 All Providers
@@ -167,7 +180,7 @@ export function CredentialRotationTimeline({
                     "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                     filterProvider === provider
                       ? "bg-wl-primary-500 text-white"
-                      : "bg-wl-surface-hover text-wl-text-secondary hover:text-wl-text-primary"
+                      : "bg-wl-surface-hover text-wl-text-secondary hover:text-wl-text-primary",
                   )}
                 >
                   {provider}
@@ -217,7 +230,9 @@ export function CredentialRotationTimeline({
 
                     {/* Entry card */}
                     <button
-                      onClick={() => setExpandedId(isExpanded ? null : entry.id)}
+                      onClick={() =>
+                        setExpandedId(isExpanded ? null : entry.id)
+                      }
                       className="flex-1 text-left bg-wl-surface-hover/50 border border-wl-border-subtle rounded-lg p-4 hover:bg-wl-surface-hover transition-colors"
                     >
                       {/* Header */}
@@ -238,29 +253,34 @@ export function CredentialRotationTimeline({
                             {getCredentialTypeLabel(entry.credentialType)}
                           </div>
                         </div>
-                        {entry.status === "pending" && entry.daysUntilNext !== undefined && (
-                          <div className="text-right">
-                            <div className="text-xs font-medium text-wl-text-secondary mb-1">
-                              Days Until Next
+                        {entry.status === "pending" &&
+                          entry.daysUntilNext !== undefined && (
+                            <div className="text-right">
+                              <div className="text-xs font-medium text-wl-text-secondary mb-1">
+                                Days Until Next
+                              </div>
+                              <div className="text-lg font-bold text-wl-primary-600">
+                                {entry.daysUntilNext}
+                              </div>
                             </div>
-                            <div className="text-lg font-bold text-wl-primary-600">
-                              {entry.daysUntilNext}
-                            </div>
-                          </div>
-                        )}
+                          )}
                       </div>
 
                       {/* Dates */}
                       <div className="grid grid-cols-2 gap-4 text-xs">
                         <div>
-                          <div className="text-wl-text-secondary mb-1">Scheduled</div>
+                          <div className="text-wl-text-secondary mb-1">
+                            Scheduled
+                          </div>
                           <div className="font-medium text-wl-text-primary">
                             {formatDate(entry.scheduledDate)}
                           </div>
                         </div>
                         {entry.actualDate && (
                           <div>
-                            <div className="text-wl-text-secondary mb-1">Completed</div>
+                            <div className="text-wl-text-secondary mb-1">
+                              Completed
+                            </div>
                             <div className="font-medium text-wl-text-primary">
                               {formatDate(entry.actualDate)}
                             </div>
@@ -299,10 +319,13 @@ export function CredentialRotationTimeline({
                           className={cn(
                             "w-full px-4 py-2 rounded text-xs font-medium transition-colors",
                             "bg-wl-primary-500 text-white hover:bg-wl-primary-600",
-                            isRotating === entry.id && "opacity-60 cursor-not-allowed"
+                            isRotating === entry.id &&
+                              "opacity-60 cursor-not-allowed",
                           )}
                         >
-                          {isRotating === entry.id ? "Rotating..." : "Rotate Now"}
+                          {isRotating === entry.id
+                            ? "Rotating..."
+                            : "Rotate Now"}
                         </button>
                       )}
                     </div>
@@ -329,7 +352,9 @@ export function CredentialRotationTimeline({
               </div>
             </div>
             <div className="p-3 rounded bg-wl-surface-hover border border-wl-border-subtle">
-              <div className="text-xs text-wl-text-secondary mb-1">Completed</div>
+              <div className="text-xs text-wl-text-secondary mb-1">
+                Completed
+              </div>
               <div className="text-lg font-semibold text-wl-success-600">
                 {entries.filter((e) => e.status === "completed").length}
               </div>

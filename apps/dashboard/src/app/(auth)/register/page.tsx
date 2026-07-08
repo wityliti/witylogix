@@ -3,7 +3,16 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Mail, Lock, User, Building2, Loader2, ArrowRight, CheckCircle2, Chrome } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  User,
+  Building2,
+  Loader2,
+  ArrowRight,
+  CheckCircle2,
+  Chrome,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
 
@@ -33,7 +42,9 @@ export default function RegisterPage() {
     }
   }, [isAuthenticated, authLoading, router]);
 
-  const calculatePasswordStrength = (pwd: string): { score: number; label: string; color: string } => {
+  const calculatePasswordStrength = (
+    pwd: string,
+  ): { score: number; label: string; color: string } => {
     let score = 0;
     if (pwd.length >= 8) score++;
     if (pwd.length >= 12) score++;
@@ -41,9 +52,12 @@ export default function RegisterPage() {
     if (/\d/.test(pwd)) score++;
     if (/[!@#$%^&*]/.test(pwd)) score++;
 
-    if (score <= 1) return { score, label: "Weak", color: "var(--wl-danger-500)" };
-    if (score <= 2) return { score, label: "Fair", color: "var(--wl-warning-500)" };
-    if (score <= 3) return { score, label: "Good", color: "var(--wl-primary-500)" };
+    if (score <= 1)
+      return { score, label: "Weak", color: "var(--wl-danger-500)" };
+    if (score <= 2)
+      return { score, label: "Fair", color: "var(--wl-warning-500)" };
+    if (score <= 3)
+      return { score, label: "Good", color: "var(--wl-primary-500)" };
     return { score, label: "Strong", color: "var(--wl-success-500)" };
   };
 
@@ -128,7 +142,10 @@ export default function RegisterPage() {
       // Redirect to onboarding on success
       router.push("/onboarding");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Registration failed. Please try again.";
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Registration failed. Please try again.";
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -204,27 +221,28 @@ export default function RegisterPage() {
                 nameError
                   ? "border-wl-danger-500 border-1.5"
                   : "border-wl-border-default",
-                isLoading && "opacity-60"
+                isLoading && "opacity-60",
               )}
-
               onFocus={(e) => {
                 if (!isLoading) {
-                  e.currentTarget.style.borderColor = nameError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
+                  e.currentTarget.style.borderColor = nameError
+                    ? "var(--wl-danger-500)"
+                    : "var(--wl-primary-500)";
                   e.currentTarget.style.boxShadow = nameError
                     ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
                     : "0 0 0 3px rgba(108, 99, 255, 0.1)";
                 }
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = nameError ? "var(--wl-danger-500)" : "1px solid var(--wl-border-default)";
+                e.currentTarget.style.borderColor = nameError
+                  ? "var(--wl-danger-500)"
+                  : "1px solid var(--wl-border-default)";
                 e.currentTarget.style.boxShadow = "none";
               }}
             />
           </div>
           {nameError && (
-            <span className="text-xs text-wl-danger-400">
-              {nameError}
-            </span>
+            <span className="text-xs text-wl-danger-400">{nameError}</span>
           )}
         </div>
 
@@ -256,27 +274,28 @@ export default function RegisterPage() {
                 emailError
                   ? "border-wl-danger-500 border-1.5"
                   : "border-wl-border-default",
-                isLoading && "opacity-60"
+                isLoading && "opacity-60",
               )}
-
               onFocus={(e) => {
                 if (!isLoading) {
-                  e.currentTarget.style.borderColor = emailError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
+                  e.currentTarget.style.borderColor = emailError
+                    ? "var(--wl-danger-500)"
+                    : "var(--wl-primary-500)";
                   e.currentTarget.style.boxShadow = emailError
                     ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
                     : "0 0 0 3px rgba(108, 99, 255, 0.1)";
                 }
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = emailError ? "var(--wl-danger-500)" : "1px solid var(--wl-border-default)";
+                e.currentTarget.style.borderColor = emailError
+                  ? "var(--wl-danger-500)"
+                  : "1px solid var(--wl-border-default)";
                 e.currentTarget.style.boxShadow = "none";
               }}
             />
           </div>
           {emailError && (
-            <span className="text-xs text-wl-danger-400">
-              {emailError}
-            </span>
+            <span className="text-xs text-wl-danger-400">{emailError}</span>
           )}
         </div>
 
@@ -308,27 +327,28 @@ export default function RegisterPage() {
                 companyError
                   ? "border-wl-danger-500 border-1.5"
                   : "border-wl-border-default",
-                isLoading && "opacity-60"
+                isLoading && "opacity-60",
               )}
-
               onFocus={(e) => {
                 if (!isLoading) {
-                  e.currentTarget.style.borderColor = companyError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
+                  e.currentTarget.style.borderColor = companyError
+                    ? "var(--wl-danger-500)"
+                    : "var(--wl-primary-500)";
                   e.currentTarget.style.boxShadow = companyError
                     ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
                     : "0 0 0 3px rgba(108, 99, 255, 0.1)";
                 }
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = companyError ? "var(--wl-danger-500)" : "1px solid var(--wl-border-default)";
+                e.currentTarget.style.borderColor = companyError
+                  ? "var(--wl-danger-500)"
+                  : "1px solid var(--wl-border-default)";
                 e.currentTarget.style.boxShadow = "none";
               }}
             />
           </div>
           {companyError && (
-            <span className="text-xs text-wl-danger-400">
-              {companyError}
-            </span>
+            <span className="text-xs text-wl-danger-400">{companyError}</span>
           )}
         </div>
 
@@ -360,27 +380,28 @@ export default function RegisterPage() {
                 passwordError
                   ? "border-wl-danger-500 border-1.5"
                   : "border-wl-border-default",
-                isLoading && "opacity-60"
+                isLoading && "opacity-60",
               )}
-
               onFocus={(e) => {
                 if (!isLoading) {
-                  e.currentTarget.style.borderColor = passwordError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
+                  e.currentTarget.style.borderColor = passwordError
+                    ? "var(--wl-danger-500)"
+                    : "var(--wl-primary-500)";
                   e.currentTarget.style.boxShadow = passwordError
                     ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
                     : "0 0 0 3px rgba(108, 99, 255, 0.1)";
                 }
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = passwordError ? "var(--wl-danger-500)" : "1px solid var(--wl-border-default)";
+                e.currentTarget.style.borderColor = passwordError
+                  ? "var(--wl-danger-500)"
+                  : "1px solid var(--wl-border-default)";
                 e.currentTarget.style.boxShadow = "none";
               }}
             />
           </div>
           {passwordError && (
-            <span className="text-xs text-wl-danger-400">
-              {passwordError}
-            </span>
+            <span className="text-xs text-wl-danger-400">{passwordError}</span>
           )}
 
           {/* Password Strength Indicator */}
@@ -392,14 +413,14 @@ export default function RegisterPage() {
                     key={i}
                     className={cn(
                       "flex-1 h-1 rounded-full transition-all",
-                      i < strength.score ? "bg-current" : "bg-wl-border"
+                      i < strength.score ? "bg-current" : "bg-wl-border",
                     )}
                     style={{
-                      backgroundColor: i < strength.score ? strength.color : undefined,
+                      backgroundColor:
+                        i < strength.score ? strength.color : undefined,
                     }}
                   />
                 ))}
-
               </div>
               <span
                 className="text-xs font-medium"
@@ -413,10 +434,14 @@ export default function RegisterPage() {
               {/* Password Requirements Checklist */}
               <div className="mt-2 space-y-1 text-xs text-wl-text-tertiary">
                 <div className="flex items-center gap-2">
-                  <div className={cn(
-                    "w-4 h-4 rounded flex items-center justify-center transition-all",
-                    password.length >= 8 ? "bg-wl-success-500/20" : "bg-wl-border"
-                  )}>
+                  <div
+                    className={cn(
+                      "w-4 h-4 rounded flex items-center justify-center transition-all",
+                      password.length >= 8
+                        ? "bg-wl-success-500/20"
+                        : "bg-wl-border",
+                    )}
+                  >
                     {password.length >= 8 && (
                       <CheckCircle2 size={12} className="text-wl-success-500" />
                     )}
@@ -424,10 +449,14 @@ export default function RegisterPage() {
                   At least 8 characters
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className={cn(
-                    "w-4 h-4 rounded flex items-center justify-center transition-all",
-                    /[a-z]/.test(password) && /[A-Z]/.test(password) ? "bg-wl-success-500/20" : "bg-wl-border"
-                  )}>
+                  <div
+                    className={cn(
+                      "w-4 h-4 rounded flex items-center justify-center transition-all",
+                      /[a-z]/.test(password) && /[A-Z]/.test(password)
+                        ? "bg-wl-success-500/20"
+                        : "bg-wl-border",
+                    )}
+                  >
                     {/[a-z]/.test(password) && /[A-Z]/.test(password) && (
                       <CheckCircle2 size={12} className="text-wl-success-500" />
                     )}
@@ -435,10 +464,14 @@ export default function RegisterPage() {
                   Uppercase and lowercase letters
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className={cn(
-                    "w-4 h-4 rounded flex items-center justify-center transition-all",
-                    /\d/.test(password) ? "bg-wl-success-500/20" : "bg-wl-border"
-                  )}>
+                  <div
+                    className={cn(
+                      "w-4 h-4 rounded flex items-center justify-center transition-all",
+                      /\d/.test(password)
+                        ? "bg-wl-success-500/20"
+                        : "bg-wl-border",
+                    )}
+                  >
                     {/\d/.test(password) && (
                       <CheckCircle2 size={12} className="text-wl-success-500" />
                     )}
@@ -446,10 +479,14 @@ export default function RegisterPage() {
                   At least one number
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className={cn(
-                    "w-4 h-4 rounded flex items-center justify-center transition-all",
-                    /[!@#$%^&*]/.test(password) ? "bg-wl-success-500/20" : "bg-wl-border"
-                  )}>
+                  <div
+                    className={cn(
+                      "w-4 h-4 rounded flex items-center justify-center transition-all",
+                      /[!@#$%^&*]/.test(password)
+                        ? "bg-wl-success-500/20"
+                        : "bg-wl-border",
+                    )}
+                  >
                     {/[!@#$%^&*]/.test(password) && (
                       <CheckCircle2 size={12} className="text-wl-success-500" />
                     )}
@@ -492,23 +529,27 @@ export default function RegisterPage() {
               disabled={isLoading}
               className={cn(
                 "w-full py-3 px-3 pl-11 rounded-lg border text-sm bg-wl-bg-surface text-wl-text-primary transition-all outline-none",
-                confirmError || (confirmPassword && password !== confirmPassword)
+                confirmError ||
+                  (confirmPassword && password !== confirmPassword)
                   ? "border-wl-danger-500 border-1.5"
                   : confirmPassword && password === confirmPassword
                     ? "border-wl-success-500"
                     : "border-wl-border-default",
                 isLoading && "opacity-60",
-                confirmPassword && password === confirmPassword ? "pr-11" : "pr-3"
+                confirmPassword && password === confirmPassword
+                  ? "pr-11"
+                  : "pr-3",
               )}
-
               onFocus={(e) => {
                 if (!isLoading) {
                   e.currentTarget.style.borderColor =
-                    confirmError || (confirmPassword && password !== confirmPassword)
+                    confirmError ||
+                    (confirmPassword && password !== confirmPassword)
                       ? "var(--wl-danger-500)"
                       : "var(--wl-primary-500)";
                   e.currentTarget.style.boxShadow =
-                    confirmError || (confirmPassword && password !== confirmPassword)
+                    confirmError ||
+                    (confirmPassword && password !== confirmPassword)
                       ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
                       : "0 0 0 3px rgba(108, 99, 255, 0.1)";
                 }
@@ -519,9 +560,7 @@ export default function RegisterPage() {
             />
           </div>
           {confirmError && (
-            <span className="text-xs text-wl-danger-400">
-              {confirmError}
-            </span>
+            <span className="text-xs text-wl-danger-400">{confirmError}</span>
           )}
         </div>
 
@@ -530,10 +569,9 @@ export default function RegisterPage() {
           <label
             className={cn(
               "flex items-start gap-2 text-sm text-wl-text-secondary select-none cursor-pointer",
-              isLoading && "opacity-60 cursor-not-allowed"
+              isLoading && "opacity-60 cursor-not-allowed",
             )}
           >
-
             <input
               type="checkbox"
               checked={agreeTerms}
@@ -544,7 +582,7 @@ export default function RegisterPage() {
               disabled={isLoading}
               className={cn(
                 "w-4 h-4 mt-0.5 flex-shrink-0",
-                isLoading ? "cursor-not-allowed" : "cursor-pointer"
+                isLoading ? "cursor-not-allowed" : "cursor-pointer",
               )}
               style={{
                 accentColor: "var(--wl-primary-500)",
@@ -553,17 +591,11 @@ export default function RegisterPage() {
 
             <span>
               I agree to the{" "}
-              <a
-                href="#"
-                className="text-wl-primary-400 no-underline"
-              >
+              <a href="#" className="text-wl-primary-400 no-underline">
                 Terms & Conditions
               </a>{" "}
               and{" "}
-              <a
-                href="#"
-                className="text-wl-primary-400 no-underline"
-              >
+              <a href="#" className="text-wl-primary-400 no-underline">
                 Privacy Policy
               </a>
             </span>
@@ -587,14 +619,15 @@ export default function RegisterPage() {
           </div>
         )}
 
-
         {/* Submit Button */}
         <button
           type="submit"
           disabled={isLoading}
           className={cn(
             "py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all",
-            isLoading ? "opacity-80 cursor-not-allowed" : "cursor-pointer hover:shadow-lg hover:-translate-y-0.5"
+            isLoading
+              ? "opacity-80 cursor-not-allowed"
+              : "cursor-pointer hover:shadow-lg hover:-translate-y-0.5",
           )}
           style={{
             background: isLoading
@@ -602,17 +635,20 @@ export default function RegisterPage() {
               : "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
             boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
           }}
-
           onMouseEnter={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 20px rgba(108, 99, 255, 0.35)";
-              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                "0 6px 20px rgba(108, 99, 255, 0.35)";
+              (e.currentTarget as HTMLButtonElement).style.transform =
+                "translateY(-1px)";
             }
           }}
           onMouseLeave={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(108, 99, 255, 0.25)";
-              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                "0 4px 12px rgba(108, 99, 255, 0.25)";
+              (e.currentTarget as HTMLButtonElement).style.transform =
+                "translateY(0)";
             }
           }}
         >
@@ -645,18 +681,22 @@ export default function RegisterPage() {
           disabled={isLoading}
           className={cn(
             "py-3 px-4 rounded-lg border border-wl-border-default bg-wl-bg-surface text-wl-text-primary text-sm font-semibold flex items-center justify-center gap-2 transition-all",
-            isLoading && "opacity-60 cursor-not-allowed"
+            isLoading && "opacity-60 cursor-not-allowed",
           )}
           onMouseEnter={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-primary-500)";
-              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg-overlay)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor =
+                "var(--wl-primary-500)";
+              (e.currentTarget as HTMLButtonElement).style.background =
+                "var(--wl-bg-overlay)";
             }
           }}
           onMouseLeave={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-border-default)";
-              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg-surface)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor =
+                "var(--wl-border-default)";
+              (e.currentTarget as HTMLButtonElement).style.background =
+                "var(--wl-bg-surface)";
             }
           }}
         >
@@ -670,18 +710,22 @@ export default function RegisterPage() {
           disabled={isLoading}
           className={cn(
             "py-3 px-4 rounded-lg border border-wl-border-default bg-wl-bg-surface text-wl-text-primary text-sm font-semibold flex items-center justify-center gap-2 transition-all",
-            isLoading && "opacity-60 cursor-not-allowed"
+            isLoading && "opacity-60 cursor-not-allowed",
           )}
           onMouseEnter={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-primary-500)";
-              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg-overlay)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor =
+                "var(--wl-primary-500)";
+              (e.currentTarget as HTMLButtonElement).style.background =
+                "var(--wl-bg-overlay)";
             }
           }}
           onMouseLeave={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-border-default)";
-              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg-surface)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor =
+                "var(--wl-border-default)";
+              (e.currentTarget as HTMLButtonElement).style.background =
+                "var(--wl-bg-surface)";
             }
           }}
         >
@@ -697,13 +741,12 @@ export default function RegisterPage() {
           href="/login"
           className={cn(
             "text-wl-primary-400 no-underline font-semibold transition-colors hover:text-wl-primary-300",
-            isLoading && "opacity-60 pointer-events-none"
+            isLoading && "opacity-60 pointer-events-none",
           )}
         >
           Sign in
         </Link>
       </div>
-
     </div>
   );
 }

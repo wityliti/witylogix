@@ -1,5 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrendingUp } from "lucide-react";
 
@@ -104,7 +111,9 @@ export const WithGlow: Story = {
       <>
         <CardHeader>
           <CardTitle>Featured Card</CardTitle>
-          <CardDescription>This card has a glowing shadow effect</CardDescription>
+          <CardDescription>
+            This card has a glowing shadow effect
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <p>Perfect for highlighting important information.</p>

@@ -149,11 +149,7 @@ describe("Mailgun Client", () => {
     });
 
     it("should identify invalid email addresses", () => {
-      const invalidEmails = [
-        "not-an-email",
-        "missing@domain",
-        "@nodomain.com",
-      ];
+      const invalidEmails = ["not-an-email", "missing@domain", "@nodomain.com"];
 
       for (const email of invalidEmails) {
         expect(email).not.toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
@@ -845,7 +841,11 @@ describe("Email Routing Engine", () => {
     it("should select provider based on domain", () => {
       const domain = "company.com";
       const provider =
-        domain === "gmail.com" ? "gmail" : domain === "outlook.com" ? "outlook" : "mailgun";
+        domain === "gmail.com"
+          ? "gmail"
+          : domain === "outlook.com"
+            ? "outlook"
+            : "mailgun";
 
       expect(provider).toBe("mailgun");
     });

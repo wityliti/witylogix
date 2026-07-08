@@ -119,7 +119,7 @@ class CircuitBreaker {
   constructor(
     failureThreshold: number,
     successThreshold: number,
-    timeout: number
+    timeout: number,
   ) {
     this.failureThreshold = failureThreshold;
     this.successThreshold = successThreshold;
@@ -206,11 +206,7 @@ class RetryHandler {
    * @param delayMs - Initial delay in milliseconds
    * @param backoffMultiplier - Multiplier for exponential backoff
    */
-  constructor(
-    maxAttempts: number,
-    delayMs: number,
-    backoffMultiplier: number
-  ) {
+  constructor(maxAttempts: number, delayMs: number, backoffMultiplier: number) {
     this.maxAttempts = maxAttempts;
     this.delayMs = delayMs;
     this.backoffMultiplier = backoffMultiplier;
@@ -225,7 +221,7 @@ class RetryHandler {
    */
   async execute<T>(
     fn: () => Promise<T>,
-    context: string = "operation"
+    context: string = "operation",
   ): Promise<T> {
     let lastError: Error | null = null;
 
@@ -233,22 +229,18 @@ class RetryHandler {
       try {
         return await fn();
       } catch (error) {
-        lastError =
-          error instanceof Error
-            ? error
-            : new Error(String(error));
+        lastError = error instanceof Error ? error : new Error(String(error));
 
         if (attempt < this.maxAttempts) {
           const delay =
-            this.delayMs *
-            Math.pow(this.backoffMultiplier, attempt - 1);
+            this.delayMs * Math.pow(this.backoffMultiplier, attempt - 1);
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
 
     throw new Error(
-      `${context} failed after ${this.maxAttempts} attempts: ${lastError?.message}`
+      `${context} failed after ${this.maxAttempts} attempts: ${lastError?.message}`,
     );
   }
 }
@@ -280,19 +272,19 @@ export abstract class FuelFleetAdapter extends EventEmitter {
 
     this.rateLimiter = new RateLimiter(
       config.rateLimit.maxRequests,
-      config.rateLimit.windowMs
+      config.rateLimit.windowMs,
     );
 
     this.circuitBreaker = new CircuitBreaker(
       config.circuitBreaker.failureThreshold,
       config.circuitBreaker.successThreshold,
-      config.circuitBreaker.timeout
+      config.circuitBreaker.timeout,
     );
 
     this.retryHandler = new RetryHandler(
       config.retry.maxAttempts,
       config.retry.delayMs,
-      config.retry.backoffMultiplier
+      config.retry.backoffMultiplier,
     );
   }
 
@@ -324,9 +316,7 @@ export abstract class FuelFleetAdapter extends EventEmitter {
     // Check rate limiter
     if (!this.rateLimiter.isAllowed()) {
       const remaining = this.rateLimiter.getRemaining();
-      throw new Error(
-        `Rate limit exceeded. ${remaining} requests remaining`
-      );
+      throw new Error(`Rate limit exceeded. ${remaining} requests remaining`);
     }
 
     // Check circuit breaker
@@ -401,7 +391,7 @@ export abstract class FuelFleetAdapter extends EventEmitter {
    */
   abstract getTransactions(
     cardId: string,
-    criteria?: Record<string, unknown>
+    criteria?: Record<string, unknown>,
   ): Promise<FuelTransaction[]>;
 
   /**
@@ -434,7 +424,9 @@ export abstract class FuelFleetAdapter extends EventEmitter {
    * @param criteria - Filter criteria
    * @returns Array of station locations
    */
-  abstract listStations(criteria?: Record<string, unknown>): Promise<StationLocation[]>;
+  abstract listStations(
+    criteria?: Record<string, unknown>,
+  ): Promise<StationLocation[]>;
 
   /**
    * Get fuel price data
@@ -459,7 +451,9 @@ export abstract class FuelFleetAdapter extends EventEmitter {
    * @param assignment - Assignment data
    * @returns Created assignment
    */
-  abstract assignCard(assignment: Partial<CardAssignment>): Promise<CardAssignment>;
+  abstract assignCard(
+    assignment: Partial<CardAssignment>,
+  ): Promise<CardAssignment>;
 
   /**
    * Unassign card from driver or vehicle
@@ -475,7 +469,9 @@ export abstract class FuelFleetAdapter extends EventEmitter {
    * @param limit - Limit configuration
    * @returns Created/updated limit
    */
-  abstract setPurchaseLimit(limit: Partial<PurchaseLimit>): Promise<PurchaseLimit>;
+  abstract setPurchaseLimit(
+    limit: Partial<PurchaseLimit>,
+  ): Promise<PurchaseLimit>;
 
   /**
    * Get card purchase limits

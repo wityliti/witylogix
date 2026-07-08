@@ -1,15 +1,21 @@
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import { useApiQuery } from '@/hooks/use-api';
-import { api } from '@/lib/api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { DollarSign, Clock, CheckCircle, Download, TrendingUp } from 'lucide-react';
+import { useState, useCallback } from "react";
+import { useApiQuery } from "@/hooks/use-api";
+import { api } from "@/lib/api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  DollarSign,
+  Clock,
+  CheckCircle,
+  Download,
+  TrendingUp,
+} from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -73,11 +79,17 @@ function SummaryCard({
     <Card className="p-5 bg-wl-bg-elevated border-wl-border-subtle">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">{label}</p>
-          <p className="mt-1 text-2xl font-bold text-wl-text-primary">${amount}</p>
-          <p className="mt-0.5 text-xs text-wl-text-tertiary">{count} deliveries</p>
+          <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">
+            {label}
+          </p>
+          <p className="mt-1 text-2xl font-bold text-wl-text-primary">
+            ${amount}
+          </p>
+          <p className="mt-0.5 text-xs text-wl-text-tertiary">
+            {count} deliveries
+          </p>
         </div>
-        <div className={cn('p-2 rounded-lg', color)}>
+        <div className={cn("p-2 rounded-lg", color)}>
           <Icon className="w-5 h-5 text-white" />
         </div>
       </div>
@@ -87,14 +99,20 @@ function SummaryCard({
 
 function StatusBadge({ status }: { status: string }) {
   const variants: Record<string, string> = {
-    pending: 'bg-wl-warning-subtle text-wl-warning border-wl-warning/20',
-    collected: 'bg-blue-500/10 text-blue-400 border-blue-400/20',
-    verified: 'bg-purple-500/10 text-purple-400 border-purple-400/20',
-    reconciled: 'bg-wl-success-subtle text-wl-success border-wl-success/20',
-    failed: 'bg-wl-error-subtle text-wl-error border-wl-error/20',
+    pending: "bg-wl-warning-subtle text-wl-warning border-wl-warning/20",
+    collected: "bg-blue-500/10 text-blue-400 border-blue-400/20",
+    verified: "bg-purple-500/10 text-purple-400 border-purple-400/20",
+    reconciled: "bg-wl-success-subtle text-wl-success border-wl-success/20",
+    failed: "bg-wl-error-subtle text-wl-error border-wl-error/20",
   };
   return (
-    <span className={cn('inline-flex px-2 py-0.5 rounded text-xs font-medium border', variants[status] ?? 'bg-wl-bg-tertiary text-wl-text-secondary border-wl-border-subtle')}>
+    <span
+      className={cn(
+        "inline-flex px-2 py-0.5 rounded text-xs font-medium border",
+        variants[status] ??
+          "bg-wl-bg-tertiary text-wl-text-secondary border-wl-border-subtle",
+      )}
+    >
       {status}
     </span>
   );
@@ -103,8 +121,8 @@ function StatusBadge({ status }: { status: string }) {
 // ─── Main Page ────────────────────────────────────────────────────
 
 export default function CODReconciliationPage() {
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [remitting, setRemitting] = useState(false);
@@ -112,18 +130,34 @@ export default function CODReconciliationPage() {
   const [remitSuccess, setRemitSuccess] = useState<string | null>(null);
 
   const summaryParams = new URLSearchParams();
-  if (from) summaryParams.set('from', new Date(from).toISOString());
-  if (to) summaryParams.set('to', new Date(to).toISOString());
+  if (from) summaryParams.set("from", new Date(from).toISOString());
+  if (to) summaryParams.set("to", new Date(to).toISOString());
 
-  const { data: summaryData, loading: summaryLoading, error: summaryError, refetch: refetchSummary } =
-    useApiQuery<{ data: CODSummary }>(`/api/v4/finance/cod/summary?${summaryParams.toString()}`);
+  const {
+    data: summaryData,
+    loading: summaryLoading,
+    error: summaryError,
+    refetch: refetchSummary,
+  } = useApiQuery<{ data: CODSummary }>(
+    `/api/v4/finance/cod/summary?${summaryParams.toString()}`,
+  );
 
-  const deliveriesParams = new URLSearchParams({ page: String(page), limit: '25', status: 'collected' });
-  if (from) deliveriesParams.set('from', new Date(from).toISOString());
-  if (to) deliveriesParams.set('to', new Date(to).toISOString());
+  const deliveriesParams = new URLSearchParams({
+    page: String(page),
+    limit: "25",
+    status: "collected",
+  });
+  if (from) deliveriesParams.set("from", new Date(from).toISOString());
+  if (to) deliveriesParams.set("to", new Date(to).toISOString());
 
-  const { data: deliveriesData, loading: deliveriesLoading, error: deliveriesError, refetch: refetchDeliveries } =
-    useApiQuery<DeliveriesResponse>(`/api/v4/finance/cod/deliveries?${deliveriesParams.toString()}`);
+  const {
+    data: deliveriesData,
+    loading: deliveriesLoading,
+    error: deliveriesError,
+    refetch: refetchDeliveries,
+  } = useApiQuery<DeliveriesResponse>(
+    `/api/v4/finance/cod/deliveries?${deliveriesParams.toString()}`,
+  );
 
   const summary = summaryData?.data;
   const deliveries = deliveriesData?.data ?? [];
@@ -152,7 +186,10 @@ export default function CODReconciliationPage() {
     setRemitError(null);
     setRemitSuccess(null);
     try {
-      const json = await api.patch<{ data: { updated: number } }>('/api/v4/finance/cod/remit', { deliveryIds: Array.from(selectedIds) });
+      const json = await api.patch<{ data: { updated: number } }>(
+        "/api/v4/finance/cod/remit",
+        { deliveryIds: Array.from(selectedIds) },
+      );
       setRemitSuccess(`${json.data.updated} deliveries marked as remitted.`);
       setSelectedIds(new Set());
       refetchSummary();
@@ -165,10 +202,13 @@ export default function CODReconciliationPage() {
   }, [selectedIds, refetchSummary, refetchDeliveries]);
 
   const handleExportCSV = useCallback(() => {
-    const params = new URLSearchParams({ limit: '1000', page: '1' });
-    if (from) params.set('from', new Date(from).toISOString());
-    if (to) params.set('to', new Date(to).toISOString());
-    window.open(`/api/v4/finance/cod/deliveries?${params.toString()}&format=csv`, '_blank');
+    const params = new URLSearchParams({ limit: "1000", page: "1" });
+    if (from) params.set("from", new Date(from).toISOString());
+    if (to) params.set("to", new Date(to).toISOString());
+    window.open(
+      `/api/v4/finance/cod/deliveries?${params.toString()}&format=csv`,
+      "_blank",
+    );
   }, [from, to]);
 
   if (summaryLoading) return <LoadingSkeleton />;
@@ -183,7 +223,9 @@ export default function CODReconciliationPage() {
         <div className="p-6">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-2xl font-bold text-wl-text-primary">COD Reconciliation</h1>
+              <h1 className="text-2xl font-bold text-wl-text-primary">
+                COD Reconciliation
+              </h1>
               <p className="text-sm text-wl-text-secondary mt-1">
                 Track and reconcile Cash on Delivery payments
               </p>
@@ -192,14 +234,20 @@ export default function CODReconciliationPage() {
               <input
                 type="date"
                 value={from}
-                onChange={(e) => { setFrom(e.target.value); setPage(1); }}
+                onChange={(e) => {
+                  setFrom(e.target.value);
+                  setPage(1);
+                }}
                 className="px-3 py-2 text-sm rounded-lg bg-wl-bg-elevated border border-wl-border-subtle text-wl-text-primary focus:outline-none focus:border-wl-primary-400"
               />
               <span className="text-wl-text-secondary text-sm">to</span>
               <input
                 type="date"
                 value={to}
-                onChange={(e) => { setTo(e.target.value); setPage(1); }}
+                onChange={(e) => {
+                  setTo(e.target.value);
+                  setPage(1);
+                }}
                 className="px-3 py-2 text-sm rounded-lg bg-wl-bg-elevated border border-wl-border-subtle text-wl-text-primary focus:outline-none focus:border-wl-primary-400"
               />
               <Button variant="secondary" size="sm" onClick={handleExportCSV}>
@@ -216,28 +264,28 @@ export default function CODReconciliationPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <SummaryCard
             label="Total Collected"
-            amount={totals?.collected ?? '0.00'}
+            amount={totals?.collected ?? "0.00"}
             count={totals?.collectedCount ?? 0}
             icon={DollarSign}
             color="bg-blue-600"
           />
           <SummaryCard
             label="Outstanding"
-            amount={totals?.outstanding ?? '0.00'}
+            amount={totals?.outstanding ?? "0.00"}
             count={totals?.outstandingCount ?? 0}
             icon={Clock}
             color="bg-wl-warning"
           />
           <SummaryCard
             label="Remitted"
-            amount={totals?.reconciled ?? '0.00'}
+            amount={totals?.reconciled ?? "0.00"}
             count={totals?.reconciledCount ?? 0}
             icon={CheckCircle}
             color="bg-wl-success"
           />
           <SummaryCard
             label="Total COD"
-            amount={totals?.total ?? '0.00'}
+            amount={totals?.total ?? "0.00"}
             count={totals?.totalCount ?? 0}
             icon={TrendingUp}
             color="bg-wl-primary-500"
@@ -248,30 +296,51 @@ export default function CODReconciliationPage() {
         {summary && summary.byDriver.length > 0 && (
           <Card className="bg-wl-bg-elevated border-wl-border-subtle overflow-hidden">
             <div className="p-4 border-b border-wl-border-subtle">
-              <h2 className="text-sm font-semibold text-wl-text-primary">Per-Driver Breakdown</h2>
+              <h2 className="text-sm font-semibold text-wl-text-primary">
+                Per-Driver Breakdown
+              </h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-wl-border-subtle">
-                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">Driver</th>
-                    <th className="text-right px-4 py-3 text-wl-text-secondary font-medium">Collected</th>
-                    <th className="text-right px-4 py-3 text-wl-text-secondary font-medium">Outstanding</th>
-                    <th className="text-right px-4 py-3 text-wl-text-secondary font-medium">Remitted</th>
+                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">
+                      Driver
+                    </th>
+                    <th className="text-right px-4 py-3 text-wl-text-secondary font-medium">
+                      Collected
+                    </th>
+                    <th className="text-right px-4 py-3 text-wl-text-secondary font-medium">
+                      Outstanding
+                    </th>
+                    <th className="text-right px-4 py-3 text-wl-text-secondary font-medium">
+                      Remitted
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {summary.byDriver.map((row) => (
-                    <tr key={row.driver.id} className="border-b border-wl-border-subtle last:border-0 hover:bg-wl-bg-tertiary/50">
+                    <tr
+                      key={row.driver.id}
+                      className="border-b border-wl-border-subtle last:border-0 hover:bg-wl-bg-tertiary/50"
+                    >
                       <td className="px-4 py-3 font-medium text-wl-text-primary">
                         {row.driver.name}
                         {row.driver.phone && (
-                          <span className="ml-2 text-xs text-wl-text-tertiary">{row.driver.phone}</span>
+                          <span className="ml-2 text-xs text-wl-text-tertiary">
+                            {row.driver.phone}
+                          </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right text-blue-400">${row.collected}</td>
-                      <td className="px-4 py-3 text-right text-wl-warning">${row.outstanding}</td>
-                      <td className="px-4 py-3 text-right text-wl-success">${row.reconciled}</td>
+                      <td className="px-4 py-3 text-right text-blue-400">
+                        ${row.collected}
+                      </td>
+                      <td className="px-4 py-3 text-right text-wl-warning">
+                        ${row.outstanding}
+                      </td>
+                      <td className="px-4 py-3 text-right text-wl-success">
+                        ${row.reconciled}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -293,7 +362,9 @@ export default function CODReconciliationPage() {
             </h2>
             {selectedIds.size > 0 && (
               <div className="flex items-center gap-3">
-                <span className="text-xs text-wl-text-secondary">{selectedIds.size} selected</span>
+                <span className="text-xs text-wl-text-secondary">
+                  {selectedIds.size} selected
+                </span>
                 <Button
                   variant="primary"
                   size="sm"
@@ -301,7 +372,7 @@ export default function CODReconciliationPage() {
                   disabled={remitting}
                 >
                   <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
-                  {remitting ? 'Processing…' : 'Mark as Remitted'}
+                  {remitting ? "Processing…" : "Mark as Remitted"}
                 </Button>
               </div>
             )}
@@ -319,9 +390,13 @@ export default function CODReconciliationPage() {
           )}
 
           {deliveriesLoading ? (
-            <div className="p-8 text-center text-wl-text-tertiary text-sm">Loading deliveries…</div>
+            <div className="p-8 text-center text-wl-text-tertiary text-sm">
+              Loading deliveries…
+            </div>
           ) : deliveriesError ? (
-            <div className="p-4"><ErrorState error={deliveriesError} /></div>
+            <div className="p-4">
+              <ErrorState error={deliveriesError} />
+            </div>
           ) : deliveries.length === 0 ? (
             <div className="p-8 text-center text-wl-text-tertiary text-sm">
               No outstanding COD deliveries for this period.
@@ -334,17 +409,32 @@ export default function CODReconciliationPage() {
                     <th className="px-4 py-3 text-left">
                       <input
                         type="checkbox"
-                        checked={selectedIds.size === deliveries.length && deliveries.length > 0}
+                        checked={
+                          selectedIds.size === deliveries.length &&
+                          deliveries.length > 0
+                        }
                         onChange={toggleAll}
                         className="rounded border-wl-border-subtle"
                       />
                     </th>
-                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">Order</th>
-                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">Shipment</th>
-                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">Driver</th>
-                    <th className="text-right px-4 py-3 text-wl-text-secondary font-medium">Amount</th>
-                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">Status</th>
-                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">Collected At</th>
+                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">
+                      Order
+                    </th>
+                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">
+                      Shipment
+                    </th>
+                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">
+                      Driver
+                    </th>
+                    <th className="text-right px-4 py-3 text-wl-text-secondary font-medium">
+                      Amount
+                    </th>
+                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">
+                      Status
+                    </th>
+                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">
+                      Collected At
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -352,8 +442,8 @@ export default function CODReconciliationPage() {
                     <tr
                       key={d.id}
                       className={cn(
-                        'border-b border-wl-border-subtle last:border-0 hover:bg-wl-bg-tertiary/50 transition-colors',
-                        selectedIds.has(d.id) && 'bg-wl-primary-500/5',
+                        "border-b border-wl-border-subtle last:border-0 hover:bg-wl-bg-tertiary/50 transition-colors",
+                        selectedIds.has(d.id) && "bg-wl-primary-500/5",
                       )}
                     >
                       <td className="px-4 py-3">
@@ -365,12 +455,14 @@ export default function CODReconciliationPage() {
                         />
                       </td>
                       <td className="px-4 py-3 text-wl-text-primary">
-                        {d.order?.shopifyOrderNumber ?? '—'}
+                        {d.order?.shopifyOrderNumber ?? "—"}
                       </td>
                       <td className="px-4 py-3 text-wl-text-secondary">
-                        {d.shipment?.shipmentNumber ?? '—'}
+                        {d.shipment?.shipmentNumber ?? "—"}
                       </td>
-                      <td className="px-4 py-3 text-wl-text-primary">{d.driver.name}</td>
+                      <td className="px-4 py-3 text-wl-text-primary">
+                        {d.driver.name}
+                      </td>
                       <td className="px-4 py-3 text-right font-medium text-wl-text-primary">
                         ${d.amount} {d.currency}
                       </td>
@@ -378,7 +470,9 @@ export default function CODReconciliationPage() {
                         <StatusBadge status={d.status} />
                       </td>
                       <td className="px-4 py-3 text-wl-text-secondary text-xs">
-                        {d.collectedAt ? new Date(d.collectedAt).toLocaleDateString() : '—'}
+                        {d.collectedAt
+                          ? new Date(d.collectedAt).toLocaleDateString()
+                          : "—"}
                       </td>
                     </tr>
                   ))}

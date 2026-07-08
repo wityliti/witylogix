@@ -17,9 +17,12 @@
  * - refresh_token: Token refresh flow
  */
 
-import { randomBytes, createHash } from 'crypto';
-import { EventEmitter } from 'events';
-import type { CredentialVault, CredentialEntry } from '../credentials/credential-vault.js';
+import { randomBytes, createHash } from "crypto";
+import { EventEmitter } from "events";
+import type {
+  CredentialVault,
+  CredentialEntry,
+} from "../credentials/credential-vault.js";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -50,7 +53,7 @@ export interface PKCEState {
   /** Code challenge (SHA256 hash of verifier, base64url encoded) */
   codeChallenge: string;
   /** Code challenge method (always S256) */
-  codeChallengeMethod: 'S256';
+  codeChallengeMethod: "S256";
   /** State parameter for CSRF protection */
   state: string;
 }
@@ -70,7 +73,7 @@ export interface OAuth2Config {
   /** Redirect URI after authorization */
   redirectUri?: string;
   /** OAuth2 grant type */
-  grantType: 'authorization_code' | 'client_credentials' | 'refresh_token';
+  grantType: "authorization_code" | "client_credentials" | "refresh_token";
   /** Requested scopes */
   scopes?: string[];
   /** Use PKCE for public clients (default: true if no clientSecret) */
@@ -119,7 +122,7 @@ export interface StoredToken {
   refreshToken?: string;
   expiresAt: number; // Timestamp in milliseconds
   scope?: string;
-  grantType: 'authorization_code' | 'client_credentials' | 'refresh_token';
+  grantType: "authorization_code" | "client_credentials" | "refresh_token";
 }
 
 // ─── Constants ───────────────────────────────────────────────────────
@@ -128,7 +131,8 @@ const DEFAULT_REFRESH_BUFFER_MS = 5 * 60 * 1000; // 5 minutes
 const DEFAULT_MAX_REFRESH_RETRIES = 3;
 const DEFAULT_BACKOFF_MULTIPLIER = 2;
 const PKCE_CODE_VERIFIER_LENGTH = 128; // Maximum length for safety
-const PKCE_ALLOWED_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+const PKCE_ALLOWED_CHARS =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
 
 // ─── Token Manager ──────────────────────────────────────────────────
 
@@ -151,34 +155,41 @@ export class OAuth2TokenManager extends EventEmitter {
     this.httpClient = config.httpClient;
     this.tenantId = config.tenantId;
     this.providerId = config.providerId;
-    this.refreshBufferMs = config.oauth2Config.refreshBufferMs ?? DEFAULT_REFRESH_BUFFER_MS;
-    this.maxRefreshRetries = config.oauth2Config.maxRefreshRetries ?? DEFAULT_MAX_REFRESH_RETRIES;
-    this.backoffMultiplier = config.oauth2Config.backoffMultiplier ?? DEFAULT_BACKOFF_MULTIPLIER;
+    this.refreshBufferMs =
+      config.oauth2Config.refreshBufferMs ?? DEFAULT_REFRESH_BUFFER_MS;
+    this.maxRefreshRetries =
+      config.oauth2Config.maxRefreshRetries ?? DEFAULT_MAX_REFRESH_RETRIES;
+    this.backoffMultiplier =
+      config.oauth2Config.backoffMultiplier ?? DEFAULT_BACKOFF_MULTIPLIER;
   }
 
   /**
    * Generate authorization URL for OAuth2 flow
    */
-  generateAuthorizationUrl(scope?: string[]): { url: string; pkce?: PKCEState } {
+  generateAuthorizationUrl(scope?: string[]): {
+    url: string;
+    pkce?: PKCEState;
+  } {
     const scopes = scope ?? this.oauth2Config.scopes ?? [];
     const params = new URLSearchParams({
       client_id: this.oauth2Config.clientId,
-      response_type: 'code',
-      scope: scopes.join(' '),
+      response_type: "code",
+      scope: scopes.join(" "),
     });
 
     if (this.oauth2Config.redirectUri) {
-      params.append('redirect_uri', this.oauth2Config.redirectUri);
+      params.append("redirect_uri", this.oauth2Config.redirectUri);
     }
 
     // Add PKCE if configured
     let pkce: PKCEState | undefined;
-    const shouldUsePkce = this.oauth2Config.usePkce ?? !this.oauth2Config.clientSecret;
+    const shouldUsePkce =
+      this.oauth2Config.usePkce ?? !this.oauth2Config.clientSecret;
     if (shouldUsePkce) {
       pkce = this.generatePKCE();
-      params.append('code_challenge', pkce.codeChallenge);
-      params.append('code_challenge_method', pkce.codeChallengeMethod);
-      params.append('state', pkce.state);
+      params.append("code_challenge", pkce.codeChallenge);
+      params.append("code_challenge_method", pkce.codeChallengeMethod);
+      params.append("state", pkce.state);
     }
 
     const url = `${this.oauth2Config.authorizationUrl}?${params.toString()}`;
@@ -194,7 +205,7 @@ export class OAuth2TokenManager extends EventEmitter {
     pkceState?: PKCEState,
   ): Promise<OAuth2Token> {
     const body: Record<string, unknown> = {
-      grant_type: 'authorization_code',
+      grant_type: "authorization_code",
       client_id: this.oauth2Config.clientId,
       code,
     };
@@ -222,7 +233,7 @@ export class OAuth2TokenManager extends EventEmitter {
     await this.storeToken(token);
 
     this.currentToken = token;
-    this.emit('token_refreshed', { token });
+    this.emit("token_refreshed", { token });
 
     return token;
   }
@@ -255,7 +266,7 @@ export class OAuth2TokenManager extends EventEmitter {
 
     throw new Error(
       `No valid token available for provider "${this.providerId}". ` +
-      'Please authorize first.',
+        "Please authorize first.",
     );
   }
 
@@ -306,7 +317,7 @@ export class OAuth2TokenManager extends EventEmitter {
     await this.credentialVault.delete(this.tenantId, this.providerId);
     this.currentToken = null;
 
-    this.emit('token_revoked', { providerId: this.providerId });
+    this.emit("token_revoked", { providerId: this.providerId });
   }
 
   /**
@@ -323,12 +334,12 @@ export class OAuth2TokenManager extends EventEmitter {
   private parseTokenResponse(response: Record<string, unknown>): OAuth2Token {
     const accessToken = response.access_token as string;
     if (!accessToken) {
-      throw new Error('No access_token in response');
+      throw new Error("No access_token in response");
     }
 
     return {
       accessToken,
-      tokenType: (response.token_type as string) ?? 'Bearer',
+      tokenType: (response.token_type as string) ?? "Bearer",
       refreshToken: response.refresh_token as string | undefined,
       expiresIn: (response.expires_in as number) ?? 3600,
       scope: response.scope as string | undefined,
@@ -347,13 +358,13 @@ export class OAuth2TokenManager extends EventEmitter {
       try {
         const storedToken = await this.loadToken();
         if (!storedToken?.refreshToken) {
-          throw new Error('No refresh token available');
+          throw new Error("No refresh token available");
         }
 
         const response = await this.httpClient.post<Record<string, unknown>>(
           this.oauth2Config.tokenUrl,
           {
-            grant_type: 'refresh_token',
+            grant_type: "refresh_token",
             refresh_token: storedToken.refreshToken,
             client_id: this.oauth2Config.clientId,
             client_secret: this.oauth2Config.clientSecret,
@@ -364,7 +375,7 @@ export class OAuth2TokenManager extends EventEmitter {
         await this.storeToken(token);
         this.currentToken = token;
 
-        this.emit('token_refreshed', { token, attempt });
+        this.emit("token_refreshed", { token, attempt });
         return token;
       } catch (error) {
         lastError = error as Error;
@@ -376,7 +387,7 @@ export class OAuth2TokenManager extends EventEmitter {
       }
     }
 
-    this.emit('token_refresh_failed', {
+    this.emit("token_refresh_failed", {
       providerId: this.providerId,
       error: lastError?.message,
       attempts: this.maxRefreshRetries,
@@ -393,7 +404,7 @@ export class OAuth2TokenManager extends EventEmitter {
   private async storeToken(token: OAuth2Token): Promise<void> {
     const stored: StoredToken = {
       accessToken: token.accessToken,
-      tokenType: token.tokenType ?? 'Bearer',
+      tokenType: token.tokenType ?? "Bearer",
       refreshToken: token.refreshToken,
       expiresAt: Date.now() + token.expiresIn * 1000,
       scope: token.scope,
@@ -403,13 +414,13 @@ export class OAuth2TokenManager extends EventEmitter {
     const entry: CredentialEntry = {
       tenantId: this.tenantId,
       providerId: this.providerId,
-      credentialType: 'oauth_token',
+      credentialType: "oauth_token",
       credential: {
         accessToken: stored.accessToken,
-        refreshToken: stored.refreshToken ?? '',
+        refreshToken: stored.refreshToken ?? "",
         expiresAt: String(stored.expiresAt),
         tokenType: stored.tokenType,
-        scope: stored.scope ?? '',
+        scope: stored.scope ?? "",
       },
       metadata: { grantType: this.oauth2Config.grantType },
     };
@@ -422,15 +433,18 @@ export class OAuth2TokenManager extends EventEmitter {
    * Load token from credential vault
    */
   private async loadToken(): Promise<OAuth2Token | null> {
-    const entry = await this.credentialVault.retrieve(this.tenantId, this.providerId);
-    if (!entry || entry.credentialType !== 'oauth_token') {
+    const entry = await this.credentialVault.retrieve(
+      this.tenantId,
+      this.providerId,
+    );
+    if (!entry || entry.credentialType !== "oauth_token") {
       return null;
     }
 
     const cred = entry.credential;
     return {
       accessToken: cred.accessToken,
-      tokenType: cred.tokenType ?? 'Bearer',
+      tokenType: cred.tokenType ?? "Bearer",
       refreshToken: cred.refreshToken || undefined,
       expiresIn: Math.floor((parseInt(cred.expiresAt, 10) - Date.now()) / 1000),
       scope: cred.scope || undefined,
@@ -445,7 +459,7 @@ export class OAuth2TokenManager extends EventEmitter {
     const codeVerifier = this.generateRandomString(PKCE_CODE_VERIFIER_LENGTH);
 
     // Generate code challenge (SHA256 of verifier, base64url encoded)
-    const hash = createHash('sha256').update(codeVerifier).digest();
+    const hash = createHash("sha256").update(codeVerifier).digest();
     const codeChallenge = this.base64urlEncode(hash);
 
     // Generate state for CSRF protection
@@ -454,7 +468,7 @@ export class OAuth2TokenManager extends EventEmitter {
     return {
       codeVerifier,
       codeChallenge,
-      codeChallengeMethod: 'S256',
+      codeChallengeMethod: "S256",
       state,
     };
   }
@@ -463,7 +477,7 @@ export class OAuth2TokenManager extends EventEmitter {
    * Generate random string from PKCE allowed characters
    */
   private generateRandomString(length: number): string {
-    let result = '';
+    let result = "";
     const randomBytes_ = randomBytes(length);
 
     for (let i = 0; i < length; i++) {
@@ -479,10 +493,10 @@ export class OAuth2TokenManager extends EventEmitter {
    */
   private base64urlEncode(buffer: Buffer): string {
     return buffer
-      .toString('base64')
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=/g, "");
   }
 
   /**
@@ -505,6 +519,6 @@ export class OAuth2TokenManager extends EventEmitter {
  * Token manager event types
  */
 export type TokenManagerEvent =
-  | 'token_refreshed'
-  | 'token_revoked'
-  | 'token_refresh_failed';
+  | "token_refreshed"
+  | "token_revoked"
+  | "token_refresh_failed";

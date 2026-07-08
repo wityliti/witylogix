@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useApiQuery, useApiMutation } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import {
   ChevronLeft,
   Upload,
@@ -14,7 +14,7 @@ import {
   Eye,
   Paintbrush,
   Globe,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface BrandingSettings {
   primaryLogo?: string;
@@ -25,8 +25,16 @@ interface BrandingSettings {
 }
 
 export default function BrandingPage() {
-  const { data: branding, loading, error, refetch } = useApiQuery<BrandingSettings>('/api/v4/settings/branding');
-  const { execute: updateBranding } = useApiMutation('PATCH', '/api/v4/settings/branding');
+  const {
+    data: branding,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<BrandingSettings>("/api/v4/settings/branding");
+  const { execute: updateBranding } = useApiMutation(
+    "PATCH",
+    "/api/v4/settings/branding",
+  );
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -61,9 +69,7 @@ export default function BrandingPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Logo Upload */}
               <div>
-                <h4 className="font-medium text-white mb-4">
-                  Primary Logo
-                </h4>
+                <h4 className="font-medium text-white mb-4">Primary Logo</h4>
                 <div className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center hover:border-blue-500/50 transition-colors cursor-pointer">
                   <div className="mb-4">
                     <div className="w-16 h-16 mx-auto rounded-lg bg-wl-bg-elevated flex items-center justify-center">
@@ -94,9 +100,7 @@ export default function BrandingPage() {
 
               {/* Favicon Upload */}
               <div>
-                <h4 className="font-medium text-white mb-4">
-                  Favicon
-                </h4>
+                <h4 className="font-medium text-white mb-4">Favicon</h4>
                 <div className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center hover:border-blue-500/50 transition-colors cursor-pointer">
                   <div className="mb-4">
                     <div className="w-16 h-16 mx-auto rounded-lg bg-wl-bg-elevated flex items-center justify-center">
@@ -116,9 +120,7 @@ export default function BrandingPage() {
                     Choose File
                   </Button>
                 </div>
-                <p className="text-xs text-gray-500 mt-3">
-                  Not uploaded yet
-                </p>
+                <p className="text-xs text-gray-500 mt-3">Not uploaded yet</p>
               </div>
             </div>
           </CardContent>
@@ -271,7 +273,9 @@ export default function BrandingPage() {
         {/* Email Template Branding */}
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="text-white">Email Template Branding</CardTitle>
+            <CardTitle className="text-white">
+              Email Template Branding
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>

@@ -1,4 +1,4 @@
-import * as Network from 'expo-network';
+import * as Network from "expo-network";
 
 type ConnectivityListener = (isOnline: boolean) => void;
 
@@ -15,7 +15,9 @@ class ConnectivityMonitor {
     this.pollInterval = setInterval(async () => {
       try {
         const newState = await Network.getNetworkStateAsync();
-        const nowOnline = !!(newState.isConnected && newState.isInternetReachable);
+        const nowOnline = !!(
+          newState.isConnected && newState.isInternetReachable
+        );
         if (nowOnline !== this.isOnline) {
           this.isOnline = nowOnline;
           this.notifyListeners(nowOnline);

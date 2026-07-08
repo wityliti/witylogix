@@ -2,7 +2,14 @@
 
 import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { Button, Input, Badge, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui";
+import {
+  Button,
+  Input,
+  Badge,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui";
 import type { BadgeVariant } from "@/components/ui/badge";
 import type { LineItem, BillingRule } from "./types";
 
@@ -33,7 +40,11 @@ function generateId(): string {
   return `item_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function calculateAmount(quantity: number, unitPrice: number, taxRate: number): number {
+function calculateAmount(
+  quantity: number,
+  unitPrice: number,
+  taxRate: number,
+): number {
   const subtotal = quantity * unitPrice;
   const tax = subtotal * (taxRate / 100);
   return subtotal + tax;
@@ -65,20 +76,37 @@ export function InvoiceLineItems({
 
       // Auto-calculate amount
       const item = updatedItems[index];
-      item.amount = calculateAmount(item.quantity, item.unitPrice, item.taxRate);
+      item.amount = calculateAmount(
+        item.quantity,
+        item.unitPrice,
+        item.taxRate,
+      );
 
       onItemsChange?.(updatedItems);
 
       // Recalculate totals
-      const subtotal = updatedItems.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
-      const taxTotal = updatedItems.reduce((sum, i) => sum + (i.quantity * i.unitPrice * (i.taxRate / 100)), 0);
+      const subtotal = updatedItems.reduce(
+        (sum, i) => sum + i.quantity * i.unitPrice,
+        0,
+      );
+      const taxTotal = updatedItems.reduce(
+        (sum, i) => sum + i.quantity * i.unitPrice * (i.taxRate / 100),
+        0,
+      );
       const total = subtotal + taxTotal;
 
       onSubtotalChange?.(subtotal);
       onTaxChange?.(taxTotal);
       onTotalChange?.(total);
     },
-    [items, readOnly, onItemsChange, onSubtotalChange, onTaxChange, onTotalChange]
+    [
+      items,
+      readOnly,
+      onItemsChange,
+      onSubtotalChange,
+      onTaxChange,
+      onTotalChange,
+    ],
   );
 
   const removeItem = useCallback(
@@ -88,15 +116,28 @@ export function InvoiceLineItems({
       onItemsChange?.(updatedItems);
 
       // Recalculate totals
-      const subtotal = updatedItems.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
-      const taxTotal = updatedItems.reduce((sum, i) => sum + (i.quantity * i.unitPrice * (i.taxRate / 100)), 0);
+      const subtotal = updatedItems.reduce(
+        (sum, i) => sum + i.quantity * i.unitPrice,
+        0,
+      );
+      const taxTotal = updatedItems.reduce(
+        (sum, i) => sum + i.quantity * i.unitPrice * (i.taxRate / 100),
+        0,
+      );
       const total = subtotal + taxTotal;
 
       onSubtotalChange?.(subtotal);
       onTaxChange?.(taxTotal);
       onTotalChange?.(total);
     },
-    [items, readOnly, onItemsChange, onSubtotalChange, onTaxChange, onTotalChange]
+    [
+      items,
+      readOnly,
+      onItemsChange,
+      onSubtotalChange,
+      onTaxChange,
+      onTotalChange,
+    ],
   );
 
   const addItem = useCallback(() => {
@@ -121,12 +162,18 @@ export function InvoiceLineItems({
       updatedItems.splice(toIndex, 0, movedItem);
       onItemsChange?.(updatedItems);
     },
-    [items, readOnly, onItemsChange]
+    [items, readOnly, onItemsChange],
   );
 
   // Calculate totals
-  const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
-  const taxTotal = items.reduce((sum, item) => sum + item.quantity * item.unitPrice * (item.taxRate / 100), 0);
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.quantity * item.unitPrice,
+    0,
+  );
+  const taxTotal = items.reduce(
+    (sum, item) => sum + item.quantity * item.unitPrice * (item.taxRate / 100),
+    0,
+  );
   const total = subtotal + taxTotal;
 
   return (
@@ -177,19 +224,30 @@ export function InvoiceLineItems({
                   "border-b border-wl-border-subtle px-4 py-3 grid grid-cols-12 gap-3 items-center",
                   "transition-colors duration-fast",
                   draggedIndex === index && "bg-wl-primary-500/10",
-                  !readOnly && "cursor-move hover:bg-wl-bg-surface"
+                  !readOnly && "cursor-move hover:bg-wl-bg-surface",
                 )}
               >
                 {/* Drag handle */}
                 {!readOnly && (
                   <div className="col-span-4 flex items-center gap-2">
-                    <svg className="w-4 h-4 text-wl-text-tertiary flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 7h8M8 12h8M8 17h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    <svg
+                      className="w-4 h-4 text-wl-text-tertiary flex-shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M8 7h8M8 12h8M8 17h8"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
                     </svg>
                     <Input
                       type="text"
                       value={item.description}
-                      onChange={(e) => updateItem(index, { description: e.target.value })}
+                      onChange={(e) =>
+                        updateItem(index, { description: e.target.value })
+                      }
                       placeholder="Line item description"
                       disabled={readOnly}
                       className="flex-1"
@@ -197,7 +255,9 @@ export function InvoiceLineItems({
                   </div>
                 )}
                 {readOnly && (
-                  <div className="col-span-4 text-sm text-wl-text-primary">{item.description}</div>
+                  <div className="col-span-4 text-sm text-wl-text-primary">
+                    {item.description}
+                  </div>
                 )}
 
                 {/* Quantity */}
@@ -205,7 +265,11 @@ export function InvoiceLineItems({
                   <Input
                     type="number"
                     value={item.quantity}
-                    onChange={(e) => updateItem(index, { quantity: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      updateItem(index, {
+                        quantity: parseFloat(e.target.value) || 0,
+                      })
+                    }
                     placeholder="0"
                     disabled={readOnly}
                     min="0"
@@ -219,7 +283,11 @@ export function InvoiceLineItems({
                   <Input
                     type="number"
                     value={item.unitPrice}
-                    onChange={(e) => updateItem(index, { unitPrice: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      updateItem(index, {
+                        unitPrice: parseFloat(e.target.value) || 0,
+                      })
+                    }
                     placeholder="0.00"
                     disabled={readOnly}
                     min="0"
@@ -233,7 +301,11 @@ export function InvoiceLineItems({
                   <Input
                     type="number"
                     value={item.taxRate}
-                    onChange={(e) => updateItem(index, { taxRate: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      updateItem(index, {
+                        taxRate: parseFloat(e.target.value) || 0,
+                      })
+                    }
                     placeholder="0"
                     disabled={readOnly}
                     min="0"
@@ -259,7 +331,9 @@ export function InvoiceLineItems({
                           {billingRuleLabels[item.billingRule]}
                         </Badge>
                       </TooltipTrigger>
-                      <TooltipContent>Billing Rule: {billingRuleLabels[item.billingRule]}</TooltipContent>
+                      <TooltipContent>
+                        Billing Rule: {billingRuleLabels[item.billingRule]}
+                      </TooltipContent>
                     </Tooltip>
                   )}
                   {!readOnly && (
@@ -269,7 +343,12 @@ export function InvoiceLineItems({
                       onClick={() => removeItem(index)}
                       title="Remove item"
                     >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -289,8 +368,18 @@ export function InvoiceLineItems({
       {/* Add button */}
       {!readOnly && (
         <Button size="sm" variant="ghost" onClick={addItem}>
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 4v16m8-8H4"
+            />
           </svg>
           Add Line Item
         </Button>
@@ -301,15 +390,21 @@ export function InvoiceLineItems({
         <div className="flex justify-end gap-8">
           <div>
             <p className="text-sm text-wl-text-secondary">Subtotal:</p>
-            <p className="text-lg font-semibold text-wl-text-primary">{formatCurrency(subtotal)}</p>
+            <p className="text-lg font-semibold text-wl-text-primary">
+              {formatCurrency(subtotal)}
+            </p>
           </div>
           <div>
             <p className="text-sm text-wl-text-secondary">Tax:</p>
-            <p className="text-lg font-semibold text-wl-text-primary">{formatCurrency(taxTotal)}</p>
+            <p className="text-lg font-semibold text-wl-text-primary">
+              {formatCurrency(taxTotal)}
+            </p>
           </div>
           <div className="bg-wl-primary-500/10 rounded-lg px-4 py-2 min-w-[120px]">
             <p className="text-sm text-wl-text-secondary">Total:</p>
-            <p className="text-lg font-bold text-wl-primary-400">{formatCurrency(total)}</p>
+            <p className="text-lg font-bold text-wl-primary-400">
+              {formatCurrency(total)}
+            </p>
           </div>
         </div>
       </div>

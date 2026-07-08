@@ -21,6 +21,7 @@ Witylogix is implementing a **multi-provider notification system** with **Bring 
 7. **Rate Limiting & Metering** — Per-provider per-tenant token bucket, fallback usage tracking for BYOK accounting
 
 **Architecture:**
+
 - **Orchestrator** — Entry point for sending notifications; coordinates template loading, rendering, routing
 - **Channel Router** — Directs to correct provider based on channel + tenant credentials
 - **Provider Registry** — Maps provider slug → implementation with lazy initialization
@@ -35,11 +36,13 @@ Witylogix is implementing a **multi-provider notification system** with **Bring 
 ### Multi-Tenant Notification Challenge
 
 Witylogix supports SaaS tenants (shops) that manage their own deliveries. Each tenant may want to:
+
 - Use their own SendGrid/Mailgun/AWS SES account for branding and quota independence
 - Fall back to shared deployer credentials if not configured
 - Track which provider was used and whether fallback occurred
 
 Current state:
+
 - Single hardcoded email provider (SendGrid)
 - No SMS, WhatsApp, or Push support
 - No tenant-specific credentials
@@ -49,12 +52,13 @@ Current state:
 
 SaaS platforms often face this choice:
 
-| Approach | Pros | Cons |
-|----------|------|------|
-| **Unified Service** | Simpler ops, single provider, easier UX | Vendor lock-in, billing opacity, quota contention between tenants |
-| **BYOK** | Tenant autonomy, transparent costs, credential ownership | Credential management complexity, provider sprawl, need for fallbacks |
+| Approach            | Pros                                                     | Cons                                                                  |
+| ------------------- | -------------------------------------------------------- | --------------------------------------------------------------------- |
+| **Unified Service** | Simpler ops, single provider, easier UX                  | Vendor lock-in, billing opacity, quota contention between tenants     |
+| **BYOK**            | Tenant autonomy, transparent costs, credential ownership | Credential management complexity, provider sprawl, need for fallbacks |
 
 **Decision: BYOK** — Witylogix tenants are sophisticated logistics operators who want:
+
 - Independent API credentials (for cost tracking, custom whitelabeling)
 - Fallback to deployer defaults only if they haven't configured
 - Clear visibility into which provider serves each notification
@@ -80,6 +84,7 @@ Witylogix notifications span four independent channels:
    - Features: Batching, data payloads, segmentation, scheduling
 
 Each channel must be independently configurable because:
+
 - Tenant may use Twilio for SMS but SendGrid for email
 - Different providers have different costs (Twilio SMS ≠ Vonage SMS)
 - Different regulatory requirements (WhatsApp template review, SMS throughput)
@@ -87,11 +92,13 @@ Each channel must be independently configurable because:
 ### Template System Design
 
 Notifications combine:
+
 - Static template (subject, body) stored in database
 - Dynamic variables (customer name, order ID, delivery ETA)
 - Channel-specific rendering (HTML for email, plain text for SMS)
 
 Example template:
+
 ```
 Name: "order_shipped"
 Channel: EMAIL
@@ -102,6 +109,7 @@ TextBody: "Hi {{customerName}}, Your order {{orderId}} has shipped..."
 ```
 
 Rendering pipeline:
+
 1. Load template from DB by (templateId, channel)
 2. Interpolate {{variable}} with values from context
 3. Pass to provider (provider handles provider-specific templating if used)
@@ -116,6 +124,7 @@ Network failures happen. Notification delivery must be robust:
 - **Provider overload** → rate limiting, backpressure via token bucket
 
 Example retry sequence:
+
 ```
 Attempt 1: t=0ms (immediate)
   → SendGrid rate limit (429), retry after 60s
@@ -126,6 +135,7 @@ Attempt 3: t=300ms + jitter
 ```
 
 If all attempts fail:
+
 - Log to `notificationLog` table with status FAILED
 - Emit to dead-letter queue for manual intervention
 - Alert ops if SLA violated (e.g., shipping notification not sent within 5 min)
@@ -133,12 +143,14 @@ If all attempts fail:
 ### Rate Limiting Strategy
 
 Each provider has rate limits:
+
 - SendGrid: 100 req/sec
 - Twilio: 1000 req/sec per credential
 - Firebase: 10k msgs/sec
 - Meta WhatsApp: Depends on tier (100–10k msgs/sec)
 
 Solution: **Per-provider per-tenant token bucket**
+
 - Each tenant → each provider → sliding window token bucket
 - Tokens refill at provider's configured rate
 - Block if tenant exceeds their quota; emit metering event
@@ -148,6 +160,7 @@ Example: tenant with SendGrid reaches daily cap → fallback to deployer's SendG
 ### Health Checks & Monitoring
 
 Operational visibility requires:
+
 - **Periodic health checks** — Every 60s, test connectivity to each enabled provider
 - **Delivery status webhooks** — Provider calls back when message bounces/opens/clicks
 - **SLA tracking** — Alert if >5% of notifications fail in 24h window
@@ -161,11 +174,11 @@ Operational visibility requires:
 
 Alternative architectures:
 
-| Architecture | Approach | Pros | Cons |
-|--------------|----------|------|------|
-| **Unified Adapter** | Single SendGrid adapter, swap at config time | Simple | Vendor lock-in, one credentials object per tenant, no provider choice |
-| **Provider Registry** (chosen) | Multiple provider instances, each with own config | Provider agnostic, granular creds, fallback chains | Registry complexity, lazy init overhead |
-| **Smart Router** | Router picks provider at send-time from tenant config | Maximum flexibility | Routing logic scattered, hard to test, credential leaks risk |
+| Architecture                   | Approach                                              | Pros                                               | Cons                                                                  |
+| ------------------------------ | ----------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------------------------- |
+| **Unified Adapter**            | Single SendGrid adapter, swap at config time          | Simple                                             | Vendor lock-in, one credentials object per tenant, no provider choice |
+| **Provider Registry** (chosen) | Multiple provider instances, each with own config     | Provider agnostic, granular creds, fallback chains | Registry complexity, lazy init overhead                               |
+| **Smart Router**               | Router picks provider at send-time from tenant config | Maximum flexibility                                | Routing logic scattered, hard to test, credential leaks risk          |
 
 **Decision: Provider Registry Pattern**
 
@@ -174,19 +187,20 @@ Each channel maintains a registry of provider instances:
 ```typescript
 interface NotificationRegistry {
   email: {
-    sendgrid: SendGridEmailProvider,
-    mailgun: MailgunEmailProvider,
+    sendgrid: SendGridEmailProvider;
+    mailgun: MailgunEmailProvider;
     // ... more providers
-  },
+  };
   sms: {
-    twilio: TwilioSMSProvider,
-    vonage: VonageSMSProvider,
+    twilio: TwilioSMSProvider;
+    vonage: VonageSMSProvider;
     // ... more providers
-  }
+  };
 }
 ```
 
 Benefits:
+
 - **Swappable** — Replace SendGrid with Mailgun in shop.settings.notifications.email.provider, code unchanged
 - **Fallback chains** — Try SendGrid first, fall back to Mailgun if over quota
 - **Per-tenant isolation** — Each tenant's SendGrid creds stay isolated; can't see other tenants' credentials
@@ -197,27 +211,35 @@ Benefits:
 
 Template rendering options:
 
-| Format | Library | Pros | Cons |
-|--------|---------|------|------|
-| **Mustache** (chosen) | handlebars, micro-mustache | Simple, widely adopted, logic-less, safe | Limited features |
-| **Handlebars** | @handlebars/handlebars | Helpers, partials, if/loop | Larger bundle, overkill for notifications |
-| **EJS** | ejs | Full JS expressions | Injection risk, hard to audit |
-| **Nunjucks** | nunjucks | Filters, inheritance | Heavy, overkill for short notifications |
+| Format                | Library                    | Pros                                     | Cons                                      |
+| --------------------- | -------------------------- | ---------------------------------------- | ----------------------------------------- |
+| **Mustache** (chosen) | handlebars, micro-mustache | Simple, widely adopted, logic-less, safe | Limited features                          |
+| **Handlebars**        | @handlebars/handlebars     | Helpers, partials, if/loop               | Larger bundle, overkill for notifications |
+| **EJS**               | ejs                        | Full JS expressions                      | Injection risk, hard to audit             |
+| **Nunjucks**          | nunjucks                   | Filters, inheritance                     | Heavy, overkill for short notifications   |
 
 **Decision: Mustache with Simple Interpolation**
 
 Implementation:
+
 ```typescript
-function renderTemplate(template: string, variables: Record<string, unknown>): string {
+function renderTemplate(
+  template: string,
+  variables: Record<string, unknown>,
+): string {
   let result = template;
   for (const [key, value] of Object.entries(variables)) {
-    result = result.replace(new RegExp(`{{\\s*${key}\\s*}}`, 'g'), String(value));
+    result = result.replace(
+      new RegExp(`{{\\s*${key}\\s*}}`, "g"),
+      String(value),
+    );
   }
   return result;
 }
 ```
 
 Why:
+
 - Safe — No arbitrary JS execution
 - Auditable — Easy to review templates
 - Fast — O(n) regex replacement
@@ -225,6 +247,7 @@ Why:
 - Compatible — Works with handlebars syntax for future migration
 
 Channel-specific formatting:
+
 - **Email** — Keep HTML, link previews via `<a>` tags
 - **SMS/WhatsApp** — Strip HTML, break lines at 160 chars for SMS segmentation
 - **Push** — Truncate to 240 chars, emoji-safe
@@ -291,6 +314,7 @@ interface NotificationProvider {
 ```
 
 Each provider (SendGrid, Twilio, Firebase) implements this interface:
+
 - `send()` — Adapts unified message to provider API, calls SDK
 - `validateConfig()` — Tests credentials (e.g., SendGrid API key syntax + connectivity test)
 - `getStatus()` — Calls provider's health endpoint, returns latency + quota info
@@ -302,20 +326,22 @@ interface TenantProviderBucket {
   shopId: string;
   channel: "EMAIL" | "SMS" | "WHATSAPP" | "PUSH";
   provider: string;
-  tokens: number;                    // Current token count
-  capacity: number;                  // Bucket capacity (e.g., 100)
-  refillRate: number;                // Tokens per second
-  lastRefillAt: number;              // Last refill timestamp (ms)
+  tokens: number; // Current token count
+  capacity: number; // Bucket capacity (e.g., 100)
+  refillRate: number; // Tokens per second
+  lastRefillAt: number; // Last refill timestamp (ms)
 }
 ```
 
 Algorithm:
+
 1. When send requested, calculate refill: `tokens += (now - lastRefillAt) * refillRate`
 2. Clamp to capacity
 3. If tokens >= cost (1), decrement and allow
 4. Else block and return `RateLimitError`
 
 Benefits:
+
 - **Smooth fairness** — All tenants get fair share
 - **Burst capable** — Accumulate tokens, then burst send
 - **Per-provider** — Different providers have different limits
@@ -346,6 +372,7 @@ for (let attempt = 0; attempt < maxAttempts; attempt++) {
 ```
 
 Why:
+
 - **Transient resilience** — Network glitches recover within 100-400ms
 - **Jitter** — Prevents thundering herd (all clients retrying simultaneously)
 - **3 attempts max** — Balance retry cost vs. delivery success (3 attempts ≈ 99.9% success for 10% transient error rate)
@@ -354,6 +381,7 @@ Why:
 ### Metering & Fallback Usage Tracking
 
 When BYOK enabled and tenant hasn't configured a channel:
+
 1. Fallback to deployer's credentials
 2. Emit `NotificationMeterEvent`:
    ```typescript
@@ -369,6 +397,7 @@ When BYOK enabled and tenant hasn't configured a channel:
 3. Accounting system receives event, logs usage for billing (e.g., $0.001 per email)
 
 This allows:
+
 - Transparent cost pass-through to tenant
 - Detection of misconfigured tenants
 - Fallback capacity planning
@@ -382,6 +411,7 @@ This allows:
 Manages provider instances per tenant, supports lazy initialization, health monitoring, and automatic failover.
 
 **Key responsibilities:**
+
 - Store provider instances by channel + provider name
 - Lazy init from tenant credentials
 - Track health status
@@ -391,6 +421,7 @@ Manages provider instances per tenant, supports lazy initialization, health moni
 ### 2. Notification Orchestrator (`orchestrator.ts`)
 
 Main entry point for sending notifications. Coordinates:
+
 - Template loading from DB
 - Variable interpolation
 - Provider routing
@@ -398,6 +429,7 @@ Main entry point for sending notifications. Coordinates:
 - Delivery logging
 
 **Key responsibilities:**
+
 - Load template by templateId + channel
 - Render with variables
 - Route to provider via registry
@@ -408,6 +440,7 @@ Main entry point for sending notifications. Coordinates:
 ### 3. Architecture Document (`ADR-012-notification-provider-architecture.md`)
 
 Comprehensive design document covering:
+
 - Context (multi-tenant, BYOK, multi-channel)
 - Decision rationale
 - Architecture diagram
@@ -491,12 +524,12 @@ Comprehensive design document covering:
 
 ## Implementation Timeline
 
-| Phase | Timeline | Deliverables |
-|-------|----------|--------------|
+| Phase       | Timeline   | Deliverables                                                      |
+| ----------- | ---------- | ----------------------------------------------------------------- |
 | **Phase 1** | Sprint 3.2 | ADR, Orchestrator v1, Provider Registry, Email/SMS/Push providers |
-| **Phase 2** | Sprint 3.3 | WhatsApp provider, dead-letter queue, webhook verification |
-| **Phase 3** | Sprint 3.4 | Health checks, metering events, SLA alerting |
-| **Phase 4** | Sprint 4.1 | Tenant UI for credential management, async queue migration |
+| **Phase 2** | Sprint 3.3 | WhatsApp provider, dead-letter queue, webhook verification        |
+| **Phase 3** | Sprint 3.4 | Health checks, metering events, SLA alerting                      |
+| **Phase 4** | Sprint 4.1 | Tenant UI for credential management, async queue migration        |
 
 ---
 
@@ -519,4 +552,3 @@ Comprehensive design document covering:
 - [Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging)
 - [Exponential Backoff and Jitter](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/)
 - [Token Bucket Rate Limiting](https://en.wikipedia.org/wiki/Token_bucket)
-

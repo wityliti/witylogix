@@ -9,7 +9,7 @@
  * - Distance calculations
  */
 
-import type { LatLng } from './types.js';
+import type { LatLng } from "./types.js";
 
 /**
  * Decode Google encoded polyline (precision 5)
@@ -105,7 +105,7 @@ export function decodeMapboxPolyline6(encoded: string): LatLng[] {
  * Encode polyline to Google format (precision 5)
  */
 export function encodeGooglePolyline(points: LatLng[]): string {
-  let encoded = '';
+  let encoded = "";
   let prevLat = 0;
   let prevLng = 0;
 
@@ -127,7 +127,7 @@ export function encodeGooglePolyline(points: LatLng[]): string {
  * Encode single value in polyline format
  */
 function encodeValue(value: number): string {
-  let result = '';
+  let result = "";
   let v = value << 1;
 
   if (v < 0) {
@@ -173,7 +173,10 @@ export function haversineDistance(point1: LatLng, point2: LatLng): number {
 
   const a =
     Math.sin(dphi / 2) * Math.sin(dphi / 2) +
-    Math.cos(phi1) * Math.cos(phi2) * Math.sin(dlambda / 2) * Math.sin(dlambda / 2);
+    Math.cos(phi1) *
+      Math.cos(phi2) *
+      Math.sin(dlambda / 2) *
+      Math.sin(dlambda / 2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
@@ -185,7 +188,10 @@ export function haversineDistance(point1: LatLng, point2: LatLng): number {
  * @param points Array of coordinate points
  * @param tolerance Maximum distance in meters
  */
-export function simplifyPolyline(points: LatLng[], tolerance: number = 5): LatLng[] {
+export function simplifyPolyline(
+  points: LatLng[],
+  tolerance: number = 5,
+): LatLng[] {
   if (points.length <= 2) return points;
 
   // Find the point with maximum distance from line
@@ -193,7 +199,11 @@ export function simplifyPolyline(points: LatLng[], tolerance: number = 5): LatLn
   let maxIndex = 0;
 
   for (let i = 1; i < points.length - 1; i++) {
-    const distance = perpendicularDistance(points[i], points[0], points[points.length - 1]);
+    const distance = perpendicularDistance(
+      points[i],
+      points[0],
+      points[points.length - 1],
+    );
 
     if (distance > maxDistance) {
       maxDistance = distance;
@@ -216,7 +226,11 @@ export function simplifyPolyline(points: LatLng[], tolerance: number = 5): LatLn
  * Calculate perpendicular distance from point to line segment
  * Returns distance in meters
  */
-function perpendicularDistance(point: LatLng, lineStart: LatLng, lineEnd: LatLng): number {
+function perpendicularDistance(
+  point: LatLng,
+  lineStart: LatLng,
+  lineEnd: LatLng,
+): number {
   const A = lineStart.lat - lineEnd.lat;
   const B = lineStart.lng - lineEnd.lng;
   const C = A * lineEnd.lat + B * lineEnd.lng;
@@ -232,10 +246,12 @@ function perpendicularDistance(point: LatLng, lineStart: LatLng, lineEnd: LatLng
  * Convert polyline to GeoJSON LineString
  */
 export function polylineToGeoJSON(encoded: string, isMapbox: boolean = false) {
-  const points = isMapbox ? decodeMapboxPolyline6(encoded) : decodeGooglePolyline(encoded);
+  const points = isMapbox
+    ? decodeMapboxPolyline6(encoded)
+    : decodeGooglePolyline(encoded);
 
   return {
-    type: 'LineString' as const,
+    type: "LineString" as const,
     coordinates: points.map((p) => [p.lng, p.lat]),
   };
 }
@@ -247,8 +263,8 @@ export function geoJsonToPolyline(geoJson: {
   type: string;
   coordinates: Array<[number, number]>;
 }): string {
-  if (geoJson.type !== 'LineString') {
-    throw new Error('Expected GeoJSON LineString');
+  if (geoJson.type !== "LineString") {
+    throw new Error("Expected GeoJSON LineString");
   }
 
   const points: LatLng[] = geoJson.coordinates.map(([lng, lat]) => ({
@@ -266,10 +282,12 @@ export function getPolylineBounds(
   encoded: string,
   isMapbox: boolean = false,
 ): { ne: LatLng; sw: LatLng } {
-  const points = isMapbox ? decodeMapboxPolyline6(encoded) : decodeGooglePolyline(encoded);
+  const points = isMapbox
+    ? decodeMapboxPolyline6(encoded)
+    : decodeGooglePolyline(encoded);
 
   if (points.length === 0) {
-    throw new Error('Cannot get bounds from empty polyline');
+    throw new Error("Cannot get bounds from empty polyline");
   }
 
   let minLat = points[0].lat;

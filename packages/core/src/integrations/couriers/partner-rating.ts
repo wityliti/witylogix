@@ -132,7 +132,7 @@ const GOOD_THRESHOLD = 80;
 export async function calculatePartnerScore(
   partnerId: string,
   period: "30d" | "60d" | "90d" = "30d",
-  weights: Partial<MetricWeights> = {}
+  weights: Partial<MetricWeights> = {},
 ): Promise<PartnerScore> {
   const mergedWeights = { ...DEFAULT_WEIGHTS, ...weights };
 
@@ -145,16 +145,14 @@ export async function calculatePartnerScore(
     mergedWeights.slaCompliance;
 
   if (Math.abs(weightSum - 1.0) > 0.01) {
-    throw new Error(
-      `Weights must sum to 1.0, got ${weightSum.toFixed(2)}`
-    );
+    throw new Error(`Weights must sum to 1.0, got ${weightSum.toFixed(2)}`);
   }
 
   // Get metrics
   const metrics = await getPerformanceMetrics(partnerId, period);
   const previousMetrics = await getPerformanceMetrics(
     partnerId,
-    period === "30d" ? "60d" : period === "60d" ? "90d" : "90d"
+    period === "30d" ? "60d" : period === "60d" ? "90d" : "90d",
   );
 
   // Calculate individual scores (0-100)
@@ -175,10 +173,9 @@ export async function calculatePartnerScore(
   // Detect trend
   const { trend, trendPercentage } = detectTrend(
     score,
-    previousMetrics ? calculateCompositeScore(
-      previousMetrics,
-      mergedWeights
-    ) : score
+    previousMetrics
+      ? calculateCompositeScore(previousMetrics, mergedWeights)
+      : score,
   );
 
   // Identify risk flags
@@ -211,7 +208,7 @@ export async function calculatePartnerScore(
  */
 async function getPerformanceMetrics(
   partnerId: string,
-  period: "30d" | "60d" | "90d"
+  period: "30d" | "60d" | "90d",
 ): Promise<PerformanceMetrics> {
   const days = parseInt(period);
   const since = new Date();
@@ -245,14 +242,17 @@ async function getPerformanceMetrics(
     const quote = typeof d.quote === "string" ? JSON.parse(d.quote) : d.quote;
     const estimatedMinutes = quote.estimatedMinutes || 0;
     const createdTime = new Date(d.createdAt);
-    const estimatedTime = new Date(createdTime.getTime() + estimatedMinutes * 60000);
+    const estimatedTime = new Date(
+      createdTime.getTime() + estimatedMinutes * 60000,
+    );
     return new Date(d.deliveredAt) <= estimatedTime;
   }).length;
 
   // Count damaged (would come from support tickets or damage reports)
   // For now, assuming damage metadata in metadata field
   const damagedCount = deliveries.filter((d: any) => {
-    const metadata = typeof d.metadata === "string" ? JSON.parse(d.metadata) : d.metadata;
+    const metadata =
+      typeof d.metadata === "string" ? JSON.parse(d.metadata) : d.metadata;
     return metadata?.damaged === true;
   }).length;
 
@@ -260,7 +260,10 @@ async function getPerformanceMetrics(
   const costs = deliveries
     .filter((d: any) => d.actualCost)
     .map((d: any) => parseFloat(d.actualCost));
-  const averageCost = costs.length > 0 ? costs.reduce((a: number, b: number) => a + b, 0) / costs.length : 0;
+  const averageCost =
+    costs.length > 0
+      ? costs.reduce((a: number, b: number) => a + b, 0) / costs.length
+      : 0;
 
   // Get benchmark cost (average across all partners)
   const allDeliveries = await (prisma.courierDelivery as any).findMany({
@@ -272,21 +275,29 @@ async function getPerformanceMetrics(
   const allCosts = allDeliveries
     .filter((d: any) => d.actualCost)
     .map((d: any) => parseFloat(d.actualCost));
-  const benchmarkCost = allCosts.length > 0 ? allCosts.reduce((a: number, b: number) => a + b, 0) / allCosts.length : averageCost;
+  const benchmarkCost =
+    allCosts.length > 0
+      ? allCosts.reduce((a: number, b: number) => a + b, 0) / allCosts.length
+      : averageCost;
 
   // Get customer ratings (would come from a ratings table)
   // For demonstration, assuming ratings in metadata
   const ratings = deliveries
     .filter((d: any) => {
-      const metadata = typeof d.metadata === "string" ? JSON.parse(d.metadata) : d.metadata;
+      const metadata =
+        typeof d.metadata === "string" ? JSON.parse(d.metadata) : d.metadata;
       return metadata?.customerRating !== undefined;
     })
     .map((d: any) => {
-      const metadata = typeof d.metadata === "string" ? JSON.parse(d.metadata) : d.metadata;
+      const metadata =
+        typeof d.metadata === "string" ? JSON.parse(d.metadata) : d.metadata;
       return metadata.customerRating as number;
     });
 
-  const averageRating = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 5.0;
+  const averageRating =
+    ratings.length > 0
+      ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length
+      : 5.0;
 
   return {
     onTimeDeliveries: onTimeCount,
@@ -365,7 +376,7 @@ function calculateSLAComplianceScore(metrics: PerformanceMetrics): number {
  */
 function calculateCompositeScore(
   metrics: PerformanceMetrics,
-  weights: MetricWeights
+  weights: MetricWeights,
 ): number {
   const onTimeScore = calculateOnTimeRateScore(metrics);
   const damageScore = calculateDamageRateScore(metrics);
@@ -412,15 +423,20 @@ function detectTrend(currentScore: number, previousScore: number): TrendResult {
 /**
  * Identify risk flags based on metrics
  */
-function identifyRiskFlags(metrics: PerformanceMetrics, score: number): string[] {
+function identifyRiskFlags(
+  metrics: PerformanceMetrics,
+  score: number,
+): string[] {
   const flags: string[] = [];
 
-  const onTimeRate = metrics.totalDeliveries > 0
-    ? (metrics.onTimeDeliveries / metrics.totalDeliveries) * 100
-    : 100;
-  const damageRate = metrics.totalDeliveries > 0
-    ? (metrics.damagedDeliveries / metrics.totalDeliveries) * 100
-    : 0;
+  const onTimeRate =
+    metrics.totalDeliveries > 0
+      ? (metrics.onTimeDeliveries / metrics.totalDeliveries) * 100
+      : 100;
+  const damageRate =
+    metrics.totalDeliveries > 0
+      ? (metrics.damagedDeliveries / metrics.totalDeliveries) * 100
+      : 0;
 
   if (onTimeRate < 80) {
     flags.push("low_on_time_rate");
@@ -452,9 +468,7 @@ function identifyRiskFlags(metrics: PerformanceMetrics, score: number): string[]
 /**
  * Get recommended action based on score
  */
-function getRecommendedAction(
-  score: number
-): "active" | "review" | "suspend" {
+function getRecommendedAction(score: number): "active" | "review" | "suspend" {
   if (score < AUTO_SUSPENSION_THRESHOLD) {
     return "suspend";
   }
@@ -471,7 +485,7 @@ function getRecommendedAction(
  */
 export async function saveRatingHistory(
   score: PartnerScore,
-  metrics: PerformanceMetrics
+  metrics: PerformanceMetrics,
 ): Promise<void> {
   // Store in a hypothetical partner_ratings table
   // This would be expanded in a real schema
@@ -482,7 +496,9 @@ export async function saveRatingHistory(
 
   // In a real implementation, we'd create a dedicated PartnerRating model
   // For now, we'll log for audit
-  console.log(`[Rating] Partner ${score.partnerId}: Score ${score.score} (${score.period})`);
+  console.log(
+    `[Rating] Partner ${score.partnerId}: Score ${score.score} (${score.period})`,
+  );
 }
 
 /**
@@ -491,12 +507,12 @@ export async function saveRatingHistory(
 export async function getRatingHistory(
   partnerId: string,
   period: "30d" | "60d" | "90d" = "30d",
-  limit: number = 30
+  limit: number = 30,
 ): Promise<PartnerRatingHistoryEntry[]> {
   // This would query from a PartnerRating history table
   // For demonstration, returning empty array
   console.log(
-    `[Rating] Fetching history for partner ${partnerId} (${period}, limit ${limit})`
+    `[Rating] Fetching history for partner ${partnerId} (${period}, limit ${limit})`,
   );
   return [];
 }
@@ -505,14 +521,14 @@ export async function getRatingHistory(
  * Get all partners by score
  */
 export async function getRankedPartners(
-  period: "30d" | "60d" | "90d" = "30d"
+  period: "30d" | "60d" | "90d" = "30d",
 ): Promise<PartnerScore[]> {
   const partners = await (prisma.courierPartner as any).findMany({
     select: { id: true },
   });
 
   const scores = await Promise.all(
-    partners.map((p: any) => calculatePartnerScore(p.id, period))
+    partners.map((p: any) => calculatePartnerScore(p.id, period)),
   );
 
   return scores.sort((a, b) => b.score - a.score);
@@ -522,11 +538,12 @@ export async function getRankedPartners(
  * Get partners that need review or suspension
  */
 export async function getFlaggedPartners(
-  period: "30d" | "60d" | "90d" = "30d"
+  period: "30d" | "60d" | "90d" = "30d",
 ): Promise<PartnerScore[]> {
   const scores = await getRankedPartners(period);
   return scores.filter(
-    (s) => s.recommendedAction === "review" || s.recommendedAction === "suspend"
+    (s) =>
+      s.recommendedAction === "review" || s.recommendedAction === "suspend",
   );
 }
 
@@ -537,7 +554,7 @@ export async function getFlaggedPartners(
  */
 export async function defineSLA(
   partnerId: string,
-  config: Omit<SLAConfig, "partnerId">
+  config: Omit<SLAConfig, "partnerId">,
 ): Promise<void> {
   // Store SLA config (would be in a PartnerSLA table)
   console.log(`[SLA] Configured SLA for partner ${partnerId}:`, config);
@@ -548,7 +565,7 @@ export async function defineSLA(
  */
 export async function getSLAReport(
   partnerId: string,
-  period: "30d" | "60d" | "90d" = "30d"
+  period: "30d" | "60d" | "90d" = "30d",
 ): Promise<{
   partnerId: string;
   period: string;
@@ -573,10 +590,13 @@ export async function getSLAReport(
 
   for (const delivery of deliveries) {
     if (delivery.deliveredAt && delivery.quote) {
-      const quote = typeof delivery.quote === "string" ? JSON.parse(delivery.quote) : delivery.quote;
+      const quote =
+        typeof delivery.quote === "string"
+          ? JSON.parse(delivery.quote)
+          : delivery.quote;
       const estimatedMinutes = quote.estimatedMinutes || 0;
       const estimatedTime = new Date(
-        new Date(delivery.createdAt).getTime() + estimatedMinutes * 60000
+        new Date(delivery.createdAt).getTime() + estimatedMinutes * 60000,
       );
 
       if (new Date(delivery.deliveredAt) > estimatedTime) {
@@ -594,9 +614,10 @@ export async function getSLAReport(
     }
   }
 
-  const compliancePercentage = deliveries.length > 0
-    ? ((deliveries.length - violations.length) / deliveries.length) * 100
-    : 100;
+  const compliancePercentage =
+    deliveries.length > 0
+      ? ((deliveries.length - violations.length) / deliveries.length) * 100
+      : 100;
 
   return {
     partnerId,
@@ -612,7 +633,7 @@ export async function getSLAReport(
  */
 export async function trackSLACompliance(
   deliveryId: string,
-  slaConfig?: SLAConfig
+  slaConfig?: SLAConfig,
 ): Promise<{ compliant: boolean; violation?: SLAViolation }> {
   const delivery = await (prisma.courierDelivery as any).findUnique({
     where: { id: deliveryId },
@@ -626,10 +647,13 @@ export async function trackSLACompliance(
   // Use provided SLA or get from database
   // For now, just check basic time expectations
   if (delivery.quote && delivery.deliveredAt) {
-    const quote = typeof delivery.quote === "string" ? JSON.parse(delivery.quote) : delivery.quote;
+    const quote =
+      typeof delivery.quote === "string"
+        ? JSON.parse(delivery.quote)
+        : delivery.quote;
     const estimatedMinutes = quote.estimatedMinutes || 0;
     const estimatedTime = new Date(
-      new Date(delivery.createdAt).getTime() + estimatedMinutes * 60000
+      new Date(delivery.createdAt).getTime() + estimatedMinutes * 60000,
     );
 
     if (new Date(delivery.deliveredAt) > estimatedTime) {
@@ -653,7 +677,12 @@ export async function trackSLACompliance(
 /**
  * Escalate SLA violation to support team
  */
-export async function escalateViolation(violation: SLAViolation): Promise<void> {
-  console.log(`[SLA] Escalating violation for delivery ${violation.deliveryId}:`, violation);
+export async function escalateViolation(
+  violation: SLAViolation,
+): Promise<void> {
+  console.log(
+    `[SLA] Escalating violation for delivery ${violation.deliveryId}:`,
+    violation,
+  );
   // Would trigger support ticket creation or notification
 }

@@ -36,7 +36,7 @@ export async function runStep<TInput = unknown, TOutput = unknown>(
   step: WorkflowStep<TInput, TOutput>,
   input: TInput,
   context: WorkflowContext,
-  defaultTimeout: number = 30000
+  defaultTimeout: number = 30000,
 ): Promise<StepResult<TOutput>> {
   const timeout = step.timeout ?? defaultTimeout;
   const maxRetries = step.retries ?? 0;
@@ -47,7 +47,7 @@ export async function runStep<TInput = unknown, TOutput = unknown>(
     try {
       const result = await executeWithTimeout(
         () => step.invoke(input, context),
-        timeout
+        timeout,
       );
 
       context.logger.info(`Step "${step.name}" completed successfully`, {
@@ -70,14 +70,14 @@ export async function runStep<TInput = unknown, TOutput = unknown>(
             stepId: step.id,
             error: error.message,
             optional: isOptional,
-          }
+          },
         );
 
         // If step is optional, return success anyway
         if (isOptional) {
           context.logger.warn(
             `Step "${step.name}" is optional; skipping compensation`,
-            { stepId: step.id }
+            { stepId: step.id },
           );
           return { ok: true, data: undefined as unknown as TOutput };
         }
@@ -93,7 +93,7 @@ export async function runStep<TInput = unknown, TOutput = unknown>(
             attempt: attempt + 1,
             error: error.message,
             backoffMs,
-          }
+          },
         );
 
         await sleep(backoffMs);
@@ -114,13 +114,11 @@ export async function runStep<TInput = unknown, TOutput = unknown>(
  */
 async function executeWithTimeout<T>(
   fn: () => Promise<T> | T,
-  timeoutMs: number
+  timeoutMs: number,
 ): Promise<T> {
   const timeoutPromise = new Promise<never>((_, reject) => {
     const timer = setTimeout(() => {
-      reject(
-        new Error(`Operation timed out after ${timeoutMs}ms`)
-      );
+      reject(new Error(`Operation timed out after ${timeoutMs}ms`));
     }, timeoutMs);
 
     // Prevent timer from keeping process alive if it's the only event
@@ -130,9 +128,7 @@ async function executeWithTimeout<T>(
   });
 
   const result = await Promise.resolve(fn());
-  clearTimeout(
-    setTimeout(() => {}, timeoutMs) as unknown as NodeJS.Timeout
-  );
+  clearTimeout(setTimeout(() => {}, timeoutMs) as unknown as NodeJS.Timeout);
 
   return Promise.race([Promise.resolve(result), timeoutPromise]);
 }
@@ -154,7 +150,7 @@ function sleep(ms: number): Promise<void> {
  */
 export function createStepExecution(
   step: WorkflowStep,
-  startedAt: Date = new Date()
+  startedAt: Date = new Date(),
 ): WorkflowStepExecution {
   return {
     stepId: step.id,
@@ -171,7 +167,7 @@ export function createStepExecution(
 export function markStepSuccess(
   execution: WorkflowStepExecution,
   output: unknown,
-  completedAt: Date = new Date()
+  completedAt: Date = new Date(),
 ): void {
   execution.status = "completed" as WorkflowStatus;
   execution.output = output;
@@ -185,7 +181,7 @@ export function markStepSuccess(
 export function markStepFailure(
   execution: WorkflowStepExecution,
   error: Error,
-  completedAt: Date = new Date()
+  completedAt: Date = new Date(),
 ): void {
   execution.status = "failed" as WorkflowStatus;
   execution.error = error.message;

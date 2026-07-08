@@ -10,18 +10,18 @@
 
 ## Sprint Backlog (10 Agents)
 
-| # | Agent | Owner | Deliverable | ECC Skill |
-|---|-------|-------|-------------|-----------|
-| 1 | Expand db helpers + full sweep | PK | Add 20+ models to helpers.ts, then sweep ALL remaining (prisma as any) in api/routes | backend-patterns |
-| 2 | (prisma as any) sweep — core modules | RG | Replace remaining (prisma as any) across ALL packages/core/src using expanded db | backend-patterns |
-| 3 | Orders sub-pages (7 pages) | NK | Redesign orders/[id], board, bulk, conflicts, create, import, local | frontend-patterns |
-| 4 | Routes + Dispatch sub-pages (7 pages) | DM | Redesign routes, routes/[id], [id]/assign, [id]/edit, create, plan, dispatch/couriers | frontend-patterns |
-| 5 | Fleet + Shipping sub-pages (8 pages) | VS | Redesign fleet/fuel, maintenance, vehicles, vehicles/[id], shipping/labels, labels/new, tracking, tracking/[num] | frontend-patterns |
-| 6 | Tracking + Delivery + Map (6 pages) | SP | Redesign tracking, tracking-config, tracking/live, delivery, delivery/standard, map | frontend-patterns |
-| 7 | Finance + Payments + Products (8 pages) | AM | Redesign finance, finance/invoices, finance/reconciliation, payments, invoices/*, products, products/*, inventory | frontend-patterns |
-| 8 | CRM + Customers + Partners (8 pages) | ZR | Redesign crm, crm/connect, customers, partners, partners/[id], compare, onboard, collaboration | frontend-patterns |
-| 9 | ELD + Campaigns + Calendar + Misc (12 pages) | KS | Redesign eld, eld/dvir, eld/hos, campaigns, campaigns/[id], calendar, events, collections, saved-views, profile, support, onboarding | frontend-patterns |
-| 10 | Platform + Stores + Misc standalone (8 pages) | AR | Redesign platform, stores, locations, zones, time-slots, widget-config, widgets, mobile-config | frontend-patterns |
+| #   | Agent                                         | Owner | Deliverable                                                                                                                          | ECC Skill         |
+| --- | --------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------- |
+| 1   | Expand db helpers + full sweep                | PK    | Add 20+ models to helpers.ts, then sweep ALL remaining (prisma as any) in api/routes                                                 | backend-patterns  |
+| 2   | (prisma as any) sweep — core modules          | RG    | Replace remaining (prisma as any) across ALL packages/core/src using expanded db                                                     | backend-patterns  |
+| 3   | Orders sub-pages (7 pages)                    | NK    | Redesign orders/[id], board, bulk, conflicts, create, import, local                                                                  | frontend-patterns |
+| 4   | Routes + Dispatch sub-pages (7 pages)         | DM    | Redesign routes, routes/[id], [id]/assign, [id]/edit, create, plan, dispatch/couriers                                                | frontend-patterns |
+| 5   | Fleet + Shipping sub-pages (8 pages)          | VS    | Redesign fleet/fuel, maintenance, vehicles, vehicles/[id], shipping/labels, labels/new, tracking, tracking/[num]                     | frontend-patterns |
+| 6   | Tracking + Delivery + Map (6 pages)           | SP    | Redesign tracking, tracking-config, tracking/live, delivery, delivery/standard, map                                                  | frontend-patterns |
+| 7   | Finance + Payments + Products (8 pages)       | AM    | Redesign finance, finance/invoices, finance/reconciliation, payments, invoices/_, products, products/_, inventory                    | frontend-patterns |
+| 8   | CRM + Customers + Partners (8 pages)          | ZR    | Redesign crm, crm/connect, customers, partners, partners/[id], compare, onboard, collaboration                                       | frontend-patterns |
+| 9   | ELD + Campaigns + Calendar + Misc (12 pages)  | KS    | Redesign eld, eld/dvir, eld/hos, campaigns, campaigns/[id], calendar, events, collections, saved-views, profile, support, onboarding | frontend-patterns |
+| 10  | Platform + Stores + Misc standalone (8 pages) | AR    | Redesign platform, stores, locations, zones, time-slots, widget-config, widgets, mobile-config                                       | frontend-patterns |
 
 ## Target: 64 pages redesigned this sprint (18 + 64 = 82 total)
 

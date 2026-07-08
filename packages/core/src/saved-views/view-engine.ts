@@ -4,7 +4,7 @@
  * Handles CRUD operations, filtering, and view configuration
  */
 
-import type { PrismaClient } from '@witylogix/db';
+import type { PrismaClient } from "@witylogix/db";
 import {
   SavedView,
   CreateViewRequest,
@@ -14,7 +14,7 @@ import {
   TABLE_COLUMNS,
   ViewNotFoundError,
   ViewValidationError,
-} from './types';
+} from "./types";
 
 /**
  * View Engine - Manages saved views for users
@@ -34,7 +34,7 @@ export class ViewEngine {
   async createView(
     shopId: string,
     userId: string,
-    data: CreateViewRequest
+    data: CreateViewRequest,
   ): Promise<SavedView> {
     // Validate the request
     this.validateCreateRequest(data);
@@ -51,7 +51,7 @@ export class ViewEngine {
 
     if (existingView) {
       throw new ViewValidationError(
-        `View with name "${data.name}" already exists for this table`
+        `View with name "${data.name}" already exists for this table`,
       );
     }
 
@@ -85,7 +85,7 @@ export class ViewEngine {
   async updateView(
     viewId: string,
     userId: string,
-    data: UpdateViewRequest
+    data: UpdateViewRequest,
   ): Promise<SavedView> {
     // Get the view and verify ownership
     const view = await (this.prisma as any).savedView.findUnique({
@@ -97,7 +97,9 @@ export class ViewEngine {
     }
 
     if (view.userId !== userId) {
-      throw new ViewValidationError('You do not have permission to update this view');
+      throw new ViewValidationError(
+        "You do not have permission to update this view",
+      );
     }
 
     // If name is being updated, check uniqueness
@@ -113,7 +115,7 @@ export class ViewEngine {
 
       if (existingView) {
         throw new ViewValidationError(
-          `View with name "${data.name}" already exists for this table`
+          `View with name "${data.name}" already exists for this table`,
         );
       }
     }
@@ -126,7 +128,9 @@ export class ViewEngine {
         filters: data.filters !== undefined ? data.filters : undefined,
         sortConfig: data.sortConfig !== undefined ? data.sortConfig : undefined,
         columnVisibility:
-          data.columnVisibility !== undefined ? data.columnVisibility : undefined,
+          data.columnVisibility !== undefined
+            ? data.columnVisibility
+            : undefined,
         isShared: data.isShared !== undefined ? data.isShared : undefined,
       },
     });
@@ -151,7 +155,9 @@ export class ViewEngine {
     }
 
     if (view.userId !== userId) {
-      throw new ViewValidationError('You do not have permission to delete this view');
+      throw new ViewValidationError(
+        "You do not have permission to delete this view",
+      );
     }
 
     await (this.prisma as any).savedView.delete({
@@ -171,7 +177,7 @@ export class ViewEngine {
   async setDefault(
     viewId: string,
     userId: string,
-    tableName: TableName
+    tableName: TableName,
   ): Promise<SavedView> {
     const view = await (this.prisma as any).savedView.findUnique({
       where: { id: viewId },
@@ -182,7 +188,9 @@ export class ViewEngine {
     }
 
     if (view.userId !== userId) {
-      throw new ViewValidationError('You do not have permission to modify this view');
+      throw new ViewValidationError(
+        "You do not have permission to modify this view",
+      );
     }
 
     // Unset previous default for this user and table
@@ -224,7 +232,9 @@ export class ViewEngine {
     }
 
     if (view.userId !== userId) {
-      throw new ViewValidationError('You do not have permission to duplicate this view');
+      throw new ViewValidationError(
+        "You do not have permission to duplicate this view",
+      );
     }
 
     // Generate unique name
@@ -278,7 +288,9 @@ export class ViewEngine {
     }
 
     if (view.userId !== userId) {
-      throw new ViewValidationError('You do not have permission to share this view');
+      throw new ViewValidationError(
+        "You do not have permission to share this view",
+      );
     }
 
     const updated = await (this.prisma as any).savedView.update({
@@ -306,7 +318,9 @@ export class ViewEngine {
     }
 
     if (view.userId !== userId) {
-      throw new ViewValidationError('You do not have permission to unshare this view');
+      throw new ViewValidationError(
+        "You do not have permission to unshare this view",
+      );
     }
 
     const updated = await (this.prisma as any).savedView.update({
@@ -347,7 +361,7 @@ export class ViewEngine {
   async listViews(
     shopId: string,
     userId: string,
-    tableName?: TableName
+    tableName?: TableName,
   ): Promise<SavedView[]> {
     const whereClause: any = {
       shopId,
@@ -363,7 +377,7 @@ export class ViewEngine {
 
     const views = await (this.prisma as any).savedView.findMany({
       where: whereClause,
-      orderBy: [{ userId: 'asc' }, { createdAt: 'desc' }],
+      orderBy: [{ userId: "asc" }, { createdAt: "desc" }],
     });
 
     return views.map((view: any) => this.formatView(view));
@@ -396,7 +410,9 @@ export class ViewEngine {
     }
 
     // Combine all conditions with AND
-    return whereConditions.length === 1 ? whereConditions[0] : { AND: whereConditions };
+    return whereConditions.length === 1
+      ? whereConditions[0]
+      : { AND: whereConditions };
   }
 
   /**
@@ -415,7 +431,7 @@ export class ViewEngine {
     for (const filter of filters) {
       if (!columns.includes(filter.column)) {
         throw new ViewValidationError(
-          `Column "${filter.column}" does not exist in table "${tableName}"`
+          `Column "${filter.column}" does not exist in table "${tableName}"`,
         );
       }
 
@@ -444,21 +460,21 @@ export class ViewEngine {
     const { column, operator, value } = filter;
 
     switch (operator) {
-      case 'equals':
+      case "equals":
         return { [column]: { equals: value } };
-      case 'not_equals':
+      case "not_equals":
         return { [column]: { not: value } };
-      case 'contains':
-        return { [column]: { contains: value, mode: 'insensitive' } };
-      case 'starts_with':
-        return { [column]: { startsWith: value, mode: 'insensitive' } };
-      case 'greater_than':
+      case "contains":
+        return { [column]: { contains: value, mode: "insensitive" } };
+      case "starts_with":
+        return { [column]: { startsWith: value, mode: "insensitive" } };
+      case "greater_than":
         return { [column]: { gt: value } };
-      case 'less_than':
+      case "less_than":
         return { [column]: { lt: value } };
-      case 'in':
+      case "in":
         return { [column]: { in: Array.isArray(value) ? value : [value] } };
-      case 'between':
+      case "between":
         if (!Array.isArray(value) || value.length !== 2) {
           return null;
         }
@@ -468,13 +484,13 @@ export class ViewEngine {
             { [column]: { lte: value[1] } },
           ],
         };
-      case 'is_empty':
+      case "is_empty":
         return {
-          OR: [{ [column]: null }, { [column]: '' }],
+          OR: [{ [column]: null }, { [column]: "" }],
         };
-      case 'is_not_empty':
+      case "is_not_empty":
         return {
-          AND: [{ [column]: { not: null } }, { [column]: { not: '' } }],
+          AND: [{ [column]: { not: null } }, { [column]: { not: "" } }],
         };
       default:
         return null;
@@ -485,23 +501,23 @@ export class ViewEngine {
    * Private helper: Validate filter operator and value combination
    */
   private validateFilterOperator(operator: string, value: any): void {
-    if (['between', 'in'].includes(operator)) {
+    if (["between", "in"].includes(operator)) {
       if (!Array.isArray(value)) {
         throw new ViewValidationError(
-          `Operator "${operator}" requires an array value`
+          `Operator "${operator}" requires an array value`,
         );
       }
-      if (operator === 'between' && value.length !== 2) {
+      if (operator === "between" && value.length !== 2) {
         throw new ViewValidationError(
-          'Operator "between" requires exactly 2 values'
+          'Operator "between" requires exactly 2 values',
         );
       }
     }
 
-    if (['is_empty', 'is_not_empty'].includes(operator)) {
+    if (["is_empty", "is_not_empty"].includes(operator)) {
       if (value !== null && value !== undefined) {
         throw new ViewValidationError(
-          `Operator "${operator}" does not take a value`
+          `Operator "${operator}" does not take a value`,
         );
       }
     }
@@ -532,11 +548,11 @@ export class ViewEngine {
    */
   private validateCreateRequest(data: CreateViewRequest): void {
     if (!data.name || data.name.trim().length === 0) {
-      throw new ViewValidationError('View name is required');
+      throw new ViewValidationError("View name is required");
     }
 
     if (!data.tableName) {
-      throw new ViewValidationError('Table name is required');
+      throw new ViewValidationError("Table name is required");
     }
 
     if (!TABLE_COLUMNS[data.tableName]) {

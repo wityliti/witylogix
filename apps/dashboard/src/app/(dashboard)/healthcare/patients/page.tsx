@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
-import { Users, User, Heart, Pill, AlertCircle, Plus } from 'lucide-react';
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiList } from "@/hooks/use-api";
+import { Users, User, Heart, Pill, AlertCircle, Plus } from "lucide-react";
 
 interface Patient {
   id: string;
@@ -37,15 +37,18 @@ interface Patient {
 }
 
 function PatientTable({ patients }: { patients: Patient[] }) {
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
+    null,
+  );
   const [searchTerm, setSearchTerm] = useState("");
 
   const selectedPatient = patients.find((p) => p.id === selectedPatientId);
 
-  const filteredPatients = patients.filter((p) =>
-    p.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.mrn.includes(searchTerm)
+  const filteredPatients = patients.filter(
+    (p) =>
+      p.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.mrn.includes(searchTerm),
   );
 
   const getAge = (dob: string) => {
@@ -66,7 +69,13 @@ function PatientTable({ patients }: { patients: Patient[] }) {
               className="w-full px-4 py-2 pl-10 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none transition-colors"
             />
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
                 <circle cx="11" cy="11" r="8"></circle>
                 <path d="M21 21l-4.35-4.35"></path>
               </svg>
@@ -87,13 +96,27 @@ function PatientTable({ patients }: { patients: Patient[] }) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-wl-border-default">
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Name</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">MRN</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Age</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Contact</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Conditions</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Medications</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Status</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">
+                    Name
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">
+                    MRN
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">
+                    Age
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">
+                    Contact
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">
+                    Conditions
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">
+                    Medications
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">
+                    Status
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -115,11 +138,13 @@ function PatientTable({ patients }: { patients: Patient[] }) {
                       {getAge(patient.dateOfBirth)}
                     </td>
                     <td className="py-3 px-4 text-gray-400 text-xs">
-                      {patient.phone || '—'}
+                      {patient.phone || "—"}
                     </td>
                     <td className="py-3 px-4">
                       {patient.activeConditionsCount > 0 ? (
-                        <Badge variant="warning">{patient.activeConditionsCount}</Badge>
+                        <Badge variant="warning">
+                          {patient.activeConditionsCount}
+                        </Badge>
                       ) : (
                         <span className="text-gray-400">—</span>
                       )}
@@ -132,7 +157,11 @@ function PatientTable({ patients }: { patients: Patient[] }) {
                       )}
                     </td>
                     <td className="py-3 px-4">
-                      <Badge variant={patient.status === "ACTIVE" ? "success" : "default"}>
+                      <Badge
+                        variant={
+                          patient.status === "ACTIVE" ? "success" : "default"
+                        }
+                      >
                         {patient.status}
                       </Badge>
                     </td>
@@ -168,34 +197,46 @@ function PatientTable({ patients }: { patients: Patient[] }) {
               {/* Demographics */}
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-400 mb-3">Demographics</h3>
+                  <h3 className="text-sm font-semibold text-gray-400 mb-3">
+                    Demographics
+                  </h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-400">Age:</span>
-                      <span className="text-white font-medium">{getAge(selectedPatient.dateOfBirth)}</span>
+                      <span className="text-white font-medium">
+                        {getAge(selectedPatient.dateOfBirth)}
+                      </span>
                     </div>
                     {selectedPatient.gender && (
                       <div className="flex justify-between">
                         <span className="text-gray-400">Gender:</span>
-                        <span className="text-white font-medium">{selectedPatient.gender}</span>
+                        <span className="text-white font-medium">
+                          {selectedPatient.gender}
+                        </span>
                       </div>
                     )}
                     <div className="flex justify-between">
                       <span className="text-gray-400">DOB:</span>
                       <span className="text-white font-medium">
-                        {new Date(selectedPatient.dateOfBirth).toLocaleDateString()}
+                        {new Date(
+                          selectedPatient.dateOfBirth,
+                        ).toLocaleDateString()}
                       </span>
                     </div>
                     {selectedPatient.email && (
                       <div className="flex justify-between">
                         <span className="text-gray-400">Email:</span>
-                        <span className="text-white font-medium text-xs">{selectedPatient.email}</span>
+                        <span className="text-white font-medium text-xs">
+                          {selectedPatient.email}
+                        </span>
                       </div>
                     )}
                     {selectedPatient.phone && (
                       <div className="flex justify-between">
                         <span className="text-gray-400">Phone:</span>
-                        <span className="text-white font-medium">{selectedPatient.phone}</span>
+                        <span className="text-white font-medium">
+                          {selectedPatient.phone}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -203,11 +244,14 @@ function PatientTable({ patients }: { patients: Patient[] }) {
 
                 {selectedPatient.address && (
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-400 mb-3">Address</h3>
+                    <h3 className="text-sm font-semibold text-gray-400 mb-3">
+                      Address
+                    </h3>
                     <div className="text-sm text-gray-400 space-y-1">
                       <p>{selectedPatient.address.street}</p>
                       <p>
-                        {selectedPatient.address.city}, {selectedPatient.address.state}{' '}
+                        {selectedPatient.address.city},{" "}
+                        {selectedPatient.address.state}{" "}
                         {selectedPatient.address.postalCode}
                       </p>
                       <p>{selectedPatient.address.country}</p>
@@ -217,11 +261,19 @@ function PatientTable({ patients }: { patients: Patient[] }) {
 
                 {selectedPatient.insurance && (
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-400 mb-3">Insurance</h3>
+                    <h3 className="text-sm font-semibold text-gray-400 mb-3">
+                      Insurance
+                    </h3>
                     <div className="text-sm space-y-1">
-                      <p className="text-white font-medium">{selectedPatient.insurance.provider}</p>
-                      <p className="text-gray-400 text-xs">Plan: {selectedPatient.insurance.planName}</p>
-                      <p className="text-gray-400 text-xs">ID: {selectedPatient.insurance.memberId}</p>
+                      <p className="text-white font-medium">
+                        {selectedPatient.insurance.provider}
+                      </p>
+                      <p className="text-gray-400 text-xs">
+                        Plan: {selectedPatient.insurance.planName}
+                      </p>
+                      <p className="text-gray-400 text-xs">
+                        ID: {selectedPatient.insurance.memberId}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -232,19 +284,31 @@ function PatientTable({ patients }: { patients: Patient[] }) {
                 <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default">
                   <div className="flex items-center gap-2 mb-2">
                     <Heart className="text-red-500" size={16} />
-                    <span className="text-sm font-semibold text-white">Active Conditions</span>
+                    <span className="text-sm font-semibold text-white">
+                      Active Conditions
+                    </span>
                   </div>
-                  <p className="text-2xl font-bold text-white">{selectedPatient.activeConditionsCount}</p>
-                  <p className="text-xs text-gray-400 mt-1">Ongoing treatment</p>
+                  <p className="text-2xl font-bold text-white">
+                    {selectedPatient.activeConditionsCount}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Ongoing treatment
+                  </p>
                 </div>
 
                 <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default">
                   <div className="flex items-center gap-2 mb-2">
                     <Pill className="text-emerald-500" size={16} />
-                    <span className="text-sm font-semibold text-white">Medications</span>
+                    <span className="text-sm font-semibold text-white">
+                      Medications
+                    </span>
                   </div>
-                  <p className="text-2xl font-bold text-white">{selectedPatient.medicationsCount}</p>
-                  <p className="text-xs text-gray-400 mt-1">Current prescriptions</p>
+                  <p className="text-2xl font-bold text-white">
+                    {selectedPatient.medicationsCount}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Current prescriptions
+                  </p>
                 </div>
               </div>
             </div>
@@ -256,7 +320,12 @@ function PatientTable({ patients }: { patients: Patient[] }) {
 }
 
 export default function PatientsPage() {
-  const { items: patients, loading, error, refetch } = useApiList<Patient>('/api/v4/customers?type=patient');
+  const {
+    items: patients,
+    loading,
+    error,
+    refetch,
+  } = useApiList<Patient>("/api/v4/customers?type=patient");
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -267,7 +336,9 @@ export default function PatientsPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Patient Registry</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Patient Registry
+            </h1>
             <p className="text-gray-400">Manage and view patient records</p>
           </div>
           <Button variant="primary" className="flex items-center gap-2">
@@ -281,7 +352,9 @@ export default function PatientsPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Total Patients</span>
+              <span className="text-gray-400 text-sm font-medium">
+                Total Patients
+              </span>
               <Users className="text-blue-500" size={20} />
             </div>
             <p className="text-3xl font-bold text-white">{patients.length}</p>
@@ -294,16 +367,20 @@ export default function PatientsPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Avg. Conditions</span>
+              <span className="text-gray-400 text-sm font-medium">
+                Avg. Conditions
+              </span>
               <Heart className="text-red-500" size={20} />
             </div>
             <p className="text-3xl font-bold text-white">
               {patients.length > 0
                 ? (
-                    patients.reduce((sum, p) => sum + p.activeConditionsCount, 0) /
-                    patients.length
+                    patients.reduce(
+                      (sum, p) => sum + p.activeConditionsCount,
+                      0,
+                    ) / patients.length
                   ).toFixed(1)
-                : '0'}
+                : "0"}
             </p>
             <p className="text-gray-400 text-xs mt-2">Per patient</p>
           </CardContent>
@@ -312,7 +389,9 @@ export default function PatientsPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Avg. Medications</span>
+              <span className="text-gray-400 text-sm font-medium">
+                Avg. Medications
+              </span>
               <Pill className="text-emerald-500" size={20} />
             </div>
             <p className="text-3xl font-bold text-white">
@@ -321,7 +400,7 @@ export default function PatientsPage() {
                     patients.reduce((sum, p) => sum + p.medicationsCount, 0) /
                     patients.length
                   ).toFixed(1)
-                : '0'}
+                : "0"}
             </p>
             <p className="text-gray-400 text-xs mt-2">Per patient</p>
           </CardContent>

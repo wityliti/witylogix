@@ -79,7 +79,7 @@ export class SyncScheduler {
     platformType: PlatformType,
     direction: SyncDirection,
     interval: SyncInterval,
-    priority: SyncPriority = SyncPriority.SCHEDULED
+    priority: SyncPriority = SyncPriority.SCHEDULED,
   ): ScheduledJob {
     const jobId = this.generateJobId();
     const now = new Date();
@@ -120,9 +120,15 @@ export class SyncScheduler {
     tenantId: string,
     platformType: PlatformType,
     direction: SyncDirection,
-    priority: SyncPriority = SyncPriority.MANUAL
+    priority: SyncPriority = SyncPriority.MANUAL,
   ): ScheduledJob {
-    return this.scheduleSync(tenantId, platformType, direction, SyncInterval.REALTIME, priority);
+    return this.scheduleSync(
+      tenantId,
+      platformType,
+      direction,
+      SyncInterval.REALTIME,
+      priority,
+    );
   }
 
   /**
@@ -137,7 +143,9 @@ export class SyncScheduler {
    * @param tenantId - Tenant ID
    */
   public getJobsForTenant(tenantId: string): ScheduledJob[] {
-    return Array.from(this.scheduledJobs.values()).filter((job) => job.tenantId === tenantId);
+    return Array.from(this.scheduledJobs.values()).filter(
+      (job) => job.tenantId === tenantId,
+    );
   }
 
   /**
@@ -145,9 +153,12 @@ export class SyncScheduler {
    * @param tenantId - Tenant ID
    * @param platformType - Platform type
    */
-  public getJobsForPlatform(tenantId: string, platformType: PlatformType): ScheduledJob[] {
+  public getJobsForPlatform(
+    tenantId: string,
+    platformType: PlatformType,
+  ): ScheduledJob[] {
     return Array.from(this.scheduledJobs.values()).filter(
-      (job) => job.tenantId === tenantId && job.platformType === platformType
+      (job) => job.tenantId === tenantId && job.platformType === platformType,
     );
   }
 
@@ -234,7 +245,8 @@ export class SyncScheduler {
       job.isRunning = true;
       this.runningJobs.add(jobId);
 
-      const tenantConcurrency = this.tenantConcurrencyMap.get(job.tenantId) || 0;
+      const tenantConcurrency =
+        this.tenantConcurrencyMap.get(job.tenantId) || 0;
       this.tenantConcurrencyMap.set(job.tenantId, tenantConcurrency + 1);
     }
   }
@@ -259,8 +271,12 @@ export class SyncScheduler {
 
       this.runningJobs.delete(jobId);
 
-      const tenantConcurrency = (this.tenantConcurrencyMap.get(job.tenantId) || 1) - 1;
-      this.tenantConcurrencyMap.set(job.tenantId, Math.max(0, tenantConcurrency));
+      const tenantConcurrency =
+        (this.tenantConcurrencyMap.get(job.tenantId) || 1) - 1;
+      this.tenantConcurrencyMap.set(
+        job.tenantId,
+        Math.max(0, tenantConcurrency),
+      );
     }
   }
 
@@ -330,7 +346,9 @@ export class SyncScheduler {
    * @param staleThresholdMs - Time threshold for stale detection (default 1 hour)
    * @returns Restarted jobs
    */
-  public checkAndRestartStaleJobs(staleThresholdMs: number = 3600000): ScheduledJob[] {
+  public checkAndRestartStaleJobs(
+    staleThresholdMs: number = 3600000,
+  ): ScheduledJob[] {
     const now = Date.now();
     const restarted: ScheduledJob[] = [];
 
@@ -346,10 +364,11 @@ export class SyncScheduler {
           this.runningJobs.delete(job);
           restarted.push(scheduledJob);
 
-          const tenantConcurrency = (this.tenantConcurrencyMap.get(scheduledJob.tenantId) || 1) - 1;
+          const tenantConcurrency =
+            (this.tenantConcurrencyMap.get(scheduledJob.tenantId) || 1) - 1;
           this.tenantConcurrencyMap.set(
             scheduledJob.tenantId,
-            Math.max(0, tenantConcurrency)
+            Math.max(0, tenantConcurrency),
           );
         }
       }

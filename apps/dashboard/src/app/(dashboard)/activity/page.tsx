@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import {
   AlertCircle,
   Download,
@@ -12,24 +12,24 @@ import {
   GitBranch,
   Search,
   X,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { EventTimeline } from './components/event-timeline';
-import { EventFilters } from './components/event-filters';
-import { useApiList } from '@/hooks/use-api';
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { EventTimeline } from "./components/event-timeline";
+import { EventFilters } from "./components/event-filters";
+import { useApiList } from "@/hooks/use-api";
 
 export interface ActivityEvent {
   id: string;
-  type: 'order' | 'shipment' | 'driver' | 'system' | 'webhook' | 'workflow';
-  severity: 'info' | 'warning' | 'error' | 'success';
+  type: "order" | "shipment" | "driver" | "system" | "webhook" | "workflow";
+  severity: "info" | "warning" | "error" | "success";
   title: string;
   description: string;
   timestamp: string;
@@ -47,8 +47,13 @@ export interface ActivityEvent {
 }
 
 export default function ActivityPage() {
-  const { items: apiEvents, loading, error, refetch } = useApiList<ActivityEvent>('/api/v4/activity-logs');
-  const [searchQuery, setSearchQuery] = useState('');
+  const {
+    items: apiEvents,
+    loading,
+    error,
+    refetch,
+  } = useApiList<ActivityEvent>("/api/v4/activity-logs");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isLiveMode, setIsLiveMode] = useState(true);
   const [filters, setFilters] = useState({
@@ -81,7 +86,9 @@ export default function ActivityPage() {
   // Live mode: poll the real API every 30 seconds
   useEffect(() => {
     if (!isLiveMode) return;
-    const interval = setInterval(() => { refetch(); }, 30000);
+    const interval = setInterval(() => {
+      refetch();
+    }, 30000);
     return () => clearInterval(interval);
   }, [isLiveMode, refetch]);
 
@@ -132,7 +139,7 @@ export default function ActivityPage() {
   const handleExport = useCallback(() => {
     const displayed = filteredEvents();
     const csvContent = [
-      ['ID', 'Type', 'Severity', 'Title', 'Description', 'Timestamp', 'User'],
+      ["ID", "Type", "Severity", "Title", "Description", "Timestamp", "User"],
       ...displayed.map((event) => [
         event.id,
         event.type,
@@ -140,41 +147,55 @@ export default function ActivityPage() {
         event.title,
         event.description,
         String(event.timestamp),
-        event.user?.name || 'System',
+        event.user?.name || "System",
       ]),
     ]
-      .map((row) => row.map((cell) => `"${cell}"`).join(','))
-      .join('\n');
+      .map((row) => row.map((cell) => `"${cell}"`).join(","))
+      .join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `activity-log-${new Date().toISOString()}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   }, [filteredEvents]);
 
-  const getEventIcon = (type: ActivityEvent['type']) => {
-    const iconProps = 'w-4 h-4';
+  const getEventIcon = (type: ActivityEvent["type"]) => {
+    const iconProps = "w-4 h-4";
     switch (type) {
-      case 'order': return <Package className={iconProps} />;
-      case 'shipment': return <Truck className={iconProps} />;
-      case 'driver': return <Users className={iconProps} />;
-      case 'system': return <Zap className={iconProps} />;
-      case 'webhook': return <Webhook className={iconProps} />;
-      case 'workflow': return <GitBranch className={iconProps} />;
-      default: return <AlertCircle className={iconProps} />;
+      case "order":
+        return <Package className={iconProps} />;
+      case "shipment":
+        return <Truck className={iconProps} />;
+      case "driver":
+        return <Users className={iconProps} />;
+      case "system":
+        return <Zap className={iconProps} />;
+      case "webhook":
+        return <Webhook className={iconProps} />;
+      case "workflow":
+        return <GitBranch className={iconProps} />;
+      default:
+        return <AlertCircle className={iconProps} />;
     }
   };
 
-  const getSeverityBadgeVariant = (severity: ActivityEvent['severity']): "danger" | "warning" | "success" | "info" | "default" => {
+  const getSeverityBadgeVariant = (
+    severity: ActivityEvent["severity"],
+  ): "danger" | "warning" | "success" | "info" | "default" => {
     switch (severity) {
-      case 'error': return 'danger';
-      case 'warning': return 'warning';
-      case 'success': return 'success';
-      case 'info': return 'info';
-      default: return 'default';
+      case "error":
+        return "danger";
+      case "warning":
+        return "warning";
+      case "success":
+        return "success";
+      case "info":
+        return "info";
+      default:
+        return "default";
     }
   };
 
@@ -182,7 +203,9 @@ export default function ActivityPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const displayedEvents = filteredEvents();
-  const selectedEvent = selectedEventId ? displayedEvents.find((e) => e.id === selectedEventId) : null;
+  const selectedEvent = selectedEventId
+    ? displayedEvents.find((e) => e.id === selectedEventId)
+    : null;
 
   return (
     <div
@@ -194,32 +217,46 @@ export default function ActivityPage() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-white tracking-tight">Activity Log</h1>
-              <p className="text-sm text-gray-300 mt-2">Real-time monitoring of system events and operations</p>
+              <h1 className="text-3xl font-bold text-white tracking-tight">
+                Activity Log
+              </h1>
+              <p className="text-sm text-gray-300 mt-2">
+                Real-time monitoring of system events and operations
+              </p>
             </div>
             <div className="flex items-center gap-3">
               {/* Live indicator */}
               <button
                 onClick={() => setIsLiveMode((v) => !v)}
                 className={cn(
-                  'flex items-center gap-2 px-3 py-1.5 rounded-md border transition-all duration-300',
+                  "flex items-center gap-2 px-3 py-1.5 rounded-md border transition-all duration-300",
                   isLiveMode
                     ? "bg-emerald-500/10 border-emerald-500/30"
-                    : "bg-wl-bg-elevated border-wl-border-default"
+                    : "bg-wl-bg-elevated border-wl-border-default",
                 )}
               >
                 <div
                   className={cn(
-                    'w-2 h-2 rounded-full transition-all duration-500',
-                    isLiveMode ? 'bg-emerald-500 animate-pulse' : 'bg-gray-500',
+                    "w-2 h-2 rounded-full transition-all duration-500",
+                    isLiveMode ? "bg-emerald-500 animate-pulse" : "bg-gray-500",
                   )}
                 />
-                <span className={cn('text-xs font-medium', isLiveMode ? 'text-emerald-500' : 'text-gray-300')}>
-                  {isLiveMode ? 'Live' : 'Paused'}
+                <span
+                  className={cn(
+                    "text-xs font-medium",
+                    isLiveMode ? "text-emerald-500" : "text-gray-300",
+                  )}
+                >
+                  {isLiveMode ? "Live" : "Paused"}
                 </span>
               </button>
 
-              <Button variant="secondary" size="md" onClick={handleExport} className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={handleExport}
+                className="flex items-center gap-2"
+              >
                 <Download className="w-4 h-4" />
                 Export
               </Button>
@@ -240,12 +277,12 @@ export default function ActivityPage() {
                   "bg-wl-bg-surface border border-wl-border-default",
                   "text-white placeholder-wl-text-tertiary",
                   "focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
-                  "rounded-md transition-all duration-200"
+                  "rounded-md transition-all duration-200",
                 )}
               />
               {searchQuery && (
                 <button
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => setSearchQuery("")}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
                 >
                   <X className="w-4 h-4" />
@@ -254,16 +291,29 @@ export default function ActivityPage() {
             </div>
 
             {/* Filters */}
-            <EventFilters filters={filters} setFilters={setFilters} users={uniqueUsers} />
+            <EventFilters
+              filters={filters}
+              setFilters={setFilters}
+              users={uniqueUsers}
+            />
 
-            {(filters.types.length > 0 || filters.severities.length > 0 || filters.startDate || filters.endDate || filters.userId) && (
+            {(filters.types.length > 0 ||
+              filters.severities.length > 0 ||
+              filters.startDate ||
+              filters.endDate ||
+              filters.userId) && (
               <div className="flex flex-wrap items-center gap-2">
                 {filters.types.map((type) => (
                   <Badge
                     key={type}
                     variant="primary"
                     className="gap-1.5 cursor-pointer hover:bg-blue-500/20"
-                    onClick={() => setFilters((prev) => ({ ...prev, types: prev.types.filter((t) => t !== type) }))}
+                    onClick={() =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        types: prev.types.filter((t) => t !== type),
+                      }))
+                    }
                   >
                     {type} <X className="w-3 h-3 ml-1" />
                   </Badge>
@@ -271,15 +321,32 @@ export default function ActivityPage() {
                 {filters.severities.map((severity) => (
                   <Badge
                     key={severity}
-                    variant={getSeverityBadgeVariant(severity as ActivityEvent['severity'])}
+                    variant={getSeverityBadgeVariant(
+                      severity as ActivityEvent["severity"],
+                    )}
                     className="gap-1.5 cursor-pointer hover:opacity-80"
-                    onClick={() => setFilters((prev) => ({ ...prev, severities: prev.severities.filter((s) => s !== severity) }))}
+                    onClick={() =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        severities: prev.severities.filter(
+                          (s) => s !== severity,
+                        ),
+                      }))
+                    }
                   >
                     {severity} <X className="w-3 h-3 ml-1" />
                   </Badge>
                 ))}
                 <button
-                  onClick={() => setFilters({ types: [], severities: [], startDate: null, endDate: null, userId: null })}
+                  onClick={() =>
+                    setFilters({
+                      types: [],
+                      severities: [],
+                      startDate: null,
+                      endDate: null,
+                      userId: null,
+                    })
+                  }
                   className="text-xs text-blue-400 hover:text-blue-300 font-medium"
                 >
                   Clear all
@@ -297,11 +364,17 @@ export default function ActivityPage() {
             icon={<AlertCircle className="w-8 h-8" />}
             title="No events found"
             description={
-              searchQuery || filters.types.length > 0 || filters.severities.length > 0
-                ? 'Try adjusting your search or filters to find events'
-                : 'Activity events will appear here as they are generated'
+              searchQuery ||
+              filters.types.length > 0 ||
+              filters.severities.length > 0
+                ? "Try adjusting your search or filters to find events"
+                : "Activity events will appear here as they are generated"
             }
-            action={searchQuery ? { label: 'Clear search', onClick: () => setSearchQuery('') } : undefined}
+            action={
+              searchQuery
+                ? { label: "Clear search", onClick: () => setSearchQuery("") }
+                : undefined
+            }
           />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -314,7 +387,9 @@ export default function ActivityPage() {
                 isLive={isLiveMode}
                 getEventIcon={getEventIcon}
                 getSeverityBadge={(severity) => (
-                  <Badge variant={getSeverityBadgeVariant(severity)}>{severity}</Badge>
+                  <Badge variant={getSeverityBadgeVariant(severity)}>
+                    {severity}
+                  </Badge>
                 )}
               />
             </div>
@@ -330,11 +405,20 @@ export default function ActivityPage() {
                       >
                         <X className="w-3 h-3" /> Close
                       </button>
-                      <h3 className="text-lg font-semibold text-white">{selectedEvent.title}</h3>
+                      <h3 className="text-lg font-semibold text-white">
+                        {selectedEvent.title}
+                      </h3>
                       <div className="mt-3 flex items-center gap-2">
-                        <div className="flex-shrink-0">{getEventIcon(selectedEvent.type)}</div>
-                        <Badge variant={getSeverityBadgeVariant(selectedEvent.severity)}>
-                          {selectedEvent.severity.charAt(0).toUpperCase() + selectedEvent.severity.slice(1)}
+                        <div className="flex-shrink-0">
+                          {getEventIcon(selectedEvent.type)}
+                        </div>
+                        <Badge
+                          variant={getSeverityBadgeVariant(
+                            selectedEvent.severity,
+                          )}
+                        >
+                          {selectedEvent.severity.charAt(0).toUpperCase() +
+                            selectedEvent.severity.slice(1)}
                         </Badge>
                       </div>
                     </div>
@@ -358,8 +442,12 @@ export default function ActivityPage() {
                             <AvatarFallback name={selectedEvent.user.name} />
                           </Avatar>
                           <div>
-                            <p className="text-sm font-medium text-white">{selectedEvent.user.name}</p>
-                            <p className="text-xs text-gray-400">{selectedEvent.user.id}</p>
+                            <p className="text-sm font-medium text-white">
+                              {selectedEvent.user.name}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {selectedEvent.user.id}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -403,14 +491,12 @@ export default function ActivityPage() {
                             {Object.entries(selectedEvent.metadata).map(
                               ([key, value]) => (
                                 <div key={key} className="text-xs">
-                                  <span className="text-gray-300">
-                                    {key}:
-                                  </span>
+                                  <span className="text-gray-300">{key}:</span>
                                   <span className="text-white ml-2">
                                     {String(value)}
                                   </span>
                                 </div>
-                              )
+                              ),
                             )}
                           </div>
                         </div>

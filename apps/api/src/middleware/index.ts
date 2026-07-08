@@ -32,7 +32,10 @@ export {
 } from "./rate-limiter.js";
 
 // Request logging
-export { default as requestLoggerPlugin, redactSensitiveData } from "./request-logger.js";
+export {
+  default as requestLoggerPlugin,
+  redactSensitiveData,
+} from "./request-logger.js";
 
 // Request correlation
 export { default as requestIdPlugin } from "./request-id.js";

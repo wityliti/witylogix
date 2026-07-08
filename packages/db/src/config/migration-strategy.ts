@@ -15,7 +15,12 @@
 /**
  * Migration status
  */
-export type MigrationStatus = "pending" | "in_progress" | "completed" | "rolled_back" | "failed";
+export type MigrationStatus =
+  | "pending"
+  | "in_progress"
+  | "completed"
+  | "rolled_back"
+  | "failed";
 
 /**
  * Migration record with metadata
@@ -128,7 +133,7 @@ export class MigrationManager {
       // Warn if active connections are high
       if (details.activeConnectionCount > 50) {
         console.warn(
-          `High number of active connections: ${details.activeConnectionCount}`
+          `High number of active connections: ${details.activeConnectionCount}`,
         );
       }
 
@@ -214,7 +219,7 @@ export class MigrationManager {
   registerMigration(
     migrationId: string,
     name: string,
-    rollbackSql: string
+    rollbackSql: string,
   ): void {
     const record: MigrationRecord = {
       id: migrationId,
@@ -359,7 +364,7 @@ export class MigrationManager {
   private logAudit(
     action: string,
     migrationId: string,
-    details: Record<string, any>
+    details: Record<string, any>,
   ): void {
     this.auditLog.push({
       timestamp: new Date(),

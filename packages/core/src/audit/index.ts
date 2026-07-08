@@ -19,10 +19,10 @@ export {
   AuditQueryError,
   AuditLogError,
   AuditEventBuilder,
-} from './types';
+} from "./types";
 
 // Logger
-export { AuditLogger } from './logger';
+export { AuditLogger } from "./logger";
 
 // Query Engine
-export { AuditQueryEngine, createAuditQueryEngine } from './query';
+export { AuditQueryEngine, createAuditQueryEngine } from "./query";

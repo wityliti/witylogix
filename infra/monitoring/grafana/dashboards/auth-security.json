@@ -16,14 +16,14 @@
           "type": "query",
           "datasource": "Prometheus",
           "query": "label_values(auth_login_attempts_total, environment)",
-          "current": {"value": "production", "text": "production"}
+          "current": { "value": "production", "text": "production" }
         },
         {
           "name": "tenant",
           "type": "query",
           "datasource": "Prometheus",
           "query": "label_values(auth_login_attempts_total{environment=\"$environment\"}, tenant_id)",
-          "current": {"value": "all", "text": "All"},
+          "current": { "value": "all", "text": "All" },
           "multi": true
         }
       ]
@@ -40,8 +40,8 @@
             "legendFormat": "Successful Logins"
           }
         ],
-        "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
-        "yaxes": [{"label": "logins/min"}]
+        "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+        "yaxes": [{ "label": "logins/min" }]
       },
       {
         "id": 2,
@@ -54,8 +54,8 @@
             "legendFormat": "Failed Logins"
           }
         ],
-        "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
-        "yaxes": [{"label": "attempts/min"}]
+        "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+        "yaxes": [{ "label": "attempts/min" }]
       },
       {
         "id": 3,
@@ -67,15 +67,15 @@
             "expr": "100 * (sum(auth_mfa_enabled_users{environment=\"$environment\",tenant_id=~\"$tenant\"}) / sum(auth_total_users{environment=\"$environment\",tenant_id=~\"$tenant\"}))"
           }
         ],
-        "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+        "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
         "fieldConfig": {
           "defaults": {
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"color": "red", "value": null},
-                {"color": "yellow", "value": 50},
-                {"color": "green", "value": 90}
+                { "color": "red", "value": null },
+                { "color": "yellow", "value": 50 },
+                { "color": "green", "value": 90 }
               ]
             }
           }
@@ -91,8 +91,8 @@
             "expr": "sum(auth_active_sessions{environment=\"$environment\",tenant_id=~\"$tenant\"})"
           }
         ],
-        "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
-        "options": {"colorMode": "value"}
+        "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+        "options": { "colorMode": "value" }
       },
       {
         "id": 5,
@@ -105,8 +105,8 @@
             "legendFormat": "Refreshes/min"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 6},
-        "yaxes": [{"label": "refreshes/min"}]
+        "gridPos": { "h": 8, "w": 6, "x": 0, "y": 6 },
+        "yaxes": [{ "label": "refreshes/min" }]
       },
       {
         "id": 6,
@@ -118,8 +118,8 @@
             "expr": "100 * (sum(rate(auth_rate_limit_exceeded_total{environment=\"$environment\",tenant_id=~\"$tenant\"}[1m])) / sum(rate(auth_login_attempts_total{environment=\"$environment\",tenant_id=~\"$tenant\"}[1m])))"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 6},
-        "options": {"colorMode": "background"}
+        "gridPos": { "h": 8, "w": 6, "x": 6, "y": 6 },
+        "options": { "colorMode": "background" }
       },
       {
         "id": 7,
@@ -131,8 +131,8 @@
             "expr": "count(auth_blocked_ips{environment=\"$environment\"})"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 6},
-        "options": {"colorMode": "background"}
+        "gridPos": { "h": 8, "w": 6, "x": 12, "y": 6 },
+        "options": { "colorMode": "background" }
       },
       {
         "id": 8,
@@ -145,7 +145,7 @@
             "legendFormat": "{{method}}"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 6}
+        "gridPos": { "h": 8, "w": 6, "x": 18, "y": 6 }
       },
       {
         "id": 9,
@@ -158,7 +158,7 @@
             "format": "table"
           }
         ],
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14}
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 }
       },
       {
         "id": 10,
@@ -171,7 +171,7 @@
             "format": "table"
           }
         ],
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14}
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 }
       }
     ]
   }

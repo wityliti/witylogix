@@ -82,13 +82,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     const response = await client.get<{ data: PaymentsPageData }>(
-      `/api/v4/payments?page=${page}&limit=${limit}&status=${status}&type=${type}&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`
+      `/api/v4/payments?page=${page}&limit=${limit}&status=${status}&type=${type}&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`,
     );
 
     return response;
   } catch (error) {
     console.error("Failed to fetch payments:", error);
-    return { data: { payments: [], summary: { totalRevenue: 0, pendingAmount: 0, refundedAmount: 0, failedCount: 0 }, meta: { total: 0, page, limit, totalPages: 0 } } };
+    return {
+      data: {
+        payments: [],
+        summary: {
+          totalRevenue: 0,
+          pendingAmount: 0,
+          refundedAmount: 0,
+          failedCount: 0,
+        },
+        meta: { total: 0, page, limit, totalPages: 0 },
+      },
+    };
   }
 }
 
@@ -113,7 +124,7 @@ export async function action({ request }: ActionFunctionArgs) {
       const endDate = url.searchParams.get("endDate") || "";
 
       const response = await client.get(
-        `/api/v4/payments/export?status=${status}&type=${type}&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`
+        `/api/v4/payments/export?status=${status}&type=${type}&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`,
       );
 
       return {
@@ -158,7 +169,9 @@ export default function PaymentsIndex() {
     });
   };
 
-  const getStatusTone = (status: string): "success" | "info" | "warning" | "critical" | undefined => {
+  const getStatusTone = (
+    status: string,
+  ): "success" | "info" | "warning" | "critical" | undefined => {
     switch (status) {
       case "COMPLETED":
         return "success";
@@ -173,7 +186,9 @@ export default function PaymentsIndex() {
     }
   };
 
-  const getTypeTone = (type: string): "info" | "success" | "critical" | "warning" | undefined => {
+  const getTypeTone = (
+    type: string,
+  ): "info" | "success" | "critical" | "warning" | undefined => {
     switch (type) {
       case "CHARGE":
         return "info";
@@ -217,7 +232,10 @@ export default function PaymentsIndex() {
             heading="No payments yet"
             image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
           >
-            <p>Payment transactions will appear here once you start processing orders.</p>
+            <p>
+              Payment transactions will appear here once you start processing
+              orders.
+            </p>
           </EmptyState>
         </Card>
       </Page>

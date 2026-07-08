@@ -120,11 +120,10 @@ function calculateDistance(from: Coordinate, to: Coordinate): number {
 /**
  * Calculate distance matrix between all stops
  */
-function buildDistanceMatrix(
-  stops: Stop[],
-  depot?: Coordinate
-): number[][] {
-  const coords: Coordinate[] = depot ? [depot, ...stops.map(s => s.coordinate)] : stops.map(s => s.coordinate);
+function buildDistanceMatrix(stops: Stop[], depot?: Coordinate): number[][] {
+  const coords: Coordinate[] = depot
+    ? [depot, ...stops.map((s) => s.coordinate)]
+    : stops.map((s) => s.coordinate);
   const n = coords.length;
   const matrix: number[][] = Array(n)
     .fill(null)
@@ -167,7 +166,7 @@ function canAddToRoute(
   route: RouteSequence,
   stop: Stop,
   distanceMatrix: number[][],
-  stopIndex: number
+  stopIndex: number,
 ): boolean {
   if (!canAddCapacity(route, stop)) {
     return false;
@@ -177,18 +176,24 @@ function canAddToRoute(
   const lastStop =
     route.stops.length > 0
       ? route.stops[route.stops.length - 1]
-      : { coordinate: route.stops[0]?.coordinate || { latitude: 0, longitude: 0 } };
+      : {
+          coordinate: route.stops[0]?.coordinate || {
+            latitude: 0,
+            longitude: 0,
+          },
+        };
 
-  const lastStopIdx = route.sequence.length > 0 ? route.sequence.length - 1 : -1;
+  const lastStopIdx =
+    route.sequence.length > 0 ? route.sequence.length - 1 : -1;
 
   const travelTime = estimateTravelTime(
     distanceMatrix[lastStopIdx + 1][stopIndex + 1],
-    new Date()
+    new Date(),
   );
   const arrivalTime = new Date(
     (route.estimatedArrivalTimes[lastStopIdx]?.getTime() || Date.now()) +
       (route.stops[lastStopIdx]?.duration || 0) * 60000 +
-      travelTime * 60000
+      travelTime * 60000,
   );
 
   return (
@@ -220,7 +225,7 @@ function nearestNeighborRoute(
   stops: Stop[],
   startPos: Coordinate,
   distanceMatrix: number[][],
-  maxTime: number
+  maxTime: number,
 ): { sequence: string[]; used: Set<string> } {
   const sequence: string[] = [];
   const used = new Set<string>();
@@ -267,7 +272,7 @@ function nearestNeighborRoute(
  */
 function apply2Opt(
   route: RouteSequence,
-  maxIterations: number = 100
+  maxIterations: number = 100,
 ): RouteSequence {
   const sequence = [...route.sequence];
   let improved = true;
@@ -282,23 +287,25 @@ function apply2Opt(
         const currentDist =
           calculateDistance(
             route.stops.find((s) => s.id === sequence[i])!.coordinate,
-            route.stops.find((s) => s.id === sequence[i + 1])!.coordinate
+            route.stops.find((s) => s.id === sequence[i + 1])!.coordinate,
           ) +
           calculateDistance(
             route.stops.find((s) => s.id === sequence[j])!.coordinate,
-            route.stops.find((s) => s.id === sequence[(j + 1) % sequence.length])!
-              .coordinate
+            route.stops.find(
+              (s) => s.id === sequence[(j + 1) % sequence.length],
+            )!.coordinate,
           );
 
         const newDist =
           calculateDistance(
             route.stops.find((s) => s.id === sequence[i])!.coordinate,
-            route.stops.find((s) => s.id === sequence[j])!.coordinate
+            route.stops.find((s) => s.id === sequence[j])!.coordinate,
           ) +
           calculateDistance(
             route.stops.find((s) => s.id === sequence[i + 1])!.coordinate,
-            route.stops.find((s) => s.id === sequence[(j + 1) % sequence.length])!
-              .coordinate
+            route.stops.find(
+              (s) => s.id === sequence[(j + 1) % sequence.length],
+            )!.coordinate,
           );
 
         if (newDist < currentDist) {
@@ -327,7 +334,7 @@ function apply2Opt(
  */
 function apply3Opt(
   route: RouteSequence,
-  maxIterations: number = 50
+  maxIterations: number = 50,
 ): RouteSequence {
   if (route.sequence.length <= 20) {
     return route; // Only apply for larger routes
@@ -409,13 +416,13 @@ function insertBreaks(route: RouteSequence, vehicle: Vehicle): Break[] {
 
   for (let i = 0; i < route.stops.length; i++) {
     const stop = route.stops[i];
-    const travelTime = i === 0 ? 0 : estimateTravelTime(
-      calculateDistance(
-        route.stops[i - 1].coordinate,
-        stop.coordinate
-      ),
-      route.estimatedArrivalTimes[i] || new Date()
-    );
+    const travelTime =
+      i === 0
+        ? 0
+        : estimateTravelTime(
+            calculateDistance(route.stops[i - 1].coordinate, stop.coordinate),
+            route.estimatedArrivalTimes[i] || new Date(),
+          );
 
     workTimeTotalMinutes += travelTime + (stop.duration || 0);
 
@@ -424,7 +431,7 @@ function insertBreaks(route: RouteSequence, vehicle: Vehicle): Break[] {
       breaks.push({
         startTime: new Date(
           (route.estimatedArrivalTimes[i]?.getTime() || Date.now()) +
-            (stop.duration || 0) * 60000
+            (stop.duration || 0) * 60000,
         ),
         duration: breakDuration,
         location: stop.coordinate,
@@ -444,9 +451,10 @@ function insertBreaks(route: RouteSequence, vehicle: Vehicle): Break[] {
 function validateTimeWindows(route: RouteSequence): string[] {
   const violations: string[] = [];
   // Start from the earliest open time of the first stop, not now
-  let currentTime = route.stops.length > 0
-    ? new Date(route.stops[0].timeWindow.openTime)
-    : new Date();
+  let currentTime =
+    route.stops.length > 0
+      ? new Date(route.stops[0].timeWindow.openTime)
+      : new Date();
 
   for (let i = 0; i < route.sequence.length; i++) {
     const stop = route.stops[i];
@@ -456,19 +464,20 @@ function validateTimeWindows(route: RouteSequence): string[] {
       i === 0
         ? 0
         : estimateTravelTime(
-            calculateDistance(
-              route.stops[i - 1].coordinate,
-              stop.coordinate
-            ),
-            currentTime
+            calculateDistance(route.stops[i - 1].coordinate, stop.coordinate),
+            currentTime,
           );
 
     currentTime = new Date(
-      currentTime.getTime() + travelTime * 60000 + (route.stops[i - 1]?.duration || 0) * 60000
+      currentTime.getTime() +
+        travelTime * 60000 +
+        (route.stops[i - 1]?.duration || 0) * 60000,
     );
 
     if (currentTime.getTime() > stop.timeWindow.closeTime.getTime()) {
-      violations.push(`Stop ${stop.id} closes at ${stop.timeWindow.closeTime}, arrival ${currentTime}`);
+      violations.push(
+        `Stop ${stop.id} closes at ${stop.timeWindow.closeTime}, arrival ${currentTime}`,
+      );
     }
     if (currentTime.getTime() < stop.timeWindow.openTime.getTime()) {
       currentTime = new Date(stop.timeWindow.openTime);
@@ -484,7 +493,7 @@ function validateTimeWindows(route: RouteSequence): string[] {
  * Optimize routes using nearest-neighbor with 2-opt and 3-opt improvements
  */
 export function optimizeRoutes(
-  request: OptimizationRequest
+  request: OptimizationRequest,
 ): OptimizationResult {
   const startTime = Date.now();
   const mode = request.mode || "minimize_distance";
@@ -501,12 +510,14 @@ export function optimizeRoutes(
       request.stops.filter((s) => unassignedStops.has(s.id)),
       vehicle.currentPosition,
       distanceMatrix,
-      vehicle.maxShiftHours * 60
+      vehicle.maxShiftHours * 60,
     );
 
     if (sequence.length === 0) continue;
 
-    const stopsForRoute = sequence.map((id) => request.stops.find((s) => s.id === id)!);
+    const stopsForRoute = sequence.map(
+      (id) => request.stops.find((s) => s.id === id)!,
+    );
     let route: RouteSequence = {
       vehicleId: vehicle.id,
       stops: stopsForRoute,
@@ -542,10 +553,13 @@ export function optimizeRoutes(
   }
 
   // Calculate savings
-  const totalOptimizedDistance = routes.reduce((s, r) => s + r.totalDistance, 0);
+  const totalOptimizedDistance = routes.reduce(
+    (s, r) => s + r.totalDistance,
+    0,
+  );
   const estimatedOriginalDistance = calculateEstimatedOriginalDistance(
     request.stops,
-    depot
+    depot,
   );
 
   const executionTimeMs = Date.now() - startTime;
@@ -560,7 +574,7 @@ export function optimizeRoutes(
       cost: calculateCostSavings(request.stops, routes, request.vehicles, mode),
     },
     unassignedStops: Array.from(unassignedStops).map(
-      (id) => request.stops.find((s) => s.id === id)!
+      (id) => request.stops.find((s) => s.id === id)!,
     ),
     executionTimeMs,
   };
@@ -573,7 +587,7 @@ function calculateRouteDuration(stops: Stop[]): number {
   for (let i = 0; i < stops.length - 1; i++) {
     const travelTime = estimateTravelTime(
       calculateDistance(stops[i].coordinate, stops[i + 1].coordinate),
-      new Date()
+      new Date(),
     );
     duration += travelTime + (stops[i].duration || 0);
   }
@@ -584,15 +598,16 @@ function calculateRouteDuration(stops: Stop[]): number {
 function calculateRouteCost(
   stops: Stop[],
   vehicle: Vehicle,
-  mode: OptimizationMode
+  mode: OptimizationMode,
 ): number {
   const distance = calculateRouteDistance(
     stops.map((s) => s.id),
-    stops
+    stops,
   );
   const duration = calculateRouteDuration(stops);
 
-  let cost = distance * vehicle.costPerKm + (duration / 60) * vehicle.costPerHour;
+  let cost =
+    distance * vehicle.costPerKm + (duration / 60) * vehicle.costPerHour;
 
   if (mode === "minimize_cost") {
     cost *= 1.1; // slight penalty boost for cost optimization
@@ -607,7 +622,9 @@ function calculateArrivalTimes(stops: Stop[]): Date[] {
 
   for (const stop of stops) {
     times.push(new Date(currentTime));
-    currentTime = new Date(currentTime.getTime() + (stop.duration || 0) * 60000);
+    currentTime = new Date(
+      currentTime.getTime() + (stop.duration || 0) * 60000,
+    );
   }
 
   return times;
@@ -615,7 +632,7 @@ function calculateArrivalTimes(stops: Stop[]): Date[] {
 
 function calculateEstimatedOriginalDistance(
   stops: Stop[],
-  depot: Coordinate
+  depot: Coordinate,
 ): number {
   // Simplified: assume original was just sequential
   let distance = 0;
@@ -630,10 +647,7 @@ function calculateEstimatedOriginalDistance(
   return distance;
 }
 
-function calculateTimeSavings(
-  stops: Stop[],
-  routes: RouteSequence[]
-): number {
+function calculateTimeSavings(stops: Stop[], routes: RouteSequence[]): number {
   // Estimate based on optimized vs worst-case sequential
   const totalStops = stops.length;
   const worstCaseMinutes = totalStops * 15; // 15 min avg per stop
@@ -646,7 +660,7 @@ function calculateCostSavings(
   stops: Stop[],
   routes: RouteSequence[],
   vehicles: Vehicle[],
-  mode: OptimizationMode
+  mode: OptimizationMode,
 ): number {
   const totalOptimizedCost = routes.reduce((s, r) => s + r.totalCost, 0);
   const estimatedWorstCaseCost = stops.length * 50; // rough estimate

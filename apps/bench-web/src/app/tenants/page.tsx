@@ -6,11 +6,13 @@ export default function TenantsPage() {
         List of all tenants across every installation.
       </p>
       <div className="bg-[#14141f] border border-gray-800 rounded p-6 text-sm text-gray-500">
-        <div className="font-semibold text-gray-300 mb-2">Not yet implemented</div>
+        <div className="font-semibold text-gray-300 mb-2">
+          Not yet implemented
+        </div>
         <p>
-          Phase 2 adds a <code>/internal/bench/tenants</code> list endpoint
-          plus cross-installation aggregation. This page will render them
-          with plan, installation, owner, and health status.
+          Phase 2 adds a <code>/internal/bench/tenants</code> list endpoint plus
+          cross-installation aggregation. This page will render them with plan,
+          installation, owner, and health status.
         </p>
       </div>
     </div>

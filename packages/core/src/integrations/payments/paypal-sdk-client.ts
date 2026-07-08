@@ -4,7 +4,7 @@
  * Handles orders, captures, subscriptions, payouts, and webhook verification
  */
 
-import { createHmac } from 'crypto';
+import { createHmac } from "crypto";
 import type {
   PaymentIntent,
   Subscription,
@@ -14,8 +14,12 @@ import type {
   PaymentError,
   RateLimitInfo,
   SubscriptionItem,
-} from './payment-sdk-types';
-import { type PaymentStatus, type RefundStatus, type SubscriptionStatus } from './payment-sdk-types';
+} from "./payment-sdk-types";
+import {
+  type PaymentStatus,
+  type RefundStatus,
+  type SubscriptionStatus,
+} from "./payment-sdk-types";
 
 /**
  * PayPal OAuth response
@@ -23,7 +27,7 @@ import { type PaymentStatus, type RefundStatus, type SubscriptionStatus } from '
 interface PayPalOAuthResponse {
   scope: string;
   access_token: string;
-  token_type: 'Bearer';
+  token_type: "Bearer";
   app_id: string;
   expires_in: number;
 }
@@ -47,13 +51,18 @@ interface PayPalErrorResponse {
 class PayPalPaymentError extends Error implements PaymentError {
   code: string;
   statusCode?: number;
-  provider: 'paypal' = 'paypal';
+  provider: "paypal" = "paypal";
   retryable: boolean;
   originalError?: Error;
 
-  constructor(message: string, code: string, statusCode?: number, retryable: boolean = false) {
+  constructor(
+    message: string,
+    code: string,
+    statusCode?: number,
+    retryable: boolean = false,
+  ) {
     super(message);
-    this.name = 'PayPalPaymentError';
+    this.name = "PayPalPaymentError";
     this.code = code;
     this.statusCode = statusCode;
     this.retryable = retryable;
@@ -86,9 +95,9 @@ export class PayPalClient {
   constructor(config: PayPalConfig) {
     if (!config.clientId || !config.clientSecret) {
       throw new PayPalPaymentError(
-        'PayPal clientId and clientSecret are required',
-        'missing_credentials',
-        400
+        "PayPal clientId and clientSecret are required",
+        "missing_credentials",
+        400,
       );
     }
 
@@ -97,9 +106,9 @@ export class PayPalClient {
     this.config = config;
 
     this.apiBaseUrl =
-      config.environment === 'live'
-        ? 'https://api.paypal.com'
-        : 'https://api.sandbox.paypal.com';
+      config.environment === "live"
+        ? "https://api.paypal.com"
+        : "https://api.sandbox.paypal.com";
   }
 
   /**
@@ -111,7 +120,9 @@ export class PayPalClient {
       return this.accessToken;
     }
 
-    const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
+    const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString(
+      "base64",
+    );
 
     try {
       const abortController = new AbortController();
@@ -119,13 +130,13 @@ export class PayPalClient {
       let response: Response;
       try {
         response = await fetch(`${this.apiBaseUrl}/v1/oauth2/token`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Authorization': `Basic ${auth}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/x-www-form-urlencoded',
+            Authorization: `Basic ${auth}`,
+            Accept: "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
           },
-          body: 'grant_type=client_credentials',
+          body: "grant_type=client_credentials",
           signal: abortController.signal,
         });
       } finally {
@@ -135,10 +146,10 @@ export class PayPalClient {
       if (!response.ok) {
         const errorBody = (await response.json()) as PayPalErrorResponse;
         throw new PayPalPaymentError(
-          errorBody.message || 'Failed to obtain access token',
-          'oauth_error',
+          errorBody.message || "Failed to obtain access token",
+          "oauth_error",
           response.status,
-          response.status >= 500
+          response.status >= 500,
         );
       }
 
@@ -150,7 +161,12 @@ export class PayPalClient {
       return this.accessToken;
     } catch (error) {
       if (error instanceof PayPalPaymentError) throw error;
-      throw new PayPalPaymentError('Failed to obtain access token', 'oauth_error', undefined, true);
+      throw new PayPalPaymentError(
+        "Failed to obtain access token",
+        "oauth_error",
+        undefined,
+        true,
+      );
     }
   }
 
@@ -158,7 +174,7 @@ export class PayPalClient {
    * Create an order
    */
   async createOrder(options: {
-    intent: 'CAPTURE' | 'AUTHORIZE';
+    intent: "CAPTURE" | "AUTHORIZE";
     purchaseUnits: Array<{
       amount: {
         currencyCode: string;
@@ -184,14 +200,15 @@ export class PayPalClient {
           cancelUrl: string;
           brandName?: string;
           locale?: string;
-          userAction?: 'CONTINUE' | 'PAY_NOW';
+          userAction?: "CONTINUE" | "PAY_NOW";
         };
       };
     };
     metadata?: Record<string, any>;
     idempotencyKey?: string;
   }): Promise<PaymentIntent> {
-    const idempotencyKey = options.idempotencyKey || this.generateIdempotencyKey();
+    const idempotencyKey =
+      options.idempotencyKey || this.generateIdempotencyKey();
     const cacheKey = `createOrder:${idempotencyKey}`;
 
     if (this.idempotencyCache.has(cacheKey)) {
@@ -210,9 +227,14 @@ export class PayPalClient {
       ...(options.paymentSource && { payment_source: options.paymentSource }),
     };
 
-    const response = await this.makeRequest('POST', '/v2/checkout/orders', payload, {
-      idempotencyKey,
-    });
+    const response = await this.makeRequest(
+      "POST",
+      "/v2/checkout/orders",
+      payload,
+      {
+        idempotencyKey,
+      },
+    );
 
     const intent = this.mapPayPalOrderToPaymentIntent(response);
 
@@ -224,12 +246,15 @@ export class PayPalClient {
   /**
    * Capture an order (complete payment)
    */
-  async captureOrder(orderId: string, idempotencyKey?: string): Promise<PaymentIntent> {
+  async captureOrder(
+    orderId: string,
+    idempotencyKey?: string,
+  ): Promise<PaymentIntent> {
     const response = await this.makeRequest(
-      'POST',
+      "POST",
       `/v2/checkout/orders/${orderId}/capture`,
       {},
-      { idempotencyKey }
+      { idempotencyKey },
     );
 
     return this.mapPayPalOrderToPaymentIntent(response);
@@ -238,12 +263,15 @@ export class PayPalClient {
   /**
    * Authorize an order (two-step payment)
    */
-  async authorizeOrder(orderId: string, idempotencyKey?: string): Promise<PaymentIntent> {
+  async authorizeOrder(
+    orderId: string,
+    idempotencyKey?: string,
+  ): Promise<PaymentIntent> {
     const response = await this.makeRequest(
-      'POST',
+      "POST",
       `/v2/checkout/orders/${orderId}/authorize`,
       {},
-      { idempotencyKey }
+      { idempotencyKey },
     );
 
     return this.mapPayPalOrderToPaymentIntent(response);
@@ -252,12 +280,15 @@ export class PayPalClient {
   /**
    * Void an order
    */
-  async voidOrder(orderId: string, idempotencyKey?: string): Promise<PaymentIntent> {
+  async voidOrder(
+    orderId: string,
+    idempotencyKey?: string,
+  ): Promise<PaymentIntent> {
     const response = await this.makeRequest(
-      'DELETE',
+      "DELETE",
       `/v2/checkout/orders/${orderId}`,
       {},
-      { idempotencyKey }
+      { idempotencyKey },
     );
 
     return this.mapPayPalOrderToPaymentIntent(response);
@@ -267,7 +298,10 @@ export class PayPalClient {
    * Get order details
    */
   async getOrder(orderId: string): Promise<PaymentIntent> {
-    const response = await this.makeRequest('GET', `/v2/checkout/orders/${orderId}`);
+    const response = await this.makeRequest(
+      "GET",
+      `/v2/checkout/orders/${orderId}`,
+    );
     return this.mapPayPalOrderToPaymentIntent(response);
   }
 
@@ -282,13 +316,13 @@ export class PayPalClient {
       finalCapture?: boolean;
       invoiceId?: string;
       idempotencyKey?: string;
-    }
+    },
   ): Promise<PaymentIntent> {
     const payload: Record<string, any> = {};
 
     if (options?.amount) {
       payload.amount = {
-        currencyCode: options.currencyCode || 'USD',
+        currencyCode: options.currencyCode || "USD",
         value: options.amount,
       };
     }
@@ -302,10 +336,10 @@ export class PayPalClient {
     }
 
     const response = await this.makeRequest(
-      'POST',
+      "POST",
       `/v2/payments/authorizations/${authorizationId}/capture`,
       payload,
-      { idempotencyKey: options?.idempotencyKey }
+      { idempotencyKey: options?.idempotencyKey },
     );
 
     return this.mapPayPalCaptureToPaymentIntent(response);
@@ -321,13 +355,13 @@ export class PayPalClient {
       currencyCode?: string;
       reason?: string;
       idempotencyKey?: string;
-    }
+    },
   ): Promise<Refund> {
     const payload: Record<string, any> = {};
 
     if (options?.amount) {
       payload.amount = {
-        currencyCode: options.currencyCode || 'USD',
+        currencyCode: options.currencyCode || "USD",
         value: options.amount,
       };
     }
@@ -337,10 +371,10 @@ export class PayPalClient {
     }
 
     const response = await this.makeRequest(
-      'POST',
+      "POST",
       `/v2/payments/captures/${captureId}/refund`,
       payload,
-      { idempotencyKey: options?.idempotencyKey }
+      { idempotencyKey: options?.idempotencyKey },
     );
 
     return this.mapPayPalRefund(response);
@@ -360,20 +394,31 @@ export class PayPalClient {
       taxAmount?: string;
       metadata?: Record<string, any>;
       idempotencyKey?: string;
-    }
+    },
   ): Promise<Subscription> {
     const payload: Record<string, any> = {
       plan_id: planId,
       ...(options?.quantity && { quantity: options.quantity }),
-      ...(options?.startTime && { start_time: options.startTime.toISOString() }),
-      ...(options?.shippingAmount && { shipping_amount: { value: options.shippingAmount } }),
+      ...(options?.startTime && {
+        start_time: options.startTime.toISOString(),
+      }),
+      ...(options?.shippingAmount && {
+        shipping_amount: { value: options.shippingAmount },
+      }),
       ...(options?.taxAmount && { tax_amount: { value: options.taxAmount } }),
-      ...(options?.subscriberId && { subscriber: { id: options.subscriberId } }),
+      ...(options?.subscriberId && {
+        subscriber: { id: options.subscriberId },
+      }),
     };
 
-    const response = await this.makeRequest('POST', '/v1/billing/subscriptions', payload, {
-      idempotencyKey: options?.idempotencyKey,
-    });
+    const response = await this.makeRequest(
+      "POST",
+      "/v1/billing/subscriptions",
+      payload,
+      {
+        idempotencyKey: options?.idempotencyKey,
+      },
+    );
 
     return this.mapPayPalSubscription(response);
   }
@@ -389,19 +434,20 @@ export class PayPalClient {
       taxAmount?: string;
       metadata?: Record<string, any>;
     },
-    idempotencyKey?: string
+    idempotencyKey?: string,
   ): Promise<Subscription> {
     const payload: Record<string, any> = {};
 
     if (updates.quantity) payload.quantity = updates.quantity;
-    if (updates.shippingAmount) payload.shipping_amount = { value: updates.shippingAmount };
+    if (updates.shippingAmount)
+      payload.shipping_amount = { value: updates.shippingAmount };
     if (updates.taxAmount) payload.tax_amount = { value: updates.taxAmount };
 
     const response = await this.makeRequest(
-      'PATCH',
+      "PATCH",
       `/v1/billing/subscriptions/${subscriptionId}`,
       payload,
-      { idempotencyKey }
+      { idempotencyKey },
     );
 
     return this.mapPayPalSubscription(response);
@@ -413,7 +459,7 @@ export class PayPalClient {
   async suspendSubscription(
     subscriptionId: string,
     reason?: string,
-    idempotencyKey?: string
+    idempotencyKey?: string,
   ): Promise<Subscription> {
     const payload: Record<string, any> = {};
 
@@ -422,10 +468,10 @@ export class PayPalClient {
     }
 
     const response = await this.makeRequest(
-      'POST',
+      "POST",
       `/v1/billing/subscriptions/${subscriptionId}/suspend`,
       payload,
-      { idempotencyKey }
+      { idempotencyKey },
     );
 
     return this.mapPayPalSubscription(response);
@@ -437,7 +483,7 @@ export class PayPalClient {
   async cancelSubscription(
     subscriptionId: string,
     reason?: string,
-    idempotencyKey?: string
+    idempotencyKey?: string,
   ): Promise<Subscription> {
     const payload: Record<string, any> = {};
 
@@ -446,10 +492,10 @@ export class PayPalClient {
     }
 
     const response = await this.makeRequest(
-      'POST',
+      "POST",
       `/v1/billing/subscriptions/${subscriptionId}/cancel`,
       payload,
-      { idempotencyKey }
+      { idempotencyKey },
     );
 
     return this.mapPayPalSubscription(response);
@@ -475,10 +521,10 @@ export class PayPalClient {
   }): Promise<{ batchId: string; items: any[] }> {
     const payload = {
       sender_batch_id: options.senderBatchId,
-      email_subject: options.emailSubject || 'Payout Notification',
-      email_message: options.emailMessage || 'You have received a payout',
+      email_subject: options.emailSubject || "Payout Notification",
+      email_message: options.emailMessage || "You have received a payout",
       items: options.items.map((item) => ({
-        recipient_type: 'EMAIL',
+        recipient_type: "EMAIL",
         receiver: item.receiverId,
         amount: item.amount,
         note: item.description,
@@ -486,9 +532,14 @@ export class PayPalClient {
       })),
     };
 
-    const response = await this.makeRequest('POST', '/v1/payments/payouts', payload, {
-      idempotencyKey: options.idempotencyKey,
-    });
+    const response = await this.makeRequest(
+      "POST",
+      "/v1/payments/payouts",
+      payload,
+      {
+        idempotencyKey: options.idempotencyKey,
+      },
+    );
 
     return {
       batchId: response.batch_header.payout_batch_id,
@@ -501,8 +552,8 @@ export class PayPalClient {
    */
   async getPayoutBatchStatus(batchId: string): Promise<any> {
     const response = await this.makeRequest(
-      'GET',
-      `/v1/payments/payouts/${batchId}`
+      "GET",
+      `/v1/payments/payouts/${batchId}`,
     );
 
     return {
@@ -522,20 +573,20 @@ export class PayPalClient {
     transmissionId: string,
     transmissionTime: string,
     certUrl: string,
-    actualSignature: string
+    actualSignature: string,
   ): Promise<boolean> {
     try {
       // In production, fetch and validate the certificate from certUrl
       // For now, we'll compute the expected signature
 
-      const bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
-      const expectedSig = createHmac('sha256', this.clientSecret)
+      const bodyStr = typeof body === "string" ? body : JSON.stringify(body);
+      const expectedSig = createHmac("sha256", this.clientSecret)
         .update(`${transmissionId}|${transmissionTime}|${bodyStr}`)
-        .digest('base64');
+        .digest("base64");
 
       return expectedSig === actualSignature;
     } catch (error) {
-      console.error('Webhook signature verification error:', error);
+      console.error("Webhook signature verification error:", error);
       return false;
     }
   }
@@ -548,7 +599,7 @@ export class PayPalClient {
     transmissionId: string,
     transmissionTime: string,
     certUrl: string,
-    signature: string
+    signature: string,
   ): Promise<WitylogixPaymentEvent | null> {
     try {
       // Verify signature
@@ -557,20 +608,20 @@ export class PayPalClient {
         transmissionId,
         transmissionTime,
         certUrl,
-        signature
+        signature,
       );
 
       if (!isValid) {
         throw new PayPalPaymentError(
-          'Invalid webhook signature',
-          'signature_verification_failed',
-          401
+          "Invalid webhook signature",
+          "signature_verification_failed",
+          401,
         );
       }
 
       return this.normalizePayPalWebhookEvent(event);
     } catch (error) {
-      console.error('Error parsing webhook event:', error);
+      console.error("Error parsing webhook event:", error);
       return null;
     }
   }
@@ -582,7 +633,7 @@ export class PayPalClient {
     method: string,
     endpoint: string,
     payload?: Record<string, any>,
-    options?: { idempotencyKey?: string }
+    options?: { idempotencyKey?: string },
   ): Promise<any> {
     // Get fresh access token
     const accessToken = await this.getAccessToken();
@@ -592,13 +643,13 @@ export class PayPalClient {
 
     const url = `${this.apiBaseUrl}${endpoint}`;
     const headers: Record<string, string> = {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
     };
 
     if (options?.idempotencyKey) {
-      headers['PayPal-Request-Id'] = options.idempotencyKey;
+      headers["PayPal-Request-Id"] = options.idempotencyKey;
     }
 
     let attempt = 0;
@@ -615,7 +666,7 @@ export class PayPalClient {
           signal: abortCtrl.signal,
         };
 
-        if (method !== 'GET' && method !== 'DELETE' && payload) {
+        if (method !== "GET" && method !== "DELETE" && payload) {
           fetchOptions.body = JSON.stringify(payload);
         }
 
@@ -633,14 +684,18 @@ export class PayPalClient {
             response.status === 429 ||
             response.status === 503;
 
-          const errorMessage = (errorData as PayPalErrorResponse).message || `HTTP ${response.status}`;
-          const errorCode = (errorData as PayPalErrorResponse).name || `http_${response.status}`;
+          const errorMessage =
+            (errorData as PayPalErrorResponse).message ||
+            `HTTP ${response.status}`;
+          const errorCode =
+            (errorData as PayPalErrorResponse).name ||
+            `http_${response.status}`;
 
           throw new PayPalPaymentError(
             errorMessage,
             errorCode,
             response.status,
-            isRetryable
+            isRetryable,
           );
         }
 
@@ -661,7 +716,15 @@ export class PayPalClient {
       }
     }
 
-    throw lastError || new PayPalPaymentError('Request failed after retries', 'network_error', undefined, false);
+    throw (
+      lastError ||
+      new PayPalPaymentError(
+        "Request failed after retries",
+        "network_error",
+        undefined,
+        false,
+      )
+    );
   }
 
   /**
@@ -672,7 +735,7 @@ export class PayPalClient {
 
     // Remove old timestamps outside the window
     this.requestsInWindow = this.requestsInWindow.filter(
-      (timestamp) => now - timestamp < this.RATE_LIMIT_WINDOW
+      (timestamp) => now - timestamp < this.RATE_LIMIT_WINDOW,
     );
 
     // If at limit, wait
@@ -685,7 +748,7 @@ export class PayPalClient {
       }
 
       this.requestsInWindow = this.requestsInWindow.filter(
-        (timestamp) => Date.now() - timestamp < this.RATE_LIMIT_WINDOW
+        (timestamp) => Date.now() - timestamp < this.RATE_LIMIT_WINDOW,
       );
     }
 
@@ -697,11 +760,11 @@ export class PayPalClient {
    */
   private mapPayPalOrderToPaymentIntent(paypalOrder: any): PaymentIntent {
     const statusMap: Record<string, PaymentStatus> = {
-      CREATED: 'pending',
-      SAVED: 'pending',
-      APPROVED: 'pending',
-      VOIDED: 'canceled',
-      COMPLETED: 'succeeded',
+      CREATED: "pending",
+      SAVED: "pending",
+      APPROVED: "pending",
+      VOIDED: "canceled",
+      COMPLETED: "succeeded",
     };
 
     const unit = paypalOrder.purchase_units?.[0];
@@ -709,10 +772,10 @@ export class PayPalClient {
     return {
       id: paypalOrder.id,
       externalId: paypalOrder.id,
-      provider: 'paypal',
-      amount: Math.round(parseFloat(unit?.amount?.value || '0') * 100),
-      currency: unit?.amount?.currency_code || 'USD',
-      status: statusMap[paypalOrder.status] || ('pending' as PaymentStatus),
+      provider: "paypal",
+      amount: Math.round(parseFloat(unit?.amount?.value || "0") * 100),
+      currency: unit?.amount?.currency_code || "USD",
+      status: statusMap[paypalOrder.status] || ("pending" as PaymentStatus),
       customerId: paypalOrder.payer?.payer_id,
       orderId: paypalOrder.id,
       description: unit?.description,
@@ -727,20 +790,20 @@ export class PayPalClient {
    */
   private mapPayPalCaptureToPaymentIntent(capture: any): PaymentIntent {
     const statusMap: Record<string, PaymentStatus> = {
-      COMPLETED: 'succeeded',
-      DECLINED: 'failed',
-      PARTIALLY_REFUNDED: 'succeeded',
-      PENDING: 'processing',
-      REFUNDED: 'succeeded',
+      COMPLETED: "succeeded",
+      DECLINED: "failed",
+      PARTIALLY_REFUNDED: "succeeded",
+      PENDING: "processing",
+      REFUNDED: "succeeded",
     };
 
     return {
       id: capture.id,
       externalId: capture.id,
-      provider: 'paypal',
-      amount: Math.round(parseFloat(capture.amount?.value || '0') * 100),
-      currency: capture.amount?.currency_code || 'USD',
-      status: statusMap[capture.status] || ('pending' as PaymentStatus),
+      provider: "paypal",
+      amount: Math.round(parseFloat(capture.amount?.value || "0") * 100),
+      currency: capture.amount?.currency_code || "USD",
+      status: statusMap[capture.status] || ("pending" as PaymentStatus),
       description: capture.description,
       metadata: {},
       createdAt: new Date(capture.create_time),
@@ -754,35 +817,44 @@ export class PayPalClient {
   private mapPayPalSubscription(paypalSub: any): Subscription {
     // PayPal 'SETUP' = subscription created but not yet active (nearest: 'suspended')
     const statusMap: Record<string, SubscriptionStatus> = {
-      SETUP: 'suspended',
-      ACTIVE: 'active',
-      SUSPENDED: 'suspended',
-      CANCELLED: 'canceled',
-      EXPIRED: 'ended',
+      SETUP: "suspended",
+      ACTIVE: "active",
+      SUSPENDED: "suspended",
+      CANCELLED: "canceled",
+      EXPIRED: "ended",
     };
 
     return {
       id: paypalSub.id,
       externalId: paypalSub.id,
-      provider: 'paypal',
-      customerId: paypalSub.subscriber?.email_address || paypalSub.subscriber?.payer_id || '',
-      status: statusMap[paypalSub.status] || 'active',
+      provider: "paypal",
+      customerId:
+        paypalSub.subscriber?.email_address ||
+        paypalSub.subscriber?.payer_id ||
+        "",
+      status: statusMap[paypalSub.status] || "active",
       items: [
         {
           id: paypalSub.id,
           externalId: paypalSub.id,
           priceId: paypalSub.plan_id,
-          quantity: parseInt(paypalSub.quantity || '1', 10),
+          quantity: parseInt(paypalSub.quantity || "1", 10),
           metadata: {},
           createdAt: new Date(paypalSub.create_time),
         },
       ],
-      currentPeriodStart: new Date(paypalSub.status_update_time || paypalSub.create_time),
-      currentPeriodEnd: new Date(paypalSub.status_update_time || paypalSub.create_time),
-      currency: 'USD',
+      currentPeriodStart: new Date(
+        paypalSub.status_update_time || paypalSub.create_time,
+      ),
+      currentPeriodEnd: new Date(
+        paypalSub.status_update_time || paypalSub.create_time,
+      ),
+      currency: "USD",
       metadata: {},
       createdAt: new Date(paypalSub.create_time),
-      updatedAt: new Date(paypalSub.status_update_time || paypalSub.create_time),
+      updatedAt: new Date(
+        paypalSub.status_update_time || paypalSub.create_time,
+      ),
     };
   }
 
@@ -791,21 +863,21 @@ export class PayPalClient {
    */
   private mapPayPalRefund(paypalRefund: any): Refund {
     const statusMap: Record<string, RefundStatus> = {
-      COMPLETED: 'succeeded',
-      PENDING: 'pending',
-      FAILED: 'failed',
-      CANCELLED: 'canceled',
+      COMPLETED: "succeeded",
+      PENDING: "pending",
+      FAILED: "failed",
+      CANCELLED: "canceled",
     };
 
     return {
       id: paypalRefund.id,
       externalId: paypalRefund.id,
-      provider: 'paypal',
-      chargeId: paypalRefund.links?.[0]?.href || '',
-      amount: Math.round(parseFloat(paypalRefund.amount?.value || '0') * 100),
-      currency: paypalRefund.amount?.currency_code || 'USD',
-      status: statusMap[paypalRefund.status] || ('pending' as RefundStatus),
-      reason: 'general',
+      provider: "paypal",
+      chargeId: paypalRefund.links?.[0]?.href || "",
+      amount: Math.round(parseFloat(paypalRefund.amount?.value || "0") * 100),
+      currency: paypalRefund.amount?.currency_code || "USD",
+      status: statusMap[paypalRefund.status] || ("pending" as RefundStatus),
+      reason: "general",
       metadata: {},
       createdAt: new Date(paypalRefund.create_time),
       updatedAt: new Date(paypalRefund.update_time),
@@ -815,53 +887,55 @@ export class PayPalClient {
   /**
    * Normalize PayPal webhook event to unified format
    */
-  private normalizePayPalWebhookEvent(event: Record<string, any>): WitylogixPaymentEvent {
+  private normalizePayPalWebhookEvent(
+    event: Record<string, any>,
+  ): WitylogixPaymentEvent {
     const eventTypeMap: Record<string, any> = {
-      'PAYMENT.CAPTURE.COMPLETED': {
-        type: 'payment.completed',
-        resourceType: 'payment_intent',
+      "PAYMENT.CAPTURE.COMPLETED": {
+        type: "payment.completed",
+        resourceType: "payment_intent",
       },
-      'PAYMENT.CAPTURE.DENIED': {
-        type: 'payment.failed',
-        resourceType: 'payment_intent',
+      "PAYMENT.CAPTURE.DENIED": {
+        type: "payment.failed",
+        resourceType: "payment_intent",
       },
-      'PAYMENT.CAPTURE.PENDING': {
-        type: 'payment.failed',
-        resourceType: 'payment_intent',
+      "PAYMENT.CAPTURE.PENDING": {
+        type: "payment.failed",
+        resourceType: "payment_intent",
       },
-      'PAYMENT.CAPTURE.REFUNDED': {
-        type: 'refund.completed',
-        resourceType: 'refund',
+      "PAYMENT.CAPTURE.REFUNDED": {
+        type: "refund.completed",
+        resourceType: "refund",
       },
-      'CHECKOUT.ORDER.COMPLETED': {
-        type: 'payment.completed',
-        resourceType: 'payment_intent',
+      "CHECKOUT.ORDER.COMPLETED": {
+        type: "payment.completed",
+        resourceType: "payment_intent",
       },
-      'CHECKOUT.ORDER.APPROVED': {
-        type: 'payment.completed',
-        resourceType: 'payment_intent',
+      "CHECKOUT.ORDER.APPROVED": {
+        type: "payment.completed",
+        resourceType: "payment_intent",
       },
-      'BILLING.SUBSCRIPTION.CREATED': {
-        type: 'subscription.created',
-        resourceType: 'subscription',
+      "BILLING.SUBSCRIPTION.CREATED": {
+        type: "subscription.created",
+        resourceType: "subscription",
       },
-      'BILLING.SUBSCRIPTION.UPDATED': {
-        type: 'subscription.updated',
-        resourceType: 'subscription',
+      "BILLING.SUBSCRIPTION.UPDATED": {
+        type: "subscription.updated",
+        resourceType: "subscription",
       },
-      'BILLING.SUBSCRIPTION.CANCELLED': {
-        type: 'subscription.canceled',
-        resourceType: 'subscription',
+      "BILLING.SUBSCRIPTION.CANCELLED": {
+        type: "subscription.canceled",
+        resourceType: "subscription",
       },
-      'BILLING.SUBSCRIPTION.SUSPENDED': {
-        type: 'subscription.paused',
-        resourceType: 'subscription',
+      "BILLING.SUBSCRIPTION.SUSPENDED": {
+        type: "subscription.paused",
+        resourceType: "subscription",
       },
     };
 
     const mapping = eventTypeMap[event.event_type] || {
       type: event.event_type,
-      resourceType: 'payment_intent',
+      resourceType: "payment_intent",
     };
 
     const data: any = {};
@@ -869,11 +943,11 @@ export class PayPalClient {
     return {
       id: `${event.id}-${Date.now()}`,
       timestamp: new Date(event.create_time),
-      provider: 'paypal',
+      provider: "paypal",
       externalEventId: event.id,
       type: mapping.type,
       resourceType: mapping.resourceType,
-      resourceId: event.resource?.id || '',
+      resourceId: event.resource?.id || "",
       data,
       rawEvent: event,
       verified: true,

@@ -14,7 +14,7 @@
  * ~200 lines, 18+ tests
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 // ============================================================================
 // MOCK TYPES & INTERFACES
@@ -24,8 +24,8 @@ interface SigningSession {
   id: string;
   envelopeId: string;
   recipientEmail: string;
-  sessionType: 'in_person' | 'remote' | 'embedded';
-  status: 'active' | 'paused' | 'completed' | 'expired';
+  sessionType: "in_person" | "remote" | "embedded";
+  status: "active" | "paused" | "completed" | "expired";
   createdAt: Date;
   expiresAt: Date;
   resumableUntil?: Date;
@@ -34,7 +34,7 @@ interface SigningSession {
 
 interface SignedField {
   fieldId: string;
-  type: 'signature' | 'initial' | 'text' | 'date' | 'checkbox';
+  type: "signature" | "initial" | "text" | "date" | "checkbox";
   value: string;
   signedAt: Date;
   coordinates?: { x: number; y: number };
@@ -56,8 +56,8 @@ interface CompletionCertificate {
 
 interface AuthenticationChallenge {
   id: string;
-  method: 'sms' | 'email' | 'knowledge' | 'biometric';
-  status: 'pending' | 'sent' | 'verified' | 'failed';
+  method: "sms" | "email" | "knowledge" | "biometric";
+  status: "pending" | "sent" | "verified" | "failed";
   createdAt: Date;
   verifiedAt?: Date;
   attempts: number;
@@ -90,7 +90,7 @@ class MockSigningCeremonyService {
       envelopeId,
       recipientEmail,
       sessionType: sessionType as any,
-      status: 'active',
+      status: "active",
       createdAt: new Date(),
       expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
       resumableUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
@@ -110,7 +110,7 @@ class MockSigningCeremonyService {
     const challenge: AuthenticationChallenge = {
       id: `auth_${Math.random().toString(36).substr(2, 9)}`,
       method: method as any,
-      status: 'sent',
+      status: "sent",
       createdAt: new Date(),
       attempts: 0,
       maxAttempts: 3,
@@ -127,16 +127,17 @@ class MockSigningCeremonyService {
     challenge.attempts++;
 
     // Simulate verification logic
-    const isValid = response === 'valid_response' || challenge.method === 'biometric';
+    const isValid =
+      response === "valid_response" || challenge.method === "biometric";
 
     if (isValid) {
-      challenge.status = 'verified';
+      challenge.status = "verified";
       challenge.verifiedAt = new Date();
       return true;
     }
 
     if (challenge.attempts >= challenge.maxAttempts) {
-      challenge.status = 'failed';
+      challenge.status = "failed";
     }
 
     return false;
@@ -154,7 +155,9 @@ class MockSigningCeremonyService {
 
     const validation = await this.validateField(fieldId, fieldType, value);
     if (!validation.isValid) {
-      throw new Error(`Field validation failed: ${validation.errors?.join(', ')}`);
+      throw new Error(
+        `Field validation failed: ${validation.errors?.join(", ")}`,
+      );
     }
 
     const signedField: SignedField = {
@@ -182,18 +185,18 @@ class MockSigningCeremonyService {
     };
 
     // Simulate validation logic
-    if (fieldType === 'signature' && !value) {
+    if (fieldType === "signature" && !value) {
       validation.isValid = false;
-      validation.errors?.push('Signature cannot be empty');
+      validation.errors?.push("Signature cannot be empty");
     }
 
-    if (fieldType === 'email' && !value.includes('@')) {
+    if (fieldType === "email" && !value.includes("@")) {
       validation.isValid = false;
-      validation.errors?.push('Invalid email format');
+      validation.errors?.push("Invalid email format");
     }
 
-    if (fieldType === 'text' && value.length > 500) {
-      validation.warnings?.push('Text field exceeds recommended length');
+    if (fieldType === "text" && value.length > 500) {
+      validation.warnings?.push("Text field exceeds recommended length");
     }
 
     return validation;
@@ -203,7 +206,7 @@ class MockSigningCeremonyService {
     const session = this.sessions.get(sessionId);
     if (!session) throw new Error(`Session ${sessionId} not found`);
 
-    session.status = 'paused';
+    session.status = "paused";
     return session;
   }
 
@@ -211,15 +214,15 @@ class MockSigningCeremonyService {
     const session = this.sessions.get(sessionId);
     if (!session) throw new Error(`Session ${sessionId} not found`);
 
-    if (session.status === 'expired') {
-      throw new Error('Session expired');
+    if (session.status === "expired") {
+      throw new Error("Session expired");
     }
 
     if (session.resumableUntil && session.resumableUntil < new Date()) {
-      throw new Error('Session expired and cannot be resumed');
+      throw new Error("Session expired and cannot be resumed");
     }
 
-    session.status = 'active';
+    session.status = "active";
     // Extend expiry by 1 hour from now (always strictly after original expiry)
     session.expiresAt = new Date(Date.now() + 60 * 60 * 1000 + 1);
     return session;
@@ -229,7 +232,7 @@ class MockSigningCeremonyService {
     const session = this.sessions.get(sessionId);
     if (!session) throw new Error(`Session ${sessionId} not found`);
 
-    session.status = 'completed';
+    session.status = "completed";
 
     const certificate: CompletionCertificate = {
       id: `cert_${Math.random().toString(36).substr(2, 9)}`,
@@ -240,19 +243,19 @@ class MockSigningCeremonyService {
       certificateData: this.generateCertificateData(session),
       chainOfCustody: [
         {
-          event: 'Session Created',
+          event: "Session Created",
           timestamp: session.createdAt,
           details: `Session ${session.id} created for ${session.recipientEmail}`,
         },
         {
-          event: 'Fields Signed',
+          event: "Fields Signed",
           timestamp: new Date(),
           details: `${Object.keys(session.signedFields).length} fields signed`,
         },
         {
-          event: 'Signing Completed',
+          event: "Signing Completed",
           timestamp: new Date(),
-          details: 'All required fields signed successfully',
+          details: "All required fields signed successfully",
         },
       ],
     };
@@ -290,7 +293,7 @@ class MockSigningCeremonyService {
     if (!session) throw new Error(`Session ${sessionId} not found`);
 
     session.expiresAt = new Date(Date.now() - 1000); // Set to past
-    session.status = 'expired';
+    session.status = "expired";
   }
 }
 
@@ -298,7 +301,7 @@ class MockSigningCeremonyService {
 // TEST SUITE
 // ============================================================================
 
-describe('Signing Ceremony', () => {
+describe("Signing Ceremony", () => {
   let service: MockSigningCeremonyService;
 
   beforeEach(() => {
@@ -313,45 +316,45 @@ describe('Signing Ceremony', () => {
   // Session Creation
   // ──────────────────────────────────────────────────────────────────────────
 
-  it('should create in-person signing session', async () => {
+  it("should create in-person signing session", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'in_person',
+      "env_123",
+      "signer@example.com",
+      "in_person",
     );
 
-    expect(session.sessionType).toBe('in_person');
-    expect(session.status).toBe('active');
+    expect(session.sessionType).toBe("in_person");
+    expect(session.status).toBe("active");
     expect(session.expiresAt).toBeInstanceOf(Date);
   });
 
-  it('should create remote signing session', async () => {
+  it("should create remote signing session", async () => {
     const session = await service.createSigningSession(
-      'env_456',
-      'remote@example.com',
-      'remote',
+      "env_456",
+      "remote@example.com",
+      "remote",
     );
 
-    expect(session.sessionType).toBe('remote');
-    expect(session.status).toBe('active');
+    expect(session.sessionType).toBe("remote");
+    expect(session.status).toBe("active");
   });
 
-  it('should create embedded signing session', async () => {
+  it("should create embedded signing session", async () => {
     const session = await service.createSigningSession(
-      'env_789',
-      'embedded@example.com',
-      'embedded',
+      "env_789",
+      "embedded@example.com",
+      "embedded",
     );
 
-    expect(session.sessionType).toBe('embedded');
-    expect(session.status).toBe('active');
+    expect(session.sessionType).toBe("embedded");
+    expect(session.status).toBe("active");
   });
 
-  it('should set session expiration', async () => {
+  it("should set session expiration", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
 
     expect(session.expiresAt.getTime()).toBeGreaterThan(Date.now());
@@ -361,70 +364,70 @@ describe('Signing Ceremony', () => {
   // Authentication Methods
   // ──────────────────────────────────────────────────────────────────────────
 
-  it('should create SMS authentication challenge', async () => {
+  it("should create SMS authentication challenge", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
 
-    const challenge = await service.authenticateSigner(session.id, 'sms');
+    const challenge = await service.authenticateSigner(session.id, "sms");
 
-    expect(challenge.method).toBe('sms');
-    expect(challenge.status).toBe('sent');
+    expect(challenge.method).toBe("sms");
+    expect(challenge.status).toBe("sent");
     expect(challenge.attempts).toBe(0);
   });
 
-  it('should create email authentication challenge', async () => {
+  it("should create email authentication challenge", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
 
-    const challenge = await service.authenticateSigner(session.id, 'email');
+    const challenge = await service.authenticateSigner(session.id, "email");
 
-    expect(challenge.method).toBe('email');
-    expect(challenge.status).toBe('sent');
+    expect(challenge.method).toBe("email");
+    expect(challenge.status).toBe("sent");
   });
 
-  it('should create knowledge-based authentication challenge', async () => {
+  it("should create knowledge-based authentication challenge", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
 
-    const challenge = await service.authenticateSigner(session.id, 'knowledge');
+    const challenge = await service.authenticateSigner(session.id, "knowledge");
 
-    expect(challenge.method).toBe('knowledge');
+    expect(challenge.method).toBe("knowledge");
   });
 
-  it('should verify signer with correct response', async () => {
+  it("should verify signer with correct response", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
-    const challenge = await service.authenticateSigner(session.id, 'email');
+    const challenge = await service.authenticateSigner(session.id, "email");
 
-    const verified = await service.verifySigner(challenge.id, 'valid_response');
+    const verified = await service.verifySigner(challenge.id, "valid_response");
 
     expect(verified).toBe(true);
     const updated = this.authChallenges?.get?.(challenge.id);
   });
 
-  it('should track authentication attempts', async () => {
+  it("should track authentication attempts", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
-    const challenge = await service.authenticateSigner(session.id, 'sms');
+    const challenge = await service.authenticateSigner(session.id, "sms");
 
-    await service.verifySigner(challenge.id, 'wrong');
-    await service.verifySigner(challenge.id, 'wrong');
-    const result = await service.verifySigner(challenge.id, 'wrong');
+    await service.verifySigner(challenge.id, "wrong");
+    await service.verifySigner(challenge.id, "wrong");
+    const result = await service.verifySigner(challenge.id, "wrong");
 
     expect(result).toBe(false);
   });
@@ -433,88 +436,98 @@ describe('Signing Ceremony', () => {
   // Field Signing and Validation
   // ──────────────────────────────────────────────────────────────────────────
 
-  it('should sign signature field', async () => {
+  it("should sign signature field", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
 
-    const field = await service.signField(session.id, 'sig_1', 'signature', 'signature_data');
+    const field = await service.signField(
+      session.id,
+      "sig_1",
+      "signature",
+      "signature_data",
+    );
 
-    expect(field.type).toBe('signature');
+    expect(field.type).toBe("signature");
     expect(field.signedAt).toBeTruthy();
   });
 
-  it('should sign initial field', async () => {
+  it("should sign initial field", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
-    );
-
-    const field = await service.signField(session.id, 'init_1', 'initial', 'JD');
-
-    expect(field.type).toBe('initial');
-    expect(field.value).toBe('JD');
-  });
-
-  it('should sign text field', async () => {
-    const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
 
     const field = await service.signField(
       session.id,
-      'text_1',
-      'text',
-      'John Doe',
+      "init_1",
+      "initial",
+      "JD",
     );
 
-    expect(field.type).toBe('text');
-    expect(field.value).toBe('John Doe');
+    expect(field.type).toBe("initial");
+    expect(field.value).toBe("JD");
   });
 
-  it('should track field coordinates', async () => {
+  it("should sign text field", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'in_person',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
 
     const field = await service.signField(
       session.id,
-      'sig_1',
-      'signature',
-      'sig_data',
+      "text_1",
+      "text",
+      "John Doe",
+    );
+
+    expect(field.type).toBe("text");
+    expect(field.value).toBe("John Doe");
+  });
+
+  it("should track field coordinates", async () => {
+    const session = await service.createSigningSession(
+      "env_123",
+      "signer@example.com",
+      "in_person",
+    );
+
+    const field = await service.signField(
+      session.id,
+      "sig_1",
+      "signature",
+      "sig_data",
       { x: 100, y: 200 },
     );
 
     expect(field.coordinates).toEqual({ x: 100, y: 200 });
   });
 
-  it('should validate signature field not empty', async () => {
-    const validation = await service.validateField('sig_1', 'signature', '');
+  it("should validate signature field not empty", async () => {
+    const validation = await service.validateField("sig_1", "signature", "");
 
     expect(validation.isValid).toBe(false);
-    expect(validation.errors?.includes('Signature cannot be empty')).toBe(true);
+    expect(validation.errors?.includes("Signature cannot be empty")).toBe(true);
   });
 
-  it('should validate email field format', async () => {
+  it("should validate email field format", async () => {
     const validation = await service.validateField(
-      'email_1',
-      'email',
-      'invalid-email',
+      "email_1",
+      "email",
+      "invalid-email",
     );
 
     expect(validation.isValid).toBe(false);
   });
 
-  it('should warn on text field exceeding length', async () => {
-    const longText = 'a'.repeat(501);
-    const validation = await service.validateField('text_1', 'text', longText);
+  it("should warn on text field exceeding length", async () => {
+    const longText = "a".repeat(501);
+    const validation = await service.validateField("text_1", "text", longText);
 
     expect(validation.warnings?.length).toBeGreaterThan(0);
   });
@@ -523,55 +536,57 @@ describe('Signing Ceremony', () => {
   // Session Timeout and Resume
   // ──────────────────────────────────────────────────────────────────────────
 
-  it('should pause session', async () => {
+  it("should pause session", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
 
     const paused = await service.pauseSession(session.id);
 
-    expect(paused.status).toBe('paused');
+    expect(paused.status).toBe("paused");
   });
 
-  it('should resume paused session', async () => {
+  it("should resume paused session", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
     await service.pauseSession(session.id);
 
     const resumed = await service.resumeSession(session.id);
 
-    expect(resumed.status).toBe('active');
+    expect(resumed.status).toBe("active");
   });
 
-  it('should reset expiration on resume', async () => {
+  it("should reset expiration on resume", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
     const originalExpiry = session.expiresAt;
 
     await service.pauseSession(session.id);
     const resumed = await service.resumeSession(session.id);
 
-    expect(resumed.expiresAt.getTime()).toBeGreaterThan(originalExpiry.getTime());
+    expect(resumed.expiresAt.getTime()).toBeGreaterThan(
+      originalExpiry.getTime(),
+    );
   });
 
-  it('should prevent resume of expired session', async () => {
+  it("should prevent resume of expired session", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
     await service.expireSession(session.id);
 
     await expect(service.resumeSession(session.id)).rejects.toThrow(
-      'Session expired',
+      "Session expired",
     );
   });
 
@@ -579,43 +594,43 @@ describe('Signing Ceremony', () => {
   // Completion Certificate
   // ──────────────────────────────────────────────────────────────────────────
 
-  it('should generate completion certificate', async () => {
+  it("should generate completion certificate", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
 
-    await service.signField(session.id, 'sig_1', 'signature', 'sig_data');
+    await service.signField(session.id, "sig_1", "signature", "sig_data");
     const cert = await service.completeSession(session.id);
 
     expect(cert.id).toBeTruthy();
-    expect(cert.envelopeId).toBe('env_123');
-    expect(cert.signerEmail).toBe('signer@example.com');
+    expect(cert.envelopeId).toBe("env_123");
+    expect(cert.signerEmail).toBe("signer@example.com");
     expect(cert.signedAt).toBeTruthy();
   });
 
-  it('should include chain of custody in certificate', async () => {
+  it("should include chain of custody in certificate", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
 
-    await service.signField(session.id, 'sig_1', 'signature', 'sig_data');
+    await service.signField(session.id, "sig_1", "signature", "sig_data");
     const cert = await service.completeSession(session.id);
 
     expect(cert.chainOfCustody).toHaveLength(3);
-    expect(cert.chainOfCustody[0].event).toBe('Session Created');
-    expect(cert.chainOfCustody[1].event).toBe('Fields Signed');
-    expect(cert.chainOfCustody[2].event).toBe('Signing Completed');
+    expect(cert.chainOfCustody[0].event).toBe("Session Created");
+    expect(cert.chainOfCustody[1].event).toBe("Fields Signed");
+    expect(cert.chainOfCustody[2].event).toBe("Signing Completed");
   });
 
-  it('should retrieve completion certificate', async () => {
+  it("should retrieve completion certificate", async () => {
     const session = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
 
     const cert = await service.completeSession(session.id);
@@ -629,20 +644,20 @@ describe('Signing Ceremony', () => {
   // Session Retrieval
   // ──────────────────────────────────────────────────────────────────────────
 
-  it('should retrieve session by ID', async () => {
+  it("should retrieve session by ID", async () => {
     const created = await service.createSigningSession(
-      'env_123',
-      'signer@example.com',
-      'remote',
+      "env_123",
+      "signer@example.com",
+      "remote",
     );
 
     const retrieved = await service.getSession(created.id);
 
     expect(retrieved.id).toBe(created.id);
-    expect(retrieved.status).toBe('active');
+    expect(retrieved.status).toBe("active");
   });
 
-  it('should throw error for nonexistent session', async () => {
-    await expect(service.getSession('nonexistent')).rejects.toThrow();
+  it("should throw error for nonexistent session", async () => {
+    await expect(service.getSession("nonexistent")).rejects.toThrow();
   });
 });

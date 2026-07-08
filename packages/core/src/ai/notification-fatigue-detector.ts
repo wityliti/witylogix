@@ -12,7 +12,11 @@
  * All scoring is transparent with explainable factors. No external ML libraries.
  */
 
-import { type NotificationChannel, type NotificationCategory, type NotificationPriority } from "../notifications/notification-types.js";
+import {
+  type NotificationChannel,
+  type NotificationCategory,
+  type NotificationPriority,
+} from "../notifications/notification-types.js";
 
 // ─── TYPES ─────────────────────────────────────────────────────────────────
 
@@ -177,18 +181,28 @@ export interface UnsubscribePrediction {
 // ─── FATIGUE SCORER ───────────────────────────────────────────────────────
 
 export class FatigueScorer {
-  private dailyNotifications: Map<string, { count: number; date: Date }> = new Map();
+  private dailyNotifications: Map<string, { count: number; date: Date }> =
+    new Map();
   private dismissRates: Map<string, number[]> = new Map(); // rolling 7-day dismiss rates
   private openRates: Map<string, number[]> = new Map(); // rolling 7-day open rates
-  private channelFatigue: Map<string, Record<NotificationChannel, number>> = new Map();
-  private categoryFatigue: Map<string, Record<NotificationCategory, number>> = new Map();
+  private channelFatigue: Map<string, Record<NotificationChannel, number>> =
+    new Map();
+  private categoryFatigue: Map<string, Record<NotificationCategory, number>> =
+    new Map();
   private signals: Map<string, FatigueSignal[]> = new Map();
 
-  recordNotificationSent(userId: string, channel: NotificationChannel, category: NotificationCategory): void {
+  recordNotificationSent(
+    userId: string,
+    channel: NotificationChannel,
+    category: NotificationCategory,
+  ): void {
     const today = new Date().toDateString();
     const key = `${userId}:${today}`;
 
-    const current = this.dailyNotifications.get(key) ?? { count: 0, date: new Date() };
+    const current = this.dailyNotifications.get(key) ?? {
+      count: 0,
+      date: new Date(),
+    };
     current.count++;
     this.dailyNotifications.set(key, current);
 
@@ -241,13 +255,14 @@ export class FatigueScorer {
     }
 
     // Check for high dismiss rate signal
-    const dismissRate = rates.length > 0 ? rates.reduce((a, b) => a + b) / rates.length : 0;
+    const dismissRate =
+      rates.length > 0 ? rates.reduce((a, b) => a + b) / rates.length : 0;
     if (dismissRate > 0.7) {
       this.addSignal(userId, "INCREASING_DISMISS_RATE", 75, {
         metric: "dismiss_rate",
         previousValue: 0.5,
         currentValue: dismissRate,
-        changePercent: (dismissRate - 0.5) / 0.5 * 100,
+        changePercent: ((dismissRate - 0.5) / 0.5) * 100,
       });
     }
   }
@@ -265,7 +280,7 @@ export class FatigueScorer {
     userId: string,
     type: FatigueSignal["signalType"],
     severity: number,
-    context: FatigueSignal["context"]
+    context: FatigueSignal["context"],
   ): void {
     if (!this.signals.has(userId)) {
       this.signals.set(userId, []);
@@ -288,7 +303,8 @@ export class FatigueScorer {
   calculateFatigueScore(userId: string): FatigueScore {
     const today = new Date().toDateString();
     const dailyKey = `${userId}:${today}`;
-    const notificationsToday = this.dailyNotifications.get(dailyKey)?.count ?? 0;
+    const notificationsToday =
+      this.dailyNotifications.get(dailyKey)?.count ?? 0;
 
     // Weekly count (simplified: last 7 days)
     let weeklyCount = 0;
@@ -303,9 +319,13 @@ export class FatigueScorer {
     const openRates = this.openRates.get(userId) ?? [];
     const dismissRates = this.dismissRates.get(userId) ?? [];
     const avgOpenRate =
-      openRates.length > 0 ? openRates.reduce((a, b) => a + b) / openRates.length : 0.7;
+      openRates.length > 0
+        ? openRates.reduce((a, b) => a + b) / openRates.length
+        : 0.7;
     const avgDismissRate =
-      dismissRates.length > 0 ? dismissRates.reduce((a, b) => a + b) / dismissRates.length : 0;
+      dismissRates.length > 0
+        ? dismissRates.reduce((a, b) => a + b) / dismissRates.length
+        : 0;
 
     // Volume scores (0-50 each)
     const dailyVolumeScore = Math.min(50, (notificationsToday / 10) * 50);
@@ -322,18 +342,26 @@ export class FatigueScorer {
     // Normalize fatigue scores to 0-100
     const normChFatigue: Record<NotificationChannel, number> = {} as any;
     for (const ch in chFatigue) {
-      normChFatigue[ch as NotificationChannel] = Math.min(100, (chFatigue[ch as NotificationChannel] ?? 0) * 10);
+      normChFatigue[ch as NotificationChannel] = Math.min(
+        100,
+        (chFatigue[ch as NotificationChannel] ?? 0) * 10,
+      );
     }
 
     const normCatFatigue: Record<NotificationCategory, number> = {} as any;
     for (const cat in catFatigue) {
-      normCatFatigue[cat as NotificationCategory] = Math.min(100, (catFatigue[cat as NotificationCategory] ?? 0) * 20);
+      normCatFatigue[cat as NotificationCategory] = Math.min(
+        100,
+        (catFatigue[cat as NotificationCategory] ?? 0) * 20,
+      );
     }
 
     // Overall fatigue score (weighted average)
-    const avgChFatigue = Object.keys(normChFatigue).length > 0
-      ? Object.values(normChFatigue).reduce((a, b) => a + b, 0) / Object.keys(normChFatigue).length
-      : 0;
+    const avgChFatigue =
+      Object.keys(normChFatigue).length > 0
+        ? Object.values(normChFatigue).reduce((a, b) => a + b, 0) /
+          Object.keys(normChFatigue).length
+        : 0;
 
     // Scale volume scores to 0-100 range (from 0-50)
     const scaledDailyVolume = dailyVolumeScore * 2;
@@ -345,11 +373,19 @@ export class FatigueScorer {
         scaledWeeklyVolume * 0.2 +
         openRateTrendScore * 0.15 +
         dismissRateTrendScore * 0.15 +
-        avgChFatigue * 0.2
+        avgChFatigue * 0.2,
     );
 
     const severity =
-      overallFatigue < 20 ? "NONE" : overallFatigue < 40 ? "LOW" : overallFatigue < 60 ? "MODERATE" : overallFatigue < 80 ? "HIGH" : "SEVERE";
+      overallFatigue < 20
+        ? "NONE"
+        : overallFatigue < 40
+          ? "LOW"
+          : overallFatigue < 60
+            ? "MODERATE"
+            : overallFatigue < 80
+              ? "HIGH"
+              : "SEVERE";
 
     return {
       userId,
@@ -368,7 +404,10 @@ export class FatigueScorer {
         notificationsThisWeek: weeklyCount,
         averageOpenRateLast7Days: avgOpenRate,
         averageDismissRateLast7Days: avgDismissRate,
-        unsubscribeAttempts: this.signals.get(userId)?.filter((s) => s.signalType === "UNSUBSCRIBE_REQUEST").length ?? 0,
+        unsubscribeAttempts:
+          this.signals
+            .get(userId)
+            ?.filter((s) => s.signalType === "UNSUBSCRIBE_REQUEST").length ?? 0,
       },
       signals: this.signals.get(userId) ?? [],
       calculatedAt: new Date(),
@@ -394,7 +433,11 @@ export class OverloadDetector {
     this.notificationTimestamps.set(userId, filtered);
   }
 
-  isOverloaded(userId: string, thresholdCount: number = 20, thresholdHours: number = 1): boolean {
+  isOverloaded(
+    userId: string,
+    thresholdCount: number = 20,
+    thresholdHours: number = 1,
+  ): boolean {
     const timestamps = this.notificationTimestamps.get(userId) ?? [];
     if (timestamps.length < thresholdCount) return false;
 
@@ -451,16 +494,27 @@ export class ThrottleRecommender {
     }
 
     // Calculate throttle parameters based on fatigue level
-    const reductionPercent = Math.min(100, (fatigueScore.overallFatigueScore - 50) * 2);
+    const reductionPercent = Math.min(
+      100,
+      (fatigueScore.overallFatigueScore - 50) * 2,
+    );
     const throttleHours =
-      fatigueScore.overallFatigueScore > 80 ? 24 : fatigueScore.overallFatigueScore > 70 ? 12 : 6;
+      fatigueScore.overallFatigueScore > 80
+        ? 24
+        : fatigueScore.overallFatigueScore > 70
+          ? 12
+          : 6;
 
     const now = new Date();
-    const throttleEnd = new Date(now.getTime() + throttleHours * 60 * 60 * 1000);
+    const throttleEnd = new Date(
+      now.getTime() + throttleHours * 60 * 60 * 1000,
+    );
 
     // Affected categories based on fatigue
     const affectedCategories: NotificationCategory[] = [];
-    for (const [cat, fatigue] of Object.entries(fatigueScore.factors.categoryFatigueScores)) {
+    for (const [cat, fatigue] of Object.entries(
+      fatigueScore.factors.categoryFatigueScores,
+    )) {
       if (fatigue > 60) {
         affectedCategories.push(cat as NotificationCategory);
       }
@@ -468,14 +522,17 @@ export class ThrottleRecommender {
 
     // Affected channels based on fatigue
     const affectedChannels: NotificationChannel[] = [];
-    for (const [ch, fatigue] of Object.entries(fatigueScore.factors.channelFatigueScores)) {
+    for (const [ch, fatigue] of Object.entries(
+      fatigueScore.factors.channelFatigueScores,
+    )) {
       if (fatigue > 60) {
         affectedChannels.push(ch as NotificationChannel);
       }
     }
 
     // Priority threshold: only send HIGH/CRITICAL during throttle
-    const priorityThreshold = fatigueScore.overallFatigueScore > 70 ? "HIGH" : "NORMAL";
+    const priorityThreshold =
+      fatigueScore.overallFatigueScore > 70 ? "HIGH" : "NORMAL";
 
     return {
       userId,
@@ -486,7 +543,8 @@ export class ThrottleRecommender {
         endAt: throttleEnd,
         durationHours: throttleHours,
       },
-      categoriesAffected: affectedCategories.length > 0 ? affectedCategories : [],
+      categoriesAffected:
+        affectedCategories.length > 0 ? affectedCategories : [],
       channelsAffected: affectedChannels.length > 0 ? affectedChannels : [],
       priorityThreshold: priorityThreshold as NotificationPriority,
       reasoning: {
@@ -494,7 +552,10 @@ export class ThrottleRecommender {
         currentFatigueScore: fatigueScore.overallFatigueScore,
         estimatedRecoveryHours: throttleHours,
         impact: {
-          expectedOpenRateImprovement: Math.min(15, (100 - fatigueScore.metrics.averageOpenRateLast7Days * 100) * 0.2),
+          expectedOpenRateImprovement: Math.min(
+            15,
+            (100 - fatigueScore.metrics.averageOpenRateLast7Days * 100) * 0.2,
+          ),
           expectedEngagementImprovement: Math.min(20, reductionPercent * 0.15),
         },
       },
@@ -511,7 +572,7 @@ export class ImportanceRanker {
     userId: string,
     category: NotificationCategory,
     priority: NotificationPriority,
-    userEngagementWithCategory: number = 0.5 // 0-1
+    userEngagementWithCategory: number = 0.5, // 0-1
   ): ImportanceScore {
     // Priority factor (0-40)
     const priorityValues: Record<NotificationPriority, number> = {
@@ -527,14 +588,15 @@ export class ImportanceRanker {
     const relevanceFactor = 15 + userEngagementWithCategory * 15;
 
     // Timeliness factor (0-20) - typically time-sensitive
-    const timelinesseFactor = priority === "CRITICAL" ? 20 : priority === "HIGH" ? 15 : 10;
+    const timelinesseFactor =
+      priority === "CRITICAL" ? 20 : priority === "HIGH" ? 15 : 10;
 
     // User affinity factor (0-10)
     const affinityFactor = userEngagementWithCategory * 10;
 
     const importanceScore = Math.min(
       100,
-      priorityFactor + relevanceFactor + timelinesseFactor + affinityFactor
+      priorityFactor + relevanceFactor + timelinesseFactor + affinityFactor,
     );
 
     return {
@@ -559,10 +621,10 @@ export class ImportanceRanker {
       category: NotificationCategory;
       priority: NotificationPriority;
     }>,
-    userId: string
+    userId: string,
   ): ImportanceScore[] {
     return notifications.map((n) =>
-      this.rankImportance(n.id, userId, n.category, n.priority, 0.6)
+      this.rankImportance(n.id, userId, n.category, n.priority, 0.6),
     );
   }
 }
@@ -602,18 +664,25 @@ export class DigestOptimizer {
 export class UnsubscribePrediction {
   predictUnsubscribeRisk(
     userId: string,
-    fatigueScore: FatigueScore
+    fatigueScore: FatigueScore,
   ): UnsubscribePrediction {
     // Calculate unsubscribe likelihood based on fatigue
     const baselineRisk = 10;
     const fatigueRisk = (fatigueScore.overallFatigueScore / 100) * 60;
-    const openRateDecliningRisk = fatigueScore.factors.openRateTrendScore > 50 ? 15 : 0;
-    const dismissRateRising = fatigueScore.metrics.averageDismissRateLast7Days > 0.5 ? 10 : 0;
-    const unsubscribeAttemptRisk = fatigueScore.metrics.unsubscribeAttempts > 0 ? 25 : 0;
+    const openRateDecliningRisk =
+      fatigueScore.factors.openRateTrendScore > 50 ? 15 : 0;
+    const dismissRateRising =
+      fatigueScore.metrics.averageDismissRateLast7Days > 0.5 ? 10 : 0;
+    const unsubscribeAttemptRisk =
+      fatigueScore.metrics.unsubscribeAttempts > 0 ? 25 : 0;
 
     const likelihood = Math.min(
       100,
-      baselineRisk + fatigueRisk + openRateDecliningRisk + dismissRateRising + unsubscribeAttemptRisk
+      baselineRisk +
+        fatigueRisk +
+        openRateDecliningRisk +
+        dismissRateRising +
+        unsubscribeAttemptRisk,
     );
 
     const riskLevel =
@@ -632,7 +701,9 @@ export class UnsubscribePrediction {
     }
 
     // Identify at-risk channels
-    const channelsAtRisk = Object.entries(fatigueScore.factors.channelFatigueScores)
+    const channelsAtRisk = Object.entries(
+      fatigueScore.factors.channelFatigueScores,
+    )
       .filter(([_, fatigue]) => fatigue > 70)
       .map(([channel, fatigue]) => ({
         channel: channel as NotificationChannel,
@@ -642,19 +713,28 @@ export class UnsubscribePrediction {
     const recommendedActions = [];
     if (riskLevel === "CRITICAL") {
       recommendedActions.push(
-        { action: "Immediately reduce notification frequency by 50%", priority: "HIGH" },
+        {
+          action: "Immediately reduce notification frequency by 50%",
+          priority: "HIGH",
+        },
         { action: "Contact user to understand preferences", priority: "HIGH" },
-        { action: "Implement weekly digest instead of daily", priority: "MEDIUM" }
+        {
+          action: "Implement weekly digest instead of daily",
+          priority: "MEDIUM",
+        },
       );
     } else if (riskLevel === "HIGH") {
       recommendedActions.push(
         { action: "Reduce notification frequency by 25%", priority: "HIGH" },
-        { action: "Consolidate messages into digest", priority: "MEDIUM" }
+        { action: "Consolidate messages into digest", priority: "MEDIUM" },
       );
     } else if (riskLevel === "MEDIUM") {
       recommendedActions.push(
         { action: "Monitor open rates closely", priority: "MEDIUM" },
-        { action: "Personalize content to increase relevance", priority: "LOW" }
+        {
+          action: "Personalize content to increase relevance",
+          priority: "LOW",
+        },
       );
     }
 
@@ -686,7 +766,9 @@ export function createOverloadDetector(): OverloadDetector {
   return new OverloadDetector();
 }
 
-export function createThrottleRecommender(fatigueScorer: FatigueScorer): ThrottleRecommender {
+export function createThrottleRecommender(
+  fatigueScorer: FatigueScorer,
+): ThrottleRecommender {
   return new ThrottleRecommender(fatigueScorer);
 }
 

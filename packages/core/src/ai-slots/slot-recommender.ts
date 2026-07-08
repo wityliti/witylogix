@@ -11,15 +11,18 @@
  * Returns top 5 recommended slots ranked by composite score.
  */
 
-import { DemandPredictor } from './demand-predictor.js';
-import { DriverAvailabilityPredictor, type DriverShift } from './driver-availability.js';
+import { DemandPredictor } from "./demand-predictor.js";
+import {
+  DriverAvailabilityPredictor,
+  type DriverShift,
+} from "./driver-availability.js";
 import type {
   ScoredSlot,
   RecommendSlotRequest,
   CustomerPreference,
   ZoneCongestion,
   WeatherImpact,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Slot data structure (from database)
@@ -96,10 +99,7 @@ export class SlotRecommender {
    */
   setCongestionData(congestionData: ZoneCongestion[]): void {
     congestionData.forEach((c) => {
-      this.congestionData.set(
-        `${c.zoneId}-${c.timestamp.toISOString()}`,
-        c,
-      );
+      this.congestionData.set(`${c.zoneId}-${c.timestamp.toISOString()}`, c);
     });
   }
 
@@ -108,10 +108,7 @@ export class SlotRecommender {
    */
   setWeatherData(weatherData: WeatherImpact[]): void {
     weatherData.forEach((w) => {
-      this.weatherData.set(
-        `${w.zoneId}-${w.date.toISOString()}`,
-        w,
-      );
+      this.weatherData.set(`${w.zoneId}-${w.date.toISOString()}`, w);
     });
   }
 
@@ -125,9 +122,7 @@ export class SlotRecommender {
   /**
    * Recommend slots for a customer
    */
-  recommendSlots(
-    request: RecommendSlotRequest,
-  ): ScoredSlot[] {
+  recommendSlots(request: RecommendSlotRequest): ScoredSlot[] {
     const maxSlots = request.maxSlots ?? 5;
 
     // Get relevant slots for the zone and date
@@ -152,9 +147,7 @@ export class SlotRecommender {
     );
 
     // Sort by score (descending) and return top N
-    return scoredSlots
-      .sort((a, b) => b.score - a.score)
-      .slice(0, maxSlots);
+    return scoredSlots.sort((a, b) => b.score - a.score).slice(0, maxSlots);
   }
 
   /**
@@ -171,18 +164,10 @@ export class SlotRecommender {
     );
 
     // 1. Demand score (lower demand is better: 0-1)
-    const demandScore = this.calculateDemandScore(
-      slot.zoneId,
-      date,
-      midHour,
-    );
+    const demandScore = this.calculateDemandScore(slot.zoneId, date, midHour);
 
     // 2. Driver availability score (more drivers is better: 0-1)
-    const driverScore = this.calculateDriverScore(
-      slot.zoneId,
-      date,
-      midHour,
-    );
+    const driverScore = this.calculateDriverScore(slot.zoneId, date, midHour);
 
     // 3. Customer preference score (matches history: 0-1)
     const prefScore = this.calculatePreferenceScore(
@@ -200,10 +185,7 @@ export class SlotRecommender {
     );
 
     // 5. Weather impact (minimize impact: 0-1)
-    const weatherScore = this.calculateWeatherScore(
-      slot.zoneId,
-      date,
-    );
+    const weatherScore = this.calculateWeatherScore(slot.zoneId, date);
 
     // Weighted composite score (0-100)
     const score =
@@ -237,9 +219,8 @@ export class SlotRecommender {
       midHour,
     );
     const driverAvailability =
-      (driverForecast.expectedAvailableDrivers /
-        Math.max(driverForecast.totalScheduledDrivers, 1)) ||
-      0.5;
+      driverForecast.expectedAvailableDrivers /
+        Math.max(driverForecast.totalScheduledDrivers, 1) || 0.5;
 
     return {
       slotId: slot.id,
@@ -264,11 +245,7 @@ export class SlotRecommender {
     date: Date,
     hour: number,
   ): number {
-    const forecast = this.demandPredictor.predictDemand(
-      zoneId,
-      date,
-      hour,
-    );
+    const forecast = this.demandPredictor.predictDemand(zoneId, date, hour);
 
     // Assume avg 30 orders per slot at capacity
     // Score: at 0 orders = 1.0, at 30+ = 0.2
@@ -286,10 +263,7 @@ export class SlotRecommender {
     date: Date,
     hour: number,
   ): number {
-    const forecast = this.driverPredictor.predictAvailability(
-      date,
-      hour,
-    );
+    const forecast = this.driverPredictor.predictAvailability(date, hour);
 
     const zoneDrivers = forecast.zoneDistribution[zoneId] ?? 0;
     const totalDrivers = forecast.expectedAvailableDrivers || 1;
@@ -421,11 +395,11 @@ export class SlotRecommender {
 
     // Find highest scoring factor
     const scores = [
-      { label: 'Low demand', score: demandScore },
-      { label: 'Available drivers', score: driverScore },
-      { label: 'Your preference', score: prefScore },
-      { label: 'Light congestion', score: congestionScore },
-      { label: 'Good weather', score: weatherScore },
+      { label: "Low demand", score: demandScore },
+      { label: "Available drivers", score: driverScore },
+      { label: "Your preference", score: prefScore },
+      { label: "Light congestion", score: congestionScore },
+      { label: "Good weather", score: weatherScore },
     ];
 
     scores.sort((a, b) => b.score - a.score);
@@ -437,14 +411,14 @@ export class SlotRecommender {
     }
 
     if (demandScore < 0.3) {
-      reasons.push('High demand period');
+      reasons.push("High demand period");
     }
 
     if (driverScore > 0.8) {
-      reasons.push('Excellent driver availability');
+      reasons.push("Excellent driver availability");
     }
 
-    return `${slot.name}: ${reasons.join(', ')}`;
+    return `${slot.name}: ${reasons.join(", ")}`;
   }
 
   /**

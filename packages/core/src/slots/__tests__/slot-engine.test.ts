@@ -74,7 +74,11 @@ describe("SlotEngine", () => {
       mockDb.deliverySlot.findMany.mockResolvedValue([slot]);
       mockDb.slotReservation.count.mockResolvedValue(0);
 
-      const available = await slotEngine.getAvailableSlots(futureDate1, "zone-1", "loc-1");
+      const available = await slotEngine.getAvailableSlots(
+        futureDate1,
+        "zone-1",
+        "loc-1",
+      );
 
       expect(available).toHaveLength(1);
       expect(available[0].id).toBe("slot-1");
@@ -105,7 +109,11 @@ describe("SlotEngine", () => {
         reason: "Holiday",
       });
 
-      const available = await slotEngine.getAvailableSlots(futureDate1, "zone-1", "loc-1");
+      const available = await slotEngine.getAvailableSlots(
+        futureDate1,
+        "zone-1",
+        "loc-1",
+      );
 
       expect(available).toHaveLength(0);
     });
@@ -226,9 +234,9 @@ describe("SlotEngine", () => {
     it("should throw error if slot not found", async () => {
       mockDb.deliverySlot.findUnique.mockResolvedValue(null);
 
-      await expect(slotEngine.reserveSlot("invalid-id", "order-1")).rejects.toThrow(
-        SlotNotFoundError,
-      );
+      await expect(
+        slotEngine.reserveSlot("invalid-id", "order-1"),
+      ).rejects.toThrow(SlotNotFoundError);
     });
   });
 
@@ -251,7 +259,9 @@ describe("SlotEngine", () => {
     it("should throw error if reservation not found", async () => {
       mockDb.slotReservation.findFirst.mockResolvedValue(null);
 
-      await expect(slotEngine.releaseSlot("slot-1", "order-1")).rejects.toThrow();
+      await expect(
+        slotEngine.releaseSlot("slot-1", "order-1"),
+      ).rejects.toThrow();
     });
   });
 
@@ -294,9 +304,9 @@ describe("SlotEngine", () => {
     });
 
     it("should reject if start date is after end date", async () => {
-      await expect(slotEngine.getSlotsByDateRange(futureDate2, futureDate1)).rejects.toThrow(
-        InvalidSlotDateError,
-      );
+      await expect(
+        slotEngine.getSlotsByDateRange(futureDate2, futureDate1),
+      ).rejects.toThrow(InvalidSlotDateError);
     });
   });
 

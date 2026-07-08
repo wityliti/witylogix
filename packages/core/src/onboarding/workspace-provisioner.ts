@@ -375,7 +375,8 @@ export class WorkspaceProvisioner {
    * @returns Full dashboard URL
    */
   private buildDashboardUrl(slug: string): string {
-    const baseUrl = process.env.DASHBOARD_BASE_URL || "https://app.witylogix.com";
+    const baseUrl =
+      process.env.DASHBOARD_BASE_URL || "https://app.witylogix.com";
     return `${baseUrl}/workspaces/${slug}/dashboard`;
   }
 

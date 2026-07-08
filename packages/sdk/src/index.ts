@@ -2,11 +2,11 @@
  * @witylogix/sdk - TypeScript SDK for the Witylogix delivery logistics API
  */
 
-import { WitylogixClient } from './client';
-import { OrdersResource } from './resources/orders';
-import { DriversResource } from './resources/drivers';
-import { ZonesResource } from './resources/zones';
-import { ShipmentsResource } from './resources/shipments';
+import { WitylogixClient } from "./client";
+import { OrdersResource } from "./resources/orders";
+import { DriversResource } from "./resources/drivers";
+import { ZonesResource } from "./resources/zones";
+import { ShipmentsResource } from "./resources/shipments";
 
 /**
  * Extended client with resource accessors
@@ -39,7 +39,7 @@ export {
   DriversResource,
   ZonesResource,
   ShipmentsResource,
-} from './resources';
+} from "./resources";
 
 export type {
   CreateOrderData,
@@ -50,7 +50,7 @@ export type {
   UpdateZoneData,
   CreateShipmentData,
   UpdateShipmentData,
-} from './resources';
+} from "./resources";
 
 // Types
 export type {
@@ -75,7 +75,7 @@ export type {
   ApiErrorResponse,
   ClientConfig,
   RequestOptions,
-} from './types';
+} from "./types";
 
 // Errors
 export {
@@ -87,7 +87,7 @@ export {
   ServerError,
   NetworkError,
   ConfigError,
-} from './errors';
+} from "./errors";
 
 // Default export
 export default Witylogix;

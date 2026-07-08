@@ -14,34 +14,37 @@ import {
   isBefore,
   isAfter,
   eachDayOfInterval,
-} from 'date-fns';
-import type { BlackoutDate } from '../types';
+} from "date-fns";
+import type { BlackoutDate } from "../types";
 
 /**
  * Format date for display (e.g., "Mon, Mar 11, 2026")
  */
 export const formatDateDisplay = (date: Date): string => {
-  return format(date, 'EEE, MMM d, yyyy');
+  return format(date, "EEE, MMM d, yyyy");
 };
 
 /**
  * Format date for API (ISO 8601)
  */
 export const formatDateISO = (date: Date): string => {
-  return format(date, 'yyyy-MM-dd');
+  return format(date, "yyyy-MM-dd");
 };
 
 /**
  * Format time for display (e.g., "2:30 PM")
  */
 export const formatTimeDisplay = (date: Date): string => {
-  return format(date, 'h:mm a');
+  return format(date, "h:mm a");
 };
 
 /**
  * Format time range for display (e.g., "2:00 PM - 3:00 PM")
  */
-export const formatTimeRangeDisplay = (startTime: Date, endTime: Date): string => {
+export const formatTimeRangeDisplay = (
+  startTime: Date,
+  endTime: Date,
+): string => {
   return `${formatTimeDisplay(startTime)} - ${formatTimeDisplay(endTime)}`;
 };
 
@@ -49,13 +52,16 @@ export const formatTimeRangeDisplay = (startTime: Date, endTime: Date): string =
  * Format date and time together (e.g., "Mar 11, 2:30 PM")
  */
 export const formatDateTimeDisplay = (date: Date, time: Date): string => {
-  return `${format(date, 'MMM d')}, ${formatTimeDisplay(time)}`;
+  return `${format(date, "MMM d")}, ${formatTimeDisplay(time)}`;
 };
 
 /**
  * Check if a date is blackouted
  */
-export const isDateBlackouted = (date: Date, blackoutDates: BlackoutDate[]): BlackoutDate | undefined => {
+export const isDateBlackouted = (
+  date: Date,
+  blackoutDates: BlackoutDate[],
+): BlackoutDate | undefined => {
   return blackoutDates.find((bd) => isSameDay(bd.date, date));
 };
 
@@ -65,7 +71,7 @@ export const isDateBlackouted = (date: Date, blackoutDates: BlackoutDate[]): Bla
 export const getBlackoutDatesInMonth = (
   year: number,
   month: number,
-  blackoutDates: BlackoutDate[]
+  blackoutDates: BlackoutDate[],
 ): Map<number, BlackoutDate> => {
   const result = new Map<number, BlackoutDate>();
 
@@ -85,10 +91,12 @@ export const isValidSelectableDate = (
   date: Date,
   blackoutDates: BlackoutDate[] = [],
   minDate?: Date,
-  maxDate?: Date
+  maxDate?: Date,
 ): boolean => {
   const normalizedDate = startOfDay(date);
-  const normalizedMinDate = minDate ? startOfDay(minDate) : startOfDay(new Date());
+  const normalizedMinDate = minDate
+    ? startOfDay(minDate)
+    : startOfDay(new Date());
   const normalizedMaxDate = maxDate ? endOfDay(maxDate) : null;
 
   // Check if before minimum date
@@ -123,9 +131,12 @@ export const parseDate = (dateString: string): Date => {
 /**
  * Get number of available slots text
  */
-export const getAvailableSlotsText = (available: number, total: number): string => {
-  if (available === 0) return 'Fully booked';
-  if (available === 1) return '1 slot left';
+export const getAvailableSlotsText = (
+  available: number,
+  total: number,
+): string => {
+  if (available === 0) return "Fully booked";
+  if (available === 1) return "1 slot left";
   if (available <= 3) return `${available} slots left`;
   return `${available} slots available`;
 };
@@ -135,15 +146,15 @@ export const getAvailableSlotsText = (available: number, total: number): string 
  */
 export const getRelativeDayName = (date: Date): string => {
   if (isToday(date)) {
-    return 'Today';
+    return "Today";
   }
 
   const tomorrow = addDays(new Date(), 1);
   if (isSameDay(date, tomorrow)) {
-    return 'Tomorrow';
+    return "Tomorrow";
   }
 
-  return format(date, 'EEEE');
+  return format(date, "EEEE");
 };
 
 /**
@@ -153,7 +164,7 @@ export const daysUntil = (date: Date): number => {
   const today = startOfDay(new Date());
   const target = startOfDay(date);
   return Math.floor(
-    (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
   );
 };
 
@@ -181,7 +192,7 @@ export const isAfterCutoff = (
   date: Date,
   currentTime: Date,
   cutoffHour: number,
-  cutoffMinute: number = 0
+  cutoffMinute: number = 0,
 ): boolean => {
   const cutoff = new Date(date);
   cutoff.setHours(cutoffHour, cutoffMinute, 0, 0);
@@ -192,13 +203,17 @@ export const isAfterCutoff = (
  * Format time for API (HH:mm format)
  */
 export const formatTimeForApi = (date: Date): string => {
-  return format(date, 'HH:mm');
+  return format(date, "HH:mm");
 };
 
 /**
  * Create time from hour and minute
  */
-export const createTime = (hour: number, minute: number, date: Date = new Date()): Date => {
+export const createTime = (
+  hour: number,
+  minute: number,
+  date: Date = new Date(),
+): Date => {
   const result = new Date(date);
   result.setHours(hour, minute, 0, 0);
   return result;
@@ -221,10 +236,17 @@ export const getEndOfDay = (date: Date): Date => {
 /**
  * Check if date is within range
  */
-export const isDateInRange = (date: Date, startDate: Date, endDate: Date): boolean => {
+export const isDateInRange = (
+  date: Date,
+  startDate: Date,
+  endDate: Date,
+): boolean => {
   const normalizedDate = startOfDay(date);
   const normalizedStart = startOfDay(startDate);
   const normalizedEnd = endOfDay(endDate);
 
-  return !isBefore(normalizedDate, normalizedStart) && !isAfter(normalizedDate, normalizedEnd);
+  return (
+    !isBefore(normalizedDate, normalizedStart) &&
+    !isAfter(normalizedDate, normalizedEnd)
+  );
 };

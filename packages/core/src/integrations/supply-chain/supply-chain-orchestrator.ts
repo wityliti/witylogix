@@ -4,15 +4,21 @@
  * @packageDocumentation
  */
 
-import { EventEmitter } from 'events';
-import type { SupplyChainConfig, InventoryItem, OutboundOrder, FulfillmentRequest, WaveDefinition } from './types';
-import { SupplyChainAdapter } from './supply-chain-adapter';
-import { ManhattanClient } from './manhattan-client';
-import { BlueYonderClient } from './blue-yonder-client';
-import { KorberClient } from './korber-client';
-import { DeposcoClient } from './deposco-client';
-import { ExtensivClient } from './extensiv-client';
-import { FishbowlClient } from './fishbowl-client';
+import { EventEmitter } from "events";
+import type {
+  SupplyChainConfig,
+  InventoryItem,
+  OutboundOrder,
+  FulfillmentRequest,
+  WaveDefinition,
+} from "./types";
+import { SupplyChainAdapter } from "./supply-chain-adapter";
+import { ManhattanClient } from "./manhattan-client";
+import { BlueYonderClient } from "./blue-yonder-client";
+import { KorberClient } from "./korber-client";
+import { DeposcoClient } from "./deposco-client";
+import { ExtensivClient } from "./extensiv-client";
+import { FishbowlClient } from "./fishbowl-client";
 
 /**
  * Inventory snapshot with warehouse details
@@ -39,7 +45,7 @@ interface ReplenishmentTrigger {
   sourceWarehouse: string;
   destinationWarehouse: string;
   quantity: number;
-  priority: 'standard' | 'expedited';
+  priority: "standard" | "expedited";
   reason: string;
 }
 
@@ -66,7 +72,11 @@ export class SupplyChainOrchestrator extends EventEmitter {
    * @throws Error if no providers successfully initialize
    */
   public async initialize(): Promise<void> {
-    const results: Array<{ provider: string; success: boolean; error?: Error }> = [];
+    const results: Array<{
+      provider: string;
+      success: boolean;
+      error?: Error;
+    }> = [];
 
     for (const config of this.configs) {
       try {
@@ -74,14 +84,14 @@ export class SupplyChainOrchestrator extends EventEmitter {
         await adapter.initialize();
         this.providers.set(config.provider, adapter);
         results.push({ provider: config.provider, success: true });
-        this.emit('provider-initialized', { provider: config.provider });
+        this.emit("provider-initialized", { provider: config.provider });
       } catch (error) {
         results.push({
           provider: config.provider,
           success: false,
           error: error as Error,
         });
-        this.emit('provider-initialization-failed', {
+        this.emit("provider-initialization-failed", {
           provider: config.provider,
           error: (error as Error).message,
         });
@@ -89,7 +99,7 @@ export class SupplyChainOrchestrator extends EventEmitter {
     }
 
     if (results.filter((r) => r.success).length === 0) {
-      throw new Error('No supply chain providers successfully initialized');
+      throw new Error("No supply chain providers successfully initialized");
     }
   }
 
@@ -107,14 +117,17 @@ export class SupplyChainOrchestrator extends EventEmitter {
       return cached;
     }
 
-    const locations: UnifiedInventoryView['locations'] = [];
+    const locations: UnifiedInventoryView["locations"] = [];
     let totalQuantity = 0;
     let totalAllocated = 0;
     let totalAvailable = 0;
 
     for (const [, adapter] of this.providers) {
       try {
-        const config = adapter instanceof SupplyChainAdapter ? (adapter as any).config : null;
+        const config =
+          adapter instanceof SupplyChainAdapter
+            ? (adapter as any).config
+            : null;
         if (!config?.warehouseId) continue;
 
         const inventory = await adapter.getInventory(config.warehouseId, sku);
@@ -129,7 +142,7 @@ export class SupplyChainOrchestrator extends EventEmitter {
           available: inventory.quantityAvailable,
         });
       } catch (error) {
-        this.emit('inventory-fetch-error', {
+        this.emit("inventory-fetch-error", {
           sku,
           error: (error as Error).message,
         });
@@ -179,7 +192,9 @@ export class SupplyChainOrchestrator extends EventEmitter {
             canFulfill = false;
             break;
           }
-          const locInv = invView.locations.find((l) => l.warehouseId === loc.warehouseId);
+          const locInv = invView.locations.find(
+            (l) => l.warehouseId === loc.warehouseId,
+          );
           if (!locInv || locInv.available < item.quantity) {
             canFulfill = false;
             break;
@@ -201,10 +216,12 @@ export class SupplyChainOrchestrator extends EventEmitter {
     }
 
     if (!bestWarehouse) {
-      throw new Error(`Unable to route order ${order.orderNumber}: insufficient inventory`);
+      throw new Error(
+        `Unable to route order ${order.orderNumber}: insufficient inventory`,
+      );
     }
 
-    this.emit('order-routed', {
+    this.emit("order-routed", {
       orderId: order.id,
       orderNumber: order.orderNumber,
       warehouseId: bestWarehouse,
@@ -230,7 +247,9 @@ export class SupplyChainOrchestrator extends EventEmitter {
       if (!inventory) continue;
 
       // Find over-stocked and under-stocked locations
-      const sorted = inventory.locations.sort((a, b) => b.available - a.available);
+      const sorted = inventory.locations.sort(
+        (a, b) => b.available - a.available,
+      );
 
       if (sorted.length >= 2) {
         const overstocked = sorted[0];
@@ -243,8 +262,8 @@ export class SupplyChainOrchestrator extends EventEmitter {
             sourceWarehouse: overstocked.warehouseId,
             destinationWarehouse: understocked.warehouseId,
             quantity: transferQty,
-            priority: 'standard',
-            reason: 'Inventory rebalancing',
+            priority: "standard",
+            reason: "Inventory rebalancing",
           });
         }
       }
@@ -266,11 +285,11 @@ export class SupplyChainOrchestrator extends EventEmitter {
         health.set(provider, isHealthy);
 
         if (!isHealthy) {
-          this.emit('provider-unhealthy', { provider });
+          this.emit("provider-unhealthy", { provider });
         }
       } catch (error) {
         health.set(provider, false);
-        this.emit('provider-health-check-failed', {
+        this.emit("provider-health-check-failed", {
           provider,
           error: (error as Error).message,
         });
@@ -296,7 +315,7 @@ export class SupplyChainOrchestrator extends EventEmitter {
       }
     }
 
-    throw new Error('No healthy supply chain providers available');
+    throw new Error("No healthy supply chain providers available");
   }
 
   /**
@@ -324,7 +343,9 @@ export class SupplyChainOrchestrator extends EventEmitter {
               lastUpdated: new Date(),
             };
 
-            const locIndex = cached.locations.findIndex((l) => l.warehouseId === config.warehouseId);
+            const locIndex = cached.locations.findIndex(
+              (l) => l.warehouseId === config.warehouseId,
+            );
             if (locIndex >= 0) {
               cached.locations[locIndex].quantity = item.quantityOnHand;
               cached.locations[locIndex].allocated = item.quantityAllocated;
@@ -343,7 +364,7 @@ export class SupplyChainOrchestrator extends EventEmitter {
           }
         }
       } catch (error) {
-        this.emit('inventory-sync-error', {
+        this.emit("inventory-sync-error", {
           error: (error as Error).message,
         });
       }
@@ -360,17 +381,17 @@ export class SupplyChainOrchestrator extends EventEmitter {
    */
   private createAdapter(config: SupplyChainConfig): SupplyChainAdapter {
     switch (config.provider) {
-      case 'manhattan':
+      case "manhattan":
         return new ManhattanClient(config);
-      case 'blue-yonder':
+      case "blue-yonder":
         return new BlueYonderClient(config);
-      case 'korber':
+      case "korber":
         return new KorberClient(config);
-      case 'deposco':
+      case "deposco":
         return new DeposcoClient(config);
-      case 'extensiv':
+      case "extensiv":
         return new ExtensivClient(config);
-      case 'fishbowl':
+      case "fishbowl":
         return new FishbowlClient(config);
       default:
         throw new Error(`Unknown supply chain provider: ${config.provider}`);

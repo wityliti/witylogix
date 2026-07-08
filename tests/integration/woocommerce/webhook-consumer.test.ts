@@ -5,7 +5,10 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createHmac } from "node:crypto";
-import { WebhookConsumer, createWebhookConsumer } from "../../../packages/core/src/integrations/woocommerce/webhook-consumer.js";
+import {
+  WebhookConsumer,
+  createWebhookConsumer,
+} from "../../../packages/core/src/integrations/woocommerce/webhook-consumer.js";
 import type { WCWebhookPayload } from "../../../packages/core/src/integrations/woocommerce/types.js";
 
 describe("WebhookConsumer", () => {
@@ -152,8 +155,9 @@ describe("WebhookConsumer", () => {
     });
 
     it("should handle many delivery IDs", () => {
-      const deliveryIds = Array.from({ length: 1000 }, (_, i) =>
-        `delivery_${i}`
+      const deliveryIds = Array.from(
+        { length: 1000 },
+        (_, i) => `delivery_${i}`,
       );
 
       for (const id of deliveryIds) {
@@ -166,8 +170,7 @@ describe("WebhookConsumer", () => {
     });
 
     it("should handle UUID-style delivery IDs", () => {
-      const deliveryId =
-        "550e8400-e29b-41d4-a716-446655440000";
+      const deliveryId = "550e8400-e29b-41d4-a716-446655440000";
 
       consumer.markDeliveryProcessed(deliveryId);
 
@@ -374,7 +377,7 @@ describe("WebhookConsumer", () => {
     it("should build webhook creation payload", () => {
       const payload = WebhookConsumer.buildWebhookPayload(
         "order.created",
-        "https://example.com/webhooks"
+        "https://example.com/webhooks",
       );
 
       expect(payload.topic).toBe("order.created");
@@ -387,7 +390,7 @@ describe("WebhookConsumer", () => {
     it("should build payload for product webhook", () => {
       const payload = WebhookConsumer.buildWebhookPayload(
         "product.updated",
-        "https://example.com/webhooks/products"
+        "https://example.com/webhooks/products",
       );
 
       expect(payload.topic).toBe("product.updated");
@@ -398,7 +401,7 @@ describe("WebhookConsumer", () => {
     it("should build payload for customer webhook", () => {
       const payload = WebhookConsumer.buildWebhookPayload(
         "customer.deleted",
-        "https://example.com/webhooks/customers"
+        "https://example.com/webhooks/customers",
       );
 
       expect(payload.topic).toBe("customer.deleted");
@@ -409,7 +412,7 @@ describe("WebhookConsumer", () => {
     it("should handle topics without dots", () => {
       const payload = WebhookConsumer.buildWebhookPayload(
         "invalid_topic",
-        "https://example.com/webhooks"
+        "https://example.com/webhooks",
       );
 
       expect(payload.resource).toBe("invalid_topic");
@@ -518,7 +521,9 @@ describe("WebhookConsumer", () => {
     });
 
     it("should report handler failures without rethrowing", async () => {
-      const handler = vi.fn().mockRejectedValue(new Error("Connection timeout"));
+      const handler = vi
+        .fn()
+        .mockRejectedValue(new Error("Connection timeout"));
       consumer.registerHandler("product.updated", handler);
 
       const payload: WCWebhookPayload = {
@@ -541,14 +546,18 @@ describe("WebhookConsumer", () => {
       const handler = vi.fn().mockResolvedValue(undefined);
       consumer.registerHandler("order.created", handler);
 
-      const payloads: WCWebhookPayload[] = Array.from({ length: 5 }, (_, i) => ({
-        id: i,
-        resource: "order",
-        event: "created",
-      } as WCWebhookPayload));
+      const payloads: WCWebhookPayload[] = Array.from(
+        { length: 5 },
+        (_, i) =>
+          ({
+            id: i,
+            resource: "order",
+            event: "created",
+          }) as WCWebhookPayload,
+      );
 
       const results = await Promise.all(
-        payloads.map((p) => consumer.processWebhook(p, "order.created"))
+        payloads.map((p) => consumer.processWebhook(p, "order.created")),
       );
 
       expect(results).toHaveLength(5);
@@ -566,7 +575,10 @@ describe("WebhookConsumer", () => {
         body: "x".repeat(1000000), // 1MB of data
       } as WCWebhookPayload;
 
-      const result = await consumer.processWebhook(largePayload, "order.created");
+      const result = await consumer.processWebhook(
+        largePayload,
+        "order.created",
+      );
 
       expect(result.success).toBe(true);
     });

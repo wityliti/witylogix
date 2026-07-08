@@ -52,11 +52,7 @@ export class TruckstopV2SDKClient extends EventEmitter {
   /**
    * Initialize Truckstop v2 SDK client
    */
-  constructor(config: {
-    apiKey: string;
-    baseUrl?: string;
-    debug?: boolean;
-  }) {
+  constructor(config: { apiKey: string; baseUrl?: string; debug?: boolean }) {
     super();
     this.auth = { apiKey: config.apiKey };
     this.baseUrl = config.baseUrl || "https://api.truckstop.com/v2";
@@ -75,7 +71,7 @@ export class TruckstopV2SDKClient extends EventEmitter {
       query?: Record<string, string | number>;
       timeout?: number;
       cache?: boolean;
-    } = {}
+    } = {},
   ): Promise<T> {
     const url = new URL(`${this.baseUrl}${endpoint}`);
 
@@ -138,7 +134,7 @@ export class TruckstopV2SDKClient extends EventEmitter {
           if (retries < maxRetries - 1) {
             if (this.debug) {
               console.log(
-                `[Truckstop v2] Rate limited, backing off for ${waitTime}ms (retry ${retries + 1}/${maxRetries})`
+                `[Truckstop v2] Rate limited, backing off for ${waitTime}ms (retry ${retries + 1}/${maxRetries})`,
               );
             }
             await this.delay(waitTime);
@@ -162,7 +158,10 @@ export class TruckstopV2SDKClient extends EventEmitter {
           };
 
           try {
-            const errorData = (await response.json()) as Record<string, unknown>;
+            const errorData = (await response.json()) as Record<
+              string,
+              unknown
+            >;
             error.details = errorData;
           } catch {
             // Ignore JSON parse errors
@@ -193,7 +192,10 @@ export class TruckstopV2SDKClient extends EventEmitter {
         return data;
       } catch (error) {
         if (this.debug) {
-          console.error(`[Truckstop v2] Request error (attempt ${retries + 1}):`, error);
+          console.error(
+            `[Truckstop v2] Request error (attempt ${retries + 1}):`,
+            error,
+          );
         }
 
         if (retries < maxRetries - 1) {
@@ -219,7 +221,9 @@ export class TruckstopV2SDKClient extends EventEmitter {
   /**
    * Post a load to the Truckstop network
    */
-  async postLoad(load: Omit<LoadPosting, "loadId" | "status" | "postedAt" | "updatedAt">): Promise<LoadPosting> {
+  async postLoad(
+    load: Omit<LoadPosting, "loadId" | "status" | "postedAt" | "updatedAt">,
+  ): Promise<LoadPosting> {
     const body = {
       origin: load.origin,
       destination: load.destination,
@@ -249,13 +253,17 @@ export class TruckstopV2SDKClient extends EventEmitter {
    */
   async updateLoad(
     loadId: string,
-    updates: Partial<LoadPosting>
+    updates: Partial<LoadPosting>,
   ): Promise<LoadPosting> {
     const body = {
       ...(updates.rate && { rate: updates.rate }),
       ...(updates.status && { status: updates.status }),
-      ...(updates.pickupDate && { pickup_date: updates.pickupDate.toISOString() }),
-      ...(updates.deliveryDate && { delivery_date: updates.deliveryDate.toISOString() }),
+      ...(updates.pickupDate && {
+        pickup_date: updates.pickupDate.toISOString(),
+      }),
+      ...(updates.deliveryDate && {
+        delivery_date: updates.deliveryDate.toISOString(),
+      }),
     };
 
     return this.request<LoadPosting>(`/loads/${loadId}`, {
@@ -610,22 +618,28 @@ export class TruckstopV2SDKClient extends EventEmitter {
     fileName: string;
     mimeType: string;
   }> {
-    const response = await fetch(`${this.baseUrl}/documents/${documentId}/download`, {
-      headers: {
-        "X-API-Key": this.auth.apiKey,
-        ...(this.auth.oauthToken && {
-          Authorization: `Bearer ${this.auth.oauthToken}`,
-        }),
+    const response = await fetch(
+      `${this.baseUrl}/documents/${documentId}/download`,
+      {
+        headers: {
+          "X-API-Key": this.auth.apiKey,
+          ...(this.auth.oauthToken && {
+            Authorization: `Bearer ${this.auth.oauthToken}`,
+          }),
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`Document download failed: ${response.statusText}`);
     }
 
     const buffer = await response.arrayBuffer();
-    const fileName = response.headers.get("content-disposition")?.split("filename=")[1] || "document";
-    const mimeType = response.headers.get("content-type") || "application/octet-stream";
+    const fileName =
+      response.headers.get("content-disposition")?.split("filename=")[1] ||
+      "document";
+    const mimeType =
+      response.headers.get("content-type") || "application/octet-stream";
 
     return {
       document: Buffer.from(buffer),

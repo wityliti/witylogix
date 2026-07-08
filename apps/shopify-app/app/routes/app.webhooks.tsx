@@ -81,16 +81,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const [endpointsRes, triggersRes, deliveriesRes] = await Promise.allSettled(
       [
         api.get<{ data: WebhookEndpoint[] }>(
-          "/api/v4/shops/me/webhooks/endpoints"
+          "/api/v4/shops/me/webhooks/endpoints",
         ),
         api.get<{ data: WebhookTrigger[] }>(
-          "/api/v4/shops/me/webhooks/triggers"
+          "/api/v4/shops/me/webhooks/triggers",
         ),
         api.get<{ data: WebhookDelivery[] }>(
           "/api/v4/shops/me/webhooks/deliveries",
-          { limit: 50 }
+          { limit: 50 },
         ),
-      ]
+      ],
     );
 
     const endpoints: WebhookEndpoint[] =
@@ -109,7 +109,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         triggers: [],
         deliveries: [],
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -156,7 +156,7 @@ export async function action({ request }: ActionFunctionArgs) {
         {
           error: error instanceof Error ? error.message : "Unknown error",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
   }
@@ -167,8 +167,7 @@ export async function action({ request }: ActionFunctionArgs) {
 // ─── Component ─────────────────────────────────────────────
 
 export default function WebhooksPage() {
-  const { endpoints, triggers, deliveries } =
-    useLoaderData<WebhookPageData>();
+  const { endpoints, triggers, deliveries } = useLoaderData<WebhookPageData>();
   const actionData = useActionData<{
     success?: boolean;
     error?: string;
@@ -178,9 +177,7 @@ export default function WebhooksPage() {
   const [addModalActive, setAddModalActive] = useState(false);
   const [newUrl, setNewUrl] = useState("");
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
-  const [expandedDelivery, setExpandedDelivery] = useState<string | null>(
-    null
-  );
+  const [expandedDelivery, setExpandedDelivery] = useState<string | null>(null);
 
   const handleAddWebhook = useCallback(async () => {
     const formData = new FormData();
@@ -232,11 +229,14 @@ export default function WebhooksPage() {
 
       window.location.reload();
     },
-    []
+    [],
   );
 
   return (
-    <Page title="Webhooks" subtitle="Manage webhook endpoints and workflow triggers">
+    <Page
+      title="Webhooks"
+      subtitle="Manage webhook endpoints and workflow triggers"
+    >
       <Layout>
         {/* Info Banner */}
         <Layout.Section>
@@ -251,7 +251,14 @@ export default function WebhooksPage() {
         {/* Outbound Webhooks Section */}
         <Layout.Section>
           <Card>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 16,
+              }}
+            >
               <div>
                 <Text as="h2" variant="headingLg">
                   Outbound Webhooks
@@ -295,7 +302,9 @@ export default function WebhooksPage() {
                       </Text>
                     </IndexTable.Cell>
                     <IndexTable.Cell>
-                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      <div
+                        style={{ display: "flex", gap: 6, flexWrap: "wrap" }}
+                      >
                         {endpoint.events.map((event) => (
                           <Badge key={event} tone="info">
                             {event}
@@ -319,7 +328,9 @@ export default function WebhooksPage() {
                     <IndexTable.Cell>
                       <Text as="span" variant="bodySm" tone="subdued">
                         {endpoint.lastDeliveryAt
-                          ? new Date(endpoint.lastDeliveryAt).toLocaleDateString()
+                          ? new Date(
+                              endpoint.lastDeliveryAt,
+                            ).toLocaleDateString()
                           : "Never"}
                       </Text>
                     </IndexTable.Cell>
@@ -355,7 +366,8 @@ export default function WebhooksPage() {
                 Shopify Workflow Triggers
               </Text>
               <Text as="p" variant="bodyMd" tone="subdued">
-                Choose which Shopify events automatically trigger Witylogix workflows
+                Choose which Shopify events automatically trigger Witylogix
+                workflows
               </Text>
             </div>
 
@@ -366,7 +378,9 @@ export default function WebhooksPage() {
                 </Text>
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
+              >
                 {triggers.map((trigger) => (
                   <div
                     key={trigger.shopifyEvent}
@@ -393,7 +407,7 @@ export default function WebhooksPage() {
                       onChange={() =>
                         handleToggleTrigger(
                           trigger.shopifyEvent,
-                          trigger.enabled
+                          trigger.enabled,
                         )
                       }
                     />

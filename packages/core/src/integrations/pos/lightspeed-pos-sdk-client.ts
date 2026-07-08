@@ -4,9 +4,20 @@
  * Implements OAuth2, bucket-based rate limiting, and comprehensive retail operations
  */
 
-import type { POSLocation, POSMenuItem, POSOrder, POSPayment, POSWebhookEvent, POSEmployee, POSShift, POSRevenueCenter, MenuSyncOptions, OrderFilters } from './types';
-import { POSAdapter } from './pos-adapter';
-import type { Lightspeed, RateLimitInfo, POSSDKError } from './pos-sdk-types';
+import type {
+  POSLocation,
+  POSMenuItem,
+  POSOrder,
+  POSPayment,
+  POSWebhookEvent,
+  POSEmployee,
+  POSShift,
+  POSRevenueCenter,
+  MenuSyncOptions,
+  OrderFilters,
+} from "./types";
+import { POSAdapter } from "./pos-adapter";
+import type { Lightspeed, RateLimitInfo, POSSDKError } from "./pos-sdk-types";
 
 /**
  * Lightspeed POS SDK Client
@@ -16,16 +27,25 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   private baseUrl: string;
   private bucketTokens: number = 60; // Bucket leak rate: 60 req/min
   private lastRefill: number = Date.now();
-  private rateLimitInfo: RateLimitInfo = { remaining: 60, reset: Date.now(), limit: 60 };
-  private requestQueue: Array<{ execute: () => Promise<any>; resolve: (v: any) => void; reject: (e: any) => void }> = [];
+  private rateLimitInfo: RateLimitInfo = {
+    remaining: 60,
+    reset: Date.now(),
+    limit: 60,
+  };
+  private requestQueue: Array<{
+    execute: () => Promise<any>;
+    resolve: (v: any) => void;
+    reject: (e: any) => void;
+  }> = [];
   private isProcessingQueue = false;
 
   constructor(config: Lightspeed.Config) {
-    super('lightspeed');
+    super("lightspeed");
     this.config = config;
-    this.baseUrl = config.environment === 'production'
-      ? 'https://api.lightspeedapp.com'
-      : 'https://sandbox.dev.lightspeedapp.com';
+    this.baseUrl =
+      config.environment === "production"
+        ? "https://api.lightspeedapp.com"
+        : "https://sandbox.dev.lightspeedapp.com";
     this.initializeRateLimiter();
   }
 
@@ -66,7 +86,7 @@ export class LightspeedPOSSDKClient extends POSAdapter {
       // Check if we have tokens
       if (this.bucketTokens < 1) {
         // Wait for token to be available
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise((r) => setTimeout(r, 1000));
         this.bucketTokens = 1;
       }
 
@@ -90,25 +110,28 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   async getLocation(locationId: string): Promise<POSLocation> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
-        const response = await this.makeRequest(`/accounts/${this.config.accountId}`, 'GET');
+        const response = await this.makeRequest(
+          `/accounts/${this.config.accountId}`,
+          "GET",
+        );
         const account = response.Account;
 
         return {
           id: account.id,
           externalId: account.id,
-          providerId: 'lightspeed',
+          providerId: "lightspeed",
           name: account.name,
           address: {
-            street1: account.addressLine1 || '',
+            street1: account.addressLine1 || "",
             street2: account.addressLine2,
-            city: account.city || '',
-            state: account.state || '',
-            postalCode: account.zip || '',
-            country: account.country || 'US',
+            city: account.city || "",
+            state: account.state || "",
+            postalCode: account.zip || "",
+            country: account.country || "US",
           },
           phone: account.phone,
           email: account.email,
-          timezone: account.timeZone || 'UTC',
+          timezone: account.timeZone || "UTC",
           isActive: account.archived === 0,
           createdAt: new Date(account.createdDate || Date.now()),
           updatedAt: new Date(account.updatedDate || Date.now()),
@@ -132,10 +155,13 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Get menu items (products)
    */
-  async getMenuItems(locationId?: string, categoryId?: string): Promise<POSMenuItem[]> {
+  async getMenuItems(
+    locationId?: string,
+    categoryId?: string,
+  ): Promise<POSMenuItem[]> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
-        const cached = this.getMenuFromCache(locationId || 'default');
+        const cached = this.getMenuFromCache(locationId || "default");
         if (cached && !categoryId) {
           return cached;
         }
@@ -144,11 +170,13 @@ export class LightspeedPOSSDKClient extends POSAdapter {
           ? `/accounts/${this.config.accountId}/categories/${categoryId}/items`
           : `/accounts/${this.config.accountId}/items`;
 
-        const response = await this.makeRequest(path, 'GET');
-        const items = (response.Item || []).map((item: any) => this.mapLightspeedItemToPOS(item, locationId || 'default'));
+        const response = await this.makeRequest(path, "GET");
+        const items = (response.Item || []).map((item: any) =>
+          this.mapLightspeedItemToPOS(item, locationId || "default"),
+        );
 
         if (!categoryId) {
-          this.cacheMenu(locationId || 'default', items);
+          this.cacheMenu(locationId || "default", items);
         }
 
         return items;
@@ -159,29 +187,40 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Create sale (order)
    */
-  async createOrder(locationId: string, order: Partial<POSOrder>): Promise<POSOrder> {
+  async createOrder(
+    locationId: string,
+    order: Partial<POSOrder>,
+  ): Promise<POSOrder> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const validation = this.validateOrder(order);
         if (!validation.valid) {
-          throw this.createError('INVALID_ORDER', validation.errors.join(', '));
+          throw this.createError("INVALID_ORDER", validation.errors.join(", "));
         }
 
         const payload = {
           Sale: {
-            saleStatus: 'CURRENT',
+            saleStatus: "CURRENT",
             note: order.notes,
             lineItems: order.lineItems?.map((li: any) => ({
               Item: { id: li.menuItemId },
               quantity: li.quantity,
               unitPrice: this.formatAmount(li.price),
             })),
-            discountAmount: order.discounts?.reduce((sum, d) => sum + (d.type === 'fixed' ? d.amount : 0), 0) || 0,
+            discountAmount:
+              order.discounts?.reduce(
+                (sum, d) => sum + (d.type === "fixed" ? d.amount : 0),
+                0,
+              ) || 0,
             tax: this.formatAmount(order.metadata?.tax || 0),
           },
         };
 
-        const response = await this.makeRequest(`/accounts/${this.config.accountId}/sales`, 'POST', payload);
+        const response = await this.makeRequest(
+          `/accounts/${this.config.accountId}/sales`,
+          "POST",
+          payload,
+        );
         return this.mapLightspeedSaleToPOS(response.Sale, locationId);
       });
     });
@@ -193,7 +232,10 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   async getOrder(locationId: string, orderId: string): Promise<POSOrder> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
-        const response = await this.makeRequest(`/accounts/${this.config.accountId}/sales/${orderId}`, 'GET');
+        const response = await this.makeRequest(
+          `/accounts/${this.config.accountId}/sales/${orderId}`,
+          "GET",
+        );
         return this.mapLightspeedSaleToPOS(response.Sale, locationId);
       });
     });
@@ -202,23 +244,36 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * List orders with optional filters
    */
-  async listOrders(locationId: string, filters?: OrderFilters): Promise<POSOrder[]> {
+  async listOrders(
+    locationId: string,
+    filters?: OrderFilters,
+  ): Promise<POSOrder[]> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const params = new URLSearchParams();
 
         if (filters?.startDate) {
-          params.append('filter', `createDate>=${filters.startDate.toISOString()}`);
+          params.append(
+            "filter",
+            `createDate>=${filters.startDate.toISOString()}`,
+          );
         }
         if (filters?.endDate) {
-          params.append('filter', `createDate<=${filters.endDate.toISOString()}`);
+          params.append(
+            "filter",
+            `createDate<=${filters.endDate.toISOString()}`,
+          );
         }
 
         const path = `/accounts/${this.config.accountId}/sales?${params}`;
-        const response = await this.makeRequest(path, 'GET');
-        const sales = Array.isArray(response.Sale) ? response.Sale : [response.Sale];
+        const response = await this.makeRequest(path, "GET");
+        const sales = Array.isArray(response.Sale)
+          ? response.Sale
+          : [response.Sale];
 
-        return sales.map((s: any) => this.mapLightspeedSaleToPOS(s, locationId));
+        return sales.map((s: any) =>
+          this.mapLightspeedSaleToPOS(s, locationId),
+        );
       });
     });
   }
@@ -226,7 +281,11 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Update order
    */
-  async updateOrder(locationId: string, orderId: string, updates: Partial<POSOrder>): Promise<POSOrder> {
+  async updateOrder(
+    locationId: string,
+    orderId: string,
+    updates: Partial<POSOrder>,
+  ): Promise<POSOrder> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload: Record<string, any> = {
@@ -235,7 +294,11 @@ export class LightspeedPOSSDKClient extends POSAdapter {
           },
         };
 
-        await this.makeRequest(`/accounts/${this.config.accountId}/sales/${orderId}`, 'PUT', payload);
+        await this.makeRequest(
+          `/accounts/${this.config.accountId}/sales/${orderId}`,
+          "PUT",
+          payload,
+        );
         return this.getOrder(locationId, orderId);
       });
     });
@@ -244,28 +307,32 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Add payment to order
    */
-  async addPayment(locationId: string, orderId: string, payment: Partial<POSPayment>): Promise<POSPayment> {
+  async addPayment(
+    locationId: string,
+    orderId: string,
+    payment: Partial<POSPayment>,
+  ): Promise<POSPayment> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload = {
           SalePayment: {
             Sale: { id: orderId },
-            PaymentType: { id: '1' }, // Default payment type
+            PaymentType: { id: "1" }, // Default payment type
             amount: this.formatAmount(payment.amount || 0),
           },
         };
 
         const response = await this.makeRequest(
           `/accounts/${this.config.accountId}/salePayments`,
-          'POST',
-          payload
+          "POST",
+          payload,
         );
 
         return {
           id: response.SalePayment.id,
-          method: payment.method || 'cash',
+          method: payment.method || "cash",
           amount: payment.amount || 0,
-          currency: 'USD',
+          currency: "USD",
           tip: payment.tip || 0,
           createdAt: new Date(response.SalePayment.createdDate),
         };
@@ -276,17 +343,25 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Void sale
    */
-  async voidOrder(locationId: string, orderId: string, reason?: string): Promise<POSOrder> {
+  async voidOrder(
+    locationId: string,
+    orderId: string,
+    reason?: string,
+  ): Promise<POSOrder> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload = {
           Sale: {
-            saleStatus: 'DELETED',
+            saleStatus: "DELETED",
             note: reason,
           },
         };
 
-        await this.makeRequest(`/accounts/${this.config.accountId}/sales/${orderId}`, 'PUT', payload);
+        await this.makeRequest(
+          `/accounts/${this.config.accountId}/sales/${orderId}`,
+          "PUT",
+          payload,
+        );
         return this.getOrder(locationId, orderId);
       });
     });
@@ -295,7 +370,10 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Refund sale
    */
-  async refundPayment(salePaymentId: string, amount?: number): Promise<POSPayment> {
+  async refundPayment(
+    salePaymentId: string,
+    amount?: number,
+  ): Promise<POSPayment> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload: Record<string, any> = {
@@ -308,15 +386,15 @@ export class LightspeedPOSSDKClient extends POSAdapter {
 
         const response = await this.makeRequest(
           `/accounts/${this.config.accountId}/salePayments/${salePaymentId}`,
-          'PUT',
-          payload
+          "PUT",
+          payload,
         );
 
         return {
           id: response.SalePayment.id,
-          method: 'card',
+          method: "card",
           amount: response.SalePayment.amount || 0,
-          currency: 'USD',
+          currency: "USD",
           createdAt: new Date(response.SalePayment.createdDate),
         };
       });
@@ -326,18 +404,26 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Apply discount to sale
    */
-  async applyDiscount(locationId: string, orderId: string, discount: { type: 'fixed' | 'percentage'; amount: number }): Promise<POSOrder> {
+  async applyDiscount(
+    locationId: string,
+    orderId: string,
+    discount: { type: "fixed" | "percentage"; amount: number },
+  ): Promise<POSOrder> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload: Record<string, any> = { Sale: {} };
 
-        if (discount.type === 'fixed') {
+        if (discount.type === "fixed") {
           payload.Sale.discountAmount = this.formatAmount(discount.amount);
         } else {
           payload.Sale.discountPercent = discount.amount;
         }
 
-        await this.makeRequest(`/accounts/${this.config.accountId}/sales/${orderId}`, 'PUT', payload);
+        await this.makeRequest(
+          `/accounts/${this.config.accountId}/sales/${orderId}`,
+          "PUT",
+          payload,
+        );
         return this.getOrder(locationId, orderId);
       });
     });
@@ -346,7 +432,12 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Create product
    */
-  async createProduct(data: { title: string; sku?: string; basePrice: number; cost?: number }): Promise<{ id: number; name: string }> {
+  async createProduct(data: {
+    title: string;
+    sku?: string;
+    basePrice: number;
+    cost?: number;
+  }): Promise<{ id: number; name: string }> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload = {
@@ -355,13 +446,17 @@ export class LightspeedPOSSDKClient extends POSAdapter {
             sku: data.sku,
             basePrice: this.formatAmount(data.basePrice),
             cost: data.cost ? this.formatAmount(data.cost) : undefined,
-            itemType: 'item',
+            itemType: "item",
             active: 1,
           },
         };
 
-        const response = await this.makeRequest(`/accounts/${this.config.accountId}/items`, 'POST', payload);
-        this.invalidateMenuCache('default');
+        const response = await this.makeRequest(
+          `/accounts/${this.config.accountId}/items`,
+          "POST",
+          payload,
+        );
+        this.invalidateMenuCache("default");
 
         return {
           id: response.Item.itemID,
@@ -374,7 +469,11 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Create product variant
    */
-  async createProductVariant(itemId: number, variantName: string, price: number): Promise<{ id: number; name: string }> {
+  async createProductVariant(
+    itemId: number,
+    variantName: string,
+    price: number,
+  ): Promise<{ id: number; name: string }> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload = {
@@ -386,11 +485,11 @@ export class LightspeedPOSSDKClient extends POSAdapter {
 
         const response = await this.makeRequest(
           `/accounts/${this.config.accountId}/items/${itemId}/variants`,
-          'POST',
-          payload
+          "POST",
+          payload,
         );
 
-        this.invalidateMenuCache('default');
+        this.invalidateMenuCache("default");
 
         return {
           id: response.Variant.variantID,
@@ -408,13 +507,17 @@ export class LightspeedPOSSDKClient extends POSAdapter {
       return this.executeWithRetries(async () => {
         const payload = {
           Image: {
-            filename: imageUrl.split('/').pop() || 'image.jpg',
+            filename: imageUrl.split("/").pop() || "image.jpg",
             imageUrl,
           },
         };
 
-        await this.makeRequest(`/accounts/${this.config.accountId}/items/${itemId}/images`, 'POST', payload);
-        this.invalidateMenuCache('default');
+        await this.makeRequest(
+          `/accounts/${this.config.accountId}/items/${itemId}/images`,
+          "POST",
+          payload,
+        );
+        this.invalidateMenuCache("default");
       });
     });
   }
@@ -432,7 +535,11 @@ export class LightspeedPOSSDKClient extends POSAdapter {
           },
         };
 
-        await this.makeRequest(`/accounts/${this.config.accountId}/inventoryCounts`, 'POST', payload);
+        await this.makeRequest(
+          `/accounts/${this.config.accountId}/inventoryCounts`,
+          "POST",
+          payload,
+        );
       });
     });
   }
@@ -440,7 +547,12 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Transfer inventory between locations
    */
-  async transferInventory(fromLocationId: number, toLocationId: number, itemId: number, quantity: number): Promise<void> {
+  async transferInventory(
+    fromLocationId: number,
+    toLocationId: number,
+    itemId: number,
+    quantity: number,
+  ): Promise<void> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload = {
@@ -449,11 +561,15 @@ export class LightspeedPOSSDKClient extends POSAdapter {
             toLocationID: toLocationId,
             Item: { id: itemId },
             quantity,
-            status: 'pending',
+            status: "pending",
           },
         };
 
-        await this.makeRequest(`/accounts/${this.config.accountId}/inventoryTransfers`, 'POST', payload);
+        await this.makeRequest(
+          `/accounts/${this.config.accountId}/inventoryTransfers`,
+          "POST",
+          payload,
+        );
       });
     });
   }
@@ -461,7 +577,10 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Perform physical inventory count
    */
-  async recordPhysicalCount(itemId: number, countedQuantity: number): Promise<void> {
+  async recordPhysicalCount(
+    itemId: number,
+    countedQuantity: number,
+  ): Promise<void> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload = {
@@ -472,7 +591,11 @@ export class LightspeedPOSSDKClient extends POSAdapter {
           },
         };
 
-        await this.makeRequest(`/accounts/${this.config.accountId}/inventoryCounts`, 'POST', payload);
+        await this.makeRequest(
+          `/accounts/${this.config.accountId}/inventoryCounts`,
+          "POST",
+          payload,
+        );
       });
     });
   }
@@ -480,7 +603,12 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Create customer
    */
-  async createCustomer(data: { firstName: string; lastName: string; email?: string; phone?: string }): Promise<{ id: number; name: string }> {
+  async createCustomer(data: {
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+  }): Promise<{ id: number; name: string }> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload = {
@@ -492,7 +620,11 @@ export class LightspeedPOSSDKClient extends POSAdapter {
           },
         };
 
-        const response = await this.makeRequest(`/accounts/${this.config.accountId}/customers`, 'POST', payload);
+        const response = await this.makeRequest(
+          `/accounts/${this.config.accountId}/customers`,
+          "POST",
+          payload,
+        );
 
         return {
           id: response.Customer.customerID,
@@ -505,11 +637,18 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * List customers
    */
-  async listCustomers(): Promise<Array<{ id: number; name: string; email?: string }>> {
+  async listCustomers(): Promise<
+    Array<{ id: number; name: string; email?: string }>
+  > {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
-        const response = await this.makeRequest(`/accounts/${this.config.accountId}/customers`, 'GET');
-        const customers = Array.isArray(response.Customer) ? response.Customer : [response.Customer];
+        const response = await this.makeRequest(
+          `/accounts/${this.config.accountId}/customers`,
+          "GET",
+        );
+        const customers = Array.isArray(response.Customer)
+          ? response.Customer
+          : [response.Customer];
 
         return customers.map((c: any) => ({
           id: c.customerID,
@@ -532,7 +671,11 @@ export class LightspeedPOSSDKClient extends POSAdapter {
           },
         };
 
-        await this.makeRequest(`/accounts/${this.config.accountId}/customers/${customerId}`, 'PUT', payload);
+        await this.makeRequest(
+          `/accounts/${this.config.accountId}/customers/${customerId}`,
+          "PUT",
+          payload,
+        );
       });
     });
   }
@@ -549,7 +692,11 @@ export class LightspeedPOSSDKClient extends POSAdapter {
           },
         };
 
-        await this.makeRequest(`/accounts/${this.config.accountId}/customers/${customerId}`, 'PUT', payload);
+        await this.makeRequest(
+          `/accounts/${this.config.accountId}/customers/${customerId}`,
+          "PUT",
+          payload,
+        );
       });
     });
   }
@@ -557,7 +704,10 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Create employee
    */
-  async createEmployee(locationId: string, data: { firstName: string; lastName: string; email?: string; pin?: string }): Promise<POSEmployee> {
+  async createEmployee(
+    locationId: string,
+    data: { firstName: string; lastName: string; email?: string; pin?: string },
+  ): Promise<POSEmployee> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload = {
@@ -569,17 +719,21 @@ export class LightspeedPOSSDKClient extends POSAdapter {
           },
         };
 
-        const response = await this.makeRequest(`/accounts/${this.config.accountId}/employees`, 'POST', payload);
+        const response = await this.makeRequest(
+          `/accounts/${this.config.accountId}/employees`,
+          "POST",
+          payload,
+        );
 
         return {
           id: response.Employee.employeeID.toString(),
           externalId: response.Employee.employeeID.toString(),
-          providerId: 'lightspeed',
+          providerId: "lightspeed",
           locationId,
           firstName: data.firstName,
           lastName: data.lastName,
           email: data.email,
-          role: 'staff',
+          role: "staff",
           isActive: response.Employee.archived === 0,
           createdAt: new Date(response.Employee.createdDate),
           updatedAt: new Date(response.Employee.updatedDate),
@@ -594,19 +748,24 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   async listEmployees(locationId: string): Promise<POSEmployee[]> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
-        const response = await this.makeRequest(`/accounts/${this.config.accountId}/employees`, 'GET');
-        const employees = Array.isArray(response.Employee) ? response.Employee : [response.Employee];
+        const response = await this.makeRequest(
+          `/accounts/${this.config.accountId}/employees`,
+          "GET",
+        );
+        const employees = Array.isArray(response.Employee)
+          ? response.Employee
+          : [response.Employee];
 
         return employees.map((emp: any) => ({
           id: emp.employeeID.toString(),
           externalId: emp.employeeID.toString(),
-          providerId: 'lightspeed',
+          providerId: "lightspeed",
           locationId,
           firstName: emp.firstName,
           lastName: emp.lastName,
           email: emp.email,
           phone: emp.phone,
-          role: emp.role || 'staff',
+          role: emp.role || "staff",
           isActive: emp.archived === 0,
           createdAt: new Date(emp.createdDate),
           updatedAt: new Date(emp.updatedDate),
@@ -618,7 +777,10 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Create shift (timeclock entry)
    */
-  async createShift(locationId: string, shift: Partial<POSShift>): Promise<POSShift> {
+  async createShift(
+    locationId: string,
+    shift: Partial<POSShift>,
+  ): Promise<POSShift> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const payload = {
@@ -628,17 +790,23 @@ export class LightspeedPOSSDKClient extends POSAdapter {
           },
         };
 
-        const response = await this.makeRequest(`/accounts/${this.config.accountId}/timeclock`, 'POST', payload);
+        const response = await this.makeRequest(
+          `/accounts/${this.config.accountId}/timeclock`,
+          "POST",
+          payload,
+        );
 
         return {
           id: response.Timeclock.timeclockID.toString(),
           externalId: response.Timeclock.timeclockID.toString(),
-          providerId: 'lightspeed',
+          providerId: "lightspeed",
           locationId,
-          employeeId: shift.employeeId || '',
+          employeeId: shift.employeeId || "",
           startTime: new Date(response.Timeclock.clockInTime),
-          endTime: response.Timeclock.clockOutTime ? new Date(response.Timeclock.clockOutTime) : undefined,
-          status: response.Timeclock.clockOutTime ? 'closed' : 'open',
+          endTime: response.Timeclock.clockOutTime
+            ? new Date(response.Timeclock.clockOutTime)
+            : undefined,
+          status: response.Timeclock.clockOutTime ? "closed" : "open",
           createdAt: new Date(response.Timeclock.createdDate),
           updatedAt: new Date(response.Timeclock.updatedDate),
         };
@@ -660,19 +828,21 @@ export class LightspeedPOSSDKClient extends POSAdapter {
 
         const response = await this.makeRequest(
           `/accounts/${this.config.accountId}/timeclock/${shiftId}`,
-          'PUT',
-          payload
+          "PUT",
+          payload,
         );
 
         return {
           id: response.Timeclock.timeclockID.toString(),
           externalId: response.Timeclock.timeclockID.toString(),
-          providerId: 'lightspeed',
+          providerId: "lightspeed",
           locationId,
-          employeeId: response.Timeclock.Employee?.id || '',
+          employeeId: response.Timeclock.Employee?.id || "",
           startTime: new Date(response.Timeclock.clockInTime),
-          endTime: response.Timeclock.clockOutTime ? new Date(response.Timeclock.clockOutTime) : undefined,
-          status: 'closed',
+          endTime: response.Timeclock.clockOutTime
+            ? new Date(response.Timeclock.clockOutTime)
+            : undefined,
+          status: "closed",
           createdAt: new Date(response.Timeclock.createdDate),
           updatedAt: new Date(response.Timeclock.updatedDate),
         };
@@ -683,19 +853,24 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Get daily Z report
    */
-  async getDailyZReport(registerNumber: number, date: Date): Promise<{ registerName: string; sales: number; tax: number }> {
+  async getDailyZReport(
+    registerNumber: number,
+    date: Date,
+  ): Promise<{ registerName: string; sales: number; tax: number }> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
-        const dateStr = date.toISOString().split('T')[0];
+        const dateStr = date.toISOString().split("T")[0];
         const response = await this.makeRequest(
           `/accounts/${this.config.accountId}/registers/${registerNumber}/zReport?date=${dateStr}`,
-          'GET'
+          "GET",
         );
 
         return {
-          registerName: response.ZReport?.registerName || '',
+          registerName: response.ZReport?.registerName || "",
           sales: this.formatAmountToCents(response.ZReport?.totalSales || 0),
-          tax: this.formatAmountToCents(response.ZReport?.totalTaxCollected || 0),
+          tax: this.formatAmountToCents(
+            response.ZReport?.totalTaxCollected || 0,
+          ),
         };
       });
     });
@@ -704,7 +879,12 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Get product performance report
    */
-  async getProductPerformanceReport(startDate: Date, endDate: Date): Promise<Array<{ productName: string; unitsSold: number; revenue: number }>> {
+  async getProductPerformanceReport(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<
+    Array<{ productName: string; unitsSold: number; revenue: number }>
+  > {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const params = new URLSearchParams({
@@ -714,7 +894,7 @@ export class LightspeedPOSSDKClient extends POSAdapter {
 
         const response = await this.makeRequest(
           `/accounts/${this.config.accountId}/reports/productSales?${params}`,
-          'GET'
+          "GET",
         );
 
         return (response.items || []).map((item: any) => ({
@@ -729,7 +909,11 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Get employee sales report
    */
-  async getEmployeeSalesReport(employeeId: number, startDate: Date, endDate: Date): Promise<{ name: string; sales: number; transactions: number }> {
+  async getEmployeeSalesReport(
+    employeeId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{ name: string; sales: number; transactions: number }> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const params = new URLSearchParams({
@@ -739,7 +923,7 @@ export class LightspeedPOSSDKClient extends POSAdapter {
 
         const response = await this.makeRequest(
           `/accounts/${this.config.accountId}/employees/${employeeId}/sales?${params}`,
-          'GET'
+          "GET",
         );
 
         return {
@@ -777,12 +961,22 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Get kitchen display status
    */
-  async getKitchenDisplayStatus(locationId: string, orderId: string): Promise<import('./types').KitchenOrderStatus> {
+  async getKitchenDisplayStatus(
+    locationId: string,
+    orderId: string,
+  ): Promise<import("./types").KitchenOrderStatus> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const order = await this.getOrder(locationId, orderId);
         const s = order.status;
-        const mapped: import('./types').KitchenOrderStatus = s === 'completed' ? 'completed' : s === 'in_progress' ? 'in_progress' : s === 'open' ? 'new' : 'received';
+        const mapped: import("./types").KitchenOrderStatus =
+          s === "completed"
+            ? "completed"
+            : s === "in_progress"
+              ? "in_progress"
+              : s === "open"
+                ? "new"
+                : "received";
         return mapped;
       });
     });
@@ -791,16 +985,19 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Get revenue center
    */
-  async getRevenueCenter(locationId: string, revenueCenterId: string): Promise<POSRevenueCenter> {
+  async getRevenueCenter(
+    locationId: string,
+    revenueCenterId: string,
+  ): Promise<POSRevenueCenter> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         return {
           id: revenueCenterId,
           externalId: revenueCenterId,
-          providerId: 'lightspeed',
+          providerId: "lightspeed",
           locationId,
-          name: 'Default',
-          type: 'dining_room',
+          name: "Default",
+          type: "dining_room",
           isActive: true,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -817,12 +1014,12 @@ export class LightspeedPOSSDKClient extends POSAdapter {
       return this.executeWithRetries(async () => {
         return [
           {
-            id: 'default',
-            externalId: 'default',
-            providerId: 'lightspeed',
+            id: "default",
+            externalId: "default",
+            providerId: "lightspeed",
             locationId,
-            name: 'Default',
-            type: 'dining_room',
+            name: "Default",
+            type: "dining_room",
             isActive: true,
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -845,26 +1042,26 @@ export class LightspeedPOSSDKClient extends POSAdapter {
    */
   parseWebhookPayload(payload: Record<string, any>): POSWebhookEvent | null {
     const eventTypeMap: Record<string, string> = {
-      'sale.created': 'order',
-      'sale.updated': 'order',
-      'product.created': 'menu',
-      'product.updated': 'menu',
-      'employee.created': 'employee',
-      'employee.updated': 'employee',
-      'timeclock.created': 'shift',
-      'inventory.updated': 'inventory',
+      "sale.created": "order",
+      "sale.updated": "order",
+      "product.created": "menu",
+      "product.updated": "menu",
+      "employee.created": "employee",
+      "employee.updated": "employee",
+      "timeclock.created": "shift",
+      "inventory.updated": "inventory",
     };
 
-    const eventType = payload.type || 'unknown';
-    const resourceType = eventTypeMap[eventType] || 'order';
+    const eventType = payload.type || "unknown";
+    const resourceType = eventTypeMap[eventType] || "order";
 
     return {
       id: payload.eventID?.toString() || `lightspeed-${Date.now()}`,
-      providerId: 'lightspeed',
-      provider: 'lightspeed',
+      providerId: "lightspeed",
+      provider: "lightspeed",
       eventType,
       resourceType: resourceType as any,
-      resourceId: payload.objectId?.toString() || '',
+      resourceId: payload.objectId?.toString() || "",
       data: payload,
       timestamp: new Date(payload.timestamp || Date.now()),
       verified: true,
@@ -877,14 +1074,14 @@ export class LightspeedPOSSDKClient extends POSAdapter {
    */
   private async makeRequest(
     path: string,
-    method: string = 'GET',
-    body?: Record<string, any>
+    method: string = "GET",
+    body?: Record<string, any>,
   ): Promise<any> {
     try {
       const headers: Record<string, string> = {
-        'Authorization': `Bearer ${this.config.accessToken}`,
-        'Content-Type': 'application/json',
-        'User-Agent': 'Witylogix-Lightspeed-SDK/1.0',
+        Authorization: `Bearer ${this.config.accessToken}`,
+        "Content-Type": "application/json",
+        "User-Agent": "Witylogix-Lightspeed-SDK/1.0",
       };
 
       const options: any = { method, headers };
@@ -895,17 +1092,22 @@ export class LightspeedPOSSDKClient extends POSAdapter {
       const response = await fetch(`${this.baseUrl}${path}`, options);
 
       // Check for rate limit headers
-      if (response.headers.has('X-RateLimit-Remaining')) {
-        this.rateLimitInfo.remaining = parseInt(response.headers.get('X-RateLimit-Remaining') || '60', 10);
+      if (response.headers.has("X-RateLimit-Remaining")) {
+        this.rateLimitInfo.remaining = parseInt(
+          response.headers.get("X-RateLimit-Remaining") || "60",
+          10,
+        );
       }
 
-      const data = await response.json() as Record<string, unknown>;
+      const data = (await response.json()) as Record<string, unknown>;
 
       if (!response.ok && response.status >= 400) {
         throw this.createError(
-          (data.error as Record<string, unknown> | undefined)?.code as string || 'API_ERROR',
-          (data.error as Record<string, unknown> | undefined)?.message as string || response.statusText,
-          { statusCode: response.status }
+          ((data.error as Record<string, unknown> | undefined)
+            ?.code as string) || "API_ERROR",
+          ((data.error as Record<string, unknown> | undefined)
+            ?.message as string) || response.statusText,
+          { statusCode: response.status },
         );
       }
 
@@ -914,17 +1116,28 @@ export class LightspeedPOSSDKClient extends POSAdapter {
       if (error instanceof Error && (error as any).code) {
         throw error;
       }
-      throw this.createError('REQUEST_FAILED', (error as Error).message);
+      throw this.createError("REQUEST_FAILED", (error as Error).message);
     }
   }
 
   /**
    * Create typed error
    */
-  private createError(code: string, message: string, details?: Record<string, any>): Error & { code: string; retryable: boolean } {
-    const error = new Error(message) as Error & { code: string; retryable: boolean };
+  private createError(
+    code: string,
+    message: string,
+    details?: Record<string, any>,
+  ): Error & { code: string; retryable: boolean } {
+    const error = new Error(message) as Error & {
+      code: string;
+      retryable: boolean;
+    };
     error.code = code;
-    error.retryable = !['INVALID_REQUEST', 'UNAUTHORIZED', 'NOT_FOUND'].includes(code);
+    error.retryable = ![
+      "INVALID_REQUEST",
+      "UNAUTHORIZED",
+      "NOT_FOUND",
+    ].includes(code);
     return error;
   }
 
@@ -943,11 +1156,11 @@ export class LightspeedPOSSDKClient extends POSAdapter {
     return {
       id: sale.saleID.toString(),
       externalId: sale.saleID.toString(),
-      providerId: 'lightspeed',
+      providerId: "lightspeed",
       locationId,
       orderNumber: sale.saleID.toString(),
       status: sale.saleStatus.toLowerCase() as any,
-      orderType: 'takeout',
+      orderType: "takeout",
       lineItems: (sale.saleLineItem || []).map((li: any) => ({
         id: li.saleLineID.toString(),
         menuItemId: li.itemID.toString(),
@@ -955,18 +1168,20 @@ export class LightspeedPOSSDKClient extends POSAdapter {
         price: this.formatAmountToCents(li.unitPrice),
         subtotal: this.formatAmountToCents(li.unitPrice * li.quantity),
       })),
-      discounts: sale.discountTotal ? [
-        {
-          id: 'discount',
-          type: 'fixed',
-          amount: this.formatAmountToCents(sale.discountTotal),
-        },
-      ] : [],
+      discounts: sale.discountTotal
+        ? [
+            {
+              id: "discount",
+              type: "fixed",
+              amount: this.formatAmountToCents(sale.discountTotal),
+            },
+          ]
+        : [],
       payments: (sale.salePayment || []).map((p: any) => ({
         id: p.salePaymentID.toString(),
-        method: 'card',
+        method: "card",
         amount: this.formatAmountToCents(p.amount),
-        currency: 'USD',
+        currency: "USD",
         createdAt: new Date(p.createdDate),
       })),
       subtotal: totals.subtotal,
@@ -984,13 +1199,13 @@ export class LightspeedPOSSDKClient extends POSAdapter {
     return {
       id: item.itemID.toString(),
       externalId: item.itemID.toString(),
-      providerId: 'lightspeed',
+      providerId: "lightspeed",
       locationId,
-      categoryId: item.categoryID?.toString() || '',
+      categoryId: item.categoryID?.toString() || "",
       name: item.title,
       description: item.description,
       price: this.formatAmountToCents(item.basePrice),
-      currency: 'USD',
+      currency: "USD",
       cost: item.cost ? this.formatAmountToCents(item.cost) : undefined,
       taxable: true,
       discountable: true,

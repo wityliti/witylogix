@@ -220,7 +220,10 @@ export interface EtsyShop {
 /**
  * Etsy SDK Client - Implements IECommerceAdapter
  */
-export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAdapter {
+export class EtsySdkClient
+  extends ECommerceAdapterBase
+  implements IECommerceAdapter
+{
   private readonly baseUrl = "https://openapi.etsy.com/v3";
   private readonly authUrl = "https://api.etsy.com/v3/oauth/token";
   private clientId: string;
@@ -230,10 +233,14 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
   private accessTokenExpiresAt: number = 0;
   private lastModifiedTracker: Map<string, number> = new Map();
   protected logger = {
-    info: (msg: string, data?: unknown) => console.info(`[EtsySdk] ${msg}`, data),
-    error: (msg: string, error?: unknown) => console.error(`[EtsySdk] ${msg}`, error),
-    warn: (msg: string, data?: unknown) => console.warn(`[EtsySdk] ${msg}`, data),
-    debug: (msg: string, data?: unknown) => console.debug(`[EtsySdk] ${msg}`, data),
+    info: (msg: string, data?: unknown) =>
+      console.info(`[EtsySdk] ${msg}`, data),
+    error: (msg: string, error?: unknown) =>
+      console.error(`[EtsySdk] ${msg}`, error),
+    warn: (msg: string, data?: unknown) =>
+      console.warn(`[EtsySdk] ${msg}`, data),
+    debug: (msg: string, data?: unknown) =>
+      console.debug(`[EtsySdk] ${msg}`, data),
   };
 
   /**
@@ -244,7 +251,9 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
     super(config);
 
     if (!config.apiKey || !config.apiSecret || !config.accessToken) {
-      throw new Error("Etsy SDK requires apiKey (clientId), apiSecret (clientSecret), and accessToken (refreshToken)");
+      throw new Error(
+        "Etsy SDK requires apiKey (clientId), apiSecret (clientSecret), and accessToken (refreshToken)",
+      );
     }
 
     this.clientId = config.apiKey;
@@ -293,7 +302,11 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
   /**
    * Make authenticated request to Etsy API
    */
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  private async request<T>(
+    method: string,
+    path: string,
+    body?: unknown,
+  ): Promise<T> {
     await this.rateLimiter.waitIfNeeded();
 
     const accessToken = await this.getAccessToken();
@@ -309,7 +322,9 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
     });
 
     if (!response.ok) {
-      throw new Error(`Etsy API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Etsy API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     return (await response.json()) as T;
@@ -327,7 +342,9 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
         results: EtsyReceipt[];
       }>("GET", `/receipts?limit=${limit}`);
 
-      orders.push(...response.results.map((receipt) => this.normalizeReceipt(receipt)));
+      orders.push(
+        ...response.results.map((receipt) => this.normalizeReceipt(receipt)),
+      );
     } catch (error) {
       this.logger.error("Failed to get orders from Etsy", error);
     }
@@ -339,14 +356,20 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
    * Get order by ID
    */
   async getOrderById(orderId: string): Promise<ECommerceOrder> {
-    const response = await this.request<EtsyReceipt>("GET", `/receipts/${orderId}`);
+    const response = await this.request<EtsyReceipt>(
+      "GET",
+      `/receipts/${orderId}`,
+    );
     return this.normalizeReceipt(response);
   }
 
   /**
    * Update order
    */
-  async updateOrder(orderId: string, data: Partial<ECommerceOrder>): Promise<ECommerceOrder> {
+  async updateOrder(
+    orderId: string,
+    data: Partial<ECommerceOrder>,
+  ): Promise<ECommerceOrder> {
     await this.request<unknown>("PUT", `/receipts/${orderId}`, {
       message_from_seller: data.notes,
     });
@@ -366,7 +389,9 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
         results: EtsyListing[];
       }>("GET", `/shops/self/listings?limit=${limit}&status=active`);
 
-      products.push(...response.results.map((listing) => this.normalizeListing(listing)));
+      products.push(
+        ...response.results.map((listing) => this.normalizeListing(listing)),
+      );
     } catch (error) {
       this.logger.error("Failed to get products from Etsy", error);
     }
@@ -378,7 +403,10 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
    * Get product by ID
    */
   async getProductById(productId: string): Promise<ECommerceProduct> {
-    const response = await this.request<EtsyListing>("GET", `/listings/${productId}`);
+    const response = await this.request<EtsyListing>(
+      "GET",
+      `/listings/${productId}`,
+    );
     return this.normalizeListing(response);
   }
 
@@ -391,19 +419,23 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
       throw new Error("Product must have at least one variant");
     }
 
-    const response = await this.request<EtsyListing>("POST", "/shops/self/listings", {
-      title: product.title,
-      description: product.description,
-      price: variant.price,
-      quantity: variant.inventory.quantity,
-      shipping_profile_id: 0,
-      who_made: "i_did",
-      is_supply: false,
-      when_made: "made_to_order",
-      listing_type: "fixed",
-      category_id: 0,
-      tags: product.tags || [],
-    });
+    const response = await this.request<EtsyListing>(
+      "POST",
+      "/shops/self/listings",
+      {
+        title: product.title,
+        description: product.description,
+        price: variant.price,
+        quantity: variant.inventory.quantity,
+        shipping_profile_id: 0,
+        who_made: "i_did",
+        is_supply: false,
+        when_made: "made_to_order",
+        listing_type: "fixed",
+        category_id: 0,
+        tags: product.tags || [],
+      },
+    );
 
     return this.normalizeListing(response);
   }
@@ -411,7 +443,10 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
   /**
    * Update product (listing)
    */
-  async updateProduct(productId: string, data: Partial<ECommerceProduct>): Promise<ECommerceProduct> {
+  async updateProduct(
+    productId: string,
+    data: Partial<ECommerceProduct>,
+  ): Promise<ECommerceProduct> {
     const updateData: Record<string, unknown> = {};
 
     if (data.title) updateData.title = data.title;
@@ -421,7 +456,11 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
       updateData.quantity = data.variants[0].inventory.quantity;
     }
 
-    const response = await this.request<EtsyListing>("PUT", `/listings/${productId}`, updateData);
+    const response = await this.request<EtsyListing>(
+      "PUT",
+      `/listings/${productId}`,
+      updateData,
+    );
     return this.normalizeListing(response);
   }
 
@@ -449,7 +488,10 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
   /**
    * Create fulfillment (shipment)
    */
-  async createFulfillment(orderId: string, request: FulfillmentRequest): Promise<FulfillmentResponse> {
+  async createFulfillment(
+    orderId: string,
+    request: FulfillmentRequest,
+  ): Promise<FulfillmentResponse> {
     try {
       const shipments = request.trackingNumber
         ? [
@@ -460,9 +502,13 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
           ]
         : [];
 
-      await this.request<unknown>("POST", `/receipts/${orderId}/tracking_upload`, {
-        shipments,
-      });
+      await this.request<unknown>(
+        "POST",
+        `/receipts/${orderId}/tracking_upload`,
+        {
+          shipments,
+        },
+      );
 
       return {
         id: `${orderId}-shipment`,
@@ -507,7 +553,10 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
    */
   async getInventory(variantId: string): Promise<ECommerceInventory> {
     try {
-      const response = await this.request<EtsyListing>("GET", `/listings/${variantId}`);
+      const response = await this.request<EtsyListing>(
+        "GET",
+        `/listings/${variantId}`,
+      );
       const quantity = response.inventory?.quantity ?? response.quantity ?? 0;
 
       return {
@@ -527,7 +576,9 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
   /**
    * Update inventory
    */
-  async updateInventory(request: InventoryUpdateRequest): Promise<ECommerceInventory> {
+  async updateInventory(
+    request: InventoryUpdateRequest,
+  ): Promise<ECommerceInventory> {
     await this.request<unknown>("PUT", `/listings/${request.variantId}`, {
       quantity: request.quantity,
     });
@@ -543,8 +594,13 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
       return false;
     }
 
-    const payloadString = typeof payload === "string" ? payload : JSON.stringify(payload);
-    return this.verifySignature(payloadString, signature, this.config.webhookSecret);
+    const payloadString =
+      typeof payload === "string" ? payload : JSON.stringify(payload);
+    return this.verifySignature(
+      payloadString,
+      signature,
+      this.config.webhookSecret,
+    );
   }
 
   /**
@@ -655,8 +711,8 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
   private normalizeReceipt(receipt: EtsyReceipt): ECommerceOrder {
     const status: OrderStatus = this.mapReceiptStatus(receipt.status);
     const paymentStatus: PaymentStatus = "captured";
-    const fulfillmentStatus: FulfillmentStatus = receipt.transactions?.some((t) =>
-      t.shipping?.length,
+    const fulfillmentStatus: FulfillmentStatus = receipt.transactions?.some(
+      (t) => t.shipping?.length,
     )
       ? "complete"
       : "pending";
@@ -702,7 +758,8 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
         postalCode: receipt.zip || "",
         country: "US",
       },
-      lineItems: receipt.transactions?.map((t) => this.normalizeTransaction(t)) || [],
+      lineItems:
+        receipt.transactions?.map((t) => this.normalizeTransaction(t)) || [],
       paymentMethod: receipt.payment_method,
       createdAt: new Date(receipt.creation_tsz * 1000),
       updatedAt: new Date(receipt.last_modified_tsz * 1000),
@@ -712,7 +769,9 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
   /**
    * Normalize Etsy transaction to line item
    */
-  private normalizeTransaction(transaction: EtsyTransaction): ECommerceLineItem {
+  private normalizeTransaction(
+    transaction: EtsyTransaction,
+  ): ECommerceLineItem {
     return {
       id: transaction.transaction_id.toString(),
       name: transaction.title || "",

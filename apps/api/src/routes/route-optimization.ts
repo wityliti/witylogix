@@ -45,10 +45,12 @@ const stopSchema = z.object({
   volume: z.number().nonnegative().optional(),
   skills: z.array(z.string()).optional(),
   shipmentId: z.string().uuid().optional(),
-  timeWindow: z.object({
-    start: z.string().datetime(),
-    end: z.string().datetime(),
-  }).optional(),
+  timeWindow: z
+    .object({
+      start: z.string().datetime(),
+      end: z.string().datetime(),
+    })
+    .optional(),
 });
 
 /**
@@ -73,11 +75,15 @@ const optimizeRequestSchema = z.object({
   stops: z.array(stopSchema).min(1),
   vehicleCount: z.number().int().min(1),
   constraints: constraintsSchema,
-  algorithm: z.object({
-    name: z.enum(["nearest-neighbor", "nearest-neighbor-2opt", "savings"]).default("nearest-neighbor"),
-    maxIterations: z.number().int().positive().optional(),
-    timeLimit: z.number().int().positive().optional(),
-  }).optional(),
+  algorithm: z
+    .object({
+      name: z
+        .enum(["nearest-neighbor", "nearest-neighbor-2opt", "savings"])
+        .default("nearest-neighbor"),
+      maxIterations: z.number().int().positive().optional(),
+      timeLimit: z.number().int().positive().optional(),
+    })
+    .optional(),
 });
 
 /**
@@ -117,49 +123,56 @@ async function routeOptimizationRoutes(app: FastifyInstance): Promise<void> {
    * Accepts a list of stops with constraints and vehicle count,
    * returns optimized routes with ETAs and metrics.
    */
-  app.post("/optimize", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const body = optimizeRequestSchema.parse(request.body);
+  app.post(
+    "/optimize",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const body = optimizeRequestSchema.parse(request.body);
 
-      // Convert time windows from ISO strings to Date objects
-      const stopsWithDates = body.stops.map((stop) => ({
-        ...stop,
-        timeWindow: stop.timeWindow ? {
-          start: new Date(stop.timeWindow.start),
-          end: new Date(stop.timeWindow.end),
-        } : undefined,
-      }));
+        // Convert time windows from ISO strings to Date objects
+        const stopsWithDates = body.stops.map((stop) => ({
+          ...stop,
+          timeWindow: stop.timeWindow
+            ? {
+                start: new Date(stop.timeWindow.start),
+                end: new Date(stop.timeWindow.end),
+              }
+            : undefined,
+        }));
 
-      const optimizationRequest: RouteOptimizationRequest = {
-        depot: body.depot,
-        stops: stopsWithDates as Stop[],
-        vehicleCount: body.vehicleCount,
-        constraints: body.constraints as OptimizationConstraints,
-        algorithm: body.algorithm,
-      };
+        const optimizationRequest: RouteOptimizationRequest = {
+          depot: body.depot,
+          stops: stopsWithDates as Stop[],
+          vehicleCount: body.vehicleCount,
+          constraints: body.constraints as OptimizationConstraints,
+          algorithm: body.algorithm,
+        };
 
-      const result: RouteOptimizationResult = await optimizer.optimize(optimizationRequest);
+        const result: RouteOptimizationResult =
+          await optimizer.optimize(optimizationRequest);
 
-      return {
-        success: true,
-        data: result,
-      };
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return reply.status(400).send({
+        return {
+          success: true,
+          data: result,
+        };
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return reply.status(400).send({
+            success: false,
+            error: "Validation error",
+            details: error.errors,
+          });
+        }
+
+        request.log.error(error, "Route optimization failed");
+        return reply.status(500).send({
           success: false,
-          error: "Validation error",
-          details: error.errors,
+          error:
+            error instanceof Error ? error.message : "Internal server error",
         });
       }
-
-      request.log.error(error, "Route optimization failed");
-      return reply.status(500).send({
-        success: false,
-        error: error instanceof Error ? error.message : "Internal server error",
-      });
-    }
-  });
+    },
+  );
 
   // ── POST /distance-matrix ───────────────────────────────────
 
@@ -169,36 +182,40 @@ async function routeOptimizationRoutes(app: FastifyInstance): Promise<void> {
    * Calculates distances and travel durations between all point pairs.
    * Results are cached for subsequent requests.
    */
-  app.post("/distance-matrix", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const body = distanceMatrixRequestSchema.parse(request.body);
+  app.post(
+    "/distance-matrix",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const body = distanceMatrixRequestSchema.parse(request.body);
 
-      const matrix: DistanceMatrix = computeDistanceMatrix(
-        body.points as GeoPoint[],
-        body.speedKmh,
-        body.trafficFactor,
-      );
+        const matrix: DistanceMatrix = computeDistanceMatrix(
+          body.points as GeoPoint[],
+          body.speedKmh,
+          body.trafficFactor,
+        );
 
-      return {
-        success: true,
-        data: matrix,
-      };
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return reply.status(400).send({
+        return {
+          success: true,
+          data: matrix,
+        };
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return reply.status(400).send({
+            success: false,
+            error: "Validation error",
+            details: error.errors,
+          });
+        }
+
+        request.log.error(error, "Distance matrix computation failed");
+        return reply.status(500).send({
           success: false,
-          error: "Validation error",
-          details: error.errors,
+          error:
+            error instanceof Error ? error.message : "Internal server error",
         });
       }
-
-      request.log.error(error, "Distance matrix computation failed");
-      return reply.status(500).send({
-        success: false,
-        error: error instanceof Error ? error.message : "Internal server error",
-      });
-    }
-  });
+    },
+  );
 
   // ── POST /eta ───────────────────────────────────────────────
 
@@ -215,10 +232,12 @@ async function routeOptimizationRoutes(app: FastifyInstance): Promise<void> {
       // Convert time fields to Date objects
       const stopsWithDates = body.stops.map((stop) => ({
         ...stop,
-        timeWindow: stop.timeWindow ? {
-          start: new Date(stop.timeWindow.start),
-          end: new Date(stop.timeWindow.end),
-        } : undefined,
+        timeWindow: stop.timeWindow
+          ? {
+              start: new Date(stop.timeWindow.start),
+              end: new Date(stop.timeWindow.end),
+            }
+          : undefined,
       }));
 
       const departureTime = new Date(body.departureTime);

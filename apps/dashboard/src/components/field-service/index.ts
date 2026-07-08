@@ -10,4 +10,8 @@ export { WorkOrderCard } from "./work-order-card";
 // Types
 export type { JobCalendarProps, CalendarJob } from "./job-calendar";
 export type { TechnicianMarkerProps, TechnicianJob } from "./technician-marker";
-export type { WorkOrderCardProps, PartItem, TimeLogEntry } from "./work-order-card";
+export type {
+  WorkOrderCardProps,
+  PartItem,
+  TimeLogEntry,
+} from "./work-order-card";

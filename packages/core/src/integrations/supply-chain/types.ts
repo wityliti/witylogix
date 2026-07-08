@@ -11,7 +11,13 @@
  */
 export interface SupplyChainConfig {
   /** Unique provider identifier (e.g., 'manhattan', 'blue-yonder', 'korber') */
-  provider: 'manhattan' | 'blue-yonder' | 'korber' | 'deposco' | 'extensiv' | 'fishbowl';
+  provider:
+    | "manhattan"
+    | "blue-yonder"
+    | "korber"
+    | "deposco"
+    | "extensiv"
+    | "fishbowl";
   /** API key or OAuth2 client ID */
   apiKey?: string;
   /** OAuth2 client secret */
@@ -67,9 +73,9 @@ export interface WarehouseLocation {
     longitude: number;
   };
   /** Warehouse type (distribution center, fulfillment center, etc.) */
-  type: 'dc' | 'fc' | 'return_center' | 'manufacturing' | 'cross_dock';
+  type: "dc" | "fc" | "return_center" | "manufacturing" | "cross_dock";
   /** Operational status */
-  status: 'active' | 'inactive' | 'maintenance' | 'closed';
+  status: "active" | "inactive" | "maintenance" | "closed";
   /** Operating hours */
   operatingHours?: {
     dayOfWeek: number;
@@ -132,7 +138,7 @@ export interface InventoryItem {
   /** Last inventory count date */
   countDate?: Date;
   /** Item status (available, hold, damaged, expired) */
-  status: 'available' | 'hold' | 'damaged' | 'expired' | 'in_transit';
+  status: "available" | "hold" | "damaged" | "expired" | "in_transit";
   /** FIFO/LIFO designation */
   fifoSequence?: number;
   /** Reorder point threshold */
@@ -165,7 +171,13 @@ export interface InboundShipment {
   /** Actual receipt date */
   receivedDate?: Date;
   /** Shipment status */
-  status: 'in_transit' | 'at_dock' | 'received' | 'quality_check' | 'putaway_in_progress' | 'closed';
+  status:
+    | "in_transit"
+    | "at_dock"
+    | "received"
+    | "quality_check"
+    | "putaway_in_progress"
+    | "closed";
   /** Shipment items with quantities */
   items: {
     sku: string;
@@ -205,7 +217,7 @@ export interface OutboundOrder {
   /** Customer-facing order number */
   orderNumber: string;
   /** Order type (sales, transfer, return) */
-  type: 'sales' | 'transfer' | 'rma' | 'sample';
+  type: "sales" | "transfer" | "rma" | "sample";
   /** Source warehouse */
   sourceWarehouseId: string;
   /** Destination warehouse (for transfers) */
@@ -228,9 +240,16 @@ export interface OutboundOrder {
   /** Expected delivery date */
   deliveryDate?: Date;
   /** Order status */
-  status: 'pending' | 'allocated' | 'picking' | 'packing' | 'shipped' | 'cancelled' | 'on_hold';
+  status:
+    | "pending"
+    | "allocated"
+    | "picking"
+    | "packing"
+    | "shipped"
+    | "cancelled"
+    | "on_hold";
   /** Order priority (standard, expedited, overnight) */
-  priority: 'standard' | 'expedited' | 'overnight';
+  priority: "standard" | "expedited" | "overnight";
   /** Ordered items with quantities */
   items: {
     sku: string;
@@ -244,7 +263,7 @@ export interface OutboundOrder {
   /** Wave identifier when assigned */
   waveId?: string;
   /** Shipping method */
-  shippingMethod?: 'ground' | 'expedited' | 'overnight' | 'pickup';
+  shippingMethod?: "ground" | "expedited" | "overnight" | "pickup";
   /** Carrier identifier */
   carrierId?: string;
   /** Special handling instructions */
@@ -267,7 +286,7 @@ export interface FulfillmentRequest {
   /** Request creation timestamp */
   createdAt: Date;
   /** Fulfillment status */
-  status: 'pending' | 'allocated' | 'in_progress' | 'completed' | 'cancelled';
+  status: "pending" | "allocated" | "in_progress" | "completed" | "cancelled";
   /** Allocated items */
   allocations: {
     sku: string;
@@ -281,7 +300,7 @@ export interface FulfillmentRequest {
   /** Priority score (for sorting in wave) */
   priority?: number;
   /** Allocation method used */
-  allocationMethod?: 'fifo' | 'closest' | 'random' | 'lifo';
+  allocationMethod?: "fifo" | "closest" | "random" | "lifo";
   /** Notes on fulfillment */
   notes?: string;
   /** Custom attributes */
@@ -308,7 +327,14 @@ export interface PurchaseOrder {
   /** Actual receipt date */
   receivedDate?: Date;
   /** PO status */
-  status: 'draft' | 'issued' | 'acknowledged' | 'in_transit' | 'received' | 'invoiced' | 'closed';
+  status:
+    | "draft"
+    | "issued"
+    | "acknowledged"
+    | "in_transit"
+    | "received"
+    | "invoiced"
+    | "closed";
   /** Ordered items */
   items: {
     sku: string;
@@ -329,7 +355,7 @@ export interface PurchaseOrder {
   /** Tracking number */
   trackingNumber?: string;
   /** Acceptance status */
-  acceptanceStatus?: 'pending' | 'accepted' | 'rejected' | 'conditional';
+  acceptanceStatus?: "pending" | "accepted" | "rejected" | "conditional";
   /** Custom attributes */
   attributes?: Record<string, unknown>;
 }
@@ -354,7 +380,7 @@ export interface TransferOrder {
   /** Actual receipt date */
   receivedDate?: Date;
   /** Transfer status */
-  status: 'pending' | 'in_transit' | 'received' | 'cancelled';
+  status: "pending" | "in_transit" | "received" | "cancelled";
   /** Transferred items */
   items: {
     sku: string;
@@ -365,7 +391,7 @@ export interface TransferOrder {
   /** Reason for transfer */
   reason?: string;
   /** Transit method */
-  transitMethod?: 'ltl' | 'truckload' | 'parcel' | 'courier';
+  transitMethod?: "ltl" | "truckload" | "parcel" | "courier";
   /** Carrier */
   carrier?: string;
   /** Tracking number */
@@ -390,7 +416,12 @@ export interface ReceiptConfirmation {
   /** Receiving user */
   receivedBy: string;
   /** Receipt status */
-  status: 'pending_qc' | 'qc_passed' | 'qc_failed' | 'partial_receipt' | 'completed';
+  status:
+    | "pending_qc"
+    | "qc_passed"
+    | "qc_failed"
+    | "partial_receipt"
+    | "completed";
   /** Received items with actual quantities */
   items: {
     sku: string;
@@ -400,7 +431,7 @@ export interface ReceiptConfirmation {
     lotNumber?: string;
   }[];
   /** Quality control result */
-  qcStatus?: 'pass' | 'fail' | 'conditional';
+  qcStatus?: "pass" | "fail" | "conditional";
   /** QC notes */
   qcNotes?: string;
   /** Damage report */
@@ -425,7 +456,7 @@ export interface WaveDefinition {
   /** Wave creation timestamp */
   createdAt: Date;
   /** Wave status */
-  status: 'planned' | 'released' | 'in_progress' | 'completed' | 'cancelled';
+  status: "planned" | "released" | "in_progress" | "completed" | "cancelled";
   /** Associated fulfillment request IDs */
   fulfillmentRequestIds: string[];
   /** Planned pick start time */
@@ -437,7 +468,7 @@ export interface WaveDefinition {
   /** Actual pick completion time */
   pickActualEnd?: Date;
   /** Pick method (zone, batch, order) */
-  pickMethod?: 'zone' | 'batch' | 'order' | 'cluster';
+  pickMethod?: "zone" | "batch" | "order" | "cluster";
   /** Zones included in wave */
   zones?: string[];
   /** Wave priority */
@@ -478,7 +509,13 @@ export interface PickTask {
   /** Associated order ID */
   orderId?: string;
   /** Task status */
-  status: 'pending' | 'assigned' | 'in_progress' | 'completed' | 'skipped' | 'exception';
+  status:
+    | "pending"
+    | "assigned"
+    | "in_progress"
+    | "completed"
+    | "skipped"
+    | "exception";
   /** Assigned worker user ID */
   assignedWorker?: string;
   /** Assignment timestamp */
@@ -509,9 +546,9 @@ export interface PackStation {
   /** Physical location code */
   location: string;
   /** Station type (manual, semi-automated, automated) */
-  type: 'manual' | 'semi_auto' | 'auto';
+  type: "manual" | "semi_auto" | "auto";
   /** Current status */
-  status: 'active' | 'inactive' | 'maintenance';
+  status: "active" | "inactive" | "maintenance";
   /** Active work order/shipment */
   activeShipmentId?: string;
   /** Capacity in units per hour */
@@ -519,7 +556,7 @@ export interface PackStation {
   /** Assigned workers */
   workers?: string[];
   /** Packing method (individual, batch, case) */
-  packingMethod?: 'individual' | 'batch' | 'case' | 'wave';
+  packingMethod?: "individual" | "batch" | "case" | "wave";
   /** Scales available */
   scalesAvailable?: boolean;
   /** Printer count */
@@ -553,7 +590,7 @@ export interface ShipConfirmation {
   /** Carrier code */
   carrier: string;
   /** Carrier service level */
-  serviceLevel?: 'ground' | 'expedited' | 'overnight' | 'international';
+  serviceLevel?: "ground" | "expedited" | "overnight" | "international";
   /** Tracking number */
   trackingNumber?: string;
   /** Weight */

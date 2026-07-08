@@ -85,8 +85,10 @@ export class RequestValidator {
    */
   async validateBody<T>(
     data: unknown,
-    schema: { validate: (data: unknown, options?: any) => { error?: any; value?: T } },
-    options: ValidatorOptions = {}
+    schema: {
+      validate: (data: unknown, options?: any) => { error?: any; value?: T };
+    },
+    options: ValidatorOptions = {},
   ): Promise<ValidationResult<T>> {
     try {
       const result = schema.validate(data, {
@@ -120,8 +122,10 @@ export class RequestValidator {
    */
   async validateQuery<T>(
     query: Record<string, any>,
-    schema: { validate: (data: unknown, options?: any) => { error?: any; value?: T } },
-    options: ValidatorOptions = {}
+    schema: {
+      validate: (data: unknown, options?: any) => { error?: any; value?: T };
+    },
+    options: ValidatorOptions = {},
   ): Promise<ValidationResult<T>> {
     return this.validateBody(query, schema, {
       ...options,
@@ -134,8 +138,10 @@ export class RequestValidator {
    */
   async validateParams<T>(
     params: Record<string, any>,
-    schema: { validate: (data: unknown, options?: any) => { error?: any; value?: T } },
-    options: ValidatorOptions = {}
+    schema: {
+      validate: (data: unknown, options?: any) => { error?: any; value?: T };
+    },
+    options: ValidatorOptions = {},
   ): Promise<ValidationResult<T>> {
     return this.validateBody(params, schema, options);
   }
@@ -145,8 +151,10 @@ export class RequestValidator {
    */
   async validateHeaders<T>(
     headers: Record<string, any>,
-    schema: { validate: (data: unknown, options?: any) => { error?: any; value?: T } },
-    options: ValidatorOptions = {}
+    schema: {
+      validate: (data: unknown, options?: any) => { error?: any; value?: T };
+    },
+    options: ValidatorOptions = {},
   ): Promise<ValidationResult<T>> {
     // Normalize header names to lowercase
     const normalizedHeaders: Record<string, any> = {};
@@ -232,7 +240,9 @@ export class RequestValidator {
 
         if (!allowedFields.includes(sortBy)) {
           return {
-            error: { message: `sortBy must be one of: ${allowedFields.join(", ")}` },
+            error: {
+              message: `sortBy must be one of: ${allowedFields.join(", ")}`,
+            },
           };
         }
         if (!["asc", "desc"].includes(sortOrder)) {
@@ -252,7 +262,7 @@ export class RequestValidator {
   createFilterSchema(allowedFields: string[]) {
     return {
       validate: (data: unknown) => {
-        const obj = data as any || {};
+        const obj = (data as any) || {};
         const filtered: FilterParams = {};
 
         for (const field of allowedFields) {

@@ -37,11 +37,18 @@ class MockCrmRepository implements CrmRepository {
     return null;
   }
 
-  async createContact(tenantId: string, contact: UnifiedContact): Promise<UnifiedContact> {
+  async createContact(
+    tenantId: string,
+    contact: UnifiedContact,
+  ): Promise<UnifiedContact> {
     return contact;
   }
 
-  async updateContact(tenantId: string, contactId: string, updates: Partial<UnifiedContact>): Promise<UnifiedContact> {
+  async updateContact(
+    tenantId: string,
+    contactId: string,
+    updates: Partial<UnifiedContact>,
+  ): Promise<UnifiedContact> {
     return {} as UnifiedContact;
   }
 
@@ -360,7 +367,10 @@ describe("CrmSyncOrchestrator", () => {
         createdAt: new Date().toISOString(),
       };
 
-      const resolution = resolver.resolveConflict(conflict, ConflictResolutionStrategy.TIMESTAMP_WINS);
+      const resolution = resolver.resolveConflict(
+        conflict,
+        ConflictResolutionStrategy.TIMESTAMP_WINS,
+      );
 
       expect(resolution).toBe("external@example.com");
     });
@@ -382,7 +392,10 @@ describe("CrmSyncOrchestrator", () => {
         createdAt: new Date().toISOString(),
       };
 
-      const resolution = resolver.resolveConflict(conflict, ConflictResolutionStrategy.SOURCE_OF_TRUTH);
+      const resolution = resolver.resolveConflict(
+        conflict,
+        ConflictResolutionStrategy.SOURCE_OF_TRUTH,
+      );
 
       expect(resolution).toBe("external@example.com");
     });
@@ -406,7 +419,10 @@ describe("CrmSyncOrchestrator", () => {
         createdAt: new Date().toISOString(),
       };
 
-      const resolution = resolver.resolveConflict(conflict, ConflictResolutionStrategy.FIELD_PRIORITY);
+      const resolution = resolver.resolveConflict(
+        conflict,
+        ConflictResolutionStrategy.FIELD_PRIORITY,
+      );
 
       expect(resolution).toBe("internal@example.com");
     });
@@ -434,7 +450,9 @@ describe("CrmSyncOrchestrator", () => {
       const transaction1 = orchestrator.createTransaction();
       const transaction2 = orchestrator.createTransaction();
 
-      expect(transaction1.getState().transactionId).not.toBe(transaction2.getState().transactionId);
+      expect(transaction1.getState().transactionId).not.toBe(
+        transaction2.getState().transactionId,
+      );
     });
 
     it("should add operations to transaction", () => {

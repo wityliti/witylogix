@@ -9,23 +9,23 @@ import { reactRouter } from "@react-router/dev/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
-    plugins: [reactRouter(), tsconfigPaths()],
-    server: {
-        port: 3000,
-        hmr: {
-            protocol: "ws",
-        },
+  plugins: [reactRouter(), tsconfigPaths()],
+  server: {
+    port: 3000,
+    hmr: {
+      protocol: "ws",
     },
-    build: {
-        sourcemap: true,
-        rollupOptions: {
-            external: [],
-        },
+  },
+  build: {
+    sourcemap: true,
+    rollupOptions: {
+      external: [],
     },
-    resolve: {
-        alias: {
-            "~": new URL("./app", import.meta.url).pathname,
-        },
+  },
+  resolve: {
+    alias: {
+      "~": new URL("./app", import.meta.url).pathname,
     },
+  },
 });
 //# sourceMappingURL=vite.config.js.map

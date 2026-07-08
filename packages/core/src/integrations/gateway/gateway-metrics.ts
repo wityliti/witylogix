@@ -13,7 +13,7 @@
  * - Prometheus and JSON export
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -56,7 +56,7 @@ export interface ProviderMetrics {
  * Aggregated metrics for time window
  */
 export interface AggregatedMetrics {
-  timeWindow: 'one_minute' | 'five_minute' | 'one_hour' | 'one_day';
+  timeWindow: "one_minute" | "five_minute" | "one_hour" | "one_day";
   startTime: Date;
   endTime: Date;
   totalRequests: number;
@@ -72,12 +72,12 @@ export interface AggregatedMetrics {
  */
 export interface AnomalyDetection {
   providerId: string;
-  type: 'latency' | 'error_rate' | 'request_volume';
+  type: "latency" | "error_rate" | "request_volume";
   baseline: number;
   current: number;
   deviation: number;
   isAnomaly: boolean;
-  severity: 'low' | 'medium' | 'high';
+  severity: "low" | "medium" | "high";
 }
 
 /**
@@ -175,7 +175,7 @@ export class MetricsCollectorV2 extends EventEmitter {
     this.updateProviderMetrics(providerId);
 
     // Emit event
-    this.emit('request', metric);
+    this.emit("request", metric);
   }
 
   /**
@@ -186,7 +186,7 @@ export class MetricsCollectorV2 extends EventEmitter {
     if (current) {
       current.circuitBreakerTrips++;
     }
-    this.emit('circuit-breaker-trip', { providerId });
+    this.emit("circuit-breaker-trip", { providerId });
   }
 
   /**
@@ -207,7 +207,7 @@ export class MetricsCollectorV2 extends EventEmitter {
    * Get aggregated metrics for time window
    */
   getAggregatedMetrics(
-    timeWindow: 'one_minute' | 'five_minute' | 'one_hour' | 'one_day',
+    timeWindow: "one_minute" | "five_minute" | "one_hour" | "one_day",
   ): AggregatedMetrics {
     const now = new Date();
     const windowMs = this.getWindowMs(timeWindow);
@@ -231,14 +231,16 @@ export class MetricsCollectorV2 extends EventEmitter {
       totalLatency += windowMetrics.reduce((sum, m) => sum + m.latencyMs, 0);
     }
 
-    const successRate = totalRequests > 0 ? (successCount / totalRequests) * 100 : 0;
-    const errorRate = totalRequests > 0 ? (errorCount / totalRequests) * 100 : 0;
+    const successRate =
+      totalRequests > 0 ? (successCount / totalRequests) * 100 : 0;
+    const errorRate =
+      totalRequests > 0 ? (errorCount / totalRequests) * 100 : 0;
     const avgLatencyMs = totalRequests > 0 ? totalLatency / totalRequests : 0;
 
     const anomalies: AnomalyDetection[] = [];
     if (this.config.enableAnomalyDetection) {
       for (const [providerId, metrics] of this.metrics) {
-        const pid = providerId.replace('metrics_', '');
+        const pid = providerId.replace("metrics_", "");
         const detection = this.detectAnomalies(pid, metrics, startTime);
         anomalies.push(...detection);
       }
@@ -280,13 +282,16 @@ export class MetricsCollectorV2 extends EventEmitter {
     const successCount = metrics.filter((m) => m.statusCode < 400).length;
     const errorCount = metrics.filter((m) => m.statusCode >= 400).length;
     const cacheHits = metrics.filter((m) => m.cacheHit).length;
-    const cacheMisses = metrics.filter((m) => !m.cacheHit && m.cacheHit !== undefined).length;
+    const cacheMisses = metrics.filter(
+      (m) => !m.cacheHit && m.cacheHit !== undefined,
+    ).length;
     const retryCount = metrics.filter((m) => m.retried).length;
 
     const errorBreakdown: ErrorBreakdown = {};
     for (const metric of metrics) {
       if (metric.errorCode) {
-        errorBreakdown[metric.errorCode] = (errorBreakdown[metric.errorCode] ?? 0) + 1;
+        errorBreakdown[metric.errorCode] =
+          (errorBreakdown[metric.errorCode] ?? 0) + 1;
       }
     }
 
@@ -299,9 +304,13 @@ export class MetricsCollectorV2 extends EventEmitter {
       errorBreakdown,
       cacheHits,
       cacheMisses,
-      cacheHitRate: cacheHits + cacheMisses > 0 ? (cacheHits / (cacheHits + cacheMisses)) * 100 : 0,
+      cacheHitRate:
+        cacheHits + cacheMisses > 0
+          ? (cacheHits / (cacheHits + cacheMisses)) * 100
+          : 0,
       retryCount,
-      circuitBreakerTrips: this.providerMetrics.get(providerId)?.circuitBreakerTrips ?? 0,
+      circuitBreakerTrips:
+        this.providerMetrics.get(providerId)?.circuitBreakerTrips ?? 0,
       lastUpdated: new Date(),
     };
 
@@ -330,7 +339,7 @@ export class MetricsCollectorV2 extends EventEmitter {
   }
 
   private percentile(values: number[], p: number): number {
-    const index = Math.ceil((p * values.length) - 1);
+    const index = Math.ceil(p * values.length - 1);
     return values[Math.max(0, index)];
   }
 
@@ -352,7 +361,8 @@ export class MetricsCollectorV2 extends EventEmitter {
     const latencies = windowMetrics.map((m) => m.latencyMs);
     const avgLatency = latencies.reduce((a, b) => a + b, 0) / latencies.length;
     const stdDev = Math.sqrt(
-      latencies.reduce((sum, val) => sum + Math.pow(val - avgLatency, 2), 0) / latencies.length,
+      latencies.reduce((sum, val) => sum + Math.pow(val - avgLatency, 2), 0) /
+        latencies.length,
     );
 
     const baselineLatencies = this.baselineMetrics
@@ -366,12 +376,12 @@ export class MetricsCollectorV2 extends EventEmitter {
     if (avgLatency > baselineAvg + stdDev * threshold) {
       anomalies.push({
         providerId,
-        type: 'latency',
+        type: "latency",
         baseline: baselineAvg,
         current: avgLatency,
         deviation: avgLatency - baselineAvg,
         isAnomaly: true,
-        severity: avgLatency > baselineAvg * 2 ? 'high' : 'medium',
+        severity: avgLatency > baselineAvg * 2 ? "high" : "medium",
       });
     }
 
@@ -389,19 +399,21 @@ export class MetricsCollectorV2 extends EventEmitter {
     if (errorRate > baselineErrorRate + 5 && errorRate > 1) {
       anomalies.push({
         providerId,
-        type: 'error_rate',
+        type: "error_rate",
         baseline: baselineErrorRate,
         current: errorRate,
         deviation: errorRate - baselineErrorRate,
         isAnomaly: true,
-        severity: errorRate > 10 ? 'high' : 'medium',
+        severity: errorRate > 10 ? "high" : "medium",
       });
     }
 
     return anomalies;
   }
 
-  private getWindowMs(timeWindow: 'one_minute' | 'five_minute' | 'one_hour' | 'one_day'): number {
+  private getWindowMs(
+    timeWindow: "one_minute" | "five_minute" | "one_hour" | "one_day",
+  ): number {
     const windows: Record<string, number> = {
       one_minute: 60 * 1000,
       five_minute: 5 * 60 * 1000,
@@ -425,7 +437,7 @@ export class MetricsExporter {
    */
   exportPrometheus(): string {
     const metrics = this.collector.getAllMetrics();
-    let output = '';
+    let output = "";
 
     for (const m of metrics) {
       output += `# HELP gateway_requests_total Total requests to provider\n`;
@@ -452,7 +464,7 @@ export class MetricsExporter {
       output += `# HELP gateway_retries Total retry count\n`;
       output += `gateway_retries{provider="${m.providerId}"} ${m.retryCount}\n`;
 
-      output += '\n';
+      output += "\n";
     }
 
     return output;
@@ -481,17 +493,29 @@ export class MetricsExporter {
     const lines: string[] = [];
 
     for (const m of metrics) {
-      lines.push(`gateway.requests.total:${m.requestCount}|c|#provider:${m.providerId}`);
-      lines.push(`gateway.requests.success:${m.successCount}|c|#provider:${m.providerId}`);
-      lines.push(`gateway.requests.error:${m.errorCount}|c|#provider:${m.providerId}`);
-      lines.push(`gateway.latency.p95:${m.latencies.p95}|ms|#provider:${m.providerId}`);
-      lines.push(`gateway.latency.p99:${m.latencies.p99}|ms|#provider:${m.providerId}`);
-      lines.push(`gateway.cache.hits:${m.cacheHits}|c|#provider:${m.providerId}`);
+      lines.push(
+        `gateway.requests.total:${m.requestCount}|c|#provider:${m.providerId}`,
+      );
+      lines.push(
+        `gateway.requests.success:${m.successCount}|c|#provider:${m.providerId}`,
+      );
+      lines.push(
+        `gateway.requests.error:${m.errorCount}|c|#provider:${m.providerId}`,
+      );
+      lines.push(
+        `gateway.latency.p95:${m.latencies.p95}|ms|#provider:${m.providerId}`,
+      );
+      lines.push(
+        `gateway.latency.p99:${m.latencies.p99}|ms|#provider:${m.providerId}`,
+      );
+      lines.push(
+        `gateway.cache.hits:${m.cacheHits}|c|#provider:${m.providerId}`,
+      );
       lines.push(
         `gateway.cache.hit_rate:${m.cacheHitRate.toFixed(2)}|g|#provider:${m.providerId}`,
       );
     }
 
-    return lines.join('\n');
+    return lines.join("\n");
   }
 }

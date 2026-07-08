@@ -21,33 +21,35 @@
 import { PrismaClient } from "./generated/prisma";
 // Singleton Prisma client
 const globalForPrisma = globalThis;
-export const prisma = globalForPrisma.prisma ??
-    new PrismaClient({
-        log: process.env.NODE_ENV === "development"
-            ? ["query", "error", "warn"]
-            : ["error"],
-    });
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log:
+      process.env.NODE_ENV === "development"
+        ? ["query", "error", "warn"]
+        : ["error"],
+  });
 if (process.env.NODE_ENV !== "production") {
-    globalForPrisma.prisma = prisma;
+  globalForPrisma.prisma = prisma;
 }
 /**
  * Shop-scoped Prisma client — sets `app.current_shop_id`.
  * Used by Shopify webhooks, carrier service, and all per-shop operations.
  */
 export function forTenant(shopId) {
-    return prisma.$extends({
-        query: {
-            $allModels: {
-                async $allOperations({ args, query }) {
-                    const [, result] = await prisma.$transaction([
-                        prisma.$executeRaw `SELECT set_config('app.current_shop_id', ${shopId}, TRUE)`,
-                        query(args),
-                    ]);
-                    return result;
-                },
-            },
+  return prisma.$extends({
+    query: {
+      $allModels: {
+        async $allOperations({ args, query }) {
+          const [, result] = await prisma.$transaction([
+            prisma.$executeRaw`SELECT set_config('app.current_shop_id', ${shopId}, TRUE)`,
+            query(args),
+          ]);
+          return result;
         },
-    });
+      },
+    },
+  });
 }
 /**
  * Org-scoped Prisma client — sets `app.current_org_id`.
@@ -55,19 +57,19 @@ export function forTenant(shopId) {
  * Shop-specific tables (orders, routes) are NOT accessible here.
  */
 export function forOrg(orgId) {
-    return prisma.$extends({
-        query: {
-            $allModels: {
-                async $allOperations({ args, query }) {
-                    const [, result] = await prisma.$transaction([
-                        prisma.$executeRaw `SELECT set_config('app.current_org_id', ${orgId}, TRUE)`,
-                        query(args),
-                    ]);
-                    return result;
-                },
-            },
+  return prisma.$extends({
+    query: {
+      $allModels: {
+        async $allOperations({ args, query }) {
+          const [, result] = await prisma.$transaction([
+            prisma.$executeRaw`SELECT set_config('app.current_org_id', ${orgId}, TRUE)`,
+            query(args),
+          ]);
+          return result;
         },
-    });
+      },
+    },
+  });
 }
 /**
  * Dual-scoped Prisma client — sets BOTH shop_id and org_id.
@@ -75,20 +77,20 @@ export function forOrg(orgId) {
  * (e.g., assigning an org-level driver to a shop-specific order).
  */
 export function forTenantInOrg(shopId, orgId) {
-    return prisma.$extends({
-        query: {
-            $allModels: {
-                async $allOperations({ args, query }) {
-                    const [, , result] = await prisma.$transaction([
-                        prisma.$executeRaw `SELECT set_config('app.current_shop_id', ${shopId}, TRUE)`,
-                        prisma.$executeRaw `SELECT set_config('app.current_org_id', ${orgId}, TRUE)`,
-                        query(args),
-                    ]);
-                    return result;
-                },
-            },
+  return prisma.$extends({
+    query: {
+      $allModels: {
+        async $allOperations({ args, query }) {
+          const [, , result] = await prisma.$transaction([
+            prisma.$executeRaw`SELECT set_config('app.current_shop_id', ${shopId}, TRUE)`,
+            prisma.$executeRaw`SELECT set_config('app.current_org_id', ${orgId}, TRUE)`,
+            query(args),
+          ]);
+          return result;
         },
-    });
+      },
+    },
+  });
 }
 // Re-export Prisma types for consumers
 export * from "./generated/prisma";

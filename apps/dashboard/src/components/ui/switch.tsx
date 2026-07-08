@@ -5,7 +5,10 @@ import { cn } from "@/lib/utils";
 
 type SwitchSize = "sm" | "md";
 
-export interface SwitchProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "onChange" | "size"> {
+export interface SwitchProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "type" | "onChange" | "size"
+> {
   size?: SwitchSize;
   checked?: boolean;
   onChange?: (checked: boolean) => void;
@@ -34,7 +37,7 @@ const Switch = forwardRef<HTMLInputElement, SwitchProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const sizes = sizeClasses[size];
 
@@ -43,14 +46,17 @@ const Switch = forwardRef<HTMLInputElement, SwitchProps>(
         className={cn(
           "inline-flex items-center cursor-pointer",
           disabled && "opacity-50 cursor-not-allowed",
-          className
+          className,
         )}
       >
         <input
           ref={ref}
           type="checkbox"
           checked={checked}
-          onChange={(e) => { onChange?.(e.target.checked); onCheckedChange?.(e.target.checked); }}
+          onChange={(e) => {
+            onChange?.(e.target.checked);
+            onCheckedChange?.(e.target.checked);
+          }}
           disabled={disabled}
           className="hidden"
           {...props}
@@ -62,7 +68,7 @@ const Switch = forwardRef<HTMLInputElement, SwitchProps>(
             "rounded-full transition-colors duration-fast ease-default",
             checked
               ? "bg-wl-primary-500 hover:bg-wl-primary-600"
-              : "bg-wl-bg-overlay hover:bg-wl-border-strong"
+              : "bg-wl-bg-overlay hover:bg-wl-border-strong",
           )}
         >
           <div
@@ -71,14 +77,20 @@ const Switch = forwardRef<HTMLInputElement, SwitchProps>(
               sizes.thumb,
               "rounded-full bg-wl-text-inverse",
               "transition-transform duration-fast ease-default",
-              checked && `translate-x-${size === "sm" ? "4" : "5"}`
+              checked && `translate-x-${size === "sm" ? "4" : "5"}`,
             )}
-            style={checked ? { transform: `translateX(${size === "sm" ? "16px" : "20px"})` } : {}}
+            style={
+              checked
+                ? {
+                    transform: `translateX(${size === "sm" ? "16px" : "20px"})`,
+                  }
+                : {}
+            }
           />
         </div>
       </label>
     );
-  }
+  },
 );
 
 Switch.displayName = "Switch";

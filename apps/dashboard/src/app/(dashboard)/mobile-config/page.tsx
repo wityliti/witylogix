@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { useApiQuery, useApiMutation } from '@/hooks/use-api';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
-import { useToast } from '@/components/ui/toast';
+import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { useToast } from "@/components/ui/toast";
 import {
   Smartphone,
   Palette,
@@ -49,8 +49,10 @@ export default function MobileConfigPage() {
   const { addToast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
 
-  const { data: shopResp, loading: shopLoading } = useApiQuery<{ data: ShopData }>('/api/v4/shops/me');
-  const saveMutation = useApiMutation<unknown>('PATCH', '/api/v4/shops/me');
+  const { data: shopResp, loading: shopLoading } = useApiQuery<{
+    data: ShopData;
+  }>("/api/v4/shops/me");
+  const saveMutation = useApiMutation<unknown>("PATCH", "/api/v4/shops/me");
 
   // Branding state
   const [appName, setAppName] = useState("Witylogix Driver");
@@ -150,7 +152,8 @@ export default function MobileConfigPage() {
     if (cfg.notifications) setNotifications(cfg.notifications);
     if (cfg.trackingInterval) setTrackingInterval(cfg.trackingInterval);
     if (cfg.batteryMode) setBatteryMode(cfg.batteryMode);
-    if (cfg.backgroundTracking !== undefined) setBackgroundTracking(cfg.backgroundTracking);
+    if (cfg.backgroundTracking !== undefined)
+      setBackgroundTracking(cfg.backgroundTracking);
     if (cfg.cacheSize) setCacheSize(cfg.cacheSize);
     if (cfg.syncInterval) setSyncInterval(cfg.syncInterval);
     if (cfg.autoRetry !== undefined) setAutoRetry(cfg.autoRetry);
@@ -162,8 +165,8 @@ export default function MobileConfigPage() {
   const toggleFeature = (featureId: string) => {
     setFeatures(
       features.map((f) =>
-        f.id === featureId ? { ...f, enabled: !f.enabled } : f
-      )
+        f.id === featureId ? { ...f, enabled: !f.enabled } : f,
+      ),
     );
   };
 
@@ -171,8 +174,8 @@ export default function MobileConfigPage() {
   const toggleNotification = (notificationId: string) => {
     setNotifications(
       notifications.map((n) =>
-        n.id === notificationId ? { ...n, enabled: !n.enabled } : n
-      )
+        n.id === notificationId ? { ...n, enabled: !n.enabled } : n,
+      ),
     );
   };
 
@@ -184,22 +187,34 @@ export default function MobileConfigPage() {
       await saveMutation.execute({
         settings: {
           mobileConfig: {
-            appName, primaryColor, logoUrl, features, navigationMap,
-            notifications, trackingInterval, batteryMode, backgroundTracking,
-            cacheSize, syncInterval, autoRetry,
+            appName,
+            primaryColor,
+            logoUrl,
+            features,
+            navigationMap,
+            notifications,
+            trackingInterval,
+            batteryMode,
+            backgroundTracking,
+            cacheSize,
+            syncInterval,
+            autoRetry,
           },
         },
       });
       addToast({
-        type: 'success',
-        title: 'Configuration saved',
-        message: 'Mobile app configuration has been updated.',
+        type: "success",
+        title: "Configuration saved",
+        message: "Mobile app configuration has been updated.",
       });
     } catch (err) {
       addToast({
-        type: 'error',
-        title: 'Failed to save configuration',
-        message: err instanceof Error ? err.message : 'Could not save configuration. Please try again.',
+        type: "error",
+        title: "Failed to save configuration",
+        message:
+          err instanceof Error
+            ? err.message
+            : "Could not save configuration. Please try again.",
       });
     } finally {
       setIsSaving(false);
@@ -212,9 +227,14 @@ export default function MobileConfigPage() {
         title="Mobile App Configuration"
         subtitle="Configure the driver mobile app settings and features"
         actions={
-          <Button variant="primary" size="md" onClick={handleSave} disabled={isSaving}>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={handleSave}
+            disabled={isSaving}
+          >
             <Save className="w-4 h-4 mr-2" />
-            {isSaving ? 'Saving...' : 'Save Configuration'}
+            {isSaving ? "Saving..." : "Save Configuration"}
           </Button>
         }
       />
@@ -235,9 +255,7 @@ export default function MobileConfigPage() {
                 <label className="block text-sm font-semibold text-white mb-3">
                   App Logo
                 </label>
-                <div
-                  className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center cursor-pointer transition-all bg-wl-bg-elevated hover:border-blue-500 hover:bg-blue-500/8"
-                >
+                <div className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center cursor-pointer transition-all bg-wl-bg-elevated hover:border-blue-500 hover:bg-blue-500/8">
                   <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                   <p className="text-sm font-medium text-white">
                     Drag logo or click to upload
@@ -248,14 +266,10 @@ export default function MobileConfigPage() {
                 </div>
                 {logoUrl && (
                   <div className="mt-3 p-3 bg-wl-bg-elevated rounded-lg text-center">
-                    <div
-                      className="w-15 h-15 mx-auto mb-2 bg-wl-bg-root rounded-lg flex items-center justify-center text-xs text-gray-400"
-                    >
+                    <div className="w-15 h-15 mx-auto mb-2 bg-wl-bg-root rounded-lg flex items-center justify-center text-xs text-gray-400">
                       LOGO
                     </div>
-                    <p className="text-xs text-gray-400">
-                      {logoUrl}
-                    </p>
+                    <p className="text-xs text-gray-400">{logoUrl}</p>
                   </div>
                 )}
               </div>
@@ -323,9 +337,7 @@ export default function MobileConfigPage() {
                       {feature.description}
                     </p>
                   </div>
-                  <label
-                    className="flex items-center gap-2 ml-4 cursor-pointer"
-                  >
+                  <label className="flex items-center gap-2 ml-4 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={feature.enabled}
@@ -381,9 +393,7 @@ export default function MobileConfigPage() {
                       {notification.description}
                     </p>
                   </div>
-                  <label
-                    className="flex items-center gap-2 ml-4 cursor-pointer"
-                  >
+                  <label className="flex items-center gap-2 ml-4 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={notification.enabled}
@@ -515,25 +525,20 @@ export default function MobileConfigPage() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div>
-                <p className="text-xs text-gray-400">
-                  Features Enabled
-                </p>
+                <p className="text-xs text-gray-400">Features Enabled</p>
                 <p className="text-lg font-bold text-white mt-1">
                   {features.filter((f) => f.enabled).length} / {features.length}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400">
-                  Notifications Enabled
-                </p>
+                <p className="text-xs text-gray-400">Notifications Enabled</p>
                 <p className="text-lg font-bold text-white mt-1">
-                  {notifications.filter((n) => n.enabled).length} / {notifications.length}
+                  {notifications.filter((n) => n.enabled).length} /{" "}
+                  {notifications.length}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400">
-                  Configuration Status
-                </p>
+                <p className="text-xs text-gray-400">Configuration Status</p>
                 <Badge variant="success" className="mt-1">
                   Configured
                 </Badge>
@@ -545,7 +550,9 @@ export default function MobileConfigPage() {
                 DEPLOYMENT NOTES
               </p>
               <p className="text-sm text-gray-400">
-                All configurations are ready for deployment to production. Click "Save Configuration" to apply these settings to the driver mobile app.
+                All configurations are ready for deployment to production. Click
+                "Save Configuration" to apply these settings to the driver
+                mobile app.
               </p>
             </div>
 

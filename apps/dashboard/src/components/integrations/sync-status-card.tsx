@@ -26,51 +26,51 @@ export function SyncStatusCard({
   // Get status color and label
   const getStatusColor = (): string => {
     switch (syncStatus) {
-      case 'success':
-        return 'var(--wl-success-500)';
-      case 'syncing':
-        return 'var(--wl-primary-500)';
-      case 'error':
-        return 'var(--wl-danger-500)';
-      case 'paused':
-        return 'var(--wl-warning-500)';
+      case "success":
+        return "var(--wl-success-500)";
+      case "syncing":
+        return "var(--wl-primary-500)";
+      case "error":
+        return "var(--wl-danger-500)";
+      case "paused":
+        return "var(--wl-warning-500)";
       default:
-        return 'var(--wl-border-subtle)';
+        return "var(--wl-border-subtle)";
     }
   };
 
   const getStatusLabel = (): string => {
     switch (syncStatus) {
-      case 'success':
-        return 'Synced';
-      case 'syncing':
-        return 'Syncing...';
-      case 'error':
-        return 'Error';
-      case 'paused':
-        return 'Paused';
+      case "success":
+        return "Synced";
+      case "syncing":
+        return "Syncing...";
+      case "error":
+        return "Error";
+      case "paused":
+        return "Paused";
       default:
-        return 'Idle';
+        return "Idle";
     }
   };
 
   // Get sync direction icon
   const getSyncDirectionIcon = (): string => {
     switch (syncDirection) {
-      case 'inbound':
-        return '←';
-      case 'outbound':
-        return '→';
-      case 'bidirectional':
-        return '↔';
+      case "inbound":
+        return "←";
+      case "outbound":
+        return "→";
+      case "bidirectional":
+        return "↔";
       default:
-        return '—';
+        return "—";
     }
   };
 
   // Format relative time
   const formatRelativeTime = (date: Date | undefined): string => {
-    if (!date) return 'Never';
+    if (!date) return "Never";
 
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -81,7 +81,7 @@ export function SyncStatusCard({
     if (days > 0) return `${days}d ago`;
     if (hours > 0) return `${hours}h ago`;
     if (minutes > 0) return `${minutes}m ago`;
-    return 'Just now';
+    return "Just now";
   };
 
   const handleTriggerSync = async () => {
@@ -96,21 +96,29 @@ export function SyncStatusCard({
 
   // Calculate success rate
   const totalRecords = recordsSynced + recordsFailed;
-  const successRate = totalRecords > 0 ? Math.round((recordsSynced / totalRecords) * 100) : 0;
+  const successRate =
+    totalRecords > 0 ? Math.round((recordsSynced / totalRecords) * 100) : 0;
 
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn("w-full", className)}>
       <div className="border border-wl-border-subtle rounded-lg bg-wl-bg-surface p-6">
         {/* Header with status */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h3 className="text-base font-semibold text-wl-text-primary mb-2">Data Sync Status</h3>
+            <h3 className="text-base font-semibold text-wl-text-primary mb-2">
+              Data Sync Status
+            </h3>
             <div className="flex items-center gap-2">
               <div
-                className={cn('w-2 h-2 rounded-full', syncStatus === 'syncing' && 'animate-pulse')}
+                className={cn(
+                  "w-2 h-2 rounded-full",
+                  syncStatus === "syncing" && "animate-pulse",
+                )}
                 style={{ backgroundColor: getStatusColor() }}
               />
-              <span className="text-sm text-wl-text-secondary">{getStatusLabel()}</span>
+              <span className="text-sm text-wl-text-secondary">
+                {getStatusLabel()}
+              </span>
             </div>
           </div>
           <div className="text-right">
@@ -139,7 +147,7 @@ export function SyncStatusCard({
           <div>
             <div className="text-xs text-wl-text-secondary mb-1">Next Sync</div>
             <div className="text-sm font-medium text-wl-text-primary">
-              {nextSyncAt ? formatRelativeTime(nextSyncAt) : 'Not scheduled'}
+              {nextSyncAt ? formatRelativeTime(nextSyncAt) : "Not scheduled"}
             </div>
             {nextSyncAt && (
               <div className="text-xs text-wl-text-secondary mt-1">
@@ -153,8 +161,12 @@ export function SyncStatusCard({
         <div className="mb-6 pb-6 border-b border-wl-border-subtle">
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-sm font-semibold text-wl-text-primary">Records</h4>
-              <span className="text-sm font-medium text-wl-text-primary">{successRate}% success</span>
+              <h4 className="text-sm font-semibold text-wl-text-primary">
+                Records
+              </h4>
+              <span className="text-sm font-medium text-wl-text-primary">
+                {successRate}% success
+              </span>
             </div>
             <div className="relative h-2 bg-wl-surface-hover rounded-full overflow-hidden">
               <div
@@ -193,8 +205,8 @@ export function SyncStatusCard({
               onClick={() => setShowErrors(!showErrors)}
               className="flex items-center gap-2 text-sm font-medium text-wl-danger-500 hover:text-wl-danger-600 mb-3"
             >
-              <span>{showErrors ? '▼' : '▶'}</span>
-              {errors.length} Recent Error{errors.length !== 1 ? 's' : ''}
+              <span>{showErrors ? "▼" : "▶"}</span>
+              {errors.length} Recent Error{errors.length !== 1 ? "s" : ""}
             </button>
 
             {showErrors && (
@@ -225,15 +237,18 @@ export function SyncStatusCard({
         {/* Action button */}
         <button
           onClick={handleTriggerSync}
-          disabled={isLoading || syncStatus === 'syncing'}
+          disabled={isLoading || syncStatus === "syncing"}
           className={cn(
-            'w-full px-4 py-2 rounded font-medium text-sm transition-colors',
-            'bg-wl-primary-500 text-white hover:bg-wl-primary-600',
-            'dark:bg-wl-primary-600 dark:hover:bg-wl-primary-700',
-            (isLoading || syncStatus === 'syncing') && 'opacity-60 cursor-not-allowed'
+            "w-full px-4 py-2 rounded font-medium text-sm transition-colors",
+            "bg-wl-primary-500 text-white hover:bg-wl-primary-600",
+            "dark:bg-wl-primary-600 dark:hover:bg-wl-primary-700",
+            (isLoading || syncStatus === "syncing") &&
+              "opacity-60 cursor-not-allowed",
           )}
         >
-          {isLoading || syncStatus === 'syncing' ? 'Syncing...' : 'Trigger Sync Now'}
+          {isLoading || syncStatus === "syncing"
+            ? "Syncing..."
+            : "Trigger Sync Now"}
         </button>
       </div>
     </div>

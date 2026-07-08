@@ -115,14 +115,25 @@ describe("TenantRateLimiter", () => {
       const planTier = "PRO" as const;
 
       // Set custom limit for /webhook endpoint (lower than plan default)
-      limiter.setEndpointLimit("/webhook", { maxRequests: 10, windowMs: 60000 });
+      limiter.setEndpointLimit("/webhook", {
+        maxRequests: 10,
+        windowMs: 60000,
+      });
 
       // Check default endpoint (should use plan limit)
-      const defaultResult = await limiter.checkLimit(tenantId, planTier, "default");
+      const defaultResult = await limiter.checkLimit(
+        tenantId,
+        planTier,
+        "default",
+      );
       expect(defaultResult.limit).toBe(1000); // PRO limit
 
       // Check overridden endpoint (should use custom limit)
-      const webhookResult = await limiter.checkLimit(tenantId, planTier, "/webhook");
+      const webhookResult = await limiter.checkLimit(
+        tenantId,
+        planTier,
+        "/webhook",
+      );
       expect(webhookResult.limit).toBe(10);
     });
 
@@ -136,7 +147,11 @@ describe("TenantRateLimiter", () => {
       }
 
       // /webhook should still have capacity (different counter)
-      const webhookResult = await limiter.checkLimit(tenantId, planTier, "/webhook");
+      const webhookResult = await limiter.checkLimit(
+        tenantId,
+        planTier,
+        "/webhook",
+      );
       expect(webhookResult.allowed).toBe(true);
       expect(webhookResult.remaining).toBe(99);
     });

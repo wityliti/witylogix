@@ -2,12 +2,12 @@
 
 ## Supported Versions
 
-| Version | Status                | Support Level          |
-| ------- | --------------------- | ---------------------- |
-| 4.x     | Current release       | Full support           |
-| 3.x     | Previous release      | Security fixes only    |
-| 2.x     | End of life           | No support             |
-| 1.x     | End of life           | No support             |
+| Version | Status           | Support Level       |
+| ------- | ---------------- | ------------------- |
+| 4.x     | Current release  | Full support        |
+| 3.x     | Previous release | Security fixes only |
+| 2.x     | End of life      | No support          |
+| 1.x     | End of life      | No support          |
 
 Only the latest patch release within each supported major version receives updates. We strongly recommend upgrading to the latest 4.x release.
 
@@ -31,12 +31,12 @@ We will never take legal action against researchers who report vulnerabilities r
 
 ## Response Timeline
 
-| Stage                  | Timeframe              |
-| ---------------------- | ---------------------- |
-| Acknowledgement        | Within 48 hours        |
-| Triage and assessment  | Within 5 business days |
-| Fix for critical       | Within 30 days         |
-| Fix for non-critical   | Within 90 days         |
+| Stage                 | Timeframe              |
+| --------------------- | ---------------------- |
+| Acknowledgement       | Within 48 hours        |
+| Triage and assessment | Within 5 business days |
+| Fix for critical      | Within 30 days         |
+| Fix for non-critical  | Within 90 days         |
 
 You will receive status updates at each stage. If we need more time, we will communicate the reason and revised timeline.
 

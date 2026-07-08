@@ -125,7 +125,7 @@ describe("EventBus", () => {
     it("should not emit if no handlers registered", async () => {
       const payload: EventPayload = { shipmentId: "ship_123" };
       await expect(
-        eventBus.emit(TriggerEvent.SHIPMENT_DELIVERED, payload)
+        eventBus.emit(TriggerEvent.SHIPMENT_DELIVERED, payload),
       ).resolves.not.toThrow();
     });
 
@@ -144,7 +144,9 @@ describe("EventBus", () => {
       eventBus.on(TriggerEvent.SHIPMENT_DELIVERED, syncHandler);
       eventBus.on(TriggerEvent.SHIPMENT_DELIVERED, asyncHandler);
 
-      await eventBus.emit(TriggerEvent.SHIPMENT_DELIVERED, { shipmentId: "ship_123" });
+      await eventBus.emit(TriggerEvent.SHIPMENT_DELIVERED, {
+        shipmentId: "ship_123",
+      });
 
       expect(callOrder).toContain(1);
       expect(callOrder).toContain(2);
@@ -161,7 +163,9 @@ describe("EventBus", () => {
       eventBus.on(TriggerEvent.SHIPMENT_DELIVERED, successHandler);
 
       await expect(
-        eventBus.emit(TriggerEvent.SHIPMENT_DELIVERED, { shipmentId: "ship_123" })
+        eventBus.emit(TriggerEvent.SHIPMENT_DELIVERED, {
+          shipmentId: "ship_123",
+        }),
       ).resolves.not.toThrow();
 
       expect(errorHandler).toHaveBeenCalled();
@@ -248,7 +252,11 @@ describe("NotificationTriggerEngine", () => {
       queuedItems.push(item);
     };
 
-    engine = new NotificationTriggerEngine(bus, mockRuleLoader, mockQueueHandler);
+    engine = new NotificationTriggerEngine(
+      bus,
+      mockRuleLoader,
+      mockQueueHandler,
+    );
   });
 
   describe("rule loading", () => {
@@ -258,8 +266,13 @@ describe("NotificationTriggerEngine", () => {
     });
 
     it("should load rules for specific event", async () => {
-      const rules = await engine.loadRules("shop_123", TriggerEvent.SHIPMENT_DELIVERED);
-      expect(rules.every((r) => r.event === TriggerEvent.SHIPMENT_DELIVERED)).toBe(true);
+      const rules = await engine.loadRules(
+        "shop_123",
+        TriggerEvent.SHIPMENT_DELIVERED,
+      );
+      expect(
+        rules.every((r) => r.event === TriggerEvent.SHIPMENT_DELIVERED),
+      ).toBe(true);
     });
 
     it("should return empty for unknown shop", async () => {
@@ -296,8 +309,12 @@ describe("NotificationTriggerEngine", () => {
         isActive: true,
       };
 
-      expect(engine.evaluateConditions(rule, { zone: "north_zone_1" })).toBe(true);
-      expect(engine.evaluateConditions(rule, { zone: "south_zone_2" })).toBe(false);
+      expect(engine.evaluateConditions(rule, { zone: "north_zone_1" })).toBe(
+        true,
+      );
+      expect(engine.evaluateConditions(rule, { zone: "south_zone_2" })).toBe(
+        false,
+      );
     });
 
     it("should evaluate neq operator", () => {
@@ -312,7 +329,9 @@ describe("NotificationTriggerEngine", () => {
         isActive: true,
       };
 
-      expect(engine.evaluateConditions(rule, { status: "delivered" })).toBe(true);
+      expect(engine.evaluateConditions(rule, { status: "delivered" })).toBe(
+        true,
+      );
       expect(engine.evaluateConditions(rule, { status: "failed" })).toBe(false);
     });
 
@@ -356,19 +375,21 @@ describe("NotificationTriggerEngine", () => {
         templateId: "tmpl",
         channel: "EMAIL",
         recipientType: "customer",
-        conditions: [{ field: "address", operator: "contains", value: "New York" }],
+        conditions: [
+          { field: "address", operator: "contains", value: "New York" },
+        ],
         isActive: true,
       };
 
       expect(
         engine.evaluateConditions(rule, {
           address: "123 Main St, New York, NY 10001",
-        })
+        }),
       ).toBe(true);
       expect(
         engine.evaluateConditions(rule, {
           address: "456 Park Ave, Boston, MA 02101",
-        })
+        }),
       ).toBe(false);
     });
 
@@ -381,7 +402,11 @@ describe("NotificationTriggerEngine", () => {
         channel: "EMAIL",
         recipientType: "customer",
         conditions: [
-          { field: "zone", operator: "in", value: ["zone_1", "zone_2", "zone_3"] },
+          {
+            field: "zone",
+            operator: "in",
+            value: ["zone_1", "zone_2", "zone_3"],
+          },
         ],
         isActive: true,
       };
@@ -409,21 +434,21 @@ describe("NotificationTriggerEngine", () => {
         engine.evaluateConditions(rule, {
           zone: "north_zone_1",
           amount: 150,
-        })
+        }),
       ).toBe(true);
 
       expect(
         engine.evaluateConditions(rule, {
           zone: "north_zone_1",
           amount: 50,
-        })
+        }),
       ).toBe(false);
 
       expect(
         engine.evaluateConditions(rule, {
           zone: "south_zone_2",
           amount: 150,
-        })
+        }),
       ).toBe(false);
     });
 
@@ -444,13 +469,13 @@ describe("NotificationTriggerEngine", () => {
       expect(
         engine.evaluateConditions(rule, {
           shipment: { zone: "north_zone_1" },
-        })
+        }),
       ).toBe(true);
 
       expect(
         engine.evaluateConditions(rule, {
           shipment: { zone: "south_zone_2" },
-        })
+        }),
       ).toBe(false);
     });
   });
@@ -483,7 +508,9 @@ describe("NotificationTriggerEngine", () => {
       };
 
       expect(
-        engine.resolveRecipient(rule, { customerEmail: "customer@example.com" })
+        engine.resolveRecipient(rule, {
+          customerEmail: "customer@example.com",
+        }),
       ).toBe("customer@example.com");
     });
 
@@ -499,7 +526,7 @@ describe("NotificationTriggerEngine", () => {
       };
 
       expect(engine.resolveRecipient(rule, { customerId: "cust_123" })).toBe(
-        "cust_123"
+        "cust_123",
       );
     });
 
@@ -515,7 +542,7 @@ describe("NotificationTriggerEngine", () => {
       };
 
       expect(
-        engine.resolveRecipient(rule, { driverPhone: "+1-555-123-4567" })
+        engine.resolveRecipient(rule, { driverPhone: "+1-555-123-4567" }),
       ).toBe("+1-555-123-4567");
     });
 
@@ -531,7 +558,7 @@ describe("NotificationTriggerEngine", () => {
       };
 
       expect(engine.resolveRecipient(rule, { shopId: "shop_123" })).toBe(
-        "shop_123"
+        "shop_123",
       );
     });
 
@@ -554,7 +581,7 @@ describe("NotificationTriggerEngine", () => {
     it("should include common fields", () => {
       const vars = engine.buildTemplateVars(
         TriggerEvent.SHIPMENT_DELIVERED,
-        {}
+        {},
       );
       expect(vars).toHaveProperty("event", TriggerEvent.SHIPMENT_DELIVERED);
       expect(vars).toHaveProperty("timestamp");
@@ -628,7 +655,7 @@ describe("NotificationTriggerEngine", () => {
     it("should process event with no rules", async () => {
       const result = await engine.processEvent(
         TriggerEvent.SHIPMENT_DELIVERED,
-        { shopId: "unknown_shop" }
+        { shopId: "unknown_shop" },
       );
 
       expect(result.matchedRuleCount).toBe(0);
@@ -637,7 +664,10 @@ describe("NotificationTriggerEngine", () => {
     });
 
     it("should process event missing shopId", async () => {
-      const result = await engine.processEvent(TriggerEvent.SHIPMENT_DELIVERED, {});
+      const result = await engine.processEvent(
+        TriggerEvent.SHIPMENT_DELIVERED,
+        {},
+      );
 
       expect(result.matchedRuleCount).toBe(0);
       expect(result.queuedCount).toBe(0);
@@ -651,7 +681,7 @@ describe("NotificationTriggerEngine", () => {
           shopId: "shop_123",
           shipmentId: "ship_123",
           customerEmail: "test@example.com",
-        }
+        },
       );
 
       expect(result.matchedRuleCount).toBeGreaterThan(0);
@@ -712,7 +742,7 @@ describe("NotificationTriggerEngine", () => {
         {
           shopId: "shop_123",
           customerEmail: "test@example.com",
-        }
+        },
       );
 
       expect(result.durationMs).toBeGreaterThanOrEqual(0);
@@ -725,12 +755,12 @@ describe("NotificationTriggerEngine", () => {
         async () => {
           throw new Error("Loader error");
         },
-        mockQueueHandler
+        mockQueueHandler,
       );
 
       const result = await errorEngine.processEvent(
         TriggerEvent.SHIPMENT_DELIVERED,
-        { shopId: "shop_123" }
+        { shopId: "shop_123" },
       );
 
       expect(result.errors.length).toBeGreaterThan(0);
@@ -742,7 +772,7 @@ describe("NotificationTriggerEngine", () => {
         mockRuleLoader,
         async () => {
           throw new Error("Queue error");
-        }
+        },
       );
 
       const result = await errorEngine.processEvent(
@@ -750,7 +780,7 @@ describe("NotificationTriggerEngine", () => {
         {
           shopId: "shop_123",
           customerEmail: "test@example.com",
-        }
+        },
       );
 
       expect(result.errors.length).toBeGreaterThan(0);
@@ -783,7 +813,7 @@ describe("NotificationTriggerEngine", () => {
         async () => {
           // Track which event was processed
           deliveredCalled = true;
-        }
+        },
       );
 
       await bus.emit(TriggerEvent.SHIPMENT_DELIVERED, {

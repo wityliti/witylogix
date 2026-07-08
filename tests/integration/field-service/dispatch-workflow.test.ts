@@ -9,15 +9,19 @@
  * - Reassignment: when tech becomes unavailable, cascade to next
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   createMockWorkOrder,
   createMockTechnician,
   createMockDispatchAssignment,
   createMockServiceZone,
   calculateTravelTime,
-} from '../fixtures/field-service-fixtures.js';
-import type { MockWorkOrder, MockTechnician, MockDispatchAssignment } from '../fixtures/field-service-fixtures.js';
+} from "../fixtures/field-service-fixtures.js";
+import type {
+  MockWorkOrder,
+  MockTechnician,
+  MockDispatchAssignment,
+} from "../fixtures/field-service-fixtures.js";
 
 // ─────────────────────────────────────────────────────────────────────────
 // SETUP & HELPERS
@@ -73,11 +77,13 @@ class DispatchEngine {
 
     for (const tech of this.technicians.values()) {
       // Check skills
-      const hasAllSkills = workOrder.requiredSkills.every((skill) => tech.skills.includes(skill));
+      const hasAllSkills = workOrder.requiredSkills.every((skill) =>
+        tech.skills.includes(skill),
+      );
       if (!hasAllSkills) continue;
 
       // Check availability
-      if (tech.status === 'available') {
+      if (tech.status === "available") {
         candidates.push(tech.id);
       }
     }
@@ -87,7 +93,7 @@ class DispatchEngine {
 
   private findNearestTechnician(
     workOrder: MockWorkOrder,
-    candidateIds: string[]
+    candidateIds: string[],
   ): string | null {
     let nearestId: string | null = null;
     let minDistance = Infinity;
@@ -96,10 +102,10 @@ class DispatchEngine {
       const tech = this.technicians.get(techId);
       if (!tech || !tech.currentLocation) continue;
 
-      const distance = calculateTravelTime(
-        tech.currentLocation,
-        { latitude: workOrder.location.latitude, longitude: workOrder.location.longitude }
-      );
+      const distance = calculateTravelTime(tech.currentLocation, {
+        latitude: workOrder.location.latitude,
+        longitude: workOrder.location.longitude,
+      });
 
       if (distance < minDistance) {
         minDistance = distance;
@@ -116,7 +122,8 @@ class DispatchEngine {
 
   preemptByPriority(emergencyWorkOrderId: string): MockDispatchAssignment[] {
     const emergencyWorkOrder = this.workOrders.get(emergencyWorkOrderId);
-    if (!emergencyWorkOrder || emergencyWorkOrder.priority !== 'emergency') return [];
+    if (!emergencyWorkOrder || emergencyWorkOrder.priority !== "emergency")
+      return [];
 
     const preempted: MockDispatchAssignment[] = [];
 
@@ -126,8 +133,12 @@ class DispatchEngine {
 
       // Check priority levels
       const priorityOrder = { emergency: 0, high: 1, medium: 2, low: 3 };
-      if (priorityOrder[assignedWorkOrder.priority as keyof typeof priorityOrder] >
-          priorityOrder[emergencyWorkOrder.priority as keyof typeof priorityOrder]) {
+      if (
+        priorityOrder[
+          assignedWorkOrder.priority as keyof typeof priorityOrder
+        ] >
+        priorityOrder[emergencyWorkOrder.priority as keyof typeof priorityOrder]
+      ) {
         // Preempt lower priority
         preempted.push(assignment);
         this.assignments.delete(assignmentId);
@@ -158,13 +169,19 @@ class DispatchEngine {
     // Find all work orders assigned to this technician
     const assignedWorkOrders: string[] = [];
     for (const [woId, assignment] of this.assignments) {
-      if (assignment.technicianId === technicianId && assignment.status === 'pending') {
+      if (
+        assignment.technicianId === technicianId &&
+        assignment.status === "pending"
+      ) {
         assignedWorkOrders.push(woId);
       }
     }
 
     // Simple optimization: sort by travel time from current location
-    let currentLocation = technician.currentLocation || { latitude: 34.0522, longitude: -118.2437 };
+    let currentLocation = technician.currentLocation || {
+      latitude: 34.0522,
+      longitude: -118.2437,
+    };
     const optimizedOrder: string[] = [];
     const remaining = new Set(assignedWorkOrders);
     let totalTravelTime = 0;
@@ -195,7 +212,10 @@ class DispatchEngine {
 
         const wo = this.workOrders.get(nearestWoId);
         if (wo) {
-          currentLocation = { latitude: wo.location.latitude, longitude: wo.location.longitude };
+          currentLocation = {
+            latitude: wo.location.latitude,
+            longitude: wo.location.longitude,
+          };
         }
       }
     }
@@ -205,7 +225,9 @@ class DispatchEngine {
     for (const woId of optimizedOrder) {
       const wo = this.workOrders.get(woId);
       if (wo && wo.estimatedDuration) {
-        completionTime = new Date(completionTime.getTime() + wo.estimatedDuration * 60 * 1000);
+        completionTime = new Date(
+          completionTime.getTime() + wo.estimatedDuration * 60 * 1000,
+        );
       }
     }
 
@@ -233,15 +255,24 @@ class DispatchEngine {
     if (!assignment) return;
 
     assignment.actualArrival = actualTime;
-    assignment.status = 'arrived';
+    assignment.status = "arrived";
   }
 
-  compareETAAccuracy(assignmentId: string): { estimatedMinutes: number; actualMinutes: number; deviation: number } | null {
+  compareETAAccuracy(assignmentId: string): {
+    estimatedMinutes: number;
+    actualMinutes: number;
+    deviation: number;
+  } | null {
     const assignment = this.assignments.get(assignmentId);
-    if (!assignment || !assignment.eta || !assignment.actualArrival) return null;
+    if (!assignment || !assignment.eta || !assignment.actualArrival)
+      return null;
 
-    const estimatedMinutes = (assignment.eta.getTime() - assignment.assignedAt.getTime()) / (1000 * 60);
-    const actualMinutes = (assignment.actualArrival.getTime() - assignment.assignedAt.getTime()) / (1000 * 60);
+    const estimatedMinutes =
+      (assignment.eta.getTime() - assignment.assignedAt.getTime()) /
+      (1000 * 60);
+    const actualMinutes =
+      (assignment.actualArrival.getTime() - assignment.assignedAt.getTime()) /
+      (1000 * 60);
 
     return {
       estimatedMinutes: Math.round(estimatedMinutes),
@@ -259,13 +290,16 @@ class DispatchEngine {
     if (!technician) return [];
 
     // Mark technician unavailable
-    technician.status = 'unavailable';
+    technician.status = "unavailable";
 
     const reassignedWoIds: string[] = [];
 
     // Find work orders assigned to this technician
     for (const [woId, assignment] of this.assignments) {
-      if (assignment.technicianId === technicianId && assignment.status !== 'completed') {
+      if (
+        assignment.technicianId === technicianId &&
+        assignment.status !== "completed"
+      ) {
         reassignedWoIds.push(woId);
 
         // Try to auto-dispatch to next available
@@ -314,7 +348,10 @@ class DispatchEngine {
     return result;
   }
 
-  updateAssignmentStatus(assignmentId: string, status: MockDispatchAssignment['status']): void {
+  updateAssignmentStatus(
+    assignmentId: string,
+    status: MockDispatchAssignment["status"],
+  ): void {
     const assignment = this.assignments.get(assignmentId);
     if (assignment) {
       assignment.status = status;
@@ -326,7 +363,7 @@ class DispatchEngine {
 // TESTS
 // ─────────────────────────────────────────────────────────────────────────
 
-describe('Field Service Dispatch Workflow', () => {
+describe("Field Service Dispatch Workflow", () => {
   let engine: DispatchEngine;
   let workOrder: MockWorkOrder;
   let technician: MockTechnician;
@@ -335,16 +372,16 @@ describe('Field Service Dispatch Workflow', () => {
     engine = new DispatchEngine();
 
     workOrder = createMockWorkOrder({
-      id: 'wo_0',
-      requiredSkills: ['HVAC'],
-      priority: 'high',
+      id: "wo_0",
+      requiredSkills: ["HVAC"],
+      priority: "high",
     });
     engine.registerWorkOrder(workOrder);
 
     technician = createMockTechnician({
-      id: 'tech_0',
-      skills: ['HVAC', 'Electrical'],
-      status: 'available',
+      id: "tech_0",
+      skills: ["HVAC", "Electrical"],
+      status: "available",
     });
     engine.registerTechnician(technician);
   });
@@ -353,8 +390,8 @@ describe('Field Service Dispatch Workflow', () => {
   // AUTO-DISPATCH
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Auto-Dispatch', () => {
-    it('should dispatch to nearest available technician', () => {
+  describe("Auto-Dispatch", () => {
+    it("should dispatch to nearest available technician", () => {
       const assignment = engine.autoDispatch(workOrder.id);
 
       expect(assignment).toBeDefined();
@@ -362,9 +399,12 @@ describe('Field Service Dispatch Workflow', () => {
       expect(assignment?.workOrderId).toBe(workOrder.id);
     });
 
-    it('should dispatch only to technicians with matching skills', () => {
-      const unskilled = createMockTechnician({ id: 'tech_1', skills: ['Plumbing'] });
-      unskilled.status = 'available';
+    it("should dispatch only to technicians with matching skills", () => {
+      const unskilled = createMockTechnician({
+        id: "tech_1",
+        skills: ["Plumbing"],
+      });
+      unskilled.status = "available";
       engine.registerTechnician(unskilled);
 
       const assignment = engine.autoDispatch(workOrder.id);
@@ -373,17 +413,17 @@ describe('Field Service Dispatch Workflow', () => {
       expect(assignment?.technicianId).toBe(technician.id);
     });
 
-    it('should not dispatch to unavailable technicians', () => {
-      technician.status = 'unavailable';
+    it("should not dispatch to unavailable technicians", () => {
+      technician.status = "unavailable";
 
       const assignment = engine.autoDispatch(workOrder.id);
 
       expect(assignment).toBeNull();
     });
 
-    it('should dispatch to nearest among multiple candidates', () => {
-      const tech2 = createMockTechnician({ id: 'tech_2', skills: ['HVAC'] });
-      tech2.status = 'available';
+    it("should dispatch to nearest among multiple candidates", () => {
+      const tech2 = createMockTechnician({ id: "tech_2", skills: ["HVAC"] });
+      tech2.status = "available";
       tech2.currentLocation = { latitude: 34.05, longitude: -118.24 }; // Slightly closer
       engine.registerTechnician(tech2);
 
@@ -397,22 +437,22 @@ describe('Field Service Dispatch Workflow', () => {
   // PRIORITY PREEMPTION
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Priority Preemption', () => {
-    it('should preempt lower priority work orders for emergency', () => {
+  describe("Priority Preemption", () => {
+    it("should preempt lower priority work orders for emergency", () => {
       // Assign medium priority work order first
       const mediumWo = createMockWorkOrder({
-        id: 'wo_1',
-        requiredSkills: ['HVAC'],
-        priority: 'medium',
+        id: "wo_1",
+        requiredSkills: ["HVAC"],
+        priority: "medium",
       });
       engine.registerWorkOrder(mediumWo);
       engine.autoDispatch(mediumWo.id);
 
       // Create emergency work order
       const emergencyWo = createMockWorkOrder({
-        id: 'wo_2',
-        requiredSkills: ['HVAC'],
-        priority: 'emergency',
+        id: "wo_2",
+        requiredSkills: ["HVAC"],
+        priority: "emergency",
       });
       engine.registerWorkOrder(emergencyWo);
 
@@ -422,19 +462,19 @@ describe('Field Service Dispatch Workflow', () => {
       expect(preempted.length).toBeGreaterThan(0);
     });
 
-    it('should dispatch emergency after preemption', () => {
+    it("should dispatch emergency after preemption", () => {
       const mediumWo = createMockWorkOrder({
-        id: 'wo_3',
-        requiredSkills: ['HVAC'],
-        priority: 'medium',
+        id: "wo_3",
+        requiredSkills: ["HVAC"],
+        priority: "medium",
       });
       engine.registerWorkOrder(mediumWo);
       engine.autoDispatch(mediumWo.id);
 
       const emergencyWo = createMockWorkOrder({
-        id: 'wo_4',
-        requiredSkills: ['HVAC'],
-        priority: 'emergency',
+        id: "wo_4",
+        requiredSkills: ["HVAC"],
+        priority: "emergency",
       });
       engine.registerWorkOrder(emergencyWo);
 
@@ -449,11 +489,11 @@ describe('Field Service Dispatch Workflow', () => {
   // ROUTE OPTIMIZATION
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Route Optimization', () => {
-    it('should optimize route for technician', () => {
-      const wo1 = createMockWorkOrder({ id: 'wo_5', requiredSkills: ['HVAC'] });
-      const wo2 = createMockWorkOrder({ id: 'wo_6', requiredSkills: ['HVAC'] });
-      const wo3 = createMockWorkOrder({ id: 'wo_7', requiredSkills: ['HVAC'] });
+  describe("Route Optimization", () => {
+    it("should optimize route for technician", () => {
+      const wo1 = createMockWorkOrder({ id: "wo_5", requiredSkills: ["HVAC"] });
+      const wo2 = createMockWorkOrder({ id: "wo_6", requiredSkills: ["HVAC"] });
+      const wo3 = createMockWorkOrder({ id: "wo_7", requiredSkills: ["HVAC"] });
 
       engine.registerWorkOrder(wo1);
       engine.registerWorkOrder(wo2);
@@ -470,10 +510,10 @@ describe('Field Service Dispatch Workflow', () => {
       expect(route.totalTravelTime).toBeGreaterThan(0);
     });
 
-    it('should calculate estimated completion time', () => {
+    it("should calculate estimated completion time", () => {
       const wo1 = createMockWorkOrder({
-        id: 'wo_8',
-        requiredSkills: ['HVAC'],
+        id: "wo_8",
+        requiredSkills: ["HVAC"],
         estimatedDuration: 120,
       });
       engine.registerWorkOrder(wo1);
@@ -482,7 +522,9 @@ describe('Field Service Dispatch Workflow', () => {
       const route = engine.optimizeRoute(technician.id);
 
       expect(route.estimatedCompletionTime).toBeInstanceOf(Date);
-      expect(route.estimatedCompletionTime.getTime()).toBeGreaterThan(Date.now());
+      expect(route.estimatedCompletionTime.getTime()).toBeGreaterThan(
+        Date.now(),
+      );
     });
   });
 
@@ -490,8 +532,8 @@ describe('Field Service Dispatch Workflow', () => {
   // ETA TRACKING
   // ─────────────────────────────────────────────────────────────────
 
-  describe('ETA Accuracy', () => {
-    it('should calculate ETA for assignment', () => {
+  describe("ETA Accuracy", () => {
+    it("should calculate ETA for assignment", () => {
       const assignment = engine.autoDispatch(workOrder.id);
       if (!assignment) return;
 
@@ -499,7 +541,7 @@ describe('Field Service Dispatch Workflow', () => {
       expect(eta).toBeInstanceOf(Date);
     });
 
-    it('should record actual arrival time', () => {
+    it("should record actual arrival time", () => {
       const assignment = engine.autoDispatch(workOrder.id);
       if (!assignment) return;
 
@@ -508,14 +550,16 @@ describe('Field Service Dispatch Workflow', () => {
 
       const updated = engine.getAssignment(workOrder.id);
       expect(updated?.actualArrival).toEqual(actualTime);
-      expect(updated?.status).toBe('arrived');
+      expect(updated?.status).toBe("arrived");
     });
 
-    it('should compare ETA vs actual time', () => {
+    it("should compare ETA vs actual time", () => {
       const assignment = engine.autoDispatch(workOrder.id);
       if (!assignment) return;
 
-      const actualTime = new Date(assignment.assignedAt.getTime() + 35 * 60 * 1000); // 35 min later
+      const actualTime = new Date(
+        assignment.assignedAt.getTime() + 35 * 60 * 1000,
+      ); // 35 min later
       engine.recordActualArrival(workOrder.id, actualTime);
 
       const accuracy = engine.compareETAAccuracy(workOrder.id);
@@ -529,8 +573,8 @@ describe('Field Service Dispatch Workflow', () => {
   // REASSIGNMENT
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Reassignment on Unavailability', () => {
-    it('should reassign when technician becomes unavailable', () => {
+  describe("Reassignment on Unavailability", () => {
+    it("should reassign when technician becomes unavailable", () => {
       const assignment = engine.autoDispatch(workOrder.id);
       expect(assignment).toBeDefined();
 
@@ -539,11 +583,11 @@ describe('Field Service Dispatch Workflow', () => {
       expect(reassigned).toContain(workOrder.id);
     });
 
-    it('should cascade reassignment to next technician', () => {
+    it("should cascade reassignment to next technician", () => {
       const tech2 = createMockTechnician({
-        id: 'tech_2',
-        skills: ['HVAC'],
-        status: 'available',
+        id: "tech_2",
+        skills: ["HVAC"],
+        status: "available",
       });
       engine.registerTechnician(tech2);
 
@@ -559,15 +603,15 @@ describe('Field Service Dispatch Workflow', () => {
   // DISPATCH HELPERS
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Dispatch Management', () => {
-    it('should retrieve assignment by work order', () => {
+  describe("Dispatch Management", () => {
+    it("should retrieve assignment by work order", () => {
       const assignment = engine.autoDispatch(workOrder.id);
 
       const retrieved = engine.getAssignment(workOrder.id);
       expect(retrieved).toEqual(assignment);
     });
 
-    it('should get assignments by technician', () => {
+    it("should get assignments by technician", () => {
       engine.autoDispatch(workOrder.id);
 
       const assignments = engine.getAssignmentsByTechnician(technician.id);
@@ -576,13 +620,13 @@ describe('Field Service Dispatch Workflow', () => {
       expect(assignments[0].technicianId).toBe(technician.id);
     });
 
-    it('should update assignment status', () => {
+    it("should update assignment status", () => {
       engine.autoDispatch(workOrder.id);
 
-      engine.updateAssignmentStatus(workOrder.id, 'started');
+      engine.updateAssignmentStatus(workOrder.id, "started");
 
       const updated = engine.getAssignment(workOrder.id);
-      expect(updated?.status).toBe('started');
+      expect(updated?.status).toBe("started");
     });
   });
 
@@ -590,16 +634,16 @@ describe('Field Service Dispatch Workflow', () => {
   // COMPLEX SCENARIOS
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Complex Dispatch Scenarios', () => {
-    it('should handle emergency dispatch with multiple technicians', () => {
-      const tech2 = createMockTechnician({ id: 'tech_3', skills: ['HVAC'] });
-      tech2.status = 'available';
+  describe("Complex Dispatch Scenarios", () => {
+    it("should handle emergency dispatch with multiple technicians", () => {
+      const tech2 = createMockTechnician({ id: "tech_3", skills: ["HVAC"] });
+      tech2.status = "available";
       engine.registerTechnician(tech2);
 
       const emergencyWo = createMockWorkOrder({
-        id: 'wo_9',
-        requiredSkills: ['HVAC'],
-        priority: 'emergency',
+        id: "wo_9",
+        requiredSkills: ["HVAC"],
+        priority: "emergency",
       });
       engine.registerWorkOrder(emergencyWo);
 
@@ -607,23 +651,25 @@ describe('Field Service Dispatch Workflow', () => {
       expect(assignment).toBeDefined();
     });
 
-    it('should manage complete dispatch lifecycle', () => {
+    it("should manage complete dispatch lifecycle", () => {
       // Dispatch
       const assignment = engine.autoDispatch(workOrder.id);
-      expect(assignment?.status).toBe('pending');
+      expect(assignment?.status).toBe("pending");
 
       // Update to arrived
-      engine.updateAssignmentStatus(workOrder.id, 'arrived');
-      expect(engine.getAssignment(workOrder.id)?.status).toBe('arrived');
+      engine.updateAssignmentStatus(workOrder.id, "arrived");
+      expect(engine.getAssignment(workOrder.id)?.status).toBe("arrived");
 
       // Record actual arrival
       const actualArrival = new Date();
       engine.recordActualArrival(workOrder.id, actualArrival);
-      expect(engine.getAssignment(workOrder.id)?.actualArrival).toEqual(actualArrival);
+      expect(engine.getAssignment(workOrder.id)?.actualArrival).toEqual(
+        actualArrival,
+      );
 
       // Complete
-      engine.updateAssignmentStatus(workOrder.id, 'completed');
-      expect(engine.getAssignment(workOrder.id)?.status).toBe('completed');
+      engine.updateAssignmentStatus(workOrder.id, "completed");
+      expect(engine.getAssignment(workOrder.id)?.status).toBe("completed");
     });
   });
 });

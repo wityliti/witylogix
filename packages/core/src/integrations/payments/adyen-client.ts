@@ -3,14 +3,26 @@
  * Implements Adyen Checkout API v71 with split payments, recurring, and dispute management
  */
 
-import { type PaymentTransaction, type PaymentMethod, type PaymentRefund, type PaymentDispute, type PaymentWebhookEvent, type PaymentMethodDetails, type CustomerData, type PaymentOptions, type RefundReason, type DisputeFilters, type TransactionStatus } from './types';
-import { PaymentAdapter } from './payment-adapter';
+import {
+  type PaymentTransaction,
+  type PaymentMethod,
+  type PaymentRefund,
+  type PaymentDispute,
+  type PaymentWebhookEvent,
+  type PaymentMethodDetails,
+  type CustomerData,
+  type PaymentOptions,
+  type RefundReason,
+  type DisputeFilters,
+  type TransactionStatus,
+} from "./types";
+import { PaymentAdapter } from "./payment-adapter";
 
 /**
  * Adyen configuration
  */
 interface AdyenConfig {
-  environment: 'test' | 'live';
+  environment: "test" | "live";
   apiKey: string;
   merchantAccount: string;
   clientKey?: string;
@@ -45,12 +57,12 @@ export class AdyenClient extends PaymentAdapter {
   private apiUrl: string;
 
   constructor(config: AdyenConfig) {
-    super('adyen');
+    super("adyen");
     this.config = config;
     this.apiUrl =
-      config.environment === 'live'
-        ? 'https://checkout-api.adyen.com/v71'
-        : 'https://checkout-test.adyen.com/v71';
+      config.environment === "live"
+        ? "https://checkout-api.adyen.com/v71"
+        : "https://checkout-test.adyen.com/v71";
   }
 
   /**
@@ -60,14 +72,16 @@ export class AdyenClient extends PaymentAdapter {
     amount: number,
     currency: string,
     paymentMethodId: string,
-    options?: PaymentOptions
+    options?: PaymentOptions,
   ): Promise<PaymentTransaction> {
-    const idempotencyKey = options?.idempotencyKey || this.generateIdempotencyKey({
-      amount,
-      currency,
-      paymentMethodId,
-      timestamp: Date.now(),
-    });
+    const idempotencyKey =
+      options?.idempotencyKey ||
+      this.generateIdempotencyKey({
+        amount,
+        currency,
+        paymentMethodId,
+        timestamp: Date.now(),
+      });
 
     return this.executeWithIdempotency(idempotencyKey, async () => {
       const payload = {
@@ -78,8 +92,8 @@ export class AdyenClient extends PaymentAdapter {
         reference: idempotencyKey,
         merchantAccount: this.config.merchantAccount,
         paymentMethod: this.parsePaymentMethodData(paymentMethodId),
-        shopperIP: '',
-        userAgent: '',
+        shopperIP: "",
+        userAgent: "",
         billingAddress: options?.billingAddress
           ? {
               city: options.billingAddress.city,
@@ -108,29 +122,38 @@ export class AdyenClient extends PaymentAdapter {
             }
           : undefined,
         telephoneNumber: options?.billingAddress?.phone,
-        recurringProcessingModel: options?.skipTokenization ? undefined : 'CardOnFile',
+        recurringProcessingModel: options?.skipTokenization
+          ? undefined
+          : "CardOnFile",
         deviceFingerprint: options?.deviceData,
         captureDelayHours: 7,
       };
 
-      const response = await this.makeRequest('/payments', payload, idempotencyKey);
+      const response = await this.makeRequest(
+        "/payments",
+        payload,
+        idempotencyKey,
+      );
 
-      if (response.resultCode === 'Refused' || response.resultCode === 'Error') {
+      if (
+        response.resultCode === "Refused" ||
+        response.resultCode === "Error"
+      ) {
         throw new Error(
-          `Adyen charge failed: ${response.refusalReason || response.message || 'Unknown error'}`
+          `Adyen charge failed: ${response.refusalReason || response.message || "Unknown error"}`,
         );
       }
 
       // Handle 3DS challenge if needed
       if (response.action) {
-        const pspRef = response.pspReference ?? '';
+        const pspRef = response.pspReference ?? "";
         return {
           id: pspRef,
           externalId: pspRef,
-          providerId: 'adyen',
+          providerId: "adyen",
           amount,
           currency,
-          status: 'pending',
+          status: "pending",
           paymentMethodId,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -149,15 +172,17 @@ export class AdyenClient extends PaymentAdapter {
     amount: number,
     currency: string,
     paymentMethodId: string,
-    options?: PaymentOptions
+    options?: PaymentOptions,
   ): Promise<PaymentTransaction> {
-    const idempotencyKey = options?.idempotencyKey || this.generateIdempotencyKey({
-      amount,
-      currency,
-      paymentMethodId,
-      authorize: true,
-      timestamp: Date.now(),
-    });
+    const idempotencyKey =
+      options?.idempotencyKey ||
+      this.generateIdempotencyKey({
+        amount,
+        currency,
+        paymentMethodId,
+        authorize: true,
+        timestamp: Date.now(),
+      });
 
     return this.executeWithIdempotency(idempotencyKey, async () => {
       const payload = {
@@ -168,33 +193,43 @@ export class AdyenClient extends PaymentAdapter {
         reference: idempotencyKey,
         merchantAccount: this.config.merchantAccount,
         paymentMethod: this.parsePaymentMethodData(paymentMethodId),
-        shopperIP: '',
-        userAgent: '',
+        shopperIP: "",
+        userAgent: "",
         captureDelayHours: 0, // Don't auto-capture for authorize
       };
 
-      const response = await this.makeRequest('/payments', payload, idempotencyKey);
+      const response = await this.makeRequest(
+        "/payments",
+        payload,
+        idempotencyKey,
+      );
 
-      if (response.resultCode === 'Refused' || response.resultCode === 'Error') {
+      if (
+        response.resultCode === "Refused" ||
+        response.resultCode === "Error"
+      ) {
         throw new Error(
-          `Adyen authorization failed: ${response.refusalReason || response.message}`
+          `Adyen authorization failed: ${response.refusalReason || response.message}`,
         );
       }
 
-      return this.mapAdyenTransaction(response, 'authorized');
+      return this.mapAdyenTransaction(response, "authorized");
     });
   }
 
   /**
    * Capture previously authorized transaction
    */
-  async capture(transactionId: string, amount?: number): Promise<PaymentTransaction> {
+  async capture(
+    transactionId: string,
+    amount?: number,
+  ): Promise<PaymentTransaction> {
     return this.executeWithRetries(async () => {
       const payload = {
         originalReference: transactionId,
         modificationAmount: amount
           ? {
-              currency: 'USD',
+              currency: "USD",
               value: amount,
             }
           : undefined,
@@ -205,14 +240,19 @@ export class AdyenClient extends PaymentAdapter {
       const response = await this.makeRequest(
         `/payments/${transactionId}/captures`,
         payload,
-        `capture-${transactionId}`
+        `capture-${transactionId}`,
       );
 
-      if (response.resultCode === 'Refused' || response.resultCode === 'Error') {
-        throw new Error(`Adyen capture failed: ${response.refusalReason || response.message}`);
+      if (
+        response.resultCode === "Refused" ||
+        response.resultCode === "Error"
+      ) {
+        throw new Error(
+          `Adyen capture failed: ${response.refusalReason || response.message}`,
+        );
       }
 
-      return this.mapAdyenTransaction(response, 'captured');
+      return this.mapAdyenTransaction(response, "captured");
     });
   }
 
@@ -230,14 +270,19 @@ export class AdyenClient extends PaymentAdapter {
       const response = await this.makeRequest(
         `/payments/${transactionId}/reversals`,
         payload,
-        `void-${transactionId}`
+        `void-${transactionId}`,
       );
 
-      if (response.resultCode === 'Refused' || response.resultCode === 'Error') {
-        throw new Error(`Adyen void failed: ${response.refusalReason || response.message}`);
+      if (
+        response.resultCode === "Refused" ||
+        response.resultCode === "Error"
+      ) {
+        throw new Error(
+          `Adyen void failed: ${response.refusalReason || response.message}`,
+        );
       }
 
-      return this.mapAdyenTransaction(response, 'voided');
+      return this.mapAdyenTransaction(response, "voided");
     });
   }
 
@@ -247,14 +292,14 @@ export class AdyenClient extends PaymentAdapter {
   async refund(
     transactionId: string,
     amount?: number,
-    reason?: RefundReason
+    reason?: RefundReason,
   ): Promise<PaymentRefund> {
     return this.executeWithRetries(async () => {
       const payload = {
         originalReference: transactionId,
         modificationAmount: amount
           ? {
-              currency: 'USD',
+              currency: "USD",
               value: amount,
             }
           : undefined,
@@ -265,23 +310,28 @@ export class AdyenClient extends PaymentAdapter {
       const response = await this.makeRequest(
         `/payments/${transactionId}/refunds`,
         payload,
-        `refund-${transactionId}`
+        `refund-${transactionId}`,
       );
 
-      if (response.resultCode === 'Refused' || response.resultCode === 'Error') {
-        throw new Error(`Adyen refund failed: ${response.refusalReason || response.message}`);
+      if (
+        response.resultCode === "Refused" ||
+        response.resultCode === "Error"
+      ) {
+        throw new Error(
+          `Adyen refund failed: ${response.refusalReason || response.message}`,
+        );
       }
 
-      const refundRef = response.pspReference ?? '';
+      const refundRef = response.pspReference ?? "";
       return {
         id: refundRef,
         externalId: refundRef,
-        providerId: 'adyen',
+        providerId: "adyen",
         transactionId,
         amount: amount || 0,
-        currency: 'USD',
-        status: 'completed',
-        reason: reason || 'other',
+        currency: "USD",
+        status: "completed",
+        reason: reason || "other",
         createdAt: new Date(),
         updatedAt: new Date(),
         processedAt: new Date(),
@@ -294,12 +344,12 @@ export class AdyenClient extends PaymentAdapter {
    */
   async createPaymentMethod(
     details: PaymentMethodDetails,
-    customerId?: string
+    customerId?: string,
   ): Promise<PaymentMethod> {
     return this.executeWithRetries(async () => {
       const payload = {
         amount: {
-          currency: 'USD',
+          currency: "USD",
           value: 0, // Tokenization doesn't require amount
         },
         reference: `pm-${Date.now()}`,
@@ -308,34 +358,43 @@ export class AdyenClient extends PaymentAdapter {
           JSON.stringify({
             type: details.type,
             cardNumber: details.cardNumber,
-            expiryMonth: details.cardExpiry?.split('/')[0],
-            expiryYear: details.cardExpiry?.split('/')[1],
+            expiryMonth: details.cardExpiry?.split("/")[0],
+            expiryYear: details.cardExpiry?.split("/")[1],
             cvc: details.cardCvv,
             holderName: details.cardholderName,
-          })
+          }),
         ),
         storePaymentMethod: true,
-        recurringProcessingModel: 'CardOnFile',
+        recurringProcessingModel: "CardOnFile",
       };
 
-      const response = await this.makeRequest('/payments', payload, `pm-${Date.now()}`);
+      const response = await this.makeRequest(
+        "/payments",
+        payload,
+        `pm-${Date.now()}`,
+      );
 
-      if (response.resultCode === 'Refused' || response.resultCode === 'Error') {
-        throw new Error(`Adyen payment method creation failed: ${response.refusalReason}`);
+      if (
+        response.resultCode === "Refused" ||
+        response.resultCode === "Error"
+      ) {
+        throw new Error(
+          `Adyen payment method creation failed: ${response.refusalReason}`,
+        );
       }
 
-      const pmRef = response.pspReference ?? '';
+      const pmRef = response.pspReference ?? "";
       return {
         id: pmRef,
         externalId: pmRef,
-        providerId: 'adyen',
-        type: 'card',
+        providerId: "adyen",
+        type: "card",
         customerId,
         cardDetails: {
-          brand: 'visa',
-          lastFour: details.cardNumber?.slice(-4) || '',
-          expiryMonth: parseInt(details.cardExpiry?.split('/')[0] || '01'),
-          expiryYear: parseInt(details.cardExpiry?.split('/')[1] || '2025'),
+          brand: "visa",
+          lastFour: details.cardNumber?.slice(-4) || "",
+          expiryMonth: parseInt(details.cardExpiry?.split("/")[0] || "01"),
+          expiryYear: parseInt(details.cardExpiry?.split("/")[1] || "2025"),
           cardholderName: details.cardholderName,
         },
         isDefault: false,
@@ -350,14 +409,14 @@ export class AdyenClient extends PaymentAdapter {
    * Delete payment method
    */
   async deletePaymentMethod(paymentMethodId: string): Promise<void> {
-    throw new Error('Adyen deletePaymentMethod not directly supported');
+    throw new Error("Adyen deletePaymentMethod not directly supported");
   }
 
   /**
    * Get payment method
    */
   async getPaymentMethod(paymentMethodId: string): Promise<PaymentMethod> {
-    throw new Error('Adyen getPaymentMethod not directly supported');
+    throw new Error("Adyen getPaymentMethod not directly supported");
   }
 
   /**
@@ -365,18 +424,15 @@ export class AdyenClient extends PaymentAdapter {
    */
   async listPaymentMethods(customerId: string): Promise<PaymentMethod[]> {
     return this.executeWithRetries(async () => {
-      const response = await this.makeRequest(
-        `/listPaymentMethods`,
-        {
-          merchantAccount: this.config.merchantAccount,
-          shopperReference: customerId,
-        }
-      );
+      const response = await this.makeRequest(`/listPaymentMethods`, {
+        merchantAccount: this.config.merchantAccount,
+        shopperReference: customerId,
+      });
 
       return (response.paymentMethods || []).map((pm: any) => ({
         id: pm.id,
         externalId: pm.id,
-        providerId: 'adyen',
+        providerId: "adyen",
         type: pm.type,
         customerId,
         cardDetails: {
@@ -385,7 +441,7 @@ export class AdyenClient extends PaymentAdapter {
           expiryMonth: pm.expiryMonth,
           expiryYear: pm.expiryYear,
         },
-        isDefault: pm.storedPaymentMethodId === 'DEFAULT',
+        isDefault: pm.storedPaymentMethodId === "DEFAULT",
         isDeleted: false,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -400,7 +456,7 @@ export class AdyenClient extends PaymentAdapter {
     return this.executeWithRetries(async () => {
       const response = await this.makeRequest(`/payments/${transactionId}`, {});
 
-      if (response.resultCode === 'Error') {
+      if (response.resultCode === "Error") {
         throw new Error(`Adyen transaction lookup failed: ${response.message}`);
       }
 
@@ -411,7 +467,9 @@ export class AdyenClient extends PaymentAdapter {
   /**
    * Create customer record
    */
-  async createCustomer(customerData: CustomerData): Promise<{ id: string; externalId: string }> {
+  async createCustomer(
+    customerData: CustomerData,
+  ): Promise<{ id: string; externalId: string }> {
     const customerId = `customer-${Date.now()}`;
 
     return {
@@ -423,7 +481,10 @@ export class AdyenClient extends PaymentAdapter {
   /**
    * Update customer information
    */
-  async updateCustomer(customerId: string, data: Partial<CustomerData>): Promise<void> {
+  async updateCustomer(
+    customerId: string,
+    data: Partial<CustomerData>,
+  ): Promise<void> {
     // Adyen doesn't have explicit customer update; handled via transaction data
     return Promise.resolve();
   }
@@ -436,15 +497,17 @@ export class AdyenClient extends PaymentAdapter {
     currency: string,
     paymentMethodId: string,
     splits: Array<{ accountId: string; amount: number; percentage?: number }>,
-    options?: PaymentOptions
+    options?: PaymentOptions,
   ): Promise<PaymentTransaction> {
-    const idempotencyKey = options?.idempotencyKey || this.generateIdempotencyKey({
-      amount,
-      currency,
-      paymentMethodId,
-      splits,
-      timestamp: Date.now(),
-    });
+    const idempotencyKey =
+      options?.idempotencyKey ||
+      this.generateIdempotencyKey({
+        amount,
+        currency,
+        paymentMethodId,
+        splits,
+        timestamp: Date.now(),
+      });
 
     return this.executeWithIdempotency(idempotencyKey, async () => {
       const payload = {
@@ -455,7 +518,7 @@ export class AdyenClient extends PaymentAdapter {
         reference: idempotencyKey,
         merchantAccount: this.config.merchantAccount,
         paymentMethod: this.parsePaymentMethodData(paymentMethodId),
-        splits: splits.map(split => ({
+        splits: splits.map((split) => ({
           amount: {
             currency,
             value: split.percentage
@@ -463,14 +526,23 @@ export class AdyenClient extends PaymentAdapter {
               : split.amount,
           },
           reference: split.accountId,
-          type: 'MarketplaceCommission',
+          type: "MarketplaceCommission",
         })),
       };
 
-      const response = await this.makeRequest('/payments', payload, idempotencyKey);
+      const response = await this.makeRequest(
+        "/payments",
+        payload,
+        idempotencyKey,
+      );
 
-      if (response.resultCode === 'Refused' || response.resultCode === 'Error') {
-        throw new Error(`Adyen split payment failed: ${response.refusalReason}`);
+      if (
+        response.resultCode === "Refused" ||
+        response.resultCode === "Error"
+      ) {
+        throw new Error(
+          `Adyen split payment failed: ${response.refusalReason}`,
+        );
       }
 
       return this.mapAdyenTransaction(response);
@@ -482,13 +554,19 @@ export class AdyenClient extends PaymentAdapter {
    */
   verifyWebhookSignature(payload: string, signature: string): boolean {
     // Adyen uses HMAC-SHA256
-    return this.verifyHmacSignature(payload, signature, this.config.webhookHmacKey);
+    return this.verifyHmacSignature(
+      payload,
+      signature,
+      this.config.webhookHmacKey,
+    );
   }
 
   /**
    * Parse webhook payload
    */
-  parseWebhookPayload(payload: Record<string, any>): PaymentWebhookEvent | null {
+  parseWebhookPayload(
+    payload: Record<string, any>,
+  ): PaymentWebhookEvent | null {
     const notificationItems = payload.notificationItems || [];
 
     if (notificationItems.length === 0) {
@@ -499,30 +577,30 @@ export class AdyenClient extends PaymentAdapter {
     const notification = item.NotificationRequestItem || item;
 
     const eventTypes: Record<string, string> = {
-      AUTHORISATION: 'authorized',
-      CAPTURE: 'captured',
-      REFUND: 'refunded',
-      CANCELLATION: 'voided',
-      CAPTUREFAILED: 'failed',
-      REFUNDFAILED: 'failed',
-      CANCELLATIONFAILED: 'failed',
-      CHARGEBACK: 'dispute_opened',
-      CHARGEBACK_REVERSED: 'dispute_won',
-      NOTIFICATIONTEST: 'test',
-      PENDING: 'pending',
-      REPORT_AVAILABLE: 'report_ready',
+      AUTHORISATION: "authorized",
+      CAPTURE: "captured",
+      REFUND: "refunded",
+      CANCELLATION: "voided",
+      CAPTUREFAILED: "failed",
+      REFUNDFAILED: "failed",
+      CANCELLATIONFAILED: "failed",
+      CHARGEBACK: "dispute_opened",
+      CHARGEBACK_REVERSED: "dispute_won",
+      NOTIFICATIONTEST: "test",
+      PENDING: "pending",
+      REPORT_AVAILABLE: "report_ready",
     };
 
-    const eventType = notification.eventCode || 'unknown';
+    const eventType = notification.eventCode || "unknown";
     const mappedType = eventTypes[eventType] || eventType;
 
     return {
       id: notification.pspReference || `adyen-${Date.now()}`,
-      providerId: 'adyen',
-      provider: 'adyen',
+      providerId: "adyen",
+      provider: "adyen",
       eventType: mappedType,
       resourceType: this.mapAdyenResourceType(eventType),
-      resourceId: notification.pspReference || notification.reference || '',
+      resourceId: notification.pspReference || notification.reference || "",
       data: notification,
       timestamp: new Date(notification.eventDate || Date.now()),
       verified: true,
@@ -533,15 +611,18 @@ export class AdyenClient extends PaymentAdapter {
   /**
    * Submit dispute evidence
    */
-  async submitDisputeEvidence(disputeId: string, evidence: any[]): Promise<void> {
-    throw new Error('Adyen dispute evidence submission not directly supported');
+  async submitDisputeEvidence(
+    disputeId: string,
+    evidence: any[],
+  ): Promise<void> {
+    throw new Error("Adyen dispute evidence submission not directly supported");
   }
 
   /**
    * Get dispute
    */
   async getDispute(disputeId: string): Promise<PaymentDispute> {
-    throw new Error('Adyen getDispute not directly supported');
+    throw new Error("Adyen getDispute not directly supported");
   }
 
   /**
@@ -557,21 +638,21 @@ export class AdyenClient extends PaymentAdapter {
   private async makeRequest(
     path: string,
     payload: Record<string, any>,
-    idempotencyKey?: string
+    idempotencyKey?: string,
   ): Promise<AdyenResponse> {
     try {
       const headers: Record<string, string> = {
-        'X-API-Key': this.config.apiKey,
-        'Content-Type': 'application/json',
-        'User-Agent': 'Witylogix-Payment-Gateway/1.0',
+        "X-API-Key": this.config.apiKey,
+        "Content-Type": "application/json",
+        "User-Agent": "Witylogix-Payment-Gateway/1.0",
       };
 
       if (idempotencyKey) {
-        headers['Idempotency-Key'] = idempotencyKey;
+        headers["Idempotency-Key"] = idempotencyKey;
       }
 
       const response = await fetch(`${this.apiUrl}${path}`, {
-        method: 'POST',
+        method: "POST",
         headers,
         body: JSON.stringify(payload),
       });
@@ -611,7 +692,7 @@ export class AdyenClient extends PaymentAdapter {
       return JSON.parse(paymentMethodId);
     } catch {
       return {
-        type: 'scheme',
+        type: "scheme",
         storedPaymentMethodId: paymentMethodId,
       };
     }
@@ -620,27 +701,31 @@ export class AdyenClient extends PaymentAdapter {
   /**
    * Map Adyen transaction to standardized format
    */
-  private mapAdyenTransaction(response: AdyenResponse, overrideStatus?: TransactionStatus): PaymentTransaction {
+  private mapAdyenTransaction(
+    response: AdyenResponse,
+    overrideStatus?: TransactionStatus,
+  ): PaymentTransaction {
     const statusMap: Record<string, TransactionStatus> = {
-      Authorised: 'authorized',
-      Refused: 'failed',
-      Received: 'pending',
-      RedirectShopper: 'pending',
-      Error: 'failed',
-      Cancelled: 'voided',
-      AuthorisedPending3D2Result: 'pending',
+      Authorised: "authorized",
+      Refused: "failed",
+      Received: "pending",
+      RedirectShopper: "pending",
+      Error: "failed",
+      Cancelled: "voided",
+      AuthorisedPending3D2Result: "pending",
     };
 
-    const status = overrideStatus || statusMap[response.resultCode || ''] || 'pending';
+    const status =
+      overrideStatus || statusMap[response.resultCode || ""] || "pending";
 
     return {
-      id: response.pspReference || '',
-      externalId: response.pspReference || '',
-      providerId: 'adyen',
+      id: response.pspReference || "",
+      externalId: response.pspReference || "",
+      providerId: "adyen",
       amount: response.amount?.value || 0,
-      currency: response.amount?.currency || 'USD',
+      currency: response.amount?.currency || "USD",
       status,
-      paymentMethodId: response.pspReference || '',
+      paymentMethodId: response.pspReference || "",
       createdAt: new Date(),
       updatedAt: new Date(),
       failureReason: response.refusalReason || response.message,
@@ -651,10 +736,11 @@ export class AdyenClient extends PaymentAdapter {
    * Map Adyen resource type
    */
   private mapAdyenResourceType(
-    eventType: string
-  ): 'transaction' | 'payment_method' | 'dispute' | 'refund' | 'subscription' {
-    if (eventType === 'REFUND' || eventType === 'REFUNDFAILED') return 'refund';
-    if (eventType === 'CHARGEBACK' || eventType === 'CHARGEBACK_REVERSED') return 'dispute';
-    return 'transaction';
+    eventType: string,
+  ): "transaction" | "payment_method" | "dispute" | "refund" | "subscription" {
+    if (eventType === "REFUND" || eventType === "REFUNDFAILED") return "refund";
+    if (eventType === "CHARGEBACK" || eventType === "CHARGEBACK_REVERSED")
+      return "dispute";
+    return "transaction";
   }
 }

@@ -1,6 +1,13 @@
 "use client";
 
-import { forwardRef, useRef, useEffect, useState, type MouseEvent, type TouchEvent } from "react";
+import {
+  forwardRef,
+  useRef,
+  useEffect,
+  useState,
+  type MouseEvent,
+  type TouchEvent,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -18,8 +25,10 @@ interface SignaturePadProps {
   className?: string;
 }
 
-function getEventCoords(e: MouseEvent<HTMLCanvasElement> | TouchEvent<HTMLCanvasElement>): { clientX: number; clientY: number } {
-  if ('touches' in e) {
+function getEventCoords(
+  e: MouseEvent<HTMLCanvasElement> | TouchEvent<HTMLCanvasElement>,
+): { clientX: number; clientY: number } {
+  if ("touches" in e) {
     return { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY };
   }
   return { clientX: e.clientX, clientY: e.clientY };
@@ -69,7 +78,7 @@ const SignaturePad = forwardRef<HTMLCanvasElement, SignaturePadProps>(
     };
 
     const startDrawing = (
-      e: MouseEvent<HTMLCanvasElement> | TouchEvent<HTMLCanvasElement>
+      e: MouseEvent<HTMLCanvasElement> | TouchEvent<HTMLCanvasElement>,
     ) => {
       if (!hasSignature) setHasSignature(true);
       const canvas = canvasRef.current;
@@ -89,7 +98,7 @@ const SignaturePad = forwardRef<HTMLCanvasElement, SignaturePadProps>(
     };
 
     const draw = (
-      e: MouseEvent<HTMLCanvasElement> | TouchEvent<HTMLCanvasElement>
+      e: MouseEvent<HTMLCanvasElement> | TouchEvent<HTMLCanvasElement>,
     ) => {
       if (!isDrawing) return;
 
@@ -189,7 +198,7 @@ const SignaturePad = forwardRef<HTMLCanvasElement, SignaturePadProps>(
 
           const scale = Math.min(
             canvas.width / img.width,
-            canvas.height / img.height
+            canvas.height / img.height,
           );
           const x = (canvas.width - img.width * scale) / 2;
           const y = (canvas.height - img.height * scale) / 2;
@@ -297,9 +306,11 @@ const SignaturePad = forwardRef<HTMLCanvasElement, SignaturePadProps>(
               variant="secondary"
               onClick={(e) => {
                 e.preventDefault();
-                (e.currentTarget.parentElement?.querySelector(
-                  "input[type=file]"
-                ) as HTMLInputElement)?.click();
+                (
+                  e.currentTarget.parentElement?.querySelector(
+                    "input[type=file]",
+                  ) as HTMLInputElement
+                )?.click();
               }}
               className="gap-1"
             >
@@ -374,7 +385,7 @@ const SignaturePad = forwardRef<HTMLCanvasElement, SignaturePadProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 SignaturePad.displayName = "SignaturePad";

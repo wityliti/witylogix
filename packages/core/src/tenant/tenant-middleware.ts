@@ -365,10 +365,7 @@ export function rateLimitMiddleware(options: {
 
     res.setHeader("X-RateLimit-Limit", options.maxRequests);
     res.setHeader("X-RateLimit-Remaining", options.maxRequests - record.count);
-    res.setHeader(
-      "X-RateLimit-Reset",
-      Math.ceil(record.resetAt / 1000)
-    );
+    res.setHeader("X-RateLimit-Reset", Math.ceil(record.resetAt / 1000));
 
     next();
   };
@@ -386,7 +383,7 @@ export function tenantLoggingMiddleware() {
     res.json = function (body: any) {
       if (req.tenant) {
         console.log(
-          `[${req.tenant.orgId}] ${req.method} ${req.path} - ${res.statusCode}`
+          `[${req.tenant.orgId}] ${req.method} ${req.path} - ${res.statusCode}`,
         );
       }
       return original.call(this, body);

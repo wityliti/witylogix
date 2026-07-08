@@ -40,7 +40,7 @@ export interface FHIRCoding {
 }
 
 export interface FHIRIdentifier {
-  use?: 'usual' | 'official' | 'temp' | 'secondary' | 'old';
+  use?: "usual" | "official" | "temp" | "secondary" | "old";
   type?: FHIRCodeableConcept;
   system?: string;
   value?: string;
@@ -49,7 +49,14 @@ export interface FHIRIdentifier {
 }
 
 export interface FHIRHumanName {
-  use?: 'usual' | 'official' | 'temp' | 'nickname' | 'anonymous' | 'old' | 'maiden';
+  use?:
+    | "usual"
+    | "official"
+    | "temp"
+    | "nickname"
+    | "anonymous"
+    | "old"
+    | "maiden";
   text?: string;
   family?: string;
   given?: string[];
@@ -59,8 +66,8 @@ export interface FHIRHumanName {
 }
 
 export interface FHIRAddress {
-  use?: 'home' | 'work' | 'temp' | 'old' | 'billing';
-  type?: 'postal' | 'physical' | 'both';
+  use?: "home" | "work" | "temp" | "old" | "billing";
+  type?: "postal" | "physical" | "both";
   text?: string;
   line?: string[];
   city?: string;
@@ -72,27 +79,27 @@ export interface FHIRAddress {
 }
 
 export interface FHIRContactPoint {
-  system?: 'phone' | 'fax' | 'email' | 'pager' | 'url' | 'sms' | 'other';
+  system?: "phone" | "fax" | "email" | "pager" | "url" | "sms" | "other";
   value?: string;
-  use?: 'home' | 'work' | 'temp' | 'old' | 'mobile';
+  use?: "home" | "work" | "temp" | "old" | "mobile";
   rank?: number;
   period?: { start?: string; end?: string };
 }
 
 export interface FHIRPeriod {
   start?: string; // ISO 8601 datetime
-  end?: string;   // ISO 8601 datetime
+  end?: string; // ISO 8601 datetime
 }
 
 export interface FHIRPatient {
-  resourceType: 'Patient';
+  resourceType: "Patient";
   id?: string;
   meta?: FHIRMeta;
   identifier?: FHIRIdentifier[];
   active?: boolean;
   name?: FHIRHumanName[];
   telecom?: FHIRContactPoint[];
-  gender?: 'male' | 'female' | 'other' | 'unknown';
+  gender?: "male" | "female" | "other" | "unknown";
   birthDate?: string; // YYYY-MM-DD
   deceased?: boolean | string;
   address?: FHIRAddress[];
@@ -116,16 +123,25 @@ export interface FHIRPatient {
   managingOrganization?: FHIRReference;
   link?: Array<{
     other: FHIRReference;
-    type: 'replaced-by' | 'replaces' | 'refer' | 'seealso';
+    type: "replaced-by" | "replaces" | "refer" | "seealso";
   }>;
 }
 
 export interface FHIREncounter {
-  resourceType: 'Encounter';
+  resourceType: "Encounter";
   id?: string;
   meta?: FHIRMeta;
   identifier?: FHIRIdentifier[];
-  status: 'planned' | 'arrived' | 'triaged' | 'in-progress' | 'onleave' | 'finished' | 'cancelled' | 'entered-in-error' | 'unknown';
+  status:
+    | "planned"
+    | "arrived"
+    | "triaged"
+    | "in-progress"
+    | "onleave"
+    | "finished"
+    | "cancelled"
+    | "entered-in-error"
+    | "unknown";
   statusHistory?: Array<{ status: string; period: FHIRPeriod }>;
   class: { system?: string; code?: string; display?: string };
   classHistory?: Array<{ class: any; period: FHIRPeriod }>;
@@ -142,7 +158,13 @@ export interface FHIREncounter {
   }>;
   appointment?: FHIRReference[];
   period?: FHIRPeriod;
-  length?: { value?: number; comparator?: string; unit?: string; system?: string; code?: string };
+  length?: {
+    value?: number;
+    comparator?: string;
+    unit?: string;
+    system?: string;
+    code?: string;
+  };
   reason?: Array<{
     use?: FHIRCodeableConcept[];
     value?: FHIRCodeableConcept[];
@@ -166,7 +188,7 @@ export interface FHIREncounter {
   };
   location?: Array<{
     location: FHIRReference;
-    status?: 'planned' | 'active' | 'reserved' | 'completed';
+    status?: "planned" | "active" | "reserved" | "completed";
     physicalType?: FHIRCodeableConcept;
     period?: FHIRPeriod;
   }>;
@@ -175,13 +197,21 @@ export interface FHIREncounter {
 }
 
 export interface FHIRObservation {
-  resourceType: 'Observation';
+  resourceType: "Observation";
   id?: string;
   meta?: FHIRMeta;
   identifier?: FHIRIdentifier[];
   basedOn?: FHIRReference[];
   partOf?: FHIRReference[];
-  status: 'registered' | 'preliminary' | 'final' | 'amended' | 'corrected' | 'cancelled' | 'entered-in-error' | 'unknown';
+  status:
+    | "registered"
+    | "preliminary"
+    | "final"
+    | "amended"
+    | "corrected"
+    | "cancelled"
+    | "entered-in-error"
+    | "unknown";
   category?: FHIRCodeableConcept[];
   code: FHIRCodeableConcept;
   subject?: FHIRReference;
@@ -245,7 +275,7 @@ export interface FHIRObservation {
 }
 
 export interface FHIRCondition {
-  resourceType: 'Condition';
+  resourceType: "Condition";
   id?: string;
   meta?: FHIRMeta;
   identifier?: FHIRIdentifier[];
@@ -283,15 +313,30 @@ export interface FHIRCondition {
 }
 
 export interface FHIRMedicationRequest {
-  resourceType: 'MedicationRequest';
+  resourceType: "MedicationRequest";
   id?: string;
   meta?: FHIRMeta;
   identifier?: FHIRIdentifier[];
-  status: 'active' | 'on-hold' | 'cancelled' | 'completed' | 'entered-in-error' | 'draft' | 'unknown';
+  status:
+    | "active"
+    | "on-hold"
+    | "cancelled"
+    | "completed"
+    | "entered-in-error"
+    | "draft"
+    | "unknown";
   statusReason?: FHIRCodeableConcept;
-  intent: 'proposal' | 'plan' | 'order' | 'original-order' | 'reflex-order' | 'filler-order' | 'instance-order' | 'option';
+  intent:
+    | "proposal"
+    | "plan"
+    | "order"
+    | "original-order"
+    | "reflex-order"
+    | "filler-order"
+    | "instance-order"
+    | "option";
   category?: FHIRCodeableConcept[];
-  priority?: 'routine' | 'urgent' | 'asap' | 'stat';
+  priority?: "routine" | "urgent" | "asap" | "stat";
   doNotPerform?: boolean;
   medicationCodeableConcept?: FHIRCodeableConcept;
   medicationReference?: FHIRReference;
@@ -350,15 +395,15 @@ export interface FHIRMedicationRequest {
 }
 
 export interface FHIRAllergyIntolerance {
-  resourceType: 'AllergyIntolerance';
+  resourceType: "AllergyIntolerance";
   id?: string;
   meta?: FHIRMeta;
   identifier?: FHIRIdentifier[];
   clinicalStatus?: FHIRCodeableConcept;
   verificationStatus?: FHIRCodeableConcept;
-  type?: 'allergy' | 'intolerance' | 'propensity';
-  category?: Array<'food' | 'medication' | 'environment' | 'biologic'>;
-  criticality?: 'low' | 'high' | 'unable-to-assess';
+  type?: "allergy" | "intolerance" | "propensity";
+  category?: Array<"food" | "medication" | "environment" | "biologic">;
+  criticality?: "low" | "high" | "unable-to-assess";
   code: FHIRCodeableConcept;
   patient: FHIRReference;
   encounter?: FHIRReference;
@@ -377,19 +422,29 @@ export interface FHIRAllergyIntolerance {
     manifestation: FHIRCodeableConcept[];
     description?: string;
     onset?: string;
-    severity?: 'mild' | 'moderate' | 'severe';
+    severity?: "mild" | "moderate" | "severe";
     exposureRoute?: FHIRCodeableConcept;
     note?: Array<{ text?: string; time?: string; authorString?: string }>;
   }>;
 }
 
 export interface FHIRDiagnosticReport {
-  resourceType: 'DiagnosticReport';
+  resourceType: "DiagnosticReport";
   id?: string;
   meta?: FHIRMeta;
   identifier?: FHIRIdentifier[];
   basedOn?: FHIRReference[];
-  status: 'registered' | 'partial' | 'preliminary' | 'final' | 'amended' | 'corrected' | 'appended' | 'cancelled' | 'entered-in-error' | 'unknown';
+  status:
+    | "registered"
+    | "partial"
+    | "preliminary"
+    | "final"
+    | "amended"
+    | "corrected"
+    | "appended"
+    | "cancelled"
+    | "entered-in-error"
+    | "unknown";
   category?: FHIRCodeableConcept[];
   code: FHIRCodeableConcept;
   subject?: FHIRReference;
@@ -405,11 +460,16 @@ export interface FHIRDiagnosticReport {
   media?: Array<{ comment?: string; link: FHIRReference }>;
   conclusion?: string;
   conclusionCode?: FHIRCodeableConcept[];
-  presentedForm?: Array<{ contentType?: string; language?: string; data?: string; url?: string }>;
+  presentedForm?: Array<{
+    contentType?: string;
+    language?: string;
+    data?: string;
+    url?: string;
+  }>;
 }
 
 export interface FHIRProcedure {
-  resourceType: 'Procedure';
+  resourceType: "Procedure";
   id?: string;
   meta?: FHIRMeta;
   identifier?: FHIRIdentifier[];
@@ -417,7 +477,15 @@ export interface FHIRProcedure {
   instantiatesUri?: string[];
   basedOn?: FHIRReference[];
   partOf?: FHIRReference[];
-  status: 'preparation' | 'in-progress' | 'not-done' | 'on-hold' | 'stopped' | 'completed' | 'entered-in-error' | 'unknown';
+  status:
+    | "preparation"
+    | "in-progress"
+    | "not-done"
+    | "on-hold"
+    | "stopped"
+    | "completed"
+    | "entered-in-error"
+    | "unknown";
   statusReason?: FHIRCodeableConcept;
   category?: FHIRCodeableConcept;
   code?: FHIRCodeableConcept;
@@ -451,12 +519,12 @@ export interface FHIRProcedure {
 }
 
 export interface FHIRImmunization {
-  resourceType: 'Immunization';
+  resourceType: "Immunization";
   id?: string;
   meta?: FHIRMeta;
   identifier?: FHIRIdentifier[];
   instantiatedOn?: string;
-  status: 'completed' | 'entered-in-error' | 'not-done';
+  status: "completed" | "entered-in-error" | "not-done";
   statusReason?: FHIRCodeableConcept;
   vaccineCode: FHIRCodeableConcept;
   manufacturer?: FHIRReference;
@@ -537,7 +605,14 @@ export interface HL7Message {
 export interface ClinicalEvent {
   id: string;
   patientId: string;
-  eventType: 'admission' | 'discharge' | 'transfer' | 'observation' | 'medication' | 'procedure' | 'diagnosis';
+  eventType:
+    | "admission"
+    | "discharge"
+    | "transfer"
+    | "observation"
+    | "medication"
+    | "procedure"
+    | "diagnosis";
   eventDateTime: string;
   eventData: Record<string, any>;
   sourceSystem: string;
@@ -568,7 +643,7 @@ export interface DataQualityScore {
   validityScore: number; // 0-100
   overallScore: number; // 0-100
   issues: Array<{
-    severity: 'critical' | 'warning' | 'info';
+    severity: "critical" | "warning" | "info";
     field: string;
     description: string;
   }>;
@@ -577,20 +652,29 @@ export interface DataQualityScore {
 
 // Helper type for bundles
 export interface FHIRBundle {
-  resourceType: 'Bundle';
+  resourceType: "Bundle";
   id?: string;
   meta?: FHIRMeta;
   identifier?: FHIRIdentifier;
-  type: 'document' | 'message' | 'transaction' | 'transaction-response' | 'batch' | 'batch-response' | 'history' | 'searchset' | 'collection';
+  type:
+    | "document"
+    | "message"
+    | "transaction"
+    | "transaction-response"
+    | "batch"
+    | "batch-response"
+    | "history"
+    | "searchset"
+    | "collection";
   timestamp?: string;
   total?: number;
   link?: Array<{ relation: string; url: string }>;
   entry?: Array<{
     fullUrl?: string;
     resource?: any; // Can be any FHIR resource
-    search?: { mode?: 'match' | 'include' | 'outcome'; score?: number };
+    search?: { mode?: "match" | "include" | "outcome"; score?: number };
     request?: {
-      method: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+      method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH";
       url: string;
       ifNoneMatch?: string;
       ifModifiedSince?: string;
@@ -605,5 +689,11 @@ export interface FHIRBundle {
       outcome?: any;
     };
   }>;
-  signature?: { type?: any[]; when?: string; who?: FHIRReference; contentType?: string; blob?: string };
+  signature?: {
+    type?: any[];
+    when?: string;
+    who?: FHIRReference;
+    contentType?: string;
+    blob?: string;
+  };
 }

@@ -175,7 +175,9 @@ function DeliveryCard({
     >
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-white text-sm truncate">{delivery.orderId}</p>
+          <p className="font-semibold text-white text-sm truncate">
+            {delivery.orderId}
+          </p>
           <p className="text-xs text-zinc-300 mt-0.5 truncate">
             {delivery.recipient?.name ?? "Unknown Recipient"}
           </p>
@@ -254,22 +256,31 @@ export default function CourierDispatchPage() {
     "/api/v4/deliveries/:id/assign",
   );
 
-  const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
+  const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(
+    null,
+  );
   const [assignmentPanelOpen, setAssignmentPanelOpen] = useState(false);
   const [isDispatching, setIsDispatching] = useState(false);
 
   // Stats
   const stats = useMemo(() => {
     const activeCouriers = couriers.filter((c) => c.status !== "idle").length;
-    const pendingDeliveries = deliveries.filter((d) => d.status === "pending").length;
-    const inTransitCount = deliveries.filter((d) => d.status === "in_transit").length;
-    const completedToday = deliveries.filter((d) => d.status === "delivered").length;
+    const pendingDeliveries = deliveries.filter(
+      (d) => d.status === "pending",
+    ).length;
+    const inTransitCount = deliveries.filter(
+      (d) => d.status === "in_transit",
+    ).length;
+    const completedToday = deliveries.filter(
+      (d) => d.status === "delivered",
+    ).length;
     const avgDeliveryTime =
       deliveries
         .filter((d) => d.deliveredAt && d.createdAt)
         .reduce((sum, d) => {
           const ms =
-            new Date(d.deliveredAt!).getTime() - new Date(d.createdAt).getTime();
+            new Date(d.deliveredAt!).getTime() -
+            new Date(d.createdAt).getTime();
           return sum + ms / 60000;
         }, 0) / Math.max(1, completedToday);
     const onTimeCount = deliveries.filter(
@@ -280,7 +291,9 @@ export default function CourierDispatchPage() {
         new Date(d.deliveredAt) <= new Date(d.estimatedDeliveryTime),
     ).length;
     const onTimePercentage =
-      completedToday > 0 ? Math.round((onTimeCount / completedToday) * 100) : 100;
+      completedToday > 0
+        ? Math.round((onTimeCount / completedToday) * 100)
+        : 100;
 
     return {
       activeCouriers,
@@ -296,7 +309,8 @@ export default function CourierDispatchPage() {
     () =>
       deliveries.filter(
         (d) =>
-          d.status === DeliveryStatus.PENDING || d.status === DeliveryStatus.PICKED_UP,
+          d.status === DeliveryStatus.PENDING ||
+          d.status === DeliveryStatus.PICKED_UP,
       ),
     [deliveries],
   );
@@ -341,7 +355,8 @@ export default function CourierDispatchPage() {
     setIsDispatching(true);
     const pendingDelivery = deliveries.find((d) => d.status === "pending");
     if (pendingDelivery && couriers.length > 0) {
-      const assignedCourier = couriers.find((c) => c.status === "idle") ?? couriers[0];
+      const assignedCourier =
+        couriers.find((c) => c.status === "idle") ?? couriers[0];
       try {
         await assignDelivery({ courierId: assignedCourier.id });
         setSelectedDelivery(pendingDelivery);
@@ -403,7 +418,9 @@ export default function CourierDispatchPage() {
           {/* Header */}
           <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-800/30">
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-semibold text-white">Pending Deliveries</h2>
+              <h2 className="text-sm font-semibold text-white">
+                Pending Deliveries
+              </h2>
               <Badge variant="danger" className="text-[10px] px-1.5">
                 {pendingDeliveries.length}
               </Badge>
@@ -452,7 +469,9 @@ export default function CourierDispatchPage() {
                   couriers={couriers}
                   isSelected={selectedDelivery?.id === delivery.id}
                   onSelect={(d) =>
-                    setSelectedDelivery(selectedDelivery?.id === d.id ? null : d)
+                    setSelectedDelivery(
+                      selectedDelivery?.id === d.id ? null : d,
+                    )
                   }
                   onAssign={() => setAssignmentPanelOpen(true)}
                 />
@@ -481,7 +500,9 @@ export default function CourierDispatchPage() {
                   active
                 </span>
                 <span>
-                  <span className="text-white font-semibold">{stats.inTransitCount}</span>{" "}
+                  <span className="text-white font-semibold">
+                    {stats.inTransitCount}
+                  </span>{" "}
                   in transit
                 </span>
                 {selectedDelivery && (
@@ -520,8 +541,12 @@ export default function CourierDispatchPage() {
               <div className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="text-sm font-semibold text-white">Delivery Details</h3>
-                    <p className="text-xs text-zinc-400 mt-0.5">{selectedDelivery.orderId}</p>
+                    <h3 className="text-sm font-semibold text-white">
+                      Delivery Details
+                    </h3>
+                    <p className="text-xs text-zinc-400 mt-0.5">
+                      {selectedDelivery.orderId}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     {selectedDelivery.status === "pending" && (

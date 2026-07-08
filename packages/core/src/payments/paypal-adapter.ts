@@ -16,8 +16,8 @@ import type {
   RefundRequest,
   PaymentGatewayConfig,
   PaymentWebhookPayload,
-} from './types.js';
-import { PaymentGatewayBase } from './payment-gateway.js';
+} from "./types.js";
+import { PaymentGatewayBase } from "./payment-gateway.js";
 
 // ─── PAYPAL TYPES ─────────────────────────────────────────────────────────
 
@@ -80,8 +80,8 @@ interface PayPalOrder {
 // ─── PAYPAL GATEWAY CLASS ──────────────────────────────────────────────────
 
 export class PayPalGateway extends PaymentGatewayBase {
-  readonly name: string = 'PayPal';
-  readonly code: string = 'paypal';
+  readonly name: string = "PayPal";
+  readonly code: string = "paypal";
 
   private baseUrl: string;
   private clientId: string;
@@ -92,16 +92,19 @@ export class PayPalGateway extends PaymentGatewayBase {
   constructor(config: PaymentGatewayConfig) {
     super(config);
 
-    const isProduction = config.isProduction || process.env.NODE_ENV === 'production';
+    const isProduction =
+      config.isProduction || process.env.NODE_ENV === "production";
     this.baseUrl = isProduction
-      ? 'https://api.paypal.com'
-      : 'https://api.sandbox.paypal.com';
+      ? "https://api.paypal.com"
+      : "https://api.sandbox.paypal.com";
 
-    this.clientId = config.metadata?.clientId || process.env.PAYPAL_CLIENT_ID || '';
-    this.clientSecret = config.secretKey || process.env.PAYPAL_CLIENT_SECRET || '';
+    this.clientId =
+      config.metadata?.clientId || process.env.PAYPAL_CLIENT_ID || "";
+    this.clientSecret =
+      config.secretKey || process.env.PAYPAL_CLIENT_SECRET || "";
 
     if (!this.clientId || !this.clientSecret) {
-      throw new Error('PayPal gateway requires clientId and clientSecret');
+      throw new Error("PayPal gateway requires clientId and clientSecret");
     }
   }
 
@@ -115,16 +118,18 @@ export class PayPalGateway extends PaymentGatewayBase {
       return this.accessToken;
     }
 
-    const authString = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
+    const authString = Buffer.from(
+      `${this.clientId}:${this.clientSecret}`,
+    ).toString("base64");
 
     const response = await globalThis.fetch(`${this.baseUrl}/v1/oauth2/token`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Basic ${authString}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Basic ${authString}`,
+        Accept: "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: 'grant_type=client_credentials',
+      body: "grant_type=client_credentials",
     });
 
     if (!response.ok) {
@@ -158,55 +163,65 @@ export class PayPalGateway extends PaymentGatewayBase {
     const amountInDollars = (amount / 100).toFixed(2);
 
     const orderRequest: PayPalCreateOrderRequest = {
-      intent: 'CAPTURE',
+      intent: "CAPTURE",
       purchase_units: [
         {
           amount: {
             currency_code: currency.toUpperCase(),
             value: amountInDollars,
           },
-          custom_id: `${shopId}-${metadata?.orderId || 'no-order'}`,
-          description: metadata?.description || 'Witylogix Delivery Payment',
+          custom_id: `${shopId}-${metadata?.orderId || "no-order"}`,
+          description: metadata?.description || "Witylogix Delivery Payment",
         },
       ],
       application_context: {
-        return_url: metadata?.returnUrl || 'https://app.witylogix.com/payment/return',
-        cancel_url: metadata?.cancelUrl || 'https://app.witylogix.com/payment/cancel',
-        brand_name: 'Witylogix',
-        locale: 'en-US',
-        shipping_preference: 'NO_SHIPPING',
+        return_url:
+          metadata?.returnUrl || "https://app.witylogix.com/payment/return",
+        cancel_url:
+          metadata?.cancelUrl || "https://app.witylogix.com/payment/cancel",
+        brand_name: "Witylogix",
+        locale: "en-US",
+        shipping_preference: "NO_SHIPPING",
       },
     };
 
-    const response = await globalThis.fetch(`${this.baseUrl}/v2/checkout/orders`, {
-      method: 'POST',
-      headers: {
-        ...this.buildAuthHeaders(),
-        'Authorization': `Bearer ${accessToken}`,
+    const response = await globalThis.fetch(
+      `${this.baseUrl}/v2/checkout/orders`,
+      {
+        method: "POST",
+        headers: {
+          ...this.buildAuthHeaders(),
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(orderRequest),
       },
-      body: JSON.stringify(orderRequest),
-    });
+    );
 
     if (!response.ok) {
-      const error = await response.json() as any;
+      const error = (await response.json()) as any;
       throw new Error(`PayPal create order failed: ${JSON.stringify(error)}`);
     }
 
     const order = (await response.json()) as PayPalOrder;
 
-    const idempotencyKey = this.generateIdempotencyKey(shopId, customerId, amount, Date.now());
+    const idempotencyKey = this.generateIdempotencyKey(
+      shopId,
+      customerId,
+      amount,
+      Date.now(),
+    );
 
     return {
       id: order.id,
       shopId,
       amount,
       currency: currency.toUpperCase(),
-      status: 'pending',
-      methodType: 'paypal',
+      status: "pending",
+      methodType: "paypal",
       idempotencyKey,
-      providerName: 'paypal',
+      providerName: "paypal",
       providerIntentId: order.id,
-      description: metadata?.description || 'PayPal payment',
+      description: metadata?.description || "PayPal payment",
       metadata: {
         ...metadata,
         paypalOrderId: order.id,
@@ -226,17 +241,17 @@ export class PayPalGateway extends PaymentGatewayBase {
     const response = await globalThis.fetch(
       `${this.baseUrl}/v2/checkout/orders/${paymentIntentId}/capture`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
           ...this.buildAuthHeaders(),
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({}),
       },
     );
 
     if (!response.ok) {
-      const error = await response.json() as any;
+      const error = (await response.json()) as any;
       throw new Error(`PayPal capture failed: ${JSON.stringify(error)}`);
     }
 
@@ -244,20 +259,20 @@ export class PayPalGateway extends PaymentGatewayBase {
 
     const capture = order.purchase_units[0]?.payments?.captures?.[0];
     if (!capture) {
-      throw new Error('No capture found in PayPal response');
+      throw new Error("No capture found in PayPal response");
     }
 
     const amount = Math.round(parseFloat(capture.amount.value) * 100);
 
     return {
       id: this.generateTransactionId(),
-      shopId: '', // Set by processor
+      shopId: "", // Set by processor
       amount,
       currency: capture.amount.currency_code,
-      status: 'completed',
-      type: 'charge',
-      methodType: 'paypal',
-      providerName: 'paypal',
+      status: "completed",
+      type: "charge",
+      methodType: "paypal",
+      providerName: "paypal",
       providerTransactionId: capture.id,
       providerRef: paymentIntentId,
       metadata: {
@@ -281,37 +296,39 @@ export class PayPalGateway extends PaymentGatewayBase {
     const accessToken = await this.getAccessToken();
 
     const refundBody: any = {
-      amount: amount ? ((amount / 100).toFixed(2)) : undefined,
+      amount: amount ? (amount / 100).toFixed(2) : undefined,
     };
 
     const response = await globalThis.fetch(
       `${this.baseUrl}/v2/payments/captures/${transactionId}/refund`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
           ...this.buildAuthHeaders(),
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(refundBody),
       },
     );
 
     if (!response.ok) {
-      const error = await response.json() as any;
+      const error = (await response.json()) as any;
       throw new Error(`PayPal refund failed: ${JSON.stringify(error)}`);
     }
 
     const refund = (await response.json()) as any;
 
-    const refundAmount = amount ? amount : Math.round(parseFloat(refund.amount.value) * 100);
+    const refundAmount = amount
+      ? amount
+      : Math.round(parseFloat(refund.amount.value) * 100);
 
     return {
       id: this.generateTransactionId(),
-      shopId: '', // Set by processor
+      shopId: "", // Set by processor
       transactionId,
       amount: refundAmount,
-      reason: (reason as any) || 'customer_request',
-      status: 'completed',
+      reason: (reason as any) || "customer_request",
+      status: "completed",
       providerRefundId: refund.id,
       metadata: {
         paypalRefundId: refund.id,
@@ -327,8 +344,8 @@ export class PayPalGateway extends PaymentGatewayBase {
    */
   async getPaymentStatus(providerTransactionId: string): Promise<Transaction> {
     // Extract order ID from transaction ID or use directly
-    const orderId = providerTransactionId.includes('-')
-      ? providerTransactionId.split('-')[0]
+    const orderId = providerTransactionId.includes("-")
+      ? providerTransactionId.split("-")[0]
       : providerTransactionId;
 
     const accessToken = await this.getAccessToken();
@@ -336,16 +353,16 @@ export class PayPalGateway extends PaymentGatewayBase {
     const response = await globalThis.fetch(
       `${this.baseUrl}/v2/checkout/orders/${orderId}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
           ...this.buildAuthHeaders(),
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       },
     );
 
     if (!response.ok) {
-      const error = await response.json() as any;
+      const error = (await response.json()) as any;
       throw new Error(`PayPal get order failed: ${JSON.stringify(error)}`);
     }
 
@@ -357,21 +374,21 @@ export class PayPalGateway extends PaymentGatewayBase {
       : 0;
 
     const statusMap: Record<string, any> = {
-      'CREATED': 'pending',
-      'APPROVED': 'authorized',
-      'VOIDED': 'cancelled',
-      'COMPLETED': 'completed',
+      CREATED: "pending",
+      APPROVED: "authorized",
+      VOIDED: "cancelled",
+      COMPLETED: "completed",
     };
 
     return {
       id: providerTransactionId,
-      shopId: '',
+      shopId: "",
       amount,
-      currency: order.purchase_units[0]?.amount.currency_code || 'USD',
-      status: statusMap[order.status] || 'pending',
-      type: 'charge',
-      methodType: 'paypal',
-      providerName: 'paypal',
+      currency: order.purchase_units[0]?.amount.currency_code || "USD",
+      status: statusMap[order.status] || "pending",
+      type: "charge",
+      methodType: "paypal",
+      providerName: "paypal",
       providerTransactionId: capture?.id || order.id,
       metadata: {
         paypalOrderId: order.id,
@@ -404,10 +421,10 @@ export class PayPalGateway extends PaymentGatewayBase {
     const response = await globalThis.fetch(
       `${this.baseUrl}/v1/notifications/verify-webhook-signature`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
           ...this.buildAuthHeaders(),
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(verifyRequest),
       },
@@ -418,22 +435,24 @@ export class PayPalGateway extends PaymentGatewayBase {
     }
 
     const result = (await response.json()) as any;
-    return result.verification_status === 'SUCCESS';
+    return result.verification_status === "SUCCESS";
   }
 
   /**
    * Parse PayPal webhook payload
    */
   async parseWebhookPayload(payload: any): Promise<PaymentWebhookPayload> {
-    const eventType = payload.event_type || '';
+    const eventType = payload.event_type || "";
 
-    let webhookType: PaymentWebhookPayload['type'] = 'payment.authorized';
+    let webhookType: PaymentWebhookPayload["type"] = "payment.authorized";
 
-    if (eventType.includes('PAYMENT.CAPTURE.COMPLETED')) {
-      webhookType = 'payment.captured';
-    } else if (eventType.includes('PAYMENT.CAPTURE.DENIED') ||
-               eventType.includes('PAYMENT.CAPTURE.REFUNDED')) {
-      webhookType = 'payment.failed';
+    if (eventType.includes("PAYMENT.CAPTURE.COMPLETED")) {
+      webhookType = "payment.captured";
+    } else if (
+      eventType.includes("PAYMENT.CAPTURE.DENIED") ||
+      eventType.includes("PAYMENT.CAPTURE.REFUNDED")
+    ) {
+      webhookType = "payment.failed";
     }
 
     const resource = payload.resource || {};
@@ -441,15 +460,15 @@ export class PayPalGateway extends PaymentGatewayBase {
 
     return {
       type: webhookType,
-      provider: 'paypal',
+      provider: "paypal",
       providerEventId: payload.id,
       timestamp: new Date(payload.create_time),
       data: {
         transactionId: resource.id,
         paymentIntentId: resource.supplementary_data?.related_ids?.order_id,
         amount,
-        currency: resource.amount?.currency_code || 'USD',
-        status: 'completed',
+        currency: resource.amount?.currency_code || "USD",
+        status: "completed",
         providerTransactionId: resource.id,
         metadata: {
           paypalEventType: eventType,

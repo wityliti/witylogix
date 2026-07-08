@@ -4,7 +4,13 @@
  * Supports payment reminder emails and payment receipt emails
  */
 
-import type { Invoice, InvoiceLineItem, InvoiceDiscount, InvoiceTax, PaymentRecord } from './types.js';
+import type {
+  Invoice,
+  InvoiceLineItem,
+  InvoiceDiscount,
+  InvoiceTax,
+  PaymentRecord,
+} from "./types.js";
 
 export interface InvoiceEmailData {
   invoice: Invoice;
@@ -42,7 +48,13 @@ export interface EmailContent {
  * Build HTML invoice email
  */
 export function buildInvoiceEmail(data: InvoiceEmailData): EmailContent {
-  const { invoice, companyName = 'Witylogix', companyLogo, paymentLink, customMessage } = data;
+  const {
+    invoice,
+    companyName = "Witylogix",
+    companyLogo,
+    paymentLink,
+    customMessage,
+  } = data;
 
   const logoHtml = companyLogo
     ? `<img src="${companyLogo}" alt="${companyName}" style="height: 40px; margin-bottom: 20px;">`
@@ -265,7 +277,7 @@ export function buildInvoiceEmail(data: InvoiceEmailData): EmailContent {
           </div>
           <div class="info-block">
             <div class="info-label">Due Date</div>
-            <div class="info-value" style="color: ${invoice.dueAt < new Date() ? '#dc2626' : '#374151'};">
+            <div class="info-value" style="color: ${invoice.dueAt < new Date() ? "#dc2626" : "#374151"};">
               ${formatDate(invoice.dueAt)}
             </div>
           </div>
@@ -277,8 +289,9 @@ export function buildInvoiceEmail(data: InvoiceEmailData): EmailContent {
       </div>
 
       <!-- Line Items -->
-      ${invoice.lineItems && invoice.lineItems.length > 0
-        ? `
+      ${
+        invoice.lineItems && invoice.lineItems.length > 0
+          ? `
       <div class="section">
         <div class="section-title">Line Items</div>
         <table>
@@ -291,24 +304,29 @@ export function buildInvoiceEmail(data: InvoiceEmailData): EmailContent {
             </tr>
           </thead>
           <tbody>
-            ${invoice.lineItems.map(item => `
+            ${invoice.lineItems
+              .map(
+                (item) => `
             <tr>
               <td>${item.description}</td>
               <td class="amount-right">${item.quantity}</td>
               <td class="amount-right">${formatCurrency(item.unitPrice, invoice.currency)}</td>
               <td class="amount-right"><strong>${formatCurrency(item.amount, invoice.currency)}</strong></td>
             </tr>
-            `).join('')}
+            `,
+              )
+              .join("")}
           </tbody>
         </table>
       </div>
       `
-        : ''
+          : ""
       }
 
       <!-- Discounts -->
-      ${invoice.discounts && invoice.discounts.length > 0
-        ? `
+      ${
+        invoice.discounts && invoice.discounts.length > 0
+          ? `
       <div class="section">
         <div class="section-title">Discounts</div>
         <table>
@@ -319,17 +337,21 @@ export function buildInvoiceEmail(data: InvoiceEmailData): EmailContent {
             </tr>
           </thead>
           <tbody>
-            ${invoice.discounts.map(discount => `
+            ${invoice.discounts
+              .map(
+                (discount) => `
             <tr>
               <td>${discount.description}</td>
               <td class="amount-right">-${formatCurrency(discount.amount, invoice.currency)}</td>
             </tr>
-            `).join('')}
+            `,
+              )
+              .join("")}
           </tbody>
         </table>
       </div>
       `
-        : ''
+          : ""
       }
 
       <!-- Summary -->
@@ -339,23 +361,25 @@ export function buildInvoiceEmail(data: InvoiceEmailData): EmailContent {
             <span class="summary-label">Subtotal</span>
             <span class="summary-value">${formatCurrency(invoice.subtotal, invoice.currency)}</span>
           </div>
-          ${invoice.discountTotal > 0
-            ? `
+          ${
+            invoice.discountTotal > 0
+              ? `
           <div class="summary-row">
             <span class="summary-label">Discounts</span>
             <span class="summary-value">-${formatCurrency(invoice.discountTotal, invoice.currency)}</span>
           </div>
           `
-            : ''
+              : ""
           }
-          ${invoice.taxTotal > 0
-            ? `
+          ${
+            invoice.taxTotal > 0
+              ? `
           <div class="summary-row">
             <span class="summary-label">Taxes</span>
             <span class="summary-value">${formatCurrency(invoice.taxTotal, invoice.currency)}</span>
           </div>
           `
-            : ''
+              : ""
           }
           <div class="summary-row total-row">
             <span class="summary-label">Total Due</span>
@@ -365,18 +389,20 @@ export function buildInvoiceEmail(data: InvoiceEmailData): EmailContent {
       </div>
 
       <!-- Custom Message -->
-      ${customMessage
-        ? `
+      ${
+        customMessage
+          ? `
       <div class="message-box">
         ${escapeHtml(customMessage)}
       </div>
       `
-        : ''
+          : ""
       }
 
       <!-- Payment CTA -->
-      ${paymentLink && invoice.status !== 'paid'
-        ? `
+      ${
+        paymentLink && invoice.status !== "paid"
+          ? `
       <div style="text-align: center;">
         <a href="${paymentLink}" class="cta-button">Pay Now</a>
         <p style="font-size: 12px; color: #6b7280;">
@@ -384,12 +410,13 @@ export function buildInvoiceEmail(data: InvoiceEmailData): EmailContent {
         </p>
       </div>
       `
-        : ''
+          : ""
       }
 
       <!-- Notes -->
-      ${invoice.notes
-        ? `
+      ${
+        invoice.notes
+          ? `
       <div class="section">
         <div class="section-title">Notes</div>
         <p style="margin: 0; font-size: 14px; line-height: 1.6;">
@@ -397,7 +424,7 @@ export function buildInvoiceEmail(data: InvoiceEmailData): EmailContent {
         </p>
       </div>
       `
-        : ''
+          : ""
       }
     </div>
 
@@ -423,11 +450,11 @@ Due Date: ${formatDate(invoice.dueAt)}
 
 SUMMARY:
 Subtotal: ${formatCurrency(invoice.subtotal, invoice.currency)}
-${invoice.discountTotal > 0 ? `Discounts: -${formatCurrency(invoice.discountTotal, invoice.currency)}\n` : ''}
-${invoice.taxTotal > 0 ? `Taxes: ${formatCurrency(invoice.taxTotal, invoice.currency)}\n` : ''}
+${invoice.discountTotal > 0 ? `Discounts: -${formatCurrency(invoice.discountTotal, invoice.currency)}\n` : ""}
+${invoice.taxTotal > 0 ? `Taxes: ${formatCurrency(invoice.taxTotal, invoice.currency)}\n` : ""}
 Total Due: ${formatCurrency(invoice.total, invoice.currency)}
 
-${paymentLink && invoice.status !== 'paid' ? `\nPay online: ${paymentLink}\n` : ''}
+${paymentLink && invoice.status !== "paid" ? `\nPay online: ${paymentLink}\n` : ""}
 
 For questions, contact billing@witylogix.com
   `.trim();
@@ -439,21 +466,28 @@ For questions, contact billing@witylogix.com
  * Build payment reminder email
  */
 export function buildPaymentReminderEmail(data: EmailReminder): EmailContent {
-  const { invoice, daysOverdue, companyName = 'Witylogix', companyLogo, paymentLink } = data;
+  const {
+    invoice,
+    daysOverdue,
+    companyName = "Witylogix",
+    companyLogo,
+    paymentLink,
+  } = data;
 
   const reminderType =
     daysOverdue <= 7
-      ? 'This invoice is due soon'
+      ? "This invoice is due soon"
       : daysOverdue <= 14
-        ? 'This invoice is now overdue'
-        : 'This invoice is significantly overdue';
+        ? "This invoice is now overdue"
+        : "This invoice is significantly overdue";
 
   const logoHtml = companyLogo
     ? `<img src="${companyLogo}" alt="${companyName}" style="height: 40px; margin-bottom: 20px;">`
     : `<h2 style="color: #1f2937; margin: 0 0 20px 0;">${companyName}</h2>`;
 
   const subject = `Payment Reminder: Invoice ${invoice.invoiceNumber} – ${reminderType}`;
-  const warningColor = daysOverdue > 14 ? '#dc2626' : daysOverdue > 7 ? '#f59e0b' : '#f59e0b';
+  const warningColor =
+    daysOverdue > 14 ? "#dc2626" : daysOverdue > 7 ? "#f59e0b" : "#f59e0b";
 
   const html = `
 <!DOCTYPE html>
@@ -555,7 +589,7 @@ export function buildPaymentReminderEmail(data: EmailReminder): EmailContent {
 
       <p style="margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
         Invoice <strong>${invoice.invoiceNumber}</strong> was due on <strong>${formatDate(invoice.dueAt)}</strong>.
-        ${daysOverdue > 1 ? `It is now <strong>${daysOverdue} days overdue</strong>.` : 'Please pay at your earliest convenience.'}
+        ${daysOverdue > 1 ? `It is now <strong>${daysOverdue} days overdue</strong>.` : "Please pay at your earliest convenience."}
       </p>
 
       <div class="invoice-summary">
@@ -577,11 +611,12 @@ export function buildPaymentReminderEmail(data: EmailReminder): EmailContent {
         </div>
       </div>
 
-      ${paymentLink
-        ? `
+      ${
+        paymentLink
+          ? `
       <a href="${paymentLink}" class="cta-button">Pay Now</a>
       `
-        : ''
+          : ""
       }
 
       <p style="font-size: 13px; color: #6b7280; margin: 20px 0;">
@@ -609,9 +644,9 @@ Invoice Date: ${formatDate(invoice.issuedAt)}
 Due Date: ${formatDate(invoice.dueAt)}
 Amount Due: ${formatCurrency(invoice.total, invoice.currency)}
 
-${daysOverdue > 1 ? `This invoice is ${daysOverdue} days overdue.` : 'Please pay at your earliest convenience.'}
+${daysOverdue > 1 ? `This invoice is ${daysOverdue} days overdue.` : "Please pay at your earliest convenience."}
 
-${paymentLink ? `Pay online: ${paymentLink}` : ''}
+${paymentLink ? `Pay online: ${paymentLink}` : ""}
 
 If you have already made a payment, please disregard this notice and accept our thanks.
 
@@ -625,7 +660,7 @@ For questions, contact billing@witylogix.com
  * Build payment receipt email
  */
 export function buildPaymentReceiptEmail(data: ReceiptEmailData): EmailContent {
-  const { invoice, payment, companyName = 'Witylogix', companyLogo } = data;
+  const { invoice, payment, companyName = "Witylogix", companyLogo } = data;
 
   const logoHtml = companyLogo
     ? `<img src="${companyLogo}" alt="${companyName}" style="height: 40px; margin-bottom: 20px;">`
@@ -735,14 +770,15 @@ export function buildPaymentReceiptEmail(data: ReceiptEmailData): EmailContent {
           <span class="summary-label">Payment Method</span>
           <span class="summary-value">${getPaymentMethodLabel(payment.method)}</span>
         </div>
-        ${payment.reference
-          ? `
+        ${
+          payment.reference
+            ? `
         <div class="summary-row">
           <span class="summary-label">Reference</span>
           <span class="summary-value">${payment.reference}</span>
         </div>
         `
-          : ''
+            : ""
         }
         <div class="summary-row" style="border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 10px; font-size: 16px;">
           <span class="summary-label" style="font-weight: 700;">Amount Paid</span>
@@ -772,7 +808,7 @@ Thank you! We have received your payment.
 Invoice Number: ${invoice.invoiceNumber}
 Payment Date: ${formatDate(payment.paidAt)}
 Payment Method: ${getPaymentMethodLabel(payment.method)}
-${payment.reference ? `Reference: ${payment.reference}\n` : ''}
+${payment.reference ? `Reference: ${payment.reference}\n` : ""}
 Amount Paid: ${formatCurrency(payment.amount, invoice.currency)}
 
 If you have any questions, contact billing@witylogix.com
@@ -787,16 +823,20 @@ Thank you for your business!
  * Helper: Format date to readable string
  */
 function formatDate(date: Date): string {
-  const opts: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-  return new Intl.DateTimeFormat('en-US', opts).format(new Date(date));
+  const opts: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+  return new Intl.DateTimeFormat("en-US", opts).format(new Date(date));
 }
 
 /**
  * Helper: Format currency
  */
 function formatCurrency(amount: number, currency: string): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
     currency,
   }).format(amount);
 }
@@ -806,14 +846,14 @@ function formatCurrency(amount: number, currency: string): string {
  */
 function getStatusLabel(status: string): string {
   const labels: Record<string, string> = {
-    draft: 'Draft',
-    finalized: 'Sent',
-    sent: 'Sent',
-    paid: 'Paid',
-    overdue: 'Overdue',
-    voided: 'Voided',
+    draft: "Draft",
+    finalized: "Sent",
+    sent: "Sent",
+    paid: "Paid",
+    overdue: "Overdue",
+    voided: "Voided",
   };
-  return labels[status] || 'Pending';
+  return labels[status] || "Pending";
 }
 
 /**
@@ -821,11 +861,11 @@ function getStatusLabel(status: string): string {
  */
 function getPaymentMethodLabel(method: string): string {
   const labels: Record<string, string> = {
-    credit_card: 'Credit Card',
-    bank_transfer: 'Bank Transfer',
-    check: 'Check',
-    cash: 'Cash',
-    other: 'Other',
+    credit_card: "Credit Card",
+    bank_transfer: "Bank Transfer",
+    check: "Check",
+    cash: "Cash",
+    other: "Other",
   };
   return labels[method] || method;
 }
@@ -835,13 +875,13 @@ function getPaymentMethodLabel(method: string): string {
  */
 function escapeHtml(text: string): string {
   const map: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;',
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
   };
-  return text.replace(/[&<>"']/g, char => map[char]);
+  return text.replace(/[&<>"']/g, (char) => map[char]);
 }
 
 /**
@@ -851,23 +891,33 @@ function escapeHtml(text: string): string {
 export async function sendInvoiceEmail(data: InvoiceEmailData): Promise<void> {
   const emailContent = buildInvoiceEmail(data);
   // INTEGRATION: Send via notification service
-  console.log(`[INTEGRATION] Would send invoice email to ${data.recipientEmail}`);
+  console.log(
+    `[INTEGRATION] Would send invoice email to ${data.recipientEmail}`,
+  );
 }
 
 /**
  * Send payment reminder email
  */
-export async function sendPaymentReminderEmail(data: EmailReminder): Promise<void> {
+export async function sendPaymentReminderEmail(
+  data: EmailReminder,
+): Promise<void> {
   const emailContent = buildPaymentReminderEmail(data);
   // INTEGRATION: Send via notification service
-  console.log(`[INTEGRATION] Would send reminder email to ${data.recipientEmail}`);
+  console.log(
+    `[INTEGRATION] Would send reminder email to ${data.recipientEmail}`,
+  );
 }
 
 /**
  * Send payment receipt email
  */
-export async function sendPaymentReceiptEmail(data: ReceiptEmailData): Promise<void> {
+export async function sendPaymentReceiptEmail(
+  data: ReceiptEmailData,
+): Promise<void> {
   const emailContent = buildPaymentReceiptEmail(data);
   // INTEGRATION: Send via notification service
-  console.log(`[INTEGRATION] Would send receipt email to ${data.recipientEmail}`);
+  console.log(
+    `[INTEGRATION] Would send receipt email to ${data.recipientEmail}`,
+  );
 }

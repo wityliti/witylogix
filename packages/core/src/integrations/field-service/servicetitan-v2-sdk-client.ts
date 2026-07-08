@@ -5,7 +5,7 @@
  * Rate limiting: 100 req/min with automatic retry and backoff
  */
 
-import { createHmac } from 'node:crypto';
+import { createHmac } from "node:crypto";
 import type {
   JobCreateRequest,
   JobUpdateRequest,
@@ -37,8 +37,8 @@ import type {
   JobReport,
   TechnicianMetrics,
   CustomerRetention,
-} from './field-service-sdk-types.js';
-import { RateLimitError, APIError } from './field-service-sdk-types.js';
+} from "./field-service-sdk-types.js";
+import { RateLimitError, APIError } from "./field-service-sdk-types.js";
 
 interface ServiceTitanConfig {
   appKey: string;
@@ -79,9 +79,9 @@ export class ServiceTitanV2Client {
   constructor(config: ServiceTitanConfig) {
     this.config = {
       ...config,
-      apiUrl: config.apiUrl || 'https://api.servicetitan.com',
+      apiUrl: config.apiUrl || "https://api.servicetitan.com",
     };
-    this.apiUrl = this.config.apiUrl ?? 'https://api.servicetitan.com';
+    this.apiUrl = this.config.apiUrl ?? "https://api.servicetitan.com";
   }
 
   /**
@@ -90,10 +90,10 @@ export class ServiceTitanV2Client {
   async authenticate(): Promise<void> {
     try {
       const response = (await this.request(
-        'POST',
-        '/auth/v1/oauth/token',
+        "POST",
+        "/auth/v1/oauth/token",
         {
-          grant_type: 'client_credentials',
+          grant_type: "client_credentials",
           client_id: this.config.appKey,
           client_secret: this.config.appSecret,
         },
@@ -105,9 +105,9 @@ export class ServiceTitanV2Client {
       this.tokenExpiresAt = new Date(Date.now() + expiresIn * 1000);
     } catch (error) {
       throw new APIError(
-        'AUTH_FAILED',
+        "AUTH_FAILED",
         401,
-        { provider: 'servicetitan', cause: error },
+        { provider: "servicetitan", cause: error },
         true,
       );
     }
@@ -116,10 +116,14 @@ export class ServiceTitanV2Client {
   /**
    * Verify webhook signature using HMAC-SHA256
    */
-  verifyWebhookSignature(payload: string, signature: string, secret: string): boolean {
-    const hmac = createHmac('sha256', secret);
+  verifyWebhookSignature(
+    payload: string,
+    signature: string,
+    secret: string,
+  ): boolean {
+    const hmac = createHmac("sha256", secret);
     hmac.update(payload);
-    const computed = hmac.digest('hex');
+    const computed = hmac.digest("hex");
     return computed === signature;
   }
 
@@ -128,7 +132,7 @@ export class ServiceTitanV2Client {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      await this.request('GET', '/crm/v2/customers?limit=1');
+      await this.request("GET", "/crm/v2/customers?limit=1");
       return true;
     } catch {
       return false;
@@ -150,13 +154,13 @@ export class ServiceTitanV2Client {
       locationCity: request.location.city,
       locationState: request.location.state,
       locationZip: request.location.postalCode,
-      locationCountry: request.location.country || 'US',
-      jobDate: request.scheduledStart?.toISOString().split('T')[0],
+      locationCountry: request.location.country || "US",
+      jobDate: request.scheduledStart?.toISOString().split("T")[0],
       estimatedDuration: request.estimatedDuration,
       notes: request.notes,
     };
 
-    const response = (await this.request('POST', '/jobs/v2/jobs', data)) as any;
+    const response = (await this.request("POST", "/jobs/v2/jobs", data)) as any;
     return this.mapJobResponse(response);
   }
 
@@ -164,22 +168,34 @@ export class ServiceTitanV2Client {
    * Get job by ID
    */
   async getJob(jobId: string): Promise<JobResponse> {
-    const response = (await this.request('GET', `/jobs/v2/jobs/${jobId}`)) as any;
+    const response = (await this.request(
+      "GET",
+      `/jobs/v2/jobs/${jobId}`,
+    )) as any;
     return this.mapJobResponse(response);
   }
 
   /**
    * Update job
    */
-  async updateJob(jobId: string, request: JobUpdateRequest): Promise<JobResponse> {
+  async updateJob(
+    jobId: string,
+    request: JobUpdateRequest,
+  ): Promise<JobResponse> {
     const data: Record<string, unknown> = {};
     if (request.title) data.description = request.title;
-    if (request.priority) data.priority = this.mapPriorityToST(request.priority);
+    if (request.priority)
+      data.priority = this.mapPriorityToST(request.priority);
     if (request.status) data.status = request.status;
-    if (request.scheduledStart) data.jobDate = request.scheduledStart.toISOString().split('T')[0];
+    if (request.scheduledStart)
+      data.jobDate = request.scheduledStart.toISOString().split("T")[0];
     if (request.notes) data.notes = request.notes;
 
-    const response = (await this.request('PATCH', `/jobs/v2/jobs/${jobId}`, data)) as any;
+    const response = (await this.request(
+      "PATCH",
+      `/jobs/v2/jobs/${jobId}`,
+      data,
+    )) as any;
     return this.mapJobResponse(response);
   }
 
@@ -187,21 +203,28 @@ export class ServiceTitanV2Client {
    * Delete job
    */
   async deleteJob(jobId: string): Promise<void> {
-    await this.request('DELETE', `/jobs/v2/jobs/${jobId}`);
+    await this.request("DELETE", `/jobs/v2/jobs/${jobId}`);
   }
 
   /**
    * List jobs with pagination
    */
-  async listJobs(request?: PaginationRequest): Promise<PaginatedResponse<JobResponse>> {
+  async listJobs(
+    request?: PaginationRequest,
+  ): Promise<PaginatedResponse<JobResponse>> {
     const params = new URLSearchParams({
       limit: (request?.limit || 50).toString(),
       offset: (request?.offset || 0).toString(),
     });
 
-    const response = (await this.request('GET', `/jobs/v2/jobs?${params}`)) as any;
+    const response = (await this.request(
+      "GET",
+      `/jobs/v2/jobs?${params}`,
+    )) as any;
     return {
-      items: (response.data || []).map((item: any) => this.mapJobResponse(item)),
+      items: (response.data || []).map((item: any) =>
+        this.mapJobResponse(item),
+      ),
       total: response.pageInfo?.totalCount || 0,
       hasMore: response.pageInfo?.hasMore || false,
       nextOffset: response.pageInfo?.nextOffset,
@@ -211,14 +234,21 @@ export class ServiceTitanV2Client {
   /**
    * Schedule job for technician
    */
-  async scheduleJob(jobId: string, request: JobScheduleRequest): Promise<JobResponse> {
+  async scheduleJob(
+    jobId: string,
+    request: JobScheduleRequest,
+  ): Promise<JobResponse> {
     const data = {
       resourceId: request.technicianId,
-      jobDate: request.scheduledStart.toISOString().split('T')[0],
+      jobDate: request.scheduledStart.toISOString().split("T")[0],
       estimatedDuration: request.duration,
     };
 
-    const response = (await this.request('PATCH', `/jobs/v2/jobs/${jobId}`, data)) as any;
+    const response = (await this.request(
+      "PATCH",
+      `/jobs/v2/jobs/${jobId}`,
+      data,
+    )) as any;
     return this.mapJobResponse(response);
   }
 
@@ -227,12 +257,16 @@ export class ServiceTitanV2Client {
    */
   async completeJob(jobId: string, notes?: string): Promise<JobResponse> {
     const data = {
-      status: 'completed',
+      status: "completed",
       completionDate: new Date().toISOString(),
       notes,
     };
 
-    const response = (await this.request('PATCH', `/jobs/v2/jobs/${jobId}`, data)) as any;
+    const response = (await this.request(
+      "PATCH",
+      `/jobs/v2/jobs/${jobId}`,
+      data,
+    )) as any;
     return this.mapJobResponse(response);
   }
 
@@ -241,11 +275,15 @@ export class ServiceTitanV2Client {
    */
   async cancelJob(jobId: string, reason?: string): Promise<JobResponse> {
     const data = {
-      status: 'cancelled',
+      status: "cancelled",
       notes: reason,
     };
 
-    const response = (await this.request('PATCH', `/jobs/v2/jobs/${jobId}`, data)) as any;
+    const response = (await this.request(
+      "PATCH",
+      `/jobs/v2/jobs/${jobId}`,
+      data,
+    )) as any;
     return this.mapJobResponse(response);
   }
 
@@ -254,7 +292,9 @@ export class ServiceTitanV2Client {
   /**
    * Create customer
    */
-  async createCustomer(request: CustomerCreateRequest): Promise<CustomerResponse> {
+  async createCustomer(
+    request: CustomerCreateRequest,
+  ): Promise<CustomerResponse> {
     const data = {
       firstName: request.firstName,
       lastName: request.lastName,
@@ -266,11 +306,15 @@ export class ServiceTitanV2Client {
       city: request.primaryAddress.city,
       state: request.primaryAddress.state,
       zip: request.primaryAddress.postalCode,
-      country: request.primaryAddress.country || 'US',
-      type: request.type === 'residential' ? 'Residential' : 'Commercial',
+      country: request.primaryAddress.country || "US",
+      type: request.type === "residential" ? "Residential" : "Commercial",
     };
 
-    const response = (await this.request('POST', '/crm/v2/customers', data)) as any;
+    const response = (await this.request(
+      "POST",
+      "/crm/v2/customers",
+      data,
+    )) as any;
     return this.mapCustomerResponse(response);
   }
 
@@ -278,35 +322,52 @@ export class ServiceTitanV2Client {
    * Get customer
    */
   async getCustomer(customerId: string): Promise<CustomerResponse> {
-    const response = (await this.request('GET', `/crm/v2/customers/${customerId}`)) as any;
+    const response = (await this.request(
+      "GET",
+      `/crm/v2/customers/${customerId}`,
+    )) as any;
     return this.mapCustomerResponse(response);
   }
 
   /**
    * Update customer
    */
-  async updateCustomer(customerId: string, request: CustomerUpdateRequest): Promise<CustomerResponse> {
+  async updateCustomer(
+    customerId: string,
+    request: CustomerUpdateRequest,
+  ): Promise<CustomerResponse> {
     const data: Record<string, unknown> = {};
     if (request.email) data.email = request.email;
     if (request.phone) data.phone = request.phone;
     if (request.mobile) data.mobile = request.mobile;
 
-    const response = (await this.request('PATCH', `/crm/v2/customers/${customerId}`, data)) as any;
+    const response = (await this.request(
+      "PATCH",
+      `/crm/v2/customers/${customerId}`,
+      data,
+    )) as any;
     return this.mapCustomerResponse(response);
   }
 
   /**
    * List customers
    */
-  async listCustomers(request?: PaginationRequest): Promise<PaginatedResponse<CustomerResponse>> {
+  async listCustomers(
+    request?: PaginationRequest,
+  ): Promise<PaginatedResponse<CustomerResponse>> {
     const params = new URLSearchParams({
       limit: (request?.limit || 50).toString(),
       offset: (request?.offset || 0).toString(),
     });
 
-    const response = (await this.request('GET', `/crm/v2/customers?${params}`)) as any;
+    const response = (await this.request(
+      "GET",
+      `/crm/v2/customers?${params}`,
+    )) as any;
     return {
-      items: (response.data || []).map((item: any) => this.mapCustomerResponse(item)),
+      items: (response.data || []).map((item: any) =>
+        this.mapCustomerResponse(item),
+      ),
       total: response.pageInfo?.totalCount || 0,
       hasMore: response.pageInfo?.hasMore || false,
       nextOffset: response.pageInfo?.nextOffset,
@@ -317,7 +378,10 @@ export class ServiceTitanV2Client {
    * Get customer locations
    */
   async getCustomerLocations(customerId: string): Promise<any[]> {
-    const response = (await this.request('GET', `/crm/v2/customers/${customerId}/locations`)) as any;
+    const response = (await this.request(
+      "GET",
+      `/crm/v2/customers/${customerId}/locations`,
+    )) as any;
     return response.data || [];
   }
 
@@ -325,7 +389,11 @@ export class ServiceTitanV2Client {
    * Add customer location
    */
   async addCustomerLocation(customerId: string, location: any): Promise<any> {
-    return this.request('POST', `/crm/v2/customers/${customerId}/locations`, location);
+    return this.request(
+      "POST",
+      `/crm/v2/customers/${customerId}/locations`,
+      location,
+    );
   }
 
   // ─── TECHNICIAN MANAGEMENT ────────────────────────────────────────────────
@@ -334,22 +402,32 @@ export class ServiceTitanV2Client {
    * Get technician
    */
   async getTechnician(technicianId: string): Promise<TechnicianResponse> {
-    const response = (await this.request('GET', `/crm/v2/resources/${technicianId}`)) as any;
+    const response = (await this.request(
+      "GET",
+      `/crm/v2/resources/${technicianId}`,
+    )) as any;
     return this.mapTechnicianResponse(response);
   }
 
   /**
    * List technicians
    */
-  async listTechnicians(request?: PaginationRequest): Promise<PaginatedResponse<TechnicianResponse>> {
+  async listTechnicians(
+    request?: PaginationRequest,
+  ): Promise<PaginatedResponse<TechnicianResponse>> {
     const params = new URLSearchParams({
       limit: (request?.limit || 50).toString(),
       offset: (request?.offset || 0).toString(),
     });
 
-    const response = (await this.request('GET', `/crm/v2/resources?${params}`)) as any;
+    const response = (await this.request(
+      "GET",
+      `/crm/v2/resources?${params}`,
+    )) as any;
     return {
-      items: (response.data || []).map((item: any) => this.mapTechnicianResponse(item)),
+      items: (response.data || []).map((item: any) =>
+        this.mapTechnicianResponse(item),
+      ),
       total: response.pageInfo?.totalCount || 0,
       hasMore: response.pageInfo?.hasMore || false,
       nextOffset: response.pageInfo?.nextOffset,
@@ -359,9 +437,16 @@ export class ServiceTitanV2Client {
   /**
    * Update technician availability
    */
-  async updateTechnicianAvailability(technicianId: string, status: string): Promise<TechnicianResponse> {
+  async updateTechnicianAvailability(
+    technicianId: string,
+    status: string,
+  ): Promise<TechnicianResponse> {
     const data = { status };
-    const response = (await this.request('PATCH', `/crm/v2/resources/${technicianId}`, data)) as any;
+    const response = (await this.request(
+      "PATCH",
+      `/crm/v2/resources/${technicianId}`,
+      data,
+    )) as any;
     return this.mapTechnicianResponse(response);
   }
 
@@ -369,19 +454,25 @@ export class ServiceTitanV2Client {
    * Get technician GPS location
    */
   async getTechnicianLocation(technicianId: string): Promise<any> {
-    return this.request('GET', `/gps/v2/resources/${technicianId}/location`);
+    return this.request("GET", `/gps/v2/resources/${technicianId}/location`);
   }
 
   /**
    * Get technician performance metrics
    */
-  async getTechnicianMetrics(technicianId: string, period: { startDate: Date; endDate: Date }): Promise<TechnicianMetrics> {
+  async getTechnicianMetrics(
+    technicianId: string,
+    period: { startDate: Date; endDate: Date },
+  ): Promise<TechnicianMetrics> {
     const params = new URLSearchParams({
-      startDate: period.startDate.toISOString().split('T')[0],
-      endDate: period.endDate.toISOString().split('T')[0],
+      startDate: period.startDate.toISOString().split("T")[0],
+      endDate: period.endDate.toISOString().split("T")[0],
     });
 
-    const response = (await this.request('GET', `/crm/v2/resources/${technicianId}/metrics?${params}`)) as any;
+    const response = (await this.request(
+      "GET",
+      `/crm/v2/resources/${technicianId}/metrics?${params}`,
+    )) as any;
     return {
       technicianId,
       jobsCompleted: response.completedJobs || 0,
@@ -398,21 +489,30 @@ export class ServiceTitanV2Client {
   /**
    * Create estimate
    */
-  async createEstimate(request: EstimateCreateRequest): Promise<EstimateResponse> {
+  async createEstimate(
+    request: EstimateCreateRequest,
+  ): Promise<EstimateResponse> {
     const data = {
       customerId: request.customerId,
       issueDate: request.issueDate.toISOString(),
       expirationDate: request.expiryDate?.toISOString(),
-      lineItems: request.lineItems.map(item => ({
+      lineItems: request.lineItems.map((item) => ({
         description: item.description,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
       })),
-      total: request.lineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0),
+      total: request.lineItems.reduce(
+        (sum, item) => sum + item.quantity * item.unitPrice,
+        0,
+      ),
       notes: request.notes,
     };
 
-    const response = (await this.request('POST', '/billing/v2/estimates', data)) as any;
+    const response = (await this.request(
+      "POST",
+      "/billing/v2/estimates",
+      data,
+    )) as any;
     return this.mapEstimateResponse(response);
   }
 
@@ -420,20 +520,31 @@ export class ServiceTitanV2Client {
    * Get estimate
    */
   async getEstimate(estimateId: string): Promise<EstimateResponse> {
-    const response = (await this.request('GET', `/billing/v2/estimates/${estimateId}`)) as any;
+    const response = (await this.request(
+      "GET",
+      `/billing/v2/estimates/${estimateId}`,
+    )) as any;
     return this.mapEstimateResponse(response);
   }
 
   /**
    * Update estimate
    */
-  async updateEstimate(estimateId: string, request: EstimateUpdateRequest): Promise<EstimateResponse> {
+  async updateEstimate(
+    estimateId: string,
+    request: EstimateUpdateRequest,
+  ): Promise<EstimateResponse> {
     const data: Record<string, unknown> = {};
     if (request.status) data.status = request.status;
     if (request.lineItems) data.lineItems = request.lineItems;
-    if (request.expiryDate) data.expirationDate = request.expiryDate.toISOString();
+    if (request.expiryDate)
+      data.expirationDate = request.expiryDate.toISOString();
 
-    const response = (await this.request('PATCH', `/billing/v2/estimates/${estimateId}`, data)) as any;
+    const response = (await this.request(
+      "PATCH",
+      `/billing/v2/estimates/${estimateId}`,
+      data,
+    )) as any;
     return this.mapEstimateResponse(response);
   }
 
@@ -441,7 +552,11 @@ export class ServiceTitanV2Client {
    * Approve estimate (convert to job)
    */
   async approveEstimate(estimateId: string): Promise<JobResponse> {
-    const response = (await this.request('POST', `/billing/v2/estimates/${estimateId}/approve`, {})) as any;
+    const response = (await this.request(
+      "POST",
+      `/billing/v2/estimates/${estimateId}/approve`,
+      {},
+    )) as any;
     return this.mapJobResponse(response);
   }
 
@@ -456,16 +571,23 @@ export class ServiceTitanV2Client {
       jobIds: request.jobIds,
       invoiceDate: request.invoiceDate.toISOString(),
       dueDate: request.dueDate.toISOString(),
-      lineItems: request.lineItems.map(item => ({
+      lineItems: request.lineItems.map((item) => ({
         description: item.description,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
       })),
-      total: request.lineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0),
+      total: request.lineItems.reduce(
+        (sum, item) => sum + item.quantity * item.unitPrice,
+        0,
+      ),
       notes: request.notes,
     };
 
-    const response = (await this.request('POST', '/billing/v2/invoices', data)) as any;
+    const response = (await this.request(
+      "POST",
+      "/billing/v2/invoices",
+      data,
+    )) as any;
     return this.mapInvoiceResponse(response);
   }
 
@@ -473,35 +595,52 @@ export class ServiceTitanV2Client {
    * Get invoice
    */
   async getInvoice(invoiceId: string): Promise<InvoiceResponse> {
-    const response = (await this.request('GET', `/billing/v2/invoices/${invoiceId}`)) as any;
+    const response = (await this.request(
+      "GET",
+      `/billing/v2/invoices/${invoiceId}`,
+    )) as any;
     return this.mapInvoiceResponse(response);
   }
 
   /**
    * Update invoice
    */
-  async updateInvoice(invoiceId: string, request: InvoiceUpdateRequest): Promise<InvoiceResponse> {
+  async updateInvoice(
+    invoiceId: string,
+    request: InvoiceUpdateRequest,
+  ): Promise<InvoiceResponse> {
     const data: Record<string, unknown> = {};
     if (request.dueDate) data.dueDate = request.dueDate.toISOString();
     if (request.lineItems) data.lineItems = request.lineItems;
     if (request.status) data.status = request.status;
 
-    const response = (await this.request('PATCH', `/billing/v2/invoices/${invoiceId}`, data)) as any;
+    const response = (await this.request(
+      "PATCH",
+      `/billing/v2/invoices/${invoiceId}`,
+      data,
+    )) as any;
     return this.mapInvoiceResponse(response);
   }
 
   /**
    * List invoices
    */
-  async listInvoices(request?: PaginationRequest): Promise<PaginatedResponse<InvoiceResponse>> {
+  async listInvoices(
+    request?: PaginationRequest,
+  ): Promise<PaginatedResponse<InvoiceResponse>> {
     const params = new URLSearchParams({
       limit: (request?.limit || 50).toString(),
       offset: (request?.offset || 0).toString(),
     });
 
-    const response = (await this.request('GET', `/billing/v2/invoices?${params}`)) as any;
+    const response = (await this.request(
+      "GET",
+      `/billing/v2/invoices?${params}`,
+    )) as any;
     return {
-      items: (response.data || []).map((item: any) => this.mapInvoiceResponse(item)),
+      items: (response.data || []).map((item: any) =>
+        this.mapInvoiceResponse(item),
+      ),
       total: response.pageInfo?.totalCount || 0,
       hasMore: response.pageInfo?.hasMore || false,
       nextOffset: response.pageInfo?.nextOffset,
@@ -520,16 +659,24 @@ export class ServiceTitanV2Client {
       reference: request.reference,
     };
 
-    const response = (await this.request('POST', '/billing/v2/payments', data)) as any;
+    const response = (await this.request(
+      "POST",
+      "/billing/v2/payments",
+      data,
+    )) as any;
     return this.getInvoice(response.invoiceId);
   }
 
   /**
    * Send invoice via email/SMS
    */
-  async sendInvoice(invoiceId: string, method: 'email' | 'sms', recipient?: string): Promise<void> {
+  async sendInvoice(
+    invoiceId: string,
+    method: "email" | "sms",
+    recipient?: string,
+  ): Promise<void> {
     const data = { method, recipient };
-    await this.request('POST', `/billing/v2/invoices/${invoiceId}/send`, data);
+    await this.request("POST", `/billing/v2/invoices/${invoiceId}/send`, data);
   }
 
   // ─── PRICEBOOK MANAGEMENT ──────────────────────────────────────────────────
@@ -537,13 +684,18 @@ export class ServiceTitanV2Client {
   /**
    * Get pricebook items
    */
-  async getPricebookItems(request?: PaginationRequest): Promise<PaginatedResponse<PricebookItem>> {
+  async getPricebookItems(
+    request?: PaginationRequest,
+  ): Promise<PaginatedResponse<PricebookItem>> {
     const params = new URLSearchParams({
       limit: (request?.limit || 100).toString(),
       offset: (request?.offset || 0).toString(),
     });
 
-    const response = (await this.request('GET', `/catalog/v2/pricebook-items?${params}`)) as any;
+    const response = (await this.request(
+      "GET",
+      `/catalog/v2/pricebook-items?${params}`,
+    )) as any;
     return {
       items: (response.data || []).map((item: any) => ({
         id: item.id,
@@ -565,7 +717,10 @@ export class ServiceTitanV2Client {
    * Get pricebook categories
    */
   async getPricebookCategories(): Promise<PricebookCategory[]> {
-    const response = (await this.request('GET', '/catalog/v2/pricebook-categories')) as any;
+    const response = (await this.request(
+      "GET",
+      "/catalog/v2/pricebook-categories",
+    )) as any;
     return response.data || [];
   }
 
@@ -586,7 +741,11 @@ export class ServiceTitanV2Client {
       visitFrequency: plan.visitFrequency,
     };
 
-    const response = (await this.request('POST', '/billing/v2/memberships', data)) as any;
+    const response = (await this.request(
+      "POST",
+      "/billing/v2/memberships",
+      data,
+    )) as any;
     return response;
   }
 
@@ -594,7 +753,10 @@ export class ServiceTitanV2Client {
    * Get membership plans for customer
    */
   async getMemberships(customerId: string): Promise<MembershipPlan[]> {
-    const response = (await this.request('GET', `/billing/v2/customers/${customerId}/memberships`)) as any;
+    const response = (await this.request(
+      "GET",
+      `/billing/v2/customers/${customerId}/memberships`,
+    )) as any;
     return response.data || [];
   }
 
@@ -602,7 +764,11 @@ export class ServiceTitanV2Client {
    * Renew membership
    */
   async renewMembership(membershipId: string): Promise<MembershipPlan> {
-    const response = (await this.request('POST', `/billing/v2/memberships/${membershipId}/renew`, {})) as any;
+    const response = (await this.request(
+      "POST",
+      `/billing/v2/memberships/${membershipId}/renew`,
+      {},
+    )) as any;
     return response;
   }
 
@@ -611,46 +777,64 @@ export class ServiceTitanV2Client {
   /**
    * Create dispatch assignment
    */
-  async createDispatchAssignment(request: DispatchAssignmentRequest): Promise<DispatchAssignmentResponse> {
+  async createDispatchAssignment(
+    request: DispatchAssignmentRequest,
+  ): Promise<DispatchAssignmentResponse> {
     const data = {
       jobId: request.jobId,
       resourceId: request.technicianId,
-      priority: this.mapPriorityToST(request.priority || 'medium'),
+      priority: this.mapPriorityToST(request.priority || "medium"),
       notes: request.notes,
     };
 
-    const response = (await this.request('POST', '/dispatch/v2/assignments', data)) as any;
+    const response = (await this.request(
+      "POST",
+      "/dispatch/v2/assignments",
+      data,
+    )) as any;
     return {
       id: response.id,
       jobId: response.jobId,
       technicianId: response.resourceId,
-      status: response.status || 'assigned',
+      status: response.status || "assigned",
       assignedAt: new Date(response.createdDate),
-      priority: request.priority || 'medium',
+      priority: request.priority || "medium",
     };
   }
 
   /**
    * Get dispatch assignment
    */
-  async getDispatchAssignment(assignmentId: string): Promise<DispatchAssignmentResponse> {
-    const response = (await this.request('GET', `/dispatch/v2/assignments/${assignmentId}`)) as any;
+  async getDispatchAssignment(
+    assignmentId: string,
+  ): Promise<DispatchAssignmentResponse> {
+    const response = (await this.request(
+      "GET",
+      `/dispatch/v2/assignments/${assignmentId}`,
+    )) as any;
     return {
       id: response.id,
       jobId: response.jobId,
       technicianId: response.resourceId,
       status: response.status,
       assignedAt: new Date(response.createdDate),
-      priority: 'high',
+      priority: "high",
     };
   }
 
   /**
    * Update dispatch assignment
    */
-  async updateDispatchAssignment(assignmentId: string, status: string): Promise<DispatchAssignmentResponse> {
+  async updateDispatchAssignment(
+    assignmentId: string,
+    status: string,
+  ): Promise<DispatchAssignmentResponse> {
     const data = { status };
-    const response = (await this.request('PATCH', `/dispatch/v2/assignments/${assignmentId}`, data)) as any;
+    const response = (await this.request(
+      "PATCH",
+      `/dispatch/v2/assignments/${assignmentId}`,
+      data,
+    )) as any;
     return this.getDispatchAssignment(response.id);
   }
 
@@ -658,21 +842,27 @@ export class ServiceTitanV2Client {
    * Cancel dispatch assignment
    */
   async cancelDispatchAssignment(assignmentId: string): Promise<void> {
-    await this.request('DELETE', `/dispatch/v2/assignments/${assignmentId}`);
+    await this.request("DELETE", `/dispatch/v2/assignments/${assignmentId}`);
   }
 
   /**
    * Optimize dispatch (auto-assign jobs to technicians)
    */
-  async optimizeDispatch(request: DispatchOptimizationRequest): Promise<DispatchOptimizationResponse> {
+  async optimizeDispatch(
+    request: DispatchOptimizationRequest,
+  ): Promise<DispatchOptimizationResponse> {
     const data = {
       jobIds: request.jobIds,
       technicianIds: request.technicianIds,
       constraints: request.constraints,
-      goals: request.goals || ['minimize_travel_time'],
+      goals: request.goals || ["minimize_travel_time"],
     };
 
-    const response = (await this.request('POST', '/dispatch/v2/optimize', data)) as any;
+    const response = (await this.request(
+      "POST",
+      "/dispatch/v2/optimize",
+      data,
+    )) as any;
     return {
       assignments: response.assignments || [],
       unassignedJobIds: response.unassignedJobIds || [],
@@ -693,7 +883,10 @@ export class ServiceTitanV2Client {
    * Get job profitability report
    */
   async getJobReport(jobId: string): Promise<JobReport> {
-    const response = (await this.request('GET', `/reports/v2/jobs/${jobId}/profitability`)) as any;
+    const response = (await this.request(
+      "GET",
+      `/reports/v2/jobs/${jobId}/profitability`,
+    )) as any;
     return {
       jobId,
       revenue: response.revenue || 0,
@@ -702,33 +895,43 @@ export class ServiceTitanV2Client {
       profitMargin: response.profitMargin || 0,
       hoursWorked: response.hoursWorked || 0,
       technicianCount: response.technicianCount || 0,
-      completedAt: response.completedAt ? new Date(response.completedAt) : undefined,
+      completedAt: response.completedAt
+        ? new Date(response.completedAt)
+        : undefined,
     };
   }
 
   /**
    * Get revenue report
    */
-  async getRevenueReport(period: { startDate: Date; endDate: Date }): Promise<any> {
+  async getRevenueReport(period: {
+    startDate: Date;
+    endDate: Date;
+  }): Promise<any> {
     const params = new URLSearchParams({
-      startDate: period.startDate.toISOString().split('T')[0],
-      endDate: period.endDate.toISOString().split('T')[0],
+      startDate: period.startDate.toISOString().split("T")[0],
+      endDate: period.endDate.toISOString().split("T")[0],
     });
 
-    return this.request('GET', `/reports/v2/revenue?${params}`);
+    return this.request("GET", `/reports/v2/revenue?${params}`);
   }
 
   /**
    * Get customer retention report
    */
   async getCustomerRetention(customerId: string): Promise<CustomerRetention> {
-    const response = (await this.request('GET', `/reports/v2/customers/${customerId}/retention`)) as any;
+    const response = (await this.request(
+      "GET",
+      `/reports/v2/customers/${customerId}/retention`,
+    )) as any;
     return {
       customerId,
-      lastJobDate: response.lastJobDate ? new Date(response.lastJobDate) : new Date(),
+      lastJobDate: response.lastJobDate
+        ? new Date(response.lastJobDate)
+        : new Date(),
       jobFrequency: response.jobFrequency || 0,
       retentionScore: response.retentionScore || 0,
-      atRiskStatus: response.atRiskStatus || 'low',
+      atRiskStatus: response.atRiskStatus || "low",
     };
   }
 
@@ -750,12 +953,12 @@ export class ServiceTitanV2Client {
           await this.waitForRateLimit();
 
           const headers: Record<string, string> = {
-            'Content-Type': 'application/json',
-            'X-Tenant-ID': this.config.tenantId,
+            "Content-Type": "application/json",
+            "X-Tenant-ID": this.config.tenantId,
           };
 
           if (requireAuth && this.accessToken) {
-            headers['Authorization'] = `Bearer ${this.accessToken}`;
+            headers["Authorization"] = `Bearer ${this.accessToken}`;
           }
 
           try {
@@ -770,12 +973,17 @@ export class ServiceTitanV2Client {
 
             if (!response.ok) {
               if (response.status === 429) {
-                const retryAfter = parseInt(response.headers.get('Retry-After') || '60') * 1000;
-                throw new RateLimitError(retryAfter, this.rateLimiter.remaining, this.rateLimiter.limit);
+                const retryAfter =
+                  parseInt(response.headers.get("Retry-After") || "60") * 1000;
+                throw new RateLimitError(
+                  retryAfter,
+                  this.rateLimiter.remaining,
+                  this.rateLimiter.limit,
+                );
               }
 
               throw new APIError(
-                'API_ERROR',
+                "API_ERROR",
                 response.status,
                 { endpoint, method, status: response.statusText },
                 response.status >= 500 || response.status === 429,
@@ -787,7 +995,7 @@ export class ServiceTitanV2Client {
             if (error instanceof RateLimitError) throw error;
             if (error instanceof APIError) throw error;
             throw new APIError(
-              'REQUEST_FAILED',
+              "REQUEST_FAILED",
               500,
               { cause: error, endpoint, method },
               true,
@@ -831,7 +1039,7 @@ export class ServiceTitanV2Client {
     const now = new Date();
     if (this.rateLimiter.remaining <= 0 && now < this.rateLimiter.resetAt) {
       const waitTime = this.rateLimiter.resetAt.getTime() - now.getTime();
-      await new Promise(resolve => setTimeout(resolve, waitTime + 100));
+      await new Promise((resolve) => setTimeout(resolve, waitTime + 100));
     }
   }
 
@@ -839,9 +1047,9 @@ export class ServiceTitanV2Client {
    * Update rate limit from response headers
    */
   private updateRateLimitFromHeaders(headers: Headers): void {
-    const remaining = headers.get('X-RateLimit-Remaining');
-    const limit = headers.get('X-RateLimit-Limit');
-    const reset = headers.get('X-RateLimit-Reset');
+    const remaining = headers.get("X-RateLimit-Remaining");
+    const limit = headers.get("X-RateLimit-Limit");
+    const reset = headers.get("X-RateLimit-Reset");
 
     if (remaining) this.rateLimiter.remaining = parseInt(remaining);
     if (limit) this.rateLimiter.limit = parseInt(limit);
@@ -853,7 +1061,10 @@ export class ServiceTitanV2Client {
    */
   private async ensureAuthenticated(required: boolean): Promise<void> {
     if (!required) return;
-    if (!this.accessToken || (this.tokenExpiresAt && Date.now() >= this.tokenExpiresAt.getTime())) {
+    if (
+      !this.accessToken ||
+      (this.tokenExpiresAt && Date.now() >= this.tokenExpiresAt.getTime())
+    ) {
       await this.authenticate();
     }
   }
@@ -879,25 +1090,28 @@ export class ServiceTitanV2Client {
       id: data.id,
       jobNumber: data.number || data.jobNumber,
       customerId: data.customerId,
-      title: data.description || '',
+      title: data.description || "",
       description: data.description,
-      status: data.status?.toLowerCase() || 'scheduled',
+      status: data.status?.toLowerCase() || "scheduled",
       priority: this.unmapPriority(data.priority),
       location: {
-        address: data.locationStreet || '',
-        city: data.locationCity || '',
+        address: data.locationStreet || "",
+        city: data.locationCity || "",
         state: data.locationState,
-        postalCode: data.locationZip || '',
-        country: data.locationCountry || 'US',
+        postalCode: data.locationZip || "",
+        country: data.locationCountry || "US",
       },
-      assignedTechnicians: data.assignedResources?.map((r: any) => r.resourceId) || [],
+      assignedTechnicians:
+        data.assignedResources?.map((r: any) => r.resourceId) || [],
       scheduledStart: data.jobDate ? new Date(data.jobDate) : undefined,
       lineItems: data.lineItems || [],
       total: data.jobTotal || 0,
       notes: data.notes,
       createdAt: new Date(data.createdDate),
       updatedAt: new Date(data.modifiedDate),
-      completedAt: data.completionDate ? new Date(data.completionDate) : undefined,
+      completedAt: data.completionDate
+        ? new Date(data.completionDate)
+        : undefined,
     };
   }
 
@@ -907,20 +1121,20 @@ export class ServiceTitanV2Client {
   private mapCustomerResponse(data: any): CustomerResponse {
     return {
       id: data.id,
-      firstName: data.firstName || '',
-      lastName: data.lastName || '',
+      firstName: data.firstName || "",
+      lastName: data.lastName || "",
       companyName: data.companyName,
       email: data.email,
       phone: data.phone,
       mobile: data.mobile,
-      type: data.type || 'both',
-      status: data.status || 'active',
+      type: data.type || "both",
+      status: data.status || "active",
       primaryAddress: {
-        address: data.street || '',
-        city: data.city || '',
+        address: data.street || "",
+        city: data.city || "",
         state: data.state,
-        postalCode: data.zip || '',
-        country: data.country || 'US',
+        postalCode: data.zip || "",
+        country: data.country || "US",
       },
       createdAt: new Date(data.createdDate),
       updatedAt: new Date(data.modifiedDate),
@@ -933,21 +1147,22 @@ export class ServiceTitanV2Client {
   private mapTechnicianResponse(data: any): TechnicianResponse {
     return {
       id: data.id,
-      firstName: data.firstName || '',
-      lastName: data.lastName || '',
+      firstName: data.firstName || "",
+      lastName: data.lastName || "",
       email: data.email,
       phone: data.phone,
-      status: (data.status?.toLowerCase() as any) || 'available',
+      status: (data.status?.toLowerCase() as any) || "available",
       skills: data.skillIds || [],
       certifications: data.certifications || [],
-      currentLocation: data.currentLocationLatitude && data.currentLocationLongitude
-        ? {
-            latitude: data.currentLocationLatitude,
-            longitude: data.currentLocationLongitude,
-            accuracy: data.locationAccuracy,
-            timestamp: new Date(),
-          }
-        : undefined,
+      currentLocation:
+        data.currentLocationLatitude && data.currentLocationLongitude
+          ? {
+              latitude: data.currentLocationLatitude,
+              longitude: data.currentLocationLongitude,
+              accuracy: data.locationAccuracy,
+              timestamp: new Date(),
+            }
+          : undefined,
       currentJobId: data.currentJobId,
       hoursWorked: data.hoursWorked,
       rating: data.rating,
@@ -965,9 +1180,11 @@ export class ServiceTitanV2Client {
       estimateNumber: data.number || data.estimateNumber,
       customerId: data.customerId,
       jobId: data.jobId,
-      status: data.status?.toLowerCase() || 'draft',
+      status: data.status?.toLowerCase() || "draft",
       issueDate: new Date(data.issueDate),
-      expiryDate: data.expirationDate ? new Date(data.expirationDate) : undefined,
+      expiryDate: data.expirationDate
+        ? new Date(data.expirationDate)
+        : undefined,
       lineItems: data.lineItems || [],
       subtotal: data.subtotal || data.total * 0.9,
       taxAmount: data.taxAmount,
@@ -990,7 +1207,7 @@ export class ServiceTitanV2Client {
       invoiceNumber: data.number || data.invoiceNumber,
       customerId: data.customerId,
       jobIds: data.jobIds || [],
-      status: data.status?.toLowerCase() || 'draft',
+      status: data.status?.toLowerCase() || "draft",
       invoiceDate: new Date(data.invoiceDate),
       dueDate: new Date(data.dueDate),
       lineItems: data.lineItems || [],
@@ -998,7 +1215,7 @@ export class ServiceTitanV2Client {
       taxAmount: data.taxAmount,
       total: data.total || 0,
       amountPaid: data.amountPaid,
-      amountDue: data.amountDue || (data.total - (data.amountPaid || 0)),
+      amountDue: data.amountDue || data.total - (data.amountPaid || 0),
       notes: data.notes,
       sentAt: data.sentDate ? new Date(data.sentDate) : undefined,
       createdAt: new Date(data.createdDate || Date.now()),
@@ -1011,11 +1228,11 @@ export class ServiceTitanV2Client {
    */
   private unmapPriority(priority?: number): string {
     const map: Record<number, string> = {
-      0: 'urgent',
-      1: 'high',
-      2: 'medium',
-      3: 'low',
+      0: "urgent",
+      1: "high",
+      2: "medium",
+      3: "low",
     };
-    return map[priority || 2] || 'medium';
+    return map[priority || 2] || "medium";
   }
 }

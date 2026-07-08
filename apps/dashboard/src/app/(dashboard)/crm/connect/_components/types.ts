@@ -1,7 +1,7 @@
 // CRM Connection Types
 
 export interface SyncConfig {
-  direction: 'in' | 'out' | 'bidirectional';
+  direction: "in" | "out" | "bidirectional";
   objectTypes: string[];
 }
 

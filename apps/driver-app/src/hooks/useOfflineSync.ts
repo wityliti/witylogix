@@ -1,17 +1,19 @@
-import { useEffect, useState, useCallback } from 'react';
-import { syncManager, SyncState } from '../services/sync-manager';
-import { connectivityMonitor } from '../services/connectivity-monitor';
-import { getPendingCount } from '../services/offline-event-service';
+import { useEffect, useState, useCallback } from "react";
+import { syncManager, SyncState } from "../services/sync-manager";
+import { connectivityMonitor } from "../services/connectivity-monitor";
+import { getPendingCount } from "../services/offline-event-service";
 
 export interface OfflineSyncHookState {
   isOnline: boolean;
-  syncStatus: SyncState['status'];
+  syncStatus: SyncState["status"];
   pendingCount: number;
   lastSyncAt: number | null;
 }
 
 export function useOfflineSync() {
-  const [isOnline, setIsOnline] = useState(connectivityMonitor.isCurrentlyOnline());
+  const [isOnline, setIsOnline] = useState(
+    connectivityMonitor.isCurrentlyOnline(),
+  );
   const [syncState, setSyncState] = useState<SyncState>(syncManager.getState());
 
   useEffect(() => {
@@ -20,7 +22,9 @@ export function useOfflineSync() {
 
     // Refresh pending count on mount
     getPendingCount()
-      .then((count) => setSyncState((prev) => ({ ...prev, pendingCount: count })))
+      .then((count) =>
+        setSyncState((prev) => ({ ...prev, pendingCount: count })),
+      )
       .catch(() => {});
 
     return () => {

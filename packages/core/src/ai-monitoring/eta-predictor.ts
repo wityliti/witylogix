@@ -137,7 +137,10 @@ export class ETAPredictor {
       const estimatedMs = this.predictWithModel(features);
       const accuracy = this.calculateAccuracy();
       const confidence = this.calculateConfidence(accuracy);
-      const { lower, upper } = this.calculateConfidenceInterval(estimatedMs, accuracy);
+      const { lower, upper } = this.calculateConfidenceInterval(
+        estimatedMs,
+        accuracy,
+      );
 
       this.predictionCount++;
 
@@ -224,13 +227,15 @@ export class ETAPredictor {
     timeMs += features.dayOfWeek * this.weights.dayOfWeek;
 
     // Driver speed adjustment
-    timeMs += (50 - features.driverSpeedHistory) * this.weights.driverSpeedHistory;
+    timeMs +=
+      (50 - features.driverSpeedHistory) * this.weights.driverSpeedHistory;
 
     // Stops overhead
     timeMs += features.stopsRemaining * this.weights.stopsRemaining;
 
     // Zone-specific factors
-    const zoneFactor = this.weights.zoneFactors.get(features.trafficZone) ?? 1.0;
+    const zoneFactor =
+      this.weights.zoneFactors.get(features.trafficZone) ?? 1.0;
     timeMs *= zoneFactor;
 
     return Math.max(timeMs, 60000); // Minimum 1 minute
@@ -246,8 +251,10 @@ export class ETAPredictor {
     timestamp: string,
   ): PredictionResult {
     // Basic calculation: time = distance / speed + stops overhead
-    const travelTimeMs = (features.distance / this.config.fallbackBaseSpeed) * 3600000;
-    const stopsTimeMs = features.stopsRemaining * this.config.stopTimeOverheadMs;
+    const travelTimeMs =
+      (features.distance / this.config.fallbackBaseSpeed) * 3600000;
+    const stopsTimeMs =
+      features.stopsRemaining * this.config.stopTimeOverheadMs;
     const estimatedMs = travelTimeMs + stopsTimeMs;
 
     // Wider confidence interval for fallback
@@ -286,16 +293,20 @@ export class ETAPredictor {
       const errorRate = error / (point.actual || 1);
 
       // Adjust weights based on prediction error
-      this.weights.distance += learningRate * errorRate * point.features.distance;
-      this.weights.timeOfDay += learningRate * errorRate * point.features.timeOfDay;
-      this.weights.dayOfWeek += learningRate * errorRate * point.features.dayOfWeek;
+      this.weights.distance +=
+        learningRate * errorRate * point.features.distance;
+      this.weights.timeOfDay +=
+        learningRate * errorRate * point.features.timeOfDay;
+      this.weights.dayOfWeek +=
+        learningRate * errorRate * point.features.dayOfWeek;
       this.weights.driverSpeedHistory +=
         learningRate * errorRate * (50 - point.features.driverSpeedHistory);
       this.weights.stopsRemaining +=
         learningRate * errorRate * point.features.stopsRemaining;
 
       // Update zone factor
-      const currentZoneFactor = this.weights.zoneFactors.get(point.features.trafficZone) ?? 1.0;
+      const currentZoneFactor =
+        this.weights.zoneFactors.get(point.features.trafficZone) ?? 1.0;
       this.weights.zoneFactors.set(
         point.features.trafficZone,
         currentZoneFactor + learningRate * errorRate * 0.1,
@@ -331,7 +342,9 @@ export class ETAPredictor {
       sumAbsError += error;
       sumSquaredError += error * error;
 
-      const percentError = Math.abs((point.actual - point.predicted) / point.actual);
+      const percentError = Math.abs(
+        (point.actual - point.predicted) / point.actual,
+      );
       sumPercentError += percentError;
     }
 
@@ -347,7 +360,9 @@ export class ETAPredictor {
   /**
    * Calculate confidence based on accuracy metrics.
    */
-  private calculateConfidence(accuracy: { mae: number; rmse: number; mape: number } | null): number {
+  private calculateConfidence(
+    accuracy: { mae: number; rmse: number; mape: number } | null,
+  ): number {
     if (!accuracy) {
       return this.config.defaultConfidence;
     }

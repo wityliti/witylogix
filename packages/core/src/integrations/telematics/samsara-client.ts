@@ -128,7 +128,9 @@ export class SamsaraClient extends TelematicsAdapter {
         pageIndex++;
       }
 
-      const normalized = vehicles.map((v) => this.normalizer.normalizeVehicle(v));
+      const normalized = vehicles.map((v) =>
+        this.normalizer.normalizeVehicle(v),
+      );
       this.cache.set(cacheKey, normalized, 300000); // 5 min cache
       return normalized;
     });
@@ -144,7 +146,9 @@ export class SamsaraClient extends TelematicsAdapter {
     if (cached) return cached;
 
     return this.retryWithBackoff(async () => {
-      const url = new URL(`${this.baseUrl}/fleet/vehicles/${vehicleId}/locations`);
+      const url = new URL(
+        `${this.baseUrl}/fleet/vehicles/${vehicleId}/locations`,
+      );
       url.searchParams.append("limit", "1");
 
       const response = await this.fetchWithTimeout(url.toString(), {
@@ -181,7 +185,9 @@ export class SamsaraClient extends TelematicsAdapter {
    * Get diagnostics for a vehicle
    * GET /fleet/vehicles/{id}/stats
    */
-  async getVehicleDiagnostics(vehicleId: string): Promise<NormalizedDiagnostic> {
+  async getVehicleDiagnostics(
+    vehicleId: string,
+  ): Promise<NormalizedDiagnostic> {
     const cacheKey = `samsara:diagnostics:${vehicleId}`;
     const cached = this.cache.get(cacheKey) as NormalizedDiagnostic | undefined;
     if (cached) return cached;
@@ -206,7 +212,10 @@ export class SamsaraClient extends TelematicsAdapter {
       }
 
       const data = (await response.json()) as { data: SamsaraStats };
-      const normalized = this.normalizer.normalizeDiagnostic(data.data, vehicleId);
+      const normalized = this.normalizer.normalizeDiagnostic(
+        data.data,
+        vehicleId,
+      );
       this.cache.set(cacheKey, normalized, 300000); // 5 min cache
       return normalized;
     });
@@ -267,7 +276,9 @@ export class SamsaraClient extends TelematicsAdapter {
    */
   async getFuelLevel(vehicleId: string): Promise<NormalizedFuelReading> {
     const cacheKey = `samsara:fuel:${vehicleId}`;
-    const cached = this.cache.get(cacheKey) as NormalizedFuelReading | undefined;
+    const cached = this.cache.get(cacheKey) as
+      | NormalizedFuelReading
+      | undefined;
     if (cached) return cached;
 
     return this.retryWithBackoff(async () => {
@@ -313,7 +324,8 @@ export class SamsaraClient extends TelematicsAdapter {
         headers: this.buildHeaders(),
         body: JSON.stringify({
           url: webhookUrl,
-          eventTypes: eventTypes.length > 0 ? eventTypes : ["*.created", "*.updated"],
+          eventTypes:
+            eventTypes.length > 0 ? eventTypes : ["*.created", "*.updated"],
         }),
       });
 

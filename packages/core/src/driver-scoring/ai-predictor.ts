@@ -4,7 +4,7 @@
  * Pure TypeScript with no external ML dependencies
  */
 
-import { DriverMetrics, DriverScore } from './types';
+import { DriverMetrics, DriverScore } from "./types";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -23,7 +23,7 @@ export interface DriverFeatureVector {
 export interface PredictedScore {
   predictedScore: number; // 0-100
   confidence: number; // 0-1
-  direction: 'improving' | 'declining' | 'stable';
+  direction: "improving" | "declining" | "stable";
   horizon: number; // periods ahead
 }
 
@@ -32,12 +32,12 @@ export interface Anomaly {
   currentValue: number;
   historicalMean: number;
   deviation: number; // standard deviations
-  severity: 'warning' | 'critical';
+  severity: "warning" | "critical";
 }
 
 export interface SatisfactionPrediction {
   score: number; // 0-100
-  riskLevel: 'low' | 'medium' | 'high';
+  riskLevel: "low" | "medium" | "high";
   factors: Record<string, number>; // weighted contribution of each factor
 }
 
@@ -57,29 +57,34 @@ export interface RegressionResult {
  */
 export function extractFeatures(metrics: DriverMetrics): DriverFeatureVector {
   // On-time delivery ratio (0-1)
-  const onTimeRatio = metrics.totalDeliveries > 0
-    ? metrics.onTimeCount / metrics.totalDeliveries
-    : 0;
+  const onTimeRatio =
+    metrics.totalDeliveries > 0
+      ? metrics.onTimeCount / metrics.totalDeliveries
+      : 0;
 
   // Average customer rating (1-5 scale)
-  const avgRating = metrics.customerRatingCount > 0
-    ? metrics.customerRatingSum / metrics.customerRatingCount
-    : 0;
+  const avgRating =
+    metrics.customerRatingCount > 0
+      ? metrics.customerRatingSum / metrics.customerRatingCount
+      : 0;
 
   // POD compliance ratio (0-1)
-  const podRatio = metrics.totalDeliveries > 0
-    ? metrics.podComplianceCount / metrics.totalDeliveries
-    : 0;
+  const podRatio =
+    metrics.totalDeliveries > 0
+      ? metrics.podComplianceCount / metrics.totalDeliveries
+      : 0;
 
   // Route efficiency ratio (optimal/actual)
-  const efficiencyRatio = metrics.totalDeliveries > 0
-    ? metrics.routeEfficiencySum / metrics.totalDeliveries
-    : 1;
+  const efficiencyRatio =
+    metrics.totalDeliveries > 0
+      ? metrics.routeEfficiencySum / metrics.totalDeliveries
+      : 1;
 
   // Incident ratio (0-1, lower is better)
-  const incidentRatio = metrics.totalDeliveries > 0
-    ? metrics.incidentCount / metrics.totalDeliveries
-    : 0;
+  const incidentRatio =
+    metrics.totalDeliveries > 0
+      ? metrics.incidentCount / metrics.totalDeliveries
+      : 0;
 
   // Absolute delivery volume
   const deliveryVolume = metrics.totalDeliveries;
@@ -107,7 +112,9 @@ export function extractFeatures(metrics: DriverMetrics): DriverFeatureVector {
  * Perform simple linear regression on data points
  * Returns slope, intercept, and R-squared (goodness of fit)
  */
-function linearRegression(points: Array<{ x: number; y: number }>): RegressionResult {
+function linearRegression(
+  points: Array<{ x: number; y: number }>,
+): RegressionResult {
   if (points.length === 0) {
     return { slope: 0, intercept: 0, rSquared: 0 };
   }
@@ -148,7 +155,7 @@ function linearRegression(points: Array<{ x: number; y: number }>): RegressionRe
     ssTot += deviation * deviation;
   }
 
-  const rSquared = ssTot === 0 ? 0 : 1 - (ssRes / ssTot);
+  const rSquared = ssTot === 0 ? 0 : 1 - ssRes / ssTot;
 
   return {
     slope,
@@ -167,13 +174,13 @@ function linearRegression(points: Array<{ x: number; y: number }>): RegressionRe
  */
 export function predictFutureScore(
   history: DriverScore[],
-  horizon: number
+  horizon: number,
 ): PredictedScore {
   if (history.length === 0) {
     return {
       predictedScore: 50,
       confidence: 0,
-      direction: 'stable',
+      direction: "stable",
       horizon,
     };
   }
@@ -183,7 +190,7 @@ export function predictFutureScore(
     return {
       predictedScore: history[0].compositeScore,
       confidence: 0.2,
-      direction: 'stable',
+      direction: "stable",
       horizon,
     };
   }
@@ -201,16 +208,19 @@ export function predictFutureScore(
   // Predict score at future period
   const lastPeriod = history.length - 1;
   const futurePeriod = lastPeriod + horizon;
-  const predictedScore = Math.max(0, Math.min(100, regression.slope * futurePeriod + regression.intercept));
+  const predictedScore = Math.max(
+    0,
+    Math.min(100, regression.slope * futurePeriod + regression.intercept),
+  );
 
   // Determine direction based on slope
-  let direction: 'improving' | 'declining' | 'stable';
+  let direction: "improving" | "declining" | "stable";
   if (regression.slope > 0.5) {
-    direction = 'improving';
+    direction = "improving";
   } else if (regression.slope < -0.5) {
-    direction = 'declining';
+    direction = "declining";
   } else {
-    direction = 'stable';
+    direction = "stable";
   }
 
   // Confidence based on:
@@ -235,7 +245,10 @@ export function predictFutureScore(
 /**
  * Calculate mean and standard deviation of a numeric array
  */
-function calculateMeanAndStdDev(values: number[]): { mean: number; stdDev: number } {
+function calculateMeanAndStdDev(values: number[]): {
+  mean: number;
+  stdDev: number;
+} {
   if (values.length === 0) {
     return { mean: 0, stdDev: 0 };
   }
@@ -246,7 +259,9 @@ function calculateMeanAndStdDev(values: number[]): { mean: number; stdDev: numbe
     return { mean, stdDev: 0 };
   }
 
-  const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+  const variance =
+    values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+    values.length;
   const stdDev = Math.sqrt(variance);
 
   return { mean, stdDev };
@@ -258,7 +273,7 @@ function calculateMeanAndStdDev(values: number[]): { mean: number; stdDev: numbe
  */
 export function detectAnomalies(
   current: DriverMetrics,
-  historical: DriverMetrics[]
+  historical: DriverMetrics[],
 ): Anomaly[] {
   if (historical.length === 0) {
     return [];
@@ -268,27 +283,32 @@ export function detectAnomalies(
   const threshold = 2; // Standard deviations
 
   // Helper to extract metric values
-  const extractMetric = (metrics: DriverMetrics, metricName: string): number => {
+  const extractMetric = (
+    metrics: DriverMetrics,
+    metricName: string,
+  ): number => {
     const record = metrics as Record<string, unknown>;
     const value = record[metricName];
-    return typeof value === 'number' ? value : 0;
+    return typeof value === "number" ? value : 0;
   };
 
   // Metrics to check
   const metricsToCheck = [
-    'onTimeCount',
-    'lateCount',
-    'avgDeliveryMinutes',
-    'customerRatingSum',
-    'customerRatingCount',
-    'podComplianceCount',
-    'podMissedCount',
-    'routeEfficiencySum',
-    'incidentCount',
+    "onTimeCount",
+    "lateCount",
+    "avgDeliveryMinutes",
+    "customerRatingSum",
+    "customerRatingCount",
+    "podComplianceCount",
+    "podMissedCount",
+    "routeEfficiencySum",
+    "incidentCount",
   ];
 
   for (const metricName of metricsToCheck) {
-    const historicalValues = historical.map(m => extractMetric(m, metricName));
+    const historicalValues = historical.map((m) =>
+      extractMetric(m, metricName),
+    );
     const currentValue = extractMetric(current, metricName);
 
     const { mean, stdDev } = calculateMeanAndStdDev(historicalValues);
@@ -301,7 +321,7 @@ export function detectAnomalies(
     const deviation = Math.abs(currentValue - mean) / stdDev;
 
     if (deviation > threshold) {
-      const severity = deviation > 3 ? 'critical' : 'warning';
+      const severity = deviation > 3 ? "critical" : "warning";
       anomalies.push({
         metric: metricName,
         currentValue,
@@ -323,23 +343,29 @@ export function detectAnomalies(
  * Predict customer satisfaction based on driver metrics
  * Uses weighted model combining key performance indicators
  */
-export function predictCustomerSatisfaction(metrics: DriverMetrics): SatisfactionPrediction {
+export function predictCustomerSatisfaction(
+  metrics: DriverMetrics,
+): SatisfactionPrediction {
   // Extract component ratios
-  const onTimeRatio = metrics.totalDeliveries > 0
-    ? metrics.onTimeCount / metrics.totalDeliveries
-    : 0;
+  const onTimeRatio =
+    metrics.totalDeliveries > 0
+      ? metrics.onTimeCount / metrics.totalDeliveries
+      : 0;
 
-  const podRatio = metrics.totalDeliveries > 0
-    ? metrics.podComplianceCount / metrics.totalDeliveries
-    : 0;
+  const podRatio =
+    metrics.totalDeliveries > 0
+      ? metrics.podComplianceCount / metrics.totalDeliveries
+      : 0;
 
-  const incidentRatio = metrics.totalDeliveries > 0
-    ? metrics.incidentCount / metrics.totalDeliveries
-    : 0;
+  const incidentRatio =
+    metrics.totalDeliveries > 0
+      ? metrics.incidentCount / metrics.totalDeliveries
+      : 0;
 
-  const efficiencyRatio = metrics.totalDeliveries > 0
-    ? metrics.routeEfficiencySum / metrics.totalDeliveries
-    : 1;
+  const efficiencyRatio =
+    metrics.totalDeliveries > 0
+      ? metrics.routeEfficiencySum / metrics.totalDeliveries
+      : 1;
 
   // Normalize efficiency to 0-1 scale (1.0 = perfect, > 1.0 = inefficient)
   const efficiencyScore = Math.min(1, 1 / Math.max(0.1, efficiencyRatio));
@@ -352,29 +378,36 @@ export function predictCustomerSatisfaction(metrics: DriverMetrics): Satisfactio
     efficiency: 0.1,
   };
 
-  const satisfactionScore = Math.max(0, Math.min(100,
-    (onTimeRatio * weights.onTime +
-      podRatio * weights.pod +
-      (1 - incidentRatio) * weights.reliability +
-      efficiencyScore * weights.efficiency) * 100
-  ));
+  const satisfactionScore = Math.max(
+    0,
+    Math.min(
+      100,
+      (onTimeRatio * weights.onTime +
+        podRatio * weights.pod +
+        (1 - incidentRatio) * weights.reliability +
+        efficiencyScore * weights.efficiency) *
+        100,
+    ),
+  );
 
   // Determine risk level
-  let riskLevel: 'low' | 'medium' | 'high';
+  let riskLevel: "low" | "medium" | "high";
   if (satisfactionScore >= 80) {
-    riskLevel = 'low';
+    riskLevel = "low";
   } else if (satisfactionScore >= 60) {
-    riskLevel = 'medium';
+    riskLevel = "medium";
   } else {
-    riskLevel = 'high';
+    riskLevel = "high";
   }
 
   // Calculate individual factor contributions
   const factors: Record<string, number> = {
     onTimePerformance: Math.round(onTimeRatio * weights.onTime * 1000) / 10,
     proofOfDelivery: Math.round(podRatio * weights.pod * 1000) / 10,
-    reliability: Math.round((1 - incidentRatio) * weights.reliability * 1000) / 10,
-    routeEfficiency: Math.round(efficiencyScore * weights.efficiency * 1000) / 10,
+    reliability:
+      Math.round((1 - incidentRatio) * weights.reliability * 1000) / 10,
+    routeEfficiency:
+      Math.round(efficiencyScore * weights.efficiency * 1000) / 10,
   };
 
   return {

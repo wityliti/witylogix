@@ -1,22 +1,30 @@
-'use client';
+"use client";
 /**
  * useFitBounds — auto-fits the WLMap viewport to a set of [lng, lat] coordinates.
  * Call it once the map is ready.  Re-runs when the coords array reference changes.
  */
 
-import { useEffect } from 'react';
-import type { Map as MapLibreMap, LngLatBoundsLike } from 'maplibre-gl';
+import { useEffect } from "react";
+import type { Map as MapLibreMap, LngLatBoundsLike } from "maplibre-gl";
 
 interface Coord {
   lng: number;
   lat: number;
 }
 
-export function fitBounds(map: MapLibreMap, coords: Coord[], padding = 80): void {
+export function fitBounds(
+  map: MapLibreMap,
+  coords: Coord[],
+  padding = 80,
+): void {
   if (coords.length === 0) return;
 
   if (coords.length === 1) {
-    map.flyTo({ center: [coords[0].lng, coords[0].lat], zoom: 14, duration: 800 });
+    map.flyTo({
+      center: [coords[0].lng, coords[0].lat],
+      zoom: 14,
+      duration: 800,
+    });
     return;
   }
 
@@ -49,7 +57,7 @@ export function useFitBounds(
     if (!map || coords.length === 0) return;
     const run = () => fitBounds(map, coords, padding);
     if (map.isStyleLoaded()) run();
-    else map.on('load', run);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    else map.on("load", run);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, coords, padding]);
 }

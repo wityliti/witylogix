@@ -3,11 +3,14 @@
  * Fails fast if required environment variables are missing.
  */
 import { z } from "zod";
-declare const configSchema: z.ZodObject<{
+declare const configSchema: z.ZodObject<
+  {
     NODE_ENV: z.ZodDefault<z.ZodEnum<["development", "staging", "production"]>>;
     PORT: z.ZodDefault<z.ZodNumber>;
     HOST: z.ZodDefault<z.ZodString>;
-    LOG_LEVEL: z.ZodDefault<z.ZodEnum<["fatal", "error", "warn", "info", "debug", "trace"]>>;
+    LOG_LEVEL: z.ZodDefault<
+      z.ZodEnum<["fatal", "error", "warn", "info", "debug", "trace"]>
+    >;
     DATABASE_URL: z.ZodString;
     REDIS_URL: z.ZodDefault<z.ZodString>;
     JWT_SECRET: z.ZodString;
@@ -16,16 +19,32 @@ declare const configSchema: z.ZodObject<{
     SHOPIFY_API_SECRET: z.ZodString;
     SHOPIFY_APP_URL: z.ZodOptional<z.ZodString>;
     SHOPIFY_SCOPES: z.ZodDefault<z.ZodString>;
-    ROUTING_PROVIDER: z.ZodDefault<z.ZodEnum<["mapbox", "osrm", "google_maps", "here", "graphhopper", "tomtom"]>>;
+    ROUTING_PROVIDER: z.ZodDefault<
+      z.ZodEnum<
+        ["mapbox", "osrm", "google_maps", "here", "graphhopper", "tomtom"]
+      >
+    >;
     MAPBOX_ACCESS_TOKEN: z.ZodOptional<z.ZodString>;
     OSRM_BASE_URL: z.ZodOptional<z.ZodString>;
     GOOGLE_MAPS_API_KEY: z.ZodOptional<z.ZodString>;
     HERE_API_KEY: z.ZodOptional<z.ZodString>;
     GRAPHHOPPER_API_KEY: z.ZodOptional<z.ZodString>;
     TOMTOM_API_KEY: z.ZodOptional<z.ZodString>;
-    ROUTING_BYOK: z.ZodEffects<z.ZodDefault<z.ZodEnum<["true", "false"]>>, boolean, "true" | "false" | undefined>;
-    NOTIFICATIONS_BYOK: z.ZodEffects<z.ZodDefault<z.ZodEnum<["true", "false"]>>, boolean, "true" | "false" | undefined>;
-    EMAIL_PROVIDER: z.ZodDefault<z.ZodEnum<["sendgrid", "mailgun", "aws_ses", "postmark", "resend", "smtp"]>>;
+    ROUTING_BYOK: z.ZodEffects<
+      z.ZodDefault<z.ZodEnum<["true", "false"]>>,
+      boolean,
+      "true" | "false" | undefined
+    >;
+    NOTIFICATIONS_BYOK: z.ZodEffects<
+      z.ZodDefault<z.ZodEnum<["true", "false"]>>,
+      boolean,
+      "true" | "false" | undefined
+    >;
+    EMAIL_PROVIDER: z.ZodDefault<
+      z.ZodEnum<
+        ["sendgrid", "mailgun", "aws_ses", "postmark", "resend", "smtp"]
+      >
+    >;
     SENDGRID_API_KEY: z.ZodOptional<z.ZodString>;
     MAILGUN_API_KEY: z.ZodOptional<z.ZodString>;
     MAILGUN_DOMAIN: z.ZodOptional<z.ZodString>;
@@ -40,7 +59,9 @@ declare const configSchema: z.ZodObject<{
     SMTP_PASSWORD: z.ZodOptional<z.ZodString>;
     EMAIL_FROM: z.ZodOptional<z.ZodString>;
     EMAIL_FROM_NAME: z.ZodOptional<z.ZodString>;
-    SMS_PROVIDER: z.ZodDefault<z.ZodEnum<["twilio", "vonage", "aws_sns", "messagebird", "plivo"]>>;
+    SMS_PROVIDER: z.ZodDefault<
+      z.ZodEnum<["twilio", "vonage", "aws_sns", "messagebird", "plivo"]>
+    >;
     TWILIO_ACCOUNT_SID: z.ZodOptional<z.ZodString>;
     TWILIO_AUTH_TOKEN: z.ZodOptional<z.ZodString>;
     TWILIO_PHONE_NUMBER: z.ZodOptional<z.ZodString>;
@@ -52,18 +73,25 @@ declare const configSchema: z.ZodObject<{
     MESSAGEBIRD_API_KEY: z.ZodOptional<z.ZodString>;
     PLIVO_AUTH_ID: z.ZodOptional<z.ZodString>;
     PLIVO_AUTH_TOKEN: z.ZodOptional<z.ZodString>;
-    WHATSAPP_PROVIDER: z.ZodDefault<z.ZodEnum<["meta_cloud", "twilio_whatsapp", "360dialog"]>>;
+    WHATSAPP_PROVIDER: z.ZodDefault<
+      z.ZodEnum<["meta_cloud", "twilio_whatsapp", "360dialog"]>
+    >;
     WHATSAPP_TOKEN: z.ZodOptional<z.ZodString>;
     WHATSAPP_PHONE_NUMBER_ID: z.ZodOptional<z.ZodString>;
     DIALOG360_API_KEY: z.ZodOptional<z.ZodString>;
-    PUSH_PROVIDER: z.ZodDefault<z.ZodEnum<["firebase", "onesignal", "expo_push"]>>;
+    PUSH_PROVIDER: z.ZodDefault<
+      z.ZodEnum<["firebase", "onesignal", "expo_push"]>
+    >;
     FIREBASE_PROJECT_ID: z.ZodOptional<z.ZodString>;
     FIREBASE_PRIVATE_KEY: z.ZodOptional<z.ZodString>;
     FIREBASE_CLIENT_EMAIL: z.ZodOptional<z.ZodString>;
     ONESIGNAL_APP_ID: z.ZodOptional<z.ZodString>;
     ONESIGNAL_REST_API_KEY: z.ZodOptional<z.ZodString>;
     TRACKING_PAGE_URL: z.ZodDefault<z.ZodString>;
-}, "strip", z.ZodTypeAny, {
+  },
+  "strip",
+  z.ZodTypeAny,
+  {
     NODE_ENV: "development" | "production" | "staging";
     PORT: number;
     HOST: string;
@@ -75,10 +103,22 @@ declare const configSchema: z.ZodObject<{
     SHOPIFY_API_KEY: string;
     SHOPIFY_API_SECRET: string;
     SHOPIFY_SCOPES: string;
-    ROUTING_PROVIDER: "mapbox" | "osrm" | "google_maps" | "here" | "graphhopper" | "tomtom";
+    ROUTING_PROVIDER:
+      | "mapbox"
+      | "osrm"
+      | "google_maps"
+      | "here"
+      | "graphhopper"
+      | "tomtom";
     ROUTING_BYOK: boolean;
     NOTIFICATIONS_BYOK: boolean;
-    EMAIL_PROVIDER: "sendgrid" | "mailgun" | "aws_ses" | "postmark" | "resend" | "smtp";
+    EMAIL_PROVIDER:
+      | "sendgrid"
+      | "mailgun"
+      | "aws_ses"
+      | "postmark"
+      | "resend"
+      | "smtp";
     SMS_PROVIDER: "twilio" | "vonage" | "aws_sns" | "messagebird" | "plivo";
     WHATSAPP_PROVIDER: "meta_cloud" | "twilio_whatsapp" | "360dialog";
     PUSH_PROVIDER: "firebase" | "onesignal" | "expo_push";
@@ -123,7 +163,8 @@ declare const configSchema: z.ZodObject<{
     FIREBASE_CLIENT_EMAIL?: string | undefined;
     ONESIGNAL_APP_ID?: string | undefined;
     ONESIGNAL_REST_API_KEY?: string | undefined;
-}, {
+  },
+  {
     DATABASE_URL: string;
     JWT_SECRET: string;
     SHOPIFY_API_KEY: string;
@@ -131,12 +172,26 @@ declare const configSchema: z.ZodObject<{
     NODE_ENV?: "development" | "production" | "staging" | undefined;
     PORT?: number | undefined;
     HOST?: string | undefined;
-    LOG_LEVEL?: "info" | "warn" | "error" | "fatal" | "debug" | "trace" | undefined;
+    LOG_LEVEL?:
+      | "info"
+      | "warn"
+      | "error"
+      | "fatal"
+      | "debug"
+      | "trace"
+      | undefined;
     REDIS_URL?: string | undefined;
     JWT_EXPIRES_IN?: string | undefined;
     SHOPIFY_APP_URL?: string | undefined;
     SHOPIFY_SCOPES?: string | undefined;
-    ROUTING_PROVIDER?: "mapbox" | "osrm" | "google_maps" | "here" | "graphhopper" | "tomtom" | undefined;
+    ROUTING_PROVIDER?:
+      | "mapbox"
+      | "osrm"
+      | "google_maps"
+      | "here"
+      | "graphhopper"
+      | "tomtom"
+      | undefined;
     MAPBOX_ACCESS_TOKEN?: string | undefined;
     OSRM_BASE_URL?: string | undefined;
     GOOGLE_MAPS_API_KEY?: string | undefined;
@@ -145,7 +200,14 @@ declare const configSchema: z.ZodObject<{
     TOMTOM_API_KEY?: string | undefined;
     ROUTING_BYOK?: "true" | "false" | undefined;
     NOTIFICATIONS_BYOK?: "true" | "false" | undefined;
-    EMAIL_PROVIDER?: "sendgrid" | "mailgun" | "aws_ses" | "postmark" | "resend" | "smtp" | undefined;
+    EMAIL_PROVIDER?:
+      | "sendgrid"
+      | "mailgun"
+      | "aws_ses"
+      | "postmark"
+      | "resend"
+      | "smtp"
+      | undefined;
     SENDGRID_API_KEY?: string | undefined;
     MAILGUN_API_KEY?: string | undefined;
     MAILGUN_DOMAIN?: string | undefined;
@@ -160,7 +222,13 @@ declare const configSchema: z.ZodObject<{
     SMTP_PASSWORD?: string | undefined;
     EMAIL_FROM?: string | undefined;
     EMAIL_FROM_NAME?: string | undefined;
-    SMS_PROVIDER?: "twilio" | "vonage" | "aws_sns" | "messagebird" | "plivo" | undefined;
+    SMS_PROVIDER?:
+      | "twilio"
+      | "vonage"
+      | "aws_sns"
+      | "messagebird"
+      | "plivo"
+      | undefined;
     TWILIO_ACCOUNT_SID?: string | undefined;
     TWILIO_AUTH_TOKEN?: string | undefined;
     TWILIO_PHONE_NUMBER?: string | undefined;
@@ -172,7 +240,11 @@ declare const configSchema: z.ZodObject<{
     MESSAGEBIRD_API_KEY?: string | undefined;
     PLIVO_AUTH_ID?: string | undefined;
     PLIVO_AUTH_TOKEN?: string | undefined;
-    WHATSAPP_PROVIDER?: "meta_cloud" | "twilio_whatsapp" | "360dialog" | undefined;
+    WHATSAPP_PROVIDER?:
+      | "meta_cloud"
+      | "twilio_whatsapp"
+      | "360dialog"
+      | undefined;
     WHATSAPP_TOKEN?: string | undefined;
     WHATSAPP_PHONE_NUMBER_ID?: string | undefined;
     DIALOG360_API_KEY?: string | undefined;
@@ -183,7 +255,8 @@ declare const configSchema: z.ZodObject<{
     ONESIGNAL_APP_ID?: string | undefined;
     ONESIGNAL_REST_API_KEY?: string | undefined;
     TRACKING_PAGE_URL?: string | undefined;
-}>;
+  }
+>;
 export type Config = z.infer<typeof configSchema>;
 export declare function getConfig(): Config;
 export declare function isDev(): boolean;

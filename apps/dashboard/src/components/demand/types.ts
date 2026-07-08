@@ -52,7 +52,7 @@ export interface DemandChartConfig {
   height?: number;
   showGrid?: boolean;
   showLegend?: boolean;
-  timeFormat?: 'hourly' | 'daily';
+  timeFormat?: "hourly" | "daily";
 }
 
 export interface ZoneHeatmapProps {

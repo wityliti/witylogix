@@ -28,7 +28,7 @@ export interface TrackingStats {
   averageSpeedKmh: number;
 }
 
-const STORAGE_KEY = 'witylogix_locations';
+const STORAGE_KEY = "witylogix_locations";
 const MAX_STORED_LOCATIONS = 1000;
 const EARTH_RADIUS_KM = 6371;
 
@@ -49,18 +49,17 @@ export class LocationService {
    */
   async startTracking(): Promise<void> {
     if (this.isTracking) {
-      console.warn('Tracking already in progress');
+      console.warn("Tracking already in progress");
       return;
     }
 
-    if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
-      console.error('Geolocation not available');
+    if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
+      console.error("Geolocation not available");
       return;
     }
 
     this.isTracking = true;
     this.trackingStartTime = Date.now();
-
 
     try {
       this.watchId = navigator.geolocation.watchPosition(
@@ -70,10 +69,10 @@ export class LocationService {
           enableHighAccuracy: true,
           timeout: 10000,
           maximumAge: 0,
-        }
+        },
       );
     } catch (error) {
-      console.error('Error starting tracking:', error);
+      console.error("Error starting tracking:", error);
       this.isTracking = false;
     }
   }
@@ -82,7 +81,7 @@ export class LocationService {
    * Stop GPS tracking
    */
   stopTracking(): void {
-    if (this.watchId !== null && typeof navigator !== 'undefined') {
+    if (this.watchId !== null && typeof navigator !== "undefined") {
       navigator.geolocation.clearWatch(this.watchId);
       this.watchId = null;
     }
@@ -93,7 +92,7 @@ export class LocationService {
    * Get current position once
    */
   async getCurrentPosition(): Promise<LocationCoordinate | null> {
-    if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
+    if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
       return null;
     }
 
@@ -104,13 +103,13 @@ export class LocationService {
           resolve(location);
         },
         (error) => {
-          console.error('Error getting current position:', error);
+          console.error("Error getting current position:", error);
           resolve(null);
         },
         {
           enableHighAccuracy: true,
           timeout: 10000,
-        }
+        },
       );
     });
   }
@@ -135,13 +134,15 @@ export class LocationService {
    * Handle location error
    */
   private handleLocationError(error: GeolocationPositionError): void {
-    console.error('Geolocation error:', error.code, error.message);
+    console.error("Geolocation error:", error.code, error.message);
   }
 
   /**
    * Convert Geolocation position to LocationCoordinate
    */
-  private convertGeolocationPosition(position: GeolocationPosition): LocationCoordinate {
+  private convertGeolocationPosition(
+    position: GeolocationPosition,
+  ): LocationCoordinate {
     return {
       latitude: position.coords.latitude,
       longitude: position.coords.longitude,
@@ -156,12 +157,14 @@ export class LocationService {
   /**
    * Batch upload locations to server
    */
-  async batchUploadLocations(positions: LocationCoordinate[]): Promise<boolean> {
+  async batchUploadLocations(
+    positions: LocationCoordinate[],
+  ): Promise<boolean> {
     try {
-      const response = await fetch('/api/locations/batch', {
-        method: 'POST',
+      const response = await fetch("/api/locations/batch", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...this.getAuthHeaders(),
         },
         body: JSON.stringify({
@@ -176,7 +179,7 @@ export class LocationService {
 
       return true;
     } catch (error) {
-      console.error('Error uploading locations:', error);
+      console.error("Error uploading locations:", error);
       return false;
     }
   }
@@ -215,15 +218,21 @@ export class LocationService {
   /**
    * Haversine formula to calculate distance between two points
    */
-  private haversineDistance(coord1: LocationCoordinate, coord2: LocationCoordinate): number {
+  private haversineDistance(
+    coord1: LocationCoordinate,
+    coord2: LocationCoordinate,
+  ): number {
     const lat1 = this.degreesToRadians(coord1.latitude);
     const lat2 = this.degreesToRadians(coord2.latitude);
     const deltaLat = this.degreesToRadians(coord2.latitude - coord1.latitude);
     const deltaLon = this.degreesToRadians(coord2.longitude - coord1.longitude);
 
-    const a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-      Math.cos(lat1) * Math.cos(lat2) *
-      Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
+    const a =
+      Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+      Math.cos(lat1) *
+        Math.cos(lat2) *
+        Math.sin(deltaLon / 2) *
+        Math.sin(deltaLon / 2);
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return EARTH_RADIUS_KM * c;
@@ -239,7 +248,11 @@ export class LocationService {
   /**
    * Check if location is within geofence
    */
-  isInGeofence(latitude: number, longitude: number, fence: GeofenceArea): boolean {
+  isInGeofence(
+    latitude: number,
+    longitude: number,
+    fence: GeofenceArea,
+  ): boolean {
     const distance = this.haversineDistance(
       { latitude, longitude, accuracy: 0, timestamp: Date.now() },
       {
@@ -247,7 +260,7 @@ export class LocationService {
         longitude: fence.longitude,
         accuracy: 0,
         timestamp: Date.now(),
-      }
+      },
     );
 
     return distance * 1000 <= fence.radiusMeters; // Convert km to meters
@@ -316,12 +329,12 @@ export class LocationService {
    * Save locations to storage
    */
   private saveLocationsToStorage(): void {
-    if (typeof localStorage === 'undefined') return;
+    if (typeof localStorage === "undefined") return;
 
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.locations));
     } catch (error) {
-      console.error('Failed to save locations to storage:', error);
+      console.error("Failed to save locations to storage:", error);
     }
   }
 
@@ -329,7 +342,7 @@ export class LocationService {
    * Load locations from storage
    */
   private loadLocationsFromStorage(): void {
-    if (typeof localStorage === 'undefined') return;
+    if (typeof localStorage === "undefined") return;
 
     try {
       const data = localStorage.getItem(STORAGE_KEY);
@@ -337,7 +350,7 @@ export class LocationService {
         this.locations = JSON.parse(data);
       }
     } catch (error) {
-      console.error('Failed to load locations from storage:', error);
+      console.error("Failed to load locations from storage:", error);
     }
   }
 
@@ -345,7 +358,10 @@ export class LocationService {
    * Get authentication headers
    */
   private getAuthHeaders(): Record<string, string> {
-    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    const token =
+      typeof localStorage !== "undefined"
+        ? localStorage.getItem("auth_token")
+        : null;
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
 

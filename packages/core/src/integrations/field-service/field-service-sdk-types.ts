@@ -11,7 +11,7 @@ export interface OAuth2Credentials {
   clientSecret: string;
   redirectUri?: string;
   scope?: string[];
-  grantType: 'client_credentials' | 'authorization_code' | 'refresh_token';
+  grantType: "client_credentials" | "authorization_code" | "refresh_token";
 }
 
 export interface OAuth2Token {
@@ -39,8 +39,10 @@ export class RateLimitError extends Error {
     public readonly remaining: number,
     public readonly limit: number,
   ) {
-    super(`Rate limited: ${remaining}/${limit} remaining, retry after ${retryAfter}ms`);
-    this.name = 'RateLimitError';
+    super(
+      `Rate limited: ${remaining}/${limit} remaining, retry after ${retryAfter}ms`,
+    );
+    this.name = "RateLimitError";
   }
 }
 
@@ -50,27 +52,27 @@ export interface WebhookEvent<T = Record<string, unknown>> {
   id: string;
   timestamp: Date;
   type: WebhookEventType;
-  provider: 'servicetitan' | 'jobber';
+  provider: "servicetitan" | "jobber";
   data: T;
   signature?: string;
 }
 
 export type WebhookEventType =
-  | 'job.created'
-  | 'job.updated'
-  | 'job.completed'
-  | 'job.cancelled'
-  | 'customer.created'
-  | 'customer.updated'
-  | 'invoice.created'
-  | 'invoice.sent'
-  | 'invoice.paid'
-  | 'invoice.overdue'
-  | 'technician.location_updated'
-  | 'quote.created'
-  | 'quote.accepted'
-  | 'quote.rejected'
-  | 'payment.received';
+  | "job.created"
+  | "job.updated"
+  | "job.completed"
+  | "job.cancelled"
+  | "customer.created"
+  | "customer.updated"
+  | "invoice.created"
+  | "invoice.sent"
+  | "invoice.paid"
+  | "invoice.overdue"
+  | "technician.location_updated"
+  | "quote.created"
+  | "quote.accepted"
+  | "quote.rejected"
+  | "payment.received";
 
 export interface WebhookConfig {
   url: string;
@@ -89,8 +91,8 @@ export interface JobCreateRequest {
   customerId: string;
   title: string;
   description?: string;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  status?: 'draft' | 'scheduled' | 'in_progress';
+  priority: "low" | "medium" | "high" | "urgent";
+  status?: "draft" | "scheduled" | "in_progress";
   scheduledStart?: Date;
   scheduledEnd?: Date;
   location: {
@@ -111,8 +113,8 @@ export interface JobCreateRequest {
 export interface JobUpdateRequest {
   title?: string;
   description?: string;
-  priority?: 'low' | 'medium' | 'high' | 'urgent';
-  status?: 'draft' | 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+  priority?: "low" | "medium" | "high" | "urgent";
+  status?: "draft" | "scheduled" | "in_progress" | "completed" | "cancelled";
   scheduledStart?: Date;
   scheduledEnd?: Date;
   notes?: string;
@@ -131,7 +133,7 @@ export interface JobLineItem {
   quantity: number;
   unitPrice: number;
   taxable?: boolean;
-  type?: 'material' | 'labor' | 'equipment';
+  type?: "material" | "labor" | "equipment";
 }
 
 export interface JobResponse {
@@ -175,7 +177,7 @@ export interface CustomerCreateRequest {
   email?: string;
   phone?: string;
   mobile?: string;
-  type: 'residential' | 'commercial' | 'both';
+  type: "residential" | "commercial" | "both";
   primaryAddress: {
     address: string;
     city: string;
@@ -227,7 +229,7 @@ export interface CustomerLocation {
   country?: string;
   latitude?: number;
   longitude?: number;
-  type: 'primary' | 'billing' | 'shipping';
+  type: "primary" | "billing" | "shipping";
 }
 
 // ─── TECHNICIAN MANAGEMENT ───────────────────────────────────────────────────
@@ -238,7 +240,7 @@ export interface TechnicianResponse {
   lastName: string;
   email?: string;
   phone?: string;
-  status: 'available' | 'busy' | 'offline';
+  status: "available" | "busy" | "offline";
   skills?: string[];
   certifications?: TechnicianCertification[];
   currentLocation?: GeoLocation;
@@ -289,7 +291,7 @@ export interface EstimateLineItem {
 }
 
 export interface EstimateUpdateRequest {
-  status?: 'draft' | 'sent' | 'accepted' | 'rejected';
+  status?: "draft" | "sent" | "accepted" | "rejected";
   lineItems?: EstimateLineItem[];
   notes?: string;
   expiryDate?: Date;
@@ -338,7 +340,7 @@ export interface InvoiceUpdateRequest {
   dueDate?: Date;
   lineItems?: InvoiceLineItem[];
   notes?: string;
-  status?: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+  status?: "draft" | "sent" | "paid" | "overdue" | "cancelled";
 }
 
 export interface InvoiceResponse {
@@ -364,7 +366,7 @@ export interface InvoiceResponse {
 export interface PaymentRecordRequest {
   invoiceId: string;
   amount: number;
-  method: 'cash' | 'check' | 'card' | 'bank_transfer' | 'online';
+  method: "cash" | "check" | "card" | "bank_transfer" | "online";
   reference?: string;
 }
 
@@ -373,7 +375,7 @@ export interface PaymentRecordRequest {
 export interface DispatchAssignmentRequest {
   jobId: string;
   technicianId: string;
-  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  priority?: "low" | "medium" | "high" | "urgent";
   notes?: string;
 }
 
@@ -381,7 +383,7 @@ export interface DispatchAssignmentResponse {
   id: string;
   jobId: string;
   technicianId: string;
-  status: 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
+  status: "assigned" | "accepted" | "in_progress" | "completed" | "cancelled";
   assignedAt: Date;
   acceptedAt?: Date;
   completedAt?: Date;
@@ -401,11 +403,11 @@ export interface DispatchOptimizationRequest {
 }
 
 export type DispatchGoal =
-  | 'minimize_travel_time'
-  | 'minimize_travel_distance'
-  | 'balance_workload'
-  | 'respect_skills'
-  | 'maximize_completion';
+  | "minimize_travel_time"
+  | "minimize_travel_distance"
+  | "balance_workload"
+  | "respect_skills"
+  | "maximize_completion";
 
 export interface DispatchOptimizationResponse {
   assignments: DispatchAssignmentResponse[];
@@ -430,7 +432,7 @@ export interface PricebookItem {
   category: string;
   unitPrice: number;
   taxable?: boolean;
-  type: 'material' | 'labor' | 'equipment' | 'service';
+  type: "material" | "labor" | "equipment" | "service";
   unit?: string;
   estimatedTime?: number; // minutes (for labor)
 }
@@ -447,12 +449,12 @@ export interface PricebookCategory {
 export interface MembershipPlan {
   id?: string;
   customerId: string;
-  planType: 'maintenance' | 'protection' | 'support' | 'premium';
+  planType: "maintenance" | "protection" | "support" | "premium";
   planName: string;
   startDate: Date;
   renewalDate?: Date;
-  status: 'active' | 'expired' | 'cancelled';
-  billingFrequency: 'monthly' | 'quarterly' | 'annual';
+  status: "active" | "expired" | "cancelled";
+  billingFrequency: "monthly" | "quarterly" | "annual";
   price: number;
   includedServices?: string[];
   visitFrequency?: number; // per year
@@ -465,7 +467,7 @@ export interface PaginationRequest {
   offset?: number;
   pageToken?: string;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 export interface PaginatedResponse<T> {
@@ -496,7 +498,7 @@ export class APIError extends Error {
     public readonly retryAfter?: number,
   ) {
     super(`[${code}] ${statusCode}`);
-    this.name = 'APIError';
+    this.name = "APIError";
   }
 }
 
@@ -505,7 +507,7 @@ export class APIError extends Error {
 export interface BatchOperationRequest<T> {
   operations: Array<{
     id: string;
-    operation: 'create' | 'update' | 'delete';
+    operation: "create" | "update" | "delete";
     data: T;
   }>;
 }
@@ -571,5 +573,5 @@ export interface CustomerRetention {
   lastJobDate: Date;
   jobFrequency: number; // jobs per year
   retentionScore: number; // 0-1
-  atRiskStatus: 'low' | 'medium' | 'high';
+  atRiskStatus: "low" | "medium" | "high";
 }

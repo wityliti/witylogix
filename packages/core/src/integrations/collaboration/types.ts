@@ -3,24 +3,29 @@
  * Unified types for Slack, Microsoft Teams, and Pusher adapters
  */
 
-export type ChannelType = 'public' | 'private' | 'direct' | 'group';
-export type MessageType = 'text' | 'rich' | 'file' | 'notification' | 'thread-reply';
-export type PresenceStatus = 'active' | 'away' | 'offline' | 'do_not_disturb';
-export type ReactionType = 'emoji' | 'custom' | 'reaction-group';
+export type ChannelType = "public" | "private" | "direct" | "group";
+export type MessageType =
+  | "text"
+  | "rich"
+  | "file"
+  | "notification"
+  | "thread-reply";
+export type PresenceStatus = "active" | "away" | "offline" | "do_not_disturb";
+export type ReactionType = "emoji" | "custom" | "reaction-group";
 export type WebhookEventType =
-  | 'message'
-  | 'channel_created'
-  | 'channel_deleted'
-  | 'user_joined'
-  | 'user_left'
-  | 'presence_changed'
-  | 'reaction_added'
-  | 'reaction_removed'
-  | 'file_shared'
-  | 'message_edited'
-  | 'message_deleted'
-  | 'thread_created'
-  | 'thread_reply';
+  | "message"
+  | "channel_created"
+  | "channel_deleted"
+  | "user_joined"
+  | "user_left"
+  | "presence_changed"
+  | "reaction_added"
+  | "reaction_removed"
+  | "file_shared"
+  | "message_edited"
+  | "message_deleted"
+  | "thread_created"
+  | "thread_reply";
 
 export interface CollaborationUser {
   id: string;
@@ -32,7 +37,7 @@ export interface CollaborationUser {
   department?: string;
   timezone?: string;
   locale?: string;
-  platform: 'slack' | 'teams' | 'pusher';
+  platform: "slack" | "teams" | "pusher";
   externalId?: string;
   isBot: boolean;
   isActive: boolean;
@@ -46,7 +51,7 @@ export interface CollaborationChannel {
   displayName: string;
   description?: string;
   type: ChannelType;
-  platform: 'slack' | 'teams' | 'pusher';
+  platform: "slack" | "teams" | "pusher";
   externalId?: string;
   parentId?: string;
   isArchived: boolean;
@@ -75,7 +80,7 @@ export interface CollaborationMessage {
   userId: string;
   content: string;
   type: MessageType;
-  platform: 'slack' | 'teams' | 'pusher';
+  platform: "slack" | "teams" | "pusher";
   externalId?: string;
   richContent?: {
     blocks?: unknown[];
@@ -102,7 +107,7 @@ export interface CollaborationMessage {
 export interface CollaborationAttachment {
   id: string;
   name: string;
-  type: 'file' | 'image' | 'video' | 'audio' | 'document';
+  type: "file" | "image" | "video" | "audio" | "document";
   size: number;
   mimeType: string;
   url: string;
@@ -118,7 +123,7 @@ export interface CollaborationAttachment {
 export interface MentionInfo {
   userId: string;
   displayName: string;
-  type: 'user' | 'channel' | 'group' | 'everyone';
+  type: "user" | "channel" | "group" | "everyone";
   index: number;
   length: number;
 }
@@ -142,7 +147,7 @@ export interface CollaborationPresence {
   statusMessage?: string;
   lastActivity?: Date;
   deviceInfo?: {
-    type: 'mobile' | 'desktop' | 'web';
+    type: "mobile" | "desktop" | "web";
     os?: string;
     appVersion?: string;
   };
@@ -158,7 +163,7 @@ export interface CollaborationPresence {
 export interface CollaborationWebhookEvent {
   id: string;
   type: WebhookEventType;
-  platform: 'slack' | 'teams' | 'pusher';
+  platform: "slack" | "teams" | "pusher";
   timestamp: Date;
   userId?: string;
   channelId?: string;
@@ -169,7 +174,7 @@ export interface CollaborationWebhookEvent {
 }
 
 export interface CollaborationConfig {
-  platform: 'slack' | 'teams' | 'pusher';
+  platform: "slack" | "teams" | "pusher";
   enabled: boolean;
   webhookUrl?: string;
   webhookSecret?: string;
@@ -216,7 +221,7 @@ export interface CollaborationConfig {
 }
 
 export interface CollaborationAdapterInterface {
-  platform: 'slack' | 'teams' | 'pusher';
+  platform: "slack" | "teams" | "pusher";
   config: CollaborationConfig;
 
   // Channel operations
@@ -234,11 +239,11 @@ export interface CollaborationAdapterInterface {
       type?: ChannelType;
       isPrivate?: boolean;
       members?: string[];
-    }
+    },
   ): Promise<CollaborationChannel>;
   updateChannel(
     channelId: string,
-    updates: Partial<CollaborationChannel>
+    updates: Partial<CollaborationChannel>,
   ): Promise<CollaborationChannel>;
   archiveChannel(channelId: string): Promise<void>;
   unarchiveChannel(channelId: string): Promise<void>;
@@ -253,13 +258,13 @@ export interface CollaborationAdapterInterface {
       attachments?: CollaborationAttachment[];
       threadId?: string;
       metadata?: Record<string, unknown>;
-    }
+    },
   ): Promise<CollaborationMessage>;
   getMessage(messageId: string): Promise<CollaborationMessage | null>;
   editMessage(
     messageId: string,
     content: string,
-    richContent?: Record<string, unknown>
+    richContent?: Record<string, unknown>,
   ): Promise<CollaborationMessage>;
   deleteMessage(messageId: string): Promise<void>;
   getMessageThread(messageId: string): Promise<CollaborationMessage[]>;
@@ -278,52 +283,48 @@ export interface CollaborationAdapterInterface {
   setUserPresence(
     userId: string,
     status: PresenceStatus,
-    statusMessage?: string
+    statusMessage?: string,
   ): Promise<void>;
 
   // Reaction operations
-  addReaction(
-    messageId: string,
-    emoji: string
-  ): Promise<CollaborationReaction>;
+  addReaction(messageId: string, emoji: string): Promise<CollaborationReaction>;
   removeReaction(messageId: string, emoji: string): Promise<void>;
   listReactions(messageId: string): Promise<CollaborationReaction[]>;
 
   // Member operations
   addChannelMember(
     channelId: string,
-    userId: string
+    userId: string,
   ): Promise<CollaborationUser>;
   removeChannelMember(channelId: string, userId: string): Promise<void>;
   listChannelMembers(
     channelId: string,
-    options?: { limit?: number; cursor?: string }
+    options?: { limit?: number; cursor?: string },
   ): Promise<{ members: CollaborationUser[]; cursor?: string }>;
 
   // File operations
   uploadFile(
     channelId: string,
-    file: { name: string; buffer: Buffer; mimeType: string }
+    file: { name: string; buffer: Buffer; mimeType: string },
   ): Promise<CollaborationAttachment>;
-  shareFile(messageId: string, fileId: string): Promise<CollaborationAttachment>;
+  shareFile(
+    messageId: string,
+    fileId: string,
+  ): Promise<CollaborationAttachment>;
 
   // Webhook operations
   registerWebhook(
     eventTypes: WebhookEventType[],
-    callback: (event: CollaborationWebhookEvent) => Promise<void>
+    callback: (event: CollaborationWebhookEvent) => Promise<void>,
   ): Promise<string>;
   unregisterWebhook(webhookId: string): Promise<void>;
-  validateWebhook(
-    signature: string,
-    timestamp: string,
-    body: string
-  ): boolean;
+  validateWebhook(signature: string, timestamp: string, body: string): boolean;
 
   // Connection operations
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   isConnected(): boolean;
-  health(): Promise<{ status: 'healthy' | 'degraded' | 'unhealthy' }>;
+  health(): Promise<{ status: "healthy" | "degraded" | "unhealthy" }>;
 }
 
 export interface ChannelCacheEntry {
@@ -339,7 +340,7 @@ export interface PresenceTracking {
 }
 
 export interface CircuitBreakerState {
-  status: 'closed' | 'open' | 'half-open';
+  status: "closed" | "open" | "half-open";
   failureCount: number;
   lastFailureTime?: number;
   nextAttemptTime?: number;
@@ -361,8 +362,8 @@ export interface RetryConfig {
 export interface DeliveryStatus {
   messageId: string;
   channelId: string;
-  platform: 'slack' | 'teams' | 'pusher';
-  status: 'pending' | 'sent' | 'delivered' | 'failed' | 'read';
+  platform: "slack" | "teams" | "pusher";
+  status: "pending" | "sent" | "delivered" | "failed" | "read";
   sentAt?: Date;
   deliveredAt?: Date;
   readAt?: Date;
@@ -378,14 +379,14 @@ export interface NotificationRule {
   conditions: {
     messageType?: MessageType[];
     channelTypes?: ChannelType[];
-    platforms?: Array<'slack' | 'teams' | 'pusher'>;
+    platforms?: Array<"slack" | "teams" | "pusher">;
     keywords?: string[];
   };
   actions: {
     notifyChannels?: string[];
     notifyUsers?: string[];
-    fallbackPlatform?: 'slack' | 'teams' | 'pusher';
-    formatOverride?: 'rich' | 'plain' | 'markdown';
+    fallbackPlatform?: "slack" | "teams" | "pusher";
+    formatOverride?: "rich" | "plain" | "markdown";
   };
   metadata?: Record<string, unknown>;
 }
@@ -393,7 +394,7 @@ export interface NotificationRule {
 export interface MessageTemplate {
   id: string;
   name: string;
-  platform?: 'slack' | 'teams' | 'pusher' | 'all';
+  platform?: "slack" | "teams" | "pusher" | "all";
   content: string;
   richContent?: Record<string, unknown>;
   variables?: string[];
@@ -418,8 +419,8 @@ export interface CollaborationHubConfig {
     teams?: CollaborationConfig;
     pusher?: CollaborationConfig;
   };
-  primaryPlatform: 'slack' | 'teams' | 'pusher';
-  fallbackPlatform?: 'slack' | 'teams' | 'pusher';
+  primaryPlatform: "slack" | "teams" | "pusher";
+  fallbackPlatform?: "slack" | "teams" | "pusher";
   notificationRules?: NotificationRule[];
   messageTemplates?: MessageTemplate[];
   presenceSyncInterval?: number;

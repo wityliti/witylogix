@@ -12,6 +12,7 @@
 This document outlines a comprehensive testing strategy for the Witylogix Phase 1 platform—a Shopify-integrated last-mile delivery logistics SaaS. The strategy emphasizes quality assurance across a Turborepo monorepo architecture while prioritizing multi-tenant data isolation, shipment state machine integrity, and secure template rendering.
 
 ### Critical Success Factors
+
 1. **Multi-tenant RLS enforcement** — Zero tolerance for data leakage between tenants
 2. **State machine correctness** — All 11 shipment states and transitions validated
 3. **Template rendering security** — Protection against injection attacks and variable interpolation errors
@@ -45,11 +46,13 @@ This document outlines a comprehensive testing strategy for the Witylogix Phase 
 ```
 
 **Target Coverage Ratios:**
+
 - **Unit Tests: 45%** (2,000+ tests) — Fast feedback, isolated validation
 - **Integration Tests: 40%** (1,500+ tests) — Cross-package interactions, real dependencies
 - **E2E Tests: 15%** (400+ tests) — Critical user journeys, full platform validation
 
 **Overall Coverage Target:** ≥85% code coverage, with 100% coverage for:
+
 - Multi-tenant RLS logic
 - Shipment state transitions
 - Template renderer core functions
@@ -68,6 +71,7 @@ This document outlines a comprehensive testing strategy for the Witylogix Phase 
 #### Test Categories
 
 **A. Schema Structure Tests**
+
 - Valid input acceptance (happy path)
 - Type coercion (strings → numbers, booleans)
 - Required vs. optional field handling
@@ -75,6 +79,7 @@ This document outlines a comprehensive testing strategy for the Witylogix Phase 
 - Array item validation
 
 **B. Edge Case Tests**
+
 - Empty strings, null, undefined
 - Boundary values (min/max lengths, numeric ranges)
 - Special characters and Unicode handling
@@ -83,6 +88,7 @@ This document outlines a comprehensive testing strategy for the Witylogix Phase 
 - Enum value validation
 
 **C. Custom Refinement Tests**
+
 - Cross-field validation (e.g., `endDate > startDate`)
 - Conditional field requirements
 - Custom error messages
@@ -91,106 +97,106 @@ This document outlines a comprehensive testing strategy for the Witylogix Phase 
 #### Sample Test File: `packages/validators/__tests__/shipment.test.ts`
 
 ```typescript
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 import {
   ShipmentCreateSchema,
   ShipmentUpdateSchema,
-  ShipmentFilterSchema
-} from '../schemas/shipment';
+  ShipmentFilterSchema,
+} from "../schemas/shipment";
 
-describe('Shipment Validators', () => {
-  describe('ShipmentCreateSchema', () => {
-    it('should accept valid shipment creation payload', () => {
+describe("Shipment Validators", () => {
+  describe("ShipmentCreateSchema", () => {
+    it("should accept valid shipment creation payload", () => {
       const valid = {
-        recipientName: 'John Doe',
-        recipientPhone: '+12125551234',
-        recipientAddress: '123 Main St, NYC, NY 10001',
-        items: [{ sku: 'ITEM001', quantity: 2 }],
-        estimatedDeliveryDate: '2026-03-10',
-        assignedDriverId: 'driver_abc123'
+        recipientName: "John Doe",
+        recipientPhone: "+12125551234",
+        recipientAddress: "123 Main St, NYC, NY 10001",
+        items: [{ sku: "ITEM001", quantity: 2 }],
+        estimatedDeliveryDate: "2026-03-10",
+        assignedDriverId: "driver_abc123",
       };
       const result = ShipmentCreateSchema.safeParse(valid);
       expect(result.success).toBe(true);
     });
 
-    it('should reject missing required fields', () => {
-      const invalid = { recipientName: 'John Doe' };
+    it("should reject missing required fields", () => {
+      const invalid = { recipientName: "John Doe" };
       const result = ShipmentCreateSchema.safeParse(invalid);
       expect(result.success).toBe(false);
       expect(result.error?.errors.length).toBeGreaterThan(0);
     });
 
-    it('should reject invalid phone format', () => {
+    it("should reject invalid phone format", () => {
       const invalid = {
-        recipientName: 'John Doe',
-        recipientPhone: 'invalid-phone',
-        recipientAddress: '123 Main St, NYC, NY 10001',
-        items: [{ sku: 'ITEM001', quantity: 1 }]
+        recipientName: "John Doe",
+        recipientPhone: "invalid-phone",
+        recipientAddress: "123 Main St, NYC, NY 10001",
+        items: [{ sku: "ITEM001", quantity: 1 }],
       };
       const result = ShipmentCreateSchema.safeParse(invalid);
       expect(result.success).toBe(false);
     });
 
-    it('should reject empty items array', () => {
+    it("should reject empty items array", () => {
       const invalid = {
-        recipientName: 'John Doe',
-        recipientPhone: '+12125551234',
-        recipientAddress: '123 Main St, NYC, NY 10001',
-        items: []
+        recipientName: "John Doe",
+        recipientPhone: "+12125551234",
+        recipientAddress: "123 Main St, NYC, NY 10001",
+        items: [],
       };
       const result = ShipmentCreateSchema.safeParse(invalid);
       expect(result.success).toBe(false);
     });
 
-    it('should enforce max shipment items limit', () => {
+    it("should enforce max shipment items limit", () => {
       const invalid = {
-        recipientName: 'John Doe',
-        recipientPhone: '+12125551234',
-        recipientAddress: '123 Main St, NYC, NY 10001',
+        recipientName: "John Doe",
+        recipientPhone: "+12125551234",
+        recipientAddress: "123 Main St, NYC, NY 10001",
         items: Array.from({ length: 101 }, (_, i) => ({
           sku: `ITEM${i}`,
-          quantity: 1
-        }))
+          quantity: 1,
+        })),
       };
       const result = ShipmentCreateSchema.safeParse(invalid);
       expect(result.success).toBe(false);
     });
 
-    it('should enforce date constraints', () => {
+    it("should enforce date constraints", () => {
       const invalid = {
-        recipientName: 'John Doe',
-        recipientPhone: '+12125551234',
-        recipientAddress: '123 Main St, NYC, NY 10001',
-        items: [{ sku: 'ITEM001', quantity: 1 }],
-        estimatedDeliveryDate: '2026-01-01' // Past date
+        recipientName: "John Doe",
+        recipientPhone: "+12125551234",
+        recipientAddress: "123 Main St, NYC, NY 10001",
+        items: [{ sku: "ITEM001", quantity: 1 }],
+        estimatedDeliveryDate: "2026-01-01", // Past date
       };
       const result = ShipmentCreateSchema.safeParse(invalid);
       expect(result.success).toBe(false);
     });
   });
 
-  describe('ShipmentFilterSchema', () => {
-    it('should accept valid filter combinations', () => {
+  describe("ShipmentFilterSchema", () => {
+    it("should accept valid filter combinations", () => {
       const valid = {
-        status: 'in_transit',
-        driverId: 'driver_abc123',
-        sortBy: 'createdAt',
-        sortOrder: 'desc',
+        status: "in_transit",
+        driverId: "driver_abc123",
+        sortBy: "createdAt",
+        sortOrder: "desc",
         limit: 50,
-        offset: 0
+        offset: 0,
       };
       const result = ShipmentFilterSchema.safeParse(valid);
       expect(result.success).toBe(true);
     });
 
-    it('should enforce limit boundaries', () => {
+    it("should enforce limit boundaries", () => {
       const invalid = { limit: 500 }; // Exceeds max
       const result = ShipmentFilterSchema.safeParse(invalid);
       expect(result.success).toBe(false);
     });
 
-    it('should reject invalid status values', () => {
-      const invalid = { status: 'invalid_status' };
+    it("should reject invalid status values", () => {
+      const invalid = { status: "invalid_status" };
       const result = ShipmentFilterSchema.safeParse(invalid);
       expect(result.success).toBe(false);
     });
@@ -209,18 +215,21 @@ describe('Shipment Validators', () => {
 #### Critical Test Areas
 
 **A. Multi-Tenant RLS Isolation Tests**
+
 - Tenant A cannot query tenant B's data
 - RLS policy enforcement at database layer
 - Cross-tenant queries return 403/Unauthorized
 - RLS policies apply to all CRUD operations
 
 **B. Schema Integrity Tests**
+
 - 18 modular schema files produce valid Prisma schema
 - Relationships are bidirectional and correct
 - Indexes are applied to high-query columns
 - Unique constraints are properly defined
 
 **C. Query Safety Tests**
+
 - Prepared statements prevent SQL injection
 - Parameterized queries used throughout
 - No hardcoded tenant filtering (enforced by RLS)
@@ -228,12 +237,12 @@ describe('Shipment Validators', () => {
 #### Sample Test File: `packages/db/__tests__/rls.test.ts`
 
 ```typescript
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { PrismaClient } from '@prisma/client';
-import { getOrCreateTestTenant } from '../test-utils/tenant-factory';
-import { sql } from '@prisma/client/runtime/library';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { PrismaClient } from "@prisma/client";
+import { getOrCreateTestTenant } from "../test-utils/tenant-factory";
+import { sql } from "@prisma/client/runtime/library";
 
-describe('Multi-Tenant RLS Isolation', () => {
+describe("Multi-Tenant RLS Isolation", () => {
   let tenantADb: PrismaClient;
   let tenantBDb: PrismaClient;
   let tenantAId: string;
@@ -242,8 +251,8 @@ describe('Multi-Tenant RLS Isolation', () => {
   beforeEach(async () => {
     // Create isolated test tenants
     const [tenantA, tenantB] = await Promise.all([
-      getOrCreateTestTenant('tenant-a-' + Date.now()),
-      getOrCreateTestTenant('tenant-b-' + Date.now())
+      getOrCreateTestTenant("tenant-a-" + Date.now()),
+      getOrCreateTestTenant("tenant-b-" + Date.now()),
     ]);
 
     tenantAId = tenantA.id;
@@ -251,20 +260,20 @@ describe('Multi-Tenant RLS Isolation', () => {
 
     // Create Prisma clients with tenant context
     tenantADb = new PrismaClient({
-      errorFormat: 'pretty'
+      errorFormat: "pretty",
     });
     tenantBDb = new PrismaClient({
-      errorFormat: 'pretty'
+      errorFormat: "pretty",
     });
 
     // Set RLS tenant context (mock implementation)
     await tenantADb.$executeRawUnsafe(
       `SELECT set_config('app.current_tenant_id', $1, true)`,
-      tenantAId
+      tenantAId,
     );
     await tenantBDb.$executeRawUnsafe(
       `SELECT set_config('app.current_tenant_id', $1, true)`,
-      tenantBId
+      tenantBId,
     );
   });
 
@@ -273,84 +282,84 @@ describe('Multi-Tenant RLS Isolation', () => {
     await tenantBDb.$disconnect();
   });
 
-  it('should prevent Tenant A from reading Tenant B shipments', async () => {
+  it("should prevent Tenant A from reading Tenant B shipments", async () => {
     // Tenant B creates a shipment
     const shipmentB = await tenantBDb.shipment.create({
       data: {
-        recipientName: 'Tenant B Customer',
-        recipientPhone: '+12025551234',
-        recipientAddress: '456 Oak Ave',
-        status: 'pending',
-        tenantId: tenantBId
-      }
+        recipientName: "Tenant B Customer",
+        recipientPhone: "+12025551234",
+        recipientAddress: "456 Oak Ave",
+        status: "pending",
+        tenantId: tenantBId,
+      },
     });
 
     // Tenant A attempts to read it
     const result = await tenantADb.shipment.findUnique({
-      where: { id: shipmentB.id }
+      where: { id: shipmentB.id },
     });
 
     expect(result).toBeNull(); // RLS should hide it
   });
 
-  it('should prevent Tenant A from updating Tenant B shipments', async () => {
+  it("should prevent Tenant A from updating Tenant B shipments", async () => {
     const shipmentB = await tenantBDb.shipment.create({
       data: {
-        recipientName: 'Tenant B Customer',
-        recipientPhone: '+12025551234',
-        recipientAddress: '456 Oak Ave',
-        status: 'pending',
-        tenantId: tenantBId
-      }
+        recipientName: "Tenant B Customer",
+        recipientPhone: "+12025551234",
+        recipientAddress: "456 Oak Ave",
+        status: "pending",
+        tenantId: tenantBId,
+      },
     });
 
     // Tenant A attempts to update
     const updatePromise = tenantADb.shipment.update({
       where: { id: shipmentB.id },
-      data: { status: 'in_transit' }
+      data: { status: "in_transit" },
     });
 
     // Should throw or return 0 rows affected
     await expect(updatePromise).rejects.toThrow();
   });
 
-  it('should prevent Tenant A from deleting Tenant B shipments', async () => {
+  it("should prevent Tenant A from deleting Tenant B shipments", async () => {
     const shipmentB = await tenantBDb.shipment.create({
       data: {
-        recipientName: 'Tenant B Customer',
-        recipientPhone: '+12025551234',
-        recipientAddress: '456 Oak Ave',
-        status: 'pending',
-        tenantId: tenantBId
-      }
+        recipientName: "Tenant B Customer",
+        recipientPhone: "+12025551234",
+        recipientAddress: "456 Oak Ave",
+        status: "pending",
+        tenantId: tenantBId,
+      },
     });
 
     const deletePromise = tenantADb.shipment.delete({
-      where: { id: shipmentB.id }
+      where: { id: shipmentB.id },
     });
 
     await expect(deletePromise).rejects.toThrow();
   });
 
-  it('should allow Tenant A to access only own shipments via list query', async () => {
+  it("should allow Tenant A to access only own shipments via list query", async () => {
     const shipmentA = await tenantADb.shipment.create({
       data: {
-        recipientName: 'Tenant A Customer',
-        recipientPhone: '+12125551234',
-        recipientAddress: '123 Main St',
-        status: 'pending',
-        tenantId: tenantAId
-      }
+        recipientName: "Tenant A Customer",
+        recipientPhone: "+12125551234",
+        recipientAddress: "123 Main St",
+        status: "pending",
+        tenantId: tenantAId,
+      },
     });
 
     await tenantBDb.shipment.create({
       data: {
-        recipientName: 'Tenant B Customer',
-        recipientPhone: '+12025551234',
-        recipientAddress: '456 Oak Ave',
-        status: 'pending',
-        tenantId: tenantBId
-      }
+        recipientName: "Tenant B Customer",
+        recipientPhone: "+12025551234",
+        recipientAddress: "456 Oak Ave",
+        status: "pending",
+        tenantId: tenantBId,
+      },
     });
 
     const shipments = await tenantADb.shipment.findMany();
@@ -359,28 +368,28 @@ describe('Multi-Tenant RLS Isolation', () => {
     expect(shipments[0].id).toBe(shipmentA.id);
   });
 
-  it('should enforce RLS on related queries (drivers)', async () => {
+  it("should enforce RLS on related queries (drivers)", async () => {
     const driverB = await tenantBDb.driver.create({
       data: {
-        name: 'Tenant B Driver',
-        phone: '+12025559999',
-        status: 'active',
-        tenantId: tenantBId
-      }
+        name: "Tenant B Driver",
+        phone: "+12025559999",
+        status: "active",
+        tenantId: tenantBId,
+      },
     });
 
     // Tenant A attempts to access via relationship
     const resultDirect = await tenantADb.driver.findUnique({
-      where: { id: driverB.id }
+      where: { id: driverB.id },
     });
 
     expect(resultDirect).toBeNull();
   });
 
-  it('should audit RLS violations', async () => {
+  it("should audit RLS violations", async () => {
     // Attempt a cross-tenant query
     const unauthorizedAccess = await tenantADb.shipment.findMany({
-      where: { tenantId: tenantBId } // Explicit cross-tenant filter
+      where: { tenantId: tenantBId }, // Explicit cross-tenant filter
     });
 
     // Should return empty due to RLS, not by client-side filtering
@@ -392,28 +401,28 @@ describe('Multi-Tenant RLS Isolation', () => {
 #### Schema Integrity Test: `packages/db/__tests__/schema.test.ts`
 
 ```typescript
-import { describe, it, expect } from 'vitest';
-import { PrismaClient } from '@prisma/client';
+import { describe, it, expect } from "vitest";
+import { PrismaClient } from "@prisma/client";
 
-describe('Prisma Schema Integrity', () => {
+describe("Prisma Schema Integrity", () => {
   const prisma = new PrismaClient();
 
-  it('should load schema without errors', async () => {
+  it("should load schema without errors", async () => {
     // If Prisma fails to load, this test fails
     const version = await prisma.$queryRaw`SELECT VERSION()`;
     expect(version).toBeDefined();
   });
 
-  it('should have all required models', async () => {
+  it("should have all required models", async () => {
     const models = [
-      'Tenant',
-      'Shipment',
-      'Driver',
-      'Route',
-      'Notification',
-      'Template',
-      'ApiKey',
-      'AuditLog'
+      "Tenant",
+      "Shipment",
+      "Driver",
+      "Route",
+      "Notification",
+      "Template",
+      "ApiKey",
+      "AuditLog",
     ];
 
     for (const model of models) {
@@ -421,46 +430,46 @@ describe('Prisma Schema Integrity', () => {
     }
   });
 
-  it('should enforce unique constraints on email', async () => {
-    const tenantId = 'test-tenant-' + Date.now();
+  it("should enforce unique constraints on email", async () => {
+    const tenantId = "test-tenant-" + Date.now();
 
     const user1 = await prisma.user.create({
       data: {
         email: `test-${Date.now()}@example.com`,
-        tenantId
-      }
+        tenantId,
+      },
     });
 
     const duplicatePromise = prisma.user.create({
       data: {
         email: user1.email,
-        tenantId
-      }
+        tenantId,
+      },
     });
 
     await expect(duplicatePromise).rejects.toThrow();
     await prisma.user.delete({ where: { id: user1.id } });
   });
 
-  it('should cascade delete related records', async () => {
+  it("should cascade delete related records", async () => {
     const tenant = await prisma.tenant.create({
-      data: { name: 'Test Tenant ' + Date.now() }
+      data: { name: "Test Tenant " + Date.now() },
     });
 
     const shipment = await prisma.shipment.create({
       data: {
         tenantId: tenant.id,
-        status: 'pending',
-        recipientName: 'Test',
-        recipientPhone: '+12125551234',
-        recipientAddress: 'Test'
-      }
+        status: "pending",
+        recipientName: "Test",
+        recipientPhone: "+12125551234",
+        recipientAddress: "Test",
+      },
     });
 
     await prisma.tenant.delete({ where: { id: tenant.id } });
 
     const deletedShipment = await prisma.shipment.findUnique({
-      where: { id: shipment.id }
+      where: { id: shipment.id },
     });
 
     expect(deletedShipment).toBeNull();
@@ -479,6 +488,7 @@ describe('Prisma Schema Integrity', () => {
 #### Critical Test Areas
 
 **A. Shipment State Machine**
+
 ```
 pending → assigned → in_transit → delivered (final)
        ↓
@@ -492,6 +502,7 @@ in_transit → exception → in_transit → delivered
 Valid transitions only; invalid transitions throw `InvalidStateTransitionError`
 
 **B. Template Renderer**
+
 - Variable interpolation: `{{ variable }}`
 - Conditionals: `{% if condition %}...{% endif %}`
 - Loops: `{% for item in items %}...{% endfor %}`
@@ -499,6 +510,7 @@ Valid transitions only; invalid transitions throw `InvalidStateTransitionError`
 - Missing variable handling
 
 **C. Notification Logic**
+
 - Correct notification types triggered on state changes
 - Notification payloads interpolated correctly
 - Scheduled notifications queued
@@ -506,136 +518,160 @@ Valid transitions only; invalid transitions throw `InvalidStateTransitionError`
 #### Sample Test File: `packages/core/__tests__/state-machine.test.ts`
 
 ```typescript
-import { describe, it, expect } from 'vitest';
-import { ShipmentStateMachine } from '../state-machine';
-import { InvalidStateTransitionError } from '../errors';
+import { describe, it, expect } from "vitest";
+import { ShipmentStateMachine } from "../state-machine";
+import { InvalidStateTransitionError } from "../errors";
 
-describe('Shipment State Machine', () => {
+describe("Shipment State Machine", () => {
   const machine = new ShipmentStateMachine();
 
-  it('should initialize in pending state', () => {
-    const state = machine.getCurrentState('shipment_123');
-    expect(state).toBe('pending');
+  it("should initialize in pending state", () => {
+    const state = machine.getCurrentState("shipment_123");
+    expect(state).toBe("pending");
   });
 
-  describe('Valid Transitions', () => {
-    it('should transition pending → assigned', () => {
-      const result = machine.transition('shipment_123', 'pending', 'assigned');
-      expect(result.newState).toBe('assigned');
+  describe("Valid Transitions", () => {
+    it("should transition pending → assigned", () => {
+      const result = machine.transition("shipment_123", "pending", "assigned");
+      expect(result.newState).toBe("assigned");
       expect(result.timestamp).toBeDefined();
     });
 
-    it('should transition assigned → in_transit', () => {
-      machine.transition('shipment_123', 'assigned', 'in_transit');
-      const result = machine.transition('shipment_123', 'in_transit', 'delivered');
-      expect(result.newState).toBe('delivered');
+    it("should transition assigned → in_transit", () => {
+      machine.transition("shipment_123", "assigned", "in_transit");
+      const result = machine.transition(
+        "shipment_123",
+        "in_transit",
+        "delivered",
+      );
+      expect(result.newState).toBe("delivered");
     });
 
-    it('should transition pending → cancelled', () => {
-      const result = machine.transition('shipment_cancel_123', 'pending', 'cancelled');
-      expect(result.newState).toBe('cancelled');
+    it("should transition pending → cancelled", () => {
+      const result = machine.transition(
+        "shipment_cancel_123",
+        "pending",
+        "cancelled",
+      );
+      expect(result.newState).toBe("cancelled");
     });
 
-    it('should support on_hold from assigned', () => {
-      machine.transition('shipment_hold_123', 'pending', 'assigned');
-      const result = machine.transition('shipment_hold_123', 'assigned', 'on_hold');
-      expect(result.newState).toBe('on_hold');
+    it("should support on_hold from assigned", () => {
+      machine.transition("shipment_hold_123", "pending", "assigned");
+      const result = machine.transition(
+        "shipment_hold_123",
+        "assigned",
+        "on_hold",
+      );
+      expect(result.newState).toBe("on_hold");
     });
 
-    it('should allow recovery from on_hold → assigned', () => {
-      machine.transition('shipment_recover_123', 'pending', 'assigned');
-      machine.transition('shipment_recover_123', 'assigned', 'on_hold');
-      const result = machine.transition('shipment_recover_123', 'on_hold', 'assigned');
-      expect(result.newState).toBe('assigned');
+    it("should allow recovery from on_hold → assigned", () => {
+      machine.transition("shipment_recover_123", "pending", "assigned");
+      machine.transition("shipment_recover_123", "assigned", "on_hold");
+      const result = machine.transition(
+        "shipment_recover_123",
+        "on_hold",
+        "assigned",
+      );
+      expect(result.newState).toBe("assigned");
     });
 
-    it('should transition in_transit → exception', () => {
-      machine.transition('shipment_exc_123', 'pending', 'assigned');
-      machine.transition('shipment_exc_123', 'assigned', 'in_transit');
-      const result = machine.transition('shipment_exc_123', 'in_transit', 'exception');
-      expect(result.newState).toBe('exception');
+    it("should transition in_transit → exception", () => {
+      machine.transition("shipment_exc_123", "pending", "assigned");
+      machine.transition("shipment_exc_123", "assigned", "in_transit");
+      const result = machine.transition(
+        "shipment_exc_123",
+        "in_transit",
+        "exception",
+      );
+      expect(result.newState).toBe("exception");
     });
 
-    it('should recover from exception → in_transit', () => {
-      machine.transition('shipment_exc_recover_123', 'pending', 'assigned');
-      machine.transition('shipment_exc_recover_123', 'assigned', 'in_transit');
-      machine.transition('shipment_exc_recover_123', 'in_transit', 'exception');
-      const result = machine.transition('shipment_exc_recover_123', 'exception', 'in_transit');
-      expect(result.newState).toBe('in_transit');
-    });
-  });
-
-  describe('Invalid Transitions', () => {
-    it('should reject pending → in_transit (skip assigned)', () => {
-      expect(() => {
-        machine.transition('shipment_invalid_123', 'pending', 'in_transit');
-      }).toThrow(InvalidStateTransitionError);
-    });
-
-    it('should reject delivered → any state', () => {
-      machine.transition('shipment_final_123', 'pending', 'assigned');
-      machine.transition('shipment_final_123', 'assigned', 'in_transit');
-      machine.transition('shipment_final_123', 'in_transit', 'delivered');
-
-      expect(() => {
-        machine.transition('shipment_final_123', 'delivered', 'in_transit');
-      }).toThrow(InvalidStateTransitionError);
-    });
-
-    it('should reject cancelled → any state', () => {
-      machine.transition('shipment_cancelled_123', 'pending', 'cancelled');
-
-      expect(() => {
-        machine.transition('shipment_cancelled_123', 'cancelled', 'assigned');
-      }).toThrow(InvalidStateTransitionError);
-    });
-
-    it('should reject in_transit → pending', () => {
-      machine.transition('shipment_backward_123', 'pending', 'assigned');
-      machine.transition('shipment_backward_123', 'assigned', 'in_transit');
-
-      expect(() => {
-        machine.transition('shipment_backward_123', 'in_transit', 'pending');
-      }).toThrow(InvalidStateTransitionError);
-    });
-
-    it('should reject assigned → in_transit from on_hold', () => {
-      machine.transition('shipment_hold_skip_123', 'pending', 'assigned');
-      machine.transition('shipment_hold_skip_123', 'assigned', 'on_hold');
-
-      expect(() => {
-        machine.transition('shipment_hold_skip_123', 'on_hold', 'delivered');
-      }).toThrow(InvalidStateTransitionError);
+    it("should recover from exception → in_transit", () => {
+      machine.transition("shipment_exc_recover_123", "pending", "assigned");
+      machine.transition("shipment_exc_recover_123", "assigned", "in_transit");
+      machine.transition("shipment_exc_recover_123", "in_transit", "exception");
+      const result = machine.transition(
+        "shipment_exc_recover_123",
+        "exception",
+        "in_transit",
+      );
+      expect(result.newState).toBe("in_transit");
     });
   });
 
-  describe('Final States', () => {
-    it('should mark delivered as terminal', () => {
-      expect(machine.isTerminal('delivered')).toBe(true);
+  describe("Invalid Transitions", () => {
+    it("should reject pending → in_transit (skip assigned)", () => {
+      expect(() => {
+        machine.transition("shipment_invalid_123", "pending", "in_transit");
+      }).toThrow(InvalidStateTransitionError);
     });
 
-    it('should mark cancelled as terminal', () => {
-      expect(machine.isTerminal('cancelled')).toBe(true);
+    it("should reject delivered → any state", () => {
+      machine.transition("shipment_final_123", "pending", "assigned");
+      machine.transition("shipment_final_123", "assigned", "in_transit");
+      machine.transition("shipment_final_123", "in_transit", "delivered");
+
+      expect(() => {
+        machine.transition("shipment_final_123", "delivered", "in_transit");
+      }).toThrow(InvalidStateTransitionError);
     });
 
-    it('should not mark intermediate states as terminal', () => {
-      expect(machine.isTerminal('pending')).toBe(false);
-      expect(machine.isTerminal('assigned')).toBe(false);
-      expect(machine.isTerminal('in_transit')).toBe(false);
+    it("should reject cancelled → any state", () => {
+      machine.transition("shipment_cancelled_123", "pending", "cancelled");
+
+      expect(() => {
+        machine.transition("shipment_cancelled_123", "cancelled", "assigned");
+      }).toThrow(InvalidStateTransitionError);
+    });
+
+    it("should reject in_transit → pending", () => {
+      machine.transition("shipment_backward_123", "pending", "assigned");
+      machine.transition("shipment_backward_123", "assigned", "in_transit");
+
+      expect(() => {
+        machine.transition("shipment_backward_123", "in_transit", "pending");
+      }).toThrow(InvalidStateTransitionError);
+    });
+
+    it("should reject assigned → in_transit from on_hold", () => {
+      machine.transition("shipment_hold_skip_123", "pending", "assigned");
+      machine.transition("shipment_hold_skip_123", "assigned", "on_hold");
+
+      expect(() => {
+        machine.transition("shipment_hold_skip_123", "on_hold", "delivered");
+      }).toThrow(InvalidStateTransitionError);
     });
   });
 
-  describe('Transition History', () => {
-    it('should record full transition history', () => {
-      const shipmentId = 'shipment_history_123';
-      machine.transition(shipmentId, 'pending', 'assigned');
-      machine.transition(shipmentId, 'assigned', 'in_transit');
-      machine.transition(shipmentId, 'in_transit', 'delivered');
+  describe("Final States", () => {
+    it("should mark delivered as terminal", () => {
+      expect(machine.isTerminal("delivered")).toBe(true);
+    });
+
+    it("should mark cancelled as terminal", () => {
+      expect(machine.isTerminal("cancelled")).toBe(true);
+    });
+
+    it("should not mark intermediate states as terminal", () => {
+      expect(machine.isTerminal("pending")).toBe(false);
+      expect(machine.isTerminal("assigned")).toBe(false);
+      expect(machine.isTerminal("in_transit")).toBe(false);
+    });
+  });
+
+  describe("Transition History", () => {
+    it("should record full transition history", () => {
+      const shipmentId = "shipment_history_123";
+      machine.transition(shipmentId, "pending", "assigned");
+      machine.transition(shipmentId, "assigned", "in_transit");
+      machine.transition(shipmentId, "in_transit", "delivered");
 
       const history = machine.getHistory(shipmentId);
       expect(history).toHaveLength(3);
-      expect(history[0].fromState).toBe('pending');
-      expect(history[2].toState).toBe('delivered');
+      expect(history[0].fromState).toBe("pending");
+      expect(history[2].toState).toBe("delivered");
     });
   });
 });
@@ -644,168 +680,180 @@ describe('Shipment State Machine', () => {
 #### Template Renderer Tests: `packages/core/__tests__/template-renderer.test.ts`
 
 ```typescript
-import { describe, it, expect } from 'vitest';
-import { TemplateRenderer } from '../template-renderer';
+import { describe, it, expect } from "vitest";
+import { TemplateRenderer } from "../template-renderer";
 
-describe('Template Renderer', () => {
+describe("Template Renderer", () => {
   const renderer = new TemplateRenderer();
 
-  describe('Variable Interpolation', () => {
-    it('should interpolate single variable', () => {
-      const template = 'Hello {{ name }}!';
-      const result = renderer.render(template, { name: 'John' });
-      expect(result).toBe('Hello John!');
+  describe("Variable Interpolation", () => {
+    it("should interpolate single variable", () => {
+      const template = "Hello {{ name }}!";
+      const result = renderer.render(template, { name: "John" });
+      expect(result).toBe("Hello John!");
     });
 
-    it('should interpolate multiple variables', () => {
-      const template = '{{ greeting }} {{ name }}, your order #{{ orderId }} is {{ status }}.';
+    it("should interpolate multiple variables", () => {
+      const template =
+        "{{ greeting }} {{ name }}, your order #{{ orderId }} is {{ status }}.";
       const result = renderer.render(template, {
-        greeting: 'Hi',
-        name: 'Jane',
-        orderId: '12345',
-        status: 'delivered'
+        greeting: "Hi",
+        name: "Jane",
+        orderId: "12345",
+        status: "delivered",
       });
-      expect(result).toBe('Hi Jane, your order #12345 is delivered.');
+      expect(result).toBe("Hi Jane, your order #12345 is delivered.");
     });
 
-    it('should handle missing variables gracefully', () => {
-      const template = 'Hello {{ name }}, your order is {{ status }}.';
-      const result = renderer.render(template, { name: 'John' });
-      expect(result).toBe('Hello John, your order is .');
+    it("should handle missing variables gracefully", () => {
+      const template = "Hello {{ name }}, your order is {{ status }}.";
+      const result = renderer.render(template, { name: "John" });
+      expect(result).toBe("Hello John, your order is .");
     });
 
-    it('should handle nested object access', () => {
-      const template = 'Delivering to {{ recipient.name }} at {{ recipient.address }}.';
+    it("should handle nested object access", () => {
+      const template =
+        "Delivering to {{ recipient.name }} at {{ recipient.address }}.";
       const result = renderer.render(template, {
-        recipient: { name: 'Alice', address: '123 Main St' }
+        recipient: { name: "Alice", address: "123 Main St" },
       });
-      expect(result).toBe('Delivering to Alice at 123 Main St.');
+      expect(result).toBe("Delivering to Alice at 123 Main St.");
     });
 
-    it('should HTML escape variables to prevent XSS', () => {
-      const template = 'Recipient: {{ name }}';
+    it("should HTML escape variables to prevent XSS", () => {
+      const template = "Recipient: {{ name }}";
       const result = renderer.render(template, {
-        name: '<script>alert("xss")</script>'
+        name: '<script>alert("xss")</script>',
       });
-      expect(result).toBe('Recipient: &lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
-      expect(result).not.toContain('<script>');
+      expect(result).toBe(
+        "Recipient: &lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;",
+      );
+      expect(result).not.toContain("<script>");
     });
 
-    it('should handle numeric variables', () => {
-      const template = 'Total: ${{ amount }}';
+    it("should handle numeric variables", () => {
+      const template = "Total: ${{ amount }}";
       const result = renderer.render(template, { amount: 99.99 });
-      expect(result).toBe('Total: $99.99');
+      expect(result).toBe("Total: $99.99");
     });
 
-    it('should handle boolean variables', () => {
-      const template = 'Is fragile: {{ isFragile }}';
+    it("should handle boolean variables", () => {
+      const template = "Is fragile: {{ isFragile }}";
       const result = renderer.render(template, { isFragile: true });
-      expect(result).toBe('Is fragile: true');
+      expect(result).toBe("Is fragile: true");
     });
   });
 
-  describe('Conditionals', () => {
-    it('should render if block when condition is true', () => {
-      const template = '{% if status === "delivered" %}Package delivered!{% endif %}';
-      const result = renderer.render(template, { status: 'delivered' });
-      expect(result).toBe('Package delivered!');
+  describe("Conditionals", () => {
+    it("should render if block when condition is true", () => {
+      const template =
+        '{% if status === "delivered" %}Package delivered!{% endif %}';
+      const result = renderer.render(template, { status: "delivered" });
+      expect(result).toBe("Package delivered!");
     });
 
-    it('should skip if block when condition is false', () => {
-      const template = '{% if status === "delivered" %}Package delivered!{% endif %}';
-      const result = renderer.render(template, { status: 'in_transit' });
-      expect(result).toBe('');
+    it("should skip if block when condition is false", () => {
+      const template =
+        '{% if status === "delivered" %}Package delivered!{% endif %}';
+      const result = renderer.render(template, { status: "in_transit" });
+      expect(result).toBe("");
     });
 
-    it('should support if-else blocks', () => {
-      const template = '{% if status === "delivered" %}Delivered{% else %}In transit{% endif %}';
+    it("should support if-else blocks", () => {
+      const template =
+        '{% if status === "delivered" %}Delivered{% else %}In transit{% endif %}';
 
-      const deliveredResult = renderer.render(template, { status: 'delivered' });
-      expect(deliveredResult).toBe('Delivered');
+      const deliveredResult = renderer.render(template, {
+        status: "delivered",
+      });
+      expect(deliveredResult).toBe("Delivered");
 
-      const transitResult = renderer.render(template, { status: 'in_transit' });
-      expect(transitResult).toBe('In transit');
+      const transitResult = renderer.render(template, { status: "in_transit" });
+      expect(transitResult).toBe("In transit");
     });
 
-    it('should support nested conditionals', () => {
+    it("should support nested conditionals", () => {
       const template = `{% if hasDriver %}
         {% if driverArrived %}Driver arrived!{% else %}Driver en route{% endif %}
       {% else %}No driver assigned{% endif %}`;
 
       const withDriverArrived = renderer.render(template, {
         hasDriver: true,
-        driverArrived: true
+        driverArrived: true,
       });
-      expect(withDriverArrived).toContain('Driver arrived!');
+      expect(withDriverArrived).toContain("Driver arrived!");
 
       const withDriver = renderer.render(template, {
         hasDriver: true,
-        driverArrived: false
+        driverArrived: false,
       });
-      expect(withDriver).toContain('Driver en route');
+      expect(withDriver).toContain("Driver en route");
 
       const noDriver = renderer.render(template, { hasDriver: false });
-      expect(noDriver).toContain('No driver assigned');
+      expect(noDriver).toContain("No driver assigned");
     });
   });
 
-  describe('Loops', () => {
-    it('should iterate over arrays', () => {
-      const template = '{% for item in items %}{{ item.name }}, {% endfor %}';
+  describe("Loops", () => {
+    it("should iterate over arrays", () => {
+      const template = "{% for item in items %}{{ item.name }}, {% endfor %}";
       const result = renderer.render(template, {
-        items: [{ name: 'Apple' }, { name: 'Banana' }, { name: 'Cherry' }]
+        items: [{ name: "Apple" }, { name: "Banana" }, { name: "Cherry" }],
       });
-      expect(result).toBe('Apple, Banana, Cherry, ');
+      expect(result).toBe("Apple, Banana, Cherry, ");
     });
 
-    it('should support loop index', () => {
-      const template = '{% for item in items %}#{{ @index }}: {{ item }} {% endfor %}';
+    it("should support loop index", () => {
+      const template =
+        "{% for item in items %}#{{ @index }}: {{ item }} {% endfor %}";
       const result = renderer.render(template, {
-        items: ['a', 'b', 'c']
+        items: ["a", "b", "c"],
       });
-      expect(result).toContain('#0: a');
-      expect(result).toContain('#1: b');
-      expect(result).toContain('#2: c');
+      expect(result).toContain("#0: a");
+      expect(result).toContain("#1: b");
+      expect(result).toContain("#2: c");
     });
 
-    it('should handle empty arrays', () => {
-      const template = '{% for item in items %}{{ item }}{% endfor %}No items!';
+    it("should handle empty arrays", () => {
+      const template = "{% for item in items %}{{ item }}{% endfor %}No items!";
       const result = renderer.render(template, { items: [] });
-      expect(result).toBe('No items!');
+      expect(result).toBe("No items!");
     });
 
-    it('should support nested loops', () => {
+    it("should support nested loops", () => {
       const template = `{% for order in orders %}
         Order #{{ order.id }}: {% for item in order.items %}{{ item }}, {% endfor %}\n
       {% endfor %}`;
       const result = renderer.render(template, {
         orders: [
-          { id: '1', items: ['A', 'B'] },
-          { id: '2', items: ['C'] }
-        ]
+          { id: "1", items: ["A", "B"] },
+          { id: "2", items: ["C"] },
+        ],
       });
-      expect(result).toContain('Order #1:');
-      expect(result).toContain('A, B');
+      expect(result).toContain("Order #1:");
+      expect(result).toContain("A, B");
     });
   });
 
-  describe('Security & Edge Cases', () => {
-    it('should prevent injection attacks via template syntax', () => {
+  describe("Security & Edge Cases", () => {
+    it("should prevent injection attacks via template syntax", () => {
       const malicious = '{{ system.execute("rm -rf /") }}';
       expect(() => renderer.render(malicious, {})).not.toThrow();
     });
 
-    it('should handle very long strings', () => {
-      const longString = 'A'.repeat(10000);
-      const template = '{{ text }}';
+    it("should handle very long strings", () => {
+      const longString = "A".repeat(10000);
+      const template = "{{ text }}";
       const result = renderer.render(template, { text: longString });
       expect(result.length).toBe(10000);
     });
 
-    it('should escape HTML in conditionals', () => {
-      const template = '{% if safe %}<b>Bold</b>{% endif %}';
-      const result = renderer.render(template, { safe: '<img src=x onerror=alert(1)>' });
-      expect(result).not.toContain('<img src=x');
+    it("should escape HTML in conditionals", () => {
+      const template = "{% if safe %}<b>Bold</b>{% endif %}";
+      const result = renderer.render(template, {
+        safe: "<img src=x onerror=alert(1)>",
+      });
+      expect(result).not.toContain("<img src=x");
     });
   });
 });
@@ -822,12 +870,14 @@ describe('Template Renderer', () => {
 #### Test Coverage Areas
 
 **A. Route Response Validation**
+
 - Correct HTTP status codes (200, 201, 400, 401, 403, 404, 500)
 - Response body matches schema
 - Error messages are descriptive
 - Rate limiting headers present
 
 **B. Authentication & Authorization**
+
 - Valid JWT tokens accepted
 - Expired tokens rejected
 - Missing auth header returns 401
@@ -835,11 +885,13 @@ describe('Template Renderer', () => {
 - API key validation
 
 **C. Data Validation**
+
 - Zod schema validation on request
 - Invalid data returns 400 with error details
 - Type coercion works as expected
 
 **D. Error Handling**
+
 - Unhandled errors return 500 with message
 - Validation errors return 400
 - Not found errors return 404
@@ -848,12 +900,12 @@ describe('Template Renderer', () => {
 #### Sample Test File: `apps/api/__tests__/shipments.route.test.ts`
 
 ```typescript
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { FastifyInstance } from 'fastify';
-import { createTestApp } from '../test-utils/app-factory';
-import { createTestUser, createTestShipment } from '../test-utils/data-factory';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { FastifyInstance } from "fastify";
+import { createTestApp } from "../test-utils/app-factory";
+import { createTestUser, createTestShipment } from "../test-utils/data-factory";
 
-describe('POST /api/v1/shipments', () => {
+describe("POST /api/v1/shipments", () => {
   let app: FastifyInstance;
   let authToken: string;
   let tenantId: string;
@@ -869,111 +921,111 @@ describe('POST /api/v1/shipments', () => {
     await app.close();
   });
 
-  describe('Create Shipment', () => {
-    it('should create shipment with valid payload', async () => {
+  describe("Create Shipment", () => {
+    it("should create shipment with valid payload", async () => {
       const payload = {
-        recipientName: 'John Doe',
-        recipientPhone: '+12125551234',
-        recipientAddress: '123 Main St, NYC, NY 10001',
-        items: [{ sku: 'ITEM001', quantity: 2, weight: 2.5 }],
-        estimatedDeliveryDate: '2026-03-10'
+        recipientName: "John Doe",
+        recipientPhone: "+12125551234",
+        recipientAddress: "123 Main St, NYC, NY 10001",
+        items: [{ sku: "ITEM001", quantity: 2, weight: 2.5 }],
+        estimatedDeliveryDate: "2026-03-10",
       };
 
       const response = await app.inject({
-        method: 'POST',
-        url: '/api/v1/shipments',
+        method: "POST",
+        url: "/api/v1/shipments",
         headers: { Authorization: `Bearer ${authToken}` },
-        payload
+        payload,
       });
 
       expect(response.statusCode).toBe(201);
       const body = JSON.parse(response.body);
       expect(body.id).toBeDefined();
-      expect(body.status).toBe('pending');
+      expect(body.status).toBe("pending");
       expect(body.tenantId).toBe(tenantId);
     });
 
-    it('should return 400 for missing required fields', async () => {
+    it("should return 400 for missing required fields", async () => {
       const payload = {
-        recipientName: 'John Doe'
+        recipientName: "John Doe",
         // Missing recipientPhone, recipientAddress, items
       };
 
       const response = await app.inject({
-        method: 'POST',
-        url: '/api/v1/shipments',
+        method: "POST",
+        url: "/api/v1/shipments",
         headers: { Authorization: `Bearer ${authToken}` },
-        payload
+        payload,
       });
 
       expect(response.statusCode).toBe(400);
       const body = JSON.parse(response.body);
       expect(body.error).toBeDefined();
-      expect(body.details).toContain('recipientPhone');
+      expect(body.details).toContain("recipientPhone");
     });
 
-    it('should return 401 for missing auth token', async () => {
+    it("should return 401 for missing auth token", async () => {
       const payload = {
-        recipientName: 'John Doe',
-        recipientPhone: '+12125551234',
-        recipientAddress: '123 Main St, NYC, NY 10001',
-        items: [{ sku: 'ITEM001', quantity: 1 }]
+        recipientName: "John Doe",
+        recipientPhone: "+12125551234",
+        recipientAddress: "123 Main St, NYC, NY 10001",
+        items: [{ sku: "ITEM001", quantity: 1 }],
       };
 
       const response = await app.inject({
-        method: 'POST',
-        url: '/api/v1/shipments',
-        payload
+        method: "POST",
+        url: "/api/v1/shipments",
+        payload,
       });
 
       expect(response.statusCode).toBe(401);
     });
 
-    it('should return 400 for invalid phone format', async () => {
+    it("should return 400 for invalid phone format", async () => {
       const payload = {
-        recipientName: 'John Doe',
-        recipientPhone: 'invalid-phone',
-        recipientAddress: '123 Main St, NYC, NY 10001',
-        items: [{ sku: 'ITEM001', quantity: 1 }]
+        recipientName: "John Doe",
+        recipientPhone: "invalid-phone",
+        recipientAddress: "123 Main St, NYC, NY 10001",
+        items: [{ sku: "ITEM001", quantity: 1 }],
       };
 
       const response = await app.inject({
-        method: 'POST',
-        url: '/api/v1/shipments',
+        method: "POST",
+        url: "/api/v1/shipments",
         headers: { Authorization: `Bearer ${authToken}` },
-        payload
+        payload,
       });
 
       expect(response.statusCode).toBe(400);
     });
 
-    it('should return 400 for empty items array', async () => {
+    it("should return 400 for empty items array", async () => {
       const payload = {
-        recipientName: 'John Doe',
-        recipientPhone: '+12125551234',
-        recipientAddress: '123 Main St, NYC, NY 10001',
-        items: []
+        recipientName: "John Doe",
+        recipientPhone: "+12125551234",
+        recipientAddress: "123 Main St, NYC, NY 10001",
+        items: [],
       };
 
       const response = await app.inject({
-        method: 'POST',
-        url: '/api/v1/shipments',
+        method: "POST",
+        url: "/api/v1/shipments",
         headers: { Authorization: `Bearer ${authToken}` },
-        payload
+        payload,
       });
 
       expect(response.statusCode).toBe(400);
     });
   });
 
-  describe('GET /api/v1/shipments/:id', () => {
-    it('should retrieve shipment by ID', async () => {
+  describe("GET /api/v1/shipments/:id", () => {
+    it("should retrieve shipment by ID", async () => {
       const shipment = await createTestShipment(tenantId);
 
       const response = await app.inject({
-        method: 'GET',
+        method: "GET",
         url: `/api/v1/shipments/${shipment.id}`,
-        headers: { Authorization: `Bearer ${authToken}` }
+        headers: { Authorization: `Bearer ${authToken}` },
       });
 
       expect(response.statusCode).toBe(200);
@@ -982,84 +1034,92 @@ describe('POST /api/v1/shipments', () => {
       expect(body.recipientName).toBe(shipment.recipientName);
     });
 
-    it('should return 404 for non-existent shipment', async () => {
+    it("should return 404 for non-existent shipment", async () => {
       const response = await app.inject({
-        method: 'GET',
-        url: '/api/v1/shipments/nonexistent_id',
-        headers: { Authorization: `Bearer ${authToken}` }
+        method: "GET",
+        url: "/api/v1/shipments/nonexistent_id",
+        headers: { Authorization: `Bearer ${authToken}` },
       });
 
       expect(response.statusCode).toBe(404);
     });
 
-    it('should return 403 for cross-tenant access', async () => {
-      const otherUserToken = (await createTestUser({ tenantId: 'other-tenant' })).token;
+    it("should return 403 for cross-tenant access", async () => {
+      const otherUserToken = (
+        await createTestUser({ tenantId: "other-tenant" })
+      ).token;
       const shipment = await createTestShipment(tenantId);
 
       const response = await app.inject({
-        method: 'GET',
+        method: "GET",
         url: `/api/v1/shipments/${shipment.id}`,
-        headers: { Authorization: `Bearer ${otherUserToken}` }
+        headers: { Authorization: `Bearer ${otherUserToken}` },
       });
 
       expect(response.statusCode).toBe(403);
     });
   });
 
-  describe('PATCH /api/v1/shipments/:id', () => {
-    it('should update shipment status via state transition', async () => {
-      const shipment = await createTestShipment(tenantId, { status: 'pending' });
+  describe("PATCH /api/v1/shipments/:id", () => {
+    it("should update shipment status via state transition", async () => {
+      const shipment = await createTestShipment(tenantId, {
+        status: "pending",
+      });
 
       const response = await app.inject({
-        method: 'PATCH',
+        method: "PATCH",
         url: `/api/v1/shipments/${shipment.id}`,
         headers: { Authorization: `Bearer ${authToken}` },
-        payload: { status: 'assigned', driverId: 'driver_123' }
+        payload: { status: "assigned", driverId: "driver_123" },
       });
 
       expect(response.statusCode).toBe(200);
       const body = JSON.parse(response.body);
-      expect(body.status).toBe('assigned');
+      expect(body.status).toBe("assigned");
     });
 
-    it('should reject invalid state transitions', async () => {
-      const shipment = await createTestShipment(tenantId, { status: 'pending' });
+    it("should reject invalid state transitions", async () => {
+      const shipment = await createTestShipment(tenantId, {
+        status: "pending",
+      });
 
       const response = await app.inject({
-        method: 'PATCH',
+        method: "PATCH",
         url: `/api/v1/shipments/${shipment.id}`,
         headers: { Authorization: `Bearer ${authToken}` },
-        payload: { status: 'in_transit' } // Invalid: skip assigned
+        payload: { status: "in_transit" }, // Invalid: skip assigned
       });
 
       expect(response.statusCode).toBe(400);
       const body = JSON.parse(response.body);
-      expect(body.error).toContain('Invalid state transition');
+      expect(body.error).toContain("Invalid state transition");
     });
 
-    it('should return 409 for state conflict', async () => {
-      const shipment = await createTestShipment(tenantId, { status: 'delivered' });
+    it("should return 409 for state conflict", async () => {
+      const shipment = await createTestShipment(tenantId, {
+        status: "delivered",
+      });
 
       const response = await app.inject({
-        method: 'PATCH',
+        method: "PATCH",
         url: `/api/v1/shipments/${shipment.id}`,
         headers: { Authorization: `Bearer ${authToken}` },
-        payload: { status: 'in_transit' }
+        payload: { status: "in_transit" },
       });
 
       expect(response.statusCode).toBe(409);
     });
   });
 
-  describe('GET /api/v1/shipments (list)', () => {
-    it('should list shipments for current tenant', async () => {
+  describe("GET /api/v1/shipments (list)", () => {
+    it("should list shipments for current tenant", async () => {
       const shipment1 = await createTestShipment(tenantId);
       const shipment2 = await createTestShipment(tenantId);
 
       const response = await app.inject({
-        method: 'GET',
-        url: '/api/v1/shipments',
-        headers: { Authorization: `Bearer ${authToken}` }
+        method: "GET",
+        url: "/api/v1/shipments",
+        headers: { Authorization: `Bearer ${authToken}` },
       });
 
       expect(response.statusCode).toBe(200);
@@ -1068,15 +1128,15 @@ describe('POST /api/v1/shipments', () => {
       expect(body.total).toBe(2);
     });
 
-    it('should support pagination', async () => {
+    it("should support pagination", async () => {
       for (let i = 0; i < 15; i++) {
         await createTestShipment(tenantId);
       }
 
       const response = await app.inject({
-        method: 'GET',
-        url: '/api/v1/shipments?limit=10&offset=0',
-        headers: { Authorization: `Bearer ${authToken}` }
+        method: "GET",
+        url: "/api/v1/shipments?limit=10&offset=0",
+        headers: { Authorization: `Bearer ${authToken}` },
       });
 
       expect(response.statusCode).toBe(200);
@@ -1085,15 +1145,15 @@ describe('POST /api/v1/shipments', () => {
       expect(body.total).toBe(15);
     });
 
-    it('should filter by status', async () => {
-      await createTestShipment(tenantId, { status: 'pending' });
-      await createTestShipment(tenantId, { status: 'in_transit' });
-      await createTestShipment(tenantId, { status: 'in_transit' });
+    it("should filter by status", async () => {
+      await createTestShipment(tenantId, { status: "pending" });
+      await createTestShipment(tenantId, { status: "in_transit" });
+      await createTestShipment(tenantId, { status: "in_transit" });
 
       const response = await app.inject({
-        method: 'GET',
-        url: '/api/v1/shipments?status=in_transit',
-        headers: { Authorization: `Bearer ${authToken}` }
+        method: "GET",
+        url: "/api/v1/shipments?status=in_transit",
+        headers: { Authorization: `Bearer ${authToken}` },
       });
 
       expect(response.statusCode).toBe(200);
@@ -1101,16 +1161,18 @@ describe('POST /api/v1/shipments', () => {
       expect(body.data).toHaveLength(2);
     });
 
-    it('should not leak other tenant shipments', async () => {
-      const otherUserToken = (await createTestUser({ tenantId: 'other-tenant' })).token;
+    it("should not leak other tenant shipments", async () => {
+      const otherUserToken = (
+        await createTestUser({ tenantId: "other-tenant" })
+      ).token;
 
       await createTestShipment(tenantId);
-      await createTestShipment('other-tenant');
+      await createTestShipment("other-tenant");
 
       const response = await app.inject({
-        method: 'GET',
-        url: '/api/v1/shipments',
-        headers: { Authorization: `Bearer ${authToken}` }
+        method: "GET",
+        url: "/api/v1/shipments",
+        headers: { Authorization: `Bearer ${authToken}` },
       });
 
       expect(response.statusCode).toBe(200);
@@ -1132,18 +1194,21 @@ describe('POST /api/v1/shipments', () => {
 #### Test Coverage Areas
 
 **A. Component Unit Tests**
+
 - Props validation
 - Conditional rendering
 - Event handlers
 - State updates
 
 **B. Page Integration Tests**
+
 - Server-side data fetching (getServerSideProps equivalent)
 - Client-side rendering
 - Navigation between pages
 - Form submissions
 
 **C. User Interaction Tests**
+
 - Button clicks
 - Form input and validation
 - Filtering and sorting
@@ -1332,12 +1397,14 @@ describe('ShipmentCard Component', () => {
 
 **Threat:** Attacker crafts malicious queries to access cross-tenant data
 **Test Strategy:** Attempt RLS bypass via:
+
 - Direct query manipulation
 - Relationship traversal
 - Subquery injection
 - UPDATE/DELETE without tenant filter
 
 **Test Case:**
+
 ```typescript
 it('should prevent RLS bypass via explicit cross-tenant filter', async () => {
   // Create shipments in two tenants
@@ -1361,12 +1428,13 @@ it('should prevent RLS bypass via explicit cross-tenant filter', async () => {
 **Coverage:** All 11 states × invalid transitions = 50+ test cases
 
 **Test Case:**
+
 ```typescript
-it('should prevent delivery of cancelled shipment', async () => {
-  machine.transition(shipmentId, 'pending', 'cancelled');
+it("should prevent delivery of cancelled shipment", async () => {
+  machine.transition(shipmentId, "pending", "cancelled");
 
   expect(() => {
-    machine.transition(shipmentId, 'cancelled', 'delivered');
+    machine.transition(shipmentId, "cancelled", "delivered");
   }).toThrow(InvalidStateTransitionError);
 });
 ```
@@ -1375,20 +1443,22 @@ it('should prevent delivery of cancelled shipment', async () => {
 
 **Threat:** Malicious variables or conditionals in templates execute code
 **Test Strategy:**
+
 - HTML/JS injection via variables
 - Template syntax injection
 - Path traversal in file includes
 - Infinite loops in conditionals
 
 **Test Case:**
+
 ```typescript
-it('should escape HTML in interpolated variables', () => {
-  const template = 'Message: {{ userInput }}';
+it("should escape HTML in interpolated variables", () => {
+  const template = "Message: {{ userInput }}";
   const malicious = '<img src=x onerror="alert(1)">';
 
   const result = renderer.render(template, { userInput: malicious });
-  expect(result).not.toContain('<img src=x');
-  expect(result).toContain('&lt;img');
+  expect(result).not.toContain("<img src=x");
+  expect(result).toContain("&lt;img");
 });
 ```
 
@@ -1398,17 +1468,18 @@ it('should escape HTML in interpolated variables', () => {
 **Test Strategy:** Fuzz API endpoints with malformed data
 
 **Test Case:**
+
 ```typescript
-it('should reject oversized payload', async () => {
+it("should reject oversized payload", async () => {
   const hugePayload = {
-    items: Array(1000).fill({ sku: 'TEST', quantity: 1 })
+    items: Array(1000).fill({ sku: "TEST", quantity: 1 }),
   };
 
   const response = await app.inject({
-    method: 'POST',
-    url: '/api/v1/shipments',
+    method: "POST",
+    url: "/api/v1/shipments",
     headers: { Authorization: `Bearer ${authToken}` },
-    payload: hugePayload
+    payload: hugePayload,
   });
 
   expect(response.statusCode).toBe(400);
@@ -1421,27 +1492,28 @@ it('should reject oversized payload', async () => {
 **Test Strategy:** Simulate simultaneous transitions on same shipment
 
 **Test Case:**
+
 ```typescript
-it('should handle concurrent state transitions atomically', async () => {
-  const shipmentId = 'shipment_race_123';
+it("should handle concurrent state transitions atomically", async () => {
+  const shipmentId = "shipment_race_123";
 
   const results = await Promise.all([
     app.inject({
-      method: 'PATCH',
+      method: "PATCH",
       url: `/api/v1/shipments/${shipmentId}`,
-      payload: { status: 'assigned' },
-      headers: { Authorization: `Bearer ${token1}` }
+      payload: { status: "assigned" },
+      headers: { Authorization: `Bearer ${token1}` },
     }),
     app.inject({
-      method: 'PATCH',
+      method: "PATCH",
       url: `/api/v1/shipments/${shipmentId}`,
-      payload: { status: 'in_transit' },
-      headers: { Authorization: `Bearer ${token2}` }
-    })
+      payload: { status: "in_transit" },
+      headers: { Authorization: `Bearer ${token2}` },
+    }),
   ]);
 
   // One should succeed, other should fail
-  const successCount = results.filter(r => r.statusCode === 200).length;
+  const successCount = results.filter((r) => r.statusCode === 200).length;
   expect(successCount).toBe(1);
 });
 ```
@@ -1492,8 +1564,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -1570,9 +1642,9 @@ jobs:
 
 ```typescript
 // packages/[package]/__tests__/[feature].unit.test.ts
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
-describe('[Feature]', () => {
+describe("[Feature]", () => {
   beforeEach(() => {
     // Setup
   });
@@ -1581,8 +1653,8 @@ describe('[Feature]', () => {
     // Cleanup
   });
 
-  describe('[Scenario]', () => {
-    it('should [expected behavior]', () => {
+  describe("[Scenario]", () => {
+    it("should [expected behavior]", () => {
       // Arrange
       const input = {};
 
@@ -1600,11 +1672,11 @@ describe('[Feature]', () => {
 
 ```typescript
 // packages/[package]/__tests__/[feature].integration.test.ts
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { PrismaClient } from '@prisma/client';
-import { createTestTenant } from '../test-utils/tenant-factory';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { PrismaClient } from "@prisma/client";
+import { createTestTenant } from "../test-utils/tenant-factory";
 
-describe('[Feature] Integration', () => {
+describe("[Feature] Integration", () => {
   let db: PrismaClient;
   let tenantId: string;
 
@@ -1618,7 +1690,7 @@ describe('[Feature] Integration', () => {
     await db.$disconnect();
   });
 
-  it('should [expected behavior] with dependencies', async () => {
+  it("should [expected behavior] with dependencies", async () => {
     // Arrange
     const entity = await db.model.create({ data: {} });
 
@@ -1635,22 +1707,22 @@ describe('[Feature] Integration', () => {
 
 ```typescript
 // e2e/[feature].e2e.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test.describe('[Feature] E2E', () => {
+test.describe("[Feature] E2E", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto("/");
   });
 
-  test('should [user scenario]', async ({ page }) => {
+  test("should [user scenario]", async ({ page }) => {
     // User journey
     await page.click('button:has-text("Login")');
-    await page.fill('input[name="email"]', 'test@example.com');
-    await page.fill('input[name="password"]', 'password123');
+    await page.fill('input[name="email"]', "test@example.com");
+    await page.fill('input[name="password"]', "password123");
     await page.click('button:has-text("Sign In")');
 
     // Assertions
-    await expect(page.locator('text=Dashboard')).toBeVisible();
+    await expect(page.locator("text=Dashboard")).toBeVisible();
   });
 });
 ```
@@ -1659,16 +1731,17 @@ test.describe('[Feature] E2E', () => {
 
 ## 6. Coverage Targets Per Package
 
-| Package | Unit | Integration | E2E | Overall | Critical 100% Areas |
-|---------|------|-------------|-----|---------|---------------------|
-| validators | 100% | N/A | N/A | 100% | All schemas |
-| db | 85% | 95% | N/A | 90% | RLS, multi-tenant queries |
-| core | 95% | 90% | N/A | 95% | State machine, renderer |
-| api | 80% | 90% | 85% | 85% | All route handlers |
-| dashboard | 75% | 85% | 80% | 80% | Critical user paths |
-| **Overall** | **~87%** | **~90%** | **~82%** | **~85%** | Multi-tenant, state, security |
+| Package     | Unit     | Integration | E2E      | Overall  | Critical 100% Areas           |
+| ----------- | -------- | ----------- | -------- | -------- | ----------------------------- |
+| validators  | 100%     | N/A         | N/A      | 100%     | All schemas                   |
+| db          | 85%      | 95%         | N/A      | 90%      | RLS, multi-tenant queries     |
+| core        | 95%      | 90%         | N/A      | 95%      | State machine, renderer       |
+| api         | 80%      | 90%         | 85%      | 85%      | All route handlers            |
+| dashboard   | 75%      | 85%         | 80%      | 80%      | Critical user paths           |
+| **Overall** | **~87%** | **~90%**    | **~82%** | **~85%** | Multi-tenant, state, security |
 
 **Coverage thresholds enforced in CI/CD:**
+
 - Fail if overall coverage drops below 85%
 - Fail if critical packages drop below stated minimums
 - Fail if new code has <80% coverage
@@ -1680,129 +1753,129 @@ test.describe('[Feature] E2E', () => {
 ### 7.1 `vitest.config.ts`
 
 ```typescript
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import path from 'path';
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
+import path from "path";
 
 export default defineConfig({
   plugins: [react()],
   test: {
     globals: true,
-    environment: 'node',
+    environment: "node",
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
+      provider: "v8",
+      reporter: ["text", "json", "html", "lcov"],
       exclude: [
-        'node_modules/',
-        'dist/',
-        '**/*.d.ts',
-        '**/*.spec.ts',
-        '**/*.test.ts',
-        '**/test-utils/**',
-        '**/fixtures/**'
+        "node_modules/",
+        "dist/",
+        "**/*.d.ts",
+        "**/*.spec.ts",
+        "**/*.test.ts",
+        "**/test-utils/**",
+        "**/fixtures/**",
       ],
       lines: 85,
       functions: 85,
       branches: 85,
-      statements: 85
+      statements: 85,
     },
-    include: ['**/*.test.ts', '**/*.test.tsx'],
-    exclude: ['node_modules', 'dist'],
-    setupFiles: ['./test-setup.ts'],
+    include: ["**/*.test.ts", "**/*.test.tsx"],
+    exclude: ["node_modules", "dist"],
+    setupFiles: ["./test-setup.ts"],
     testTimeout: 10000,
     hookTimeout: 10000,
     isolate: true,
     threads: true,
     maxThreads: 8,
-    minThreads: 1
+    minThreads: 1,
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@validators': path.resolve(__dirname, '../validators/src'),
-      '@db': path.resolve(__dirname, '../db/src'),
-      '@core': path.resolve(__dirname, '../core/src')
-    }
-  }
+      "@": path.resolve(__dirname, "./src"),
+      "@validators": path.resolve(__dirname, "../validators/src"),
+      "@db": path.resolve(__dirname, "../db/src"),
+      "@core": path.resolve(__dirname, "../core/src"),
+    },
+  },
 });
 ```
 
 ### 7.2 `vitest.react.config.ts` (For dashboard)
 
 ```typescript
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import path from 'path';
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
+import path from "path";
 
 export default defineConfig({
   plugins: [react()],
   test: {
     globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./test-setup.ts'],
+    environment: "jsdom",
+    setupFiles: ["./test-setup.ts"],
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
-      include: ['src/**/*.{ts,tsx}'],
+      provider: "v8",
+      reporter: ["text", "json", "html", "lcov"],
+      include: ["src/**/*.{ts,tsx}"],
       exclude: [
-        'node_modules/',
-        'dist/',
-        '**/*.d.ts',
-        '**/*.test.ts',
-        '**/*.stories.tsx'
+        "node_modules/",
+        "dist/",
+        "**/*.d.ts",
+        "**/*.test.ts",
+        "**/*.stories.tsx",
       ],
       lines: 80,
       functions: 80,
       branches: 75,
-      statements: 80
-    }
+      statements: 80,
+    },
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
-    }
-  }
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
 });
 ```
 
 ### 7.3 `playwright.config.ts` (For E2E)
 
 ```typescript
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
-  testDir: './e2e',
+  testDir: "./e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: "html",
   use: {
-    baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure'
+    baseURL: "http://localhost:3000",
+    trace: "on-first-retry",
+    screenshot: "only-on-failure",
   },
 
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
     {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] }
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
     },
     {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] }
-    }
+      name: "webkit",
+      use: { ...devices["Desktop Safari"] },
+    },
   ],
 
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI
-  }
+    command: "npm run dev",
+    url: "http://localhost:3000",
+    reuseExistingServer: !process.env.CI,
+  },
 });
 ```
 
@@ -1841,7 +1914,7 @@ export default defineConfig({
 ### 8.1 Tenant Factory: `packages/db/test-utils/tenant-factory.ts`
 
 ```typescript
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -1850,8 +1923,8 @@ export async function createTestTenant(name?: string) {
     data: {
       name: name || `Test Tenant ${Date.now()}`,
       slug: `tenant-${Date.now()}`,
-      isActive: true
-    }
+      isActive: true,
+    },
   });
 }
 
@@ -1867,8 +1940,8 @@ export async function cleanupTestTenant(tenantId: string) {
 ### 8.2 Data Factory: `apps/api/test-utils/data-factory.ts`
 
 ```typescript
-import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
+import { PrismaClient } from "@prisma/client";
+import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
@@ -1878,20 +1951,20 @@ export async function createTestUser(overrides = {}) {
   const tenant = await prisma.tenant.upsert({
     where: { id: tenantId },
     update: {},
-    create: { name: tenantId }
+    create: { name: tenantId },
   });
 
   const user = await prisma.user.create({
     data: {
       email: `test-${Date.now()}@example.com`,
       tenantId: tenant.id,
-      ...overrides
-    }
+      ...overrides,
+    },
   });
 
   const token = jwt.sign(
     { userId: user.id, tenantId: user.tenantId },
-    process.env.JWT_SECRET || 'test-secret'
+    process.env.JWT_SECRET || "test-secret",
   );
 
   return { ...user, token };
@@ -1901,12 +1974,12 @@ export async function createTestShipment(tenantId: string, overrides = {}) {
   return await prisma.shipment.create({
     data: {
       tenantId,
-      status: 'pending',
+      status: "pending",
       recipientName: `Recipient ${Date.now()}`,
-      recipientPhone: '+12125551234',
-      recipientAddress: '123 Main St',
-      ...overrides
-    }
+      recipientPhone: "+12125551234",
+      recipientAddress: "123 Main St",
+      ...overrides,
+    },
   });
 }
 ```
@@ -1929,23 +2002,27 @@ export async function createTestShipment(tenantId: string, overrides = {}) {
 ## 10. Testing Roadmap
 
 ### Phase 1 (Week 1-2): Foundation
+
 - [ ] Set up Vitest, React Testing Library, Playwright
 - [ ] Write unit tests for validators (100%)
 - [ ] Write RLS isolation tests (100%)
 - [ ] Write state machine tests (100%)
 
 ### Phase 2 (Week 3-4): Integration
+
 - [ ] API route integration tests (all 50+ endpoints)
 - [ ] Dashboard component tests (critical paths)
 - [ ] Template renderer security tests
 
 ### Phase 3 (Week 5-6): E2E & Quality
+
 - [ ] Playwright E2E workflows
 - [ ] Coverage report generation
 - [ ] Performance benchmarking
 - [ ] Load testing for concurrent shipments
 
 ### Phase 4 (Ongoing): Maintenance
+
 - [ ] 85% coverage maintained with each PR
 - [ ] New features require tests
 - [ ] Monthly security audit of test coverage
@@ -1982,30 +2059,35 @@ npm run test:coverage -- --ui
 ## Appendix B: Common Test Scenarios by Package
 
 ### validators
+
 - Valid/invalid input combinations
 - Edge case values (empty, null, very large)
 - Custom refinement rules
 - Error message clarity
 
 ### db
+
 - RLS isolation (tenant A ≠ tenant B)
 - Query performance (indexes)
 - Relationship integrity
 - Data constraints
 
 ### core
+
 - All valid state transitions
 - All invalid state transitions
 - Template rendering (variables, loops, conditionals)
 - Security (XSS, injection)
 
 ### api
+
 - Request validation against Zod
 - Authentication (JWT, API keys)
 - Authorization (RLS enforcement)
 - Error responses (4xx, 5xx)
 
 ### dashboard
+
 - Component rendering
 - User interactions (click, type, submit)
 - Navigation

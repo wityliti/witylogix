@@ -57,7 +57,9 @@ const RevenueTooltip = memo(
     if (active && payload && label) {
       return (
         <div className="bg-wl-bg-elevated border border-wl-border-default rounded-lg p-3 shadow-lg">
-          <p className="text-sm font-semibold text-wl-text-primary mb-2">{label}</p>
+          <p className="text-sm font-semibold text-wl-text-primary mb-2">
+            {label}
+          </p>
           <div className="space-y-1">
             {payload.map((entry, index) => (
               <p key={index} className="text-xs" style={{ color: entry.color }}>
@@ -69,7 +71,7 @@ const RevenueTooltip = memo(
       );
     }
     return null;
-  }
+  },
 );
 
 RevenueTooltip.displayName = "RevenueTooltip";
@@ -91,10 +93,13 @@ export const RevenueChart = memo(function RevenueChart({
   const stats = useMemo(() => {
     if (chartData.length === 0) return null;
 
-    const currentYearTotal = chartData.reduce((sum, d) => sum + (d.revenue || 0), 0);
+    const currentYearTotal = chartData.reduce(
+      (sum, d) => sum + (d.revenue || 0),
+      0,
+    );
     const previousYearTotal = chartData.reduce(
       (sum, d) => sum + (d.previousYear || 0),
-      0
+      0,
     );
     const targetTotal = chartData.reduce((sum, d) => sum + (d.target || 0), 0);
 
@@ -111,7 +116,8 @@ export const RevenueChart = memo(function RevenueChart({
 
     const monthlyGrowth =
       previousMonth && previousMonth.revenue > 0
-        ? ((lastMonth.revenue - previousMonth.revenue) / previousMonth.revenue) *
+        ? ((lastMonth.revenue - previousMonth.revenue) /
+            previousMonth.revenue) *
           100
         : 0;
 
@@ -175,7 +181,8 @@ export const RevenueChart = memo(function RevenueChart({
                       : "text-wl-danger-400"
                   }`}
                 >
-                  {stats.growth >= 0 ? "+" : ""}{stats.growth.toFixed(1)}%
+                  {stats.growth >= 0 ? "+" : ""}
+                  {stats.growth.toFixed(1)}%
                 </p>
               </div>
             </div>
@@ -206,9 +213,13 @@ export const RevenueChart = memo(function RevenueChart({
       )}
 
       {/* Chart */}
-      <Suspense fallback={<div className="w-full" style={{ height }}>
-        <div className="w-full h-full bg-wl-bg-secondary animate-pulse rounded-lg border border-wl-neutral-800" />
-      </div>}>
+      <Suspense
+        fallback={
+          <div className="w-full" style={{ height }}>
+            <div className="w-full h-full bg-wl-bg-secondary animate-pulse rounded-lg border border-wl-neutral-800" />
+          </div>
+        }
+      >
         <ResponsiveContainer width="100%" height={height}>
           <ComposedChart
             data={chartData}
@@ -216,13 +227,7 @@ export const RevenueChart = memo(function RevenueChart({
             margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
           >
             <defs>
-              <linearGradient
-                id="revenueGradient"
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
+              <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop
                   offset="5%"
                   stopColor="var(--wl-success-400)"
@@ -253,15 +258,15 @@ export const RevenueChart = memo(function RevenueChart({
             <YAxis
               stroke="var(--wl-text-tertiary)"
               tick={{ fontSize: 12 }}
-              tickFormatter={(value: number) => formatCurrency(value, currency).replace(/\.0+K|M/, "")}
+              tickFormatter={(value: number) =>
+                formatCurrency(value, currency).replace(/\.0+K|M/, "")
+              }
               axisLine={{ stroke: "var(--wl-border-subtle)" }}
               style={{ color: "var(--wl-text-tertiary)" }}
             />
 
             <Tooltip
-              content={
-                <RevenueTooltip currency={currency} />
-              }
+              content={<RevenueTooltip currency={currency} />}
               cursor={{ fill: "var(--wl-primary-500)", fillOpacity: 0.05 }}
             />
 

@@ -1,20 +1,26 @@
 // @ts-nocheck
 /**
  * Preact Hooks for Witylogix Extensions
- * 
+ *
  * Custom hooks providing common extension patterns:
  * - Theme token reading and observation
  * - App Bridge client initialization
  * - Delivery options fetching
  * - POS extension API communication
- * 
+ *
  * Usage:
  *   const tokens = useTheme();
  *   const bridge = useAppBridge();
  *   const options = useDeliveryOptions();
  */
 
-import { useEffect, useState, useRef, useCallback, useMemo } from 'preact/hooks';
+import {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+} from "preact/hooks";
 import type {
   ThemeTokens,
   ExtensionConfig,
@@ -22,20 +28,26 @@ import type {
   DeliveryFilter,
   AppBridgeClient,
   ExtensionApi,
-} from './types.ts';
+} from "./types.ts";
 
-import { readThemeTokens, observeThemeChanges, getCachedOrDefaultThemes } from './theme-bridge.ts';
-import { createAppBridgeClient } from './app-bridge.ts';
+import {
+  readThemeTokens,
+  observeThemeChanges,
+  getCachedOrDefaultThemes,
+} from "./theme-bridge.ts";
+import { createAppBridgeClient } from "./app-bridge.ts";
 
 /**
  * Hook: Read and observe theme tokens
  * Automatically re-renders component when theme changes
  * Falls back to cached or default tokens on first render
- * 
+ *
  * @returns ThemeTokens - Current theme tokens
  */
 export function useTheme(): ThemeTokens {
-  const [tokens, setTokens] = useState<ThemeTokens>(() => getCachedOrDefaultThemes());
+  const [tokens, setTokens] = useState<ThemeTokens>(() =>
+    getCachedOrDefaultThemes(),
+  );
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -66,7 +78,7 @@ export function useTheme(): ThemeTokens {
  * Hook: Get App Bridge client for sending actions to Shopify
  * Lazily initializes client on first use
  * Reuses same client instance across component tree (via useMemo)
- * 
+ *
  * @returns AppBridgeClient - Client ready for discount/address/session actions
  */
 export function useAppBridge(): AppBridgeClient {
@@ -76,10 +88,10 @@ export function useAppBridge(): AppBridgeClient {
   if (!clientRef.current) {
     try {
       clientRef.current = createAppBridgeClient(
-        (window as any).__EXTENSION_CONFIG__
+        (window as any).__EXTENSION_CONFIG__,
       );
     } catch (error) {
-      console.error('[useAppBridge] Failed to initialize client:', error);
+      console.error("[useAppBridge] Failed to initialize client:", error);
       throw error;
     }
   }
@@ -91,7 +103,7 @@ export function useAppBridge(): AppBridgeClient {
  * Hook: Fetch delivery options from backend
  * Implements caching with optional filters
  * Handles loading and error states
- * 
+ *
  * @param filters - Optional filters (maxCost, maxDays, serviceType)
  * @returns Object with options, selected option, select callback, loading/error states
  */
@@ -131,7 +143,9 @@ export function useDeliveryOptions(filters?: DeliveryFilter) {
         }
       } catch (err) {
         if (isMounted) {
-          setError(err instanceof Error ? err : new Error('Failed to load options'));
+          setError(
+            err instanceof Error ? err : new Error("Failed to load options"),
+          );
           setIsLoading(false);
         }
       }
@@ -155,7 +169,7 @@ export function useDeliveryOptions(filters?: DeliveryFilter) {
       prev.map((opt) => ({
         ...opt,
         selected: opt.id === option.id,
-      }))
+      })),
     );
   }, []);
 
@@ -172,26 +186,33 @@ export function useDeliveryOptions(filters?: DeliveryFilter) {
  * Hook: POS extension API for postMessage communication
  * Enables RPC-style calls between POS extension and parent frame
  * Also handles event subscriptions
- * 
+ *
  * @returns ExtensionApi - Object with invoke, register, subscribe methods
  */
 export function useExtensionApi(): ExtensionApi {
   const callIdRef = useRef(0);
   const pendingCallsRef = useRef<
-    Map<string, { resolve: (data: any) => void; reject: (error: Error) => void }>
+    Map<
+      string,
+      { resolve: (data: any) => void; reject: (error: Error) => void }
+    >
   >(new Map());
-  const handlersRef = useRef<Map<string, (args: any) => Promise<any>>>(new Map());
-  const subscribersRef = useRef<Map<string, Set<(data: any) => void>>>(new Map());
+  const handlersRef = useRef<Map<string, (args: any) => Promise<any>>>(
+    new Map(),
+  );
+  const subscribersRef = useRef<Map<string, Set<(data: any) => void>>>(
+    new Map(),
+  );
 
   // Set up message listener on mount
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       const message = event.data;
 
-      if (!message || typeof message !== 'object') return;
+      if (!message || typeof message !== "object") return;
 
       // Handle response to invoke call
-      if (message.type === 'wl:invoke:result') {
+      if (message.type === "wl:invoke:result") {
         const pending = pendingCallsRef.current.get(message.id);
         if (pending) {
           if (message.error) {
@@ -205,94 +226,115 @@ export function useExtensionApi(): ExtensionApi {
       }
 
       // Handle request from parent for registered method
-      if (message.type === 'wl:invoke:request') {
+      if (message.type === "wl:invoke:request") {
         const handler = handlersRef.current.get(message.method);
         if (!handler) {
-          window.parent?.postMessage({
-            type: 'wl:invoke:response',
-            id: message.id,
-            error: `Unknown method: ${message.method}`,
-          }, '*');
+          window.parent?.postMessage(
+            {
+              type: "wl:invoke:response",
+              id: message.id,
+              error: `Unknown method: ${message.method}`,
+            },
+            "*",
+          );
           return;
         }
 
         handler(message.args || {})
           .then((result) => {
-            window.parent?.postMessage({
-              type: 'wl:invoke:response',
-              id: message.id,
-              data: result,
-            }, '*');
+            window.parent?.postMessage(
+              {
+                type: "wl:invoke:response",
+                id: message.id,
+                data: result,
+              },
+              "*",
+            );
           })
           .catch((error) => {
-            window.parent?.postMessage({
-              type: 'wl:invoke:response',
-              id: message.id,
-              error: error instanceof Error ? error.message : String(error),
-            }, '*');
+            window.parent?.postMessage(
+              {
+                type: "wl:invoke:response",
+                id: message.id,
+                error: error instanceof Error ? error.message : String(error),
+              },
+              "*",
+            );
           });
         return;
       }
 
       // Handle subscription event
-      if (message.type === 'wl:event') {
+      if (message.type === "wl:event") {
         const subscribers = subscribersRef.current.get(message.event);
         if (subscribers) {
           subscribers.forEach((callback) => {
             try {
               callback(message.data);
             } catch (error) {
-              console.error('[ExtensionApi] Subscriber error:', error);
+              console.error("[ExtensionApi] Subscriber error:", error);
             }
           });
         }
       }
     };
 
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
   }, []);
 
   /**
    * Invoke a method in the parent frame
    */
-  const invoke = useCallback(async (method: string, args: any): Promise<any> => {
-    const callId = `call-${++callIdRef.current}`;
+  const invoke = useCallback(
+    async (method: string, args: any): Promise<any> => {
+      const callId = `call-${++callIdRef.current}`;
 
-    return new Promise((resolve, reject) => {
-      pendingCallsRef.current.set(callId, { resolve, reject });
+      return new Promise((resolve, reject) => {
+        pendingCallsRef.current.set(callId, { resolve, reject });
 
-      window.parent?.postMessage({
-        type: 'wl:invoke',
-        id: callId,
-        method,
-        args,
-      }, '*');
+        window.parent?.postMessage(
+          {
+            type: "wl:invoke",
+            id: callId,
+            method,
+            args,
+          },
+          "*",
+        );
 
-      // Timeout after 30 seconds
-      setTimeout(() => {
-        if (pendingCallsRef.current.has(callId)) {
-          pendingCallsRef.current.delete(callId);
-          reject(new Error(`Invoke timeout: ${method}`));
-        }
-      }, 30000);
-    });
-  }, []);
+        // Timeout after 30 seconds
+        setTimeout(() => {
+          if (pendingCallsRef.current.has(callId)) {
+            pendingCallsRef.current.delete(callId);
+            reject(new Error(`Invoke timeout: ${method}`));
+          }
+        }, 30000);
+      });
+    },
+    [],
+  );
 
   /**
    * Register a handler for parent to invoke
    */
   const register = useCallback(
-    async (method: string, handler: (args: any) => Promise<any>): Promise<void> => {
+    async (
+      method: string,
+      handler: (args: any) => Promise<any>,
+    ): Promise<void> => {
       handlersRef.current.set(method, handler);
 
       // Notify parent that handler is registered
-      window.parent?.postMessage({
-        type: 'wl:register',
-        method,
-      }, '*');
+      window.parent?.postMessage(
+        {
+          type: "wl:register",
+          method,
+        },
+        "*",
+      );
     },
-    []
+    [],
   );
 
   /**
@@ -308,17 +350,20 @@ export function useExtensionApi(): ExtensionApi {
       subscribers.add(handler);
 
       // Notify parent of subscription
-      window.parent?.postMessage({
-        type: 'wl:subscribe',
-        event,
-      }, '*');
+      window.parent?.postMessage(
+        {
+          type: "wl:subscribe",
+          event,
+        },
+        "*",
+      );
 
       // Return unsubscribe function
       return () => {
         subscribers.delete(handler);
       };
     },
-    []
+    [],
   );
 
   return { invoke, register, subscribe };
@@ -327,17 +372,19 @@ export function useExtensionApi(): ExtensionApi {
 /**
  * Hook: Get extension metadata (version, deployment info)
  * Reads from window.__EXTENSION_METADATA__ set by build system
- * 
+ *
  * @returns Object with version, deployedAt, commitSha, type
  */
 export function useExtensionMetadata() {
   const [metadata] = useState(() => {
-    return (window as any).__EXTENSION_METADATA__ || {
-      version: 'unknown',
-      deployedAt: new Date().toISOString(),
-      commitSha: 'unknown',
-      type: 'checkout' as const,
-    };
+    return (
+      (window as any).__EXTENSION_METADATA__ || {
+        version: "unknown",
+        deployedAt: new Date().toISOString(),
+        commitSha: "unknown",
+        type: "checkout" as const,
+      }
+    );
   });
 
   return metadata;
@@ -346,14 +393,16 @@ export function useExtensionMetadata() {
 /**
  * Hook: Get extension config
  * Reads from window.__EXTENSION_CONFIG__ injected by parent
- * 
+ *
  * @returns ExtensionConfig object
  */
 export function useExtensionConfig(): ExtensionConfig {
   const [config] = useState(() => {
     const cfg = (window as any).__EXTENSION_CONFIG__;
     if (!cfg) {
-      throw new Error('Extension config not available. Ensure __EXTENSION_CONFIG__ is set.');
+      throw new Error(
+        "Extension config not available. Ensure __EXTENSION_CONFIG__ is set.",
+      );
     }
     return cfg;
   });
@@ -364,14 +413,14 @@ export function useExtensionConfig(): ExtensionConfig {
 /**
  * Hook: Async state management
  * Executes async function and manages loading/error/success states
- * 
+ *
  * @param asyncFn - Async function to execute
  * @param dependencies - Dependencies array
  * @returns Object with data, isLoading, error, refetch
  */
 export function useAsync<T>(
   asyncFn: () => Promise<T>,
-  dependencies: any[] = []
+  dependencies: any[] = [],
 ) {
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -401,7 +450,7 @@ export function useAsync<T>(
  * Hook: Debounced value
  * Delays updating a value until user stops changing it
  * Useful for search inputs, filters, etc.
- * 
+ *
  * @param value - Value to debounce
  * @param delay - Delay in milliseconds (default: 300)
  * @returns Debounced value

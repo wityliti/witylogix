@@ -84,9 +84,15 @@ const columns = [
     width: "120px",
     render: (item: OrderItem) => {
       const statusConfig = {
-        completed: { variant: "success" as const, icon: <CheckCircle2 size={14} /> },
+        completed: {
+          variant: "success" as const,
+          icon: <CheckCircle2 size={14} />,
+        },
         pending: { variant: "warning" as const },
-        cancelled: { variant: "danger" as const, icon: <AlertCircle size={14} /> },
+        cancelled: {
+          variant: "danger" as const,
+          icon: <AlertCircle size={14} />,
+        },
       };
       const config = statusConfig[item.status];
       return (
@@ -124,7 +130,7 @@ export const Sortable: Story = {
     columns: columns.map((col) =>
       col.key === "customer" || col.key === "date"
         ? { ...col, sortable: true }
-        : col
+        : col,
     ),
     data: sampleData,
   },

@@ -40,10 +40,7 @@ const deploymentOptions = [
   },
 ];
 
-export function ChooseDeployment({
-  data,
-  onSelect,
-}: ChooseDeploymentProps) {
+export function ChooseDeployment({ data, onSelect }: ChooseDeploymentProps) {
   const selected = data.deploymentType;
 
   return (
@@ -76,7 +73,7 @@ export function ChooseDeployment({
                 isSelected
                   ? `border-wl-primary-500 ${option.borderColor} shadow-lg`
                   : `${option.borderColor}`,
-                "hover:shadow-md active:scale-98"
+                "hover:shadow-md active:scale-98",
               )}
             >
               {/* Checkmark */}
@@ -91,7 +88,7 @@ export function ChooseDeployment({
                 className={cn(
                   "w-12 h-12 rounded-lg flex items-center justify-center mb-4",
                   `bg-gradient-to-br ${option.color}`,
-                  isSelected && "shadow-lg"
+                  isSelected && "shadow-lg",
                 )}
               >
                 <Icon className="w-6 h-6 text-wl-text-inverse" />
@@ -126,7 +123,7 @@ export function ChooseDeployment({
                   className={cn(
                     "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100",
                     "transition-opacity duration-300 pointer-events-none",
-                    "bg-gradient-to-br from-wl-primary-500/5 to-transparent"
+                    "bg-gradient-to-br from-wl-primary-500/5 to-transparent",
                   )}
                 />
               )}
@@ -174,8 +171,7 @@ export function ChooseDeployment({
             <span className="font-semibold text-wl-text-primary">Scale</span>
           </div>
           <p className="text-wl-text-tertiary m-0">
-            Start small and scale up as your business grows. No vendor
-            lock-in.
+            Start small and scale up as your business grows. No vendor lock-in.
           </p>
         </div>
       </div>

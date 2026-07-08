@@ -77,7 +77,7 @@ const PartnerCard = forwardRef<HTMLDivElement, PartnerCardProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const statusInfo = statusConfig[status];
     const StatusIcon = statusInfo.icon;
@@ -112,7 +112,7 @@ const PartnerCard = forwardRef<HTMLDivElement, PartnerCardProps>(
               <span
                 className={cn(
                   "inline-block text-xs font-medium rounded px-2 py-1 mt-1",
-                  categoryColors[category]
+                  categoryColors[category],
                 )}
               >
                 {categoryLabels[category]}
@@ -123,7 +123,7 @@ const PartnerCard = forwardRef<HTMLDivElement, PartnerCardProps>(
           <span
             className={cn(
               "inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold whitespace-nowrap flex-shrink-0",
-              statusInfo.color
+              statusInfo.color,
             )}
           >
             <StatusIcon className="w-3 h-3" />
@@ -169,7 +169,7 @@ const PartnerCard = forwardRef<HTMLDivElement, PartnerCardProps>(
                   "w-4 h-4",
                   i < Math.floor(rating)
                     ? "fill-wl-warning-400 text-wl-warning-400"
-                    : "text-wl-border-subtle"
+                    : "text-wl-border-subtle",
                 )}
               />
             ))}
@@ -200,7 +200,7 @@ const PartnerCard = forwardRef<HTMLDivElement, PartnerCardProps>(
         </div>
       </Card>
     );
-  }
+  },
 );
 
 PartnerCard.displayName = "PartnerCard";

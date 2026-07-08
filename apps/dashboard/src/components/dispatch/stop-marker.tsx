@@ -43,11 +43,16 @@ export function StopMarker({
         "border-2 border-white shadow-lg",
         "transition-all duration-200",
         isNext && "ring-4 ring-offset-2 animate-pulse",
-        className
+        className,
       )}
       style={{ backgroundColor: color }}
     >
-      <div className={cn("flex items-center justify-center text-white", sizeConfig.container)}>
+      <div
+        className={cn(
+          "flex items-center justify-center text-white",
+          sizeConfig.container,
+        )}
+      >
         {isDelivered ? (
           <span className={cn("font-bold", sizeConfig.text)}>{checkIcon}</span>
         ) : (

@@ -46,7 +46,7 @@ export interface Invoice {
   id: string;
   amount: number;
   currency: string;
-  status: 'draft' | 'sent' | 'paid' | 'outstanding' | 'void';
+  status: "draft" | "sent" | "paid" | "outstanding" | "void";
   customerId?: string;
   totalAmount?: number;
   lineItems?: LineItem[];
@@ -56,7 +56,7 @@ export interface Invoice {
 export interface Payment {
   id: string;
   amount: number;
-  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  status: "pending" | "completed" | "failed" | "refunded";
   invoiceId?: string;
   date?: Date;
 }
@@ -77,12 +77,12 @@ export interface LineItem {
 export function createMockContact(overrides?: Partial<Contact>): Contact {
   const contact: Contact = {
     id: `contact_${Math.random().toString(36).substr(2, 9)}`,
-    firstName: 'John',
-    lastName: 'Doe',
-    fullName: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+1-555-123-4567',
-    company: 'Acme Corp',
+    firstName: "John",
+    lastName: "Doe",
+    fullName: "John Doe",
+    email: "john.doe@example.com",
+    phone: "+1-555-123-4567",
+    company: "Acme Corp",
     ...overrides,
   };
 
@@ -101,9 +101,9 @@ export function createMockContact(overrides?: Partial<Contact>): Contact {
 export function createMockDeal(overrides?: Partial<Deal>): Deal {
   return {
     id: `deal_${Math.random().toString(36).substr(2, 9)}`,
-    amount: 10000.00,
-    currency: 'USD',
-    status: 'open',
+    amount: 10000.0,
+    currency: "USD",
+    status: "open",
     ...overrides,
   };
 }
@@ -115,8 +115,8 @@ export function createMockDeal(overrides?: Partial<Deal>): Deal {
 export function createMockCompany(overrides?: Partial<Company>): Company {
   return {
     id: `company_${Math.random().toString(36).substr(2, 9)}`,
-    name: 'Acme Corporation',
-    industry: 'Technology',
+    name: "Acme Corporation",
+    industry: "Technology",
     employees: 500,
     ...overrides,
   };
@@ -129,9 +129,9 @@ export function createMockCompany(overrides?: Partial<Company>): Company {
 export function createMockInvoice(overrides?: Partial<Invoice>): Invoice {
   return {
     id: `invoice_${Math.random().toString(36).substr(2, 9)}`,
-    amount: 5000.00,
-    currency: 'USD',
-    status: 'outstanding',
+    amount: 5000.0,
+    currency: "USD",
+    status: "outstanding",
     ...overrides,
   };
 }
@@ -143,8 +143,8 @@ export function createMockInvoice(overrides?: Partial<Invoice>): Invoice {
 export function createMockPayment(overrides?: Partial<Payment>): Payment {
   return {
     id: `payment_${Math.random().toString(36).substr(2, 9)}`,
-    amount: 5000.00,
-    status: 'completed',
+    amount: 5000.0,
+    status: "completed",
     date: new Date(),
     ...overrides,
   };
@@ -157,8 +157,8 @@ export function createMockPayment(overrides?: Partial<Payment>): Payment {
 export function createMockLineItem(overrides?: Partial<LineItem>): LineItem {
   const base = {
     id: `lineitem_${Math.random().toString(36).substr(2, 9)}`,
-    description: 'Service',
-    amount: 1000.00,
+    description: "Service",
+    amount: 1000.0,
     quantity: 1,
     taxRate: 0.1,
     ...overrides,
@@ -175,19 +175,19 @@ export function createMockLineItem(overrides?: Partial<LineItem>): LineItem {
 // ─────────────────────────────────────────────────────────────────────────
 
 export function createMockSalesforceResponse(
-  overrides?: Partial<Record<string, any>>
+  overrides?: Partial<Record<string, any>>,
 ): Record<string, any> {
   return {
     id: `salesforce_${Math.random().toString(36).substr(2, 9)}`,
-    Name: 'John Doe',
-    Email: 'john.doe@example.com',
-    Phone: '+1-555-123-4567',
-    Company: 'Acme Corp',
-    Amount: 10000.00,
-    StageName: 'Negotiation/Review',
-    CloseDate: new Date('2024-04-15').toISOString(),
-    CreatedDate: new Date('2024-03-15').toISOString(),
-    LastModifiedDate: new Date('2024-03-15').toISOString(),
+    Name: "John Doe",
+    Email: "john.doe@example.com",
+    Phone: "+1-555-123-4567",
+    Company: "Acme Corp",
+    Amount: 10000.0,
+    StageName: "Negotiation/Review",
+    CloseDate: new Date("2024-04-15").toISOString(),
+    CreatedDate: new Date("2024-03-15").toISOString(),
+    LastModifiedDate: new Date("2024-03-15").toISOString(),
     ...overrides,
   };
 }
@@ -197,23 +197,23 @@ export function createMockSalesforceResponse(
 // ─────────────────────────────────────────────────────────────────────────
 
 export function createMockHubSpotResponse(
-  overrides?: Partial<Record<string, any>>
+  overrides?: Partial<Record<string, any>>,
 ): Record<string, any> {
   return {
     id: `hubspot_${Math.random().toString(36).substr(2, 9)}`,
     properties: {
-      firstname: 'John',
-      lastname: 'Doe',
-      email: 'john.doe@example.com',
-      phone: '+1-555-123-4567',
-      company: 'Acme Corp',
-      hs_lead_status: 'OPEN',
-      dealstage: 'negotiation',
-      amount: '10000',
-      closedate: Math.floor(new Date('2024-04-15').getTime() / 1000),
+      firstname: "John",
+      lastname: "Doe",
+      email: "john.doe@example.com",
+      phone: "+1-555-123-4567",
+      company: "Acme Corp",
+      hs_lead_status: "OPEN",
+      dealstage: "negotiation",
+      amount: "10000",
+      closedate: Math.floor(new Date("2024-04-15").getTime() / 1000),
       hs_analytics_num_contacts: 1,
-      createdate: new Date('2024-03-15').getTime(),
-      lastmodifieddate: new Date('2024-03-15').getTime(),
+      createdate: new Date("2024-03-15").getTime(),
+      lastmodifieddate: new Date("2024-03-15").getTime(),
     },
     ...overrides,
   };
@@ -224,22 +224,22 @@ export function createMockHubSpotResponse(
 // ─────────────────────────────────────────────────────────────────────────
 
 export function createMockQuickBooksInvoice(
-  overrides?: Partial<Record<string, any>>
+  overrides?: Partial<Record<string, any>>,
 ): Record<string, any> {
   return {
     id: `qb_invoice_${Math.random().toString(36).substr(2, 9)}`,
     docNumber: `INV-${Math.floor(Math.random() * 10000)}`,
-    txnDate: '2024-03-15',
-    dueDate: '2024-04-15',
+    txnDate: "2024-03-15",
+    dueDate: "2024-04-15",
     customerRef: {
-      value: 'qb_customer_123',
-      name: 'Acme Corp',
+      value: "qb_customer_123",
+      name: "Acme Corp",
     },
     lineItems: [
       {
-        description: 'Consulting Services',
+        description: "Consulting Services",
         amount: 5000,
-        detailType: 'SalesItemLineDetail',
+        detailType: "SalesItemLineDetail",
         salesItemLineDetail: {
           qty: 1,
           unitPrice: 5000,
@@ -252,11 +252,11 @@ export function createMockQuickBooksInvoice(
     totalAmt: 5400,
     balance: 5400,
     currency: {
-      value: 'USD',
+      value: "USD",
     },
     metaData: {
-      createTime: new Date('2024-03-15T10:00:00Z').toISOString(),
-      updateTime: new Date('2024-03-15T10:00:00Z').toISOString(),
+      createTime: new Date("2024-03-15T10:00:00Z").toISOString(),
+      updateTime: new Date("2024-03-15T10:00:00Z").toISOString(),
     },
     ...overrides,
   };
@@ -267,26 +267,26 @@ export function createMockQuickBooksInvoice(
 // ─────────────────────────────────────────────────────────────────────────
 
 export function createMockXeroPayment(
-  overrides?: Partial<Record<string, any>>
+  overrides?: Partial<Record<string, any>>,
 ): Record<string, any> {
   return {
     PaymentID: `xero_payment_${Math.random().toString(36).substr(2, 9)}`,
     InvoiceNumber: `INV-${Math.floor(Math.random() * 10000)}`,
-    Reference: 'Payment Ref',
-    Amount: 5400.00,
-    PaymentType: 'ACCRECPAYMENT',
-    Status: 'AUTHORISED',
-    LineAmountTypes: 'Inclusive',
-    PaymentDate: '2024-03-15',
+    Reference: "Payment Ref",
+    Amount: 5400.0,
+    PaymentType: "ACCRECPAYMENT",
+    Status: "AUTHORISED",
+    LineAmountTypes: "Inclusive",
+    PaymentDate: "2024-03-15",
     Account: {
-      Code: '200',
-      Name: 'Sales',
+      Code: "200",
+      Name: "Sales",
     },
     Contact: {
-      ContactID: 'xero_contact_123',
-      Name: 'Acme Corp',
+      ContactID: "xero_contact_123",
+      Name: "Acme Corp",
     },
-    UpdatedDateUTC: new Date('2024-03-15T10:00:00Z').toISOString(),
+    UpdatedDateUTC: new Date("2024-03-15T10:00:00Z").toISOString(),
     ...overrides,
   };
 }
@@ -321,7 +321,7 @@ export function createMockInvoiceBatch(count: number): Invoice[] {
     return createMockInvoice({
       id: `invoice_${i}`,
       amount: 500 * (i + 1),
-      status: i % 2 === 0 ? 'paid' : 'outstanding',
+      status: i % 2 === 0 ? "paid" : "outstanding",
     });
   });
 }

@@ -3,20 +3,20 @@
  * Comprehensive test suite for Firebase Cloud Messaging push provider
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { FirebasePushProvider } from '../firebase-push';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { FirebasePushProvider } from "../firebase-push";
 import {
   InvalidRecipientError,
   AuthenticationError,
   ProviderError,
-} from '../types';
+} from "../types";
 
-describe('FirebasePushProvider', () => {
+describe("FirebasePushProvider", () => {
   let provider: FirebasePushProvider;
   let mockFetch: ReturnType<typeof vi.fn>;
 
   const validConfig = {
-    projectId: 'test-firebase-project',
+    projectId: "test-firebase-project",
     privateKey: `-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDaHt8Y0cGjByFY
 UXisiT6JPlbe/rSv3gLvCiWcf4+jQk705e2zRYj8Lr7juR/JeLD8jXZ71yn9B2nJ
@@ -45,7 +45,7 @@ lvSxUx9Zh3ALVq+HCk3KrG3NJ04uIeBLUz77jNlRrMPL+fJHfWPe+Sv1+cCyY3am
 rK39xMNz3XKgxwhpTXDwKFLaQJkms6Mh533nq0crHmRwn8w9riLoc/80rzBtwUpQ
 SEgGkht6jcD8rnVWsduQR3kA
 -----END PRIVATE KEY-----`,
-    clientEmail: 'test-service@test-project.iam.gserviceaccount.com',
+    clientEmail: "test-service@test-project.iam.gserviceaccount.com",
   };
 
   beforeEach(() => {
@@ -55,17 +55,17 @@ SEgGkht6jcD8rnVWsduQR3kA
     provider = new FirebasePushProvider(validConfig);
   });
 
-  describe('send()', () => {
-    it('should send push notification successfully with 200 response', async () => {
+  describe("send()", () => {
+    it("should send push notification successfully with 200 response", async () => {
       // Mock token exchange
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'test-access-token-12345',
+          access_token: "test-access-token-12345",
           expires_in: 3600,
-          token_type: 'Bearer',
+          token_type: "Bearer",
         }),
       });
 
@@ -75,27 +75,29 @@ SEgGkht6jcD8rnVWsduQR3kA
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          name: 'projects/test-project/messages/1234567890',
+          name: "projects/test-project/messages/1234567890",
         }),
       });
 
       const result = await provider.send({
-        to: 'device-token-abc123def456',
-        subject: 'New Notification',
-        body: 'This is a test push notification',
+        to: "device-token-abc123def456",
+        subject: "New Notification",
+        body: "This is a test push notification",
       });
 
       expect(result.success).toBe(true);
-      expect(result.messageId).toBe('projects/test-project/messages/1234567890');
+      expect(result.messageId).toBe(
+        "projects/test-project/messages/1234567890",
+      );
     });
 
-    it('should create JWT and exchange for access token', async () => {
+    it("should create JWT and exchange for access token", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'test-token',
+          access_token: "test-token",
           expires_in: 3600,
         }),
       });
@@ -104,40 +106,42 @@ SEgGkht6jcD8rnVWsduQR3kA
         status: 200,
         ok: true,
         headers: new Map(),
-        json: vi.fn().mockResolvedValueOnce({ name: 'msg123' }),
+        json: vi.fn().mockResolvedValueOnce({ name: "msg123" }),
       });
 
       await provider.send({
-        to: 'device-token-abc123',
-        body: 'Test',
+        to: "device-token-abc123",
+        body: "Test",
       });
 
       // Verify OAuth2 token exchange was called
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://oauth2.googleapis.com/token',
+        "https://oauth2.googleapis.com/token",
         expect.objectContaining({
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            "Content-Type": "application/x-www-form-urlencoded",
           },
-        })
+        }),
       );
 
       // Verify the assertion (JWT) was included in the request
       const tokenCall = mockFetch.mock.calls[0];
       const tokenBody = tokenCall[1].body;
-      expect(tokenBody).toContain('grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer');
-      expect(tokenBody).toContain('assertion=');
+      expect(tokenBody).toContain(
+        "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer",
+      );
+      expect(tokenBody).toContain("assertion=");
     });
 
-    it('should cache and refresh access token', async () => {
+    it("should cache and refresh access token", async () => {
       // First token exchange
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'first-token',
+          access_token: "first-token",
           expires_in: 3600,
         }),
       });
@@ -147,7 +151,7 @@ SEgGkht6jcD8rnVWsduQR3kA
         status: 200,
         ok: true,
         headers: new Map(),
-        json: vi.fn().mockResolvedValueOnce({ name: 'msg1' }),
+        json: vi.fn().mockResolvedValueOnce({ name: "msg1" }),
       });
 
       // Second send (should use cached token)
@@ -155,17 +159,17 @@ SEgGkht6jcD8rnVWsduQR3kA
         status: 200,
         ok: true,
         headers: new Map(),
-        json: vi.fn().mockResolvedValueOnce({ name: 'msg2' }),
+        json: vi.fn().mockResolvedValueOnce({ name: "msg2" }),
       });
 
       await provider.send({
-        to: 'device-token-1',
-        body: 'Test 1',
+        to: "device-token-1",
+        body: "Test 1",
       });
 
       await provider.send({
-        to: 'device-token-2',
-        body: 'Test 2',
+        to: "device-token-2",
+        body: "Test 2",
       });
 
       // Should have 3 calls: token + send + send (no second token exchange)
@@ -173,16 +177,16 @@ SEgGkht6jcD8rnVWsduQR3kA
 
       // Verify second FCM call has the same token
       const secondFcmCall = mockFetch.mock.calls[2];
-      expect(secondFcmCall[1].headers.Authorization).toBe('Bearer first-token');
+      expect(secondFcmCall[1].headers.Authorization).toBe("Bearer first-token");
     });
 
-    it('should build correct FCM payload structure', async () => {
+    it("should build correct FCM payload structure", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'token',
+          access_token: "token",
           expires_in: 3600,
         }),
       });
@@ -191,44 +195,46 @@ SEgGkht6jcD8rnVWsduQR3kA
         status: 200,
         ok: true,
         headers: new Map(),
-        json: vi.fn().mockResolvedValueOnce({ name: 'msg123' }),
+        json: vi.fn().mockResolvedValueOnce({ name: "msg123" }),
       });
 
       await provider.send({
-        to: 'device-token-abc',
-        subject: 'Test Title',
-        body: 'Test Body',
-        metadata: { orderId: 'ORD123', amount: '99.99' },
+        to: "device-token-abc",
+        subject: "Test Title",
+        body: "Test Body",
+        metadata: { orderId: "ORD123", amount: "99.99" },
       });
 
       const fcmCall = mockFetch.mock.calls[1];
       const fcmUrl = fcmCall[0];
       const fcmBody = JSON.parse(fcmCall[1].body);
 
-      expect(fcmUrl).toContain('https://fcm.googleapis.com/v1/projects/test-firebase-project/messages:send');
-      expect(fcmBody).toHaveProperty('message');
+      expect(fcmUrl).toContain(
+        "https://fcm.googleapis.com/v1/projects/test-firebase-project/messages:send",
+      );
+      expect(fcmBody).toHaveProperty("message");
       expect(fcmBody.message).toEqual(
         expect.objectContaining({
-          token: 'device-token-abc',
+          token: "device-token-abc",
           notification: {
-            title: 'Test Title',
-            body: 'Test Body',
+            title: "Test Title",
+            body: "Test Body",
           },
           data: {
-            orderId: 'ORD123',
-            amount: '99.99',
+            orderId: "ORD123",
+            amount: "99.99",
           },
-        })
+        }),
       );
     });
 
-    it('should include Android-specific options in payload', async () => {
+    it("should include Android-specific options in payload", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'token',
+          access_token: "token",
           expires_in: 3600,
         }),
       });
@@ -237,35 +243,35 @@ SEgGkht6jcD8rnVWsduQR3kA
         status: 200,
         ok: true,
         headers: new Map(),
-        json: vi.fn().mockResolvedValueOnce({ name: 'msg123' }),
+        json: vi.fn().mockResolvedValueOnce({ name: "msg123" }),
       });
 
       await provider.send({
-        to: 'device-token',
-        body: 'Test',
+        to: "device-token",
+        body: "Test",
       });
 
       const fcmCall = mockFetch.mock.calls[1];
       const fcmBody = JSON.parse(fcmCall[1].body);
 
-      expect(fcmBody.message).toHaveProperty('android');
+      expect(fcmBody.message).toHaveProperty("android");
       expect(fcmBody.message.android).toEqual(
         expect.objectContaining({
-          priority: 'high',
+          priority: "high",
           notification: {
-            clickAction: 'FLUTTER_NOTIFICATION_CLICK',
+            clickAction: "FLUTTER_NOTIFICATION_CLICK",
           },
-        })
+        }),
       );
     });
 
-    it('should include APNs (iOS) specific options in payload', async () => {
+    it("should include APNs (iOS) specific options in payload", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'token',
+          access_token: "token",
           expires_in: 3600,
         }),
       });
@@ -274,34 +280,34 @@ SEgGkht6jcD8rnVWsduQR3kA
         status: 200,
         ok: true,
         headers: new Map(),
-        json: vi.fn().mockResolvedValueOnce({ name: 'msg123' }),
+        json: vi.fn().mockResolvedValueOnce({ name: "msg123" }),
       });
 
       await provider.send({
-        to: 'device-token',
-        body: 'Test',
+        to: "device-token",
+        body: "Test",
       });
 
       const fcmCall = mockFetch.mock.calls[1];
       const fcmBody = JSON.parse(fcmCall[1].body);
 
-      expect(fcmBody.message).toHaveProperty('apns');
+      expect(fcmBody.message).toHaveProperty("apns");
       expect(fcmBody.message.apns).toEqual(
         expect.objectContaining({
           headers: {
-            'apns-priority': '10',
+            "apns-priority": "10",
           },
-        })
+        }),
       );
     });
 
-    it('should handle invalid registration token (404 response)', async () => {
+    it("should handle invalid registration token (404 response)", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'token',
+          access_token: "token",
           expires_in: 3600,
         }),
       });
@@ -311,26 +317,28 @@ SEgGkht6jcD8rnVWsduQR3kA
         ok: false,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          error: { message: 'Requested entity was not found' },
+          error: { message: "Requested entity was not found" },
         }),
       });
 
       const result = await provider.send({
-        to: 'invalid-token',
-        body: 'Test',
+        to: "invalid-token",
+        body: "Test",
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('Invalid registration token or project ID');
+      expect(result.error).toContain(
+        "Invalid registration token or project ID",
+      );
     });
 
-    it('should handle authentication error (401 response)', async () => {
+    it("should handle authentication error (401 response)", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'token',
+          access_token: "token",
           expires_in: 3600,
         }),
       });
@@ -340,26 +348,26 @@ SEgGkht6jcD8rnVWsduQR3kA
         ok: false,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          error: { message: 'Unauthorized' },
+          error: { message: "Unauthorized" },
         }),
       });
 
       const result = await provider.send({
-        to: 'device-token',
-        body: 'Test',
+        to: "device-token",
+        body: "Test",
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('Invalid access token');
+      expect(result.error).toContain("Invalid access token");
     });
 
-    it('should handle rate limit error (429 response)', async () => {
+    it("should handle rate limit error (429 response)", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'token',
+          access_token: "token",
           expires_in: 3600,
         }),
       });
@@ -369,141 +377,141 @@ SEgGkht6jcD8rnVWsduQR3kA
         ok: false,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          error: { message: 'Too many requests' },
+          error: { message: "Too many requests" },
         }),
       });
 
       const result = await provider.send({
-        to: 'device-token',
-        body: 'Test',
+        to: "device-token",
+        body: "Test",
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('Firebase rate limit exceeded');
+      expect(result.error).toContain("Firebase rate limit exceeded");
     });
 
-    it('should reject invalid device token format', async () => {
+    it("should reject invalid device token format", async () => {
       const result = await provider.send({
-        to: 'tok', // Too short
-        body: 'Test',
+        to: "tok", // Too short
+        body: "Test",
       });
 
       expect(result.success).toBe(false);
       expect(mockFetch).not.toHaveBeenCalled();
     });
 
-    it('should reject missing project ID', async () => {
+    it("should reject missing project ID", async () => {
       const providerNoProject = new FirebasePushProvider({
-        projectId: '',
+        projectId: "",
         privateKey: validConfig.privateKey,
         clientEmail: validConfig.clientEmail,
       });
 
       const result = await providerNoProject.send({
-        to: 'device-token-abc123',
-        body: 'Test',
+        to: "device-token-abc123",
+        body: "Test",
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('Missing projectId');
+      expect(result.error).toContain("Missing projectId");
     });
 
-    it('should handle token exchange failures', async () => {
+    it("should handle token exchange failures", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 400,
         ok: false,
         headers: new Map(),
-        text: vi.fn().mockResolvedValueOnce('Invalid JWT'),
+        text: vi.fn().mockResolvedValueOnce("Invalid JWT"),
       });
 
       const result = await provider.send({
-        to: 'device-token',
-        body: 'Test',
+        to: "device-token",
+        body: "Test",
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('Failed');
+      expect(result.error).toContain("Failed");
     });
   });
 
-  describe('validateConfig()', () => {
-    it('should validate correct configuration', async () => {
+  describe("validateConfig()", () => {
+    it("should validate correct configuration", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'token',
+          access_token: "token",
           expires_in: 3600,
         }),
       });
 
       const result = await provider.validateConfig({
-        projectId: 'test-project',
+        projectId: "test-project",
         privateKey: validConfig.privateKey,
-        clientEmail: 'test@test.iam.gserviceaccount.com',
+        clientEmail: "test@test.iam.gserviceaccount.com",
       });
 
       expect(result).toBe(true);
     });
 
-    it('should reject missing projectId', async () => {
+    it("should reject missing projectId", async () => {
       const result = await provider.validateConfig({
-        projectId: '',
+        projectId: "",
         privateKey: validConfig.privateKey,
-        clientEmail: 'test@test.iam.gserviceaccount.com',
+        clientEmail: "test@test.iam.gserviceaccount.com",
       });
 
       expect(result).toBe(false);
       expect(mockFetch).not.toHaveBeenCalled();
     });
 
-    it('should reject invalid private key format', async () => {
+    it("should reject invalid private key format", async () => {
       const result = await provider.validateConfig({
-        projectId: 'project',
-        privateKey: 'invalid-key-format',
-        clientEmail: 'test@test.iam.gserviceaccount.com',
+        projectId: "project",
+        privateKey: "invalid-key-format",
+        clientEmail: "test@test.iam.gserviceaccount.com",
       });
 
       expect(result).toBe(false);
     });
 
-    it('should reject missing clientEmail', async () => {
+    it("should reject missing clientEmail", async () => {
       const result = await provider.validateConfig({
-        projectId: 'project',
+        projectId: "project",
         privateKey: validConfig.privateKey,
-        clientEmail: '',
+        clientEmail: "",
       });
 
       expect(result).toBe(false);
     });
 
-    it('should handle token exchange failures during validation', async () => {
+    it("should handle token exchange failures during validation", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 400,
         ok: false,
         headers: new Map(),
-        text: vi.fn().mockResolvedValueOnce('Invalid JWT'),
+        text: vi.fn().mockResolvedValueOnce("Invalid JWT"),
       });
 
       const result = await provider.validateConfig({
-        projectId: 'project',
+        projectId: "project",
         privateKey: validConfig.privateKey,
-        clientEmail: 'test@test.iam.gserviceaccount.com',
+        clientEmail: "test@test.iam.gserviceaccount.com",
       });
 
       expect(result).toBe(false);
     });
   });
 
-  describe('getStatus()', () => {
-    it('should return healthy status after successful token exchange', async () => {
+  describe("getStatus()", () => {
+    it("should return healthy status after successful token exchange", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'token',
+          access_token: "token",
           expires_in: 3600,
         }),
       });
@@ -512,16 +520,16 @@ SEgGkht6jcD8rnVWsduQR3kA
 
       expect(status.healthy).toBe(true);
       expect(status.latency).toBeDefined();
-      expect(typeof status.latency).toBe('number');
+      expect(typeof status.latency).toBe("number");
     });
 
-    it('should cache status for 60 seconds', async () => {
+    it("should cache status for 60 seconds", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'token',
+          access_token: "token",
           expires_in: 3600,
         }),
       });
@@ -533,12 +541,12 @@ SEgGkht6jcD8rnVWsduQR3kA
       expect(mockFetch).toHaveBeenCalledTimes(1);
     });
 
-    it('should report unhealthy on token exchange failure', async () => {
+    it("should report unhealthy on token exchange failure", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 400,
         ok: false,
         headers: new Map(),
-        text: vi.fn().mockResolvedValueOnce('Invalid JWT'),
+        text: vi.fn().mockResolvedValueOnce("Invalid JWT"),
       });
 
       const status = await provider.getStatus();
@@ -548,13 +556,13 @@ SEgGkht6jcD8rnVWsduQR3kA
     });
   });
 
-  describe('channel and name properties', () => {
-    it('should have correct channel type', () => {
-      expect(provider.channel).toBe('PUSH');
+  describe("channel and name properties", () => {
+    it("should have correct channel type", () => {
+      expect(provider.channel).toBe("PUSH");
     });
 
-    it('should have correct provider name', () => {
-      expect(provider.name).toBe('Firebase');
+    it("should have correct provider name", () => {
+      expect(provider.name).toBe("Firebase");
     });
   });
 });

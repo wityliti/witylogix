@@ -7,19 +7,19 @@
  * Widget type - different widget components
  */
 export type WidgetType =
-  | 'stat_card'
-  | 'chart_line'
-  | 'chart_bar'
-  | 'chart_pie'
-  | 'table'
-  | 'map'
-  | 'activity_feed'
-  | 'calendar';
+  | "stat_card"
+  | "chart_line"
+  | "chart_bar"
+  | "chart_pie"
+  | "table"
+  | "map"
+  | "activity_feed"
+  | "calendar";
 
 /**
  * Widget size in grid units
  */
-export type WidgetSize = '1x1' | '2x1' | '1x2' | '2x2';
+export type WidgetSize = "1x1" | "2x1" | "1x2" | "2x2";
 
 /**
  * Grid position and dimensions
@@ -36,10 +36,10 @@ export interface GridPosition {
  */
 export interface ChartConfig {
   metric?: string;
-  timeRange?: 'day' | 'week' | 'month' | 'quarter' | 'year';
+  timeRange?: "day" | "week" | "month" | "quarter" | "year";
   compareToLastPeriod?: boolean;
   groupBy?: string;
-  aggregation?: 'sum' | 'count' | 'average' | 'min' | 'max';
+  aggregation?: "sum" | "count" | "average" | "min" | "max";
 }
 
 /**
@@ -49,7 +49,7 @@ export interface TableConfig {
   columns?: string[];
   pageSize?: number;
   sortBy?: string;
-  sortDirection?: 'asc' | 'desc';
+  sortDirection?: "asc" | "desc";
   filters?: any[];
 }
 
@@ -140,98 +140,98 @@ export interface WidgetCatalogEntry {
  */
 export const WIDGET_CATALOG: WidgetCatalogEntry[] = [
   {
-    type: 'stat_card',
-    name: 'Stat Card',
-    description: 'Display a single metric with its value and trend',
-    defaultSize: '1x1',
+    type: "stat_card",
+    name: "Stat Card",
+    description: "Display a single metric with its value and trend",
+    defaultSize: "1x1",
     defaultConfig: {
-      dataSource: 'orders',
-      metric: 'totalRevenue',
-      timeRange: 'month',
+      dataSource: "orders",
+      metric: "totalRevenue",
+      timeRange: "month",
       compareToLastPeriod: true,
     },
-    icon: 'chart-box',
+    icon: "chart-box",
   },
   {
-    type: 'chart_line',
-    name: 'Line Chart',
-    description: 'Display metrics over time as a line chart',
-    defaultSize: '2x2',
+    type: "chart_line",
+    name: "Line Chart",
+    description: "Display metrics over time as a line chart",
+    defaultSize: "2x2",
     defaultConfig: {
-      dataSource: 'orders',
-      timeRange: 'month',
-      groupBy: 'date',
-      aggregation: 'sum',
+      dataSource: "orders",
+      timeRange: "month",
+      groupBy: "date",
+      aggregation: "sum",
     },
-    icon: 'chart-line',
+    icon: "chart-line",
   },
   {
-    type: 'chart_bar',
-    name: 'Bar Chart',
-    description: 'Display categorical data as a bar chart',
-    defaultSize: '2x2',
+    type: "chart_bar",
+    name: "Bar Chart",
+    description: "Display categorical data as a bar chart",
+    defaultSize: "2x2",
     defaultConfig: {
-      dataSource: 'orders',
-      timeRange: 'month',
-      groupBy: 'status',
-      aggregation: 'count',
+      dataSource: "orders",
+      timeRange: "month",
+      groupBy: "status",
+      aggregation: "count",
     },
-    icon: 'chart-bar',
+    icon: "chart-bar",
   },
   {
-    type: 'chart_pie',
-    name: 'Pie Chart',
-    description: 'Display proportional data as a pie chart',
-    defaultSize: '1x2',
+    type: "chart_pie",
+    name: "Pie Chart",
+    description: "Display proportional data as a pie chart",
+    defaultSize: "1x2",
     defaultConfig: {
-      dataSource: 'orders',
-      groupBy: 'status',
+      dataSource: "orders",
+      groupBy: "status",
     },
-    icon: 'chart-pie',
+    icon: "chart-pie",
   },
   {
-    type: 'table',
-    name: 'Data Table',
-    description: 'Display data in tabular format with sorting and filtering',
-    defaultSize: '2x2',
+    type: "table",
+    name: "Data Table",
+    description: "Display data in tabular format with sorting and filtering",
+    defaultSize: "2x2",
     defaultConfig: {
-      dataSource: 'orders',
+      dataSource: "orders",
       tableConfig: {
         pageSize: 10,
       },
     },
-    icon: 'table',
+    icon: "table",
   },
   {
-    type: 'map',
-    name: 'Map',
-    description: 'Display delivery routes or location-based data on a map',
-    defaultSize: '2x2',
+    type: "map",
+    name: "Map",
+    description: "Display delivery routes or location-based data on a map",
+    defaultSize: "2x2",
     defaultConfig: {
-      dataSource: 'routes',
+      dataSource: "routes",
     },
-    icon: 'map',
+    icon: "map",
   },
   {
-    type: 'activity_feed',
-    name: 'Activity Feed',
-    description: 'Show recent orders, shipments, and system events',
-    defaultSize: '1x2',
+    type: "activity_feed",
+    name: "Activity Feed",
+    description: "Show recent orders, shipments, and system events",
+    defaultSize: "1x2",
     defaultConfig: {
-      dataSource: 'orders',
+      dataSource: "orders",
       refreshInterval: 30,
     },
-    icon: 'feed',
+    icon: "feed",
   },
   {
-    type: 'calendar',
-    name: 'Calendar',
-    description: 'Display scheduled deliveries and events in calendar view',
-    defaultSize: '2x2',
+    type: "calendar",
+    name: "Calendar",
+    description: "Display scheduled deliveries and events in calendar view",
+    defaultSize: "2x2",
     defaultConfig: {
-      dataSource: 'routes',
+      dataSource: "routes",
     },
-    icon: 'calendar',
+    icon: "calendar",
   },
 ];
 
@@ -249,7 +249,7 @@ export const DEFAULT_GRID_HEIGHT = DEFAULT_GRID_ROWS;
 export class WidgetNotFoundError extends Error {
   constructor(widgetId: string) {
     super(`Widget not found: ${widgetId}`);
-    this.name = 'WidgetNotFoundError';
+    this.name = "WidgetNotFoundError";
   }
 }
 
@@ -259,6 +259,6 @@ export class WidgetNotFoundError extends Error {
 export class WidgetValidationError extends Error {
   constructor(message: string) {
     super(`Widget validation error: ${message}`);
-    this.name = 'WidgetValidationError';
+    this.name = "WidgetValidationError";
   }
 }

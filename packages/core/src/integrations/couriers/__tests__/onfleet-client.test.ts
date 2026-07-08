@@ -7,7 +7,11 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { OnfleetClient } from "../onfleet-client.js";
-import type { CourierConfig, QuoteRequest, CreateDeliveryRequest } from "../types.js";
+import type {
+  CourierConfig,
+  QuoteRequest,
+  CreateDeliveryRequest,
+} from "../types.js";
 import { DeliveryStatus, WebhookEvent } from "../types.js";
 
 describe("OnfleetClient", () => {
@@ -27,12 +31,16 @@ describe("OnfleetClient", () => {
   describe("validateConfig", () => {
     it("should throw error if API key is missing", async () => {
       const invalidClient = new OnfleetClient({ apiKey: "" });
-      await expect(invalidClient.validateConfig()).rejects.toThrow("Onfleet API key is required");
+      await expect(invalidClient.validateConfig()).rejects.toThrow(
+        "Onfleet API key is required",
+      );
     });
 
     it("should validate with valid API key", async () => {
       // INTEGRATION: Mock the HTTP request
-      await expect(client.validateConfig()).rejects.toThrow("HTTP integration required");
+      await expect(client.validateConfig()).rejects.toThrow(
+        "HTTP integration required",
+      );
     });
   });
 
@@ -52,7 +60,9 @@ describe("OnfleetClient", () => {
       };
 
       // INTEGRATION: Mock the HTTP response
-      await expect(client.getQuote(request)).rejects.toThrow("HTTP integration required");
+      await expect(client.getQuote(request)).rejects.toThrow(
+        "HTTP integration required",
+      );
     });
 
     it("should include distance in kilometers", async () => {
@@ -107,7 +117,9 @@ describe("OnfleetClient", () => {
       };
 
       // INTEGRATION: Mock HTTP response
-      await expect(client.createDelivery(request)).rejects.toThrow("HTTP integration required");
+      await expect(client.createDelivery(request)).rejects.toThrow(
+        "HTTP integration required",
+      );
     });
 
     it("should include tracking URL in response", async () => {
@@ -139,7 +151,9 @@ describe("OnfleetClient", () => {
   describe("getDeliveryStatus", () => {
     it("should return current delivery status", async () => {
       // INTEGRATION: Mock status response
-      await expect(client.getDeliveryStatus("task_123")).rejects.toThrow("HTTP integration required");
+      await expect(client.getDeliveryStatus("task_123")).rejects.toThrow(
+        "HTTP integration required",
+      );
     });
 
     it("should include driver information when assigned", async () => {
@@ -161,7 +175,9 @@ describe("OnfleetClient", () => {
   describe("cancelDelivery", () => {
     it("should cancel a delivery and return CANCELLED status", async () => {
       // INTEGRATION: Mock cancel response
-      await expect(client.cancelDelivery("task_123")).rejects.toThrow("HTTP integration required");
+      await expect(client.cancelDelivery("task_123")).rejects.toThrow(
+        "HTTP integration required",
+      );
     });
 
     it("should throw error for already delivered task", async () => {
@@ -173,7 +189,9 @@ describe("OnfleetClient", () => {
   describe("getDriverLocation", () => {
     it("should return driver's current location", async () => {
       // INTEGRATION: Mock location endpoint
-      await expect(client.getDriverLocation("task_123")).rejects.toThrow("HTTP integration required");
+      await expect(client.getDriverLocation("task_123")).rejects.toThrow(
+        "HTTP integration required",
+      );
     });
 
     it("should include location accuracy when available", async () => {
@@ -183,7 +201,9 @@ describe("OnfleetClient", () => {
 
     it("should throw error if no driver assigned", async () => {
       // INTEGRATION: Test unassigned task handling
-      await expect(client.getDriverLocation("unassigned_task")).rejects.toThrow();
+      await expect(
+        client.getDriverLocation("unassigned_task"),
+      ).rejects.toThrow();
     });
 
     it("should include last update timestamp", async () => {
@@ -195,7 +215,9 @@ describe("OnfleetClient", () => {
   describe("listWebhooks", () => {
     it("should return list of registered webhooks", async () => {
       // INTEGRATION: Mock webhooks list
-      await expect(client.listWebhooks()).rejects.toThrow("HTTP integration required");
+      await expect(client.listWebhooks()).rejects.toThrow(
+        "HTTP integration required",
+      );
     });
 
     it("should include webhook ID, URL, and events", async () => {
@@ -210,7 +232,10 @@ describe("OnfleetClient", () => {
       await expect(
         client.registerWebhook({
           url: "https://example.com/webhooks/onfleet",
-          events: [WebhookEvent.DELIVERY_PICKED_UP, WebhookEvent.DELIVERY_DELIVERED],
+          events: [
+            WebhookEvent.DELIVERY_PICKED_UP,
+            WebhookEvent.DELIVERY_DELIVERED,
+          ],
         }),
       ).rejects.toThrow("HTTP integration required");
     });
@@ -229,12 +254,16 @@ describe("OnfleetClient", () => {
   describe("deregisterWebhook", () => {
     it("should deregister a webhook by ID", async () => {
       // INTEGRATION: Mock deregister endpoint
-      await expect(client.deregisterWebhook("webhook_123")).rejects.toThrow("HTTP integration required");
+      await expect(client.deregisterWebhook("webhook_123")).rejects.toThrow(
+        "HTTP integration required",
+      );
     });
 
     it("should throw error for non-existent webhook", async () => {
       // INTEGRATION: Test error handling
-      await expect(client.deregisterWebhook("invalid_webhook")).rejects.toThrow();
+      await expect(
+        client.deregisterWebhook("invalid_webhook"),
+      ).rejects.toThrow();
     });
   });
 
@@ -256,7 +285,9 @@ describe("OnfleetClient", () => {
     it("should map Onfleet status 0 to PENDING", () => {
       // INTEGRATION: Test internal status mapping
       // Map: 0=pending, 1=picked_up, 2=in_transit, 3=delivered, -1=cancelled
-      expect([DeliveryStatus.PENDING, DeliveryStatus.PICKED_UP]).toContain(DeliveryStatus.PENDING);
+      expect([DeliveryStatus.PENDING, DeliveryStatus.PICKED_UP]).toContain(
+        DeliveryStatus.PENDING,
+      );
     });
 
     it("should map Onfleet status 3 to DELIVERED", () => {
@@ -301,7 +332,9 @@ describe("OnfleetClient", () => {
 
     it("should handle null/undefined driver location", async () => {
       // INTEGRATION: Test unassigned task
-      await expect(client.getDriverLocation("unassigned_task")).rejects.toThrow();
+      await expect(
+        client.getDriverLocation("unassigned_task"),
+      ).rejects.toThrow();
     });
   });
 
@@ -326,7 +359,9 @@ describe("OnfleetClient", () => {
         apiKey: "key",
         baseUrl: "https://staging.onfleet.com/api/v2",
       });
-      expect(customClient["baseUrl"]).toBe("https://staging.onfleet.com/api/v2");
+      expect(customClient["baseUrl"]).toBe(
+        "https://staging.onfleet.com/api/v2",
+      );
     });
   });
 });

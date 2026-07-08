@@ -6,39 +6,53 @@
 
 // ─── ENUMS & CONSTANTS ──────────────────────────────────────────────────────
 
-export type ERPProvider = 'sap' | 'netsuite' | 'dynamics365' | 'sage';
+export type ERPProvider = "sap" | "netsuite" | "dynamics365" | "sage";
 
-export type SyncDirection = 'push' | 'pull' | 'bidirectional';
+export type SyncDirection = "push" | "pull" | "bidirectional";
 
-export type ConflictResolution = 'timestamp' | 'priority' | 'manual' | 'custom';
+export type ConflictResolution = "timestamp" | "priority" | "manual" | "custom";
 
-export type ERPSyncStatus = 'pending' | 'synced' | 'failed' | 'partial' | 'skipped' | 'conflict';
+export type ERPSyncStatus =
+  | "pending"
+  | "synced"
+  | "failed"
+  | "partial"
+  | "skipped"
+  | "conflict";
 
-export type SyncEntityType = 'customer' | 'vendor' | 'product' | 'invoice' | 'order' | 'payment' | 'journal_entry' | 'inventory';
+export type SyncEntityType =
+  | "customer"
+  | "vendor"
+  | "product"
+  | "invoice"
+  | "order"
+  | "payment"
+  | "journal_entry"
+  | "inventory";
 
 export type ERPFieldType =
-  | 'string'
-  | 'number'
-  | 'integer'
-  | 'boolean'
-  | 'date'
-  | 'datetime'
-  | 'currency'
-  | 'decimal'
-  | 'email'
-  | 'phone'
-  | 'url'
-  | 'select'
-  | 'multiselect'
-  | 'textarea'
-  | 'json';
+  | "string"
+  | "number"
+  | "integer"
+  | "boolean"
+  | "date"
+  | "datetime"
+  | "currency"
+  | "decimal"
+  | "email"
+  | "phone"
+  | "url"
+  | "select"
+  | "multiselect"
+  | "textarea"
+  | "json";
 
 export enum ConnectionStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  ERROR = 'ERROR',
-  EXPIRED = 'EXPIRED',
-  PENDING_AUTH = 'PENDING_AUTH',
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+  ERROR = "ERROR",
+  EXPIRED = "EXPIRED",
+  PENDING_AUTH = "PENDING_AUTH",
 }
 
 // ─── CORE ERP ENTITIES ──────────────────────────────────────────────────────
@@ -60,7 +74,7 @@ export interface ERPCustomer {
   creditLimit?: number;
   paymentTerms?: string;
   currency?: string;
-  status?: 'active' | 'inactive' | 'blocked' | 'prospect';
+  status?: "active" | "inactive" | "blocked" | "prospect";
   addresses?: ERPAddress[];
   contacts?: ERPContact[];
   customFields?: Record<string, unknown>;
@@ -84,7 +98,7 @@ export interface ERPVendor {
   taxId?: string;
   currency?: string;
   paymentTerms?: string;
-  status?: 'active' | 'inactive' | 'blocked';
+  status?: "active" | "inactive" | "blocked";
   addresses?: ERPAddress[];
   contacts?: ERPContact[];
   customFields?: Record<string, unknown>;
@@ -97,7 +111,7 @@ export interface ERPVendor {
  * ERP Contact/Address information
  */
 export interface ERPAddress {
-  type?: 'billing' | 'shipping' | 'business' | 'other';
+  type?: "billing" | "shipping" | "business" | "other";
   line1: string;
   line2?: string;
   city: string;
@@ -132,7 +146,7 @@ export interface ERPProduct {
   cost?: number;
   currency?: string;
   quantity?: number;
-  status?: 'active' | 'inactive' | 'discontinued';
+  status?: "active" | "inactive" | "discontinued";
   taxCode?: string;
   taxRate?: number;
   hsCode?: string; // Harmonized System code
@@ -160,7 +174,13 @@ export interface ERPOrder {
   customerId: string;
   customerName?: string;
   currency?: string;
-  status?: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled' | 'completed';
+  status?:
+    | "pending"
+    | "confirmed"
+    | "shipped"
+    | "delivered"
+    | "cancelled"
+    | "completed";
   lineItems: ERPLineItem[];
   subtotal?: number;
   taxAmount?: number;
@@ -187,8 +207,14 @@ export interface ERPInvoice {
   customerId: string;
   customerName?: string;
   currency?: string;
-  status?: 'draft' | 'posted' | 'paid' | 'overdue' | 'cancelled' | 'credit_note';
-  invoiceType?: 'sales' | 'purchase' | 'credit_memo' | 'debit_memo';
+  status?:
+    | "draft"
+    | "posted"
+    | "paid"
+    | "overdue"
+    | "cancelled"
+    | "credit_note";
+  invoiceType?: "sales" | "purchase" | "credit_memo" | "debit_memo";
   lineItems: ERPLineItem[];
   subtotal?: number;
   taxAmount?: number;
@@ -239,8 +265,8 @@ export interface ERPPayment {
   vendorId?: string;
   amount: number;
   currency?: string;
-  paymentMethod?: 'cash' | 'check' | 'bank_transfer' | 'credit_card' | 'other';
-  status?: 'pending' | 'posted' | 'reconciled' | 'reversed';
+  paymentMethod?: "cash" | "check" | "bank_transfer" | "credit_card" | "other";
+  status?: "pending" | "posted" | "reconciled" | "reversed";
   notes?: string;
   customFields?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
@@ -257,7 +283,7 @@ export interface ERPJournalEntry {
   transactionDate: Date;
   description?: string;
   currency?: string;
-  status?: 'draft' | 'posted' | 'reversed' | 'cancelled';
+  status?: "draft" | "posted" | "reversed" | "cancelled";
   lines: ERPJournalLine[];
   totalDebit?: number;
   totalCredit?: number;
@@ -400,7 +426,11 @@ export interface ERPSyncConfig {
   fullSyncIntervalDays?: number;
   deltaSyncIntervalMinutes?: number;
   autoSync?: boolean;
-  onConflict?: (record: unknown, local: unknown, remote: unknown) => Promise<unknown>;
+  onConflict?: (
+    record: unknown,
+    local: unknown,
+    remote: unknown,
+  ) => Promise<unknown>;
   customFieldMappings?: Record<string, string>;
 }
 
@@ -415,7 +445,7 @@ export interface ERPFieldMapping {
   readOnly?: boolean;
   required?: boolean;
   transform?: {
-    direction: 'push' | 'pull' | 'bidirectional';
+    direction: "push" | "pull" | "bidirectional";
     encode?: (value: unknown) => unknown;
     decode?: (value: unknown) => unknown;
   };
@@ -430,7 +460,7 @@ export interface TaxRate {
   code: string;
   name: string;
   rate: number; // 0-100
-  type?: 'standard' | 'reduced' | 'zero' | 'exempt';
+  type?: "standard" | "reduced" | "zero" | "exempt";
   country?: string;
   startDate?: Date;
   endDate?: Date;
@@ -453,8 +483,14 @@ export interface Currency {
 export interface Account {
   code: string;
   name: string;
-  type: 'asset' | 'liability' | 'equity' | 'revenue' | 'expense' | 'cost_of_goods_sold';
-  status?: 'active' | 'inactive';
+  type:
+    | "asset"
+    | "liability"
+    | "equity"
+    | "revenue"
+    | "expense"
+    | "cost_of_goods_sold";
+  status?: "active" | "inactive";
   description?: string;
   parent?: string; // Parent account code
 }
@@ -466,7 +502,7 @@ export interface CostCenter {
   code: string;
   name: string;
   description?: string;
-  status?: 'active' | 'inactive';
+  status?: "active" | "inactive";
   parent?: string;
 }
 
@@ -501,7 +537,7 @@ export interface ERPBatchResult<T = unknown> {
   results: Array<{
     recordId: string;
     externalId?: string;
-    status: 'success' | 'failed' | 'skipped';
+    status: "success" | "failed" | "skipped";
     data?: T;
     error?: string;
   }>;
@@ -525,7 +561,7 @@ export interface ERPOperationError extends Error {
 export interface ERPWebhookPayload {
   eventType: string;
   entityType: SyncEntityType;
-  action: 'create' | 'update' | 'delete';
+  action: "create" | "update" | "delete";
   recordId: string;
   externalId?: string;
   data: Record<string, unknown>;

@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { RefreshCw, Settings } from 'lucide-react';
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RefreshCw, Settings } from "lucide-react";
 
 export type FreightProviderStatus = "CONNECTED" | "ERROR" | "DISCONNECTED";
 
@@ -27,14 +27,14 @@ interface FreightProviderStatusProps {
 
 const statusVariant = (status: FreightProviderStatus) => {
   switch (status) {
-    case 'CONNECTED':
-      return 'success';
-    case 'ERROR':
-      return 'danger';
-    case 'DISCONNECTED':
-      return 'default';
+    case "CONNECTED":
+      return "success";
+    case "ERROR":
+      return "danger";
+    case "DISCONNECTED":
+      return "default";
     default:
-      return 'default';
+      return "default";
   }
 };
 

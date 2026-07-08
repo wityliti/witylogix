@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useApiQuery, useApiMutation } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Header } from '@/components/layout/header';
+import { useState } from "react";
+import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Header } from "@/components/layout/header";
 import {
   Card,
   CardHeader,
@@ -12,16 +12,12 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import {
-  Upload,
-  AlertTriangle,
-  Trash2,
-} from 'lucide-react';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { Upload, AlertTriangle, Trash2 } from "lucide-react";
 
 interface Organization {
   name: string;
@@ -48,17 +44,27 @@ interface UsageMetric {
 }
 
 export default function OrganizationPage() {
-  const { data: org, loading, error, refetch } = useApiQuery<Organization>('/api/v4/settings/organization');
-  const { data: billing } = useApiQuery<BillingInfo>('/api/v4/billing');
-  const { execute: updateOrg } = useApiMutation('PATCH', '/api/v4/settings/organization');
+  const {
+    data: org,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<Organization>("/api/v4/settings/organization");
+  const { data: billing } = useApiQuery<BillingInfo>("/api/v4/billing");
+  const { execute: updateOrg } = useApiMutation(
+    "PATCH",
+    "/api/v4/settings/organization",
+  );
 
-  const [orgData, setOrgData] = useState(org || {
-    name: '',
-    logo: '',
-    website: '',
-    industry: '',
-    companySize: '',
-  });
+  const [orgData, setOrgData] = useState(
+    org || {
+      name: "",
+      logo: "",
+      website: "",
+      industry: "",
+      companySize: "",
+    },
+  );
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -80,7 +86,7 @@ export default function OrganizationPage() {
       await updateOrg(orgData);
       refetch();
     } catch (err) {
-      console.error('Failed to update organization:', err);
+      console.error("Failed to update organization:", err);
     } finally {
       setIsSaving(false);
     }
@@ -104,7 +110,9 @@ export default function OrganizationPage() {
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">Organization Details</CardTitle>
-              <CardDescription className="text-gray-400">Update your organization information</CardDescription>
+              <CardDescription className="text-gray-400">
+                Update your organization information
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
@@ -139,7 +147,9 @@ export default function OrganizationPage() {
                 <Input
                   type="text"
                   value={orgData.name}
-                  onChange={(e) => setOrgData({ ...orgData, name: e.target.value })}
+                  onChange={(e) =>
+                    setOrgData({ ...orgData, name: e.target.value })
+                  }
                   placeholder="Organization name"
                 />
               </div>
@@ -151,7 +161,9 @@ export default function OrganizationPage() {
                 <Input
                   type="url"
                   value={orgData.website}
-                  onChange={(e) => setOrgData({ ...orgData, website: e.target.value })}
+                  onChange={(e) =>
+                    setOrgData({ ...orgData, website: e.target.value })
+                  }
                   placeholder="https://example.com"
                 />
               </div>
@@ -163,10 +175,14 @@ export default function OrganizationPage() {
                   </label>
                   <select
                     value={orgData.industry}
-                    onChange={(e) => setOrgData({ ...orgData, industry: e.target.value })}
+                    onChange={(e) =>
+                      setOrgData({ ...orgData, industry: e.target.value })
+                    }
                     className="w-full px-3 py-2 bg-wl-bg-root text-white border border-wl-border-default rounded-md text-sm"
                   >
-                    <option value="Logistics & Delivery">Logistics & Delivery</option>
+                    <option value="Logistics & Delivery">
+                      Logistics & Delivery
+                    </option>
                     <option value="E-Commerce">E-Commerce</option>
                     <option value="Food & Beverage">Food & Beverage</option>
                     <option value="Retail">Retail</option>
@@ -180,7 +196,9 @@ export default function OrganizationPage() {
                   </label>
                   <select
                     value={orgData.companySize}
-                    onChange={(e) => setOrgData({ ...orgData, companySize: e.target.value })}
+                    onChange={(e) =>
+                      setOrgData({ ...orgData, companySize: e.target.value })
+                    }
                     className="w-full px-3 py-2 bg-wl-bg-root text-white border border-wl-border-default rounded-md text-sm"
                   >
                     <option value="1-10">1-10 employees</option>
@@ -193,7 +211,11 @@ export default function OrganizationPage() {
               </div>
             </CardContent>
             <CardFooter className="flex gap-3">
-              <Button variant="primary" onClick={handleSave} disabled={isSaving}>
+              <Button
+                variant="primary"
+                onClick={handleSave}
+                disabled={isSaving}
+              >
                 {isSaving ? "Saving..." : "Save Changes"}
               </Button>
               <Button variant="secondary">Cancel</Button>
@@ -206,9 +228,13 @@ export default function OrganizationPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-white">Current Plan</CardTitle>
-                  <CardDescription className="text-gray-400">Manage your billing and subscription</CardDescription>
+                  <CardDescription className="text-gray-400">
+                    Manage your billing and subscription
+                  </CardDescription>
                 </div>
-                <Badge variant="primary" className="bg-blue-500 text-white">{billing?.plan ?? 'Free'} Plan</Badge>
+                <Badge variant="primary" className="bg-blue-500 text-white">
+                  {billing?.plan ?? "Free"} Plan
+                </Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -226,7 +252,7 @@ export default function OrganizationPage() {
                     Cycle Start
                   </p>
                   <p className="text-lg font-semibold text-white">
-                    {billing?.cycleStart ?? '—'}
+                    {billing?.cycleStart ?? "—"}
                   </p>
                 </div>
                 <div className="p-4 bg-wl-bg-elevated rounded-lg">
@@ -234,7 +260,7 @@ export default function OrganizationPage() {
                     Next Billing
                   </p>
                   <p className="text-lg font-semibold text-white">
-                    {billing?.nextBilling ?? '—'}
+                    {billing?.nextBilling ?? "—"}
                   </p>
                 </div>
               </div>
@@ -247,21 +273,31 @@ export default function OrganizationPage() {
                   <div className="space-y-4">
                     {usageMetrics.map((metric) => {
                       const barColor =
-                        metric.percentage >= 90 ? "bg-red-500"
-                        : metric.percentage >= 70 ? "bg-amber-500"
-                        : "bg-blue-500";
+                        metric.percentage >= 90
+                          ? "bg-red-500"
+                          : metric.percentage >= 70
+                            ? "bg-amber-500"
+                            : "bg-blue-500";
                       return (
                         <div key={metric.name}>
                           <div className="flex justify-between items-end mb-2">
-                            <span className="text-sm text-white">{metric.name}</span>
+                            <span className="text-sm text-white">
+                              {metric.name}
+                            </span>
                             <span className="text-xs text-gray-400">
-                              {metric.current.toLocaleString()} / {metric.limit.toLocaleString()} {metric.unit}
+                              {metric.current.toLocaleString()} /{" "}
+                              {metric.limit.toLocaleString()} {metric.unit}
                             </span>
                           </div>
                           <div className="w-full bg-wl-bg-root rounded-full h-2">
                             <div
-                              className={cn("h-2 rounded-full transition-all", barColor)}
-                              style={{ width: `${Math.min(metric.percentage, 100)}%` }}
+                              className={cn(
+                                "h-2 rounded-full transition-all",
+                                barColor,
+                              )}
+                              style={{
+                                width: `${Math.min(metric.percentage, 100)}%`,
+                              }}
                             />
                           </div>
                         </div>
@@ -283,7 +319,9 @@ export default function OrganizationPage() {
                 <AlertTriangle className="w-5 h-5" />
                 Danger Zone
               </CardTitle>
-              <CardDescription className="text-gray-400">Irreversible and destructive actions</CardDescription>
+              <CardDescription className="text-gray-400">
+                Irreversible and destructive actions
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="p-4 bg-red-500/5 border border-red-500/30 rounded-lg">
@@ -291,7 +329,8 @@ export default function OrganizationPage() {
                   Delete Organization
                 </h4>
                 <p className="text-sm text-gray-400 mb-3">
-                  This will permanently delete your organization, all data, and cannot be undone.
+                  This will permanently delete your organization, all data, and
+                  cannot be undone.
                 </p>
                 <Button
                   variant="danger"

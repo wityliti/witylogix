@@ -24,7 +24,12 @@
  */
 
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import { useLoaderData, Form, useActionData, useNavigation } from "react-router";
+import {
+  useLoaderData,
+  Form,
+  useActionData,
+  useNavigation,
+} from "react-router";
 import { useState, useMemo, useCallback } from "react";
 import {
   Page,
@@ -117,14 +122,20 @@ const CATEGORY_TABS: { key: CategoryKey; label: string }[] = [
   { key: "ANALYTICS", label: "Analytics" },
 ];
 
-const HEALTH_BADGE_TONE: Record<string, "success" | "warning" | "critical" | undefined> = {
+const HEALTH_BADGE_TONE: Record<
+  string,
+  "success" | "warning" | "critical" | undefined
+> = {
   HEALTHY: "success",
   DEGRADED: "warning",
   ERROR: "critical",
   UNKNOWN: undefined,
 };
 
-const STATUS_BADGE_TONE: Record<string, "success" | "info" | "critical" | undefined> = {
+const STATUS_BADGE_TONE: Record<
+  string,
+  "success" | "info" | "critical" | undefined
+> = {
   AVAILABLE: "success",
   COMING_SOON: undefined,
   BETA: "info",
@@ -215,7 +226,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
     try {
       await api.delete(`/api/v4/integrations/${slug}`);
-      return { success: true, message: `${slug} uninstalled successfully`, slug };
+      return {
+        success: true,
+        message: `${slug} uninstalled successfully`,
+        slug,
+      };
     } catch (error: any) {
       return { error: error?.message ?? `Failed to uninstall ${slug}`, slug };
     }
@@ -248,9 +263,9 @@ export async function action({ request }: ActionFunctionArgs) {
     const slug = formData.get("slug") as string;
 
     try {
-      const result = await api.post<SingleResponse<{ healthy: boolean; message?: string }>>(
-        `/api/v4/integrations/${slug}/test`,
-      );
+      const result = await api.post<
+        SingleResponse<{ healthy: boolean; message?: string }>
+      >(`/api/v4/integrations/${slug}/test`);
       const healthy = result.data.healthy;
       return {
         success: true,
@@ -296,7 +311,8 @@ export default function Integrations() {
   // Filter marketplace by category and search
   const filteredApps = useMemo(() => {
     return marketplace.filter((app) => {
-      if (activeCategory !== "ALL" && app.category !== activeCategory) return false;
+      if (activeCategory !== "ALL" && app.category !== activeCategory)
+        return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         return (
@@ -393,7 +409,10 @@ export default function Integrations() {
                 >
                   <p>
                     No integrations found
-                    {searchQuery ? ` matching "${searchQuery}"` : " in this category"}.
+                    {searchQuery
+                      ? ` matching "${searchQuery}"`
+                      : " in this category"}
+                    .
                   </p>
                 </EmptyState>
               </Card>
@@ -402,7 +421,9 @@ export default function Integrations() {
                 {filteredApps.map((app) => {
                   const isInstalled = installedSlugs.has(app.slug);
                   const isExpanded = expandedSlug === app.slug;
-                  const installedData = installed.find((i) => i.slug === app.slug);
+                  const installedData = installed.find(
+                    (i) => i.slug === app.slug,
+                  );
 
                   return (
                     <Card key={app.slug}>
@@ -460,7 +481,10 @@ export default function Integrations() {
                         )}
 
                         {/* Expanded Panel */}
-                        <Collapsible open={isExpanded} id={`expand-${app.slug}`}>
+                        <Collapsible
+                          open={isExpanded}
+                          id={`expand-${app.slug}`}
+                        >
                           <BlockStack gap="300">
                             <Divider />
                             {app.longDescription && (
@@ -472,12 +496,22 @@ export default function Integrations() {
                             {/* Links */}
                             <InlineStack gap="300">
                               {app.websiteUrl && (
-                                <Button url={app.websiteUrl} external variant="plain" size="slim">
+                                <Button
+                                  url={app.websiteUrl}
+                                  external
+                                  variant="plain"
+                                  size="slim"
+                                >
                                   Website
                                 </Button>
                               )}
                               {app.docsUrl && (
-                                <Button url={app.docsUrl} external variant="plain" size="slim">
+                                <Button
+                                  url={app.docsUrl}
+                                  external
+                                  variant="plain"
+                                  size="slim"
+                                >
                                   Documentation
                                 </Button>
                               )}
@@ -492,7 +526,10 @@ export default function Integrations() {
                                 setConfirmUninstall={setConfirmUninstall}
                               />
                             ) : (
-                              <InstallForm app={app} isSubmitting={isSubmitting} />
+                              <InstallForm
+                                app={app}
+                                isSubmitting={isSubmitting}
+                              />
                             )}
                           </BlockStack>
                         </Collapsible>
@@ -539,11 +576,12 @@ export default function Integrations() {
                           </Badge>
                         </InlineStack>
                         <InlineStack gap="200">
-                          {!integration.isEnabled && (
-                            <Badge>Disabled</Badge>
-                          )}
-                          <Badge tone={HEALTH_BADGE_TONE[integration.healthStatus]}>
-                            {HEALTH_LABELS[integration.healthStatus] ?? "Unknown"}
+                          {!integration.isEnabled && <Badge>Disabled</Badge>}
+                          <Badge
+                            tone={HEALTH_BADGE_TONE[integration.healthStatus]}
+                          >
+                            {HEALTH_LABELS[integration.healthStatus] ??
+                              "Unknown"}
                           </Badge>
                         </InlineStack>
                       </InlineStack>
@@ -554,7 +592,8 @@ export default function Integrations() {
 
                       {integration.lastSyncAt && (
                         <Text as="span" variant="bodySm" tone="subdued">
-                          Last sync: {new Date(integration.lastSyncAt).toLocaleString()}
+                          Last sync:{" "}
+                          {new Date(integration.lastSyncAt).toLocaleString()}
                         </Text>
                       )}
 
@@ -568,7 +607,10 @@ export default function Integrations() {
                         {isExpanded ? "Collapse" : "Manage"}
                       </Button>
 
-                      <Collapsible open={isExpanded} id={`installed-${integration.slug}`}>
+                      <Collapsible
+                        open={isExpanded}
+                        id={`installed-${integration.slug}`}
+                      >
                         {app && (
                           <>
                             <Divider />
@@ -632,7 +674,13 @@ function InstallForm({
                 <TextField
                   label={`${field.label}${field.required ? " *" : ""}`}
                   name={`cred_${field.key}`}
-                  type={field.type === "textarea" ? "text" : field.type === "password" ? "password" : "text"}
+                  type={
+                    field.type === "textarea"
+                      ? "text"
+                      : field.type === "password"
+                        ? "password"
+                        : "text"
+                  }
                   placeholder={field.placeholder}
                   requiredIndicator={field.required}
                   autoComplete="off"
@@ -698,7 +746,9 @@ function InstalledPanel({
       ? [
           {
             term: "Last Health Check",
-            description: new Date(integration.lastHealthCheckAt).toLocaleString(),
+            description: new Date(
+              integration.lastHealthCheckAt,
+            ).toLocaleString(),
           },
         ]
       : []),
@@ -716,10 +766,12 @@ function InstalledPanel({
             Current Credentials
           </Text>
           <DescriptionList
-            items={Object.entries(integration.credentials).map(([key, masked]) => ({
-              term: key,
-              description: masked,
-            }))}
+            items={Object.entries(integration.credentials).map(
+              ([key, masked]) => ({
+                term: key,
+                description: masked,
+              }),
+            )}
           />
         </>
       )}
@@ -744,7 +796,13 @@ function InstalledPanel({
                     key={field.key}
                     label={field.label}
                     name={`cred_${field.key}`}
-                    type={field.type === "textarea" ? "text" : field.type === "password" ? "password" : "text"}
+                    type={
+                      field.type === "textarea"
+                        ? "text"
+                        : field.type === "password"
+                          ? "password"
+                          : "text"
+                    }
                     placeholder={`New ${field.label.toLowerCase()} (leave blank to keep current)`}
                     autoComplete="off"
                   />
@@ -796,16 +854,11 @@ function InstalledPanel({
               <Button submit tone="critical" disabled={isSubmitting}>
                 Confirm Uninstall
               </Button>
-              <Button onClick={() => setConfirmUninstall(null)}>
-                Cancel
-              </Button>
+              <Button onClick={() => setConfirmUninstall(null)}>Cancel</Button>
             </InlineStack>
           </Form>
         ) : (
-          <Button
-            tone="critical"
-            onClick={() => setConfirmUninstall(app.slug)}
-          >
+          <Button tone="critical" onClick={() => setConfirmUninstall(app.slug)}>
             Uninstall
           </Button>
         )}

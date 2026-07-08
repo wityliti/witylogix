@@ -24,7 +24,9 @@ vi.mock("argon2", () => {
     argon2id: 2,
     hash: vi.fn(async (password: string) => {
       const salt = randomBytes(16).toString("hex");
-      const hash = createHash("sha256").update(password + salt).digest("hex");
+      const hash = createHash("sha256")
+        .update(password + salt)
+        .digest("hex");
       const result = `$argon2id$v=19$m=65536,t=4,p=4$${salt}$${hash}`;
       hashes.set(result, password);
       return result;
@@ -133,7 +135,9 @@ describe("PasswordService", () => {
     it("should reject passwords shorter than 8 characters", () => {
       const result = service.scoreStrength("Short");
       expect(result.score).toBe(0);
-      expect(result.feedback).toContain("Password is too short. Use at least 8 characters.");
+      expect(result.feedback).toContain(
+        "Password is too short. Use at least 8 characters.",
+      );
     });
 
     it("should score basic 8-character password", () => {
@@ -161,22 +165,30 @@ describe("PasswordService", () => {
     it("should give highest score for very strong password", () => {
       const result = service.scoreStrength("x7#K!mP$92qL@vN&4bRwZ");
       expect(result.score).toBe(4);
-      expect(result.feedback.some((f) => f.includes("character diversity"))).toBe(true);
+      expect(
+        result.feedback.some((f) => f.includes("character diversity")),
+      ).toBe(true);
     });
 
     it("should detect sequential numbers pattern", () => {
       const result = service.scoreStrength("Password12345!");
-      expect(result.suggestions.some((s) => s.includes("sequential"))).toBe(true);
+      expect(result.suggestions.some((s) => s.includes("sequential"))).toBe(
+        true,
+      );
     });
 
     it("should detect repeated characters", () => {
       const result = service.scoreStrength("Passsssword1!");
-      expect(result.feedback.some((f) => f.includes("Avoid common patterns"))).toBe(true);
+      expect(
+        result.feedback.some((f) => f.includes("Avoid common patterns")),
+      ).toBe(true);
     });
 
     it("should suggest character diversity improvements", () => {
       const result = service.scoreStrength("password1234");
-      expect(result.suggestions.some((s) => s.includes("uppercase"))).toBe(true);
+      expect(result.suggestions.some((s) => s.includes("uppercase"))).toBe(
+        true,
+      );
       expect(result.suggestions.some((s) => s.includes("special"))).toBe(true);
     });
 
@@ -196,7 +208,11 @@ describe("PasswordService", () => {
 
     it("should reward mixing uppercase, lowercase, digits, special chars", () => {
       const result = service.scoreStrength("Secure#Pass2024@Data");
-      expect(result.feedback.some((f) => f.includes("Excellent character diversity"))).toBe(true);
+      expect(
+        result.feedback.some((f) =>
+          f.includes("Excellent character diversity"),
+        ),
+      ).toBe(true);
       expect(result.score).toBeGreaterThanOrEqual(3);
     });
 
@@ -221,7 +237,9 @@ describe("PasswordService", () => {
     });
 
     it("should reject passwords under 8 characters", async () => {
-      await expect(service.hash("Short7")).rejects.toThrow("at least 8 characters");
+      await expect(service.hash("Short7")).rejects.toThrow(
+        "at least 8 characters",
+      );
     });
 
     it("should accept 8-character password", async () => {
@@ -231,7 +249,9 @@ describe("PasswordService", () => {
 
     it("should reject passwords over 128 characters", async () => {
       const longPass = "A".repeat(129);
-      await expect(service.hash(longPass)).rejects.toThrow("at most 128 characters");
+      await expect(service.hash(longPass)).rejects.toThrow(
+        "at most 128 characters",
+      );
     });
 
     it("should accept exactly 128-character password", async () => {
@@ -311,8 +331,9 @@ describe("PasswordService", () => {
     });
 
     it("should handle very high entropy password", async () => {
-      const entropy = Math.random().toString(36).substring(2, 25) +
-                     Math.random().toString(36).substring(2, 25);
+      const entropy =
+        Math.random().toString(36).substring(2, 25) +
+        Math.random().toString(36).substring(2, 25);
       const hash = await service.hash(entropy);
       expect(hash).toBeTruthy();
     });

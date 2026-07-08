@@ -93,7 +93,10 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
     const plan = shop.planTier as PlanTier;
     const planFeatures = PLANS[plan];
     const settings = (shop.settings as Record<string, unknown>) ?? {};
-    const billingAddress = (settings.billingAddress ?? null) as Record<string, string> | null;
+    const billingAddress = (settings.billingAddress ?? null) as Record<
+      string,
+      string
+    > | null;
 
     const billingPeriodStart = getMonthStart(new Date());
     const billingPeriodEnd = getMonthEnd(new Date());
@@ -124,32 +127,42 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
       ]);
 
     const shipLimit =
-      planFeatures.shipmentsPerMonth === Infinity ? null : planFeatures.shipmentsPerMonth;
+      planFeatures.shipmentsPerMonth === Infinity
+        ? null
+        : planFeatures.shipmentsPerMonth;
     const driverLimit =
       planFeatures.driversLimit === Infinity ? null : planFeatures.driversLimit;
     const notifLimit =
-      planFeatures.notificationsPerMonth === Infinity ? null : planFeatures.notificationsPerMonth;
+      planFeatures.notificationsPerMonth === Infinity
+        ? null
+        : planFeatures.notificationsPerMonth;
 
     const usageMetrics = [
       {
         name: "Shipments",
         current: shipmentsCount,
         limit: shipLimit ?? 9999999,
-        percentage: shipLimit ? Math.min(100, (shipmentsCount / shipLimit) * 100) : 0,
+        percentage: shipLimit
+          ? Math.min(100, (shipmentsCount / shipLimit) * 100)
+          : 0,
         unit: "shipments",
       },
       {
         name: "Active Drivers",
         current: driversCount,
         limit: driverLimit ?? 9999999,
-        percentage: driverLimit ? Math.min(100, (driversCount / driverLimit) * 100) : 0,
+        percentage: driverLimit
+          ? Math.min(100, (driversCount / driverLimit) * 100)
+          : 0,
         unit: "drivers",
       },
       {
         name: "Notifications",
         current: notificationCount,
         limit: notifLimit ?? 9999999,
-        percentage: notifLimit ? Math.min(100, (notificationCount / notifLimit) * 100) : 0,
+        percentage: notifLimit
+          ? Math.min(100, (notificationCount / notifLimit) * 100)
+          : 0,
         unit: "sent",
       },
     ];
@@ -181,14 +194,17 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   // ── GET /address — Get billing address ───────────────────────────────────
-  fastify.get("/address", async (request: FastifyRequest, reply: FastifyReply) => {
-    const shop = await request.tenantDb.shop.findUnique({
-      where: { id: request.shopId },
-      select: { settings: true },
-    });
-    const settings = (shop?.settings as Record<string, unknown>) ?? {};
-    return reply.send({ data: settings.billingAddress ?? null });
-  });
+  fastify.get(
+    "/address",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const shop = await request.tenantDb.shop.findUnique({
+        where: { id: request.shopId },
+        select: { settings: true },
+      });
+      const settings = (shop?.settings as Record<string, unknown>) ?? {};
+      return reply.send({ data: settings.billingAddress ?? null });
+    },
+  );
 
   // ── PUT /address — Save billing address ──────────────────────────────────
   fastify.put(
@@ -213,19 +229,22 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
   /**
    * List available subscription plans with features comparison matrix
    */
-  fastify.get("/plans", async (request: FastifyRequest, reply: FastifyReply) => {
-    const plans = getPlanComparison();
-    // Return standard paginated shape so dashboard useApiList works
-    return reply.send({
-      data: {
-        plans,
-        metadata: {
-          total: plans.length,
-          timestamp: new Date(),
+  fastify.get(
+    "/plans",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const plans = getPlanComparison();
+      // Return standard paginated shape so dashboard useApiList works
+      return reply.send({
+        data: {
+          plans,
+          metadata: {
+            total: plans.length,
+            timestamp: new Date(),
+          },
         },
-      },
-    });
-  });
+      });
+    },
+  );
 
   // ── GET /subscription ────────────────────────────────────────────────────
   /**
@@ -263,14 +282,15 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
       });
 
       // Get notification and API usage from events
-      const notificationCount = await request.tenantDb.notificationMeterEvent.count({
-        where: {
-          shopId,
-          timestamp: {
-            gte: getMonthStart(new Date()),
+      const notificationCount =
+        await request.tenantDb.notificationMeterEvent.count({
+          where: {
+            shopId,
+            timestamp: {
+              gte: getMonthStart(new Date()),
+            },
           },
-        },
-      });
+        });
 
       const apiCallCount = await request.tenantDb.routingMeterEvent.count({
         where: {
@@ -296,7 +316,7 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
 
       // Get actual subscription status from database
       const subscriptionStatus = await getSubscriptionStatus(
-        (request.tenantDb as any),
+        request.tenantDb as any,
         shopId,
       );
 
@@ -355,11 +375,15 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
           (1000 * 60 * 60 * 24),
       );
 
-      const proratedAmount = calculateProration(currentPlan, newPlan, daysRemaining);
+      const proratedAmount = calculateProration(
+        currentPlan,
+        newPlan,
+        daysRemaining,
+      );
 
       // Create recurring application charge via Shopify GraphQL API or mock it for MVP
       const shopifyChargeId = await createRecurringCharge(
-        (request.tenantDb as any),
+        request.tenantDb as any,
         shop,
         newPlan,
         proratedAmount,
@@ -425,7 +449,7 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
 
       // Cancel the subscription in database
       await cancelSubscription(
-        (request.tenantDb as any),
+        request.tenantDb as any,
         shopId,
         billingPeriodEnd,
       );
@@ -463,7 +487,8 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
       return reply.send({
         status: "cancelled",
         effectiveDate: billingPeriodEnd,
-        message: "Subscription cancelled. Service will downgrade to FREE at the end of the billing cycle.",
+        message:
+          "Subscription cancelled. Service will downgrade to FREE at the end of the billing cycle.",
       });
     },
   );
@@ -473,166 +498,220 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
    * Returns quota usage as a flat array for the dashboard billing page.
    * Delegates to the subscription endpoint logic.
    */
-  fastify.get("/quotas", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { shopId } = request;
-    const shop = await request.tenantDb.shop.findUnique({ where: { id: shopId } });
-    if (!shop) {
-      return reply.send({ data: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } });
-    }
+  fastify.get(
+    "/quotas",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { shopId } = request;
+      const shop = await request.tenantDb.shop.findUnique({
+        where: { id: shopId },
+      });
+      if (!shop) {
+        return reply.send({
+          data: [],
+          pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+        });
+      }
 
-    const plan = shop.planTier as import("@witylogix/db").PlanTier;
-    const planFeatures = PLANS[plan];
-    const monthStart = getMonthStart(new Date());
+      const plan = shop.planTier as import("@witylogix/db").PlanTier;
+      const planFeatures = PLANS[plan];
+      const monthStart = getMonthStart(new Date());
 
-    const [shipmentsUsed, driversUsed, apiCallsUsed, notificationsUsed] = await Promise.all([
-      request.tenantDb.shipment.count({ where: { shopId, createdAt: { gte: monthStart } } }),
-      request.tenantDb.driver.count({ where: { shopId } }),
-      request.tenantDb.routingMeterEvent.count({ where: { shopId, timestamp: { gte: monthStart } } }),
-      request.tenantDb.notificationMeterEvent.count({ where: { shopId, timestamp: { gte: monthStart } } }),
-    ]);
+      const [shipmentsUsed, driversUsed, apiCallsUsed, notificationsUsed] =
+        await Promise.all([
+          request.tenantDb.shipment.count({
+            where: { shopId, createdAt: { gte: monthStart } },
+          }),
+          request.tenantDb.driver.count({ where: { shopId } }),
+          request.tenantDb.routingMeterEvent.count({
+            where: { shopId, timestamp: { gte: monthStart } },
+          }),
+          request.tenantDb.notificationMeterEvent.count({
+            where: { shopId, timestamp: { gte: monthStart } },
+          }),
+        ]);
 
-    const quotas = [
-      { name: 'Shipments', current: shipmentsUsed, limit: planFeatures.shipmentsPerMonth, unit: 'shipments/month' },
-      { name: 'Drivers', current: driversUsed, limit: planFeatures.driversLimit, unit: 'active drivers' },
-      { name: 'API Calls', current: apiCallsUsed, limit: planFeatures.apiCallsPerMonth, unit: 'calls/month' },
-      { name: 'Notifications', current: notificationsUsed, limit: planFeatures.notificationsPerMonth, unit: 'notifications/month' },
-    ];
+      const quotas = [
+        {
+          name: "Shipments",
+          current: shipmentsUsed,
+          limit: planFeatures.shipmentsPerMonth,
+          unit: "shipments/month",
+        },
+        {
+          name: "Drivers",
+          current: driversUsed,
+          limit: planFeatures.driversLimit,
+          unit: "active drivers",
+        },
+        {
+          name: "API Calls",
+          current: apiCallsUsed,
+          limit: planFeatures.apiCallsPerMonth,
+          unit: "calls/month",
+        },
+        {
+          name: "Notifications",
+          current: notificationsUsed,
+          limit: planFeatures.notificationsPerMonth,
+          unit: "notifications/month",
+        },
+      ];
 
-    return reply.send({
-      data: quotas,
-      pagination: { page: 1, limit: quotas.length, total: quotas.length, totalPages: 1 },
-    });
-  });
+      return reply.send({
+        data: quotas,
+        pagination: {
+          page: 1,
+          limit: quotas.length,
+          total: quotas.length,
+          totalPages: 1,
+        },
+      });
+    },
+  );
 
   // ── GET /usage ───────────────────────────────────────────────────────────
   /**
    * Detailed usage metrics with daily breakdown and projections
    */
-  fastify.get("/usage", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { shopId } = request;
+  fastify.get(
+    "/usage",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { shopId } = request;
 
-    const billingPeriodStart = getMonthStart(new Date());
-    const billingPeriodEnd = getMonthEnd(new Date());
+      const billingPeriodStart = getMonthStart(new Date());
+      const billingPeriodEnd = getMonthEnd(new Date());
 
-    // Get daily shipment counts
-    const dailyShipments = await request.tenantDb.shipment.groupBy({
-      by: ["createdAt"],
-      where: {
-        shopId,
-        createdAt: {
-          gte: billingPeriodStart,
-          lte: billingPeriodEnd,
+      // Get daily shipment counts
+      const dailyShipments = await request.tenantDb.shipment.groupBy({
+        by: ["createdAt"],
+        where: {
+          shopId,
+          createdAt: {
+            gte: billingPeriodStart,
+            lte: billingPeriodEnd,
+          },
         },
-      },
-      _count: true,
-      orderBy: {
-        createdAt: "asc",
-      },
-    });
-
-    // Get hourly API calls
-    const apiCallsDaily = await request.tenantDb.routingMeterEvent.groupBy({
-      by: ["timestamp"],
-      where: {
-        shopId,
-        timestamp: {
-          gte: billingPeriodStart,
-          lte: billingPeriodEnd,
+        _count: true,
+        orderBy: {
+          createdAt: "asc",
         },
-      },
-      _count: true,
-      orderBy: {
-        timestamp: "asc",
-      },
-    });
+      });
 
-    // Get notifications
-    const notificationsDaily = await request.tenantDb.notificationMeterEvent.groupBy({
-      by: ["timestamp"],
-      where: {
-        shopId,
-        timestamp: {
-          gte: billingPeriodStart,
-          lte: billingPeriodEnd,
+      // Get hourly API calls
+      const apiCallsDaily = await request.tenantDb.routingMeterEvent.groupBy({
+        by: ["timestamp"],
+        where: {
+          shopId,
+          timestamp: {
+            gte: billingPeriodStart,
+            lte: billingPeriodEnd,
+          },
         },
-      },
-      _count: true,
-      orderBy: {
-        timestamp: "asc",
-      },
-    });
-
-    const shop = await request.tenantDb.shop.findUnique({
-      where: { id: shopId },
-    });
-
-    if (!shop) {
-      throw new NotFoundError("Shop", shopId);
-    }
-
-    const plan = shop.planTier as PlanTier;
-
-    // Calculate totals
-    const totalShipments = dailyShipments.reduce((sum, day) => sum + day._count, 0);
-    const totalApiCalls = apiCallsDaily.reduce((sum, day) => sum + day._count, 0);
-    const totalNotifications = notificationsDaily.reduce(
-      (sum, day) => sum + day._count,
-      0,
-    );
-
-    // Get limits check
-    const shipmentsCheck = checkUsageLimit(plan, "shipments", totalShipments);
-    const apiCallsCheck = checkUsageLimit(plan, "apiCalls", totalApiCalls);
-    const notificationsCheck = checkUsageLimit(plan, "notifications", totalNotifications);
-
-    return reply.send({
-      billingPeriod: {
-        start: billingPeriodStart,
-        end: billingPeriodEnd,
-        daysRemaining: Math.ceil(
-          (billingPeriodEnd.getTime() - new Date().getTime()) /
-            (1000 * 60 * 60 * 24),
-        ),
-      },
-      usage: {
-        shipments: {
-          used: totalShipments,
-          limit: PLANS[plan].shipmentsPerMonth,
-          allowed: shipmentsCheck.allowed,
-          remaining: shipmentsCheck.remaining,
-          percentageUsed: shipmentsCheck.percentageUsed,
+        _count: true,
+        orderBy: {
+          timestamp: "asc",
         },
-        apiCalls: {
-          used: totalApiCalls,
-          limit: PLANS[plan].apiCallsPerMonth,
-          allowed: apiCallsCheck.allowed,
-          remaining: apiCallsCheck.remaining,
-          percentageUsed: apiCallsCheck.percentageUsed,
+      });
+
+      // Get notifications
+      const notificationsDaily =
+        await request.tenantDb.notificationMeterEvent.groupBy({
+          by: ["timestamp"],
+          where: {
+            shopId,
+            timestamp: {
+              gte: billingPeriodStart,
+              lte: billingPeriodEnd,
+            },
+          },
+          _count: true,
+          orderBy: {
+            timestamp: "asc",
+          },
+        });
+
+      const shop = await request.tenantDb.shop.findUnique({
+        where: { id: shopId },
+      });
+
+      if (!shop) {
+        throw new NotFoundError("Shop", shopId);
+      }
+
+      const plan = shop.planTier as PlanTier;
+
+      // Calculate totals
+      const totalShipments = dailyShipments.reduce(
+        (sum, day) => sum + day._count,
+        0,
+      );
+      const totalApiCalls = apiCallsDaily.reduce(
+        (sum, day) => sum + day._count,
+        0,
+      );
+      const totalNotifications = notificationsDaily.reduce(
+        (sum, day) => sum + day._count,
+        0,
+      );
+
+      // Get limits check
+      const shipmentsCheck = checkUsageLimit(plan, "shipments", totalShipments);
+      const apiCallsCheck = checkUsageLimit(plan, "apiCalls", totalApiCalls);
+      const notificationsCheck = checkUsageLimit(
+        plan,
+        "notifications",
+        totalNotifications,
+      );
+
+      return reply.send({
+        billingPeriod: {
+          start: billingPeriodStart,
+          end: billingPeriodEnd,
+          daysRemaining: Math.ceil(
+            (billingPeriodEnd.getTime() - new Date().getTime()) /
+              (1000 * 60 * 60 * 24),
+          ),
         },
-        notifications: {
-          used: totalNotifications,
-          limit: PLANS[plan].notificationsPerMonth,
-          allowed: notificationsCheck.allowed,
-          remaining: notificationsCheck.remaining,
-          percentageUsed: notificationsCheck.percentageUsed,
+        usage: {
+          shipments: {
+            used: totalShipments,
+            limit: PLANS[plan].shipmentsPerMonth,
+            allowed: shipmentsCheck.allowed,
+            remaining: shipmentsCheck.remaining,
+            percentageUsed: shipmentsCheck.percentageUsed,
+          },
+          apiCalls: {
+            used: totalApiCalls,
+            limit: PLANS[plan].apiCallsPerMonth,
+            allowed: apiCallsCheck.allowed,
+            remaining: apiCallsCheck.remaining,
+            percentageUsed: apiCallsCheck.percentageUsed,
+          },
+          notifications: {
+            used: totalNotifications,
+            limit: PLANS[plan].notificationsPerMonth,
+            allowed: notificationsCheck.allowed,
+            remaining: notificationsCheck.remaining,
+            percentageUsed: notificationsCheck.percentageUsed,
+          },
         },
-      },
-      trends: {
-        dailyShipments: dailyShipments.map((day) => ({
-          date: day.createdAt,
-          count: day._count,
-        })),
-        dailyApiCalls: apiCallsDaily.map((day) => ({
-          date: day.timestamp,
-          count: day._count,
-        })),
-        dailyNotifications: notificationsDaily.map((day) => ({
-          date: day.timestamp,
-          count: day._count,
-        })),
-      },
-    });
-  });
+        trends: {
+          dailyShipments: dailyShipments.map((day) => ({
+            date: day.createdAt,
+            count: day._count,
+          })),
+          dailyApiCalls: apiCallsDaily.map((day) => ({
+            date: day.timestamp,
+            count: day._count,
+          })),
+          dailyNotifications: notificationsDaily.map((day) => ({
+            date: day.timestamp,
+            count: day._count,
+          })),
+        },
+      });
+    },
+  );
 
   // ── POST /usage/event ────────────────────────────────────────────────────
   /**
@@ -694,12 +773,19 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
       return reply.send({
         data: invoices.map((invoice) => ({
           id: invoice.id,
-          period: new Date(invoice.createdAt).toLocaleString('default', { month: 'short', year: 'numeric' }),
+          period: new Date(invoice.createdAt).toLocaleString("default", {
+            month: "short",
+            year: "numeric",
+          }),
           date: invoice.createdAt,
           amount: Number(invoice.amount) / 100,
           currency: invoice.currency,
-          status: invoice.status.toLowerCase() === 'completed' ? 'paid' : invoice.status.toLowerCase(),
-          description: (invoice.metadata as any)?.description || `Payment ${invoice.type}`,
+          status:
+            invoice.status.toLowerCase() === "completed"
+              ? "paid"
+              : invoice.status.toLowerCase(),
+          description:
+            (invoice.metadata as any)?.description || `Payment ${invoice.type}`,
         })),
         pagination: {
           page,
@@ -722,22 +808,27 @@ async function getSubscriptionStatus(
   tenantDb: any,
   shopId: string,
 ): Promise<string> {
-  const subscription = await (tenantDb as any).subscription.findUnique({
-    where: { shopId },
-    select: {
-      status: true,
-      planTier: true,
-      renewalDate: true,
-      cancelledAt: true,
-      cancelledEffectiveAt: true,
-    },
-  }).catch(() => null);
+  const subscription = await (tenantDb as any).subscription
+    .findUnique({
+      where: { shopId },
+      select: {
+        status: true,
+        planTier: true,
+        renewalDate: true,
+        cancelledAt: true,
+        cancelledEffectiveAt: true,
+      },
+    })
+    .catch(() => null);
 
   if (!subscription) {
     return "active"; // Default to active if no subscription record
   }
 
-  if (subscription.status === "cancelled" && subscription.cancelledEffectiveAt) {
+  if (
+    subscription.status === "cancelled" &&
+    subscription.cancelledEffectiveAt
+  ) {
     if (new Date() >= new Date(subscription.cancelledEffectiveAt)) {
       return "cancelled";
     }
@@ -766,40 +857,42 @@ async function createRecurringCharge(
   const planFeatures = PLANS[plan];
 
   // Create billing record in database
-  const billingRecord = await (tenantDb as any).subscription.upsert({
-    where: { shopId: shop.id },
-    update: {
-      planTier: plan,
-      status: "active",
-      renewalDate: getMonthEnd(new Date()),
-      amount: Number(planFeatures.monthlyPrice),
-      proratedAmount,
-    },
-    create: {
-      shopId: shop.id,
-      planTier: plan,
-      status: "active",
-      amount: Number(planFeatures.monthlyPrice),
-      proratedAmount,
-      renewalDate: getMonthEnd(new Date()),
-    },
-  }).catch(async () => {
-    // If subscription table doesn't exist, create charge in payment transactions
-    return (tenantDb as any).paymentTransaction.create({
-      data: {
-        shopId: shop.id,
-        type: "CHARGE",
+  const billingRecord = await (tenantDb as any).subscription
+    .upsert({
+      where: { shopId: shop.id },
+      update: {
+        planTier: plan,
+        status: "active",
+        renewalDate: getMonthEnd(new Date()),
         amount: Number(planFeatures.monthlyPrice),
-        currency: "USD",
-        status: "pending",
-        metadata: {
-          plan,
-          proratedAmount,
-          description: `Recurring charge for ${plan} plan`,
-        },
+        proratedAmount,
       },
+      create: {
+        shopId: shop.id,
+        planTier: plan,
+        status: "active",
+        amount: Number(planFeatures.monthlyPrice),
+        proratedAmount,
+        renewalDate: getMonthEnd(new Date()),
+      },
+    })
+    .catch(async () => {
+      // If subscription table doesn't exist, create charge in payment transactions
+      return (tenantDb as any).paymentTransaction.create({
+        data: {
+          shopId: shop.id,
+          type: "CHARGE",
+          amount: Number(planFeatures.monthlyPrice),
+          currency: "USD",
+          status: "pending",
+          metadata: {
+            plan,
+            proratedAmount,
+            description: `Recurring charge for ${plan} plan`,
+          },
+        },
+      });
     });
-  });
 
   // Mock charge ID
   const chargeId = `gid://shopify/RecurringApplicationCharge/${Date.now()}`;
@@ -831,21 +924,23 @@ async function cancelSubscription(
     });
   } catch {
     // If subscription table doesn't exist, log the cancellation in activity log
-    await (tenantDb as any).activityLog.create({
-      data: {
-        shopId,
-        action: "PLAN_CANCELLED",
-        entityType: "subscription",
-        entityId: shopId,
-        actorType: "system",
-        changes: {
-          status: "cancelled",
-          effectiveDate: effectiveDate.toISOString(),
+    await (tenantDb as any).activityLog
+      .create({
+        data: {
+          shopId,
+          action: "PLAN_CANCELLED",
+          entityType: "subscription",
+          entityId: shopId,
+          actorType: "system",
+          changes: {
+            status: "cancelled",
+            effectiveDate: effectiveDate.toISOString(),
+          },
         },
-      },
-    }).catch(() => {
-      // Silently fail if activity log doesn't exist
-    });
+      })
+      .catch(() => {
+        // Silently fail if activity log doesn't exist
+      });
   }
 }
 

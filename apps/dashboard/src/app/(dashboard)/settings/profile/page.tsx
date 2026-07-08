@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useApiQuery, useApiMutation } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Header } from '@/components/layout/header';
+import { useState } from "react";
+import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Header } from "@/components/layout/header";
 import {
   Card,
   CardHeader,
@@ -12,10 +12,10 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import {
   Upload,
   Check,
@@ -25,7 +25,7 @@ import {
   Copy,
   Eye,
   EyeOff,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface UserProfile {
   name: string;
@@ -41,28 +41,44 @@ interface MFAStatus {
 }
 
 export default function ProfilePage() {
-  const { data: profile, loading, error, refetch } = useApiQuery<UserProfile>('/api/v4/users/profile');
-  const { data: mfaStatus } = useApiQuery<MFAStatus>('/api/v4/users/mfa');
-  const { execute: updateProfile } = useApiMutation('PATCH', '/api/v4/users/profile');
-  const { execute: changePassword } = useApiMutation('POST', '/api/v4/users/change-password');
-  const { execute: setupMFA } = useApiMutation('POST', '/api/v4/users/mfa/setup');
+  const {
+    data: profile,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<UserProfile>("/api/v4/users/profile");
+  const { data: mfaStatus } = useApiQuery<MFAStatus>("/api/v4/users/mfa");
+  const { execute: updateProfile } = useApiMutation(
+    "PATCH",
+    "/api/v4/users/profile",
+  );
+  const { execute: changePassword } = useApiMutation(
+    "POST",
+    "/api/v4/users/change-password",
+  );
+  const { execute: setupMFA } = useApiMutation(
+    "POST",
+    "/api/v4/users/mfa/setup",
+  );
 
-  const [profileData, setProfileData] = useState(profile || {
-    name: '',
-    email: '',
-    phone: '',
-    avatar: '',
-  });
+  const [profileData, setProfileData] = useState(
+    profile || {
+      name: "",
+      email: "",
+      phone: "",
+      avatar: "",
+    },
+  );
 
   const [password, setPassword] = useState({
-    current: '',
-    new: '',
-    confirm: '',
+    current: "",
+    new: "",
+    confirm: "",
   });
 
   const [mfaEnabled, setMfaEnabled] = useState(mfaStatus?.enabled ?? false);
   const [mfaSetup, setMfaSetup] = useState(false);
-  const [qrCode, setQrCode] = useState(mfaStatus?.qrCode ?? '');
+  const [qrCode, setQrCode] = useState(mfaStatus?.qrCode ?? "");
   const [backupCodes, setBackupCodes] = useState(mfaStatus?.backupCodes ?? []);
   const [showPassword, setShowPassword] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -73,7 +89,10 @@ export default function ProfilePage() {
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        setProfileData({ ...profileData, avatar: event.target?.result as string });
+        setProfileData({
+          ...profileData,
+          avatar: event.target?.result as string,
+        });
       };
       reader.readAsDataURL(file);
     }
@@ -100,7 +119,7 @@ export default function ProfilePage() {
       await updateProfile(profileData);
       refetch();
     } catch (err) {
-      console.error('Failed to update profile:', err);
+      console.error("Failed to update profile:", err);
     } finally {
       setIsSaving(false);
     }
@@ -112,9 +131,9 @@ export default function ProfilePage() {
         currentPassword: password.current,
         newPassword: password.new,
       });
-      setPassword({ current: '', new: '', confirm: '' });
+      setPassword({ current: "", new: "", confirm: "" });
     } catch (err) {
-      console.error('Failed to change password:', err);
+      console.error("Failed to change password:", err);
     }
   };
 
@@ -141,7 +160,9 @@ export default function ProfilePage() {
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">Profile Information</CardTitle>
-              <CardDescription className="text-gray-400">Update your personal details</CardDescription>
+              <CardDescription className="text-gray-400">
+                Update your personal details
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
@@ -167,7 +188,10 @@ export default function ProfilePage() {
                             if (file) {
                               const reader = new FileReader();
                               reader.onload = (event) => {
-                                setProfileData({ ...profileData, avatar: event.target?.result as string });
+                                setProfileData({
+                                  ...profileData,
+                                  avatar: event.target?.result as string,
+                                });
                               };
                               reader.readAsDataURL(file);
                             }
@@ -187,7 +211,9 @@ export default function ProfilePage() {
                 <Input
                   type="text"
                   value={profileData.name}
-                  onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, name: e.target.value })
+                  }
                   placeholder="Your full name"
                 />
               </div>
@@ -211,13 +237,19 @@ export default function ProfilePage() {
                 <Input
                   type="tel"
                   value={profileData.phone}
-                  onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, phone: e.target.value })
+                  }
                   placeholder="+1 (555) 123-4567"
                 />
               </div>
             </CardContent>
             <CardFooter className="flex gap-3">
-              <Button variant="primary" onClick={handleSaveProfile} disabled={isSaving}>
+              <Button
+                variant="primary"
+                onClick={handleSaveProfile}
+                disabled={isSaving}
+              >
                 {isSaving ? "Saving..." : "Save Changes"}
               </Button>
               <Button variant="secondary">Cancel</Button>
@@ -231,7 +263,9 @@ export default function ProfilePage() {
                 <Lock className="w-5 h-5" />
                 Change Password
               </CardTitle>
-              <CardDescription className="text-gray-400">Update your password regularly for security</CardDescription>
+              <CardDescription className="text-gray-400">
+                Update your password regularly for security
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -241,7 +275,9 @@ export default function ProfilePage() {
                 <Input
                   type="password"
                   value={password.current}
-                  onChange={(e) => setPassword({ ...password, current: e.target.value })}
+                  onChange={(e) =>
+                    setPassword({ ...password, current: e.target.value })
+                  }
                   placeholder="Enter current password"
                 />
               </div>
@@ -261,7 +297,11 @@ export default function ProfilePage() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
                 {password.new && (
@@ -270,7 +310,10 @@ export default function ProfilePage() {
                       <span className="text-gray-400">Strength:</span>
                       <div className="flex-1 h-2 bg-wl-bg-elevated rounded-full overflow-hidden">
                         <div
-                          className={cn("h-full transition-all", getStrengthColor())}
+                          className={cn(
+                            "h-full transition-all",
+                            getStrengthColor(),
+                          )}
                           style={{ width: `${passwordStrength}%` }}
                         />
                       </div>
@@ -286,13 +329,22 @@ export default function ProfilePage() {
                 <Input
                   type="password"
                   value={password.confirm}
-                  onChange={(e) => setPassword({ ...password, confirm: e.target.value })}
+                  onChange={(e) =>
+                    setPassword({ ...password, confirm: e.target.value })
+                  }
                   placeholder="Confirm new password"
                 />
               </div>
             </CardContent>
             <CardFooter className="flex gap-3">
-              <Button variant="primary" disabled={!password.current || !password.new || password.new !== password.confirm}>
+              <Button
+                variant="primary"
+                disabled={
+                  !password.current ||
+                  !password.new ||
+                  password.new !== password.confirm
+                }
+              >
                 Update Password
               </Button>
               <Button variant="secondary">Cancel</Button>
@@ -336,7 +388,11 @@ export default function ProfilePage() {
                     <p className="text-sm text-gray-400 mb-3">
                       Scan this QR code with your authenticator app
                     </p>
-                    <img src={qrCode} alt="MFA QR Code" className="mx-auto border border-wl-border-default p-2 rounded" />
+                    <img
+                      src={qrCode}
+                      alt="MFA QR Code"
+                      className="mx-auto border border-wl-border-default p-2 rounded"
+                    />
                   </div>
 
                   <div>
@@ -356,7 +412,8 @@ export default function ProfilePage() {
                       Backup Codes
                     </p>
                     <p className="text-xs text-gray-400 mb-3">
-                      Save these codes in a secure location. Use them if you lose access to your authenticator.
+                      Save these codes in a secure location. Use them if you
+                      lose access to your authenticator.
                     </p>
                     <div className="space-y-2">
                       {backupCodes.map((code, idx) => (
@@ -377,7 +434,13 @@ export default function ProfilePage() {
             </CardContent>
             {mfaSetup && (
               <CardFooter className="flex gap-3">
-                <Button variant="primary" onClick={() => { setMfaEnabled(true); setMfaSetup(false); }}>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    setMfaEnabled(true);
+                    setMfaSetup(false);
+                  }}
+                >
                   Confirm & Enable MFA
                 </Button>
                 <Button variant="secondary" onClick={() => setMfaSetup(false)}>

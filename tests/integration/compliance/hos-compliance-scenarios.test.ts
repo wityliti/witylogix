@@ -25,7 +25,7 @@ interface HOSState {
   violations: string[];
 }
 
-function computeHOSState(logs: typeof createMockHOSLog[]): HOSState {
+function computeHOSState(logs: (typeof createMockHOSLog)[]): HOSState {
   const state: HOSState = {
     drivingMinutes11: 0,
     onDutyMinutes14: 0,
@@ -45,7 +45,10 @@ function computeHOSState(logs: typeof createMockHOSLog[]): HOSState {
     } else if (log.dutyStatus === "ON_DUTY") {
       state.onDutyMinutes14 += minutes;
       state.totalOnDutyMinutes14 += minutes;
-    } else if (log.dutyStatus === "OFF_DUTY" || log.dutyStatus === "SLEEPER_BERTH") {
+    } else if (
+      log.dutyStatus === "OFF_DUTY" ||
+      log.dutyStatus === "SLEEPER_BERTH"
+    ) {
       state.minutesSinceBreak = 0;
     }
   });
@@ -262,7 +265,7 @@ describe("70-Hour / 8-Day Cycle", () => {
   });
 
   it("should flag violation at 70h01m accumulated", () => {
-    const drivingMinutes = (70 * 60) + 1;
+    const drivingMinutes = 70 * 60 + 1;
     const cycleLimit = 70 * 60;
 
     const isViolation = drivingMinutes > cycleLimit;
@@ -447,7 +450,9 @@ describe("Short-Haul Exception", () => {
 describe("Adverse Driving Conditions Extension", () => {
   it("should extend 11-hour limit by 2 hours during adverse conditions", () => {
     const conditions = "ICE_STORM";
-    const isAdverse = ["ICE_STORM", "HEAVY_SNOW", "FOG", "FLOOD"].includes(conditions);
+    const isAdverse = ["ICE_STORM", "HEAVY_SNOW", "FOG", "FLOOD"].includes(
+      conditions,
+    );
 
     const normalLimit = 11 * 60;
     const extendedLimit = isAdverse ? 13 * 60 : normalLimit;

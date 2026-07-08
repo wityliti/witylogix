@@ -132,10 +132,7 @@ export class SentryManager {
   /**
    * Capture an error with automatic context enrichment.
    */
-  captureException(
-    error: Error | unknown,
-    context?: ErrorContext
-  ): string {
+  captureException(error: Error | unknown, context?: ErrorContext): string {
     const eventId = this.generateEventId();
 
     const errorContext = {
@@ -186,7 +183,7 @@ export class SentryManager {
   captureMessage(
     message: string,
     level: "info" | "warning" | "error" = "info",
-    context?: ErrorContext
+    context?: ErrorContext,
   ): string {
     const eventId = this.generateEventId();
 
@@ -234,7 +231,7 @@ export class SentryManager {
    */
   finishTransaction(
     transaction: Transaction,
-    status: "ok" | "error" | "cancelled" = "ok"
+    status: "ok" | "error" | "cancelled" = "ok",
   ): void {
     const duration = Date.now() - transaction.startTime;
 
@@ -273,12 +270,16 @@ export class SentryManager {
   /**
    * Extract stack trace from error.
    */
-  private extractStacktrace(error: unknown): { frames: Array<{
-    filename?: string;
-    function?: string;
-    lineno?: number;
-    colno?: number;
-  }> } | undefined {
+  private extractStacktrace(error: unknown):
+    | {
+        frames: Array<{
+          filename?: string;
+          function?: string;
+          lineno?: number;
+          colno?: number;
+        }>;
+      }
+    | undefined {
     if (!(error instanceof Error) || !error.stack) {
       return undefined;
     }

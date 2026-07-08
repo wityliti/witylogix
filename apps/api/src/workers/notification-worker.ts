@@ -107,9 +107,7 @@ function isAuthenticationError(error: string): boolean {
  * Determine if error is permanent (should not retry).
  */
 function isPermanentError(error: string): boolean {
-  return (
-    isInvalidRecipientError(error) || isAuthenticationError(error)
-  );
+  return isInvalidRecipientError(error) || isAuthenticationError(error);
 }
 
 // ──────────────────────────────────────────────────────────────────
@@ -132,8 +130,14 @@ async function logDeliveryAttempt(
 
     // Extract provider name from result metadata
     let providerName = "";
-    if (result.providerResponse && typeof result.providerResponse === "object") {
-      const providerResponse = result.providerResponse as Record<string, unknown>;
+    if (
+      result.providerResponse &&
+      typeof result.providerResponse === "object"
+    ) {
+      const providerResponse = result.providerResponse as Record<
+        string,
+        unknown
+      >;
       providerName = (providerResponse.providerName as string) || "";
     }
 
@@ -173,8 +177,8 @@ async function logDeadLetterEntry(
   try {
     console.error(
       `[notification-worker] DEAD_LETTER: job=${jobId} shopId=${shopId} ` +
-      `channels=${jobData.channels.join(",")} recipient=${jobData.recipient.email || jobData.recipient.phone} ` +
-      `error="${error}" attempts=${attemptCount}`,
+        `channels=${jobData.channels.join(",")} recipient=${jobData.recipient.email || jobData.recipient.phone} ` +
+        `error="${error}" attempts=${attemptCount}`,
     );
 
     // Optional: Store to DLQ table for ops investigation
@@ -223,10 +227,8 @@ function validateJobPayload(data: NotificationJobData): void {
   // Validate recipient has at least one address
   if (
     !data.recipient ||
-    (typeof data.recipient !== "object" ||
-      !data.recipient.email &&
-      !data.recipient.phone &&
-      !data.recipient.fcmToken)
+    typeof data.recipient !== "object" ||
+    (!data.recipient.email && !data.recipient.phone && !data.recipient.fcmToken)
   ) {
     throw new Error(
       "Recipient must have at least one of: email, phone, or fcmToken",
@@ -287,9 +289,7 @@ function getRecipientForChannel(
     case "SMS":
     case "WHATSAPP":
       if (!recipient.phone) {
-        throw new Error(
-          `Phone recipient required for ${channel} channel`,
-        );
+        throw new Error(`Phone recipient required for ${channel} channel`);
       }
       return recipient.phone;
     case "PUSH":
@@ -319,9 +319,7 @@ function getRecipientForChannel(
  *   3. Return results
  *   4. On error: classify and re-throw (for BullMQ retry) or log to DLQ
  */
-async function notificationHandler(
-  job: Job<NotificationJobData>,
-): Promise<
+async function notificationHandler(job: Job<NotificationJobData>): Promise<
   Array<{
     channel: string;
     success: boolean;
@@ -411,7 +409,7 @@ async function notificationHandler(
 
         console.warn(
           `[notification-worker] Job ${job.id} ${channel} failed ` +
-          `(${isRetryableError(error) ? "retryable" : "permanent"}): ${error}`,
+            `(${isRetryableError(error) ? "retryable" : "permanent"}): ${error}`,
         );
 
         results.push({
@@ -422,7 +420,8 @@ async function notificationHandler(
       }
     } catch (error) {
       // Orchestrator threw an exception (not just failed result)
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
 
       const isRetryable =
         error instanceof Error &&
@@ -439,7 +438,7 @@ async function notificationHandler(
 
       console.error(
         `[notification-worker] Job ${job.id} ${channelStr} exception ` +
-        `(${isRetryable ? "retryable" : "permanent"}): ${errorMessage}`,
+          `(${isRetryable ? "retryable" : "permanent"}): ${errorMessage}`,
       );
 
       results.push({
@@ -456,7 +455,7 @@ async function notificationHandler(
     const failures = results.filter((r) => !r.success);
     console.warn(
       `[notification-worker] Job ${job.id} has retryable failures, will be retried by BullMQ: ` +
-      failures.map((f) => `${f.channel}: ${f.error}`).join("; "),
+        failures.map((f) => `${f.channel}: ${f.error}`).join("; "),
     );
     throw new Error(
       `Retryable failures: ${failures.map((f) => `${f.channel}: ${f.error}`).join("; ")}`,
@@ -466,7 +465,9 @@ async function notificationHandler(
   // If any permanent failure, log to DLQ and fail job
   if (anyPermanentFailure) {
     const failures = results.filter((r) => !r.success);
-    const errorSummary = failures.map((f) => `${f.channel}: ${f.error}`).join("; ");
+    const errorSummary = failures
+      .map((f) => `${f.channel}: ${f.error}`)
+      .join("; ");
 
     await logDeadLetterEntry(
       shopId,
@@ -546,7 +547,10 @@ export function startNotificationWorker(): Worker {
         error.message,
         job.attemptsMade,
       ).catch((err) => {
-        console.error(`[notification-worker] Failed to log DLQ for job ${job.id}:`, err);
+        console.error(
+          `[notification-worker] Failed to log DLQ for job ${job.id}:`,
+          err,
+        );
       });
     }
   });

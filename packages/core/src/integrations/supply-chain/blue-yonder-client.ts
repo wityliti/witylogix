@@ -4,8 +4,8 @@
  * @packageDocumentation
  */
 
-import { SupplyChainAdapter } from './supply-chain-adapter';
-import { RetryHandler } from './supply-chain-adapter';
+import { SupplyChainAdapter } from "./supply-chain-adapter";
+import { RetryHandler } from "./supply-chain-adapter";
 import type {
   SupplyChainConfig,
   WarehouseLocation,
@@ -20,7 +20,7 @@ import type {
   PickTask,
   PackStation,
   ShipConfirmation,
-} from './types';
+} from "./types";
 
 /**
  * Blue Yonder WMS/TMS adapter
@@ -37,10 +37,12 @@ export class BlueYonderClient extends SupplyChainAdapter {
     try {
       await this.checkPrerequisites();
       await this.authenticateOAuth2();
-      this.logEvent('blue_yonder.initialized');
+      this.logEvent("blue_yonder.initialized");
     } catch (error) {
       this.handleApiResponse(false, error as Error);
-      throw new Error(`Blue Yonder initialization failed: ${(error as Error).message}`);
+      throw new Error(
+        `Blue Yonder initialization failed: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -52,11 +54,14 @@ export class BlueYonderClient extends SupplyChainAdapter {
       await this.checkPrerequisites();
       const response = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const result = await fetch(`${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const result = await fetch(
+          `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
         return result.ok;
       });
       this.handleApiResponse(true);
@@ -79,9 +84,14 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/facilities/${warehouseId}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to get warehouse: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to get warehouse: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -92,14 +102,14 @@ export class BlueYonderClient extends SupplyChainAdapter {
         name: warehouse.facilityName,
         code: warehouse.facilityCode,
         address: {
-          street: warehouse.address?.street || '',
-          city: warehouse.address?.city || '',
-          state: warehouse.address?.state || '',
-          postalCode: warehouse.address?.postalCode || '',
-          country: warehouse.address?.country || 'US',
+          street: warehouse.address?.street || "",
+          city: warehouse.address?.city || "",
+          state: warehouse.address?.state || "",
+          postalCode: warehouse.address?.postalCode || "",
+          country: warehouse.address?.country || "US",
         },
-        type: (warehouse.facilityType as any) || 'dc',
-        status: (warehouse.status as any) || 'active',
+        type: (warehouse.facilityType as any) || "dc",
+        status: (warehouse.status as any) || "active",
       };
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -115,9 +125,14 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/facilities`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to list warehouses: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to list warehouses: ${response.statusText}`);
         const data = (await response.json()) as { content?: any[] };
         return data.content || [];
       });
@@ -129,14 +144,14 @@ export class BlueYonderClient extends SupplyChainAdapter {
         name: w.facilityName,
         code: w.facilityCode,
         address: {
-          street: w.address?.street || '',
-          city: w.address?.city || '',
-          state: w.address?.state || '',
-          postalCode: w.address?.postalCode || '',
-          country: w.address?.country || 'US',
+          street: w.address?.street || "",
+          city: w.address?.city || "",
+          state: w.address?.state || "",
+          postalCode: w.address?.postalCode || "",
+          country: w.address?.country || "US",
         },
-        type: (w.facilityType as any) || 'dc',
-        status: (w.status as any) || 'active',
+        type: (w.facilityType as any) || "dc",
+        status: (w.status as any) || "active",
       }));
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -144,7 +159,9 @@ export class BlueYonderClient extends SupplyChainAdapter {
     }
   }
 
-  public async createWarehouse(warehouse: WarehouseLocation): Promise<WarehouseLocation> {
+  public async createWarehouse(
+    warehouse: WarehouseLocation,
+  ): Promise<WarehouseLocation> {
     try {
       await this.checkPrerequisites();
 
@@ -167,14 +184,20 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/facilities`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to create warehouse: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to create warehouse: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('warehouse.created', { id: warehouse.id });
+      this.logEvent("warehouse.created", { id: warehouse.id });
 
       return {
         id: result.facilityId,
@@ -192,7 +215,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
   public async updateWarehouse(
     warehouseId: string,
-    updates: Partial<WarehouseLocation>
+    updates: Partial<WarehouseLocation>,
   ): Promise<WarehouseLocation> {
     try {
       await this.checkPrerequisites();
@@ -206,13 +229,19 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/facilities/${warehouseId}`,
-          { method: 'PUT', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to update warehouse: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to update warehouse: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('warehouse.updated', { id: warehouseId });
+      this.logEvent("warehouse.updated", { id: warehouseId });
 
       return this.getWarehouse(warehouseId);
     } catch (error) {
@@ -225,7 +254,10 @@ export class BlueYonderClient extends SupplyChainAdapter {
   // INVENTORY MANAGEMENT
   // ============================================================================
 
-  public async getInventory(warehouseId: string, sku: string): Promise<InventoryItem> {
+  public async getInventory(
+    warehouseId: string,
+    sku: string,
+  ): Promise<InventoryItem> {
     try {
       await this.checkPrerequisites();
 
@@ -233,9 +265,14 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/facilities/${warehouseId}/inventory/${sku}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to get inventory: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to get inventory: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -245,15 +282,15 @@ export class BlueYonderClient extends SupplyChainAdapter {
         id: inventory.inventoryId,
         sku: inventory.sku,
         warehouseId,
-        zone: inventory.zone || '',
-        binLocation: inventory.location || '',
+        zone: inventory.zone || "",
+        binLocation: inventory.location || "",
         quantityOnHand: inventory.qoh,
         quantityAllocated: inventory.qal,
         quantityAvailable: inventory.qav,
         productName: sku,
-        uom: inventory.uom || 'EACH',
+        uom: inventory.uom || "EACH",
         receivedDate: new Date(inventory.receivedDate || Date.now()),
-        status: (inventory.status as any) || 'available',
+        status: (inventory.status as any) || "available",
         unitCost: inventory.cost || 0,
       };
     } catch (error) {
@@ -264,7 +301,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
   public async listInventory(
     warehouseId: string,
-    filters?: { zone?: string; status?: string; sku?: string }
+    filters?: { zone?: string; status?: string; sku?: string },
   ): Promise<InventoryItem[]> {
     try {
       await this.checkPrerequisites();
@@ -272,15 +309,20 @@ export class BlueYonderClient extends SupplyChainAdapter {
       const items = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams();
-        if (filters?.zone) params.append('zone', filters.zone);
-        if (filters?.status) params.append('status', filters.status);
-        if (filters?.sku) params.append('sku', filters.sku);
+        if (filters?.zone) params.append("zone", filters.zone);
+        if (filters?.status) params.append("status", filters.status);
+        if (filters?.sku) params.append("sku", filters.sku);
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/facilities/${warehouseId}/inventory?${params}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to list inventory: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to list inventory: ${response.statusText}`);
         const data = (await response.json()) as { content?: any[] };
         return data.content || [];
       });
@@ -291,15 +333,15 @@ export class BlueYonderClient extends SupplyChainAdapter {
         id: inv.inventoryId,
         sku: inv.sku,
         warehouseId,
-        zone: inv.zone || '',
-        binLocation: inv.location || '',
+        zone: inv.zone || "",
+        binLocation: inv.location || "",
         quantityOnHand: inv.qoh,
         quantityAllocated: inv.qal,
         quantityAvailable: inv.qav,
         productName: inv.sku,
-        uom: inv.uom || 'EACH',
+        uom: inv.uom || "EACH",
         receivedDate: new Date(inv.receivedDate || Date.now()),
-        status: (inv.status as any) || 'available',
+        status: (inv.status as any) || "available",
         unitCost: inv.cost || 0,
       }));
     } catch (error) {
@@ -308,18 +350,26 @@ export class BlueYonderClient extends SupplyChainAdapter {
     }
   }
 
-  public async syncInventoryRealTime(warehouseId: string): Promise<InventoryItem[]> {
+  public async syncInventoryRealTime(
+    warehouseId: string,
+  ): Promise<InventoryItem[]> {
     return this.listInventory(warehouseId);
   }
 
-  public async syncInventoryBatch(warehouseId: string, skus: string[]): Promise<InventoryItem[]> {
+  public async syncInventoryBatch(
+    warehouseId: string,
+    skus: string[],
+  ): Promise<InventoryItem[]> {
     const results: InventoryItem[] = [];
     for (const sku of skus) {
       try {
         const item = await this.getInventory(warehouseId, sku);
         results.push(item);
       } catch (error) {
-        this.logEvent('inventory.sync.error', { sku, error: (error as Error).message });
+        this.logEvent("inventory.sync.error", {
+          sku,
+          error: (error as Error).message,
+        });
       }
     }
     return results;
@@ -329,7 +379,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
     warehouseId: string,
     sku: string,
     quantity: number,
-    reason: string
+    reason: string,
   ): Promise<InventoryItem> {
     try {
       await this.checkPrerequisites();
@@ -345,13 +395,19 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/facilities/${warehouseId}/inventory-adjustments`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to adjust inventory: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to adjust inventory: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('inventory.adjusted', { sku, quantity, reason });
+      this.logEvent("inventory.adjusted", { sku, quantity, reason });
 
       return this.getInventory(warehouseId, sku);
     } catch (error) {
@@ -365,7 +421,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
     sku: string,
     fromBin: string,
     toBin: string,
-    quantity: number
+    quantity: number,
   ): Promise<InventoryItem[]> {
     try {
       await this.checkPrerequisites();
@@ -382,13 +438,19 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/facilities/${warehouseId}/inventory-moves`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to move inventory: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to move inventory: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('inventory.moved', { sku, fromBin, toBin, quantity });
+      this.logEvent("inventory.moved", { sku, fromBin, toBin, quantity });
 
       return [await this.getInventory(warehouseId, sku)];
     } catch (error) {
@@ -401,7 +463,9 @@ export class BlueYonderClient extends SupplyChainAdapter {
   // INBOUND OPERATIONS
   // ============================================================================
 
-  public async getInboundShipment(shipmentId: string): Promise<InboundShipment> {
+  public async getInboundShipment(
+    shipmentId: string,
+  ): Promise<InboundShipment> {
     try {
       await this.checkPrerequisites();
 
@@ -409,9 +473,16 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/inbound-shipments/${shipmentId}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to get inbound shipment: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(
+            `Failed to get inbound shipment: ${response.statusText}`,
+          );
         return response.json() as Promise<any>;
       });
 
@@ -419,9 +490,9 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
       return {
         id: shipment.shipmentId,
-        trackingNumber: shipment.trackingNumber || '',
+        trackingNumber: shipment.trackingNumber || "",
         warehouseId: shipment.facilityId,
-        status: (shipment.status as any) || 'in_transit',
+        status: (shipment.status as any) || "in_transit",
         items: shipment.items || [],
         expectedDeliveryDate: new Date(shipment.expectedDeliveryDate),
       };
@@ -433,7 +504,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
   public async listInboundShipments(
     warehouseId: string,
-    status?: string
+    status?: string,
   ): Promise<InboundShipment[]> {
     try {
       await this.checkPrerequisites();
@@ -441,14 +512,20 @@ export class BlueYonderClient extends SupplyChainAdapter {
       const shipments = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams({ facilityId: warehouseId });
-        if (status) params.append('status', status);
+        if (status) params.append("status", status);
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/inbound-shipments?${params}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
         if (!response.ok)
-          throw new Error(`Failed to list inbound shipments: ${response.statusText}`);
+          throw new Error(
+            `Failed to list inbound shipments: ${response.statusText}`,
+          );
         const data = (await response.json()) as { content?: any[] };
         return data.content || [];
       });
@@ -457,9 +534,9 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
       return shipments.map((s) => ({
         id: s.shipmentId,
-        trackingNumber: s.trackingNumber || '',
+        trackingNumber: s.trackingNumber || "",
         warehouseId,
-        status: (s.status as any) || 'in_transit',
+        status: (s.status as any) || "in_transit",
         items: s.items || [],
         expectedDeliveryDate: new Date(s.expectedDeliveryDate),
       }));
@@ -469,7 +546,9 @@ export class BlueYonderClient extends SupplyChainAdapter {
     }
   }
 
-  public async createInboundShipment(shipment: InboundShipment): Promise<InboundShipment> {
+  public async createInboundShipment(
+    shipment: InboundShipment,
+  ): Promise<InboundShipment> {
     try {
       await this.checkPrerequisites();
 
@@ -480,25 +559,33 @@ export class BlueYonderClient extends SupplyChainAdapter {
           facilityId: shipment.warehouseId,
           expectedDeliveryDate: shipment.expectedDeliveryDate,
           items: shipment.items,
-          status: 'in_transit',
+          status: "in_transit",
         };
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/inbound-shipments`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to create inbound shipment: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(
+            `Failed to create inbound shipment: ${response.statusText}`,
+          );
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('inbound.created', { id: result.shipmentId });
+      this.logEvent("inbound.created", { id: result.shipmentId });
 
       return {
         id: result.shipmentId,
         trackingNumber: result.trackingNumber,
         warehouseId: shipment.warehouseId,
-        status: 'in_transit',
+        status: "in_transit",
         items: shipment.items,
         expectedDeliveryDate: shipment.expectedDeliveryDate,
       };
@@ -510,7 +597,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
   public async receiveInboundShipment(
     shipmentId: string,
-    receivedItems: Array<{ sku: string; quantity: number; lotNumber?: string }>
+    receivedItems: Array<{ sku: string; quantity: number; lotNumber?: string }>,
   ): Promise<InboundShipment> {
     try {
       await this.checkPrerequisites();
@@ -525,13 +612,19 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/inbound-shipments/${shipmentId}/receive`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to receive shipment: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to receive shipment: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('inbound.received', { id: shipmentId });
+      this.logEvent("inbound.received", { id: shipmentId });
 
       return this.getInboundShipment(shipmentId);
     } catch (error) {
@@ -543,7 +636,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
   public async confirmQualityCheck(
     shipmentId: string,
     qcPassed: boolean,
-    notes?: string
+    notes?: string,
   ): Promise<ReceiptConfirmation> {
     try {
       await this.checkPrerequisites();
@@ -553,30 +646,36 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const payload = {
           shipmentId,
           qcPassed,
-          qcNotes: notes || '',
+          qcNotes: notes || "",
           qcDate: new Date().toISOString(),
         };
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/inbound-shipments/${shipmentId}/quality-check`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to confirm QC: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to confirm QC: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('qc.confirmed', { shipmentId, qcPassed });
+      this.logEvent("qc.confirmed", { shipmentId, qcPassed });
 
       return {
         id: result.receiptId,
         shipmentId,
-        warehouseId: this.config.warehouseId || '',
+        warehouseId: this.config.warehouseId || "",
         receiptDate: new Date(),
-        receivedBy: 'system',
-        status: qcPassed ? 'qc_passed' : 'qc_failed',
+        receivedBy: "system",
+        status: qcPassed ? "qc_passed" : "qc_failed",
         items: result.items || [],
-        qcStatus: qcPassed ? 'pass' : 'fail',
+        qcStatus: qcPassed ? "pass" : "fail",
         qcNotes: notes,
       };
     } catch (error) {
@@ -597,9 +696,14 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/orders/${orderId}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to get order: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to get order: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -608,11 +712,11 @@ export class BlueYonderClient extends SupplyChainAdapter {
       return {
         id: order.orderId,
         orderNumber: order.orderNumber,
-        type: 'sales',
+        type: "sales",
         sourceWarehouseId: order.facilityId,
         orderDate: new Date(order.orderDate),
-        status: (order.status as any) || 'pending',
-        priority: 'standard',
+        status: (order.status as any) || "pending",
+        priority: "standard",
         items: order.items || [],
       };
     } catch (error) {
@@ -623,7 +727,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
   public async listOutboundOrders(
     warehouseId: string,
-    status?: string
+    status?: string,
   ): Promise<OutboundOrder[]> {
     try {
       await this.checkPrerequisites();
@@ -631,13 +735,18 @@ export class BlueYonderClient extends SupplyChainAdapter {
       const orders = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams({ facilityId: warehouseId });
-        if (status) params.append('status', status);
+        if (status) params.append("status", status);
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/orders?${params}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to list orders: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to list orders: ${response.statusText}`);
         const data = (await response.json()) as { content?: any[] };
         return data.content || [];
       });
@@ -647,11 +756,11 @@ export class BlueYonderClient extends SupplyChainAdapter {
       return orders.map((o) => ({
         id: o.orderId,
         orderNumber: o.orderNumber,
-        type: 'sales',
+        type: "sales",
         sourceWarehouseId: warehouseId,
         orderDate: new Date(o.orderDate),
-        status: (o.status as any) || 'pending',
-        priority: 'standard',
+        status: (o.status as any) || "pending",
+        priority: "standard",
         items: o.items || [],
       }));
     } catch (error) {
@@ -660,7 +769,9 @@ export class BlueYonderClient extends SupplyChainAdapter {
     }
   }
 
-  public async createOutboundOrder(order: OutboundOrder): Promise<OutboundOrder> {
+  public async createOutboundOrder(
+    order: OutboundOrder,
+  ): Promise<OutboundOrder> {
     try {
       await this.checkPrerequisites();
 
@@ -671,19 +782,25 @@ export class BlueYonderClient extends SupplyChainAdapter {
           facilityId: order.sourceWarehouseId,
           orderDate: order.orderDate,
           items: order.items,
-          status: 'pending',
+          status: "pending",
         };
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/orders`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to create order: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to create order: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('order.created', { id: result.orderId });
+      this.logEvent("order.created", { id: result.orderId });
 
       return {
         id: result.orderId,
@@ -691,7 +808,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
         type: order.type,
         sourceWarehouseId: order.sourceWarehouseId,
         orderDate: order.orderDate,
-        status: 'pending',
+        status: "pending",
         priority: order.priority,
         items: order.items,
       };
@@ -703,7 +820,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
   public async updateOutboundOrder(
     orderId: string,
-    updates: Partial<OutboundOrder>
+    updates: Partial<OutboundOrder>,
   ): Promise<OutboundOrder> {
     try {
       await this.checkPrerequisites();
@@ -717,13 +834,19 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/orders/${orderId}`,
-          { method: 'PUT', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to update order: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to update order: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('order.updated', { id: orderId });
+      this.logEvent("order.updated", { id: orderId });
 
       return this.getOutboundOrder(orderId);
     } catch (error) {
@@ -732,7 +855,10 @@ export class BlueYonderClient extends SupplyChainAdapter {
     }
   }
 
-  public async cancelOutboundOrder(orderId: string, reason: string): Promise<OutboundOrder> {
+  public async cancelOutboundOrder(
+    orderId: string,
+    reason: string,
+  ): Promise<OutboundOrder> {
     try {
       await this.checkPrerequisites();
 
@@ -742,13 +868,19 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/orders/${orderId}/cancel`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to cancel order: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to cancel order: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('order.cancelled', { id: orderId, reason });
+      this.logEvent("order.cancelled", { id: orderId, reason });
 
       return this.getOutboundOrder(orderId);
     } catch (error) {
@@ -761,7 +893,9 @@ export class BlueYonderClient extends SupplyChainAdapter {
   // FULFILLMENT & ALLOCATION
   // ============================================================================
 
-  public async getFulfillmentRequest(fulfillmentId: string): Promise<FulfillmentRequest> {
+  public async getFulfillmentRequest(
+    fulfillmentId: string,
+  ): Promise<FulfillmentRequest> {
     try {
       await this.checkPrerequisites();
 
@@ -769,10 +903,16 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/fulfillment-requests/${fulfillmentId}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
         if (!response.ok)
-          throw new Error(`Failed to get fulfillment request: ${response.statusText}`);
+          throw new Error(
+            `Failed to get fulfillment request: ${response.statusText}`,
+          );
         return response.json() as Promise<any>;
       });
 
@@ -783,7 +923,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
         orderId: result.orderId,
         warehouseId: result.facilityId,
         createdAt: new Date(result.createdDate),
-        status: (result.status as any) || 'pending',
+        status: (result.status as any) || "pending",
         allocations: result.allocations || [],
       };
     } catch (error) {
@@ -795,7 +935,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
   public async allocateOrder(
     orderId: string,
     warehouseId: string,
-    allocationMethod?: 'fifo' | 'closest' | 'random'
+    allocationMethod?: "fifo" | "closest" | "random",
   ): Promise<FulfillmentRequest> {
     try {
       await this.checkPrerequisites();
@@ -805,27 +945,33 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const payload = {
           orderId,
           facilityId: warehouseId,
-          allocationMethod: allocationMethod || 'fifo',
+          allocationMethod: allocationMethod || "fifo",
           allocatedDate: new Date().toISOString(),
         };
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/allocate`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to allocate order: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to allocate order: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('order.allocated', { orderId, warehouseId });
+      this.logEvent("order.allocated", { orderId, warehouseId });
 
       return {
         id: result.fulfillmentId,
         orderId,
         warehouseId,
         createdAt: new Date(),
-        status: 'allocated',
+        status: "allocated",
         allocations: result.allocations || [],
       };
     } catch (error) {
@@ -834,13 +980,15 @@ export class BlueYonderClient extends SupplyChainAdapter {
     }
   }
 
-  public async releaseFulfillment(fulfillmentId: string): Promise<FulfillmentRequest> {
-    return this.updateFulfillmentStatus(fulfillmentId, 'in_progress');
+  public async releaseFulfillment(
+    fulfillmentId: string,
+  ): Promise<FulfillmentRequest> {
+    return this.updateFulfillmentStatus(fulfillmentId, "in_progress");
   }
 
   public async updateFulfillmentStatus(
     fulfillmentId: string,
-    status: string
+    status: string,
   ): Promise<FulfillmentRequest> {
     try {
       await this.checkPrerequisites();
@@ -851,14 +999,21 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/fulfillment-requests/${fulfillmentId}`,
-          { method: 'PUT', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
         if (!response.ok)
-          throw new Error(`Failed to update fulfillment: ${response.statusText}`);
+          throw new Error(
+            `Failed to update fulfillment: ${response.statusText}`,
+          );
       });
 
       this.handleApiResponse(true);
-      this.logEvent('fulfillment.updated', { id: fulfillmentId, status });
+      this.logEvent("fulfillment.updated", { id: fulfillmentId, status });
 
       return this.getFulfillmentRequest(fulfillmentId);
     } catch (error) {
@@ -879,9 +1034,14 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/waves/${waveId}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to get wave: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to get wave: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -892,7 +1052,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
         waveNumber: wave.waveNumber,
         warehouseId: wave.facilityId,
         createdAt: new Date(wave.createdDate),
-        status: (wave.status as any) || 'planned',
+        status: (wave.status as any) || "planned",
         fulfillmentRequestIds: wave.fulfillmentIds || [],
         orderCount: wave.orderCount,
         unitCount: wave.unitCount,
@@ -903,20 +1063,28 @@ export class BlueYonderClient extends SupplyChainAdapter {
     }
   }
 
-  public async listWaves(warehouseId: string, status?: string): Promise<WaveDefinition[]> {
+  public async listWaves(
+    warehouseId: string,
+    status?: string,
+  ): Promise<WaveDefinition[]> {
     try {
       await this.checkPrerequisites();
 
       const waves = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams({ facilityId: warehouseId });
-        if (status) params.append('status', status);
+        if (status) params.append("status", status);
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/waves?${params}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to list waves: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to list waves: ${response.statusText}`);
         const data = (await response.json()) as { content?: any[] };
         return data.content || [];
       });
@@ -928,7 +1096,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
         waveNumber: w.waveNumber,
         warehouseId,
         createdAt: new Date(w.createdDate),
-        status: (w.status as any) || 'planned',
+        status: (w.status as any) || "planned",
         fulfillmentRequestIds: w.fulfillmentIds || [],
         orderCount: w.orderCount,
         unitCount: w.unitCount,
@@ -942,7 +1110,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
   public async createWave(
     warehouseId: string,
     fulfillmentIds: string[],
-    pickMethod?: 'zone' | 'batch' | 'order'
+    pickMethod?: "zone" | "batch" | "order",
   ): Promise<WaveDefinition> {
     try {
       await this.checkPrerequisites();
@@ -952,27 +1120,33 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const payload = {
           facilityId: warehouseId,
           fulfillmentIds,
-          pickMethod: pickMethod || 'zone',
+          pickMethod: pickMethod || "zone",
           createdDate: new Date().toISOString(),
         };
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/waves`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to create wave: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to create wave: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('wave.created', { id: result.waveId });
+      this.logEvent("wave.created", { id: result.waveId });
 
       return {
         id: result.waveId,
         waveNumber: result.waveNumber,
         warehouseId,
         createdAt: new Date(result.createdDate),
-        status: 'planned',
+        status: "planned",
         fulfillmentRequestIds: fulfillmentIds,
       };
     } catch (error) {
@@ -991,13 +1165,19 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/waves/${waveId}/release`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to release wave: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to release wave: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('wave.released', { id: waveId });
+      this.logEvent("wave.released", { id: waveId });
 
       return this.getWave(waveId);
     } catch (error) {
@@ -1016,13 +1196,19 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/waves/${waveId}/complete`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to complete wave: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to complete wave: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('wave.completed', { id: waveId });
+      this.logEvent("wave.completed", { id: waveId });
 
       return this.getWave(waveId);
     } catch (error) {
@@ -1043,9 +1229,14 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/pick-tasks/${taskId}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to get pick task: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to get pick task: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -1055,12 +1246,12 @@ export class BlueYonderClient extends SupplyChainAdapter {
         id: task.taskId,
         waveId: task.waveId,
         fromBinLocation: task.fromLocation,
-        zone: task.zone || '',
+        zone: task.zone || "",
         sku: task.sku,
         quantity: task.quantity,
         pickedQuantity: task.pickedQuantity || 0,
-        toBinLocation: task.toLocation || '',
-        status: (task.status as any) || 'pending',
+        toBinLocation: task.toLocation || "",
+        status: (task.status as any) || "pending",
       };
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -1076,9 +1267,14 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/pick-tasks?waveId=${waveId}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to list pick tasks: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to list pick tasks: ${response.statusText}`);
         const data = (await response.json()) as { content?: any[] };
         return data.content || [];
       });
@@ -1089,12 +1285,12 @@ export class BlueYonderClient extends SupplyChainAdapter {
         id: t.taskId,
         waveId,
         fromBinLocation: t.fromLocation,
-        zone: t.zone || '',
+        zone: t.zone || "",
         sku: t.sku,
         quantity: t.quantity,
         pickedQuantity: t.pickedQuantity || 0,
-        toBinLocation: t.toLocation || '',
-        status: (t.status as any) || 'pending',
+        toBinLocation: t.toLocation || "",
+        status: (t.status as any) || "pending",
       }));
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -1105,7 +1301,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
   public async updatePickTask(
     taskId: string,
     pickedQuantity: number,
-    status: string
+    status: string,
   ): Promise<PickTask> {
     try {
       await this.checkPrerequisites();
@@ -1120,13 +1316,23 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/pick-tasks/${taskId}`,
-          { method: 'PUT', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to update pick task: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to update pick task: ${response.statusText}`);
       });
 
       this.handleApiResponse(true);
-      this.logEvent('pick_task.updated', { id: taskId, pickedQuantity, status });
+      this.logEvent("pick_task.updated", {
+        id: taskId,
+        pickedQuantity,
+        status,
+      });
 
       return this.getPickTask(taskId);
     } catch (error) {
@@ -1147,9 +1353,14 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/pack-stations/${stationId}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to get pack station: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to get pack station: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -1161,8 +1372,8 @@ export class BlueYonderClient extends SupplyChainAdapter {
         warehouseId: station.facilityId,
         zone: station.zone,
         location: station.location,
-        type: (station.type as any) || 'manual',
-        status: (station.status as any) || 'active',
+        type: (station.type as any) || "manual",
+        status: (station.status as any) || "active",
       };
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -1178,9 +1389,16 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/pack-stations?facilityId=${warehouseId}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to list pack stations: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(
+            `Failed to list pack stations: ${response.statusText}`,
+          );
         const data = (await response.json()) as { content?: any[] };
         return data.content || [];
       });
@@ -1193,8 +1411,8 @@ export class BlueYonderClient extends SupplyChainAdapter {
         warehouseId,
         zone: s.zone,
         location: s.location,
-        type: (s.type as any) || 'manual',
-        status: (s.status as any) || 'active',
+        type: (s.type as any) || "manual",
+        status: (s.status as any) || "active",
       }));
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -1206,7 +1424,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
     orderId: string,
     carrier: string,
     trackingNumber: string,
-    weight?: number
+    weight?: number,
   ): Promise<ShipConfirmation> {
     try {
       await this.checkPrerequisites();
@@ -1223,20 +1441,26 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/ship-confirm`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to confirm shipment: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to confirm shipment: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('shipment.confirmed', { orderId, trackingNumber });
+      this.logEvent("shipment.confirmed", { orderId, trackingNumber });
 
       return {
         id: result.shipConfirmId,
         orderId,
         shipmentNumber: result.shipmentNumber,
-        warehouseId: this.config.warehouseId || '',
+        warehouseId: this.config.warehouseId || "",
         shipDate: new Date(),
         items: [],
         carrier,
@@ -1255,8 +1479,13 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
   public async getLocation(
     warehouseId: string,
-    binLocation: string
-  ): Promise<{ binLocation: string; zone: string; capacity?: number; currentQuantity?: number }> {
+    binLocation: string,
+  ): Promise<{
+    binLocation: string;
+    zone: string;
+    capacity?: number;
+    currentQuantity?: number;
+  }> {
     try {
       await this.checkPrerequisites();
 
@@ -1264,9 +1493,14 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/facilities/${warehouseId}/locations/${binLocation}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to get location: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to get location: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -1292,10 +1526,17 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/facilities/${warehouseId}/zones`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to list zones: ${response.statusText}`);
-        const data = (await response.json()) as { content?: Array<{ zone: string }> };
+        if (!response.ok)
+          throw new Error(`Failed to list zones: ${response.statusText}`);
+        const data = (await response.json()) as {
+          content?: Array<{ zone: string }>;
+        };
         return (data.content || []).map((z) => z.zone);
       });
 
@@ -1311,7 +1552,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
   public async configureZone(
     warehouseId: string,
     zone: string,
-    config: { pickMethod?: string; packStations?: number; capacity?: number }
+    config: { pickMethod?: string; packStations?: number; capacity?: number },
   ): Promise<Record<string, unknown>> {
     try {
       await this.checkPrerequisites();
@@ -1327,14 +1568,20 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/zones/${zone}`,
-          { method: 'PUT', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to configure zone: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to configure zone: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('zone.configured', { zone });
+      this.logEvent("zone.configured", { zone });
 
       return result;
     } catch (error) {
@@ -1355,9 +1602,14 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/purchase-orders/${poId}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to get PO: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to get PO: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
@@ -1370,7 +1622,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
         warehouseId: po.facilityId,
         createdDate: new Date(po.createdDate),
         expectedDeliveryDate: new Date(po.expectedDeliveryDate),
-        status: (po.status as any) || 'draft',
+        status: (po.status as any) || "draft",
         items: po.items || [],
         totalValue: po.totalValue,
       };
@@ -1387,13 +1639,18 @@ export class BlueYonderClient extends SupplyChainAdapter {
       const pos = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams();
-        if (status) params.append('status', status);
+        if (status) params.append("status", status);
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/purchase-orders?${params}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to list POs: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to list POs: ${response.statusText}`);
         const data = (await response.json()) as { content?: any[] };
         return data.content || [];
       });
@@ -1407,7 +1664,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
         warehouseId: p.facilityId,
         createdDate: new Date(p.createdDate),
         expectedDeliveryDate: new Date(p.expectedDeliveryDate),
-        status: (p.status as any) || 'draft',
+        status: (p.status as any) || "draft",
         items: p.items || [],
         totalValue: p.totalValue,
       }));
@@ -1430,19 +1687,25 @@ export class BlueYonderClient extends SupplyChainAdapter {
           createdDate: po.createdDate,
           expectedDeliveryDate: po.expectedDeliveryDate,
           items: po.items,
-          status: 'draft',
+          status: "draft",
         };
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/purchase-orders`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to create PO: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to create PO: ${response.statusText}`);
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('po.created', { id: result.poId });
+      this.logEvent("po.created", { id: result.poId });
 
       return {
         id: result.poId,
@@ -1451,7 +1714,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
         warehouseId: po.warehouseId,
         createdDate: po.createdDate,
         expectedDeliveryDate: po.expectedDeliveryDate,
-        status: 'draft',
+        status: "draft",
         items: po.items,
       };
     } catch (error) {
@@ -1472,9 +1735,16 @@ export class BlueYonderClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/transfer-orders/${toId}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to get transfer order: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(
+            `Failed to get transfer order: ${response.statusText}`,
+          );
         return response.json() as Promise<any>;
       });
 
@@ -1487,7 +1757,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
         toWarehouseId: to.toFacilityId,
         createdDate: new Date(to.createdDate),
         expectedDeliveryDate: new Date(to.expectedDeliveryDate),
-        status: (to.status as any) || 'pending',
+        status: (to.status as any) || "pending",
         items: to.items || [],
       };
     } catch (error) {
@@ -1503,13 +1773,20 @@ export class BlueYonderClient extends SupplyChainAdapter {
       const tos = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams();
-        if (status) params.append('status', status);
+        if (status) params.append("status", status);
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/transfer-orders?${params}`,
-          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to list transfer orders: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(
+            `Failed to list transfer orders: ${response.statusText}`,
+          );
         const data = (await response.json()) as { content?: any[] };
         return data.content || [];
       });
@@ -1523,7 +1800,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
         toWarehouseId: t.toFacilityId,
         createdDate: new Date(t.createdDate),
         expectedDeliveryDate: new Date(t.expectedDeliveryDate),
-        status: (t.status as any) || 'pending',
+        status: (t.status as any) || "pending",
         items: t.items || [],
       }));
     } catch (error) {
@@ -1545,19 +1822,27 @@ export class BlueYonderClient extends SupplyChainAdapter {
           createdDate: to.createdDate,
           expectedDeliveryDate: to.expectedDeliveryDate,
           items: to.items,
-          status: 'pending',
+          status: "pending",
         };
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/tenants/${this.config.tenantId}/transfer-orders`,
-          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
         );
-        if (!response.ok) throw new Error(`Failed to create transfer order: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(
+            `Failed to create transfer order: ${response.statusText}`,
+          );
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('to.created', { id: result.toId });
+      this.logEvent("to.created", { id: result.toId });
 
       return {
         id: result.toId,
@@ -1566,7 +1851,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
         toWarehouseId: to.toWarehouseId,
         createdDate: to.createdDate,
         expectedDeliveryDate: to.expectedDeliveryDate,
-        status: 'pending',
+        status: "pending",
         items: to.items,
       };
     } catch (error) {
@@ -1581,16 +1866,19 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
   private async authenticateOAuth2(): Promise<void> {
     try {
-      const response = await fetch(this.config.tokenUrl || `${this.config.baseUrl}/oauth/token`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          grant_type: 'client_credentials',
-          client_id: this.config.apiKey || '',
-          client_secret: this.config.clientSecret || '',
-        }).toString(),
-        signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-      });
+      const response = await fetch(
+        this.config.tokenUrl || `${this.config.baseUrl}/oauth/token`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            grant_type: "client_credentials",
+            client_id: this.config.apiKey || "",
+            client_secret: this.config.clientSecret || "",
+          }).toString(),
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`OAuth2 authentication failed: ${response.statusText}`);
@@ -1603,7 +1891,7 @@ export class BlueYonderClient extends SupplyChainAdapter {
       this.accessToken = data.access_token;
       this.tokenExpiresAt = Date.now() + data.expires_in * 1000;
 
-      this.logEvent('authentication.successful');
+      this.logEvent("authentication.successful");
     } catch (error) {
       throw new Error(`Failed to authenticate: ${(error as Error).message}`);
     }
@@ -1611,9 +1899,9 @@ export class BlueYonderClient extends SupplyChainAdapter {
 
   private buildHeaders(): Record<string, string> {
     return {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${this.accessToken}`,
-      'X-Tenant-ID': this.config.tenantId || '',
+      "X-Tenant-ID": this.config.tenantId || "",
       ...this.config.customHeaders,
     };
   }

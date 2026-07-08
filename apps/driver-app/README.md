@@ -23,16 +23,19 @@ A React Native (Expo) mobile application for delivery drivers to manage routes, 
 ## Installation
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Create `.env` file from `.env.example`:
+
 ```bash
 cp .env.example .env
 ```
 
 3. Update `.env` with your API endpoint:
+
 ```
 EXPO_PUBLIC_API_URL=http://your-api-url:3000
 ```
@@ -40,11 +43,13 @@ EXPO_PUBLIC_API_URL=http://your-api-url:3000
 ## Development
 
 Start the development server:
+
 ```bash
 npm start
 ```
 
 Run on specific platform:
+
 ```bash
 # iOS
 npm run ios
@@ -56,6 +61,7 @@ npm run android
 ## TypeScript
 
 Run type checking:
+
 ```bash
 npm run typecheck
 ```
@@ -63,6 +69,7 @@ npm run typecheck
 ## Linting
 
 Check code style:
+
 ```bash
 npm run lint
 ```
@@ -86,20 +93,24 @@ app.json             # Expo configuration
 The app expects the following API structure:
 
 ### Authentication
+
 - `POST /api/v4/auth/driver/login` - Login with phone and password
 - `POST /api/v4/auth/driver/logout` - Logout
 
 ### Deliveries
+
 - `GET /api/v4/drivers/me/active-delivery` - Get current active delivery
 - `GET /api/v4/deliveries/{id}` - Get delivery details
 - `PATCH /api/v4/deliveries/{id}` - Update delivery status/proof
 
 ### Routes
+
 - `GET /api/v4/drivers/me/routes` - Get assigned routes
 - `GET /api/v4/routes/{id}` - Get route details
 - `PATCH /api/v4/routes/{id}` - Update route status
 
 ### Driver
+
 - `GET /api/v4/drivers/me/profile` - Get driver profile
 - `GET /api/v4/drivers/me/stats/today` - Get today's statistics
 - `PATCH /api/v4/drivers/{id}/location` - Send location update
@@ -145,16 +156,19 @@ Recommended test scenarios:
 ## Troubleshooting
 
 ### Location permission denied
+
 - Grant location permissions in device settings
 - For iOS: Check Info.plist permissions
 - For Android: Request runtime permissions
 
 ### API connection error
+
 - Verify API URL in `.env`
 - Check backend server is running
 - Verify network connectivity
 
 ### Token storage issues
+
 - Clear app data and retry login
 - On iOS: Keychain access may require device unlock
 - On Android: Verify secure storage setup

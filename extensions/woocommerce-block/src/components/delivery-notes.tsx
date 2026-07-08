@@ -3,7 +3,7 @@
  * Text input for delivery instructions
  */
 
-import { useState } from '@wordpress/element';
+import { useState } from "@wordpress/element";
 
 interface DeliveryNotesProps {
   value?: string;
@@ -14,13 +14,14 @@ interface DeliveryNotesProps {
 }
 
 const DEFAULT_MAX_LENGTH = 500;
-const DEFAULT_PLACEHOLDER = 'Add delivery instructions (e.g., gate code, special access instructions)';
+const DEFAULT_PLACEHOLDER =
+  "Add delivery instructions (e.g., gate code, special access instructions)";
 
 /**
  * Delivery Notes Component
  */
 export function DeliveryNotes({
-  value = '',
+  value = "",
   onChange,
   isRequired = false,
   placeholder = DEFAULT_PLACEHOLDER,
@@ -53,9 +54,9 @@ export function DeliveryNotes({
         required={isRequired}
         className={`
           delivery-notes-textarea
-          ${isFocused ? 'delivery-notes-textarea--focused' : ''}
-          ${isOverLimit ? 'delivery-notes-textarea--error' : ''}
-          ${isNearLimit && !isOverLimit ? 'delivery-notes-textarea--warning' : ''}
+          ${isFocused ? "delivery-notes-textarea--focused" : ""}
+          ${isOverLimit ? "delivery-notes-textarea--error" : ""}
+          ${isNearLimit && !isOverLimit ? "delivery-notes-textarea--warning" : ""}
         `}
         rows={4}
         aria-label="Delivery instructions"
@@ -66,11 +67,13 @@ export function DeliveryNotes({
         <p id="delivery-notes-help" className="delivery-notes-help">
           Provide any special instructions for delivery
         </p>
-        <span className={`
+        <span
+          className={`
           delivery-notes-counter
-          ${isOverLimit ? 'delivery-notes-counter--error' : ''}
-          ${isNearLimit && !isOverLimit ? 'delivery-notes-counter--warning' : ''}
-        `}>
+          ${isOverLimit ? "delivery-notes-counter--error" : ""}
+          ${isNearLimit && !isOverLimit ? "delivery-notes-counter--warning" : ""}
+        `}
+        >
           {charCount}/{maxLength}
         </span>
       </div>

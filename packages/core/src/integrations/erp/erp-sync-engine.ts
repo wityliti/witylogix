@@ -17,8 +17,8 @@ import type {
   SyncEntityType,
   ERPSyncStatus,
   ERPBatchResult,
-} from './types.js';
-import { AbstractERPAdapter } from './erp-adapter.js';
+} from "./types.js";
+import { AbstractERPAdapter } from "./erp-adapter.js";
 
 // ─── SYNC ENGINE TYPES ────────────────────────────────────────────────────
 
@@ -40,12 +40,12 @@ export interface SyncAuditLog {
   entityType: SyncEntityType;
   recordId: string;
   direction: SyncDirection;
-  action: 'create' | 'update' | 'delete' | 'conflict';
+  action: "create" | "update" | "delete" | "conflict";
   localData?: Record<string, any>;
   remoteData?: Record<string, any>;
   resolvedData?: Record<string, any>;
   resolutionMethod?: string;
-  status: 'success' | 'failed' | 'partial';
+  status: "success" | "failed" | "partial";
   error?: string;
   duration: number; // ms
 }
@@ -54,7 +54,7 @@ export interface DeltaChangeSet {
   recordId: string;
   entity: SyncEntityType;
   lastSyncAt: Date;
-  changeType: 'create' | 'update' | 'delete';
+  changeType: "create" | "update" | "delete";
   data: Record<string, any>;
 }
 
@@ -96,20 +96,24 @@ export class ERPSyncEngine {
 
   // Entity dependency order for syncing
   private readonly ENTITY_SYNC_ORDER: SyncEntityType[] = [
-    'customer',
-    'vendor',
-    'product',
-    'order',
-    'invoice',
-    'payment',
-    'journal_entry',
-    'inventory',
+    "customer",
+    "vendor",
+    "product",
+    "order",
+    "invoice",
+    "payment",
+    "journal_entry",
+    "inventory",
   ];
 
   /**
    * Register adapter for a connection
    */
-  registerAdapter(connectionId: string, connection: ERPConnection, adapter: AbstractERPAdapter): void {
+  registerAdapter(
+    connectionId: string,
+    connection: ERPConnection,
+    adapter: AbstractERPAdapter,
+  ): void {
     this.adapters.set(connectionId, adapter);
     this.connections.set(connectionId, connection);
   }
@@ -253,9 +257,9 @@ export class ERPSyncEngine {
 
           result.auditLogs.push(auditLog);
 
-          if (auditLog.status === 'success') {
+          if (auditLog.status === "success") {
             result.successCount += 1;
-          } else if (auditLog.action === 'conflict') {
+          } else if (auditLog.action === "conflict") {
             result.conflictCount += 1;
           } else {
             result.failureCount += 1;
@@ -300,28 +304,45 @@ export class ERPSyncEngine {
       recordId: change.recordId,
       direction: options.direction,
       action: change.changeType,
-      status: 'success',
+      status: "success",
       duration: 0,
     };
 
     try {
       // Determine sync direction
-      if (options.direction === 'push' || options.direction === 'bidirectional') {
+      if (
+        options.direction === "push" ||
+        options.direction === "bidirectional"
+      ) {
         // Push to ERP
         auditLog.localData = change.data;
         await this.pushToERP(adapter, entityType, change);
       }
 
-      if (options.direction === 'pull' || options.direction === 'bidirectional') {
+      if (
+        options.direction === "pull" ||
+        options.direction === "bidirectional"
+      ) {
         // Pull from ERP
-        const remoteData = await this.pullFromERP(adapter, entityType, change.recordId);
+        const remoteData = await this.pullFromERP(
+          adapter,
+          entityType,
+          change.recordId,
+        );
         auditLog.remoteData = remoteData;
 
         // Check for conflicts
-        if (options.direction === 'bidirectional' && change.changeType === 'update') {
-          const conflict = this.detectConflict(change.data, remoteData, change.lastSyncAt);
+        if (
+          options.direction === "bidirectional" &&
+          change.changeType === "update"
+        ) {
+          const conflict = this.detectConflict(
+            change.data,
+            remoteData,
+            change.lastSyncAt,
+          );
           if (conflict) {
-            auditLog.action = 'conflict';
+            auditLog.action = "conflict";
             const resolved = await this.resolveConflict(
               conflict,
               options.conflictResolution,
@@ -335,7 +356,7 @@ export class ERPSyncEngine {
       auditLog.duration = Date.now() - startTime;
       return auditLog;
     } catch (error: any) {
-      auditLog.status = 'failed';
+      auditLog.status = "failed";
       auditLog.error = error.message;
       auditLog.duration = Date.now() - startTime;
       throw error;
@@ -385,13 +406,13 @@ export class ERPSyncEngine {
 
     // More sophisticated detection could track field-level changes
     return {
-      recordId: localData.id || '',
-      entity: 'customer' as SyncEntityType,
+      recordId: localData.id || "",
+      entity: "customer" as SyncEntityType,
       localVersion: localData,
       remoteVersion: remoteData,
       localLastModified: new Date(),
       remoteLastModified: new Date(),
-      resolutionStrategy: 'timestamp',
+      resolutionStrategy: "timestamp",
     };
   }
 
@@ -403,17 +424,17 @@ export class ERPSyncEngine {
     strategy: ConflictResolution,
   ): Promise<Record<string, any>> {
     switch (strategy) {
-      case 'timestamp':
+      case "timestamp":
         // Keep the more recently modified version
         return conflict.remoteLastModified > conflict.localLastModified
           ? conflict.remoteVersion
           : conflict.localVersion;
 
-      case 'priority':
+      case "priority":
         // Keep local (Witylogix is source of truth)
         return conflict.localVersion;
 
-      case 'manual':
+      case "manual":
         // Return both versions for manual review
         return {
           localVersion: conflict.localVersion,
@@ -421,7 +442,7 @@ export class ERPSyncEngine {
           requiresManualReview: true,
         };
 
-      case 'custom':
+      case "custom":
         // Allow custom resolver function
         return conflict.localVersion;
 
@@ -473,7 +494,9 @@ export class ERPSyncEngine {
    */
   clearAuditLogs(connectionId?: string): void {
     if (connectionId) {
-      this.auditLogs = this.auditLogs.filter((log) => log.connectionId !== connectionId);
+      this.auditLogs = this.auditLogs.filter(
+        (log) => log.connectionId !== connectionId,
+      );
     } else {
       this.auditLogs = [];
     }
@@ -509,17 +532,17 @@ export class ERPSyncEngine {
       : this.auditLogs;
 
     const headers = [
-      'ID',
-      'Connection ID',
-      'Sync ID',
-      'Timestamp',
-      'Entity Type',
-      'Record ID',
-      'Direction',
-      'Action',
-      'Status',
-      'Duration (ms)',
-      'Error',
+      "ID",
+      "Connection ID",
+      "Sync ID",
+      "Timestamp",
+      "Entity Type",
+      "Record ID",
+      "Direction",
+      "Action",
+      "Status",
+      "Duration (ms)",
+      "Error",
     ];
 
     const rows = logs.map((log) => [
@@ -533,10 +556,12 @@ export class ERPSyncEngine {
       log.action,
       log.status,
       log.duration,
-      log.error || '',
+      log.error || "",
     ]);
 
-    const csv = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n');
+    const csv = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${cell}"`).join(","))
+      .join("\n");
 
     return csv;
   }
@@ -546,7 +571,10 @@ export class ERPSyncEngine {
  * Factory function to create sync engine with pre-registered adapters
  */
 export function createERPSyncEngine(
-  connections: Map<string, { connection: ERPConnection; adapter: AbstractERPAdapter }>,
+  connections: Map<
+    string,
+    { connection: ERPConnection; adapter: AbstractERPAdapter }
+  >,
 ): ERPSyncEngine {
   const engine = new ERPSyncEngine();
 

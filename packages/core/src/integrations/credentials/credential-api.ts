@@ -11,9 +11,9 @@
  * All endpoints use Zod validation
  */
 
-import { Router } from 'express';
-import { z } from 'zod';
-import type { Request, Response, NextFunction } from 'express';
+import { Router } from "express";
+import { z } from "zod";
+import type { Request, Response, NextFunction } from "express";
 import type {
   Credential,
   RotationPolicy,
@@ -24,33 +24,38 @@ import type {
   VaultStatus,
   RotationFrequency,
   Severity,
-} from './credential-types.js';
-import type { RotationScheduler, SecretScanner, ZeroDowntimeRotator, CredentialHealthScorer } from './credential-lifecycle-manager.js';
-import type { IVaultAdapter } from './vault-adapters.js';
+} from "./credential-types.js";
+import type {
+  RotationScheduler,
+  SecretScanner,
+  ZeroDowntimeRotator,
+  CredentialHealthScorer,
+} from "./credential-lifecycle-manager.js";
+import type { IVaultAdapter } from "./vault-adapters.js";
 
 // ─── Zod Schemas ────────────────────────────────────────────────────────
 
 const CredentialTypeSchema = z.enum([
-  'api_key',
-  'oauth_token',
-  'jwt',
-  'certificate',
-  'ssh_key',
-  'password',
-  'connection_string',
-  'webhook_secret',
-  'custom',
+  "api_key",
+  "oauth_token",
+  "jwt",
+  "certificate",
+  "ssh_key",
+  "password",
+  "connection_string",
+  "webhook_secret",
+  "custom",
 ]);
 
-const SeveritySchema = z.enum(['critical', 'high', 'medium', 'low']);
+const SeveritySchema = z.enum(["critical", "high", "medium", "low"]);
 
 const RotationFrequencySchema = z.enum([
-  'daily',
-  'weekly',
-  'monthly',
-  'quarterly',
-  'annually',
-  'manual',
+  "daily",
+  "weekly",
+  "monthly",
+  "quarterly",
+  "annually",
+  "manual",
 ]);
 
 const CreateCredentialSchema = z.object({
@@ -91,11 +96,11 @@ const CreateRotationPolicySchema = z.object({
 
 const ScanContentSchema = z.object({
   content: z.string().min(1),
-  scanType: z.enum(['regex', 'entropy', 'file_scan', 'full']).optional(),
+  scanType: z.enum(["regex", "entropy", "file_scan", "full"]).optional(),
 });
 
 const MarkRemediatedSchema = z.object({
-  action: z.enum(['rotated', 'removed', 'marked_false_positive', 'ignored']),
+  action: z.enum(["rotated", "removed", "marked_false_positive", "ignored"]),
   comment: z.string().optional(),
 });
 
@@ -110,11 +115,11 @@ function validateRequest<T>(schema: z.ZodSchema<T>) {
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
-          error: 'Validation error',
+          error: "Validation error",
           details: error.errors,
         });
       }
-      res.status(400).json({ error: 'Invalid request' });
+      res.status(400).json({ error: "Invalid request" });
     }
   };
 }
@@ -134,7 +139,7 @@ export function createCredentialRouter(
    * GET /api/v1/credentials
    * List all credentials for tenant
    */
-  router.get('/credentials', async (req: Request, res: Response) => {
+  router.get("/credentials", async (req: Request, res: Response) => {
     try {
       const tenantId = req.query.tenantId as string;
       const credentials = await vault.list({
@@ -154,12 +159,12 @@ export function createCredentialRouter(
    * GET /api/v1/credentials/:id
    * Get a specific credential (masked)
    */
-  router.get('/credentials/:id', async (req: Request, res: Response) => {
+  router.get("/credentials/:id", async (req: Request, res: Response) => {
     try {
       const credential = await vault.get(req.params.id);
 
       if (!credential) {
-        return res.status(404).json({ error: 'Credential not found' });
+        return res.status(404).json({ error: "Credential not found" });
       }
 
       // Return masked version
@@ -179,7 +184,7 @@ export function createCredentialRouter(
    * Create a new credential
    */
   router.post(
-    '/credentials',
+    "/credentials",
     validateRequest(CreateCredentialSchema),
     async (req: Request, res: Response) => {
       try {
@@ -194,13 +199,15 @@ export function createCredentialRouter(
           displayName: validated.displayName,
           description: validated.description,
           encryptedValue: validated.value,
-          iv: '', // Would be set by vault adapter
-          authTag: '',
-          keyVersion: 'v1',
+          iv: "", // Would be set by vault adapter
+          authTag: "",
+          keyVersion: "v1",
           createdAt: new Date(),
           updatedAt: new Date(),
           rotatedAt: new Date(),
-          expiresAt: validated.expiresAt ? new Date(validated.expiresAt) : undefined,
+          expiresAt: validated.expiresAt
+            ? new Date(validated.expiresAt)
+            : undefined,
           tags: validated.tags,
           metadata: validated.metadata,
         };
@@ -219,7 +226,7 @@ export function createCredentialRouter(
    * Update a credential
    */
   router.put(
-    '/credentials/:id',
+    "/credentials/:id",
     validateRequest(UpdateCredentialSchema),
     async (req: Request, res: Response) => {
       try {
@@ -227,14 +234,17 @@ export function createCredentialRouter(
         const credential = await vault.get(req.params.id);
 
         if (!credential) {
-          return res.status(404).json({ error: 'Credential not found' });
+          return res.status(404).json({ error: "Credential not found" });
         }
 
         // Update fields
-        if (validated.displayName) credential.displayName = validated.displayName;
-        if (validated.description) credential.description = validated.description;
+        if (validated.displayName)
+          credential.displayName = validated.displayName;
+        if (validated.description)
+          credential.description = validated.description;
         if (validated.value) credential.encryptedValue = validated.value;
-        if (validated.expiresAt) credential.expiresAt = new Date(validated.expiresAt);
+        if (validated.expiresAt)
+          credential.expiresAt = new Date(validated.expiresAt);
         if (validated.tags) credential.tags = validated.tags;
         if (validated.metadata) credential.metadata = validated.metadata;
 
@@ -253,10 +263,10 @@ export function createCredentialRouter(
    * DELETE /api/v1/credentials/:id
    * Delete a credential
    */
-  router.delete('/credentials/:id', async (req: Request, res: Response) => {
+  router.delete("/credentials/:id", async (req: Request, res: Response) => {
     try {
       await vault.delete(req.params.id);
-      res.json({ message: 'Credential deleted' });
+      res.json({ message: "Credential deleted" });
     } catch (error) {
       res.status(500).json({ error: String(error) });
     }
@@ -266,32 +276,39 @@ export function createCredentialRouter(
    * POST /api/v1/credentials/:id/rotate
    * Manually trigger credential rotation
    */
-  router.post('/credentials/:id/rotate', async (req: Request, res: Response) => {
-    try {
-      const result = await rotationScheduler.triggerRotation(req.params.id);
-      res.json({ data: result });
-    } catch (error) {
-      res.status(500).json({ error: String(error) });
-    }
-  });
+  router.post(
+    "/credentials/:id/rotate",
+    async (req: Request, res: Response) => {
+      try {
+        const result = await rotationScheduler.triggerRotation(req.params.id);
+        res.json({ data: result });
+      } catch (error) {
+        res.status(500).json({ error: String(error) });
+      }
+    },
+  );
 
   /**
    * GET /api/v1/credentials/:id/health
    * Get credential health score
    */
-  router.get('/credentials/:id/health', async (req: Request, res: Response) => {
+  router.get("/credentials/:id/health", async (req: Request, res: Response) => {
     try {
       const credential = await vault.get(req.params.id);
 
       if (!credential) {
-        return res.status(404).json({ error: 'Credential not found' });
+        return res.status(404).json({ error: "Credential not found" });
       }
 
       // Get rotation policy
-      const nextRotationDate = rotationScheduler.getNextRotationDate(credential.id);
+      const nextRotationDate = rotationScheduler.getNextRotationDate(
+        credential.id,
+      );
 
       // Scan for exposures (mock)
-      const scanResult = await secretScanner.scanContent(credential.encryptedValue);
+      const scanResult = await secretScanner.scanContent(
+        credential.encryptedValue,
+      );
 
       // Calculate health
       const health = healthScorer.calculateHealth(
@@ -314,7 +331,7 @@ export function createCredentialRouter(
    * GET /api/v1/credentials/scan
    * Get previous scan results
    */
-  router.get('/credentials/scan', async (req: Request, res: Response) => {
+  router.get("/credentials/scan", async (req: Request, res: Response) => {
     try {
       // In production: fetch from database
       const scans: ScanResult[] = [];
@@ -333,7 +350,7 @@ export function createCredentialRouter(
    * Run secret scan on content
    */
   router.post(
-    '/credentials/scan/run',
+    "/credentials/scan/run",
     validateRequest(ScanContentSchema),
     async (req: Request, res: Response) => {
       try {
@@ -351,32 +368,35 @@ export function createCredentialRouter(
    * GET /api/v1/credentials/rotation/schedule
    * Get rotation schedule for all credentials
    */
-  router.get('/credentials/rotation/schedule', async (req: Request, res: Response) => {
-    try {
-      // In production: fetch from database
-      const schedules = [
-        {
-          credentialId: 'cred_123',
-          nextRotationAt: new Date(),
-          frequency: 'weekly',
-        },
-      ];
+  router.get(
+    "/credentials/rotation/schedule",
+    async (req: Request, res: Response) => {
+      try {
+        // In production: fetch from database
+        const schedules = [
+          {
+            credentialId: "cred_123",
+            nextRotationAt: new Date(),
+            frequency: "weekly",
+          },
+        ];
 
-      res.json({
-        data: schedules,
-        count: schedules.length,
-      });
-    } catch (error) {
-      res.status(500).json({ error: String(error) });
-    }
-  });
+        res.json({
+          data: schedules,
+          count: schedules.length,
+        });
+      } catch (error) {
+        res.status(500).json({ error: String(error) });
+      }
+    },
+  );
 
   /**
    * POST /api/v1/credentials/rotation/schedule
    * Create or update rotation policy
    */
   router.post(
-    '/credentials/rotation/schedule',
+    "/credentials/rotation/schedule",
     validateRequest(CreateRotationPolicySchema),
     async (req: Request, res: Response) => {
       try {
@@ -416,22 +436,25 @@ export function createCredentialRouter(
    * GET /api/v1/credentials/vaults/status
    * Check vault health and status
    */
-  router.get('/credentials/vaults/status', async (req: Request, res: Response) => {
-    try {
-      const health = await vault.getHealth();
+  router.get(
+    "/credentials/vaults/status",
+    async (req: Request, res: Response) => {
+      try {
+        const health = await vault.getHealth();
 
-      res.json({ data: health });
-    } catch (error) {
-      res.status(500).json({ error: String(error) });
-    }
-  });
+        res.json({ data: health });
+      } catch (error) {
+        res.status(500).json({ error: String(error) });
+      }
+    },
+  );
 
   /**
    * POST /api/v1/credentials/:findingId/remediate
    * Mark a secret finding as remediated
    */
   router.post(
-    '/credentials/:findingId/remediate',
+    "/credentials/:findingId/remediate",
     validateRequest(MarkRemediatedSchema),
     async (req: Request, res: Response) => {
       try {
@@ -442,7 +465,7 @@ export function createCredentialRouter(
           validated.comment,
         );
 
-        res.json({ message: 'Finding marked as remediated' });
+        res.json({ message: "Finding marked as remediated" });
       } catch (error) {
         res.status(500).json({ error: String(error) });
       }
@@ -453,65 +476,75 @@ export function createCredentialRouter(
    * GET /api/v1/credentials/:id/rotation-history
    * Get rotation history for a credential
    */
-  router.get('/credentials/:id/rotation-history', async (req: Request, res: Response) => {
-    try {
-      const history = rotationScheduler.getRotationHistory(req.params.id);
+  router.get(
+    "/credentials/:id/rotation-history",
+    async (req: Request, res: Response) => {
+      try {
+        const history = rotationScheduler.getRotationHistory(req.params.id);
 
-      res.json({
-        data: history,
-        count: history.length,
-      });
-    } catch (error) {
-      res.status(500).json({ error: String(error) });
-    }
-  });
+        res.json({
+          data: history,
+          count: history.length,
+        });
+      } catch (error) {
+        res.status(500).json({ error: String(error) });
+      }
+    },
+  );
 
   /**
    * POST /api/v1/credentials/:id/breach-rotate
    * Trigger immediate rotation due to breach detection
    */
-  router.post('/credentials/:id/breach-rotate', async (req: Request, res: Response) => {
-    try {
-      const result = await rotationScheduler.rotateOnBreach(req.params.id);
+  router.post(
+    "/credentials/:id/breach-rotate",
+    async (req: Request, res: Response) => {
+      try {
+        const result = await rotationScheduler.rotateOnBreach(req.params.id);
 
-      res.json({ data: result });
-    } catch (error) {
-      res.status(500).json({ error: String(error) });
-    }
-  });
+        res.json({ data: result });
+      } catch (error) {
+        res.status(500).json({ error: String(error) });
+      }
+    },
+  );
 
   /**
    * POST /api/v1/credentials/team-rotate
    * Trigger rotation for multiple credentials due to team change
    */
-  router.post('/credentials/team-rotate', async (req: Request, res: Response) => {
-    try {
-      const { credentialIds } = req.body as { credentialIds: string[] };
+  router.post(
+    "/credentials/team-rotate",
+    async (req: Request, res: Response) => {
+      try {
+        const { credentialIds } = req.body as { credentialIds: string[] };
 
-      const results: RotationResult[] = [];
-      for (const credentialId of credentialIds) {
-        try {
-          const result = await rotationScheduler.rotateOnTeamChange(credentialId);
-          results.push(result);
-        } catch (error) {
-          // Log error and continue
+        const results: RotationResult[] = [];
+        for (const credentialId of credentialIds) {
+          try {
+            const result =
+              await rotationScheduler.rotateOnTeamChange(credentialId);
+            results.push(result);
+          } catch (error) {
+            // Log error and continue
+          }
         }
-      }
 
-      res.json({
-        data: results,
-        count: results.length,
-      });
-    } catch (error) {
-      res.status(500).json({ error: String(error) });
-    }
-  });
+        res.json({
+          data: results,
+          count: results.length,
+        });
+      } catch (error) {
+        res.status(500).json({ error: String(error) });
+      }
+    },
+  );
 
   /**
    * POST /api/v1/credentials/backup
    * Create vault backup
    */
-  router.post('/credentials/backup', async (req: Request, res: Response) => {
+  router.post("/credentials/backup", async (req: Request, res: Response) => {
     try {
       const backupId = await vault.backup();
 
@@ -527,13 +560,13 @@ export function createCredentialRouter(
    * POST /api/v1/credentials/restore
    * Restore from backup
    */
-  router.post('/credentials/restore', async (req: Request, res: Response) => {
+  router.post("/credentials/restore", async (req: Request, res: Response) => {
     try {
       const { backupId } = req.body as { backupId: string };
 
       await vault.restore(backupId);
 
-      res.json({ message: 'Backup restored' });
+      res.json({ message: "Backup restored" });
     } catch (error) {
       res.status(500).json({ error: String(error) });
     }
@@ -546,9 +579,9 @@ export function createCredentialRouter(
 
 function maskValue(value: string): string {
   if (value.length <= 4) {
-    return '*'.repeat(value.length);
+    return "*".repeat(value.length);
   }
-  return '*'.repeat(value.length - 4) + value.slice(-4);
+  return "*".repeat(value.length - 4) + value.slice(-4);
 }
 
 /**

@@ -38,7 +38,7 @@ NotificationService
 ### Initialize Service
 
 ```typescript
-import { NotificationService } from '@witylogix/core/notifications-v2';
+import { NotificationService } from "@witylogix/core/notifications-v2";
 
 const service = new NotificationService({
   rateLimitConfig: {
@@ -52,9 +52,9 @@ const service = new NotificationService({
     maxDelayMs: 10000,
     backoffMultiplier: 2,
   },
-  emailFrom: 'noreply@witylogix.com',
-  smsSender: '+1234567890',
-  trackingBaseUrl: 'https://track.witylogix.com',
+  emailFrom: "noreply@witylogix.com",
+  smsSender: "+1234567890",
+  trackingBaseUrl: "https://track.witylogix.com",
 });
 ```
 
@@ -62,17 +62,17 @@ const service = new NotificationService({
 
 ```typescript
 const results = await service.send({
-  customerId: 'cust_123',
-  eventType: 'delivery_scheduled',
+  customerId: "cust_123",
+  eventType: "delivery_scheduled",
   // Optional: specify channels (defaults to customer preferences)
-  channels: ['email', 'sms'],
+  channels: ["email", "sms"],
   data: {
-    customerName: 'John Doe',
-    customerEmail: 'john@example.com',
-    customerPhone: '+15551234567',
-    deliveryDate: '2026-03-15',
-    timeWindow: '2:00pm - 4:00pm',
-    trackingUrl: 'https://example.com/track/order123',
+    customerName: "John Doe",
+    customerEmail: "john@example.com",
+    customerPhone: "+15551234567",
+    deliveryDate: "2026-03-15",
+    timeWindow: "2:00pm - 4:00pm",
+    trackingUrl: "https://example.com/track/order123",
   },
 });
 
@@ -95,21 +95,21 @@ const allResults = await service.sendBulk(notifications);
 ### Manage Preferences
 
 ```typescript
-import { PreferenceManager } from '@witylogix/core/notifications-v2';
+import { PreferenceManager } from "@witylogix/core/notifications-v2";
 
 // Get customer preferences
-const prefs = PreferenceManager.getPreferences('cust_123');
+const prefs = PreferenceManager.getPreferences("cust_123");
 
 // Disable SMS channel
-PreferenceManager.disableChannel('cust_123', 'sms');
+PreferenceManager.disableChannel("cust_123", "sms");
 
 // Disable specific event type for channel
-PreferenceManager.disableEventType('cust_123', 'whatsapp', 'delivery_arriving');
+PreferenceManager.disableEventType("cust_123", "whatsapp", "delivery_arriving");
 
 // Get available channels for event
 const channels = PreferenceManager.getAvailableChannels(
-  'cust_123',
-  'delivery_scheduled'
+  "cust_123",
+  "delivery_scheduled",
 );
 ```
 
@@ -119,16 +119,16 @@ const channels = PreferenceManager.getAvailableChannels(
 const limiter = service.getRateLimiter();
 
 // Check if can send
-const canSend = limiter.canSend('cust_123', 'sms');
+const canSend = limiter.canSend("cust_123", "sms");
 
 // Get status
-const status = limiter.getStatus('cust_123', 'sms');
+const status = limiter.getStatus("cust_123", "sms");
 console.log(status.sentToday); // 3
-console.log(status.limit);     // 10
-console.log(status.resetAt);   // Date
+console.log(status.limit); // 10
+console.log(status.resetAt); // Date
 
 // Reset limits
-limiter.reset('cust_123', 'sms');
+limiter.reset("cust_123", "sms");
 ```
 
 ### URL Shortening
@@ -137,37 +137,35 @@ limiter.reset('cust_123', 'sms');
 const shortener = service.getUrlShortener();
 
 // Shorten a URL
-const result = shortener.shortenUrl('https://example.com/track/verylongid123456');
+const result = shortener.shortenUrl(
+  "https://example.com/track/verylongid123456",
+);
 // result.shortUrl -> 'https://track.witylogix.com/abc123'
 
 // Get stats
-const stats = shortener.getStats('abc123');
+const stats = shortener.getStats("abc123");
 console.log(stats.clicks); // 5
 ```
 
 ### Webhooks
 
 ```typescript
-import { WebhookManager } from '@witylogix/core/notifications-v2';
+import { WebhookManager } from "@witylogix/core/notifications-v2";
 
 // Register webhook
 const webhook = WebhookManager.registerWebhook(
-  'https://myapp.com/webhooks/deliveries',
-  ['delivery.scheduled', 'delivery.delivered']
+  "https://myapp.com/webhooks/deliveries",
+  ["delivery.scheduled", "delivery.delivered"],
 );
 
 // List webhooks
 const webhooks = WebhookManager.listWebhooks();
 
 // Fire webhook
-const result = await WebhookManager.fireWebhook(
-  webhook,
-  'delivery.scheduled',
-  {
-    customerId: 'cust_123',
-    deliveryDate: '2026-03-15',
-  }
-);
+const result = await WebhookManager.fireWebhook(webhook, "delivery.scheduled", {
+  customerId: "cust_123",
+  deliveryDate: "2026-03-15",
+});
 
 // Update webhook
 WebhookManager.updateWebhook(webhook.id, {
@@ -224,7 +222,7 @@ Configure via `NotificationServiceConfig`:
 ```typescript
 const config = {
   rateLimitConfig: {
-    maxSmsPerDay: 20,      // Custom limit
+    maxSmsPerDay: 20, // Custom limit
     maxWhatsAppPerDay: 10,
     windowMs: 24 * 60 * 60 * 1000, // 24 hours
   },
@@ -369,6 +367,7 @@ npm run test -- packages/core/src/notifications-v2/__tests__
 ```
 
 Tests cover:
+
 - Template rendering for all event types and channels
 - Variable interpolation
 - Rate limiting enforcement

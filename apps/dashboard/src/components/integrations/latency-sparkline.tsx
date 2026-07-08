@@ -30,12 +30,21 @@ export function LatencySparkline({
   className,
 }: LatencySparklineProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [hoveredPoint, setHoveredPoint] = useState<LatencyDataPoint | null>(null);
+  const [hoveredPoint, setHoveredPoint] = useState<LatencyDataPoint | null>(
+    null,
+  );
 
   if (!data || data.length === 0) {
     return (
-      <div className={cn("w-full flex items-center justify-center bg-wl-surface-hover rounded-lg p-8", className)}>
-        <div className="text-wl-text-secondary text-sm">No latency data available</div>
+      <div
+        className={cn(
+          "w-full flex items-center justify-center bg-wl-surface-hover rounded-lg p-8",
+          className,
+        )}
+      >
+        <div className="text-wl-text-secondary text-sm">
+          No latency data available
+        </div>
       </div>
     );
   }
@@ -53,7 +62,7 @@ export function LatencySparkline({
     return data
       .map(
         (d, idx) =>
-          `${idx * pointSpacing},${height - (d[percentile] || 0) * yScale}`
+          `${idx * pointSpacing},${height - (d[percentile] || 0) * yScale}`,
       )
       .join(" ");
   };

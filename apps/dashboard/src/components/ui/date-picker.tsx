@@ -10,7 +10,10 @@ import {
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface DatePickerProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> {
+interface DatePickerProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "value" | "onChange"
+> {
   value?: Date | null;
   /** Alias for value (react-datepicker compatible) */
   selected?: Date | null;
@@ -37,7 +40,7 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const effectiveValue = selected ?? value;
     const [isOpen, setIsOpen] = useState(false);
@@ -112,7 +115,7 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
       const selectedDate = new Date(
         currentDate.getFullYear(),
         currentDate.getMonth(),
-        day
+        day,
       );
       if (!isDateDisabled(selectedDate)) {
         onChange(selectedDate);
@@ -123,13 +126,13 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
     // Handle month navigation
     const handlePrevMonth = () => {
       setCurrentDate(
-        new Date(currentDate.getFullYear(), currentDate.getMonth() - 1)
+        new Date(currentDate.getFullYear(), currentDate.getMonth() - 1),
       );
     };
 
     const handleNextMonth = () => {
       setCurrentDate(
-        new Date(currentDate.getFullYear(), currentDate.getMonth() + 1)
+        new Date(currentDate.getFullYear(), currentDate.getMonth() + 1),
       );
     };
 
@@ -199,7 +202,7 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
                 : "border-wl-border-default hover:border-wl-border-default",
               "disabled:opacity-60 disabled:cursor-not-allowed",
               "cursor-pointer",
-              className
+              className,
             )}
             {...props}
           />
@@ -247,42 +250,82 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
                 <button
                   key={index}
                   onClick={() => handleDateClick(day)}
-                  disabled={day === 0 || isDateDisabled(
-                    new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
-                  )}
+                  disabled={
+                    day === 0 ||
+                    isDateDisabled(
+                      new Date(
+                        currentDate.getFullYear(),
+                        currentDate.getMonth(),
+                        day,
+                      ),
+                    )
+                  }
                   className={cn(
                     "w-full aspect-square rounded-md text-sm font-medium",
                     "transition-all duration-fast ease-default",
                     "flex items-center justify-center",
                     day === 0 && "invisible",
-                    day !== 0 && !isDateDisabled(
-                      new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
-                    ) && "hover:bg-wl-bg-surface cursor-pointer",
+                    day !== 0 &&
+                      !isDateDisabled(
+                        new Date(
+                          currentDate.getFullYear(),
+                          currentDate.getMonth(),
+                          day,
+                        ),
+                      ) &&
+                      "hover:bg-wl-bg-surface cursor-pointer",
                     isSelected(
-                      new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
-                    ) &&
-                      "bg-wl-primary-500 text-wl-text-inverse font-semibold",
+                      new Date(
+                        currentDate.getFullYear(),
+                        currentDate.getMonth(),
+                        day,
+                      ),
+                    ) && "bg-wl-primary-500 text-wl-text-inverse font-semibold",
                     isToday(
-                      new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+                      new Date(
+                        currentDate.getFullYear(),
+                        currentDate.getMonth(),
+                        day,
+                      ),
                     ) &&
                       !isSelected(
-                        new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+                        new Date(
+                          currentDate.getFullYear(),
+                          currentDate.getMonth(),
+                          day,
+                        ),
                       ) &&
                       "border border-wl-primary-500 text-wl-primary-500",
                     isDateDisabled(
-                      new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+                      new Date(
+                        currentDate.getFullYear(),
+                        currentDate.getMonth(),
+                        day,
+                      ),
                     ) && "text-wl-text-tertiary opacity-50 cursor-not-allowed",
                     day !== 0 &&
                       !isDateDisabled(
-                        new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+                        new Date(
+                          currentDate.getFullYear(),
+                          currentDate.getMonth(),
+                          day,
+                        ),
                       ) &&
                       !isSelected(
-                        new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+                        new Date(
+                          currentDate.getFullYear(),
+                          currentDate.getMonth(),
+                          day,
+                        ),
                       ) &&
                       !isToday(
-                        new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+                        new Date(
+                          currentDate.getFullYear(),
+                          currentDate.getMonth(),
+                          day,
+                        ),
                       ) &&
-                      "text-wl-text-primary"
+                      "text-wl-text-primary",
                   )}
                 >
                   {day || ""}
@@ -293,7 +336,7 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 DatePicker.displayName = "DatePicker";

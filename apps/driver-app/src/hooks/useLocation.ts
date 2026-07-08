@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from "react";
 
 export interface Location {
   latitude: number;
@@ -10,7 +10,9 @@ export interface Location {
 }
 
 export const useLocation = () => {
-  const [lastKnownLocation, setLastKnownLocation] = useState<Location | null>(null);
+  const [lastKnownLocation, setLastKnownLocation] = useState<Location | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [watchId, setWatchId] = useState<NodeJS.Timeout | null>(null);
@@ -36,7 +38,8 @@ export const useLocation = () => {
         resolve(mockLocation);
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to get location';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to get location";
       setError(errorMessage);
       setLoading(false);
       throw err;
@@ -56,7 +59,8 @@ export const useLocation = () => {
           const location = await getCurrentPosition();
           callback?.(location);
         } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'Location update failed';
+          const errorMessage =
+            err instanceof Error ? err.message : "Location update failed";
           setError(errorMessage);
         }
       }, interval);
@@ -64,7 +68,7 @@ export const useLocation = () => {
       setWatchId(id);
       return id;
     },
-    [getCurrentPosition, watchId]
+    [getCurrentPosition, watchId],
   );
 
   const clearWatch = useCallback(() => {

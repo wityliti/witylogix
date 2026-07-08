@@ -6,11 +6,13 @@
 **Reviewers:** Platform Engineering Team
 
 ## Title
+
 CLI Deployment & Management Tool for One-Line VM Deployment
 
 ## Context
 
 Witylogix platform currently requires multi-step manual deployment to production VMs. DevOps teams and customers need:
+
 1. **One-line deployment** to any Ubuntu 20.04+, Debian, or Amazon Linux instance
 2. **Lifecycle management** (deploy, upgrade, rollback, status, logs, backup/restore)
 3. **Zero external dependencies** — no reliance on SaaS platforms (unlike current Railway workflow)
@@ -24,6 +26,7 @@ Current Railway-based deployment (infra/deploy-scripts/railway.sh) is cloud-lock
 ## Problem Statement
 
 **Current Pain Points:**
+
 - Railway deployment requires external service account and Railway CLI
 - No local control over infrastructure lifecycle
 - Cannot deploy to customer VMs, private datacenters, or air-gapped environments
@@ -33,6 +36,7 @@ Current Railway-based deployment (infra/deploy-scripts/railway.sh) is cloud-lock
 - No integrated backup/restore workflow
 
 **Target Use Cases:**
+
 1. DevOps: `witylogix install --domain api.example.com --env production`
 2. One-Click Customer Deployment: provide single installer script
 3. Multi-Environment: dev, staging, prod configurations
@@ -46,6 +50,7 @@ We will build a **pure Bash CLI tool** (`infra/cli/witylogix`) with modular subc
 ### Rationale
 
 **Why Bash over Go/Node:**
+
 - **Zero runtime dependencies**: Every Linux distro includes bash; Go/Node add deployment complexity
 - **Simplicity for DevOps**: bash is native skill for ops teams
 - **Small footprint**: Single executable vs runtime overhead
@@ -53,6 +58,7 @@ We will build a **pure Bash CLI tool** (`infra/cli/witylogix`) with modular subc
 - **Docker/curl only external deps**: both ubiquitous in container environments
 
 **Trade-off**: bash is less type-safe than Go and harder to test; mitigated by:
+
 - Heavy use of shellcheck for static analysis
 - Comprehensive validation functions
 - Modular command structure for testability
@@ -95,6 +101,7 @@ infra/cli/
 ### Main Entrypoint: `infra/cli/witylogix`
 
 **Responsibilities:**
+
 1. Parse global flags (`--yes`, `--verbose`, `--quiet`, `--version`, `--help`)
 2. Detect WITYLOGIX_HOME directory (default: `~/.witylogix`)
 3. Source configuration file if exists
@@ -103,6 +110,7 @@ infra/cli/
 6. Handle global error cases with meaningful messages
 
 **Key Functions:**
+
 ```bash
 banner()              # Print ASCII logo + version
 load_config()         # Load ~/.witylogix/config
@@ -113,6 +121,7 @@ trap_error()          # Global error handler
 ```
 
 **Exit Codes:**
+
 - 0: Success
 - 1: General error
 - 2: Usage error (wrong arguments)
@@ -121,6 +130,7 @@ trap_error()          # Global error handler
 ### Shared Library: `infra/cli/lib/common.sh`
 
 **Validation Functions:**
+
 ```bash
 require_root()         # Check root or sudo access
 require_docker()       # Check Docker installed & running
@@ -128,6 +138,7 @@ require_command(cmd)   # Check if command exists
 ```
 
 **Service Management:**
+
 ```bash
 wait_for_healthy(container, timeout)  # Poll until healthy
 get_container_logs(container, lines)  # Fetch recent logs
@@ -135,12 +146,14 @@ container_exists(name)                # Check if running
 ```
 
 **User Interaction:**
+
 ```bash
 confirm(prompt, default)  # Interactive yes/no (respects --yes)
 spinner(pid)              # Animated spinner for long operations
 ```
 
 **Output Formatting:**
+
 ```bash
 table_header()            # Print table header row
 table_row(cols...)        # Print aligned table row
@@ -148,12 +161,14 @@ progress(current, total)  # Progress bar
 ```
 
 **Configuration:**
+
 ```bash
 get_config(key)           # Read config value
 set_config(key, value)    # Write config value
 ```
 
 **System Detection:**
+
 ```bash
 detect_os()               # Returns: ubuntu / debian / amzn / centos
 detect_arch()             # Returns: amd64 / arm64 / arm
@@ -161,15 +176,15 @@ detect_arch()             # Returns: amd64 / arm64 / arm
 
 ### Port Assignments (Fixed)
 
-| Service | Port | Purpose |
-|---------|------|---------|
-| API Server | 3001 | RESTful API (Caddy upstream) |
-| Dashboard | 3002 | Web UI (Caddy upstream) |
-| Documentation | 3003 | API docs (Caddy upstream) |
-| PostgreSQL | 5432 | Primary database |
-| Redis | 6379 | Cache & session store |
-| Caddy HTTP | 80 | HTTP reverse proxy |
-| Caddy HTTPS | 443 | HTTPS reverse proxy |
+| Service       | Port | Purpose                      |
+| ------------- | ---- | ---------------------------- |
+| API Server    | 3001 | RESTful API (Caddy upstream) |
+| Dashboard     | 3002 | Web UI (Caddy upstream)      |
+| Documentation | 3003 | API docs (Caddy upstream)    |
+| PostgreSQL    | 5432 | Primary database             |
+| Redis         | 6379 | Cache & session store        |
+| Caddy HTTP    | 80   | HTTP reverse proxy           |
+| Caddy HTTPS   | 443  | HTTPS reverse proxy          |
 
 ### Config File Format: `~/.witylogix/config`
 
@@ -193,9 +208,11 @@ LOG_LEVEL="info"
 ### Subcommand Reference
 
 #### 1. `witylogix install [OPTIONS]`
+
 **Purpose:** One-time VM setup, install Docker, pull images
 
 **Options:**
+
 - `--domain DOMAIN` — Set primary domain
 - `--env PROD|STAGE|DEV` — Set environment
 - `--install-dir PATH` — Custom install directory (default: /opt/witylogix)
@@ -203,6 +220,7 @@ LOG_LEVEL="info"
 - `--yes` — Non-interactive mode
 
 **Behavior:**
+
 - Check OS (Ubuntu 20.04+, Debian 10+, Amazon Linux 2)
 - Install Docker & Docker Compose if missing
 - Create install directory
@@ -211,14 +229,17 @@ LOG_LEVEL="info"
 - Run doctor to verify installation
 
 #### 2. `witylogix deploy [OPTIONS]`
+
 **Purpose:** Start/restart services with current config
 
 **Options:**
+
 - `--build` — Rebuild Docker images from source
 - `--force` — Kill existing containers first
 - `--yes` — Skip confirmation prompts
 
 **Behavior:**
+
 - Validate config exists
 - Check Docker running
 - Stop existing containers (if --force)
@@ -228,13 +249,16 @@ LOG_LEVEL="info"
 - Save deployment timestamp
 
 #### 3. `witylogix upgrade [OPTIONS]`
+
 **Purpose:** Upgrade to newer Witylogix version
 
 **Options:**
+
 - `--to VERSION` — Specific version (default: latest)
 - `--dryrun` — Show what would be upgraded
 
 **Behavior:**
+
 - Fetch latest version from releases
 - Backup current state (if --backup)
 - Download new images
@@ -244,9 +268,11 @@ LOG_LEVEL="info"
 - Show changelog
 
 #### 4. `witylogix status [--json]`
+
 **Purpose:** Show health of all services
 
 **Output (human):**
+
 ```
 Witylogix Status
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -262,19 +288,28 @@ System: Ubuntu 20.04 (x86_64) | Uptime: 45d 3h | Load: 0.45
 ```
 
 **Output (JSON):**
+
 ```json
 {
   "system": { "uptime": "45d 3h", "load": 0.45 },
   "services": [
-    { "name": "API", "status": "running", "port": 3001, "cpu": 2.1, "memory_mb": 256 }
+    {
+      "name": "API",
+      "status": "running",
+      "port": 3001,
+      "cpu": 2.1,
+      "memory_mb": 256
+    }
   ]
 }
 ```
 
 #### 5. `witylogix logs [SERVICE] [OPTIONS]`
+
 **Purpose:** Stream or fetch service logs
 
 **Options:**
+
 - `--lines N` — Show last N lines (default: 100)
 - `--follow` — Stream in real-time (default for terminal)
 - `--since DURATION` — Show logs since (e.g., 1h, 30m)
@@ -283,9 +318,11 @@ System: Ubuntu 20.04 (x86_64) | Uptime: 45d 3h | Load: 0.45
 **Services:** api, dashboard, postgres, redis, caddy, all
 
 #### 6. `witylogix backup [OPTIONS]`
+
 **Purpose:** Backup database, configs, and user data
 
 **Options:**
+
 - `--name LABEL` — Custom backup name
 - `--destination PATH` — Save backup to path (default: ~/.witylogix/backups)
 - `--compress` — gzip compression (default: true)
@@ -293,12 +330,15 @@ System: Ubuntu 20.04 (x86_64) | Uptime: 45d 3h | Load: 0.45
 **Output:** `backup-2026-03-10T14:30:45Z.tar.gz`
 
 #### 7. `witylogix restore BACKUP_FILE [OPTIONS]`
+
 **Purpose:** Restore from backup
 
 **Options:**
+
 - `--force` — Overwrite existing database
 
 **Behavior:**
+
 - Validate backup integrity
 - Stop services
 - Restore database
@@ -307,22 +347,27 @@ System: Ubuntu 20.04 (x86_64) | Uptime: 45d 3h | Load: 0.45
 - Verify restored state
 
 #### 8. `witylogix ssl [SUBCOMMAND]`
+
 **Purpose:** SSL/TLS certificate management via Caddy
 
 **Subcommands:**
+
 - `ssl status` — Show current certificate and expiry
 - `ssl renew` — Force certificate renewal
 - `ssl set-domain DOMAIN` — Update Caddy domain config
 
 **Behavior:**
+
 - Uses Caddy's automatic ACME (Let's Encrypt) integration
 - Handles certificate renewal automatically
 - Falls back to self-signed if ACME fails
 
 #### 9. `witylogix env [SUBCOMMAND]`
+
 **Purpose:** Manage environment variables
 
 **Subcommands:**
+
 - `env list` — Show all variables
 - `env get KEY` — Get single variable
 - `env set KEY VALUE` — Set variable (persists to ~/.witylogix/config)
@@ -330,9 +375,11 @@ System: Ubuntu 20.04 (x86_64) | Uptime: 45d 3h | Load: 0.45
 - `env export` — Export as shell-sourceable file
 
 #### 10. `witylogix doctor [--verbose]`
+
 **Purpose:** Diagnostic tool for troubleshooting
 
 **Checks:**
+
 - OS compatibility
 - Docker installation & version
 - Disk space available
@@ -344,6 +391,7 @@ System: Ubuntu 20.04 (x86_64) | Uptime: 45d 3h | Load: 0.45
 - Config file integrity
 
 **Output Example:**
+
 ```
 Witylogix Doctor
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -361,13 +409,16 @@ Fix: witylogix logs redis
 ```
 
 #### 11. `witylogix dev [OPTIONS]`
+
 **Purpose:** Development mode with hot reload
 
 **Options:**
+
 - `--service SERVICE` — Watch specific service
 - `--watch-dir PATH` — Watch custom directory
 
 **Behavior:**
+
 - Mount source code as volume
 - Enable debug logging
 - Rebuild on file change
@@ -375,56 +426,69 @@ Fix: witylogix logs redis
 - Open browser to dashboard
 
 #### 12. `witylogix init [OPTIONS]`
+
 **Purpose:** Initialize configuration on new machine
 
 **Options:**
+
 - `--interactive` — Step-by-step wizard
 - `--config-file PATH` — Load config from file
 
 **Behavior:**
+
 - Prompt for domain, environment, install dir
 - Validate inputs
 - Save to ~/.witylogix/config
 - Create necessary directories
 
 #### 13. `witylogix scale [OPTIONS]`
+
 **Purpose:** Horizontal scaling — multiple API instances
 
 **Options:**
+
 - `--api-replicas N` — Number of API instances (default: 1)
 - `--dashboard-replicas N` — Number of dashboard instances
 
 **Behavior:**
+
 - Update docker-compose.yml with service replicas
 - Reconfigure Caddy load balancing
 - Restart services
 - Verify all healthy
 
 #### 14. `witylogix destroy [OPTIONS]`
+
 **Purpose:** Complete teardown of all services
 
 **Options:**
+
 - `--keep-data` — Preserve database & backups
 - `--force` — Skip confirmation
 
 **Behavior:**
+
 - Confirm action (unless --force)
 - Stop all containers
 - Remove volumes (unless --keep-data)
 - Remove config (ask user)
 
 #### 15. `witylogix ai setup [OPTIONS]`
+
 **Purpose:** AI-assisted initial setup
 
 **Behavior:**
+
 - Ask natural language questions about deployment
 - Guide through installation with AI
 - Generate optimized config
 
 #### 16. `witylogix ai diagnose [OPTIONS]`
+
 **Purpose:** AI-powered troubleshooting
 
 **Behavior:**
+
 - Collect system state, logs, error messages
 - Send to Claude API (optional, requires API key)
 - Suggest fixes based on symptoms
@@ -554,36 +618,37 @@ Return exit code 0
 
 ### 1. Bash vs Go vs Node
 
-| Criterion | Bash | Go | Node |
-|-----------|------|----|----|
-| Runtime deps | None (built-in) | None (single binary) | Node.js required |
-| Type safety | None | Excellent | Medium |
-| Learning curve | Low | Medium | Low |
-| Dev speed | Fast | Medium | Fast |
-| Container friendly | Excellent | Good | Good |
-| Package size | Minimal | ~10 MB | ~200 MB |
-| Testability | Hard | Easy | Easy |
-| Cross-platform | Linux-focused | Excellent | Excellent |
+| Criterion          | Bash            | Go                   | Node             |
+| ------------------ | --------------- | -------------------- | ---------------- |
+| Runtime deps       | None (built-in) | None (single binary) | Node.js required |
+| Type safety        | None            | Excellent            | Medium           |
+| Learning curve     | Low             | Medium               | Low              |
+| Dev speed          | Fast            | Medium               | Fast             |
+| Container friendly | Excellent       | Good                 | Good             |
+| Package size       | Minimal         | ~10 MB               | ~200 MB          |
+| Testability        | Hard            | Easy                 | Easy             |
+| Cross-platform     | Linux-focused   | Excellent            | Excellent        |
 
 **Decision:** Bash for simplicity and zero runtime. Go if we need type safety + distribution later.
 
 ### 2. Caddy vs Nginx vs Traefik
 
-| Feature | Caddy | Nginx | Traefik |
-|---------|-------|-------|---------|
-| Automatic HTTPS | ✓ Built-in | Manual/plugin | ✓ Native |
-| Docker integration | ✓ Good | Requires templating | ✓ Native labels |
-| Zero-config | ✓ Yes | No | Partial |
-| Learning curve | Low | Medium | Medium |
-| Container-light | ~80 MB | ~130 MB | ~100 MB |
-| Configuration language | Caddyfile (simple) | nginx.conf (complex) | TOML/YAML |
-| Use case | Single host, simple | High performance | Orchestration |
+| Feature                | Caddy               | Nginx                | Traefik         |
+| ---------------------- | ------------------- | -------------------- | --------------- |
+| Automatic HTTPS        | ✓ Built-in          | Manual/plugin        | ✓ Native        |
+| Docker integration     | ✓ Good              | Requires templating  | ✓ Native labels |
+| Zero-config            | ✓ Yes               | No                   | Partial         |
+| Learning curve         | Low                 | Medium               | Medium          |
+| Container-light        | ~80 MB              | ~130 MB              | ~100 MB         |
+| Configuration language | Caddyfile (simple)  | nginx.conf (complex) | TOML/YAML       |
+| Use case               | Single host, simple | High performance     | Orchestration   |
 
 **Decision:** Caddy for this single-host deployment scenario.
 
 ### 3. Configuration Persistence
 
 **Alternatives Considered:**
+
 - JSON file: Too verbose, harder to edit manually
 - TOML: Requires parser, overkill
 - YAML: Requires parser, indentation-prone
@@ -594,6 +659,7 @@ Return exit code 0
 ### 4. Error Handling Strategy
 
 **Alternatives:**
+
 - Silent failure with exit codes only: Poor UX
 - Exception-style with traceback: Verbose, noisy
 - Structured logging with levels: Good but complex
@@ -603,6 +669,7 @@ Return exit code 0
 ## Implementation Timeline
 
 ### Phase 1 (Sprint 4.3): MVP
+
 - ADR-022 (this document)
 - `infra/cli/witylogix` main entrypoint
 - `infra/cli/lib/common.sh` shared library
@@ -610,30 +677,33 @@ Return exit code 0
 - Basic tests with shellcheck
 
 ### Phase 2 (Sprint 4.4):
+
 - Remaining core commands (status, logs, upgrade, ssl)
 - Docker Compose templates
 - Integration tests
 
 ### Phase 3 (Sprint 4.5):
+
 - Advanced commands (backup, restore, scale)
 - AI-assisted commands (ai setup, ai diagnose)
 - Production hardening
 
 ### Phase 4 (Future):
+
 - Cloud provider integrations (AWS EC2, DigitalOcean, Hetzner)
 - Distributed deployment (multi-node)
 - Web UI for CLI commands
 
 ## Risks and Mitigation
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| Bash portability | Medium | High | Test on Ubuntu, Debian, Amazon Linux; use shellcheck |
-| Docker dependency | Low | Medium | Clear install instructions; check in `install` |
-| Config corruption | Low | Medium | Atomic writes; backup before modify |
-| Race conditions (concurrent deploys) | Medium | High | Lock file (`~/.witylogix/.deploy.lock`) |
-| Silent failures | Medium | High | Explicit error logging; fail fast |
-| Scaling complexity | Medium | Medium | Start with manual scaling; add auto-scale later |
+| Risk                                 | Likelihood | Impact | Mitigation                                           |
+| ------------------------------------ | ---------- | ------ | ---------------------------------------------------- |
+| Bash portability                     | Medium     | High   | Test on Ubuntu, Debian, Amazon Linux; use shellcheck |
+| Docker dependency                    | Low        | Medium | Clear install instructions; check in `install`       |
+| Config corruption                    | Low        | Medium | Atomic writes; backup before modify                  |
+| Race conditions (concurrent deploys) | Medium     | High   | Lock file (`~/.witylogix/.deploy.lock`)              |
+| Silent failures                      | Medium     | High   | Explicit error logging; fail fast                    |
+| Scaling complexity                   | Medium     | Medium | Start with manual scaling; add auto-scale later      |
 
 ## Future Enhancements
 

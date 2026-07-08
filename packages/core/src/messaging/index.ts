@@ -26,7 +26,7 @@ export type {
   SendResult,
   BatchSendOptions,
   BatchSendResult,
-} from './types.js';
+} from "./types.js";
 
 export {
   MessageChannel,
@@ -37,32 +37,30 @@ export {
   RateLimitError,
   AuthenticationError,
   ConfigurationError,
-} from './types.js';
+} from "./types.js";
 
 // ─── Providers ───────────────────────────────────────────────
 
-export type { MessageProvider } from './providers/base.js';
-export { MessageProvider as BaseMessageProvider } from './providers/base.js';
+export type { MessageProvider } from "./providers/base.js";
+export { MessageProvider as BaseMessageProvider } from "./providers/base.js";
 
-export { EmailProvider, validateEmail } from './providers/email.js';
+export { EmailProvider, validateEmail } from "./providers/email.js";
 
 export {
   SmsProvider,
   validatePhoneE164 as validateSmsPhoneE164,
   calculateSmsLength,
-} from './providers/sms.js';
+} from "./providers/sms.js";
 
 export {
   WhatsAppProvider,
   validatePhoneE164 as validateWhatsAppPhoneE164,
-} from './providers/whatsapp.js';
+} from "./providers/whatsapp.js";
 
-export {
-  PushProvider,
-} from './providers/push.js';
+export { PushProvider } from "./providers/push.js";
 
 // ─── Dispatcher ──────────────────────────────────────────────
 
-export type { BatchSendOptions, BatchSendResult } from './types.js';
+export type { BatchSendOptions, BatchSendResult } from "./types.js";
 
-export { MessageDispatcher } from './dispatcher.js';
+export { MessageDispatcher } from "./dispatcher.js";

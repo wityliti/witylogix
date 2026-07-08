@@ -1,51 +1,70 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useApiList } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Package, Car, CheckCircle, Zap, LogIn, Pause, Play, Filter, RotateCcw } from 'lucide-react';
+import { useState } from "react";
+import { useApiList } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  Package,
+  Car,
+  CheckCircle,
+  Zap,
+  LogIn,
+  Pause,
+  Play,
+  Filter,
+  RotateCcw,
+} from "lucide-react";
 
 interface RealtimeEvent {
   id: string;
-  type: 'order.created' | 'driver.assigned' | 'delivery.completed' | 'webhook.fired' | 'user.login';
+  type:
+    | "order.created"
+    | "driver.assigned"
+    | "delivery.completed"
+    | "webhook.fired"
+    | "user.login";
   actor: string;
   description: string;
   timestamp: string;
   data?: Record<string, any>;
-  status: 'success' | 'pending' | 'failed';
+  status: "success" | "pending" | "failed";
 }
 
 export default function RealtimePage() {
   const [isPaused, setIsPaused] = useState(false);
-  const [selectedType, setSelectedType] = useState<string>('all');
+  const [selectedType, setSelectedType] = useState<string>("all");
 
-  const { items: events, loading, error, refetch } = useApiList<RealtimeEvent>(
-    '/api/v4/activity-logs?view=realtime'
-  );
+  const {
+    items: events,
+    loading,
+    error,
+    refetch,
+  } = useApiList<RealtimeEvent>("/api/v4/activity-logs?view=realtime");
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} />;
 
-  const filtered = selectedType === 'all'
-    ? events
-    : events.filter((e) => e.type === selectedType);
+  const filtered =
+    selectedType === "all"
+      ? events
+      : events.filter((e) => e.type === selectedType);
 
   const getEventIcon = (type: string) => {
     switch (type) {
-      case 'order.created':
+      case "order.created":
         return <Package className="w-4 h-4" />;
-      case 'driver.assigned':
+      case "driver.assigned":
         return <Car className="w-4 h-4" />;
-      case 'delivery.completed':
+      case "delivery.completed":
         return <CheckCircle className="w-4 h-4" />;
-      case 'webhook.fired':
+      case "webhook.fired":
         return <Zap className="w-4 h-4" />;
-      case 'user.login':
+      case "user.login":
         return <LogIn className="w-4 h-4" />;
       default:
         return null;
@@ -54,12 +73,12 @@ export default function RealtimePage() {
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case 'success':
-        return 'success';
-      case 'failed':
-        return 'danger';
+      case "success":
+        return "success";
+      case "failed":
+        return "danger";
       default:
-        return 'warning';
+        return "warning";
     }
   };
 
@@ -69,12 +88,14 @@ export default function RealtimePage() {
         <div className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-white">Realtime Activity</h1>
+              <h1 className="text-2xl font-bold text-white">
+                Realtime Activity
+              </h1>
               <p className="text-sm text-gray-300 mt-1">Live event feed</p>
             </div>
             <div className="flex gap-2">
               <Button
-                variant={isPaused ? 'secondary' : 'primary'}
+                variant={isPaused ? "secondary" : "primary"}
                 size="md"
                 onClick={() => setIsPaused(!isPaused)}
               >
@@ -98,22 +119,30 @@ export default function RealtimePage() {
           </div>
 
           <div className="flex gap-2 mt-6 overflow-x-auto">
-            {['all', 'order.created', 'driver.assigned', 'delivery.completed', 'webhook.fired', 'user.login'].map((type) => {
-              const count = type === 'all'
-                ? events.length
-                : events.filter((e) => e.type === type).length;
+            {[
+              "all",
+              "order.created",
+              "driver.assigned",
+              "delivery.completed",
+              "webhook.fired",
+              "user.login",
+            ].map((type) => {
+              const count =
+                type === "all"
+                  ? events.length
+                  : events.filter((e) => e.type === type).length;
               return (
                 <button
                   key={type}
                   onClick={() => setSelectedType(type)}
                   className={cn(
-                    'px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap',
+                    "px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
                     selectedType === type
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-wl-bg-elevated text-gray-300'
+                      ? "bg-blue-500 text-white"
+                      : "bg-wl-bg-elevated text-gray-300",
                   )}
                 >
-                  {type === 'all' ? 'All' : type.replace('.', ' ')} ({count})
+                  {type === "all" ? "All" : type.replace(".", " ")} ({count})
                 </button>
               );
             })}
@@ -139,12 +168,18 @@ export default function RealtimePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium text-white break-words">{event.actor}</p>
-                      <Badge variant={getStatusBadgeVariant(event.status) as any}>
+                      <p className="font-medium text-white break-words">
+                        {event.actor}
+                      </p>
+                      <Badge
+                        variant={getStatusBadgeVariant(event.status) as any}
+                      >
                         {event.status}
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-300 break-words">{event.description}</p>
+                    <p className="text-sm text-gray-300 break-words">
+                      {event.description}
+                    </p>
                     <p className="text-xs text-gray-400 mt-1">
                       {new Date(event.timestamp).toLocaleTimeString()}
                     </p>

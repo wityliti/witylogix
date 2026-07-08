@@ -16,7 +16,9 @@ describe("FuelGauge Component", () => {
     });
 
     it("should render tank capacity label", () => {
-      const { container } = render(<FuelGauge fuelLevel={50} tankCapacity={60} />);
+      const { container } = render(
+        <FuelGauge fuelLevel={50} tankCapacity={60} />,
+      );
       expect(container.textContent).toContain("60L");
     });
 
@@ -77,7 +79,9 @@ describe("FuelGauge Component", () => {
 
   describe("Custom Tank Capacity", () => {
     it("should render custom tank capacity", () => {
-      const { container } = render(<FuelGauge fuelLevel={50} tankCapacity={100} />);
+      const { container } = render(
+        <FuelGauge fuelLevel={50} tankCapacity={100} />,
+      );
       expect(container.textContent).toContain("100L");
     });
 
@@ -87,20 +91,26 @@ describe("FuelGauge Component", () => {
     });
 
     it("should handle large tank capacity", () => {
-      const { container } = render(<FuelGauge fuelLevel={50} tankCapacity={500} />);
+      const { container } = render(
+        <FuelGauge fuelLevel={50} tankCapacity={500} />,
+      );
       expect(container.textContent).toContain("500L");
     });
   });
 
   describe("Animation", () => {
     it("should support animation prop", () => {
-      const { container } = render(<FuelGauge fuelLevel={50} animated={true} />);
+      const { container } = render(
+        <FuelGauge fuelLevel={50} animated={true} />,
+      );
       const svg = container.querySelector("svg");
       expect(svg).toBeTruthy();
     });
 
     it("should support non-animated mode", () => {
-      const { container } = render(<FuelGauge fuelLevel={50} animated={false} />);
+      const { container } = render(
+        <FuelGauge fuelLevel={50} animated={false} />,
+      );
       const svg = container.querySelector("svg");
       expect(svg).toBeTruthy();
     });
@@ -145,7 +155,7 @@ describe("FuelGauge Component", () => {
   describe("CSS Classes", () => {
     it("should accept custom className", () => {
       const { container } = render(
-        <FuelGauge fuelLevel={50} className="custom-gauge" />
+        <FuelGauge fuelLevel={50} className="custom-gauge" />,
       );
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper?.className).toContain("custom-gauge");

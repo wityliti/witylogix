@@ -46,7 +46,7 @@ class CircuitBreaker {
   constructor(
     failureThreshold: number = 5,
     successThreshold: number = 2,
-    resetTimeout: number = 60000
+    resetTimeout: number = 60000,
   ) {
     this.failureThreshold = failureThreshold;
     this.successThreshold = successThreshold;
@@ -60,7 +60,7 @@ class CircuitBreaker {
         this.successCount = 0;
       } else {
         throw new Error(
-          `Circuit breaker is OPEN. Retry after ${this.resetTimeout}ms`
+          `Circuit breaker is OPEN. Retry after ${this.resetTimeout}ms`,
         );
       }
     }
@@ -119,7 +119,7 @@ class RateLimiter {
       const timeSinceLastRefill = now - this.lastRefillTime;
       this.tokens = Math.min(
         this.maxTokens,
-        this.tokens + timeSinceLastRefill * this.refillRate
+        this.tokens + timeSinceLastRefill * this.refillRate,
       );
       this.lastRefillTime = now;
 
@@ -151,7 +151,7 @@ interface RetryConfig {
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   config: RetryConfig,
-  isRetryable: (error: unknown) => boolean = () => true
+  isRetryable: (error: unknown) => boolean = () => true,
 ): Promise<T> {
   let lastError: unknown;
 
@@ -164,7 +164,7 @@ async function retryWithBackoff<T>(
       if (attempt < config.maxAttempts - 1 && isRetryable(error)) {
         const delayMs = Math.min(
           config.maxDelayMs,
-          config.baseDelayMs * Math.pow(config.backoffMultiplier, attempt)
+          config.baseDelayMs * Math.pow(config.backoffMultiplier, attempt),
         );
         await new Promise((resolve) => setTimeout(resolve, delayMs));
       } else {
@@ -273,14 +273,14 @@ export abstract class ShippingAdapter implements IShippingAdapter {
   constructor(
     config: ShippingConfig,
     rpsLimit: number = 10,
-    circuitBreakerFailureThreshold: number = 5
+    circuitBreakerFailureThreshold: number = 5,
   ) {
     this.config = config;
     this.rateLimiter = new RateLimiter(rpsLimit);
     this.circuitBreaker = new CircuitBreaker(
       circuitBreakerFailureThreshold,
       2,
-      60000
+      60000,
     );
   }
 
@@ -290,20 +290,20 @@ export abstract class ShippingAdapter implements IShippingAdapter {
 
   abstract createShipment(
     request: ShipmentRequest,
-    rateId: string
+    rateId: string,
   ): Promise<ShipmentLabel>;
 
   abstract getLabel(labelId: string): Promise<ShipmentLabel>;
 
   abstract track(
     trackingNumber: string,
-    carrier?: string
+    carrier?: string,
   ): Promise<TrackingResult>;
 
   abstract cancelShipment(labelId: string): Promise<boolean>;
 
   abstract validateAddress(
-    address: ShippingAddress
+    address: ShippingAddress,
   ): Promise<AddressValidationResult>;
 
   /**
@@ -317,7 +317,7 @@ export abstract class ShippingAdapter implements IShippingAdapter {
       headers?: Record<string, string>;
       body?: unknown;
       query?: Record<string, string | number>;
-    } = {}
+    } = {},
   ): Promise<T> {
     // Rate limit
     await this.rateLimiter.acquire();
@@ -347,7 +347,7 @@ export abstract class ShippingAdapter implements IShippingAdapter {
           if (!response.ok) {
             const errorBody = await response.text();
             throw new Error(
-              `HTTP ${response.status}: ${errorBody.substring(0, 200)}`
+              `HTTP ${response.status}: ${errorBody.substring(0, 200)}`,
             );
           }
 
@@ -361,8 +361,8 @@ export abstract class ShippingAdapter implements IShippingAdapter {
             return /HTTP [5]/.test(error.message);
           }
           return false;
-        }
-      )
+        },
+      ),
     );
   }
 }

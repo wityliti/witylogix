@@ -3,8 +3,13 @@
  * Logs SMS messages to console instead of sending
  */
 
-import type { SmsProvider, SmsMessage, SmsResult, SmsProviderType } from '../types.js';
-import { SmsStatus } from '../types.js';
+import type {
+  SmsProvider,
+  SmsMessage,
+  SmsResult,
+  SmsProviderType,
+} from "../types.js";
+import { SmsStatus } from "../types.js";
 
 /**
  * Calculate number of SMS segments (160 chars per segment, 153 for multi-part)
@@ -22,7 +27,7 @@ function calculateSegments(message: string): number {
  * Logs SMS messages to console with formatted output
  */
 export class ConsoleSmsProvider implements SmsProvider {
-  private provider: SmsProviderType = 'console';
+  private provider: SmsProviderType = "console";
 
   async send(message: SmsMessage): Promise<SmsResult> {
     const messageId = this.generateMessageId();
@@ -30,10 +35,10 @@ export class ConsoleSmsProvider implements SmsProvider {
     const segments = calculateSegments(message.body);
 
     console.log(
-      '\n' +
-        '═══════════════════════════════════════════════════════════════\n' +
-        '                     SMS MESSAGE (CONSOLE)\n' +
-        '═══════════════════════════════════════════════════════════════',
+      "\n" +
+        "═══════════════════════════════════════════════════════════════\n" +
+        "                     SMS MESSAGE (CONSOLE)\n" +
+        "═══════════════════════════════════════════════════════════════",
     );
 
     console.log(`ID: ${messageId}`);
@@ -43,19 +48,21 @@ export class ConsoleSmsProvider implements SmsProvider {
     }
 
     console.log(
-      `To: ${Array.isArray(message.to) ? message.to.join(', ') : message.to}`,
+      `To: ${Array.isArray(message.to) ? message.to.join(", ") : message.to}`,
     );
 
     console.log(`Segments: ${segments} (${message.body.length} characters)`);
-    console.log(`───────────────────────────────────────────────────────────────`);
+    console.log(
+      `───────────────────────────────────────────────────────────────`,
+    );
     console.log(message.body);
 
     if (message.metadata) {
-      console.log('\nMetadata:', JSON.stringify(message.metadata, null, 2));
+      console.log("\nMetadata:", JSON.stringify(message.metadata, null, 2));
     }
 
     console.log(
-      '═══════════════════════════════════════════════════════════════\n',
+      "═══════════════════════════════════════════════════════════════\n",
     );
 
     return {

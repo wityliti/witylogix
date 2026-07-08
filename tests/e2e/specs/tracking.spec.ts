@@ -1,9 +1,9 @@
-import { test, expect } from '../fixtures/auth.fixture';
-import { DashboardPage } from '../pages/dashboard.page';
-import { OrdersPage, OrderData } from '../pages/orders.page';
+import { test, expect } from "../fixtures/auth.fixture";
+import { DashboardPage } from "../pages/dashboard.page";
+import { OrdersPage, OrderData } from "../pages/orders.page";
 
-test.describe('Order Tracking', () => {
-  test('should navigate to tracking page', async ({ adminPage }) => {
+test.describe("Order Tracking", () => {
+  test("should navigate to tracking page", async ({ adminPage }) => {
     const dashboardPage = new DashboardPage(adminPage);
 
     // Navigate to dashboard
@@ -16,26 +16,26 @@ test.describe('Order Tracking', () => {
     const pageTitle = adminPage.locator('h1, [data-testid="page-title"]');
     const hasTrackingElement = await pageTitle
       .textContent()
-      .then((text) => text?.toLowerCase().includes('track'))
+      .then((text) => text?.toLowerCase().includes("track"))
       .catch(() => false);
 
     // Verify we're on a tracking-related page
-    expect(adminPage.url()).toContain('track');
+    expect(adminPage.url()).toContain("track");
   });
 
-  test('should search shipment by tracking ID', async ({ adminPage }) => {
+  test("should search shipment by tracking ID", async ({ adminPage }) => {
     const ordersPage = new OrdersPage(adminPage);
 
     // First create an order to track
     const orderData: OrderData = {
-      senderName: 'Tracking Sender',
-      senderEmail: 'sender.track@example.com',
-      senderPhone: '+1234567890',
-      senderAddress: '123 Track St, New York, NY 10001',
-      receiverName: 'Tracking Receiver',
-      receiverEmail: 'receiver.track@example.com',
-      receiverPhone: '+0987654321',
-      receiverAddress: '456 Delivery Ave, Los Angeles, CA 90001',
+      senderName: "Tracking Sender",
+      senderEmail: "sender.track@example.com",
+      senderPhone: "+1234567890",
+      senderAddress: "123 Track St, New York, NY 10001",
+      receiverName: "Tracking Receiver",
+      receiverEmail: "receiver.track@example.com",
+      receiverPhone: "+0987654321",
+      receiverAddress: "456 Delivery Ave, Los Angeles, CA 90001",
     };
 
     // Navigate to orders and create order
@@ -56,7 +56,7 @@ test.describe('Order Tracking', () => {
     await ordersPage.expectOrderExists(trackingId);
   });
 
-  test('should display full tracking timeline', async ({ adminPage }) => {
+  test("should display full tracking timeline", async ({ adminPage }) => {
     const ordersPage = new OrdersPage(adminPage);
 
     // Navigate to orders
@@ -82,7 +82,9 @@ test.describe('Order Tracking', () => {
         await expect(timelineSection).toBeVisible();
 
         // Look for timeline events
-        const timelineEvents = adminPage.locator('[data-testid="timeline-event"], .timeline-event');
+        const timelineEvents = adminPage.locator(
+          '[data-testid="timeline-event"], .timeline-event',
+        );
         const eventCount = await timelineEvents.count();
 
         expect(eventCount).toBeGreaterThanOrEqual(0);
@@ -90,7 +92,7 @@ test.describe('Order Tracking', () => {
     }
   });
 
-  test('should show status updates in timeline', async ({ adminPage }) => {
+  test("should show status updates in timeline", async ({ adminPage }) => {
     const ordersPage = new OrdersPage(adminPage);
 
     // Navigate to orders
@@ -107,7 +109,9 @@ test.describe('Order Tracking', () => {
       await ordersPage.openOrderDetails(trackingId);
 
       // Look for status indicators in timeline
-      const statusElements = adminPage.locator('[data-testid="status"], .status');
+      const statusElements = adminPage.locator(
+        '[data-testid="status"], .status',
+      );
 
       // Get all visible status elements
       const count = await statusElements.count();
@@ -121,7 +125,7 @@ test.describe('Order Tracking', () => {
     }
   });
 
-  test('should display estimated delivery time', async ({ adminPage }) => {
+  test("should display estimated delivery time", async ({ adminPage }) => {
     const ordersPage = new OrdersPage(adminPage);
 
     // Navigate to orders
@@ -149,14 +153,16 @@ test.describe('Order Tracking', () => {
     }
   });
 
-  test('should show current location for in-transit orders', async ({ adminPage }) => {
+  test("should show current location for in-transit orders", async ({
+    adminPage,
+  }) => {
     const ordersPage = new OrdersPage(adminPage);
 
     // Navigate to orders
     await ordersPage.navigateToList();
 
     // Filter for IN_TRANSIT orders to find location data
-    await ordersPage.filterByStatus('IN_TRANSIT');
+    await ordersPage.filterByStatus("IN_TRANSIT");
 
     const orderCount = await ordersPage.getOrderCount();
 
@@ -177,7 +183,9 @@ test.describe('Order Tracking', () => {
         await expect(locationSection).toBeVisible();
 
         // Look for location details like address or coordinates
-        const locationText = adminPage.locator('[data-testid="location-address"], .address, [role="status"]');
+        const locationText = adminPage.locator(
+          '[data-testid="location-address"], .address, [role="status"]',
+        );
 
         if (await locationText.isVisible().catch(() => false)) {
           const text = await locationText.textContent();
@@ -187,14 +195,16 @@ test.describe('Order Tracking', () => {
     }
   });
 
-  test('should show driver information during transit', async ({ adminPage }) => {
+  test("should show driver information during transit", async ({
+    adminPage,
+  }) => {
     const ordersPage = new OrdersPage(adminPage);
 
     // Navigate to orders
     await ordersPage.navigateToList();
 
     // Filter for IN_TRANSIT orders
-    await ordersPage.filterByStatus('IN_TRANSIT');
+    await ordersPage.filterByStatus("IN_TRANSIT");
 
     const orderCount = await ordersPage.getOrderCount();
 
@@ -206,15 +216,21 @@ test.describe('Order Tracking', () => {
       await ordersPage.openOrderDetails(trackingId);
 
       // Look for driver information section
-      const driverSection = adminPage.locator('[data-testid="driver-info"], section:has-text("Driver")');
+      const driverSection = adminPage.locator(
+        '[data-testid="driver-info"], section:has-text("Driver")',
+      );
 
       // If driver section exists, verify it's displayed
       if (await driverSection.isVisible().catch(() => false)) {
         await expect(driverSection).toBeVisible();
 
         // Look for driver name and contact
-        const driverName = adminPage.locator('[data-testid="driver-name"], .driver-name');
-        const driverPhone = adminPage.locator('[data-testid="driver-phone"], .driver-phone');
+        const driverName = adminPage.locator(
+          '[data-testid="driver-name"], .driver-name',
+        );
+        const driverPhone = adminPage.locator(
+          '[data-testid="driver-phone"], .driver-phone',
+        );
 
         if (await driverName.isVisible().catch(() => false)) {
           expect(await driverName.textContent()).toBeTruthy();
@@ -223,7 +239,7 @@ test.describe('Order Tracking', () => {
     }
   });
 
-  test('should verify status progression is logical', async ({ adminPage }) => {
+  test("should verify status progression is logical", async ({ adminPage }) => {
     const ordersPage = new OrdersPage(adminPage);
 
     // Navigate to orders
@@ -240,7 +256,9 @@ test.describe('Order Tracking', () => {
       await ordersPage.openOrderDetails(trackingId);
 
       // Get all status updates from timeline
-      const timelineEvents = adminPage.locator('[data-testid="timeline-event"], .timeline-event');
+      const timelineEvents = adminPage.locator(
+        '[data-testid="timeline-event"], .timeline-event',
+      );
       const eventCount = await timelineEvents.count();
 
       // Collect all statuses in order
@@ -260,14 +278,16 @@ test.describe('Order Tracking', () => {
     }
   });
 
-  test('should display proof of delivery when completed', async ({ adminPage }) => {
+  test("should display proof of delivery when completed", async ({
+    adminPage,
+  }) => {
     const ordersPage = new OrdersPage(adminPage);
 
     // Navigate to orders
     await ordersPage.navigateToList();
 
     // Filter for DELIVERED orders
-    await ordersPage.filterByStatus('DELIVERED');
+    await ordersPage.filterByStatus("DELIVERED");
 
     const orderCount = await ordersPage.getOrderCount();
 
@@ -288,8 +308,12 @@ test.describe('Order Tracking', () => {
         await expect(podSection).toBeVisible();
 
         // Look for signature or photo
-        const signature = adminPage.locator('[data-testid="signature"], img[alt="Signature"]');
-        const photo = adminPage.locator('[data-testid="delivery-photo"], img[alt="Photo"]');
+        const signature = adminPage.locator(
+          '[data-testid="signature"], img[alt="Signature"]',
+        );
+        const photo = adminPage.locator(
+          '[data-testid="delivery-photo"], img[alt="Photo"]',
+        );
 
         if (await signature.isVisible().catch(() => false)) {
           await expect(signature).toBeVisible();

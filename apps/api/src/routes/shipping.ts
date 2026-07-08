@@ -65,30 +65,36 @@ const rateRequestSchema = z.object({
   to: addressSchema,
   weight: weightSchema,
   dimensions: dimensionsSchema.optional(),
-  packageType: z.enum([
-    "ENVELOPE",
-    "PACKAGE",
-    "PALLET",
-    "BOX",
-    "TUBE",
-    "PAK",
-    "FLAT_RATE_ENVELOPE",
-    "FLAT_RATE_BOX",
-  ]).optional(),
-  services: z.array(
-    z.enum([
-      "GROUND",
-      "EXPRESS",
-      "OVERNIGHT",
-      "ECONOMY",
-      "STANDARD",
-      "PRIORITY",
-      "INTERNATIONAL",
+  packageType: z
+    .enum([
+      "ENVELOPE",
+      "PACKAGE",
+      "PALLET",
+      "BOX",
+      "TUBE",
+      "PAK",
+      "FLAT_RATE_ENVELOPE",
+      "FLAT_RATE_BOX",
     ])
-  ).optional(),
+    .optional(),
+  services: z
+    .array(
+      z.enum([
+        "GROUND",
+        "EXPRESS",
+        "OVERNIGHT",
+        "ECONOMY",
+        "STANDARD",
+        "PRIORITY",
+        "INTERNATIONAL",
+      ]),
+    )
+    .optional(),
   insureValue: z.number().optional(),
   signatureRequired: z.boolean().optional(),
-  deliveryConfirmation: z.enum(["NONE", "DELIVERY", "SIGNATURE", "ADULT_SIGNATURE"]).optional(),
+  deliveryConfirmation: z
+    .enum(["NONE", "DELIVERY", "SIGNATURE", "ADULT_SIGNATURE"])
+    .optional(),
   metadata: z.record(z.unknown()).optional(),
 });
 
@@ -98,16 +104,18 @@ const labelRequestSchema = z.object({
   to: addressSchema,
   weight: weightSchema,
   dimensions: dimensionsSchema.optional(),
-  packageType: z.enum([
-    "ENVELOPE",
-    "PACKAGE",
-    "PALLET",
-    "BOX",
-    "TUBE",
-    "PAK",
-    "FLAT_RATE_ENVELOPE",
-    "FLAT_RATE_BOX",
-  ]).optional(),
+  packageType: z
+    .enum([
+      "ENVELOPE",
+      "PACKAGE",
+      "PALLET",
+      "BOX",
+      "TUBE",
+      "PAK",
+      "FLAT_RATE_ENVELOPE",
+      "FLAT_RATE_BOX",
+    ])
+    .optional(),
   rateId: z.string().optional(),
   rankBy: z.enum(["price", "speed", "value"]).default("price"),
   maxPrice: z.number().optional(),
@@ -169,7 +177,7 @@ function initializeRateEngine(credentials: {
  */
 async function getRates(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   const { shopId } = await tenantContext(request);
   const validated = rateRequestSchema.parse(request.body);
@@ -219,7 +227,7 @@ async function getRates(
   } catch (error: unknown) {
     console.error("Error fetching rates:", error);
     throw new ValidationError(
-      `Failed to fetch shipping rates: ${error instanceof Error ? error.message : String(error)}`
+      `Failed to fetch shipping rates: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 }
@@ -230,7 +238,7 @@ async function getRates(
  */
 async function createLabel(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   const { shopId } = await tenantContext(request);
   const validated = labelRequestSchema.parse(request.body);
@@ -309,7 +317,7 @@ async function createLabel(
   } catch (error: unknown) {
     console.error("Error creating label:", error);
     throw new ValidationError(
-      `Failed to create shipping label: ${error instanceof Error ? error.message : String(error)}`
+      `Failed to create shipping label: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 }
@@ -320,7 +328,7 @@ async function createLabel(
  */
 async function trackShipment(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   const { shopId } = await tenantContext(request);
   const { tracking } = request.params as { tracking: string };
@@ -375,7 +383,7 @@ async function trackShipment(
       throw error;
     }
     throw new ValidationError(
-      `Failed to track shipment: ${error instanceof Error ? error.message : String(error)}`
+      `Failed to track shipment: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 }
@@ -386,7 +394,7 @@ async function trackShipment(
  */
 async function validateAddress(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   const { shopId } = await tenantContext(request);
   const validated = addressValidationSchema.parse(request.body);
@@ -433,7 +441,7 @@ async function validateAddress(
   } catch (error: unknown) {
     console.error("Error validating address:", error);
     throw new ValidationError(
-      `Failed to validate address: ${error instanceof Error ? error.message : String(error)}`
+      `Failed to validate address: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 }
@@ -444,7 +452,7 @@ async function validateAddress(
  */
 async function listCarriers(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   const { shopId } = await tenantContext(request);
 
@@ -472,7 +480,7 @@ async function listCarriers(
  */
 async function handleWebhook(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   const { provider } = request.params as { provider: string };
 
@@ -516,40 +524,36 @@ async function handleWebhook(
 // ─── Route Registration ─────────────────────────────────────────
 
 export async function registerShippingRoutes(
-  app: FastifyInstance
+  app: FastifyInstance,
 ): Promise<void> {
   app.post<{ Body: unknown }>(
     "/shipping/rates",
     { onRequest: [requireAuth] },
-    getRates
+    getRates,
   );
 
   app.post<{ Body: unknown }>(
     "/shipping/labels",
     { onRequest: [requireAuth] },
-    createLabel
+    createLabel,
   );
 
   app.get<{ Params: { tracking: string } }>(
     "/shipping/track/:tracking",
     { onRequest: [requireAuth] },
-    trackShipment
+    trackShipment,
   );
 
   app.post<{ Body: unknown }>(
     "/shipping/validate-address",
     { onRequest: [requireAuth] },
-    validateAddress
+    validateAddress,
   );
 
-  app.get(
-    "/shipping/carriers",
-    { onRequest: [requireAuth] },
-    listCarriers
-  );
+  app.get("/shipping/carriers", { onRequest: [requireAuth] }, listCarriers);
 
   app.post<{ Params: { provider: string }; Body: unknown }>(
     "/shipping/webhooks/:provider",
-    handleWebhook
+    handleWebhook,
   );
 }

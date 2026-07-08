@@ -10,12 +10,7 @@ interface MigrationConfig {
   id: string;
   sourceProvider: string;
   targetProvider: string;
-  status:
-    | "configured"
-    | "shadow"
-    | "gradual"
-    | "completed"
-    | "rolled_back";
+  status: "configured" | "shadow" | "gradual" | "completed" | "rolled_back";
   startTime?: Date;
   completionTime?: Date;
   trafficPercentage: number;
@@ -53,7 +48,7 @@ class MigrationWorkflowSystem {
 
   createMigration(
     sourceProvider: string,
-    targetProvider: string
+    targetProvider: string,
   ): MigrationConfig {
     const migration: MigrationConfig = {
       id: `migration-${Date.now()}`,
@@ -73,12 +68,8 @@ class MigrationWorkflowSystem {
     return migration;
   }
 
-  addDataMapping(
-    migrationId: string,
-    mapping: DataMapping
-  ): boolean {
-    const mappings =
-      this.dataMappings.get(migrationId);
+  addDataMapping(migrationId: string, mapping: DataMapping): boolean {
+    const mappings = this.dataMappings.get(migrationId);
 
     if (!mappings) {
       return false;
@@ -88,10 +79,7 @@ class MigrationWorkflowSystem {
     return true;
   }
 
-  enableShadowMode(
-    migrationId: string,
-    sampleSize: number = 100
-  ): void {
+  enableShadowMode(migrationId: string, sampleSize: number = 100): void {
     const migration = this.migrations.get(migrationId);
 
     if (!migration) {
@@ -103,18 +91,10 @@ class MigrationWorkflowSystem {
 
     // Simulate shadow comparison
     for (let i = 0; i < sampleSize; i++) {
-      const sourceSample = this.generateSample(
-        migration.sourceProvider
-      );
-      const targetSample = this.transformData(
-        sourceSample,
-        migrationId
-      );
+      const sourceSample = this.generateSample(migration.sourceProvider);
+      const targetSample = this.transformData(sourceSample, migrationId);
 
-      const matches = this.compareSamples(
-        sourceSample,
-        targetSample
-      );
+      const matches = this.compareSamples(sourceSample, targetSample);
 
       this.shadowResults.push({
         timestamp: new Date(),
@@ -138,16 +118,14 @@ class MigrationWorkflowSystem {
 
   private transformData(
     data: Record<string, unknown>,
-    migrationId: string
+    migrationId: string,
   ): Record<string, unknown> {
     const mappings = this.dataMappings.get(migrationId) || [];
 
     const transformed: Record<string, unknown> = {};
 
     for (const mapping of mappings) {
-      let value = (data as Record<string, unknown>)[
-        mapping.sourceField
-      ];
+      let value = (data as Record<string, unknown>)[mapping.sourceField];
 
       if (mapping.transform) {
         value = mapping.transform(value);
@@ -161,16 +139,14 @@ class MigrationWorkflowSystem {
 
   private compareSamples(
     source: Record<string, unknown>,
-    target: Record<string, unknown>
+    target: Record<string, unknown>,
   ): boolean {
-    return (
-      JSON.stringify(source) === JSON.stringify(target)
-    );
+    return JSON.stringify(source) === JSON.stringify(target);
   }
 
   startGradualCutover(
     migrationId: string,
-    duration: number = 3600000
+    duration: number = 3600000,
   ): boolean {
     const migration = this.migrations.get(migrationId);
 
@@ -184,10 +160,7 @@ class MigrationWorkflowSystem {
     return true;
   }
 
-  shiftTraffic(
-    migrationId: string,
-    percentage: number
-  ): boolean {
+  shiftTraffic(migrationId: string, percentage: number): boolean {
     const migration = this.migrations.get(migrationId);
 
     if (!migration) {
@@ -215,13 +188,8 @@ class MigrationWorkflowSystem {
       return;
     }
 
-    const sourceSample = this.generateSample(
-      migration.sourceProvider
-    );
-    const targetSample = this.transformData(
-      sourceSample,
-      migrationId
-    );
+    const sourceSample = this.generateSample(migration.sourceProvider);
+    const targetSample = this.transformData(sourceSample, migrationId);
 
     const validation: ValidationResult = {
       migrationId,
@@ -229,8 +197,7 @@ class MigrationWorkflowSystem {
       sourceSample,
       targetSample,
       dataMatches:
-        JSON.stringify(sourceSample) ===
-        JSON.stringify(targetSample),
+        JSON.stringify(sourceSample) === JSON.stringify(targetSample),
       latencyDiff: Math.random() * 50 - 25, // -25 to +25ms
       errorRateDiff: Math.random() * 0.01 - 0.005, // -0.5% to +0.5%
     };
@@ -275,9 +242,7 @@ class MigrationWorkflowSystem {
     return this.shadowResults;
   }
 
-  getShadowComparisonSummary(
-    migrationId: string
-  ): {
+  getShadowComparisonSummary(migrationId: string): {
     total: number;
     matches: number;
     mismatches: number;
@@ -293,23 +258,15 @@ class MigrationWorkflowSystem {
       matches,
       mismatches,
       matchPercentage:
-        results.length > 0
-          ? (matches / results.length) * 100
-          : 0,
+        results.length > 0 ? (matches / results.length) * 100 : 0,
     };
   }
 
-  getValidationResults(
-    migrationId: string
-  ): ValidationResult[] {
-    return this.validationResults.filter(
-      (v) => v.migrationId === migrationId
-    );
+  getValidationResults(migrationId: string): ValidationResult[] {
+    return this.validationResults.filter((v) => v.migrationId === migrationId);
   }
 
-  getLatencyComparison(
-    migrationId: string
-  ): {
+  getLatencyComparison(migrationId: string): {
     avgDiff: number;
     maxDiff: number;
     minDiff: number;
@@ -323,16 +280,13 @@ class MigrationWorkflowSystem {
     const diffs = results.map((r) => r.latencyDiff);
 
     return {
-      avgDiff:
-        diffs.reduce((a, b) => a + b, 0) / diffs.length,
+      avgDiff: diffs.reduce((a, b) => a + b, 0) / diffs.length,
       maxDiff: Math.max(...diffs),
       minDiff: Math.min(...diffs),
     };
   }
 
-  getErrorRateComparison(
-    migrationId: string
-  ): {
+  getErrorRateComparison(migrationId: string): {
     avgDiff: number;
     maxDiff: number;
     minDiff: number;
@@ -346,8 +300,7 @@ class MigrationWorkflowSystem {
     const diffs = results.map((r) => r.errorRateDiff);
 
     return {
-      avgDiff:
-        diffs.reduce((a, b) => a + b, 0) / diffs.length,
+      avgDiff: diffs.reduce((a, b) => a + b, 0) / diffs.length,
       maxDiff: Math.max(...diffs),
       minDiff: Math.min(...diffs),
     };
@@ -358,15 +311,9 @@ class MigrationWorkflowSystem {
   }
 
   validateMigration(migrationId: string): boolean {
-    const summary = this.getShadowComparisonSummary(
-      migrationId
-    );
-    const latencyComp = this.getLatencyComparison(
-      migrationId
-    );
-    const errorComp = this.getErrorRateComparison(
-      migrationId
-    );
+    const summary = this.getShadowComparisonSummary(migrationId);
+    const latencyComp = this.getLatencyComparison(migrationId);
+    const errorComp = this.getErrorRateComparison(migrationId);
 
     // Validation passes if:
     // - 99%+ data matches
@@ -390,10 +337,7 @@ describe("Migration Workflow", () => {
 
   describe("Provider Swap Configuration", () => {
     it("should create migration config", () => {
-      const migration = system.createMigration(
-        "stripe",
-        "paypal"
-      );
+      const migration = system.createMigration("stripe", "paypal");
 
       expect(migration.id).toBeDefined();
       expect(migration.sourceProvider).toBe("stripe");
@@ -402,66 +346,46 @@ describe("Migration Workflow", () => {
     });
 
     it("should track migration status", () => {
-      const migration = system.createMigration(
-        "square",
-        "stripe"
-      );
+      const migration = system.createMigration("square", "stripe");
 
-      expect(
-        [
-          "configured",
-          "shadow",
-          "gradual",
-          "completed",
-          "rolled_back",
-        ]
-      ).toContain(migration.status);
+      expect([
+        "configured",
+        "shadow",
+        "gradual",
+        "completed",
+        "rolled_back",
+      ]).toContain(migration.status);
     });
   });
 
   describe("Data Mapping", () => {
     it("should add data mapping", () => {
-      const migration = system.createMigration(
-        "stripe",
-        "paypal"
-      );
+      const migration = system.createMigration("stripe", "paypal");
 
-      const success = system.addDataMapping(
-        migration.id,
-        {
-          sourceField: "charge_id",
-          targetField: "transaction_id",
-          required: true,
-        }
-      );
+      const success = system.addDataMapping(migration.id, {
+        sourceField: "charge_id",
+        targetField: "transaction_id",
+        required: true,
+      });
 
       expect(success).toBe(true);
     });
 
     it("should support data transformation", () => {
-      const migration = system.createMigration(
-        "stripe",
-        "paypal"
-      );
+      const migration = system.createMigration("stripe", "paypal");
 
-      const success = system.addDataMapping(
-        migration.id,
-        {
-          sourceField: "amount_cents",
-          targetField: "amount_dollars",
-          transform: (value) => (value as number) / 100,
-          required: true,
-        }
-      );
+      const success = system.addDataMapping(migration.id, {
+        sourceField: "amount_cents",
+        targetField: "amount_dollars",
+        transform: (value) => (value as number) / 100,
+        required: true,
+      });
 
       expect(success).toBe(true);
     });
 
     it("should map multiple fields", () => {
-      const migration = system.createMigration(
-        "old-api",
-        "new-api"
-      );
+      const migration = system.createMigration("old-api", "new-api");
 
       system.addDataMapping(migration.id, {
         sourceField: "field1",
@@ -482,10 +406,7 @@ describe("Migration Workflow", () => {
 
   describe("Shadow Mode Comparison", () => {
     it("should enable shadow mode", () => {
-      const migration = system.createMigration(
-        "stripe",
-        "paypal"
-      );
+      const migration = system.createMigration("stripe", "paypal");
 
       system.enableShadowMode(migration.id, 50);
 
@@ -494,15 +415,11 @@ describe("Migration Workflow", () => {
     });
 
     it("should compare shadow results", () => {
-      const migration = system.createMigration(
-        "stripe",
-        "paypal"
-      );
+      const migration = system.createMigration("stripe", "paypal");
 
       system.enableShadowMode(migration.id, 100);
 
-      const summary =
-        system.getShadowComparisonSummary(migration.id);
+      const summary = system.getShadowComparisonSummary(migration.id);
 
       expect(summary.total).toBe(100);
       expect(summary.matches).toBeGreaterThanOrEqual(0);
@@ -511,16 +428,11 @@ describe("Migration Workflow", () => {
     });
 
     it("should track individual shadow comparisons", () => {
-      const migration = system.createMigration(
-        "square",
-        "stripe"
-      );
+      const migration = system.createMigration("square", "stripe");
 
       system.enableShadowMode(migration.id, 10);
 
-      const results = system.getShadowResults(
-        migration.id
-      );
+      const results = system.getShadowResults(migration.id);
 
       expect(results.length).toBeGreaterThan(0);
       expect(results[0].sourceSample).toBeDefined();
@@ -531,15 +443,10 @@ describe("Migration Workflow", () => {
 
   describe("Gradual Cutover", () => {
     it("should start gradual cutover", () => {
-      const migration = system.createMigration(
-        "stripe",
-        "paypal"
-      );
+      const migration = system.createMigration("stripe", "paypal");
 
       system.enableShadowMode(migration.id, 50);
-      const success = system.startGradualCutover(
-        migration.id
-      );
+      const success = system.startGradualCutover(migration.id);
 
       expect(success).toBe(true);
 
@@ -548,44 +455,30 @@ describe("Migration Workflow", () => {
     });
 
     it("should shift traffic gradually", () => {
-      const migration = system.createMigration(
-        "square",
-        "stripe"
-      );
+      const migration = system.createMigration("square", "stripe");
 
       system.enableShadowMode(migration.id, 50);
       system.startGradualCutover(migration.id);
 
       system.shiftTraffic(migration.id, 25);
-      expect(
-        system.getMigration(migration.id)?.trafficPercentage
-      ).toBe(25);
+      expect(system.getMigration(migration.id)?.trafficPercentage).toBe(25);
 
       system.shiftTraffic(migration.id, 50);
-      expect(
-        system.getMigration(migration.id)?.trafficPercentage
-      ).toBe(50);
+      expect(system.getMigration(migration.id)?.trafficPercentage).toBe(50);
 
       system.shiftTraffic(migration.id, 100);
-      expect(
-        system.getMigration(migration.id)?.trafficPercentage
-      ).toBe(100);
+      expect(system.getMigration(migration.id)?.trafficPercentage).toBe(100);
     });
 
     it("should validate during gradual shift", () => {
-      const migration = system.createMigration(
-        "stripe",
-        "paypal"
-      );
+      const migration = system.createMigration("stripe", "paypal");
 
       system.enableShadowMode(migration.id, 20);
       system.startGradualCutover(migration.id);
 
       system.shiftTraffic(migration.id, 50);
 
-      const validations = system.getValidationResults(
-        migration.id
-      );
+      const validations = system.getValidationResults(migration.id);
 
       expect(validations.length).toBeGreaterThan(0);
     });
@@ -593,18 +486,13 @@ describe("Migration Workflow", () => {
 
   describe("Migration Validation", () => {
     it("should validate latency comparison", () => {
-      const migration = system.createMigration(
-        "stripe",
-        "paypal"
-      );
+      const migration = system.createMigration("stripe", "paypal");
 
       system.enableShadowMode(migration.id, 100);
       system.startGradualCutover(migration.id);
       system.shiftTraffic(migration.id, 50);
 
-      const latency = system.getLatencyComparison(
-        migration.id
-      );
+      const latency = system.getLatencyComparison(migration.id);
 
       expect(latency.avgDiff).toBeDefined();
       expect(latency.maxDiff).toBeDefined();
@@ -612,18 +500,13 @@ describe("Migration Workflow", () => {
     });
 
     it("should validate error rate comparison", () => {
-      const migration = system.createMigration(
-        "square",
-        "stripe"
-      );
+      const migration = system.createMigration("square", "stripe");
 
       system.enableShadowMode(migration.id, 100);
       system.startGradualCutover(migration.id);
       system.shiftTraffic(migration.id, 50);
 
-      const errorRate = system.getErrorRateComparison(
-        migration.id
-      );
+      const errorRate = system.getErrorRateComparison(migration.id);
 
       expect(errorRate.avgDiff).toBeDefined();
       expect(errorRate.maxDiff).toBeDefined();
@@ -631,17 +514,12 @@ describe("Migration Workflow", () => {
     });
 
     it("should perform overall migration validation", () => {
-      const migration = system.createMigration(
-        "stripe",
-        "paypal"
-      );
+      const migration = system.createMigration("stripe", "paypal");
 
       system.enableShadowMode(migration.id, 100);
       system.startGradualCutover(migration.id);
 
-      const isValid = system.validateMigration(
-        migration.id
-      );
+      const isValid = system.validateMigration(migration.id);
 
       expect(isValid).toBeDefined();
     });
@@ -649,18 +527,13 @@ describe("Migration Workflow", () => {
 
   describe("Completion", () => {
     it("should complete migration", () => {
-      const migration = system.createMigration(
-        "stripe",
-        "paypal"
-      );
+      const migration = system.createMigration("stripe", "paypal");
 
       system.enableShadowMode(migration.id, 50);
       system.startGradualCutover(migration.id);
       system.shiftTraffic(migration.id, 100);
 
-      const success = system.completeMigration(
-        migration.id
-      );
+      const success = system.completeMigration(migration.id);
 
       expect(success).toBe(true);
 
@@ -672,10 +545,7 @@ describe("Migration Workflow", () => {
 
   describe("Rollback", () => {
     it("should rollback migration", () => {
-      const migration = system.createMigration(
-        "square",
-        "stripe"
-      );
+      const migration = system.createMigration("square", "stripe");
 
       system.enableShadowMode(migration.id, 50);
       system.startGradualCutover(migration.id);
@@ -691,13 +561,9 @@ describe("Migration Workflow", () => {
     });
 
     it("should restore previous state on rollback", () => {
-      const migration = system.createMigration(
-        "stripe",
-        "paypal"
-      );
+      const migration = system.createMigration("stripe", "paypal");
 
-      const originalTraffic =
-        migration.trafficPercentage;
+      const originalTraffic = migration.trafficPercentage;
 
       system.enableShadowMode(migration.id, 50);
       system.startGradualCutover(migration.id);
@@ -705,13 +571,9 @@ describe("Migration Workflow", () => {
 
       system.rollback(migration.id);
 
-      const rolledBack = system.getMigration(
-        migration.id
-      );
+      const rolledBack = system.getMigration(migration.id);
 
-      expect(rolledBack?.trafficPercentage).toBeLessThan(
-        75
-      );
+      expect(rolledBack?.trafficPercentage).toBeLessThan(75);
     });
   });
 });

@@ -6,31 +6,37 @@
 /**
  * Collection type (manual or automatic)
  */
-export type CollectionType = 'manual' | 'auto';
+export type CollectionType = "manual" | "auto";
 
 /**
  * Sorting options for collection products
  */
 export type SortOrder =
-  | 'manual'
-  | 'best-selling'
-  | 'alpha-asc'
-  | 'alpha-desc'
-  | 'price-asc'
-  | 'price-desc'
-  | 'created-desc';
+  | "manual"
+  | "best-selling"
+  | "alpha-asc"
+  | "alpha-desc"
+  | "price-asc"
+  | "price-desc"
+  | "created-desc";
 
 /**
  * Rule condition for automatic collections
  */
-export type RuleCondition = 'equals' | 'not_equals' | 'contains' | 'not_contains' | 'greater_than' | 'less_than';
+export type RuleCondition =
+  | "equals"
+  | "not_equals"
+  | "contains"
+  | "not_contains"
+  | "greater_than"
+  | "less_than";
 
 /**
  * Rule for automatic collection evaluation
  */
 export interface CollectionRule {
   column: string;
-  relation: 'and' | 'or';
+  relation: "and" | "or";
   condition: RuleCondition;
   value: string | number | boolean;
 }
@@ -164,12 +170,19 @@ export interface CollectionPlatformAdapter {
   /**
    * Sync a collection from the platform
    */
-  syncCollection(shopId: string, externalCollectionId: string): Promise<Collection>;
+  syncCollection(
+    shopId: string,
+    externalCollectionId: string,
+  ): Promise<Collection>;
 
   /**
    * Fetch products from a collection on the platform
    */
-  fetchProducts(externalCollectionId: string, limit?: number, cursor?: string): Promise<{
+  fetchProducts(
+    externalCollectionId: string,
+    limit?: number,
+    cursor?: string,
+  ): Promise<{
     products: Array<{
       externalId: string;
       title: string;
@@ -180,7 +193,10 @@ export interface CollectionPlatformAdapter {
   /**
    * Push collection rules to the platform
    */
-  pushRules(externalCollectionId: string, rules: CollectionRule[]): Promise<void>;
+  pushRules(
+    externalCollectionId: string,
+    rules: CollectionRule[],
+  ): Promise<void>;
 
   /**
    * Get rate limit info from platform

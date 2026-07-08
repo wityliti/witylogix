@@ -1,7 +1,7 @@
 // @ts-nocheck
 /**
  * Core types for Witylogix Shopify extensions
- * 
+ *
  * These types define the contract between:
  * - Extension components (Preact)
  * - Shopify App Bridge (checkout extensions)
@@ -114,8 +114,8 @@ export interface ThemeTokens {
       md: string;
       lg: string;
       xl: string;
-      '2xl': string;
-      '3xl': string;
+      "2xl": string;
+      "3xl": string;
     };
     weights: {
       light: number;
@@ -140,7 +140,7 @@ export interface ThemeTokens {
    * Current color scheme: 'light' or 'dark'
    * Derived from prefers-color-scheme or manual detection
    */
-  colorScheme: 'light' | 'dark';
+  colorScheme: "light" | "dark";
 }
 
 /**
@@ -225,7 +225,7 @@ export interface DiscountResult {
   /** Error message (if unsuccessful) */
   error?: string;
   /** Human-readable error code for UI handling */
-  errorCode?: 'INVALID_CODE' | 'EXPIRED' | 'LIMIT_EXCEEDED' | 'UNKNOWN';
+  errorCode?: "INVALID_CODE" | "EXPIRED" | "LIMIT_EXCEEDED" | "UNKNOWN";
 }
 
 /**
@@ -303,7 +303,7 @@ export interface ExtensionMetadata {
   /** Git commit SHA */
   commitSha: string;
   /** Extension type: "checkout" or "pos" */
-  type: 'checkout' | 'pos';
+  type: "checkout" | "pos";
 }
 
 /**

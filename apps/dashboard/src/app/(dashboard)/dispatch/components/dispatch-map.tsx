@@ -57,19 +57,22 @@ export function DispatchMap({
     return m;
   }, [routes]);
 
-  const stopMarkers = useMemo<StopMarker[]>(() =>
-    routes.flatMap((route) =>
-      route.stops.map((stop) => ({
-        id: stop.id,
-        lat: stop.latitude,
-        lng: stop.longitude,
-        sequence: stop.sequence,
-        label: stop.customerName ?? stop.address,
-        status: (STOP_STATUS_MAP[stop.status.toLowerCase()] ?? "PENDING") as StopMarkerStatus,
-        address: stop.address,
-      }))
-    ),
-  [routes]);
+  const stopMarkers = useMemo<StopMarker[]>(
+    () =>
+      routes.flatMap((route) =>
+        route.stops.map((stop) => ({
+          id: stop.id,
+          lat: stop.latitude,
+          lng: stop.longitude,
+          sequence: stop.sequence,
+          label: stop.customerName ?? stop.address,
+          status: (STOP_STATUS_MAP[stop.status.toLowerCase()] ??
+            "PENDING") as StopMarkerStatus,
+          address: stop.address,
+        })),
+      ),
+    [routes],
+  );
 
   const driverMarkers = useMemo<DriverMarker[]>(() => {
     const result: DriverMarker[] = [];
@@ -80,7 +83,8 @@ export function DispatchMap({
           name: driver.name,
           lat: driver.currentLocation.lat,
           lng: driver.currentLocation.lng,
-          status: (DRIVER_STATUS_MAP[driver.status.toLowerCase()] ?? "offline") as LayerDriverStatus,
+          status: (DRIVER_STATUS_MAP[driver.status.toLowerCase()] ??
+            "offline") as LayerDriverStatus,
         });
       }
     }
@@ -92,7 +96,9 @@ export function DispatchMap({
       <div className="w-full h-full bg-wl-bg-surface rounded-lg border border-wl-border-subtle flex items-center justify-center p-6">
         <div className="text-center">
           <AlertCircle className="w-8 h-8 text-wl-danger-400 mx-auto mb-3" />
-          <p className="text-sm font-medium text-wl-text-primary mb-1">Map Loading Error</p>
+          <p className="text-sm font-medium text-wl-text-primary mb-1">
+            Map Loading Error
+          </p>
           <p className="text-xs text-wl-text-secondary">{error}</p>
         </div>
       </div>
@@ -112,9 +118,11 @@ export function DispatchMap({
 
       <WLMap
         className="w-full h-full"
-        center={stopMarkers.length > 0
-          ? [stopMarkers[0].lng, stopMarkers[0].lat] as [number, number]
-          : [0, 20]}
+        center={
+          stopMarkers.length > 0
+            ? ([stopMarkers[0].lng, stopMarkers[0].lat] as [number, number])
+            : [0, 20]
+        }
         zoom={stopMarkers.length > 0 ? 12 : 2}
       >
         {routes.map((route) => (
@@ -142,18 +150,25 @@ export function DispatchMap({
       {/* Route legend */}
       {routes.length > 0 && (
         <div className="absolute bottom-4 left-4 bg-wl-bg-surface/90 backdrop-blur-sm rounded-lg border border-wl-border-subtle p-3 shadow-lg z-10 max-h-32 overflow-y-auto">
-          <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">Routes</p>
+          <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
+            Routes
+          </p>
           <div className="space-y-1">
             {routes.slice(0, 5).map((route) => (
               <div key={route.id} className="flex items-center gap-2 text-xs">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: route.color }} />
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: route.color }}
+                />
                 <span className="text-wl-text-secondary truncate">
                   {route.name ?? `Route ${route.id.slice(0, 8)}`}
                 </span>
               </div>
             ))}
             {routes.length > 5 && (
-              <p className="text-xs text-wl-text-tertiary pt-1">+{routes.length - 5} more</p>
+              <p className="text-xs text-wl-text-tertiary pt-1">
+                +{routes.length - 5} more
+              </p>
             )}
           </div>
         </div>

@@ -44,7 +44,9 @@ describe("Onboarding Analytics", () => {
       trackEvent(event);
       const events = getAnalyticsEvents();
       expect(events.length).toBe(1);
-      expect(events[0].eventType).toBe(OnboardingAnalyticsEventType.STEP_STARTED);
+      expect(events[0].eventType).toBe(
+        OnboardingAnalyticsEventType.STEP_STARTED,
+      );
     });
 
     it("should track step completed event", () => {

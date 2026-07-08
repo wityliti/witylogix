@@ -24,11 +24,11 @@ export {
   type ProofOfDelivery,
   type RateLimitConfig,
   type CircuitBreakerConfig,
-} from './types';
+} from "./types";
 
-export { LastMileAdapter } from './lastmile-adapter';
-export { DoorDashDriveClient } from './doordash-drive-client';
-export { UberDirectClient } from './uber-direct-client';
-export { UberEatsClient } from './ubereats-client';
-export { GrubhubClient } from './grubhub-client';
-export { DeliveryAggregator } from './delivery-aggregator';
+export { LastMileAdapter } from "./lastmile-adapter";
+export { DoorDashDriveClient } from "./doordash-drive-client";
+export { UberDirectClient } from "./uber-direct-client";
+export { UberEatsClient } from "./ubereats-client";
+export { GrubhubClient } from "./grubhub-client";
+export { DeliveryAggregator } from "./delivery-aggregator";

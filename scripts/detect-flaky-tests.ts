@@ -131,7 +131,7 @@ function saveFlakyHistory(history: FlakyHistory): void {
 
 function updateFlakyHistory(
   history: FlakyHistory,
-  results: TestResult[]
+  results: TestResult[],
 ): FlakyHistory {
   for (const result of results) {
     const testKey = result.name;
@@ -196,16 +196,22 @@ function detectFlakyTests(history: FlakyHistory): FlakyTestData[] {
 
 function generateSuggestions(
   testName: string,
-  data: { file: string; results: Array<{ passed: boolean; timestamp: string }> },
-  flakiness: number
+  data: {
+    file: string;
+    results: Array<{ passed: boolean; timestamp: string }>;
+  },
+  flakiness: number,
 ): string[] {
   const suggestions: string[] = [];
 
   // Check for timeout patterns
-  if (testName.toLowerCase().includes("async") || testName.toLowerCase().includes("database")) {
+  if (
+    testName.toLowerCase().includes("async") ||
+    testName.toLowerCase().includes("database")
+  ) {
     suggestions.push("Increase test timeout or add explicit wait conditions");
     suggestions.push(
-      "Review async operations for race conditions or timing issues"
+      "Review async operations for race conditions or timing issues",
     );
   }
 
@@ -216,7 +222,7 @@ function generateSuggestions(
     testName.toLowerCase().includes("network")
   ) {
     suggestions.push(
-      "Add network error handling and retry logic to test setup"
+      "Add network error handling and retry logic to test setup",
     );
     suggestions.push("Mock external service calls to eliminate dependencies");
   }
@@ -228,7 +234,9 @@ function generateSuggestions(
     testName.toLowerCase().includes("state")
   ) {
     suggestions.push("Ensure test data is properly isolated and cleaned up");
-    suggestions.push("Check for database transaction or state pollution issues");
+    suggestions.push(
+      "Check for database transaction or state pollution issues",
+    );
   }
 
   // High flakiness

@@ -17,7 +17,7 @@ export interface EasyPostAddress {
   id: string;
 
   /** Object type (always "address") */
-  object: 'address';
+  object: "address";
 
   /** Creation timestamp (ISO 8601) */
   created_at: string;
@@ -56,7 +56,7 @@ export interface EasyPostAddress {
   email?: string;
 
   /** API mode (test or production) */
-  mode: 'test' | 'production';
+  mode: "test" | "production";
 
   /** Whether address is residential */
   residential?: boolean;
@@ -73,7 +73,7 @@ export interface EasyPostParcel {
   id: string;
 
   /** Object type (always "parcel") */
-  object: 'parcel';
+  object: "parcel";
 
   /** Creation timestamp */
   created_at: string;
@@ -97,7 +97,7 @@ export interface EasyPostParcel {
   predefined_package?: string;
 
   /** API mode */
-  mode: 'test' | 'production';
+  mode: "test" | "production";
 }
 
 /**
@@ -108,7 +108,7 @@ export interface EasyPostRate {
   id: string;
 
   /** Object type (always "rate") */
-  object: 'rate';
+  object: "rate";
 
   /** Creation timestamp */
   created_at: string;
@@ -117,7 +117,7 @@ export interface EasyPostRate {
   updated_at: string;
 
   /** API mode */
-  mode: 'test' | 'production';
+  mode: "test" | "production";
 
   /** Service name (e.g., "Ground", "Express") */
   service: string;
@@ -158,7 +158,7 @@ export interface EasyPostShipment {
   id: string;
 
   /** Object type (always "shipment") */
-  object: 'shipment';
+  object: "shipment";
 
   /** Creation timestamp */
   created_at: string;
@@ -167,7 +167,7 @@ export interface EasyPostShipment {
   updated_at: string;
 
   /** API mode */
-  mode: 'test' | 'production';
+  mode: "test" | "production";
 
   /** Reference/custom ID for this shipment */
   reference?: string;
@@ -205,13 +205,13 @@ export interface EasyPostShipment {
   /** Postage label (after purchase) */
   postage_label?: {
     id: string;
-    object: 'PostageLabel';
+    object: "PostageLabel";
     created_at: string;
     updated_at: string;
     type: string;
     url: string;
     filename: string;
-    fileformat: 'pdf' | 'png' | 'zpl' | 'epl2';
+    fileformat: "pdf" | "png" | "zpl" | "epl2";
     carrier_barcode_ability: string;
   };
 
@@ -257,7 +257,7 @@ export interface EasyPostLabel {
   label_url: string;
 
   /** Label format */
-  label_format: 'PDF' | 'PNG' | 'ZPL' | 'EPL2';
+  label_format: "PDF" | "PNG" | "ZPL" | "EPL2";
 
   /** Creation timestamp */
   created_at: string;
@@ -268,7 +268,7 @@ export interface EasyPostLabel {
  */
 export interface EasyPostCheckpoint {
   /** Object type */
-  object: 'TrackingLocation';
+  object: "TrackingLocation";
 
   /** Event timestamp */
   created_at: string;
@@ -287,7 +287,7 @@ export interface EasyPostCheckpoint {
 
   /** Location information */
   tracking_location?: {
-    object: 'TrackingLocation';
+    object: "TrackingLocation";
     city?: string;
     state?: string;
     country?: string;
@@ -303,7 +303,7 @@ export interface EasyPostTracker {
   id: string;
 
   /** Object type (always "tracker") */
-  object: 'tracker';
+  object: "tracker";
 
   /** Creation timestamp */
   created_at: string;
@@ -312,7 +312,7 @@ export interface EasyPostTracker {
   updated_at: string;
 
   /** API mode */
-  mode: 'test' | 'production';
+  mode: "test" | "production";
 
   /** Tracking number */
   tracking_code: string;
@@ -362,7 +362,7 @@ export interface EasyPostBatch {
   id: string;
 
   /** Object type (always "batch") */
-  object: 'batch';
+  object: "batch";
 
   /** Creation timestamp */
   created_at: string;
@@ -371,7 +371,7 @@ export interface EasyPostBatch {
   updated_at: string;
 
   /** API mode */
-  mode: 'test' | 'production';
+  mode: "test" | "production";
 
   /** Batch state (e.g., "creating", "created", "purchasing", "purchased") */
   state: string;
@@ -402,7 +402,7 @@ export interface ScanForm {
   id: string;
 
   /** Object type */
-  object: 'ScanForm';
+  object: "ScanForm";
 
   /** Creation timestamp */
   created_at: string;
@@ -411,7 +411,7 @@ export interface ScanForm {
   updated_at: string;
 
   /** API mode */
-  mode: 'test' | 'production';
+  mode: "test" | "production";
 
   /** Form status */
   status: string;
@@ -434,7 +434,7 @@ export interface EasyPostCustomsItem {
   id: string;
 
   /** Object type */
-  object: 'CustomsItem';
+  object: "CustomsItem";
 
   /** Creation timestamp */
   created_at: string;
@@ -461,7 +461,7 @@ export interface EasyPostCustomsItem {
   hs_code?: string;
 
   /** API mode */
-  mode: 'test' | 'production';
+  mode: "test" | "production";
 }
 
 /**
@@ -472,7 +472,7 @@ export interface EasyPostCustomsInfo {
   id: string;
 
   /** Object type */
-  object: 'CustomsInfo';
+  object: "CustomsInfo";
 
   /** Creation timestamp */
   created_at: string;
@@ -511,7 +511,7 @@ export interface EasyPostCustomsInfo {
   certifier?: string;
 
   /** API mode */
-  mode: 'test' | 'production';
+  mode: "test" | "production";
 }
 
 /**
@@ -522,7 +522,7 @@ export interface EasyPostInsurance {
   id: string;
 
   /** Object type */
-  object: 'Insurance';
+  object: "Insurance";
 
   /** Creation timestamp */
   created_at: string;
@@ -546,7 +546,7 @@ export interface EasyPostInsurance {
   status?: string;
 
   /** API mode */
-  mode: 'test' | 'production';
+  mode: "test" | "production";
 }
 
 /**
@@ -557,7 +557,7 @@ export interface CarrierAccount {
   id: string;
 
   /** Object type */
-  object: 'CarrierAccount';
+  object: "CarrierAccount";
 
   /** Creation timestamp */
   created_at: string;
@@ -578,7 +578,7 @@ export interface CarrierAccount {
   reference?: string;
 
   /** API mode */
-  mode: 'test' | 'production';
+  mode: "test" | "production";
 
   /** Credentials (carrier-specific) */
   credentials?: Record<string, unknown>;

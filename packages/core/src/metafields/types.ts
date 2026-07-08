@@ -4,19 +4,19 @@
  */
 
 export enum MetafieldType {
-  STRING = 'STRING',
-  NUMBER = 'NUMBER',
-  BOOLEAN = 'BOOLEAN',
-  JSON = 'JSON',
-  DATE = 'DATE',
+  STRING = "STRING",
+  NUMBER = "NUMBER",
+  BOOLEAN = "BOOLEAN",
+  JSON = "JSON",
+  DATE = "DATE",
 }
 
 export enum EntityType {
-  ORDER = 'ORDER',
-  SHIPMENT = 'SHIPMENT',
-  CUSTOMER = 'CUSTOMER',
-  PRODUCT = 'PRODUCT',
-  DRIVER = 'DRIVER',
+  ORDER = "ORDER",
+  SHIPMENT = "SHIPMENT",
+  CUSTOMER = "CUSTOMER",
+  PRODUCT = "PRODUCT",
+  DRIVER = "DRIVER",
 }
 
 /**

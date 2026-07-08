@@ -104,9 +104,7 @@ export class RequestFingerprinter {
    * Initialize request fingerprinter.
    * @param geoIpProvider - Optional GeoIP lookup function
    */
-  constructor(
-    geoIpProvider?: (ip: string) => Promise<any>
-  ) {
+  constructor(geoIpProvider?: (ip: string) => Promise<any>) {
     this.geoIpProvider = geoIpProvider;
     this.loadTorExitNodes();
   }
@@ -156,7 +154,7 @@ export class RequestFingerprinter {
   async generateFingerprint(
     attributes: RequestAttributes,
     userId?: string,
-    location?: StoredFingerprint["location"]
+    location?: StoredFingerprint["location"],
   ): Promise<StoredFingerprint> {
     const hash = this.generateHash(attributes);
     const now = new Date();
@@ -227,7 +225,7 @@ export class RequestFingerprinter {
   private detectRapidIpChange(
     userId: string,
     currentIp: string,
-    timezoneOffset?: number
+    timezoneOffset?: number,
   ): AnomalyResult["reasons"] {
     const reasons: AnomalyResult["reasons"] = [];
     const history = this.ipHistory.get(userId);
@@ -309,7 +307,7 @@ export class RequestFingerprinter {
    */
   private detectGeoAnomaly(
     userId: string,
-    location?: StoredFingerprint["location"]
+    location?: StoredFingerprint["location"],
   ): AnomalyResult["reasons"] {
     const reasons: AnomalyResult["reasons"] = [];
 
@@ -337,7 +335,7 @@ export class RequestFingerprinter {
   async detectAnomalies(
     attributes: RequestAttributes,
     userId?: string,
-    thresholdScore: number = 50
+    thresholdScore: number = 50,
   ): Promise<AnomalyResult> {
     const reasons: AnomalyResult["reasons"] = [];
     let score = 0;

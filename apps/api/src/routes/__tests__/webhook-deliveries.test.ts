@@ -90,7 +90,7 @@ describe("Webhook Deliveries Routes", () => {
   describe("GET / - List webhook deliveries", () => {
     it("should return paginated list of deliveries", async () => {
       mockPrisma.webhookDelivery.findMany.mockResolvedValue(
-        mockDeliveries.slice(0, 2)
+        mockDeliveries.slice(0, 2),
       );
       mockPrisma.webhookDelivery.count.mockResolvedValue(3);
 
@@ -112,7 +112,9 @@ describe("Webhook Deliveries Routes", () => {
     });
 
     it("should filter by status", async () => {
-      const successDeliveries = mockDeliveries.filter((d) => d.status === "success");
+      const successDeliveries = mockDeliveries.filter(
+        (d) => d.status === "success",
+      );
       mockPrisma.webhookDelivery.findMany.mockResolvedValue(successDeliveries);
       mockPrisma.webhookDelivery.count.mockResolvedValue(1);
 
@@ -125,13 +127,13 @@ describe("Webhook Deliveries Routes", () => {
       expect(mockPrisma.webhookDelivery.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ status: "success" }),
-        })
+        }),
       );
     });
 
     it("should filter by event type", async () => {
       const orderDeliveries = mockDeliveries.filter(
-        (d) => d.eventType === "order.created"
+        (d) => d.eventType === "order.created",
       );
       mockPrisma.webhookDelivery.findMany.mockResolvedValue(orderDeliveries);
       mockPrisma.webhookDelivery.count.mockResolvedValue(1);
@@ -143,7 +145,7 @@ describe("Webhook Deliveries Routes", () => {
       expect(mockPrisma.webhookDelivery.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ eventType: "order.created" }),
-        })
+        }),
       );
     });
 
@@ -172,7 +174,7 @@ describe("Webhook Deliveries Routes", () => {
               lte: endDate,
             }),
           }),
-        })
+        }),
       );
     });
 
@@ -180,7 +182,7 @@ describe("Webhook Deliveries Routes", () => {
       const pageSize = 2;
       const page = 2;
       mockPrisma.webhookDelivery.findMany.mockResolvedValue(
-        mockDeliveries.slice(2)
+        mockDeliveries.slice(2),
       );
       mockPrisma.webhookDelivery.count.mockResolvedValue(3);
 
@@ -192,7 +194,7 @@ describe("Webhook Deliveries Routes", () => {
         expect.objectContaining({
           skip: 2,
           take: 2,
-        })
+        }),
       );
     });
 
@@ -227,7 +229,7 @@ describe("Webhook Deliveries Routes", () => {
       expect(mockPrisma.webhookDelivery.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { timestamp: "desc" },
-        })
+        }),
       );
     });
   });
@@ -275,7 +277,11 @@ describe("Webhook Deliveries Routes", () => {
 
       for (const id of invalidIds) {
         expect(() => {
-          if (!id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+          if (
+            !id.match(
+              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+            )
+          ) {
             throw new Error("Invalid UUID");
           }
         }).toThrow("Invalid UUID");
@@ -331,7 +337,9 @@ describe("Webhook Deliveries Routes", () => {
       mockPrisma.webhookDelivery.findUnique.mockResolvedValue(pendingDelivery);
       mockPrisma.webhookDelivery.update.mockResolvedValue(updatedDelivery);
 
-      mockPrisma.webhookDelivery.findUnique({ where: { id: pendingDelivery.id } });
+      mockPrisma.webhookDelivery.findUnique({
+        where: { id: pendingDelivery.id },
+      });
 
       expect(mockPrisma.webhookDelivery.findUnique).toHaveBeenCalledWith({
         where: { id: pendingDelivery.id },
@@ -421,7 +429,8 @@ describe("Webhook Deliveries Routes", () => {
         { duration: 150 },
       ];
 
-      const avgDuration = deliveries.reduce((sum, d) => sum + d.duration, 0) / deliveries.length;
+      const avgDuration =
+        deliveries.reduce((sum, d) => sum + d.duration, 0) / deliveries.length;
       expect(avgDuration).toBe(150);
     });
 
@@ -442,7 +451,8 @@ describe("Webhook Deliveries Routes", () => {
         pending: 0,
       };
 
-      const successRate = stats.total > 0 ? (stats.success / stats.total) * 100 : 0;
+      const successRate =
+        stats.total > 0 ? (stats.success / stats.total) * 100 : 0;
       expect(successRate).toBe(0);
     });
   });
@@ -460,7 +470,7 @@ describe("Webhook Deliveries Routes", () => {
 
     it("should handle database errors gracefully", async () => {
       mockPrisma.webhookDelivery.findMany.mockRejectedValue(
-        new Error("Database connection error")
+        new Error("Database connection error"),
       );
 
       expect(mockPrisma.webhookDelivery.findMany).not.toHaveBeenCalled();

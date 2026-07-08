@@ -5,9 +5,11 @@ Comprehensive test coverage for the Shopify embedded admin app routes, built wit
 ## Test Files
 
 ### 1. `app-index.test.ts` (808 lines, ~600 lines per requirement)
+
 Tests the **Dashboard (Home) route** (`_index.tsx`)
 
 **Coverage:**
+
 - ✓ Shopify session authentication and validation
 - ✓ Loading dashboard KPI statistics (ordersToday, activeDeliveries, driversOnline, successRate)
 - ✓ Loading recent activity timeline with event filtering
@@ -18,6 +20,7 @@ Tests the **Dashboard (Home) route** (`_index.tsx`)
 - ✓ Edge cases (empty arrays, null values, missing fields)
 
 **Test Suites:**
+
 - Authentication (3 tests)
 - Dashboard Stats Loading (6 tests)
 - Recent Activity Loading (6 tests)
@@ -29,9 +32,11 @@ Tests the **Dashboard (Home) route** (`_index.tsx`)
 ---
 
 ### 2. `app-settings.test.ts` (1,097 lines, ~600 lines per requirement)
+
 Tests the **Settings Page route** (`settings._index.tsx`)
 
 **Coverage:**
+
 - ✓ Multi-tab settings page loader (general, branding, notifications, API keys, billing)
 - ✓ General settings validation (company name, timezone, currency, weight/distance units)
 - ✓ Branding settings (logo URL, color validation, tracking page)
@@ -43,6 +48,7 @@ Tests the **Settings Page route** (`settings._index.tsx`)
 - ✓ Input validation and fallback UI
 
 **Test Suites:**
+
 - Loader - General Settings (6 tests)
 - Loader - Branding Settings (6 tests)
 - Loader - Notification Settings (5 tests)
@@ -59,9 +65,11 @@ Tests the **Settings Page route** (`settings._index.tsx`)
 ---
 
 ### 3. `app-webhooks.test.ts` (950 lines, ~700 lines per requirement)
+
 Tests the **Webhook Management route** (`app.webhooks.tsx`)
 
 **Coverage:**
+
 - ✓ Webhook endpoint CRUD operations (create, read, update, delete)
 - ✓ Shopify event trigger management (enable/disable, event filtering)
 - ✓ Webhook registration and deregistration
@@ -73,6 +81,7 @@ Tests the **Webhook Management route** (`app.webhooks.tsx`)
 - ✓ Error handling and data validation
 
 **Test Suites:**
+
 - Loader - Webhook Endpoints (7 tests)
 - Loader - Webhook Triggers (6 tests)
 - Loader - Webhook Deliveries (10 tests)
@@ -88,9 +97,11 @@ Tests the **Webhook Management route** (`app.webhooks.tsx`)
 ---
 
 ### 4. `app-orders.test.ts` (917 lines, ~600 lines per requirement)
+
 Tests the **Orders List and Detail routes** (`orders._index.tsx`, `orders.$id.tsx`)
 
 **Coverage:**
+
 - ✓ Loading order lists with server-side pagination
 - ✓ Filtering by status (PENDING, DELIVERED, OUT_FOR_DELIVERY, etc.)
 - ✓ Filtering by date range (dateFrom, dateTo)
@@ -105,6 +116,7 @@ Tests the **Orders List and Detail routes** (`orders._index.tsx`, `orders.$id.ts
 - ✓ Data type validation and error handling
 
 **Test Suites:**
+
 - Loader - Basic Loading (6 tests)
 - Filtering - Status Filter (5 tests)
 - Filtering - Date Range Filter (4 tests)
@@ -126,24 +138,26 @@ Tests the **Orders List and Detail routes** (`orders._index.tsx`, `orders.$id.ts
 
 ## Test Statistics
 
-| File | Lines | Test Suites | Tests |
-|------|-------|------------|-------|
-| app-index.test.ts | 808 | 7 | 29 |
-| app-settings.test.ts | 1,097 | 12 | 64 |
-| app-webhooks.test.ts | 950 | 11 | 62 |
-| app-orders.test.ts | 917 | 15 | 82 |
-| **TOTAL** | **3,772** | **45** | **237** |
+| File                 | Lines     | Test Suites | Tests   |
+| -------------------- | --------- | ----------- | ------- |
+| app-index.test.ts    | 808       | 7           | 29      |
+| app-settings.test.ts | 1,097     | 12          | 64      |
+| app-webhooks.test.ts | 950       | 11          | 62      |
+| app-orders.test.ts   | 917       | 15          | 82      |
+| **TOTAL**            | **3,772** | **45**      | **237** |
 
 ---
 
 ## Running Tests
 
 ### Run all tests
+
 ```bash
 npm test
 ```
 
 ### Run specific test file
+
 ```bash
 npm test -- app-index.test.ts
 npm test -- app-settings.test.ts
@@ -152,11 +166,13 @@ npm test -- app-orders.test.ts
 ```
 
 ### Run tests in watch mode
+
 ```bash
 npm test -- --watch
 ```
 
 ### Run tests with coverage
+
 ```bash
 npm test -- --coverage
 ```
@@ -166,19 +182,25 @@ npm test -- --coverage
 ## Test Architecture
 
 ### Mocking Strategy
+
 All tests use **vi.mock()** for dependency injection:
+
 - `~/lib/shopify.server` - Shopify authentication
 - `~/lib/api.server` - API client factory
 
 ### Test Fixtures
+
 Each test file includes:
+
 - **Mock data structures** matching actual route types
 - **Mock session objects** with realistic values
 - **Mock API responses** for both success and failure scenarios
 - **Reusable request builders** for loader testing
 
 ### Assertions
+
 Tests validate:
+
 - **Correct endpoint calls** with proper parameters
 - **Data transformation and parsing**
 - **Error handling and fallbacks**
@@ -191,6 +213,7 @@ Tests validate:
 ## Testing Patterns
 
 ### Loader Testing Pattern
+
 ```typescript
 it("should load data and return typed response", async () => {
   (authenticate.admin as any).mockResolvedValue({
@@ -212,6 +235,7 @@ it("should load data and return typed response", async () => {
 ```
 
 ### Filter Validation Pattern
+
 ```typescript
 it("should filter by status", () => {
   const filtered = mockOrders.filter((o) => o.status === "DELIVERED");
@@ -221,6 +245,7 @@ it("should filter by status", () => {
 ```
 
 ### Error Handling Pattern
+
 ```typescript
 it("should provide fallback on API error", async () => {
   mockApiClient.get.mockRejectedValueOnce(new Error("API Error"));
@@ -239,23 +264,27 @@ it("should provide fallback on API error", async () => {
 ## Key Features Tested
 
 ### Authentication
+
 - ✓ Shopify session validation
 - ✓ Access token extraction and passing to API client
 - ✓ Invalid/missing session handling
 
 ### Data Loading
+
 - ✓ Correct API endpoint calls
 - ✓ Query parameter passing
 - ✓ Parallel request handling
 - ✓ Response data parsing and typing
 
 ### Filtering & Search
+
 - ✓ Status, date range, driver, zone filters
 - ✓ Text search across multiple fields
 - ✓ Filter combination and interaction
 - ✓ Empty result handling
 
 ### Pagination
+
 - ✓ Page navigation
 - ✓ Custom page limits
 - ✓ Total page calculation
@@ -263,18 +292,21 @@ it("should provide fallback on API error", async () => {
 - ✓ Reset to page 1 on filter change
 
 ### Data Validation
+
 - ✓ Enum validation (statuses, units)
 - ✓ Format validation (URLs, colors, dates)
 - ✓ Nullable field handling
 - ✓ Numeric range validation
 
 ### Error Handling
+
 - ✓ API failure graceful degradation
 - ✓ Fallback data provision
 - ✓ Partial failure handling
 - ✓ Session validation before operations
 
 ### Business Logic
+
 - ✓ Order status sync
 - ✓ Webhook circuit breaker
 - ✓ API key masking

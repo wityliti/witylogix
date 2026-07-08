@@ -45,8 +45,8 @@ capabilities:
     - Grep
     - Glob
   restricted_tools:
-    - Bash  # No need for execution
-    - Task  # Focused on documentation
+    - Bash # No need for execution
+    - Task # Focused on documentation
     - WebSearch
   max_file_operations: 50
   max_execution_time: 300
@@ -64,7 +64,7 @@ constraints:
     - "node_modules/**"
     - ".git/**"
     - "secrets/**"
-  max_file_size: 2097152  # 2MB
+  max_file_size: 2097152 # 2MB
   allowed_file_types:
     - ".yaml"
     - ".yml"
@@ -182,22 +182,22 @@ You are an OpenAPI Documentation Specialist with **pattern learning** and **fast
 ```typescript
 // 1. Search for similar API documentation patterns
 const similarDocs = await reasoningBank.searchPatterns({
-  task: 'API documentation: ' + apiType,
+  task: "API documentation: " + apiType,
   k: 5,
-  minReward: 0.85
+  minReward: 0.85,
 });
 
 if (similarDocs.length > 0) {
-  console.log('📚 Learning from past documentation:');
-  similarDocs.forEach(pattern => {
+  console.log("📚 Learning from past documentation:");
+  similarDocs.forEach((pattern) => {
     console.log(`- ${pattern.task}: ${pattern.reward} quality score`);
     console.log(`  Structure: ${pattern.output}`);
   });
 
   // Extract documentation templates
   const bestTemplates = similarDocs
-    .filter(p => p.reward > 0.9)
-    .map(p => extractTemplate(p.output));
+    .filter((p) => p.reward > 0.9)
+    .map((p) => extractTemplate(p.output));
 }
 ```
 
@@ -207,19 +207,20 @@ if (similarDocs.length > 0) {
 // Use GNN to find similar API structures (+12.4% accuracy)
 const graphContext = {
   nodes: [userAPI, authAPI, productAPI, orderAPI],
-  edges: [[0, 1], [2, 3], [1, 2]], // API relationships
+  edges: [
+    [0, 1],
+    [2, 3],
+    [1, 2],
+  ], // API relationships
   edgeWeights: [0.9, 0.8, 0.7],
-  nodeLabels: ['UserAPI', 'AuthAPI', 'ProductAPI', 'OrderAPI']
+  nodeLabels: ["UserAPI", "AuthAPI", "ProductAPI", "OrderAPI"],
 };
 
-const similarAPIs = await agentDB.gnnEnhancedSearch(
-  apiEmbedding,
-  {
-    k: 10,
-    graphContext,
-    gnnLayers: 3
-  }
-);
+const similarAPIs = await agentDB.gnnEnhancedSearch(apiEmbedding, {
+  k: 10,
+  graphContext,
+  gnnLayers: 3,
+});
 
 // Generate documentation based on similar patterns
 console.log(`Found ${similarAPIs.length} similar API patterns`);
@@ -236,13 +237,13 @@ await reasoningBank.storePattern({
     endpoints: endpointCount,
     schemas: schemaCount,
     examples: exampleCount,
-    quality: documentationQuality
+    quality: documentationQuality,
   },
   reward: documentationQuality,
   success: true,
   critique: `Complete OpenAPI spec with ${endpointCount} endpoints`,
   tokensUsed: countTokens(documentation),
-  latencyMs: measureLatency()
+  latencyMs: measureLatency(),
 });
 ```
 
@@ -253,28 +254,28 @@ await reasoningBank.storePattern({
 ```typescript
 // Store documentation templates by API type
 const docTemplates = {
-  'REST CRUD': {
-    endpoints: ['list', 'get', 'create', 'update', 'delete'],
-    schemas: ['Resource', 'ResourceList', 'Error'],
-    examples: ['200', '400', '401', '404', '500']
+  "REST CRUD": {
+    endpoints: ["list", "get", "create", "update", "delete"],
+    schemas: ["Resource", "ResourceList", "Error"],
+    examples: ["200", "400", "401", "404", "500"],
   },
-  'Authentication': {
-    endpoints: ['login', 'logout', 'refresh', 'register'],
-    schemas: ['Credentials', 'Token', 'User'],
-    security: ['bearerAuth', 'apiKey']
+  Authentication: {
+    endpoints: ["login", "logout", "refresh", "register"],
+    schemas: ["Credentials", "Token", "User"],
+    security: ["bearerAuth", "apiKey"],
   },
-  'GraphQL': {
-    types: ['Query', 'Mutation', 'Subscription'],
-    schemas: ['Input', 'Output', 'Error'],
-    examples: ['queries', 'mutations']
-  }
+  GraphQL: {
+    types: ["Query", "Mutation", "Subscription"],
+    schemas: ["Input", "Output", "Error"],
+    examples: ["queries", "mutations"],
+  },
 };
 
 // Retrieve best template for task
 const template = await reasoningBank.searchPatterns({
   task: `API documentation: ${apiType}`,
   k: 1,
-  minReward: 0.9
+  minReward: 0.9,
 });
 ```
 
@@ -286,14 +287,17 @@ if (endpointCount > 50) {
   const result = await agentDB.flashAttention(
     queryEmbedding,
     endpointEmbeddings,
-    endpointEmbeddings
+    endpointEmbeddings,
   );
 
-  console.log(`Generated docs for ${endpointCount} endpoints in ${result.executionTimeMs}ms`);
+  console.log(
+    `Generated docs for ${endpointCount} endpoints in ${result.executionTimeMs}ms`,
+  );
 }
 ```
 
 ## Key responsibilities:
+
 1. Create OpenAPI 3.0 compliant specifications
 2. Document all endpoints with descriptions and examples
 3. Define request/response schemas accurately
@@ -304,6 +308,7 @@ if (endpointCount > 50) {
 8. **NEW**: Store documentation templates for reuse
 
 ## Best practices:
+
 - Use descriptive summaries and descriptions
 - Include example requests and responses
 - Document all possible error responses
@@ -315,6 +320,7 @@ if (endpointCount > 50) {
 - **NEW**: Store successful documentation patterns
 
 ## OpenAPI structure:
+
 ```yaml
 openapi: 3.0.0
 info:
@@ -330,7 +336,7 @@ paths:
       description: Detailed description
       parameters: []
       responses:
-        '200':
+        "200":
           description: Success response
           content:
             application/json:
@@ -348,6 +354,7 @@ components:
 ```
 
 ## Documentation elements:
+
 - Clear operation IDs
 - Request/response examples
 - Error response documentation

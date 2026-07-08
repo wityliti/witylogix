@@ -68,14 +68,13 @@ export default function NotificationPreferencesPage() {
   } = useNotificationPreferences();
   const testMutation = useSendTestNotification();
 
-  const { execute: sendTest } = useApiMutation<{ success: boolean; message: string }>(
-    "POST",
-    "/api/v4/notification-preferences/test",
-  );
+  const { execute: sendTest } = useApiMutation<{
+    success: boolean;
+    message: string;
+  }>("POST", "/api/v4/notification-preferences/test");
 
-  const [isSendingTest, setIsSendingTest] = useState<
-    NotificationChannel | null
-  >(null);
+  const [isSendingTest, setIsSendingTest] =
+    useState<NotificationChannel | null>(null);
   const [testResult, setTestResult] = useState<{
     channel: NotificationChannel;
     success: boolean;
@@ -106,7 +105,7 @@ export default function NotificationPreferencesPage() {
       startTime: "22:00",
       endTime: "08:00",
       timezone: "America/New_York",
-    }
+    },
   );
 
   const [digestSettings, setDigestSettings] = useState(
@@ -114,20 +113,18 @@ export default function NotificationPreferencesPage() {
       enabled: false,
       frequency: "IMMEDIATE" as const,
       time: "09:00",
-    }
+    },
   );
 
   const enabledCount = useMemo(() => {
-    return (
-      preferences?.channelMatrix.filter((p) => p.enabled).length || 0
-    );
+    return preferences?.channelMatrix.filter((p) => p.enabled).length || 0;
   }, [preferences]);
 
   const handleToggle = useCallback(
     async (channel: NotificationChannel, category: NotificationCategory) => {
       await toggleChannelCategory(channel, category);
     },
-    [toggleChannelCategory]
+    [toggleChannelCategory],
   );
 
   const handleSave = useCallback(async () => {
@@ -158,13 +155,16 @@ export default function NotificationPreferencesPage() {
         setIsSendingTest(null);
       }
     },
-    [sendTest]
+    [sendTest],
   );
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-wl-bg-primary">
-        <Header title="Notification Preferences" subtitle="Loading preferences…" />
+        <Header
+          title="Notification Preferences"
+          subtitle="Loading preferences…"
+        />
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <LoadingSkeleton />
         </main>
@@ -175,7 +175,10 @@ export default function NotificationPreferencesPage() {
   if (error && !isLoading) {
     return (
       <div className="min-h-screen bg-wl-bg-primary">
-        <Header title="Notification Preferences" subtitle="Configure how and when you receive notifications" />
+        <Header
+          title="Notification Preferences"
+          subtitle="Configure how and when you receive notifications"
+        />
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <ErrorState error={error} onRetry={refetch} />
         </main>
@@ -205,8 +208,8 @@ export default function NotificationPreferencesPage() {
             <CardHeader>
               <CardTitle>Notification Channels</CardTitle>
               <CardDescription>
-                Choose which channels you want to receive notifications for
-                each category ({enabledCount} enabled)
+                Choose which channels you want to receive notifications for each
+                category ({enabledCount} enabled)
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -234,10 +237,10 @@ export default function NotificationPreferencesPage() {
                     {channels.map((channel) => {
                       const channelPrefs =
                         preferences?.channelMatrix.filter(
-                          (p) => p.channel === channel
+                          (p) => p.channel === channel,
                         ) || [];
                       const enabledForChannel = channelPrefs.filter(
-                        (p) => p.enabled
+                        (p) => p.enabled,
                       ).length;
 
                       return (
@@ -250,12 +253,11 @@ export default function NotificationPreferencesPage() {
                           </td>
 
                           {categories.map((category) => {
-                            const pref =
-                              preferences?.channelMatrix.find(
-                                (p) =>
-                                  p.channel === channel &&
-                                  p.category === category
-                              ) || { enabled: true };
+                            const pref = preferences?.channelMatrix.find(
+                              (p) =>
+                                p.channel === channel &&
+                                p.category === category,
+                            ) || { enabled: true };
 
                             return (
                               <td
@@ -276,9 +278,7 @@ export default function NotificationPreferencesPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() =>
-                                handleTestNotification(channel)
-                              }
+                              onClick={() => handleTestNotification(channel)}
                               disabled={
                                 isSendingTest === channel ||
                                 enabledForChannel === 0
@@ -299,15 +299,11 @@ export default function NotificationPreferencesPage() {
                               <div className="mt-1">
                                 <Badge
                                   variant={
-                                    testResult.success
-                                      ? "success"
-                                      : "danger"
+                                    testResult.success ? "success" : "danger"
                                   }
                                   className="text-xs"
                                 >
-                                  {testResult.success
-                                    ? "Sent"
-                                    : "Failed"}
+                                  {testResult.success ? "Sent" : "Failed"}
                                 </Badge>
                               </div>
                             )}
@@ -332,9 +328,7 @@ export default function NotificationPreferencesPage() {
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-white">
-                    Enable Quiet Hours
-                  </h4>
+                  <h4 className="font-medium text-white">Enable Quiet Hours</h4>
                   <p className="text-sm text-wl-text-secondary">
                     Stop receiving notifications during your preferred hours
                   </p>
@@ -404,7 +398,7 @@ export default function NotificationPreferencesPage() {
                           "bg-wl-bg-overlay border border-wl-border-default",
                           "text-white",
                           "focus:outline-none focus:border-blue-500",
-                          "transition-colors duration-fast"
+                          "transition-colors duration-fast",
                         )}
                       >
                         {timezoneOptions.map((opt) => (
@@ -431,9 +425,7 @@ export default function NotificationPreferencesPage() {
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-white">
-                    Enable Digest
-                  </h4>
+                  <h4 className="font-medium text-white">Enable Digest</h4>
                   <p className="text-sm text-wl-text-secondary">
                     Receive notifications in a consolidated email or report
                   </p>
@@ -469,7 +461,7 @@ export default function NotificationPreferencesPage() {
                           "bg-wl-bg-overlay border border-wl-border-default",
                           "text-white",
                           "focus:outline-none focus:border-blue-500",
-                          "transition-colors duration-fast"
+                          "transition-colors duration-fast",
                         )}
                       >
                         {frequencyOptions.map((opt) => (
@@ -509,11 +501,7 @@ export default function NotificationPreferencesPage() {
             <Link href="/notifications">
               <Button variant="secondary">Cancel</Button>
             </Link>
-            <Button
-              variant="primary"
-              onClick={handleSave}
-              disabled={isSaving}
-            >
+            <Button variant="primary" onClick={handleSave} disabled={isSaving}>
               {isSaving ? "Saving..." : "Save Preferences"}
             </Button>
           </div>

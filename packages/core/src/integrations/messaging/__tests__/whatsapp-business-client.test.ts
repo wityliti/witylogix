@@ -67,7 +67,7 @@ describe("WhatsAppBusinessClient", () => {
 
       const result = await client.sendTemplateMessage(
         "+14155552671",
-        "hello_world"
+        "hello_world",
       );
 
       expect(result.messageId).toBeTruthy();
@@ -88,7 +88,7 @@ describe("WhatsAppBusinessClient", () => {
         "+14155552671",
         "greeting_template",
         "en_US",
-        [{ type: "text", text: "John" }]
+        [{ type: "text", text: "John" }],
       );
 
       expect(result.status).toBe("sent");
@@ -113,7 +113,7 @@ describe("WhatsAppBusinessClient", () => {
             type: "document",
             document: { link: "https://example.com/invoice.pdf" },
           },
-        ]
+        ],
       );
 
       expect(result.status).toBe("sent");
@@ -133,7 +133,7 @@ describe("WhatsAppBusinessClient", () => {
 
       const result = await client.sendTextMessage(
         "+14155552671",
-        "Hello, how can I help you?"
+        "Hello, how can I help you?",
       );
 
       expect(result.messageId).toBeTruthy();
@@ -152,7 +152,7 @@ describe("WhatsAppBusinessClient", () => {
 
       const result = await client.sendTextMessage(
         "+14155552671",
-        "This is a follow-up message"
+        "This is a follow-up message",
       );
 
       expect(result.status).toBe("sent");
@@ -174,7 +174,7 @@ describe("WhatsAppBusinessClient", () => {
         "+14155552671",
         "image",
         "https://example.com/image.jpg",
-        "Check this out"
+        "Check this out",
       );
 
       expect(result.status).toBe("sent");
@@ -194,7 +194,7 @@ describe("WhatsAppBusinessClient", () => {
         "+14155552671",
         "video",
         "https://example.com/video.mp4",
-        "Watch this video"
+        "Watch this video",
       );
 
       expect(result.status).toBe("sent");
@@ -214,7 +214,7 @@ describe("WhatsAppBusinessClient", () => {
         "+14155552671",
         "document",
         "https://example.com/document.pdf",
-        "Here is your document"
+        "Here is your document",
       );
 
       expect(result.status).toBe("sent");
@@ -233,7 +233,7 @@ describe("WhatsAppBusinessClient", () => {
       const result = await client.sendMediaMessage(
         "+14155552671",
         "audio",
-        "https://example.com/audio.mp3"
+        "https://example.com/audio.mp3",
       );
 
       expect(result.status).toBe("sent");
@@ -259,7 +259,7 @@ describe("WhatsAppBusinessClient", () => {
           { id: "opt1", title: "Option 1" },
           { id: "opt2", title: "Option 2" },
         ],
-        "Choose Now"
+        "Choose Now",
       );
 
       expect(result.status).toBe("sent");
@@ -283,7 +283,7 @@ describe("WhatsAppBusinessClient", () => {
           { id: "prod1", title: "Product 1" },
           { id: "prod2", title: "Product 2" },
           { id: "prod3", title: "Product 3" },
-        ]
+        ],
       );
 
       expect(result.status).toBe("sent");
@@ -294,7 +294,7 @@ describe("WhatsAppBusinessClient", () => {
     it("should verify webhook token", () => {
       const result = client.verifyWebhookToken(
         "test-verify-token",
-        "test-verify-token"
+        "test-verify-token",
       );
 
       expect(result).toBe("test-verify-token");
@@ -303,7 +303,7 @@ describe("WhatsAppBusinessClient", () => {
     it("should reject invalid webhook token", () => {
       const result = client.verifyWebhookToken(
         "test-verify-token",
-        "wrong-token"
+        "wrong-token",
       );
 
       expect(result).toBeNull();
@@ -414,7 +414,7 @@ describe("WhatsAppBusinessClient", () => {
         "welcome_template",
         "MARKETING",
         "en_US",
-        "Welcome to our service! {{firstName}}"
+        "Welcome to our service! {{firstName}}",
       );
 
       expect(result.id).toBe("new-template-123");
@@ -542,7 +542,7 @@ describe("WhatsAppBusinessClient", () => {
       const result = await client.uploadMedia(
         fileBuffer,
         "image/jpeg",
-        "photo.jpg"
+        "photo.jpg",
       );
 
       expect(result.mediaId).toBe("media-handle-999");
@@ -560,7 +560,7 @@ describe("WhatsAppBusinessClient", () => {
 
       const result = await client.uploadMedia(
         "iVBORw0KGgoAAAANSUhEUgAAAAUA...",
-        "image/png"
+        "image/png",
       );
 
       expect(result.mediaId).toBe("media-handle-111");
@@ -579,9 +579,7 @@ describe("WhatsAppBusinessClient", () => {
         }),
       });
 
-      await expect(
-        client.sendTextMessage("invalid", "Test")
-      ).rejects.toThrow();
+      await expect(client.sendTextMessage("invalid", "Test")).rejects.toThrow();
     });
 
     it("should handle missing webhook data", () => {

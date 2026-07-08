@@ -34,7 +34,10 @@ import {
   Divider,
   Box,
 } from "@shopify/polaris";
-import { createApiClientFromRequest, type PaginatedResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type PaginatedResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -72,7 +75,10 @@ const DELIVERY_METHODS = [
 
 const RATE_TYPES = ["FLAT", "WEIGHT_BASED", "DISTANCE_BASED", "TIERED"];
 
-const DELIVERY_METHOD_TONE: Record<string, "success" | "info" | "critical" | "warning" | "attention"> = {
+const DELIVERY_METHOD_TONE: Record<
+  string,
+  "success" | "info" | "critical" | "warning" | "attention"
+> = {
   LOCAL_DELIVERY: "success",
   STORE_PICKUP: "info",
   STANDARD_SHIPPING: "critical",
@@ -108,7 +114,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       deliveryMethod,
       rateType,
       activeStatus,
-    }
+    },
   );
 
   return { profiles: response.data, meta: response.meta };
@@ -254,7 +260,10 @@ export default function ShippingProfilesList() {
     <Page
       title="Shipping Profiles"
       subtitle={`${meta.total} total profiles`}
-      primaryAction={{ content: "Create Profile", url: "/shipping-profiles/new" }}
+      primaryAction={{
+        content: "Create Profile",
+        url: "/shipping-profiles/new",
+      }}
     >
       <BlockStack gap="400">
         <Filters
@@ -273,7 +282,10 @@ export default function ShippingProfilesList() {
             <PolarisEmptyState
               heading="No shipping profiles found"
               image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
-              action={{ content: "Create Profile", url: "/shipping-profiles/new" }}
+              action={{
+                content: "Create Profile",
+                url: "/shipping-profiles/new",
+              }}
             >
               <p>
                 {currentDeliveryMethod || currentRateType || currentActiveStatus
@@ -287,14 +299,22 @@ export default function ShippingProfilesList() {
             <BlockStack gap="300">
               {profiles.map((profile) => (
                 <Card key={profile.id}>
-                  <InlineStack align="space-between" blockAlign="start" wrap={false} gap="400">
+                  <InlineStack
+                    align="space-between"
+                    blockAlign="start"
+                    wrap={false}
+                    gap="400"
+                  >
                     <BlockStack gap="300">
                       <InlineStack gap="200" blockAlign="center">
                         <Text as="h3" variant="headingSm" fontWeight="semibold">
                           {profile.name}
                         </Text>
                         <Badge
-                          tone={DELIVERY_METHOD_TONE[profile.deliveryMethod] ?? "info"}
+                          tone={
+                            DELIVERY_METHOD_TONE[profile.deliveryMethod] ??
+                            "info"
+                          }
                         >
                           {profile.deliveryMethod.replace(/_/g, " ")}
                         </Badge>
@@ -326,7 +346,8 @@ export default function ShippingProfilesList() {
                         <Text as="span" variant="bodyMd" fontWeight="medium">
                           {profile.linkedLocationsCount}{" "}
                           <Text as="span" variant="bodySm" tone="subdued">
-                            location{profile.linkedLocationsCount !== 1 ? "s" : ""}
+                            location
+                            {profile.linkedLocationsCount !== 1 ? "s" : ""}
                           </Text>
                         </Text>
                       </BlockStack>
@@ -337,7 +358,10 @@ export default function ShippingProfilesList() {
                         {profile.isActive ? "Active" : "Inactive"}
                       </Badge>
                       <InlineStack gap="200">
-                        <Button size="slim" url={`/shipping-profiles/${profile.id}`}>
+                        <Button
+                          size="slim"
+                          url={`/shipping-profiles/${profile.id}`}
+                        >
                           Edit
                         </Button>
                         <Button

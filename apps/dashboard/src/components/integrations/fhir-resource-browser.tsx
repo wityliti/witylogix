@@ -15,7 +15,12 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-type ResourceType = "Patient" | "Observation" | "Procedure" | "Medication" | "Condition";
+type ResourceType =
+  | "Patient"
+  | "Observation"
+  | "Procedure"
+  | "Medication"
+  | "Condition";
 
 interface FhirResource {
   resourceType: ResourceType;
@@ -56,12 +61,28 @@ const defaultResource: FhirResource = {
     ],
     contact: [
       {
-        relationship: [{ coding: [{ system: "http://terminology.hl7.org/CodeSystem/v2-0131", code: "N" }] }],
+        relationship: [
+          {
+            coding: [
+              {
+                system: "http://terminology.hl7.org/CodeSystem/v2-0131",
+                code: "N",
+              },
+            ],
+          },
+        ],
         name: { given: ["Jane"], family: "Doe" },
         telecom: [{ system: "phone", value: "+1-555-987-6543" }],
       },
     ],
-    maritalStatus: { coding: [{ system: "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus", code: "M" }] },
+    maritalStatus: {
+      coding: [
+        {
+          system: "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus",
+          code: "M",
+        },
+      ],
+    },
     active: true,
   },
   references: [
@@ -130,7 +151,9 @@ export function FhirResourceBrowser({
     }
 
     if (Array.isArray(value)) {
-      return <span className="text-wl-text-secondary">[{value.length} items]</span>;
+      return (
+        <span className="text-wl-text-secondary">[{value.length} items]</span>
+      );
     }
 
     if (typeof value === "object") {
@@ -143,7 +166,7 @@ export function FhirResourceBrowser({
   const renderTreeNode = (
     obj: any,
     parentPath: string = "",
-    depth: number = 0
+    depth: number = 0,
   ): JSX.Element[] => {
     const items: JSX.Element[] = [];
 
@@ -153,11 +176,15 @@ export function FhirResourceBrowser({
       const key = String(rawKey);
       const isArrayIndex = typeof rawKey === "number" || /^\d+$/.test(key);
       const displayKey = isArrayIndex ? `[${key}]` : key;
-      const currentPath = parentPath ? `${parentPath}.${displayKey}` : displayKey;
+      const currentPath = parentPath
+        ? `${parentPath}.${displayKey}`
+        : displayKey;
       const isObject = value !== null && typeof value === "object";
       const isArray = Array.isArray(value);
 
-      const matchesSearch = !searchQuery || currentPath.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch =
+        !searchQuery ||
+        currentPath.toLowerCase().includes(searchQuery.toLowerCase());
 
       if (!matchesSearch && isObject) continue;
 
@@ -184,7 +211,9 @@ export function FhirResourceBrowser({
 
             {!isObject && <span className="w-4" />}
 
-            <span className="text-wl-primary-400 font-semibold">{displayKey}</span>
+            <span className="text-wl-primary-400 font-semibold">
+              {displayKey}
+            </span>
             <span className="text-wl-text-secondary">:</span>
 
             {isObject ? (
@@ -197,7 +226,9 @@ export function FhirResourceBrowser({
 
             {!isObject && (
               <button
-                onClick={() => copyToClipboard(JSON.stringify(value), currentPath)}
+                onClick={() =>
+                  copyToClipboard(JSON.stringify(value), currentPath)
+                }
                 className="opacity-0 group-hover:opacity-100 transition-opacity ml-auto flex-shrink-0"
                 title="Copy value"
               >
@@ -209,7 +240,7 @@ export function FhirResourceBrowser({
           {isObject && expandedPaths.has(currentPath) && (
             <>{renderTreeNode(value, currentPath, depth + 1)}</>
           )}
-        </div>
+        </div>,
       );
     }
 
@@ -221,7 +252,7 @@ export function FhirResourceBrowser({
     return (resource.references || []).filter(
       (ref) =>
         ref.display.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ref.id.toLowerCase().includes(searchQuery.toLowerCase())
+        ref.id.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [searchQuery, resource.references]);
 
@@ -232,7 +263,7 @@ export function FhirResourceBrowser({
     <div
       className={cn(
         "flex flex-col bg-wl-bg-surface border border-wl-border-subtle rounded-lg overflow-hidden",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -241,7 +272,9 @@ export function FhirResourceBrowser({
           <div className="flex items-center gap-3">
             <FileJson className="w-5 h-5 text-wl-primary-500" />
             <div>
-              <h3 className="text-base font-semibold text-wl-text-primary">FHIR Resource Browser</h3>
+              <h3 className="text-base font-semibold text-wl-text-primary">
+                FHIR Resource Browser
+              </h3>
               <p className="text-xs text-wl-text-secondary mt-1">
                 {resource.resourceType} (ID: {resource.id})
               </p>
@@ -305,7 +338,9 @@ export function FhirResourceBrowser({
               <Badge variant="primary" className="mb-2">
                 {resource.resourceType}
               </Badge>
-              <p className="text-xs text-wl-text-secondary">ID: {resource.id}</p>
+              <p className="text-xs text-wl-text-secondary">
+                ID: {resource.id}
+              </p>
             </div>
 
             {/* Tree view */}
@@ -340,8 +375,12 @@ export function FhirResourceBrowser({
                     <Badge variant="info" className="text-xs mb-1">
                       {ref.type}
                     </Badge>
-                    <p className="text-sm text-wl-text-primary font-medium">{ref.display}</p>
-                    <p className="text-xs text-wl-text-secondary font-mono mt-1">ID: {ref.id}</p>
+                    <p className="text-sm text-wl-text-primary font-medium">
+                      {ref.display}
+                    </p>
+                    <p className="text-xs text-wl-text-secondary font-mono mt-1">
+                      ID: {ref.id}
+                    </p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-wl-text-secondary group-hover:text-wl-primary-500 flex-shrink-0" />
                 </div>

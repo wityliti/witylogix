@@ -5,11 +5,11 @@
  * outlier detection, and calibration.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { EnsemblePredictor } from '../ensemble.js';
-import type { HistoricalDelivery, FeatureVector } from '../types.js';
+import { describe, it, expect, beforeEach } from "vitest";
+import { EnsemblePredictor } from "../ensemble.js";
+import type { HistoricalDelivery, FeatureVector } from "../types.js";
 
-describe('EnsemblePredictor', () => {
+describe("EnsemblePredictor", () => {
   let ensemble: EnsemblePredictor;
   let historicalData: HistoricalDelivery[];
 
@@ -22,7 +22,7 @@ describe('EnsemblePredictor', () => {
       const hour = i % 24;
       const dayOfWeek = Math.floor(i / 24) % 7;
       const distance = 3 + (i % 50);
-      const zone = i % 3 === 0 ? 'urban' : i % 3 === 1 ? 'suburban' : 'rural';
+      const zone = i % 3 === 0 ? "urban" : i % 3 === 1 ? "suburban" : "rural";
 
       const baseTime = 20 + distance * 0.8;
       const multiplier = hour >= 7 && hour <= 19 ? 1.2 : 1.0;
@@ -35,11 +35,11 @@ describe('EnsemblePredictor', () => {
         hour,
         day_of_week: dayOfWeek,
         is_holiday: dayOfWeek === 0,
-        weather_condition: 'clear',
+        weather_condition: "clear",
         weather_intensity: 0,
-        traffic_condition: 'light',
+        traffic_condition: "light",
         driver_experience_score: 0.6,
-        vehicle_type: 'car',
+        vehicle_type: "car",
         num_stops: 1,
         actual_duration_minutes: Math.max(10, actual),
         planned_duration_minutes: baseTime,
@@ -51,7 +51,7 @@ describe('EnsemblePredictor', () => {
     }
   });
 
-  it('should initialize with default weights', () => {
+  it("should initialize with default weights", () => {
     const weights = ensemble.getWeights();
     expect(weights.timeOfDay).toBeGreaterThan(0);
     expect(weights.distanceDecay).toBeGreaterThan(0);
@@ -70,29 +70,29 @@ describe('EnsemblePredictor', () => {
     expect(Math.abs(sum - 1.0)).toBeLessThan(0.01);
   });
 
-  it('should train on historical data', () => {
+  it("should train on historical data", () => {
     expect(() => {
       ensemble.fit(historicalData);
     }).not.toThrow();
   });
 
-  it('should make predictions after training', () => {
+  it("should make predictions after training", () => {
     ensemble.fit(historicalData);
 
     const features: FeatureVector = {
       distance_km: 0.5,
-      zone_type: 'suburban',
+      zone_type: "suburban",
       hour: 12,
       day_of_week: 2,
       is_holiday: false,
       is_weekend: 0,
-      weather_condition: 'clear',
+      weather_condition: "clear",
       weather_intensity: 0,
-      traffic_condition: 'light',
+      traffic_condition: "light",
       traffic_multiplier: 1.0,
       historical_avg_minutes: 30,
       driver_experience_score: 0.6,
-      vehicle_type: 'car',
+      vehicle_type: "car",
       num_stops_remaining: 1,
       temperature_celsius: 20,
       wind_speed_kmh: 0,
@@ -111,23 +111,23 @@ describe('EnsemblePredictor', () => {
     );
   });
 
-  it('should combine all 5 models', () => {
+  it("should combine all 5 models", () => {
     ensemble.fit(historicalData);
 
     const features: FeatureVector = {
       distance_km: 0.5,
-      zone_type: 'suburban',
+      zone_type: "suburban",
       hour: 12,
       day_of_week: 2,
       is_holiday: false,
       is_weekend: 0,
-      weather_condition: 'clear',
+      weather_condition: "clear",
       weather_intensity: 0,
-      traffic_condition: 'light',
+      traffic_condition: "light",
       traffic_multiplier: 1.0,
       historical_avg_minutes: 30,
       driver_experience_score: 0.6,
-      vehicle_type: 'car',
+      vehicle_type: "car",
       num_stops_remaining: 1,
       temperature_celsius: 20,
       wind_speed_kmh: 0,
@@ -138,31 +138,43 @@ describe('EnsemblePredictor', () => {
 
     // Should have predictions from all 6 models (5 original + GBDT)
     expect(prediction.model_predictions.length).toBe(6);
-    expect(prediction.model_predictions.map((p) => p.modelName)).toContain('time-of-day');
-    expect(prediction.model_predictions.map((p) => p.modelName)).toContain('distance-decay');
-    expect(prediction.model_predictions.map((p) => p.modelName)).toContain('historical-similarity');
-    expect(prediction.model_predictions.map((p) => p.modelName)).toContain('traffic-aware');
-    expect(prediction.model_predictions.map((p) => p.modelName)).toContain('weather-impact');
-    expect(prediction.model_predictions.map((p) => p.modelName)).toContain('gbdt');
+    expect(prediction.model_predictions.map((p) => p.modelName)).toContain(
+      "time-of-day",
+    );
+    expect(prediction.model_predictions.map((p) => p.modelName)).toContain(
+      "distance-decay",
+    );
+    expect(prediction.model_predictions.map((p) => p.modelName)).toContain(
+      "historical-similarity",
+    );
+    expect(prediction.model_predictions.map((p) => p.modelName)).toContain(
+      "traffic-aware",
+    );
+    expect(prediction.model_predictions.map((p) => p.modelName)).toContain(
+      "weather-impact",
+    );
+    expect(prediction.model_predictions.map((p) => p.modelName)).toContain(
+      "gbdt",
+    );
   });
 
-  it('should have a dominant model', () => {
+  it("should have a dominant model", () => {
     ensemble.fit(historicalData);
 
     const features: FeatureVector = {
       distance_km: 0.5,
-      zone_type: 'suburban',
+      zone_type: "suburban",
       hour: 12,
       day_of_week: 2,
       is_holiday: false,
       is_weekend: 0,
-      weather_condition: 'clear',
+      weather_condition: "clear",
       weather_intensity: 0,
-      traffic_condition: 'light',
+      traffic_condition: "light",
       traffic_multiplier: 1.0,
       historical_avg_minutes: 30,
       driver_experience_score: 0.6,
-      vehicle_type: 'car',
+      vehicle_type: "car",
       num_stops_remaining: 1,
       temperature_celsius: 20,
       wind_speed_kmh: 0,
@@ -172,28 +184,28 @@ describe('EnsemblePredictor', () => {
     const prediction = ensemble.predict(features);
 
     expect(prediction.dominant_model).toBeDefined();
-    expect(prediction.dominant_model).not.toBe('');
+    expect(prediction.dominant_model).not.toBe("");
   });
 
-  it('should update weights based on errors', () => {
+  it("should update weights based on errors", () => {
     ensemble.fit(historicalData);
 
     const initialWeights = ensemble.getWeights();
 
     const features: FeatureVector = {
       distance_km: 0.5,
-      zone_type: 'suburban',
+      zone_type: "suburban",
       hour: 12,
       day_of_week: 2,
       is_holiday: false,
       is_weekend: 0,
-      weather_condition: 'clear',
+      weather_condition: "clear",
       weather_intensity: 0,
-      traffic_condition: 'light',
+      traffic_condition: "light",
       traffic_multiplier: 1.0,
       historical_avg_minutes: 30,
       driver_experience_score: 0.6,
-      vehicle_type: 'car',
+      vehicle_type: "car",
       num_stops_remaining: 1,
       temperature_celsius: 20,
       wind_speed_kmh: 0,
@@ -214,24 +226,24 @@ describe('EnsemblePredictor', () => {
     expect(updatedWeights).not.toEqual(initialWeights);
   });
 
-  it('should calculate confidence from model agreement', () => {
+  it("should calculate confidence from model agreement", () => {
     ensemble.fit(historicalData);
 
     // Test with close agreement
     const features1: FeatureVector = {
       distance_km: 0.5,
-      zone_type: 'suburban',
+      zone_type: "suburban",
       hour: 12,
       day_of_week: 2,
       is_holiday: false,
       is_weekend: 0,
-      weather_condition: 'clear',
+      weather_condition: "clear",
       weather_intensity: 0,
-      traffic_condition: 'light',
+      traffic_condition: "light",
       traffic_multiplier: 1.0,
       historical_avg_minutes: 30,
       driver_experience_score: 0.6,
-      vehicle_type: 'car',
+      vehicle_type: "car",
       num_stops_remaining: 1,
       temperature_celsius: 20,
       wind_speed_kmh: 0,
@@ -244,7 +256,7 @@ describe('EnsemblePredictor', () => {
     expect(prediction1.confidence).toBeGreaterThan(0.2);
   });
 
-  it('should handle calibration', () => {
+  it("should handle calibration", () => {
     ensemble.fit(historicalData);
 
     const predictions = [30, 35, 32, 28, 40];
@@ -257,23 +269,23 @@ describe('EnsemblePredictor', () => {
     expect(result.scale_correction_factor).toBeGreaterThan(0);
   });
 
-  it('should detect outlier models', () => {
+  it("should detect outlier models", () => {
     ensemble.fit(historicalData);
 
     const features: FeatureVector = {
       distance_km: 50, // Very large distance
-      zone_type: 'rural',
+      zone_type: "rural",
       hour: 12,
       day_of_week: 2,
       is_holiday: false,
       is_weekend: 0,
-      weather_condition: 'clear',
+      weather_condition: "clear",
       weather_intensity: 0,
-      traffic_condition: 'light',
+      traffic_condition: "light",
       traffic_multiplier: 1.0,
       historical_avg_minutes: 100,
       driver_experience_score: 0.6,
-      vehicle_type: 'truck',
+      vehicle_type: "truck",
       num_stops_remaining: 5,
       temperature_celsius: 20,
       wind_speed_kmh: 0,
@@ -293,23 +305,23 @@ describe('EnsemblePredictor', () => {
     expect(prediction.predicted_duration_minutes).toBeLessThan(maxDuration);
   });
 
-  it('should provide accurate p50 prediction', () => {
+  it("should provide accurate p50 prediction", () => {
     ensemble.fit(historicalData);
 
     const features: FeatureVector = {
       distance_km: 0.5,
-      zone_type: 'suburban',
+      zone_type: "suburban",
       hour: 12,
       day_of_week: 2,
       is_holiday: false,
       is_weekend: 0,
-      weather_condition: 'clear',
+      weather_condition: "clear",
       weather_intensity: 0,
-      traffic_condition: 'light',
+      traffic_condition: "light",
       traffic_multiplier: 1.0,
       historical_avg_minutes: 30,
       driver_experience_score: 0.6,
-      vehicle_type: 'car',
+      vehicle_type: "car",
       num_stops_remaining: 1,
       temperature_celsius: 20,
       wind_speed_kmh: 0,
@@ -320,11 +332,15 @@ describe('EnsemblePredictor', () => {
 
     expect(prediction.p50_minutes).toBeDefined();
     expect(prediction.p50_minutes).toBeGreaterThan(0);
-    expect(prediction.p50_minutes).toBeGreaterThanOrEqual(prediction.lower_bound_minutes);
-    expect(prediction.p50_minutes).toBeLessThanOrEqual(prediction.upper_bound_minutes);
+    expect(prediction.p50_minutes).toBeGreaterThanOrEqual(
+      prediction.lower_bound_minutes,
+    );
+    expect(prediction.p50_minutes).toBeLessThanOrEqual(
+      prediction.upper_bound_minutes,
+    );
   });
 
-  it('should handle multiple predictions', () => {
+  it("should handle multiple predictions", () => {
     ensemble.fit(historicalData);
 
     const predictions: number[] = [];
@@ -332,18 +348,18 @@ describe('EnsemblePredictor', () => {
     for (let i = 0; i < 10; i++) {
       const features: FeatureVector = {
         distance_km: 5 + i,
-        zone_type: i % 2 === 0 ? 'urban' : 'suburban',
+        zone_type: i % 2 === 0 ? "urban" : "suburban",
         hour: (8 + i) % 24,
         day_of_week: (i % 7) as any,
         is_holiday: i % 7 === 0,
         is_weekend: i % 7 === 0 ? 1 : 0,
-        weather_condition: 'clear',
+        weather_condition: "clear",
         weather_intensity: 0,
-        traffic_condition: 'light',
+        traffic_condition: "light",
         traffic_multiplier: 1.0,
         historical_avg_minutes: 30,
         driver_experience_score: 0.6,
-        vehicle_type: 'car',
+        vehicle_type: "car",
         num_stops_remaining: 1,
         temperature_celsius: 20,
         wind_speed_kmh: 0,
@@ -363,23 +379,23 @@ describe('EnsemblePredictor', () => {
     expect(maxPred).toBeGreaterThan(minPred);
   });
 
-  it('should serialize and deserialize state', () => {
+  it("should serialize and deserialize state", () => {
     ensemble.fit(historicalData);
 
     const features: FeatureVector = {
       distance_km: 0.5,
-      zone_type: 'suburban',
+      zone_type: "suburban",
       hour: 12,
       day_of_week: 2,
       is_holiday: false,
       is_weekend: 0,
-      weather_condition: 'clear',
+      weather_condition: "clear",
       weather_intensity: 0,
-      traffic_condition: 'light',
+      traffic_condition: "light",
       traffic_multiplier: 1.0,
       historical_avg_minutes: 30,
       driver_experience_score: 0.6,
-      vehicle_type: 'car',
+      vehicle_type: "car",
       num_stops_remaining: 1,
       temperature_celsius: 20,
       wind_speed_kmh: 0,
@@ -397,11 +413,14 @@ describe('EnsemblePredictor', () => {
     // (GBDT trees are not serialized in state — only weights — so a small
     // deviation between trained vs fallback GBDT is acceptable.)
     expect(prediction2.predicted_duration_minutes).toBeGreaterThan(0);
-    const diff = Math.abs(prediction1.predicted_duration_minutes - prediction2.predicted_duration_minutes);
+    const diff = Math.abs(
+      prediction1.predicted_duration_minutes -
+        prediction2.predicted_duration_minutes,
+    );
     expect(diff).toBeLessThan(15); // Within 15 minutes
   });
 
-  it('should get feature importance', () => {
+  it("should get feature importance", () => {
     ensemble.fit(historicalData);
 
     const importance = ensemble.getFeatureImportance();
@@ -417,7 +436,7 @@ describe('EnsemblePredictor', () => {
     expect(topFeatures.some(([, imp]) => imp > 0)).toBe(true);
   });
 
-  it('should handle edge cases', () => {
+  it("should handle edge cases", () => {
     // Test with empty historical data
     expect(() => {
       ensemble.fit([]);
@@ -425,18 +444,18 @@ describe('EnsemblePredictor', () => {
 
     const features: FeatureVector = {
       distance_km: 0.5,
-      zone_type: 'suburban',
+      zone_type: "suburban",
       hour: 12,
       day_of_week: 2,
       is_holiday: false,
       is_weekend: 0,
-      weather_condition: 'clear',
+      weather_condition: "clear",
       weather_intensity: 0,
-      traffic_condition: 'light',
+      traffic_condition: "light",
       traffic_multiplier: 1.0,
       historical_avg_minutes: 30,
       driver_experience_score: 0.6,
-      vehicle_type: 'car',
+      vehicle_type: "car",
       num_stops_remaining: 1,
       temperature_celsius: 20,
       wind_speed_kmh: 0,

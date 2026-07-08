@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 /**
  * Dashboard-level loading skeleton
@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils';
  */
 export default function DashboardLoading() {
   return (
-    <div className={cn('min-h-screen bg-wl-bg-root p-6')}>
-      <main className={cn('flex-1')}>
+    <div className={cn("min-h-screen bg-wl-bg-root p-6")}>
+      <main className={cn("flex-1")}>
         {/* Header skeleton */}
         <div className="mb-8 space-y-3 animate-pulse">
           <div className="h-8 bg-wl-bg-primary rounded w-1/3" />
@@ -17,10 +17,7 @@ export default function DashboardLoading() {
         {/* Tabs/Navigation skeleton */}
         <div className="mb-6 flex gap-2 animate-pulse">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-9 bg-wl-bg-primary rounded px-4 w-24"
-            />
+            <div key={i} className="h-9 bg-wl-bg-primary rounded px-4 w-24" />
           ))}
         </div>
 
@@ -40,8 +37,8 @@ export default function DashboardLoading() {
             <div
               key={i}
               className={cn(
-                'bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5',
-                'animate-pulse'
+                "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5",
+                "animate-pulse",
               )}
             >
               <div className="h-4 bg-wl-bg-primary rounded w-1/2 mb-3" />
@@ -58,9 +55,9 @@ export default function DashboardLoading() {
             {/* Chart/Large card skeleton */}
             <div
               className={cn(
-                'bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5',
-                'animate-pulse mb-6',
-                'min-h-96'
+                "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5",
+                "animate-pulse mb-6",
+                "min-h-96",
               )}
             >
               <div className="h-4 bg-wl-bg-primary rounded w-1/4 mb-6" />
@@ -80,8 +77,8 @@ export default function DashboardLoading() {
             {/* Table skeleton */}
             <div
               className={cn(
-                'bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5',
-                'animate-pulse'
+                "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5",
+                "animate-pulse",
               )}
             >
               <div className="h-5 bg-wl-bg-primary rounded w-1/4 mb-4" />
@@ -104,8 +101,8 @@ export default function DashboardLoading() {
             {/* Activity/Recent section */}
             <div
               className={cn(
-                'bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5',
-                'animate-pulse'
+                "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5",
+                "animate-pulse",
               )}
             >
               <div className="h-5 bg-wl-bg-primary rounded w-1/3 mb-4" />

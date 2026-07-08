@@ -241,7 +241,7 @@ describe("MessagingRouter", () => {
           provider: "failing",
           apiKey: "key",
         },
-        true
+        true,
       );
 
       router.registerProvider("failing", failingAdapter);
@@ -270,7 +270,7 @@ describe("MessagingRouter", () => {
           provider: "failing1",
           apiKey: "key",
         },
-        true
+        true,
       );
 
       const failingAdapter2 = new MockMessagingAdapter(
@@ -278,7 +278,7 @@ describe("MessagingRouter", () => {
           provider: "failing2",
           apiKey: "key",
         },
-        true
+        true,
       );
 
       router.registerProvider("failing1", failingAdapter1);
@@ -335,7 +335,7 @@ describe("MessagingRouter", () => {
           provider: "failing-push",
           apiKey: "key",
         },
-        true
+        true,
       );
 
       router.registerProvider("failing-push", failingAdapter);
@@ -400,7 +400,12 @@ describe("MessagingRouter", () => {
     it("should distribute recipients across providers", async () => {
       const result = await router.sendBulk({
         type: "sms",
-        recipients: ["+1000000001", "+1000000002", "+1000000003", "+1000000004"],
+        recipients: [
+          "+1000000001",
+          "+1000000002",
+          "+1000000003",
+          "+1000000004",
+        ],
         content: { body: "Distributed" },
       });
 
@@ -596,7 +601,7 @@ describe("MessagingRouter", () => {
     it("should route and retry on provider failure", async () => {
       const failingAdapter = new MockMessagingAdapter(
         { provider: "failing", apiKey: "key" },
-        true
+        true,
       );
 
       router.registerProvider("failing", failingAdapter);
@@ -627,7 +632,7 @@ describe("MessagingRouter", () => {
         costPerMessage: {
           primary: 0.05,
           alternate: 0.03,
-          fallback: 0.10,
+          fallback: 0.1,
         },
       });
 

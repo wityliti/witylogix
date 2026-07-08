@@ -14,7 +14,12 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import type { TestCustomer, TestOrder, TestRoute, InvoiceRecord } from "./fixtures/e2e-fixtures.js";
+import type {
+  TestCustomer,
+  TestOrder,
+  TestRoute,
+  InvoiceRecord,
+} from "./fixtures/e2e-fixtures.js";
 import {
   createTestCustomer,
   createTestOrder,
@@ -23,7 +28,12 @@ import {
   createInvoiceRecord,
   createNotificationRecord,
 } from "./fixtures/e2e-fixtures.js";
-import type { AuthenticatedClient, StatusCheckResult, NotificationAssertion, InvoiceAssertion } from "./helpers/test-helpers.js";
+import type {
+  AuthenticatedClient,
+  StatusCheckResult,
+  NotificationAssertion,
+  InvoiceAssertion,
+} from "./helpers/test-helpers.js";
 import {
   waitForStatus,
   assertNotificationSent,
@@ -38,7 +48,8 @@ import {
 
 // ─── TEST SETUP ─────────────────────────────────────────────────────────────
 
-const API_BASE_URL: string = process.env.API_BASE_URL || "http://localhost:3000/api/v4";
+const API_BASE_URL: string =
+  process.env.API_BASE_URL || "http://localhost:3000/api/v4";
 
 // Mock in-memory databases for test isolation
 let mockOrders: Map<string, TestOrder> = new Map();
@@ -253,7 +264,9 @@ describe("Order Lifecycle E2E Tests", () => {
       expect(order.id).toBeDefined();
       expect(order.status).toBe("pending");
       expect(order.customerId).toBe(customer.id);
-      expect(order.totalAmount).toBe(order.items.reduce((sum, item) => sum + item.price * item.quantity, 0));
+      expect(order.totalAmount).toBe(
+        order.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      );
     });
 
     it("should create order with external order ID", async () => {
@@ -269,7 +282,11 @@ describe("Order Lifecycle E2E Tests", () => {
       const order: TestOrder = await createOrder(merchant, customer);
       const route: TestRoute = createTestRoute();
 
-      const assigned: TestOrder = await assignOrderToRoute(merchant, order.id, route);
+      const assigned: TestOrder = await assignOrderToRoute(
+        merchant,
+        order.id,
+        route,
+      );
 
       expect(assigned.status).toBe("assigned");
       expect(assigned.assignedRoute).toBe(route.id);
@@ -352,13 +369,17 @@ describe("Order Lifecycle E2E Tests", () => {
       const invoice: InvoiceAssertion = await assertInvoiceGenerated(
         order.id,
         async () => {
-          const inv = Array.from(mockInvoices.values()).find((i) => i.orderId === order.id);
-          return inv ? {
-            id: inv.id,
-            invoiceNumber: inv.invoiceNumber,
-            amount: inv.amount,
-            generatedAt: inv.issuedAt,
-          } : null;
+          const inv = Array.from(mockInvoices.values()).find(
+            (i) => i.orderId === order.id,
+          );
+          return inv
+            ? {
+                id: inv.id,
+                invoiceNumber: inv.invoiceNumber,
+                amount: inv.amount,
+                generatedAt: inv.issuedAt,
+              }
+            : null;
         },
       );
 
@@ -371,7 +392,11 @@ describe("Order Lifecycle E2E Tests", () => {
       expect(order.status).toBe("pending");
 
       const route: TestRoute = createTestRoute();
-      const assigned: TestOrder = await assignOrderToRoute(merchant, order.id, route);
+      const assigned: TestOrder = await assignOrderToRoute(
+        merchant,
+        order.id,
+        route,
+      );
       expect(assigned.status).toBe("assigned");
 
       const dispatched: TestOrder = await dispatchOrder(merchant, order.id);
@@ -475,8 +500,11 @@ describe("Order Lifecycle E2E Tests", () => {
 
   describe("Orders with Multiple Items", () => {
     it("should create order with multiple items", async () => {
-      const order: TestOrder = await createOrder(merchant, customer,
-        createTestOrderWithMultipleItems(5));
+      const order: TestOrder = await createOrder(
+        merchant,
+        customer,
+        createTestOrderWithMultipleItems(5),
+      );
 
       expect(order.items.length).toBe(5);
     });
@@ -494,8 +522,11 @@ describe("Order Lifecycle E2E Tests", () => {
     });
 
     it("should include all items in invoice", async () => {
-      const order: TestOrder = await createOrder(merchant, customer,
-        createTestOrderWithMultipleItems(3));
+      const order: TestOrder = await createOrder(
+        merchant,
+        customer,
+        createTestOrderWithMultipleItems(3),
+      );
       const route: TestRoute = createTestRoute();
       await assignOrderToRoute(merchant, order.id, route);
       await dispatchOrder(merchant, order.id);
@@ -504,13 +535,17 @@ describe("Order Lifecycle E2E Tests", () => {
       const invoice: InvoiceAssertion = await assertInvoiceGenerated(
         order.id,
         async () => {
-          const inv = Array.from(mockInvoices.values()).find((i) => i.orderId === order.id);
-          return inv ? {
-            id: inv.id,
-            invoiceNumber: inv.invoiceNumber,
-            amount: inv.amount,
-            generatedAt: inv.issuedAt,
-          } : null;
+          const inv = Array.from(mockInvoices.values()).find(
+            (i) => i.orderId === order.id,
+          );
+          return inv
+            ? {
+                id: inv.id,
+                invoiceNumber: inv.invoiceNumber,
+                amount: inv.amount,
+                generatedAt: inv.issuedAt,
+              }
+            : null;
         },
       );
 
@@ -572,10 +607,14 @@ describe("Order Lifecycle E2E Tests", () => {
         Array.from({ length: 3 }, () => createOrder(merchant, customer)),
       );
 
-      const routes: TestRoute[] = Array.from({ length: 3 }, () => createTestRoute());
+      const routes: TestRoute[] = Array.from({ length: 3 }, () =>
+        createTestRoute(),
+      );
 
       const assigned: TestOrder[] = await Promise.all(
-        orders.map((order, index) => assignOrderToRoute(merchant, order.id, routes[index])),
+        orders.map((order, index) =>
+          assignOrderToRoute(merchant, order.id, routes[index]),
+        ),
       );
 
       assigned.forEach((order) => {
@@ -591,7 +630,11 @@ describe("Order Lifecycle E2E Tests", () => {
       const statuses: string[] = [order.status]; // "pending"
 
       const route: TestRoute = createTestRoute();
-      let current: TestOrder = await assignOrderToRoute(merchant, order.id, route);
+      let current: TestOrder = await assignOrderToRoute(
+        merchant,
+        order.id,
+        route,
+      );
       statuses.push(current.status); // "assigned"
 
       current = await dispatchOrder(merchant, order.id);
@@ -600,7 +643,12 @@ describe("Order Lifecycle E2E Tests", () => {
       current = await deliverOrder(driver, order.id);
       statuses.push(current.status); // "delivered"
 
-      expect(statuses).toEqual(["pending", "assigned", "in_transit", "delivered"]);
+      expect(statuses).toEqual([
+        "pending",
+        "assigned",
+        "in_transit",
+        "delivered",
+      ]);
     });
   });
 });

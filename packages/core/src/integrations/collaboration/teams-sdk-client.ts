@@ -4,8 +4,8 @@
  * @internal
  */
 
-import { createHmac, timingSafeEqual } from 'crypto';
-import { z } from 'zod';
+import { createHmac, timingSafeEqual } from "crypto";
+import { z } from "zod";
 
 // ─────────────────────────────────────────────────────────────────
 // Type Definitions & Schemas
@@ -15,7 +15,7 @@ import { z } from 'zod';
  * Microsoft Graph OAuth2 token response
  */
 export interface TeamsOAuth2Token {
-  token_type: 'Bearer';
+  token_type: "Bearer";
   scope: string;
   expires_in: number;
   access_token: string;
@@ -34,7 +34,7 @@ export interface TeamsTeam {
   createdDateTime: string;
   isArchived?: boolean;
   webUrl?: string;
-  visibility?: 'public' | 'private' | 'hiddenMembership';
+  visibility?: "public" | "private" | "hiddenMembership";
   summary?: {
     guestsCount?: number;
     membersCount?: number;
@@ -53,11 +53,18 @@ export interface TeamsChannel {
   createdDateTime?: string;
   isArchived?: boolean;
   isFavoriteByDefault?: boolean;
-  membershipType?: 'standard' | 'private' | 'shared' | 'unknownFutureValue';
+  membershipType?: "standard" | "private" | "shared" | "unknownFutureValue";
   webUrl?: string;
   moderationSettings?: {
-    userNewMessageRestriction?: 'everyone' | 'everyoneExceptGuests' | 'moderators' | 'unknownFutureValue';
-    replyRestriction?: 'everyone' | 'authorAndModerators' | 'unknownFutureValue';
+    userNewMessageRestriction?:
+      | "everyone"
+      | "everyoneExceptGuests"
+      | "moderators"
+      | "unknownFutureValue";
+    replyRestriction?:
+      | "everyone"
+      | "authorAndModerators"
+      | "unknownFutureValue";
   };
 }
 
@@ -77,7 +84,7 @@ export interface TeamsMessage {
     };
   };
   body: {
-    contentType: 'html' | 'text';
+    contentType: "html" | "text";
     content: string;
   };
   summary?: string;
@@ -95,7 +102,7 @@ export interface TeamsMessage {
  */
 export interface TeamsChat {
   id: string;
-  chatType: 'oneOnOne' | 'group' | 'meeting' | 'unknownFutureValue';
+  chatType: "oneOnOne" | "group" | "meeting" | "unknownFutureValue";
   createdDateTime: string;
   isArchived?: boolean;
   lastUpdatedDateTime: string;
@@ -111,7 +118,12 @@ export interface TeamsUser {
   id: string;
   displayName: string;
   email?: string;
-  userIdentityType?: 'aadUser' | 'federatedUser' | 'anonymousGuest' | 'microsoftAccount' | 'unknownFutureValue';
+  userIdentityType?:
+    | "aadUser"
+    | "federatedUser"
+    | "anonymousGuest"
+    | "microsoftAccount"
+    | "unknownFutureValue";
   tenantId?: string;
 }
 
@@ -131,7 +143,14 @@ export interface TeamsAttachment {
  * Teams reaction object
  */
 export interface TeamsReaction {
-  reactionType: 'like' | 'love' | 'laugh' | 'sad' | 'surprised' | 'angry' | string;
+  reactionType:
+    | "like"
+    | "love"
+    | "laugh"
+    | "sad"
+    | "surprised"
+    | "angry"
+    | string;
   createdDateTime: string;
   user?: {
     application?: { id: string; displayName: string };
@@ -150,7 +169,11 @@ export interface TeamsMention {
     application?: { id: string; displayName: string };
     device?: { id: string; displayName: string };
     user?: { id: string; displayName: string };
-    conversation?: { id: string; displayName: string; conversationIdentityType: string };
+    conversation?: {
+      id: string;
+      displayName: string;
+      conversationIdentityType: string;
+    };
   };
 }
 
@@ -159,16 +182,25 @@ export interface TeamsMention {
  */
 export type TeamsAdaptiveCard = {
   $schema: string;
-  type: 'AdaptiveCard';
+  type: "AdaptiveCard";
   version: string;
   body: Array<
-    | { type: 'TextBlock'; text: string; weight?: 'default' | 'lighter' | 'bolder'; size?: string }
-    | { type: 'Container'; items: unknown[] }
-    | { type: 'Image'; url: string; size?: 'small' | 'medium' | 'large' | 'stretch' }
-    | { type: 'ActionSet'; title: string }
+    | {
+        type: "TextBlock";
+        text: string;
+        weight?: "default" | "lighter" | "bolder";
+        size?: string;
+      }
+    | { type: "Container"; items: unknown[] }
+    | {
+        type: "Image";
+        url: string;
+        size?: "small" | "medium" | "large" | "stretch";
+      }
+    | { type: "ActionSet"; title: string }
   >;
   actions?: Array<{
-    type: 'Action.OpenUrl' | 'Action.Submit' | 'Action.ShowCard';
+    type: "Action.OpenUrl" | "Action.Submit" | "Action.ShowCard";
     title: string;
     url?: string;
     data?: Record<string, unknown>;
@@ -180,7 +212,7 @@ export type TeamsAdaptiveCard = {
  */
 export interface TeamsSubscription {
   id: string;
-  changeType: 'created' | 'updated' | 'deleted';
+  changeType: "created" | "updated" | "deleted";
   notificationUrl: string;
   resource: string;
   expirationDateTime: string;
@@ -194,14 +226,14 @@ export interface TeamsSubscription {
  */
 export interface TeamsChangeNotification {
   value: Array<{
-    changeType: 'created' | 'updated' | 'deleted';
+    changeType: "created" | "updated" | "deleted";
     clientState?: string;
     subscriptionId: string;
     subscriptionExpirationDateTime: string;
-    lifecycleEvent?: 'missed' | 'reauthorizationRequired';
+    lifecycleEvent?: "missed" | "reauthorizationRequired";
     resource: string;
     resourceData?: {
-      '@odata.type': string;
+      "@odata.type": string;
       id: string;
       [key: string]: unknown;
     };
@@ -214,22 +246,31 @@ export interface TeamsChangeNotification {
  */
 export interface TeamsPresence {
   id: string;
-  availability: 'Available' | 'AvailableIdle' | 'Away' | 'BeRightBack' | 'Busy' | 'BusyIdle' | 'DoNotDisturb' | 'Offline' | 'PresenceUnknown';
+  availability:
+    | "Available"
+    | "AvailableIdle"
+    | "Away"
+    | "BeRightBack"
+    | "Busy"
+    | "BusyIdle"
+    | "DoNotDisturb"
+    | "Offline"
+    | "PresenceUnknown";
   activity:
-    | 'Available'
-    | 'Away'
-    | 'BeRightBack'
-    | 'Busy'
-    | 'DoNotDisturb'
-    | 'InACall'
-    | 'InAConferenceCall'
-    | 'Inactive'
-    | 'InFocusSession'
-    | 'Offline'
-    | 'OffWork'
-    | 'PresenceUnknown'
-    | 'Presenting'
-    | 'UnavailableAddinTheCloud';
+    | "Available"
+    | "Away"
+    | "BeRightBack"
+    | "Busy"
+    | "DoNotDisturb"
+    | "InACall"
+    | "InAConferenceCall"
+    | "Inactive"
+    | "InFocusSession"
+    | "Offline"
+    | "OffWork"
+    | "PresenceUnknown"
+    | "Presenting"
+    | "UnavailableAddinTheCloud";
   statusMessage?: { content?: string; expiryDateTime?: string };
 }
 
@@ -248,7 +289,7 @@ const teamsOAuth2ConfigSchema = z.object({
 
 const teamsMessagePayloadSchema = z.object({
   body: z.object({
-    contentType: z.enum(['html', 'text']),
+    contentType: z.enum(["html", "text"]),
     content: z.string().min(1),
   }),
   attachments: z.array(z.record(z.unknown())).optional(),
@@ -257,7 +298,7 @@ const teamsMessagePayloadSchema = z.object({
 const teamsChangeNotificationSchema = z.object({
   value: z.array(
     z.object({
-      changeType: z.enum(['created', 'updated', 'deleted']),
+      changeType: z.enum(["created", "updated", "deleted"]),
       clientState: z.string().optional(),
       subscriptionId: z.string(),
       resource: z.string(),
@@ -286,7 +327,7 @@ export class TeamsSDKClient {
   private clientSecret?: string;
   private tenantId?: string;
   private webhookSigningSecret?: string;
-  private apiBaseUrl = 'https://graph.microsoft.com/v1.0';
+  private apiBaseUrl = "https://graph.microsoft.com/v1.0";
   private tokenExpiresAt?: number;
 
   /**
@@ -306,10 +347,13 @@ export class TeamsSDKClient {
     this.clientId = config.clientId || process.env.TEAMS_CLIENT_ID;
     this.clientSecret = config.clientSecret || process.env.TEAMS_CLIENT_SECRET;
     this.tenantId = config.tenantId || process.env.TEAMS_TENANT_ID;
-    this.webhookSigningSecret = config.webhookSigningSecret || process.env.TEAMS_WEBHOOK_SECRET;
+    this.webhookSigningSecret =
+      config.webhookSigningSecret || process.env.TEAMS_WEBHOOK_SECRET;
 
     if (!this.accessToken && !this.clientId) {
-      throw new Error('TEAMS_ACCESS_TOKEN or TEAMS_CLIENT_ID env vars required');
+      throw new Error(
+        "TEAMS_ACCESS_TOKEN or TEAMS_CLIENT_ID env vars required",
+      );
     }
   }
 
@@ -322,14 +366,16 @@ export class TeamsSDKClient {
    * @param config - OAuth2 configuration
    * @returns Authorization URL
    */
-  getOAuth2AuthorizationUrl(config: z.infer<typeof teamsOAuth2ConfigSchema>): string {
+  getOAuth2AuthorizationUrl(
+    config: z.infer<typeof teamsOAuth2ConfigSchema>,
+  ): string {
     const validated = teamsOAuth2ConfigSchema.parse(config);
     const params = new URLSearchParams({
       client_id: validated.clientId,
       redirect_uri: validated.redirectUri,
-      response_type: 'code',
-      response_mode: 'query',
-      scope: validated.scopes.join(' '),
+      response_type: "code",
+      response_mode: "query",
+      scope: validated.scopes.join(" "),
       ...(validated.state && { state: validated.state }),
     });
 
@@ -352,19 +398,22 @@ export class TeamsSDKClient {
     redirectUri: string,
     tenantId: string,
   ): Promise<TeamsOAuth2Token> {
-    const response = await fetch(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+    const response = await fetch(
+      `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          client_id: clientId,
+          client_secret: clientSecret,
+          code,
+          redirect_uri: redirectUri,
+          grant_type: "authorization_code",
+        }),
       },
-      body: new URLSearchParams({
-        client_id: clientId,
-        client_secret: clientSecret,
-        code,
-        redirect_uri: redirectUri,
-        grant_type: 'authorization_code',
-      }),
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`OAuth2 exchange failed: ${response.statusText}`);
@@ -384,24 +433,31 @@ export class TeamsSDKClient {
    * @param clientSecret - OAuth2 client secret
    * @param tenantId - Azure AD tenant ID
    */
-  async refreshAccessToken(clientId: string, clientSecret: string, tenantId: string): Promise<TeamsOAuth2Token> {
+  async refreshAccessToken(
+    clientId: string,
+    clientSecret: string,
+    tenantId: string,
+  ): Promise<TeamsOAuth2Token> {
     if (!this.refreshToken) {
-      throw new Error('No refresh token available');
+      throw new Error("No refresh token available");
     }
 
-    const response = await fetch(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+    const response = await fetch(
+      `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          client_id: clientId,
+          client_secret: clientSecret,
+          refresh_token: this.refreshToken,
+          grant_type: "refresh_token",
+          scope: "https://graph.microsoft.com/.default",
+        }),
       },
-      body: new URLSearchParams({
-        client_id: clientId,
-        client_secret: clientSecret,
-        refresh_token: this.refreshToken,
-        grant_type: 'refresh_token',
-        scope: 'https://graph.microsoft.com/.default',
-      }),
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`Token refresh failed: ${response.statusText}`);
@@ -427,7 +483,7 @@ export class TeamsSDKClient {
     limit?: number;
     skip?: number;
     displayNameFilter?: string;
-  }): Promise<{ teams: TeamsTeam[]; '@odata.nextLink'?: string }> {
+  }): Promise<{ teams: TeamsTeam[]; "@odata.nextLink"?: string }> {
     let query = `$top=${Math.min(options?.limit ?? 50, 999)}`;
     if (options?.skip) query += `&$skip=${options.skip}`;
     if (options?.displayNameFilter) {
@@ -451,16 +507,20 @@ export class TeamsSDKClient {
    * @param description - Team description
    * @param isPrivate - Whether team is private
    */
-  async createTeam(displayName: string, description?: string, isPrivate = true): Promise<TeamsTeam> {
+  async createTeam(
+    displayName: string,
+    description?: string,
+    isPrivate = true,
+  ): Promise<TeamsTeam> {
     const payload = {
-      'template@odata.bind': `https://graph.microsoft.com/v1.0/teamsTemplates('standard')`,
+      "template@odata.bind": `https://graph.microsoft.com/v1.0/teamsTemplates('standard')`,
       displayName,
       ...(description && { description }),
-      visibility: isPrivate ? 'Private' : 'Public',
+      visibility: isPrivate ? "Private" : "Public",
     };
 
-    return this.callApi('/teams', {
-      method: 'POST',
+    return this.callApi("/teams", {
+      method: "POST",
       body: JSON.stringify(payload),
     });
   }
@@ -477,7 +537,7 @@ export class TeamsSDKClient {
   async listChannels(
     teamId: string,
     options?: { limit?: number; skip?: number },
-  ): Promise<{ channels: TeamsChannel[]; '@odata.nextLink'?: string }> {
+  ): Promise<{ channels: TeamsChannel[]; "@odata.nextLink"?: string }> {
     let query = `$top=${Math.min(options?.limit ?? 50, 999)}`;
     if (options?.skip) query += `&$skip=${options.skip}`;
 
@@ -499,15 +559,19 @@ export class TeamsSDKClient {
    * @param displayName - Channel name
    * @param description - Channel description
    */
-  async createChannel(teamId: string, displayName: string, description?: string): Promise<TeamsChannel> {
+  async createChannel(
+    teamId: string,
+    displayName: string,
+    description?: string,
+  ): Promise<TeamsChannel> {
     const payload = {
       displayName,
       ...(description && { description }),
-      membershipType: 'standard',
+      membershipType: "standard",
     };
 
     return this.callApi(`/teams/${teamId}/channels`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(payload),
     });
   }
@@ -522,10 +586,14 @@ export class TeamsSDKClient {
    * @param channelId - Channel ID
    * @param payload - Message payload
    */
-  async sendMessage(teamId: string, channelId: string, payload: z.infer<typeof teamsMessagePayloadSchema>): Promise<TeamsMessage> {
+  async sendMessage(
+    teamId: string,
+    channelId: string,
+    payload: z.infer<typeof teamsMessagePayloadSchema>,
+  ): Promise<TeamsMessage> {
     const validated = teamsMessagePayloadSchema.parse(payload);
     return this.callApi(`/teams/${teamId}/channels/${channelId}/messages`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(validated),
     });
   }
@@ -544,10 +612,13 @@ export class TeamsSDKClient {
     payload: z.infer<typeof teamsMessagePayloadSchema>,
   ): Promise<TeamsMessage> {
     const validated = teamsMessagePayloadSchema.parse(payload);
-    return this.callApi(`/teams/${teamId}/channels/${channelId}/messages/${messageId}/replies`, {
-      method: 'POST',
-      body: JSON.stringify(validated),
-    });
+    return this.callApi(
+      `/teams/${teamId}/channels/${channelId}/messages/${messageId}/replies`,
+      {
+        method: "POST",
+        body: JSON.stringify(validated),
+      },
+    );
   }
 
   /**
@@ -563,12 +634,14 @@ export class TeamsSDKClient {
       limit?: number;
       skip?: number;
     },
-  ): Promise<{ messages: TeamsMessage[]; '@odata.nextLink'?: string }> {
+  ): Promise<{ messages: TeamsMessage[]; "@odata.nextLink"?: string }> {
     let query = `$top=${Math.min(options?.limit ?? 50, 999)}`;
     if (options?.skip) query += `&$skip=${options.skip}`;
-    query += '&$orderby=createdDateTime DESC';
+    query += "&$orderby=createdDateTime DESC";
 
-    return this.callApi(`/teams/${teamId}/channels/${channelId}/messages?${query}`);
+    return this.callApi(
+      `/teams/${teamId}/channels/${channelId}/messages?${query}`,
+    );
   }
 
   /**
@@ -577,8 +650,14 @@ export class TeamsSDKClient {
    * @param channelId - Channel ID
    * @param messageId - Message ID
    */
-  async getMessage(teamId: string, channelId: string, messageId: string): Promise<TeamsMessage> {
-    return this.callApi(`/teams/${teamId}/channels/${channelId}/messages/${messageId}`);
+  async getMessage(
+    teamId: string,
+    channelId: string,
+    messageId: string,
+  ): Promise<TeamsMessage> {
+    return this.callApi(
+      `/teams/${teamId}/channels/${channelId}/messages/${messageId}`,
+    );
   }
 
   /**
@@ -588,18 +667,26 @@ export class TeamsSDKClient {
    * @param messageId - Message ID
    * @param content - New message content
    */
-  async updateMessage(teamId: string, channelId: string, messageId: string, content: string): Promise<TeamsMessage> {
+  async updateMessage(
+    teamId: string,
+    channelId: string,
+    messageId: string,
+    content: string,
+  ): Promise<TeamsMessage> {
     const payload = {
       body: {
-        contentType: 'html',
+        contentType: "html",
         content,
       },
     };
 
-    return this.callApi(`/teams/${teamId}/channels/${channelId}/messages/${messageId}`, {
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-    });
+    return this.callApi(
+      `/teams/${teamId}/channels/${channelId}/messages/${messageId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      },
+    );
   }
 
   /**
@@ -608,10 +695,17 @@ export class TeamsSDKClient {
    * @param channelId - Channel ID
    * @param messageId - Message ID
    */
-  async deleteMessage(teamId: string, channelId: string, messageId: string): Promise<void> {
-    await this.callApi(`/teams/${teamId}/channels/${channelId}/messages/${messageId}`, {
-      method: 'DELETE',
-    });
+  async deleteMessage(
+    teamId: string,
+    channelId: string,
+    messageId: string,
+  ): Promise<void> {
+    await this.callApi(
+      `/teams/${teamId}/channels/${channelId}/messages/${messageId}`,
+      {
+        method: "DELETE",
+      },
+    );
   }
 
   /**
@@ -628,11 +722,13 @@ export class TeamsSDKClient {
       limit?: number;
       skip?: number;
     },
-  ): Promise<{ replies: TeamsMessage[]; '@odata.nextLink'?: string }> {
+  ): Promise<{ replies: TeamsMessage[]; "@odata.nextLink"?: string }> {
     let query = `$top=${Math.min(options?.limit ?? 50, 999)}`;
     if (options?.skip) query += `&$skip=${options.skip}`;
 
-    return this.callApi(`/teams/${teamId}/channels/${channelId}/messages/${messageId}/replies?${query}`);
+    return this.callApi(
+      `/teams/${teamId}/channels/${channelId}/messages/${messageId}/replies?${query}`,
+    );
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -646,11 +742,12 @@ export class TeamsSDKClient {
   async listChats(options?: {
     limit?: number;
     skip?: number;
-    chatType?: 'oneOnOne' | 'group' | 'meeting';
-  }): Promise<{ chats: TeamsChat[]; '@odata.nextLink'?: string }> {
+    chatType?: "oneOnOne" | "group" | "meeting";
+  }): Promise<{ chats: TeamsChat[]; "@odata.nextLink"?: string }> {
     let query = `$top=${Math.min(options?.limit ?? 50, 999)}`;
     if (options?.skip) query += `&$skip=${options.skip}`;
-    if (options?.chatType) query += `&$filter=chatType eq '${options.chatType}'`;
+    if (options?.chatType)
+      query += `&$filter=chatType eq '${options.chatType}'`;
 
     return this.callApi(`/me/chats?${query}`);
   }
@@ -660,16 +757,19 @@ export class TeamsSDKClient {
    * @param chatId - Chat ID
    * @param content - Message content
    */
-  async sendChatMessage(chatId: string, content: string): Promise<TeamsMessage> {
+  async sendChatMessage(
+    chatId: string,
+    content: string,
+  ): Promise<TeamsMessage> {
     const payload = {
       body: {
-        contentType: 'html',
+        contentType: "html",
         content,
       },
     };
 
     return this.callApi(`/chats/${chatId}/messages`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(payload),
     });
   }
@@ -703,10 +803,13 @@ export class TeamsSDKClient {
       reactionType,
     };
 
-    await this.callApi(`/teams/${teamId}/channels/${channelId}/messages/${messageId}/reactions`, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
+    await this.callApi(
+      `/teams/${teamId}/channels/${channelId}/messages/${messageId}/reactions`,
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+      },
+    );
   }
 
   /**
@@ -725,7 +828,7 @@ export class TeamsSDKClient {
     await this.callApi(
       `/teams/${teamId}/channels/${channelId}/messages/${messageId}/reactions/${encodeURIComponent(reactionType)}`,
       {
-        method: 'DELETE',
+        method: "DELETE",
       },
     );
   }
@@ -750,7 +853,7 @@ export class TeamsSDKClient {
     limit?: number;
     skip?: number;
     searchFilter?: string;
-  }): Promise<{ users: TeamsUser[]; '@odata.nextLink'?: string }> {
+  }): Promise<{ users: TeamsUser[]; "@odata.nextLink"?: string }> {
     let query = `$top=${Math.min(options?.limit ?? 50, 999)}`;
     if (options?.skip) query += `&$skip=${options.skip}`;
     if (options?.searchFilter) {
@@ -772,13 +875,15 @@ export class TeamsSDKClient {
    * Get multiple users' presence
    * @param userIds - User IDs
    */
-  async getMultiplePresence(userIds: string[]): Promise<{ value: TeamsPresence[] }> {
+  async getMultiplePresence(
+    userIds: string[],
+  ): Promise<{ value: TeamsPresence[] }> {
     const payload = {
       ids: userIds,
     };
 
-    return this.callApi('/communications/getPresencesByUserId', {
-      method: 'POST',
+    return this.callApi("/communications/getPresencesByUserId", {
+      method: "POST",
       body: JSON.stringify(payload),
     });
   }
@@ -794,14 +899,19 @@ export class TeamsSDKClient {
    * @param filename - File name
    * @param content - File content
    */
-  async uploadFile(teamId: string, channelId: string, filename: string, content: Buffer | string): Promise<TeamsAttachment> {
+  async uploadFile(
+    teamId: string,
+    channelId: string,
+    filename: string,
+    content: Buffer | string,
+  ): Promise<TeamsAttachment> {
     const formData = new FormData();
-    formData.append('file', new Blob([content]), filename);
+    formData.append("file", new Blob([content]), filename);
 
     const response = await fetch(
       `${this.apiBaseUrl}/teams/${teamId}/channels/${channelId}/filesFolder/children`,
       {
-        method: 'PUT',
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${this.accessToken}`,
         },
@@ -821,8 +931,13 @@ export class TeamsSDKClient {
    * @param teamId - Team ID
    * @param channelId - Channel ID
    */
-  async listChannelFiles(teamId: string, channelId: string): Promise<{ files: TeamsAttachment[] }> {
-    return this.callApi(`/teams/${teamId}/channels/${channelId}/filesFolder/children`);
+  async listChannelFiles(
+    teamId: string,
+    channelId: string,
+  ): Promise<{ files: TeamsAttachment[] }> {
+    return this.callApi(
+      `/teams/${teamId}/channels/${channelId}/filesFolder/children`,
+    );
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -841,22 +956,27 @@ export class TeamsSDKClient {
     resource: string,
     notificationUrl: string,
     expirationMinutes = 4230,
-    changeTypes: Array<'created' | 'updated' | 'deleted'> = ['created', 'updated'],
+    changeTypes: Array<"created" | "updated" | "deleted"> = [
+      "created",
+      "updated",
+    ],
     clientState?: string,
   ): Promise<TeamsSubscription> {
-    const expirationDateTime = new Date(Date.now() + expirationMinutes * 60 * 1000).toISOString();
+    const expirationDateTime = new Date(
+      Date.now() + expirationMinutes * 60 * 1000,
+    ).toISOString();
 
     const payload = {
-      changeType: changeTypes.join(','),
+      changeType: changeTypes.join(","),
       notificationUrl,
       resource,
       expirationDateTime,
       ...(clientState && { clientState }),
-      latestSupportedTlsVersion: '1.2',
+      latestSupportedTlsVersion: "1.2",
     };
 
-    return this.callApi('/subscriptions', {
-      method: 'POST',
+    return this.callApi("/subscriptions", {
+      method: "POST",
       body: JSON.stringify(payload),
     });
   }
@@ -866,11 +986,16 @@ export class TeamsSDKClient {
    * @param subscriptionId - Subscription ID
    * @param expirationMinutes - New duration in minutes
    */
-  async renewSubscription(subscriptionId: string, expirationMinutes = 4230): Promise<TeamsSubscription> {
-    const expirationDateTime = new Date(Date.now() + expirationMinutes * 60 * 1000).toISOString();
+  async renewSubscription(
+    subscriptionId: string,
+    expirationMinutes = 4230,
+  ): Promise<TeamsSubscription> {
+    const expirationDateTime = new Date(
+      Date.now() + expirationMinutes * 60 * 1000,
+    ).toISOString();
 
     return this.callApi(`/subscriptions/${subscriptionId}`, {
-      method: 'PATCH',
+      method: "PATCH",
       body: JSON.stringify({ expirationDateTime }),
     });
   }
@@ -892,15 +1017,20 @@ export class TeamsSDKClient {
    */
   verifyWebhookSignature(signature: string, body: string): boolean {
     if (!this.webhookSigningSecret) {
-      throw new Error('webhookSigningSecret required for signature verification');
+      throw new Error(
+        "webhookSigningSecret required for signature verification",
+      );
     }
 
-    const expectedSignature = createHmac('sha256', this.webhookSigningSecret)
+    const expectedSignature = createHmac("sha256", this.webhookSigningSecret)
       .update(body)
-      .digest('base64');
+      .digest("base64");
 
     try {
-      return timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
+      return timingSafeEqual(
+        Buffer.from(signature),
+        Buffer.from(expectedSignature),
+      );
     } catch {
       return false;
     }
@@ -912,14 +1042,19 @@ export class TeamsSDKClient {
    * @param signature - X-Hub-Signature header
    * @returns Parsed notification
    */
-  async handleChangeNotification(body: string, signature?: string): Promise<TeamsChangeNotification> {
+  async handleChangeNotification(
+    body: string,
+    signature?: string,
+  ): Promise<TeamsChangeNotification> {
     // Verify signature if provided
     if (signature && !this.verifyWebhookSignature(signature, body)) {
-      throw new Error('Invalid webhook signature');
+      throw new Error("Invalid webhook signature");
     }
 
     const payload = JSON.parse(body) as unknown;
-    return teamsChangeNotificationSchema.parse(payload) as unknown as TeamsChangeNotification;
+    return teamsChangeNotificationSchema.parse(
+      payload,
+    ) as unknown as TeamsChangeNotification;
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -938,28 +1073,39 @@ export class TeamsSDKClient {
     },
   ): Promise<T> {
     if (!this.accessToken) {
-      throw new Error('No access token available');
+      throw new Error("No access token available");
     }
 
     // Check if token is about to expire
     if (this.tokenExpiresAt && Date.now() > this.tokenExpiresAt - 60000) {
-      if (this.refreshToken && this.clientId && this.clientSecret && this.tenantId) {
-        await this.refreshAccessToken(this.clientId, this.clientSecret, this.tenantId);
+      if (
+        this.refreshToken &&
+        this.clientId &&
+        this.clientSecret &&
+        this.tenantId
+      ) {
+        await this.refreshAccessToken(
+          this.clientId,
+          this.clientSecret,
+          this.tenantId,
+        );
       }
     }
 
     const response = await fetch(`${this.apiBaseUrl}${endpoint}`, {
-      method: options?.method ?? 'GET',
+      method: options?.method ?? "GET",
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       ...(options?.body && { body: options.body }),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(`Graph API error (${response.status}): ${JSON.stringify(errorData)}`);
+      throw new Error(
+        `Graph API error (${response.status}): ${JSON.stringify(errorData)}`,
+      );
     }
 
     return response.json() as Promise<T>;

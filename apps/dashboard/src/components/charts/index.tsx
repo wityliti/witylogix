@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 export {
   LineChart,
@@ -17,4 +17,4 @@ export {
   Area,
   Pie,
   ComposedChart,
-} from 'recharts';
+} from "recharts";

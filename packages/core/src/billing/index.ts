@@ -24,7 +24,7 @@ export {
   type ProrationResult,
   type BillingPlan,
   type BillingSubscription,
-} from './subscription-manager.js';
+} from "./subscription-manager.js";
 
 export {
   // Quota Enforcer
@@ -36,7 +36,7 @@ export {
   type QuotaCheckResult,
   type QuotaUsageSummary,
   type QuotaEvent,
-} from './quota-enforcer.js';
+} from "./quota-enforcer.js";
 
 export {
   // Invoice Generator
@@ -46,7 +46,7 @@ export {
   type InvoiceLineItems,
   type PaginationOptions,
   type Invoice,
-} from './invoice-generator.js';
+} from "./invoice-generator.js";
 
 // PlanTier from Prisma schema: FREE | STARTER | GROWTH | ENTERPRISE
 type PlanTier = "FREE" | "STARTER" | "GROWTH" | "ENTERPRISE";
@@ -275,7 +275,8 @@ export function createUsageSummary(
     (new Date().getTime() - billingPeriodStart.getTime()) /
       (1000 * 60 * 60 * 24),
   );
-  const projectedShipmentsPerDay = daysElapsed > 0 ? metrics.shipmentsUsed / daysElapsed : 0;
+  const projectedShipmentsPerDay =
+    daysElapsed > 0 ? metrics.shipmentsUsed / daysElapsed : 0;
   const projectedShipmentsTotal = projectedShipmentsPerDay * daysInPeriod;
 
   return {

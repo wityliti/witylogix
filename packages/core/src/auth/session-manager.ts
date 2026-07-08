@@ -69,7 +69,10 @@ export class SessionManager {
   private sessionTimeoutMs: number = 24 * 60 * 60 * 1000; // 24 hours default
   private cleanupIntervalMs: number = 60 * 60 * 1000; // 1 hour
 
-  constructor(options?: { maxConcurrentSessions?: number; sessionTimeoutMs?: number }) {
+  constructor(options?: {
+    maxConcurrentSessions?: number;
+    sessionTimeoutMs?: number;
+  }) {
     if (options?.maxConcurrentSessions) {
       this.maxConcurrentSessions = options.maxConcurrentSessions;
     }
@@ -93,7 +96,15 @@ export class SessionManager {
    * @returns Session info including session ID
    */
   async createSession(input: CreateSessionInput): Promise<SessionInfo> {
-    const { orgId, userId, providerId, authResult, ipAddress, userAgent, deviceId } = input;
+    const {
+      orgId,
+      userId,
+      providerId,
+      authResult,
+      ipAddress,
+      userAgent,
+      deviceId,
+    } = input;
 
     // Calculate token expiry
     const expiresAt = authResult.expiresAt
@@ -163,7 +174,9 @@ export class SessionManager {
 
       return this.mapSessionRecord(session);
     } catch (error) {
-      throw new Error(`Failed to create session: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to create session: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -252,7 +265,8 @@ export class SessionManager {
       }
 
       // Update with new token and expiry
-      const expiresAt = newExpiresAt || new Date(Date.now() + this.sessionTimeoutMs);
+      const expiresAt =
+        newExpiresAt || new Date(Date.now() + this.sessionTimeoutMs);
 
       const updated = await db.authSession.update({
         where: { id: sessionId },
@@ -265,7 +279,9 @@ export class SessionManager {
 
       return this.mapSessionRecord(updated);
     } catch (error) {
-      throw new Error(`Failed to refresh session: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to refresh session: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -284,7 +300,9 @@ export class SessionManager {
         },
       });
     } catch (error) {
-      throw new Error(`Failed to revoke session: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to revoke session: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -294,7 +312,11 @@ export class SessionManager {
    * @param userId User ID
    * @param orgId Organization ID
    */
-  async revokeAllSessions(userId: string, orgId: string, excludeSessionId?: string): Promise<void> {
+  async revokeAllSessions(
+    userId: string,
+    orgId: string,
+    excludeSessionId?: string,
+  ): Promise<void> {
     try {
       const where: any = { userId, orgId, isRevoked: false };
       if (excludeSessionId) {
@@ -308,7 +330,9 @@ export class SessionManager {
         },
       });
     } catch (error) {
-      throw new Error(`Failed to revoke all sessions: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to revoke all sessions: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -319,7 +343,10 @@ export class SessionManager {
    * @param orgId Organization ID
    * @returns Array of active sessions
    */
-  async listActiveSessions(userId: string, orgId: string): Promise<SessionInfo[]> {
+  async listActiveSessions(
+    userId: string,
+    orgId: string,
+  ): Promise<SessionInfo[]> {
     try {
       const sessions = await db.authSession.findMany({
         where: {
@@ -353,7 +380,9 @@ export class SessionManager {
         },
       });
     } catch (error) {
-      throw new Error(`Failed to verify MFA: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to verify MFA: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -363,20 +392,31 @@ export class SessionManager {
    * @param expiredRetentionDays Days to retain expired sessions
    * @param revokedRetentionDays Days to retain revoked sessions
    */
-  async cleanupExpiredSessions(expiredRetentionDays: number, revokedRetentionDays: number): Promise<void> {
+  async cleanupExpiredSessions(
+    expiredRetentionDays: number,
+    revokedRetentionDays: number,
+  ): Promise<void> {
     const now = new Date();
     // Delete expired sessions beyond retention
     await db.authSession.deleteMany({
       where: {
         isRevoked: false,
-        expiresAt: { lt: new Date(now.getTime() - expiredRetentionDays * 24 * 60 * 60 * 1000) },
+        expiresAt: {
+          lt: new Date(
+            now.getTime() - expiredRetentionDays * 24 * 60 * 60 * 1000,
+          ),
+        },
       },
     });
     // Delete revoked sessions beyond retention
     await db.authSession.deleteMany({
       where: {
         isRevoked: true,
-        revokedAt: { lt: new Date(now.getTime() - revokedRetentionDays * 24 * 60 * 60 * 1000) },
+        revokedAt: {
+          lt: new Date(
+            now.getTime() - revokedRetentionDays * 24 * 60 * 60 * 1000,
+          ),
+        },
       },
     });
   }
@@ -388,10 +428,23 @@ export class SessionManager {
    * @param orgId Organization ID
    * @returns Session statistics
    */
-  async getSessionStats(userId: string, orgId: string): Promise<{ totalSessions: number; activeSessions: number; revokedSessions: number }> {
-    const totalSessions = await db.authSession.count({ where: { userId, orgId } });
-    const activeSessions = await db.authSession.count({ where: { userId, orgId, isRevoked: false } });
-    const revokedSessions = await db.authSession.count({ where: { userId, orgId, isRevoked: true } });
+  async getSessionStats(
+    userId: string,
+    orgId: string,
+  ): Promise<{
+    totalSessions: number;
+    activeSessions: number;
+    revokedSessions: number;
+  }> {
+    const totalSessions = await db.authSession.count({
+      where: { userId, orgId },
+    });
+    const activeSessions = await db.authSession.count({
+      where: { userId, orgId, isRevoked: false },
+    });
+    const revokedSessions = await db.authSession.count({
+      where: { userId, orgId, isRevoked: true },
+    });
     return { totalSessions, activeSessions, revokedSessions };
   }
 
@@ -427,8 +480,17 @@ export class SessionManager {
         await db.authSession.deleteMany({
           where: {
             OR: [
-              { expiresAt: { lt: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) } }, // 30 days old
-              { isRevoked: true, revokedAt: { lt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) } }, // 7 days revoked
+              {
+                expiresAt: {
+                  lt: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+                },
+              }, // 30 days old
+              {
+                isRevoked: true,
+                revokedAt: {
+                  lt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
+                },
+              }, // 7 days revoked
             ],
           },
         });
@@ -446,7 +508,10 @@ let instance: SessionManager;
 /**
  * Get or create the singleton SessionManager instance.
  */
-export function getSessionManager(options?: { maxConcurrentSessions?: number; sessionTimeoutMs?: number }): SessionManager {
+export function getSessionManager(options?: {
+  maxConcurrentSessions?: number;
+  sessionTimeoutMs?: number;
+}): SessionManager {
   if (!instance) {
     instance = new SessionManager(options);
   }
@@ -456,7 +521,10 @@ export function getSessionManager(options?: { maxConcurrentSessions?: number; se
 /**
  * Create a new SessionManager instance (for testing).
  */
-export function createSessionManager(options?: { maxConcurrentSessions?: number; sessionTimeoutMs?: number }): SessionManager {
+export function createSessionManager(options?: {
+  maxConcurrentSessions?: number;
+  sessionTimeoutMs?: number;
+}): SessionManager {
   return new SessionManager(options);
 }
 

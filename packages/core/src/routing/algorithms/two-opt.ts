@@ -149,7 +149,11 @@ export function twoOptFirstImprovement(
 
     // Try all possible 2-opt swaps, return immediately on first improvement
     for (let i = 1; i < currentRoute.length - 2 && !foundImprovement; i++) {
-      for (let j = i + 2; j < currentRoute.length - 1 && !foundImprovement; j++) {
+      for (
+        let j = i + 2;
+        j < currentRoute.length - 1 && !foundImprovement;
+        j++
+      ) {
         const delta = calculateTwoOptDelta(currentRoute, distanceMatrix, i, j);
 
         if (delta < -1e-10) {
@@ -222,7 +226,10 @@ export function twoOptBestImprovement(
  * @param distanceMatrix - Distance matrix
  * @returns Total distance
  */
-export function calculateTourDistance(route: number[], distanceMatrix: number[][]): number {
+export function calculateTourDistance(
+  route: number[],
+  distanceMatrix: number[][],
+): number {
   let totalDistance = 0;
 
   for (let i = 0; i < route.length - 1; i++) {

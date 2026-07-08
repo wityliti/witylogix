@@ -4,7 +4,7 @@
  * Supports multiple currencies, custom branding, and payment instructions
  */
 
-import type { Invoice } from './types.js';
+import type { Invoice } from "./types.js";
 
 // ─── BRANDING CONFIG ────────────────────────────────────────────────────
 
@@ -41,20 +41,23 @@ export class InvoicePDFRenderer {
   private branding: Required<InvoiceBranding>;
   private paymentInstructions?: PaymentInstructions;
 
-  constructor(branding: InvoiceBranding, paymentInstructions?: PaymentInstructions) {
+  constructor(
+    branding: InvoiceBranding,
+    paymentInstructions?: PaymentInstructions,
+  ) {
     this.branding = {
       companyName: branding.companyName,
-      companyLogo: branding.companyLogo || '',
-      companyAddress: branding.companyAddress || '',
-      companyCity: branding.companyCity || '',
-      companyState: branding.companyState || '',
-      companyZip: branding.companyZip || '',
-      companyPhone: branding.companyPhone || '',
-      companyEmail: branding.companyEmail || '',
-      companyWebsite: branding.companyWebsite || '',
-      primaryColor: branding.primaryColor || '#2563EB',
-      secondaryColor: branding.secondaryColor || '#F3F4F6',
-      accentColor: branding.accentColor || '#10B981',
+      companyLogo: branding.companyLogo || "",
+      companyAddress: branding.companyAddress || "",
+      companyCity: branding.companyCity || "",
+      companyState: branding.companyState || "",
+      companyZip: branding.companyZip || "",
+      companyPhone: branding.companyPhone || "",
+      companyEmail: branding.companyEmail || "",
+      companyWebsite: branding.companyWebsite || "",
+      primaryColor: branding.primaryColor || "#2563EB",
+      secondaryColor: branding.secondaryColor || "#F3F4F6",
+      accentColor: branding.accentColor || "#10B981",
     };
     this.paymentInstructions = paymentInstructions;
   }
@@ -130,16 +133,16 @@ export class InvoicePDFRenderer {
    * Render invoice details
    */
   private renderInvoiceDetails(invoice: Invoice): string {
-    const companyAddress = `${this.branding.companyAddress}${this.branding.companyCity ? ', ' + this.branding.companyCity : ''}${this.branding.companyState ? ', ' + this.branding.companyState : ''}${this.branding.companyZip ? ' ' + this.branding.companyZip : ''}`;
+    const companyAddress = `${this.branding.companyAddress}${this.branding.companyCity ? ", " + this.branding.companyCity : ""}${this.branding.companyState ? ", " + this.branding.companyState : ""}${this.branding.companyZip ? " " + this.branding.companyZip : ""}`;
 
     return `
       <div class="details-section">
         <div class="company-info">
           <h3>From</h3>
           <p><strong>${this.branding.companyName}</strong></p>
-          ${companyAddress ? `<p>${this.escapeHtml(companyAddress)}</p>` : ''}
-          ${this.branding.companyPhone ? `<p>${this.escapeHtml(this.branding.companyPhone)}</p>` : ''}
-          ${this.branding.companyEmail ? `<p>${this.escapeHtml(this.branding.companyEmail)}</p>` : ''}
+          ${companyAddress ? `<p>${this.escapeHtml(companyAddress)}</p>` : ""}
+          ${this.branding.companyPhone ? `<p>${this.escapeHtml(this.branding.companyPhone)}</p>` : ""}
+          ${this.branding.companyEmail ? `<p>${this.escapeHtml(this.branding.companyEmail)}</p>` : ""}
         </div>
       </div>
     `;
@@ -155,7 +158,7 @@ export class InvoicePDFRenderer {
       <div class="bill-to-section">
         <h3>Bill To</h3>
         <div class="bill-to-content">
-          ${billTo ? `<p>${this.escapeHtml(billTo)}</p>` : '<p>Customer information not available</p>'}
+          ${billTo ? `<p>${this.escapeHtml(billTo)}</p>` : "<p>Customer information not available</p>"}
         </div>
       </div>
     `;
@@ -171,7 +174,7 @@ export class InvoicePDFRenderer {
 
     const rows = invoice.lineItems
       .map(
-        item => `
+        (item) => `
       <tr>
         <td class="description">${this.escapeHtml(item.description)}</td>
         <td class="qty">${this.formatNumber(item.quantity, 2)}</td>
@@ -180,7 +183,7 @@ export class InvoicePDFRenderer {
       </tr>
     `,
       )
-      .join('');
+      .join("");
 
     return `
       <div class="line-items-section">
@@ -205,25 +208,26 @@ export class InvoicePDFRenderer {
    * Render summary section with totals
    */
   private renderSummary(invoice: Invoice): string {
-    const discountRow = invoice.discountTotal > 0
-      ? `
+    const discountRow =
+      invoice.discountTotal > 0
+        ? `
         <tr class="summary-row">
           <td>Discount(s)</td>
           <td class="amount">-${this.formatCurrency(invoice.discountTotal, invoice.currency)}</td>
         </tr>
       `
-      : '';
+        : "";
 
     const taxRows = (invoice.taxes || [])
       .map(
-        tax => `
+        (tax) => `
         <tr class="tax-row">
           <td>${this.escapeHtml(tax.description)}</td>
           <td class="amount">${this.formatCurrency(tax.amount, invoice.currency)}</td>
         </tr>
       `,
       )
-      .join('');
+      .join("");
 
     return `
       <div class="summary-section">
@@ -250,7 +254,7 @@ export class InvoicePDFRenderer {
    */
   private renderPaymentInstructions(invoice: Invoice): string {
     if (!this.paymentInstructions) {
-      return '';
+      return "";
     }
 
     const methods: string[] = [];
@@ -260,10 +264,10 @@ export class InvoicePDFRenderer {
         <div class="payment-method">
           <h4>Bank Transfer</h4>
           <p><strong>Bank:</strong> ${this.escapeHtml(this.paymentInstructions.bankName)}</p>
-          ${this.paymentInstructions.accountHolder ? `<p><strong>Account Holder:</strong> ${this.escapeHtml(this.paymentInstructions.accountHolder)}</p>` : ''}
-          ${this.paymentInstructions.accountNumber ? `<p><strong>Account #:</strong> ${this.escapeHtml(this.paymentInstructions.accountNumber)}</p>` : ''}
-          ${this.paymentInstructions.routingNumber ? `<p><strong>Routing #:</strong> ${this.escapeHtml(this.paymentInstructions.routingNumber)}</p>` : ''}
-          ${this.paymentInstructions.swiftCode ? `<p><strong>SWIFT Code:</strong> ${this.escapeHtml(this.paymentInstructions.swiftCode)}</p>` : ''}
+          ${this.paymentInstructions.accountHolder ? `<p><strong>Account Holder:</strong> ${this.escapeHtml(this.paymentInstructions.accountHolder)}</p>` : ""}
+          ${this.paymentInstructions.accountNumber ? `<p><strong>Account #:</strong> ${this.escapeHtml(this.paymentInstructions.accountNumber)}</p>` : ""}
+          ${this.paymentInstructions.routingNumber ? `<p><strong>Routing #:</strong> ${this.escapeHtml(this.paymentInstructions.routingNumber)}</p>` : ""}
+          ${this.paymentInstructions.swiftCode ? `<p><strong>SWIFT Code:</strong> ${this.escapeHtml(this.paymentInstructions.swiftCode)}</p>` : ""}
         </div>
       `);
     }
@@ -279,13 +283,13 @@ export class InvoicePDFRenderer {
     }
 
     if (methods.length === 0) {
-      return '';
+      return "";
     }
 
     return `
       <div class="payment-instructions-section">
         <h3>Payment Instructions</h3>
-        ${methods.join('')}
+        ${methods.join("")}
         <p class="reference-note"><strong>Please reference invoice number ${this.escapeHtml(invoice.invoiceNumber)} with your payment.</strong></p>
       </div>
     `;
@@ -295,13 +299,13 @@ export class InvoicePDFRenderer {
    * Render terms and notes section
    */
   private renderTermsAndNotes(invoice: Invoice): string {
-    let content = '';
+    let content = "";
 
     if (invoice.notes) {
       content += `
         <div class="notes-section">
           <h4>Notes</h4>
-          <p>${this.escapeHtml(invoice.notes).replace(/\n/g, '<br>')}</p>
+          <p>${this.escapeHtml(invoice.notes).replace(/\n/g, "<br>")}</p>
         </div>
       `;
     }
@@ -312,7 +316,7 @@ export class InvoicePDFRenderer {
         ${content}
       </div>
     `
-      : '';
+      : "";
   }
 
   /**
@@ -667,12 +671,12 @@ export class InvoicePDFRenderer {
    */
   private formatStatus(status: string): string {
     const statusMap: Record<string, string> = {
-      draft: 'Draft',
-      finalized: 'Finalized',
-      sent: 'Sent',
-      paid: 'Paid',
-      overdue: 'Overdue',
-      voided: 'Voided',
+      draft: "Draft",
+      finalized: "Finalized",
+      sent: "Sent",
+      paid: "Paid",
+      overdue: "Overdue",
+      voided: "Voided",
     };
     return statusMap[status] || status;
   }
@@ -681,10 +685,10 @@ export class InvoicePDFRenderer {
    * Format date
    */
   private formatDate(date: Date): string {
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   }
 
@@ -700,11 +704,11 @@ export class InvoicePDFRenderer {
    */
   private formatCurrency(amount: number, currency: string): string {
     const currencySymbols: Record<string, string> = {
-      USD: '$',
-      EUR: '€',
-      GBP: '£',
-      CAD: '$',
-      AUD: '$',
+      USD: "$",
+      EUR: "€",
+      GBP: "£",
+      CAD: "$",
+      AUD: "$",
     };
 
     const symbol = currencySymbols[currency] || currency;
@@ -715,17 +719,21 @@ export class InvoicePDFRenderer {
    * Get bill to address from metadata
    */
   private getBillToAddress(invoice: Invoice): string {
-    if (invoice.metadata && typeof invoice.metadata === 'object' && 'billToAddress' in invoice.metadata) {
+    if (
+      invoice.metadata &&
+      typeof invoice.metadata === "object" &&
+      "billToAddress" in invoice.metadata
+    ) {
       return invoice.metadata.billToAddress as string;
     }
-    return '';
+    return "";
   }
 
   /**
    * Escape HTML special characters
    */
   private escapeHtml(text: string): string {
-    const div = document.createElement('div');
+    const div = document.createElement("div");
     div.textContent = text;
     return div.innerHTML;
   }
@@ -734,7 +742,10 @@ export class InvoicePDFRenderer {
 /**
  * Helper function to render invoice as HTML string
  */
-export function renderInvoiceHTML(invoice: Invoice, branding: InvoiceBranding): string {
+export function renderInvoiceHTML(
+  invoice: Invoice,
+  branding: InvoiceBranding,
+): string {
   const renderer = new InvoicePDFRenderer(branding);
   return renderer.renderHTML(invoice);
 }

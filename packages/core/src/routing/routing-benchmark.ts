@@ -16,11 +16,11 @@
  *   fs.writeFileSync('benchmark-results.json', JSON.stringify(results));
  */
 
-import type { RoutingProvider } from './routing-orchestrator.js';
+import type { RoutingProvider } from "./routing-orchestrator.js";
 
 export interface BenchmarkRoute {
   name: string;
-  category: 'urban_short' | 'suburban_medium' | 'highway_long' | 'multi_stop';
+  category: "urban_short" | "suburban_medium" | "highway_long" | "multi_stop";
   origin: { lat: number; lng: number };
   destination: { lat: number; lng: number };
   waypoints?: Array<{ lat: number; lng: number }>;
@@ -89,7 +89,7 @@ export class RoutingBenchmark {
 
   constructor(
     routes: BenchmarkRoute[] = getDefaultBenchmarkRoutes(),
-    providers: RoutingProvider[] = getDefaultProviders()
+    providers: RoutingProvider[] = getDefaultProviders(),
   ) {
     this.routes = routes;
     this.providers = providers;
@@ -156,8 +156,14 @@ export class RoutingBenchmark {
     const distances = successResults.map((r) => r.distance);
     const durations = successResults.map((r) => r.duration);
 
-    const meanDistance = distances.length > 0 ? distances.reduce((a, b) => a + b) / distances.length : 0;
-    const meanDuration = durations.length > 0 ? durations.reduce((a, b) => a + b) / durations.length : 0;
+    const meanDistance =
+      distances.length > 0
+        ? distances.reduce((a, b) => a + b) / distances.length
+        : 0;
+    const meanDuration =
+      durations.length > 0
+        ? durations.reduce((a, b) => a + b) / durations.length
+        : 0;
 
     // Calculate accuracy metrics
     const resultsWithAccuracy = results.map((result) => {
@@ -167,8 +173,10 @@ export class RoutingBenchmark {
 
       return {
         ...result,
-        distanceAccuracy: 100 - Math.abs((result.distance - meanDistance) / meanDistance) * 100,
-        durationAccuracy: 100 - Math.abs((result.duration - meanDuration) / meanDuration) * 100,
+        distanceAccuracy:
+          100 - Math.abs((result.distance - meanDistance) / meanDistance) * 100,
+        durationAccuracy:
+          100 - Math.abs((result.duration - meanDuration) / meanDuration) * 100,
       };
     });
 
@@ -192,7 +200,7 @@ export class RoutingBenchmark {
    */
   private async benchmarkProvider(
     provider: RoutingProvider,
-    route: BenchmarkRoute
+    route: BenchmarkRoute,
   ): Promise<ProviderBenchmarkResult> {
     const startTime = Date.now();
 
@@ -220,27 +228,32 @@ export class RoutingBenchmark {
    * Rank providers for a specific route
    */
   private rankProviders(
-    results: ProviderBenchmarkResult[]
-  ): BenchmarkSummary['rankings'] {
+    results: ProviderBenchmarkResult[],
+  ): BenchmarkSummary["rankings"] {
     const successResults = results.filter((r) => r.success);
 
     // Calculate scores
     const scored = successResults.map((result) => {
       // 40% accuracy + 30% latency + 20% cost + 10% feature coverage
-      const accuracyScore = (
-        ((result.distanceAccuracy || 50) + (result.durationAccuracy || 50)) / 2
-      ) * 0.4;
+      const accuracyScore =
+        (((result.distanceAccuracy || 50) + (result.durationAccuracy || 50)) /
+          2) *
+        0.4;
 
       const maxLatency = Math.max(...successResults.map((r) => r.latencyMs));
       const latencyScore = ((maxLatency - result.latencyMs) / maxLatency) * 30;
 
       const maxCost = Math.max(...successResults.map((r) => r.cost || 0));
-      const costScore = maxCost > 0 ? ((maxCost - (result.cost || 0)) / maxCost) * 20 : 20;
+      const costScore =
+        maxCost > 0 ? ((maxCost - (result.cost || 0)) / maxCost) * 20 : 20;
 
-      const featureCount = Object.values(result.features).filter(Boolean).length;
+      const featureCount = Object.values(result.features).filter(
+        Boolean,
+      ).length;
       const featureScore = (featureCount / 4) * 10;
 
-      const totalScore = accuracyScore + latencyScore + costScore + featureScore;
+      const totalScore =
+        accuracyScore + latencyScore + costScore + featureScore;
 
       return {
         provider: result.provider,
@@ -266,8 +279,8 @@ export class RoutingBenchmark {
    * Calculate overall rankings across all routes
    */
   private calculateOverallRankings(
-    summaries: BenchmarkSummary[]
-  ): BenchmarkReport['overallRankings'] {
+    summaries: BenchmarkSummary[],
+  ): BenchmarkReport["overallRankings"] {
     const providerStats: Map<
       RoutingProvider,
       {
@@ -316,25 +329,30 @@ export class RoutingBenchmark {
     });
 
     // Calculate final rankings
-    const rankings: BenchmarkReport['overallRankings'] = [];
+    const rankings: BenchmarkReport["overallRankings"] = [];
 
     providerStats.forEach((stats, provider) => {
       const averageScore = stats.count > 0 ? stats.totalScore / stats.count : 0;
       const scoreByCategory: Record<string, number> = {};
 
       Object.entries(stats.scoreByCategory).forEach(([category, scores]) => {
-        scoreByCategory[category] = Math.round((scores.reduce((a, b) => a + b) / scores.length) * 10) / 10;
+        scoreByCategory[category] =
+          Math.round((scores.reduce((a, b) => a + b) / scores.length) * 10) /
+          10;
       });
 
       const averageLatency =
-        stats.latencies.length > 0 ? stats.latencies.reduce((a, b) => a + b) / stats.latencies.length : 0;
+        stats.latencies.length > 0
+          ? stats.latencies.reduce((a, b) => a + b) / stats.latencies.length
+          : 0;
 
       rankings.push({
         provider,
         averageScore: Math.round(averageScore * 10) / 10,
         scoreByCategory,
         totalRequests: stats.requests,
-        successRate: stats.requests > 0 ? stats.successCount / stats.requests : 0,
+        successRate:
+          stats.requests > 0 ? stats.successCount / stats.requests : 0,
         averageLatencyMs: Math.round(averageLatency),
       });
     });
@@ -346,7 +364,9 @@ export class RoutingBenchmark {
   /**
    * Calculate total cost per provider
    */
-  private calculateCostComparison(results: ProviderBenchmarkResult[]): Record<RoutingProvider, number> {
+  private calculateCostComparison(
+    results: ProviderBenchmarkResult[],
+  ): Record<RoutingProvider, number> {
     const costs: Record<string, number> = {};
 
     this.providers.forEach((provider) => {
@@ -369,18 +389,20 @@ export class RoutingBenchmark {
     if (route.expectedDistance) {
       // Add random variance (±10%)
       const variance = route.expectedDistance * 0.1;
-      return Math.round(route.expectedDistance + (Math.random() - 0.5) * variance * 2);
+      return Math.round(
+        route.expectedDistance + (Math.random() - 0.5) * variance * 2,
+      );
     }
 
     // Generate based on category
     switch (route.category) {
-      case 'urban_short':
+      case "urban_short":
         return Math.round(Math.random() * 4000) + 1000;
-      case 'suburban_medium':
+      case "suburban_medium":
         return Math.round(Math.random() * 15000) + 5000;
-      case 'highway_long':
+      case "highway_long":
         return Math.round(Math.random() * 50000) + 50000;
-      case 'multi_stop':
+      case "multi_stop":
         return Math.round(Math.random() * 30000) + 10000;
       default:
         return 5000;
@@ -401,22 +423,22 @@ export class RoutingBenchmark {
   private estimateCost(provider: RoutingProvider, distance: number): number {
     // Estimates based on typical pricing models
     switch (provider) {
-      case 'google-routes':
-        return distance / 1000 * 0.005; // $0.005 per km
-      case 'mapbox-directions':
-        return distance / 1000 * 0.0005; // $0.0005 per km
-      case 'here-routing':
-        return distance / 1000 * 0.003; // $0.003 per km
-      case 'valhalla':
+      case "google-routes":
+        return (distance / 1000) * 0.005; // $0.005 per km
+      case "mapbox-directions":
+        return (distance / 1000) * 0.0005; // $0.0005 per km
+      case "here-routing":
+        return (distance / 1000) * 0.003; // $0.003 per km
+      case "valhalla":
         return 0; // Open-source, free
-      case 'vroom':
+      case "vroom":
         return 0; // Open-source, free
-      case 'route4me':
-        return distance / 1000 * 0.002; // $0.002 per km
-      case 'optimoroute':
-        return distance / 1000 * 0.002; // $0.002 per km
-      case 'routific':
-        return distance / 1000 * 0.001; // $0.001 per km
+      case "route4me":
+        return (distance / 1000) * 0.002; // $0.002 per km
+      case "optimoroute":
+        return (distance / 1000) * 0.002; // $0.002 per km
+      case "routific":
+        return (distance / 1000) * 0.001; // $0.001 per km
       default:
         return 0;
     }
@@ -426,59 +448,59 @@ export class RoutingBenchmark {
    * Get feature set for provider
    */
   private getProviderFeatures(
-    provider: RoutingProvider
-  ): ProviderBenchmarkResult['features'] {
+    provider: RoutingProvider,
+  ): ProviderBenchmarkResult["features"] {
     switch (provider) {
-      case 'google-routes':
+      case "google-routes":
         return {
           turnByTurn: true,
           trafficData: true,
           alternatives: true,
           polyline: true,
         };
-      case 'mapbox-directions':
+      case "mapbox-directions":
         return {
           turnByTurn: true,
           trafficData: true,
           alternatives: true,
           polyline: true,
         };
-      case 'here-routing':
+      case "here-routing":
         return {
           turnByTurn: true,
           trafficData: true,
           alternatives: true,
           polyline: true,
         };
-      case 'valhalla':
+      case "valhalla":
         return {
           turnByTurn: true,
           trafficData: false,
           alternatives: true,
           polyline: true,
         };
-      case 'vroom':
+      case "vroom":
         return {
           turnByTurn: false,
           trafficData: false,
           alternatives: false,
           polyline: true,
         };
-      case 'route4me':
+      case "route4me":
         return {
           turnByTurn: true,
           trafficData: true,
           alternatives: false,
           polyline: true,
         };
-      case 'optimoroute':
+      case "optimoroute":
         return {
           turnByTurn: false,
           trafficData: false,
           alternatives: false,
           polyline: true,
         };
-      case 'routific':
+      case "routific":
         return {
           turnByTurn: false,
           trafficData: false,
@@ -503,8 +525,8 @@ export function getDefaultBenchmarkRoutes(): BenchmarkRoute[] {
   return [
     // Urban short route (NYC)
     {
-      name: 'NYC Downtown',
-      category: 'urban_short',
+      name: "NYC Downtown",
+      category: "urban_short",
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.758, lng: -73.9855 },
       expectedDistance: 2500,
@@ -512,8 +534,8 @@ export function getDefaultBenchmarkRoutes(): BenchmarkRoute[] {
     },
     // Suburban medium route
     {
-      name: 'Boston to Springfield',
-      category: 'suburban_medium',
+      name: "Boston to Springfield",
+      category: "suburban_medium",
       origin: { lat: 42.3601, lng: -71.0589 },
       destination: { lat: 42.1015, lng: -72.589 },
       expectedDistance: 95000,
@@ -521,8 +543,8 @@ export function getDefaultBenchmarkRoutes(): BenchmarkRoute[] {
     },
     // Highway long route
     {
-      name: 'LA to San Diego',
-      category: 'highway_long',
+      name: "LA to San Diego",
+      category: "highway_long",
       origin: { lat: 34.0522, lng: -118.2437 },
       destination: { lat: 32.7157, lng: -117.1611 },
       expectedDistance: 195000,
@@ -530,10 +552,10 @@ export function getDefaultBenchmarkRoutes(): BenchmarkRoute[] {
     },
     // Multi-stop route
     {
-      name: 'Delivery Route',
-      category: 'multi_stop',
+      name: "Delivery Route",
+      category: "multi_stop",
       origin: { lat: 40.7128, lng: -74.006 },
-      destination: { lat: 40.7489, lng: -73.9680 },
+      destination: { lat: 40.7489, lng: -73.968 },
       waypoints: [
         { lat: 40.7307, lng: -73.9969 },
         { lat: 40.7505, lng: -73.9972 },
@@ -550,13 +572,13 @@ export function getDefaultBenchmarkRoutes(): BenchmarkRoute[] {
  */
 export function getDefaultProviders(): RoutingProvider[] {
   return [
-    'google-routes',
-    'mapbox-directions',
-    'here-routing',
-    'valhalla',
-    'vroom',
-    'route4me',
-    'optimoroute',
-    'routific',
+    "google-routes",
+    "mapbox-directions",
+    "here-routing",
+    "valhalla",
+    "vroom",
+    "route4me",
+    "optimoroute",
+    "routific",
   ];
 }

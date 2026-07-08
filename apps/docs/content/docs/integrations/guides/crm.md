@@ -4,20 +4,21 @@ CRM systems manage customer relationships, sales pipelines, and support interact
 
 ## Supported CRM Systems
 
-| CRM | Best For | Focus |
-|-----|----------|-------|
-| **Salesforce** | Enterprise | All-in-one CRM |
-| **HubSpot** | Inbound marketing | Sales + Marketing |
-| **Pipedrive** | Sales-focused | Pipeline management |
-| **Dynamics CRM** | Microsoft shops | Enterprise CRM |
-| **Zoho CRM** | SMB/mid-market | Affordable CRM |
-| **Freshsales** | Growing teams | Modern CRM |
-| **Capsule CRM** | Small teams | Lightweight CRM |
-| **Insightly** | Project-centric | CRM + Projects |
+| CRM              | Best For          | Focus               |
+| ---------------- | ----------------- | ------------------- |
+| **Salesforce**   | Enterprise        | All-in-one CRM      |
+| **HubSpot**      | Inbound marketing | Sales + Marketing   |
+| **Pipedrive**    | Sales-focused     | Pipeline management |
+| **Dynamics CRM** | Microsoft shops   | Enterprise CRM      |
+| **Zoho CRM**     | SMB/mid-market    | Affordable CRM      |
+| **Freshsales**   | Growing teams     | Modern CRM          |
+| **Capsule CRM**  | Small teams       | Lightweight CRM     |
+| **Insightly**    | Project-centric   | CRM + Projects      |
 
 ## Use Cases
 
 ### 1. Delivery Visibility in CRM
+
 Add shipment tracking details directly in customer records:
 
 ```javascript
@@ -46,6 +47,7 @@ await client.integrations.update({
 ```
 
 ### 2. Activity Timeline
+
 Log delivery events as CRM activities:
 
 ```javascript
@@ -64,6 +66,7 @@ const activity = await client.integrations.create({
 ```
 
 ### 3. Lead/Contact Enrichment
+
 Update contact information from delivery data:
 
 ```javascript
@@ -84,15 +87,18 @@ const contact = await client.integrations.update({
 ## Setup by Platform
 
 ### Salesforce
+
 **Best for**: Enterprise organizations with complex CRM needs.
 
 #### 1. Create Connected App
+
 - Salesforce Setup → Apps → App Manager
 - Create → Connected App
 - Enable OAuth, set Redirect URL
 - Copy Consumer Key & Secret
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const crm = await client.integrations.create({
   provider: "salesforce",
@@ -112,6 +118,7 @@ const crm = await client.integrations.create({
 ```
 
 #### 3. Create Custom Fields
+
 ```apex
 // In Salesforce, create custom fields for delivery data
 Account.DeliveryTrackingUrl__c (URL)
@@ -120,14 +127,17 @@ Account.OnTimeDeliveryRate__c (Percent)
 ```
 
 ### HubSpot
+
 **Best for**: Inbound marketing, sales automation.
 
 #### 1. Get API Key
+
 - HubSpot Settings → Integrations → API Key
 - Create new API key with required scopes
 - Copy the key
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const crm = await client.integrations.create({
   provider: "hubspot",
@@ -145,6 +155,7 @@ const crm = await client.integrations.create({
 ```
 
 #### 3. Create Custom Properties
+
 ```javascript
 // Create custom properties in HubSpot
 const properties = [
@@ -170,13 +181,16 @@ const properties = [
 ```
 
 ### Pipedrive
+
 **Best for**: Sales-focused teams.
 
 #### 1. Get API Token
+
 - Pipedrive Settings → Personal Preferences → API
 - Copy your API token
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const crm = await client.integrations.create({
   provider: "pipedrive",
@@ -190,15 +204,18 @@ const crm = await client.integrations.create({
 ```
 
 ### Dynamics CRM
+
 **Best for**: Microsoft-centric enterprises.
 
 #### 1. Create App Registration
+
 - Azure AD → App Registrations
 - Create new app
 - Copy Application ID, Directory ID
 - Create client secret
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const crm = await client.integrations.create({
   provider: "dynamicsCRM",
@@ -216,6 +233,7 @@ const crm = await client.integrations.create({
 ```
 
 ### Zoho CRM, Freshsales, Others
+
 **Similar OAuth pattern:**
 
 ```javascript
@@ -236,6 +254,7 @@ const crm = await client.integrations.create({
 ## Data Sync Patterns
 
 ### Pull (Polling)
+
 ```javascript
 // Sync customers from CRM periodically
 const syncCustomers = async () => {
@@ -257,6 +276,7 @@ const syncCustomers = async () => {
 ```
 
 ### Push (Webhooks)
+
 ```javascript
 // CRM fires webhook on customer/deal changes
 app.post("/webhooks/crm", async (req, res) => {
@@ -276,6 +296,7 @@ app.post("/webhooks/crm", async (req, res) => {
 ## Field Mapping
 
 ### Account/Company Mapping
+
 ```javascript
 const mapping = {
   externalId: "crm.accountId",
@@ -298,6 +319,7 @@ const mapping = {
 ```
 
 ### Contact/Person Mapping
+
 ```javascript
 const contactMapping = {
   externalId: "crm.contactId",
@@ -319,6 +341,7 @@ const contactMapping = {
 ```
 
 ### Activity Mapping
+
 ```javascript
 const activityMapping = {
   externalId: "crm.taskId",
@@ -338,6 +361,7 @@ const activityMapping = {
 ## Event Subscriptions
 
 ### Shipment Events → CRM Activities
+
 ```javascript
 const webhook = await client.webhooks.create({
   integration: "salesforce",
@@ -374,11 +398,11 @@ const syncConfig = {
     priority: "normal",
   },
   deliveryActivity: {
-    frequency: "real-time",    // Delivery events logged immediately
+    frequency: "real-time", // Delivery events logged immediately
     priority: "high",
   },
   opportunityData: {
-    frequency: "every-hour",   // Order status changes
+    frequency: "every-hour", // Order status changes
     priority: "high",
   },
 };
@@ -428,13 +452,13 @@ const syncHealth = await client.integrations.health({
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Sync failing | Invalid credentials | Revalidate API key/token |
-| Missing custom fields | Field not created in CRM | Create field in CRM first |
-| Duplicate records | No external ID mapping | Add external ID mapping |
-| Data loss | Overwriting active records | Implement merge logic |
-| Rate limited | Too many API calls | Implement batching/delays |
+| Issue                 | Cause                      | Solution                  |
+| --------------------- | -------------------------- | ------------------------- |
+| Sync failing          | Invalid credentials        | Revalidate API key/token  |
+| Missing custom fields | Field not created in CRM   | Create field in CRM first |
+| Duplicate records     | No external ID mapping     | Add external ID mapping   |
+| Data loss             | Overwriting active records | Implement merge logic     |
+| Rate limited          | Too many API calls         | Implement batching/delays |
 
 ## Next Steps
 

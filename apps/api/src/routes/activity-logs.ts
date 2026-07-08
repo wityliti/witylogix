@@ -34,7 +34,7 @@ type CreateActivityLog = z.infer<typeof createActivityLogSchema>;
 type ActivityLogFilter = z.infer<typeof activityLogFilterSchema>;
 
 export default async function activityLogRoutes(
-  fastify: FastifyInstance
+  fastify: FastifyInstance,
 ): Promise<void> {
   fastify.addHook("preHandler", requireAuth);
   fastify.addHook("preHandler", tenantContext);
@@ -47,7 +47,7 @@ export default async function activityLogRoutes(
       if (!parsedQuery.success) {
         throw new ValidationError(
           "Invalid query parameters",
-          parsedQuery.error.errors
+          parsedQuery.error.errors,
         );
       }
 
@@ -79,12 +79,12 @@ export default async function activityLogRoutes(
         whereClause.timestamp = {};
         if (dateFrom) {
           (whereClause.timestamp as Record<string, unknown>).gte = new Date(
-            dateFrom
+            dateFrom,
           );
         }
         if (dateTo) {
           (whereClause.timestamp as Record<string, unknown>).lte = new Date(
-            dateTo
+            dateTo,
           );
         }
       }
@@ -110,7 +110,7 @@ export default async function activityLogRoutes(
           pages: Math.ceil(total / limit),
         },
       });
-    }
+    },
   );
 
   // GET /:id — Get single log entry
@@ -128,7 +128,7 @@ export default async function activityLogRoutes(
       }
 
       return reply.send({ data: log });
-    }
+    },
   );
 
   // POST / — Create activity log entry
@@ -139,7 +139,7 @@ export default async function activityLogRoutes(
       if (!parsedBody.success) {
         throw new ValidationError(
           "Invalid activity log data",
-          parsedBody.error.errors
+          parsedBody.error.errors,
         );
       }
 
@@ -151,7 +151,7 @@ export default async function activityLogRoutes(
       });
 
       return reply.status(201).send({ data: log });
-    }
+    },
   );
 
   // GET /entity/:entityType/:entityId — Get logs for a specific entity
@@ -168,9 +168,12 @@ export default async function activityLogRoutes(
 
       const limit = Math.min(
         Math.max(parseInt((request.query as any).limit as string) || 25, 1),
-        100
+        100,
       );
-      const page = Math.max(parseInt((request.query as any).page as string) || 1, 1);
+      const page = Math.max(
+        parseInt((request.query as any).page as string) || 1,
+        1,
+      );
       const skip = (page - 1) * limit;
 
       // Validate UUID format for entityId
@@ -209,7 +212,7 @@ export default async function activityLogRoutes(
           pages: Math.ceil(total / limit),
         },
       });
-    }
+    },
   );
 
   // GET /stats — Get activity summary stats
@@ -229,12 +232,12 @@ export default async function activityLogRoutes(
         whereClause.timestamp = {};
         if (dateFrom) {
           (whereClause.timestamp as Record<string, unknown>).gte = new Date(
-            dateFrom
+            dateFrom,
           );
         }
         if (dateTo) {
           (whereClause.timestamp as Record<string, unknown>).lte = new Date(
-            dateTo
+            dateTo,
           );
         }
       }
@@ -269,11 +272,15 @@ export default async function activityLogRoutes(
 
       // Get events today
       const now = new Date();
-      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const startOfDay = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+      );
       const endOfDay = new Date(
         now.getFullYear(),
         now.getMonth(),
-        now.getDate() + 1
+        now.getDate() + 1,
       );
 
       const eventsToday = await request.tenantDb.activityLog.count({
@@ -321,7 +328,7 @@ export default async function activityLogRoutes(
               : null,
         },
       });
-    }
+    },
   );
 
   // DELETE /bulk — Soft-archive logs older than a date (ADMIN only)
@@ -339,7 +346,7 @@ export default async function activityLogRoutes(
       if (!parsedBody.success) {
         throw new ValidationError(
           "Invalid request body",
-          parsedBody.error.errors
+          parsedBody.error.errors,
         );
       }
 
@@ -370,6 +377,6 @@ export default async function activityLogRoutes(
           beforeDate: cutoffDate.toISOString(),
         },
       });
-    }
+    },
   );
 }

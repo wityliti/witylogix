@@ -94,9 +94,9 @@ const rateTypeLabel = (r: RateType): string => {
 };
 
 export default function ShippingProfilesPage() {
-  const [deliveryFilter, setDeliveryFilter] = useState<
-    DeliveryMethod | "ALL"
-  >("ALL");
+  const [deliveryFilter, setDeliveryFilter] = useState<DeliveryMethod | "ALL">(
+    "ALL",
+  );
   const [search, setSearch] = useState("");
 
   const {
@@ -110,17 +110,13 @@ export default function ShippingProfilesPage() {
 
   const filtered = useMemo(() => {
     return profiles.filter((profile) => {
-      if (
-        deliveryFilter !== "ALL" &&
-        profile.deliveryMethod !== deliveryFilter
-      )
+      if (deliveryFilter !== "ALL" && profile.deliveryMethod !== deliveryFilter)
         return false;
       if (search) {
         const q = search.toLowerCase();
         return (
           profile.name.toLowerCase().includes(q) ||
-          (profile.description &&
-            profile.description.toLowerCase().includes(q))
+          (profile.description && profile.description.toLowerCase().includes(q))
         );
       }
       return true;
@@ -350,7 +346,9 @@ export default function ShippingProfilesPage() {
                       Processing Time
                     </div>
                     <div
-                      className={cn("text-base font-bold font-mono text-gray-300")}
+                      className={cn(
+                        "text-base font-bold font-mono text-gray-300",
+                      )}
                     >
                       {profile.processingTimeHours}h
                     </div>
@@ -361,7 +359,9 @@ export default function ShippingProfilesPage() {
                       Min Order
                     </div>
                     <div
-                      className={cn("text-base font-bold font-mono text-gray-300")}
+                      className={cn(
+                        "text-base font-bold font-mono text-gray-300",
+                      )}
                     >
                       {profile.minOrderAmount
                         ? formatCurrency(Number(profile.minOrderAmount))

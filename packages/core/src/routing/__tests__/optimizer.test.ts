@@ -16,7 +16,7 @@ const createStop = (
   id: string,
   location: GeoPoint,
   serviceDuration = 5,
-  priority = 1
+  priority = 1,
 ): OptimizationStop => ({
   id,
   location,
@@ -25,10 +25,7 @@ const createStop = (
   demand: { weight: 10, volume: 0.1 },
 });
 
-const createVehicle = (
-  id: string,
-  startLocation: GeoPoint
-): Vehicle => ({
+const createVehicle = (id: string, startLocation: GeoPoint): Vehicle => ({
   id,
   driverId: `driver_${id}`,
   startLocation,
@@ -41,7 +38,7 @@ const createVehicle = (
 const createOptimizationRequest = (
   stops: OptimizationStop[],
   vehicles: Vehicle[],
-  algorithm = "nearest_neighbor"
+  algorithm = "nearest_neighbor",
 ): OptimizationRequest => ({
   depot: createGeoPoint(40.7128, -74.006),
   stops,
@@ -68,7 +65,11 @@ describe("Route Optimizer", () => {
     it("should optimize routes with single stop", async () => {
       const stops = [createStop("1", createGeoPoint(40.758, -73.985))];
       const vehicles = [createVehicle("v1", createGeoPoint(40.7128, -74.006))];
-      const request = createOptimizationRequest(stops, vehicles, "nearest_neighbor");
+      const request = createOptimizationRequest(
+        stops,
+        vehicles,
+        "nearest_neighbor",
+      );
 
       const result = await optimizeRoutes(request);
 
@@ -113,7 +114,9 @@ describe("Route Optimizer", () => {
       const result = await optimizeRoutes(request);
 
       expect(result.routes.length).toBeGreaterThanOrEqual(0);
-      expect(result.metrics.stopsCovered + result.metrics.stopsUncovered).toBe(3);
+      expect(result.metrics.stopsCovered + result.metrics.stopsUncovered).toBe(
+        3,
+      );
     });
   });
 
@@ -131,7 +134,7 @@ describe("Route Optimizer", () => {
       const request = createOptimizationRequest(
         stops,
         vehicles,
-        "nearest_neighbor_2opt"
+        "nearest_neighbor_2opt",
       );
 
       const result = await optimizeRoutes(request);
@@ -152,7 +155,7 @@ describe("Route Optimizer", () => {
       const request = createOptimizationRequest(
         stops,
         vehicles,
-        "nearest_neighbor_2opt"
+        "nearest_neighbor_2opt",
       );
       request.settings.maxIterations = 10;
 
@@ -200,9 +203,9 @@ describe("Route Optimizer", () => {
       const result = await optimizeRoutes(request);
 
       // Should handle capacity constraints
-      expect(
-        result.metrics.stopsCovered + result.metrics.stopsUncovered
-      ).toBe(2);
+      expect(result.metrics.stopsCovered + result.metrics.stopsUncovered).toBe(
+        2,
+      );
     });
 
     it("should optimize for multiple vehicle utilization", async () => {
@@ -358,7 +361,9 @@ describe("Route Optimizer", () => {
       const result = await optimizeRoutes(request);
 
       expect(result).toBeDefined();
-      expect(result.routes.length + result.unassignedStops.length).toBeGreaterThan(0);
+      expect(
+        result.routes.length + result.unassignedStops.length,
+      ).toBeGreaterThan(0);
     });
 
     it("should handle very distant stops", async () => {
@@ -381,7 +386,9 @@ describe("Route Optimizer", () => {
 
       const result = await optimizeRoutes(request);
 
-      expect(result.metrics.stopsCovered + result.metrics.stopsUncovered).toBe(1);
+      expect(result.metrics.stopsCovered + result.metrics.stopsUncovered).toBe(
+        1,
+      );
     });
 
     it("should handle multiple vehicles with single stop", async () => {
@@ -446,15 +453,15 @@ describe("Route Optimizer", () => {
     });
 
     it("should calculate vehicle utilization", async () => {
-      const stops = [
-        createStop("1", createGeoPoint(40.758, -73.985), 5),
-      ];
+      const stops = [createStop("1", createGeoPoint(40.758, -73.985), 5)];
       const vehicles = [createVehicle("v1", createGeoPoint(40.7128, -74.006))];
       const request = createOptimizationRequest(stops, vehicles);
 
       const result = await optimizeRoutes(request);
 
-      expect(result.metrics.averageVehicleUtilization).toBeGreaterThanOrEqual(0);
+      expect(result.metrics.averageVehicleUtilization).toBeGreaterThanOrEqual(
+        0,
+      );
       expect(result.metrics.averageVehicleUtilization).toBeLessThanOrEqual(100);
     });
 
@@ -469,9 +476,9 @@ describe("Route Optimizer", () => {
 
       const result = await optimizeRoutes(request);
 
-      expect(
-        result.metrics.stopsCovered + result.metrics.stopsUncovered
-      ).toBe(3);
+      expect(result.metrics.stopsCovered + result.metrics.stopsUncovered).toBe(
+        3,
+      );
     });
   });
 
@@ -481,7 +488,11 @@ describe("Route Optimizer", () => {
     it("should support nearest_neighbor algorithm", async () => {
       const stops = [createStop("1", createGeoPoint(40.758, -73.985), 5)];
       const vehicles = [createVehicle("v1", createGeoPoint(40.7128, -74.006))];
-      const request = createOptimizationRequest(stops, vehicles, "nearest_neighbor");
+      const request = createOptimizationRequest(
+        stops,
+        vehicles,
+        "nearest_neighbor",
+      );
 
       const result = await optimizeRoutes(request);
 
@@ -494,7 +505,7 @@ describe("Route Optimizer", () => {
       const request = createOptimizationRequest(
         stops,
         vehicles,
-        "nearest_neighbor_2opt"
+        "nearest_neighbor_2opt",
       );
 
       const result = await optimizeRoutes(request);

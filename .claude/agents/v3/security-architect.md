@@ -11,11 +11,11 @@ capabilities:
   - claims_based_authorization
   - zero_trust_patterns
   # V3 Intelligence Capabilities
-  - self_learning           # ReasoningBank pattern storage
-  - context_enhancement     # GNN-enhanced threat pattern search
-  - fast_processing         # Flash Attention for large codebase scanning
-  - hnsw_threat_search      # 150x-12,500x faster threat pattern matching
-  - smart_coordination      # Attention-based security consensus
+  - self_learning # ReasoningBank pattern storage
+  - context_enhancement # GNN-enhanced threat pattern search
+  - fast_processing # Flash Attention for large codebase scanning
+  - hnsw_threat_search # 150x-12,500x faster threat pattern matching
+  - smart_coordination # Attention-based security consensus
 priority: critical
 hooks:
   pre: |
@@ -128,17 +128,19 @@ You are a specialized security architect with advanced V3 intelligence capabilit
 ```typescript
 // Search for similar threat patterns using HNSW indexing
 const threatPatterns = await agentDB.hnswSearch({
-  query: 'SQL injection authentication bypass',
+  query: "SQL injection authentication bypass",
   k: 10,
-  namespace: 'security_threats',
-  minSimilarity: 0.85
+  namespace: "security_threats",
+  minSimilarity: 0.85,
 });
 
 console.log(`Found ${threatPatterns.results.length} similar threats`);
-console.log(`Search time: ${threatPatterns.executionTimeMs}ms (${threatPatterns.speedup}x faster)`);
+console.log(
+  `Search time: ${threatPatterns.executionTimeMs}ms (${threatPatterns.speedup}x faster)`,
+);
 
 // Results include learned remediation patterns
-threatPatterns.results.forEach(pattern => {
+threatPatterns.results.forEach((pattern) => {
   console.log(`- ${pattern.threatType}: ${pattern.mitigation}`);
   console.log(`  Effectiveness: ${pattern.reward * 100}%`);
 });
@@ -150,12 +152,14 @@ threatPatterns.results.forEach(pattern => {
 // Scan large codebases efficiently with Flash Attention
 if (codebaseFiles.length > 1000) {
   const securityScan = await agentDB.flashAttention(
-    securityQueryEmbedding,    // What vulnerabilities to look for
-    codebaseEmbeddings,        // All code file embeddings
-    vulnerabilityPatterns      // Known vulnerability patterns
+    securityQueryEmbedding, // What vulnerabilities to look for
+    codebaseEmbeddings, // All code file embeddings
+    vulnerabilityPatterns, // Known vulnerability patterns
   );
 
-  console.log(`Scanned ${codebaseFiles.length} files in ${securityScan.executionTimeMs}ms`);
+  console.log(
+    `Scanned ${codebaseFiles.length} files in ${securityScan.executionTimeMs}ms`,
+  );
   console.log(`Memory efficiency: ~50% reduction with Flash Attention`);
   console.log(`Speedup: ${securityScan.speedup}x (2.49x-7.47x typical)`);
 }
@@ -167,22 +171,22 @@ if (codebaseFiles.length > 1000) {
 // Learn from security assessments via ReasoningBank
 await reasoningBank.storePattern({
   sessionId: `security-${Date.now()}`,
-  task: 'Authentication bypass vulnerability assessment',
+  task: "Authentication bypass vulnerability assessment",
   input: codeUnderReview,
   output: securityFindings,
   reward: calculateSecurityScore(securityFindings), // 0-1 score
   success: criticalVulnerabilities === 0,
   critique: generateSecurityCritique(securityFindings),
   tokensUsed: tokenCount,
-  latencyMs: analysisTime
+  latencyMs: analysisTime,
 });
 
 function calculateSecurityScore(findings) {
   let score = 1.0;
-  findings.forEach(f => {
-    if (f.severity === 'critical') score -= 0.3;
-    else if (f.severity === 'high') score -= 0.15;
-    else if (f.severity === 'medium') score -= 0.05;
+  findings.forEach((f) => {
+    if (f.severity === "critical") score -= 0.3;
+    else if (f.severity === "high") score -= 0.15;
+    else if (f.severity === "medium") score -= 0.05;
   });
   return Math.max(score, 0);
 }
@@ -194,23 +198,25 @@ function calculateSecurityScore(findings) {
 
 ```typescript
 interface STRIDEThreatModel {
-  spoofing: ThreatAnalysis[];      // Authentication threats
-  tampering: ThreatAnalysis[];     // Integrity threats
-  repudiation: ThreatAnalysis[];   // Non-repudiation threats
+  spoofing: ThreatAnalysis[]; // Authentication threats
+  tampering: ThreatAnalysis[]; // Integrity threats
+  repudiation: ThreatAnalysis[]; // Non-repudiation threats
   informationDisclosure: ThreatAnalysis[]; // Confidentiality threats
   denialOfService: ThreatAnalysis[]; // Availability threats
   elevationOfPrivilege: ThreatAnalysis[]; // Authorization threats
 }
 
 // Analyze component for STRIDE threats
-async function analyzeSTRIDE(component: SystemComponent): Promise<STRIDEThreatModel> {
+async function analyzeSTRIDE(
+  component: SystemComponent,
+): Promise<STRIDEThreatModel> {
   const model: STRIDEThreatModel = {
     spoofing: [],
     tampering: [],
     repudiation: [],
     informationDisclosure: [],
     denialOfService: [],
-    elevationOfPrivilege: []
+    elevationOfPrivilege: [],
   };
 
   // 1. Search for similar past threat models via HNSW
@@ -218,13 +224,13 @@ async function analyzeSTRIDE(component: SystemComponent): Promise<STRIDEThreatMo
     task: `STRIDE analysis for ${component.type}`,
     k: 5,
     minReward: 0.85,
-    namespace: 'security'
+    namespace: "security",
   });
 
   // 2. Apply learned patterns
   if (similarModels.length > 0) {
-    console.log('Applying learned threat patterns:');
-    similarModels.forEach(m => {
+    console.log("Applying learned threat patterns:");
+    similarModels.forEach((m) => {
       console.log(`- ${m.task}: ${m.reward * 100}% effective`);
     });
   }
@@ -255,13 +261,13 @@ async function analyzeSTRIDE(component: SystemComponent): Promise<STRIDEThreatMo
 
 ```typescript
 interface DREADScore {
-  damage: number;          // 0-10: How bad is the impact?
+  damage: number; // 0-10: How bad is the impact?
   reproducibility: number; // 0-10: How easy to reproduce?
-  exploitability: number;  // 0-10: How easy to exploit?
-  affectedUsers: number;   // 0-10: How many users affected?
+  exploitability: number; // 0-10: How easy to exploit?
+  affectedUsers: number; // 0-10: How many users affected?
   discoverability: number; // 0-10: How easy to discover?
-  totalRisk: number;       // Average score
-  priority: 'critical' | 'high' | 'medium' | 'low';
+  totalRisk: number; // Average score
+  priority: "critical" | "high" | "medium" | "low";
 }
 
 function calculateDREAD(threat: Threat): DREADScore {
@@ -272,22 +278,22 @@ function calculateDREAD(threat: Threat): DREADScore {
     affectedUsers: assessAffectedUsers(threat),
     discoverability: assessDiscoverability(threat),
     totalRisk: 0,
-    priority: 'low'
+    priority: "low",
   };
 
-  score.totalRisk = (
-    score.damage +
-    score.reproducibility +
-    score.exploitability +
-    score.affectedUsers +
-    score.discoverability
-  ) / 5;
+  score.totalRisk =
+    (score.damage +
+      score.reproducibility +
+      score.exploitability +
+      score.affectedUsers +
+      score.discoverability) /
+    5;
 
   // Determine priority based on total risk
-  if (score.totalRisk >= 8) score.priority = 'critical';
-  else if (score.totalRisk >= 6) score.priority = 'high';
-  else if (score.totalRisk >= 4) score.priority = 'medium';
-  else score.priority = 'low';
+  if (score.totalRisk >= 8) score.priority = "critical";
+  else if (score.totalRisk >= 6) score.priority = "high";
+  else if (score.totalRisk >= 4) score.priority = "medium";
+  else score.priority = "low";
 
   return score;
 }
@@ -306,11 +312,11 @@ interface CVETracker {
 
 const criticalCVEs: CVETracker = {
   cve1: {
-    id: 'CVE-2024-001',
-    title: 'Arbitrary Code Execution via Unsafe Eval',
-    severity: 'critical',
+    id: "CVE-2024-001",
+    title: "Arbitrary Code Execution via Unsafe Eval",
+    severity: "critical",
     cvss: 9.8,
-    affectedComponents: ['agent-executor', 'plugin-loader'],
+    affectedComponents: ["agent-executor", "plugin-loader"],
     detection: `
       // Detect unsafe eval usage
       const patterns = [
@@ -330,16 +336,16 @@ const criticalCVEs: CVETracker = {
         });
       };
     `,
-    status: 'mitigated',
-    patchVersion: '3.0.0-alpha.15'
+    status: "mitigated",
+    patchVersion: "3.0.0-alpha.15",
   },
 
   cve2: {
-    id: 'CVE-2024-002',
-    title: 'Command Injection via Shell Metacharacters',
-    severity: 'critical',
+    id: "CVE-2024-002",
+    title: "Command Injection via Shell Metacharacters",
+    severity: "critical",
     cvss: 9.1,
-    affectedComponents: ['terminal-executor', 'bash-runner'],
+    affectedComponents: ["terminal-executor", "bash-runner"],
     detection: `
       // Detect unescaped shell commands
       const dangerousPatterns = [
@@ -361,16 +367,16 @@ const criticalCVEs: CVETracker = {
         });
       };
     `,
-    status: 'mitigated',
-    patchVersion: '3.0.0-alpha.16'
+    status: "mitigated",
+    patchVersion: "3.0.0-alpha.16",
   },
 
   cve3: {
-    id: 'CVE-2024-003',
-    title: 'Prototype Pollution in Config Merging',
-    severity: 'high',
+    id: "CVE-2024-003",
+    title: "Prototype Pollution in Config Merging",
+    severity: "high",
     cvss: 7.5,
-    affectedComponents: ['config-manager', 'plugin-config'],
+    affectedComponents: ["config-manager", "plugin-config"],
     detection: `
       // Detect unsafe object merging
       const patterns = [
@@ -395,9 +401,9 @@ const criticalCVEs: CVETracker = {
         return target;
       };
     `,
-    status: 'mitigated',
-    patchVersion: '3.0.0-alpha.14'
-  }
+    status: "mitigated",
+    patchVersion: "3.0.0-alpha.14",
+  },
 };
 
 // Automated CVE scanning
@@ -416,7 +422,7 @@ async function scanForCVEs(codebase: string[]): Promise<CVEFinding[]> {
             file,
             matches: matches.length,
             severity: cve.severity,
-            remediation: cve.remediation
+            remediation: cve.remediation,
           });
         }
       }
@@ -448,17 +454,17 @@ interface ClaimsBasedAuth {
 
 // Define authorization claims
 interface IdentityClaim {
-  sub: string;           // Subject (user ID)
-  iss: string;           // Issuer
-  aud: string[];         // Audience
-  iat: number;           // Issued at
-  exp: number;           // Expiration
-  nbf?: number;          // Not before
+  sub: string; // Subject (user ID)
+  iss: string; // Issuer
+  aud: string[]; // Audience
+  iat: number; // Issued at
+  exp: number; // Expiration
+  nbf?: number; // Not before
 }
 
 interface PermissionClaim {
-  resource: string;      // Resource identifier
-  actions: string[];     // Allowed actions
+  resource: string; // Resource identifier
+  actions: string[]; // Allowed actions
   conditions?: Condition[]; // Additional conditions
 }
 
@@ -469,7 +475,7 @@ class ClaimsAuthorizer {
   async authorize(
     principal: Principal,
     resource: string,
-    action: string
+    action: string,
   ): Promise<AuthorizationResult> {
     // 1. Extract claims from principal
     const claims = this.extractClaims(principal);
@@ -479,24 +485,24 @@ class ClaimsAuthorizer {
 
     // 3. Evaluate each policy
     const results = await Promise.all(
-      policies.map(p => this.evaluatePolicy(p, claims, resource, action))
+      policies.map((p) => this.evaluatePolicy(p, claims, resource, action)),
     );
 
     // 4. Combine results (deny overrides allow)
-    const denied = results.find(r => r.decision === 'deny');
+    const denied = results.find((r) => r.decision === "deny");
     if (denied) {
       return {
         allowed: false,
         reason: denied.reason,
-        policy: denied.policyId
+        policy: denied.policyId,
       };
     }
 
-    const allowed = results.find(r => r.decision === 'allow');
+    const allowed = results.find((r) => r.decision === "allow");
     return {
       allowed: !!allowed,
-      reason: allowed?.reason || 'No matching policy',
-      policy: allowed?.policyId
+      reason: allowed?.reason || "No matching policy",
+      policy: allowed?.policyId,
     };
   }
 
@@ -509,36 +515,36 @@ class ClaimsAuthorizer {
     // Store pattern for learning
     reasoningBank.storePattern({
       sessionId: `policy-${policy.id}`,
-      task: 'Define authorization policy',
+      task: "Define authorization policy",
       input: JSON.stringify(policy),
-      output: 'Policy defined successfully',
+      output: "Policy defined successfully",
       reward: 1.0,
       success: true,
-      critique: `Policy ${policy.id} covers ${policy.resources.length} resources`
+      critique: `Policy ${policy.id} covers ${policy.resources.length} resources`,
     });
   }
 }
 
 // Example policy definition
 const apiAccessPolicy: AuthorizationPolicy = {
-  id: 'api-access-policy',
-  description: 'Controls access to API endpoints',
-  resources: ['/api/*'],
-  actions: ['read', 'write', 'delete'],
+  id: "api-access-policy",
+  description: "Controls access to API endpoints",
+  resources: ["/api/*"],
+  actions: ["read", "write", "delete"],
   conditions: [
     {
-      type: 'claim',
-      claim: 'roles',
-      operator: 'contains',
-      value: 'api-user'
+      type: "claim",
+      claim: "roles",
+      operator: "contains",
+      value: "api-user",
     },
     {
-      type: 'time',
-      operator: 'between',
-      value: { start: '09:00', end: '17:00' }
-    }
+      type: "time",
+      operator: "between",
+      value: { start: "09:00", end: "17:00" },
+    },
   ],
-  effect: 'allow'
+  effect: "allow",
 };
 ```
 
@@ -571,7 +577,7 @@ class ZeroTrustSecurityManager {
       this.verifyDevice(request),
       this.verifyLocation(request),
       this.verifyBehavior(request),
-      this.verifyContext(request)
+      this.verifyContext(request),
     ];
 
     const results = await Promise.all(verifications);
@@ -589,7 +595,7 @@ class ZeroTrustSecurityManager {
       allowed: accessDecision.allowed,
       trustScore,
       requiredActions: accessDecision.requiredActions,
-      sessionConstraints: accessDecision.constraints
+      sessionConstraints: accessDecision.constraints,
     };
   }
 
@@ -597,24 +603,30 @@ class ZeroTrustSecurityManager {
   async enforceSegmentation(
     source: NetworkEntity,
     destination: NetworkEntity,
-    action: string
+    action: string,
   ): Promise<SegmentationResult> {
     // 1. Verify source identity
     const sourceVerified = await this.verifyIdentity(source);
     if (!sourceVerified.valid) {
-      return { allowed: false, reason: 'Source identity not verified' };
+      return { allowed: false, reason: "Source identity not verified" };
     }
 
     // 2. Check segment policies
-    const segmentPolicy = this.getSegmentPolicy(source.segment, destination.segment);
+    const segmentPolicy = this.getSegmentPolicy(
+      source.segment,
+      destination.segment,
+    );
     if (!segmentPolicy.allowsCommunication) {
-      return { allowed: false, reason: 'Segment policy denies communication' };
+      return { allowed: false, reason: "Segment policy denies communication" };
     }
 
     // 3. Verify action is permitted
     const actionAllowed = segmentPolicy.allowedActions.includes(action);
     if (!actionAllowed) {
-      return { allowed: false, reason: `Action '${action}' not permitted between segments` };
+      return {
+        allowed: false,
+        reason: `Action '${action}' not permitted between segments`,
+      };
     }
 
     // 4. Apply encryption requirements
@@ -624,7 +636,7 @@ class ZeroTrustSecurityManager {
       allowed: true,
       encryptionRequired,
       auditRequired: true,
-      maxSessionDuration: segmentPolicy.maxSessionDuration
+      maxSessionDuration: segmentPolicy.maxSessionDuration,
     };
   }
 
@@ -634,7 +646,7 @@ class ZeroTrustSecurityManager {
     const historicalPatterns = await agentDB.hnswSearch({
       query: `behavior patterns for ${entity.type}`,
       k: 20,
-      namespace: 'security_behavior'
+      namespace: "security_behavior",
     });
 
     // 2. Analyze current behavior
@@ -643,8 +655,8 @@ class ZeroTrustSecurityManager {
     // 3. Detect anomalies using Flash Attention
     const anomalies = await agentDB.flashAttention(
       currentBehavior.embedding,
-      historicalPatterns.map(p => p.embedding),
-      historicalPatterns.map(p => p.riskFactors)
+      historicalPatterns.map((p) => p.embedding),
+      historicalPatterns.map((p) => p.riskFactors),
     );
 
     // 4. Calculate risk score
@@ -654,7 +666,7 @@ class ZeroTrustSecurityManager {
       entityId: entity.id,
       riskScore,
       anomalies: anomalies.detected,
-      recommendations: this.generateRecommendations(riskScore, anomalies)
+      recommendations: this.generateRecommendations(riskScore, anomalies),
     };
   }
 }
@@ -667,15 +679,15 @@ class ZeroTrustSecurityManager {
 ```typescript
 // 1. Search for similar security patterns via HNSW
 const similarAssessments = await reasoningBank.searchPatterns({
-  task: 'Security assessment for authentication module',
+  task: "Security assessment for authentication module",
   k: 10,
   minReward: 0.85,
-  namespace: 'security'
+  namespace: "security",
 });
 
 if (similarAssessments.length > 0) {
-  console.log('Learning from past security assessments:');
-  similarAssessments.forEach(pattern => {
+  console.log("Learning from past security assessments:");
+  similarAssessments.forEach((pattern) => {
     console.log(`- ${pattern.task}: ${pattern.reward * 100}% success rate`);
     console.log(`  Key findings: ${pattern.critique}`);
   });
@@ -686,12 +698,12 @@ const securityFailures = await reasoningBank.searchPatterns({
   task: currentTask.description,
   onlyFailures: true,
   k: 5,
-  namespace: 'security'
+  namespace: "security",
 });
 
 if (securityFailures.length > 0) {
-  console.log('Avoiding past security mistakes:');
-  securityFailures.forEach(failure => {
+  console.log("Avoiding past security mistakes:");
+  securityFailures.forEach((failure) => {
     console.log(`- Vulnerability: ${failure.critique}`);
     console.log(`  Impact: ${failure.output}`);
   });
@@ -708,20 +720,28 @@ const relevantVulnerabilities = await agentDB.gnnEnhancedSearch(
     k: 15,
     graphContext: buildSecurityDependencyGraph(),
     gnnLayers: 3,
-    namespace: 'security'
-  }
+    namespace: "security",
+  },
 );
 
-console.log(`Context accuracy improved by ${relevantVulnerabilities.improvementPercent}%`);
-console.log(`Found ${relevantVulnerabilities.results.length} related vulnerabilities`);
+console.log(
+  `Context accuracy improved by ${relevantVulnerabilities.improvementPercent}%`,
+);
+console.log(
+  `Found ${relevantVulnerabilities.results.length} related vulnerabilities`,
+);
 
 // Build security dependency graph
 function buildSecurityDependencyGraph() {
   return {
     nodes: [authModule, sessionManager, dataValidator, cryptoService],
-    edges: [[0, 1], [1, 2], [0, 3]], // auth->session, session->validator, auth->crypto
+    edges: [
+      [0, 1],
+      [1, 2],
+      [0, 3],
+    ], // auth->session, session->validator, auth->crypto
     edgeWeights: [0.9, 0.7, 0.8],
-    nodeLabels: ['Authentication', 'Session', 'Validation', 'Cryptography']
+    nodeLabels: ["Authentication", "Session", "Validation", "Cryptography"],
   };
 }
 ```
@@ -732,14 +752,14 @@ function buildSecurityDependencyGraph() {
 // Store successful security patterns for future learning
 await reasoningBank.storePattern({
   sessionId: `security-architect-${Date.now()}`,
-  task: 'SQL injection vulnerability assessment',
+  task: "SQL injection vulnerability assessment",
   input: JSON.stringify(assessmentContext),
   output: JSON.stringify(findings),
   reward: calculateSecurityEffectiveness(findings),
   success: criticalVulns === 0 && highVulns < 3,
   critique: generateSecurityCritique(findings),
   tokensUsed: tokenCount,
-  latencyMs: assessmentDuration
+  latencyMs: assessmentDuration,
 });
 
 function calculateSecurityEffectiveness(findings) {
@@ -772,20 +792,27 @@ const securityConsensus = await securityCoordinator.coordinateAgents(
     myThreatAssessment,
     securityAuditorFindings,
     codeReviewerSecurityNotes,
-    pentesterResults
+    pentesterResults,
   ],
-  'flash' // 2.49x-7.47x faster coordination
+  "flash", // 2.49x-7.47x faster coordination
 );
 
 console.log(`Security team consensus: ${securityConsensus.consensus}`);
 console.log(`My assessment weight: ${securityConsensus.attentionWeights[0]}`);
-console.log(`Priority findings: ${securityConsensus.topAgents.map(a => a.name)}`);
+console.log(
+  `Priority findings: ${securityConsensus.topAgents.map((a) => a.name)}`,
+);
 
 // Merge findings with weighted importance
 const mergedFindings = securityConsensus.attentionWeights.map((weight, i) => ({
-  source: ['threat-model', 'audit', 'code-review', 'pentest'][i],
+  source: ["threat-model", "audit", "code-review", "pentest"][i],
   weight,
-  findings: [myThreatAssessment, securityAuditorFindings, codeReviewerSecurityNotes, pentesterResults][i]
+  findings: [
+    myThreatAssessment,
+    securityAuditorFindings,
+    codeReviewerSecurityNotes,
+    pentesterResults,
+  ][i],
 }));
 ```
 
@@ -793,41 +820,43 @@ const mergedFindings = securityConsensus.attentionWeights.map((weight, i) => ({
 
 ```javascript
 // Store security findings in coordinated memory
-mcp__claude-flow__memory_usage({
-  action: "store",
-  key: "swarm/security-architect/assessment",
-  namespace: "coordination",
-  value: JSON.stringify({
-    agent: "security-architect",
-    status: "completed",
-    threatModel: {
-      strideFindings: strideResults,
-      dreadScores: dreadScores,
-      criticalThreats: criticalThreats
-    },
-    cveStatus: {
-      cve1: "mitigated",
-      cve2: "mitigated",
-      cve3: "mitigated"
-    },
-    recommendations: securityRecommendations,
-    timestamp: Date.now()
-  })
-})
+mcp__claude -
+  flow__memory_usage({
+    action: "store",
+    key: "swarm/security-architect/assessment",
+    namespace: "coordination",
+    value: JSON.stringify({
+      agent: "security-architect",
+      status: "completed",
+      threatModel: {
+        strideFindings: strideResults,
+        dreadScores: dreadScores,
+        criticalThreats: criticalThreats,
+      },
+      cveStatus: {
+        cve1: "mitigated",
+        cve2: "mitigated",
+        cve3: "mitigated",
+      },
+      recommendations: securityRecommendations,
+      timestamp: Date.now(),
+    }),
+  });
 
 // Share with other security agents
-mcp__claude-flow__memory_usage({
-  action: "store",
-  key: "swarm/shared/security-findings",
-  namespace: "coordination",
-  value: JSON.stringify({
-    type: "security-assessment",
-    source: "security-architect",
-    patterns: ["zero-trust", "claims-auth", "micro-segmentation"],
-    vulnerabilities: vulnerabilityList,
-    remediations: remediationPlan
-  })
-})
+mcp__claude -
+  flow__memory_usage({
+    action: "store",
+    key: "swarm/shared/security-findings",
+    namespace: "coordination",
+    value: JSON.stringify({
+      type: "security-assessment",
+      source: "security-architect",
+      patterns: ["zero-trust", "claims-auth", "micro-segmentation"],
+      vulnerabilities: vulnerabilityList,
+      remediations: remediationPlan,
+    }),
+  });
 ```
 
 ## Security Scanning Commands

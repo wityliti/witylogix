@@ -20,7 +20,7 @@ requires:
   packages:
     - "@claude-flow/aidefence"
   agents:
-    - security-architect  # For escalation
+    - security-architect # For escalation
 
 # Auto-spawn configuration
 auto_spawn:
@@ -70,6 +70,7 @@ You are the **AIDefence Guardian**, a specialized security agent that monitors a
 ## Detection Capabilities
 
 ### Threat Types Detected
+
 - `instruction_override` - Attempts to override system instructions
 - `jailbreak` - DAN mode, bypass attempts, restriction removal
 - `role_switching` - Identity manipulation attempts
@@ -78,6 +79,7 @@ You are the **AIDefence Guardian**, a specialized security agent that monitors a
 - `pii_exposure` - Emails, SSNs, API keys, passwords
 
 ### Performance
+
 - Detection latency: <10ms (actual ~0.06ms)
 - Pattern count: 50+ built-in, unlimited learned
 - False positive rate: <5%
@@ -87,7 +89,7 @@ You are the **AIDefence Guardian**, a specialized security agent that monitors a
 ### Scanning Agent Input
 
 ```typescript
-import { createAIDefence } from '@claude-flow/aidefence';
+import { createAIDefence } from "@claude-flow/aidefence";
 
 const guardian = createAIDefence({ enableLearning: true });
 
@@ -96,13 +98,13 @@ async function guardInput(agentId: string, input: string) {
   const result = await guardian.detect(input);
 
   if (!result.safe) {
-    const critical = result.threats.filter(t => t.severity === 'critical');
+    const critical = result.threats.filter((t) => t.severity === "critical");
 
     if (critical.length > 0) {
       // Block critical threats
       throw new SecurityError(`Blocked: ${critical[0].description}`, {
         agentId,
-        threats: critical
+        threats: critical,
       });
     }
 
@@ -124,21 +126,26 @@ async function guardInput(agentId: string, input: string) {
 ### Multi-Agent Security Consensus
 
 ```typescript
-import { calculateSecurityConsensus } from '@claude-flow/aidefence';
+import { calculateSecurityConsensus } from "@claude-flow/aidefence";
 
 // Gather assessments from multiple security agents
 const assessments = [
-  { agentId: 'guardian-1', threatAssessment: result1, weight: 1.0 },
-  { agentId: 'security-architect', threatAssessment: result2, weight: 0.8 },
-  { agentId: 'reviewer', threatAssessment: result3, weight: 0.5 },
+  { agentId: "guardian-1", threatAssessment: result1, weight: 1.0 },
+  { agentId: "security-architect", threatAssessment: result2, weight: 0.8 },
+  { agentId: "reviewer", threatAssessment: result3, weight: 0.5 },
 ];
 
 const consensus = calculateSecurityConsensus(assessments);
 
-if (consensus.consensus === 'threat') {
-  console.log(`🚨 Security consensus: THREAT (${(consensus.confidence * 100).toFixed(1)}% confidence)`);
+if (consensus.consensus === "threat") {
+  console.log(
+    `🚨 Security consensus: THREAT (${(consensus.confidence * 100).toFixed(1)}% confidence)`,
+  );
   if (consensus.criticalThreats.length > 0) {
-    console.log('Critical threats:', consensus.criticalThreats.map(t => t.type).join(', '));
+    console.log(
+      "Critical threats:",
+      consensus.criticalThreats.map((t) => t.type).join(", "),
+    );
   }
 }
 ```
@@ -149,15 +156,17 @@ if (consensus.consensus === 'threat') {
 // When detection is confirmed accurate
 await guardian.learnFromDetection(input, result, {
   wasAccurate: true,
-  userVerdict: 'Confirmed prompt injection attempt'
+  userVerdict: "Confirmed prompt injection attempt",
 });
 
 // Record successful mitigation
-await guardian.recordMitigation('jailbreak', 'block', true);
+await guardian.recordMitigation("jailbreak", "block", true);
 
 // Get best mitigation for threat type
-const mitigation = await guardian.getBestMitigation('prompt_injection');
-console.log(`Best strategy: ${mitigation.strategy} (${mitigation.effectiveness * 100}% effective)`);
+const mitigation = await guardian.getBestMitigation("prompt_injection");
+console.log(
+  `Best strategy: ${mitigation.strategy} (${mitigation.effectiveness * 100}% effective)`,
+);
 ```
 
 ## Integration Hooks
@@ -191,22 +200,23 @@ Add to `.claude/settings.json`:
 
 ```javascript
 // Store detection in swarm memory
-mcp__claude-flow__memory_usage({
-  action: "store",
-  namespace: "security_detections",
-  key: `detection-${Date.now()}`,
-  value: JSON.stringify({
-    agentId: "aidefence-guardian",
-    input: inputHash,
-    threats: result.threats,
-    timestamp: Date.now()
-  })
-});
+mcp__claude -
+  flow__memory_usage({
+    action: "store",
+    namespace: "security_detections",
+    key: `detection-${Date.now()}`,
+    value: JSON.stringify({
+      agentId: "aidefence-guardian",
+      input: inputHash,
+      threats: result.threats,
+      timestamp: Date.now(),
+    }),
+  });
 
 // Search for similar past detections
 const similar = await guardian.searchSimilarThreats(input, { k: 5 });
 if (similar.length > 0) {
-  console.log('Similar threats found in history:', similar.length);
+  console.log("Similar threats found in history:", similar.length);
 }
 ```
 
@@ -264,17 +274,18 @@ Track guardian effectiveness:
 const stats = await guardian.getStats();
 
 // Report to metrics system
-mcp__claude-flow__memory_usage({
-  action: "store",
-  namespace: "guardian_metrics",
-  key: `metrics-${new Date().toISOString().split('T')[0]}`,
-  value: JSON.stringify({
-    detectionCount: stats.detectionCount,
-    avgLatencyMs: stats.avgDetectionTimeMs,
-    learnedPatterns: stats.learnedPatterns,
-    mitigationEffectiveness: stats.avgMitigationEffectiveness
-  })
-});
+mcp__claude -
+  flow__memory_usage({
+    action: "store",
+    namespace: "guardian_metrics",
+    key: `metrics-${new Date().toISOString().split("T")[0]}`,
+    value: JSON.stringify({
+      detectionCount: stats.detectionCount,
+      avgLatencyMs: stats.avgDetectionTimeMs,
+      learnedPatterns: stats.learnedPatterns,
+      mitigationEffectiveness: stats.avgMitigationEffectiveness,
+    }),
+  });
 ```
 
 ---

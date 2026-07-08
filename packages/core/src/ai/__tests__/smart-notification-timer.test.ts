@@ -21,7 +21,10 @@ import {
   SendTimeOptimizer,
   type NotificationOutcome,
 } from "../smart-notification-timer.js";
-import { NotificationChannel, NotificationCategory } from "../../notifications/notification-types.js";
+import {
+  NotificationChannel,
+  NotificationCategory,
+} from "../../notifications/notification-types.js";
 
 describe("Smart Notification Timer", () => {
   let optimizer: SendTimeOptimizer;
@@ -36,8 +39,18 @@ describe("Smart Notification Timer", () => {
 
   describe("User Activity Tracker", () => {
     it("should record notification sends", () => {
-      tracker.recordSent("user_1", NotificationChannel.EMAIL, NotificationCategory.ORDER, "America/New_York");
-      tracker.recordSent("user_1", NotificationChannel.EMAIL, NotificationCategory.ORDER, "America/New_York");
+      tracker.recordSent(
+        "user_1",
+        NotificationChannel.EMAIL,
+        NotificationCategory.ORDER,
+        "America/New_York",
+      );
+      tracker.recordSent(
+        "user_1",
+        NotificationChannel.EMAIL,
+        NotificationCategory.ORDER,
+        "America/New_York",
+      );
 
       const activity = tracker.getActivity("user_1", NotificationChannel.EMAIL);
       expect(activity).toBeDefined();
@@ -48,20 +61,36 @@ describe("Smart Notification Timer", () => {
       const sentAt = new Date("2026-03-17T09:00:00Z");
       const openedAt = new Date("2026-03-17T09:15:00Z");
 
-      tracker.recordOpened("user_1", NotificationChannel.EMAIL, NotificationCategory.ORDER, "America/New_York", sentAt, openedAt);
+      tracker.recordOpened(
+        "user_1",
+        NotificationChannel.EMAIL,
+        NotificationCategory.ORDER,
+        "America/New_York",
+        sentAt,
+        openedAt,
+      );
 
       const activity = tracker.getActivity("user_1", NotificationChannel.EMAIL);
       expect(activity).toBeDefined();
       expect(activity!.totalNotificationsOpened).toBe(1);
       expect(activity!.averageResponseTimeMs).toBeGreaterThan(0);
-      expect(activity!.averageResponseTimeMs).toBeLessThanOrEqual(15 * 60 * 1000); // <= 15 minutes
+      expect(activity!.averageResponseTimeMs).toBeLessThanOrEqual(
+        15 * 60 * 1000,
+      ); // <= 15 minutes
     });
 
     it("should record notification clicks with response time", () => {
       const sentAt = new Date("2026-03-17T09:00:00Z");
       const clickedAt = new Date("2026-03-17T09:30:00Z");
 
-      tracker.recordClicked("user_1", NotificationChannel.SMS, NotificationCategory.DELIVERY, "UTC", sentAt, clickedAt);
+      tracker.recordClicked(
+        "user_1",
+        NotificationChannel.SMS,
+        NotificationCategory.DELIVERY,
+        "UTC",
+        sentAt,
+        clickedAt,
+      );
 
       const activity = tracker.getActivity("user_1", NotificationChannel.SMS);
       expect(activity).toBeDefined();
@@ -73,19 +102,51 @@ describe("Smart Notification Timer", () => {
       const sentAt = new Date("2026-03-17T09:00:00Z");
       const openedAt = new Date("2026-03-17T09:10:00Z");
 
-      tracker.recordOpened("user_1", NotificationChannel.PUSH, NotificationCategory.ORDER, "UTC", sentAt, openedAt);
-      tracker.recordOpened("user_1", NotificationChannel.PUSH, NotificationCategory.ORDER, "UTC", sentAt, openedAt);
-      tracker.recordOpened("user_1", NotificationChannel.PUSH, NotificationCategory.MARKETING, "UTC", sentAt, openedAt);
+      tracker.recordOpened(
+        "user_1",
+        NotificationChannel.PUSH,
+        NotificationCategory.ORDER,
+        "UTC",
+        sentAt,
+        openedAt,
+      );
+      tracker.recordOpened(
+        "user_1",
+        NotificationChannel.PUSH,
+        NotificationCategory.ORDER,
+        "UTC",
+        sentAt,
+        openedAt,
+      );
+      tracker.recordOpened(
+        "user_1",
+        NotificationChannel.PUSH,
+        NotificationCategory.MARKETING,
+        "UTC",
+        sentAt,
+        openedAt,
+      );
 
       const activity = tracker.getActivity("user_1", NotificationChannel.PUSH);
       expect(activity).toBeDefined();
-      expect(activity!.categoryPerformance[NotificationCategory.ORDER]).toBeDefined();
-      expect(activity!.categoryPerformance[NotificationCategory.ORDER].openCount).toBe(2);
-      expect(activity!.categoryPerformance[NotificationCategory.MARKETING].openCount).toBe(1);
+      expect(
+        activity!.categoryPerformance[NotificationCategory.ORDER],
+      ).toBeDefined();
+      expect(
+        activity!.categoryPerformance[NotificationCategory.ORDER].openCount,
+      ).toBe(2);
+      expect(
+        activity!.categoryPerformance[NotificationCategory.MARKETING].openCount,
+      ).toBe(1);
     });
 
     it("should initialize day-of-week activity with 7 days", () => {
-      tracker.recordSent("user_1", NotificationChannel.EMAIL, NotificationCategory.ORDER, "America/New_York");
+      tracker.recordSent(
+        "user_1",
+        NotificationChannel.EMAIL,
+        NotificationCategory.ORDER,
+        "America/New_York",
+      );
       const activity = tracker.getActivity("user_1", NotificationChannel.EMAIL);
 
       expect(activity).toBeDefined();
@@ -104,14 +165,30 @@ describe("Smart Notification Timer", () => {
 
       // Record 10 sends and 7 opens = 70% open rate
       for (let i = 0; i < 7; i++) {
-        tracker.recordOpened("user_2", NotificationChannel.EMAIL, NotificationCategory.ORDER, "UTC", sentAt, openedAt);
+        tracker.recordOpened(
+          "user_2",
+          NotificationChannel.EMAIL,
+          NotificationCategory.ORDER,
+          "UTC",
+          sentAt,
+          openedAt,
+        );
       }
       for (let i = 0; i < 3; i++) {
-        tracker.recordSent("user_2", NotificationChannel.EMAIL, NotificationCategory.ORDER, "UTC");
+        tracker.recordSent(
+          "user_2",
+          NotificationChannel.EMAIL,
+          NotificationCategory.ORDER,
+          "UTC",
+        );
       }
 
       const scorer = new EngagementScorer(tracker);
-      const score = scorer.scoreEngagement("user_2", NotificationChannel.EMAIL, NotificationCategory.ORDER);
+      const score = scorer.scoreEngagement(
+        "user_2",
+        NotificationChannel.EMAIL,
+        NotificationCategory.ORDER,
+      );
 
       expect(score).toBeDefined();
       expect(score.factors.openRatePercent).toBeGreaterThan(0);
@@ -120,7 +197,11 @@ describe("Smart Notification Timer", () => {
 
     it("should return default score for new users with no data", () => {
       const scorer = new EngagementScorer(tracker);
-      const score = scorer.scoreEngagement("unknown_user", NotificationChannel.EMAIL, NotificationCategory.ORDER);
+      const score = scorer.scoreEngagement(
+        "unknown_user",
+        NotificationChannel.EMAIL,
+        NotificationCategory.ORDER,
+      );
 
       expect(score).toBeDefined();
       expect(score.overallScore).toBe(50); // neutral default
@@ -131,10 +212,21 @@ describe("Smart Notification Timer", () => {
       const sentAt = new Date("2026-03-17T09:00:00Z");
       const quickOpenAt = new Date("2026-03-17T09:05:00Z");
 
-      tracker.recordOpened("user_3", NotificationChannel.PUSH, NotificationCategory.ORDER, "UTC", sentAt, quickOpenAt);
+      tracker.recordOpened(
+        "user_3",
+        NotificationChannel.PUSH,
+        NotificationCategory.ORDER,
+        "UTC",
+        sentAt,
+        quickOpenAt,
+      );
 
       const scorer = new EngagementScorer(tracker);
-      const score = scorer.scoreEngagement("user_3", NotificationChannel.PUSH, NotificationCategory.ORDER);
+      const score = scorer.scoreEngagement(
+        "user_3",
+        NotificationChannel.PUSH,
+        NotificationCategory.ORDER,
+      );
 
       expect(score.factors.responseTimeFactor).toBeGreaterThan(0.3);
     });
@@ -149,7 +241,7 @@ describe("Smart Notification Timer", () => {
         "new_user",
         NotificationChannel.EMAIL,
         NotificationCategory.ORDER,
-        "America/New_York"
+        "America/New_York",
       );
 
       expect(recommendation).toBeDefined();
@@ -167,7 +259,14 @@ describe("Smart Notification Timer", () => {
         date.setHours(9);
         const openDate = new Date(date);
         openDate.setMinutes(openDate.getMinutes() + 10);
-        tracker.recordOpened("user_4", NotificationChannel.EMAIL, NotificationCategory.ORDER, "UTC", date, openDate);
+        tracker.recordOpened(
+          "user_4",
+          NotificationChannel.EMAIL,
+          NotificationCategory.ORDER,
+          "UTC",
+          date,
+          openDate,
+        );
       }
 
       const predictor = optimizer.getTimePredictor();
@@ -175,7 +274,7 @@ describe("Smart Notification Timer", () => {
         "user_4",
         NotificationChannel.EMAIL,
         NotificationCategory.ORDER,
-        "America/New_York"
+        "America/New_York",
       );
 
       expect(recommendation.confidence).toBeGreaterThan(50);
@@ -183,17 +282,24 @@ describe("Smart Notification Timer", () => {
     });
 
     it("should include day-of-week factors in reasoning", () => {
-      tracker.recordSent("user_5", NotificationChannel.EMAIL, NotificationCategory.ORDER, "UTC");
+      tracker.recordSent(
+        "user_5",
+        NotificationChannel.EMAIL,
+        NotificationCategory.ORDER,
+        "UTC",
+      );
       const predictor = optimizer.getTimePredictor();
       const recommendation = predictor.predictOptimalTime(
         "user_5",
         NotificationChannel.EMAIL,
         NotificationCategory.ORDER,
-        "America/New_York"
+        "America/New_York",
       );
 
       expect(recommendation.reasoning.dayOfWeekFactors).toBeDefined();
-      expect(Object.keys(recommendation.reasoning.dayOfWeekFactors).length).toBe(7);
+      expect(
+        Object.keys(recommendation.reasoning.dayOfWeekFactors).length,
+      ).toBe(7);
     });
   });
 
@@ -206,25 +312,49 @@ describe("Smart Notification Timer", () => {
 
       // Email gets higher engagement
       for (let i = 0; i < 8; i++) {
-        tracker.recordOpened("user_6", NotificationChannel.EMAIL, NotificationCategory.ORDER, "UTC", sentAt, openedAt);
+        tracker.recordOpened(
+          "user_6",
+          NotificationChannel.EMAIL,
+          NotificationCategory.ORDER,
+          "UTC",
+          sentAt,
+          openedAt,
+        );
       }
 
       // SMS gets lower engagement
       for (let i = 0; i < 3; i++) {
-        tracker.recordOpened("user_6", NotificationChannel.SMS, NotificationCategory.ORDER, "UTC", sentAt, openedAt);
+        tracker.recordOpened(
+          "user_6",
+          NotificationChannel.SMS,
+          NotificationCategory.ORDER,
+          "UTC",
+          sentAt,
+          openedAt,
+        );
       }
 
       const learner = optimizer.getChannelLearner();
-      const preference = learner.learnChannelPreference("user_6", NotificationCategory.ORDER, [NotificationChannel.EMAIL, NotificationChannel.SMS]);
+      const preference = learner.learnChannelPreference(
+        "user_6",
+        NotificationCategory.ORDER,
+        [NotificationChannel.EMAIL, NotificationChannel.SMS],
+      );
 
       expect(preference.channelRanking).toBeDefined();
       expect(preference.channelRanking.length).toBeGreaterThan(0);
-      expect(preference.channelRanking[0].channel).toBe(NotificationChannel.EMAIL);
+      expect(preference.channelRanking[0].channel).toBe(
+        NotificationChannel.EMAIL,
+      );
     });
 
     it("should recommend digest for low-engagement channels", () => {
       const learner = optimizer.getChannelLearner();
-      const preference = learner.learnChannelPreference("new_user_digest", NotificationCategory.ORDER, [NotificationChannel.EMAIL]);
+      const preference = learner.learnChannelPreference(
+        "new_user_digest",
+        NotificationCategory.ORDER,
+        [NotificationChannel.EMAIL],
+      );
 
       // New users with no data should consider digest
       if (preference.shouldUseDigest) {
@@ -241,7 +371,7 @@ describe("Smart Notification Timer", () => {
         "user_7",
         NotificationCategory.ORDER,
         "America/New_York",
-        [NotificationChannel.EMAIL, NotificationChannel.PUSH]
+        [NotificationChannel.EMAIL, NotificationChannel.PUSH],
       );
 
       expect(recommendation).toBeDefined();
@@ -261,7 +391,9 @@ describe("Smart Notification Timer", () => {
 
       optimizer.recordOutcome(outcome);
 
-      const activity = optimizer.getActivityTracker().getActivity("user_8", NotificationChannel.EMAIL);
+      const activity = optimizer
+        .getActivityTracker()
+        .getActivity("user_8", NotificationChannel.EMAIL);
       expect(activity).toBeDefined();
       expect(activity!.totalNotificationsOpened).toBe(1);
     });
@@ -276,7 +408,9 @@ describe("Smart Notification Timer", () => {
 
       optimizer.recordOutcome(outcome);
 
-      const activity = optimizer.getActivityTracker().getActivity("user_9", NotificationChannel.SMS);
+      const activity = optimizer
+        .getActivityTracker()
+        .getActivity("user_9", NotificationChannel.SMS);
       expect(activity).toBeDefined();
       expect(activity!.totalNotificationsSent).toBe(1);
       expect(activity!.totalNotificationsOpened).toBe(0);
@@ -296,7 +430,7 @@ describe("Smart Notification Timer", () => {
         ],
         NotificationCategory.ORDER,
         [NotificationChannel.EMAIL, NotificationChannel.PUSH],
-        60
+        60,
       );
 
       expect(schedule).toBeDefined();
@@ -316,11 +450,13 @@ describe("Smart Notification Timer", () => {
         recipients,
         NotificationCategory.MARKETING,
         [NotificationChannel.EMAIL],
-        120
+        120,
       );
 
       // Recipients should be sorted by recommended time
-      const times = schedule.recipients.map((r) => r.recommendedTimestampUTC.getTime());
+      const times = schedule.recipients.map((r) =>
+        r.recommendedTimestampUTC.getTime(),
+      );
       for (let i = 1; i < times.length; i++) {
         expect(times[i]).toBeGreaterThanOrEqual(times[i - 1]);
       }
@@ -335,7 +471,7 @@ describe("Smart Notification Timer", () => {
         ],
         NotificationCategory.DELIVERY,
         [NotificationChannel.PUSH],
-        60
+        60,
       );
 
       expect(schedule.reasoning.peakHours).toBeDefined();
@@ -374,15 +510,23 @@ describe("Smart Notification Timer", () => {
         "user_complete",
         NotificationCategory.ORDER,
         "UTC",
-        [NotificationChannel.EMAIL, NotificationChannel.PUSH]
+        [NotificationChannel.EMAIL, NotificationChannel.PUSH],
       );
 
       expect(recommendation.confidence).toBeGreaterThan(30);
     });
 
     it("should work across multiple channels and categories", () => {
-      const channels = [NotificationChannel.EMAIL, NotificationChannel.SMS, NotificationChannel.PUSH];
-      const categories = [NotificationCategory.ORDER, NotificationCategory.DELIVERY, NotificationCategory.MARKETING];
+      const channels = [
+        NotificationChannel.EMAIL,
+        NotificationChannel.SMS,
+        NotificationChannel.PUSH,
+      ];
+      const categories = [
+        NotificationCategory.ORDER,
+        NotificationCategory.DELIVERY,
+        NotificationCategory.MARKETING,
+      ];
 
       // Record diverse activity
       const sentAt = new Date("2026-03-17T09:00:00Z");
@@ -390,11 +534,21 @@ describe("Smart Notification Timer", () => {
 
       for (const channel of channels) {
         for (const category of categories) {
-          tracker.recordOpened("user_diverse", channel, category, "UTC", sentAt, openedAt);
+          tracker.recordOpened(
+            "user_diverse",
+            channel,
+            category,
+            "UTC",
+            sentAt,
+            openedAt,
+          );
         }
       }
 
-      const activity = tracker.getActivity("user_diverse", NotificationChannel.EMAIL);
+      const activity = tracker.getActivity(
+        "user_diverse",
+        NotificationChannel.EMAIL,
+      );
       expect(activity).toBeDefined();
       expect(Object.keys(activity!.categoryPerformance).length).toBe(3);
     });

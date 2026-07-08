@@ -55,12 +55,12 @@ export function IdleTimeChart({
   // Get max value for X scale
   const maxValue = Math.max(
     ...(data.map((d) => d.idleHours) || [10]),
-    fleetAverage || 10
+    fleetAverage || 10,
   );
 
   // Calculate bar heights
   const barHeight = Math.max((chartHeight / sortedData.length) * 0.7, 16);
-  const barGap = (chartHeight / sortedData.length) - barHeight;
+  const barGap = chartHeight / sortedData.length - barHeight;
 
   // Get color based on idle hours
   const getBarColor = (hours: number) => {
@@ -71,13 +71,17 @@ export function IdleTimeChart({
 
   // Calculate average if not provided
   const calculatedAverage =
-    fleetAverage || (sortedData.reduce((sum, d) => sum + d.idleHours, 0) / sortedData.length || 0);
+    fleetAverage ||
+    sortedData.reduce((sum, d) => sum + d.idleHours, 0) / sortedData.length ||
+    0;
   const averageX = padding.left + (calculatedAverage / maxValue) * chartWidth;
 
   return (
     <div ref={containerRef} className={cn("w-full", className)}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-wl-text-primary">Vehicle Idle Time</h3>
+        <h3 className="font-semibold text-wl-text-primary">
+          Vehicle Idle Time
+        </h3>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-xs">
             <div className="w-2 h-2 rounded-full bg-wl-success-400" />
@@ -176,7 +180,8 @@ export function IdleTimeChart({
 
         {/* Bars */}
         {sortedData.map((vehicle, i) => {
-          const y = padding.top + (chartHeight / sortedData.length) * i + barGap / 2;
+          const y =
+            padding.top + (chartHeight / sortedData.length) * i + barGap / 2;
           const barWidth = (vehicle.idleHours / maxValue) * chartWidth;
           const isHovered = hoveredBar === vehicle.vehicleId;
 
@@ -218,7 +223,7 @@ export function IdleTimeChart({
                 className={cn(
                   "text-wl-text-primary transition-opacity",
                   isHovered && "opacity-100",
-                  !isHovered && "opacity-80"
+                  !isHovered && "opacity-80",
                 )}
               >
                 {vehicle.vehicleName}
@@ -248,7 +253,11 @@ export function IdleTimeChart({
               {Math.max(...sortedData.map((d) => d.idleHours)).toFixed(1)}h
             </div>
             <div className="text-wl-text-secondary">
-              {sortedData.reduce((max, d) => (d.idleHours > max.idleHours ? d : max)).vehicleName}
+              {
+                sortedData.reduce((max, d) =>
+                  d.idleHours > max.idleHours ? d : max,
+                ).vehicleName
+              }
             </div>
           </div>
           <div className="p-3 rounded-lg bg-wl-bg-overlay border border-wl-border-default">
@@ -264,7 +273,11 @@ export function IdleTimeChart({
               {Math.min(...sortedData.map((d) => d.idleHours)).toFixed(1)}h
             </div>
             <div className="text-wl-text-secondary">
-              {sortedData.reduce((min, d) => (d.idleHours < min.idleHours ? d : min)).vehicleName}
+              {
+                sortedData.reduce((min, d) =>
+                  d.idleHours < min.idleHours ? d : min,
+                ).vehicleName
+              }
             </div>
           </div>
         </div>

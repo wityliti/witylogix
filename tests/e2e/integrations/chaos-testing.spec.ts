@@ -73,7 +73,7 @@ class ChaosTestingPageObject {
     name: string,
     provider: string,
     faultType: string,
-    durationMs: number
+    durationMs: number,
   ): ChaosScenarioUI {
     const scenario: ChaosScenarioUI = {
       id: `chaos-${Date.now()}`,
@@ -90,9 +90,7 @@ class ChaosTestingPageObject {
   }
 
   selectScenario(scenarioId: string): boolean {
-    const scenario = this.scenarios.find(
-      (s) => s.id === scenarioId
-    );
+    const scenario = this.scenarios.find((s) => s.id === scenarioId);
 
     if (!scenario) {
       return false;
@@ -135,16 +133,11 @@ class ChaosTestingPageObject {
     }
 
     // Simulate progress
-    this.executionProgress = Math.min(
-      100,
-      this.executionProgress + 5
-    );
+    this.executionProgress = Math.min(100, this.executionProgress + 5);
 
     const elapsedTime =
-      (this.executionProgress / 100) *
-      this.activeScenario.duration;
-    const remainingTime =
-      this.activeScenario.duration - elapsedTime;
+      (this.executionProgress / 100) * this.activeScenario.duration;
+    const remainingTime = this.activeScenario.duration - elapsedTime;
 
     return {
       scenarioId: this.activeScenario.id,
@@ -155,9 +148,7 @@ class ChaosTestingPageObject {
     };
   }
 
-  getExecutionMetrics(
-    scenarioId: string
-  ): {
+  getExecutionMetrics(scenarioId: string): {
     affectedRequests: number;
     failoverCount: number;
     circuitBreakerTripped: boolean;
@@ -180,8 +171,7 @@ class ChaosTestingPageObject {
       affectedRequests: Math.floor(Math.random() * 1000),
       failoverCount: Math.floor(Math.random() * 10),
       circuitBreakerTripped:
-        this.activeScenario.faultType === "error" &&
-        Math.random() > 0.5,
+        this.activeScenario.faultType === "error" && Math.random() > 0.5,
       avgLatency:
         this.activeScenario.faultType === "latency"
           ? 5000 + Math.random() * 2000
@@ -292,9 +282,9 @@ describe("E2E: Chaos Testing", () => {
       const scenarios = page.getScenarioList();
 
       scenarios.forEach((scenario) => {
-        expect(
-          ["ready", "running", "completed", "stopped"]
-        ).toContain(scenario.status);
+        expect(["ready", "running", "completed", "stopped"]).toContain(
+          scenario.status,
+        );
       });
     });
   });
@@ -307,7 +297,7 @@ describe("E2E: Chaos Testing", () => {
         "Custom Latency Test",
         "Braintree",
         "latency",
-        300000
+        300000,
       );
 
       expect(scenario.id).toBeDefined();
@@ -322,19 +312,19 @@ describe("E2E: Chaos Testing", () => {
         "Latency",
         "Stripe",
         "latency",
-        300000
+        300000,
       );
       const error = page.createCustomScenario(
         "Error",
         "PayPal",
         "error",
-        300000
+        300000,
       );
       const timeout = page.createCustomScenario(
         "Timeout",
         "Square",
         "timeout",
-        300000
+        300000,
       );
 
       expect(latency.faultType).toBe("latency");
@@ -349,13 +339,13 @@ describe("E2E: Chaos Testing", () => {
         "Short Test",
         "Stripe",
         "latency",
-        60000
+        60000,
       );
       const longTest = page.createCustomScenario(
         "Long Test",
         "PayPal",
         "error",
-        3600000
+        3600000,
       );
 
       expect(shortTest.duration).toBe(60000);
@@ -404,12 +394,8 @@ describe("E2E: Chaos Testing", () => {
       const progress2 = page.getExecutionProgress();
       const progress3 = page.getExecutionProgress();
 
-      expect(progress1.progress).toBeLessThanOrEqual(
-        progress2.progress
-      );
-      expect(progress2.progress).toBeLessThanOrEqual(
-        progress3.progress
-      );
+      expect(progress1.progress).toBeLessThanOrEqual(progress2.progress);
+      expect(progress2.progress).toBeLessThanOrEqual(progress3.progress);
     });
 
     it("should display elapsed and remaining time", () => {
@@ -424,7 +410,7 @@ describe("E2E: Chaos Testing", () => {
       expect(progress.remainingTime).toBeGreaterThanOrEqual(0);
       expect(progress.elapsedTime + progress.remainingTime).toBeCloseTo(
         scenarios[0].duration,
-        0
+        0,
       );
     });
 
@@ -450,9 +436,7 @@ describe("E2E: Chaos Testing", () => {
       const scenarios = page.getScenarioList();
       page.executeScenario(scenarios[0].id);
 
-      const metrics = page.getExecutionMetrics(
-        scenarios[0].id
-      );
+      const metrics = page.getExecutionMetrics(scenarios[0].id);
 
       expect(metrics.affectedRequests).toBeGreaterThanOrEqual(0);
       expect(metrics.failoverCount).toBeGreaterThanOrEqual(0);
@@ -465,13 +449,9 @@ describe("E2E: Chaos Testing", () => {
       const scenarios = page.getScenarioList();
       page.executeScenario(scenarios[0].id);
 
-      const metrics = page.getExecutionMetrics(
-        scenarios[0].id
-      );
+      const metrics = page.getExecutionMetrics(scenarios[0].id);
 
-      expect(
-        typeof metrics.circuitBreakerTripped
-      ).toBe("boolean");
+      expect(typeof metrics.circuitBreakerTripped).toBe("boolean");
     });
 
     it("should display impact metrics", () => {
@@ -480,9 +460,7 @@ describe("E2E: Chaos Testing", () => {
       const scenarios = page.getScenarioList();
       page.executeScenario(scenarios[0].id);
 
-      const metrics = page.getExecutionMetrics(
-        scenarios[0].id
-      );
+      const metrics = page.getExecutionMetrics(scenarios[0].id);
 
       expect(metrics.avgLatency).toBeDefined();
       expect(metrics.errorRate).toBeDefined();
@@ -546,16 +524,12 @@ describe("E2E: Chaos Testing", () => {
       let lastProgress = 0;
       for (let i = 0; i < 5; i++) {
         const progress = page.getExecutionProgress();
-        expect(progress.progress).toBeGreaterThanOrEqual(
-          lastProgress
-        );
+        expect(progress.progress).toBeGreaterThanOrEqual(lastProgress);
         lastProgress = progress.progress;
       }
 
       // View metrics
-      const metrics = page.getExecutionMetrics(
-        scenarios[0].id
-      );
+      const metrics = page.getExecutionMetrics(scenarios[0].id);
       expect(metrics.affectedRequests).toBeGreaterThanOrEqual(0);
 
       // Get results

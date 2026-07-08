@@ -65,7 +65,7 @@ describe("DATClient", () => {
       expect(token).toBe("test-token");
       expect(mockFetch).toHaveBeenCalledWith(
         "https://api.dat.com/oauth/token",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -132,8 +132,20 @@ describe("DATClient", () => {
       });
 
       const load = await client.postLoad({
-        origin: { city: "Los Angeles", state: "CA", postalCode: "90001", country: "US", address: "" },
-        destination: { city: "Dallas", state: "TX", postalCode: "75001", country: "US", address: "" },
+        origin: {
+          city: "Los Angeles",
+          state: "CA",
+          postalCode: "90001",
+          country: "US",
+          address: "",
+        },
+        destination: {
+          city: "Dallas",
+          state: "TX",
+          postalCode: "75001",
+          country: "US",
+          address: "",
+        },
         equipmentType: "dry_van" as any,
         weight: 20000,
         length: 53,
@@ -160,7 +172,7 @@ describe("DATClient", () => {
           weight: 20000,
           shipper: { name: "", email: "", phone: "" },
           receiver: { name: "", email: "", phone: "" },
-        })
+        }),
       ).rejects.toThrow("Origin and destination are required");
     });
 
@@ -250,7 +262,10 @@ describe("DATClient", () => {
         }),
       });
 
-      const loads = await client.searchLoads({ origin: "ZZ", destination: "ZZ" });
+      const loads = await client.searchLoads({
+        origin: "ZZ",
+        destination: "ZZ",
+      });
       expect(loads).toHaveLength(0);
     });
   });
@@ -373,7 +388,13 @@ describe("DATClient", () => {
             usdotNumber: "67890",
             businessType: "for_hire",
             contact: { name: "", email: "", phone: "" },
-            headquarters: { city: "", state: "", postalCode: "", country: "", address: "" },
+            headquarters: {
+              city: "",
+              state: "",
+              postalCode: "",
+              country: "",
+              address: "",
+            },
             equipmentTypes: ["dry_van"],
             overallRating: 85,
             ratings: new Map(),
@@ -403,7 +424,13 @@ describe("DATClient", () => {
               mcNumber: "111",
               businessType: "for_hire",
               contact: { name: "", email: "", phone: "" },
-              headquarters: { city: "", state: "", postalCode: "", country: "", address: "" },
+              headquarters: {
+                city: "",
+                state: "",
+                postalCode: "",
+                country: "",
+                address: "",
+              },
               equipmentTypes: ["dry_van"],
               overallRating: 80,
               ratings: new Map(),
@@ -432,7 +459,13 @@ describe("DATClient", () => {
             mcNumber: "12345",
             businessType: "for_hire",
             contact: { name: "", email: "", phone: "" },
-            headquarters: { city: "", state: "", postalCode: "", country: "", address: "" },
+            headquarters: {
+              city: "",
+              state: "",
+              postalCode: "",
+              country: "",
+              address: "",
+            },
             equipmentTypes: ["dry_van"],
             overallRating: 92,
             ratings: new Map(),
@@ -497,7 +530,7 @@ describe("DATClient", () => {
           data: {
             laneId: "CA-TX",
             trends: [
-              { date: "2026-03-01", rate: 2.80 },
+              { date: "2026-03-01", rate: 2.8 },
               { date: "2026-03-12", rate: 2.85 },
             ],
           },
@@ -552,7 +585,13 @@ describe("DATClient", () => {
             loadId: "load-123",
             carrier: {} as CarrierProfile,
             status: "in_transit",
-            currentLocation: { city: "Tulsa", state: "OK", postalCode: "74001", country: "US", address: "" },
+            currentLocation: {
+              city: "Tulsa",
+              state: "OK",
+              postalCode: "74001",
+              country: "US",
+              address: "",
+            },
             locationHistory: [],
             updatedAt: "2026-03-12T10:00:00Z",
           },
@@ -657,7 +696,9 @@ describe("DATClient", () => {
       }
 
       // The next request should exceed the rate limit
-      await expect(client.searchLoads({})).rejects.toThrow(/Rate limit exceeded/);
+      await expect(client.searchLoads({})).rejects.toThrow(
+        /Rate limit exceeded/,
+      );
     });
   });
 

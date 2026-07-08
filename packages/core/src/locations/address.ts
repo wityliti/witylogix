@@ -1,23 +1,23 @@
 /**
  * Address Management Module
- * 
+ *
  * Implements address parsing, normalization, and validation.
  * Note: Geocoding stub returns null - actual geocoding requires external service.
  */
 
-import type { Coordinates, NormalizedAddress } from './types';
+import type { Coordinates, NormalizedAddress } from "./types";
 
 /**
  * Validate geographic coordinates
- * 
+ *
  * @param lat Latitude (-90 to 90)
  * @param lng Longitude (-180 to 180)
  * @returns True if coordinates are valid
  */
 export function validateCoordinates(lat: number, lng: number): boolean {
   return (
-    typeof lat === 'number' &&
-    typeof lng === 'number' &&
+    typeof lat === "number" &&
+    typeof lng === "number" &&
     lat >= -90 &&
     lat <= 90 &&
     lng >= -180 &&
@@ -29,7 +29,7 @@ export function validateCoordinates(lat: number, lng: number): boolean {
 
 /**
  * Convert coordinates to string format "lat,lng"
- * 
+ *
  * @param coords Coordinates to convert
  * @returns String representation
  */
@@ -40,11 +40,13 @@ export function coordinatesToString(coords: Coordinates): string {
 /**
  * Parse address string into components
  * Uses simple pattern matching for common address formats
- * 
+ *
  * @param address Full address string
  * @returns Parsed address components
  */
-export function parseAddressComponents(address: string): Partial<NormalizedAddress> {
+export function parseAddressComponents(
+  address: string,
+): Partial<NormalizedAddress> {
   const result: Partial<NormalizedAddress> = {
     formatted: address.trim(),
   };
@@ -54,7 +56,7 @@ export function parseAddressComponents(address: string): Partial<NormalizedAddre
   }
 
   // Split by comma for main components
-  const parts = address.split(',').map((p) => p.trim());
+  const parts = address.split(",").map((p) => p.trim());
 
   // Try to extract components from parts
   // Common formats:
@@ -98,14 +100,14 @@ export function parseAddressComponents(address: string): Partial<NormalizedAddre
 
 /**
  * Normalize address by cleaning and standardizing components
- * 
+ *
  * @param rawAddress Raw address input
  * @returns Normalized address with all components
  */
 export function normalizeAddress(rawAddress: string): NormalizedAddress {
   if (!rawAddress || rawAddress.trim().length === 0) {
     return {
-      formatted: '',
+      formatted: "",
     };
   }
 
@@ -124,51 +126,53 @@ export function normalizeAddress(rawAddress: string): NormalizedAddress {
 
   // Standardize zip code format (basic cleaning)
   if (components.zip) {
-    components.zip = components.zip.replace(/\s+/g, '');
+    components.zip = components.zip.replace(/\s+/g, "");
   }
 
   return {
-    street: components.street || '',
-    city: components.city || '',
-    state: components.state || '',
-    zip: components.zip || '',
-    country: components.country || '',
+    street: components.street || "",
+    city: components.city || "",
+    state: components.state || "",
+    zip: components.zip || "",
+    country: components.country || "",
     formatted: formatAddress(
       {
-        street: components.street || '',
-        city: components.city || '',
-        state: components.state || '',
-        zip: components.zip || '',
-        country: components.country || '',
+        street: components.street || "",
+        city: components.city || "",
+        state: components.state || "",
+        zip: components.zip || "",
+        country: components.country || "",
         formatted: trimmed,
       },
-      'full'
+      "full",
     ),
   };
 }
 
 /**
  * Format address from components
- * 
+ *
  * @param components Address components
  * @param format Format style: 'short' or 'full'
  * @returns Formatted address string
  */
 export function formatAddress(
   components: NormalizedAddress,
-  format: 'short' | 'full' = 'full'
+  format: "short" | "full" = "full",
 ): string {
-  if (format === 'short') {
+  if (format === "short") {
     // Short format: "City, State ZIP"
     const parts: string[] = [];
 
     if (components.city) parts.push(components.city);
     if (components.state || components.zip) {
-      const stateZip = [components.state, components.zip].filter(Boolean).join(' ');
+      const stateZip = [components.state, components.zip]
+        .filter(Boolean)
+        .join(" ");
       parts.push(stateZip);
     }
 
-    return parts.join(', ') || components.formatted || '';
+    return parts.join(", ") || components.formatted || "";
   }
 
   // Full format: "Street, City, State ZIP, Country"
@@ -178,22 +182,24 @@ export function formatAddress(
   if (components.city) parts.push(components.city);
 
   if (components.state || components.zip) {
-    const stateZip = [components.state, components.zip].filter(Boolean).join(' ');
+    const stateZip = [components.state, components.zip]
+      .filter(Boolean)
+      .join(" ");
     parts.push(stateZip);
   }
 
   if (components.country) parts.push(components.country);
 
-  return parts.join(', ') || components.formatted || '';
+  return parts.join(", ") || components.formatted || "";
 }
 
 /**
  * Estimate geocoding results from address string
- * 
+ *
  * STUB FUNCTION: Always returns null
  * In production, this would integrate with a geocoding service like Google Maps,
  * Mapbox, or Open Street Map.
- * 
+ *
  * @param address Address string to geocode
  * @returns Coordinates or null if geocoding fails or is not available
  */
@@ -201,7 +207,7 @@ export function estimateGeocode(address: string): Coordinates | null {
   // This is a stub implementation
   // In production, this would call an external geocoding API
   // Example implementation would be:
-  // 
+  //
   // const response = await fetch('https://api.geocoder.com/geocode', {
   //   params: { address }
   // });
@@ -221,7 +227,7 @@ export function estimateGeocode(address: string): Coordinates | null {
 
 /**
  * Validate address has required components
- * 
+ *
  * @param address Address to validate
  * @returns True if address has minimum required fields
  */
@@ -232,24 +238,27 @@ export function isValidAddress(address: NormalizedAddress): boolean {
 /**
  * Check if two addresses represent the same location
  * Uses fuzzy matching on normalized components
- * 
+ *
  * @param address1 First address
  * @param address2 Second address
  * @returns True if addresses likely represent same location
  */
-export function addressesMatch(address1: NormalizedAddress, address2: NormalizedAddress): boolean {
+export function addressesMatch(
+  address1: NormalizedAddress,
+  address2: NormalizedAddress,
+): boolean {
   // Exact match on key components
-  const street1 = (address1.street || '').toLowerCase().trim();
-  const street2 = (address2.street || '').toLowerCase().trim();
+  const street1 = (address1.street || "").toLowerCase().trim();
+  const street2 = (address2.street || "").toLowerCase().trim();
 
-  const city1 = (address1.city || '').toLowerCase().trim();
-  const city2 = (address2.city || '').toLowerCase().trim();
+  const city1 = (address1.city || "").toLowerCase().trim();
+  const city2 = (address2.city || "").toLowerCase().trim();
 
-  const state1 = (address1.state || '').toUpperCase().trim();
-  const state2 = (address2.state || '').toUpperCase().trim();
+  const state1 = (address1.state || "").toUpperCase().trim();
+  const state2 = (address2.state || "").toUpperCase().trim();
 
-  const zip1 = (address1.zip || '').trim();
-  const zip2 = (address2.zip || '').trim();
+  const zip1 = (address1.zip || "").trim();
+  const zip2 = (address2.zip || "").trim();
 
   // Check if street and city match, and either state or zip matches
   return (
@@ -262,7 +271,7 @@ export function addressesMatch(address1: NormalizedAddress, address2: Normalized
 /**
  * Extract postal code from address string
  * Looks for common postal code patterns
- * 
+ *
  * @param address Address string
  * @returns Postal code if found, null otherwise
  */
@@ -282,7 +291,9 @@ export function extractPostalCode(address: string): string | null {
   }
 
   // UK postcode
-  const ukPostcodeMatch = address.match(/\b[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}\b/i);
+  const ukPostcodeMatch = address.match(
+    /\b[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}\b/i,
+  );
   if (ukPostcodeMatch) {
     return ukPostcodeMatch[0];
   }

@@ -1,8 +1,14 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import { useApiList, useApiQuery, type ApiFilters, type UseApiQueryResult, type UseApiListResult } from './use-api';
-import type { CustomerLocation } from '@/components/map/customer-density-layer';
+import { useMemo } from "react";
+import {
+  useApiList,
+  useApiQuery,
+  type ApiFilters,
+  type UseApiQueryResult,
+  type UseApiListResult,
+} from "./use-api";
+import type { CustomerLocation } from "@/components/map/customer-density-layer";
 
 export interface Customer {
   id: string;
@@ -25,8 +31,8 @@ export interface Customer {
   // Derived fields normalised by the API
   name: string;
   totalOrders: number;
-  tier: 'standard' | 'premium' | 'enterprise';
-  status: 'active' | 'inactive';
+  tier: "standard" | "premium" | "enterprise";
+  status: "active" | "inactive";
 }
 
 export interface CustomerAddress {
@@ -43,19 +49,26 @@ export interface CustomerAddress {
   default?: boolean;
 }
 
-
 export interface CustomerFilters extends ApiFilters {
-  status?: 'active' | 'inactive';
-  tier?: 'standard' | 'premium' | 'enterprise';
+  status?: "active" | "inactive";
+  tier?: "standard" | "premium" | "enterprise";
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 export interface CustomerSegmentStats {
   total: number;
-  tiers: Record<string, { count: number; totalSpent: number; totalOrders: number }>;
+  tiers: Record<
+    string,
+    { count: number; totalSpent: number; totalOrders: number }
+  >;
   statuses: { active: number; inactive: number };
-  topCities: Array<{ city: string; count: number; totalSpent: number; avgOrders: number }>;
+  topCities: Array<{
+    city: string;
+    count: number;
+    totalSpent: number;
+    avgOrders: number;
+  }>;
 }
 
 /**
@@ -66,10 +79,10 @@ export interface CustomerSegmentStats {
  */
 function normalizeCustomer(raw: unknown): Customer {
   const r = (raw ?? {}) as Record<string, unknown>;
-  const str = (v: unknown): string => (typeof v === 'string' ? v : '');
+  const str = (v: unknown): string => (typeof v === "string" ? v : "");
   const num = (v: unknown): number => {
-    if (typeof v === 'number') return v;
-    if (typeof v === 'string') {
+    if (typeof v === "number") return v;
+    if (typeof v === "string") {
       const parsed = Number(v);
       return Number.isFinite(parsed) ? parsed : 0;
     }
@@ -81,27 +94,27 @@ function normalizeCustomer(raw: unknown): Customer {
   const fallbackName = str(r.name);
   const name =
     fallbackName ||
-    [first, last].filter(Boolean).join(' ').trim() ||
+    [first, last].filter(Boolean).join(" ").trim() ||
     str(r.email) ||
-    'Unknown';
+    "Unknown";
 
   const rawStatus = str(r.status).toLowerCase();
-  const status: Customer['status'] =
-    rawStatus === 'inactive' || rawStatus === 'blocked'
-      ? (rawStatus as Customer['status'])
-      : 'active';
+  const status: Customer["status"] =
+    rawStatus === "inactive" || rawStatus === "blocked"
+      ? (rawStatus as Customer["status"])
+      : "active";
 
   const rawTier = str(r.tier).toLowerCase();
-  const tier: Customer['tier'] =
-    rawTier === 'premium' || rawTier === 'enterprise'
-      ? (rawTier as Customer['tier'])
-      : 'standard';
+  const tier: Customer["tier"] =
+    rawTier === "premium" || rawTier === "enterprise"
+      ? (rawTier as Customer["tier"])
+      : "standard";
 
   return {
     id: str(r.id),
     shopId: str(r.shopId),
     externalCustomerId: str(r.externalCustomerId),
-    source: str(r.source) || 'SHOPIFY',
+    source: str(r.source) || "SHOPIFY",
     name,
     email: r.email ? str(r.email) : null,
     phone: r.phone ? str(r.phone) : null,
@@ -113,7 +126,9 @@ function normalizeCustomer(raw: unknown): Customer {
     totalOrders: num(r.ordersCount ?? r.totalOrders),
     totalSpent: num(r.totalSpent),
     tags: Array.isArray(r.tags) ? (r.tags as string[]) : [],
-    addresses: Array.isArray(r.addresses) ? (r.addresses as CustomerAddress[]) : [],
+    addresses: Array.isArray(r.addresses)
+      ? (r.addresses as CustomerAddress[])
+      : [],
     marketingConsent: Boolean(r.marketingConsent),
     notes: r.notes ? str(r.notes) : null,
     lastSyncAt: str(r.lastSyncAt),
@@ -130,7 +145,7 @@ function normalizeCustomer(raw: unknown): Customer {
 export function useCustomers(
   filters?: CustomerFilters,
 ): UseApiListResult<Customer> {
-  const result = useApiList<unknown>('/api/v4/customers', filters);
+  const result = useApiList<unknown>("/api/v4/customers", filters);
   const items = useMemo<Customer[]>(
     () => (result.items ?? []).map(normalizeCustomer),
     [result.items],
@@ -163,7 +178,12 @@ export interface CustomerOrdersData {
 
 export interface CustomerOrdersResult {
   data: CustomerOrdersData | null;
-  pagination: { page: number; limit: number; total: number; totalPages: number };
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
   loading: boolean;
   error: Error | null;
   refetch: () => Promise<void>;
@@ -208,11 +228,18 @@ export function useCustomer(id: string | null): UseApiQueryResult<Customer> {
  */
 export function useCustomerOrders(id: string | null): CustomerOrdersResult {
   const result = useApiQuery<CustomerOrdersData>(
-    id ? `/api/v4/customers/${id}/orders?limit=20&sortBy=createdAt&sortOrder=desc` : null,
+    id
+      ? `/api/v4/customers/${id}/orders?limit=20&sortBy=createdAt&sortOrder=desc`
+      : null,
   );
   return {
     data: result.data ?? null,
-    pagination: { page: 1, limit: 20, total: result.data?.orders?.length ?? 0, totalPages: 1 },
+    pagination: {
+      page: 1,
+      limit: 20,
+      total: result.data?.orders?.length ?? 0,
+      totalPages: 1,
+    },
     loading: result.loading,
     error: result.error,
     refetch: result.refetch,
@@ -220,13 +247,13 @@ export function useCustomerOrders(id: string | null): CustomerOrdersResult {
 }
 
 export function useCustomerStats(): UseApiQueryResult<CustomerStats> {
-  return useApiQuery<CustomerStats>('/api/v4/customers/stats');
+  return useApiQuery<CustomerStats>("/api/v4/customers/stats");
 }
 
 export function useCustomerLocations(): UseApiQueryResult<CustomerLocation[]> {
-  return useApiQuery<CustomerLocation[]>('/api/v4/customers/locations');
+  return useApiQuery<CustomerLocation[]>("/api/v4/customers/locations");
 }
 
 export function useCustomerSegmentStats(): UseApiQueryResult<CustomerSegmentStats> {
-  return useApiQuery<CustomerSegmentStats>('/api/v4/customers/segment-stats');
+  return useApiQuery<CustomerSegmentStats>("/api/v4/customers/segment-stats");
 }

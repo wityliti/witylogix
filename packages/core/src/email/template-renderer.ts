@@ -3,18 +3,18 @@
  * Implements Handlebars-like syntax without external dependencies
  */
 
-import type { TemplateVariables } from './types.js';
+import type { TemplateVariables } from "./types.js";
 
 /**
  * HTML escape function
  */
 function htmlEscape(text: string): string {
   const map: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;',
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
   };
   return text.replace(/[&<>"']/g, (char) => map[char]);
 }
@@ -23,7 +23,7 @@ function htmlEscape(text: string): string {
  * Get nested value from variables object
  */
 function getNestedValue(obj: any, path: string): any {
-  return path.split('.').reduce((current, part) => {
+  return path.split(".").reduce((current, part) => {
     if (current == null) return undefined;
     return current[part];
   }, obj);
@@ -35,40 +35,46 @@ function getNestedValue(obj: any, path: string): any {
 function isTruthy(value: any): boolean {
   if (value === false || value === null || value === undefined) return false;
   if (Array.isArray(value)) return value.length > 0;
-  if (typeof value === 'string') return value.length > 0;
+  if (typeof value === "string") return value.length > 0;
   return Boolean(value);
 }
 
 /**
  * Format date using simple formatting
  */
-function formatDate(date: Date | string, format: string = 'MM/DD/YYYY'): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(d.getTime())) return '';
+function formatDate(
+  date: Date | string,
+  format: string = "MM/DD/YYYY",
+): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return "";
 
   const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  const hours = String(d.getHours()).padStart(2, '0');
-  const minutes = String(d.getMinutes()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
 
   return format
-    .replace('YYYY', year.toString())
-    .replace('MM', month)
-    .replace('DD', day)
-    .replace('HH', hours)
-    .replace('mm', minutes);
+    .replace("YYYY", year.toString())
+    .replace("MM", month)
+    .replace("DD", day)
+    .replace("HH", hours)
+    .replace("mm", minutes);
 }
 
 /**
  * Format currency value
  */
-function formatCurrency(amount: number | string, currency: string = 'USD'): string {
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  if (isNaN(num)) return '';
+function formatCurrency(
+  amount: number | string,
+  currency: string = "USD",
+): string {
+  const num = typeof amount === "string" ? parseFloat(amount) : amount;
+  if (isNaN(num)) return "";
 
-  const formatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
+  const formatter = new Intl.NumberFormat("en-US", {
+    style: "currency",
     currency,
   });
   return formatter.format(num);
@@ -119,7 +125,7 @@ export function renderTemplate(
   result = result.replace(/\{\{\{(.+?)\}\}\}/g, (match, expression) => {
     const trimmed = expression.trim();
     const value = getNestedValue(variables, trimmed);
-    return value != null ? String(value) : '';
+    return value != null ? String(value) : "";
   });
 
   // Process conditionals: {{#if condition}}...{{/if}}
@@ -133,48 +139,48 @@ export function renderTemplate(
     const trimmed = expression.trim();
 
     // Check for formatDate helper
-    if (trimmed.startsWith('formatDate ')) {
-      const arg = trimmed.substring('formatDate '.length);
+    if (trimmed.startsWith("formatDate ")) {
+      const arg = trimmed.substring("formatDate ".length);
       const value = getNestedValue(variables, arg);
       if (value) return formatDate(value);
-      return '';
+      return "";
     }
 
     // Check for formatCurrency helper
-    if (trimmed.startsWith('formatCurrency ')) {
-      const arg = trimmed.substring('formatCurrency '.length);
+    if (trimmed.startsWith("formatCurrency ")) {
+      const arg = trimmed.substring("formatCurrency ".length);
       const value = getNestedValue(variables, arg);
       if (value) return formatCurrency(value);
-      return '';
+      return "";
     }
 
     // Check for uppercase helper
-    if (trimmed.startsWith('uppercase ')) {
-      const arg = trimmed.substring('uppercase '.length);
+    if (trimmed.startsWith("uppercase ")) {
+      const arg = trimmed.substring("uppercase ".length);
       const value = getNestedValue(variables, arg);
       if (value) return uppercase(value);
-      return '';
+      return "";
     }
 
     // Check for lowercase helper
-    if (trimmed.startsWith('lowercase ')) {
-      const arg = trimmed.substring('lowercase '.length);
+    if (trimmed.startsWith("lowercase ")) {
+      const arg = trimmed.substring("lowercase ".length);
       const value = getNestedValue(variables, arg);
       if (value) return lowercase(value);
-      return '';
+      return "";
     }
 
     // Check for capitalize helper
-    if (trimmed.startsWith('capitalize ')) {
-      const arg = trimmed.substring('capitalize '.length);
+    if (trimmed.startsWith("capitalize ")) {
+      const arg = trimmed.substring("capitalize ".length);
       const value = getNestedValue(variables, arg);
       if (value) return capitalize(value);
-      return '';
+      return "";
     }
 
     // Regular variable
     const value = getNestedValue(variables, trimmed);
-    if (value == null) return '';
+    if (value == null) return "";
     return htmlEscape(String(value));
   });
 
@@ -184,7 +190,10 @@ export function renderTemplate(
 /**
  * Process conditional blocks: {{#if condition}}...{{/if}}
  */
-function processConditionals(template: string, variables: TemplateVariables): string {
+function processConditionals(
+  template: string,
+  variables: TemplateVariables,
+): string {
   let result = template;
   const ifRegex = /\{\{#if\s+(.+?)\}\}(.*?)\{\{\/if\}\}/gs;
 
@@ -195,10 +204,14 @@ function processConditionals(template: string, variables: TemplateVariables): st
     const value = getNestedValue(variables, condition);
 
     if (isTruthy(value)) {
-      result = result.substring(0, match.index) + content + result.substring(ifRegex.lastIndex);
+      result =
+        result.substring(0, match.index) +
+        content +
+        result.substring(ifRegex.lastIndex);
       ifRegex.lastIndex = match.index;
     } else {
-      result = result.substring(0, match.index) + result.substring(ifRegex.lastIndex);
+      result =
+        result.substring(0, match.index) + result.substring(ifRegex.lastIndex);
       ifRegex.lastIndex = match.index;
     }
   }
@@ -214,8 +227,8 @@ function findMatchingEachEnd(template: string, startAfter: number): number {
   let depth = 1;
   let i = startAfter;
   while (i < template.length && depth > 0) {
-    const eachOpen = template.indexOf('{{#each ', i);
-    const eachClose = template.indexOf('{{/each}}', i);
+    const eachOpen = template.indexOf("{{#each ", i);
+    const eachClose = template.indexOf("{{/each}}", i);
 
     if (eachClose === -1) return -1; // no matching close
 
@@ -252,7 +265,7 @@ function processLoops(template: string, variables: TemplateVariables): string {
     const closeEnd = closeStart + 9; // length of '{{/each}}'
     const array = getNestedValue(variables, arrayPath);
 
-    let rendered = '';
+    let rendered = "";
 
     if (Array.isArray(array)) {
       rendered = array
@@ -260,17 +273,18 @@ function processLoops(template: string, variables: TemplateVariables): string {
           const itemVariables: TemplateVariables = {
             ...variables,
             this: item,
-            [arrayPath.split('.').pop() || 'item']: item,
-            '@index': index,
-            '@first': index === 0,
-            '@last': index === array.length - 1,
+            [arrayPath.split(".").pop() || "item"]: item,
+            "@index": index,
+            "@first": index === 0,
+            "@last": index === array.length - 1,
           };
           return renderTemplate(content, itemVariables);
         })
-        .join('');
+        .join("");
     }
 
-    result = result.substring(0, match.index) + rendered + result.substring(closeEnd);
+    result =
+      result.substring(0, match.index) + rendered + result.substring(closeEnd);
     openRegex.lastIndex = match.index;
   }
 

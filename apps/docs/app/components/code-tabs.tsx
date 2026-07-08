@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 
 interface CodeTabsProps {
   tabs: {
@@ -24,9 +24,10 @@ export function CodeTabs({ tabs }: CodeTabsProps) {
             onClick={() => setActive(i)}
             className={`
               flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px
-              ${i === active
-                ? 'text-[var(--teal)] border-[var(--teal)] bg-[var(--forge-surface)]'
-                : 'text-[var(--sand-dim)] border-transparent hover:text-[var(--sand-muted)] hover:bg-[var(--forge-raised)]'
+              ${
+                i === active
+                  ? "text-[var(--teal)] border-[var(--teal)] bg-[var(--forge-surface)]"
+                  : "text-[var(--sand-dim)] border-transparent hover:text-[var(--sand-muted)] hover:bg-[var(--forge-raised)]"
               }
             `}
           >

@@ -4,7 +4,7 @@
  * Uses WC Store API nonce for authentication
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Slot availability for a specific time period
@@ -15,7 +15,7 @@ export interface SlotAvailability {
   startTime: string; // HH:MM
   endTime: string; // HH:MM
   label: string;
-  timeGroup: 'morning' | 'afternoon' | 'evening';
+  timeGroup: "morning" | "afternoon" | "evening";
   capacity: number;
   reserved: number;
   price: number; // In cents
@@ -70,7 +70,7 @@ const SlotAvailabilitySchema = z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}$/),
   endTime: z.string().regex(/^\d{2}:\d{2}$/),
   label: z.string(),
-  timeGroup: z.enum(['morning', 'afternoon', 'evening']),
+  timeGroup: z.enum(["morning", "afternoon", "evening"]),
   capacity: z.number().int().positive(),
   reserved: z.number().int().nonnegative(),
   price: z.number().int().nonnegative(),
@@ -94,15 +94,17 @@ const SlotReservationSchema = z.object({
 
 const AddressValidationSchema = z.object({
   valid: z.boolean(),
-  address: z.object({
-    street: z.string(),
-    city: z.string(),
-    state: z.string(),
-    zipcode: z.string(),
-    country: z.string(),
-    latitude: z.number(),
-    longitude: z.number(),
-  }).optional(),
+  address: z
+    .object({
+      street: z.string(),
+      city: z.string(),
+      state: z.string(),
+      zipcode: z.string(),
+      country: z.string(),
+      latitude: z.number(),
+      longitude: z.number(),
+    })
+    .optional(),
   zone: z.string().optional(),
   message: z.string().optional(),
 });
@@ -113,10 +115,10 @@ const AddressValidationSchema = z.object({
 export class WitylogixAPI {
   private apiUrl: string;
   private merchantId: string;
-  private nonce: string = '';
+  private nonce: string = "";
 
   constructor(apiUrl: string, merchantId: string) {
-    this.apiUrl = apiUrl.replace(/\/$/, ''); // Remove trailing slash
+    this.apiUrl = apiUrl.replace(/\/$/, ""); // Remove trailing slash
     this.merchantId = merchantId;
   }
 
@@ -128,17 +130,22 @@ export class WitylogixAPI {
       return this.nonce;
     }
 
-    if (typeof window !== 'undefined') {
-      const nonce = (window as any)?.wc?.wcStoreApiNonce ||
-                    (document.querySelector('meta[name="wc-store-api-nonce"]') as HTMLMetaElement)?.content ||
-                    '';
+    if (typeof window !== "undefined") {
+      const nonce =
+        (window as any)?.wc?.wcStoreApiNonce ||
+        (
+          document.querySelector(
+            'meta[name="wc-store-api-nonce"]',
+          ) as HTMLMetaElement
+        )?.content ||
+        "";
       if (nonce) {
         this.nonce = nonce;
         return nonce;
       }
     }
 
-    return '';
+    return "";
   }
 
   /**
@@ -147,19 +154,19 @@ export class WitylogixAPI {
   private async request<T>(
     endpoint: string,
     options: RequestInit = {},
-    schema?: z.ZodSchema
+    schema?: z.ZodSchema,
   ): Promise<T> {
     const url = `${this.apiUrl}${endpoint}`;
     const nonce = this.getNonce();
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'X-Merchant-ID': this.merchantId,
-      ...options.headers as Record<string, string>,
+      "Content-Type": "application/json",
+      "X-Merchant-ID": this.merchantId,
+      ...(options.headers as Record<string, string>),
     };
 
     if (nonce) {
-      headers['X-WC-Store-API-Nonce'] = nonce;
+      headers["X-WC-Store-API-Nonce"] = nonce;
     }
 
     try {
@@ -170,7 +177,9 @@ export class WitylogixAPI {
 
       if (!response.ok) {
         const error = await response.text();
-        throw new Error(`API Error [${response.status}]: ${error || response.statusText}`);
+        throw new Error(
+          `API Error [${response.status}]: ${error || response.statusText}`,
+        );
       }
 
       const data = await response.json();
@@ -179,14 +188,14 @@ export class WitylogixAPI {
         try {
           return schema.parse(data);
         } catch (validationError) {
-          console.error('Validation error:', validationError);
-          throw new Error('Invalid response format from API');
+          console.error("Validation error:", validationError);
+          throw new Error("Invalid response format from API");
         }
       }
 
       return data as T;
     } catch (error) {
-      console.error('API request failed:', error);
+      console.error("API request failed:", error);
       throw error;
     }
   }
@@ -194,14 +203,17 @@ export class WitylogixAPI {
   /**
    * Fetch available delivery slots for a specific date
    */
-  async fetchAvailableSlots(date: string, zoneId?: string): Promise<SlotAvailability[]> {
+  async fetchAvailableSlots(
+    date: string,
+    zoneId?: string,
+  ): Promise<SlotAvailability[]> {
     if (!date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      throw new Error('Invalid date format. Expected YYYY-MM-DD');
+      throw new Error("Invalid date format. Expected YYYY-MM-DD");
     }
 
     const params = new URLSearchParams({ date });
     if (zoneId) {
-      params.append('zone_id', zoneId);
+      params.append("zone_id", zoneId);
     }
 
     const endpoint = `/wc/v1/witylogix/slots?${params.toString()}`;
@@ -209,7 +221,9 @@ export class WitylogixAPI {
     const response = await this.request<{ slots: unknown[] }>(endpoint);
 
     // Validate each slot
-    const validatedSlots = z.array(SlotAvailabilitySchema).parse(response.slots);
+    const validatedSlots = z
+      .array(SlotAvailabilitySchema)
+      .parse(response.slots);
     return validatedSlots;
   }
 
@@ -230,11 +244,7 @@ export class WitylogixAPI {
 
     const endpoint = `/wc/v1/witylogix/rates?${params.toString()}`;
 
-    const response = await this.request<ZoneRate>(
-      endpoint,
-      {},
-      ZoneRateSchema
-    );
+    const response = await this.request<ZoneRate>(endpoint, {}, ZoneRateSchema);
 
     return response;
   }
@@ -244,7 +254,7 @@ export class WitylogixAPI {
    */
   async reserveSlot(slotId: string, orderId: string): Promise<SlotReservation> {
     if (!slotId || !orderId) {
-      throw new Error('Missing required parameters: slotId and orderId');
+      throw new Error("Missing required parameters: slotId and orderId");
     }
 
     const endpoint = `/wc/v1/witylogix/reserve`;
@@ -252,13 +262,13 @@ export class WitylogixAPI {
     const response = await this.request<SlotReservation>(
       endpoint,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({
           slotId,
           orderId,
         }),
       },
-      SlotReservationSchema
+      SlotReservationSchema,
     );
 
     return response;
@@ -279,10 +289,10 @@ export class WitylogixAPI {
     const response = await this.request<AddressValidationResult>(
       endpoint,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(address),
       },
-      AddressValidationSchema
+      AddressValidationSchema,
     );
 
     return response;
@@ -291,9 +301,12 @@ export class WitylogixAPI {
   /**
    * Check if delivery service is available for a zipcode
    */
-  async checkServiceAvailability(zipcode: string, country: string = 'US'): Promise<boolean> {
+  async checkServiceAvailability(
+    zipcode: string,
+    country: string = "US",
+  ): Promise<boolean> {
     if (!zipcode) {
-      throw new Error('Zipcode is required');
+      throw new Error("Zipcode is required");
     }
 
     const params = new URLSearchParams({ zip: zipcode, country });
@@ -307,13 +320,16 @@ export class WitylogixAPI {
 /**
  * Initialize API client
  */
-export function createWitylogixAPI(apiUrl: string, merchantId: string): WitylogixAPI {
+export function createWitylogixAPI(
+  apiUrl: string,
+  merchantId: string,
+): WitylogixAPI {
   if (!apiUrl) {
-    throw new Error('Witylogix API URL is required');
+    throw new Error("Witylogix API URL is required");
   }
 
   if (!merchantId) {
-    throw new Error('Merchant ID is required');
+    throw new Error("Merchant ID is required");
   }
 
   return new WitylogixAPI(apiUrl, merchantId);

@@ -39,23 +39,24 @@ export type {
   HistoricalDeliveryData,
   ZoneCongestion,
   WeatherImpact,
-} from './types.js';
+} from "./types.js";
 
 // Export services
-export { DemandPredictor, demandPredictor } from './demand-predictor.js';
+export { DemandPredictor, demandPredictor } from "./demand-predictor.js";
 
-export type { DriverShift, ZoneCoverage } from './driver-availability.js';
+export type { DriverShift, ZoneCoverage } from "./driver-availability.js";
 export {
   DriverAvailabilityPredictor,
   driverAvailabilityPredictor,
-} from './driver-availability.js';
+} from "./driver-availability.js";
 
-export type { TimeSlot } from './slot-recommender.js';
-export { SlotRecommender, slotRecommender } from './slot-recommender.js';
+export type { TimeSlot } from "./slot-recommender.js";
+export { SlotRecommender, slotRecommender } from "./slot-recommender.js";
 
 // Holt-Winters forecasting
-export {
-  HoltWintersModel,
-  DEFAULT_HOURLY_PROFILE,
-} from './holt-winters.js';
-export type { HoltWintersParams, HoltWintersForecast, HoltWintersState } from './holt-winters.js';
+export { HoltWintersModel, DEFAULT_HOURLY_PROFILE } from "./holt-winters.js";
+export type {
+  HoltWintersParams,
+  HoltWintersForecast,
+  HoltWintersState,
+} from "./holt-winters.js";

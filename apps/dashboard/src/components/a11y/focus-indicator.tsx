@@ -3,8 +3,8 @@
  * Global focus-visible styles and focus ring component
  */
 
-import React, { ReactNode } from 'react';
-import { cn } from '@/lib/utils';
+import React, { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 /**
  * Global focus indicator styles (add to root CSS)
@@ -48,8 +48,8 @@ export const focusIndicatorStyles = `
 interface FocusRingProps {
   children: ReactNode;
   className?: string;
-  offset?: 'none' | 'small' | 'default' | 'large';
-  width?: 'thin' | 'default' | 'thick';
+  offset?: "none" | "small" | "default" | "large";
+  width?: "thin" | "default" | "thick";
 }
 
 /**
@@ -58,29 +58,29 @@ interface FocusRingProps {
 export function FocusRing({
   children,
   className,
-  offset = 'default',
-  width = 'default',
+  offset = "default",
+  width = "default",
 }: FocusRingProps): React.ReactElement {
   const offsetClasses = {
-    none: '',
-    small: 'focus-visible:outline-offset-1',
-    default: 'focus-visible:outline-offset-2',
-    large: 'focus-visible:outline-offset-4',
+    none: "",
+    small: "focus-visible:outline-offset-1",
+    default: "focus-visible:outline-offset-2",
+    large: "focus-visible:outline-offset-4",
   };
 
   const widthClasses = {
-    thin: 'focus-visible:outline-1',
-    default: 'focus-visible:outline-2',
-    thick: 'focus-visible:outline-4',
+    thin: "focus-visible:outline-1",
+    default: "focus-visible:outline-2",
+    thick: "focus-visible:outline-4",
   };
 
   return (
     <div
       className={cn(
-        'focus-visible:outline-wl-primary-600',
+        "focus-visible:outline-wl-primary-600",
         offsetClasses[offset],
         widthClasses[width],
-        className
+        className,
       )}
     >
       {children}
@@ -94,39 +94,39 @@ export function FocusRing({
 export function useFocusRing(
   ref: React.RefObject<HTMLElement>,
   options: {
-    offset?: 'none' | 'small' | 'default' | 'large';
-    width?: 'thin' | 'default' | 'thick';
-  } = {}
+    offset?: "none" | "small" | "default" | "large";
+    width?: "thin" | "default" | "thick";
+  } = {},
 ): void {
-  const { offset = 'default', width = 'default' } = options;
+  const { offset = "default", width = "default" } = options;
 
   React.useEffect(() => {
     if (!ref.current) return;
 
     const offsetClasses = {
-      none: '',
-      small: 'focus-visible:outline-offset-1',
-      default: 'focus-visible:outline-offset-2',
-      large: 'focus-visible:outline-offset-4',
+      none: "",
+      small: "focus-visible:outline-offset-1",
+      default: "focus-visible:outline-offset-2",
+      large: "focus-visible:outline-offset-4",
     };
 
     const widthClasses = {
-      thin: 'focus-visible:outline-1',
-      default: 'focus-visible:outline-2',
-      thick: 'focus-visible:outline-4',
+      thin: "focus-visible:outline-1",
+      default: "focus-visible:outline-2",
+      thick: "focus-visible:outline-4",
     };
 
     ref.current.classList.add(
-      'focus-visible:outline-wl-primary-600',
+      "focus-visible:outline-wl-primary-600",
       offsetClasses[offset],
-      widthClasses[width]
+      widthClasses[width],
     );
 
     return () => {
       ref.current?.classList.remove(
-        'focus-visible:outline-wl-primary-600',
+        "focus-visible:outline-wl-primary-600",
         offsetClasses[offset],
-        widthClasses[width]
+        widthClasses[width],
       );
     };
   }, [ref, offset, width]);
@@ -136,13 +136,13 @@ export function useFocusRing(
  * Inject global focus indicator styles into document
  */
 export function injectFocusIndicatorStyles(): void {
-  if (typeof document === 'undefined') return;
+  if (typeof document === "undefined") return;
 
   // Check if styles already injected
-  if (document.getElementById('a11y-focus-indicator-styles')) return;
+  if (document.getElementById("a11y-focus-indicator-styles")) return;
 
-  const styleElement = document.createElement('style');
-  styleElement.id = 'a11y-focus-indicator-styles';
+  const styleElement = document.createElement("style");
+  styleElement.id = "a11y-focus-indicator-styles";
   styleElement.textContent = focusIndicatorStyles;
   document.head.appendChild(styleElement);
 }

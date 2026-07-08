@@ -11,14 +11,14 @@ import type {
   PosOrderFilters,
   PosOrderStats,
   PosOrderListResponse,
-} from './types';
+} from "./types";
 
 // Valid status transitions: each status maps to the statuses it can move TO
 const VALID_TRANSITIONS: Record<PosOrderStatus, PosOrderStatus[]> = {
-  PENDING: ['CONFIRMED', 'CANCELLED'],
-  CONFIRMED: ['READY', 'CANCELLED'],
-  READY: ['PICKED_UP', 'CANCELLED'],
-  PICKED_UP: ['DELIVERED', 'CANCELLED'],
+  PENDING: ["CONFIRMED", "CANCELLED"],
+  CONFIRMED: ["READY", "CANCELLED"],
+  READY: ["PICKED_UP", "CANCELLED"],
+  PICKED_UP: ["DELIVERED", "CANCELLED"],
   DELIVERED: [],
   CANCELLED: [],
 };
@@ -38,10 +38,10 @@ export class PosManager {
    */
   async createConfig(input: PosConfigInput): Promise<any> {
     if (!input.shopId) {
-      throw new Error('shopId is required');
+      throw new Error("shopId is required");
     }
     if (!input.provider) {
-      throw new Error('provider is required');
+      throw new Error("provider is required");
     }
 
     const config = await this.prisma.posConfig.create({
@@ -62,7 +62,7 @@ export class PosManager {
    */
   async getConfig(id: string): Promise<any> {
     if (!id) {
-      throw new Error('id is required');
+      throw new Error("id is required");
     }
 
     const config = await this.prisma.posConfig.findUnique({
@@ -74,15 +74,20 @@ export class PosManager {
   /**
    * Update a POS configuration
    */
-  async updateConfig(id: string, updates: Partial<PosConfigInput>): Promise<any> {
+  async updateConfig(
+    id: string,
+    updates: Partial<PosConfigInput>,
+  ): Promise<any> {
     if (!id) {
-      throw new Error('id is required');
+      throw new Error("id is required");
     }
 
     const config = await this.prisma.posConfig.update({
       where: { id },
       data: {
-        ...(updates.terminalId !== undefined && { terminalId: updates.terminalId }),
+        ...(updates.terminalId !== undefined && {
+          terminalId: updates.terminalId,
+        }),
         ...(updates.provider && { provider: updates.provider }),
         ...(updates.apiKey !== undefined && { apiKey: updates.apiKey }),
         ...(updates.enabled !== undefined && { enabled: updates.enabled }),
@@ -97,7 +102,7 @@ export class PosManager {
    */
   async deleteConfig(id: string): Promise<void> {
     if (!id) {
-      throw new Error('id is required');
+      throw new Error("id is required");
     }
 
     await this.prisma.posConfig.delete({ where: { id } });
@@ -108,12 +113,12 @@ export class PosManager {
    */
   async listConfigs(shopId: string): Promise<any[]> {
     if (!shopId) {
-      throw new Error('shopId is required');
+      throw new Error("shopId is required");
     }
 
     const configs = await this.prisma.posConfig.findMany({
       where: { shopId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
     return configs;
   }
@@ -128,22 +133,22 @@ export class PosManager {
    */
   async createOrder(input: any): Promise<any> {
     if (!input.shopId) {
-      throw new Error('shopId is required');
+      throw new Error("shopId is required");
     }
 
     // Support both `posConfigId` (canonical) and `configId` (test alias)
     const posConfigId = input.posConfigId ?? input.configId;
     if (!posConfigId) {
-      throw new Error('posConfigId is required');
+      throw new Error("posConfigId is required");
     }
 
     if (!input.items || input.items.length === 0) {
-      throw new Error('Order must have at least one item');
+      throw new Error("Order must have at least one item");
     }
 
     const total = input.total ?? 0;
     if (total <= 0) {
-      throw new Error('Order total must be greater than 0');
+      throw new Error("Order total must be greater than 0");
     }
 
     // Support both `type` (test alias) and `deliveryType` (canonical)
@@ -151,12 +156,12 @@ export class PosManager {
 
     // Require address only for the canonical LOCAL_DELIVERY type
     const scheduledTime = input.scheduledAt ?? input.scheduledTime;
-    if (deliveryType === 'LOCAL_DELIVERY' && !input.address) {
-      throw new Error('Delivery orders require an address');
+    if (deliveryType === "LOCAL_DELIVERY" && !input.address) {
+      throw new Error("Delivery orders require an address");
     }
 
     if (scheduledTime && new Date(scheduledTime) <= new Date()) {
-      throw new Error('Scheduled time must be in the future');
+      throw new Error("Scheduled time must be in the future");
     }
 
     // Support both `externalOrderId` (test alias) and `externalId` (canonical)
@@ -171,7 +176,7 @@ export class PosManager {
         customerPhone: input.customerPhone ?? input.customerEmail,
         items: input.items,
         total,
-        status: 'PENDING',
+        status: "PENDING",
         deliveryType,
         address: input.address,
         notes: input.notes,
@@ -184,12 +189,16 @@ export class PosManager {
   /**
    * Update the status of a POS order, enforcing valid transitions.
    */
-  async updateOrderStatus(orderId: string, status: PosOrderStatus, notes?: string): Promise<any> {
+  async updateOrderStatus(
+    orderId: string,
+    status: PosOrderStatus,
+    notes?: string,
+  ): Promise<any> {
     if (!orderId) {
-      throw new Error('orderId is required');
+      throw new Error("orderId is required");
     }
     if (!status) {
-      throw new Error('status is required');
+      throw new Error("status is required");
     }
 
     const validStatuses = Object.keys(VALID_TRANSITIONS) as PosOrderStatus[];
@@ -198,12 +207,14 @@ export class PosManager {
     }
 
     // Fetch current order to validate transition
-    const current = await this.prisma.posOrder.findUnique({ where: { id: orderId } });
+    const current = await this.prisma.posOrder.findUnique({
+      where: { id: orderId },
+    });
     if (current) {
       const allowed = VALID_TRANSITIONS[current.status as PosOrderStatus] ?? [];
       if (!allowed.includes(status)) {
         throw new Error(
-          `Invalid status transition from ${current.status} to ${status}`
+          `Invalid status transition from ${current.status} to ${status}`,
         );
       }
     }
@@ -214,10 +225,10 @@ export class PosManager {
       data: {
         status,
         ...(notes && { notes }),
-        ...(status === 'CONFIRMED' && { confirmedAt: now }),
-        ...(status === 'READY' && { readyAt: now }),
-        ...(status === 'PICKED_UP' && { pickedUpAt: now }),
-        ...(status === 'DELIVERED' && { deliveredAt: now }),
+        ...(status === "CONFIRMED" && { confirmedAt: now }),
+        ...(status === "READY" && { readyAt: now }),
+        ...(status === "PICKED_UP" && { pickedUpAt: now }),
+        ...(status === "DELIVERED" && { deliveredAt: now }),
       },
     });
     return order;
@@ -228,12 +239,17 @@ export class PosManager {
    */
   async cancelOrder(orderId: string, reason?: string): Promise<any> {
     if (!orderId) {
-      throw new Error('orderId is required');
+      throw new Error("orderId is required");
     }
 
     // Reject if order is already in a terminal state
-    const current = await this.prisma.posOrder.findUnique({ where: { id: orderId } });
-    if (current && (current.status === 'DELIVERED' || current.status === 'CANCELLED')) {
+    const current = await this.prisma.posOrder.findUnique({
+      where: { id: orderId },
+    });
+    if (
+      current &&
+      (current.status === "DELIVERED" || current.status === "CANCELLED")
+    ) {
       throw new Error(`Cannot cancel order with status ${current.status}`);
     }
 
@@ -241,7 +257,7 @@ export class PosManager {
     const order = await this.prisma.posOrder.update({
       where: { id: orderId },
       data: {
-        status: 'CANCELLED',
+        status: "CANCELLED",
         cancellationReason: reason,
         cancelledAt: now,
       },
@@ -254,10 +270,12 @@ export class PosManager {
    */
   async getOrder(orderId: string): Promise<any> {
     if (!orderId) {
-      throw new Error('orderId is required');
+      throw new Error("orderId is required");
     }
 
-    const order = await this.prisma.posOrder.findUnique({ where: { id: orderId } });
+    const order = await this.prisma.posOrder.findUnique({
+      where: { id: orderId },
+    });
     return order;
   }
 
@@ -277,7 +295,7 @@ export class PosManager {
    */
   async listOrders(shopId: string, filters?: any): Promise<any[]> {
     if (!shopId) {
-      throw new Error('shopId is required');
+      throw new Error("shopId is required");
     }
 
     // Support both pageSize (test) and limit (canonical)
@@ -307,7 +325,7 @@ export class PosManager {
       where,
       skip,
       take: pageSize,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return orders;
@@ -318,11 +336,11 @@ export class PosManager {
    */
   async getOrderStats(shopId: string): Promise<any> {
     if (!shopId) {
-      throw new Error('shopId is required');
+      throw new Error("shopId is required");
     }
 
     const groups = await this.prisma.posOrder.groupBy({
-      by: ['status'],
+      by: ["status"],
       where: { shopId },
       _count: { id: true },
       _sum: { total: true },
@@ -346,10 +364,10 @@ export class PosManager {
    */
   async getStats(shopId: string, from: Date, to: Date): Promise<PosOrderStats> {
     if (!shopId) {
-      throw new Error('shopId is required');
+      throw new Error("shopId is required");
     }
     if (!from || !to) {
-      throw new Error('from and to dates are required');
+      throw new Error("from and to dates are required");
     }
 
     const orders = await this.prisma.posOrder.findMany({
@@ -380,16 +398,16 @@ export class PosManager {
    */
   async createForm(input: any): Promise<any> {
     if (!input.shopId) {
-      throw new Error('shopId is required');
+      throw new Error("shopId is required");
     }
     if (!input.fields || input.fields.length === 0) {
-      throw new Error('Form must have at least one field');
+      throw new Error("Form must have at least one field");
     }
 
     const form = await this.prisma.posOrderForm.create({
       data: {
         shopId: input.shopId,
-        name: input.name ?? 'Custom Form',
+        name: input.name ?? "Custom Form",
         fields: input.fields,
         isDefault: input.isDefault ?? false,
       },
@@ -402,7 +420,7 @@ export class PosManager {
    */
   async getDefaultForm(shopId: string): Promise<any> {
     if (!shopId) {
-      throw new Error('shopId is required');
+      throw new Error("shopId is required");
     }
 
     const form = await this.prisma.posOrderForm.findFirst({
@@ -418,12 +436,17 @@ export class PosManager {
   async validateFormSubmission(
     formId: string,
     submission: Record<string, unknown>,
-  ): Promise<{ valid: boolean; errors: Array<{ field: string; message: string }> }> {
+  ): Promise<{
+    valid: boolean;
+    errors: Array<{ field: string; message: string }>;
+  }> {
     if (!formId) {
-      throw new Error('formId is required');
+      throw new Error("formId is required");
     }
 
-    const form = await this.prisma.posOrderForm.findUnique({ where: { id: formId } });
+    const form = await this.prisma.posOrderForm.findUnique({
+      where: { id: formId },
+    });
     if (!form) {
       throw new Error(`Form not found: ${formId}`);
     }
@@ -433,19 +456,25 @@ export class PosManager {
 
     for (const field of fields) {
       const value = submission[field.name];
-      const isEmpty = value === undefined || value === null || value === '';
+      const isEmpty = value === undefined || value === null || value === "";
 
       if (field.required && isEmpty) {
-        errors.push({ field: field.name, message: `${field.name} is required` });
+        errors.push({
+          field: field.name,
+          message: `${field.name} is required`,
+        });
         continue;
       }
 
       if (isEmpty) continue;
 
-      if (field.type === 'email') {
+      if (field.type === "email") {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (typeof value !== 'string' || !emailRegex.test(value)) {
-          errors.push({ field: field.name, message: `Invalid email format for ${field.name}` });
+        if (typeof value !== "string" || !emailRegex.test(value)) {
+          errors.push({
+            field: field.name,
+            message: `Invalid email format for ${field.name}`,
+          });
         }
       }
     }
@@ -456,21 +485,26 @@ export class PosManager {
   /**
    * Create an order from a validated form submission
    */
-  async createOrderFromForm(formId: string, submission: Record<string, unknown>): Promise<any> {
+  async createOrderFromForm(
+    formId: string,
+    submission: Record<string, unknown>,
+  ): Promise<any> {
     // Validate first
     const validation = await this.validateFormSubmission(formId, submission);
     if (!validation.valid) {
-      throw new Error('Form validation failed');
+      throw new Error("Form validation failed");
     }
 
-    const form = await this.prisma.posOrderForm.findUnique({ where: { id: formId } });
+    const form = await this.prisma.posOrderForm.findUnique({
+      where: { id: formId },
+    });
 
     const order = await this.prisma.posOrder.create({
       data: {
         shopId: form?.shopId,
         formId,
         customerName: submission.customerName as string,
-        status: 'PENDING',
+        status: "PENDING",
         items: [],
         total: 0,
         formData: submission,

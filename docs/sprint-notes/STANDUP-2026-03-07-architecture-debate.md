@@ -35,12 +35,12 @@ All builds verified green.
 ## Team Assignments
 
 | Blue Team (Pro-Adoption) | Red Team (Anti/Cautious) |
-|--------------------------|--------------------------|
-| AR — CTO | RG — Backend Lead |
-| DM — Frontend Dev | SP — Full-stack |
-| KS — QA Lead | PK — Sr. Backend |
-| NK — Frontend Lead | VS — Component Dev |
-| | AM — Integration |
+| ------------------------ | ------------------------ |
+| AR — CTO                 | RG — Backend Lead        |
+| DM — Frontend Dev        | SP — Full-stack          |
+| KS — QA Lead             | PK — Sr. Backend         |
+| NK — Frontend Lead       | VS — Component Dev       |
+|                          | AM — Integration         |
 
 ---
 
@@ -90,6 +90,7 @@ I hear you, AR, but let me push back on the urgency and scope.
 We're a delivery logistics platform. Our order lifecycle is well-defined: order → assign → pickup → deliver → POD. It doesn't change between tenants. The "customization" is in which routing provider they use, which notification provider they use — and we ALREADY solved that with the BYOK provider registry.
 
 **Second, the cost is real.** Adding a workflow layer means:
+
 - Every existing route must be refactored
 - Every developer must learn a new abstraction
 - Debugging gets harder — stack traces go through workflow engine instead of direct function calls
@@ -113,6 +114,7 @@ Our test count went from 0 to 57 suites in 8 sprints. But test QUALITY is my con
 KS, I respect the testing argument, but you can get the same benefit by just extracting functions. You don't need a workflow engine to write `validateDeliveryData(input): ValidatedInput`. That's just... a function.
 
 The workflow engine adds value when you need:
+
 1. Durable execution (resume after crash)
 2. Long-running processes (multi-day)
 3. Complex compensation (saga pattern)
@@ -152,6 +154,7 @@ DM, your example actually proves the OPPOSITE point. You needed 4 queries becaus
 Medusa uses links because their modules literally run on separate databases. Their modules CAN'T use foreign keys. But our modules share one Prisma client with one PostgreSQL database. We have real foreign keys. We have real transactions. Links would throw away one of our biggest advantages: referential integrity.
 
 Also — who's going to maintain the link tables? That's a whole new layer of data to manage, migrate, and test. If I add a new module that relates to orders, I now need to:
+
 1. Create the module
 2. Create a link definition
 3. Run `db:sync-links`
@@ -165,12 +168,14 @@ With Prisma, I just add a relation in the schema and I'm done.
 SP makes a fair point about foreign keys. Here's my counter: the real value of links isn't technical purity — it's **plugin extensibility**.
 
 Right now, if a deployer wants to add a "loyalty points" module that tracks points per customer per order, they'd need to:
+
 1. Fork our Prisma schema
 2. Add foreign keys from loyalty_points to orders and customers
 3. Run migrations on their database
 4. Hope their schema changes don't conflict with our next upgrade
 
 With links, they'd:
+
 1. Create `@witylogix/plugin-loyalty` as an npm package
 2. Define `defineLink(LoyaltyModule.linkable.points, OrderModule.linkable.order)`
 3. Install the plugin — link table is auto-created
@@ -201,6 +206,7 @@ Also, our notification system is a mess of direct function calls. When an order 
 NK, I like the idea of events, but let me be specific about the operational cost.
 
 A Redis-backed event bus means:
+
 - Redis becomes a critical dependency (it's currently optional for caching)
 - We need consumer groups, dead-letter queues, retry logic
 - Event schema versioning (what happens when event V2 has different fields than V1?)
@@ -298,6 +304,7 @@ After hearing both sides, here's what I'm deciding:
 ### Adopt — But Phased and Pragmatic
 
 **Phase 1 (Sprint 2.9-3.0): Workflow Engine ONLY**
+
 - Build the workflow engine as `packages/framework/`
 - Convert the TOP 3 most complex flows to workflows:
   - `createDeliveryOrderWorkflow`
@@ -309,11 +316,13 @@ After hearing both sides, here's what I'm deciding:
 **Why now:** RG is right that we need customers. But AR is right that our orchestration is getting messy. The compromise: build the engine, prove it on 3 workflows, ship the product with a hybrid architecture. Old routes still work. New features use workflows.
 
 **Phase 2 (After 10 customers): Event Bus**
+
 - Add Redis-backed event bus
 - Convert notification, analytics, webhook side effects to event subscribers
 - But ONLY after we see real usage patterns
 
 **Phase 3 (After 50 customers): Module Links + Plugin System**
+
 - RG is absolutely right: we shouldn't build plugin infrastructure before we have plugin demand
 - When customers start asking "can I add X to Witylogix?" — that's when we build links and plugins
 
@@ -333,18 +342,18 @@ After hearing both sides, here's what I'm deciding:
 
 ## Action Items
 
-| ID | Owner | Action | Sprint |
-|----|-------|--------|--------|
-| 1 | AR | Design `packages/framework/` with workflow engine, container DI, step runner | 2.9 |
-| 2 | RG | Define interfaces for WorkflowStep, WorkflowContext, StepCompensation | 2.9 |
-| 3 | PK | Implement `createDeliveryOrderWorkflow` as proof-of-concept | 2.9 |
-| 4 | SP | Implement `assignDriverWorkflow` using the framework | 2.9 |
-| 5 | NK | Implement `completeDeliveryWorkflow` | 2.9 |
-| 6 | KS | Write test suites for all 3 workflows (step-level + workflow-level) | 2.9 |
-| 7 | DM | Dashboard page: workflow execution viewer (admin can see step-by-step audit) | 2.9 |
-| 8 | VS | Refactor 3 existing API routes to call workflows instead of direct services | 2.9 |
-| 9 | AM | BullMQ integration for durable workflow execution | 2.9 |
-| ALL | ALL | After Sprint 2.9: review, retrospective, decide Phase 2 scope | 3.0 |
+| ID  | Owner | Action                                                                       | Sprint |
+| --- | ----- | ---------------------------------------------------------------------------- | ------ |
+| 1   | AR    | Design `packages/framework/` with workflow engine, container DI, step runner | 2.9    |
+| 2   | RG    | Define interfaces for WorkflowStep, WorkflowContext, StepCompensation        | 2.9    |
+| 3   | PK    | Implement `createDeliveryOrderWorkflow` as proof-of-concept                  | 2.9    |
+| 4   | SP    | Implement `assignDriverWorkflow` using the framework                         | 2.9    |
+| 5   | NK    | Implement `completeDeliveryWorkflow`                                         | 2.9    |
+| 6   | KS    | Write test suites for all 3 workflows (step-level + workflow-level)          | 2.9    |
+| 7   | DM    | Dashboard page: workflow execution viewer (admin can see step-by-step audit) | 2.9    |
+| 8   | VS    | Refactor 3 existing API routes to call workflows instead of direct services  | 2.9    |
+| 9   | AM    | BullMQ integration for durable workflow execution                            | 2.9    |
+| ALL | ALL   | After Sprint 2.9: review, retrospective, decide Phase 2 scope                | 3.0    |
 
 ---
 
@@ -383,5 +392,5 @@ Let's ship Sprint 2.9 and show the world what composable delivery logistics look
 
 ---
 
-*Document generated: 2026-03-07*
-*Next standup: Sprint 2.9 kickoff*
+_Document generated: 2026-03-07_
+_Next standup: Sprint 2.9 kickoff_

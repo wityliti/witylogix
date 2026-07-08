@@ -30,7 +30,10 @@ import {
   Select,
   Banner,
 } from "@shopify/polaris";
-import { createApiClientFromRequest, type SingleResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type SingleResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -50,7 +53,10 @@ interface UsersPageData {
 
 const ROLES = ["SUPER_ADMIN", "ADMIN", "DISPATCHER", "VIEWER"] as const;
 
-const ROLE_BADGE_TONE: Record<string, "magic" | "info" | "success" | undefined> = {
+const ROLE_BADGE_TONE: Record<
+  string,
+  "magic" | "info" | "success" | undefined
+> = {
   SUPER_ADMIN: "magic",
   ADMIN: "info",
   DISPATCHER: "success",
@@ -175,9 +181,11 @@ export default function UsersList() {
               }))}
               value={user.role}
               onChange={(value) => {
-                const form = document.querySelector(
-                  `form input[name="userId"][value="${user.id}"]`
-                )?.closest("form") as HTMLFormElement | null;
+                const form = document
+                  .querySelector(
+                    `form input[name="userId"][value="${user.id}"]`,
+                  )
+                  ?.closest("form") as HTMLFormElement | null;
                 if (form) {
                   const roleInput = document.createElement("input");
                   roleInput.type = "hidden";

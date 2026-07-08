@@ -47,14 +47,14 @@ export class ConnectionManager {
   registerConnection(
     connection: WebSocketConnection,
     orgId: string,
-    planTier: "FREE" | "STARTER" | "GROWTH" | "ENTERPRISE"
+    planTier: "FREE" | "STARTER" | "GROWTH" | "ENTERPRISE",
   ): void {
     const connections = this.tenantConnections.get(orgId) ?? new Set();
     const limit = CONNECTION_LIMITS[planTier];
 
     if (connections.size >= limit) {
       throw new Error(
-        `Connection limit exceeded for plan ${planTier}: ${connections.size}/${limit}`
+        `Connection limit exceeded for plan ${planTier}: ${connections.size}/${limit}`,
       );
     }
 
@@ -177,8 +177,7 @@ export class ConnectionManager {
     const connection = this.connectionsById.get(connectionId);
     if (!connection) return false;
 
-    const timeSinceHeartbeat =
-      Date.now() - connection.lastHeartbeat.getTime();
+    const timeSinceHeartbeat = Date.now() - connection.lastHeartbeat.getTime();
     return timeSinceHeartbeat < HEARTBEAT_TIMEOUT;
   }
 
@@ -190,7 +189,7 @@ export class ConnectionManager {
    */
   updateConnectionMetrics(
     connectionId: string,
-    metrics: Partial<ConnectionMetrics>
+    metrics: Partial<ConnectionMetrics>,
   ): void {
     const connection = this.connectionsById.get(connectionId);
     if (!connection) return;
@@ -254,7 +253,7 @@ export class ConnectionManager {
    */
   private updateTenantMetrics(
     orgId: string,
-    update: Partial<TenantMetrics>
+    update: Partial<TenantMetrics>,
   ): void {
     const current =
       this.tenantMetrics.get(orgId) ?? this.createDefaultMetrics();

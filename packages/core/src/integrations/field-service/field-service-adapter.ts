@@ -25,14 +25,14 @@ import type {
   FieldServiceBatchResult,
   FieldServiceOperationError,
   FieldServiceCredentials,
-} from './types.js';
+} from "./types.js";
 
 // ─── CIRCUIT BREAKER ────────────────────────────────────────────────────────
 
 enum CircuitState {
-  CLOSED = 'CLOSED',
-  OPEN = 'OPEN',
-  HALF_OPEN = 'HALF_OPEN',
+  CLOSED = "CLOSED",
+  OPEN = "OPEN",
+  HALF_OPEN = "HALF_OPEN",
 }
 
 interface CircuitBreakerConfig {
@@ -104,7 +104,9 @@ class CircuitBreaker {
   }
 
   private createCircuitOpenError(): Error {
-    const error = new Error('Circuit breaker is OPEN - service temporarily unavailable');
+    const error = new Error(
+      "Circuit breaker is OPEN - service temporarily unavailable",
+    );
     (error as any).retryable = true;
     return error;
   }
@@ -137,7 +139,9 @@ class RateLimiter {
    */
   async acquire(): Promise<void> {
     const now: number = Date.now();
-    this.requestTimestamps = this.requestTimestamps.filter((ts: number) => now - ts < this.windowMs);
+    this.requestTimestamps = this.requestTimestamps.filter(
+      (ts: number) => now - ts < this.windowMs,
+    );
 
     if (this.requestTimestamps.length >= this.maxRequests) {
       const oldestTimestamp: number = this.requestTimestamps[0] as number;
@@ -156,8 +160,13 @@ class RateLimiter {
    */
   getInfo(): RateLimitInfo {
     const now: number = Date.now();
-    const recentRequests: number[] = this.requestTimestamps.filter((ts: number) => now - ts < this.windowMs);
-    const remaining: number = Math.max(0, this.maxRequests - recentRequests.length);
+    const recentRequests: number[] = this.requestTimestamps.filter(
+      (ts: number) => now - ts < this.windowMs,
+    );
+    const remaining: number = Math.max(
+      0,
+      this.maxRequests - recentRequests.length,
+    );
     const resetAt: Date = new Date(now + this.windowMs);
 
     return {
@@ -197,7 +206,10 @@ class RetryHandler {
   /**
    * Execute function with exponential backoff retry
    */
-  async execute<T>(fn: () => Promise<T>, isRetryable?: (error: unknown) => boolean): Promise<T> {
+  async execute<T>(
+    fn: () => Promise<T>,
+    isRetryable?: (error: unknown) => boolean,
+  ): Promise<T> {
     let lastError: unknown;
     let delayMs = this.config.initialDelayMs;
 
@@ -214,7 +226,10 @@ class RetryHandler {
 
         if (attempt < this.config.maxAttempts) {
           await new Promise((resolve) => setTimeout(resolve, delayMs));
-          delayMs = Math.min(delayMs * this.config.backoffMultiplier, this.config.maxDelayMs);
+          delayMs = Math.min(
+            delayMs * this.config.backoffMultiplier,
+            this.config.maxDelayMs,
+          );
         }
       }
     }
@@ -246,17 +261,29 @@ class OAuth2TokenManager {
     const { credentials } = this.connection;
 
     if (!credentials.accessToken) {
-      throw this.createError('No access token available', 'MISSING_ACCESS_TOKEN');
+      throw this.createError(
+        "No access token available",
+        "MISSING_ACCESS_TOKEN",
+      );
     }
 
     // Check if token is expired or about to expire
     const now = Date.now();
-    if (credentials.expiresAt && now + this.refreshThreshold > credentials.expiresAt.getTime()) {
+    if (
+      credentials.expiresAt &&
+      now + this.refreshThreshold > credentials.expiresAt.getTime()
+    ) {
       if (credentials.refreshToken) {
         // Token refresh implemented by subclass
-        throw this.createError('Token refresh not implemented', 'NOT_IMPLEMENTED');
+        throw this.createError(
+          "Token refresh not implemented",
+          "NOT_IMPLEMENTED",
+        );
       } else {
-        throw this.createError('Token expired and no refresh token available', 'TOKEN_EXPIRED');
+        throw this.createError(
+          "Token expired and no refresh token available",
+          "TOKEN_EXPIRED",
+        );
       }
     }
 
@@ -274,7 +301,9 @@ class OAuth2TokenManager {
    * Update token expiry time
    */
   updateExpiry(expiresInSeconds: number): void {
-    this.connection.credentials.expiresAt = new Date(Date.now() + expiresInSeconds * 1000);
+    this.connection.credentials.expiresAt = new Date(
+      Date.now() + expiresInSeconds * 1000,
+    );
   }
 
   private createError(message: string, code: string): Error {
@@ -302,7 +331,10 @@ export abstract class AbstractFieldServiceAdapter {
   /**
    * Initialize adapter
    */
-  constructor(provider: FieldServiceProvider, connection: FieldServiceConnection) {
+  constructor(
+    provider: FieldServiceProvider,
+    connection: FieldServiceConnection,
+  ) {
     this.provider = provider;
     this.connection = connection;
     this.tokenManager = new OAuth2TokenManager(connection);
@@ -330,9 +362,11 @@ export abstract class AbstractFieldServiceAdapter {
    */
   private initializeFieldMappings(): void {
     if (this.connection.config.fieldMappings) {
-      Object.entries(this.connection.config.fieldMappings).forEach(([key, mapping]) => {
-        this.fieldMappings.set(key, mapping);
-      });
+      Object.entries(this.connection.config.fieldMappings).forEach(
+        ([key, mapping]) => {
+          this.fieldMappings.set(key, mapping);
+        },
+      );
     }
   }
 
@@ -347,14 +381,21 @@ export abstract class AbstractFieldServiceAdapter {
   /**
    * Get field mapping
    */
-  protected getFieldMapping(entity: string, field: string): FieldServiceFieldMapping | undefined {
+  protected getFieldMapping(
+    entity: string,
+    field: string,
+  ): FieldServiceFieldMapping | undefined {
     return this.fieldMappings.get(`${entity}.${field}`);
   }
 
   /**
    * Map field value from provider to Witylogix
    */
-  protected mapFieldValue(entity: string, field: string, value: unknown): unknown {
+  protected mapFieldValue(
+    entity: string,
+    field: string,
+    value: unknown,
+  ): unknown {
     const mapping = this.getFieldMapping(entity, field);
     if (!mapping || !mapping.metadata?.decode) {
       return value;
@@ -365,7 +406,11 @@ export abstract class AbstractFieldServiceAdapter {
   /**
    * Map field value from Witylogix to provider
    */
-  protected reverseMapFieldValue(entity: string, field: string, value: unknown): unknown {
+  protected reverseMapFieldValue(
+    entity: string,
+    field: string,
+    value: unknown,
+  ): unknown {
     const mapping = this.getFieldMapping(entity, field);
     if (!mapping || !mapping.metadata?.encode) {
       return value;
@@ -438,12 +483,17 @@ export abstract class AbstractFieldServiceAdapter {
   /**
    * Update work order
    */
-  abstract updateWorkOrder(workOrderId: string, updates: Partial<WorkOrder>): Promise<WorkOrder>;
+  abstract updateWorkOrder(
+    workOrderId: string,
+    updates: Partial<WorkOrder>,
+  ): Promise<WorkOrder>;
 
   /**
    * List work orders
    */
-  abstract listWorkOrders(params?: PaginationParams): Promise<PaginatedResult<WorkOrder>>;
+  abstract listWorkOrders(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<WorkOrder>>;
 
   // ─── TECHNICIAN MANAGEMENT ────────────────────────────────────────────────
 
@@ -455,7 +505,9 @@ export abstract class AbstractFieldServiceAdapter {
   /**
    * List technicians
    */
-  abstract listTechnicians(params?: PaginationParams): Promise<PaginatedResult<Technician>>;
+  abstract listTechnicians(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<Technician>>;
 
   /**
    * Update technician availability
@@ -489,7 +541,11 @@ export abstract class AbstractFieldServiceAdapter {
   /**
    * Schedule job for technician
    */
-  abstract scheduleJob(jobId: string, technicianId: string, start: Date): Promise<Job>;
+  abstract scheduleJob(
+    jobId: string,
+    technicianId: string,
+    start: Date,
+  ): Promise<Job>;
 
   // ─── EQUIPMENT MANAGEMENT ──────────────────────────────────────────────────
 
@@ -501,7 +557,9 @@ export abstract class AbstractFieldServiceAdapter {
   /**
    * List equipment
    */
-  abstract listEquipment(params?: PaginationParams): Promise<PaginatedResult<Equipment>>;
+  abstract listEquipment(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<Equipment>>;
 
   /**
    * Get equipment service history
@@ -523,12 +581,17 @@ export abstract class AbstractFieldServiceAdapter {
   /**
    * Update customer
    */
-  abstract updateCustomer(customerId: string, updates: Partial<CustomerRecord>): Promise<CustomerRecord>;
+  abstract updateCustomer(
+    customerId: string,
+    updates: Partial<CustomerRecord>,
+  ): Promise<CustomerRecord>;
 
   /**
    * List customers
    */
-  abstract listCustomers(params?: PaginationParams): Promise<PaginatedResult<CustomerRecord>>;
+  abstract listCustomers(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<CustomerRecord>>;
 
   // ─── ESTIMATES & INVOICES ──────────────────────────────────────────────────
 
@@ -555,24 +618,34 @@ export abstract class AbstractFieldServiceAdapter {
   /**
    * List invoices
    */
-  abstract listInvoices(params?: PaginationParams): Promise<PaginatedResult<Invoice>>;
+  abstract listInvoices(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<Invoice>>;
 
   /**
    * Record invoice payment
    */
-  abstract recordPayment(invoiceId: string, amount: number, method: string): Promise<Invoice>;
+  abstract recordPayment(
+    invoiceId: string,
+    amount: number,
+    method: string,
+  ): Promise<Invoice>;
 
   // ─── DISPATCH OPERATIONS ───────────────────────────────────────────────────
 
   /**
    * Create dispatch assignment
    */
-  abstract createDispatchAssignment(assignment: DispatchAssignment): Promise<DispatchAssignment>;
+  abstract createDispatchAssignment(
+    assignment: DispatchAssignment,
+  ): Promise<DispatchAssignment>;
 
   /**
    * Get dispatch assignment
    */
-  abstract getDispatchAssignment(assignmentId: string): Promise<DispatchAssignment>;
+  abstract getDispatchAssignment(
+    assignmentId: string,
+  ): Promise<DispatchAssignment>;
 
   /**
    * Update dispatch assignment

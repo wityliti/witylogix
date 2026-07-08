@@ -46,7 +46,7 @@ export interface WorkspaceContext {
  */
 export async function listWorkspaces(
   userId: string,
-  orgId: string
+  orgId: string,
 ): Promise<Workspace[]> {
   // Get user's org membership
   const membership = await prisma.orgMember.findUnique({
@@ -111,7 +111,7 @@ export async function listWorkspaces(
 export async function switchWorkspace(
   userId: string,
   orgId: string,
-  workspaceId: string
+  workspaceId: string,
 ): Promise<WorkspaceContext> {
   // Verify user is org member
   const membership = await prisma.orgMember.findUnique({
@@ -129,7 +129,7 @@ export async function switchWorkspace(
 
   if (!workspace) {
     throw new Error(
-      `Workspace ${workspaceId} not found in organization ${orgId}`
+      `Workspace ${workspaceId} not found in organization ${orgId}`,
     );
   }
 
@@ -145,7 +145,7 @@ export async function switchWorkspace(
 
   if (!hasAccess) {
     throw new Error(
-      `User ${userId} does not have access to workspace ${workspaceId}`
+      `User ${userId} does not have access to workspace ${workspaceId}`,
     );
   }
 
@@ -176,7 +176,7 @@ export async function switchWorkspace(
 export async function getActiveWorkspace(
   userId: string,
   orgId: string,
-  activeWorkspaceId?: string
+  activeWorkspaceId?: string,
 ): Promise<WorkspaceContext | null> {
   // If active workspace specified, validate and return it
   if (activeWorkspaceId) {
@@ -220,7 +220,7 @@ export async function getActiveWorkspace(
 export async function canAccessWorkspace(
   userId: string,
   orgId: string,
-  workspaceId: string
+  workspaceId: string,
 ): Promise<boolean> {
   const membership = await prisma.orgMember.findUnique({
     where: { orgId_userId: { orgId, userId } },
@@ -258,7 +258,7 @@ export async function canAccessWorkspace(
  */
 export async function getMemberWorkspaces(
   userId: string,
-  orgId: string
+  orgId: string,
 ): Promise<string[]> {
   const membership = await prisma.orgMember.findUnique({
     where: { orgId_userId: { orgId, userId } },
@@ -285,7 +285,7 @@ export async function getMemberWorkspaces(
 export async function updateMemberWorkspaceAccess(
   userId: string,
   orgId: string,
-  shopIds: string[]
+  shopIds: string[],
 ): Promise<void> {
   // Verify all shops exist in this org
   const shops = await prisma.shop.findMany({

@@ -37,11 +37,11 @@ export class AutoDocGenerator {
   generateSDKDocumentation(
     provider: string,
     className: string,
-    sdkClass: any
+    sdkClass: any,
   ): SDKDocumentation {
     const methods = this.extractMethods(sdkClass);
     const methodDocs = methods.map((method) =>
-      this.generateMethodDoc(provider, method, sdkClass)
+      this.generateMethodDoc(provider, method, sdkClass),
     );
 
     return {
@@ -51,7 +51,10 @@ export class AutoDocGenerator {
       description: this.extractClassDescription(sdkClass),
       imports: [`import { ${className} } from "@witylogix/${provider}";`],
       requiredCredentials: this.getRequiredCredentials(provider),
-      instantiationExample: this.generateInstantiationExample(provider, className),
+      instantiationExample: this.generateInstantiationExample(
+        provider,
+        className,
+      ),
       methods: methodDocs,
       authentication: {
         type: this.getAuthType(provider),
@@ -74,17 +77,26 @@ export class AutoDocGenerator {
     methodData: {
       name: string;
       description: string;
-      parameters: Array<{ name: string; type: string; required: boolean; description: string }>;
+      parameters: Array<{
+        name: string;
+        type: string;
+        required: boolean;
+        description: string;
+      }>;
       returns: { type: string; description: string };
     },
-    sdkClass?: any
+    sdkClass?: any,
   ): MethodDoc {
     const parameters: ParameterDoc[] = methodData.parameters.map((param) => ({
       name: param.name,
       type: param.type,
       required: param.required,
       description: param.description,
-      constraints: this.getParameterConstraints(provider, methodData.name, param.name),
+      constraints: this.getParameterConstraints(
+        provider,
+        methodData.name,
+        param.name,
+      ),
     }));
 
     const returns: ResponseDoc = {
@@ -137,7 +149,10 @@ export class AutoDocGenerator {
     return sdkClass?.description || "SDK client for provider";
   }
 
-  private generateInstantiationExample(provider: string, className: string): string {
+  private generateInstantiationExample(
+    provider: string,
+    className: string,
+  ): string {
     const examples: Record<string, string> = {
       stripe:
         `const client = new StripeClient({\\n` +
@@ -154,13 +169,15 @@ export class AutoDocGenerator {
         `});\\n\\n` +
         `const sale = await client.createSale({ amount: 10.00 });`,
     };
-    return examples[provider] || `const client = new ${className}(credentials);`;
+    return (
+      examples[provider] || `const client = new ${className}(credentials);`
+    );
   }
 
   private getParameterConstraints(
     provider: string,
     methodName: string,
-    paramName: string
+    paramName: string,
   ): string[] {
     // In real implementation, extract from decorators/JSDoc
     if (paramName === "amount") {
@@ -172,7 +189,10 @@ export class AutoDocGenerator {
     return [];
   }
 
-  private generateResponseExample(provider: string, methodName: string): unknown {
+  private generateResponseExample(
+    provider: string,
+    methodName: string,
+  ): unknown {
     const examples: Record<string, Record<string, unknown>> = {
       stripe: {
         charge: {
@@ -201,7 +221,7 @@ export class AutoDocGenerator {
 
   private getRateLimitCategory(
     provider: string,
-    methodName: string
+    methodName: string,
   ): string | undefined {
     const heavyMethods = ["createReport", "generateInvoices", "bulkUpdate"];
     return heavyMethods.includes(methodName) ? "heavy" : "standard";
@@ -219,7 +239,7 @@ export class AutoDocGenerator {
 
   private getMethodErrors(
     provider: string,
-    methodName: string
+    methodName: string,
   ): Array<{ code: string; description: string }> {
     return [
       {
@@ -250,8 +270,13 @@ export class AutoDocGenerator {
     return credentials[provider] || [];
   }
 
-  private getAuthType(provider: string): "API_KEY" | "OAUTH" | "NONE" | "MULTI_CREDENTIAL" {
-    const authTypes: Record<string, "API_KEY" | "OAUTH" | "NONE" | "MULTI_CREDENTIAL"> = {
+  private getAuthType(
+    provider: string,
+  ): "API_KEY" | "OAUTH" | "NONE" | "MULTI_CREDENTIAL" {
+    const authTypes: Record<
+      string,
+      "API_KEY" | "OAUTH" | "NONE" | "MULTI_CREDENTIAL"
+    > = {
       stripe: "API_KEY",
       paypal: "OAUTH",
       google: "OAUTH",
@@ -261,7 +286,8 @@ export class AutoDocGenerator {
 
   private getAuthDescription(provider: string): string {
     const descriptions: Record<string, string> = {
-      stripe: "Uses API key for authentication. Find your key in the Stripe dashboard.",
+      stripe:
+        "Uses API key for authentication. Find your key in the Stripe dashboard.",
       paypal: "Uses OAuth 2.0 flow. Requires client ID and secret.",
       google: "Uses OAuth 2.0 flow with Google Sign-In.",
     };
@@ -285,7 +311,9 @@ export class AutoDocGenerator {
       google: "Google",
       amazon: "Amazon",
     };
-    return names[provider] || provider.charAt(0).toUpperCase() + provider.slice(1);
+    return (
+      names[provider] || provider.charAt(0).toUpperCase() + provider.slice(1)
+    );
   }
 }
 
@@ -303,7 +331,7 @@ export class WebhookCatalog {
   generateWebhookCatalog(provider: string): WebhookCatalogType {
     const events = this.extractWebhookEvents(provider);
     const eventDocs = events.map((event) =>
-      this.generateWebhookEventDoc(provider, event)
+      this.generateWebhookEventDoc(provider, event),
     );
 
     return {
@@ -330,7 +358,7 @@ export class WebhookCatalog {
       eventName: string;
       description: string;
       payload: Record<string, unknown>;
-    }
+    },
   ): WebhookEventDoc {
     return {
       eventType: eventData.eventType,
@@ -377,7 +405,9 @@ export class WebhookCatalog {
     return eventMap[provider] || [];
   }
 
-  private generatePayloadSchema(payload: Record<string, unknown>): PayloadSchema[] {
+  private generatePayloadSchema(
+    payload: Record<string, unknown>,
+  ): PayloadSchema[] {
     const schemas: PayloadSchema[] = [];
     for (const [key, value] of Object.entries(payload)) {
       schemas.push({
@@ -390,10 +420,7 @@ export class WebhookCatalog {
     return schemas;
   }
 
-  private generateSamplePayload(
-    provider: string,
-    eventType: string
-  ): unknown {
+  private generateSamplePayload(provider: string, eventType: string): unknown {
     const samples: Record<string, Record<string, unknown>> = {
       "stripe.charge.created": {
         id: "evt_" + "1234567890",
@@ -422,7 +449,7 @@ export class WebhookCatalog {
 
   private getAvailableFilters(
     provider: string,
-    eventType: string
+    eventType: string,
   ): string[] | undefined {
     if (provider === "stripe") {
       return ["charge_id", "customer_id"];
@@ -457,13 +484,17 @@ export class WebhookCatalog {
         `  ]\\n` +
         `}`,
     };
-    return examples[provider] || "Consult provider docs for webhook subscription";
+    return (
+      examples[provider] || "Consult provider docs for webhook subscription"
+    );
   }
 
   private getVerificationMethod(provider: string): string | undefined {
     const methods: Record<string, string> = {
-      stripe: "Verify signature using X-Stripe-Signature header and webhook secret",
-      paypal: "Verify signature using X-PAYPAL-TRANSMISSION-SIG and certificate",
+      stripe:
+        "Verify signature using X-Stripe-Signature header and webhook secret",
+      paypal:
+        "Verify signature using X-PAYPAL-TRANSMISSION-SIG and certificate",
     };
     return methods[provider];
   }
@@ -521,9 +552,14 @@ export class RateLimitReference {
    * @param operation Operation name
    * @returns Rate limit info
    */
-  getRateLimitForOperation(provider: string, operation: string): RateLimitInfo | null {
+  getRateLimitForOperation(
+    provider: string,
+    operation: string,
+  ): RateLimitInfo | null {
     const limits = this.aggregateRateLimits(provider);
-    return limits.find((l) => l.appliesTo?.includes(operation)) || limits[0] || null;
+    return (
+      limits.find((l) => l.appliesTo?.includes(operation)) || limits[0] || null
+    );
   }
 
   /**
@@ -582,15 +618,17 @@ export class RateLimitReference {
         },
       ],
     };
-    return limitMap[provider] || [
-      {
-        limitType: "requests_per_second",
-        limit: 100,
-        unit: "per_second",
-        scope: "GLOBAL",
-        retryAfterHeader: false,
-      },
-    ];
+    return (
+      limitMap[provider] || [
+        {
+          limitType: "requests_per_second",
+          limit: 100,
+          unit: "per_second",
+          scope: "GLOBAL",
+          retryAfterHeader: false,
+        },
+      ]
+    );
   }
 
   private calculateEffectiveLimit(limits: RateLimitInfo[]): {
@@ -619,7 +657,8 @@ export class RateLimitReference {
     const urls: Record<string, string> = {
       stripe: "https://stripe.com/docs/api/rate-limits",
       paypal: "https://developer.paypal.com/docs/api/overview/#rate-limiting",
-      square: "https://developer.squareup.com/docs/build-basics/common-api-patterns#rate-limits",
+      square:
+        "https://developer.squareup.com/docs/build-basics/common-api-patterns#rate-limits",
     };
     return urls[provider];
   }
@@ -645,9 +684,7 @@ export class TroubleshootingPlaybooks {
    * @param provider Provider slug
    * @returns Troubleshooting reference
    */
-  generateTroubleshootingReference(
-    provider: string
-  ): TroubleshootingReference {
+  generateTroubleshootingReference(provider: string): TroubleshootingReference {
     const playbooks = this.generatePlaybooks(provider);
 
     return {
@@ -688,12 +725,14 @@ export class TroubleshootingPlaybooks {
         steps: [
           {
             stepNumber: 1,
-            description: "Verify credentials are correctly configured in environment",
+            description:
+              "Verify credentials are correctly configured in environment",
             expectedResult: "Credentials match provider dashboard",
           },
           {
             stepNumber: 2,
-            description: "Check if API key is still active and hasn't been revoked",
+            description:
+              "Check if API key is still active and hasn't been revoked",
             expectedResult: "Key shows as active in provider dashboard",
           },
           {
@@ -792,10 +831,7 @@ export class TroubleshootingPlaybooks {
       ],
     };
 
-    return [
-      ...commonPlaybooks,
-      ...(providerSpecificPlaybooks[provider] || []),
-    ];
+    return [...commonPlaybooks, ...(providerSpecificPlaybooks[provider] || [])];
   }
 
   private getErrorCategories(provider: string): string[] {
@@ -866,12 +902,17 @@ export class ConfigurationGuideGenerator {
 
   private generateIntroduction(provider: string): string {
     const intros: Record<string, string> = {
-      stripe: "Stripe is a payment processing platform. Follow these steps to integrate Stripe with Witylogix.",
-      paypal: "PayPal offers payment processing and checkout solutions. This guide covers PayPal integration.",
-      square: "Square provides payment processing and business tools. Learn how to set up Square integration.",
+      stripe:
+        "Stripe is a payment processing platform. Follow these steps to integrate Stripe with Witylogix.",
+      paypal:
+        "PayPal offers payment processing and checkout solutions. This guide covers PayPal integration.",
+      square:
+        "Square provides payment processing and business tools. Learn how to set up Square integration.",
     };
-    return intros[provider] ||
-      `Follow these steps to set up ${this.getProviderName(provider)} integration.`;
+    return (
+      intros[provider] ||
+      `Follow these steps to set up ${this.getProviderName(provider)} integration.`
+    );
   }
 
   private getPrerequisites(provider: string): string[] {
@@ -896,7 +937,7 @@ export class ConfigurationGuideGenerator {
   }
 
   private getRequiredCredentials(
-    provider: string
+    provider: string,
   ): Array<{ name: string; description: string; howToObtain: string }> {
     const credentials: Record<
       string,
@@ -950,7 +991,7 @@ export class ConfigurationGuideGenerator {
   }
 
   private getEnvironmentVariables(
-    provider: string
+    provider: string,
   ): Array<{ name: string; value: string; description: string }> | undefined {
     const vars: Record<
       string,
@@ -992,7 +1033,8 @@ export class ConfigurationGuideGenerator {
       {
         stepNumber: 3,
         title: "Configure Environment Variables",
-        instructions: "Store credentials in environment variables (never commit to git)",
+        instructions:
+          "Store credentials in environment variables (never commit to git)",
       },
       {
         stepNumber: 4,
@@ -1003,8 +1045,10 @@ export class ConfigurationGuideGenerator {
   }
 
   private getWebhookConfiguration(
-    provider: string
-  ): Array<{ eventType: string; setupInstructions: string; example?: string }> | undefined {
+    provider: string,
+  ):
+    | Array<{ eventType: string; setupInstructions: string; example?: string }>
+    | undefined {
     const configs: Record<
       string,
       Array<{ eventType: string; setupInstructions: string; example?: string }>
@@ -1038,26 +1082,30 @@ export class ConfigurationGuideGenerator {
       {
         stepNumber: 3,
         title: "Check Logs",
-        instructions: "Review provider logs to ensure all operations are successful",
+        instructions:
+          "Review provider logs to ensure all operations are successful",
       },
     ];
   }
 
   private getCommonIssues(
-    provider: string
+    provider: string,
   ): Array<{ issue: string; solution: string }> {
     return [
       {
         issue: "401 Unauthorized / Invalid API Key",
-        solution: "Verify the API key is correct and not expired. Check it's using the right environment (test vs. live).",
+        solution:
+          "Verify the API key is correct and not expired. Check it's using the right environment (test vs. live).",
       },
       {
         issue: "Webhooks not being received",
-        solution: "Ensure webhook URL is publicly accessible, check firewall rules, and verify signing secret is correct.",
+        solution:
+          "Ensure webhook URL is publicly accessible, check firewall rules, and verify signing secret is correct.",
       },
       {
         issue: "Rate limiting errors",
-        solution: "Implement exponential backoff retry logic and batch requests where possible.",
+        solution:
+          "Implement exponential backoff retry logic and batch requests where possible.",
       },
     ];
   }

@@ -28,6 +28,8 @@ describe("FlespiClient minimal", () => {
       } as Response),
     );
 
-    await expect(client.authenticate()).rejects.toThrow("authentication failed");
+    await expect(client.authenticate()).rejects.toThrow(
+      "authentication failed",
+    );
   });
 });

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
+import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface PresenceIndicator {
   userId: string;
   name: string;
-  status: 'online' | 'away' | 'offline' | 'busy';
+  status: "online" | "away" | "offline" | "busy";
   lastActive: string;
 }
 
@@ -16,16 +16,16 @@ interface PresenceGridProps {
 
 function getStatusColor(status: string) {
   switch (status) {
-    case 'online':
-      return 'bg-green-500/20 text-green-400 border-green-500/50';
-    case 'away':
-      return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
-    case 'busy':
-      return 'bg-orange-500/20 text-orange-400 border-orange-500/50';
-    case 'offline':
-      return 'bg-gray-500/20 text-gray-400 border-gray-500/50';
+    case "online":
+      return "bg-green-500/20 text-green-400 border-green-500/50";
+    case "away":
+      return "bg-yellow-500/20 text-yellow-400 border-yellow-500/50";
+    case "busy":
+      return "bg-orange-500/20 text-orange-400 border-orange-500/50";
+    case "offline":
+      return "bg-gray-500/20 text-gray-400 border-gray-500/50";
     default:
-      return '';
+      return "";
   }
 }
 
@@ -39,8 +39,8 @@ export function PresenceGrid({ indicators }: PresenceGridProps) {
               <div className="flex items-center gap-3 flex-1">
                 <div
                   className={cn(
-                    'w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold',
-                    getStatusColor(indicator.status)
+                    "w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold",
+                    getStatusColor(indicator.status),
                   )}
                 >
                   {indicator.name.charAt(0)}
@@ -56,8 +56,8 @@ export function PresenceGrid({ indicators }: PresenceGridProps) {
               </div>
               <div
                 className={cn(
-                  'px-2 py-1 rounded-full text-xs font-semibold border',
-                  getStatusColor(indicator.status)
+                  "px-2 py-1 rounded-full text-xs font-semibold border",
+                  getStatusColor(indicator.status),
                 )}
               >
                 {indicator.status.charAt(0).toUpperCase() +

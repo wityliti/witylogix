@@ -5,7 +5,13 @@ import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-type SortField = "name" | "baseRate" | "perKmRate" | "surcharge" | "minCharge" | "estimatedTime";
+type SortField =
+  | "name"
+  | "baseRate"
+  | "perKmRate"
+  | "surcharge"
+  | "minCharge"
+  | "estimatedTime";
 type SortOrder = "asc" | "desc";
 
 interface RateItem {
@@ -131,7 +137,9 @@ const CourierRateTable = forwardRef<HTMLDivElement, CourierRateTableProps>(
             </div>
           ) : sortedRates.length === 0 ? (
             <div className="flex items-center justify-center py-8">
-              <p className="text-sm text-wl-text-secondary">No rates available</p>
+              <p className="text-sm text-wl-text-secondary">
+                No rates available
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -195,7 +203,7 @@ const CourierRateTable = forwardRef<HTMLDivElement, CourierRateTableProps>(
         </CardContent>
       </Card>
     );
-  }
+  },
 );
 
 CourierRateTable.displayName = "CourierRateTable";

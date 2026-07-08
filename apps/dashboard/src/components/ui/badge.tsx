@@ -13,7 +13,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type BadgeVariant = "default" | "success" | "warning" | "danger" | "info" | "primary" | "status";
+type BadgeVariant =
+  | "default"
+  | "success"
+  | "warning"
+  | "danger"
+  | "info"
+  | "primary"
+  | "status";
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   children: ReactNode;
@@ -125,7 +132,18 @@ const iconSizeClasses: Record<BadgeSize, string> = {
 };
 
 const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
-  ({ className, children, variant = "default", dot, status, statusSize = "md", ...props }, ref) => {
+  (
+    {
+      className,
+      children,
+      variant = "default",
+      dot,
+      status,
+      statusSize = "md",
+      ...props
+    },
+    ref,
+  ) => {
     // If status variant is requested, render as StatusBadge
     if (variant === "status" && status) {
       const config = statusConfig[status];
@@ -142,7 +160,7 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
             "transition-all duration-fast ease-default",
             config.color,
             sizeClasses[statusSize],
-            className
+            className,
           )}
           {...props}
         >
@@ -169,7 +187,7 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
           "tracking-wide uppercase",
           "leading-relaxed whitespace-nowrap",
           variantClasses[variant],
-          className
+          className,
         )}
         {...props}
       >
@@ -177,7 +195,7 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
           <span
             className={cn(
               "w-1.5 h-1.5 rounded-full",
-              "bg-current flex-shrink-0"
+              "bg-current flex-shrink-0",
             )}
             aria-hidden="true"
           />
@@ -185,18 +203,31 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
         {children}
       </span>
     );
-  }
+  },
 );
 
 Badge.displayName = "Badge";
 
 // StatusBadge - Convenience export for status-specific badge
-const StatusBadge = forwardRef<HTMLSpanElement, Omit<BadgeProps, "variant"> & { status: DeliveryStatus; size?: BadgeSize }>(
-  ({ status, size = "md", ...props }, ref) => (
-    <Badge ref={ref} variant="status" status={status} statusSize={size} {...props} />
-  )
-);
+const StatusBadge = forwardRef<
+  HTMLSpanElement,
+  Omit<BadgeProps, "variant"> & { status: DeliveryStatus; size?: BadgeSize }
+>(({ status, size = "md", ...props }, ref) => (
+  <Badge
+    ref={ref}
+    variant="status"
+    status={status}
+    statusSize={size}
+    {...props}
+  />
+));
 
 StatusBadge.displayName = "StatusBadge";
 
-export { Badge, StatusBadge, type BadgeVariant, type DeliveryStatus, type BadgeSize };
+export {
+  Badge,
+  StatusBadge,
+  type BadgeVariant,
+  type DeliveryStatus,
+  type BadgeSize,
+};

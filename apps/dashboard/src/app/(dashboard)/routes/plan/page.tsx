@@ -1,29 +1,44 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import dynamic from 'next/dynamic';
-import { ChevronLeft, ChevronRight, Zap, Map, List } from 'lucide-react';
-import Link from 'next/link';
-import { Header } from '@/components/layout/header';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { StopListEditor, RouteSummary, RouteOptimizerControls } from '@/components/routes';
-import { useRoutePlanner } from '@/hooks/use-route-planner';
-import { useApiList } from '@/hooks/use-api';
-import type { StopMarker } from '@/components/map/route-stop-markers-layer';
+import { useState } from "react";
+import dynamic from "next/dynamic";
+import { ChevronLeft, ChevronRight, Zap, Map, List } from "lucide-react";
+import Link from "next/link";
+import { Header } from "@/components/layout/header";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import {
+  StopListEditor,
+  RouteSummary,
+  RouteOptimizerControls,
+} from "@/components/routes";
+import { useRoutePlanner } from "@/hooks/use-route-planner";
+import { useApiList } from "@/hooks/use-api";
+import type { StopMarker } from "@/components/map/route-stop-markers-layer";
 
-const WLMap = dynamic(() => import('@/components/map/wl-map').then((m) => m.WLMap), {
-  ssr: false,
-  loading: () => <div className="h-full bg-wl-bg-root animate-pulse rounded-xl" />,
-});
+const WLMap = dynamic(
+  () => import("@/components/map/wl-map").then((m) => m.WLMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full bg-wl-bg-root animate-pulse rounded-xl" />
+    ),
+  },
+);
 const RoutePolylineLayer = dynamic(
-  () => import('@/components/map/route-polyline-layer').then((m) => m.RoutePolylineLayer),
+  () =>
+    import("@/components/map/route-polyline-layer").then(
+      (m) => m.RoutePolylineLayer,
+    ),
   { ssr: false },
 );
 const RouteStopMarkersLayer = dynamic(
-  () => import('@/components/map/route-stop-markers-layer').then((m) => m.RouteStopMarkersLayer),
+  () =>
+    import("@/components/map/route-stop-markers-layer").then(
+      (m) => m.RouteStopMarkersLayer,
+    ),
   { ssr: false },
 );
 
@@ -34,17 +49,21 @@ interface ApiDriver {
   vehicleType: string;
 }
 
-type StepType = 'stops' | 'constraints' | 'optimize' | 'review' | 'dispatch';
+type StepType = "stops" | "constraints" | "optimize" | "review" | "dispatch";
 
 const STEPS: { id: StepType; label: string; description: string }[] = [
-  { id: 'stops', label: 'Add Stops', description: 'Define delivery locations' },
-  { id: 'constraints', label: 'Constraints', description: 'Set vehicle & time limits' },
-  { id: 'optimize', label: 'Optimize', description: 'Calculate best route' },
-  { id: 'review', label: 'Review', description: 'Check route details' },
-  { id: 'dispatch', label: 'Dispatch', description: 'Assign & schedule' },
+  { id: "stops", label: "Add Stops", description: "Define delivery locations" },
+  {
+    id: "constraints",
+    label: "Constraints",
+    description: "Set vehicle & time limits",
+  },
+  { id: "optimize", label: "Optimize", description: "Calculate best route" },
+  { id: "review", label: "Review", description: "Check route details" },
+  { id: "dispatch", label: "Dispatch", description: "Assign & schedule" },
 ];
 
-const MAP_STEPS: StepType[] = ['optimize', 'review', 'dispatch'];
+const MAP_STEPS: StepType[] = ["optimize", "review", "dispatch"];
 
 export default function RoutePlanningPage() {
   const {
@@ -76,7 +95,7 @@ export default function RoutePlanningPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
 
-  const { items: drivers } = useApiList<ApiDriver>('/api/v4/drivers');
+  const { items: drivers } = useApiList<ApiDriver>("/api/v4/drivers");
 
   const currentStepIdx = STEPS.findIndex((s) => s.id === state.currentStep);
 
@@ -88,23 +107,29 @@ export default function RoutePlanningPage() {
       sequence: idx + 1,
       lat: s.latitude!,
       lng: s.longitude!,
-      status: 'PENDING' as const,
+      status: "PENDING" as const,
       address: s.address,
     }));
 
-  const polylineCoords: Array<[number, number]> = mapStops.map((s) => [s.lng, s.lat]);
+  const polylineCoords: Array<[number, number]> = mapStops.map((s) => [
+    s.lng,
+    s.lat,
+  ]);
 
   const mapCenter: [number, number] =
     mapStops.length > 0 ? [mapStops[0].lng, mapStops[0].lat] : [0, 20];
 
-  const showMapToggle = MAP_STEPS.includes(state.currentStep) && mapStops.length > 0;
+  const showMapToggle =
+    MAP_STEPS.includes(state.currentStep) && mapStops.length > 0;
 
   const handleNextStep = async () => {
-    if (state.currentStep === 'optimize' && state.results.length === 0) {
+    if (state.currentStep === "optimize" && state.results.length === 0) {
       try {
         await runOptimization();
       } catch (err) {
-        setSaveError(err instanceof Error ? err.message : 'Optimization failed');
+        setSaveError(
+          err instanceof Error ? err.message : "Optimization failed",
+        );
         return;
       }
     }
@@ -116,9 +141,9 @@ export default function RoutePlanningPage() {
     setSaveError(null);
     try {
       const result = await saveRoute();
-      window.location.href = result?.id ? `/routes/${result.id}` : '/routes';
+      window.location.href = result?.id ? `/routes/${result.id}` : "/routes";
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'Failed to save route');
+      setSaveError(err instanceof Error ? err.message : "Failed to save route");
       setIsSaving(false);
     }
   };
@@ -150,22 +175,24 @@ export default function RoutePlanningPage() {
                   <button
                     onClick={() => idx <= currentStepIdx && goToStep(step.id)}
                     className={cn(
-                      'w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold',
-                      'transition-colors cursor-pointer',
+                      "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold",
+                      "transition-colors cursor-pointer",
                       isActive
-                        ? 'bg-blue-500 text-white ring-2 ring-offset-2 ring-blue-500'
+                        ? "bg-blue-500 text-white ring-2 ring-offset-2 ring-blue-500"
                         : isCompleted
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-wl-bg-surface border-2 border-wl-border-default text-wl-text-secondary',
+                          ? "bg-emerald-500 text-white"
+                          : "bg-wl-bg-surface border-2 border-wl-border-default text-wl-text-secondary",
                     )}
                   >
-                    {isCompleted ? '✓' : idx + 1}
+                    {isCompleted ? "✓" : idx + 1}
                   </button>
                   {idx < STEPS.length - 1 && (
                     <div
                       className={cn(
-                        'flex-1 h-0.5 mx-2',
-                        isCompleted || isActive ? 'bg-blue-500' : 'bg-wl-border-default',
+                        "flex-1 h-0.5 mx-2",
+                        isCompleted || isActive
+                          ? "bg-blue-500"
+                          : "bg-wl-border-default",
                       )}
                     />
                   )}
@@ -181,13 +208,15 @@ export default function RoutePlanningPage() {
                 <div key={step.id} className="flex-1 text-center">
                   <div
                     className={cn(
-                      'text-sm font-semibold',
-                      isActive ? 'text-blue-500' : 'text-wl-text-secondary',
+                      "text-sm font-semibold",
+                      isActive ? "text-blue-500" : "text-wl-text-secondary",
                     )}
                   >
                     {step.label}
                   </div>
-                  <div className="text-xs text-wl-text-tertiary">{step.description}</div>
+                  <div className="text-xs text-wl-text-tertiary">
+                    {step.description}
+                  </div>
                 </div>
               );
             })}
@@ -201,10 +230,10 @@ export default function RoutePlanningPage() {
               <button
                 onClick={() => setShowMap(false)}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
                   !showMap
-                    ? 'bg-wl-bg-elevated text-wl-text-primary shadow-sm'
-                    : 'text-wl-text-secondary hover:text-wl-text-primary',
+                    ? "bg-wl-bg-elevated text-wl-text-primary shadow-sm"
+                    : "text-wl-text-secondary hover:text-wl-text-primary",
                 )}
               >
                 <List className="w-3.5 h-3.5" /> List
@@ -212,16 +241,18 @@ export default function RoutePlanningPage() {
               <button
                 onClick={() => setShowMap(true)}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
                   showMap
-                    ? 'bg-wl-bg-elevated text-wl-text-primary shadow-sm'
-                    : 'text-wl-text-secondary hover:text-wl-text-primary',
+                    ? "bg-wl-bg-elevated text-wl-text-primary shadow-sm"
+                    : "text-wl-text-secondary hover:text-wl-text-primary",
                 )}
               >
                 <Map className="w-3.5 h-3.5" /> Map
               </button>
             </div>
-            <span className="text-xs text-wl-text-tertiary">{mapStops.length} stops mapped</span>
+            <span className="text-xs text-wl-text-tertiary">
+              {mapStops.length} stops mapped
+            </span>
           </div>
         )}
 
@@ -251,12 +282,15 @@ export default function RoutePlanningPage() {
             {/* Main Content */}
             <div className="lg:col-span-2">
               {/* STEP 1: STOPS */}
-              {state.currentStep === 'stops' && (
+              {state.currentStep === "stops" && (
                 <Card className="p-6 border-wl-border-default bg-wl-bg-surface">
                   <div className="mb-4">
-                    <h2 className="text-lg font-bold text-wl-text-primary mb-1">Add Delivery Stops</h2>
+                    <h2 className="text-lg font-bold text-wl-text-primary mb-1">
+                      Add Delivery Stops
+                    </h2>
                     <p className="text-sm text-wl-text-secondary">
-                      Search for addresses and add them to your route. You can drag to reorder or import from CSV.
+                      Search for addresses and add them to your route. You can
+                      drag to reorder or import from CSV.
                     </p>
                   </div>
                   <StopListEditor
@@ -271,26 +305,33 @@ export default function RoutePlanningPage() {
               )}
 
               {/* STEP 2: CONSTRAINTS */}
-              {state.currentStep === 'constraints' && (
+              {state.currentStep === "constraints" && (
                 <Card className="p-6 border-wl-border-default bg-wl-bg-surface">
                   <div className="mb-6">
-                    <h2 className="text-lg font-bold text-wl-text-primary mb-1">Route Constraints</h2>
+                    <h2 className="text-lg font-bold text-wl-text-primary mb-1">
+                      Route Constraints
+                    </h2>
                     <p className="text-sm text-wl-text-secondary">
-                      Set vehicle specifications and driver preferences to optimize your route.
+                      Set vehicle specifications and driver preferences to
+                      optimize your route.
                     </p>
                   </div>
 
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-semibold text-wl-text-primary mb-3">Vehicle Type</label>
+                      <label className="block text-sm font-semibold text-wl-text-primary mb-3">
+                        Vehicle Type
+                      </label>
                       <select
-                        value={state.constraints.vehicleType || ''}
-                        onChange={(e) => updateConstraints({ vehicleType: e.target.value })}
+                        value={state.constraints.vehicleType || ""}
+                        onChange={(e) =>
+                          updateConstraints({ vehicleType: e.target.value })
+                        }
                         className={cn(
-                          'w-full px-4 py-2 rounded-md text-sm',
-                          'bg-wl-bg-root text-wl-text-primary',
-                          'border border-wl-border-default',
-                          'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors',
+                          "w-full px-4 py-2 rounded-md text-sm",
+                          "bg-wl-bg-root text-wl-text-primary",
+                          "border border-wl-border-default",
+                          "focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors",
                         )}
                       >
                         <option value="">Select vehicle type...</option>
@@ -309,41 +350,47 @@ export default function RoutePlanningPage() {
                       <input
                         type="number"
                         min="0"
-                        value={state.constraints.vehicleCapacity || ''}
+                        value={state.constraints.vehicleCapacity || ""}
                         onChange={(e) =>
                           updateConstraints({
-                            vehicleCapacity: e.target.value ? parseInt(e.target.value) : undefined,
+                            vehicleCapacity: e.target.value
+                              ? parseInt(e.target.value)
+                              : undefined,
                           })
                         }
                         placeholder="e.g., 20"
                         className={cn(
-                          'w-full px-4 py-2 rounded-md text-sm',
-                          'bg-wl-bg-root text-wl-text-primary',
-                          'border border-wl-border-default',
-                          'placeholder:text-wl-text-tertiary',
-                          'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors',
+                          "w-full px-4 py-2 rounded-md text-sm",
+                          "bg-wl-bg-root text-wl-text-primary",
+                          "border border-wl-border-default",
+                          "placeholder:text-wl-text-tertiary",
+                          "focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors",
                         )}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-wl-text-primary mb-3">Weight Limit (kg)</label>
+                      <label className="block text-sm font-semibold text-wl-text-primary mb-3">
+                        Weight Limit (kg)
+                      </label>
                       <input
                         type="number"
                         min="0"
-                        value={state.constraints.weightLimit || ''}
+                        value={state.constraints.weightLimit || ""}
                         onChange={(e) =>
                           updateConstraints({
-                            weightLimit: e.target.value ? parseInt(e.target.value) : undefined,
+                            weightLimit: e.target.value
+                              ? parseInt(e.target.value)
+                              : undefined,
                           })
                         }
                         placeholder="e.g., 500"
                         className={cn(
-                          'w-full px-4 py-2 rounded-md text-sm',
-                          'bg-wl-bg-root text-wl-text-primary',
-                          'border border-wl-border-default',
-                          'placeholder:text-wl-text-tertiary',
-                          'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors',
+                          "w-full px-4 py-2 rounded-md text-sm",
+                          "bg-wl-bg-root text-wl-text-primary",
+                          "border border-wl-border-default",
+                          "placeholder:text-wl-text-tertiary",
+                          "focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors",
                         )}
                       />
                     </div>
@@ -353,13 +400,15 @@ export default function RoutePlanningPage() {
                         Preferred Driver (Optional)
                       </label>
                       <select
-                        value={state.constraints.driverId || ''}
-                        onChange={(e) => updateConstraints({ driverId: e.target.value })}
+                        value={state.constraints.driverId || ""}
+                        onChange={(e) =>
+                          updateConstraints({ driverId: e.target.value })
+                        }
                         className={cn(
-                          'w-full px-4 py-2 rounded-md text-sm',
-                          'bg-wl-bg-root text-wl-text-primary',
-                          'border border-wl-border-default',
-                          'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors',
+                          "w-full px-4 py-2 rounded-md text-sm",
+                          "bg-wl-bg-root text-wl-text-primary",
+                          "border border-wl-border-default",
+                          "focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors",
                         )}
                       >
                         <option value="">Any driver</option>
@@ -375,12 +424,15 @@ export default function RoutePlanningPage() {
               )}
 
               {/* STEP 3: OPTIMIZE */}
-              {state.currentStep === 'optimize' && (
+              {state.currentStep === "optimize" && (
                 <Card className="p-6 border-wl-border-default bg-wl-bg-surface">
                   <div className="mb-6">
-                    <h2 className="text-lg font-bold text-wl-text-primary mb-1">Optimize Route</h2>
+                    <h2 className="text-lg font-bold text-wl-text-primary mb-1">
+                      Optimize Route
+                    </h2>
                     <p className="text-sm text-wl-text-secondary">
-                      Configure optimization settings and run the route optimizer.
+                      Configure optimization settings and run the route
+                      optimizer.
                     </p>
                   </div>
                   <RouteOptimizerControls
@@ -408,23 +460,30 @@ export default function RoutePlanningPage() {
               )}
 
               {/* STEP 4: REVIEW */}
-              {state.currentStep === 'review' && (
+              {state.currentStep === "review" && (
                 <Card className="p-6 border-wl-border-default bg-wl-bg-surface">
                   <div className="mb-6">
-                    <h2 className="text-lg font-bold text-wl-text-primary mb-1">Review Route</h2>
+                    <h2 className="text-lg font-bold text-wl-text-primary mb-1">
+                      Review Route
+                    </h2>
                     <p className="text-sm text-wl-text-secondary">
                       Check the optimized route details before dispatching.
                     </p>
                   </div>
-                  <RouteSummary result={state.selectedResult} stops={state.stops} />
+                  <RouteSummary
+                    result={state.selectedResult}
+                    stops={state.stops}
+                  />
                 </Card>
               )}
 
               {/* STEP 5: DISPATCH */}
-              {state.currentStep === 'dispatch' && (
+              {state.currentStep === "dispatch" && (
                 <Card className="p-6 border-wl-border-default bg-wl-bg-surface">
                   <div className="mb-6">
-                    <h2 className="text-lg font-bold text-wl-text-primary mb-1">Dispatch & Schedule</h2>
+                    <h2 className="text-lg font-bold text-wl-text-primary mb-1">
+                      Dispatch & Schedule
+                    </h2>
                     <p className="text-sm text-wl-text-secondary">
                       Assign driver, save as template, and schedule the route.
                     </p>
@@ -432,20 +491,26 @@ export default function RoutePlanningPage() {
 
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-semibold text-wl-text-primary mb-3">Assign Driver</label>
+                      <label className="block text-sm font-semibold text-wl-text-primary mb-3">
+                        Assign Driver
+                      </label>
                       <select
-                        value={state.assignedDriver || ''}
+                        value={state.assignedDriver || ""}
                         onChange={(e) => setAssignedDriver(e.target.value)}
                         className={cn(
-                          'w-full px-4 py-2 rounded-md text-sm',
-                          'bg-wl-bg-root text-wl-text-primary',
-                          'border border-wl-border-default',
-                          'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors',
+                          "w-full px-4 py-2 rounded-md text-sm",
+                          "bg-wl-bg-root text-wl-text-primary",
+                          "border border-wl-border-default",
+                          "focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors",
                         )}
                       >
                         <option value="">Select a driver...</option>
                         {drivers
-                          .filter((d) => d.status === 'AVAILABLE' || d.status === 'OFFLINE')
+                          .filter(
+                            (d) =>
+                              d.status === "AVAILABLE" ||
+                              d.status === "OFFLINE",
+                          )
                           .map((d) => (
                             <option key={d.id} value={d.id}>
                               {d.name} ({d.vehicleType})
@@ -455,20 +520,26 @@ export default function RoutePlanningPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-wl-text-primary mb-3">Schedule</label>
+                      <label className="block text-sm font-semibold text-wl-text-primary mb-3">
+                        Schedule
+                      </label>
                       <select
-                        value={state.dispatchSchedule || ''}
+                        value={state.dispatchSchedule || ""}
                         onChange={(e) => setDispatchSchedule(e.target.value)}
                         className={cn(
-                          'w-full px-4 py-2 rounded-md text-sm',
-                          'bg-wl-bg-root text-wl-text-primary',
-                          'border border-wl-border-default',
-                          'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors',
+                          "w-full px-4 py-2 rounded-md text-sm",
+                          "bg-wl-bg-root text-wl-text-primary",
+                          "border border-wl-border-default",
+                          "focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors",
                         )}
                       >
                         <option value="">Dispatch immediately</option>
-                        <option value="tomorrow-9am">Tomorrow at 9:00 AM</option>
-                        <option value="tomorrow-2pm">Tomorrow at 2:00 PM</option>
+                        <option value="tomorrow-9am">
+                          Tomorrow at 9:00 AM
+                        </option>
+                        <option value="tomorrow-2pm">
+                          Tomorrow at 2:00 PM
+                        </option>
                         <option value="custom">Pick date & time</option>
                       </select>
                     </div>
@@ -482,11 +553,11 @@ export default function RoutePlanningPage() {
                         placeholder="Template name..."
                         onChange={(e) => setTemplate(e.target.value, undefined)}
                         className={cn(
-                          'w-full px-4 py-2 rounded-md text-sm',
-                          'bg-wl-bg-root text-wl-text-primary',
-                          'border border-wl-border-default',
-                          'placeholder:text-wl-text-tertiary',
-                          'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors',
+                          "w-full px-4 py-2 rounded-md text-sm",
+                          "bg-wl-bg-root text-wl-text-primary",
+                          "border border-wl-border-default",
+                          "placeholder:text-wl-text-tertiary",
+                          "focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors",
                         )}
                       />
                     </div>
@@ -498,69 +569,91 @@ export default function RoutePlanningPage() {
             {/* Sidebar: Route Summary & Stats */}
             <div className="flex flex-col gap-4">
               <Card className="p-4 bg-wl-bg-surface border-wl-border-default sticky top-6">
-                <div className="text-sm font-semibold text-wl-text-primary mb-4">Route Summary</div>
+                <div className="text-sm font-semibold text-wl-text-primary mb-4">
+                  Route Summary
+                </div>
 
                 <div className="space-y-3">
                   <div>
-                    <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">Stops</div>
-                    <div className="text-2xl font-bold text-blue-500">{state.stops.length}</div>
+                    <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">
+                      Stops
+                    </div>
+                    <div className="text-2xl font-bold text-blue-500">
+                      {state.stops.length}
+                    </div>
                   </div>
 
                   {state.selectedResult && (
                     <>
                       <div>
-                        <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">Distance</div>
+                        <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">
+                          Distance
+                        </div>
                         <div className="text-xl font-bold text-blue-400">
                           {state.selectedResult.totalDistance.toFixed(1)} km
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">Duration</div>
+                        <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">
+                          Duration
+                        </div>
                         <div className="text-xl font-bold text-amber-500">
                           {Math.round(state.selectedResult.totalDuration)} min
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">Provider</div>
-                        <Badge variant="info">{state.selectedResult.provider.toUpperCase()}</Badge>
+                        <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">
+                          Provider
+                        </div>
+                        <Badge variant="info">
+                          {state.selectedResult.provider.toUpperCase()}
+                        </Badge>
                       </div>
                     </>
                   )}
                 </div>
               </Card>
 
-              {state.currentStep === 'stops' && !canProceedFromStops && (
+              {state.currentStep === "stops" && !canProceedFromStops && (
                 <Card className="p-3 bg-amber-500/10 border border-amber-500/30">
-                  <div className="text-sm text-amber-500">Add at least 2 stops to proceed</div>
-                </Card>
-              )}
-
-              {state.currentStep === 'optimize' && state.results.length === 0 && (
-                <Card className="p-3 bg-blue-500/10 border border-blue-500/30">
-                  <div className="text-sm text-blue-400">
-                    Click &quot;Optimize Route&quot; to calculate routes
+                  <div className="text-sm text-amber-500">
+                    Add at least 2 stops to proceed
                   </div>
                 </Card>
               )}
+
+              {state.currentStep === "optimize" &&
+                state.results.length === 0 && (
+                  <Card className="p-3 bg-blue-500/10 border border-blue-500/30">
+                    <div className="text-sm text-blue-400">
+                      Click &quot;Optimize Route&quot; to calculate routes
+                    </div>
+                  </Card>
+                )}
             </div>
           </div>
         )}
 
         {/* ═══ Bottom Navigation ═══ */}
         <div className="flex gap-3 justify-between mt-6">
-          <Button variant="secondary" size="md" onClick={previousStep} disabled={currentStepIdx === 0}>
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={previousStep}
+            disabled={currentStepIdx === 0}
+          >
             <ChevronLeft className="w-4 h-4" />
             Back
           </Button>
 
           <div className="flex gap-3">
-            {state.currentStep !== 'dispatch' && (
+            {state.currentStep !== "dispatch" && (
               <Button variant="ghost" size="md" onClick={skipStep}>
                 Skip
               </Button>
             )}
 
-            {state.currentStep === 'dispatch' ? (
+            {state.currentStep === "dispatch" ? (
               <Button
                 variant="primary"
                 size="md"
@@ -568,7 +661,7 @@ export default function RoutePlanningPage() {
                 disabled={isSaving || !state.assignedDriver}
               >
                 <Zap className="w-4 h-4" />
-                {isSaving ? 'Dispatching...' : 'Dispatch Route'}
+                {isSaving ? "Dispatching..." : "Dispatch Route"}
               </Button>
             ) : (
               <Button
@@ -576,8 +669,8 @@ export default function RoutePlanningPage() {
                 size="md"
                 onClick={handleNextStep}
                 disabled={
-                  (state.currentStep === 'stops' && !canProceedFromStops) ||
-                  (state.currentStep === 'optimize' && isOptimizing)
+                  (state.currentStep === "stops" && !canProceedFromStops) ||
+                  (state.currentStep === "optimize" && isOptimizing)
                 }
               >
                 Next

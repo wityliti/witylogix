@@ -1,11 +1,15 @@
-'use client';
+"use client";
 
-import { AlertCircle, Zap } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import type { OptimizationMode, RoutingProvider, OptimizationResult } from '@/hooks/use-route-planner';
+import { AlertCircle, Zap } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import type {
+  OptimizationMode,
+  RoutingProvider,
+  OptimizationResult,
+} from "@/hooks/use-route-planner";
 
 interface RouteOptimizerControlsProps {
   optimizationMode: OptimizationMode;
@@ -24,26 +28,26 @@ interface RouteOptimizerControlsProps {
   onUpdateConstraints?: (constraints: any) => void;
 }
 
-const providers: RoutingProvider[] = ['google', 'mapbox', 'here', 'valhalla'];
-const modes: OptimizationMode[] = ['fastest', 'shortest', 'balanced'];
+const providers: RoutingProvider[] = ["google", "mapbox", "here", "valhalla"];
+const modes: OptimizationMode[] = ["fastest", "shortest", "balanced"];
 
 const providerLabels: Record<RoutingProvider, string> = {
-  google: 'Google Maps',
-  mapbox: 'Mapbox',
-  here: 'HERE Maps',
-  valhalla: 'Valhalla',
+  google: "Google Maps",
+  mapbox: "Mapbox",
+  here: "HERE Maps",
+  valhalla: "Valhalla",
 };
 
 const modeLabels: Record<OptimizationMode, string> = {
-  fastest: 'Fastest Route',
-  shortest: 'Shortest Distance',
-  balanced: 'Balanced',
+  fastest: "Fastest Route",
+  shortest: "Shortest Distance",
+  balanced: "Balanced",
 };
 
 const modeDescription: Record<OptimizationMode, string> = {
-  fastest: 'Minimize travel time',
-  shortest: 'Minimize distance',
-  balanced: 'Balance time and distance',
+  fastest: "Minimize travel time",
+  shortest: "Minimize distance",
+  balanced: "Balance time and distance",
 };
 
 export function RouteOptimizerControls({
@@ -82,11 +86,11 @@ export function RouteOptimizerControls({
             <label
               key={mode}
               className={cn(
-                'flex items-center gap-3 p-3 rounded-md cursor-pointer',
-                'border transition-colors',
+                "flex items-center gap-3 p-3 rounded-md cursor-pointer",
+                "border transition-colors",
                 optimizationMode === mode
-                  ? 'bg-wl-primary-500/10 border-wl-primary-500'
-                  : 'border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong'
+                  ? "bg-wl-primary-500/10 border-wl-primary-500"
+                  : "border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong",
               )}
             >
               <input
@@ -122,10 +126,10 @@ export function RouteOptimizerControls({
               key={provider}
               onClick={() => toggleProvider(provider)}
               className={cn(
-                'p-3 rounded-md border transition-colors text-sm font-medium',
+                "p-3 rounded-md border transition-colors text-sm font-medium",
                 selectedProviders.includes(provider)
-                  ? 'bg-wl-primary-500/10 border-wl-primary-500 text-wl-primary-400'
-                  : 'border-wl-border-default bg-wl-bg-surface text-wl-text-secondary hover:border-wl-border-strong'
+                  ? "bg-wl-primary-500/10 border-wl-primary-500 text-wl-primary-400"
+                  : "border-wl-border-default bg-wl-bg-surface text-wl-text-secondary hover:border-wl-border-strong",
               )}
             >
               {providerLabels[provider]}
@@ -153,9 +157,7 @@ export function RouteOptimizerControls({
               <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-1">
                 Type
               </div>
-              <div className="text-sm text-wl-text-primary">
-                {vehicleType}
-              </div>
+              <div className="text-sm text-wl-text-primary">{vehicleType}</div>
             </div>
           )}
 
@@ -168,7 +170,7 @@ export function RouteOptimizerControls({
                 <div className="w-full bg-wl-bg-surface rounded-full h-2">
                   <div
                     className="bg-wl-primary-500 h-2 rounded-full"
-                    style={{ width: '65%' }}
+                    style={{ width: "65%" }}
                   />
                 </div>
                 <span className="text-sm text-wl-text-secondary whitespace-nowrap">
@@ -207,7 +209,7 @@ export function RouteOptimizerControls({
           className="w-full"
         >
           <Zap className="w-4 h-4" />
-          {isOptimizing ? 'Optimizing...' : 'Optimize Route'}
+          {isOptimizing ? "Optimizing..." : "Optimize Route"}
         </Button>
 
         {isOptimizing && (
@@ -219,8 +221,8 @@ export function RouteOptimizerControls({
             <div className="w-full bg-wl-bg-surface rounded-full h-2 overflow-hidden">
               <div
                 className={cn(
-                  'h-2 rounded-full transition-all duration-300',
-                  progress >= 100 ? 'bg-wl-success-400' : 'bg-wl-primary-500'
+                  "h-2 rounded-full transition-all duration-300",
+                  progress >= 100 ? "bg-wl-success-400" : "bg-wl-primary-500",
                 )}
                 style={{ width: `${progress}%` }}
               />
@@ -242,10 +244,10 @@ export function RouteOptimizerControls({
                 key={result.provider}
                 onClick={() => onSelectResult(result)}
                 className={cn(
-                  'w-full p-3 rounded-md border transition-colors text-left',
+                  "w-full p-3 rounded-md border transition-colors text-left",
                   selectedResult?.provider === result.provider
-                    ? 'bg-wl-primary-500/10 border-wl-primary-500'
-                    : 'border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong'
+                    ? "bg-wl-primary-500/10 border-wl-primary-500"
+                    : "border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong",
                 )}
               >
                 <div className="flex items-start justify-between mb-2">
@@ -275,7 +277,7 @@ export function RouteOptimizerControls({
                   <div>
                     <div className="text-wl-text-tertiary">Cost</div>
                     <div className="font-semibold text-wl-success-400">
-                      ${result.costEstimate?.toFixed(2) ?? '—'}
+                      ${result.costEstimate?.toFixed(2) ?? "—"}
                     </div>
                   </div>
                 </div>

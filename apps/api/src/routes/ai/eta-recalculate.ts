@@ -11,16 +11,16 @@
  *   GET    /api/v4/ai/eta/recalculate/health Health check
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { z } from 'zod';
-import { requireAuth, requireRole } from '../../middleware/auth.js';
-import { tenantContext } from '../../middleware/tenant.js';
-import { ETARecalculator } from '@witylogix/core/eta-recalculator';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { z } from "zod";
+import { requireAuth, requireRole } from "../../middleware/auth.js";
+import { tenantContext } from "../../middleware/tenant.js";
+import { ETARecalculator } from "@witylogix/core/eta-recalculator";
 import type {
   ActiveDelivery,
   NotificationTrigger,
-} from '@witylogix/core/eta-recalculator';
-import type { TrainingPoint } from '@witylogix/core/ai-eta';
+} from "@witylogix/core/eta-recalculator";
+import type { TrainingPoint } from "@witylogix/core/ai-eta";
 
 // ─── Singleton recalculator per tenant ───────────────────────────────────
 
@@ -37,8 +37,8 @@ function getRecalculator(tenantId: string): ETARecalculator {
           // to keep the recalculation response latency under 500ms
           console.info(
             `[ETA-Notification] delivery=${trigger.deliveryId} ` +
-            `delta=${trigger.deltaMinutes.toFixed(1)}min ` +
-            `channels=${trigger.channels.join(',')}`,
+              `delta=${trigger.deltaMinutes.toFixed(1)}min ` +
+              `channels=${trigger.channels.join(",")}`,
           );
         },
         deltaThresholdMinutes: 5,
@@ -74,9 +74,9 @@ const deliverySchema = z.object({
   currentEtaMinutes: z.number().nullable().default(null),
   lastSentEtaAt: z.string().datetime().nullable().default(null),
   zoneType: z
-    .enum(['urban-core', 'urban', 'suburban', 'rural', 'highway'])
+    .enum(["urban-core", "urban", "suburban", "rural", "highway"])
     .optional()
-    .default('urban'),
+    .default("urban"),
   numStopsRemaining: z.number().min(0).optional().default(1),
 });
 
@@ -100,7 +100,13 @@ const trainSchema = z.object({
           dayOfWeek: z.number().min(0).max(6),
           numStopsRemaining: z.number().min(0),
           driverSpeedKmh: z.number().min(0),
-          zoneType: z.enum(['urban-core', 'urban', 'suburban', 'rural', 'highway']),
+          zoneType: z.enum([
+            "urban-core",
+            "urban",
+            "suburban",
+            "rural",
+            "highway",
+          ]),
         }),
         osrmEstimateMinutes: z.number().positive(),
         actualMinutes: z.number().positive(),
@@ -112,18 +118,21 @@ const trainSchema = z.object({
 
 // ─── Route Plugin ─────────────────────────────────────────────────────────
 
-export default async function etaRecalculateRoutes(fastify: FastifyInstance): Promise<void> {
-  fastify.addHook('preHandler', requireAuth);
-  fastify.addHook('preHandler', tenantContext);
+export default async function etaRecalculateRoutes(
+  fastify: FastifyInstance,
+): Promise<void> {
+  fastify.addHook("preHandler", requireAuth);
+  fastify.addHook("preHandler", tenantContext);
 
   // ── POST /recalculate — Single delivery ───────────────────────────────
 
   fastify.post<{ Body: z.infer<typeof recalculateSchema> }>(
-    '/',
+    "/",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = recalculateSchema.parse(request.body);
       const tenantId = (request as any).tenantId;
-      if (!tenantId) return reply.code(401).send({ error: 'Missing tenant context' });
+      if (!tenantId)
+        return reply.code(401).send({ error: "Missing tenant context" });
       const recalculator = getRecalculator(tenantId);
 
       const start = performance.now();
@@ -165,11 +174,12 @@ export default async function etaRecalculateRoutes(fastify: FastifyInstance): Pr
   // ── POST /batch — Multiple deliveries in one GPS update ──────────────
 
   fastify.post<{ Body: z.infer<typeof batchRecalculateSchema> }>(
-    '/batch',
+    "/batch",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = batchRecalculateSchema.parse(request.body);
       const tenantId = (request as any).tenantId;
-      if (!tenantId) return reply.code(401).send({ error: 'Missing tenant context' });
+      if (!tenantId)
+        return reply.code(401).send({ error: "Missing tenant context" });
       const recalculator = getRecalculator(tenantId);
 
       const start = performance.now();
@@ -210,12 +220,13 @@ export default async function etaRecalculateRoutes(fastify: FastifyInstance): Pr
   // ── POST /train — Update residual model with historical data ──────────
 
   fastify.post<{ Body: z.infer<typeof trainSchema> }>(
-    '/train',
-    { preHandler: [requireRole('ADMIN', 'SUPER_ADMIN')] },
+    "/train",
+    { preHandler: [requireRole("ADMIN", "SUPER_ADMIN")] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = trainSchema.parse(request.body);
       const tenantId = (request as any).tenantId;
-      if (!tenantId) return reply.code(401).send({ error: 'Missing tenant context' });
+      if (!tenantId)
+        return reply.code(401).send({ error: "Missing tenant context" });
       const recalculator = getRecalculator(tenantId);
 
       const points: TrainingPoint[] = body.trainingPoints;
@@ -234,12 +245,15 @@ export default async function etaRecalculateRoutes(fastify: FastifyInstance): Pr
 
   // ── GET /health — Health check ─────────────────────────────────────────
 
-  fastify.get('/health', async (_request: FastifyRequest, reply: FastifyReply) => {
-    return reply.send({
-      healthy: true,
-      service: 'eta-recalculator',
-      version: 'WIT-204',
-      timestamp: new Date().toISOString(),
-    });
-  });
+  fastify.get(
+    "/health",
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      return reply.send({
+        healthy: true,
+        service: "eta-recalculator",
+        version: "WIT-204",
+        timestamp: new Date().toISOString(),
+      });
+    },
+  );
 }

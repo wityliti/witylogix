@@ -4,8 +4,8 @@
  * Uses pdfkit for layout control and PDF rendering.
  */
 
-import PDFDocument from 'pdfkit';
-import type { Invoice } from './types.js';
+import PDFDocument from "pdfkit";
+import type { Invoice } from "./types.js";
 
 interface PDFGeneratorOptions {
   companyName: string;
@@ -18,14 +18,14 @@ interface PDFGeneratorOptions {
   secondaryColor?: string;
 }
 
-const DEFAULT_OPTIONS: Required<Omit<PDFGeneratorOptions, 'companyLogo'>> = {
-  companyName: 'Witylogix',
-  companyAddress: '123 Main St, San Francisco, CA 94105',
-  companyPhone: '+1 (555) 123-4567',
-  companyEmail: 'billing@witylogix.com',
-  companyWebsite: 'www.witylogix.com',
-  primaryColor: '#2563EB',
-  secondaryColor: '#E5E7EB',
+const DEFAULT_OPTIONS: Required<Omit<PDFGeneratorOptions, "companyLogo">> = {
+  companyName: "Witylogix",
+  companyAddress: "123 Main St, San Francisco, CA 94105",
+  companyPhone: "+1 (555) 123-4567",
+  companyEmail: "billing@witylogix.com",
+  companyWebsite: "www.witylogix.com",
+  primaryColor: "#2563EB",
+  secondaryColor: "#E5E7EB",
 };
 
 /**
@@ -44,22 +44,22 @@ export async function generateInvoicePDF(
     try {
       // Create PDF document (A4 size)
       const doc = new PDFDocument({
-        size: 'A4',
+        size: "A4",
         margin: 40,
         bufferPages: true,
       });
 
       const chunks: Buffer[] = [];
 
-      doc.on('data', (chunk: Buffer) => {
+      doc.on("data", (chunk: Buffer) => {
         chunks.push(chunk);
       });
 
-      doc.on('end', () => {
+      doc.on("end", () => {
         resolve(Buffer.concat(chunks));
       });
 
-      doc.on('error', (err: Error) => {
+      doc.on("error", (err: Error) => {
         reject(err);
       });
 
@@ -109,7 +109,7 @@ export async function generateInvoicePDF(
  */
 function drawHeader(
   doc: PDFKit.PDFDocument,
-  config: Required<Omit<PDFGeneratorOptions, 'companyLogo'>>,
+  config: Required<Omit<PDFGeneratorOptions, "companyLogo">>,
   invoice: Invoice,
 ): void {
   const pageWidth = doc.page.width;
@@ -117,23 +117,26 @@ function drawHeader(
   const contentWidth = pageWidth - 2 * pageMargin;
 
   // Company name (large)
-  doc.fontSize(24).font('Helvetica-Bold').text(config.companyName, {
-    width: contentWidth * 0.6,
-  });
+  doc
+    .fontSize(24)
+    .font("Helvetica-Bold")
+    .text(config.companyName, {
+      width: contentWidth * 0.6,
+    });
 
   // Invoice title (right-aligned)
   doc
     .fontSize(16)
-    .font('Helvetica')
-    .text('INVOICE', pageMargin + contentWidth * 0.6, doc.y - 25, {
-      align: 'right',
+    .font("Helvetica")
+    .text("INVOICE", pageMargin + contentWidth * 0.6, doc.y - 25, {
+      align: "right",
       width: contentWidth * 0.4,
     });
 
   doc.moveDown(1);
 
   // Company contact info (smaller)
-  doc.fontSize(10).font('Helvetica').fillColor('#666666');
+  doc.fontSize(10).font("Helvetica").fillColor("#666666");
   if (config.companyAddress) {
     doc.text(config.companyAddress);
   }
@@ -144,7 +147,7 @@ function drawHeader(
     doc.text(`Email: ${config.companyEmail}`);
   }
 
-  doc.fillColor('#000000');
+  doc.fillColor("#000000");
 }
 
 /**
@@ -159,23 +162,26 @@ function drawInvoiceDetails(doc: PDFKit.PDFDocument, invoice: Invoice): void {
   const y = doc.y;
 
   // Left column
-  doc.fontSize(10).font('Helvetica-Bold').text('Invoice Number:', pageMargin, y);
-  doc.font('Helvetica').text(invoice.invoiceNumber, pageMargin, y + 15);
+  doc
+    .fontSize(10)
+    .font("Helvetica-Bold")
+    .text("Invoice Number:", pageMargin, y);
+  doc.font("Helvetica").text(invoice.invoiceNumber, pageMargin, y + 15);
 
-  doc.font('Helvetica-Bold').text('Invoice Date:', pageMargin, y + 35);
-  doc.font('Helvetica').text(formatDate(invoice.issuedAt), pageMargin, y + 50);
+  doc.font("Helvetica-Bold").text("Invoice Date:", pageMargin, y + 35);
+  doc.font("Helvetica").text(formatDate(invoice.issuedAt), pageMargin, y + 50);
 
   // Right column
-  doc.fontSize(10).font('Helvetica-Bold').text('Due Date:', rightX, y);
-  doc.font('Helvetica').text(formatDate(invoice.dueAt), rightX, y + 15);
+  doc.fontSize(10).font("Helvetica-Bold").text("Due Date:", rightX, y);
+  doc.font("Helvetica").text(formatDate(invoice.dueAt), rightX, y + 15);
 
-  doc.font('Helvetica-Bold').text('Status:', rightX, y + 35);
+  doc.font("Helvetica-Bold").text("Status:", rightX, y + 35);
   doc
-    .font('Helvetica')
+    .font("Helvetica")
     .fillColor(getStatusColor(invoice.status))
     .text(invoice.status.toUpperCase(), rightX, y + 50);
 
-  doc.fillColor('#000000');
+  doc.fillColor("#000000");
   doc.moveDown(4);
 }
 
@@ -191,8 +197,8 @@ function drawBillToShipTo(doc: PDFKit.PDFDocument, invoice: Invoice): void {
   const y = doc.y;
 
   // Bill To
-  doc.fontSize(11).font('Helvetica-Bold').text('Bill To:', pageMargin, y);
-  doc.fontSize(10).font('Helvetica');
+  doc.fontSize(11).font("Helvetica-Bold").text("Bill To:", pageMargin, y);
+  doc.fontSize(10).font("Helvetica");
 
   if (invoice.customerId) {
     doc.text(`Customer ID: ${invoice.customerId}`);
@@ -202,10 +208,13 @@ function drawBillToShipTo(doc: PDFKit.PDFDocument, invoice: Invoice): void {
   const leftCol = pageMargin;
   const rightCol = pageMargin + colWidth + 20;
 
-  doc.fontSize(11).font('Helvetica-Bold').text('Delivery Address:', rightCol, y);
-  doc.fontSize(10).font('Helvetica');
+  doc
+    .fontSize(11)
+    .font("Helvetica-Bold")
+    .text("Delivery Address:", rightCol, y);
+  doc.fontSize(10).font("Helvetica");
   doc.text(
-    invoice.metadata?.address || 'See attached delivery details',
+    invoice.metadata?.address || "See attached delivery details",
     rightCol,
     doc.y,
   );
@@ -230,27 +239,36 @@ function drawLineItemsTable(doc: PDFKit.PDFDocument, invoice: Invoice): void {
     amount: contentWidth * 0.18,
   };
 
-  doc.fontSize(10).font('Helvetica-Bold').fillColor('#2563EB');
-  doc.rect(pageMargin, headerY, contentWidth, 20).fill('#E0E7FF');
+  doc.fontSize(10).font("Helvetica-Bold").fillColor("#2563EB");
+  doc.rect(pageMargin, headerY, contentWidth, 20).fill("#E0E7FF");
 
-  doc
-    .fillColor('#000000')
-    .text('Description', pageMargin + 5, headerY + 5, { width: colWidths.description });
-  doc.text('Qty', pageMargin + colWidths.description + 5, headerY + 5, {
-    width: colWidths.qty,
-    align: 'right',
+  doc.fillColor("#000000").text("Description", pageMargin + 5, headerY + 5, {
+    width: colWidths.description,
   });
-  doc.text('Unit Price', pageMargin + colWidths.description + colWidths.qty + 5, headerY + 5, {
-    width: colWidths.unitPrice,
-    align: 'right',
+  doc.text("Qty", pageMargin + colWidths.description + 5, headerY + 5, {
+    width: colWidths.qty,
+    align: "right",
   });
   doc.text(
-    'Amount',
-    pageMargin + colWidths.description + colWidths.qty + colWidths.unitPrice + 5,
+    "Unit Price",
+    pageMargin + colWidths.description + colWidths.qty + 5,
+    headerY + 5,
+    {
+      width: colWidths.unitPrice,
+      align: "right",
+    },
+  );
+  doc.text(
+    "Amount",
+    pageMargin +
+      colWidths.description +
+      colWidths.qty +
+      colWidths.unitPrice +
+      5,
     headerY + 5,
     {
       width: colWidths.amount,
-      align: 'right',
+      align: "right",
     },
   );
 
@@ -260,17 +278,22 @@ function drawLineItemsTable(doc: PDFKit.PDFDocument, invoice: Invoice): void {
   if (invoice.lineItems && invoice.lineItems.length > 0) {
     invoice.lineItems.forEach((item) => {
       const y = doc.y;
-      doc.fontSize(9).font('Helvetica').fillColor('#000000');
+      doc.fontSize(9).font("Helvetica").fillColor("#000000");
 
       doc.text(item.description, pageMargin + 5, y, {
         width: colWidths.description - 5,
         ellipsis: true,
       });
 
-      doc.text(item.quantity.toFixed(2), pageMargin + colWidths.description + 5, y, {
-        width: colWidths.qty,
-        align: 'right',
-      });
+      doc.text(
+        item.quantity.toFixed(2),
+        pageMargin + colWidths.description + 5,
+        y,
+        {
+          width: colWidths.qty,
+          align: "right",
+        },
+      );
 
       doc.text(
         `$${item.unitPrice.toFixed(2)}`,
@@ -278,17 +301,21 @@ function drawLineItemsTable(doc: PDFKit.PDFDocument, invoice: Invoice): void {
         y,
         {
           width: colWidths.unitPrice,
-          align: 'right',
+          align: "right",
         },
       );
 
       doc.text(
         `$${item.amount.toFixed(2)}`,
-        pageMargin + colWidths.description + colWidths.qty + colWidths.unitPrice + 5,
+        pageMargin +
+          colWidths.description +
+          colWidths.qty +
+          colWidths.unitPrice +
+          5,
         y,
         {
           width: colWidths.amount,
-          align: 'right',
+          align: "right",
         },
       );
 
@@ -307,12 +334,12 @@ function drawTotalsSection(doc: PDFKit.PDFDocument, invoice: Invoice): void {
   const rightX = pageMargin + contentWidth * 0.6;
   const amountX = pageMargin + contentWidth * 0.9;
 
-  doc.fontSize(9).font('Helvetica');
+  doc.fontSize(9).font("Helvetica");
 
   // Subtotal
-  doc.text('Subtotal:', rightX, doc.y, { width: contentWidth * 0.2 });
+  doc.text("Subtotal:", rightX, doc.y, { width: contentWidth * 0.2 });
   doc.text(`$${invoice.subtotal.toFixed(2)}`, amountX, doc.y - 11, {
-    align: 'right',
+    align: "right",
     width: contentWidth * 0.1,
   });
   doc.moveDown(0.5);
@@ -321,12 +348,12 @@ function drawTotalsSection(doc: PDFKit.PDFDocument, invoice: Invoice): void {
   if (invoice.discountTotal > 0) {
     if (invoice.discounts && invoice.discounts.length > 0) {
       invoice.discounts.forEach((discount) => {
-        doc.fontSize(8).fillColor('#666666');
+        doc.fontSize(8).fillColor("#666666");
         doc.text(`  ${discount.description}:`, rightX, doc.y, {
           width: contentWidth * 0.2,
         });
         doc.text(`-$${discount.amount.toFixed(2)}`, amountX, doc.y - 10, {
-          align: 'right',
+          align: "right",
           width: contentWidth * 0.1,
         });
         doc.moveDown(0.4);
@@ -334,15 +361,17 @@ function drawTotalsSection(doc: PDFKit.PDFDocument, invoice: Invoice): void {
     }
   }
 
-  doc.fillColor('#000000');
+  doc.fillColor("#000000");
 
   // Taxes
   if (invoice.taxes && invoice.taxes.length > 0) {
     invoice.taxes.forEach((tax) => {
-      doc.fontSize(9).font('Helvetica');
-      doc.text(`${tax.description}:`, rightX, doc.y, { width: contentWidth * 0.2 });
+      doc.fontSize(9).font("Helvetica");
+      doc.text(`${tax.description}:`, rightX, doc.y, {
+        width: contentWidth * 0.2,
+      });
       doc.text(`$${tax.amount.toFixed(2)}`, amountX, doc.y - 11, {
-        align: 'right',
+        align: "right",
         width: contentWidth * 0.1,
       });
       doc.moveDown(0.5);
@@ -350,16 +379,23 @@ function drawTotalsSection(doc: PDFKit.PDFDocument, invoice: Invoice): void {
   }
 
   // Total (emphasized)
-  doc.fontSize(11).font('Helvetica-Bold');
-  doc.rect(pageMargin + contentWidth * 0.55, doc.y - 5, contentWidth * 0.45, 20).fill('#2563EB');
-  doc.fillColor('#FFFFFF');
-  doc.text('Total:', rightX + 5, doc.y, { width: contentWidth * 0.15 });
-  doc.text(`${invoice.currency} $${invoice.total.toFixed(2)}`, amountX + 5, doc.y - 11, {
-    align: 'right',
-    width: contentWidth * 0.1,
-  });
+  doc.fontSize(11).font("Helvetica-Bold");
+  doc
+    .rect(pageMargin + contentWidth * 0.55, doc.y - 5, contentWidth * 0.45, 20)
+    .fill("#2563EB");
+  doc.fillColor("#FFFFFF");
+  doc.text("Total:", rightX + 5, doc.y, { width: contentWidth * 0.15 });
+  doc.text(
+    `${invoice.currency} $${invoice.total.toFixed(2)}`,
+    amountX + 5,
+    doc.y - 11,
+    {
+      align: "right",
+      width: contentWidth * 0.1,
+    },
+  );
 
-  doc.fillColor('#000000');
+  doc.fillColor("#000000");
   doc.moveDown(1.5);
 }
 
@@ -369,27 +405,27 @@ function drawTotalsSection(doc: PDFKit.PDFDocument, invoice: Invoice): void {
 function drawPaymentTerms(
   doc: PDFKit.PDFDocument,
   invoice: Invoice,
-  config: Required<Omit<PDFGeneratorOptions, 'companyLogo'>>,
+  config: Required<Omit<PDFGeneratorOptions, "companyLogo">>,
 ): void {
   const pageMargin = 40;
 
-  doc.fontSize(10).font('Helvetica-Bold').text('Payment Terms:');
-  doc.fontSize(9).font('Helvetica');
+  doc.fontSize(10).font("Helvetica-Bold").text("Payment Terms:");
+  doc.fontSize(9).font("Helvetica");
   doc.text(`Due by: ${formatDate(invoice.dueAt)}`);
   doc.text(`Please reference Invoice #${invoice.invoiceNumber} with payment`);
   doc.text(`Make checks payable to: ${config.companyName}`);
 
   if (invoice.notes) {
     doc.moveDown(0.5);
-    doc.fontSize(10).font('Helvetica-Bold').text('Notes:');
-    doc.fontSize(9).font('Helvetica').text(invoice.notes);
+    doc.fontSize(10).font("Helvetica-Bold").text("Notes:");
+    doc.fontSize(9).font("Helvetica").text(invoice.notes);
   }
 
   if (invoice.paidAt) {
     doc.moveDown(0.5);
-    doc.fontSize(9).fillColor('#28A745').font('Helvetica-Bold');
+    doc.fontSize(9).fillColor("#28A745").font("Helvetica-Bold");
     doc.text(`Paid on: ${formatDate(invoice.paidAt)}`);
-    doc.fillColor('#000000');
+    doc.fillColor("#000000");
   }
 }
 
@@ -398,24 +434,29 @@ function drawPaymentTerms(
  */
 function drawFooter(
   doc: PDFKit.PDFDocument,
-  config: Required<Omit<PDFGeneratorOptions, 'companyLogo'>>,
+  config: Required<Omit<PDFGeneratorOptions, "companyLogo">>,
 ): void {
   const pageWidth = doc.page.width;
   const pageHeight = doc.page.height;
   const pageMargin = 40;
 
-  doc.fontSize(8).fillColor('#999999').font('Helvetica');
+  doc.fontSize(8).fillColor("#999999").font("Helvetica");
 
   const footerText = `${config.companyEmail} | ${config.companyWebsite}`;
   doc.text(footerText, pageMargin, pageHeight - 40, {
-    align: 'center',
+    align: "center",
     width: pageWidth - 2 * pageMargin,
   });
 
-  doc.text(`Generated on ${formatDate(new Date())}`, pageMargin, pageHeight - 25, {
-    align: 'center',
-    width: pageWidth - 2 * pageMargin,
-  });
+  doc.text(
+    `Generated on ${formatDate(new Date())}`,
+    pageMargin,
+    pageHeight - 25,
+    {
+      align: "center",
+      width: pageWidth - 2 * pageMargin,
+    },
+  );
 }
 
 // ─── HELPER FUNCTIONS ───────────────────────────────────────────────
@@ -424,10 +465,10 @@ function drawFooter(
  * Format date for display
  */
 function formatDate(date: Date): string {
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 }
 
@@ -436,17 +477,17 @@ function formatDate(date: Date): string {
  */
 function getStatusColor(status: string): string {
   switch (status) {
-    case 'paid':
-      return '#28A745'; // Green
-    case 'overdue':
-      return '#DC3545'; // Red
-    case 'sent':
-      return '#007BFF'; // Blue
-    case 'draft':
-      return '#6C757D'; // Gray
-    case 'voided':
-      return '#999999'; // Light gray
+    case "paid":
+      return "#28A745"; // Green
+    case "overdue":
+      return "#DC3545"; // Red
+    case "sent":
+      return "#007BFF"; // Blue
+    case "draft":
+      return "#6C757D"; // Gray
+    case "voided":
+      return "#999999"; // Light gray
     default:
-      return '#000000'; // Black
+      return "#000000"; // Black
   }
 }

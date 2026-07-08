@@ -1,6 +1,15 @@
 // Barrel exports
-export { LabelData, LabelAddress, LabelOptions, GeneratedLabel } from "./types.js";
-export { encodeCode128B, renderBarcodeToSVG, generateBarcodeBase64PNG } from "./barcode.js";
+export {
+  LabelData,
+  LabelAddress,
+  LabelOptions,
+  GeneratedLabel,
+} from "./types.js";
+export {
+  encodeCode128B,
+  renderBarcodeToSVG,
+  generateBarcodeBase64PNG,
+} from "./barcode.js";
 export { generateZPL } from "./generators/zpl.js";
 export { generatePDF } from "./generators/pdf.js";
 export { generateHTML } from "./generators/html.js";
@@ -15,7 +24,7 @@ import { generateHTML } from "./generators/html.js";
  */
 export function generateLabel(
   label: LabelData,
-  options: LabelOptions
+  options: LabelOptions,
 ): GeneratedLabel {
   let data: string;
   let mimeType: string;
@@ -45,7 +54,7 @@ export function generateLabel(
 
     default:
       throw new Error(
-        `Unsupported label format: ${options.format}. Supported formats: PDF, ZPL, HTML, PNG`
+        `Unsupported label format: ${options.format}. Supported formats: PDF, ZPL, HTML, PNG`,
       );
   }
 
@@ -63,7 +72,7 @@ export function generateLabel(
  */
 export function generateLabels(
   labels: LabelData[],
-  options: LabelOptions
+  options: LabelOptions,
 ): GeneratedLabel[] {
   return labels.map((label) => generateLabel(label, options));
 }
@@ -73,7 +82,7 @@ export function generateLabels(
  */
 export function generateZPLBatch(
   labels: LabelData[],
-  options: LabelOptions & { copies?: number }
+  options: LabelOptions & { copies?: number },
 ): string {
   let zplBatch = "";
   const copies = options.copies || 1;

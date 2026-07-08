@@ -4,15 +4,15 @@
  * @internal
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // ─────────────────────────────────────────────────────────────────
 // Platform Enum
 // ─────────────────────────────────────────────────────────────────
 
 export enum CollaborationPlatform {
-  SLACK = 'slack',
-  TEAMS = 'teams',
+  SLACK = "slack",
+  TEAMS = "teams",
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -29,7 +29,7 @@ export interface UnifiedMessage {
   senderId: string;
   senderName: string;
   content: string;
-  contentType: 'plain' | 'html' | 'markdown';
+  contentType: "plain" | "html" | "markdown";
   timestamp: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -61,7 +61,7 @@ export interface UnifiedChannel {
   name: string;
   displayName: string;
   description?: string;
-  type: 'public' | 'private' | 'direct' | 'group';
+  type: "public" | "private" | "direct" | "group";
   isArchived: boolean;
   isFavorite?: boolean;
   memberCount: number;
@@ -118,7 +118,7 @@ export interface UnifiedAttachment {
   id: string;
   platform: CollaborationPlatform;
   name: string;
-  type: 'file' | 'image' | 'video' | 'audio' | 'document';
+  type: "file" | "image" | "video" | "audio" | "document";
   size: number;
   mimeType: string;
   url: string;
@@ -156,7 +156,7 @@ export interface UnifiedReaction {
 export interface UnifiedMention {
   id: string;
   platform: CollaborationPlatform;
-  type: 'user' | 'channel' | 'group' | 'everyone';
+  type: "user" | "channel" | "group" | "everyone";
   targetId: string;
   targetName: string;
   index: number;
@@ -167,7 +167,12 @@ export interface UnifiedMention {
 // Unified Presence Type
 // ─────────────────────────────────────────────────────────────────
 
-export type PresenceStatus = 'available' | 'away' | 'busy' | 'offline' | 'do_not_disturb';
+export type PresenceStatus =
+  | "available"
+  | "away"
+  | "busy"
+  | "offline"
+  | "do_not_disturb";
 
 /**
  * Unified user presence
@@ -186,18 +191,18 @@ export interface UnifiedPresence {
 // ─────────────────────────────────────────────────────────────────
 
 export type WebhookEventType =
-  | 'message_created'
-  | 'message_updated'
-  | 'message_deleted'
-  | 'reaction_added'
-  | 'reaction_removed'
-  | 'channel_created'
-  | 'channel_updated'
-  | 'channel_archived'
-  | 'user_joined'
-  | 'user_left'
-  | 'presence_changed'
-  | 'file_uploaded';
+  | "message_created"
+  | "message_updated"
+  | "message_deleted"
+  | "reaction_added"
+  | "reaction_removed"
+  | "channel_created"
+  | "channel_updated"
+  | "channel_archived"
+  | "user_joined"
+  | "user_left"
+  | "presence_changed"
+  | "file_uploaded";
 
 /**
  * Unified webhook event
@@ -218,7 +223,10 @@ export interface UnifiedWebhookEvent {
 // Validation Schemas
 // ─────────────────────────────────────────────────────────────────
 
-export const platformSchema = z.enum([CollaborationPlatform.SLACK, CollaborationPlatform.TEAMS]);
+export const platformSchema = z.enum([
+  CollaborationPlatform.SLACK,
+  CollaborationPlatform.TEAMS,
+]);
 
 export const unifiedMessageSchema = z.object({
   id: z.string(),
@@ -227,7 +235,7 @@ export const unifiedMessageSchema = z.object({
   senderId: z.string(),
   senderName: z.string(),
   content: z.string(),
-  contentType: z.enum(['plain', 'html', 'markdown']),
+  contentType: z.enum(["plain", "html", "markdown"]),
   timestamp: z.date(),
   updatedAt: z.date().optional(),
   deletedAt: z.date().optional(),
@@ -247,7 +255,7 @@ export const unifiedChannelSchema = z.object({
   name: z.string(),
   displayName: z.string(),
   description: z.string().optional(),
-  type: z.enum(['public', 'private', 'direct', 'group']),
+  type: z.enum(["public", "private", "direct", "group"]),
   isArchived: z.boolean(),
   isFavorite: z.boolean().optional(),
   memberCount: z.number(),

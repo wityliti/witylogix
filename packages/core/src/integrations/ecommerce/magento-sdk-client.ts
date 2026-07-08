@@ -161,9 +161,11 @@ export class MagentoSDKClient {
       .map((key) => `${key}=${encodeURIComponent(params[key])}`)
       .join("&");
 
-    const baseString = [method, encodeURIComponent(url), encodeURIComponent(sortedParams)].join(
-      "&",
-    );
+    const baseString = [
+      method,
+      encodeURIComponent(url),
+      encodeURIComponent(sortedParams),
+    ].join("&");
 
     const signingKey = [
       encodeURIComponent(this.config.consumerSecret || ""),
@@ -192,7 +194,9 @@ export class MagentoSDKClient {
     const signature = this.generateOAuth1Signature(method, url, params);
     params.oauth_signature = signature;
 
-    const headerParts = Object.entries(params).map(([key, value]) => `${key}="${value}"`);
+    const headerParts = Object.entries(params).map(
+      ([key, value]) => `${key}="${value}"`,
+    );
     return `OAuth ${headerParts.join(", ")}`;
   }
 
@@ -237,7 +241,10 @@ export class MagentoSDKClient {
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.config.timeout || 30000);
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      this.config.timeout || 30000,
+    );
 
     try {
       const response = await fetch(url, {
@@ -250,9 +257,11 @@ export class MagentoSDKClient {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const errorData = await response.json().catch((): MagentoErrorResponse => ({
-          message: response.statusText,
-        })) as MagentoErrorResponse;
+        const errorData = (await response.json().catch(
+          (): MagentoErrorResponse => ({
+            message: response.statusText,
+          }),
+        )) as MagentoErrorResponse;
 
         throw new MagentoAPIError(
           response.status,
@@ -270,7 +279,11 @@ export class MagentoSDKClient {
         throw error;
       }
 
-      throw new MagentoAPIError(0, "NETWORK_ERROR", (error as Error).message || "Network request failed");
+      throw new MagentoAPIError(
+        0,
+        "NETWORK_ERROR",
+        (error as Error).message || "Network request failed",
+      );
     }
   }
 
@@ -296,13 +309,14 @@ export class MagentoSDKClient {
     total: number;
   }> {
     const params = this.buildSearchParams(criteria);
-    const response = await this.request<MagentoSearchResults<MagentoOrderResponse>>(
-      "GET",
-      `/orders?${params}`,
-    );
+    const response = await this.request<
+      MagentoSearchResults<MagentoOrderResponse>
+    >("GET", `/orders?${params}`);
 
     return {
-      orders: response.items.map((item) => this.mapMagentoOrderToECommerce(item)),
+      orders: response.items.map((item) =>
+        this.mapMagentoOrderToECommerce(item),
+      ),
       total: response.total_count,
     };
   }
@@ -311,7 +325,10 @@ export class MagentoSDKClient {
    * Get order by ID
    */
   async getOrderById(orderId: string): Promise<ECommerceOrder> {
-    const response = await this.request<MagentoOrderResponse>("GET", `/orders/${orderId}`);
+    const response = await this.request<MagentoOrderResponse>(
+      "GET",
+      `/orders/${orderId}`,
+    );
     return this.mapMagentoOrderToECommerce(response);
   }
 
@@ -327,24 +344,39 @@ export class MagentoSDKClient {
     shipping_method?: string;
     coupon_code?: string;
   }): Promise<ECommerceOrder> {
-    const response = await this.request<MagentoOrderResponse>("POST", "/orders", { order: data });
+    const response = await this.request<MagentoOrderResponse>(
+      "POST",
+      "/orders",
+      { order: data },
+    );
     return this.mapMagentoOrderToECommerce(response);
   }
 
   /**
    * Update order status
    */
-  async updateOrderStatus(orderId: string, status: string): Promise<ECommerceOrder> {
-    const response = await this.request<MagentoOrderResponse>("POST", `/orders/${orderId}`, {
-      entity: { entity_id: orderId, status },
-    });
+  async updateOrderStatus(
+    orderId: string,
+    status: string,
+  ): Promise<ECommerceOrder> {
+    const response = await this.request<MagentoOrderResponse>(
+      "POST",
+      `/orders/${orderId}`,
+      {
+        entity: { entity_id: orderId, status },
+      },
+    );
     return this.mapMagentoOrderToECommerce(response);
   }
 
   /**
    * Add comment to order
    */
-  async addOrderComment(orderId: string, comment: string, notifyCustomer = true): Promise<{
+  async addOrderComment(
+    orderId: string,
+    comment: string,
+    notifyCustomer = true,
+  ): Promise<{
     entity_id: number;
     comment: string;
   }> {
@@ -365,15 +397,17 @@ export class MagentoSDKClient {
   /**
    * Create invoice for order
    */
-  async createInvoice(orderId: string, itemsData?: Array<{ order_item_id: number; qty: number }>): Promise<{
+  async createInvoice(
+    orderId: string,
+    itemsData?: Array<{ order_item_id: number; qty: number }>,
+  ): Promise<{
     entity_id: number;
     increment_id: string;
   }> {
-    const response = await this.request<{ entity_id: number; increment_id: string }>(
-      "POST",
-      `/orders/${orderId}/invoice`,
-      { items: itemsData || [] },
-    );
+    const response = await this.request<{
+      entity_id: number;
+      increment_id: string;
+    }>("POST", `/orders/${orderId}/invoice`, { items: itemsData || [] });
     return response;
   }
 
@@ -419,13 +453,14 @@ export class MagentoSDKClient {
     total: number;
   }> {
     const params = this.buildSearchParams(criteria);
-    const response = await this.request<MagentoSearchResults<MagentoProductResponse>>(
-      "GET",
-      `/products?${params}`,
-    );
+    const response = await this.request<
+      MagentoSearchResults<MagentoProductResponse>
+    >("GET", `/products?${params}`);
 
     return {
-      products: response.items.map((item) => this.mapMagentoProductToECommerce(item)),
+      products: response.items.map((item) =>
+        this.mapMagentoProductToECommerce(item),
+      ),
       total: response.total_count,
     };
   }
@@ -434,7 +469,10 @@ export class MagentoSDKClient {
    * Get product by ID or SKU
    */
   async getProductById(productId: string): Promise<ECommerceProduct> {
-    const response = await this.request<MagentoProductResponse>("GET", `/products/${productId}`);
+    const response = await this.request<MagentoProductResponse>(
+      "GET",
+      `/products/${productId}`,
+    );
     return this.mapMagentoProductToECommerce(response);
   }
 
@@ -501,9 +539,13 @@ export class MagentoSDKClient {
     );
 
     // Link to configurable parent
-    await this.request("POST", `/configurable-products/${parentProductId}/child`, {
-      childSku: childData.sku,
-    });
+    await this.request(
+      "POST",
+      `/configurable-products/${parentProductId}/child`,
+      {
+        childSku: childData.sku,
+      },
+    );
 
     return this.mapMagentoProductToECommerce(response);
   }
@@ -515,26 +557,34 @@ export class MagentoSDKClient {
     productId: string,
     imageData: { url: string; label?: string; types?: string[] },
   ): Promise<{ id: number; media_type: string; position: number }> {
-    const response = await this.request<{ id: number; media_type: string; position: number }>(
-      "POST",
-      `/products/${productId}/media`,
-      { entry: imageData },
-    );
+    const response = await this.request<{
+      id: number;
+      media_type: string;
+      position: number;
+    }>("POST", `/products/${productId}/media`, { entry: imageData });
     return response;
   }
 
   /**
    * Delete product image
    */
-  async deleteProductImage(productId: string, imageId: number): Promise<boolean> {
-    await this.request<{ result: boolean }>("DELETE", `/products/${productId}/media/${imageId}`);
+  async deleteProductImage(
+    productId: string,
+    imageId: number,
+  ): Promise<boolean> {
+    await this.request<{ result: boolean }>(
+      "DELETE",
+      `/products/${productId}/media/${imageId}`,
+    );
     return true;
   }
 
   /**
    * Update stock/inventory
    */
-  async updateInventory(request: InventoryUpdateRequest): Promise<ECommerceInventory> {
+  async updateInventory(
+    request: InventoryUpdateRequest,
+  ): Promise<ECommerceInventory> {
     await this.request("PUT", `/products/${request.variantId}`, {
       product: {
         extension_attributes: {
@@ -565,13 +615,14 @@ export class MagentoSDKClient {
     total: number;
   }> {
     const params = this.buildSearchParams(criteria);
-    const response = await this.request<MagentoSearchResults<MagentoCustomerResponse>>(
-      "GET",
-      `/customers/search?${params}`,
-    );
+    const response = await this.request<
+      MagentoSearchResults<MagentoCustomerResponse>
+    >("GET", `/customers/search?${params}`);
 
     return {
-      customers: response.items.map((item) => this.mapMagentoCustomerToECommerce(item)),
+      customers: response.items.map((item) =>
+        this.mapMagentoCustomerToECommerce(item),
+      ),
       total: response.total_count,
     };
   }
@@ -604,7 +655,10 @@ export class MagentoSDKClient {
     taxvat?: string;
     default_billing?: string;
     default_shipping?: string;
-    addresses?: Array<{ is_default_billing: boolean; is_default_shipping: boolean }>;
+    addresses?: Array<{
+      is_default_billing: boolean;
+      is_default_shipping: boolean;
+    }>;
   }): Promise<ECommerceCustomer> {
     const response = await this.request<MagentoCustomerResponse>(
       "POST",
@@ -632,7 +686,9 @@ export class MagentoSDKClient {
   /**
    * Get customer groups
    */
-  async getCustomerGroups(): Promise<Array<{ id: number; code: string; tax_class_id: number }>> {
+  async getCustomerGroups(): Promise<
+    Array<{ id: number; code: string; tax_class_id: number }>
+  > {
     const response = await this.request<{
       items: Array<{ id: number; code: string; tax_class_id: number }>;
     }>("GET", "/customerGroups", undefined);
@@ -642,7 +698,10 @@ export class MagentoSDKClient {
   /**
    * Add customer address
    */
-  async addCustomerAddress(customerId: string, addressData: MagentoAddressResponse): Promise<{ id: number }> {
+  async addCustomerAddress(
+    customerId: string,
+    addressData: MagentoAddressResponse,
+  ): Promise<{ id: number }> {
     const response = await this.request<{ id: number }>(
       "POST",
       `/customers/${customerId}/addresses`,
@@ -678,11 +737,12 @@ export class MagentoSDKClient {
   /**
    * Get source items for SKU
    */
-  async getMSISourceItems(sku: string): Promise<Array<{ source_code: string; qty: number }>> {
-    const response = await this.request<{ items: Array<{ source_code: string; qty: number }> }>(
-      "GET",
-      `/inventory/source-items?${new URLSearchParams({ sku })}`,
-    );
+  async getMSISourceItems(
+    sku: string,
+  ): Promise<Array<{ source_code: string; qty: number }>> {
+    const response = await this.request<{
+      items: Array<{ source_code: string; qty: number }>;
+    }>("GET", `/inventory/source-items?${new URLSearchParams({ sku })}`);
     return response.items;
   }
 
@@ -699,7 +759,14 @@ export class MagentoSDKClient {
       sku: string;
       quantity: number;
     }>("POST", "/inventory/source-items", {
-      sourceItems: [{ source_code: sourceCode, sku, quantity, status: quantity > 0 ? 1 : 0 }],
+      sourceItems: [
+        {
+          source_code: sourceCode,
+          sku,
+          quantity,
+          status: quantity > 0 ? 1 : 0,
+        },
+      ],
     });
     return response;
   }
@@ -738,11 +805,9 @@ export class MagentoSDKClient {
     is_active?: boolean;
     include_in_menu?: boolean;
   }): Promise<{ id: number }> {
-    const response = await this.request<{ id: number }>(
-      "POST",
-      "/categories",
-      { category: data },
-    );
+    const response = await this.request<{ id: number }>("POST", "/categories", {
+      category: data,
+    });
     return response;
   }
 
@@ -810,9 +875,21 @@ export class MagentoSDKClient {
   async estimateShipping(
     cartId: number,
     address: MagentoQuoteAddressResponse,
-  ): Promise<Array<{ carrier_code: string; method_code: string; method_title: string; amount: number }>> {
+  ): Promise<
+    Array<{
+      carrier_code: string;
+      method_code: string;
+      method_title: string;
+      amount: number;
+    }>
+  > {
     const response = await this.request<
-      Array<{ carrier_code: string; method_code: string; method_title: string; amount: number }>
+      Array<{
+        carrier_code: string;
+        method_code: string;
+        method_title: string;
+        amount: number;
+      }>
     >("POST", `/carts/${cartId}/estimate-shipping-methods`, { address });
     return response;
   }
@@ -864,7 +941,9 @@ export class MagentoSDKClient {
   /**
    * Get async bulk status
    */
-  async getAsyncBulkStatus(bulkUuid: string): Promise<MagentoAsyncBulkResponse> {
+  async getAsyncBulkStatus(
+    bulkUuid: string,
+  ): Promise<MagentoAsyncBulkResponse> {
     const response = await this.request<MagentoAsyncBulkResponse>(
       "GET",
       `/async/bulk/${bulkUuid}`,
@@ -893,7 +972,10 @@ export class MagentoSDKClient {
         const prefix = `searchCriteria[filter_groups][${groupIndex}][filters][${filterIndex}]`;
         params.append(`${prefix}[field]`, filter.field);
         params.append(`${prefix}[value]`, String(filter.value));
-        params.append(`${prefix}[condition_type]`, filter.condition_type || "eq");
+        params.append(
+          `${prefix}[condition_type]`,
+          filter.condition_type || "eq",
+        );
       });
     });
 
@@ -910,7 +992,9 @@ export class MagentoSDKClient {
   /**
    * Map Magento order to ECommerceOrder
    */
-  private mapMagentoOrderToECommerce(order: MagentoOrderResponse): ECommerceOrder {
+  private mapMagentoOrderToECommerce(
+    order: MagentoOrderResponse,
+  ): ECommerceOrder {
     const billing = order.billing_address;
     const shipping = order.shipping_address || billing;
 
@@ -939,7 +1023,9 @@ export class MagentoSDKClient {
         firstName: billing.firstname,
         lastName: billing.lastname,
         company: billing.company,
-        address1: Array.isArray(billing.street) ? billing.street[0] : billing.street || "",
+        address1: Array.isArray(billing.street)
+          ? billing.street[0]
+          : billing.street || "",
         address2: Array.isArray(billing.street) ? billing.street[1] : undefined,
         city: billing.city,
         state: billing.region,
@@ -952,8 +1038,12 @@ export class MagentoSDKClient {
         firstName: shipping.firstname,
         lastName: shipping.lastname,
         company: shipping.company,
-        address1: Array.isArray(shipping.street) ? shipping.street[0] : shipping.street || "",
-        address2: Array.isArray(shipping.street) ? shipping.street[1] : undefined,
+        address1: Array.isArray(shipping.street)
+          ? shipping.street[0]
+          : shipping.street || "",
+        address2: Array.isArray(shipping.street)
+          ? shipping.street[1]
+          : undefined,
         city: shipping.city,
         state: shipping.region,
         postalCode: shipping.postcode,
@@ -971,7 +1061,8 @@ export class MagentoSDKClient {
         discountAmount: item.discount_amount,
         totalAmount: item.row_total,
       })),
-      shippingMethod: order.extension_attributes?.shipping_assignments?.[0]?.shipping?.method,
+      shippingMethod:
+        order.extension_attributes?.shipping_assignments?.[0]?.shipping?.method,
       paymentMethod: order.payment?.method,
       notes: order.customer_note,
       createdAt: new Date(order.created_at),
@@ -982,12 +1073,15 @@ export class MagentoSDKClient {
   /**
    * Map Magento product to ECommerceProduct
    */
-  private mapMagentoProductToECommerce(product: MagentoProductResponse): ECommerceProduct {
+  private mapMagentoProductToECommerce(
+    product: MagentoProductResponse,
+  ): ECommerceProduct {
     return {
       id: product.id.toString(),
       title: product.name,
-      description: product.custom_attributes?.find((attr) => attr.attribute_code === "description")
-        ?.value as string | undefined,
+      description: product.custom_attributes?.find(
+        (attr) => attr.attribute_code === "description",
+      )?.value as string | undefined,
       status: product.status === 1 ? "active" : "draft",
       productType: product.type_id,
       variants: [
@@ -998,7 +1092,8 @@ export class MagentoSDKClient {
           inventory: {
             variantId: product.sku,
             quantity: product.extension_attributes?.stock_item?.qty || 0,
-            trackQuantity: product.extension_attributes?.stock_item?.manage_stock || false,
+            trackQuantity:
+              product.extension_attributes?.stock_item?.manage_stock || false,
             allowNegativeStock: false,
             updatedAt: new Date(product.updated_at),
           },
@@ -1016,7 +1111,9 @@ export class MagentoSDKClient {
   /**
    * Map Magento customer to ECommerceCustomer
    */
-  private mapMagentoCustomerToECommerce(customer: MagentoCustomerResponse): ECommerceCustomer {
+  private mapMagentoCustomerToECommerce(
+    customer: MagentoCustomerResponse,
+  ): ECommerceCustomer {
     return {
       id: customer.id.toString(),
       email: customer.email,
@@ -1033,7 +1130,9 @@ export class MagentoSDKClient {
             address1: customer.addresses[0].street[0] || "",
             address2: customer.addresses[0].street[1],
             city: customer.addresses[0].city,
-            state: customer.addresses[0].region.region || customer.addresses[0].region.region_code,
+            state:
+              customer.addresses[0].region.region ||
+              customer.addresses[0].region.region_code,
             postalCode: customer.addresses[0].postcode,
             country: customer.addresses[0].country_id,
           }
@@ -1058,6 +1157,8 @@ export class MagentoSDKClient {
 /**
  * Factory function to create Magento SDK client
  */
-export function createMagentoSDKClient(config: MagentoConfig): MagentoSDKClient {
+export function createMagentoSDKClient(
+  config: MagentoConfig,
+): MagentoSDKClient {
   return new MagentoSDKClient(config);
 }

@@ -184,7 +184,9 @@ export class GeofenceManager {
    * Get geofences by tag
    */
   getGeofencesByTag(tag: string): Geofence[] {
-    return Array.from(this.geofences.values()).filter((gf) => gf.tags?.includes(tag));
+    return Array.from(this.geofences.values()).filter((gf) =>
+      gf.tags?.includes(tag),
+    );
   }
 
   /**
@@ -196,7 +198,12 @@ export class GeofenceManager {
       throw new Error(`Geofence ${id} not found`);
     }
 
-    const updated = { ...geofence, ...updates, id: geofence.id, updatedAt: new Date() } as Geofence;
+    const updated = {
+      ...geofence,
+      ...updates,
+      id: geofence.id,
+      updatedAt: new Date(),
+    } as Geofence;
     this.geofences.set(id, updated);
     return updated;
   }
@@ -216,23 +223,38 @@ export class GeofenceManager {
     lng: number,
     circle: CircleGeofence,
   ): boolean {
-    const distance = this.haversineDistance(lat, lng, circle.center.lat, circle.center.lng);
+    const distance = this.haversineDistance(
+      lat,
+      lng,
+      circle.center.lat,
+      circle.center.lng,
+    );
     return distance <= circle.radius;
   }
 
   /**
    * Check if a point is inside a polygon geofence
    */
-  private isPointInPolygon(lat: number, lng: number, polygon: PolygonGeofence): boolean {
+  private isPointInPolygon(
+    lat: number,
+    lng: number,
+    polygon: PolygonGeofence,
+  ): boolean {
     let inside = false;
 
-    for (let i = 0, j = polygon.points.length - 1; i < polygon.points.length; j = i++) {
+    for (
+      let i = 0, j = polygon.points.length - 1;
+      i < polygon.points.length;
+      j = i++
+    ) {
       const xi = polygon.points[i].lng;
       const yi = polygon.points[i].lat;
       const xj = polygon.points[j].lng;
       const yj = polygon.points[j].lat;
 
-      const intersect = yi > lng !== yj > lng && lat < ((xj - xi) * (lng - yi)) / (yj - yi) + xi;
+      const intersect =
+        yi > lng !== yj > lng &&
+        lat < ((xj - xi) * (lng - yi)) / (yj - yi) + xi;
       if (intersect) {
         inside = !inside;
       }
@@ -244,7 +266,11 @@ export class GeofenceManager {
   /**
    * Check if a point is inside any geofence
    */
-  isPointInGeofence(lat: number, lng: number, geofenceId?: string): Geofence | null {
+  isPointInGeofence(
+    lat: number,
+    lng: number,
+    geofenceId?: string,
+  ): Geofence | null {
     if (geofenceId) {
       const gf = this.geofences.get(geofenceId);
       if (!gf) return null;
@@ -289,12 +315,17 @@ export class GeofenceManager {
    */
   detectGeofenceEvents(position: WitylogixVehiclePosition): GeofenceEvent[] {
     const events: GeofenceEvent[] = [];
-    const currentGeofences = this.getGeofencesContainingPoint(position.lat, position.lng);
+    const currentGeofences = this.getGeofencesContainingPoint(
+      position.lat,
+      position.lng,
+    );
     const state = this.vehicleStates[position.vehicleId];
 
     if (state) {
       // Check for exit
-      const stillInside = currentGeofences.some((gf) => gf.id === state.geofenceId);
+      const stillInside = currentGeofences.some(
+        (gf) => gf.id === state.geofenceId,
+      );
       if (!stillInside) {
         const exitedGeofence = this.geofences.get(state.geofenceId);
         if (exitedGeofence) {
@@ -311,7 +342,9 @@ export class GeofenceManager {
         delete this.vehicleStates[position.vehicleId];
       } else {
         // Check for dwell
-        const dwellMinutes = (position.timestamp.getTime() - state.enteredAt.getTime()) / (1000 * 60);
+        const dwellMinutes =
+          (position.timestamp.getTime() - state.enteredAt.getTime()) /
+          (1000 * 60);
         if (dwellMinutes > 5) {
           // Report dwell every 5 minutes
           events.push({
@@ -353,7 +386,9 @@ export class GeofenceManager {
   /**
    * Batch check positions against geofences
    */
-  batchCheckPositions(positions: WitylogixVehiclePosition[]): Map<string, GeofenceEvent[]> {
+  batchCheckPositions(
+    positions: WitylogixVehiclePosition[],
+  ): Map<string, GeofenceEvent[]> {
     const results = new Map<string, GeofenceEvent[]>();
 
     for (const position of positions) {
@@ -369,7 +404,12 @@ export class GeofenceManager {
   /**
    * Haversine distance in meters
    */
-  private haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  private haversineDistance(
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number,
+  ): number {
     const R = 6371000; // Earth radius in meters
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
     const dLng = ((lng2 - lng1) * Math.PI) / 180;
@@ -387,37 +427,39 @@ export class GeofenceManager {
    * Export geofences as GeoJSON
    */
   exportAsGeoJSON(): GeoJSONFeatureCollection {
-    const features: GeoJSONFeature[] = Array.from(this.geofences.values()).map((gf) => {
-      if (gf.type === "circle") {
-        return {
-          type: "Feature",
-          id: gf.id,
-          geometry: {
-            type: "Circle",
-            center: [gf.center.lng, gf.center.lat],
-            radius: gf.radius,
-          },
-          properties: {
-            name: gf.name,
-            radius: gf.radius,
-            tags: gf.tags,
-          },
-        };
-      } else {
-        return {
-          type: "Feature",
-          id: gf.id,
-          geometry: {
-            type: "Polygon",
-            coordinates: [gf.points.map((p) => [p.lng, p.lat])],
-          },
-          properties: {
-            name: gf.name,
-            tags: gf.tags,
-          },
-        };
-      }
-    });
+    const features: GeoJSONFeature[] = Array.from(this.geofences.values()).map(
+      (gf) => {
+        if (gf.type === "circle") {
+          return {
+            type: "Feature",
+            id: gf.id,
+            geometry: {
+              type: "Circle",
+              center: [gf.center.lng, gf.center.lat],
+              radius: gf.radius,
+            },
+            properties: {
+              name: gf.name,
+              radius: gf.radius,
+              tags: gf.tags,
+            },
+          };
+        } else {
+          return {
+            type: "Feature",
+            id: gf.id,
+            geometry: {
+              type: "Polygon",
+              coordinates: [gf.points.map((p) => [p.lng, p.lat])],
+            },
+            properties: {
+              name: gf.name,
+              tags: gf.tags,
+            },
+          };
+        }
+      },
+    );
 
     return {
       type: "FeatureCollection",
@@ -436,10 +478,19 @@ export class GeofenceManager {
 
       if (feature.geometry.type === "Circle") {
         const circle = feature.geometry as GeoJSONCircle;
-        this.addCircleGeofence(id, name, { lat: circle.center[1], lng: circle.center[0] }, circle.radius, tags);
+        this.addCircleGeofence(
+          id,
+          name,
+          { lat: circle.center[1], lng: circle.center[0] },
+          circle.radius,
+          tags,
+        );
       } else if (feature.geometry.type === "Polygon") {
         const polygon = feature.geometry as GeoJSONPolygon;
-        const points = polygon.coordinates[0].map((coord) => ({ lat: coord[1], lng: coord[0] }));
+        const points = polygon.coordinates[0].map((coord) => ({
+          lat: coord[1],
+          lng: coord[0],
+        }));
         this.addPolygonGeofence(id, name, points, tags);
       }
     }

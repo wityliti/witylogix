@@ -21,8 +21,13 @@ import {
  * Search, filter, detail modal, refund/void, export functionality
  */
 
-const txnStatusVariant = (status: TransactionStatus): "success" | "warning" | "info" | "primary" | "default" | "danger" => {
-  const map: Record<TransactionStatus, "success" | "warning" | "info" | "primary" | "default" | "danger"> = {
+const txnStatusVariant = (
+  status: TransactionStatus,
+): "success" | "warning" | "info" | "primary" | "default" | "danger" => {
+  const map: Record<
+    TransactionStatus,
+    "success" | "warning" | "info" | "primary" | "default" | "danger"
+  > = {
     completed: "success",
     pending: "info",
     refunded: "warning",
@@ -41,8 +46,12 @@ const paymentMethodIcon: Record<PaymentMethod, string> = {
 };
 
 export default function TransactionsPage() {
-  const [statusFilter, setStatusFilter] = useState<TransactionStatus | "all">("all");
-  const [paymentFilter, setPaymentFilter] = useState<PaymentMethod | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<TransactionStatus | "all">(
+    "all",
+  );
+  const [paymentFilter, setPaymentFilter] = useState<PaymentMethod | "all">(
+    "all",
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [amountRange, setAmountRange] = useState({ min: 0, max: 10000 });
@@ -50,7 +59,12 @@ export default function TransactionsPage() {
   const [showRefundForm, setShowRefundForm] = useState(false);
   const [refundReason, setRefundReason] = useState("");
 
-  const { items: allTransactions, loading: txnLoading, error: txnError, refetch: refetchTxns } = useTransactions();
+  const {
+    items: allTransactions,
+    loading: txnLoading,
+    error: txnError,
+    refetch: refetchTxns,
+  } = useTransactions();
   const { refund, loading: refunding } = useRefundTransaction();
   const { exportTransactions: exportData } = useExportTransactions();
 
@@ -72,11 +86,13 @@ export default function TransactionsPage() {
         (t) =>
           t.transactionId.toLowerCase().includes(term) ||
           t.receiptNumber.toLowerCase().includes(term) ||
-          t.customerName?.toLowerCase().includes(term)
+          t.customerName?.toLowerCase().includes(term),
       );
     }
 
-    result = result.filter((t) => t.amount >= amountRange.min && t.amount <= amountRange.max);
+    result = result.filter(
+      (t) => t.amount >= amountRange.min && t.amount <= amountRange.max,
+    );
 
     return result;
   }, [allTransactions, statusFilter, paymentFilter, searchTerm, amountRange]);
@@ -90,19 +106,31 @@ export default function TransactionsPage() {
   };
 
   if (txnLoading) return <TableSkeleton columns={6} rows={8} />;
-  if (txnError) return <ErrorState message={txnError.message} onRetry={refetchTxns} />;
+  if (txnError)
+    return <ErrorState message={txnError.message} onRetry={refetchTxns} />;
 
   return (
     <>
       <Header
         title="Transactions"
-        subtitle={`${filteredTransactions.length} transactions · ${filteredTransactions.filter((t) => t.status === "completed").reduce((sum, t) => sum + t.amount, 0).toFixed(2)} in sales`}
+        subtitle={`${filteredTransactions.length} transactions · ${filteredTransactions
+          .filter((t) => t.status === "completed")
+          .reduce((sum, t) => sum + t.amount, 0)
+          .toFixed(2)} in sales`}
         actions={
           <div className="flex gap-2">
-            <Button variant="secondary" size="md" onClick={() => handleExport("csv")}>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => handleExport("csv")}
+            >
               ⬇️ CSV
             </Button>
-            <Button variant="secondary" size="md" onClick={() => handleExport("pdf")}>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => handleExport("pdf")}
+            >
               ⬇️ PDF
             </Button>
           </div>
@@ -204,43 +232,50 @@ export default function TransactionsPage() {
           <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
             {/* Status Filter */}
             <div className="flex gap-2 flex-wrap">
-              {(["all", "completed", "pending", "refunded", "cancelled", "failed"] as const).map(
-                (status) => (
-                  <button
-                    key={status}
-                    onClick={() => setStatusFilter(status)}
-                    className={cn(
-                      "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border",
-                      statusFilter === status
-                        ? "bg-blue-500 text-white border-blue-500"
-                        : "border-wl-border-default bg-transparent text-gray-400 hover:border-wl-border-strong"
-                    )}
-                  >
-                    {status === "all" ? "All Status" : status}
-                  </button>
-                )
-              )}
+              {(
+                [
+                  "all",
+                  "completed",
+                  "pending",
+                  "refunded",
+                  "cancelled",
+                  "failed",
+                ] as const
+              ).map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setStatusFilter(status)}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border",
+                    statusFilter === status
+                      ? "bg-blue-500 text-white border-blue-500"
+                      : "border-wl-border-default bg-transparent text-gray-400 hover:border-wl-border-strong",
+                  )}
+                >
+                  {status === "all" ? "All Status" : status}
+                </button>
+              ))}
             </div>
 
             {/* Payment Filter */}
             <div className="flex gap-2 flex-wrap">
-              {(["all", "cash", "card", "mobile", "check", "gift_card"] as const).map(
-                (method) => (
-                  <button
-                    key={method}
-                    onClick={() => setPaymentFilter(method)}
-                    className={cn(
-                      "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border flex items-center gap-1",
-                      paymentFilter === method
-                        ? "bg-emerald-500 text-white border-emerald-500"
-                        : "border-wl-border-default bg-transparent text-gray-400 hover:border-wl-border-strong"
-                    )}
-                  >
-                    {method !== "all" && <span>{paymentMethodIcon[method]}</span>}
-                    {method === "all" ? "All Methods" : method.replace(/_/g, " ")}
-                  </button>
-                )
-              )}
+              {(
+                ["all", "cash", "card", "mobile", "check", "gift_card"] as const
+              ).map((method) => (
+                <button
+                  key={method}
+                  onClick={() => setPaymentFilter(method)}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border flex items-center gap-1",
+                    paymentFilter === method
+                      ? "bg-emerald-500 text-white border-emerald-500"
+                      : "border-wl-border-default bg-transparent text-gray-400 hover:border-wl-border-strong",
+                  )}
+                >
+                  {method !== "all" && <span>{paymentMethodIcon[method]}</span>}
+                  {method === "all" ? "All Methods" : method.replace(/_/g, " ")}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -255,7 +290,10 @@ export default function TransactionsPage() {
                 min="0"
                 value={amountRange.min}
                 onChange={(e) =>
-                  setAmountRange({ ...amountRange, min: Math.max(0, parseInt(e.target.value) || 0) })
+                  setAmountRange({
+                    ...amountRange,
+                    min: Math.max(0, parseInt(e.target.value) || 0),
+                  })
                 }
                 className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-white text-sm focus:outline-none focus:border-blue-500"
               />
@@ -268,7 +306,10 @@ export default function TransactionsPage() {
                 type="number"
                 value={amountRange.max}
                 onChange={(e) =>
-                  setAmountRange({ ...amountRange, max: Math.max(0, parseInt(e.target.value) || 10000) })
+                  setAmountRange({
+                    ...amountRange,
+                    max: Math.max(0, parseInt(e.target.value) || 10000),
+                  })
                 }
                 className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-white text-sm focus:outline-none focus:border-blue-500"
               />
@@ -280,13 +321,17 @@ export default function TransactionsPage() {
         <div
           className={cn(
             "grid gap-5",
-            selectedTxnData ? "grid-cols-1 lg:grid-cols-[1fr_450px]" : "grid-cols-1"
+            selectedTxnData
+              ? "grid-cols-1 lg:grid-cols-[1fr_450px]"
+              : "grid-cols-1",
           )}
         >
           {/* Table Card */}
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
-              <CardTitle>Transactions ({filteredTransactions.length})</CardTitle>
+              <CardTitle>
+                Transactions ({filteredTransactions.length})
+              </CardTitle>
             </CardHeader>
 
             <div className="overflow-x-auto">
@@ -320,7 +365,7 @@ export default function TransactionsPage() {
                       onClick={() => setSelectedTxn(txn.id)}
                       className={cn(
                         "hover:bg-wl-bg-elevated transition-colors cursor-pointer",
-                        selectedTxnData?.id === txn.id && "bg-wl-bg-elevated"
+                        selectedTxnData?.id === txn.id && "bg-wl-bg-elevated",
                       )}
                     >
                       <td className="px-4 py-3 text-white font-mono text-xs">
@@ -357,7 +402,10 @@ export default function TransactionsPage() {
 
           {/* Detail Modal */}
           {selectedTxnData && (
-            <Card className="sticky overflow-y-auto bg-wl-bg-surface border-wl-border-default" style={{ top: "24px", maxHeight: "calc(100vh - 200px)" }}>
+            <Card
+              className="sticky overflow-y-auto bg-wl-bg-surface border-wl-border-default"
+              style={{ top: "24px", maxHeight: "calc(100vh - 200px)" }}
+            >
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Transaction Details</CardTitle>
@@ -424,7 +472,10 @@ export default function TransactionsPage() {
                       </div>
                       <div className="space-y-1">
                         {selectedTxnData.items.map((item) => (
-                          <div key={item.id} className="text-xs text-gray-300 flex justify-between">
+                          <div
+                            key={item.id}
+                            className="text-xs text-gray-300 flex justify-between"
+                          >
                             <span>
                               {item.name} x{item.quantity}
                             </span>

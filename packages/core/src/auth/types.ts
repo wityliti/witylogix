@@ -303,7 +303,9 @@ export interface BaseAuthProvider {
    * @param request Authentication request (varies by provider type)
    * @returns AuthResult for local; AuthorizationUrl for OIDC/SAML
    */
-  authenticate(request: AuthenticationRequest): Promise<AuthResult | AuthorizationUrl>;
+  authenticate(
+    request: AuthenticationRequest,
+  ): Promise<AuthResult | AuthorizationUrl>;
 
   /**
    * Handle OAuth 2.0/SAML callback after user authenticates with IdP.
@@ -369,7 +371,10 @@ export interface BaseAuthProvider {
    * @param state Random state token (for CSRF protection)
    * @returns Authorization URL + state
    */
-  getAuthorizationUrl(redirectUri: string, state: string): Promise<AuthorizationUrl>;
+  getAuthorizationUrl(
+    redirectUri: string,
+    state: string,
+  ): Promise<AuthorizationUrl>;
 
   /**
    * Validate provider configuration (credentials, connectivity, etc.).
@@ -520,7 +525,10 @@ export class AuthProviderError extends Error {
  * Invalid credentials (email + password mismatch).
  */
 export class InvalidCredentialsError extends AuthProviderError {
-  constructor(provider: AuthProviderType, message = "Invalid email or password") {
+  constructor(
+    provider: AuthProviderType,
+    message = "Invalid email or password",
+  ) {
     super("INVALID_CREDENTIALS", message, provider, 401, false);
     this.name = "InvalidCredentialsError";
   }
@@ -804,7 +812,10 @@ export class AuthError extends Error {
  * MFA required error.
  */
 export class MfaRequiredError extends AuthError {
-  constructor(public challengeId: string, message = "MFA verification required") {
+  constructor(
+    public challengeId: string,
+    message = "MFA verification required",
+  ) {
     super("MFA_REQUIRED", message, 403);
     this.name = "MfaRequiredError";
   }
@@ -814,7 +825,10 @@ export class MfaRequiredError extends AuthError {
  * Permission denied error.
  */
 export class PermissionDeniedError extends AuthError {
-  constructor(public resource: string, public action: string) {
+  constructor(
+    public resource: string,
+    public action: string,
+  ) {
     super("PERMISSION_DENIED", `Not permitted to ${action} ${resource}`, 403);
     this.name = "PermissionDeniedError";
   }

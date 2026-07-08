@@ -9,9 +9,20 @@ import { cn } from "@/lib/utils";
  * Features: drag-drop-like field mapping, transformations, type validation, import/export
  */
 
-export type DataType = 'string' | 'number' | 'boolean' | 'date' | 'object' | 'array';
+export type DataType =
+  | "string"
+  | "number"
+  | "boolean"
+  | "date"
+  | "object"
+  | "array";
 
-export type TransformationType = 'uppercase' | 'lowercase' | 'trim' | 'format-date' | 'default-value';
+export type TransformationType =
+  | "uppercase"
+  | "lowercase"
+  | "trim"
+  | "format-date"
+  | "default-value";
 
 export interface FieldMapping {
   id: string;
@@ -33,12 +44,12 @@ export interface DataMapperProps {
 }
 
 const TYPE_COMPATIBILITY: Record<DataType, DataType[]> = {
-  string: ['string', 'number', 'date', 'boolean'],
-  number: ['number', 'string'],
-  boolean: ['boolean', 'string'],
-  date: ['date', 'string'],
-  object: ['object', 'string'],
-  array: ['array', 'string'],
+  string: ["string", "number", "date", "boolean"],
+  number: ["number", "string"],
+  boolean: ["boolean", "string"],
+  date: ["date", "string"],
+  object: ["object", "string"],
+  array: ["array", "string"],
 };
 
 export function DataMapper({
@@ -49,16 +60,20 @@ export function DataMapper({
   className,
 }: DataMapperProps) {
   const [editingMappingId, setEditingMappingId] = useState<string | null>(null);
-  const [editingMapping, setEditingMapping] = useState<FieldMapping | null>(null);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [editingMapping, setEditingMapping] = useState<FieldMapping | null>(
+    null,
+  );
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
 
   const handleAddMapping = () => {
     const newMapping: FieldMapping = {
       id: `mapping_${Date.now()}`,
-      sourceField: sourceFields[0]?.name || '',
-      sourceType: sourceFields[0]?.type || 'string',
-      targetField: targetFields[0]?.name || '',
-      targetType: targetFields[0]?.type || 'string',
+      sourceField: sourceFields[0]?.name || "",
+      sourceType: sourceFields[0]?.type || "string",
+      targetField: targetFields[0]?.name || "",
+      targetType: targetFields[0]?.type || "string",
       isRequired: false,
     };
     setEditingMapping(newMapping);
@@ -74,11 +89,17 @@ export function DataMapper({
     if (!editingMapping) return;
 
     // Validate compatibility
-    const sourceField = sourceFields.find((f) => f.name === editingMapping.sourceField);
-    const targetField = targetFields.find((f) => f.name === editingMapping.targetField);
+    const sourceField = sourceFields.find(
+      (f) => f.name === editingMapping.sourceField,
+    );
+    const targetField = targetFields.find(
+      (f) => f.name === editingMapping.targetField,
+    );
 
     if (sourceField && targetField) {
-      const isCompatible = TYPE_COMPATIBILITY[sourceField.type]?.includes(targetField.type);
+      const isCompatible = TYPE_COMPATIBILITY[sourceField.type]?.includes(
+        targetField.type,
+      );
       if (!isCompatible) {
         setValidationErrors({
           ...validationErrors,
@@ -105,61 +126,67 @@ export function DataMapper({
 
   const getTypeColor = (type: DataType): string => {
     switch (type) {
-      case 'string':
-        return 'var(--wl-primary-500)';
-      case 'number':
-        return 'var(--wl-success-500)';
-      case 'boolean':
-        return 'var(--wl-warning-500)';
-      case 'date':
-        return 'var(--wl-info-500)';
-      case 'object':
-      case 'array':
-        return 'var(--wl-secondary-500)';
+      case "string":
+        return "var(--wl-primary-500)";
+      case "number":
+        return "var(--wl-success-500)";
+      case "boolean":
+        return "var(--wl-warning-500)";
+      case "date":
+        return "var(--wl-info-500)";
+      case "object":
+      case "array":
+        return "var(--wl-secondary-500)";
       default:
-        return 'var(--wl-text-secondary)';
+        return "var(--wl-text-secondary)";
     }
   };
 
   const getTypeBadgeClass = (type: DataType): string => {
     switch (type) {
-      case 'string':
-        return 'bg-wl-primary-100 dark:bg-wl-primary-900/30 text-wl-primary-700 dark:text-wl-primary-300';
-      case 'number':
-        return 'bg-wl-success-100 dark:bg-wl-success-900/30 text-wl-success-700 dark:text-wl-success-300';
-      case 'boolean':
-        return 'bg-wl-warning-100 dark:bg-wl-warning-900/30 text-wl-warning-700 dark:text-wl-warning-300';
-      case 'date':
-        return 'bg-wl-info-100 dark:bg-wl-info-900/30 text-wl-info-700 dark:text-wl-info-300';
+      case "string":
+        return "bg-wl-primary-100 dark:bg-wl-primary-900/30 text-wl-primary-700 dark:text-wl-primary-300";
+      case "number":
+        return "bg-wl-success-100 dark:bg-wl-success-900/30 text-wl-success-700 dark:text-wl-success-300";
+      case "boolean":
+        return "bg-wl-warning-100 dark:bg-wl-warning-900/30 text-wl-warning-700 dark:text-wl-warning-300";
+      case "date":
+        return "bg-wl-info-100 dark:bg-wl-info-900/30 text-wl-info-700 dark:text-wl-info-300";
       default:
-        return 'bg-wl-surface-hover text-wl-text-secondary';
+        return "bg-wl-surface-hover text-wl-text-secondary";
     }
   };
 
   const unmappedSourceFields = sourceFields.filter(
-    (f) => !mappings.some((m) => m.sourceField === f.name) && !editingMapping?.sourceField
+    (f) =>
+      !mappings.some((m) => m.sourceField === f.name) &&
+      !editingMapping?.sourceField,
   );
 
   const unmappedTargetFields = targetFields.filter(
-    (f) => !mappings.some((m) => m.targetField === f.name) && !editingMapping?.targetField
+    (f) =>
+      !mappings.some((m) => m.targetField === f.name) &&
+      !editingMapping?.targetField,
   );
 
   return (
     <div
       className={cn(
-        'border border-wl-border-subtle rounded-lg bg-wl-bg-surface overflow-hidden',
-        className
+        "border border-wl-border-subtle rounded-lg bg-wl-bg-surface overflow-hidden",
+        className,
       )}
     >
       {/* Header */}
       <div className="bg-wl-surface-hover border-b border-wl-border-subtle p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-wl-text-primary">Field Mapping</h3>
+          <h3 className="text-lg font-semibold text-wl-text-primary">
+            Field Mapping
+          </h3>
           <button
             onClick={handleAddMapping}
             className={cn(
-              'px-4 py-2 rounded-lg font-medium text-sm transition-colors',
-              'bg-wl-primary-500 text-white hover:bg-wl-primary-600'
+              "px-4 py-2 rounded-lg font-medium text-sm transition-colors",
+              "bg-wl-primary-500 text-white hover:bg-wl-primary-600",
             )}
           >
             Add Mapping
@@ -186,22 +213,33 @@ export function DataMapper({
         <div className="grid grid-cols-3 gap-8 min-w-max">
           {/* Source Fields */}
           <div>
-            <h4 className="text-sm font-semibold text-wl-text-primary mb-4">Source</h4>
+            <h4 className="text-sm font-semibold text-wl-text-primary mb-4">
+              Source
+            </h4>
             <div className="space-y-3">
               {sourceFields.map((field) => {
-                const isMapped = mappings.some((m) => m.sourceField === field.name);
+                const isMapped = mappings.some(
+                  (m) => m.sourceField === field.name,
+                );
                 return (
                   <div
                     key={field.name}
                     className={cn(
-                      'p-3 rounded-lg border-2 transition-colors',
+                      "p-3 rounded-lg border-2 transition-colors",
                       isMapped
-                        ? 'border-wl-primary-500 bg-wl-primary-500/5'
-                        : 'border-wl-border-subtle bg-wl-surface-hover hover:border-wl-border-default'
+                        ? "border-wl-primary-500 bg-wl-primary-500/5"
+                        : "border-wl-border-subtle bg-wl-surface-hover hover:border-wl-border-default",
                     )}
                   >
-                    <div className="text-sm font-medium text-wl-text-primary mb-1">{field.name}</div>
-                    <span className={cn('px-2 py-0.5 rounded text-xs font-medium', getTypeBadgeClass(field.type))}>
+                    <div className="text-sm font-medium text-wl-text-primary mb-1">
+                      {field.name}
+                    </div>
+                    <span
+                      className={cn(
+                        "px-2 py-0.5 rounded text-xs font-medium",
+                        getTypeBadgeClass(field.type),
+                      )}
+                    >
                       {field.type}
                     </span>
                   </div>
@@ -212,7 +250,9 @@ export function DataMapper({
 
           {/* Mappings */}
           <div>
-            <h4 className="text-sm font-semibold text-wl-text-primary mb-4">Mapping</h4>
+            <h4 className="text-sm font-semibold text-wl-text-primary mb-4">
+              Mapping
+            </h4>
             <div className="space-y-3">
               {mappings.map((mapping) => (
                 <div
@@ -252,21 +292,25 @@ export function DataMapper({
               ))}
 
               {/* Add mapping form when editing */}
-              {editingMapping && !mappings.some((m) => m.id === editingMapping.id) && (
-                <div className="p-3 rounded-lg bg-wl-primary-500/10 border-2 border-wl-primary-500">
-                  <div className="text-xs font-semibold text-wl-primary-700 dark:text-wl-primary-300 mb-2">
-                    New Mapping
+              {editingMapping &&
+                !mappings.some((m) => m.id === editingMapping.id) && (
+                  <div className="p-3 rounded-lg bg-wl-primary-500/10 border-2 border-wl-primary-500">
+                    <div className="text-xs font-semibold text-wl-primary-700 dark:text-wl-primary-300 mb-2">
+                      New Mapping
+                    </div>
+                    <div className="text-xs text-wl-text-secondary">
+                      {editingMapping.sourceField} →{" "}
+                      {editingMapping.targetField}
+                    </div>
                   </div>
-                  <div className="text-xs text-wl-text-secondary">
-                    {editingMapping.sourceField} → {editingMapping.targetField}
-                  </div>
-                </div>
-              )}
+                )}
 
               {mappings.length === 0 && !editingMapping && (
                 <div className="p-4 text-center text-wl-text-tertiary">
                   <div className="text-sm">No mappings configured</div>
-                  <div className="text-xs mt-1">Add a mapping to get started</div>
+                  <div className="text-xs mt-1">
+                    Add a mapping to get started
+                  </div>
                 </div>
               )}
             </div>
@@ -274,22 +318,33 @@ export function DataMapper({
 
           {/* Target Fields */}
           <div>
-            <h4 className="text-sm font-semibold text-wl-text-primary mb-4">Target</h4>
+            <h4 className="text-sm font-semibold text-wl-text-primary mb-4">
+              Target
+            </h4>
             <div className="space-y-3">
               {targetFields.map((field) => {
-                const isMapped = mappings.some((m) => m.targetField === field.name);
+                const isMapped = mappings.some(
+                  (m) => m.targetField === field.name,
+                );
                 return (
                   <div
                     key={field.name}
                     className={cn(
-                      'p-3 rounded-lg border-2 transition-colors',
+                      "p-3 rounded-lg border-2 transition-colors",
                       isMapped
-                        ? 'border-wl-success-500 bg-wl-success-500/5'
-                        : 'border-wl-border-subtle bg-wl-surface-hover hover:border-wl-border-default'
+                        ? "border-wl-success-500 bg-wl-success-500/5"
+                        : "border-wl-border-subtle bg-wl-surface-hover hover:border-wl-border-default",
                     )}
                   >
-                    <div className="text-sm font-medium text-wl-text-primary mb-1">{field.name}</div>
-                    <span className={cn('px-2 py-0.5 rounded text-xs font-medium', getTypeBadgeClass(field.type))}>
+                    <div className="text-sm font-medium text-wl-text-primary mb-1">
+                      {field.name}
+                    </div>
+                    <span
+                      className={cn(
+                        "px-2 py-0.5 rounded text-xs font-medium",
+                        getTypeBadgeClass(field.type),
+                      )}
+                    >
                       {field.type}
                     </span>
                   </div>
@@ -304,7 +359,9 @@ export function DataMapper({
       {editingMapping && (
         <div className="border-t border-wl-border-subtle bg-wl-surface-hover p-6">
           <h4 className="text-sm font-semibold text-wl-text-primary mb-4">
-            {mappings.some((m) => m.id === editingMapping.id) ? 'Edit Mapping' : 'Create Mapping'}
+            {mappings.some((m) => m.id === editingMapping.id)
+              ? "Edit Mapping"
+              : "Create Mapping"}
           </h4>
 
           <div className="grid grid-cols-2 gap-6 mb-6">
@@ -318,18 +375,20 @@ export function DataMapper({
                 onChange={(e) =>
                   setEditingMapping((prev) => {
                     if (!prev) return null;
-                    const sourceField = sourceFields.find((f) => f.name === e.target.value);
+                    const sourceField = sourceFields.find(
+                      (f) => f.name === e.target.value,
+                    );
                     return {
                       ...prev,
                       sourceField: e.target.value,
-                      sourceType: sourceField?.type || 'string',
+                      sourceType: sourceField?.type || "string",
                     };
                   })
                 }
                 className={cn(
-                  'w-full px-3 py-2 rounded-lg border border-wl-border-subtle',
-                  'bg-wl-bg-surface text-wl-text-primary',
-                  'focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/20'
+                  "w-full px-3 py-2 rounded-lg border border-wl-border-subtle",
+                  "bg-wl-bg-surface text-wl-text-primary",
+                  "focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/20",
                 )}
               >
                 {sourceFields.map((field) => (
@@ -350,18 +409,20 @@ export function DataMapper({
                 onChange={(e) =>
                   setEditingMapping((prev) => {
                     if (!prev) return null;
-                    const targetField = targetFields.find((f) => f.name === e.target.value);
+                    const targetField = targetFields.find(
+                      (f) => f.name === e.target.value,
+                    );
                     return {
                       ...prev,
                       targetField: e.target.value,
-                      targetType: targetField?.type || 'string',
+                      targetType: targetField?.type || "string",
                     };
                   })
                 }
                 className={cn(
-                  'w-full px-3 py-2 rounded-lg border border-wl-border-subtle',
-                  'bg-wl-bg-surface text-wl-text-primary',
-                  'focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/20'
+                  "w-full px-3 py-2 rounded-lg border border-wl-border-subtle",
+                  "bg-wl-bg-surface text-wl-text-primary",
+                  "focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/20",
                 )}
               >
                 {targetFields.map((field) => (
@@ -379,21 +440,22 @@ export function DataMapper({
               Data Transformation
             </label>
             <select
-              value={editingMapping.transformation || 'none'}
+              value={editingMapping.transformation || "none"}
               onChange={(e) =>
                 setEditingMapping((prev) =>
                   prev
                     ? {
                         ...prev,
-                        transformation: (e.target.value as TransformationType) || undefined,
+                        transformation:
+                          (e.target.value as TransformationType) || undefined,
                       }
-                    : null
+                    : null,
                 )
               }
               className={cn(
-                'w-full px-3 py-2 rounded-lg border border-wl-border-subtle',
-                'bg-wl-bg-surface text-wl-text-primary',
-                'focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/20'
+                "w-full px-3 py-2 rounded-lg border border-wl-border-subtle",
+                "bg-wl-bg-surface text-wl-text-primary",
+                "focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/20",
               )}
             >
               <option value="none">None</option>
@@ -419,8 +481,8 @@ export function DataMapper({
             <button
               onClick={handleSaveMapping}
               className={cn(
-                'flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-colors',
-                'bg-wl-primary-500 text-white hover:bg-wl-primary-600'
+                "flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-colors",
+                "bg-wl-primary-500 text-white hover:bg-wl-primary-600",
               )}
             >
               Save Mapping
@@ -432,8 +494,8 @@ export function DataMapper({
                 setValidationErrors({});
               }}
               className={cn(
-                'flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-colors',
-                'bg-wl-surface-hover text-wl-text-primary hover:bg-wl-border-subtle'
+                "flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-colors",
+                "bg-wl-surface-hover text-wl-text-primary hover:bg-wl-border-subtle",
               )}
             >
               Cancel

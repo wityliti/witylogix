@@ -32,7 +32,9 @@ import type {
 async function workflowIntegrationPlugin(
   fastify: FastifyInstance,
 ): Promise<void> {
-  fastify.log.info("[WorkflowIntegration] Initializing workflow integration plugin");
+  fastify.log.info(
+    "[WorkflowIntegration] Initializing workflow integration plugin",
+  );
 
   // ─── Initialize Workflow Engine ───────────────────────────────────────
 
@@ -119,9 +121,15 @@ async function workflowIntegrationPlugin(
         case "createDeliveryOrder":
           return await integrationService.onOrderCreated(input as any, context);
         case "assignDriver":
-          return await integrationService.onDriverAssignment(input as any, context);
+          return await integrationService.onDriverAssignment(
+            input as any,
+            context,
+          );
         case "completeDelivery":
-          return await integrationService.onDeliveryCompleted(input as any, context);
+          return await integrationService.onDeliveryCompleted(
+            input as any,
+            context,
+          );
         default:
           fastify.log.warn(
             { workflowName },
@@ -176,7 +184,9 @@ async function workflowIntegrationPlugin(
   // ─── Graceful Shutdown ──────────────────────────────────────────────
 
   fastify.addHook("onClose", async () => {
-    fastify.log.info("[WorkflowIntegration] Shutting down workflow integration");
+    fastify.log.info(
+      "[WorkflowIntegration] Shutting down workflow integration",
+    );
     // Cleanup can be added here if needed
   });
 

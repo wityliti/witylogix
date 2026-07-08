@@ -9,12 +9,14 @@
 ## Context
 
 The Witylogix platform consists of multiple interconnected services:
+
 - **API** (Fastify backend with Prisma ORM)
 - **Dashboard** (Next.js frontend)
 - **Database Package** (Prisma schemas & migrations)
 - **Shared Packages** (Core, Types, Validators, Framework, Workflows, Extensions, Carrier Service)
 
 Current deployment workflow has gaps:
+
 1. No Docker image generation for CI pipeline — manual builds for production
 2. Prisma client generation happens redundantly across jobs without caching
 3. No structured test coverage reporting — tests pass/fail but coverage trends unknown
@@ -24,6 +26,7 @@ Current deployment workflow has gaps:
 7. No distinction between CI (testing) and CD (deployment) stages
 
 The team needs a robust CI/CD pipeline that:
+
 - Validates code quality through automated linting, type-checking, and testing
 - Produces Docker images that are always verified and tested
 - Tracks test coverage regressions to maintain code quality standards
@@ -76,6 +79,7 @@ GitHub Event (Push/PR)
 ### 2. CI/CD Pipeline Stages
 
 #### Stage 1: Lint (ESLint)
+
 - **Trigger:** On push to main, all PRs
 - **Job:** `lint`
 - **Steps:**
@@ -88,6 +92,7 @@ GitHub Event (Push/PR)
 - **Failure:** Blocks subsequent jobs via dependency
 
 #### Stage 2: Type Check (TypeScript)
+
 - **Trigger:** On push to main, all PRs
 - **Job:** `type-check`
 - **Steps:**
@@ -101,6 +106,7 @@ GitHub Event (Push/PR)
 - **Failure:** Blocks subsequent jobs
 
 #### Stage 3: Test with Coverage (Vitest)
+
 - **Trigger:** After lint + type-check pass
 - **Job:** `test`
 - **Services:**
@@ -134,6 +140,7 @@ GitHub Event (Push/PR)
 - **Failure:** Blocks Docker build job
 
 #### Stage 4: Build Applications (Turbo)
+
 - **Trigger:** After test passes
 - **Job:** `build`
 - **Steps:**
@@ -149,6 +156,7 @@ GitHub Event (Push/PR)
 - **Failure:** Blocks Docker job
 
 #### Stage 5: Docker Build & Push (New)
+
 - **Trigger:** After test + build pass
 - **Job:** `docker`
 - **Depends on:** `test` job (ensures only tested code is containerized)
@@ -174,12 +182,14 @@ GitHub Event (Push/PR)
 ### 3. Caching Strategy
 
 **pnpm Store Cache:**
+
 - Key: `${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}`
 - Path: `$PNPM_HOME/store`
 - Hit rate: High (only invalidates on lock file changes)
 - Shared across all jobs
 
 **Prisma Client Cache:**
+
 - Key: `${{ runner.os }}-prisma-${{ hashFiles('packages/db/prisma/schema.prisma') }}`
 - Path: `node_modules/.prisma`
 - Hit rate: Medium (invalidates on schema changes)
@@ -187,12 +197,14 @@ GitHub Event (Push/PR)
 - Also used in build job (separate cache entry)
 
 **Turbo Cache:**
+
 - Key: `${{ runner.os }}-turbo-${{ github.sha }}`
 - Path: `.turbo/`
 - Hit rate: Low (unique per commit, but layers cached)
 - Restore keys allow partial hits on previous commits
 
 **Next.js Cache:**
+
 - Key: `${{ runner.os }}-nextjs-${{ github.sha }}`
 - Path: `apps/dashboard/.next/cache`
 - Hit rate: Medium (invalidates on source changes)
@@ -205,10 +217,10 @@ Vitest configuration in `vitest.config.ts`:
 export default defineConfig({
   test: {
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
-      include: ['**/*.test.ts', '**/*.spec.ts'],
-      exclude: ['node_modules', 'dist'],
+      provider: "v8",
+      reporter: ["text", "json", "html", "lcov"],
+      include: ["**/*.test.ts", "**/*.spec.ts"],
+      exclude: ["node_modules", "dist"],
       all: true,
       lines: 80,
       statements: 80,
@@ -218,14 +230,15 @@ export default defineConfig({
         lines: [70, 90],
         statements: [70, 90],
         functions: [70, 90],
-        branches: [50, 90]
-      }
-    }
-  }
-})
+        branches: [50, 90],
+      },
+    },
+  },
+});
 ```
 
 **Threshold Enforcement:**
+
 - Vitest fails if coverage falls below thresholds
 - CI job fails, blocking Docker build
 - Coverage report uploaded as artifact for PR review
@@ -234,6 +247,7 @@ export default defineConfig({
 ### 5. Deployment Preview Environments (Future)
 
 For pull requests, after Docker build succeeds:
+
 - Deploy preview container to staging environment
 - Generate preview URL and comment on PR
 - Destroy preview after PR closes/merges
@@ -241,6 +255,7 @@ For pull requests, after Docker build succeeds:
 ### 6. Release Process (Main Branch Only)
 
 On push to `main` after all jobs pass:
+
 1. Docker image tagged with commit SHA
 2. Image also tagged as `latest` for quick reference
 3. Image pushed to production registry
@@ -330,29 +345,34 @@ concurrency:
 ## Implementation Plan
 
 ### Phase 1: Update CI Workflow (Sprint 4.0)
+
 - Add test coverage flag to Vitest
 - Implement Prisma schema caching
 - Add coverage artifact upload
 - Document coverage thresholds
 
 ### Phase 2: Docker Build Integration (Sprint 4.0)
+
 - Add Docker build job to CI workflow
 - Implement image tagging strategy
 - Test multi-stage Dockerfile
 - Verify layer caching works
 
 ### Phase 3: Registry Integration (Sprint 4.1)
+
 - Configure Docker registry credentials (GitHub Secrets)
 - Push images to registry on main branch
 - Create image retention policy
 - Document deployment from images
 
 ### Phase 4: Preview Deployments (Sprint 4.2)
+
 - Deploy preview containers for PRs
 - Automated cleanup on PR close
 - Preview URL comment on PR
 
 ### Phase 5: Release Automation (Sprint 4.2)
+
 - Semantic versioning in CI
 - GitHub release creation
 - Changelog generation
@@ -360,18 +380,22 @@ concurrency:
 ## Alternatives Considered
 
 ### 1. GitLab CI
+
 - **Rejected:** Witylogix uses GitHub, switching would require migration
 - **Reason:** GitHub Actions tightly integrated with GitHub, no additional vendor
 
 ### 2. Jenkins On-Premise
+
 - **Rejected:** Requires infrastructure management
 - **Reason:** GitHub Actions is managed, cheaper for small team
 
 ### 3. Separate Docker Build Step (Not in CI)
+
 - **Rejected:** Manual Docker builds decouple from CI tests
 - **Reason:** Can push untested code to production
 
 ### 4. Heroku/Vercel Deployment
+
 - **Rejected:** Limited control over Docker build process
 - **Reason:** Team wants custom multi-stage build, layer caching
 

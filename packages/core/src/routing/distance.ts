@@ -94,7 +94,10 @@ export function computeDistanceMatrix(points: GeoPoint[]): number[][] {
  * const time = estimateTravelTime(30); // 30 km at 60 km/h = 30 minutes
  * const time2 = estimateTravelTime(30, 100); // 30 km at 100 km/h = 18 minutes
  */
-export function estimateTravelTime(distanceKm: number, speedKmh: number = 60): number {
+export function estimateTravelTime(
+  distanceKm: number,
+  speedKmh: number = 60,
+): number {
   if (speedKmh <= 0) {
     throw new Error("Speed must be positive");
   }

@@ -32,7 +32,10 @@ import { prisma as dbPrisma } from "@witylogix/db";
 import type { TypedEventBus } from "../../event-bus/index.js";
 import type { WitylogixEvents } from "../../event-bus/types.js";
 import { WooCommerceAdapter } from "../../platforms/adapters/woocommerce.js";
-import type { WooCommerceOrder, WooCommerceProduct } from "../../platforms/adapters/woocommerce.js";
+import type {
+  WooCommerceOrder,
+  WooCommerceProduct,
+} from "../../platforms/adapters/woocommerce.js";
 
 /**
  * WooCommerce webhook consumer implementation.
@@ -41,7 +44,10 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
   private eventBus?: TypedEventBus<WitylogixEvents>;
   private adapter = new WooCommerceAdapter();
 
-  constructor(config: ConsumerConfig, eventBus?: TypedEventBus<WitylogixEvents>) {
+  constructor(
+    config: ConsumerConfig,
+    eventBus?: TypedEventBus<WitylogixEvents>,
+  ) {
     super(config);
     this.eventBus = eventBus;
   }
@@ -74,7 +80,7 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
     }
 
     // Basic validation of required fields
-    if (!data.shopId || !data.externalOrderId && !data.externalProductId) {
+    if (!data.shopId || (!data.externalOrderId && !data.externalProductId)) {
       throw new QueueValidationError(
         "Webhook missing required fields: shopId and externalOrderId/externalProductId",
       );
@@ -118,10 +124,7 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
         );
       }
 
-      if (
-        error instanceof Error &&
-        error.message.includes("database")
-      ) {
+      if (error instanceof Error && error.message.includes("database")) {
         throw new QueueTransientError(
           `Database error processing webhook: ${error.message}`,
           { jobId, cause: error.message },
@@ -168,12 +171,18 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
 
     // Step 2: Validate payload has required fields
     if (!payload || typeof (payload as any).id === "undefined") {
-      throw new QueueValidationError("Order payload missing required field: id");
+      throw new QueueValidationError(
+        "Order payload missing required field: id",
+      );
     }
 
     // Step 3: Map WooCommerce order data using adapter
-    console.log(`[WooCommerceWebhookConsumer] Upserting order ${externalOrderId} to database`);
-    const mappedOrder = this.adapter.mapOrder(payload as unknown as WooCommerceOrder);
+    console.log(
+      `[WooCommerceWebhookConsumer] Upserting order ${externalOrderId} to database`,
+    );
+    const mappedOrder = this.adapter.mapOrder(
+      payload as unknown as WooCommerceOrder,
+    );
 
     // Step 4: Upsert order in database with source='WOOCOMMERCE'
     await this.upsertOrder(shopId, mappedOrder);
@@ -189,14 +198,16 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
           where: { orderId: order.id, shopId },
         });
         if (!existingShipment) {
-          const shippingAddr = (payload as any).shipping ?? (payload as any).billing ?? {};
+          const shippingAddr =
+            (payload as any).shipping ?? (payload as any).billing ?? {};
           await (dbPrisma as any).shipment.create({
             data: {
               shopId,
               orderId: order.id,
               shipmentNumber: `WC-${externalOrderId}`,
               status: "PENDING",
-              recipientName: `${shippingAddr.first_name ?? ""} ${shippingAddr.last_name ?? ""}`.trim(),
+              recipientName:
+                `${shippingAddr.first_name ?? ""} ${shippingAddr.last_name ?? ""}`.trim(),
               recipientPhone: shippingAddr.phone ?? null,
               addressLine1: shippingAddr.address_1 ?? "",
               addressLine2: shippingAddr.address_2 ?? null,
@@ -238,10 +249,13 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
     }
 
     // Step 7: Emit order events
-    console.log(`[WooCommerceWebhookConsumer] Emitting order events for order ${externalOrderId}`);
+    console.log(
+      `[WooCommerceWebhookConsumer] Emitting order events for order ${externalOrderId}`,
+    );
     await this.emitOrderEvents(shopId, externalOrderId, mappedOrder);
 
-    const processingTimeMs = Date.now() - (metadata.processingStartedAt ?? Date.now());
+    const processingTimeMs =
+      Date.now() - (metadata.processingStartedAt ?? Date.now());
 
     return {
       success: true,
@@ -282,7 +296,9 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
         case "create":
         case "update":
           if (!payload) {
-            throw new QueueValidationError("Payload required for create/update");
+            throw new QueueValidationError(
+              "Payload required for create/update",
+            );
           }
           // Map WooCommerce product data using adapter
           const mappedProduct = this.adapter.mapProduct(
@@ -446,7 +462,9 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
       );
 
       if (!this.eventBus) {
-        console.warn("[WooCommerceWebhookConsumer] EventBus not initialized, skipping event emission");
+        console.warn(
+          "[WooCommerceWebhookConsumer] EventBus not initialized, skipping event emission",
+        );
         return;
       }
 
@@ -461,7 +479,7 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
           currency: order.currency,
           createdAt: order.createdAt.toISOString(),
         },
-        { tenantId: shopId }
+        { tenantId: shopId },
       );
 
       await this.simulateAsyncOperation(20);
@@ -491,7 +509,9 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
       );
 
       if (!this.eventBus) {
-        console.warn("[WooCommerceWebhookConsumer] EventBus not initialized, skipping notification");
+        console.warn(
+          "[WooCommerceWebhookConsumer] EventBus not initialized, skipping notification",
+        );
         return;
       }
 
@@ -503,7 +523,7 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
           shopId,
           confirmedAt: new Date().toISOString(),
         },
-        { tenantId: shopId }
+        { tenantId: shopId },
       );
 
       await this.simulateAsyncOperation(25);
@@ -521,10 +541,7 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
    * @param shopId Shop identifier
    * @param product Mapped product from adapter
    */
-  private async syncProductData(
-    shopId: string,
-    product: any,
-  ): Promise<void> {
+  private async syncProductData(shopId: string, product: any): Promise<void> {
     try {
       console.log(
         `[WooCommerceWebhookConsumer] Syncing product data for ${product.title}`,
@@ -604,7 +621,10 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
     } catch (error) {
       throw new QueueTransientError(
         `Failed to update variant inventory: ${error instanceof Error ? error.message : String(error)}`,
-        { productId: product.externalProductId, variantCount: product.variants.length },
+        {
+          productId: product.externalProductId,
+          variantCount: product.variants.length,
+        },
       );
     }
   }
@@ -620,9 +640,7 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
     productId: string,
   ): Promise<void> {
     try {
-      console.log(
-        `[WooCommerceWebhookConsumer] Deleting product ${productId}`,
-      );
+      console.log(`[WooCommerceWebhookConsumer] Deleting product ${productId}`);
 
       // Soft delete product
       await (dbPrisma as any).product.update({
@@ -657,7 +675,9 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
       );
 
       if (!this.eventBus) {
-        console.warn("[WooCommerceWebhookConsumer] EventBus not initialized, skipping event emission");
+        console.warn(
+          "[WooCommerceWebhookConsumer] EventBus not initialized, skipping event emission",
+        );
         return;
       }
 
@@ -670,7 +690,7 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
             shopId,
             createdAt: new Date().toISOString(),
           },
-          { tenantId: shopId }
+          { tenantId: shopId },
         );
       } else if (action === "update") {
         await this.eventBus.emit(
@@ -680,7 +700,7 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
             shopId,
             updatedAt: new Date().toISOString(),
           },
-          { tenantId: shopId }
+          { tenantId: shopId },
         );
       } else if (action === "delete") {
         await this.eventBus.emit(
@@ -690,7 +710,7 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
             shopId,
             deletedAt: new Date().toISOString(),
           },
-          { tenantId: shopId }
+          { tenantId: shopId },
         );
       }
 

@@ -24,7 +24,7 @@ import type {
   HealthCheckResult,
   RateLimitInfo,
   PaginatedResponse,
-} from './supply-chain-sdk-types.js';
+} from "./supply-chain-sdk-types.js";
 
 // ─── BLUE YONDER SPECIFIC TYPES ────────────────────────────────────
 
@@ -56,9 +56,9 @@ interface BlueYonderInventoryOptimization {
   currentStock: number;
   safetyStock: number;
   targetStock: number;
-  recommendedAction: 'increase' | 'decrease' | 'hold';
+  recommendedAction: "increase" | "decrease" | "hold";
   estimatedImpact?: number;
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  priority: "low" | "medium" | "high" | "critical";
 }
 
 interface BlueYonderReplenishment {
@@ -106,7 +106,7 @@ interface BlueYonderWaveRecords {
 
 interface BlueYonderAlert {
   id: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   category: string;
   message: string;
   affectedEntity: { type: string; id: string };
@@ -120,14 +120,14 @@ interface BlueYonderKPI {
   value: number;
   unit: string;
   target?: number;
-  trend?: 'up' | 'down' | 'stable';
+  trend?: "up" | "down" | "stable";
   lastUpdated: string;
 }
 
 interface BlueYonderNetworkNode {
   id: string;
   name: string;
-  type: 'supplier' | 'warehouse' | 'distribution' | 'store' | 'customer';
+  type: "supplier" | "warehouse" | "distribution" | "store" | "customer";
   location: { latitude: number; longitude: number };
   capacity?: number;
   leadTime?: number; // days
@@ -148,7 +148,7 @@ class RateLimiter {
   async acquire(): Promise<void> {
     const now = Date.now();
     this.requestTimestamps = this.requestTimestamps.filter(
-      (ts) => now - ts < this.windowMs
+      (ts) => now - ts < this.windowMs,
     );
 
     if (this.requestTimestamps.length >= this.maxRequests) {
@@ -164,7 +164,7 @@ class RateLimiter {
   getInfo(): RateLimitInfo {
     const now = Date.now();
     const recentRequests = this.requestTimestamps.filter(
-      (ts) => now - ts < this.windowMs
+      (ts) => now - ts < this.windowMs,
     );
     const remaining = Math.max(0, this.maxRequests - recentRequests.length);
 
@@ -199,13 +199,12 @@ class RetryHandler {
       try {
         return await fn();
       } catch (error: unknown) {
-        lastError =
-          error instanceof Error ? error : new Error(String(error));
+        lastError = error instanceof Error ? error : new Error(String(error));
 
         const statusCode =
           lastError instanceof Error &&
-          'statusCode' in lastError &&
-          typeof (lastError as Record<string, unknown>).statusCode === 'number'
+          "statusCode" in lastError &&
+          typeof (lastError as Record<string, unknown>).statusCode === "number"
             ? ((lastError as Record<string, unknown>).statusCode as number)
             : 500;
 
@@ -219,7 +218,7 @@ class RetryHandler {
         const delay = Math.min(
           this.config.maxDelayMs,
           this.config.initialDelayMs *
-            Math.pow(this.config.backoffMultiplier, attempt)
+            Math.pow(this.config.backoffMultiplier, attempt),
         );
 
         await new Promise((resolve) => setTimeout(resolve, delay));
@@ -245,7 +244,7 @@ export class BlueYonderV2SDKClient {
 
   constructor(authConfig: BlueYonderAuthConfig) {
     this.authConfig = authConfig;
-    this.baseUrl = authConfig.apiUrl.replace(/\/$/, '');
+    this.baseUrl = authConfig.apiUrl.replace(/\/$/, "");
     this.rateLimiter = new RateLimiter(200, 60000);
     this.retryHandler = new RetryHandler({
       maxAttempts: 3,
@@ -271,13 +270,13 @@ export class BlueYonderV2SDKClient {
       await this.rateLimiter.acquire();
 
       const payload = new URLSearchParams();
-      payload.append('grant_type', 'client_credentials');
-      payload.append('client_id', this.authConfig.clientId);
-      payload.append('client_secret', this.authConfig.clientSecret);
+      payload.append("grant_type", "client_credentials");
+      payload.append("client_id", this.authConfig.clientId);
+      payload.append("client_secret", this.authConfig.clientSecret);
 
       const response = await fetch(`${this.baseUrl}/oauth/token`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: payload.toString(),
       });
 
@@ -299,14 +298,14 @@ export class BlueYonderV2SDKClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     return this.retryHandler.execute(async () => {
       await this.rateLimiter.acquire();
 
       const token = await this.ensureAuthenticated();
       const headers = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
         ...(options.headers as Record<string, string>),
       };
@@ -318,14 +317,15 @@ export class BlueYonderV2SDKClient {
 
       if (!response.ok) {
         const error = new Error(
-          `API request failed: ${response.status} ${response.statusText}`
+          `API request failed: ${response.status} ${response.statusText}`,
         );
-        (error as unknown as Record<string, unknown>).statusCode = response.status;
+        (error as unknown as Record<string, unknown>).statusCode =
+          response.status;
         throw error;
       }
 
-      const contentType = response.headers.get('content-type');
-      if (contentType?.includes('application/json')) {
+      const contentType = response.headers.get("content-type");
+      if (contentType?.includes("application/json")) {
         return (await response.json()) as T;
       }
 
@@ -345,14 +345,18 @@ export class BlueYonderV2SDKClient {
     dateTo?: string;
   }): Promise<PaginatedResponse<DemandForecast>> {
     const params = new URLSearchParams();
-    if (options?.skuId) params.append('skuId', options.skuId);
-    if (options?.locationId) params.append('locationId', options.locationId);
-    if (options?.dateFrom) params.append('dateFrom', options.dateFrom);
-    if (options?.dateTo) params.append('dateTo', options.dateTo);
+    if (options?.skuId) params.append("skuId", options.skuId);
+    if (options?.locationId) params.append("locationId", options.locationId);
+    if (options?.dateFrom) params.append("dateFrom", options.dateFrom);
+    if (options?.dateTo) params.append("dateTo", options.dateTo);
 
-    const data = (await this.request<{ items: BlueYonderForecast[]; totalCount: number }>(
-      `/demand/forecasts?${params.toString()}`
-    )) as { items: BlueYonderForecast[]; totalCount: number };
+    const data = (await this.request<{
+      items: BlueYonderForecast[];
+      totalCount: number;
+    }>(`/demand/forecasts?${params.toString()}`)) as {
+      items: BlueYonderForecast[];
+      totalCount: number;
+    };
 
     return {
       items: data.items.map((f) => ({
@@ -360,7 +364,7 @@ export class BlueYonderV2SDKClient {
         skuId: f.skuId,
         warehouseId: f.locationId,
         forecastDate: new Date(f.forecastDate),
-        forecastPeriod: 'daily' as const,
+        forecastPeriod: "daily" as const,
         forecastQuantity: f.forecastQuantity,
         confidence: f.confidence,
         seasonalFactor: f.seasonalFactor,
@@ -381,7 +385,7 @@ export class BlueYonderV2SDKClient {
    */
   async getForecastBySKU(skuId: string): Promise<DemandForecast> {
     const data = (await this.request<BlueYonderForecast>(
-      `/demand/forecasts/${skuId}`
+      `/demand/forecasts/${skuId}`,
     )) as BlueYonderForecast;
 
     return {
@@ -389,7 +393,7 @@ export class BlueYonderV2SDKClient {
       skuId: data.skuId,
       warehouseId: data.locationId,
       forecastDate: new Date(data.forecastDate),
-      forecastPeriod: 'daily' as const,
+      forecastPeriod: "daily" as const,
       forecastQuantity: data.forecastQuantity,
       confidence: data.confidence,
       seasonalFactor: data.seasonalFactor,
@@ -414,7 +418,7 @@ export class BlueYonderV2SDKClient {
       liftFactor: number;
       forecastedSalesLift: number;
     }>(`/demand/promotional-lift`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(config),
     })) as { liftFactor: number; forecastedSalesLift: number };
 
@@ -432,9 +436,9 @@ export class BlueYonderV2SDKClient {
     const data = (await this.request<BlueYonderForecast>(
       `/demand/npi-forecast`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(config),
-      }
+      },
     )) as BlueYonderForecast;
 
     return {
@@ -442,7 +446,7 @@ export class BlueYonderV2SDKClient {
       skuId: data.skuId,
       warehouseId: data.locationId,
       forecastDate: new Date(data.forecastDate),
-      forecastPeriod: 'daily' as const,
+      forecastPeriod: "daily" as const,
       forecastQuantity: data.forecastQuantity,
       confidence: data.confidence,
       method: data.method as any,
@@ -456,11 +460,13 @@ export class BlueYonderV2SDKClient {
    * Get inventory optimization recommendations
    */
   async getInventoryOptimization(
-    locationId: string
+    locationId: string,
   ): Promise<BlueYonderInventoryOptimization[]> {
-    const data = (await this.request<{ items: BlueYonderInventoryOptimization[] }>(
-      `/supply/inventory-optimization/${locationId}`
-    )) as { items: BlueYonderInventoryOptimization[] };
+    const data = (await this.request<{
+      items: BlueYonderInventoryOptimization[];
+    }>(`/supply/inventory-optimization/${locationId}`)) as {
+      items: BlueYonderInventoryOptimization[];
+    };
 
     return data.items;
   }
@@ -475,13 +481,13 @@ export class BlueYonderV2SDKClient {
   }): Promise<ReplenishmentRecommendation[]> {
     const params = new URLSearchParams();
     if (options?.fromLocationId)
-      params.append('fromLocationId', options.fromLocationId);
+      params.append("fromLocationId", options.fromLocationId);
     if (options?.toLocationId)
-      params.append('toLocationId', options.toLocationId);
-    if (options?.priority) params.append('priority', options.priority);
+      params.append("toLocationId", options.toLocationId);
+    if (options?.priority) params.append("priority", options.priority);
 
     const data = (await this.request<{ items: BlueYonderReplenishment[] }>(
-      `/supply/replenishment?${params.toString()}`
+      `/supply/replenishment?${params.toString()}`,
     )) as { items: BlueYonderReplenishment[] };
 
     return data.items.map((r) => ({
@@ -491,9 +497,11 @@ export class BlueYonderV2SDKClient {
       currentStock: 0,
       safetyStock: 0,
       recommendedQuantity: r.quantity,
-      recommendedDate: new Date(r.recommendedShipDate || new Date().toISOString()),
-      priority: (r.priority as any) || 'medium',
-      reason: 'replenishment',
+      recommendedDate: new Date(
+        r.recommendedShipDate || new Date().toISOString(),
+      ),
+      priority: (r.priority as any) || "medium",
+      reason: "replenishment",
       leadTime: 0,
     }));
   }
@@ -510,9 +518,9 @@ export class BlueYonderV2SDKClient {
     const data = (await this.request<{ id: string; status: string }>(
       `/supply/allocations`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(config),
-      }
+      },
     )) as { id: string; status: string };
 
     return { allocationId: data.id, status: data.status };
@@ -530,9 +538,9 @@ export class BlueYonderV2SDKClient {
     const data = (await this.request<BlueYonderOrderPromise[]>(
       `/fulfillment/promise-order`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(config),
-      }
+      },
     )) as BlueYonderOrderPromise[];
 
     return data;
@@ -543,7 +551,7 @@ export class BlueYonderV2SDKClient {
    */
   async getATP(skuId: string, locationId: string): Promise<BlueYonderATP> {
     const data = (await this.request<BlueYonderATP>(
-      `/fulfillment/atp/${skuId}/${locationId}`
+      `/fulfillment/atp/${skuId}/${locationId}`,
     )) as BlueYonderATP;
 
     return data;
@@ -562,7 +570,7 @@ export class BlueYonderV2SDKClient {
       leadTime: number;
       cost: number;
     }>(`/fulfillment/optimal-source`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(config),
     })) as { locationId: string; leadTime: number; cost: number };
 
@@ -581,21 +589,25 @@ export class BlueYonderV2SDKClient {
     limit?: number;
   }): Promise<PaginatedResponse<NormalizedShipment>> {
     const params = new URLSearchParams();
-    if (options?.status) params.append('status', options.status);
-    if (options?.dateFrom) params.append('dateFrom', options.dateFrom);
-    if (options?.dateTo) params.append('dateTo', options.dateTo);
-    if (options?.limit) params.append('limit', String(options.limit));
+    if (options?.status) params.append("status", options.status);
+    if (options?.dateFrom) params.append("dateFrom", options.dateFrom);
+    if (options?.dateTo) params.append("dateTo", options.dateTo);
+    if (options?.limit) params.append("limit", String(options.limit));
 
-    const data = (await this.request<{ items: BlueYonderWaveRecords[]; totalCount: number }>(
-      `/wms/waves?${params.toString()}`
-    )) as { items: BlueYonderWaveRecords[]; totalCount: number };
+    const data = (await this.request<{
+      items: BlueYonderWaveRecords[];
+      totalCount: number;
+    }>(`/wms/waves?${params.toString()}`)) as {
+      items: BlueYonderWaveRecords[];
+      totalCount: number;
+    };
 
     return {
       items: data.items.map((w) => ({
         id: w.id,
         shipmentNumber: w.waveNumber,
-        warehouseId: '',
-        status: (w.status as any),
+        warehouseId: "",
+        status: w.status as any,
         orders: [],
         lines: w.shipmentLines.map((sl) => ({
           id: sl.skuId,
@@ -621,13 +633,10 @@ export class BlueYonderV2SDKClient {
     receiptNumber: string;
     items: Array<{ skuId: string; quantity: number }>;
   }): Promise<{ taskId: string }> {
-    const data = (await this.request<{ taskId: string }>(
-      `/wms/inbound`,
-      {
-        method: 'POST',
-        body: JSON.stringify(config),
-      }
-    )) as { taskId: string };
+    const data = (await this.request<{ taskId: string }>(`/wms/inbound`, {
+      method: "POST",
+      body: JSON.stringify(config),
+    })) as { taskId: string };
 
     return data;
   }
@@ -640,13 +649,10 @@ export class BlueYonderV2SDKClient {
     shipmentNumber: string;
     orderIds: string[];
   }): Promise<{ taskId: string }> {
-    const data = (await this.request<{ taskId: string }>(
-      `/wms/outbound`,
-      {
-        method: 'POST',
-        body: JSON.stringify(config),
-      }
-    )) as { taskId: string };
+    const data = (await this.request<{ taskId: string }>(`/wms/outbound`, {
+      method: "POST",
+      body: JSON.stringify(config),
+    })) as { taskId: string };
 
     return data;
   }
@@ -662,12 +668,12 @@ export class BlueYonderV2SDKClient {
     limit?: number;
   }): Promise<BlueYonderAlert[]> {
     const params = new URLSearchParams();
-    if (options?.severity) params.append('severity', options.severity);
-    if (options?.category) params.append('category', options.category);
-    if (options?.limit) params.append('limit', String(options.limit));
+    if (options?.severity) params.append("severity", options.severity);
+    if (options?.category) params.append("category", options.category);
+    if (options?.limit) params.append("limit", String(options.limit));
 
     const data = (await this.request<{ items: BlueYonderAlert[] }>(
-      `/control-tower/alerts?${params.toString()}`
+      `/control-tower/alerts?${params.toString()}`,
     )) as { items: BlueYonderAlert[] };
 
     return data.items;
@@ -678,10 +684,10 @@ export class BlueYonderV2SDKClient {
    */
   async getKPIs(category?: string): Promise<BlueYonderKPI[]> {
     const params = new URLSearchParams();
-    if (category) params.append('category', category);
+    if (category) params.append("category", category);
 
     const data = (await this.request<{ items: BlueYonderKPI[] }>(
-      `/control-tower/kpis?${params.toString()}`
+      `/control-tower/kpis?${params.toString()}`,
     )) as { items: BlueYonderKPI[] };
 
     return data.items;
@@ -716,7 +722,7 @@ export class BlueYonderV2SDKClient {
    */
   async resolveAlert(alertId: string, notes?: string): Promise<void> {
     await this.request(`/control-tower/alerts/${alertId}/resolve`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ notes }),
     });
   }
@@ -728,7 +734,7 @@ export class BlueYonderV2SDKClient {
    */
   async getNetworkNodes(): Promise<BlueYonderNetworkNode[]> {
     const data = (await this.request<{ items: BlueYonderNetworkNode[] }>(
-      `/network/nodes`
+      `/network/nodes`,
     )) as { items: BlueYonderNetworkNode[] };
 
     return data.items;
@@ -738,14 +744,14 @@ export class BlueYonderV2SDKClient {
    * Optimize distribution network
    */
   async optimizeNetwork(config: {
-    objective: 'cost' | 'service' | 'sustainability' | 'balanced';
+    objective: "cost" | "service" | "sustainability" | "balanced";
     constraints?: Record<string, unknown>;
   }): Promise<{ optimization: Record<string, unknown>; savings: number }> {
     const data = (await this.request<{
       optimization: Record<string, unknown>;
       savings: number;
     }>(`/network/optimize`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(config),
     })) as {
       optimization: Record<string, unknown>;
@@ -763,10 +769,14 @@ export class BlueYonderV2SDKClient {
   async getCarbonFootprint(options?: {
     dateFrom?: string;
     dateTo?: string;
-  }): Promise<{ totalEmissions: number; unit: string; breakdown: Record<string, number> }> {
+  }): Promise<{
+    totalEmissions: number;
+    unit: string;
+    breakdown: Record<string, number>;
+  }> {
     const params = new URLSearchParams();
-    if (options?.dateFrom) params.append('dateFrom', options.dateFrom);
-    if (options?.dateTo) params.append('dateTo', options.dateTo);
+    if (options?.dateFrom) params.append("dateFrom", options.dateFrom);
+    if (options?.dateTo) params.append("dateTo", options.dateTo);
 
     const data = (await this.request<{
       totalEmissions: number;
@@ -825,17 +835,17 @@ export class BlueYonderV2SDKClient {
       const duration = Date.now() - startTime;
 
       return {
-        status: 'healthy',
+        status: "healthy",
         timestamp: new Date(),
         responseTimeMs: duration,
       };
     } catch (error: unknown) {
       return {
-        status: 'unhealthy',
+        status: "unhealthy",
         timestamp: new Date(),
         responseTimeMs: Date.now() - startTime,
         details: {
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         },
       };
     }

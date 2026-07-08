@@ -1,6 +1,6 @@
-import { DocsLayout } from 'fumadocs-ui/layouts/docs';
-import { source } from '@/lib/source';
-import Image from 'next/image';
+import { DocsLayout } from "fumadocs-ui/layouts/docs";
+import { source } from "@/lib/source";
+import Image from "next/image";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,7 +16,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               height={28}
               className="rounded-md"
             />
-            <span className="font-display font-bold text-sand tracking-tight">Witylogix</span>
+            <span className="font-display font-bold text-sand tracking-tight">
+              Witylogix
+            </span>
           </span>
         ),
       }}
@@ -25,8 +27,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       }}
       links={[
         {
-          text: 'GitHub',
-          url: 'https://github.com/wityliti/witylogix',
+          text: "GitHub",
+          url: "https://github.com/wityliti/witylogix",
         },
       ]}
     >

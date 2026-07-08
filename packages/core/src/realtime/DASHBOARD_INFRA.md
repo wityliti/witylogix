@@ -100,7 +100,7 @@ Complete WebSocket infrastructure for real-time dashboard updates with Socket.io
    - Event filtering: By type, shop, driver, severity
    - Singleton: `getDashboardHub(config?)`
 
-5. **__tests__/dashboard-hub.test.ts** (~290 lines)
+5. \***\*tests**/dashboard-hub.test.ts\*\* (~290 lines)
    - Room management tests (join/leave)
    - Authentication tests (reject without token, invalid token)
    - Rate limiting verification
@@ -169,44 +169,49 @@ Complete WebSocket infrastructure for real-time dashboard updates with Socket.io
 ## Event Types
 
 ### Order Events
+
 - `order.created`: { orderId, shopId, customerId?, totalAmount, currency }
 - `order.updated`: { orderId, shopId, status, changes? }
 - `order.cancelled`: { orderId, shopId, reason? }
 
 ### Delivery Events
+
 - `delivery.assigned`: { deliveryId, shopId, driverId, orderId }
 - `delivery.status_changed`: { deliveryId, shopId, status, location? }
 - `delivery.completed`: { deliveryId, shopId, driverId, duration, distance? }
 
 ### Driver Events
+
 - `driver.location_updated`: { driverId, shopId, latitude, longitude, accuracy?, heading?, speed? }
 - `driver.status_changed`: { driverId, shopId, status }
 
 ### Alert Events
+
 - `alert.sla_breach`: { shopId, breachType, slaTimeMs, actualTimeMs, severity }
 - `alert.system`: { alertType, severity, message }
 
 ### Metrics Events
+
 - `metrics.updated`: { shopId, ordersToday, activeDeliveries, availableDrivers, slaPercentage }
 
 ## Room Organization
 
-| Room | Subscribers | Events |
-|------|------------|--------|
-| `org:{orgId}` | All users in org | Order, delivery, driver, alert, metrics |
-| `shop:{shopId}` | Shop-level users | Order, delivery, metrics |
-| `driver:{driverId}` | Driver + dispatch team | Location, status changes |
-| `delivery:{deliveryId}` | Relevant dispatch staff | Delivery status updates |
-| `admin` | Platform admins | System alerts |
+| Room                    | Subscribers             | Events                                  |
+| ----------------------- | ----------------------- | --------------------------------------- |
+| `org:{orgId}`           | All users in org        | Order, delivery, driver, alert, metrics |
+| `shop:{shopId}`         | Shop-level users        | Order, delivery, metrics                |
+| `driver:{driverId}`     | Driver + dispatch team  | Location, status changes                |
+| `delivery:{deliveryId}` | Relevant dispatch staff | Delivery status updates                 |
+| `admin`                 | Platform admins         | System alerts                           |
 
 ## Plan-Based Limits
 
-| Tier | Connections | Requests/min | Features |
-|------|------------|-------------|----------|
-| FREE | 5 | 60 | Basic realtime |
-| STARTER | 25 | 300 | + Metrics |
-| GROWTH | 100 | 1000 | + Alerts |
-| ENTERPRISE | ∞ | ∞ | + SLA guarantees |
+| Tier       | Connections | Requests/min | Features         |
+| ---------- | ----------- | ------------ | ---------------- |
+| FREE       | 5           | 60           | Basic realtime   |
+| STARTER    | 25          | 300          | + Metrics        |
+| GROWTH     | 100         | 1000         | + Alerts         |
+| ENTERPRISE | ∞           | ∞            | + SLA guarantees |
 
 ## Rate Limiting
 
@@ -312,12 +317,14 @@ function RealtimeOrderFeed({ token, shopId }) {
 ## Testing
 
 Run dashboard hub tests:
+
 ```bash
 cd packages/core
 npm test -- src/realtime/__tests__/dashboard-hub.test.ts
 ```
 
 Test files include:
+
 - Room join/leave
 - Authentication (valid/invalid tokens)
 - Rate limiting enforcement

@@ -56,12 +56,12 @@ export function DonutChart({
         ...d,
         color: d.color || defaultColors[i % defaultColors.length],
       })),
-    [data]
+    [data],
   );
 
   const total = useMemo(
     () => chartData.reduce((sum, d) => sum + d.value, 0),
-    [chartData]
+    [chartData],
   );
 
   // Generate SVG path for arc
@@ -70,7 +70,7 @@ export function DonutChart({
     y: number,
     radius: number,
     startAngle: number,
-    endAngle: number
+    endAngle: number,
   ): string => {
     const start = {
       x: x + radius * Math.cos(startAngle),
@@ -90,7 +90,15 @@ export function DonutChart({
 
   // Create donut segments
   const segments = useMemo(() => {
-    const segments: { index: number; label: string; value: number; percentage: string; color: string | undefined; path: string; midAngle: number }[] = [];
+    const segments: {
+      index: number;
+      label: string;
+      value: number;
+      percentage: string;
+      color: string | undefined;
+      path: string;
+      midAngle: number;
+    }[] = [];
     let currentAngle = -Math.PI / 2; // Start from top
 
     chartData.forEach((item, index) => {
@@ -104,7 +112,7 @@ export function DonutChart({
         150,
         outerRadius,
         currentAngle,
-        endAngle
+        endAngle,
       );
       // Inner arc
       const innerPath = describeArc(
@@ -112,7 +120,7 @@ export function DonutChart({
         150,
         innerRadius,
         endAngle,
-        currentAngle
+        currentAngle,
       );
 
       segments.push({
@@ -142,7 +150,7 @@ export function DonutChart({
       setTooltipPos({ x: event.clientX, y: event.clientY });
       setTooltipVisible(true);
     },
-    [segments]
+    [segments],
   );
 
   const handleSegmentMouseLeave = () => {
@@ -228,9 +236,7 @@ export function DonutChart({
         data={tooltipData}
         renderContent={(data) => (
           <div className="space-y-1">
-            <p className="font-semibold text-wl-text-primary">
-              {data?.label}
-            </p>
+            <p className="font-semibold text-wl-text-primary">{data?.label}</p>
             <p className="text-wl-text-secondary text-xs">
               {data?.value} ({data?.percentage}%)
             </p>

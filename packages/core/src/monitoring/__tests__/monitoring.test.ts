@@ -60,14 +60,10 @@ describe("MetricsCollector", () => {
 
       const metrics = collector.getMetrics();
       const getCounter = metrics.find(
-        (m) =>
-          m.name === "requests" &&
-          m.labels?.method === "GET"
+        (m) => m.name === "requests" && m.labels?.method === "GET",
       );
       const postCounter = metrics.find(
-        (m) =>
-          m.name === "requests" &&
-          m.labels?.method === "POST"
+        (m) => m.name === "requests" && m.labels?.method === "POST",
       );
 
       expect(getCounter!.value).toBe(1);
@@ -81,14 +77,10 @@ describe("MetricsCollector", () => {
 
       const metrics = collector.getMetrics();
       const usersMetric = metrics.find(
-        (m) =>
-          m.name === "api.calls" &&
-          m.labels?.endpoint === "/users"
+        (m) => m.name === "api.calls" && m.labels?.endpoint === "/users",
       );
       const ordersMetric = metrics.find(
-        (m) =>
-          m.name === "api.calls" &&
-          m.labels?.endpoint === "/orders"
+        (m) => m.name === "api.calls" && m.labels?.endpoint === "/orders",
       );
 
       expect(usersMetric!.value).toBe(2);
@@ -138,14 +130,10 @@ describe("MetricsCollector", () => {
 
       const metrics = collector.getMetrics();
       const core0 = metrics.find(
-        (m) =>
-          m.name === "cpu_usage" &&
-          m.labels?.core === "0"
+        (m) => m.name === "cpu_usage" && m.labels?.core === "0",
       );
       const core1 = metrics.find(
-        (m) =>
-          m.name === "cpu_usage" &&
-          m.labels?.core === "1"
+        (m) => m.name === "cpu_usage" && m.labels?.core === "1",
       );
 
       expect(core0!.value).toBe(45);
@@ -234,13 +222,11 @@ describe("MetricsCollector", () => {
       const metrics = collector.getMetrics();
       const apiCount = metrics.find(
         (m) =>
-          m.name === "request_latency_count" &&
-          m.labels?.endpoint === "/api"
+          m.name === "request_latency_count" && m.labels?.endpoint === "/api",
       );
       const dbCount = metrics.find(
         (m) =>
-          m.name === "request_latency_count" &&
-          m.labels?.endpoint === "/db"
+          m.name === "request_latency_count" && m.labels?.endpoint === "/db",
       );
 
       expect(apiCount!.value).toBe(2);
@@ -320,7 +306,7 @@ describe("MetricsCollector", () => {
       // Don't add any more to empty_histogram
       const m = collector.getMetrics();
       const emptyMetrics = m.filter((metric) =>
-        metric.name.startsWith("empty_histogram")
+        metric.name.startsWith("empty_histogram"),
       );
 
       expect(emptyMetrics.length).toBeGreaterThan(0);
@@ -374,9 +360,7 @@ describe("MetricsCollector", () => {
 
       const m = collector.getMetrics();
       const counter = m.find(
-        (metric) =>
-          metric.name === "test" &&
-          metric.labels?.a === "1"
+        (metric) => metric.name === "test" && metric.labels?.a === "1",
       );
 
       expect(counter!.value).toBe(2);
@@ -388,9 +372,7 @@ describe("MetricsCollector", () => {
 
       const m = collector.getMetrics();
       const counter = m.find(
-        (metric) =>
-          metric.name === "test" &&
-          metric.labels?.a === "1"
+        (metric) => metric.name === "test" && metric.labels?.a === "1",
       );
 
       expect(counter!.value).toBe(2);
@@ -409,7 +391,7 @@ describe("MetricsCollector", () => {
           metric.name === "metric" &&
           metric.labels?.service === "api" &&
           metric.labels?.method === "GET" &&
-          metric.labels?.status === "200"
+          metric.labels?.status === "200",
       );
 
       expect(metric).toBeDefined();
@@ -817,13 +799,11 @@ describe("Monitoring Module Integration", () => {
     const m = collector.getMetrics();
     const requests = m.find(
       (metric) =>
-        metric.name === "api.requests" &&
-        metric.labels?.method === "GET"
+        metric.name === "api.requests" && metric.labels?.method === "GET",
     );
     const latencyCount = m.find(
       (metric) =>
-        metric.name === "api.latency_count" &&
-        metric.labels?.method === "GET"
+        metric.name === "api.latency_count" && metric.labels?.method === "GET",
     );
 
     expect(requests!.value).toBe(100);
@@ -894,8 +874,7 @@ describe("Monitoring Module Integration", () => {
     const m = collector.getMetrics();
     const errorCount = m.find(
       (metric) =>
-        metric.name === "errors" &&
-        metric.labels?.type === "database"
+        metric.name === "errors" && metric.labels?.type === "database",
     )!.value;
 
     // Alert if error count > 20
@@ -917,7 +896,7 @@ describe("Monitoring Module Integration", () => {
     const avgDeliveryTime = m.find(
       (metric) =>
         metric.name === "delivery.time_minutes_avg" &&
-        metric.labels?.route === "downtown"
+        metric.labels?.route === "downtown",
     );
 
     expect(avgDeliveryTime!.value).toBeGreaterThan(25);
@@ -937,12 +916,12 @@ describe("Monitoring Module Integration", () => {
     const enterEvents = m.find(
       (metric) =>
         metric.name === "geofence.events" &&
-        metric.labels?.eventType === "enter"
+        metric.labels?.eventType === "enter",
     );
     const exitEvents = m.find(
       (metric) =>
         metric.name === "geofence.events" &&
-        metric.labels?.eventType === "exit"
+        metric.labels?.eventType === "exit",
     );
 
     expect(enterEvents!.value).toBe(1);
@@ -961,7 +940,7 @@ describe("Monitoring Module Integration", () => {
     const avgTime = m.find(
       (metric) =>
         metric.name === "label.generation_ms_avg" &&
-        metric.labels?.format === "PDF"
+        metric.labels?.format === "PDF",
     );
 
     expect(avgTime!.value).toBeGreaterThan(0);
@@ -979,7 +958,7 @@ describe("Monitoring Module Integration", () => {
 
       return {
         name: "api_health",
-        status: (p99 && p99.value > 1000) ? "DEGRADED" : "UP",
+        status: p99 && p99.value > 1000 ? "DEGRADED" : "UP",
         details: { p99Latency: p99?.value },
         timestamp: new Date(),
         durationMs: 0,
@@ -1017,8 +996,7 @@ describe("Alert Thresholds and Monitoring", () => {
 
     const m = collector.getMetrics();
     const errorCount = m.find((metric) => metric.name === "errors")!.value;
-    const requestCount = m.find((metric) => metric.name === "requests")!
-      .value;
+    const requestCount = m.find((metric) => metric.name === "requests")!.value;
 
     const errorRate = errorCount / requestCount;
     const threshold = 0.05; // 5% error rate
@@ -1044,7 +1022,7 @@ describe("Alert Thresholds and Monitoring", () => {
 
     const m = collector.getMetrics();
     const memoryUsage = m.find(
-      (metric) => metric.name === "memory.percent_used"
+      (metric) => metric.name === "memory.percent_used",
     )!.value;
 
     const threshold = 85;
@@ -1080,14 +1058,12 @@ describe("Alert Thresholds and Monitoring", () => {
     for (let i = 0; i < 1000; i++) {
       collector.recordHistogram(
         "geofence.check_ms",
-        Math.random() * 100 // Should be very fast
+        Math.random() * 100, // Should be very fast
       );
     }
 
     const m = collector.getMetrics();
-    const avgTime = m.find(
-      (metric) => metric.name === "geofence.check_ms_avg"
-    );
+    const avgTime = m.find((metric) => metric.name === "geofence.check_ms_avg");
 
     expect(avgTime!.value).toBeLessThanOrEqual(60); // Should be around 50ms average
   });

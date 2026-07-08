@@ -10,10 +10,31 @@ export default function ProvisionPage() {
       </p>
 
       <form action={provisionTenant} className="space-y-4">
-        <Field label="Slug" name="slug" placeholder="acme" required hint="lowercase letters, digits, -" />
-        <Field label="Owner email" name="ownerEmail" type="email" placeholder="ops@acme.example" required />
-        <Field label="Owner name" name="ownerName" placeholder="Ada Lovelace" required />
-        <SelectField label="Plan" name="plan" options={["starter", "pro", "enterprise"]} />
+        <Field
+          label="Slug"
+          name="slug"
+          placeholder="acme"
+          required
+          hint="lowercase letters, digits, -"
+        />
+        <Field
+          label="Owner email"
+          name="ownerEmail"
+          type="email"
+          placeholder="ops@acme.example"
+          required
+        />
+        <Field
+          label="Owner name"
+          name="ownerName"
+          placeholder="Ada Lovelace"
+          required
+        />
+        <SelectField
+          label="Plan"
+          name="plan"
+          options={["starter", "pro", "enterprise"]}
+        />
 
         <div className="pt-4">
           <button

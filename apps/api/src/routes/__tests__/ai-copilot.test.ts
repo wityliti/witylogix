@@ -37,7 +37,13 @@ describe("AI Co-pilot Route", () => {
     { id: "s2", status: "PENDING", city: "Austin", createdAt: new Date() },
   ];
   const mockOrders = [
-    { id: "o1", status: "PENDING", city: "Dallas", customerName: "Alice", createdAt: new Date() },
+    {
+      id: "o1",
+      status: "PENDING",
+      city: "Dallas",
+      customerName: "Alice",
+      createdAt: new Date(),
+    },
   ];
   const mockDrivers = [
     { id: "d1", name: "Bob Smith", status: "ACTIVE", shopId: mockShopId },
@@ -66,7 +72,7 @@ describe("AI Co-pilot Route", () => {
       expect((fastify as any).post).toHaveBeenCalledWith(
         "/query",
         expect.objectContaining({ preHandler: expect.any(Array) }),
-        expect.any(Function)
+        expect.any(Function),
       );
     });
   });
@@ -77,14 +83,21 @@ describe("AI Co-pilot Route", () => {
         rawQuery: "late deliveries in zone 3 today",
         entity: "delivery",
         status: "overdue",
-        dateRange: { range: "today", startDate: new Date(), endDate: new Date() },
+        dateRange: {
+          range: "today",
+          startDate: new Date(),
+          endDate: new Date(),
+        },
         fullTextFallback: false,
         tags: [],
       };
       (nlFilterParser.parse as any).mockReturnValue(filter);
 
       mockRequest = {
-        body: { query: "late deliveries in zone 3 today", entityType: "delivery" },
+        body: {
+          query: "late deliveries in zone 3 today",
+          entityType: "delivery",
+        },
         shopId: mockShopId,
         tenantDb: {
           shipment: {
@@ -98,14 +111,22 @@ describe("AI Co-pilot Route", () => {
       const handler = (fastify as any).post.mock.calls[0][2];
       const result = await handler(mockRequest, mockReply);
 
-      expect(nlFilterParser.parse).toHaveBeenCalledWith("late deliveries in zone 3 today");
+      expect(nlFilterParser.parse).toHaveBeenCalledWith(
+        "late deliveries in zone 3 today",
+      );
       expect(result.filters).toEqual(filter);
       expect(result.results).toEqual(mockShipments);
       expect(result.total).toBe(2);
     });
 
     it("should query shipments with status filter", async () => {
-      const filter = { rawQuery: "pending deliveries", entity: "delivery", status: "pending", fullTextFallback: false, tags: [] };
+      const filter = {
+        rawQuery: "pending deliveries",
+        entity: "delivery",
+        status: "pending",
+        fullTextFallback: false,
+        tags: [],
+      };
       (nlFilterParser.parse as any).mockReturnValue(filter);
 
       const findMany = vi.fn().mockResolvedValue([]);
@@ -121,7 +142,12 @@ describe("AI Co-pilot Route", () => {
       await handler(mockRequest, mockReply);
 
       expect(findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ where: expect.objectContaining({ shopId: mockShopId, status: "PENDING" }) })
+        expect.objectContaining({
+          where: expect.objectContaining({
+            shopId: mockShopId,
+            status: "PENDING",
+          }),
+        }),
       );
     });
   });
@@ -132,7 +158,11 @@ describe("AI Co-pilot Route", () => {
         rawQuery: "overdue orders from last week",
         entity: "order",
         status: "overdue",
-        dateRange: { range: "last_week", startDate: new Date(), endDate: new Date() },
+        dateRange: {
+          range: "last_week",
+          startDate: new Date(),
+          endDate: new Date(),
+        },
         fullTextFallback: false,
         tags: [],
       };
@@ -182,7 +212,7 @@ describe("AI Co-pilot Route", () => {
       expect(findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ totalPrice: { gt: 500 } }),
-        })
+        }),
       );
     });
   });
@@ -199,7 +229,10 @@ describe("AI Co-pilot Route", () => {
       (nlFilterParser.parse as any).mockReturnValue(filter);
 
       mockRequest = {
-        body: { query: "top performing drivers this week", entityType: "driver" },
+        body: {
+          query: "top performing drivers this week",
+          entityType: "driver",
+        },
         shopId: mockShopId,
         tenantDb: {
           driver: {
@@ -218,7 +251,13 @@ describe("AI Co-pilot Route", () => {
     });
 
     it("should apply status filter for 'active drivers'", async () => {
-      const filter = { rawQuery: "active drivers", entity: "driver", status: "active", fullTextFallback: false, tags: [] };
+      const filter = {
+        rawQuery: "active drivers",
+        entity: "driver",
+        status: "active",
+        fullTextFallback: false,
+        tags: [],
+      };
       (nlFilterParser.parse as any).mockReturnValue(filter);
 
       const findMany = vi.fn().mockResolvedValue([]);
@@ -234,7 +273,9 @@ describe("AI Co-pilot Route", () => {
       await handler(mockRequest, mockReply);
 
       expect(findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ where: expect.objectContaining({ status: "ACTIVE" }) })
+        expect.objectContaining({
+          where: expect.objectContaining({ status: "ACTIVE" }),
+        }),
       );
     });
   });

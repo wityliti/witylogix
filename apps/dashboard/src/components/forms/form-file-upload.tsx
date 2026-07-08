@@ -62,7 +62,9 @@ export function FormFileUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const [isDragging, setIsDragging] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
+    {},
+  );
 
   /**
    * Validate file
@@ -86,18 +88,21 @@ export function FormFileUpload({
 
       return null;
     },
-    [acceptedTypes, maxSizeBytes]
+    [acceptedTypes, maxSizeBytes],
   );
 
   /**
    * Create preview for image files
    */
-  const createPreview = useCallback((file: File): string | undefined => {
-    if (!showPreview || !file.type.startsWith("image/")) {
-      return undefined;
-    }
-    return URL.createObjectURL(file);
-  }, [showPreview]);
+  const createPreview = useCallback(
+    (file: File): string | undefined => {
+      if (!showPreview || !file.type.startsWith("image/")) {
+        return undefined;
+      }
+      return URL.createObjectURL(file);
+    },
+    [showPreview],
+  );
 
   /**
    * Handle file selection
@@ -133,7 +138,7 @@ export function FormFileUpload({
         onFilesSelected?.(validFiles);
       }
     },
-    [multiple, files, validateFile, createPreview, onFilesSelected]
+    [multiple, files, validateFile, createPreview, onFilesSelected],
   );
 
   /**
@@ -161,7 +166,7 @@ export function FormFileUpload({
       setIsDragging(false);
       handleFiles(e.dataTransfer.files);
     },
-    [handleFiles]
+    [handleFiles],
   );
 
   /**
@@ -178,7 +183,7 @@ export function FormFileUpload({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       handleFiles(e.target.files);
     },
-    [handleFiles]
+    [handleFiles],
   );
 
   /**
@@ -206,7 +211,9 @@ export function FormFileUpload({
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
-  const acceptAttr = acceptedTypes.includes("*/*") ? "" : acceptedTypes.join(",");
+  const acceptAttr = acceptedTypes.includes("*/*")
+    ? ""
+    : acceptedTypes.join(",");
 
   return (
     <div className="flex flex-col gap-3 w-full">
@@ -225,7 +232,7 @@ export function FormFileUpload({
             ? "border-wl-primary-500 bg-wl-primary-500/10"
             : hasError
               ? "border-wl-danger-400 bg-wl-danger-bg"
-              : "border-wl-border-default hover:border-wl-primary-400 bg-wl-bg-overlay"
+              : "border-wl-border-default hover:border-wl-primary-400 bg-wl-bg-overlay",
         )}
       >
         <input
@@ -243,7 +250,7 @@ export function FormFileUpload({
           size={32}
           className={cn(
             "transition-colors",
-            isDragging ? "text-wl-primary-500" : "text-wl-text-secondary"
+            isDragging ? "text-wl-primary-500" : "text-wl-text-secondary",
           )}
         />
 
@@ -280,7 +287,7 @@ export function FormFileUpload({
               className={cn(
                 "flex items-center gap-3 p-3 rounded-md",
                 "bg-wl-bg-overlay border border-wl-border-default",
-                file.error && "border-wl-danger-400 bg-wl-danger-bg/20"
+                file.error && "border-wl-danger-400 bg-wl-danger-bg/20",
               )}
             >
               {/* Preview */}
@@ -297,7 +304,7 @@ export function FormFileUpload({
                 <p
                   className={cn(
                     "text-sm font-medium truncate",
-                    file.error ? "text-wl-danger-400" : "text-wl-text-primary"
+                    file.error ? "text-wl-danger-400" : "text-wl-text-primary",
                   )}
                 >
                   {file.name}
@@ -319,7 +326,10 @@ export function FormFileUpload({
 
               {/* Status icon */}
               {file.error ? (
-                <AlertCircle size={20} className="text-wl-danger-400 flex-shrink-0" />
+                <AlertCircle
+                  size={20}
+                  className="text-wl-danger-400 flex-shrink-0"
+                />
               ) : (
                 <button
                   type="button"

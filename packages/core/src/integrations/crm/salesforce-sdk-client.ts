@@ -13,18 +13,18 @@
  * Rate Limits: 100K API calls/24h (Enterprise)
  */
 
-import { z } from 'zod';
-import type { IncomingHttpHeaders } from 'http';
-import { createHmac } from 'crypto';
+import { z } from "zod";
+import type { IncomingHttpHeaders } from "http";
+import { createHmac } from "crypto";
 
 // ─── VALIDATION SCHEMAS ────────────────────────────────────────────────
 
 const SalesforceConfigSchema = z.object({
-  clientId: z.string().min(1, 'clientId required'),
-  clientSecret: z.string().min(1, 'clientSecret required'),
-  redirectUri: z.string().url('Invalid redirectUri'),
-  environment: z.enum(['sandbox', 'production']).default('production'),
-  apiVersion: z.string().default('v59.0'),
+  clientId: z.string().min(1, "clientId required"),
+  clientSecret: z.string().min(1, "clientSecret required"),
+  redirectUri: z.string().url("Invalid redirectUri"),
+  environment: z.enum(["sandbox", "production"]).default("production"),
+  apiVersion: z.string().default("v59.0"),
 });
 
 const SalesforceOAuthCodeSchema = z.object({
@@ -37,7 +37,7 @@ const SalesforceTokenRequestSchema = z.object({
   refresh_token: z.string().optional(),
   instance_url: z.string().url(),
   id: z.string(),
-  token_type: z.string().default('Bearer'),
+  token_type: z.string().default("Bearer"),
   expires_in: z.number().optional(),
 });
 
@@ -46,35 +46,37 @@ const SOQLQuerySchema = z.object({
   params: z.record(z.unknown()).optional(),
 });
 
-const SObjectSchema = z.object({
-  Id: z.string(),
-}).catchall(z.unknown());
+const SObjectSchema = z
+  .object({
+    Id: z.string(),
+  })
+  .catchall(z.unknown());
 
 const CompositeRequestSchema = z.object({
   allOrNone: z.boolean().default(false),
   compositeRequest: z.array(
     z.object({
-      method: z.enum(['GET', 'POST', 'PATCH', 'PUT', 'DELETE']),
+      method: z.enum(["GET", "POST", "PATCH", "PUT", "DELETE"]),
       url: z.string(),
       body: z.unknown().optional(),
       referenceId: z.string(),
-    })
+    }),
   ),
 });
 
 const BulkJobSchema = z.object({
   object: z.string(),
-  operation: z.enum(['insert', 'update', 'upsert', 'delete']),
+  operation: z.enum(["insert", "update", "upsert", "delete"]),
   externalIdField: z.string().optional(),
-  contentType: z.enum(['CSV', 'JSON']).default('CSV'),
+  contentType: z.enum(["CSV", "JSON"]).default("CSV"),
 });
 
 const BulkJobStateSchema = z.enum([
-  'Open',
-  'InProgress',
-  'Completed',
-  'Failed',
-  'Aborted',
+  "Open",
+  "InProgress",
+  "Completed",
+  "Failed",
+  "Aborted",
 ]);
 
 // ─── TYPE DEFINITIONS ────────────────────────────────────────────────
@@ -352,8 +354,8 @@ export class SalesforceSDKClient {
   private rateLimitInfo: RateLimitInfo | null = null;
 
   private readonly baseUrls = {
-    sandbox: 'https://test.salesforce.com',
-    production: 'https://login.salesforce.com',
+    sandbox: "https://test.salesforce.com",
+    production: "https://login.salesforce.com",
   };
 
   /**
@@ -380,13 +382,14 @@ export class SalesforceSDKClient {
    * ```
    */
   getAuthorizationUrl(options: { state?: string } = {}): string {
-    const baseUrl = this.baseUrls[this.config.environment as 'sandbox' | 'production'];
+    const baseUrl =
+      this.baseUrls[this.config.environment as "sandbox" | "production"];
     const params = new URLSearchParams({
       client_id: this.config.clientId,
       redirect_uri: this.config.redirectUri,
-      response_type: 'code',
-      scope: 'full refresh_token',
-      state: options.state || '',
+      response_type: "code",
+      scope: "full refresh_token",
+      state: options.state || "",
     });
 
     return `${baseUrl}/services/oauth2/authorize?${params}`;
@@ -408,9 +411,10 @@ export class SalesforceSDKClient {
   async handleOAuthCallback(code: string): Promise<SalesforceTokenResponse> {
     const validated = SalesforceOAuthCodeSchema.parse({ code });
 
-    const baseUrl = this.baseUrls[this.config.environment as 'sandbox' | 'production'];
+    const baseUrl =
+      this.baseUrls[this.config.environment as "sandbox" | "production"];
     const params = new URLSearchParams({
-      grant_type: 'authorization_code',
+      grant_type: "authorization_code",
       client_id: this.config.clientId,
       client_secret: this.config.clientSecret,
       redirect_uri: this.config.redirectUri,
@@ -418,14 +422,14 @@ export class SalesforceSDKClient {
     });
 
     const response = await fetch(`${baseUrl}/services/oauth2/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(),
     });
 
     if (!response.ok) {
       throw new Error(
-        `OAuth token exchange failed: ${response.status} ${response.statusText}`
+        `OAuth token exchange failed: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -451,26 +455,27 @@ export class SalesforceSDKClient {
    */
   async refreshAccessToken(): Promise<SalesforceTokenResponse> {
     if (!this.refreshToken) {
-      throw new Error('No refresh token available');
+      throw new Error("No refresh token available");
     }
 
-    const baseUrl = this.baseUrls[this.config.environment as 'sandbox' | 'production'];
+    const baseUrl =
+      this.baseUrls[this.config.environment as "sandbox" | "production"];
     const params = new URLSearchParams({
-      grant_type: 'refresh_token',
+      grant_type: "refresh_token",
       client_id: this.config.clientId,
       client_secret: this.config.clientSecret,
       refresh_token: this.refreshToken,
     });
 
     const response = await fetch(`${baseUrl}/services/oauth2/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(),
     });
 
     if (!response.ok) {
       throw new Error(
-        `Token refresh failed: ${response.status} ${response.statusText}`
+        `Token refresh failed: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -522,7 +527,7 @@ export class SalesforceSDKClient {
    * Update rate limit info from response headers
    */
   private updateRateLimitInfo(headers: Headers): void {
-    const sforceLimit = headers.get('sforce-limit-info');
+    const sforceLimit = headers.get("sforce-limit-info");
     if (!sforceLimit) return;
 
     // Parse format: api-usage=19/100000
@@ -552,25 +557,25 @@ export class SalesforceSDKClient {
    * ```
    */
   async querySOQL(
-    options: z.infer<typeof SOQLQuerySchema>
+    options: z.infer<typeof SOQLQuerySchema>,
   ): Promise<SOQLResult> {
     const validated = SOQLQuerySchema.parse(options);
     if (!this.accessToken || !this.instanceUrl) {
-      throw new Error('Not authenticated');
+      throw new Error("Not authenticated");
     }
 
     const query = this.buildParameterizedQuery(
       validated.query,
-      validated.params || {}
+      validated.params || {},
     );
 
     const url = new URL(
       `/services/data/${this.config.apiVersion}/query`,
-      this.instanceUrl
+      this.instanceUrl,
     );
-    url.searchParams.set('q', query);
+    url.searchParams.set("q", query);
 
-    const response = await this.makeRequest(url.toString(), { method: 'GET' });
+    const response = await this.makeRequest(url.toString(), { method: "GET" });
     return response.json() as Promise<SOQLResult>;
   }
 
@@ -584,7 +589,7 @@ export class SalesforceSDKClient {
    */
   private buildParameterizedQuery(
     query: string,
-    params: Record<string, unknown>
+    params: Record<string, unknown>,
   ): string {
     let result = query;
 
@@ -605,27 +610,25 @@ export class SalesforceSDKClient {
    */
   private escapeSoqlValue(value: unknown): string {
     if (value === null || value === undefined) {
-      return 'null';
+      return "null";
     }
 
-    if (typeof value === 'number') {
+    if (typeof value === "number") {
       return String(value);
     }
 
-    if (typeof value === 'boolean') {
-      return value ? 'true' : 'false';
+    if (typeof value === "boolean") {
+      return value ? "true" : "false";
     }
 
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       // Escape single quotes and backslashes
-      const escaped = value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const escaped = value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
       return `'${escaped}'`;
     }
 
     if (Array.isArray(value)) {
-      const items = value
-        .map((v) => this.escapeSoqlValue(v))
-        .join(', ');
+      const items = value.map((v) => this.escapeSoqlValue(v)).join(", ");
       return `(${items})`;
     }
 
@@ -636,14 +639,14 @@ export class SalesforceSDKClient {
    * Get Account by ID
    */
   async getAccount(id: string): Promise<SalesforceAccount> {
-    return this.getSObject<SalesforceAccount>('Account', id);
+    return this.getSObject<SalesforceAccount>("Account", id);
   }
 
   /**
    * Create Account
    */
-  async createAccount(data: Omit<SalesforceAccount, 'Id'>): Promise<string> {
-    return this.createSObject('Account', data);
+  async createAccount(data: Omit<SalesforceAccount, "Id">): Promise<string> {
+    return this.createSObject("Account", data);
   }
 
   /**
@@ -651,30 +654,30 @@ export class SalesforceSDKClient {
    */
   async updateAccount(
     id: string,
-    data: Partial<SalesforceAccount>
+    data: Partial<SalesforceAccount>,
   ): Promise<void> {
-    return this.updateSObject('Account', id, data);
+    return this.updateSObject("Account", id, data);
   }
 
   /**
    * Delete Account
    */
   async deleteAccount(id: string): Promise<void> {
-    return this.deleteSObject('Account', id);
+    return this.deleteSObject("Account", id);
   }
 
   /**
    * Get Contact by ID
    */
   async getContact(id: string): Promise<SalesforceContact> {
-    return this.getSObject<SalesforceContact>('Contact', id);
+    return this.getSObject<SalesforceContact>("Contact", id);
   }
 
   /**
    * Create Contact
    */
-  async createContact(data: Omit<SalesforceContact, 'Id'>): Promise<string> {
-    return this.createSObject('Contact', data);
+  async createContact(data: Omit<SalesforceContact, "Id">): Promise<string> {
+    return this.createSObject("Contact", data);
   }
 
   /**
@@ -682,63 +685,60 @@ export class SalesforceSDKClient {
    */
   async updateContact(
     id: string,
-    data: Partial<SalesforceContact>
+    data: Partial<SalesforceContact>,
   ): Promise<void> {
-    return this.updateSObject('Contact', id, data);
+    return this.updateSObject("Contact", id, data);
   }
 
   /**
    * Delete Contact
    */
   async deleteContact(id: string): Promise<void> {
-    return this.deleteSObject('Contact', id);
+    return this.deleteSObject("Contact", id);
   }
 
   /**
    * Get Lead by ID
    */
   async getLead(id: string): Promise<SalesforceLead> {
-    return this.getSObject<SalesforceLead>('Lead', id);
+    return this.getSObject<SalesforceLead>("Lead", id);
   }
 
   /**
    * Create Lead
    */
-  async createLead(data: Omit<SalesforceLead, 'Id'>): Promise<string> {
-    return this.createSObject('Lead', data);
+  async createLead(data: Omit<SalesforceLead, "Id">): Promise<string> {
+    return this.createSObject("Lead", data);
   }
 
   /**
    * Update Lead
    */
-  async updateLead(
-    id: string,
-    data: Partial<SalesforceLead>
-  ): Promise<void> {
-    return this.updateSObject('Lead', id, data);
+  async updateLead(id: string, data: Partial<SalesforceLead>): Promise<void> {
+    return this.updateSObject("Lead", id, data);
   }
 
   /**
    * Delete Lead
    */
   async deleteLead(id: string): Promise<void> {
-    return this.deleteSObject('Lead', id);
+    return this.deleteSObject("Lead", id);
   }
 
   /**
    * Get Opportunity by ID
    */
   async getOpportunity(id: string): Promise<SalesforceOpportunity> {
-    return this.getSObject<SalesforceOpportunity>('Opportunity', id);
+    return this.getSObject<SalesforceOpportunity>("Opportunity", id);
   }
 
   /**
    * Create Opportunity
    */
   async createOpportunity(
-    data: Omit<SalesforceOpportunity, 'Id'>
+    data: Omit<SalesforceOpportunity, "Id">,
   ): Promise<string> {
-    return this.createSObject('Opportunity', data);
+    return this.createSObject("Opportunity", data);
   }
 
   /**
@@ -746,100 +746,100 @@ export class SalesforceSDKClient {
    */
   async updateOpportunity(
     id: string,
-    data: Partial<SalesforceOpportunity>
+    data: Partial<SalesforceOpportunity>,
   ): Promise<void> {
-    return this.updateSObject('Opportunity', id, data);
+    return this.updateSObject("Opportunity", id, data);
   }
 
   /**
    * Delete Opportunity
    */
   async deleteOpportunity(id: string): Promise<void> {
-    return this.deleteSObject('Opportunity', id);
+    return this.deleteSObject("Opportunity", id);
   }
 
   /**
    * Get Task by ID
    */
   async getTask(id: string): Promise<SalesforceTask> {
-    return this.getSObject<SalesforceTask>('Task', id);
+    return this.getSObject<SalesforceTask>("Task", id);
   }
 
   /**
    * Create Task
    */
-  async createTask(data: Omit<SalesforceTask, 'Id'>): Promise<string> {
-    return this.createSObject('Task', data);
+  async createTask(data: Omit<SalesforceTask, "Id">): Promise<string> {
+    return this.createSObject("Task", data);
   }
 
   /**
    * Update Task
    */
   async updateTask(id: string, data: Partial<SalesforceTask>): Promise<void> {
-    return this.updateSObject('Task', id, data);
+    return this.updateSObject("Task", id, data);
   }
 
   /**
    * Delete Task
    */
   async deleteTask(id: string): Promise<void> {
-    return this.deleteSObject('Task', id);
+    return this.deleteSObject("Task", id);
   }
 
   /**
    * Get Event by ID
    */
   async getEvent(id: string): Promise<SalesforceEvent> {
-    return this.getSObject<SalesforceEvent>('Event', id);
+    return this.getSObject<SalesforceEvent>("Event", id);
   }
 
   /**
    * Create Event
    */
-  async createEvent(data: Omit<SalesforceEvent, 'Id'>): Promise<string> {
-    return this.createSObject('Event', data);
+  async createEvent(data: Omit<SalesforceEvent, "Id">): Promise<string> {
+    return this.createSObject("Event", data);
   }
 
   /**
    * Update Event
    */
   async updateEvent(id: string, data: Partial<SalesforceEvent>): Promise<void> {
-    return this.updateSObject('Event', id, data);
+    return this.updateSObject("Event", id, data);
   }
 
   /**
    * Delete Event
    */
   async deleteEvent(id: string): Promise<void> {
-    return this.deleteSObject('Event', id);
+    return this.deleteSObject("Event", id);
   }
 
   /**
    * Get Case by ID
    */
   async getCase(id: string): Promise<SalesforceCase> {
-    return this.getSObject<SalesforceCase>('Case', id);
+    return this.getSObject<SalesforceCase>("Case", id);
   }
 
   /**
    * Create Case
    */
-  async createCase(data: Omit<SalesforceCase, 'Id'>): Promise<string> {
-    return this.createSObject('Case', data);
+  async createCase(data: Omit<SalesforceCase, "Id">): Promise<string> {
+    return this.createSObject("Case", data);
   }
 
   /**
    * Update Case
    */
   async updateCase(id: string, data: Partial<SalesforceCase>): Promise<void> {
-    return this.updateSObject('Case', id, data);
+    return this.updateSObject("Case", id, data);
   }
 
   /**
    * Delete Case
    */
   async deleteCase(id: string): Promise<void> {
-    return this.deleteSObject('Case', id);
+    return this.deleteSObject("Case", id);
   }
 
   /**
@@ -847,10 +847,10 @@ export class SalesforceSDKClient {
    */
   private async getSObject<T extends { Id: string }>(
     sobject: string,
-    id: string
+    id: string,
   ): Promise<T> {
     const url = `${this.instanceUrl}/services/data/${this.config.apiVersion}/sobjects/${sobject}/${id}`;
-    const response = await this.makeRequest(url, { method: 'GET' });
+    const response = await this.makeRequest(url, { method: "GET" });
     return response.json() as Promise<T>;
   }
 
@@ -859,15 +859,15 @@ export class SalesforceSDKClient {
    */
   private async createSObject(
     sobject: string,
-    data: Record<string, unknown>
+    data: Record<string, unknown>,
   ): Promise<string> {
     const url = `${this.instanceUrl}/services/data/${this.config.apiVersion}/sobjects/${sobject}`;
     const response = await this.makeRequest(url, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
     });
 
-    const result = await response.json() as { id: string };
+    const result = (await response.json()) as { id: string };
     return result.id;
   }
 
@@ -877,11 +877,11 @@ export class SalesforceSDKClient {
   private async updateSObject(
     sobject: string,
     id: string,
-    data: Record<string, unknown>
+    data: Record<string, unknown>,
   ): Promise<void> {
     const url = `${this.instanceUrl}/services/data/${this.config.apiVersion}/sobjects/${sobject}/${id}`;
     await this.makeRequest(url, {
-      method: 'PATCH',
+      method: "PATCH",
       body: JSON.stringify(data),
     });
   }
@@ -891,7 +891,7 @@ export class SalesforceSDKClient {
    */
   private async deleteSObject(sobject: string, id: string): Promise<void> {
     const url = `${this.instanceUrl}/services/data/${this.config.apiVersion}/sobjects/${sobject}/${id}`;
-    await this.makeRequest(url, { method: 'DELETE' });
+    await this.makeRequest(url, { method: "DELETE" });
   }
 
   /**
@@ -921,17 +921,17 @@ export class SalesforceSDKClient {
    * ```
    */
   async executeComposite(
-    request: z.infer<typeof CompositeRequestSchema>
+    request: z.infer<typeof CompositeRequestSchema>,
   ): Promise<CompositeResponse> {
     const validated = CompositeRequestSchema.parse(request);
 
     if (validated.compositeRequest.length > 25) {
-      throw new Error('Composite API limited to 25 subrequests');
+      throw new Error("Composite API limited to 25 subrequests");
     }
 
     const url = `${this.instanceUrl}/services/data/${this.config.apiVersion}/composite`;
     const response = await this.makeRequest(url, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(validated),
     });
 
@@ -954,13 +954,13 @@ export class SalesforceSDKClient {
    * ```
    */
   async createBulkJob(
-    jobConfig: z.infer<typeof BulkJobSchema>
+    jobConfig: z.infer<typeof BulkJobSchema>,
   ): Promise<BulkJob> {
     const validated = BulkJobSchema.parse(jobConfig);
 
     const url = `${this.instanceUrl}/services/data/${this.config.apiVersion}/jobs/ingest`;
     const response = await this.makeRequest(url, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(validated),
     });
 
@@ -976,8 +976,8 @@ export class SalesforceSDKClient {
   async uploadBulkJobData(jobId: string, csvData: string): Promise<void> {
     const url = `${this.instanceUrl}/services/data/${this.config.apiVersion}/jobs/ingest/${jobId}/batches`;
     await this.makeRequest(url, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'text/csv' },
+      method: "PUT",
+      headers: { "Content-Type": "text/csv" },
       body: csvData,
     });
   }
@@ -988,8 +988,8 @@ export class SalesforceSDKClient {
   async closeBulkJob(jobId: string): Promise<BulkJob> {
     const url = `${this.instanceUrl}/services/data/${this.config.apiVersion}/jobs/ingest/${jobId}`;
     const response = await this.makeRequest(url, {
-      method: 'PATCH',
-      body: JSON.stringify({ state: 'UploadComplete' }),
+      method: "PATCH",
+      body: JSON.stringify({ state: "UploadComplete" }),
     });
 
     return response.json() as Promise<BulkJob>;
@@ -1000,7 +1000,7 @@ export class SalesforceSDKClient {
    */
   async getBulkJobStatus(jobId: string): Promise<BulkJob> {
     const url = `${this.instanceUrl}/services/data/${this.config.apiVersion}/jobs/ingest/${jobId}`;
-    const response = await this.makeRequest(url, { method: 'GET' });
+    const response = await this.makeRequest(url, { method: "GET" });
 
     return response.json() as Promise<BulkJob>;
   }
@@ -1011,8 +1011,8 @@ export class SalesforceSDKClient {
   async getBulkJobResults(jobId: string): Promise<string> {
     const url = `${this.instanceUrl}/services/data/${this.config.apiVersion}/jobs/ingest/${jobId}/successfulResults`;
     const response = await this.makeRequest(url, {
-      method: 'GET',
-      headers: { Accept: 'text/csv' },
+      method: "GET",
+      headers: { Accept: "text/csv" },
     });
 
     return response.text();
@@ -1034,10 +1034,10 @@ export class SalesforceSDKClient {
    */
   async subscribePushTopic(
     topic: string,
-    callback: (data: Record<string, unknown>) => void
+    callback: (data: Record<string, unknown>) => void,
   ): Promise<() => void> {
     if (!this.accessToken || !this.instanceUrl) {
-      throw new Error('Not authenticated');
+      throw new Error("Not authenticated");
     }
 
     // This is a simplified implementation
@@ -1055,11 +1055,9 @@ export class SalesforceSDKClient {
    * @param sobject - SObject name
    * @returns Metadata for the SObject
    */
-  async describeSObject(
-    sobject: string
-  ): Promise<Record<string, unknown>> {
+  async describeSObject(sobject: string): Promise<Record<string, unknown>> {
     const url = `${this.instanceUrl}/services/data/${this.config.apiVersion}/sobjects/${sobject}/describe`;
-    const response = await this.makeRequest(url, { method: 'GET' });
+    const response = await this.makeRequest(url, { method: "GET" });
 
     return response.json() as Promise<Record<string, unknown>>;
   }
@@ -1083,9 +1081,9 @@ export class SalesforceSDKClient {
    * ```
    */
   verifyOutboundMessage(signature: string, body: string): boolean {
-    const hmac = createHmac('sha256', this.config.clientSecret);
+    const hmac = createHmac("sha256", this.config.clientSecret);
     hmac.update(body);
-    const computed = hmac.digest('base64');
+    const computed = hmac.digest("base64");
 
     return computed === signature;
   }
@@ -1095,16 +1093,20 @@ export class SalesforceSDKClient {
    */
   private async makeRequest(
     url: string,
-    options: { method?: string; headers?: Record<string, string>; body?: string } = {}
+    options: {
+      method?: string;
+      headers?: Record<string, string>;
+      body?: string;
+    } = {},
   ): Promise<Response> {
     if (!this.accessToken || !this.instanceUrl) {
-      throw new Error('Not authenticated');
+      throw new Error("Not authenticated");
     }
 
     const { headers: extraHeaders, ...restOptions } = options;
     const headers: Record<string, string> = {
       Authorization: `Bearer ${this.accessToken}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...extraHeaders,
     };
 
@@ -1118,7 +1120,7 @@ export class SalesforceSDKClient {
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       throw new Error(
-        `Salesforce API error ${response.status}: ${JSON.stringify(error)}`
+        `Salesforce API error ${response.status}: ${JSON.stringify(error)}`,
       );
     }
 

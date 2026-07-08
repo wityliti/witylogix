@@ -15,8 +15,18 @@ vi.mock("../../middleware/tenant.js", () => ({
   tenantContext: vi.fn(),
 }));
 vi.mock("../../lib/errors.js", () => ({
-  NotFoundError: class NotFoundError extends Error { constructor(msg: string) { super(msg); this.name = "NotFoundError"; } },
-  ValidationError: class ValidationError extends Error { constructor(msg: string) { super(msg); this.name = "ValidationError"; } },
+  NotFoundError: class NotFoundError extends Error {
+    constructor(msg: string) {
+      super(msg);
+      this.name = "NotFoundError";
+    }
+  },
+  ValidationError: class ValidationError extends Error {
+    constructor(msg: string) {
+      super(msg);
+      this.name = "ValidationError";
+    }
+  },
 }));
 
 import financeCodRoutes from "../finance-cod.js";
@@ -121,7 +131,9 @@ describe("Finance COD Routes", () => {
       const reply = createMockReply();
       const emptyAgg = { _sum: { amount: null }, _count: { id: 0 } };
 
-      (request.tenantDb.cODCollection.aggregate as any).mockResolvedValue(emptyAgg);
+      (request.tenantDb.cODCollection.aggregate as any).mockResolvedValue(
+        emptyAgg,
+      );
       (request.tenantDb.cODCollection.groupBy as any).mockResolvedValue([]);
       (request.tenantDb.driver.findMany as any).mockResolvedValue([]);
 
@@ -138,8 +150,13 @@ describe("Finance COD Routes", () => {
       const request = createMockRequest();
       const reply = createMockReply();
 
-      const aggWithData = { _sum: { amount: BigInt(150000) }, _count: { id: 3 } };
-      (request.tenantDb.cODCollection.aggregate as any).mockResolvedValue(aggWithData);
+      const aggWithData = {
+        _sum: { amount: BigInt(150000) },
+        _count: { id: 3 },
+      };
+      (request.tenantDb.cODCollection.aggregate as any).mockResolvedValue(
+        aggWithData,
+      );
       (request.tenantDb.cODCollection.groupBy as any).mockResolvedValue([]);
       (request.tenantDb.driver.findMany as any).mockResolvedValue([]);
 
@@ -155,7 +172,9 @@ describe("Finance COD Routes", () => {
       const reply = createMockReply();
       const emptyAgg = { _sum: { amount: null }, _count: { id: 0 } };
 
-      (request.tenantDb.cODCollection.aggregate as any).mockResolvedValue(emptyAgg);
+      (request.tenantDb.cODCollection.aggregate as any).mockResolvedValue(
+        emptyAgg,
+      );
       (request.tenantDb.cODCollection.groupBy as any).mockResolvedValue([
         {
           driverId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
@@ -171,7 +190,11 @@ describe("Finance COD Routes", () => {
         },
       ]);
       (request.tenantDb.driver.findMany as any).mockResolvedValue([
-        { id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", name: "John Doe", phone: "555-1234" },
+        {
+          id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+          name: "John Doe",
+          phone: "555-1234",
+        },
       ]);
 
       const handler = handlers["GET"]["/summary"];
@@ -193,7 +216,9 @@ describe("Finance COD Routes", () => {
       const reply = createMockReply();
       const emptyAgg = { _sum: { amount: null }, _count: { id: 0 } };
 
-      (request.tenantDb.cODCollection.aggregate as any).mockResolvedValue(emptyAgg);
+      (request.tenantDb.cODCollection.aggregate as any).mockResolvedValue(
+        emptyAgg,
+      );
       (request.tenantDb.cODCollection.groupBy as any).mockResolvedValue([]);
       (request.tenantDb.driver.findMany as any).mockResolvedValue([]);
 
@@ -231,12 +256,23 @@ describe("Finance COD Routes", () => {
         collectedAt: new Date("2026-03-15"),
         reconciledAt: null,
         depositId: null,
-        driver: { id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", name: "John Doe" },
-        order: { id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", shopifyOrderNumber: "#1001" },
-        shipment: { id: "dddddddd-dddd-dddd-dddd-dddddddddddd", shipmentNumber: "SHP-ABC123" },
+        driver: {
+          id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+          name: "John Doe",
+        },
+        order: {
+          id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+          shopifyOrderNumber: "#1001",
+        },
+        shipment: {
+          id: "dddddddd-dddd-dddd-dddd-dddddddddddd",
+          shipmentNumber: "SHP-ABC123",
+        },
       };
 
-      (request.tenantDb.cODCollection.findMany as any).mockResolvedValue([mockRecord]);
+      (request.tenantDb.cODCollection.findMany as any).mockResolvedValue([
+        mockRecord,
+      ]);
       (request.tenantDb.cODCollection.count as any).mockResolvedValue(1);
 
       const handler = handlers["GET"]["/deliveries"];
@@ -312,7 +348,9 @@ describe("Finance COD Routes", () => {
       (request.tenantDb.cODCollection.findMany as any).mockResolvedValue(
         deliveryIds.map((id) => ({ id, status: "collected" })),
       );
-      (request.tenantDb.cODCollection.updateMany as any).mockResolvedValue({ count: 2 });
+      (request.tenantDb.cODCollection.updateMany as any).mockResolvedValue({
+        count: 2,
+      });
 
       const handler = handlers["PATCH"]["/remit"];
       const result = await handler(request, reply);
@@ -379,7 +417,9 @@ describe("Finance COD Routes", () => {
       (request.tenantDb.cODCollection.findMany as any).mockResolvedValue([
         { id: deliveryId, status: "collected" },
       ]);
-      (request.tenantDb.cODCollection.updateMany as any).mockResolvedValue({ count: 1 });
+      (request.tenantDb.cODCollection.updateMany as any).mockResolvedValue({
+        count: 1,
+      });
 
       const handler = handlers["PATCH"]["/remit"];
       await handler(request, reply);

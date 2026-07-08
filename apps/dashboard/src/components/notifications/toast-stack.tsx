@@ -95,8 +95,7 @@ const ToastItem = React.memo(
   }) => {
     const config = VARIANT_CONFIG[toast.variant];
     const Icon = config.icon;
-    const duration =
-      toast.duration ?? DEFAULT_DURATIONS[toast.variant];
+    const duration = toast.duration ?? DEFAULT_DURATIONS[toast.variant];
     const progressBarRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -139,12 +138,14 @@ const ToastItem = React.memo(
           config.borderColor,
           "transition-all duration-300",
           "animate-in slide-in-from-right-full",
-          isExiting && "animate-out slide-out-to-right-full"
+          isExiting && "animate-out slide-out-to-right-full",
         )}
         role="alert"
         aria-live="polite"
       >
-        <Icon className={cn("w-5 h-5 flex-shrink-0 mt-0.5", config.iconColor)} />
+        <Icon
+          className={cn("w-5 h-5 flex-shrink-0 mt-0.5", config.iconColor)}
+        />
 
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-[var(--wl-text-primary)]">
@@ -169,7 +170,7 @@ const ToastItem = React.memo(
                       ? "text-[var(--wl-warning)] hover:text-[var(--wl-warning)]/80"
                       : toast.variant === "success"
                         ? "text-[var(--wl-success)] hover:text-[var(--wl-success)]/80"
-                        : "text-[var(--wl-info)] hover:text-[var(--wl-info)]/80"
+                        : "text-[var(--wl-info)] hover:text-[var(--wl-info)]/80",
                 )}
               >
                 {toast.action.label}
@@ -185,7 +186,7 @@ const ToastItem = React.memo(
             "text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]",
             "hover:bg-[var(--wl-bg-secondary)]",
             "transition-colors duration-200",
-            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--wl-primary)]"
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--wl-primary)]",
           )}
           aria-label={`Dismiss: ${toast.title}`}
         >
@@ -203,35 +204,30 @@ const ToastItem = React.memo(
                   ? "bg-[var(--wl-warning)]"
                   : toast.variant === "success"
                     ? "bg-[var(--wl-success)]"
-                    : "bg-[var(--wl-info)]"
+                    : "bg-[var(--wl-info)]",
             )}
             ref={progressBarRef}
           />
         )}
       </div>
     );
-  }
+  },
 );
 
 ToastItem.displayName = "ToastItem";
 
 export const ToastStack = React.memo(
-  ({
-    toasts,
-    onDismiss,
-    maxVisible = 5,
-    className,
-  }: ToastStackProps) => {
+  ({ toasts, onDismiss, maxVisible = 5, className }: ToastStackProps) => {
     const [exitingIds, setExitingIds] = useState<Set<string>>(new Set());
 
     const visibleToasts = useMemo(
       () => toasts.slice(0, maxVisible),
-      [toasts, maxVisible]
+      [toasts, maxVisible],
     );
 
     const hiddenCount = useMemo(
       () => Math.max(0, toasts.length - maxVisible),
-      [toasts.length, maxVisible]
+      [toasts.length, maxVisible],
     );
 
     const handleDismiss = useCallback(
@@ -247,7 +243,7 @@ export const ToastStack = React.memo(
         }, 300); // Match animation duration
         return () => clearTimeout(timer);
       },
-      [onDismiss]
+      [onDismiss],
     );
 
     if (toasts.length === 0) {
@@ -259,7 +255,7 @@ export const ToastStack = React.memo(
         className={cn(
           "fixed right-4 bottom-4 flex flex-col gap-3 z-50",
           "max-w-sm pointer-events-auto",
-          className
+          className,
         )}
         role="region"
         aria-label="Notifications"
@@ -279,7 +275,7 @@ export const ToastStack = React.memo(
             className={cn(
               "flex items-center justify-center px-4 py-2 rounded-md",
               "bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]",
-              "text-xs font-medium text-[var(--wl-text-secondary)]"
+              "text-xs font-medium text-[var(--wl-text-secondary)]",
             )}
           >
             +{hiddenCount} more notification
@@ -288,7 +284,7 @@ export const ToastStack = React.memo(
         )}
       </div>
     );
-  }
+  },
 );
 
 ToastStack.displayName = "ToastStack";

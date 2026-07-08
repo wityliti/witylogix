@@ -108,7 +108,8 @@ const DEFAULT_PROXIMITY_THRESHOLDS: ProximityThreshold[] = [
 export class GeofenceManager {
   private geofences: Map<string, Geofence> = new Map();
   private geofenceState: Map<string, GeofenceState> = new Map();
-  private proximityThresholds: ProximityThreshold[] = DEFAULT_PROXIMITY_THRESHOLDS;
+  private proximityThresholds: ProximityThreshold[] =
+    DEFAULT_PROXIMITY_THRESHOLDS;
 
   /**
    * Add or update a geofence definition.
@@ -119,7 +120,11 @@ export class GeofenceManager {
   addGeofence(geofence: Geofence): void {
     // Validate geofence geometry
     if (geofence.type === "circle") {
-      if (!geofence.center || geofence.radius === undefined || geofence.radius <= 0) {
+      if (
+        !geofence.center ||
+        geofence.radius === undefined ||
+        geofence.radius <= 0
+      ) {
         throw new Error(
           "Circle geofence must have valid center and positive radius",
         );

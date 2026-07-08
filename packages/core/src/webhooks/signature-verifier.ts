@@ -49,7 +49,7 @@ export class SignatureVerifier {
   generateSignature(
     payload: string,
     secret: string,
-    algorithm: SignatureAlgorithm = "sha256"
+    algorithm: SignatureAlgorithm = "sha256",
   ): string {
     const hmac = createHmac(algorithm, secret);
     hmac.update(payload);
@@ -70,7 +70,7 @@ export class SignatureVerifier {
     signature: string,
     timestamp: string,
     secret: string,
-    options: VerificationOptions = {}
+    options: VerificationOptions = {},
   ): {
     valid: boolean;
     reason?: string;
@@ -78,7 +78,7 @@ export class SignatureVerifier {
     // Validate timestamp
     const timestampValid = this.validateTimestamp(
       timestamp,
-      options.maxAgeSeconds || this.maxAgeSeconds
+      options.maxAgeSeconds || this.maxAgeSeconds,
     );
     if (!timestampValid) {
       return {
@@ -89,7 +89,11 @@ export class SignatureVerifier {
 
     // Verify signature
     const algorithm = options.algorithm || "sha256";
-    const expectedSignature = this.generateSignature(payload, secret, algorithm);
+    const expectedSignature = this.generateSignature(
+      payload,
+      secret,
+      algorithm,
+    );
 
     if (!this.constantTimeCompare(signature, expectedSignature)) {
       return {
@@ -119,7 +123,7 @@ export class SignatureVerifier {
     nonce: string,
     tenantId: string,
     secret: string,
-    options: VerificationOptions = {}
+    options: VerificationOptions = {},
   ): {
     valid: boolean;
     reason?: string;
@@ -130,7 +134,7 @@ export class SignatureVerifier {
       signature,
       timestamp,
       secret,
-      options
+      options,
     );
     if (!signatureValid.valid) {
       return signatureValid;
@@ -255,7 +259,7 @@ export class SignatureVerifier {
     payload: string,
     secret: string,
     nonce?: string,
-    algorithm: SignatureAlgorithm = "sha256"
+    algorithm: SignatureAlgorithm = "sha256",
   ): Record<string, string> {
     const timestamp = SignatureVerifier.generateTimestamp();
     const signature = this.generateSignature(payload, secret, algorithm);
@@ -285,9 +289,12 @@ export class SignatureVerifier {
    */
   private startNonceCleanup(): void {
     // Run cleanup every 30 minutes
-    this.nonceCleanupInterval = setInterval(() => {
-      this.cleanupNonces();
-    }, 30 * 60 * 1000);
+    this.nonceCleanupInterval = setInterval(
+      () => {
+        this.cleanupNonces();
+      },
+      30 * 60 * 1000,
+    );
 
     // Don't keep process alive if this is the only interval
     if (this.nonceCleanupInterval.unref) {

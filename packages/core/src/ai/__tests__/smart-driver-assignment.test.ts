@@ -138,7 +138,9 @@ describe("Smart Driver Assignment", () => {
       const closeScore = assignment.scoreDriver(drivers[0], closeOrder);
       const farScore = assignment.scoreDriver(drivers[0], farOrder);
 
-      expect(closeScore.proximityScore).toBeGreaterThan(farScore.proximityScore);
+      expect(closeScore.proximityScore).toBeGreaterThan(
+        farScore.proximityScore,
+      );
     });
 
     it("should score capacity correctly", () => {
@@ -165,7 +167,9 @@ describe("Smart Driver Assignment", () => {
       const smallScore = assignment.scoreDriver(drivers[0], smallOrder);
       const largeScore = assignment.scoreDriver(drivers[0], largeOrder);
 
-      expect(smallScore.capacityScore).toBeGreaterThan(largeScore.capacityScore);
+      expect(smallScore.capacityScore).toBeGreaterThan(
+        largeScore.capacityScore,
+      );
     });
 
     it("should prefer drivers with more shift time", () => {
@@ -183,7 +187,9 @@ describe("Smart Driver Assignment", () => {
       const freshScore = assignment.scoreDriver(drivers[0], order); // 480 min
       const tiredScore = assignment.scoreDriver(drivers[2], order); // 180 min
 
-      expect(freshScore.shiftHourScore).toBeGreaterThan(tiredScore.shiftHourScore);
+      expect(freshScore.shiftHourScore).toBeGreaterThan(
+        tiredScore.shiftHourScore,
+      );
     });
 
     it("should boost score for premium orders with high-rated drivers", () => {
@@ -211,7 +217,9 @@ describe("Smart Driver Assignment", () => {
       const standardScore = assignment.scoreDriver(drivers[0], standardOrder);
       const premiumScore = assignment.scoreDriver(drivers[0], premiumOrder);
 
-      expect(premiumScore.ratingScore).toBeGreaterThanOrEqual(standardScore.ratingScore);
+      expect(premiumScore.ratingScore).toBeGreaterThanOrEqual(
+        standardScore.ratingScore,
+      );
     });
   });
 
@@ -294,7 +302,9 @@ describe("Smart Driver Assignment", () => {
       const ranked = assignment.rankDriversForOrder(orders[0]);
 
       expect(ranked.length).toBe(drivers.length);
-      expect(ranked[0].overallScore).toBeGreaterThanOrEqual(ranked[1].overallScore);
+      expect(ranked[0].overallScore).toBeGreaterThanOrEqual(
+        ranked[1].overallScore,
+      );
     });
 
     it("should rank drivers by proximity when other factors equal", () => {
@@ -355,7 +365,7 @@ describe("Smart Driver Assignment", () => {
       expect(result?.estimatedPickupTime).toBeDefined();
       expect(result?.estimatedDeliveryTime).toBeDefined();
       expect(result?.estimatedDeliveryTime?.getTime()).toBeGreaterThan(
-        result?.estimatedPickupTime?.getTime() || 0
+        result?.estimatedPickupTime?.getTime() || 0,
       );
     });
   });
@@ -402,7 +412,7 @@ describe("Smart Driver Assignment", () => {
 
       // High priority should be assigned first
       const highPriorityAssigned = result.assignments.some((a) =>
-        a.orderIds.includes("high_priority")
+        a.orderIds.includes("high_priority"),
       );
       expect(highPriorityAssigned).toBe(true);
     });
@@ -447,7 +457,9 @@ describe("Smart Driver Assignment", () => {
 
       // Verify distances are in ascending order
       for (let i = 1; i < nearby.distances.length; i++) {
-        expect(nearby.distances[i]).toBeGreaterThanOrEqual(nearby.distances[i - 1]);
+        expect(nearby.distances[i]).toBeGreaterThanOrEqual(
+          nearby.distances[i - 1],
+        );
       }
     });
   });
@@ -473,7 +485,7 @@ describe("Smart Driver Assignment", () => {
 
       // Driver 3 is mostly full (40/50 kg)
       expect(utilization["driver_3"].weight).toBeGreaterThan(
-        utilization["driver_1"].weight
+        utilization["driver_1"].weight,
       );
     });
 
@@ -484,7 +496,7 @@ describe("Smart Driver Assignment", () => {
 
       // Driver 3 has completed 10 of 15 deliveries
       expect(utilization["driver_3"].deliveries).toBe(
-        Math.round((10 / 15) * 100)
+        Math.round((10 / 15) * 100),
       );
     });
   });

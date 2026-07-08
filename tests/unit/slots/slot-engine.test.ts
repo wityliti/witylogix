@@ -33,7 +33,12 @@ class SlotEngine {
   private slots = new Map<string, TimeSlot>();
   private reservations = new Map<string, Reservation>();
   private blackoutDates = new Set<string>();
-  private rateCalculationMethod: "fixed" | "distance" | "zone" | "dynamic" | "surge" = "fixed";
+  private rateCalculationMethod:
+    | "fixed"
+    | "distance"
+    | "zone"
+    | "dynamic"
+    | "surge" = "fixed";
 
   createSlot(
     date: Date,
@@ -41,7 +46,7 @@ class SlotEngine {
     endTime: string,
     capacity: number,
     rate: number,
-    zoneId?: string
+    zoneId?: string,
   ): TimeSlot {
     const id = `slot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -155,7 +160,7 @@ class SlotEngine {
   calculateRate(
     baseRate: number,
     zoneId?: string,
-    demand?: "low" | "medium" | "high"
+    demand?: "low" | "medium" | "high",
   ): number {
     let rate = baseRate;
 
@@ -198,7 +203,7 @@ class SlotEngine {
   }
 
   setRateCalculationMethod(
-    method: "fixed" | "distance" | "zone" | "dynamic" | "surge"
+    method: "fixed" | "distance" | "zone" | "dynamic" | "surge",
   ): void {
     this.rateCalculationMethod = method;
   }
@@ -208,9 +213,9 @@ class SlotEngine {
     if (!slot) return false;
 
     // Release all reservations for this slot
-    const reservationsToRelease = Array.from(
-      this.reservations.values()
-    ).filter((r) => r.slotId === slotId && r.status === "active");
+    const reservationsToRelease = Array.from(this.reservations.values()).filter(
+      (r) => r.slotId === slotId && r.status === "active",
+    );
 
     for (const res of reservationsToRelease) {
       this.cancelReservation(res.id);
@@ -256,20 +261,14 @@ describe("SlotEngine", () => {
         "12:00",
         5,
         20.0,
-        "zone_north"
+        "zone_north",
       );
 
       expect(slot.zoneId).toBe("zone_north");
     });
 
     it("should retrieve created slot", () => {
-      const created = engine.createSlot(
-        new Date(),
-        "10:00",
-        "12:00",
-        8,
-        18.0
-      );
+      const created = engine.createSlot(new Date(), "10:00", "12:00", 8, 18.0);
 
       const retrieved = engine.getSlot(created.id);
 
@@ -390,13 +389,9 @@ describe("SlotEngine", () => {
     });
 
     it("should handle all 5 zone methods", () => {
-      const methods: Array<"fixed" | "distance" | "zone" | "dynamic" | "surge"> = [
-        "fixed",
-        "distance",
-        "zone",
-        "dynamic",
-        "surge",
-      ];
+      const methods: Array<
+        "fixed" | "distance" | "zone" | "dynamic" | "surge"
+      > = ["fixed", "distance", "zone", "dynamic", "surge"];
 
       for (const method of methods) {
         engine.setRateCalculationMethod(method);
@@ -580,7 +575,7 @@ describe("SlotEngine", () => {
       const slot = engine.createSlot(new Date(), "10:00", "12:00", 10, 15.0);
 
       const reservations = Array.from({ length: 10 }, (_, i) =>
-        engine.reserveSlot(slot.id, `cust_${i}`)
+        engine.reserveSlot(slot.id, `cust_${i}`),
       );
 
       expect(reservations.every((r) => r !== null)).toBe(true);
@@ -591,7 +586,7 @@ describe("SlotEngine", () => {
       const slot = engine.createSlot(new Date(), "10:00", "12:00", 3, 15.0);
 
       const results = Array.from({ length: 5 }, (_, i) =>
-        engine.reserveSlot(slot.id, `cust_${i}`)
+        engine.reserveSlot(slot.id, `cust_${i}`),
       );
 
       const successful = results.filter((r) => r !== null);

@@ -5,7 +5,7 @@
 All form components are available in a single barrel export:
 
 ```tsx
-import { useForm, useFieldArray } from '@/hooks';
+import { useForm, useFieldArray } from "@/hooks";
 import {
   FormField,
   FormInput,
@@ -16,8 +16,8 @@ import {
   FormRadio,
   FormRadioGroup,
   FormFileUpload,
-} from '@/components/forms';
-import { emailSchema, passwordSchema } from '@/lib/validation-schemas';
+} from "@/components/forms";
+import { emailSchema, passwordSchema } from "@/lib/validation-schemas";
 ```
 
 ## Basic Form Setup
@@ -25,14 +25,14 @@ import { emailSchema, passwordSchema } from '@/lib/validation-schemas';
 ```tsx
 const form = useForm({
   initialValues: {
-    email: '',
-    password: '',
+    email: "",
+    password: "",
     rememberMe: false,
   },
   validationSchema: (values) => {
     const errors: Record<string, string> = {};
-    if (!values.email) errors.email = 'Email required';
-    if (!values.password) errors.password = 'Password required';
+    if (!values.email) errors.email = "Email required";
+    if (!values.password) errors.password = "Password required";
     return Object.keys(errors).length ? errors : null;
   },
   onSubmit: async (values) => {
@@ -40,11 +40,7 @@ const form = useForm({
   },
 });
 
-return (
-  <form onSubmit={form.handleSubmit}>
-    {/* Form fields here */}
-  </form>
-);
+return <form onSubmit={form.handleSubmit}>{/* Form fields here */}</form>;
 ```
 
 ## Field Registration
@@ -52,7 +48,7 @@ return (
 Register fields to automatically connect to form state:
 
 ```tsx
-const emailField = form.register('email');
+const emailField = form.register("email");
 
 // Returns object with:
 // - value: current value
@@ -62,7 +58,7 @@ const emailField = form.register('email');
 // - touched: whether field was interacted with
 // - isDirty: whether value changed
 
-<FormInput {...emailField} type="email" />
+<FormInput {...emailField} type="email" />;
 ```
 
 ## FormField Wrapper
@@ -77,7 +73,7 @@ Always wrap inputs with FormField for consistent styling:
   helperText="We'll send a confirmation to this email"
 >
   <FormInput
-    {...form.register('email')}
+    {...form.register("email")}
     type="email"
     placeholder="you@example.com"
   />
@@ -87,17 +83,16 @@ Always wrap inputs with FormField for consistent styling:
 ## Text Inputs
 
 ### Basic Text Input
+
 ```tsx
-<FormInput
-  {...form.register('username')}
-  placeholder="Enter username"
-/>
+<FormInput {...form.register("username")} placeholder="Enter username" />
 ```
 
 ### Email Input
+
 ```tsx
 <FormInput
-  {...form.register('email')}
+  {...form.register("email")}
   type="email"
   placeholder="your@email.com"
   prefix={<Mail size={18} />}
@@ -105,18 +100,20 @@ Always wrap inputs with FormField for consistent styling:
 ```
 
 ### Password Input
+
 ```tsx
 <FormInput
-  {...form.register('password')}
+  {...form.register("password")}
   type="password"
   placeholder="Enter password"
 />
 ```
 
 ### Number Input with Formatting
+
 ```tsx
 <FormInput
-  {...form.register('phone')}
+  {...form.register("phone")}
   type="tel"
   autoFormat="phone"
   placeholder="(555) 555-5555"
@@ -124,18 +121,20 @@ Always wrap inputs with FormField for consistent styling:
 ```
 
 ### With Clear Button
+
 ```tsx
 <FormInput
-  {...form.register('search')}
+  {...form.register("search")}
   showClear
-  onClear={() => form.setFieldValue('search', '')}
+  onClear={() => form.setFieldValue("search", "")}
 />
 ```
 
 ### Debounced Search
+
 ```tsx
 <FormInput
-  {...form.register('searchQuery')}
+  {...form.register("searchQuery")}
   debounceMs={300}
   placeholder="Search..."
 />
@@ -146,7 +145,7 @@ Always wrap inputs with FormField for consistent styling:
 ```tsx
 <FormField label="Message" required error={form.errors.message}>
   <FormTextarea
-    {...form.register('message')}
+    {...form.register("message")}
     maxLength={500}
     showCharacterCount
     showWordCount
@@ -159,14 +158,15 @@ Always wrap inputs with FormField for consistent styling:
 ## Select / Dropdown
 
 ### Simple Select
+
 ```tsx
 <FormField label="Category">
   <FormSelect
-    {...form.register('category')}
+    {...form.register("category")}
     options={[
-      { value: 'support', label: 'Support' },
-      { value: 'feedback', label: 'Feedback' },
-      { value: 'bug', label: 'Bug Report' },
+      { value: "support", label: "Support" },
+      { value: "feedback", label: "Feedback" },
+      { value: "bug", label: "Bug Report" },
     ]}
     placeholder="Choose category..."
   />
@@ -174,13 +174,14 @@ Always wrap inputs with FormField for consistent styling:
 ```
 
 ### Multi-Select
+
 ```tsx
 <FormSelect
-  {...form.register('tags')}
+  {...form.register("tags")}
   options={[
-    { value: 'react', label: 'React' },
-    { value: 'typescript', label: 'TypeScript' },
-    { value: 'tailwind', label: 'Tailwind' },
+    { value: "react", label: "React" },
+    { value: "typescript", label: "TypeScript" },
+    { value: "tailwind", label: "Tailwind" },
   ]}
   isMulti
   isClearable
@@ -190,22 +191,24 @@ Always wrap inputs with FormField for consistent styling:
 ```
 
 ### Grouped Options
+
 ```tsx
 <FormSelect
-  {...form.register('tool')}
+  {...form.register("tool")}
   options={[
-    { value: 'react', label: 'React', group: 'Frontend' },
-    { value: 'vue', label: 'Vue', group: 'Frontend' },
-    { value: 'node', label: 'Node.js', group: 'Backend' },
-    { value: 'python', label: 'Python', group: 'Backend' },
+    { value: "react", label: "React", group: "Frontend" },
+    { value: "vue", label: "Vue", group: "Frontend" },
+    { value: "node", label: "Node.js", group: "Backend" },
+    { value: "python", label: "Python", group: "Backend" },
   ]}
 />
 ```
 
 ### Async Options
+
 ```tsx
 <FormSelect
-  {...form.register('user')}
+  {...form.register("user")}
   isSearchable
   loadOptions={async (searchTerm) => {
     const res = await fetch(`/api/users?q=${searchTerm}`);
@@ -218,24 +221,23 @@ Always wrap inputs with FormField for consistent styling:
 ## Checkboxes
 
 ### Single Checkbox
+
 ```tsx
-<FormCheckbox
-  {...form.register('agree')}
-  label="I agree to the terms"
-/>
+<FormCheckbox {...form.register("agree")} label="I agree to the terms" />
 ```
 
 ### Checkbox Group
+
 ```tsx
 <FormField label="Permissions">
   <FormCheckboxGroup
     options={[
-      { value: 'read', label: 'Read' },
-      { value: 'write', label: 'Write' },
-      { value: 'delete', label: 'Delete' },
+      { value: "read", label: "Read" },
+      { value: "write", label: "Write" },
+      { value: "delete", label: "Delete" },
     ]}
     value={form.values.permissions}
-    onChange={(v) => form.setFieldValue('permissions', v)}
+    onChange={(v) => form.setFieldValue("permissions", v)}
     showSelectAll
   />
 </FormField>
@@ -244,37 +246,39 @@ Always wrap inputs with FormField for consistent styling:
 ## Radio Buttons
 
 ### Basic Radio Group
+
 ```tsx
 <FormField label="Plan">
   <FormRadioGroup
     options={[
-      { value: 'free', label: 'Free' },
-      { value: 'pro', label: 'Pro' },
-      { value: 'enterprise', label: 'Enterprise' },
+      { value: "free", label: "Free" },
+      { value: "pro", label: "Pro" },
+      { value: "enterprise", label: "Enterprise" },
     ]}
     value={form.values.plan}
-    onChange={(v) => form.setFieldValue('plan', v)}
+    onChange={(v) => form.setFieldValue("plan", v)}
   />
 </FormField>
 ```
 
 ### Card Style with Descriptions
+
 ```tsx
 <FormRadioGroup
   options={[
     {
-      value: 'monthly',
-      label: 'Monthly',
-      description: '$29/month, cancel anytime',
+      value: "monthly",
+      label: "Monthly",
+      description: "$29/month, cancel anytime",
     },
     {
-      value: 'yearly',
-      label: 'Yearly',
-      description: '$290/year, save 16%',
+      value: "yearly",
+      label: "Yearly",
+      description: "$290/year, save 16%",
     },
   ]}
   value={form.values.billing}
-  onChange={(v) => form.setFieldValue('billing', v)}
+  onChange={(v) => form.setFieldValue("billing", v)}
   cardStyle
 />
 ```
@@ -283,12 +287,12 @@ Always wrap inputs with FormField for consistent styling:
 
 ```tsx
 <FormFileUpload
-  acceptedTypes={['image/jpeg', 'image/png', 'application/pdf']}
+  acceptedTypes={["image/jpeg", "image/png", "application/pdf"]}
   maxSizeBytes={10 * 1024 * 1024}
   multiple
   showPreview
   onFilesSelected={(files) => {
-    form.setFieldValue('files', files);
+    form.setFieldValue("files", files);
   }}
 />
 ```
@@ -300,14 +304,14 @@ For repeating form sections like multiple addresses or contacts:
 ```tsx
 const form = useForm({
   initialValues: {
-    addresses: [{ street: '', city: '' }],
+    addresses: [{ street: "", city: "" }],
   },
   onSubmit: async (values) => {
     await api.submit(values);
   },
 });
 
-const addresses = useFieldArray(form, 'addresses', {
+const addresses = useFieldArray(form, "addresses", {
   minItems: 1,
   maxItems: 5,
 });
@@ -317,15 +321,11 @@ return (
     {addresses.fields.map((field, index) => (
       <div key={field.id} className="border p-4 rounded mb-4">
         <FormField label="Street">
-          <FormInput
-            {...form.register(`addresses.${index}.street`)}
-          />
+          <FormInput {...form.register(`addresses.${index}.street`)} />
         </FormField>
 
         <FormField label="City">
-          <FormInput
-            {...form.register(`addresses.${index}.city`)}
-          />
+          <FormInput {...form.register(`addresses.${index}.city`)} />
         </FormField>
 
         <button
@@ -338,7 +338,7 @@ return (
     ))}
 
     <button
-      onClick={() => addresses.append({ street: '', city: '' })}
+      onClick={() => addresses.append({ street: "", city: "" })}
       disabled={!addresses.canAddMore}
     >
       Add Address
@@ -350,10 +350,11 @@ return (
 ## Validation Modes
 
 ### onChange (Real-time validation)
+
 ```tsx
 const form = useForm({
-  initialValues: { email: '' },
-  validationMode: 'onChange',
+  initialValues: { email: "" },
+  validationMode: "onChange",
   validationSchema: (values) => {
     // Validates as user types
     return null;
@@ -363,10 +364,11 @@ const form = useForm({
 ```
 
 ### onBlur (Validate on blur)
+
 ```tsx
 const form = useForm({
-  initialValues: { email: '' },
-  validationMode: 'onBlur',
+  initialValues: { email: "" },
+  validationMode: "onBlur",
   validationSchema: (values) => {
     // Validates when field loses focus
     return null;
@@ -376,10 +378,11 @@ const form = useForm({
 ```
 
 ### onSubmit (Validate on submit)
+
 ```tsx
 const form = useForm({
-  initialValues: { email: '' },
-  validationMode: 'onSubmit',
+  initialValues: { email: "" },
+  validationMode: "onSubmit",
   validationSchema: (values) => {
     // Validates only when form is submitted
     return null;
@@ -406,7 +409,7 @@ import {
   minLengthSchema,
   maxLengthSchema,
   matchFieldSchema,
-} from '@/lib/validation-schemas';
+} from "@/lib/validation-schemas";
 
 // Use in validation schema
 validationSchema: (values) => {
@@ -422,30 +425,32 @@ validationSchema: (values) => {
   if (phoneError) errors.phone = phoneError;
 
   return Object.keys(errors).length ? errors : null;
-}
+};
 ```
 
 ## Form State & Methods
 
 ```tsx
-const form = useForm({ /* config */ });
+const form = useForm({
+  /* config */
+});
 
 // State
-form.values;           // { email: '', password: '' }
-form.errors;           // { email: 'Email required' }
-form.touched;          // { email: true, password: false }
-form.isDirty;          // Record of which fields changed
-form.isSubmitting;     // Is form being submitted
-form.isValidating;     // Is async validation running
-form.isValid;          // Are all validations passing
-form.isDirty;          // Has any field changed
+form.values; // { email: '', password: '' }
+form.errors; // { email: 'Email required' }
+form.touched; // { email: true, password: false }
+form.isDirty; // Record of which fields changed
+form.isSubmitting; // Is form being submitted
+form.isValidating; // Is async validation running
+form.isValid; // Are all validations passing
+form.isDirty; // Has any field changed
 
 // Methods
-form.handleSubmit;     // Form submit handler
-form.reset();          // Reset to initial values
-form.setFieldValue('email', 'test@example.com');
-form.setFieldError('email', 'Invalid email');
-form.setFieldTouched('email', true);
+form.handleSubmit; // Form submit handler
+form.reset(); // Reset to initial values
+form.setFieldValue("email", "test@example.com");
+form.setFieldError("email", "Invalid email");
+form.setFieldTouched("email", true);
 ```
 
 ## Styling & Theming
@@ -481,21 +486,20 @@ All components use `--wl-*` CSS variables from your dark theme. Override in your
   <FormField
     label="Email"
     required
-    error={form.touched.email && form.errors.email ? form.errors.email : undefined}
+    error={
+      form.touched.email && form.errors.email ? form.errors.email : undefined
+    }
     helperText="We'll send a confirmation email"
   >
     <FormInput
-      {...form.register('email')}
+      {...form.register("email")}
       type="email"
       placeholder="you@example.com"
     />
   </FormField>
 
-  <Button
-    type="submit"
-    disabled={form.isSubmitting || !form.isValid}
-  >
-    {form.isSubmitting ? 'Submitting...' : 'Submit'}
+  <Button type="submit" disabled={form.isSubmitting || !form.isValid}>
+    {form.isSubmitting ? "Submitting..." : "Submit"}
   </Button>
 </form>
 ```

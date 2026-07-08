@@ -166,12 +166,10 @@ export class Logger {
   private log(
     level: LogLevel,
     message: string,
-    fields?: Record<string, unknown>
+    fields?: Record<string, unknown>,
   ): void {
     // Check log level
-    if (
-      LOG_LEVELS[level] < LOG_LEVELS[this.config.level || "info"]
-    ) {
+    if (LOG_LEVELS[level] < LOG_LEVELS[this.config.level || "info"]) {
       return;
     }
 
@@ -214,7 +212,7 @@ export class Logger {
    * Redact sensitive information from fields.
    */
   private redactSensitiveData(
-    obj: Record<string, unknown>
+    obj: Record<string, unknown>,
   ): Record<string, unknown> {
     const result = { ...obj };
 
@@ -223,7 +221,7 @@ export class Logger {
         // Check key names for sensitive patterns
         if (
           /password|token|secret|credential|key|authorization|credit|card|cvv|ssn|api_key/i.test(
-            key
+            key,
           )
         ) {
           result[key] = "[REDACTED]";
@@ -239,7 +237,9 @@ export class Logger {
         }
         result[key] = redacted;
       } else if (typeof value === "object" && value !== null) {
-        result[key] = this.redactSensitiveData(value as Record<string, unknown>);
+        result[key] = this.redactSensitiveData(
+          value as Record<string, unknown>,
+        );
       }
     }
 
@@ -299,7 +299,7 @@ export class Logger {
  */
 export function createLogger(
   service: string,
-  config?: Partial<LoggerConfig>
+  config?: Partial<LoggerConfig>,
 ): Logger {
   return new Logger({
     service,

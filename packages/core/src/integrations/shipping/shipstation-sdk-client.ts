@@ -111,7 +111,7 @@ interface RetryOptions {
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   options: RetryOptions,
-  isRetryable: (error: unknown, status?: number) => boolean = () => true
+  isRetryable: (error: unknown, status?: number) => boolean = () => true,
 ): Promise<T> {
   let lastError: unknown;
 
@@ -132,7 +132,7 @@ async function retryWithBackoff<T>(
       if (shouldRetry) {
         const delayMs = Math.min(
           options.maxDelayMs,
-          options.baseDelayMs * Math.pow(2, attempt)
+          options.baseDelayMs * Math.pow(2, attempt),
         );
         await new Promise((resolve) => setTimeout(resolve, delayMs));
       } else {
@@ -158,26 +158,24 @@ function mapSSError(error: unknown): Error {
       switch (status) {
         case 400:
           return new Error(
-            `ShipStation API Error (400 Bad Request): ${error.message}`
+            `ShipStation API Error (400 Bad Request): ${error.message}`,
           );
         case 401:
           return new Error(
-            "ShipStation Authentication failed: Invalid API credentials"
+            "ShipStation Authentication failed: Invalid API credentials",
           );
         case 403:
           return new Error(
-            "ShipStation Access denied: Insufficient permissions"
+            "ShipStation Access denied: Insufficient permissions",
           );
         case 404:
           return new Error("ShipStation Resource not found");
         case 429:
           return new Error(
-            "ShipStation Rate limit exceeded: Please retry after delay"
+            "ShipStation Rate limit exceeded: Please retry after delay",
           );
         case 500:
-          return new Error(
-            "ShipStation API Server error: Please retry later"
-          );
+          return new Error("ShipStation API Server error: Please retry later");
         case 502:
         case 503:
         case 504:
@@ -229,7 +227,7 @@ export class ShipStationSDKClient {
       this.oauthToken = config.oauthToken;
     } else {
       throw new Error(
-        "ShipStation SDK requires either (apiKey + apiSecret) or oauthToken"
+        "ShipStation SDK requires either (apiKey + apiSecret) or oauthToken",
       );
     }
   }
@@ -244,7 +242,7 @@ export class ShipStationSDKClient {
       body?: unknown;
       query?: Record<string, string | number | boolean>;
       headers?: Record<string, string>;
-    } = {}
+    } = {},
   ): Promise<{ data: T; headers: Record<string, string> }> {
     return retryWithBackoff(
       async () => {
@@ -318,7 +316,7 @@ export class ShipStationSDKClient {
         // Retry on network errors
         if (error instanceof TypeError) return true;
         return false;
-      }
+      },
     ).catch((error) => {
       throw mapSSError(error);
     });
@@ -333,12 +331,12 @@ export class ShipStationSDKClient {
    * @returns Paginated list of orders
    */
   async listOrders(
-    params?: Record<string, string | number | boolean>
+    params?: Record<string, string | number | boolean>,
   ): Promise<SSPaginatedResponse<SSOrder>> {
     const { data } = await this.request<SSPaginatedResponse<SSOrder>>(
       "GET",
       "/orders",
-      { query: params }
+      { query: params },
     );
     return data;
   }
@@ -366,7 +364,7 @@ export class ShipStationSDKClient {
    */
   async updateOrder(
     orderId: string,
-    updates: Partial<SSCreateOrderRequest>
+    updates: Partial<SSCreateOrderRequest>,
   ): Promise<SSOrder> {
     const { data } = await this.request<SSOrder>("PUT", `/orders/${orderId}`, {
       body: updates,
@@ -414,7 +412,7 @@ export class ShipStationSDKClient {
   async getRates(shipmentId: string): Promise<SSRate[]> {
     const { data } = await this.request<{ rates: SSRate[] }>(
       "GET",
-      `/shipments/${shipmentId}/rates`
+      `/shipments/${shipmentId}/rates`,
     );
     return data.rates;
   }
@@ -452,7 +450,7 @@ export class ShipStationSDKClient {
   async listCarriers(): Promise<SSCarrier[]> {
     const { data } = await this.request<{ carriers: SSCarrier[] }>(
       "GET",
-      "/carriers"
+      "/carriers",
     );
     return data.carriers;
   }
@@ -463,7 +461,7 @@ export class ShipStationSDKClient {
   async listServices(carrierId: string): Promise<SSService[]> {
     const { data } = await this.request<{ services: SSService[] }>(
       "GET",
-      `/carriers/${carrierId}/services`
+      `/carriers/${carrierId}/services`,
     );
     return data.services;
   }
@@ -474,7 +472,7 @@ export class ShipStationSDKClient {
   async listPackages(carrierId: string): Promise<SSPackage[]> {
     const { data } = await this.request<{ packages: SSPackage[] }>(
       "GET",
-      `/carriers/${carrierId}/packages`
+      `/carriers/${carrierId}/packages`,
     );
     return data.packages;
   }
@@ -487,7 +485,7 @@ export class ShipStationSDKClient {
   async listWarehouses(): Promise<SSWarehouse[]> {
     const { data } = await this.request<{ warehouses: SSWarehouse[] }>(
       "GET",
-      "/warehouses"
+      "/warehouses",
     );
     return data.warehouses;
   }
@@ -495,7 +493,9 @@ export class ShipStationSDKClient {
   /**
    * Create a new warehouse
    */
-  async createWarehouse(request: SSCreateWarehouseRequest): Promise<SSWarehouse> {
+  async createWarehouse(
+    request: SSCreateWarehouseRequest,
+  ): Promise<SSWarehouse> {
     const { data } = await this.request<SSWarehouse>("POST", "/warehouses", {
       body: request,
     });
@@ -510,7 +510,7 @@ export class ShipStationSDKClient {
   async listStores(): Promise<SSStore[]> {
     const { data } = await this.request<{ stores: SSStore[] }>(
       "GET",
-      "/stores"
+      "/stores",
     );
     return data.stores;
   }
@@ -528,12 +528,12 @@ export class ShipStationSDKClient {
    * List all products
    */
   async listProducts(
-    params?: Record<string, string | number | boolean>
+    params?: Record<string, string | number | boolean>,
   ): Promise<SSPaginatedResponse<SSProduct>> {
     const { data } = await this.request<SSPaginatedResponse<SSProduct>>(
       "GET",
       "/products",
-      { query: params }
+      { query: params },
     );
     return data;
   }
@@ -544,7 +544,7 @@ export class ShipStationSDKClient {
   async getProduct(productId: string): Promise<SSProduct> {
     const { data } = await this.request<SSProduct>(
       "GET",
-      `/products/${productId}`
+      `/products/${productId}`,
     );
     return data;
   }
@@ -554,14 +554,14 @@ export class ShipStationSDKClient {
    */
   async updateProduct(
     productId: string,
-    updates: SSUpdateProductRequest
+    updates: SSUpdateProductRequest,
   ): Promise<SSProduct> {
     const { data } = await this.request<SSProduct>(
       "PUT",
       `/products/${productId}`,
       {
         body: updates,
-      }
+      },
     );
     return data;
   }
@@ -572,14 +572,14 @@ export class ShipStationSDKClient {
    * Subscribe to a webhook event
    */
   async subscribeWebhook(
-    request: SSSubscribeWebhookRequest
+    request: SSSubscribeWebhookRequest,
   ): Promise<SSWebhookSubscription> {
     const { data } = await this.request<SSWebhookSubscription>(
       "POST",
       "/webhooks",
       {
         body: request,
-      }
+      },
     );
     return data;
   }
@@ -597,7 +597,7 @@ export class ShipStationSDKClient {
   async listWebhooks(): Promise<SSWebhookSubscription[]> {
     const { data } = await this.request<{ webhooks: SSWebhookSubscription[] }>(
       "GET",
-      "/webhooks"
+      "/webhooks",
     );
     return data.webhooks;
   }
@@ -620,7 +620,7 @@ export class ShipStationSDKClient {
   async getBatchStatus(batchId: string): Promise<SSBatchStatus> {
     const { data } = await this.request<SSBatchStatus>(
       "GET",
-      `/batches/${batchId}`
+      `/batches/${batchId}`,
     );
     return data;
   }

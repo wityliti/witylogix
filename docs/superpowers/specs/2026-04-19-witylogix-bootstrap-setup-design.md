@@ -15,12 +15,12 @@ This document is the **design gate** before application implementation. **Golden
 
 ## 2. Goals
 
-| ID | Goal |
-|----|------|
-| G1 | After deploy, an operator reaches a **working dashboard** without reading dozens of env keys. |
-| G2 | **Secrets** (JWT, provider keys) are captured **once**, stored safely, and never echoed in full to the browser after save. |
-| G3 | **Self-host** and **managed** share the **same application behavior**; differ only in who provisions Postgres/Redis and secrets. |
-| G4 | Setup path is **hard to abuse** (no open reinstall on public internet without bootstrap token or equivalent). |
+| ID  | Goal                                                                                                                             |
+| --- | -------------------------------------------------------------------------------------------------------------------------------- |
+| G1  | After deploy, an operator reaches a **working dashboard** without reading dozens of env keys.                                    |
+| G2  | **Secrets** (JWT, provider keys) are captured **once**, stored safely, and never echoed in full to the browser after save.       |
+| G3  | **Self-host** and **managed** share the **same application behavior**; differ only in who provisions Postgres/Redis and secrets. |
+| G4  | Setup path is **hard to abuse** (no open reinstall on public internet without bootstrap token or equivalent).                    |
 
 ## 3. Non-goals (v1)
 
@@ -101,12 +101,12 @@ Design assumes **B** unless timeline forces **A**.
 
 ## 10. Phased delivery
 
-| Phase | Deliverable | Owner |
-|-------|-------------|--------|
-| P0 | Operator checklist + CI env validation | Eng + docs |
-| P1 | DevOps: golden-path compose +/or Railway template README | DevOps |
-| P2 | Setup UI + bootstrap API + security model | Eng |
-| P3 | Managed funnel polish (hide complexity) | Product + Eng |
+| Phase | Deliverable                                              | Owner         |
+| ----- | -------------------------------------------------------- | ------------- |
+| P0    | Operator checklist + CI env validation                   | Eng + docs    |
+| P1    | DevOps: golden-path compose +/or Railway template README | DevOps        |
+| P2    | Setup UI + bootstrap API + security model                | Eng           |
+| P3    | Managed funnel polish (hide complexity)                  | Product + Eng |
 
 ## 11. Dependencies on other work
 
@@ -126,4 +126,4 @@ Design assumes **B** unless timeline forces **A**.
 
 ---
 
-*Self-review: No “TBD” left without §12; architecture consistent with `apps/api/src/lib/config.ts` and plan appendix.*
+_Self-review: No “TBD” left without §12; architecture consistent with `apps/api/src/lib/config.ts` and plan appendix._

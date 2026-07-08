@@ -78,7 +78,9 @@ export class JwtService {
    * @param payload User/session data
    * @returns Signed JWT token
    */
-  generateAccessToken(payload: Omit<AccessTokenPayload, "iat" | "exp" | "sub" | "aud" | "iss">): string {
+  generateAccessToken(
+    payload: Omit<AccessTokenPayload, "iat" | "exp" | "sub" | "aud" | "iss">,
+  ): string {
     const now = Math.floor(Date.now() / 1000);
     const token: AccessTokenPayload = {
       ...payload,
@@ -156,7 +158,8 @@ export class JwtService {
     } catch (error) {
       return {
         valid: false,
-        error: error instanceof Error ? error.message : "Token verification failed",
+        error:
+          error instanceof Error ? error.message : "Token verification failed",
       };
     }
   }
@@ -198,7 +201,8 @@ export class JwtService {
     } catch (error) {
       return {
         valid: false,
-        error: error instanceof Error ? error.message : "Token verification failed",
+        error:
+          error instanceof Error ? error.message : "Token verification failed",
       };
     }
   }
@@ -216,7 +220,10 @@ export class JwtService {
         const payload = JSON.parse(this.base64UrlDecode(parts[1]));
         const jti = payload.jti || `${payload.exp}-${token.substring(0, 8)}`;
         this.blacklist.add(jti);
-        this.blacklistTtl.set(jti, payload.exp || Math.floor(Date.now() / 1000) + 3600);
+        this.blacklistTtl.set(
+          jti,
+          payload.exp || Math.floor(Date.now() / 1000) + 3600,
+        );
       } else {
         // Mark raw token as revoked
         this.blacklist.add(token);
@@ -341,7 +348,9 @@ export class JwtService {
       if (error instanceof TokenExpiredError) {
         throw error;
       }
-      throw new Error(`Failed to decode token: ${error instanceof Error ? error.message : "Unknown error"}`);
+      throw new Error(
+        `Failed to decode token: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -378,7 +387,11 @@ export class JwtService {
    */
   private base64UrlEncode(data: string): string {
     const buffer = Buffer.from(data, "utf-8");
-    return buffer.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+    return buffer
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=/g, "");
   }
 
   /**
@@ -397,15 +410,18 @@ export class JwtService {
    */
   private startBlacklistCleanup(): void {
     // Run cleanup every hour
-    setInterval(() => {
-      const now = Math.floor(Date.now() / 1000);
-      for (const [jti, expiry] of this.blacklistTtl.entries()) {
-        if (expiry < now) {
-          this.blacklist.delete(jti);
-          this.blacklistTtl.delete(jti);
+    setInterval(
+      () => {
+        const now = Math.floor(Date.now() / 1000);
+        for (const [jti, expiry] of this.blacklistTtl.entries()) {
+          if (expiry < now) {
+            this.blacklist.delete(jti);
+            this.blacklistTtl.delete(jti);
+          }
         }
-      }
-    }, 60 * 60 * 1000);
+      },
+      60 * 60 * 1000,
+    );
   }
 }
 

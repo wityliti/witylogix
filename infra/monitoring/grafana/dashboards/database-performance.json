@@ -16,14 +16,14 @@
           "type": "query",
           "datasource": "Prometheus",
           "query": "label_values(pg_stat_activity, environment)",
-          "current": {"value": "production", "text": "production"}
+          "current": { "value": "production", "text": "production" }
         },
         {
           "name": "database",
           "type": "query",
           "datasource": "Prometheus",
           "query": "label_values(pg_stat_activity{environment=\"$environment\"}, datname)",
-          "current": {"value": "witylogix", "text": "witylogix"}
+          "current": { "value": "witylogix", "text": "witylogix" }
         }
       ]
     },
@@ -38,8 +38,8 @@
             "expr": "sum(pg_stat_activity{environment=\"$environment\",datname=\"$database\"})"
           }
         ],
-        "gridPos": {"h": 6, "w": 4, "x": 0, "y": 0},
-        "options": {"graphMode": "area", "colorMode": "value"}
+        "gridPos": { "h": 6, "w": 4, "x": 0, "y": 0 },
+        "options": { "graphMode": "area", "colorMode": "value" }
       },
       {
         "id": 2,
@@ -51,16 +51,20 @@
             "expr": "100 * (pg_stat_activity{environment=\"$environment\",datname=\"$database\"} / pg_settings_max_connections{environment=\"$environment\"})"
           }
         ],
-        "gridPos": {"h": 6, "w": 4, "x": 4, "y": 0},
-        "options": {"orientation": "auto", "showThresholdLabels": false, "showThresholdMarkers": true},
+        "gridPos": { "h": 6, "w": 4, "x": 4, "y": 0 },
+        "options": {
+          "orientation": "auto",
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
         "fieldConfig": {
           "defaults": {
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"color": "green", "value": null},
-                {"color": "yellow", "value": 80},
-                {"color": "red", "value": 95}
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 80 },
+                { "color": "red", "value": 95 }
               ]
             }
           }
@@ -85,8 +89,8 @@
             "legendFormat": "P99"
           }
         ],
-        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 6},
-        "yaxes": [{"label": "seconds"}]
+        "gridPos": { "h": 8, "w": 8, "x": 0, "y": 6 },
+        "yaxes": [{ "label": "seconds" }]
       },
       {
         "id": 4,
@@ -98,8 +102,8 @@
             "expr": "increase(pg_slow_queries_total{environment=\"$environment\",datname=\"$database\"}[5m])"
           }
         ],
-        "gridPos": {"h": 8, "w": 4, "x": 8, "y": 6},
-        "options": {"graphMode": "area"}
+        "gridPos": { "h": 8, "w": 4, "x": 8, "y": 6 },
+        "options": { "graphMode": "area" }
       },
       {
         "id": 5,
@@ -111,15 +115,15 @@
             "expr": "100 * sum(pg_cache_hits{environment=\"$environment\",datname=\"$database\"}) / (sum(pg_cache_hits{environment=\"$environment\",datname=\"$database\"}) + sum(pg_cache_misses{environment=\"$environment\",datname=\"$database\"}))"
           }
         ],
-        "gridPos": {"h": 8, "w": 4, "x": 12, "y": 6},
+        "gridPos": { "h": 8, "w": 4, "x": 12, "y": 6 },
         "fieldConfig": {
           "defaults": {
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"color": "red", "value": null},
-                {"color": "yellow", "value": 80},
-                {"color": "green", "value": 95}
+                { "color": "red", "value": null },
+                { "color": "yellow", "value": 80 },
+                { "color": "green", "value": 95 }
               ]
             }
           }
@@ -135,8 +139,8 @@
             "expr": "increase(pg_deadlocks_total{environment=\"$environment\",datname=\"$database\"}[1h])"
           }
         ],
-        "gridPos": {"h": 8, "w": 4, "x": 16, "y": 6},
-        "options": {"colorMode": "background"}
+        "gridPos": { "h": 8, "w": 4, "x": 16, "y": 6 },
+        "options": { "colorMode": "background" }
       },
       {
         "id": 7,
@@ -148,8 +152,8 @@
             "expr": "pg_replication_lag_seconds{environment=\"$environment\",datname=\"$database\"}"
           }
         ],
-        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 14},
-        "yaxes": [{"label": "seconds"}]
+        "gridPos": { "h": 8, "w": 8, "x": 0, "y": 14 },
+        "yaxes": [{ "label": "seconds" }]
       },
       {
         "id": 8,
@@ -162,7 +166,7 @@
             "format": "table"
           }
         ],
-        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 14}
+        "gridPos": { "h": 8, "w": 8, "x": 8, "y": 14 }
       },
       {
         "id": 9,
@@ -175,7 +179,7 @@
             "format": "table"
           }
         ],
-        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 14}
+        "gridPos": { "h": 8, "w": 8, "x": 16, "y": 14 }
       }
     ],
     "alerts": [

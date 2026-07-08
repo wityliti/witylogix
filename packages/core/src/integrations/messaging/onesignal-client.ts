@@ -78,7 +78,7 @@ export class OneSignalClient extends MessagingAdapter {
       await this.makeRequest("GET", "/apps");
     } catch (error) {
       throw new Error(
-        `OneSignal validation failed: ${error instanceof Error ? error.message : String(error)}`
+        `OneSignal validation failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -92,13 +92,16 @@ export class OneSignalClient extends MessagingAdapter {
         headings: { en: "SMS" },
         contents: { en: message.body },
         include_phone_numbers: [message.to],
-        ...(message.scheduleFor && { send_after: message.scheduleFor.toISOString() }),
+        ...(message.scheduleFor && {
+          send_after: message.scheduleFor.toISOString(),
+        }),
       };
 
-      const response = (await this.makeRequest("POST", "/notifications", payload)) as Record<
-        string,
-        unknown
-      >;
+      const response = (await this.makeRequest(
+        "POST",
+        "/notifications",
+        payload,
+      )) as Record<string, unknown>;
       const responseBody = response.body as Record<string, unknown> | undefined;
 
       if (responseBody?.success) {
@@ -124,7 +127,9 @@ export class OneSignalClient extends MessagingAdapter {
    */
   async sendPush(notification: PushNotification): Promise<SendResult> {
     return this.executeWithProtections(async () => {
-      const to = Array.isArray(notification.to) ? notification.to : [notification.to];
+      const to = Array.isArray(notification.to)
+        ? notification.to
+        : [notification.to];
       const isSegment = notification.tags?.includes("segment");
 
       const payload: Record<string, unknown> = {
@@ -133,9 +138,14 @@ export class OneSignalClient extends MessagingAdapter {
         ...(notification.icon && { big_picture: notification.icon }),
         ...(notification.image && { large_icon: notification.image }),
         ...(notification.sound && { ios_sound: notification.sound }),
-        ...(notification.badge && { ios_badgeType: "Increase", ios_badgeCount: notification.badge }),
+        ...(notification.badge && {
+          ios_badgeType: "Increase",
+          ios_badgeCount: notification.badge,
+        }),
         ...(notification.data && { data: notification.data }),
-        ...(notification.scheduleFor && { send_after: notification.scheduleFor.toISOString() }),
+        ...(notification.scheduleFor && {
+          send_after: notification.scheduleFor.toISOString(),
+        }),
       };
 
       if (isSegment) {
@@ -144,10 +154,11 @@ export class OneSignalClient extends MessagingAdapter {
         payload.include_external_user_ids = to;
       }
 
-      const response = (await this.makeRequest("POST", "/notifications", payload)) as Record<
-        string,
-        unknown
-      >;
+      const response = (await this.makeRequest(
+        "POST",
+        "/notifications",
+        payload,
+      )) as Record<string, unknown>;
       const responseBody = response.body as Record<string, unknown> | undefined;
 
       if (responseBody?.id) {
@@ -185,17 +196,26 @@ export class OneSignalClient extends MessagingAdapter {
           ...(message.backgroundColor && { bg_color: message.backgroundColor }),
         },
         ...(message.segment && { included_segments: [message.segment] }),
-        ...(message.targetUserId && { include_external_user_ids: [message.targetUserId] }),
-        ...(message.scheduleFor && { send_after: message.scheduleFor.toISOString() }),
-        ...(message.expiresAt && { ttl: Math.floor((message.expiresAt.getTime() - Date.now()) / 1000) }),
+        ...(message.targetUserId && {
+          include_external_user_ids: [message.targetUserId],
+        }),
+        ...(message.scheduleFor && {
+          send_after: message.scheduleFor.toISOString(),
+        }),
+        ...(message.expiresAt && {
+          ttl: Math.floor((message.expiresAt.getTime() - Date.now()) / 1000),
+        }),
       };
 
-      const response = (await this.makeRequest("POST", "/in-app-messages", payload)) as Record<
-        string,
-        unknown
-      >;
+      const response = (await this.makeRequest(
+        "POST",
+        "/in-app-messages",
+        payload,
+      )) as Record<string, unknown>;
 
-      const respBodyInApp = response.body as Record<string, unknown> | undefined;
+      const respBodyInApp = response.body as
+        | Record<string, unknown>
+        | undefined;
       if (respBodyInApp?.id) {
         return {
           success: true,
@@ -219,7 +239,7 @@ export class OneSignalClient extends MessagingAdapter {
   async sendFromTemplate(
     templateId: string,
     recipientIds: string[],
-    substitutions?: Record<string, string>
+    substitutions?: Record<string, string>,
   ): Promise<SendResult> {
     return this.executeWithProtections(async () => {
       const payload = {
@@ -228,12 +248,15 @@ export class OneSignalClient extends MessagingAdapter {
         ...(substitutions && { substitutions }),
       };
 
-      const response = (await this.makeRequest("POST", "/notifications", payload)) as Record<
-        string,
-        unknown
-      >;
+      const response = (await this.makeRequest(
+        "POST",
+        "/notifications",
+        payload,
+      )) as Record<string, unknown>;
 
-      const respBodyTemplate = response.body as Record<string, unknown> | undefined;
+      const respBodyTemplate = response.body as
+        | Record<string, unknown>
+        | undefined;
       if (respBodyTemplate?.id) {
         return {
           success: true,
@@ -259,7 +282,7 @@ export class OneSignalClient extends MessagingAdapter {
     variant1Title: string,
     variant2Title: string,
     segmentId: string,
-    winnerCriteria: "opens" | "clicks" = "opens"
+    winnerCriteria: "opens" | "clicks" = "opens",
   ): Promise<SendResult> {
     return this.executeWithProtections(async () => {
       const payload = {
@@ -276,13 +299,16 @@ export class OneSignalClient extends MessagingAdapter {
         ],
         included_segments: [segmentId],
         is_draft: true,
-        ...(winnerCriteria && { ab_result_based_on_segment_id: winnerCriteria }),
+        ...(winnerCriteria && {
+          ab_result_based_on_segment_id: winnerCriteria,
+        }),
       };
 
-      const response = (await this.makeRequest("POST", "/notifications", payload)) as Record<
-        string,
-        unknown
-      >;
+      const response = (await this.makeRequest(
+        "POST",
+        "/notifications",
+        payload,
+      )) as Record<string, unknown>;
 
       const respBodyAB = response.body as Record<string, unknown> | undefined;
       if (respBodyAB?.id) {
@@ -305,22 +331,26 @@ export class OneSignalClient extends MessagingAdapter {
   /**
    * Create a segment.
    */
-  async createSegment(name: string, filters?: Array<Record<string, unknown>>): Promise<OneSignalSegment> {
+  async createSegment(
+    name: string,
+    filters?: Array<Record<string, unknown>>,
+  ): Promise<OneSignalSegment> {
     return this.executeWithProtections(async () => {
       const payload = {
         name,
         ...(filters && { filters }),
       };
 
-      const response = (await this.makeRequest("POST", "/segments", payload)) as Record<
-        string,
-        unknown
-      >;
+      const response = (await this.makeRequest(
+        "POST",
+        "/segments",
+        payload,
+      )) as Record<string, unknown>;
 
       return {
         id: String(response.id),
         name,
-        filters: (filters as OneSignalSegment['filters']) || [],
+        filters: (filters as OneSignalSegment["filters"]) || [],
         createdAt: new Date(),
       };
     });
@@ -331,15 +361,15 @@ export class OneSignalClient extends MessagingAdapter {
    */
   async getSegment(segmentId: string): Promise<OneSignalSegment> {
     return this.executeWithProtections(async () => {
-      const response = (await this.makeRequest("GET", `/segments/${segmentId}`)) as Record<
-        string,
-        unknown
-      >;
+      const response = (await this.makeRequest(
+        "GET",
+        `/segments/${segmentId}`,
+      )) as Record<string, unknown>;
 
       return {
         id: String(response.id),
         name: String(response.name),
-        filters: (response.filters as OneSignalSegment['filters']) || [],
+        filters: (response.filters as OneSignalSegment["filters"]) || [],
         createdAt: new Date(String(response.created_at)),
       };
     });
@@ -357,7 +387,10 @@ export class OneSignalClient extends MessagingAdapter {
   /**
    * Create or update a device.
    */
-  async upsertDevice(userId: string, deviceData: Partial<OneSignalDevice>): Promise<OneSignalDevice> {
+  async upsertDevice(
+    userId: string,
+    deviceData: Partial<OneSignalDevice>,
+  ): Promise<OneSignalDevice> {
     return this.executeWithProtections(async () => {
       const payload = {
         external_user_id: userId,
@@ -383,7 +416,10 @@ export class OneSignalClient extends MessagingAdapter {
   /**
    * Add tags to a device.
    */
-  async addDeviceTags(userId: string, tags: Record<string, string>): Promise<void> {
+  async addDeviceTags(
+    userId: string,
+    tags: Record<string, string>,
+  ): Promise<void> {
     return this.executeWithProtections(async () => {
       const payload = {
         properties: {
@@ -407,22 +443,28 @@ export class OneSignalClient extends MessagingAdapter {
   /**
    * Get notification.
    */
-  async getNotification(notificationId: string): Promise<Record<string, unknown>> {
+  async getNotification(
+    notificationId: string,
+  ): Promise<Record<string, unknown>> {
     return this.executeWithProtections(async () => {
-      return this.makeRequest("GET", `/notifications/${notificationId}`) as Promise<
-        Record<string, unknown>
-      >;
+      return this.makeRequest(
+        "GET",
+        `/notifications/${notificationId}`,
+      ) as Promise<Record<string, unknown>>;
     });
   }
 
   /**
    * Get notification analytics.
    */
-  async getNotificationAnalytics(notificationId: string): Promise<Record<string, unknown>> {
+  async getNotificationAnalytics(
+    notificationId: string,
+  ): Promise<Record<string, unknown>> {
     return this.executeWithProtections(async () => {
-      return this.makeRequest("GET", `/notifications/${notificationId}/analytics`) as Promise<
-        Record<string, unknown>
-      >;
+      return this.makeRequest(
+        "GET",
+        `/notifications/${notificationId}/analytics`,
+      ) as Promise<Record<string, unknown>>;
     });
   }
 
@@ -432,7 +474,11 @@ export class OneSignalClient extends MessagingAdapter {
   async cancelNotification(notificationId: string): Promise<void> {
     return this.executeWithProtections(async () => {
       const payload = { cancelled: true };
-      await this.makeRequest("PUT", `/notifications/${notificationId}`, payload);
+      await this.makeRequest(
+        "PUT",
+        `/notifications/${notificationId}`,
+        payload,
+      );
     });
   }
 
@@ -458,7 +504,7 @@ export class OneSignalClient extends MessagingAdapter {
   private async makeRequest(
     method: string,
     path: string,
-    body?: Record<string, unknown>
+    body?: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
     const url = new URL(path, this.baseUrl);
 
@@ -483,7 +529,9 @@ export class OneSignalClient extends MessagingAdapter {
     const response = await fetch(url.toString(), options);
 
     if (!response.ok) {
-      throw new Error(`OneSignal API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `OneSignal API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     const contentType = response.headers.get("content-type");

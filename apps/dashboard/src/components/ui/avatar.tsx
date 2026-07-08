@@ -33,9 +33,21 @@ const sizeClasses: Record<AvatarSize, string> = {
   lg: "w-14 h-14 text-base",
 };
 
-const Avatar = ({ size = "md", className, children, name, src, alt }: AvatarProps) => {
+const Avatar = ({
+  size = "md",
+  className,
+  children,
+  name,
+  src,
+  alt,
+}: AvatarProps) => {
   const initials = name
-    ? name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase()
+    ? name
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
     : null;
 
   return (
@@ -46,10 +58,16 @@ const Avatar = ({ size = "md", className, children, name, src, alt }: AvatarProp
         "bg-wl-bg-elevated",
         "border border-wl-border-default",
         sizeClasses[size],
-        className
+        className,
       )}
     >
-      {src && <img src={src} alt={alt ?? name ?? ''} className="w-full h-full object-cover" />}
+      {src && (
+        <img
+          src={src}
+          alt={alt ?? name ?? ""}
+          className="w-full h-full object-cover"
+        />
+      )}
       {!src && initials && (
         <span className="text-wl-text-primary font-medium">{initials}</span>
       )}
@@ -72,19 +90,12 @@ const AvatarImage = ({ src, alt, className }: AvatarImageProps) => {
       alt={alt}
       onError={() => setHasError(true)}
       onLoad={() => setIsLoaded(true)}
-      className={cn(
-        "w-full h-full object-cover",
-        className
-      )}
+      className={cn("w-full h-full object-cover", className)}
     />
   );
 };
 
-const AvatarFallback = ({
-  name,
-  children,
-  className
-}: AvatarFallbackProps) => {
+const AvatarFallback = ({ name, children, className }: AvatarFallbackProps) => {
   const getInitials = (nameStr: string) => {
     return nameStr
       .split(" ")
@@ -100,7 +111,7 @@ const AvatarFallback = ({
         "w-full h-full flex items-center justify-center",
         "bg-gradient-to-br from-wl-primary-600 to-wl-primary-700",
         "text-wl-text-inverse font-semibold",
-        className
+        className,
       )}
     >
       {children || (name ? getInitials(name) : "?")}

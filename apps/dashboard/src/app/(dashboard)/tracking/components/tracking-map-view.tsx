@@ -1,16 +1,24 @@
-'use client';
+"use client";
 /**
  * TrackingMapView — live delivery map with orders + drivers.
  * Rendered client-side only (dynamic import with ssr:false).
  */
 
-import { useState } from 'react';
-import { WLMap } from '@/components/map/wl-map';
-import { OrderLayer, type OrderPin, type OrderPinStatus } from '@/components/map/order-layer';
-import { DriverLayer, type DriverMarker, type DriverStatus } from '@/components/map/driver-layer';
-import { useFitBounds } from '@/components/map/use-fit-bounds';
-import { useWLMap } from '@/components/map/wl-map-context';
-import { Badge } from '@/components/ui/badge';
+import { useState } from "react";
+import { WLMap } from "@/components/map/wl-map";
+import {
+  OrderLayer,
+  type OrderPin,
+  type OrderPinStatus,
+} from "@/components/map/order-layer";
+import {
+  DriverLayer,
+  type DriverMarker,
+  type DriverStatus,
+} from "@/components/map/driver-layer";
+import { useFitBounds } from "@/components/map/use-fit-bounds";
+import { useWLMap } from "@/components/map/wl-map-context";
+import { Badge } from "@/components/ui/badge";
 
 export interface TrackingOrder {
   id: string;
@@ -40,40 +48,40 @@ interface Props {
 }
 
 const ORDER_STATUS_MAP: Record<string, OrderPinStatus> = {
-  pending: 'pending',
-  confirmed: 'pending',
-  assigned: 'assigned',
-  in_transit: 'in_transit',
-  out_for_delivery: 'in_transit',
-  delayed: 'delayed',
-  delivered: 'in_transit',
-  cancelled: 'delayed',
+  pending: "pending",
+  confirmed: "pending",
+  assigned: "assigned",
+  in_transit: "in_transit",
+  out_for_delivery: "in_transit",
+  delayed: "delayed",
+  delivered: "in_transit",
+  cancelled: "delayed",
 };
 
 const DRIVER_STATUS_MAP: Record<string, DriverStatus> = {
-  AVAILABLE: 'available',
-  available: 'available',
-  ON_ROUTE: 'busy',
-  busy: 'busy',
-  delivering: 'busy',
-  ON_BREAK: 'break',
-  break: 'break',
-  OFFLINE: 'offline',
-  offline: 'offline',
+  AVAILABLE: "available",
+  available: "available",
+  ON_ROUTE: "busy",
+  busy: "busy",
+  delivering: "busy",
+  ON_BREAK: "break",
+  break: "break",
+  OFFLINE: "offline",
+  offline: "offline",
 };
 
 const LEGEND_ORDERS = [
-  { label: 'Pending / Confirmed', color: '#60a5fa' },
-  { label: 'Assigned', color: '#f5a623' },
-  { label: 'In Transit', color: '#10b981' },
-  { label: 'Delayed / Cancelled', color: '#ef4444' },
+  { label: "Pending / Confirmed", color: "#60a5fa" },
+  { label: "Assigned", color: "#f5a623" },
+  { label: "In Transit", color: "#10b981" },
+  { label: "Delayed / Cancelled", color: "#ef4444" },
 ];
 
 const LEGEND_DRIVERS = [
-  { label: 'Available', color: '#10b981' },
-  { label: 'En Route', color: '#f59e0b' },
-  { label: 'On Break', color: '#a78bfa' },
-  { label: 'Offline', color: '#6b7280' },
+  { label: "Available", color: "#10b981" },
+  { label: "En Route", color: "#f59e0b" },
+  { label: "On Break", color: "#a78bfa" },
+  { label: "Offline", color: "#6b7280" },
 ];
 
 function MapLayers({
@@ -101,9 +109,7 @@ function MapLayers({
         selectedOrderId={selectedOrderId}
         onOrderClick={onOrderClick}
       />
-      {driverMarkers.length > 0 && (
-        <DriverLayer drivers={driverMarkers} />
-      )}
+      {driverMarkers.length > 0 && <DriverLayer drivers={driverMarkers} />}
     </>
   );
 }
@@ -124,8 +130,8 @@ export default function TrackingMapView({
       customerName: o.customerName,
       address: [o.deliveryAddress?.street, o.deliveryAddress?.city]
         .filter(Boolean)
-        .join(', '),
-      status: ORDER_STATUS_MAP[o.status] ?? 'pending',
+        .join(", "),
+      status: ORDER_STATUS_MAP[o.status] ?? "pending",
       lat: o.deliveryLat as number,
       lng: o.deliveryLng as number,
     }));
@@ -135,7 +141,7 @@ export default function TrackingMapView({
     .map((d) => ({
       id: d.id,
       name: d.name,
-      status: DRIVER_STATUS_MAP[d.status] ?? 'offline',
+      status: DRIVER_STATUS_MAP[d.status] ?? "offline",
       lat: d.lat as number,
       lng: d.lng as number,
       heading: d.heading,
@@ -164,8 +170,8 @@ export default function TrackingMapView({
             onClick={() => setShowDrivers((v) => !v)}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium border transition-all ${
               showDrivers
-                ? 'bg-emerald-600/80 border-emerald-500/50 text-white'
-                : 'bg-black/60 border-white/10 text-white/60'
+                ? "bg-emerald-600/80 border-emerald-500/50 text-white"
+                : "bg-black/60 border-white/10 text-white/60"
             }`}
           >
             {driverMarkers.length} drivers
@@ -175,19 +181,29 @@ export default function TrackingMapView({
 
       {/* Legend */}
       <div className="absolute bottom-3 left-3 z-10 bg-black/70 backdrop-blur-sm rounded-lg p-2.5 border border-white/10">
-        <p className="text-[10px] font-semibold text-white/60 uppercase mb-1.5">Orders</p>
+        <p className="text-[10px] font-semibold text-white/60 uppercase mb-1.5">
+          Orders
+        </p>
         {LEGEND_ORDERS.map((l) => (
           <div key={l.label} className="flex items-center gap-2 mb-1">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: l.color }} />
+            <div
+              className="w-2.5 h-2.5 rounded-full"
+              style={{ backgroundColor: l.color }}
+            />
             <span className="text-[10px] text-white/80">{l.label}</span>
           </div>
         ))}
         {showDrivers && drivers.length > 0 && (
           <>
-            <p className="text-[10px] font-semibold text-white/60 uppercase mt-2 mb-1.5">Drivers</p>
+            <p className="text-[10px] font-semibold text-white/60 uppercase mt-2 mb-1.5">
+              Drivers
+            </p>
             {LEGEND_DRIVERS.map((l) => (
               <div key={l.label} className="flex items-center gap-2 mb-1">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: l.color }} />
+                <div
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: l.color }}
+                />
                 <span className="text-[10px] text-white/80">{l.label}</span>
               </div>
             ))}
@@ -199,7 +215,9 @@ export default function TrackingMapView({
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-xl">
           <div className="text-center text-white">
             <p className="text-sm font-semibold mb-1">No location data</p>
-            <p className="text-xs text-white/60">Orders need delivery coordinates to appear on the map.</p>
+            <p className="text-xs text-white/60">
+              Orders need delivery coordinates to appear on the map.
+            </p>
           </div>
         </div>
       )}

@@ -87,7 +87,10 @@ function isInServiceZone(jobAddress: Address, tech: Technician): boolean {
     return true; // No zone restriction
   }
   return tech.serviceZones.some((zone) => {
-    const distance = haversineDistance(zone.coordinates[0], jobAddress.coordinates);
+    const distance = haversineDistance(
+      zone.coordinates[0],
+      jobAddress.coordinates,
+    );
     return distance <= (zone.radius || 50); // Default 50km radius
   });
 }
@@ -114,7 +117,7 @@ export class ConstraintSolver {
     tech: Technician,
     startTime: Date,
     schedule: JobSchedule,
-    slaRule: SLARule
+    slaRule: SLARule,
   ): {
     feasible: boolean;
     violations: ConstraintViolation[];
@@ -144,10 +147,11 @@ export class ConstraintSolver {
     }
 
     // 3. Availability - double-booking check
-    const endTime = new Date(startTime.getTime() + job.estimatedDuration * 60 * 1000);
+    const endTime = new Date(
+      startTime.getTime() + job.estimatedDuration * 60 * 1000,
+    );
     const isBooked = schedule.slots.some(
-      (slot) =>
-        !(endTime <= slot.startTime || startTime >= slot.endTime)
+      (slot) => !(endTime <= slot.startTime || startTime >= slot.endTime),
     );
     if (isBooked) {
       violations.push({
@@ -160,7 +164,10 @@ export class ConstraintSolver {
     }
 
     // 4. Working hours check
-    if (!isWithinWorkingHours(startTime, tech) || !isWithinWorkingHours(endTime, tech)) {
+    if (
+      !isWithinWorkingHours(startTime, tech) ||
+      !isWithinWorkingHours(endTime, tech)
+    ) {
       violations.push({
         type: "WORKING_HOURS_VIOLATION",
         message: `Job outside technician ${tech.id}'s working hours`,
@@ -173,7 +180,9 @@ export class ConstraintSolver {
     // 5. SLA compliance
     const slaWindow = slaRule.windows.find((w) => w.priority === job.priority);
     if (slaWindow) {
-      const slaDeadline = new Date(job.createdAt.getTime() + slaWindow.completionTimeMinutes * 60 * 1000);
+      const slaDeadline = new Date(
+        job.createdAt.getTime() + slaWindow.completionTimeMinutes * 60 * 1000,
+      );
       if (endTime > slaDeadline) {
         violations.push({
           type: "SLA_VIOLATION",
@@ -198,7 +207,7 @@ export class ConstraintSolver {
     jobs: WorkOrder[],
     techs: Technician[],
     schedules: Map<string, JobSchedule>,
-    slaRules: Map<string, SLARule>
+    slaRules: Map<string, SLARule>,
   ): ConstraintViolation[] {
     const violations: ConstraintViolation[] = [];
 
@@ -219,7 +228,13 @@ export class ConstraintSolver {
       const slaRule = slaRules.get(job.slaRuleId);
 
       if (schedule && slaRule && job.scheduledStart) {
-        const result = this.canSchedule(job, tech, job.scheduledStart, schedule, slaRule);
+        const result = this.canSchedule(
+          job,
+          tech,
+          job.scheduledStart,
+          schedule,
+          slaRule,
+        );
         violations.push(...result.violations);
       }
     }
@@ -241,7 +256,7 @@ export class TimeSlotFinder {
     schedule: JobSchedule,
     technicianId: string,
     minDurationMinutes: number,
-    maxSlotsToReturn: number = 10
+    maxSlotsToReturn: number = 10,
   ): TimeSlot[] {
     const available: TimeSlot[] = [];
     const workDayStart = new Date(`${schedule.date}T08:00:00Z`);
@@ -252,11 +267,13 @@ export class TimeSlotFinder {
 
     while (current < workDayEnd && slotCount < maxSlotsToReturn) {
       // Check if slot is available (not booked)
-      const slotEnd = new Date(current.getTime() + minDurationMinutes * 60 * 1000);
+      const slotEnd = new Date(
+        current.getTime() + minDurationMinutes * 60 * 1000,
+      );
       const isAvailable = !schedule.slots.some(
         (slot) =>
           slot.type === "WORK" &&
-          !(slotEnd <= slot.startTime || current >= slot.endTime)
+          !(slotEnd <= slot.startTime || current >= slot.endTime),
       );
 
       if (isAvailable && slotEnd <= workDayEnd) {
@@ -282,7 +299,7 @@ export class TimeSlotFinder {
    */
   static findNextAvailableSlot(
     schedules: Map<string, JobSchedule>,
-    minDurationMinutes: number
+    minDurationMinutes: number,
   ): {
     technicianId: string;
     slot: TimeSlot;
@@ -293,7 +310,12 @@ export class TimeSlotFinder {
     } | null = null;
 
     for (const [techId, schedule] of schedules) {
-      const slots = this.findAvailableSlots(schedule, techId, minDurationMinutes, 1);
+      const slots = this.findAvailableSlots(
+        schedule,
+        techId,
+        minDurationMinutes,
+        1,
+      );
       if (slots.length > 0) {
         if (!earliestSlot || slots[0].startTime < earliestSlot.slot.startTime) {
           earliestSlot = {
@@ -322,7 +344,7 @@ export class BatchScheduler {
     jobs: WorkOrder[],
     techs: Technician[],
     schedules: Map<string, JobSchedule>,
-    slaRules: Map<string, SLARule>
+    slaRules: Map<string, SLARule>,
   ): SchedulingResult {
     const startTime = Date.now();
     let successCount = 0;
@@ -332,11 +354,16 @@ export class BatchScheduler {
     // Sort by priority (emergency first)
     const priorityOrder = { EMERGENCY: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
     const sortedJobs = [...jobs].sort(
-      (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]
+      (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority],
     );
 
     for (const job of sortedJobs) {
-      const bestMatch = this.findBestTechnicianForJob(job, techs, schedules, slaRules);
+      const bestMatch = this.findBestTechnicianForJob(
+        job,
+        techs,
+        schedules,
+        slaRules,
+      );
 
       if (bestMatch) {
         // Schedule the job
@@ -371,7 +398,7 @@ export class BatchScheduler {
     job: WorkOrder,
     techs: Technician[],
     schedules: Map<string, JobSchedule>,
-    slaRules: Map<string, SLARule>
+    slaRules: Map<string, SLARule>,
   ): {
     technicianId: string;
     timeSlot: TimeSlot;
@@ -389,7 +416,12 @@ export class BatchScheduler {
       if (!schedule) continue;
 
       // Find available slot
-      const slots = TimeSlotFinder.findAvailableSlots(schedule, tech.id, job.estimatedDuration, 3);
+      const slots = TimeSlotFinder.findAvailableSlots(
+        schedule,
+        tech.id,
+        job.estimatedDuration,
+        3,
+      );
       if (slots.length === 0) continue;
 
       // Use first available slot
@@ -397,7 +429,10 @@ export class BatchScheduler {
       let score = 100; // Base score
 
       // Deduct for distance (prefer closer techs)
-      const distance = haversineDistance(tech.currentLocation, job.address.coordinates);
+      const distance = haversineDistance(
+        tech.currentLocation,
+        job.address.coordinates,
+      );
       score -= Math.min(distance * 0.5, 20);
 
       // Deduct for workload (prefer less busy)
@@ -428,7 +463,11 @@ export class RecurringScheduler {
   /**
    * Generate work order instances from a recurring plan.
    */
-  static generateInstances(plan: RecurringPlan, fromDate: Date, toDate: Date): WorkOrder[] {
+  static generateInstances(
+    plan: RecurringPlan,
+    fromDate: Date,
+    toDate: Date,
+  ): WorkOrder[] {
     const instances: WorkOrder[] = [];
     let current = new Date(fromDate);
 
@@ -478,13 +517,21 @@ export class RecurringScheduler {
       case "BIWEEKLY":
         // Simplified: every other week
         const weekNumber = Math.floor(date.getUTCDate() / 7);
-        return plan.dayOfWeek !== undefined && dayOfWeek === plan.dayOfWeek && weekNumber % 2 === 0;
+        return (
+          plan.dayOfWeek !== undefined &&
+          dayOfWeek === plan.dayOfWeek &&
+          weekNumber % 2 === 0
+        );
       case "MONTHLY":
         return plan.dayOfMonth !== undefined && dayOfMonth === plan.dayOfMonth;
       case "QUARTERLY":
         // Simplified: every 3 months
         const month = date.getUTCMonth();
-        return plan.dayOfMonth !== undefined && dayOfMonth === plan.dayOfMonth && month % 3 === 0;
+        return (
+          plan.dayOfMonth !== undefined &&
+          dayOfMonth === plan.dayOfMonth &&
+          month % 3 === 0
+        );
       default:
         return false;
     }
@@ -503,13 +550,15 @@ export class ConflictDetector {
   static detectConflicts(
     jobs: WorkOrder[],
     techs: Technician[],
-    schedules: Map<string, JobSchedule>
+    schedules: Map<string, JobSchedule>,
   ): ConstraintViolation[] {
     const violations: ConstraintViolation[] = [];
 
     // Check for overlapping jobs per technician
     for (const [techId, schedule] of schedules) {
-      const techJobs = jobs.filter((j) => j.technicianId === techId && j.scheduledStart && j.scheduledEnd);
+      const techJobs = jobs.filter(
+        (j) => j.technicianId === techId && j.scheduledStart && j.scheduledEnd,
+      );
       for (let i = 0; i < techJobs.length; i++) {
         for (let j = i + 1; j < techJobs.length; j++) {
           const job1 = techJobs[i];
@@ -519,7 +568,10 @@ export class ConflictDetector {
             job1.scheduledEnd &&
             job2.scheduledStart &&
             job2.scheduledEnd &&
-            !(job1.scheduledEnd <= job2.scheduledStart || job1.scheduledStart >= job2.scheduledEnd)
+            !(
+              job1.scheduledEnd <= job2.scheduledStart ||
+              job1.scheduledStart >= job2.scheduledEnd
+            )
           ) {
             violations.push({
               type: "OVERLAPPING_JOBS",
@@ -536,16 +588,28 @@ export class ConflictDetector {
     // Check for impossible travel times
     for (const [techId, schedule] of schedules) {
       const techJobs = jobs
-        .filter((j) => j.technicianId === techId && j.scheduledStart && j.scheduledEnd)
-        .sort((a, b) => (a.scheduledStart?.getTime() || 0) - (b.scheduledStart?.getTime() || 0));
+        .filter(
+          (j) =>
+            j.technicianId === techId && j.scheduledStart && j.scheduledEnd,
+        )
+        .sort(
+          (a, b) =>
+            (a.scheduledStart?.getTime() || 0) -
+            (b.scheduledStart?.getTime() || 0),
+        );
 
       for (let i = 0; i < techJobs.length - 1; i++) {
         const job1 = techJobs[i];
         const job2 = techJobs[i + 1];
         if (job1.scheduledEnd && job2.scheduledStart) {
-          const availableTime = (job2.scheduledStart.getTime() - job1.scheduledEnd.getTime()) / 60000;
+          const availableTime =
+            (job2.scheduledStart.getTime() - job1.scheduledEnd.getTime()) /
+            60000;
           const requiredTime = estimateTravelTime(
-            haversineDistance(job1.address.coordinates, job2.address.coordinates)
+            haversineDistance(
+              job1.address.coordinates,
+              job2.address.coordinates,
+            ),
           );
 
           if (availableTime < requiredTime) {
@@ -580,7 +644,7 @@ export class RescheduleEngine {
     jobs: WorkOrder[],
     techs: Technician[],
     schedules: Map<string, JobSchedule>,
-    slaRules: Map<string, SLARule>
+    slaRules: Map<string, SLARule>,
   ): {
     jobId: string;
     alternatives: Array<{
@@ -604,15 +668,34 @@ export class RescheduleEngine {
       const schedule = schedules.get(tech.id);
       if (!schedule) continue;
 
-      const slots = TimeSlotFinder.findAvailableSlots(schedule, tech.id, job.estimatedDuration, 5);
+      const slots = TimeSlotFinder.findAvailableSlots(
+        schedule,
+        tech.id,
+        job.estimatedDuration,
+        5,
+      );
       for (const slot of slots) {
-        const canSchedule = ConstraintSolver.canSchedule(job, tech, slot.startTime, schedule, slaRules.get(job.slaRuleId)!);
+        const canSchedule = ConstraintSolver.canSchedule(
+          job,
+          tech,
+          slot.startTime,
+          schedule,
+          slaRules.get(job.slaRuleId)!,
+        );
         if (canSchedule.feasible) {
           alternatives.push({
             technicianId: tech.id,
             startTime: slot.startTime,
             endTime: slot.endTime,
-            score: 100 - Math.min(haversineDistance(tech.currentLocation, job.address.coordinates), 50),
+            score:
+              100 -
+              Math.min(
+                haversineDistance(
+                  tech.currentLocation,
+                  job.address.coordinates,
+                ),
+                50,
+              ),
           });
         }
       }

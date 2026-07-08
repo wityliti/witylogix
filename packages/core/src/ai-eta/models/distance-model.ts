@@ -9,7 +9,11 @@
  * - Rural: ~60 km/h
  */
 
-import type { TimeInterval, HistoricalRoute, ModelPrediction } from '../types.js';
+import type {
+  TimeInterval,
+  HistoricalRoute,
+  ModelPrediction,
+} from "../types.js";
 
 /**
  * Linear regression result
@@ -29,10 +33,7 @@ export class DistanceModel {
   /**
    * Regression parameters by zone type
    */
-  private regressionsByZone: Map<
-    string,
-    RegressionResult
-  > = new Map();
+  private regressionsByZone: Map<string, RegressionResult> = new Map();
 
   /**
    * Default zone speeds (km/h)
@@ -67,7 +68,7 @@ export class DistanceModel {
     origin: { lat: number; lng: number },
     destination: { lat: number; lng: number },
     distanceKm: number,
-    zoneType: 'urban' | 'suburban' | 'rural',
+    zoneType: "urban" | "suburban" | "rural",
     departureTime: Date,
   ): ModelPrediction {
     const regression =
@@ -75,7 +76,8 @@ export class DistanceModel {
       this.getDefaultRegression(zoneType);
 
     // ETA = intercept + (distance * slope)
-    const expectedMinutes = regression.intercept + distanceKm * regression.slope;
+    const expectedMinutes =
+      regression.intercept + distanceKm * regression.slope;
 
     // Calculate confidence
     const dataPoints = this.historicalData.filter(
@@ -89,23 +91,18 @@ export class DistanceModel {
     // Estimate error: residual standard deviation
     const residuals = this.calculateResiduals(zoneType);
     const stdDev = Math.sqrt(
-      residuals.reduce((sum, r) => sum + r * r, 0) /
-        residuals.length,
+      residuals.reduce((sum, r) => sum + r * r, 0) / residuals.length,
     );
 
     return {
-      modelName: 'DistanceModel',
+      modelName: "DistanceModel",
       prediction: {
         low: new Date(
-          departureTime.getTime() +
-            (expectedMinutes - stdDev * 1.96) * 60000,
+          departureTime.getTime() + (expectedMinutes - stdDev * 1.96) * 60000,
         ),
-        expected: new Date(
-          departureTime.getTime() + expectedMinutes * 60000,
-        ),
+        expected: new Date(departureTime.getTime() + expectedMinutes * 60000),
         high: new Date(
-          departureTime.getTime() +
-            (expectedMinutes + stdDev * 1.96) * 60000,
+          departureTime.getTime() + (expectedMinutes + stdDev * 1.96) * 60000,
         ),
       },
       confidence,
@@ -149,10 +146,7 @@ export class DistanceModel {
 
       const x = routes.map((r) => r.distanceKm);
       const y = routes.map(
-        (r) =>
-          (r.actualArrival.getTime() -
-            r.departureTime.getTime()) /
-          60000,
+        (r) => (r.actualArrival.getTime() - r.departureTime.getTime()) / 60000,
       );
 
       const regression = this.linearRegression(x, y);
@@ -160,7 +154,7 @@ export class DistanceModel {
     });
 
     // Fill missing zones with defaults
-    ['urban', 'suburban', 'rural'].forEach((zone) => {
+    ["urban", "suburban", "rural"].forEach((zone) => {
       if (!this.regressionsByZone.has(zone)) {
         this.regressionsByZone.set(
           zone,
@@ -199,7 +193,8 @@ export class DistanceModel {
    * Get default regression for zone
    */
   private getDefaultRegression(zoneType: string): RegressionResult {
-    const speed = this.DEFAULT_SPEEDS[zoneType as keyof typeof this.DEFAULT_SPEEDS] ?? 40;
+    const speed =
+      this.DEFAULT_SPEEDS[zoneType as keyof typeof this.DEFAULT_SPEEDS] ?? 40;
     const slope = 60 / speed; // minutes per km
 
     return {
@@ -214,11 +209,8 @@ export class DistanceModel {
    */
   private initializeDefaults(): void {
     this.regressionsByZone.clear();
-    ['urban', 'suburban', 'rural'].forEach((zone) => {
-      this.regressionsByZone.set(
-        zone,
-        this.getDefaultRegression(zone),
-      );
+    ["urban", "suburban", "rural"].forEach((zone) => {
+      this.regressionsByZone.set(zone, this.getDefaultRegression(zone));
     });
   }
 
@@ -243,9 +235,7 @@ export class DistanceModel {
       const predicted =
         regression.intercept + route.distanceKm * regression.slope;
       const actual =
-        (route.actualArrival.getTime() -
-          route.departureTime.getTime()) /
-        60000;
+        (route.actualArrival.getTime() - route.departureTime.getTime()) / 60000;
 
       return actual - predicted;
     });
@@ -257,7 +247,9 @@ export class DistanceModel {
   getSpeed(zoneType: string): number {
     const regression = this.regressionsByZone.get(zoneType);
     if (!regression) {
-      return this.DEFAULT_SPEEDS[zoneType as keyof typeof this.DEFAULT_SPEEDS] ?? 45;
+      return (
+        this.DEFAULT_SPEEDS[zoneType as keyof typeof this.DEFAULT_SPEEDS] ?? 45
+      );
     }
 
     return 60 / regression.slope; // Convert slope to speed
@@ -287,9 +279,7 @@ export class DistanceModel {
       const predicted =
         regression.intercept + route.distanceKm * regression.slope;
       const actual =
-        (route.actualArrival.getTime() -
-          route.departureTime.getTime()) /
-        60000;
+        (route.actualArrival.getTime() - route.departureTime.getTime()) / 60000;
 
       const error = Math.abs(predicted - actual);
 

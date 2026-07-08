@@ -153,6 +153,7 @@ Returns initial tracking data with the following structure:
 The server should emit events to clients in the `/tracking` namespace:
 
 **location:update**
+
 ```json
 {
   "orderId": "string",
@@ -163,6 +164,7 @@ The server should emit events to clients in the `/tracking` namespace:
 ```
 
 **status:update**
+
 ```json
 {
   "orderId": "string",
@@ -172,6 +174,7 @@ The server should emit events to clients in the `/tracking` namespace:
 ```
 
 **eta:update**
+
 ```json
 {
   "orderId": "string",

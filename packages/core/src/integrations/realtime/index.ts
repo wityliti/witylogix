@@ -4,7 +4,7 @@
  * Supports pub/sub channels, presence detection, and real-time events.
  */
 
-export { PusherSDKClient } from './pusher-sdk-client.js';
+export { PusherSDKClient } from "./pusher-sdk-client.js";
 
 export type {
   PusherChannelType,
@@ -17,4 +17,4 @@ export type {
   PusherChannelInfo,
   PusherClientAuthPayload,
   PusherSDKConfig,
-} from './pusher-sdk-client.js';
+} from "./pusher-sdk-client.js";

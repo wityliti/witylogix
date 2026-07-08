@@ -15,13 +15,13 @@
  * TODO: Convert from Express to Fastify plugin pattern
  */
 
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from "fastify";
 
 export default async function demandDashboardRoutes(app: FastifyInstance) {
-  app.get('/status', async (_req, reply) => {
+  app.get("/status", async (_req, reply) => {
     return reply.send({
-      status: 'ok',
-      message: 'Demand dashboard routes — pending Fastify migration',
+      status: "ok",
+      message: "Demand dashboard routes — pending Fastify migration",
     });
   });
 }

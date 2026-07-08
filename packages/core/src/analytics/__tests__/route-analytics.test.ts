@@ -20,7 +20,9 @@ import {
  * Test fixtures
  */
 
-const createDeliveryStop = (overrides?: Partial<DeliveryStop>): DeliveryStop => ({
+const createDeliveryStop = (
+  overrides?: Partial<DeliveryStop>,
+): DeliveryStop => ({
   orderId: "order-1",
   estimatedArrival: new Date("2026-03-11T14:00:00Z"),
   actualArrival: new Date("2026-03-11T14:03:00Z"),
@@ -293,19 +295,16 @@ describe("Route Analytics", () => {
     });
 
     it("should handle different vehicle types with correct emission factors", () => {
-      const vehicleTypes: Array<"motorcycle" | "van" | "truck-small" | "truck-large"> = [
-        "motorcycle",
-        "van",
-        "truck-small",
-        "truck-large",
-      ];
+      const vehicleTypes: Array<
+        "motorcycle" | "van" | "truck-small" | "truck-large"
+      > = ["motorcycle", "van", "truck-small", "truck-large"];
 
-      const routes = vehicleTypes.map(vt =>
+      const routes = vehicleTypes.map((vt) =>
         createRoute({
           vehicleType: vt,
           plannedDistance: 100,
           actualDistance: 100,
-        })
+        }),
       );
 
       const results = calculateCO2Estimates(routes);
@@ -339,14 +338,10 @@ describe("Route Analytics", () => {
         }),
       ];
 
-      const result = calculateServiceLevelMetrics(
-        "tenant-1",
-        routes,
-        {
-          from: new Date("2026-03-11"),
-          to: new Date("2026-03-12"),
-        }
-      );
+      const result = calculateServiceLevelMetrics("tenant-1", routes, {
+        from: new Date("2026-03-11"),
+        to: new Date("2026-03-12"),
+      });
 
       expect(result.slaCompliance.premium).toBe(100);
       expect(result.slaCompliance.standard).toBe(100);
@@ -363,14 +358,10 @@ describe("Route Analytics", () => {
         }),
       ];
 
-      const result = calculateServiceLevelMetrics(
-        "tenant-1",
-        routes,
-        {
-          from: new Date("2026-03-11"),
-          to: new Date("2026-03-12"),
-        }
-      );
+      const result = calculateServiceLevelMetrics("tenant-1", routes, {
+        from: new Date("2026-03-11"),
+        to: new Date("2026-03-12"),
+      });
 
       expect(result.firstAttemptRate).toBeCloseTo(66.67, 1);
     });
@@ -386,14 +377,10 @@ describe("Route Analytics", () => {
         }),
       ];
 
-      const result = calculateServiceLevelMetrics(
-        "tenant-1",
-        routes,
-        {
-          from: new Date("2026-03-11"),
-          to: new Date("2026-03-12"),
-        }
-      );
+      const result = calculateServiceLevelMetrics("tenant-1", routes, {
+        from: new Date("2026-03-11"),
+        to: new Date("2026-03-12"),
+      });
 
       expect(result.returnRate).toBeCloseTo(33.33, 1);
       expect(result.failureRate).toBeCloseTo(33.33, 1);

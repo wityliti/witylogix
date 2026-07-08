@@ -207,7 +207,7 @@ export class EasyPostClient extends ShippingAdapter {
         `${this.baseUrl}/user`,
         {
           headers: { Authorization: this.authHeader },
-        }
+        },
       );
 
       if (!response.user?.id) {
@@ -215,7 +215,7 @@ export class EasyPostClient extends ShippingAdapter {
       }
     } catch (error: unknown) {
       throw new Error(
-        `Failed to validate EasyPost credentials: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to validate EasyPost credentials: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -253,11 +253,11 @@ export class EasyPostClient extends ShippingAdapter {
       {
         headers: { Authorization: this.authHeader },
         body: shipmentPayload,
-      }
+      },
     );
 
     return (response.shipment.rates || []).map((rate: EasyPostRate) =>
-      this.normalizeRate(rate)
+      this.normalizeRate(rate),
     );
   }
 
@@ -266,7 +266,7 @@ export class EasyPostClient extends ShippingAdapter {
    */
   async createShipment(
     request: ShipmentRequest,
-    rateId: string
+    rateId: string,
   ): Promise<ShipmentLabel> {
     // First, get the rate details
     const fromAddress = await this.createOrValidateAddress(request.from);
@@ -294,7 +294,7 @@ export class EasyPostClient extends ShippingAdapter {
       {
         headers: { Authorization: this.authHeader },
         body: shipmentPayload,
-      }
+      },
     );
 
     const shipmentId = shipmentResponse.shipment.id;
@@ -312,7 +312,7 @@ export class EasyPostClient extends ShippingAdapter {
       {
         headers: { Authorization: this.authHeader },
         body: buyPayload,
-      }
+      },
     );
 
     return this.normalizeLabel(labelResponse.shipment);
@@ -327,7 +327,7 @@ export class EasyPostClient extends ShippingAdapter {
       `${this.baseUrl}/shipments/${labelId}`,
       {
         headers: { Authorization: this.authHeader },
-      }
+      },
     );
 
     return this.normalizeLabel(response.shipment);
@@ -342,7 +342,7 @@ export class EasyPostClient extends ShippingAdapter {
       `${this.baseUrl}/trackers/${trackingNumber}`,
       {
         headers: { Authorization: this.authHeader },
-      }
+      },
     );
 
     const tracker = response.tracker;
@@ -358,7 +358,7 @@ export class EasyPostClient extends ShippingAdapter {
           .filter(Boolean)
           .join(", "),
         rawResponse: checkpoint,
-      })
+      }),
     );
 
     return {
@@ -390,7 +390,7 @@ export class EasyPostClient extends ShippingAdapter {
    * Validate an address.
    */
   async validateAddress(
-    address: ShippingAddress
+    address: ShippingAddress,
   ): Promise<AddressValidationResult> {
     const normalized = this.AddressNormalizer.normalize(address);
 
@@ -413,7 +413,7 @@ export class EasyPostClient extends ShippingAdapter {
               email: normalized.email,
             },
           },
-        }
+        },
       );
 
       return {
@@ -439,7 +439,7 @@ export class EasyPostClient extends ShippingAdapter {
    * Create or validate an address in EasyPost.
    */
   private async createOrValidateAddress(
-    address: ShippingAddress
+    address: ShippingAddress,
   ): Promise<EasyPostAddress> {
     const normalized = this.AddressNormalizer.normalize(address);
 
@@ -463,7 +463,7 @@ export class EasyPostClient extends ShippingAdapter {
       {
         headers: { Authorization: this.authHeader },
         body: payload,
-      }
+      },
     );
 
     return response.address;
@@ -472,7 +472,9 @@ export class EasyPostClient extends ShippingAdapter {
   /**
    * Create a parcel in EasyPost.
    */
-  private async createParcel(request: ShipmentRequest): Promise<EasyPostParcel> {
+  private async createParcel(
+    request: ShipmentRequest,
+  ): Promise<EasyPostParcel> {
     const weight = this.UnitConverter.normalizeWeight(request.weight);
 
     // Convert kg to ounces for EasyPost
@@ -499,7 +501,7 @@ export class EasyPostClient extends ShippingAdapter {
       {
         headers: { Authorization: this.authHeader },
         body: payload,
-      }
+      },
     );
 
     return response.parcel;
@@ -534,7 +536,7 @@ export class EasyPostClient extends ShippingAdapter {
       service: this.normalizeService(shipment.service) as ServiceLevel,
       labelUrl,
       format: this.normalizeLabelFormat(
-        shipment.postage_label?.fileformat || "pdf"
+        shipment.postage_label?.fileformat || "pdf",
       ) as LabelFormat,
       createdAt: new Date(shipment.created_at),
       rawResponse: shipment,
@@ -589,7 +591,7 @@ export class EasyPostClient extends ShippingAdapter {
    */
   public parseWebhook(
     payload: unknown,
-    headers: Record<string, string>
+    headers: Record<string, string>,
   ): ShippingWebhookEvent | null {
     if (typeof payload !== "object" || payload === null) {
       return null;
@@ -615,8 +617,9 @@ export class EasyPostClient extends ShippingAdapter {
       eventType: String(data.description || "UNKNOWN"),
       resourceId: String(result?.id || ""),
       carrier: "EASYPOST",
-      trackingNumber: (result as Record<string, unknown>)
-        ?.tracking_code as string | undefined,
+      trackingNumber: (result as Record<string, unknown>)?.tracking_code as
+        | string
+        | undefined,
       data: payload,
       timestamp: new Date(),
       rawPayload: payload,

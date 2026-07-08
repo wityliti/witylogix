@@ -1,19 +1,40 @@
-'use client';
+"use client";
 
-import { useApiList, useApiQuery, ApiFilters, UseApiListResult, UseApiQueryResult } from './use-api';
+import {
+  useApiList,
+  useApiQuery,
+  ApiFilters,
+  UseApiListResult,
+  UseApiQueryResult,
+} from "./use-api";
 
 /**
  * Work order status enum
  */
-export type WorkOrderStatus = "created" | "scheduled" | "dispatched" | "in_progress" | "completed" | "cancelled";
+export type WorkOrderStatus =
+  | "created"
+  | "scheduled"
+  | "dispatched"
+  | "in_progress"
+  | "completed"
+  | "cancelled";
 export type WorkOrderPriority = "low" | "medium" | "high" | "urgent";
-export type WorkOrderType = "installation" | "maintenance" | "repair" | "inspection";
+export type WorkOrderType =
+  | "installation"
+  | "maintenance"
+  | "repair"
+  | "inspection";
 
 /**
  * Technician status enum
  */
 export type TechnicianStatus = "available" | "on_job" | "break" | "offline";
-export type TechnicianSkill = "electrical" | "plumbing" | "hvac" | "appliances" | "general";
+export type TechnicianSkill =
+  | "electrical"
+  | "plumbing"
+  | "hvac"
+  | "appliances"
+  | "general";
 
 /**
  * Work Order data structure
@@ -106,33 +127,49 @@ export interface SLAMetrics {
 }
 
 export function useFieldServiceOverview(): UseApiQueryResult<FieldServiceOverview> {
-  return useApiQuery<FieldServiceOverview>('/api/v4/field-service/overview');
+  return useApiQuery<FieldServiceOverview>("/api/v4/field-service/overview");
 }
 
-export function useWorkOrders(filters?: ApiFilters): UseApiListResult<WorkOrder> {
-  return useApiList<WorkOrder>('/api/v4/field-service/work-orders', filters);
+export function useWorkOrders(
+  filters?: ApiFilters,
+): UseApiListResult<WorkOrder> {
+  return useApiList<WorkOrder>("/api/v4/field-service/work-orders", filters);
 }
 
-export function useWorkOrderDetail(id: string | null): UseApiQueryResult<WorkOrder> {
-  return useApiQuery<WorkOrder>(id ? `/api/v4/field-service/work-orders/${id}` : null);
+export function useWorkOrderDetail(
+  id: string | null,
+): UseApiQueryResult<WorkOrder> {
+  return useApiQuery<WorkOrder>(
+    id ? `/api/v4/field-service/work-orders/${id}` : null,
+  );
 }
 
-export function useTechnicians(filters?: ApiFilters): UseApiListResult<Technician> {
-  return useApiList<Technician>('/api/v4/field-service/technicians', filters);
+export function useTechnicians(
+  filters?: ApiFilters,
+): UseApiListResult<Technician> {
+  return useApiList<Technician>("/api/v4/field-service/technicians", filters);
 }
 
-export function useTechnicianDetail(id: string | null): UseApiQueryResult<Technician> {
-  return useApiQuery<Technician>(id ? `/api/v4/field-service/technicians/${id}` : null);
+export function useTechnicianDetail(
+  id: string | null,
+): UseApiQueryResult<Technician> {
+  return useApiQuery<Technician>(
+    id ? `/api/v4/field-service/technicians/${id}` : null,
+  );
 }
 
-export function useDispatchMap(filters?: ApiFilters): UseApiListResult<WorkOrder> {
-  return useApiList<WorkOrder>('/api/v4/field-service/dispatch-map', filters);
+export function useDispatchMap(
+  filters?: ApiFilters,
+): UseApiListResult<WorkOrder> {
+  return useApiList<WorkOrder>("/api/v4/field-service/dispatch-map", filters);
 }
 
-export function useJobSchedule(filters?: ApiFilters): UseApiListResult<ScheduleItem> {
-  return useApiList<ScheduleItem>('/api/v4/field-service/schedule', filters);
+export function useJobSchedule(
+  filters?: ApiFilters,
+): UseApiListResult<ScheduleItem> {
+  return useApiList<ScheduleItem>("/api/v4/field-service/schedule", filters);
 }
 
 export function useSLAMetrics(): UseApiQueryResult<SLAMetrics> {
-  return useApiQuery<SLAMetrics>('/api/v4/field-service/sla-metrics');
+  return useApiQuery<SLAMetrics>("/api/v4/field-service/sla-metrics");
 }

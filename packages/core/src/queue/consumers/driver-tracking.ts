@@ -30,7 +30,10 @@ import type { WitylogixEvents } from "../../event-bus/types.js";
 /**
  * Geofence violation types.
  */
-export type GeofenceViolationType = "exit_destination" | "enter_restricted" | "location_anomaly";
+export type GeofenceViolationType =
+  | "exit_destination"
+  | "enter_restricted"
+  | "location_anomaly";
 
 /**
  * Driver tracking consumer implementation.
@@ -38,7 +41,10 @@ export type GeofenceViolationType = "exit_destination" | "enter_restricted" | "l
 export class DriverTrackingConsumer extends QueueConsumer {
   private eventBus?: TypedEventBus<WitylogixEvents>;
 
-  constructor(config: ConsumerConfig, eventBus?: TypedEventBus<WitylogixEvents>) {
+  constructor(
+    config: ConsumerConfig,
+    eventBus?: TypedEventBus<WitylogixEvents>,
+  ) {
     super(config);
     this.eventBus = eventBus;
   }
@@ -436,17 +442,15 @@ export class DriverTrackingConsumer extends QueueConsumer {
         lastLocation.longitude,
       );
 
-      const timeDiffSeconds = (timestamp - lastLocation.recordedAt.getTime()) / 1000;
+      const timeDiffSeconds =
+        (timestamp - lastLocation.recordedAt.getTime()) / 1000;
       const speedMps = distance / timeDiffSeconds;
       const speedKmh = speedMps * 3.6;
 
       // Flag if speed exceeds 200 km/h (likely GPS anomaly)
       return speedKmh > 200;
     } catch (error) {
-      console.error(
-        `[DriverTrackingConsumer] Error detecting anomaly:`,
-        error,
-      );
+      console.error(`[DriverTrackingConsumer] Error detecting anomaly:`, error);
       return false;
     }
   }
@@ -512,15 +516,19 @@ export class DriverTrackingConsumer extends QueueConsumer {
 
         // Emit alert event via event bus
         if (this.eventBus) {
-          await this.eventBus.emit("driver.location_updated", {
-            driverId,
-            latitude: 0,
-            longitude: 0,
-            heading: 0,
-            speed: 0,
-            accuracy: 0,
-            timestamp: new Date().toISOString(),
-          }, { tenantId: companyId });
+          await this.eventBus.emit(
+            "driver.location_updated",
+            {
+              driverId,
+              latitude: 0,
+              longitude: 0,
+              heading: 0,
+              speed: 0,
+              accuracy: 0,
+              timestamp: new Date().toISOString(),
+            },
+            { tenantId: companyId },
+          );
         }
       }
 
@@ -570,8 +578,10 @@ export class DriverTrackingConsumer extends QueueConsumer {
         );
 
         // Assume average speed of 40 km/h
-        const estimatedMinutes = (distanceToStop / 1000) / 40 * 60;
-        const estimatedArrival = new Date(Date.now() + estimatedMinutes * 60 * 1000);
+        const estimatedMinutes = (distanceToStop / 1000 / 40) * 60;
+        const estimatedArrival = new Date(
+          Date.now() + estimatedMinutes * 60 * 1000,
+        );
 
         await (dbPrisma as any).routeStop.update({
           where: { id: stop.id },
@@ -581,10 +591,7 @@ export class DriverTrackingConsumer extends QueueConsumer {
 
       await this.simulateAsyncOperation(45);
     } catch (error) {
-      console.error(
-        `[DriverTrackingConsumer] Error updating ETAs:`,
-        error,
-      );
+      console.error(`[DriverTrackingConsumer] Error updating ETAs:`, error);
     }
   }
 
@@ -606,20 +613,26 @@ export class DriverTrackingConsumer extends QueueConsumer {
       );
 
       if (!this.eventBus) {
-        console.warn("[DriverTrackingConsumer] EventBus not initialized, skipping event emission");
+        console.warn(
+          "[DriverTrackingConsumer] EventBus not initialized, skipping event emission",
+        );
         return;
       }
 
       // Emit driver location updated event with GPS coordinates
-      await this.eventBus.emit("driver.location_updated", {
-        driverId,
-        latitude: payload.latitude,
-        longitude: payload.longitude,
-        heading: payload.heading || 0,
-        speed: payload.speed || 0,
-        accuracy: payload.accuracy || 0,
-        timestamp: new Date(payload.timestamp).toISOString(),
-      }, { tenantId: companyId });
+      await this.eventBus.emit(
+        "driver.location_updated",
+        {
+          driverId,
+          latitude: payload.latitude,
+          longitude: payload.longitude,
+          heading: payload.heading || 0,
+          speed: payload.speed || 0,
+          accuracy: payload.accuracy || 0,
+          timestamp: new Date(payload.timestamp).toISOString(),
+        },
+        { tenantId: companyId },
+      );
 
       await this.simulateAsyncOperation(15);
     } catch (error) {

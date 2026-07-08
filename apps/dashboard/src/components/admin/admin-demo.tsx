@@ -227,7 +227,9 @@ export function AdminDemo() {
       {/* Service Health Cards */}
       <div className="space-y-3">
         <div>
-          <h2 className="text-lg font-semibold text-wl-text-primary">Service Health</h2>
+          <h2 className="text-lg font-semibold text-wl-text-primary">
+            Service Health
+          </h2>
           <p className="text-xs text-wl-text-tertiary mt-1">
             Real-time service status, uptime, and response time metrics
           </p>

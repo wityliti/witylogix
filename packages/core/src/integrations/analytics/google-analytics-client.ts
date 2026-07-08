@@ -10,7 +10,7 @@
  * - Data retention settings
  */
 
-import { AnalyticsAdapter } from './analytics-adapter.js';
+import { AnalyticsAdapter } from "./analytics-adapter.js";
 import type {
   AnalyticsConfig,
   QueryDefinition,
@@ -24,7 +24,7 @@ import type {
   HealthCheckResult,
   DataSource,
   FilterDefinition,
-} from './types.js';
+} from "./types.js";
 
 interface GA4Property {
   name: string;
@@ -113,13 +113,13 @@ interface GA4ReportResponse {
  * Supports service account and OAuth2 authentication.
  */
 export class GoogleAnalyticsClient extends AnalyticsAdapter {
-  private accessToken: string = '';
+  private accessToken: string = "";
   private tokenExpiresAt: number = 0;
-  private propertyId: string = '';
+  private propertyId: string = "";
 
   constructor(config: AnalyticsConfig) {
     super(config);
-    this.propertyId = config.defaultWorkspaceId || '';
+    this.propertyId = config.defaultWorkspaceId || "";
   }
 
   /**
@@ -132,7 +132,7 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
     }
 
     // Try service account authentication
-    if (this.config.credentials.type === 'service_account') {
+    if (this.config.credentials.type === "service_account") {
       return this._authenticateServiceAccount();
     }
 
@@ -142,7 +142,9 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
       return this.accessToken;
     }
 
-    throw new Error('GA4 authentication requires service account or OAuth2 credentials');
+    throw new Error(
+      "GA4 authentication requires service account or OAuth2 credentials",
+    );
   }
 
   /**
@@ -164,16 +166,16 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
     };
 
     const response: Response = await fetch(
-      'https://analyticsdata.googleapis.com/v1beta/properties/' +
+      "https://analyticsdata.googleapis.com/v1beta/properties/" +
         `${this.propertyId}:runReport`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -197,7 +199,7 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
    * @returns Array of report responses
    */
   async batchRunReports(
-    requests: GA4ReportRequest[]
+    requests: GA4ReportRequest[],
   ): Promise<GA4ReportResponse[]> {
     const token: string = await this.authenticate();
 
@@ -212,16 +214,16 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
     };
 
     const response: Response = await fetch(
-      'https://analyticsdata.googleapis.com/v1beta/properties/' +
+      "https://analyticsdata.googleapis.com/v1beta/properties/" +
         `${this.propertyId}:batchRunReports`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -249,7 +251,7 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
    */
   async runRealtimeReport(
     dimensions: string[],
-    metrics: string[]
+    metrics: string[],
   ): Promise<GA4ReportResponse> {
     const token: string = await this.authenticate();
 
@@ -261,16 +263,16 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
     };
 
     const response: Response = await fetch(
-      'https://analyticsdata.googleapis.com/v1beta/properties/' +
+      "https://analyticsdata.googleapis.com/v1beta/properties/" +
         `${this.propertyId}:runRealtimeReport`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -295,14 +297,14 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
     const token: string = await this.authenticate();
 
     const response: Response = await fetch(
-      'https://analyticsadmin.googleapis.com/v1beta/properties',
+      "https://analyticsadmin.googleapis.com/v1beta/properties",
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -334,12 +336,12 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `https://analyticsadmin.googleapis.com/v1beta/properties/${propertyId}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -369,12 +371,12 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `https://analyticsadmin.googleapis.com/v1beta/properties/${propertyId}/dataStreams`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -407,12 +409,12 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `https://analyticsadmin.googleapis.com/v1beta/properties/${propertyId}/audiences`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -439,7 +441,7 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
    */
   async createAudience(
     propertyId: string,
-    audience: Omit<GA4Audience, 'name' | 'createTime'>
+    audience: Omit<GA4Audience, "name" | "createTime">,
   ): Promise<GA4Audience> {
     const token: string = await this.authenticate();
 
@@ -452,13 +454,13 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `https://analyticsadmin.googleapis.com/v1beta/properties/${propertyId}/audiences`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -486,16 +488,18 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `https://analyticsadmin.googleapis.com/v1beta/properties/${propertyId}/customDimensions`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch custom dimensions: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch custom dimensions: ${response.statusText}`,
+      );
     }
 
     const data: any = await response.json();
@@ -522,12 +526,12 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
     const response: Response = await fetch(
       `https://analyticsadmin.googleapis.com/v1beta/properties/${propertyId}/customMetrics`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -554,9 +558,9 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
     const properties: GA4Property[] = await this.getProperties();
 
     return properties.map((prop: GA4Property) => ({
-      id: prop.name.split('/')[1] || '',
+      id: prop.name.split("/")[1] || "",
       name: prop.displayName,
-      type: 'property',
+      type: "property",
       tableName: prop.displayName,
       archived: false,
       fields: [],
@@ -566,18 +570,20 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
   /**
    * Protected method: Execute query implementation for GA4.
    */
-  protected async _executeQueryImpl(query: QueryDefinition): Promise<QueryResult> {
+  protected async _executeQueryImpl(
+    query: QueryDefinition,
+  ): Promise<QueryResult> {
     const request: GA4ReportRequest = {
       dimensions: query.fields
-        .filter((f: string) => !f.startsWith('metric_'))
+        .filter((f: string) => !f.startsWith("metric_"))
         .map((f: string) => ({ name: f })),
       metrics: query.fields
-        .filter((f: string) => f.startsWith('metric_'))
-        .map((f: string) => ({ name: f.replace('metric_', '') })),
+        .filter((f: string) => f.startsWith("metric_"))
+        .map((f: string) => ({ name: f.replace("metric_", "") })),
       dateRanges: [
         {
-          startDate: '30daysAgo',
-          endDate: 'today',
+          startDate: "30daysAgo",
+          endDate: "today",
         },
       ],
       limit: query.limit || 10000,
@@ -588,8 +594,14 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
     return {
       executionId: query.id,
       columns: [
-        ...request.dimensions.map((d: any) => ({ name: d.name, type: 'string' as const })),
-        ...request.metrics.map((m: any) => ({ name: m.name, type: 'number' as const })),
+        ...request.dimensions.map((d: any) => ({
+          name: d.name,
+          type: "string" as const,
+        })),
+        ...request.metrics.map((m: any) => ({
+          name: m.name,
+          type: "number" as const,
+        })),
       ],
       rows: result.data.rows.map((row: any) => {
         const obj: Record<string, unknown> = {};
@@ -615,7 +627,7 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
    * Protected method: Create dashboard implementation for GA4.
    */
   protected async _createDashboardImpl(
-    dashboard: DashboardDefinition
+    dashboard: DashboardDefinition,
   ): Promise<DashboardDefinition> {
     dashboard.id = `ga4-dashboard-${Date.now()}`;
     return dashboard;
@@ -624,10 +636,12 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
   /**
    * Protected method: Get dashboard implementation for GA4.
    */
-  protected async _getDashboardImpl(dashboardId: string): Promise<DashboardDefinition> {
+  protected async _getDashboardImpl(
+    dashboardId: string,
+  ): Promise<DashboardDefinition> {
     return {
       id: dashboardId,
-      name: 'GA4 Dashboard',
+      name: "GA4 Dashboard",
       widgets: [],
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -639,7 +653,7 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
    */
   protected async _updateDashboardImpl(
     dashboardId: string,
-    updates: Partial<DashboardDefinition>
+    updates: Partial<DashboardDefinition>,
   ): Promise<DashboardDefinition> {
     return this._getDashboardImpl(dashboardId);
   }
@@ -659,7 +673,7 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
     userId: string,
     _scopes: EmbedScope[],
     _rlsRules?: RLSRule[],
-    expiryMinutes: number = 60
+    expiryMinutes: number = 60,
   ): Promise<EmbedToken> {
     const token: string = await this.authenticate();
 
@@ -667,9 +681,9 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
       id: `ga4-token-${Date.now()}`,
       token,
       entityId,
-      entityType: 'dashboard',
+      entityType: "dashboard",
       userId,
-      scopes: ['view'],
+      scopes: ["view"],
       expiresAt: new Date(Date.now() + expiryMinutes * 60 * 1000),
       createdAt: new Date(),
     };
@@ -681,12 +695,12 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
   protected async _exportDashboardImpl(
     _entityId: string,
     format: AnalyticsExportFormat,
-    _filters?: FilterDefinition[]
+    _filters?: FilterDefinition[],
   ): Promise<ExportResult> {
     return {
       jobId: `export-${Date.now()}`,
       format,
-      status: 'completed',
+      status: "completed",
       completedAt: new Date(),
     };
   }
@@ -699,13 +713,13 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
       const token: string = await this.authenticate();
 
       const response: Response = await fetch(
-        'https://analyticsadmin.googleapis.com/v1beta/properties',
+        "https://analyticsadmin.googleapis.com/v1beta/properties",
         {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       return {
@@ -714,7 +728,8 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
         responseTimeMs: 0,
       };
     } catch (error: unknown) {
-      const message: string = error instanceof Error ? error.message : String(error);
+      const message: string =
+        error instanceof Error ? error.message : String(error);
       return {
         healthy: false,
         authenticated: false,
@@ -725,42 +740,44 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
   }
 
   private async _authenticateServiceAccount(): Promise<string> {
-    const keyFile: any = JSON.parse(
-      this.config.credentials.keyFile || '{}'
-    );
+    const keyFile: any = JSON.parse(this.config.credentials.keyFile || "{}");
 
     if (!keyFile.private_key || !keyFile.client_email) {
-      throw new Error('Invalid service account credentials');
+      throw new Error("Invalid service account credentials");
     }
 
     // Create JWT assertion
     const now: number = Math.floor(Date.now() / 1000);
     const assertion = {
       iss: keyFile.client_email,
-      scope: 'https://www.googleapis.com/auth/analytics.readonly',
-      aud: 'https://oauth2.googleapis.com/token',
+      scope: "https://www.googleapis.com/auth/analytics.readonly",
+      aud: "https://oauth2.googleapis.com/token",
       exp: now + 3600,
       iat: now,
     };
 
     // In production, sign with private key using JWT library
     // For now, simplified implementation
-    const token: string = Buffer.from(JSON.stringify(assertion)).toString('base64');
+    const token: string = Buffer.from(JSON.stringify(assertion)).toString(
+      "base64",
+    );
 
     const body = new URLSearchParams();
-    body.append('grant_type', 'urn:ietf:params:oauth:grant-type:jwt-bearer');
-    body.append('assertion', token);
+    body.append("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
+    body.append("assertion", token);
 
     const response: Response = await fetch(
-      'https://oauth2.googleapis.com/token',
+      "https://oauth2.googleapis.com/token",
       {
-        method: 'POST',
+        method: "POST",
         body,
-      }
+      },
     );
 
     if (!response.ok) {
-      throw new Error(`Service account authentication failed: ${response.statusText}`);
+      throw new Error(
+        `Service account authentication failed: ${response.statusText}`,
+      );
     }
 
     const data: any = await response.json();

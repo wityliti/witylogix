@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState, useMemo, useCallback } from 'react';
-import { useApiList } from '@/hooks/use-api';
-import { cn } from '@/lib/utils';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { useState, useMemo, useCallback } from "react";
+import { useApiList } from "@/hooks/use-api";
+import { cn } from "@/lib/utils";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   useProviderDetail,
   type ProviderMetrics,
-} from '@/hooks/use-integration-health';
+} from "@/hooks/use-integration-health";
 import {
   AlertCircle,
   ArrowUp,
@@ -18,7 +18,7 @@ import {
   AlertTriangle,
   Clock,
   Zap,
-} from 'lucide-react';
+} from "lucide-react";
 
 /**
  * Provider Detail Page
@@ -43,7 +43,7 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
   const maxLatency = Math.max(
     metrics.latencyP50,
     metrics.latencyP95,
-    metrics.latencyP99
+    metrics.latencyP99,
   );
   const scale = maxLatency > 0 ? 200 / maxLatency : 1;
 
@@ -58,9 +58,7 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
           />
           <div className="text-center text-xs">
             <p className="text-gray-400">P50</p>
-            <p className="font-medium text-white">
-              {metrics.latencyP50}ms
-            </p>
+            <p className="font-medium text-white">{metrics.latencyP50}ms</p>
           </div>
         </div>
 
@@ -72,9 +70,7 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
           />
           <div className="text-center text-xs">
             <p className="text-gray-400">P95</p>
-            <p className="font-medium text-white">
-              {metrics.latencyP95}ms
-            </p>
+            <p className="font-medium text-white">{metrics.latencyP95}ms</p>
           </div>
         </div>
 
@@ -86,9 +82,7 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
           />
           <div className="text-center text-xs">
             <p className="text-gray-400">P99</p>
-            <p className="font-medium text-white">
-              {metrics.latencyP99}ms
-            </p>
+            <p className="font-medium text-white">{metrics.latencyP99}ms</p>
           </div>
         </div>
       </div>
@@ -116,18 +110,13 @@ function ErrorBreakdown({ metrics }: { metrics: ProviderMetrics | null }) {
 
   const total = Object.values(metrics.errorBreakdown).reduce(
     (sum, val) => sum + val,
-    0
+    0,
   );
   const entries = Object.entries(metrics.errorBreakdown).sort(
-    (a, b) => b[1] - a[1]
+    (a, b) => b[1] - a[1],
   );
 
-  const colors = [
-    "bg-red-500",
-    "bg-amber-500",
-    "bg-blue-500",
-    "bg-blue-500",
-  ];
+  const colors = ["bg-red-500", "bg-amber-500", "bg-blue-500", "bg-blue-500"];
 
   return (
     <div className="space-y-4">
@@ -135,15 +124,16 @@ function ErrorBreakdown({ metrics }: { metrics: ProviderMetrics | null }) {
         {/* Pie Chart */}
         <div className="flex items-center justify-center">
           <div className="relative w-40 h-40">
-            <div className="absolute inset-0 rounded-full border-8 flex items-center justify-center" style={{
-              borderColor: `conic-gradient(${entries.map((e, i) => `${colors[i % colors.length].replace('bg-', '')} ${(e[1] / total) * 360}deg`).join(', ')}`
-            }}>
+            <div
+              className="absolute inset-0 rounded-full border-8 flex items-center justify-center"
+              style={{
+                borderColor: `conic-gradient(${entries.map((e, i) => `${colors[i % colors.length].replace("bg-", "")} ${(e[1] / total) * 360}deg`).join(", ")}`,
+              }}
+            >
               <div className="text-center bg-wl-bg-surface rounded-full w-24 h-24 flex items-center justify-center">
                 <div>
                   <p className="text-sm text-gray-400">Total</p>
-                  <p className="text-2xl font-bold text-white">
-                    {total}
-                  </p>
+                  <p className="text-2xl font-bold text-white">{total}</p>
                 </div>
               </div>
             </div>
@@ -158,9 +148,7 @@ function ErrorBreakdown({ metrics }: { metrics: ProviderMetrics | null }) {
                 className={cn("w-3 h-3 rounded", colors[idx % colors.length])}
               />
               <div className="flex-1">
-                <p className="text-sm font-medium text-white">
-                  {entry[0]}
-                </p>
+                <p className="text-sm font-medium text-white">{entry[0]}</p>
                 <p className="text-xs text-gray-400">
                   {entry[1]} ({((entry[1] / total) * 100).toFixed(1)}%)
                 </p>
@@ -212,10 +200,8 @@ export default function ProvidersPage() {
 
   const circuitBreakerColor = useMemo(() => {
     if (!metrics) return "text-gray-400";
-    if (metrics.currentCircuitBreaker === "closed")
-      return "text-emerald-500";
-    if (metrics.currentCircuitBreaker === "half-open")
-      return "text-amber-500";
+    if (metrics.currentCircuitBreaker === "closed") return "text-emerald-500";
+    if (metrics.currentCircuitBreaker === "half-open") return "text-amber-500";
     return "text-red-500";
   }, [metrics?.currentCircuitBreaker]);
 
@@ -294,7 +280,12 @@ export default function ProvidersPage() {
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="pt-6">
               <p className="text-sm text-gray-400 mb-2">Circuit Breaker</p>
-              <p className={cn("text-lg font-bold capitalize", circuitBreakerColor)}>
+              <p
+                className={cn(
+                  "text-lg font-bold capitalize",
+                  circuitBreakerColor,
+                )}
+              >
                 {metrics.currentCircuitBreaker}
               </p>
             </CardContent>
@@ -392,9 +383,7 @@ export default function ProvidersPage() {
                       <td className="py-2 px-3 text-white font-mono text-xs">
                         {req.endpoint}
                       </td>
-                      <td className="py-2 px-3 text-white">
-                        {req.latency}ms
-                      </td>
+                      <td className="py-2 px-3 text-white">{req.latency}ms</td>
                       <td className="py-2 px-3 text-gray-400 text-xs">
                         {new Date(req.timestamp).toLocaleTimeString()}
                       </td>
@@ -424,9 +413,7 @@ export default function ProvidersPage() {
                     <div
                       className={cn(
                         "w-3 h-3 rounded-full",
-                        incident.resolved
-                          ? "bg-emerald-500"
-                          : "bg-amber-500"
+                        incident.resolved ? "bg-emerald-500" : "bg-amber-500",
                       )}
                     />
                     {idx < metrics.incidents.length - 1 && (
@@ -434,9 +421,7 @@ export default function ProvidersPage() {
                     )}
                   </div>
                   <div className="flex-1 pt-1">
-                    <p className="font-medium text-white">
-                      {incident.title}
-                    </p>
+                    <p className="font-medium text-white">{incident.title}</p>
                     <p className="text-xs text-gray-400 mt-1">
                       {new Date(incident.timestamp).toLocaleString()}
                     </p>
@@ -480,7 +465,12 @@ export default function ProvidersPage() {
               <input
                 type="number"
                 value={configForm.rateLimit}
-                onChange={(e) => setConfigForm((prev) => ({ ...prev, rateLimit: e.target.value }))}
+                onChange={(e) =>
+                  setConfigForm((prev) => ({
+                    ...prev,
+                    rateLimit: e.target.value,
+                  }))
+                }
                 disabled={!configMode}
                 className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
               />
@@ -493,7 +483,12 @@ export default function ProvidersPage() {
               <input
                 type="number"
                 value={configForm.timeout}
-                onChange={(e) => setConfigForm((prev) => ({ ...prev, timeout: e.target.value }))}
+                onChange={(e) =>
+                  setConfigForm((prev) => ({
+                    ...prev,
+                    timeout: e.target.value,
+                  }))
+                }
                 disabled={!configMode}
                 className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
               />
@@ -505,7 +500,12 @@ export default function ProvidersPage() {
               </label>
               <select
                 value={configForm.retryPolicy}
-                onChange={(e) => setConfigForm((prev) => ({ ...prev, retryPolicy: e.target.value }))}
+                onChange={(e) =>
+                  setConfigForm((prev) => ({
+                    ...prev,
+                    retryPolicy: e.target.value,
+                  }))
+                }
                 disabled={!configMode}
                 className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
               >
@@ -522,14 +522,23 @@ export default function ProvidersPage() {
               <input
                 type="number"
                 value={configForm.circuitBreakerThreshold}
-                onChange={(e) => setConfigForm((prev) => ({ ...prev, circuitBreakerThreshold: e.target.value }))}
+                onChange={(e) =>
+                  setConfigForm((prev) => ({
+                    ...prev,
+                    circuitBreakerThreshold: e.target.value,
+                  }))
+                }
                 disabled={!configMode}
                 className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
               />
             </div>
 
             {configMode && (
-              <Button className="w-full" onClick={handleSaveConfig} disabled={isSaving}>
+              <Button
+                className="w-full"
+                onClick={handleSaveConfig}
+                disabled={isSaving}
+              >
                 {isSaving ? "Saving…" : "Save Configuration"}
               </Button>
             )}

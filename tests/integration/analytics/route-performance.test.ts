@@ -139,7 +139,9 @@ describe("Route Performance Analytics", () => {
             {
               orderId: "order_test",
               estimatedArrival: new Date(today.getTime() + 60 * 60 * 1000),
-              actualArrival: new Date(today.getTime() + 60 * 60 * 1000 + 3 * 60 * 1000), // 3 minutes late
+              actualArrival: new Date(
+                today.getTime() + 60 * 60 * 1000 + 3 * 60 * 1000,
+              ), // 3 minutes late
               estimatedDuration: 10,
               actualDuration: 10,
               status: "delivered",
@@ -169,7 +171,9 @@ describe("Route Performance Analytics", () => {
             {
               orderId: "order_test",
               estimatedArrival: new Date(today.getTime() + 60 * 60 * 1000),
-              actualArrival: new Date(today.getTime() + 60 * 60 * 1000 + 10 * 60 * 1000), // 10 minutes late
+              actualArrival: new Date(
+                today.getTime() + 60 * 60 * 1000 + 10 * 60 * 1000,
+              ), // 10 minutes late
               estimatedDuration: 10,
               actualDuration: 10,
               status: "delivered",
@@ -444,7 +448,11 @@ describe("Route Performance Analytics", () => {
     });
 
     it("should return zero metrics for driver with no routes", () => {
-      const scorecard = calculateDriverScorecard("driver_unknown", "24h", mockRoutes);
+      const scorecard = calculateDriverScorecard(
+        "driver_unknown",
+        "24h",
+        mockRoutes,
+      );
 
       expect(scorecard.driverId).toBe("driver_unknown");
       expect(scorecard.deliveriesCompleted).toBe(0);
@@ -528,10 +536,14 @@ describe("Route Performance Analytics", () => {
 
   describe("Service Level Metrics", () => {
     it("should calculate SLA compliance per tier", () => {
-      const metrics = calculateServiceLevelMetrics("tenant_1", {
-        from: today,
-        to: new Date(today.getTime() + 24 * 60 * 60 * 1000),
-      }, mockRoutes);
+      const metrics = calculateServiceLevelMetrics(
+        "tenant_1",
+        {
+          from: today,
+          to: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        },
+        mockRoutes,
+      );
 
       expect(metrics).toBeDefined();
       expect(metrics.tenantId).toBe("tenant_1");
@@ -542,20 +554,28 @@ describe("Route Performance Analytics", () => {
     });
 
     it("should calculate first attempt rate", () => {
-      const metrics = calculateServiceLevelMetrics("tenant_1", {
-        from: today,
-        to: new Date(today.getTime() + 24 * 60 * 60 * 1000),
-      }, mockRoutes);
+      const metrics = calculateServiceLevelMetrics(
+        "tenant_1",
+        {
+          from: today,
+          to: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        },
+        mockRoutes,
+      );
 
       expect(metrics.firstAttemptRate).toBeGreaterThanOrEqual(0);
       expect(metrics.firstAttemptRate).toBeLessThanOrEqual(100);
     });
 
     it("should calculate return and failure rates", () => {
-      const metrics = calculateServiceLevelMetrics("tenant_1", {
-        from: today,
-        to: new Date(today.getTime() + 24 * 60 * 60 * 1000),
-      }, mockRoutes);
+      const metrics = calculateServiceLevelMetrics(
+        "tenant_1",
+        {
+          from: today,
+          to: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        },
+        mockRoutes,
+      );
 
       expect(metrics.returnRate).toBeGreaterThanOrEqual(0);
       expect(metrics.failureRate).toBeGreaterThanOrEqual(0);
@@ -584,7 +604,7 @@ describe("Route Performance Analytics", () => {
       const efficiency = calculateRouteEfficiency(mockRoutes[0]);
 
       expect(["excellent", "good", "fair", "poor"]).toContain(
-        efficiency.efficiencyRating
+        efficiency.efficiencyRating,
       );
     });
 

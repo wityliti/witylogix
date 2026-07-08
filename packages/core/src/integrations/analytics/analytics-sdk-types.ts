@@ -34,7 +34,7 @@ export interface NormalizedDashboard {
 export interface DashboardItem {
   id: string;
   title: string;
-  type: 'chart' | 'table' | 'kpi' | 'image' | 'text' | 'filter' | 'parameter';
+  type: "chart" | "table" | "kpi" | "image" | "text" | "filter" | "parameter";
   x: number;
   y: number;
   width: number;
@@ -50,7 +50,7 @@ export interface DashboardItem {
 export interface DashboardParameter {
   id: string;
   name: string;
-  type: 'string' | 'number' | 'date' | 'boolean';
+  type: "string" | "number" | "date" | "boolean";
   defaultValue?: unknown;
   values?: unknown[];
   allowMultiple?: boolean;
@@ -63,7 +63,13 @@ export interface DashboardFilter {
   id: string;
   name: string;
   field: string;
-  operator: 'equals' | 'contains' | 'in' | 'between' | 'greater_than' | 'less_than';
+  operator:
+    | "equals"
+    | "contains"
+    | "in"
+    | "between"
+    | "greater_than"
+    | "less_than";
   values?: unknown[];
   defaultValue?: unknown;
 }
@@ -105,7 +111,7 @@ export interface ReportPage {
 export interface ReportParameter {
   id: string;
   name: string;
-  type: 'string' | 'number' | 'date' | 'boolean' | 'datetime';
+  type: "string" | "number" | "date" | "boolean" | "datetime";
   defaultValue?: unknown;
   values?: unknown[];
   allowMultiple?: boolean;
@@ -117,7 +123,7 @@ export interface ReportParameter {
 export interface Visualization {
   id: string;
   name: string;
-  type: 'chart' | 'table' | 'kpi' | 'gauge' | 'map' | 'scatter';
+  type: "chart" | "table" | "kpi" | "gauge" | "map" | "scatter";
   query?: QueryDefinition;
   config?: Record<string, unknown>;
   drilldownConfig?: Record<string, unknown>;
@@ -165,7 +171,14 @@ export interface DatasetColumn {
   id: string;
   name: string;
   displayName?: string;
-  type: 'string' | 'number' | 'integer' | 'date' | 'datetime' | 'boolean' | 'currency';
+  type:
+    | "string"
+    | "number"
+    | "integer"
+    | "date"
+    | "datetime"
+    | "boolean"
+    | "currency";
   isHidden?: boolean;
   format?: string;
 }
@@ -178,8 +191,8 @@ export interface Measure {
   name: string;
   displayName?: string;
   expression?: string;
-  type: 'sum' | 'avg' | 'count' | 'distinct_count' | 'min' | 'max' | 'custom';
-  dataType: 'number' | 'currency' | 'percent';
+  type: "sum" | "avg" | "count" | "distinct_count" | "min" | "max" | "custom";
+  dataType: "number" | "currency" | "percent";
   format?: string;
 }
 
@@ -190,9 +203,9 @@ export interface Dimension {
   id: string;
   name: string;
   displayName?: string;
-  type: 'text' | 'date' | 'datetime' | 'time' | 'geographic' | 'number';
+  type: "text" | "date" | "datetime" | "time" | "geographic" | "number";
   hierarchy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 /**
@@ -204,7 +217,7 @@ export interface DatasetRelationship {
   fromColumn: string;
   toTable: string;
   toColumn: string;
-  cardinality: 'one_to_one' | 'one_to_many' | 'many_to_many';
+  cardinality: "one_to_one" | "one_to_many" | "many_to_many";
 }
 
 /**
@@ -212,7 +225,7 @@ export interface DatasetRelationship {
  */
 export interface RefreshSchedule {
   enabled: boolean;
-  frequency: 'hourly' | 'daily' | 'weekly' | 'monthly';
+  frequency: "hourly" | "daily" | "weekly" | "monthly";
   time?: string; // HH:mm format
   daysOfWeek?: number[]; // 0-6
   daysOfMonth?: number[]; // 1-31
@@ -225,7 +238,7 @@ export interface RefreshSchedule {
 export interface DatasetParameter {
   id: string;
   name: string;
-  type: 'string' | 'number' | 'date' | 'boolean';
+  type: "string" | "number" | "date" | "boolean";
   defaultValue?: unknown;
 }
 
@@ -254,7 +267,16 @@ export interface QueryDefinition {
  */
 export interface QueryFilter {
   field: string;
-  operator: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'contains' | 'in' | 'between';
+  operator:
+    | "eq"
+    | "ne"
+    | "gt"
+    | "gte"
+    | "lt"
+    | "lte"
+    | "contains"
+    | "in"
+    | "between";
   value?: unknown;
   valueTo?: unknown;
 }
@@ -264,7 +286,7 @@ export interface QueryFilter {
  */
 export interface Aggregation {
   field: string;
-  function: 'sum' | 'avg' | 'count' | 'distinct_count' | 'min' | 'max';
+  function: "sum" | "avg" | "count" | "distinct_count" | "min" | "max";
   alias?: string;
 }
 
@@ -273,7 +295,7 @@ export interface Aggregation {
  */
 export interface OrderBy {
   field: string;
-  direction: 'asc' | 'desc';
+  direction: "asc" | "desc";
 }
 
 /**
@@ -297,7 +319,7 @@ export interface QueryResult {
 export interface Column {
   name: string;
   displayName?: string;
-  type: 'string' | 'number' | 'date' | 'datetime' | 'boolean';
+  type: "string" | "number" | "date" | "datetime" | "boolean";
   format?: string;
 }
 
@@ -307,7 +329,7 @@ export interface Column {
  * Embed configuration for embedding dashboards/reports.
  */
 export interface EmbedConfig {
-  type: 'dashboard' | 'report' | 'view' | 'look';
+  type: "dashboard" | "report" | "view" | "look";
   contentId: string;
   contentName?: string;
   url?: string;
@@ -326,7 +348,7 @@ export interface EmbedConfig {
  * Embed permission.
  */
 export interface EmbedPermission {
-  action: 'view' | 'edit' | 'export' | 'share' | 'download';
+  action: "view" | "edit" | "export" | "share" | "download";
   allowed: boolean;
 }
 
@@ -335,7 +357,7 @@ export interface EmbedPermission {
  */
 export interface RLSRule {
   column: string;
-  operator: 'equals' | 'in' | 'like' | 'contains';
+  operator: "equals" | "in" | "like" | "contains";
   value: string | string[];
   userIdentifier: string;
 }
@@ -357,7 +379,7 @@ export interface EmbedTheme {
 /**
  * Export format options.
  */
-export type ExportFormat = 'pdf' | 'png' | 'jpg' | 'xlsx' | 'csv' | 'pptx';
+export type ExportFormat = "pdf" | "png" | "jpg" | "xlsx" | "csv" | "pptx";
 
 /**
  * Export configuration.
@@ -365,8 +387,8 @@ export type ExportFormat = 'pdf' | 'png' | 'jpg' | 'xlsx' | 'csv' | 'pptx';
 export interface ExportConfig {
   format: ExportFormat;
   fileName?: string;
-  pageSize?: 'letter' | 'a4' | 'a3';
-  orientation?: 'portrait' | 'landscape';
+  pageSize?: "letter" | "a4" | "a3";
+  orientation?: "portrait" | "landscape";
   includeFilters?: boolean;
   includeTimestamp?: boolean;
   width?: number;
@@ -378,7 +400,7 @@ export interface ExportConfig {
  */
 export interface ExportResult {
   id: string;
-  status: 'pending' | 'completed' | 'failed';
+  status: "pending" | "completed" | "failed";
   format: ExportFormat;
   downloadUrl?: string;
   fileSize?: number;
@@ -395,7 +417,7 @@ export interface ExportResult {
 export interface DataSource {
   id: string;
   name: string;
-  type: 'database' | 'api' | 'cloud' | 'file' | 'stream';
+  type: "database" | "api" | "cloud" | "file" | "stream";
   connectionType?: string;
   refreshSchedule?: RefreshSchedule;
   lastRefreshedAt?: Date;
@@ -414,7 +436,7 @@ export interface DataSource {
 export interface ScheduleConfig {
   id: string;
   name: string;
-  frequency: 'hourly' | 'daily' | 'weekly' | 'monthly' | 'custom';
+  frequency: "hourly" | "daily" | "weekly" | "monthly" | "custom";
   time?: string; // HH:mm format
   daysOfWeek?: number[]; // 0-6
   daysOfMonth?: number[]; // 1-31
@@ -431,7 +453,7 @@ export interface SubscriptionConfig {
   id: string;
   name: string;
   contentId: string;
-  contentType: 'dashboard' | 'report' | 'dataset';
+  contentType: "dashboard" | "report" | "dataset";
   recipients: string[]; // email addresses
   schedule: ScheduleConfig;
   format?: ExportFormat;
@@ -447,17 +469,17 @@ export interface SubscriptionConfig {
  * Webhook event types.
  */
 export type WebhookEventType =
-  | 'dashboard.created'
-  | 'dashboard.updated'
-  | 'dashboard.deleted'
-  | 'report.created'
-  | 'report.updated'
-  | 'report.deleted'
-  | 'dataset.refreshed'
-  | 'dataset.failed'
-  | 'query.executed'
-  | 'export.completed'
-  | 'subscription.triggered';
+  | "dashboard.created"
+  | "dashboard.updated"
+  | "dashboard.deleted"
+  | "report.created"
+  | "report.updated"
+  | "report.deleted"
+  | "dataset.refreshed"
+  | "dataset.failed"
+  | "query.executed"
+  | "export.completed"
+  | "subscription.triggered";
 
 /**
  * Webhook configuration.
@@ -482,7 +504,13 @@ export interface WebhookPayload {
   timestamp: Date;
   eventType: WebhookEventType;
   resourceId: string;
-  resourceType: 'dashboard' | 'report' | 'dataset' | 'query' | 'export' | 'subscription';
+  resourceType:
+    | "dashboard"
+    | "report"
+    | "dataset"
+    | "query"
+    | "export"
+    | "subscription";
   data: Record<string, unknown>;
   source?: string;
 }
@@ -539,7 +567,7 @@ export interface PaginatedResponse<T> {
  * Health check result.
  */
 export interface HealthCheckResult {
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: "healthy" | "degraded" | "unhealthy";
   timestamp: Date;
   responseTimeMs: number;
   details?: Record<string, unknown>;

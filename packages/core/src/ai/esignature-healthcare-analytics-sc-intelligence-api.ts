@@ -14,7 +14,7 @@ import {
   createDocumentIntelligence,
   type DocumentAnalysis,
   type VersionComparisonResult,
-} from './document-intelligence.js';
+} from "./document-intelligence.js";
 
 import {
   createClinicalDecisionSupport,
@@ -23,7 +23,7 @@ import {
   type LabResult,
   type DiagnosisSuggestion,
   type RiskScore,
-} from './clinical-decision-support.js';
+} from "./clinical-decision-support.js";
 
 import {
   createAnomalyDetector,
@@ -32,7 +32,7 @@ import {
   type Forecast,
   type Alert,
   type RootCauseAnalysis,
-} from './analytics-anomaly-detector.js';
+} from "./analytics-anomaly-detector.js";
 
 import {
   createSupplyChainOptimizer,
@@ -41,7 +41,7 @@ import {
   type InventoryOptimization,
   type FulfillmentPlan,
   type NetworkOptimization,
-} from './supply-chain-demand-forecaster.js';
+} from "./supply-chain-demand-forecaster.js";
 
 // ─── API TYPES ──────────────────────────────────────────────────────────────
 
@@ -128,7 +128,7 @@ export interface GetDiagnosisResponse {
 }
 
 export interface CalculateRiskScoreRequest {
-  scoreType: 'framingham' | 'ascvd' | 'wells_pe' | 'chads2vasc';
+  scoreType: "framingham" | "ascvd" | "wells_pe" | "chads2vasc";
   parameters: Record<string, any>;
 }
 
@@ -157,7 +157,7 @@ export interface AnalyzeMetricResponse {
 export interface GetAnomaliesRequest {
   metricName: string;
   timeSeries: Array<{ timestamp: string; value: number }>;
-  method?: 'zscore' | 'iqr' | 'isolation';
+  method?: "zscore" | "iqr" | "isolation";
 }
 
 export interface GetAnomaliesResponse {
@@ -298,7 +298,9 @@ export class IntelligenceAPIHandler {
    * POST /api/intelligence/document/analyze
    * Analyze a document for classification, risk, completeness
    */
-  async analyzeDocument(req: AnalyzeDocumentRequest): Promise<ApiResponse<AnalyzeDocumentResponse>> {
+  async analyzeDocument(
+    req: AnalyzeDocumentRequest,
+  ): Promise<ApiResponse<AnalyzeDocumentResponse>> {
     const startTime = Date.now();
 
     try {
@@ -316,7 +318,8 @@ export class IntelligenceAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Document analysis failed',
+        error:
+          error instanceof Error ? error.message : "Document analysis failed",
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
       };
@@ -328,12 +331,15 @@ export class IntelligenceAPIHandler {
    * Compare two document versions and identify risk delta
    */
   async compareDocumentVersions(
-    req: CompareDocumentVersionsRequest
+    req: CompareDocumentVersionsRequest,
   ): Promise<ApiResponse<CompareDocumentVersionsResponse>> {
     const startTime = Date.now();
 
     try {
-      const comparison = this.docIntelligence.compareVersions(req.previousContent, req.currentContent);
+      const comparison = this.docIntelligence.compareVersions(
+        req.previousContent,
+        req.currentContent,
+      );
 
       return {
         success: true,
@@ -347,7 +353,8 @@ export class IntelligenceAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Version comparison failed',
+        error:
+          error instanceof Error ? error.message : "Version comparison failed",
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
       };
@@ -361,12 +368,14 @@ export class IntelligenceAPIHandler {
    * Check for drug-drug interactions
    */
   async checkDrugInteractions(
-    req: CheckDrugInteractionRequest
+    req: CheckDrugInteractionRequest,
   ): Promise<ApiResponse<CheckDrugInteractionResponse>> {
     const startTime = Date.now();
 
     try {
-      const interactions = this.clinicalSupport.checkDrugSafety(req.medications);
+      const interactions = this.clinicalSupport.checkDrugSafety(
+        req.medications,
+      );
       const safetyScore = 100 - Math.min(100, interactions.length * 25);
 
       const recommendations = interactions.map((i) => i.managementStrategy);
@@ -384,7 +393,10 @@ export class IntelligenceAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Drug interaction check failed',
+        error:
+          error instanceof Error
+            ? error.message
+            : "Drug interaction check failed",
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
       };
@@ -396,15 +408,20 @@ export class IntelligenceAPIHandler {
    * Check for allergy conflicts with proposed medications
    */
   async checkAllergyConflicts(
-    req: CheckAllergyConflictRequest
+    req: CheckAllergyConflictRequest,
   ): Promise<ApiResponse<CheckAllergyConflictResponse>> {
     const startTime = Date.now();
 
     try {
-      const alerts = this.clinicalSupport.checkAllergyConflicts(req.allergies, req.proposedMedications);
-      const isSafe = alerts.every((a) => a.severity !== 'anaphylaxis');
+      const alerts = this.clinicalSupport.checkAllergyConflicts(
+        req.allergies,
+        req.proposedMedications,
+      );
+      const isSafe = alerts.every((a) => a.severity !== "anaphylaxis");
 
-      const recommendations = alerts.map((a) => `Avoid ${a.allergen}: ${a.manifestations.join(', ')}`);
+      const recommendations = alerts.map(
+        (a) => `Avoid ${a.allergen}: ${a.manifestations.join(", ")}`,
+      );
 
       return {
         success: true,
@@ -419,7 +436,7 @@ export class IntelligenceAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Allergy check failed',
+        error: error instanceof Error ? error.message : "Allergy check failed",
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
       };
@@ -431,7 +448,7 @@ export class IntelligenceAPIHandler {
    * Interpret a lab result with reference ranges
    */
   async interpretLabResult(
-    req: InterpretLabResultRequest
+    req: InterpretLabResultRequest,
   ): Promise<ApiResponse<InterpretLabResultResponse>> {
     const startTime = Date.now();
 
@@ -441,14 +458,18 @@ export class IntelligenceAPIHandler {
         req.value,
         req.unit,
         req.ageYears,
-        req.isMale
+        req.isMale,
       );
 
       const recommendations: string[] = [];
-      if (result.flag === 'H') {
-        recommendations.push(`${req.testName} is elevated. Monitor and investigate cause.`);
-      } else if (result.flag === 'L') {
-        recommendations.push(`${req.testName} is low. Consider supplementation.`);
+      if (result.flag === "H") {
+        recommendations.push(
+          `${req.testName} is elevated. Monitor and investigate cause.`,
+        );
+      } else if (result.flag === "L") {
+        recommendations.push(
+          `${req.testName} is low. Consider supplementation.`,
+        );
       }
 
       return {
@@ -468,7 +489,8 @@ export class IntelligenceAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Lab interpretation failed',
+        error:
+          error instanceof Error ? error.message : "Lab interpretation failed",
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
       };
@@ -479,18 +501,25 @@ export class IntelligenceAPIHandler {
    * POST /api/intelligence/clinical/diagnoses
    * Get differential diagnosis suggestions
    */
-  async getDiagnoses(req: GetDiagnosisRequest): Promise<ApiResponse<GetDiagnosisResponse>> {
+  async getDiagnoses(
+    req: GetDiagnosisRequest,
+  ): Promise<ApiResponse<GetDiagnosisResponse>> {
     const startTime = Date.now();
 
     try {
-      const diagnoses = this.clinicalSupport.diagnosisSuggester.suggestDiagnoses(req.symptoms);
+      const diagnoses =
+        this.clinicalSupport.diagnosisSuggester.suggestDiagnoses(req.symptoms);
       const topDifferential = diagnoses[0] || null;
 
       const redFlags = new Set<string>();
-      diagnoses.slice(0, 3).forEach((d) => d.redFlags.forEach((rf) => redFlags.add(rf)));
+      diagnoses
+        .slice(0, 3)
+        .forEach((d) => d.redFlags.forEach((rf) => redFlags.add(rf)));
 
       const nextSteps = new Set<string>();
-      diagnoses.slice(0, 3).forEach((d) => d.nextSteps.forEach((ns) => nextSteps.add(ns)));
+      diagnoses
+        .slice(0, 3)
+        .forEach((d) => d.nextSteps.forEach((ns) => nextSteps.add(ns)));
 
       return {
         success: true,
@@ -506,7 +535,10 @@ export class IntelligenceAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Diagnosis suggestion failed',
+        error:
+          error instanceof Error
+            ? error.message
+            : "Diagnosis suggestion failed",
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
       };
@@ -518,7 +550,7 @@ export class IntelligenceAPIHandler {
    * Calculate clinical risk scores (Framingham, ASCVD, Wells, CHADS2-VASc)
    */
   async calculateRiskScore(
-    req: CalculateRiskScoreRequest
+    req: CalculateRiskScoreRequest,
   ): Promise<ApiResponse<CalculateRiskScoreResponse>> {
     const startTime = Date.now();
 
@@ -527,28 +559,56 @@ export class IntelligenceAPIHandler {
       let score: RiskScore;
 
       switch (req.scoreType) {
-        case 'framingham':
+        case "framingham":
           score = this.clinicalSupport.riskStratifier.calculateFraminghamRisk(
-            p.age, p.isMale, p.ldl, p.hdl, p.sbp, p.smoker, p.diabetic
+            p.age,
+            p.isMale,
+            p.ldl,
+            p.hdl,
+            p.sbp,
+            p.smoker,
+            p.diabetic,
           );
           break;
-        case 'ascvd':
+        case "ascvd":
           score = this.clinicalSupport.riskStratifier.calculateASCVDRisk(
-            p.age, p.isMale, p.race, p.tc, p.ldl, p.hdl, p.sbp, p.treated, p.smoker, p.diabetic
+            p.age,
+            p.isMale,
+            p.race,
+            p.tc,
+            p.ldl,
+            p.hdl,
+            p.sbp,
+            p.treated,
+            p.smoker,
+            p.diabetic,
           );
           break;
-        case 'wells_pe':
+        case "wells_pe":
           score = this.clinicalSupport.riskStratifier.calculateWellsPEScore(
-            p.clinicalSuspicion, p.hr, p.respiratoryRate, p.o2Sat, p.dvtSigns, p.heartFailure, p.hvitPattern
+            p.clinicalSuspicion,
+            p.hr,
+            p.respiratoryRate,
+            p.o2Sat,
+            p.dvtSigns,
+            p.heartFailure,
+            p.hvitPattern,
           );
           break;
-        case 'chads2vasc':
+        case "chads2vasc":
           score = this.clinicalSupport.riskStratifier.calculateCHADS2VASc(
-            p.age, p.chf, p.hypertension, p.stroke, p.vte, p.bleeding, p.isMale, p.vascular
+            p.age,
+            p.chf,
+            p.hypertension,
+            p.stroke,
+            p.vte,
+            p.bleeding,
+            p.isMale,
+            p.vascular,
           );
           break;
         default:
-          throw new Error('Unknown score type');
+          throw new Error("Unknown score type");
       }
 
       const recommendations = [
@@ -568,7 +628,10 @@ export class IntelligenceAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Risk score calculation failed',
+        error:
+          error instanceof Error
+            ? error.message
+            : "Risk score calculation failed",
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
       };
@@ -581,7 +644,9 @@ export class IntelligenceAPIHandler {
    * POST /api/intelligence/analytics/analyze-metric
    * Comprehensive metric analysis (trend, anomalies, forecasts, alerts)
    */
-  async analyzeMetric(req: AnalyzeMetricRequest): Promise<ApiResponse<AnalyzeMetricResponse>> {
+  async analyzeMetric(
+    req: AnalyzeMetricRequest,
+  ): Promise<ApiResponse<AnalyzeMetricResponse>> {
     const startTime = Date.now();
 
     try {
@@ -611,7 +676,8 @@ export class IntelligenceAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Metric analysis failed',
+        error:
+          error instanceof Error ? error.message : "Metric analysis failed",
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
       };
@@ -622,7 +688,9 @@ export class IntelligenceAPIHandler {
    * POST /api/intelligence/analytics/anomalies
    * Detect anomalies using specified method
    */
-  async getAnomalies(req: GetAnomaliesRequest): Promise<ApiResponse<GetAnomaliesResponse>> {
+  async getAnomalies(
+    req: GetAnomaliesRequest,
+  ): Promise<ApiResponse<GetAnomaliesResponse>> {
     const startTime = Date.now();
 
     try {
@@ -633,10 +701,12 @@ export class IntelligenceAPIHandler {
 
       const anomalies = this.anomalyDetector.detector.detectAnomalies(
         data,
-        req.method || 'zscore'
+        req.method || "zscore",
       );
 
-      const highSeverity = anomalies.filter((a) => a.severity === 'high').length;
+      const highSeverity = anomalies.filter(
+        (a) => a.severity === "high",
+      ).length;
 
       return {
         success: true,
@@ -651,7 +721,8 @@ export class IntelligenceAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Anomaly detection failed',
+        error:
+          error instanceof Error ? error.message : "Anomaly detection failed",
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
       };
@@ -662,7 +733,9 @@ export class IntelligenceAPIHandler {
    * POST /api/intelligence/analytics/forecast
    * Generate time series forecasts
    */
-  async getForecast(req: GetForecastRequest): Promise<ApiResponse<GetForecastResponse>> {
+  async getForecast(
+    req: GetForecastRequest,
+  ): Promise<ApiResponse<GetForecastResponse>> {
     const startTime = Date.now();
 
     try {
@@ -673,7 +746,7 @@ export class IntelligenceAPIHandler {
 
       const forecasts = this.anomalyDetector.forecastEngine.forecast(
         data,
-        req.daysAhead || 7
+        req.daysAhead || 7,
       );
 
       const nextValue = forecasts[0]?.predictedValue || 0;
@@ -683,7 +756,10 @@ export class IntelligenceAPIHandler {
         data: {
           forecasts,
           nextValue,
-          confidenceInterval: forecasts[0]?.confidenceInterval || { lower: 0, upper: 0 },
+          confidenceInterval: forecasts[0]?.confidenceInterval || {
+            lower: 0,
+            upper: 0,
+          },
         },
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
@@ -691,7 +767,8 @@ export class IntelligenceAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Forecast generation failed',
+        error:
+          error instanceof Error ? error.message : "Forecast generation failed",
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
       };
@@ -702,7 +779,9 @@ export class IntelligenceAPIHandler {
    * POST /api/intelligence/analytics/root-cause
    * Analyze root cause of anomalies
    */
-  async getRootCause(req: GetRootCauseRequest): Promise<ApiResponse<GetRootCauseResponse>> {
+  async getRootCause(
+    req: GetRootCauseRequest,
+  ): Promise<ApiResponse<GetRootCauseResponse>> {
     const startTime = Date.now();
 
     try {
@@ -719,7 +798,7 @@ export class IntelligenceAPIHandler {
 
       const analysis = this.anomalyDetector.rootCauseAnalyzer.analyze(
         req.anomalies,
-        dimensionalData
+        dimensionalData,
       );
 
       return {
@@ -735,7 +814,8 @@ export class IntelligenceAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Root cause analysis failed',
+        error:
+          error instanceof Error ? error.message : "Root cause analysis failed",
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
       };
@@ -748,7 +828,9 @@ export class IntelligenceAPIHandler {
    * POST /api/intelligence/supply-chain/forecast-demand
    * Forecast demand using Holt-Winters
    */
-  async forecastDemand(req: ForecastDemandRequest): Promise<ApiResponse<ForecastDemandResponse>> {
+  async forecastDemand(
+    req: ForecastDemandRequest,
+  ): Promise<ApiResponse<ForecastDemandResponse>> {
     const startTime = Date.now();
 
     try {
@@ -757,7 +839,7 @@ export class IntelligenceAPIHandler {
         req.historicalMonthlyDemand,
         undefined,
         req.promotionFactor,
-        req.externalFactors
+        req.externalFactors,
       );
 
       const recommendations = [
@@ -778,7 +860,8 @@ export class IntelligenceAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Demand forecast failed',
+        error:
+          error instanceof Error ? error.message : "Demand forecast failed",
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
       };
@@ -790,7 +873,7 @@ export class IntelligenceAPIHandler {
    * Score supplier risk across multiple dimensions
    */
   async scoreSupplierRisk(
-    req: ScoreSupplierRiskRequest
+    req: ScoreSupplierRiskRequest,
   ): Promise<ApiResponse<ScoreSupplierRiskResponse>> {
     const startTime = Date.now();
 
@@ -803,7 +886,7 @@ export class IntelligenceAPIHandler {
         req.geopoliticalRisk,
         req.isSingleSource,
         req.creditScore,
-        req.yearsInBusiness
+        req.yearsInBusiness,
       );
 
       return {
@@ -819,7 +902,10 @@ export class IntelligenceAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Supplier risk scoring failed',
+        error:
+          error instanceof Error
+            ? error.message
+            : "Supplier risk scoring failed",
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
       };
@@ -831,21 +917,22 @@ export class IntelligenceAPIHandler {
    * Optimize inventory levels for service target
    */
   async optimizeInventory(
-    req: OptimizeInventoryRequest
+    req: OptimizeInventoryRequest,
   ): Promise<ApiResponse<OptimizeInventoryResponse>> {
     const startTime = Date.now();
 
     try {
-      const optimization = this.supplyChainOptimizer.inventoryOptimizer.optimizeInventory(
-        req.skuId,
-        req.annualDemandUnits,
-        req.unitCost,
-        req.holdingCostPercentage,
-        req.orderingCostPerOrder,
-        req.leadTimeDays,
-        req.leadTimeStdDevDays,
-        req.targetServiceLevel
-      );
+      const optimization =
+        this.supplyChainOptimizer.inventoryOptimizer.optimizeInventory(
+          req.skuId,
+          req.annualDemandUnits,
+          req.unitCost,
+          req.holdingCostPercentage,
+          req.orderingCostPerOrder,
+          req.leadTimeDays,
+          req.leadTimeStdDevDays,
+          req.targetServiceLevel,
+        );
 
       const recommendations = [
         `Reorder at ${optimization.reorderPoint} units`,
@@ -866,7 +953,10 @@ export class IntelligenceAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Inventory optimization failed',
+        error:
+          error instanceof Error
+            ? error.message
+            : "Inventory optimization failed",
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
       };
@@ -877,7 +967,9 @@ export class IntelligenceAPIHandler {
    * POST /api/intelligence/supply-chain/fulfillment-plan
    * Plan order fulfillment across warehouse network
    */
-  async planFulfillment(req: PlanFulfillmentRequest): Promise<ApiResponse<PlanFulfillmentResponse>> {
+  async planFulfillment(
+    req: PlanFulfillmentRequest,
+  ): Promise<ApiResponse<PlanFulfillmentResponse>> {
     const startTime = Date.now();
 
     try {
@@ -885,7 +977,7 @@ export class IntelligenceAPIHandler {
         req.orderId,
         req.itemQuantity,
         req.destinationZipCode,
-        req.warehouses
+        req.warehouses,
       );
 
       return {
@@ -901,7 +993,10 @@ export class IntelligenceAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Fulfillment planning failed',
+        error:
+          error instanceof Error
+            ? error.message
+            : "Fulfillment planning failed",
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
       };
@@ -912,21 +1007,23 @@ export class IntelligenceAPIHandler {
    * POST /api/intelligence/supply-chain/network-analyze
    * Analyze warehouse network efficiency and optimization
    */
-  async analyzeNetwork(req: AnalyzeNetworkRequest): Promise<ApiResponse<AnalyzeNetworkResponse>> {
+  async analyzeNetwork(
+    req: AnalyzeNetworkRequest,
+  ): Promise<ApiResponse<AnalyzeNetworkResponse>> {
     const startTime = Date.now();
 
     try {
       const analysis = this.supplyChainOptimizer.networkAnalyzer.analyzeNetwork(
         req.warehouses,
-        req.shipmentHistory || []
+        req.shipmentHistory || [],
       );
 
       const warehouseScores = analysis.warehouseScores.map((w) => ({
         warehouseId: w.warehouseId,
         score: Math.round(w.coverage * 100),
         issues: [
-          w.capacityUtilization > 0.9 ? 'High utilization' : '',
-          w.deliveryDaysTo95thPercentile > 3 ? 'Slow delivery' : '',
+          w.capacityUtilization > 0.9 ? "High utilization" : "",
+          w.deliveryDaysTo95thPercentile > 3 ? "Slow delivery" : "",
         ].filter(Boolean),
       }));
 
@@ -943,7 +1040,8 @@ export class IntelligenceAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Network analysis failed',
+        error:
+          error instanceof Error ? error.message : "Network analysis failed",
         timestamp: new Date().toISOString(),
         executionTimeMs: Date.now() - startTime,
       };

@@ -105,7 +105,7 @@ function extractTenantTables(schemaFiles: string[]): Map<string, string[]> {
 function getTablesWithRls(allMigrationSql: string): Set<string> {
   const rlsTables = new Set<string>();
   const matches = allMigrationSql.matchAll(
-    /ALTER\s+TABLE\s+(\w+)\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY/gi
+    /ALTER\s+TABLE\s+(\w+)\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY/gi,
   );
   for (const m of matches) {
     rlsTables.add(m[1].toLowerCase());
@@ -132,17 +132,17 @@ function main() {
 
   if (missing.length === 0) {
     console.log(
-      `✓ RLS coverage OK — all ${tenantTables.size} tenant-scoped tables have policies.`
+      `✓ RLS coverage OK — all ${tenantTables.size} tenant-scoped tables have policies.`,
     );
     process.exit(0);
   }
 
   console.error(
-    `✗ RLS coverage gap: ${missing.length} tenant-scoped table(s) missing RLS policies:\n`
+    `✗ RLS coverage gap: ${missing.length} tenant-scoped table(s) missing RLS policies:\n`,
   );
   console.error(missing.join("\n"));
   console.error(
-    "\nAdd ENABLE ROW LEVEL SECURITY + a tenant_isolation policy in a new migration under packages/db/prisma/migrations/."
+    "\nAdd ENABLE ROW LEVEL SECURITY + a tenant_isolation policy in a new migration under packages/db/prisma/migrations/.",
   );
   process.exit(1);
 }

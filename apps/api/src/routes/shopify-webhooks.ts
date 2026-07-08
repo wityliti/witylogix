@@ -93,10 +93,7 @@ const SHOPIFY_SECRET = process.env.SHOPIFY_API_SECRET || "test-secret";
 async function findShopByDomain(db: any, domain: string) {
   return db.shop.findFirst({
     where: {
-      OR: [
-        { domain: domain },
-        { shopifyDomain: domain },
-      ],
+      OR: [{ domain: domain }, { shopifyDomain: domain }],
     },
   });
 }
@@ -104,7 +101,7 @@ async function findShopByDomain(db: any, domain: string) {
 // ─── Route Plugin ────────────────────────────────────────
 
 export default async function shopifyWebhookRoutes(
-  fastify: FastifyInstance
+  fastify: FastifyInstance,
 ): Promise<void> {
   // All webhook routes use HMAC verification instead of JWT auth
   const hmacHook = verifyShopifyHmac(SHOPIFY_SECRET);
@@ -158,7 +155,7 @@ export default async function shopifyWebhookRoutes(
         fastify.log.error(error, "Failed to process app/installed webhook");
         return reply.code(200).send({ success: true }); // Always 200 for webhooks
       }
-    }
+    },
   );
 
   // ── POST /app/uninstalled ──────────────────────────────
@@ -186,7 +183,7 @@ export default async function shopifyWebhookRoutes(
         fastify.log.error(error, "Failed to process app/uninstalled webhook");
         return reply.code(200).send({ success: true });
       }
-    }
+    },
   );
 
   // ── POST /customers/data-request — GDPR ───────────────
@@ -200,7 +197,7 @@ export default async function shopifyWebhookRoutes(
 
         const shop = await findShopByDomain(
           (fastify as any).db,
-          payload.shop_domain
+          payload.shop_domain,
         );
 
         if (shop) {
@@ -223,8 +220,11 @@ export default async function shopifyWebhookRoutes(
           });
 
           fastify.log.info(
-            { shopDomain: payload.shop_domain, customerId: payload.customer.id },
-            "GDPR data request received"
+            {
+              shopDomain: payload.shop_domain,
+              customerId: payload.customer.id,
+            },
+            "GDPR data request received",
           );
         }
 
@@ -233,7 +233,7 @@ export default async function shopifyWebhookRoutes(
         fastify.log.error(error, "Failed to process GDPR data request");
         return reply.code(200).send({ success: true });
       }
-    }
+    },
   );
 
   // ── POST /customers/redact — GDPR ─────────────────────
@@ -247,7 +247,7 @@ export default async function shopifyWebhookRoutes(
 
         const shop = await findShopByDomain(
           (fastify as any).db,
-          payload.shop_domain
+          payload.shop_domain,
         );
 
         if (shop) {
@@ -286,7 +286,7 @@ export default async function shopifyWebhookRoutes(
 
           fastify.log.info(
             { customerId: payload.customer.id },
-            "GDPR customer data redacted"
+            "GDPR customer data redacted",
           );
         }
 
@@ -295,7 +295,7 @@ export default async function shopifyWebhookRoutes(
         fastify.log.error(error, "Failed to process GDPR customer redact");
         return reply.code(200).send({ success: true });
       }
-    }
+    },
   );
 
   // ── POST /shop/redact — GDPR ──────────────────────────
@@ -311,7 +311,7 @@ export default async function shopifyWebhookRoutes(
         // Delete all shop data
         const shop = await findShopByDomain(
           (fastify as any).db,
-          payload.shop_domain
+          payload.shop_domain,
         );
 
         if (shop) {
@@ -322,7 +322,7 @@ export default async function shopifyWebhookRoutes(
 
           fastify.log.info(
             { shopDomain: payload.shop_domain },
-            "GDPR shop data deleted"
+            "GDPR shop data deleted",
           );
         }
 
@@ -331,7 +331,7 @@ export default async function shopifyWebhookRoutes(
         fastify.log.error(error, "Failed to process GDPR shop redact");
         return reply.code(200).send({ success: true });
       }
-    }
+    },
   );
 
   // ── POST /orders/create — Sync new order ───────────────
@@ -348,10 +348,7 @@ export default async function shopifyWebhookRoutes(
           return reply.code(200).send({ success: true });
         }
 
-        const shop = await findShopByDomain(
-          (fastify as any).db,
-          shopDomain
-        );
+        const shop = await findShopByDomain((fastify as any).db, shopDomain);
 
         if (shop) {
           // Upsert order
@@ -364,7 +361,9 @@ export default async function shopifyWebhookRoutes(
             },
             update: {
               status: payload.fulfillment_status || "UNFULFILLED",
-              totalPrice: payload.total_price ? parseFloat(payload.total_price) : 0,
+              totalPrice: payload.total_price
+                ? parseFloat(payload.total_price)
+                : 0,
               currency: payload.currency || "USD",
               metadata: {
                 financialStatus: payload.financial_status,
@@ -378,7 +377,9 @@ export default async function shopifyWebhookRoutes(
               orderNumber: String(payload.order_number || payload.id),
               customerEmail: payload.email || null,
               status: payload.fulfillment_status || "UNFULFILLED",
-              totalPrice: payload.total_price ? parseFloat(payload.total_price) : 0,
+              totalPrice: payload.total_price
+                ? parseFloat(payload.total_price)
+                : 0,
               currency: payload.currency || "USD",
               shippingAddress: payload.shipping_address || {},
               lineItems: payload.line_items || [],
@@ -390,7 +391,7 @@ export default async function shopifyWebhookRoutes(
 
           fastify.log.info(
             { orderId: payload.id, shopId: shop.id },
-            "Order synced from Shopify"
+            "Order synced from Shopify",
           );
         }
 
@@ -399,7 +400,7 @@ export default async function shopifyWebhookRoutes(
         fastify.log.error(error, "Failed to process order/create webhook");
         return reply.code(200).send({ success: true });
       }
-    }
+    },
   );
 
   // ── POST /orders/updated — Update order ────────────────
@@ -416,10 +417,7 @@ export default async function shopifyWebhookRoutes(
           return reply.code(200).send({ success: true });
         }
 
-        const shop = await findShopByDomain(
-          (fastify as any).db,
-          shopDomain
-        );
+        const shop = await findShopByDomain((fastify as any).db, shopDomain);
 
         if (shop) {
           await (fastify as any).db.order.updateMany({
@@ -429,7 +427,9 @@ export default async function shopifyWebhookRoutes(
             },
             data: {
               status: payload.fulfillment_status || "UNFULFILLED",
-              totalPrice: payload.total_price ? parseFloat(payload.total_price) : 0,
+              totalPrice: payload.total_price
+                ? parseFloat(payload.total_price)
+                : 0,
               metadata: {
                 financialStatus: payload.financial_status,
                 lastWebhookAt: new Date().toISOString(),
@@ -439,7 +439,7 @@ export default async function shopifyWebhookRoutes(
 
           fastify.log.info(
             { orderId: payload.id },
-            "Order updated from Shopify"
+            "Order updated from Shopify",
           );
         }
 
@@ -448,7 +448,7 @@ export default async function shopifyWebhookRoutes(
         fastify.log.error(error, "Failed to process order/updated webhook");
         return reply.code(200).send({ success: true });
       }
-    }
+    },
   );
 
   // ── POST /products/update — Sync product ───────────────
@@ -465,10 +465,7 @@ export default async function shopifyWebhookRoutes(
           return reply.code(200).send({ success: true });
         }
 
-        const shop = await findShopByDomain(
-          (fastify as any).db,
-          shopDomain
-        );
+        const shop = await findShopByDomain((fastify as any).db, shopDomain);
 
         if (shop) {
           await (fastify as any).db.product.upsert({
@@ -500,7 +497,7 @@ export default async function shopifyWebhookRoutes(
 
           fastify.log.info(
             { productId: payload.id },
-            "Product synced from Shopify"
+            "Product synced from Shopify",
           );
         }
 
@@ -509,6 +506,6 @@ export default async function shopifyWebhookRoutes(
         fastify.log.error(error, "Failed to process product/update webhook");
         return reply.code(200).send({ success: true });
       }
-    }
+    },
   );
 }

@@ -15,12 +15,7 @@ import type { FastifyInstance } from "fastify";
 
 // ─── TYPE DEFINITIONS ───────────────────────────────────────────────────────
 
-export type UserRole =
-  | "admin"
-  | "merchant"
-  | "customer"
-  | "driver"
-  | "support";
+export type UserRole = "admin" | "merchant" | "customer" | "driver" | "support";
 
 export interface AuthenticatedClient {
   userId: string;
@@ -111,7 +106,10 @@ export async function waitForStatus<T extends { status: string }>(
  */
 export async function waitForWebhookDelivery(
   webhookId: string,
-  getWebhookStatus: () => Promise<{ status: string; deliveredAt?: Date } | null>,
+  getWebhookStatus: () => Promise<{
+    status: string;
+    deliveredAt?: Date;
+  } | null>,
   timeoutMs: number = 10000,
 ): Promise<boolean> {
   const startTime: number = Date.now();
@@ -159,12 +157,14 @@ export async function assertNotificationSent(
       sentAt: Date;
     }> = await getNotifications();
 
-    const found: {
-      type: string;
-      recipient: string;
-      recipientType: string;
-      sentAt: Date;
-    } | undefined = notifications.find(
+    const found:
+      | {
+          type: string;
+          recipient: string;
+          recipientType: string;
+          sentAt: Date;
+        }
+      | undefined = notifications.find(
       (n) =>
         n.type === notificationType &&
         n.recipient === recipient &&
@@ -196,7 +196,11 @@ export async function assertNotificationSent(
  * Assert that multiple notifications were sent
  */
 export async function assertNotificationsSent(
-  notifications: Array<{ type: string; recipient: string; recipientType: string }>,
+  notifications: Array<{
+    type: string;
+    recipient: string;
+    recipientType: string;
+  }>,
   getNotifications: () => Promise<
     Array<{
       type: string;
@@ -230,14 +234,12 @@ export async function assertNotificationsSent(
  */
 export async function assertInvoiceGenerated(
   orderId: string,
-  getInvoice: () => Promise<
-    {
-      id: string;
-      invoiceNumber: string;
-      amount: number;
-      generatedAt: Date;
-    } | null
-  >,
+  getInvoice: () => Promise<{
+    id: string;
+    invoiceNumber: string;
+    amount: number;
+    generatedAt: Date;
+  } | null>,
   timeoutMs: number = 15000,
 ): Promise<InvoiceAssertion> {
   const startTime: number = Date.now();
@@ -434,7 +436,11 @@ export async function connectWebSocketAndWaitForEvent<T>(
   return new Promise((resolve, reject) => {
     const timeout: NodeJS.Timeout = setTimeout(() => {
       ws.close();
-      reject(new Error(`WebSocket event "${eventType}" not received within ${timeoutMs}ms`));
+      reject(
+        new Error(
+          `WebSocket event "${eventType}" not received within ${timeoutMs}ms`,
+        ),
+      );
     }, timeoutMs);
 
     const ws: WebSocket = new WebSocket(wsUrl);
@@ -475,7 +481,9 @@ export function assertAllMatch<T>(
 ): void {
   const failing: T[] = items.filter((item) => !predicate(item));
   if (failing.length > 0) {
-    throw new Error(`${message} - Failed for ${failing.length}/${items.length} items`);
+    throw new Error(
+      `${message} - Failed for ${failing.length}/${items.length} items`,
+    );
   }
 }
 

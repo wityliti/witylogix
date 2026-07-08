@@ -1,19 +1,23 @@
 # Sprint 4.9: Demand Prediction Completion + Auto-Capacity Optimizer
 
 ## Summary
+
 Completed Sprint 4.9 with all real-time monitoring, automatic rebalancing, alerting, and model retraining systems. This delivery adds production-ready operations and optimization capabilities to the demand prediction system built in Sprint 4.8.
 
 ## Deliverables Overview
 
 ### 1. Real-Time Dashboard Service
+
 **File:** `packages/core/src/demand-prediction/realtime-dashboard.ts` (~400 lines)
 
 **Purpose:** Provides real-time demand analytics and monitoring for delivery zones
 
 **Key Classes:**
+
 - `RealtimeDashboard` - Main service class extending EventEmitter
 
 **Core Methods:**
+
 - `getCurrentDemandSnapshot(zones[])` - Live demand vs predicted per zone
 - `getDemandTimeline(zoneId, hours)` - Recent demand data points with configurable lookback
 - `getTopAnomalies(limit)` - Most significant recent anomalies sorted by severity
@@ -27,6 +31,7 @@ Completed Sprint 4.9 with all real-time monitoring, automatic rebalancing, alert
 - `getStatistics()` - Dashboard health and activity stats
 
 **Features:**
+
 - Real-time update event emitter (EventEmitter) for WebSocket integration
 - Automatic trend detection (up/down/stable)
 - Configurable history retention (max 1440 points = 24 hours)
@@ -35,6 +40,7 @@ Completed Sprint 4.9 with all real-time monitoring, automatic rebalancing, alert
 - Live utilization calculations
 
 **Types:**
+
 ```typescript
 interface DemandSnapshot {
   zoneId, timestamp, actualDemand, predictedDemand, demandGap, demandGapPercent,
@@ -55,14 +61,17 @@ interface ModelAccuracyDashboard {
 ---
 
 ### 2. Automatic Capacity Rebalancer
+
 **File:** `packages/core/src/demand-prediction/auto-rebalancer.ts` (~450 lines)
 
 **Purpose:** Monitors zone demand and automatically suggests or executes driver redistribution
 
 **Key Classes:**
+
 - `AutoRebalancer` - Main rebalancing engine
 
 **Core Methods:**
+
 - `detectImbalance(zones[])` - Compare actual demand vs capacity, classify severity
 - `suggestRebalancing(imbalances[], allZones)` - Generate optimal driver redistribution plan
 - `executeRebalancing(plan, autoApprove)` - Apply rebalancing with optional auto-approval
@@ -75,6 +84,7 @@ interface ModelAccuracyDashboard {
 - `getStatistics()` - Rebalancing activity metrics
 
 **Features:**
+
 - Configurable imbalance triggers (default 20% gap)
 - Severity classification: low/medium/high/critical
 - Automatic plan generation with surplus→shortage zone matching
@@ -88,24 +98,26 @@ interface ModelAccuracyDashboard {
 - Event emission for plan creation and execution
 
 **Configuration:**
+
 ```typescript
 interface AutoRebalancerConfig {
-  imbalanceTriggerPercent: number;        // 20
-  criticalGapPercent: number;            // 50
-  minDriverMove: number;                 // 1
-  autoApproveHighPriority: boolean;      // true
-  autoApprovalThresholdPercent: number;  // 50
-  maxDriversToMove: number;              // 10
-  minCapacityRetention: number;          // 0.7
-  safetyBuffer: number;                  // 0.15
-  driverCostPerHour: number;             // 25
-  rebalancingCostPerDriver: number;      // 5
-  monitoringIntervalSeconds: number;     // 60
-  historyRetentionDays: number;          // 30
+  imbalanceTriggerPercent: number; // 20
+  criticalGapPercent: number; // 50
+  minDriverMove: number; // 1
+  autoApproveHighPriority: boolean; // true
+  autoApprovalThresholdPercent: number; // 50
+  maxDriversToMove: number; // 10
+  minCapacityRetention: number; // 0.7
+  safetyBuffer: number; // 0.15
+  driverCostPerHour: number; // 25
+  rebalancingCostPerDriver: number; // 5
+  monitoringIntervalSeconds: number; // 60
+  historyRetentionDays: number; // 30
 }
 ```
 
 **Types:**
+
 ```typescript
 interface RebalancingPlan {
   id, planVersion, createdAt, moves[], status, impactEstimate,
@@ -123,14 +135,17 @@ interface CapacityImbalance {
 ---
 
 ### 3. Capacity Alert System
+
 **File:** `packages/core/src/demand-prediction/capacity-alerts.ts` (~350 lines)
 
 **Purpose:** Real-time alerting for capacity issues, demand spikes, and anomalies
 
 **Key Classes:**
+
 - `CapacityAlertSystem` - Main alert management system extending EventEmitter
 
 **Core Methods:**
+
 - `createRule(rule)` - Create custom alert rule
 - `updateRule(ruleId, updates)` - Modify rule configuration
 - `deleteRule(ruleId)` - Remove rule
@@ -145,12 +160,14 @@ interface CapacityImbalance {
 - `clearOldAlerts(days)` - Purge resolved alerts older than N days
 
 **Built-in Rules:**
+
 1. **demand_spike** - Demand > 50% above prediction (warning)
 2. **capacity_shortage** - Demand exceeds capacity > 30% (critical)
 3. **model_degradation** - Prediction accuracy drops > 10% (warning)
 4. **anomaly_cluster** - 3+ anomalies in 30 minutes (critical)
 
 **Features:**
+
 - Flexible rule engine with AND/OR condition logic
 - Multiple condition operators: >, <, >=, <=, ==, contains, change_percent
 - Configurable alert channels: in_app, email, slack, sms
@@ -164,6 +181,7 @@ interface CapacityImbalance {
 - Alert retention policy with auto-cleanup
 
 **Types:**
+
 ```typescript
 interface AlertRule {
   id, name, description, enabled, conditions[], conditionLogic,
@@ -184,14 +202,17 @@ interface AlertDashboard {
 ---
 
 ### 4. Model Retraining Pipeline
+
 **File:** `packages/core/src/demand-prediction/model-retrainer.ts` (~400 lines)
 
 **Purpose:** Automatic model retraining and validation system
 
 **Key Classes:**
+
 - `ModelRetrainer` - Main retraining orchestrator extending EventEmitter
 
 **Core Methods:**
+
 - `shouldRetrain(zoneId, currentMetrics)` - Check accuracy degradation
 - `isScheduledForRetraining(zoneId)` - Check if due for scheduled retrain
 - `collectTrainingData(zoneId, lookbackDays?)` - Gather recent historical data
@@ -205,6 +226,7 @@ interface AlertDashboard {
 - `getStatistics()` - Retraining activity metrics
 
 **Features:**
+
 - Automatic degradation detection (MAPE > threshold or degradation > N%)
 - Scheduled retraining (default weekly, configurable)
 - Smart data collection with feature engineering
@@ -220,42 +242,76 @@ interface AlertDashboard {
 - Event emission for monitoring integrations
 
 **Configuration:**
+
 ```typescript
 interface RetrainingConfig {
-  accuracyDegradationThreshold: number;    // 10 (%)
-  minAccuracyScore: number;               // 15 (MAPE %)
-  minImprovementPercent: number;          // 2 (%)
-  scheduleIntervalHours: number;          // 168 (weekly)
-  minDataDays: number;                    // 14
-  maxDataDays: number;                    // 90
-  minSamplesRequired: number;             // 100
-  validationSplit: number;                // 0.2
-  autoRetrain: boolean;                   // true
-  retainPreviousVersions: number;         // 3
+  accuracyDegradationThreshold: number; // 10 (%)
+  minAccuracyScore: number; // 15 (MAPE %)
+  minImprovementPercent: number; // 2 (%)
+  scheduleIntervalHours: number; // 168 (weekly)
+  minDataDays: number; // 14
+  maxDataDays: number; // 90
+  minSamplesRequired: number; // 100
+  validationSplit: number; // 0.2
+  autoRetrain: boolean; // true
+  retainPreviousVersions: number; // 3
 }
 ```
 
 **Types:**
+
 ```typescript
 interface ModelVersion {
-  version, modelType, trainedAt, trainingDataSize, metrics,
-  dataWindow, active, promotedAt, demotedAt
+  version;
+  modelType;
+  trainedAt;
+  trainingDataSize;
+  metrics;
+  dataWindow;
+  active;
+  promotedAt;
+  demotedAt;
 }
 interface RetrainingJob {
-  id, zoneId, modelType, status, requestedAt, startedAt,
-  completedAt, trainingDataSize, dataWindow, oldMetrics,
-  newMetrics, improvementPercent, promoted, reason, error
+  id;
+  zoneId;
+  modelType;
+  status;
+  requestedAt;
+  startedAt;
+  completedAt;
+  trainingDataSize;
+  dataWindow;
+  oldMetrics;
+  newMetrics;
+  improvementPercent;
+  promoted;
+  reason;
+  error;
 }
 interface RetrainingReport {
-  jobId, zoneId, modelType, status, oldMetrics, newMetrics,
-  improvementPercent, promoted, reason, requestedAt, completedAt,
-  durationSeconds, trainingDataSize, dataWindow, notes
+  jobId;
+  zoneId;
+  modelType;
+  status;
+  oldMetrics;
+  newMetrics;
+  improvementPercent;
+  promoted;
+  reason;
+  requestedAt;
+  completedAt;
+  durationSeconds;
+  trainingDataSize;
+  dataWindow;
+  notes;
 }
 ```
 
 ---
 
 ### 5. Demand Dashboard API Routes
+
 **File:** `apps/api/src/routes/demand/dashboard.ts` (~350 lines)
 
 **Purpose:** Complete REST API for dashboard, rebalancing, and alerts
@@ -263,6 +319,7 @@ interface RetrainingReport {
 **Endpoints:**
 
 #### Dashboard Endpoints
+
 - `GET /demand/dashboard/snapshot` - Current demand snapshot all zones
   - Query: `zones` (comma-separated, optional)
   - Returns: snapshots[], summary with avgUtilization, criticalZones, anomalies
@@ -282,6 +339,7 @@ interface RetrainingReport {
   - Returns: rankings[], summary with critical/high risk zones, avgGap
 
 #### Rebalancing Endpoints
+
 - `POST /demand/rebalance/suggest` - Get rebalancing suggestion
   - Body: `{ zones: [{ zoneId, demand, capacity }] }`
   - Returns: status, imbalances[], plan
@@ -294,6 +352,7 @@ interface RetrainingReport {
   - Returns: count, plans[]
 
 #### Alert Endpoints
+
 - `GET /demand/alerts` - Get alert dashboard
   - Query: optional `status`, `zoneId`
   - Returns: activeAlerts[], acknowledgedAlerts[], resolvedAlerts[], stats
@@ -307,6 +366,7 @@ interface RetrainingReport {
   - Returns: alertId, status, resolvedAt, resolvedReason
 
 #### Model Retraining Endpoints
+
 - `POST /demand/models/retrain` - Trigger retraining
   - Body: `{ zoneId, modelType, reason? }`
   - Returns: jobId, status, trainingDataSize, estimatedDuration
@@ -318,6 +378,7 @@ interface RetrainingReport {
   - Returns: history[], stats with totalRetrainings, successCount, avgImprovement
 
 **Features:**
+
 - Organization isolation via `x-org-id` header
 - Service dependency injection (per-org instances)
 - Comprehensive error handling with descriptive messages
@@ -331,9 +392,11 @@ interface RetrainingReport {
 ### 6. Test Suites
 
 #### Auto-Rebalancer Tests
+
 **File:** `packages/core/src/demand-prediction/__tests__/auto-rebalancer.test.ts` (~350 lines, 20+ tests)
 
 **Test Coverage:**
+
 - Imbalance detection (shortage, excess, severity classification)
 - Ignore threshold filtering
 - Rebalancing plan generation (surplus→shortage matching)
@@ -350,6 +413,7 @@ interface RetrainingReport {
 - Monitoring start/stop
 
 **Key Tests:**
+
 ```
 ✓ should detect capacity shortage
 ✓ should detect excess capacity
@@ -371,9 +435,11 @@ interface RetrainingReport {
 ```
 
 #### Capacity Alerts Tests
+
 **File:** `packages/core/src/demand-prediction/__tests__/capacity-alerts.test.ts` (~300 lines, 15+ tests)
 
 **Test Coverage:**
+
 - Built-in rule initialization
 - Custom rule CRUD operations
 - Threshold condition evaluation
@@ -387,6 +453,7 @@ interface RetrainingReport {
 - All condition operators (>, <, >=, <=, ==, contains)
 
 **Key Tests:**
+
 ```
 ✓ should initialize with built-in rules
 ✓ should create custom rule
@@ -407,9 +474,11 @@ interface RetrainingReport {
 ```
 
 #### Model Retrainer Tests
+
 **File:** `packages/core/src/demand-prediction/__tests__/model-retrainer.test.ts` (~300 lines, 15+ tests)
 
 **Test Coverage:**
+
 - Degradation detection (MAPE threshold, minimum accuracy score)
 - Scheduling logic (new zones, interval enforcement, config respect)
 - Training data collection and validation
@@ -423,6 +492,7 @@ interface RetrainingReport {
 - Event emission (degradation, completion, promotion)
 
 **Key Tests:**
+
 ```
 ✓ should detect accuracy degradation
 ✓ should not trigger retrain for minor changes
@@ -450,6 +520,7 @@ interface RetrainingReport {
 ## Implementation Details
 
 ### Type Safety
+
 - All classes use strict TypeScript with explicit types
 - Named imports only (no default imports)
 - Prisma typed as `(prisma as any).modelName`
@@ -457,6 +528,7 @@ interface RetrainingReport {
 - Complete return type annotations
 
 ### Architecture Patterns
+
 - Service pattern with singleton instances per organization
 - EventEmitter extension for real-time updates
 - Configuration objects for customization
@@ -465,6 +537,7 @@ interface RetrainingReport {
 - Error handling with descriptive messages
 
 ### Production Readiness
+
 - Comprehensive error handling
 - Input validation
 - Resource cleanup (timers, histories)
@@ -475,6 +548,7 @@ interface RetrainingReport {
 - Statistics and metrics tracking
 
 ### Performance Considerations
+
 - History retention limits prevent memory bloat
 - Efficient caching of zone data
 - Async retraining doesn't block monitoring
@@ -487,29 +561,32 @@ interface RetrainingReport {
 ## Integration Points
 
 ### WebSocket Integration (Dashboard)
+
 ```typescript
 const dashboard = new RealtimeDashboard(60000); // 1-minute updates
-dashboard.on('snapshot_updated', (snapshot) => {
+dashboard.on("snapshot_updated", (snapshot) => {
   // Emit to WebSocket clients
-  io.emit('demand:snapshot', snapshot);
+  io.emit("demand:snapshot", snapshot);
 });
-dashboard.startMonitoring(['zone-1', 'zone-2']);
+dashboard.startMonitoring(["zone-1", "zone-2"]);
 ```
 
 ### Message Queue Integration (Alerts)
+
 ```typescript
 const alerts = new CapacityAlertSystem();
-alerts.on('notify_slack', ({ alert }) => {
+alerts.on("notify_slack", ({ alert }) => {
   // Send to Slack webhook
   slackClient.sendMessage(alert.title);
 });
-alerts.on('notify_email', ({ alert }) => {
+alerts.on("notify_email", ({ alert }) => {
   // Send via email service
   emailService.send(alert.title);
 });
 ```
 
 ### Rebalancing Workflow
+
 ```typescript
 const rebalancer = new AutoRebalancer();
 rebalancer.startMonitoring();
@@ -524,34 +601,38 @@ const executed = rebalancer.executeRebalancing(plan, true);
 
 ## Summary Statistics
 
-| Component | Lines | Tests | Exports | Classes |
-|-----------|-------|-------|---------|---------|
-| Realtime Dashboard | ~400 | N/A | 5 types | 1 |
-| Auto-Rebalancer | ~450 | 20+ | 5 types | 1 |
-| Capacity Alerts | ~350 | 15+ | 8 types | 1 |
-| Model Retrainer | ~400 | 15+ | 6 types | 1 |
-| Dashboard API | ~350 | N/A | N/A | N/A |
-| **Total Core** | **~1950** | **50+** | **24 types** | **4** |
+| Component          | Lines     | Tests   | Exports      | Classes |
+| ------------------ | --------- | ------- | ------------ | ------- |
+| Realtime Dashboard | ~400      | N/A     | 5 types      | 1       |
+| Auto-Rebalancer    | ~450      | 20+     | 5 types      | 1       |
+| Capacity Alerts    | ~350      | 15+     | 8 types      | 1       |
+| Model Retrainer    | ~400      | 15+     | 6 types      | 1       |
+| Dashboard API      | ~350      | N/A     | N/A          | N/A     |
+| **Total Core**     | **~1950** | **50+** | **24 types** | **4**   |
 
 ---
 
 ## Files Created
 
 ### Core Implementation
+
 1. `/packages/core/src/demand-prediction/realtime-dashboard.ts`
 2. `/packages/core/src/demand-prediction/auto-rebalancer.ts`
 3. `/packages/core/src/demand-prediction/capacity-alerts.ts`
 4. `/packages/core/src/demand-prediction/model-retrainer.ts`
 
 ### API Routes
+
 5. `/apps/api/src/routes/demand/dashboard.ts`
 
 ### Test Suites
+
 6. `/packages/core/src/demand-prediction/__tests__/auto-rebalancer.test.ts`
 7. `/packages/core/src/demand-prediction/__tests__/capacity-alerts.test.ts`
 8. `/packages/core/src/demand-prediction/__tests__/model-retrainer.test.ts`
 
 ### Updates
+
 9. `/packages/core/src/demand-prediction/index.ts` - Added exports for new modules
 
 ---

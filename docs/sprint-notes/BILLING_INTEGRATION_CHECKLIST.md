@@ -3,6 +3,7 @@
 Use this checklist to integrate the billing system with your application.
 
 ## Phase 1: Review & Testing (30 mins)
+
 - [ ] Read `/BILLING_IMPLEMENTATION.md` for complete technical overview
 - [ ] Review `/BILLING_DELIVERY_SUMMARY.md` for what was built
 - [ ] Check `/packages/core/src/billing/README.md` for API reference
@@ -10,6 +11,7 @@ Use this checklist to integrate the billing system with your application.
 - [ ] Test billing endpoints locally using provided examples
 
 ## Phase 2: Integration (1-2 hours)
+
 - [ ] Copy test examples to your test suite
 - [ ] Update shipments route to check `checkUsageLimit("shipments", ...)`
 - [ ] Update drivers route to check `checkUsageLimit("drivers", ...)`
@@ -18,6 +20,7 @@ Use this checklist to integrate the billing system with your application.
 - [ ] Verify activity logs are recorded for plan changes
 
 ## Phase 3: Dashboard Integration (2-3 hours)
+
 - [ ] Display current plan tier on dashboard
 - [ ] Show usage metrics: `GET /api/v4/billing/subscription`
 - [ ] Show detailed usage: `GET /api/v4/billing/usage`
@@ -26,6 +29,7 @@ Use this checklist to integrate the billing system with your application.
 - [ ] Add warnings at 80% usage
 
 ## Phase 4: Upgrade Flow (2-3 hours)
+
 - [ ] Create plan selection UI
 - [ ] Call `POST /api/v4/billing/subscription` to upgrade
 - [ ] Redirect to Shopify confirmation URL
@@ -34,6 +38,7 @@ Use this checklist to integrate the billing system with your application.
 - [ ] Log plan changes to activity feed
 
 ## Phase 5: User Notifications (1-2 hours)
+
 - [ ] Email when approaching limit (80%)
 - [ ] Email when at limit (100%)
 - [ ] In-app notification for plan changes
@@ -41,6 +46,7 @@ Use this checklist to integrate the billing system with your application.
 - [ ] Display next billing date
 
 ## Phase 6: Shopify Integration (Phase 2)
+
 - [ ] Implement Shopify GraphQL client
 - [ ] Create actual recurring charges (not mocked)
 - [ ] Handle charge acceptance/decline
@@ -60,7 +66,7 @@ import { checkUsageLimit } from "@witylogix/core/billing/index.js";
 // In POST /shipments handler
 fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
   const shop = await request.tenantDb.shop.findUnique({
-    where: { id: request.shopId }
+    where: { id: request.shopId },
   });
 
   // Get current shipment count this month
@@ -77,13 +83,13 @@ fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
   const limitCheck = checkUsageLimit(
     shop.planTier,
     "shipments",
-    shipmentsThisMonth
+    shipmentsThisMonth,
   );
 
   if (!limitCheck.allowed) {
     throw new ConflictError(
       `Shipment limit reached (${limitCheck.limit}/month). ` +
-      `Upgrade your plan to continue: /billing/subscription`
+        `Upgrade your plan to continue: /billing/subscription`,
     );
   }
 
@@ -101,7 +107,7 @@ import { checkUsageLimit } from "@witylogix/core/billing/index.js";
 // In POST /drivers handler
 fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
   const shop = await request.tenantDb.shop.findUnique({
-    where: { id: request.shopId }
+    where: { id: request.shopId },
   });
 
   // Get current driver count
@@ -110,16 +116,12 @@ fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
   });
 
   // Check if allowed
-  const limitCheck = checkUsageLimit(
-    shop.planTier,
-    "drivers",
-    driversCount
-  );
+  const limitCheck = checkUsageLimit(shop.planTier, "drivers", driversCount);
 
   if (!limitCheck.allowed) {
     throw new ConflictError(
       `Driver limit reached (${limitCheck.limit}). ` +
-      `Upgrade your plan to add more drivers: /billing/subscription`
+        `Upgrade your plan to add more drivers: /billing/subscription`,
     );
   }
 
@@ -281,12 +283,14 @@ export function UsageChart() {
 ## Testing Checklist
 
 ### Unit Tests
+
 - [ ] `checkUsageLimit()` returns correct values
 - [ ] `calculateProration()` calculates correctly
 - [ ] `createUsageSummary()` generates proper structure
 - [ ] `getPlanComparison()` returns all plans
 
 ### Integration Tests
+
 - [ ] GET /plans returns 4 plans
 - [ ] GET /subscription returns current plan
 - [ ] POST /subscription upgrades plan
@@ -295,6 +299,7 @@ export function UsageChart() {
 - [ ] GET /invoices returns paginated invoices
 
 ### E2E Tests
+
 - [ ] User can see subscription status
 - [ ] User can upgrade plan
 - [ ] User receives Shopify confirmation URL
@@ -327,33 +332,41 @@ export function UsageChart() {
 ## Common Issues & Solutions
 
 ### Issue: Import error for @witylogix/core/billing
+
 **Solution:** Ensure the file exists at `/packages/core/src/billing/index.ts`
 
 ### Issue: Database query too slow
+
 **Solution:**
+
 - Add indexes on `shopId` and `createdAt` (already in schema)
 - Use monthly aggregation for old data
 - Implement caching for usage metrics
 
 ### Issue: Proration calculation seems off
+
 **Solution:** Use the provided `calculateProration()` function - it handles all edge cases
 
 ### Issue: Users confused about upgrade redirect
+
 **Solution:** Show clear message: "You will be redirected to Shopify to confirm your plan change"
 
 ## Support & Documentation
 
 ### For Backend Developers
+
 - See `/packages/core/src/billing/README.md` for API reference
 - See `/BILLING_QUICK_START.md` for code examples
 - See `/BILLING_IMPLEMENTATION.md` for technical details
 
 ### For Frontend Developers
+
 - See `/BILLING_QUICK_START.md` for API endpoints
 - See test examples in `/apps/api/src/routes/__tests__/billing.test.example.ts`
 - Example React components above in this checklist
 
 ### For Devops/Deployment
+
 - No new services needed
 - No new databases needed
 - No new environment variables (for MVP)
@@ -361,14 +374,14 @@ export function UsageChart() {
 
 ## Timeline Estimate
 
-| Phase | Task | Time |
-|-------|------|------|
-| 1 | Review & Testing | 0.5h |
-| 2 | Backend Integration | 1-2h |
-| 3 | Dashboard Display | 2-3h |
-| 4 | Upgrade Flow | 2-3h |
-| 5 | Notifications | 1-2h |
-| **Total** | | **7-11h** |
+| Phase     | Task                | Time      |
+| --------- | ------------------- | --------- |
+| 1         | Review & Testing    | 0.5h      |
+| 2         | Backend Integration | 1-2h      |
+| 3         | Dashboard Display   | 2-3h      |
+| 4         | Upgrade Flow        | 2-3h      |
+| 5         | Notifications       | 1-2h      |
+| **Total** |                     | **7-11h** |
 
 Add 1-2 weeks for Phase 6 (Shopify webhooks) if needed.
 
@@ -396,6 +409,7 @@ After integration, you should have:
 ## Questions?
 
 See the detailed documentation:
+
 - `/BILLING_IMPLEMENTATION.md` — Full technical guide
 - `/BILLING_QUICK_START.md` — Code examples
 - `/packages/core/src/billing/README.md` — API reference

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
 /**
  * Generic API hooks wrapping the fetch-based API client with React state management.
  * These hooks use React useState/useEffect without external dependencies like SWR.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { api, ApiResponse, PaginatedResponse } from '@/lib/api';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { api, ApiResponse, PaginatedResponse } from "@/lib/api";
 
 /**
  * Pagination metadata
@@ -141,7 +141,7 @@ export function useApiQuery<T>(
  * @returns Mutation result with execute function
  */
 export function useApiMutation<T>(
-  method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+  method: "POST" | "PUT" | "PATCH" | "DELETE",
   path: string,
 ): UseApiMutationResult<T> {
   const [data, setData] = useState<T | null>(null);
@@ -158,11 +158,11 @@ export function useApiMutation<T>(
 
         let result: ApiResponse<T>;
 
-        if (method === 'POST') {
+        if (method === "POST") {
           result = await api.post<ApiResponse<T>>(path, payload);
-        } else if (method === 'PUT') {
+        } else if (method === "PUT") {
           result = await api.put<ApiResponse<T>>(path, payload);
-        } else if (method === 'PATCH') {
+        } else if (method === "PATCH") {
           result = await api.patch<ApiResponse<T>>(path, payload);
         } else {
           result = await api.delete<ApiResponse<T>>(path);
@@ -204,8 +204,8 @@ export function useApiList<T>(
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [search, setSearch] = useState(initialFilters?.search ?? '');
-  const [sort, setSort] = useState(initialFilters?.sort ?? '');
+  const [search, setSearch] = useState(initialFilters?.search ?? "");
+  const [sort, setSort] = useState(initialFilters?.sort ?? "");
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const isMountedRef = useRef(true);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -213,12 +213,12 @@ export function useApiList<T>(
   const buildUrl = useCallback(() => {
     if (!path) return null;
 
-    const [basePath, existingQuery] = path.split('?');
-    const params = new URLSearchParams(existingQuery ?? '');
-    params.set('page', String(pagination.page));
-    params.set('limit', String(pagination.limit));
-    if (search) params.set('search', search);
-    if (sort) params.set('sort', sort);
+    const [basePath, existingQuery] = path.split("?");
+    const params = new URLSearchParams(existingQuery ?? "");
+    params.set("page", String(pagination.page));
+    params.set("limit", String(pagination.limit));
+    if (search) params.set("search", search);
+    if (sort) params.set("sort", sort);
 
     return `${basePath}?${params.toString()}`;
   }, [path, pagination.page, pagination.limit, search, sort]);
@@ -242,7 +242,9 @@ export function useApiList<T>(
     try {
       setLoading(true);
       setError(null);
-      const result = await api.get<PaginatedResponse<T> & { pagination?: PaginationMeta }>(url, { signal });
+      const result = await api.get<
+        PaginatedResponse<T> & { pagination?: PaginationMeta }
+      >(url, { signal });
       if (isMountedRef.current && !signal.aborted) {
         setItems(result.data);
         const paginationData = result.meta ?? result.pagination;
@@ -273,7 +275,7 @@ export function useApiList<T>(
 
   const handleSetSearch = useCallback((newSearch: string) => {
     setSearch(newSearch);
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
 
     // Debounce search requests
     if (searchTimeoutRef.current) {
@@ -285,11 +287,11 @@ export function useApiList<T>(
   }, []);
 
   const setPage = useCallback((page: number) => {
-    setPagination(prev => ({ ...prev, page }));
+    setPagination((prev) => ({ ...prev, page }));
   }, []);
 
   const setLimit = useCallback((limit: number) => {
-    setPagination(prev => ({ ...prev, limit, page: 1 }));
+    setPagination((prev) => ({ ...prev, limit, page: 1 }));
   }, []);
 
   const refetch = useCallback(async () => {

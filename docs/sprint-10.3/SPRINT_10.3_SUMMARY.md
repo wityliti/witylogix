@@ -7,18 +7,22 @@
 ## Problems Fixed
 
 ### 1. Login 422 Errors
+
 - **Root cause:** Browser console showed `422 Unprocessable Entity` on login because the API requires `shopDomain` and password min 8 characters
 - **Fix:** Added `NEXT_PUBLIC_SHOP_DOMAIN=demo.witylogix.io` to `.env.local` so the auth-context always sends shopDomain with login requests
 
 ### 2. API 404 Errors (drivers, orders/stats, zones, etc.)
+
 - **Root cause:** 6 React hooks (`use-drivers.ts`, `use-orders.ts`, `use-customers.ts`, `use-returns.ts`, `use-zones.ts`, `use-dashboard-stats.ts`) were calling API paths without `/api/v4/` prefix. `API_BASE` is `http://localhost:8000` but routes live at `/api/v4/*`
 - **Fix:** Added `/api/v4/` prefix to all 10 affected API paths across 6 hook files
 
 ### 3. Unauthenticated Users Not Redirected to Login
+
 - **Root cause:** Middleware's `isDashboardRoute` regex didn't cover `/` (root), `/home`, `/zones`, `/routes`, `/reports`, `/billing`, etc.
 - **Fix:** Added `pathname === '/'` check and expanded regex to cover all dashboard routes including `/home`, `/routes`, `/zones`, `/reports`, `/billing`, `/fleet`, `/freight`, `/returns`, `/pos`, `/supply-chain`
 
 ### 4. Login Redirect Param Mismatch
+
 - **Root cause:** Middleware sets `?redirect=/orders` but login page read `returnUrl`
 - **Fix:** Login page now reads `redirect` param (fallback to `returnUrl` for backward compat)
 
@@ -44,19 +48,19 @@ Running 11 tests using 1 worker
 
 ## Files Changed
 
-| File | Change |
-|------|--------|
-| `apps/dashboard/src/hooks/use-drivers.ts` | Added `/api/v4` prefix to API paths |
-| `apps/dashboard/src/hooks/use-orders.ts` | Added `/api/v4` prefix to API paths |
-| `apps/dashboard/src/hooks/use-customers.ts` | Added `/api/v4` prefix to API paths |
-| `apps/dashboard/src/hooks/use-returns.ts` | Added `/api/v4` prefix to API paths |
-| `apps/dashboard/src/hooks/use-zones.ts` | Added `/api/v4` prefix to API paths |
+| File                                              | Change                              |
+| ------------------------------------------------- | ----------------------------------- |
+| `apps/dashboard/src/hooks/use-drivers.ts`         | Added `/api/v4` prefix to API paths |
+| `apps/dashboard/src/hooks/use-orders.ts`          | Added `/api/v4` prefix to API paths |
+| `apps/dashboard/src/hooks/use-customers.ts`       | Added `/api/v4` prefix to API paths |
+| `apps/dashboard/src/hooks/use-returns.ts`         | Added `/api/v4` prefix to API paths |
+| `apps/dashboard/src/hooks/use-zones.ts`           | Added `/api/v4` prefix to API paths |
 | `apps/dashboard/src/hooks/use-dashboard-stats.ts` | Added `/api/v4` prefix to API paths |
-| `apps/dashboard/src/middleware.ts` | Expanded protected route matching |
-| `apps/dashboard/src/app/(auth)/login/page.tsx` | Fixed redirect param reading |
-| `apps/dashboard/.env.local` | Added NEXT_PUBLIC_SHOP_DOMAIN |
-| `apps/dashboard/e2e/*.spec.ts` | Updated E2E tests for robustness |
-| `apps/dashboard/playwright.config.ts` | Increased timeout to 45s |
+| `apps/dashboard/src/middleware.ts`                | Expanded protected route matching   |
+| `apps/dashboard/src/app/(auth)/login/page.tsx`    | Fixed redirect param reading        |
+| `apps/dashboard/.env.local`                       | Added NEXT_PUBLIC_SHOP_DOMAIN       |
+| `apps/dashboard/e2e/*.spec.ts`                    | Updated E2E tests for robustness    |
+| `apps/dashboard/playwright.config.ts`             | Increased timeout to 45s            |
 
 ## Team
 

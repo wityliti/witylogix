@@ -133,7 +133,14 @@ export interface Patient extends FHIRResource {
  */
 export interface Observation extends FHIRResource {
   resourceType: "Observation";
-  status: "registered" | "preliminary" | "final" | "amended" | "cancelled" | "entered-in-error" | "unknown";
+  status:
+    | "registered"
+    | "preliminary"
+    | "final"
+    | "amended"
+    | "cancelled"
+    | "entered-in-error"
+    | "unknown";
   category?: Array<{
     coding?: Array<{
       system: string;
@@ -202,7 +209,16 @@ export interface Encounter extends FHIRResource {
     system: string;
     value: string;
   }>;
-  status: "planned" | "arrived" | "triaged" | "in-progress" | "onleave" | "finished" | "cancelled" | "entered-in-error" | "unknown";
+  status:
+    | "planned"
+    | "arrived"
+    | "triaged"
+    | "in-progress"
+    | "onleave"
+    | "finished"
+    | "cancelled"
+    | "entered-in-error"
+    | "unknown";
   statusHistory?: Array<{
     status: string;
     period: {
@@ -263,18 +279,34 @@ export interface MedicationRequest extends FHIRResource {
     system: string;
     value: string;
   }>;
-  status: "active" | "on-hold" | "cancelled" | "completed" | "entered-in-error" | "draft" | "unknown";
-  intent: "proposal" | "plan" | "order" | "original-order" | "reflex-order" | "filler-order" | "instance-order";
-  medication: {
-    reference: string;
-  } | {
-    concept: {
-      coding: Array<{
-        system: string;
-        code: string;
-      }>;
-    };
-  };
+  status:
+    | "active"
+    | "on-hold"
+    | "cancelled"
+    | "completed"
+    | "entered-in-error"
+    | "draft"
+    | "unknown";
+  intent:
+    | "proposal"
+    | "plan"
+    | "order"
+    | "original-order"
+    | "reflex-order"
+    | "filler-order"
+    | "instance-order";
+  medication:
+    | {
+        reference: string;
+      }
+    | {
+        concept: {
+          coding: Array<{
+            system: string;
+            code: string;
+          }>;
+        };
+      };
   subject: {
     reference: string;
   };
@@ -334,7 +366,17 @@ export interface DiagnosticReport extends FHIRResource {
     system: string;
     value: string;
   }>;
-  status: "registered" | "partial" | "preliminary" | "final" | "amended" | "corrected" | "appended" | "cancelled" | "entered-in-error" | "unknown";
+  status:
+    | "registered"
+    | "partial"
+    | "preliminary"
+    | "final"
+    | "amended"
+    | "corrected"
+    | "appended"
+    | "cancelled"
+    | "entered-in-error"
+    | "unknown";
   category?: Array<{
     coding: Array<{
       system: string;
@@ -388,7 +430,15 @@ export interface Procedure extends FHIRResource {
     system: string;
     value: string;
   }>;
-  status: "preparation" | "in-progress" | "not-done" | "on-hold" | "stopped" | "completed" | "entered-in-error" | "unknown";
+  status:
+    | "preparation"
+    | "in-progress"
+    | "not-done"
+    | "on-hold"
+    | "stopped"
+    | "completed"
+    | "entered-in-error"
+    | "unknown";
   statusReason?: {
     coding: Array<{
       system: string;
@@ -626,12 +676,23 @@ export interface HL7Message {
  */
 export interface ClinicalDocument {
   id: string;
-  type: "CCD" | "consultation" | "discharge_summary" | "laboratory_report" | "imaging_study" | "procedure_note" | "other";
+  type:
+    | "CCD"
+    | "consultation"
+    | "discharge_summary"
+    | "laboratory_report"
+    | "imaging_study"
+    | "procedure_note"
+    | "other";
   patientId: string;
   encounterId?: string;
   title: string;
   content: string;
-  contentType: "application/pdf" | "application/xml" | "text/plain" | "application/hl7-v2+er7";
+  contentType:
+    | "application/pdf"
+    | "application/xml"
+    | "text/plain"
+    | "application/hl7-v2+er7";
   createdAt: string;
   createdBy?: string;
   effectiveDateTime?: string;
@@ -688,7 +749,17 @@ export interface AuditEntry {
   id: string;
   timestamp: string;
   eventId: string;
-  eventType: "CREATE" | "READ" | "UPDATE" | "DELETE" | "EXPORT" | "PRINT" | "QUERY" | "ACCESS" | "AUTHENTICATE" | "AUTHORIZE";
+  eventType:
+    | "CREATE"
+    | "READ"
+    | "UPDATE"
+    | "DELETE"
+    | "EXPORT"
+    | "PRINT"
+    | "QUERY"
+    | "ACCESS"
+    | "AUTHENTICATE"
+    | "AUTHORIZE";
   userId?: string;
   userEmail?: string;
   userRole?: string;
@@ -711,7 +782,15 @@ export interface AuditEntry {
 /**
  * Code system types supported.
  */
-export type CodeSystem = "ICD-10" | "ICD-9" | "SNOMED-CT" | "LOINC" | "CPT" | "RxNorm" | "CVX" | "HL7-V3";
+export type CodeSystem =
+  | "ICD-10"
+  | "ICD-9"
+  | "SNOMED-CT"
+  | "LOINC"
+  | "CPT"
+  | "RxNorm"
+  | "CVX"
+  | "HL7-V3";
 
 /**
  * Terminology mapping (code translation).

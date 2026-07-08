@@ -4,11 +4,7 @@
  * Supports tiered pricing, surcharges, and minimum charges.
  */
 
-import type {
-  RateCard,
-  DeliveryForCosting,
-  CostBreakdown,
-} from './types.js';
+import type { RateCard, DeliveryForCosting, CostBreakdown } from "./types.js";
 
 /**
  * Determine if a delivery occurs during peak hours
@@ -27,13 +23,16 @@ function isPeakTime(date: Date): boolean {
  * @param rateCard - Rate card configuration
  * @returns {ratePerKg, tierName} - Per-kg rate and tier name
  */
-function getWeightTierRate(weightKg: number, rateCard: RateCard): {
+function getWeightTierRate(
+  weightKg: number,
+  rateCard: RateCard,
+): {
   ratePerKg: number;
   tierName: string;
 } {
   // Default: base per-kg rate
   let applicableRate = rateCard.perKgRate;
-  let tierName = 'base';
+  let tierName = "base";
 
   // Find applicable tier (highest minimum that doesn't exceed weight)
   for (const tier of rateCard.weightTiers) {
@@ -41,7 +40,7 @@ function getWeightTierRate(weightKg: number, rateCard: RateCard): {
       const maxKg = tier.maxKg === null ? Infinity : tier.maxKg;
       if (weightKg <= maxKg) {
         applicableRate = tier.ratePerKg;
-        tierName = `${tier.minKg}-${tier.maxKg || '∞'}kg`;
+        tierName = `${tier.minKg}-${tier.maxKg || "∞"}kg`;
         break;
       }
     }
@@ -56,13 +55,16 @@ function getWeightTierRate(weightKg: number, rateCard: RateCard): {
  * @param rateCard - Rate card configuration
  * @returns {rateMultiplier, tierName} - Rate multiplier and tier name
  */
-function getDistanceTierRate(distanceKm: number, rateCard: RateCard): {
+function getDistanceTierRate(
+  distanceKm: number,
+  rateCard: RateCard,
+): {
   rateMultiplier: number;
   tierName: string;
 } {
   // Default: base per-km rate (multiplier = 1.0)
   let multiplier = 1.0;
-  let tierName = 'base';
+  let tierName = "base";
 
   // Find applicable tier (highest minimum that doesn't exceed distance)
   for (const tier of rateCard.distanceTiers) {
@@ -70,7 +72,7 @@ function getDistanceTierRate(distanceKm: number, rateCard: RateCard): {
       const maxKm = tier.maxKm === null ? Infinity : tier.maxKm;
       if (distanceKm <= maxKm) {
         multiplier = tier.rateMultiplier;
-        tierName = `${tier.minKm}-${tier.maxKm || '∞'}km`;
+        tierName = `${tier.minKm}-${tier.maxKm || "∞"}km`;
         break;
       }
     }
@@ -98,10 +100,16 @@ function calculateSpecialHandlingSurcharge(
   if (delivery.specialHandling.fragile && rateCard.specialHandling.fragile) {
     surcharge += rateCard.specialHandling.fragile;
   }
-  if (delivery.specialHandling.refrigerated && rateCard.specialHandling.refrigerated) {
+  if (
+    delivery.specialHandling.refrigerated &&
+    rateCard.specialHandling.refrigerated
+  ) {
     surcharge += rateCard.specialHandling.refrigerated;
   }
-  if (delivery.specialHandling.oversized && rateCard.specialHandling.oversized) {
+  if (
+    delivery.specialHandling.oversized &&
+    rateCard.specialHandling.oversized
+  ) {
     surcharge += rateCard.specialHandling.oversized;
   }
 
@@ -140,10 +148,14 @@ export function calculateDeliveryCost(
     delivery.distanceKm,
     rateCard,
   );
-  const distanceSurcharge = delivery.distanceKm * rateCard.perKmRate * distanceMultiplier;
+  const distanceSurcharge =
+    delivery.distanceKm * rateCard.perKmRate * distanceMultiplier;
 
   // ─── WEIGHT SURCHARGE ───────────────────────────────────────────────
-  const { ratePerKg: weightRate } = getWeightTierRate(delivery.weightKg, rateCard);
+  const { ratePerKg: weightRate } = getWeightTierRate(
+    delivery.weightKg,
+    rateCard,
+  );
   const weightSurcharge = delivery.weightKg * weightRate;
 
   // ─── TIME-OF-DAY PREMIUM ────────────────────────────────────────────
@@ -156,8 +168,10 @@ export function calculateDeliveryCost(
     delivery,
     rateCard,
   );
-  const subtotalBeforeSpecial = baseCharge + distanceSurcharge + weightSurcharge + timePremium;
-  const specialHandling = subtotalBeforeSpecial * (specialHandlingSurchargePct / 100);
+  const subtotalBeforeSpecial =
+    baseCharge + distanceSurcharge + weightSurcharge + timePremium;
+  const specialHandling =
+    subtotalBeforeSpecial * (specialHandlingSurchargePct / 100);
 
   // ─── FUEL SURCHARGE ─────────────────────────────────────────────────
   const subtotalBeforeFuel = subtotalBeforeSpecial + specialHandling;
@@ -198,7 +212,10 @@ export function calculateBatchCost(
     breakdown: calculateDeliveryCost(delivery, rateCard),
   }));
 
-  const totalCost = costBreakdowns.reduce((sum, item) => sum + item.breakdown.finalCharge, 0);
+  const totalCost = costBreakdowns.reduce(
+    (sum, item) => sum + item.breakdown.finalCharge,
+    0,
+  );
 
   return { totalCost, costBreakdowns };
 }

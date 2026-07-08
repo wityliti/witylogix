@@ -10,12 +10,12 @@
  * No Shopify-specific imports.
  */
 
-import type { WooCommerceOrder } from '../platforms/adapters/woocommerce.js';
+import type { WooCommerceOrder } from "../platforms/adapters/woocommerce.js";
 import {
   normalizeWooCommerceOrder,
   type CreateShipmentInput,
   type WooCommerceShipmentStatus,
-} from './normalizer.js';
+} from "./normalizer.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Minimal Prisma-compatible types (subset used by this service)
@@ -34,7 +34,9 @@ export interface PrismaLike {
       where: Record<string, unknown>;
       select?: Record<string, unknown>;
     }): Promise<{ id: string; shipmentNumber: string } | null>;
-    create(args: { data: Record<string, unknown> }): Promise<{ id: string; shipmentNumber: string }>;
+    create(args: {
+      data: Record<string, unknown>;
+    }): Promise<{ id: string; shipmentNumber: string }>;
     update(args: {
       where: Record<string, unknown>;
       data: Record<string, unknown>;
@@ -51,21 +53,21 @@ export interface PrismaLike {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SHIPMENT_STATUS_MAP: Record<WooCommerceShipmentStatus, string> = {
-  pending: 'PENDING',
-  ready_for_fulfillment: 'PROCESSING',
-  delivered: 'DELIVERED',
-  cancelled: 'CANCELLED',
-  returned: 'RETURNED',
-  on_hold: 'PENDING',
+  pending: "PENDING",
+  ready_for_fulfillment: "PROCESSING",
+  delivered: "DELIVERED",
+  cancelled: "CANCELLED",
+  returned: "RETURNED",
+  on_hold: "PENDING",
 };
 
 const ORDER_STATUS_MAP: Record<WooCommerceShipmentStatus, string> = {
-  pending: 'PENDING',
-  ready_for_fulfillment: 'ACCEPTED',
-  delivered: 'DELIVERED',
-  cancelled: 'CANCELLED',
-  returned: 'RETURNED',
-  on_hold: 'PENDING',
+  pending: "PENDING",
+  ready_for_fulfillment: "ACCEPTED",
+  delivered: "DELIVERED",
+  cancelled: "CANCELLED",
+  returned: "RETURNED",
+  on_hold: "PENDING",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -76,7 +78,7 @@ export interface UpsertShipmentResult {
   orderId: string;
   shipmentId: string;
   shipmentNumber: string;
-  action: 'created' | 'updated';
+  action: "created" | "updated";
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -115,14 +117,14 @@ export class WooCommerceShipmentService {
         shopId_externalOrderId_source: {
           shopId,
           externalOrderId: input.external_reference_id,
-          source: 'WOOCOMMERCE',
+          source: "WOOCOMMERCE",
         },
       },
       create: {
         shopId,
         externalOrderId: input.external_reference_id,
         externalOrderNumber: input.order_number,
-        source: 'WOOCOMMERCE',
+        source: "WOOCOMMERCE",
         status: ORDER_STATUS_MAP[input.shipment_status],
         customerName: input.delivery_address.name,
         customerEmail: input.delivery_address.email ?? null,
@@ -183,12 +185,12 @@ export class WooCommerceShipmentService {
         pickupAddress: input.pickup_address,
         declaredValue: input.declared_value,
         currencyCode: input.currency_code,
-        source: 'WOOCOMMERCE',
+        source: "WOOCOMMERCE",
       },
     };
 
     let shipment: { id: string; shipmentNumber: string };
-    let action: 'created' | 'updated';
+    let action: "created" | "updated";
 
     if (existing) {
       // Update existing shipment
@@ -196,7 +198,7 @@ export class WooCommerceShipmentService {
         where: { id: existing.id },
         data: shipmentData,
       });
-      action = 'updated';
+      action = "updated";
     } else {
       // Create new shipment
       shipment = await this.db.shipment.create({
@@ -207,7 +209,7 @@ export class WooCommerceShipmentService {
           ...shipmentData,
         },
       });
-      action = 'created';
+      action = "created";
     }
 
     // 3. Replace ShipmentItem rows (delete + create for idempotency)

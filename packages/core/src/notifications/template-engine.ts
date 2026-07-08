@@ -52,7 +52,7 @@ export class HandlebarsCompiler {
    */
   private static processConditionals(
     template: string,
-    variables: Record<string, unknown>
+    variables: Record<string, unknown>,
   ): string {
     const conditionalRegex = /{{#if\s+(\w+)\s*}}([\s\S]*?){{\/if}}/g;
     return template.replace(conditionalRegex, (_match, varName, content) => {
@@ -66,7 +66,7 @@ export class HandlebarsCompiler {
    */
   private static processLoops(
     template: string,
-    variables: Record<string, unknown>
+    variables: Record<string, unknown>,
   ): string {
     const loopRegex = /{{#each\s+(\w+)\s*}}([\s\S]*?){{\/each}}/g;
     return template.replace(loopRegex, (_match, varName, content) => {
@@ -97,7 +97,7 @@ export class HandlebarsCompiler {
    */
   private static processVariables(
     template: string,
-    variables: Record<string, unknown>
+    variables: Record<string, unknown>,
   ): string {
     const variableRegex = /{{(\w+(?:\.\w+)*)\s*(?:\|\s*(\w+))?\s*}}/g;
     return template.replace(variableRegex, (_match, path, filter) => {
@@ -118,7 +118,7 @@ export class HandlebarsCompiler {
    */
   private static getNestedValue(
     obj: Record<string, unknown>,
-    path: string
+    path: string,
   ): unknown {
     const parts = path.split(".");
     let current: any = obj;
@@ -201,7 +201,7 @@ export class ChannelFormatter {
   static format(
     content: string,
     channel: NotificationChannel,
-    options?: { maxLength?: number; includeFooter?: boolean }
+    options?: { maxLength?: number; includeFooter?: boolean },
   ): string {
     const maxLength = options?.maxLength || this.getMaxLength(channel);
 
@@ -345,7 +345,7 @@ export class TemplateRegistry {
    */
   async getTemplate(
     templateId: string,
-    locale?: string
+    locale?: string,
   ): Promise<NotificationTemplate | null> {
     const versions = this.templates.get(templateId);
     if (!versions) {
@@ -371,7 +371,7 @@ export class TemplateRegistry {
    */
   async getTemplateVersion(
     templateId: string,
-    version: number
+    version: number,
   ): Promise<NotificationTemplate | null> {
     const versions = this.templates.get(templateId);
     return versions?.find((t) => t.version === version) || null;
@@ -380,7 +380,9 @@ export class TemplateRegistry {
   /**
    * List all template versions
    */
-  async listTemplateVersions(templateId: string): Promise<NotificationTemplate[]> {
+  async listTemplateVersions(
+    templateId: string,
+  ): Promise<NotificationTemplate[]> {
     return this.templates.get(templateId) || [];
   }
 
@@ -434,14 +436,14 @@ export class TemplateValidator {
       // Validate SMS body length
       if (channel.channel === "SMS" && channel.body.length > 160) {
         errors.push(
-          `SMS body for channel variant ${index} exceeds 160 characters`
+          `SMS body for channel variant ${index} exceeds 160 characters`,
         );
       }
 
       // Validate PUSH body length
       if (channel.channel === "PUSH" && channel.body.length > 240) {
         errors.push(
-          `Push body for channel variant ${index} exceeds 240 characters`
+          `Push body for channel variant ${index} exceeds 240 characters`,
         );
       }
     });
@@ -454,7 +456,7 @@ export class TemplateValidator {
    */
   static validateVariables(
     template: NotificationTemplate,
-    variables: Record<string, unknown>
+    variables: Record<string, unknown>,
   ): string[] {
     const errors: string[] = [];
     const providedKeys = Object.keys(variables);
@@ -483,7 +485,9 @@ export class TemplateValidator {
       if (channel.htmlBody) {
         const htmlErrors = this.validateHandlebarsSyntax(channel.htmlBody);
         htmlErrors.forEach((err) => {
-          errors.push(`Channel ${channel.channel} HTML variant ${index}: ${err}`);
+          errors.push(
+            `Channel ${channel.channel} HTML variant ${index}: ${err}`,
+          );
         });
       }
     });
@@ -529,7 +533,7 @@ export class TemplateLocalizer {
   async registerLocale(
     templateId: string,
     locale: string,
-    template: NotificationTemplate
+    template: NotificationTemplate,
   ): Promise<void> {
     if (!this.locales.has(templateId)) {
       this.locales.set(templateId, new Map());
@@ -544,7 +548,7 @@ export class TemplateLocalizer {
   async getLocalizedTemplate(
     templateId: string,
     locale: string,
-    defaultTemplate: NotificationTemplate
+    defaultTemplate: NotificationTemplate,
   ): Promise<NotificationTemplate> {
     const localeMap = this.locales.get(templateId);
     if (!localeMap) {
@@ -585,12 +589,15 @@ export class TemplatePreview {
    */
   static generatePreview(
     template: NotificationTemplate,
-    sampleVariables: Record<string, unknown>
+    sampleVariables: Record<string, unknown>,
   ): Record<string, string> {
     const preview: Record<string, string> = {};
 
     template.channels.forEach((channel) => {
-      const rendered = HandlebarsCompiler.compile(channel.body, sampleVariables);
+      const rendered = HandlebarsCompiler.compile(
+        channel.body,
+        sampleVariables,
+      );
       const formatted = ChannelFormatter.format(rendered, channel.channel);
       preview[channel.channel] = formatted;
     });

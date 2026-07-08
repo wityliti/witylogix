@@ -57,7 +57,7 @@ const createMockConfig = (provider: string): FuelFleetConfig => ({
  */
 const createMockCard = (
   provider: string,
-  override?: Partial<FuelCard>
+  override?: Partial<FuelCard>,
 ): FuelCard => ({
   cardId: `card-${provider}-123`,
   product: provider as any,
@@ -79,7 +79,7 @@ const createMockCard = (
  */
 const createMockTransaction = (
   cardId: string,
-  override?: Partial<FuelTransaction>
+  override?: Partial<FuelTransaction>,
 ): FuelTransaction => ({
   transactionId: `txn-${Date.now()}`,
   cardId,
@@ -211,7 +211,7 @@ describe("FuelCardManager", () => {
 
       const updatedCard = await manager.manageCardStatus(
         "card-wex-123",
-        "suspend"
+        "suspend",
       );
 
       expect(updatedCard.status).toBe("suspended");
@@ -219,7 +219,7 @@ describe("FuelCardManager", () => {
 
     it("should throw on status management for non-existent card", async () => {
       await expect(
-        manager.manageCardStatus("non-existent", "suspend")
+        manager.manageCardStatus("non-existent", "suspend"),
       ).rejects.toThrow();
     });
   });
@@ -269,7 +269,7 @@ describe("FuelCardManager", () => {
 
     it("should throw on enforce policy for non-existent policy", async () => {
       await expect(
-        manager.enforcePolicyOnCards("non-existent-policy", ["card-1"])
+        manager.enforcePolicyOnCards("non-existent-policy", ["card-1"]),
       ).rejects.toThrow();
     });
   });
@@ -285,15 +285,13 @@ describe("FuelCardManager", () => {
         transactions.push(
           createMockTransaction(cardId, {
             transactionDate: new Date(now - i * 5 * 60 * 1000),
-          })
+          }),
         );
       }
 
       const alerts = await manager.detectFraudPatterns(cardId, transactions);
 
-      const velocityAlert = alerts.find(
-        (a) => a.type === "velocity_alert"
-      );
+      const velocityAlert = alerts.find((a) => a.type === "velocity_alert");
       expect(velocityAlert).toBeDefined();
       expect(velocityAlert?.severity).toBe("medium");
     });
@@ -330,9 +328,7 @@ describe("FuelCardManager", () => {
 
       const alerts = await manager.detectFraudPatterns(cardId, transactions);
 
-      const amountAlert = alerts.find(
-        (a) => a.type === "amount_anomaly"
-      );
+      const amountAlert = alerts.find((a) => a.type === "amount_anomaly");
       expect(amountAlert).toBeDefined();
       expect(amountAlert?.severity).toBe("high");
     });
@@ -366,14 +362,20 @@ describe("FuelCardManager", () => {
       // Comdata uses token header, no OAuth (1 mock), and expects { status: "success" }
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ status: "success", data: createMockCard("comdata") }),
+        json: async () => ({
+          status: "success",
+          data: createMockCard("comdata"),
+        }),
       });
       await manager.issueCard("comdata", { cardholderName: "Driver B" });
 
       // Fuelman uses API key header, no OAuth (1 mock), and expects { success: true }
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true, data: createMockCard("fuelman", { cardId: "card-fuelman-123" }) }),
+        json: async () => ({
+          success: true,
+          data: createMockCard("fuelman", { cardId: "card-fuelman-123" }),
+        }),
       });
       await manager.issueCard("fuelman", { cardholderName: "Driver C" });
 
@@ -399,7 +401,10 @@ describe("FuelCardManager", () => {
       // Comdata uses token header, no OAuth (1 mock), expects { status: "success" }
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ status: "success", data: createMockCard("comdata") }),
+        json: async () => ({
+          status: "success",
+          data: createMockCard("comdata"),
+        }),
       });
       await manager.issueCard("comdata", { cardholderName: "Driver B" });
 
@@ -448,7 +453,7 @@ describe("FuelCardManager", () => {
       const calculation = manager.calculateIFTA(
         transactions,
         startDate,
-        endDate
+        endDate,
       );
 
       expect(calculation).toBeDefined();
@@ -488,7 +493,7 @@ describe("FuelCardManager", () => {
       const calculation = manager.calculateIFTA(
         transactions,
         startDate,
-        endDate
+        endDate,
       );
 
       expect(calculation.gallonsByState["CA"]).toBe(150);
@@ -514,7 +519,7 @@ describe("FuelCardManager", () => {
       const calculation = manager.calculateIFTA(
         transactions,
         startDate,
-        endDate
+        endDate,
       );
 
       expect(calculation.taxByState["CA"]).toBeGreaterThan(0);
@@ -612,7 +617,10 @@ describe("FuelCardManager", () => {
       // Comdata uses token header, no OAuth (1 mock), expects { status: "success" }
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ status: "success", data: createMockCard("comdata") }),
+        json: async () => ({
+          status: "success",
+          data: createMockCard("comdata"),
+        }),
       });
       await manager.issueCard("comdata", { cardholderName: "Driver B" });
 
@@ -629,15 +637,30 @@ describe("FuelCardManager", () => {
       const transactions: FuelTransaction[] = [
         createMockTransaction("card-wex-123", {
           transactionDate: new Date("2026-03-15"),
-          merchantLocation: { city: "LA", state: "CA", zip: "90001", address: "" },
+          merchantLocation: {
+            city: "LA",
+            state: "CA",
+            zip: "90001",
+            address: "",
+          },
         }),
         createMockTransaction("card-comdata-456", {
           transactionDate: new Date("2026-04-01"),
-          merchantLocation: { city: "Dallas", state: "TX", zip: "75201", address: "" },
+          merchantLocation: {
+            city: "Dallas",
+            state: "TX",
+            zip: "75201",
+            address: "",
+          },
         }),
         createMockTransaction("card-fuelman-789", {
           transactionDate: new Date("2026-05-01"),
-          merchantLocation: { city: "Miami", state: "FL", zip: "33101", address: "" },
+          merchantLocation: {
+            city: "Miami",
+            state: "FL",
+            zip: "33101",
+            address: "",
+          },
         }),
       ];
 
@@ -647,7 +670,7 @@ describe("FuelCardManager", () => {
       const calculation = manager.calculateIFTA(
         transactions,
         startDate,
-        endDate
+        endDate,
       );
 
       expect(calculation.totalTax).toBeGreaterThan(0);

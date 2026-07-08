@@ -4,11 +4,16 @@
  * Handles payment reconciliation, webhook processing, and refunds
  */
 
-import type { Invoice, PaymentRecord, PaymentMethod } from './types.js';
+import type { Invoice, PaymentRecord, PaymentMethod } from "./types.js";
 
 // ─── PAYMENT GATEWAY TYPES ──────────────────────────────────────────────
 
-export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded' | 'cancelled';
+export type PaymentStatus =
+  | "pending"
+  | "completed"
+  | "failed"
+  | "refunded"
+  | "cancelled";
 
 export interface Payment {
   id: string;
@@ -63,10 +68,16 @@ export interface WebhookPayload {
 // ─── PAYMENT GATEWAY INTERFACE ──────────────────────────────────────────
 
 export interface IPaymentGateway {
-  createPaymentLink(options: PaymentLinkOptions): Promise<{ url: string; id: string }>;
-  createCheckoutSession(options: CheckoutSessionOptions): Promise<{ url: string; sessionId: string }>;
+  createPaymentLink(
+    options: PaymentLinkOptions,
+  ): Promise<{ url: string; id: string }>;
+  createCheckoutSession(
+    options: CheckoutSessionOptions,
+  ): Promise<{ url: string; sessionId: string }>;
   getPaymentStatus(paymentId: string): Promise<Payment>;
-  processRefund(options: RefundOptions): Promise<{ refundId: string; status: PaymentStatus }>;
+  processRefund(
+    options: RefundOptions,
+  ): Promise<{ refundId: string; status: PaymentStatus }>;
   validateWebhook(payload: WebhookPayload, signature: string): Promise<boolean>;
   handleWebhook(payload: WebhookPayload): Promise<void>;
 }
@@ -85,7 +96,9 @@ export class StripeAdapter implements IPaymentGateway {
   /**
    * Create a payment link for Stripe
    */
-  async createPaymentLink(options: PaymentLinkOptions): Promise<{ url: string; id: string }> {
+  async createPaymentLink(
+    options: PaymentLinkOptions,
+  ): Promise<{ url: string; id: string }> {
     try {
       // Mock Stripe API call - in production, use @stripe/stripe-js
       const paymentLink = {
@@ -106,14 +119,18 @@ export class StripeAdapter implements IPaymentGateway {
         id: paymentLink.id,
       };
     } catch (error) {
-      throw new PaymentGatewayError(`Failed to create Stripe payment link: ${this.getErrorMessage(error)}`);
+      throw new PaymentGatewayError(
+        `Failed to create Stripe payment link: ${this.getErrorMessage(error)}`,
+      );
     }
   }
 
   /**
    * Create a Stripe checkout session
    */
-  async createCheckoutSession(options: CheckoutSessionOptions): Promise<{ url: string; sessionId: string }> {
+  async createCheckoutSession(
+    options: CheckoutSessionOptions,
+  ): Promise<{ url: string; sessionId: string }> {
     try {
       // Mock Stripe checkout session creation
       const sessionId = `cs_${this.generateId()}`;
@@ -139,40 +156,49 @@ export class StripeAdapter implements IPaymentGateway {
 
       return {
         id: paymentId,
-        invoiceId: '',
+        invoiceId: "",
         amount: 0,
-        currency: 'USD',
-        method: 'credit_card',
-        status: 'completed',
+        currency: "USD",
+        method: "credit_card",
+        status: "completed",
         createdAt: new Date(),
         updatedAt: new Date(),
       };
     } catch (error) {
-      throw new PaymentGatewayError(`Failed to retrieve payment status: ${this.getErrorMessage(error)}`);
+      throw new PaymentGatewayError(
+        `Failed to retrieve payment status: ${this.getErrorMessage(error)}`,
+      );
     }
   }
 
   /**
    * Process refund through Stripe
    */
-  async processRefund(options: RefundOptions): Promise<{ refundId: string; status: PaymentStatus }> {
+  async processRefund(
+    options: RefundOptions,
+  ): Promise<{ refundId: string; status: PaymentStatus }> {
     try {
       // Mock Stripe refund processing
       const refundId = `re_${this.generateId()}`;
 
       return {
         refundId,
-        status: 'refunded',
+        status: "refunded",
       };
     } catch (error) {
-      throw new PaymentGatewayError(`Failed to process refund: ${this.getErrorMessage(error)}`);
+      throw new PaymentGatewayError(
+        `Failed to process refund: ${this.getErrorMessage(error)}`,
+      );
     }
   }
 
   /**
    * Validate webhook signature
    */
-  async validateWebhook(payload: WebhookPayload, signature: string): Promise<boolean> {
+  async validateWebhook(
+    payload: WebhookPayload,
+    signature: string,
+  ): Promise<boolean> {
     try {
       // In production, use crypto to validate HMAC signature
       // const expectedSignature = crypto
@@ -183,7 +209,9 @@ export class StripeAdapter implements IPaymentGateway {
 
       return true; // Mock validation
     } catch (error) {
-      throw new PaymentGatewayError(`Webhook validation failed: ${this.getErrorMessage(error)}`);
+      throw new PaymentGatewayError(
+        `Webhook validation failed: ${this.getErrorMessage(error)}`,
+      );
     }
   }
 
@@ -192,15 +220,15 @@ export class StripeAdapter implements IPaymentGateway {
    */
   async handleWebhook(payload: WebhookPayload): Promise<void> {
     switch (payload.type) {
-      case 'payment_intent.succeeded':
+      case "payment_intent.succeeded":
         await this.handlePaymentSucceeded(payload);
         break;
 
-      case 'payment_intent.payment_failed':
+      case "payment_intent.payment_failed":
         await this.handlePaymentFailed(payload);
         break;
 
-      case 'charge.refunded':
+      case "charge.refunded":
         await this.handleRefunded(payload);
         break;
 
@@ -218,7 +246,9 @@ export class StripeAdapter implements IPaymentGateway {
     const invoiceId = metadata?.invoiceId;
 
     if (!invoiceId) {
-      throw new PaymentGatewayError('Payment webhook missing invoiceId in metadata');
+      throw new PaymentGatewayError(
+        "Payment webhook missing invoiceId in metadata",
+      );
     }
 
     // Emit event or trigger callback
@@ -230,7 +260,7 @@ export class StripeAdapter implements IPaymentGateway {
    */
   private async handlePaymentFailed(payload: WebhookPayload): Promise<void> {
     const { id, last_payment_error } = payload.data as any;
-    const error = last_payment_error?.message || 'Unknown error';
+    const error = last_payment_error?.message || "Unknown error";
 
     // Emit event or trigger callback
   }
@@ -268,15 +298,23 @@ export class ManualPaymentAdapter implements IPaymentGateway {
   /**
    * Manual payments don't use payment links
    */
-  async createPaymentLink(options: PaymentLinkOptions): Promise<{ url: string; id: string }> {
-    throw new PaymentGatewayError('Manual payments do not support payment links');
+  async createPaymentLink(
+    options: PaymentLinkOptions,
+  ): Promise<{ url: string; id: string }> {
+    throw new PaymentGatewayError(
+      "Manual payments do not support payment links",
+    );
   }
 
   /**
    * Manual payments don't use checkout sessions
    */
-  async createCheckoutSession(options: CheckoutSessionOptions): Promise<{ url: string; sessionId: string }> {
-    throw new PaymentGatewayError('Manual payments do not support checkout sessions');
+  async createCheckoutSession(
+    options: CheckoutSessionOptions,
+  ): Promise<{ url: string; sessionId: string }> {
+    throw new PaymentGatewayError(
+      "Manual payments do not support checkout sessions",
+    );
   }
 
   /**
@@ -291,11 +329,11 @@ export class ManualPaymentAdapter implements IPaymentGateway {
       id: `pay_${this.generateId()}`,
       invoiceId,
       amount,
-      method: 'bank_transfer',
+      method: "bank_transfer",
       reference,
       paidAt: new Date(),
       metadata: {
-        type: 'bank_transfer',
+        type: "bank_transfer",
         recordedAt: new Date().toISOString(),
       },
       createdAt: new Date(),
@@ -305,15 +343,18 @@ export class ManualPaymentAdapter implements IPaymentGateway {
   /**
    * Record cash payment
    */
-  async recordCashPayment(invoiceId: string, amount: number): Promise<PaymentRecord> {
+  async recordCashPayment(
+    invoiceId: string,
+    amount: number,
+  ): Promise<PaymentRecord> {
     return {
       id: `pay_${this.generateId()}`,
       invoiceId,
       amount,
-      method: 'cash',
+      method: "cash",
       paidAt: new Date(),
       metadata: {
-        type: 'cash',
+        type: "cash",
         recordedAt: new Date().toISOString(),
       },
       createdAt: new Date(),
@@ -323,16 +364,20 @@ export class ManualPaymentAdapter implements IPaymentGateway {
   /**
    * Record check payment
    */
-  async recordCheckPayment(invoiceId: string, amount: number, checkNumber: string): Promise<PaymentRecord> {
+  async recordCheckPayment(
+    invoiceId: string,
+    amount: number,
+    checkNumber: string,
+  ): Promise<PaymentRecord> {
     return {
       id: `pay_${this.generateId()}`,
       invoiceId,
       amount,
-      method: 'check',
+      method: "check",
       reference: checkNumber,
       paidAt: new Date(),
       metadata: {
-        type: 'check',
+        type: "check",
         checkNumber,
         recordedAt: new Date().toISOString(),
       },
@@ -346,11 +391,11 @@ export class ManualPaymentAdapter implements IPaymentGateway {
   async getPaymentStatus(paymentId: string): Promise<Payment> {
     return {
       id: paymentId,
-      invoiceId: '',
+      invoiceId: "",
       amount: 0,
-      currency: 'USD',
-      method: 'other',
-      status: 'completed',
+      currency: "USD",
+      method: "other",
+      status: "completed",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -359,17 +404,22 @@ export class ManualPaymentAdapter implements IPaymentGateway {
   /**
    * Process refund manually
    */
-  async processRefund(options: RefundOptions): Promise<{ refundId: string; status: PaymentStatus }> {
+  async processRefund(
+    options: RefundOptions,
+  ): Promise<{ refundId: string; status: PaymentStatus }> {
     return {
       refundId: `ref_${this.generateId()}`,
-      status: 'refunded',
+      status: "refunded",
     };
   }
 
   /**
    * Validate webhook - not applicable for manual payments
    */
-  async validateWebhook(payload: WebhookPayload, signature: string): Promise<boolean> {
+  async validateWebhook(
+    payload: WebhookPayload,
+    signature: string,
+  ): Promise<boolean> {
     return false;
   }
 
@@ -412,7 +462,9 @@ export class PaymentReconciliation {
    * Handle partial payment
    */
   static handlePartialPayment(payment: Payment, invoice: Invoice): void {
-    const totalPaid = (invoice.payments || []).reduce((sum, p) => sum + p.amount, 0) + payment.amount;
+    const totalPaid =
+      (invoice.payments || []).reduce((sum, p) => sum + p.amount, 0) +
+      payment.amount;
 
     if (totalPaid < invoice.total) {
       // Still outstanding - invoice remains overdue
@@ -425,8 +477,13 @@ export class PaymentReconciliation {
   /**
    * Handle overpayment
    */
-  static handleOverpayment(payment: Payment, invoice: Invoice): { overpayment: number; refundRequired: boolean } {
-    const totalPaid = (invoice.payments || []).reduce((sum, p) => sum + p.amount, 0) + payment.amount;
+  static handleOverpayment(
+    payment: Payment,
+    invoice: Invoice,
+  ): { overpayment: number; refundRequired: boolean } {
+    const totalPaid =
+      (invoice.payments || []).reduce((sum, p) => sum + p.amount, 0) +
+      payment.amount;
     const overpayment = Math.max(0, totalPaid - invoice.total);
 
     return {
@@ -438,9 +495,14 @@ export class PaymentReconciliation {
   /**
    * Find unmatched payments
    */
-  static findUnmatchedPayments(payments: Payment[], invoices: Invoice[]): Payment[] {
-    return payments.filter(payment => {
-      const matchedInvoice = invoices.find(inv => this.matchPaymentToInvoice(payment, inv));
+  static findUnmatchedPayments(
+    payments: Payment[],
+    invoices: Invoice[],
+  ): Payment[] {
+    return payments.filter((payment) => {
+      const matchedInvoice = invoices.find((inv) =>
+        this.matchPaymentToInvoice(payment, inv),
+      );
       return !matchedInvoice;
     });
   }
@@ -458,7 +520,11 @@ export class PaymentReconciliation {
   } {
     const matched: Array<{ payment: Payment; invoice: Invoice }> = [];
     const unmatched: Payment[] = [];
-    const overpaid: Array<{ payment: Payment; invoice: Invoice; amount: number }> = [];
+    const overpaid: Array<{
+      payment: Payment;
+      invoice: Invoice;
+      amount: number;
+    }> = [];
 
     for (const payment of payments) {
       let found = false;
@@ -491,7 +557,7 @@ export class PaymentReconciliation {
 export class PaymentGatewayError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'PaymentGatewayError';
+    this.name = "PaymentGatewayError";
   }
 }
 
@@ -504,19 +570,24 @@ export class PaymentGatewayFactory {
    * Get or create payment gateway instance
    */
   static getGateway(
-    type: 'stripe' | 'manual',
+    type: "stripe" | "manual",
     credentials?: { apiKey?: string; webhookSecret?: string },
   ): IPaymentGateway {
-    const key = `${type}:${credentials?.apiKey || 'default'}`;
+    const key = `${type}:${credentials?.apiKey || "default"}`;
 
     if (!this.instances.has(key)) {
       let gateway: IPaymentGateway;
 
-      if (type === 'stripe') {
+      if (type === "stripe") {
         if (!credentials?.apiKey || !credentials?.webhookSecret) {
-          throw new PaymentGatewayError('Stripe requires apiKey and webhookSecret');
+          throw new PaymentGatewayError(
+            "Stripe requires apiKey and webhookSecret",
+          );
         }
-        gateway = new StripeAdapter(credentials.apiKey, credentials.webhookSecret);
+        gateway = new StripeAdapter(
+          credentials.apiKey,
+          credentials.webhookSecret,
+        );
       } else {
         gateway = new ManualPaymentAdapter();
       }

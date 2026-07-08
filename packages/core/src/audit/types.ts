@@ -8,18 +8,18 @@
  * Represents different types of actions that can be audited
  */
 export enum AuditAction {
-  CREATE = 'create',
-  READ = 'read',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  LOGIN = 'login',
-  LOGOUT = 'logout',
-  EXPORT = 'export',
-  IMPORT = 'import',
-  PERMISSION_CHANGE = 'permission_change',
-  SETTINGS_CHANGE = 'settings_change',
-  BULK_ACTION = 'bulk_action',
-  API_CALL = 'api_call',
+  CREATE = "create",
+  READ = "read",
+  UPDATE = "update",
+  DELETE = "delete",
+  LOGIN = "login",
+  LOGOUT = "logout",
+  EXPORT = "export",
+  IMPORT = "import",
+  PERMISSION_CHANGE = "permission_change",
+  SETTINGS_CHANGE = "settings_change",
+  BULK_ACTION = "bulk_action",
+  API_CALL = "api_call",
 }
 
 /**
@@ -61,24 +61,24 @@ export interface ChangedField {
  * These field names will have their values redacted
  */
 export const SENSITIVE_FIELDS = [
-  'password',
-  'passwordHash',
-  'token',
-  'accessToken',
-  'refreshToken',
-  'apiKey',
-  'apiSecret',
-  'secret',
-  'secretKey',
-  'privateKey',
-  'creditCard',
-  'cardNumber',
-  'cvv',
-  'ssn',
-  'socialSecurityNumber',
-  'bankAccount',
-  'accountNumber',
-  'routingNumber',
+  "password",
+  "passwordHash",
+  "token",
+  "accessToken",
+  "refreshToken",
+  "apiKey",
+  "apiSecret",
+  "secret",
+  "secretKey",
+  "privateKey",
+  "creditCard",
+  "cardNumber",
+  "cvv",
+  "ssn",
+  "socialSecurityNumber",
+  "bankAccount",
+  "accountNumber",
+  "routingNumber",
 ];
 
 /**
@@ -95,8 +95,8 @@ export interface AuditQuery {
   endDate?: Date;
   limit?: number; // Pagination limit (default 100, max 1000)
   offset?: number; // Pagination offset (default 0)
-  sortBy?: 'timestamp' | 'action' | 'resource'; // Sort order (default: timestamp)
-  sortOrder?: 'asc' | 'desc'; // Sort direction (default: desc)
+  sortBy?: "timestamp" | "action" | "resource"; // Sort order (default: timestamp)
+  sortOrder?: "asc" | "desc"; // Sort direction (default: desc)
 }
 
 /**
@@ -177,21 +177,21 @@ export class AuditError extends Error {
     public statusCode: number = 400,
   ) {
     super(message);
-    this.name = 'AuditError';
+    this.name = "AuditError";
   }
 }
 
 export class AuditQueryError extends AuditError {
   constructor(message: string) {
-    super('AUDIT_QUERY_ERROR', message, 400);
-    this.name = 'AuditQueryError';
+    super("AUDIT_QUERY_ERROR", message, 400);
+    this.name = "AuditQueryError";
   }
 }
 
 export class AuditLogError extends AuditError {
   constructor(message: string) {
-    super('AUDIT_LOG_ERROR', message, 500);
-    this.name = 'AuditLogError';
+    super("AUDIT_LOG_ERROR", message, 500);
+    this.name = "AuditLogError";
   }
 }
 
@@ -273,10 +273,10 @@ export class AuditEventBuilder {
   }
 
   build(): AuditEvent {
-    if (!this.event.tenantId) throw new Error('tenantId is required');
-    if (!this.event.userId) throw new Error('userId is required');
-    if (!this.event.action) throw new Error('action is required');
-    if (!this.event.resource) throw new Error('resource is required');
+    if (!this.event.tenantId) throw new Error("tenantId is required");
+    if (!this.event.userId) throw new Error("userId is required");
+    if (!this.event.action) throw new Error("action is required");
+    if (!this.event.resource) throw new Error("resource is required");
 
     return {
       id: `audit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,

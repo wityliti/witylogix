@@ -3,8 +3,8 @@
  * Validates addresses and detects delivery zones
  */
 
-import { useState, useCallback, useRef } from 'react';
-import type { AddressValidation, AddressValidationRequest } from '../types';
+import { useState, useCallback, useRef } from "react";
+import type { AddressValidation, AddressValidationRequest } from "../types";
 
 interface UseAddressValidationState {
   data: AddressValidation | null;
@@ -49,13 +49,16 @@ export const useAddressValidation = (options: UseAddressValidationOptions) => {
           zipcode,
         };
 
-        const response = await fetch(`${options.apiBaseUrl}/api/address/validate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+        const response = await fetch(
+          `${options.apiBaseUrl}/api/address/validate`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(request),
           },
-          body: JSON.stringify(request),
-        });
+        );
 
         if (!response.ok) {
           throw new Error(`Address validation failed: ${response.statusText}`);
@@ -71,12 +74,12 @@ export const useAddressValidation = (options: UseAddressValidationOptions) => {
       } catch (error) {
         setState((prev) => ({
           ...prev,
-          error: error instanceof Error ? error : new Error('Unknown error'),
+          error: error instanceof Error ? error : new Error("Unknown error"),
           isLoading: false,
         }));
       }
     },
-    [options.apiBaseUrl, options.minChars]
+    [options.apiBaseUrl, options.minChars],
   );
 
   const debouncedValidate = useCallback(
@@ -87,10 +90,10 @@ export const useAddressValidation = (options: UseAddressValidationOptions) => {
 
       debounceTimeoutRef.current = setTimeout(
         () => validate(address, zipcode),
-        options.debounceMs || 300
+        options.debounceMs || 300,
       );
     },
-    [validate, options.debounceMs]
+    [validate, options.debounceMs],
   );
 
   const getSuggestions = useCallback(
@@ -101,16 +104,19 @@ export const useAddressValidation = (options: UseAddressValidationOptions) => {
       }
 
       try {
-        const response = await fetch(`${options.apiBaseUrl}/api/address/suggestions`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+        const response = await fetch(
+          `${options.apiBaseUrl}/api/address/suggestions`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ query }),
           },
-          body: JSON.stringify({ query }),
-        });
+        );
 
         if (!response.ok) {
-          throw new Error('Failed to fetch suggestions');
+          throw new Error("Failed to fetch suggestions");
         }
 
         const suggestions = await response.json();
@@ -120,7 +126,7 @@ export const useAddressValidation = (options: UseAddressValidationOptions) => {
         return [];
       }
     },
-    [options.apiBaseUrl, options.minChars]
+    [options.apiBaseUrl, options.minChars],
   );
 
   const clearSuggestions = useCallback(() => {
@@ -145,7 +151,9 @@ interface UseAddressAutocompleteOptions {
   debounceMs?: number;
 }
 
-export const useAddressAutocomplete = (options: UseAddressAutocompleteOptions) => {
+export const useAddressAutocomplete = (
+  options: UseAddressAutocompleteOptions,
+) => {
   const [state, setState] = useState<{
     suggestions: string[];
     isLoading: boolean;
@@ -175,16 +183,19 @@ export const useAddressAutocomplete = (options: UseAddressAutocompleteOptions) =
         try {
           setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-          const response = await fetch(`${options.apiBaseUrl}/api/address/autocomplete`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
+          const response = await fetch(
+            `${options.apiBaseUrl}/api/address/autocomplete`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ query }),
             },
-            body: JSON.stringify({ query }),
-          });
+          );
 
           if (!response.ok) {
-            throw new Error('Autocomplete search failed');
+            throw new Error("Autocomplete search failed");
           }
 
           const suggestions = await response.json();
@@ -192,13 +203,13 @@ export const useAddressAutocomplete = (options: UseAddressAutocompleteOptions) =
         } catch (error) {
           setState((prev) => ({
             ...prev,
-            error: error instanceof Error ? error : new Error('Unknown error'),
+            error: error instanceof Error ? error : new Error("Unknown error"),
             isLoading: false,
           }));
         }
       }, options.debounceMs || 300);
     },
-    [options.apiBaseUrl, options.debounceMs]
+    [options.apiBaseUrl, options.debounceMs],
   );
 
   const selectAddress = useCallback((address: AddressValidation) => {

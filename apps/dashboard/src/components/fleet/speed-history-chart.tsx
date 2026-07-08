@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-} from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 interface SpeedDataPoint {
@@ -69,12 +64,8 @@ export function SpeedHistoryChart({
   const chartHeight = height - padding.top - padding.bottom;
 
   // Apply zoom
-  const startIndex = Math.floor(
-    data.length * zoomRange.start
-  );
-  const endIndex = Math.ceil(
-    data.length * zoomRange.end
-  );
+  const startIndex = Math.floor(data.length * zoomRange.start);
+  const endIndex = Math.ceil(data.length * zoomRange.end);
   const zoomedData = data.slice(startIndex, endIndex);
 
   if (zoomedData.length === 0) {
@@ -95,7 +86,7 @@ export function SpeedHistoryChart({
   const maxSpeed = Math.max(
     speedLimit * 1.2,
     Math.max(...allSpeeds) * 1.1,
-    120
+    120,
   );
 
   const xScale = (index: number) =>
@@ -107,26 +98,31 @@ export function SpeedHistoryChart({
   const generatePath = (): string => {
     if (zoomedData.length === 0) return "";
 
-    const points = zoomedData.map((d, i) =>
-      `${xScale(i)},${yScale(d.speed)}`
-    );
+    const points = zoomedData.map((d, i) => `${xScale(i)},${yScale(d.speed)}`);
     return `M ${points.join(" L ")}`;
   };
 
   // Identify violation segments
   const violationSegments = zoomedData
-    .map((d, i) => ({ index: i, speed: d.speed, isViolation: d.speed > speedLimit }))
-    .reduce((acc, point) => {
-      if (point.isViolation) {
-        const lastSegment = acc[acc.length - 1];
-        if (lastSegment && lastSegment.end === point.index - 1) {
-          lastSegment.end = point.index;
-        } else {
-          acc.push({ start: point.index, end: point.index });
+    .map((d, i) => ({
+      index: i,
+      speed: d.speed,
+      isViolation: d.speed > speedLimit,
+    }))
+    .reduce(
+      (acc, point) => {
+        if (point.isViolation) {
+          const lastSegment = acc[acc.length - 1];
+          if (lastSegment && lastSegment.end === point.index - 1) {
+            lastSegment.end = point.index;
+          } else {
+            acc.push({ start: point.index, end: point.index });
+          }
         }
-      }
-      return acc;
-    }, [] as { start: number; end: number }[]);
+        return acc;
+      },
+      [] as { start: number; end: number }[],
+    );
 
   const handlePointHover = useCallback(
     (index: number, event: React.MouseEvent) => {
@@ -142,7 +138,7 @@ export function SpeedHistoryChart({
       setTooltipVisible(true);
       setHoveredIndex(index);
     },
-    [zoomedData, speedLimit]
+    [zoomedData, speedLimit],
   );
 
   const handlePointLeave = () => {
@@ -291,9 +287,7 @@ export function SpeedHistoryChart({
           violationSegments.map((segment, idx) => {
             const violationPoints = zoomedData
               .slice(segment.start, segment.end + 1)
-              .map((d, i) =>
-                `${xScale(segment.start + i)},${yScale(d.speed)}`
-              );
+              .map((d, i) => `${xScale(segment.start + i)},${yScale(d.speed)}`);
             return (
               <path
                 key={`violation-line-${idx}`}
@@ -320,7 +314,9 @@ export function SpeedHistoryChart({
                 cx={x}
                 cy={y}
                 r={isHovered ? 6 : 3}
-                fill={isViolation ? "var(--wl-danger-400)" : "var(--wl-primary-400)"}
+                fill={
+                  isViolation ? "var(--wl-danger-400)" : "var(--wl-primary-400)"
+                }
                 opacity={isHovered ? 1 : 0.7}
                 style={{
                   cursor: "pointer",
@@ -362,7 +358,7 @@ export function SpeedHistoryChart({
               "text-sm font-bold",
               tooltipData.isViolation
                 ? "text-wl-danger-400"
-                : "text-wl-success-400"
+                : "text-wl-success-400",
             )}
           >
             {tooltipData.speed} km/h

@@ -40,7 +40,9 @@ export class InvitationService {
    * @returns Invitation response with details
    * @throws OnboardingError if organization not found or email already invited
    */
-  async createInvitation(input: InvitationRequest): Promise<InvitationResponse> {
+  async createInvitation(
+    input: InvitationRequest,
+  ): Promise<InvitationResponse> {
     const { orgId, email, role, invitedBy } = input;
 
     // Validate organization exists
@@ -123,7 +125,9 @@ export class InvitationService {
    * @returns Result with organization and role details
    * @throws OnboardingError if token invalid or expired
    */
-  async acceptInvitation(input: AcceptInvitationInput): Promise<AcceptInvitationResult> {
+  async acceptInvitation(
+    input: AcceptInvitationInput,
+  ): Promise<AcceptInvitationResult> {
     const { token, userId } = input;
 
     // Find invitation by token
@@ -325,7 +329,9 @@ export class InvitationService {
    * @param olderThanDays - Delete records processed more than N days ago
    * @returns Count of deleted records
    */
-  async archiveProcessedInvitations(olderThanDays: number = 90): Promise<number> {
+  async archiveProcessedInvitations(
+    olderThanDays: number = 90,
+  ): Promise<number> {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - olderThanDays);
 

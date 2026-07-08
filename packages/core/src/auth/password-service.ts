@@ -141,24 +141,32 @@ export class PasswordService {
 
     if (diverseCount === 4) {
       score = Math.min(score + 2, 4);
-      feedback.push("Excellent character diversity (uppercase, lowercase, digits, symbols)");
+      feedback.push(
+        "Excellent character diversity (uppercase, lowercase, digits, symbols)",
+      );
     } else if (diverseCount === 3) {
       score = Math.min(score + 1, 4);
       if (!hasSpecial) {
-        suggestions.push("Add special characters (!@#$%^&*) for stronger security");
+        suggestions.push(
+          "Add special characters (!@#$%^&*) for stronger security",
+        );
       } else if (!hasDigits) {
         suggestions.push("Add numbers for stronger security");
       } else if (!hasUpper) {
         suggestions.push("Add uppercase letters for stronger security");
       }
     } else {
-      suggestions.push("Mix uppercase, lowercase, digits, and special characters");
+      suggestions.push(
+        "Mix uppercase, lowercase, digits, and special characters",
+      );
     }
 
     // Penalize common patterns
     if (this.hasCommonPattern(password)) {
       score = Math.max(score - 1, 0);
-      feedback.push("Avoid common patterns (sequential numbers, repeated chars)");
+      feedback.push(
+        "Avoid common patterns (sequential numbers, repeated chars)",
+      );
       suggestions.push("Avoid sequential numbers and repeated characters");
     }
 
@@ -179,7 +187,11 @@ export class PasswordService {
    * @param historySize Number of previous passwords to check (default: 5)
    * @returns true if password is safe (not in history), false if already used
    */
-  async checkHistory(userId: string, newPassword: string, historySize = 5): Promise<boolean> {
+  async checkHistory(
+    userId: string,
+    newPassword: string,
+    historySize = 5,
+  ): Promise<boolean> {
     try {
       // Fetch last N password hashes for this user
       const user = await db.user.findUnique({
@@ -226,7 +238,10 @@ export class PasswordService {
   /**
    * Verify password against Argon2id hash.
    */
-  private async verifyArgon2id(password: string, hash: string): Promise<boolean> {
+  private async verifyArgon2id(
+    password: string,
+    hash: string,
+  ): Promise<boolean> {
     const argon2 = await import("argon2").catch(() => null);
 
     if (!argon2) {
@@ -287,7 +302,11 @@ export class PasswordService {
    */
   private hasCommonPattern(password: string): boolean {
     // Sequential digits: 123, 234, etc.
-    if (/0123|1234|2345|3456|4567|5678|6789|9876|8765|7654|6543|5432|4321|3210/.test(password)) {
+    if (
+      /0123|1234|2345|3456|4567|5678|6789|9876|8765|7654|6543|5432|4321|3210/.test(
+        password,
+      )
+    ) {
       return true;
     }
 
@@ -343,7 +362,9 @@ let instance: PasswordService;
 /**
  * Get or create the singleton PasswordService instance.
  */
-export function getPasswordService(options?: PasswordHashOptions): PasswordService {
+export function getPasswordService(
+  options?: PasswordHashOptions,
+): PasswordService {
   if (!instance) {
     instance = new PasswordService(options);
   }
@@ -353,6 +374,8 @@ export function getPasswordService(options?: PasswordHashOptions): PasswordServi
 /**
  * Create a new PasswordService instance (for testing).
  */
-export function createPasswordService(options?: PasswordHashOptions): PasswordService {
+export function createPasswordService(
+  options?: PasswordHashOptions,
+): PasswordService {
   return new PasswordService(options);
 }

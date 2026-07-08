@@ -20,7 +20,8 @@ const FREIGHT_TABS = [
 ];
 
 export default function FreightLayout({ children }: FreightLayoutProps) {
-  const currentPath = typeof window !== "undefined" ? window.location.pathname : "/freight";
+  const currentPath =
+    typeof window !== "undefined" ? window.location.pathname : "/freight";
   const isActive = (href: string) => {
     if (href === "/freight") return currentPath === "/freight";
     return currentPath.startsWith(href);
@@ -44,7 +45,7 @@ export default function FreightLayout({ children }: FreightLayoutProps) {
                 "flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-semibold transition-all",
                 isActive(tab.href)
                   ? "border-wl-primary-500 text-wl-primary-500"
-                  : "border-transparent text-wl-text-secondary hover:text-wl-text-primary"
+                  : "border-transparent text-wl-text-secondary hover:text-wl-text-primary",
               )}
             >
               <span>{tab.icon}</span>

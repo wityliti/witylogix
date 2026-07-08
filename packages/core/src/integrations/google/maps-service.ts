@@ -3,7 +3,7 @@
  * Handles geocoding, distance calculations, directions, and zone detection
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 import type {
   GeocodingResult,
   DistanceResult,
@@ -11,7 +11,7 @@ import type {
   Zone,
   ZoneDetectionResult,
   RateLimitInfo,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Validation schemas
@@ -21,18 +21,22 @@ const GeocodingResultSchema = z.object({
   latitude: z.number(),
   longitude: z.number(),
   plusCode: z.string().optional(),
-  viewport: z.object({
-    northeast: z.object({ lat: z.number(), lng: z.number() }),
-    southwest: z.object({ lat: z.number(), lng: z.number() }),
-  }).optional(),
-  components: z.object({
-    streetNumber: z.string().optional(),
-    route: z.string().optional(),
-    locality: z.string().optional(),
-    administrativeArea: z.string().optional(),
-    postalCode: z.string().optional(),
-    country: z.string().optional(),
-  }).optional(),
+  viewport: z
+    .object({
+      northeast: z.object({ lat: z.number(), lng: z.number() }),
+      southwest: z.object({ lat: z.number(), lng: z.number() }),
+    })
+    .optional(),
+  components: z
+    .object({
+      streetNumber: z.string().optional(),
+      route: z.string().optional(),
+      locality: z.string().optional(),
+      administrativeArea: z.string().optional(),
+      postalCode: z.string().optional(),
+      country: z.string().optional(),
+    })
+    .optional(),
 });
 
 const DistanceResultSchema = z.object({
@@ -40,7 +44,9 @@ const DistanceResultSchema = z.object({
   destination: z.string(),
   distance: z.object({ value: z.number(), text: z.string() }),
   duration: z.object({ value: z.number(), text: z.string() }),
-  durationInTraffic: z.object({ value: z.number(), text: z.string() }).optional(),
+  durationInTraffic: z
+    .object({ value: z.number(), text: z.string() })
+    .optional(),
 });
 
 /**
@@ -48,7 +54,7 @@ const DistanceResultSchema = z.object({
  */
 export class GoogleMapsService {
   private apiKey: string;
-  private apiUrl = 'https://maps.googleapis.com/maps/api';
+  private apiUrl = "https://maps.googleapis.com/maps/api";
   private cache: Map<string, { data: any; timestamp: number }> = new Map();
   private cacheTTL = 3600000; // 1 hour
   private requestCount = 0;
@@ -61,7 +67,7 @@ export class GoogleMapsService {
 
   constructor(apiKey: string) {
     if (!apiKey) {
-      throw new Error('Google Maps API key is required');
+      throw new Error("Google Maps API key is required");
     }
     this.apiKey = apiKey;
   }
@@ -69,10 +75,13 @@ export class GoogleMapsService {
   /**
    * Make a request to Google Maps API with rate limiting
    */
-  private async request<T>(endpoint: string, params: Record<string, any>): Promise<T> {
+  private async request<T>(
+    endpoint: string,
+    params: Record<string, any>,
+  ): Promise<T> {
     // Check rate limit
     if (this.requestCount >= this.dailyRequestLimit) {
-      throw new Error('Daily API limit exceeded');
+      throw new Error("Daily API limit exceeded");
     }
 
     // Check cache
@@ -84,7 +93,7 @@ export class GoogleMapsService {
 
     // Build request URL
     const url = new URL(`${this.apiUrl}/${endpoint}/json`);
-    url.searchParams.append('key', this.apiKey);
+    url.searchParams.append("key", this.apiKey);
 
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -96,13 +105,20 @@ export class GoogleMapsService {
     const response = await fetch(url.toString());
 
     if (!response.ok) {
-      throw new Error(`Google Maps API Error [${response.status}]: ${response.statusText}`);
+      throw new Error(
+        `Google Maps API Error [${response.status}]: ${response.statusText}`,
+      );
     }
 
-    const data = (await response.json()) as { status: string; error_message?: string };
+    const data = (await response.json()) as {
+      status: string;
+      error_message?: string;
+    };
 
-    if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
-      throw new Error(`Google Maps API Error: ${data.status} - ${data.error_message || 'Unknown error'}`);
+    if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
+      throw new Error(
+        `Google Maps API Error: ${data.status} - ${data.error_message || "Unknown error"}`,
+      );
     }
 
     // Update rate limit info
@@ -120,12 +136,12 @@ export class GoogleMapsService {
    */
   async geocodeAddress(address: string): Promise<GeocodingResult> {
     if (!address || address.trim().length < 3) {
-      throw new Error('Address must be at least 3 characters long');
+      throw new Error("Address must be at least 3 characters long");
     }
 
-    const response = await this.request<any>('geocode', {
+    const response = await this.request<any>("geocode", {
       address: address.trim(),
-      region: 'US', // Adjust based on your service region
+      region: "US", // Adjust based on your service region
     });
 
     if (!response.results || response.results.length === 0) {
@@ -147,17 +163,19 @@ export class GoogleMapsService {
       latitude: location.lat,
       longitude: location.lng,
       plusCode: result.plus_code?.global_code,
-      viewport: result.geometry.viewport ? {
-        northeast: result.geometry.viewport.northeast,
-        southwest: result.geometry.viewport.southwest,
-      } : undefined,
+      viewport: result.geometry.viewport
+        ? {
+            northeast: result.geometry.viewport.northeast,
+            southwest: result.geometry.viewport.southwest,
+          }
+        : undefined,
       components: {
-        streetNumber: components['street_number'],
-        route: components['route'],
-        locality: components['locality'],
-        administrativeArea: components['administrative_area_level_1'],
-        postalCode: components['postal_code'],
-        country: components['country'],
+        streetNumber: components["street_number"],
+        route: components["route"],
+        locality: components["locality"],
+        administrativeArea: components["administrative_area_level_1"],
+        postalCode: components["postal_code"],
+        country: components["country"],
       },
     });
   }
@@ -167,24 +185,28 @@ export class GoogleMapsService {
    */
   async calculateDistance(
     origin: string | { lat: number; lng: number },
-    destination: string | { lat: number; lng: number }
+    destination: string | { lat: number; lng: number },
   ): Promise<DistanceResult> {
-    const originStr = typeof origin === 'string' ? origin : `${origin.lat},${origin.lng}`;
-    const destStr = typeof destination === 'string' ? destination : `${destination.lat},${destination.lng}`;
+    const originStr =
+      typeof origin === "string" ? origin : `${origin.lat},${origin.lng}`;
+    const destStr =
+      typeof destination === "string"
+        ? destination
+        : `${destination.lat},${destination.lng}`;
 
-    const response = await this.request<any>('distancematrix', {
+    const response = await this.request<any>("distancematrix", {
       origins: originStr,
       destinations: destStr,
-      mode: 'driving',
-      units: 'imperial',
+      mode: "driving",
+      units: "imperial",
     });
 
     if (!response.rows || response.rows.length === 0) {
-      throw new Error('No route found between origin and destination');
+      throw new Error("No route found between origin and destination");
     }
 
     const element = response.rows[0].elements[0];
-    if (element.status !== 'OK') {
+    if (element.status !== "OK") {
       throw new Error(`Distance calculation failed: ${element.status}`);
     }
 
@@ -203,25 +225,29 @@ export class GoogleMapsService {
   async getDirections(
     origin: string | { lat: number; lng: number },
     destination: string | { lat: number; lng: number },
-    waypoints?: Array<string | { lat: number; lng: number }>
+    waypoints?: Array<string | { lat: number; lng: number }>,
   ): Promise<DirectionsResult> {
-    const originStr = typeof origin === 'string' ? origin : `${origin.lat},${origin.lng}`;
-    const destStr = typeof destination === 'string' ? destination : `${destination.lat},${destination.lng}`;
+    const originStr =
+      typeof origin === "string" ? origin : `${origin.lat},${origin.lng}`;
+    const destStr =
+      typeof destination === "string"
+        ? destination
+        : `${destination.lat},${destination.lng}`;
 
     const params: Record<string, any> = {
       origin: originStr,
       destination: destStr,
-      mode: 'driving',
+      mode: "driving",
       alternatives: false,
     };
 
     if (waypoints && waypoints.length > 0) {
       params.waypoints = waypoints
-        .map(wp => (typeof wp === 'string' ? wp : `${wp.lat},${wp.lng}`))
-        .join('|');
+        .map((wp) => (typeof wp === "string" ? wp : `${wp.lat},${wp.lng}`))
+        .join("|");
     }
 
-    const response = await this.request<any>('directions', params);
+    const response = await this.request<any>("directions", params);
 
     return {
       routes: response.routes.map((route: any) => ({
@@ -319,7 +345,7 @@ export class GoogleMapsService {
 
       const distance = this.calculateHaversineDistance(
         { lat, lng },
-        { lat: zone.center.latitude, lng: zone.center.longitude }
+        { lat: zone.center.latitude, lng: zone.center.longitude },
       );
 
       if (distance < minDistance) {
@@ -336,7 +362,7 @@ export class GoogleMapsService {
    */
   private calculateHaversineDistance(
     point1: { lat: number; lng: number },
-    point2: { lat: number; lng: number }
+    point2: { lat: number; lng: number },
   ): number {
     const R = 6371; // Earth's radius in kilometers
     const dLat = this.toRad(point2.lat - point1.lat);
@@ -359,12 +385,12 @@ export class GoogleMapsService {
    * Reverse geocode coordinates to get address
    */
   async reverseGeocode(lat: number, lng: number): Promise<GeocodingResult> {
-    const response = await this.request<any>('geocode', {
+    const response = await this.request<any>("geocode", {
       latlng: `${lat},${lng}`,
     });
 
     if (!response.results || response.results.length === 0) {
-      throw new Error('No address found for coordinates');
+      throw new Error("No address found for coordinates");
     }
 
     const result = response.results[0];
@@ -381,12 +407,12 @@ export class GoogleMapsService {
       latitude: location.lat,
       longitude: location.lng,
       components: {
-        streetNumber: components['street_number'],
-        route: components['route'],
-        locality: components['locality'],
-        administrativeArea: components['administrative_area_level_1'],
-        postalCode: components['postal_code'],
-        country: components['country'],
+        streetNumber: components["street_number"],
+        route: components["route"],
+        locality: components["locality"],
+        administrativeArea: components["administrative_area_level_1"],
+        postalCode: components["postal_code"],
+        country: components["country"],
       },
     });
   }

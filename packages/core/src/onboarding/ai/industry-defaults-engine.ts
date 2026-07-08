@@ -183,7 +183,8 @@ function getEcommerceProfile(): IndustryProfile {
     ],
     defaultDashboardLayout: {
       name: "Order Management Hub",
-      description: "Focused on order volume, shipments, and customer satisfaction",
+      description:
+        "Focused on order volume, shipments, and customer satisfaction",
       gridLayout: { rows: 4, cols: 3 },
       defaultWidgets: [
         "order_volume",
@@ -418,7 +419,8 @@ function getLogistics3PLProfile(): IndustryProfile {
     ],
     defaultDashboardLayout: {
       name: "Fleet Management Hub",
-      description: "Vehicle status, driver performance, and operational metrics",
+      description:
+        "Vehicle status, driver performance, and operational metrics",
       gridLayout: { rows: 5, cols: 3 },
       defaultWidgets: [
         "active_vehicles",
@@ -497,7 +499,8 @@ function getFieldServiceProfile(): IndustryProfile {
     ],
     defaultDashboardLayout: {
       name: "Dispatch & Operations",
-      description: "Job dispatch, technician locations, and customer assignments",
+      description:
+        "Job dispatch, technician locations, and customer assignments",
       gridLayout: { rows: 4, cols: 3 },
       defaultWidgets: [
         "dispatch_queue",
@@ -525,11 +528,7 @@ function getFieldServiceProfile(): IndustryProfile {
 function getManufacturingProfile(): IndustryProfile {
   return {
     industry: Industry.MANUFACTURING,
-    commonGoals: [
-      Goal.ERP_INTEGRATION,
-      Goal.ANALYTICS,
-      Goal.ORDER_MANAGEMENT,
-    ],
+    commonGoals: [Goal.ERP_INTEGRATION, Goal.ANALYTICS, Goal.ORDER_MANAGEMENT],
     recommendedIntegrations: [
       {
         slug: "sap",
@@ -721,7 +720,8 @@ function getGroceryProfile(): IndustryProfile {
     ],
     defaultDashboardLayout: {
       name: "Fresh Delivery Ops",
-      description: "Delivery status, temperature monitoring, and freshness tracking",
+      description:
+        "Delivery status, temperature monitoring, and freshness tracking",
       gridLayout: { rows: 4, cols: 3 },
       defaultWidgets: [
         "active_deliveries",

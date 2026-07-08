@@ -12,7 +12,7 @@
  * ~200 lines, 15+ tests
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   createShopifyOrder,
   createBigCommerceOrder,
@@ -20,7 +20,7 @@ import {
   generateDedupKey,
   type PlatformOrder,
   type SyncJob,
-} from '../fixtures/sync-fixtures.js';
+} from "../fixtures/sync-fixtures.js";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -91,11 +91,16 @@ class OrderSyncService {
   /**
    * Bulk sync orders with idempotency
    */
-  async syncOrderBatch(orders: PlatformOrder[]): Promise<{ created: number; duplicates: number }> {
+  async syncOrderBatch(
+    orders: PlatformOrder[],
+  ): Promise<{ created: number; duplicates: number }> {
     const results = { created: 0, duplicates: 0 };
 
     for (const order of orders) {
-      const dedupKey = generateDedupKey(order.platformId, order.externalOrderId);
+      const dedupKey = generateDedupKey(
+        order.platformId,
+        order.externalOrderId,
+      );
       const cached = this.dedupCache.get(dedupKey);
 
       if (cached && this.isCacheValid(cached)) {
@@ -112,7 +117,10 @@ class OrderSyncService {
   /**
    * Concurrent sync - only first wins, others rejected
    */
-  async concurrentSync(order: PlatformOrder, concurrent: number = 3): Promise<OrderRecord[]> {
+  async concurrentSync(
+    order: PlatformOrder,
+    concurrent: number = 3,
+  ): Promise<OrderRecord[]> {
     const promises = Array(concurrent)
       .fill(null)
       .map(() => this.syncOrder(order));
@@ -122,7 +130,10 @@ class OrderSyncService {
   /**
    * Sync with retry logic - should be idempotent
    */
-  async syncWithRetry(order: PlatformOrder, maxRetries: number = 3): Promise<OrderRecord> {
+  async syncWithRetry(
+    order: PlatformOrder,
+    maxRetries: number = 3,
+  ): Promise<OrderRecord> {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -178,7 +189,7 @@ class OrderSyncService {
    * Utility delay function
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 
@@ -186,7 +197,7 @@ class OrderSyncService {
 // TEST SUITE
 // ============================================================================
 
-describe('OrderSyncService - Idempotency', () => {
+describe("OrderSyncService - Idempotency", () => {
   let service: OrderSyncService;
 
   beforeEach(() => {
@@ -201,32 +212,32 @@ describe('OrderSyncService - Idempotency', () => {
   // DEDUP KEY GENERATION
   // ────────────────────────────────────────────────────────────────────────
 
-  describe('Dedup Key Generation', () => {
-    it('should generate consistent dedup keys', () => {
-      const platformId = 'shopify_store_001';
-      const externalOrderId = 'ORD-12345';
+  describe("Dedup Key Generation", () => {
+    it("should generate consistent dedup keys", () => {
+      const platformId = "shopify_store_001";
+      const externalOrderId = "ORD-12345";
 
       const key1 = generateDedupKey(platformId, externalOrderId);
       const key2 = generateDedupKey(platformId, externalOrderId);
 
       expect(key1).toBe(key2);
-      expect(key1).toBe('shopify_store_001#ORD-12345');
+      expect(key1).toBe("shopify_store_001#ORD-12345");
     });
 
-    it('should differentiate dedup keys by platform', () => {
-      const externalOrderId = 'ORD-12345';
+    it("should differentiate dedup keys by platform", () => {
+      const externalOrderId = "ORD-12345";
 
-      const key1 = generateDedupKey('shopify_store_001', externalOrderId);
-      const key2 = generateDedupKey('bigcommerce_store_001', externalOrderId);
+      const key1 = generateDedupKey("shopify_store_001", externalOrderId);
+      const key2 = generateDedupKey("bigcommerce_store_001", externalOrderId);
 
       expect(key1).not.toBe(key2);
     });
 
-    it('should differentiate dedup keys by externalOrderId', () => {
-      const platformId = 'shopify_store_001';
+    it("should differentiate dedup keys by externalOrderId", () => {
+      const platformId = "shopify_store_001";
 
-      const key1 = generateDedupKey(platformId, 'ORD-12345');
-      const key2 = generateDedupKey(platformId, 'ORD-12346');
+      const key1 = generateDedupKey(platformId, "ORD-12345");
+      const key2 = generateDedupKey(platformId, "ORD-12346");
 
       expect(key1).not.toBe(key2);
     });
@@ -236,8 +247,8 @@ describe('OrderSyncService - Idempotency', () => {
   // SAME ORDER SYNCED TWICE
   // ────────────────────────────────────────────────────────────────────────
 
-  describe('Same Order Synced Twice', () => {
-    it('should produce exactly one record', async () => {
+  describe("Same Order Synced Twice", () => {
+    it("should produce exactly one record", async () => {
       const order = createShopifyOrder();
 
       const record1 = await service.syncOrder(order);
@@ -247,7 +258,7 @@ describe('OrderSyncService - Idempotency', () => {
       expect(record1.id).toBe(record2.id);
     });
 
-    it('should return same record on second sync', async () => {
+    it("should return same record on second sync", async () => {
       const order = createShopifyOrder();
 
       const result1 = await service.syncOrder(order);
@@ -257,7 +268,7 @@ describe('OrderSyncService - Idempotency', () => {
       expect(result1.syncedAt).toBe(result2.syncedAt);
     });
 
-    it('should handle multiple identical syncs', async () => {
+    it("should handle multiple identical syncs", async () => {
       const order = createShopifyOrder();
 
       const results = await Promise.all([
@@ -276,8 +287,8 @@ describe('OrderSyncService - Idempotency', () => {
   // CONCURRENT SYNC
   // ────────────────────────────────────────────────────────────────────────
 
-  describe('Concurrent Sync of Same Order', () => {
-    it('should only create one record despite concurrent requests', async () => {
+  describe("Concurrent Sync of Same Order", () => {
+    it("should only create one record despite concurrent requests", async () => {
       const order = createShopifyOrder();
 
       const results = await service.concurrentSync(order, 5);
@@ -285,22 +296,22 @@ describe('OrderSyncService - Idempotency', () => {
       expect(service.getRecordCount()).toBe(1);
     });
 
-    it('should return same record ID for all concurrent requests', async () => {
+    it("should return same record ID for all concurrent requests", async () => {
       const order = createShopifyOrder();
 
       const results = await service.concurrentSync(order, 3);
-      const recordIds = new Set(results.map(r => r.id));
+      const recordIds = new Set(results.map((r) => r.id));
 
       expect(recordIds.size).toBe(1);
     });
 
-    it('should maintain consistency under high concurrency', async () => {
+    it("should maintain consistency under high concurrency", async () => {
       const order = createShopifyOrder();
 
       const results = await service.concurrentSync(order, 10);
       const firstRecord = results[0];
 
-      results.forEach(record => {
+      results.forEach((record) => {
         expect(record).toEqual(firstRecord);
       });
     });
@@ -310,8 +321,8 @@ describe('OrderSyncService - Idempotency', () => {
   // RETRY IDEMPOTENCY
   // ────────────────────────────────────────────────────────────────────────
 
-  describe('Idempotency Across Retries', () => {
-    it('should produce same record across retries', async () => {
+  describe("Idempotency Across Retries", () => {
+    it("should produce same record across retries", async () => {
       const order = createShopifyOrder();
 
       const record1 = await service.syncWithRetry(order);
@@ -321,7 +332,7 @@ describe('OrderSyncService - Idempotency', () => {
       expect(service.getRecordCount()).toBe(1);
     });
 
-    it('should succeed despite simulated failures', async () => {
+    it("should succeed despite simulated failures", async () => {
       const order = createShopifyOrder();
 
       // Note: In real implementation, service would retry on actual failures
@@ -337,10 +348,13 @@ describe('OrderSyncService - Idempotency', () => {
   // DEDUP CACHE TTL
   // ────────────────────────────────────────────────────────────────────────
 
-  describe('Dedup Cache TTL Expiry', () => {
-    it('should allow new record after cache expires', async () => {
+  describe("Dedup Cache TTL Expiry", () => {
+    it("should allow new record after cache expires", async () => {
       const order = createShopifyOrder();
-      const dedupKey = generateDedupKey(order.platformId, order.externalOrderId);
+      const dedupKey = generateDedupKey(
+        order.platformId,
+        order.externalOrderId,
+      );
 
       const record1 = await service.syncOrder(order);
       service.expireCacheEntry(dedupKey);
@@ -352,7 +366,7 @@ describe('OrderSyncService - Idempotency', () => {
       expect(record2).toBeDefined();
     });
 
-    it('should track cache entry creation time', async () => {
+    it("should track cache entry creation time", async () => {
       const order = createShopifyOrder();
 
       await service.syncOrder(order);
@@ -367,16 +381,16 @@ describe('OrderSyncService - Idempotency', () => {
   // DIFFERENT PLATFORMS, SAME EXTERNAL ID
   // ────────────────────────────────────────────────────────────────────────
 
-  describe('Different Platforms, Same External ID', () => {
-    it('should NOT dedup orders from different platforms', async () => {
+  describe("Different Platforms, Same External ID", () => {
+    it("should NOT dedup orders from different platforms", async () => {
       const shopifyOrder = createShopifyOrder({
-        platformId: 'shopify_store_001',
-        externalOrderId: 'ORD-SHARED-12345',
+        platformId: "shopify_store_001",
+        externalOrderId: "ORD-SHARED-12345",
       });
 
       const bigcommerceOrder = createBigCommerceOrder({
-        platformId: 'bigcommerce_store_001',
-        externalOrderId: 'ORD-SHARED-12345',
+        platformId: "bigcommerce_store_001",
+        externalOrderId: "ORD-SHARED-12345",
       });
 
       await service.syncOrder(shopifyOrder);
@@ -385,17 +399,17 @@ describe('OrderSyncService - Idempotency', () => {
       expect(service.getRecordCount()).toBe(2);
     });
 
-    it('should generate different dedup keys for different platforms', () => {
-      const externalOrderId = 'ORD-SHARED-12345';
+    it("should generate different dedup keys for different platforms", () => {
+      const externalOrderId = "ORD-SHARED-12345";
 
-      const key1 = generateDedupKey('shopify_store_001', externalOrderId);
-      const key2 = generateDedupKey('bigcommerce_store_001', externalOrderId);
+      const key1 = generateDedupKey("shopify_store_001", externalOrderId);
+      const key2 = generateDedupKey("bigcommerce_store_001", externalOrderId);
 
       expect(key1).not.toBe(key2);
     });
 
-    it('should maintain separate records for same external ID', async () => {
-      const externalOrderId = 'ORD-SHARED-99999';
+    it("should maintain separate records for same external ID", async () => {
+      const externalOrderId = "ORD-SHARED-99999";
 
       const records = await Promise.all([
         service.syncOrder(createShopifyOrder({ externalOrderId })),
@@ -412,25 +426,34 @@ describe('OrderSyncService - Idempotency', () => {
   // BATCH SYNC WITH IDEMPOTENCY
   // ────────────────────────────────────────────────────────────────────────
 
-  describe('Batch Sync with Idempotency', () => {
-    it('should track created vs duplicate records', async () => {
+  describe("Batch Sync with Idempotency", () => {
+    it("should track created vs duplicate records", async () => {
       const order1 = createShopifyOrder();
       const order2 = createBigCommerceOrder();
 
-      const results = await service.syncOrderBatch([order1, order2, order1, order2]);
+      const results = await service.syncOrderBatch([
+        order1,
+        order2,
+        order1,
+        order2,
+      ]);
 
       expect(results.created).toBe(2);
       expect(results.duplicates).toBe(2);
     });
 
-    it('should process mixed old and new orders correctly', async () => {
+    it("should process mixed old and new orders correctly", async () => {
       const newOrder = createShopifyOrder();
       const anotherNewOrder = createBigCommerceOrder();
 
       // First batch
       const batch1 = await service.syncOrderBatch([newOrder, anotherNewOrder]);
       // Second batch with duplicates
-      const batch2 = await service.syncOrderBatch([newOrder, anotherNewOrder, newOrder]);
+      const batch2 = await service.syncOrderBatch([
+        newOrder,
+        anotherNewOrder,
+        newOrder,
+      ]);
 
       expect(batch1.created).toBe(2);
       expect(batch2.created).toBe(0);

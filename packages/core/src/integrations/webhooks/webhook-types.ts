@@ -9,19 +9,24 @@
  * - Retry and fan-out policies
  */
 
-import type { EventEmitter } from 'events';
+import type { EventEmitter } from "events";
 
 // ─── Webhook Core Types ──────────────────────────────────────────
 
 /**
  * HTTP method for webhook delivery
  */
-export type WebhookMethod = 'POST' | 'PUT' | 'PATCH';
+export type WebhookMethod = "POST" | "PUT" | "PATCH";
 
 /**
  * Webhook delivery status
  */
-export type DeliveryStatus = 'pending' | 'success' | 'failed' | 'retrying' | 'dlq';
+export type DeliveryStatus =
+  | "pending"
+  | "success"
+  | "failed"
+  | "retrying"
+  | "dlq";
 
 /**
  * Webhook endpoint configuration

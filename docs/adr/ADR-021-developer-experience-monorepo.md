@@ -47,10 +47,17 @@ Witylogix Platform is a pnpm Turborepo monorepo with:
   - `pos-ui` (Shopify Preact POS extension)
 
 **Current turbo.json** is minimal:
+
 ```json
 {
   "globalDependencies": ["**/.env.*local"],
-  "globalEnv": ["NODE_ENV", "DATABASE_URL", "REDIS_URL", "SHOPIFY_API_KEY", "SHOPIFY_API_SECRET"],
+  "globalEnv": [
+    "NODE_ENV",
+    "DATABASE_URL",
+    "REDIS_URL",
+    "SHOPIFY_API_KEY",
+    "SHOPIFY_API_SECRET"
+  ],
   "tasks": {
     "build": { "dependsOn": ["^build"], "outputs": ["dist/**", ".next/**"] },
     "dev": { "dependsOn": ["^build"], "cache": false, "persistent": true },
@@ -62,6 +69,7 @@ Witylogix Platform is a pnpm Turborepo monorepo with:
 ```
 
 **Problems:**
+
 1. No `inputs` declared → Turbo can't know if a file changed, so it caches aggressively or conservatively
 2. Missing `db:generate` and `db:push` task definitions → Prisma generation isn't orchestrated
 3. No `globalPassThroughEnv` for CI variables (CI, GITHUB_TOKEN, etc.)
@@ -73,6 +81,7 @@ Witylogix Platform is a pnpm Turborepo monorepo with:
 ### Scaling Concerns
 
 As the team grows:
+
 - **Onboarding slowdown:** New developers don't know which port runs which app
 - **CI inefficiency:** Build pipeline is 2-3 min slower than necessary due to re-runs
 - **Silent failures:** A new package added without `build` script breaks the build silently until CI
@@ -126,12 +135,14 @@ Standardize the Witylogix monorepo with:
 #### Task Definitions with Inputs & Outputs
 
 Each task must declare:
+
 - **`inputs`:** Files/globs that trigger a rebuild
 - **`outputs`:** Artifacts that are cached
 - **`env`:** Environment variables that affect the task
 - **`dependsOn`:** Task dependencies (with `^` for workspace dependencies)
 
 #### build task
+
 ```json
 {
   "build": {
@@ -145,18 +156,26 @@ Each task must declare:
 ```
 
 #### dev task
+
 ```json
 {
   "dev": {
     "dependsOn": ["^build"],
     "cache": false,
     "persistent": true,
-    "env": ["NODE_ENV", "DATABASE_URL", "REDIS_URL", "JWT_SECRET", "NEXT_PUBLIC_API_URL"]
+    "env": [
+      "NODE_ENV",
+      "DATABASE_URL",
+      "REDIS_URL",
+      "JWT_SECRET",
+      "NEXT_PUBLIC_API_URL"
+    ]
   }
 }
 ```
 
 #### lint task
+
 ```json
 {
   "lint": {
@@ -169,6 +188,7 @@ Each task must declare:
 ```
 
 #### typecheck task
+
 ```json
 {
   "typecheck": {
@@ -181,11 +201,18 @@ Each task must declare:
 ```
 
 #### test task
+
 ```json
 {
   "test": {
     "dependsOn": ["^build"],
-    "inputs": ["src/**/*.ts", "src/**/*.test.ts", "src/**/*.spec.ts", "vitest.config.ts", "package.json"],
+    "inputs": [
+      "src/**/*.ts",
+      "src/**/*.test.ts",
+      "src/**/*.spec.ts",
+      "vitest.config.ts",
+      "package.json"
+    ],
     "outputs": ["coverage/**"],
     "env": ["DATABASE_URL", "NODE_ENV"],
     "cache": true
@@ -194,6 +221,7 @@ Each task must declare:
 ```
 
 #### db:generate task
+
 ```json
 {
   "db:generate": {
@@ -205,6 +233,7 @@ Each task must declare:
 ```
 
 #### db:push task
+
 ```json
 {
   "db:push": {
@@ -216,6 +245,7 @@ Each task must declare:
 ```
 
 #### clean task
+
 ```json
 {
   "clean": {
@@ -226,12 +256,10 @@ Each task must declare:
 ```
 
 #### globalEnv & globalPassThroughEnv
+
 ```json
 {
-  "globalEnv": [
-    "NODE_ENV",
-    "TURBO_TELEMETRY_DISABLED"
-  ],
+  "globalEnv": ["NODE_ENV", "TURBO_TELEMETRY_DISABLED"],
   "globalPassThroughEnv": [
     "DATABASE_URL",
     "REDIS_URL",
@@ -254,23 +282,24 @@ Every workspace package **must** have `package.json` scripts:
 
 #### Required Scripts (All Packages)
 
-| Script | Purpose | Notes |
-|--------|---------|-------|
-| `build` | Compile/transpile to `dist/` or `.next/` | Must produce output that can be depended upon by other packages |
-| `lint` | Run ESLint (or equivalent linter) | May be a no-op for types-only packages, but must exist |
-| `typecheck` | Run `tsc --noEmit` | Catches TypeScript errors without emitting `.js` |
+| Script      | Purpose                                  | Notes                                                           |
+| ----------- | ---------------------------------------- | --------------------------------------------------------------- |
+| `build`     | Compile/transpile to `dist/` or `.next/` | Must produce output that can be depended upon by other packages |
+| `lint`      | Run ESLint (or equivalent linter)        | May be a no-op for types-only packages, but must exist          |
+| `typecheck` | Run `tsc --noEmit`                       | Catches TypeScript errors without emitting `.js`                |
 
 #### Optional Scripts (As Applicable)
 
-| Script | Purpose | Notes |
-|--------|---------|-------|
-| `dev` | Start dev server or watch mode | Only for apps, not for libraries |
-| `test` | Run test suite (vitest, Jest, etc.) | Only if package has tests |
-| `start` | Run compiled/built output | Only for apps |
+| Script  | Purpose                             | Notes                            |
+| ------- | ----------------------------------- | -------------------------------- |
+| `dev`   | Start dev server or watch mode      | Only for apps, not for libraries |
+| `test`  | Run test suite (vitest, Jest, etc.) | Only if package has tests        |
+| `start` | Run compiled/built output           | Only for apps                    |
 
 #### Template package.json
 
 **For libraries (db, core, validators, etc.):**
+
 ```json
 {
   "name": "@witylogix/library-name",
@@ -292,6 +321,7 @@ Every workspace package **must** have `package.json` scripts:
 ```
 
 **For apps (api, dashboard, docs, etc.):**
+
 ```json
 {
   "name": "@witylogix/app-name",
@@ -312,6 +342,7 @@ Every workspace package **must** have `package.json` scripts:
 ```
 
 **For db package only:**
+
 ```json
 {
   "scripts": {
@@ -328,11 +359,13 @@ Every workspace package **must** have `package.json` scripts:
 ### 3. TypeScript Project References
 
 TypeScript `compilerOptions.composite` and `references` provide:
+
 - **Type-aware incremental builds** — `tsc` only recompiles changed files and their dependents
 - **Clear ownership** — each `tsconfig.json` explicitly lists what it depends on
 - **IDE support** — editors can follow dependency boundaries
 
 **Root tsconfig.json:**
+
 ```json
 {
   "compilerOptions": {
@@ -354,6 +387,7 @@ TypeScript `compilerOptions.composite` and `references` provide:
 ```
 
 **App tsconfig.json (extends root):**
+
 ```json
 {
   "extends": "../../tsconfig.json",
@@ -375,16 +409,17 @@ TypeScript `compilerOptions.composite` and `references` provide:
 
 All dev servers must use a **consistent port map** to prevent conflicts:
 
-| Application | Port | Start Command |
-|-------------|------|----------------|
-| **API** | 3001 | `turbo dev --filter=@witylogix/api` |
-| **Dashboard** | 3000 | `turbo dev --filter=@witylogix/dashboard` |
-| **Docs** | 3003 | `turbo dev --filter=@witylogix/docs` |
-| **Tracking Page** | 3004 | `turbo dev --filter=@witylogix/tracking-page` |
-| **Shopify App** | 3005 | `turbo dev --filter=@witylogix/shopify-app` |
-| **Driver App (Expo)** | 8081 | `turbo dev --filter=@witylogix/driver-app` |
+| Application           | Port | Start Command                                 |
+| --------------------- | ---- | --------------------------------------------- |
+| **API**               | 3001 | `turbo dev --filter=@witylogix/api`           |
+| **Dashboard**         | 3000 | `turbo dev --filter=@witylogix/dashboard`     |
+| **Docs**              | 3003 | `turbo dev --filter=@witylogix/docs`          |
+| **Tracking Page**     | 3004 | `turbo dev --filter=@witylogix/tracking-page` |
+| **Shopify App**       | 3005 | `turbo dev --filter=@witylogix/shopify-app`   |
+| **Driver App (Expo)** | 8081 | `turbo dev --filter=@witylogix/driver-app`    |
 
 **Root package.json scripts:**
+
 ```json
 {
   "scripts": {
@@ -398,6 +433,7 @@ All dev servers must use a **consistent port map** to prevent conflicts:
 ```
 
 **Each app's package.json includes the port:**
+
 ```json
 {
   "scripts": {
@@ -442,6 +478,7 @@ FEATURE_WHATSAPP=false
 #### Validation on Boot
 
 The `scripts/validate-workspace.ts` script checks:
+
 1. `.env.example` exists at the repository root
 2. All required packages have `build`, `lint`, `typecheck` scripts
 3. No version conflicts in shared dependencies (react, typescript, next)
@@ -481,6 +518,7 @@ At start time, the app must validate that all required environment variables fro
 #### Dependency Installation
 
 Turbo can't cache `pnpm install`, but it can:
+
 - Cache `prisma generate` (the slow part of db builds)
 - Cache TypeScript compilation (the slow part of non-next builds)
 

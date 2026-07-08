@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import dynamic from 'next/dynamic';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { useApiList } from '@/hooks/use-api';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import type { OrderPin, OrderPinStatus } from '@/components/map/order-layer';
+import { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { useApiList } from "@/hooks/use-api";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import type { OrderPin, OrderPinStatus } from "@/components/map/order-layer";
 import {
   Package,
   MapPin,
@@ -22,11 +22,11 @@ import {
   Mail,
   List,
   Map,
-} from 'lucide-react';
+} from "lucide-react";
 
 const LocalOrdersMapView = dynamic(
-  () => import('./components/local-orders-map-view'),
-  { ssr: false }
+  () => import("./components/local-orders-map-view"),
+  { ssr: false },
 );
 
 interface ApiDriver {
@@ -71,51 +71,70 @@ interface ApiOrder {
 
 function toOrderPinStatus(status: string): OrderPinStatus {
   const s = status.toUpperCase();
-  if (s === 'PENDING' || s === 'CONFIRMED') return 'pending';
-  if (s === 'ASSIGNED') return 'assigned';
-  if (s === 'IN_TRANSIT' || s === 'OUT_FOR_DELIVERY') return 'in_transit';
-  if (s === 'CANCELLED' || s === 'FAILED' || s === 'RETURNED') return 'delayed';
-  return 'pending';
+  if (s === "PENDING" || s === "CONFIRMED") return "pending";
+  if (s === "ASSIGNED") return "assigned";
+  if (s === "IN_TRANSIT" || s === "OUT_FOR_DELIVERY") return "in_transit";
+  if (s === "CANCELLED" || s === "FAILED" || s === "RETURNED") return "delayed";
+  return "pending";
 }
 
-const STATUS_VARIANT: Record<string, 'success' | 'primary' | 'info' | 'warning' | 'default'> = {
-  delivered: 'success',
-  in_transit: 'primary',
-  assigned: 'info',
-  pending: 'warning',
-  confirmed: 'info',
+const STATUS_VARIANT: Record<
+  string,
+  "success" | "primary" | "info" | "warning" | "default"
+> = {
+  delivered: "success",
+  in_transit: "primary",
+  assigned: "info",
+  pending: "warning",
+  confirmed: "info",
 };
 
-const ALL_STATUSES = ['pending', 'confirmed', 'assigned', 'in_transit', 'delivered'];
+const ALL_STATUSES = [
+  "pending",
+  "confirmed",
+  "assigned",
+  "in_transit",
+  "delivered",
+];
 
-function formatTimeWindow(timeSlot?: ApiTimeSlot | null, deliveryDate?: string | null): string {
+function formatTimeWindow(
+  timeSlot?: ApiTimeSlot | null,
+  deliveryDate?: string | null,
+): string {
   if (timeSlot?.startTime && timeSlot?.endTime) {
     return `${timeSlot.startTime} - ${timeSlot.endTime}`;
   }
   if (deliveryDate) {
     return new Date(deliveryDate).toLocaleDateString();
   }
-  return 'Flexible';
+  return "Flexible";
 }
 
-function formatAddress(addr: ApiOrder['deliveryAddress']): string {
+function formatAddress(addr: ApiOrder["deliveryAddress"]): string {
   return `${addr.street}, ${addr.city}`;
 }
 
 export default function LocalOrdersPage() {
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
-  const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
-  const [view, setView] = useState<'list' | 'map'>('list');
+  const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [view, setView] = useState<"list" | "map">("list");
 
-  const { items: orders, loading, error, refetch } = useApiList<ApiOrder>('/api/v4/orders', {
+  const {
+    items: orders,
+    loading,
+    error,
+    refetch,
+  } = useApiList<ApiOrder>("/api/v4/orders", {
     limit: 100,
-    sort: 'createdAt:desc',
+    sort: "createdAt:desc",
   });
 
   const filteredOrders = useMemo(() => {
-    if (statusFilter === 'all') return orders;
-    return orders.filter(o => o.status === statusFilter);
+    if (statusFilter === "all") return orders;
+    return orders.filter((o) => o.status === statusFilter);
   }, [orders, statusFilter]);
 
   const orderPins = useMemo<OrderPin[]>(() => {
@@ -129,12 +148,12 @@ export default function LocalOrdersPage() {
         status: toOrderPinStatus(o.status),
         lat: o.deliveryLat!,
         lng: o.deliveryLng!,
-        priority: o.status === 'in_transit' ? 'high' : 'medium',
+        priority: o.status === "in_transit" ? "high" : "medium",
       }));
   }, [orders]);
 
   const selectedOrder = useMemo(
-    () => orders.find(o => o.id === selectedOrderId) ?? null,
+    () => orders.find((o) => o.id === selectedOrderId) ?? null,
     [orders, selectedOrderId],
   );
 
@@ -147,8 +166,8 @@ export default function LocalOrdersPage() {
 
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = { all: orders.length };
-    ALL_STATUSES.forEach(s => {
-      counts[s] = orders.filter(o => o.status === s).length;
+    ALL_STATUSES.forEach((s) => {
+      counts[s] = orders.filter((o) => o.status === s).length;
     });
     return counts;
   }, [orders]);
@@ -164,7 +183,10 @@ export default function LocalOrdersPage() {
   if (error) {
     return (
       <div className="p-6 min-h-screen bg-wl-bg-root">
-        <ErrorState message="Failed to load local delivery orders" onRetry={refetch} />
+        <ErrorState
+          message="Failed to load local delivery orders"
+          onRetry={refetch}
+        />
       </div>
     );
   }
@@ -175,24 +197,33 @@ export default function LocalOrdersPage() {
       <div className="mb-6">
         <div className="flex items-start justify-between mb-2">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Local Delivery Orders</h1>
-            <p className="text-gray-400">{orders.length} orders total{orderPins.length > 0 && ` · ${orderPins.length} on map`}</p>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Local Delivery Orders
+            </h1>
+            <p className="text-gray-400">
+              {orders.length} orders total
+              {orderPins.length > 0 && ` · ${orderPins.length} on map`}
+            </p>
           </div>
           <div className="flex rounded overflow-hidden border border-wl-border-default">
             <button
-              onClick={() => setView('list')}
+              onClick={() => setView("list")}
               className={cn(
-                'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors',
-                view === 'list' ? 'bg-blue-500 text-white' : 'bg-wl-bg-surface text-gray-400 hover:text-white',
+                "px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors",
+                view === "list"
+                  ? "bg-blue-500 text-white"
+                  : "bg-wl-bg-surface text-gray-400 hover:text-white",
               )}
             >
               <List size={13} /> List
             </button>
             <button
-              onClick={() => setView('map')}
+              onClick={() => setView("map")}
               className={cn(
-                'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors border-l border-wl-border-default',
-                view === 'map' ? 'bg-blue-500 text-white' : 'bg-wl-bg-surface text-gray-400 hover:text-white',
+                "px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors border-l border-wl-border-default",
+                view === "map"
+                  ? "bg-blue-500 text-white"
+                  : "bg-wl-bg-surface text-gray-400 hover:text-white",
               )}
             >
               <Map size={13} /> Map
@@ -202,14 +233,20 @@ export default function LocalOrdersPage() {
 
         <div className="flex gap-3 flex-wrap mt-4">
           {[
-            { key: 'pending', label: 'Pending', color: '#f59e0b' },
-            { key: 'assigned', label: 'Assigned', color: '#6366f1' },
-            { key: 'in_transit', label: 'In Transit', color: '#3b82f6' },
-            { key: 'delivered', label: 'Delivered', color: '#10b981' },
+            { key: "pending", label: "Pending", color: "#f59e0b" },
+            { key: "assigned", label: "Assigned", color: "#6366f1" },
+            { key: "in_transit", label: "In Transit", color: "#3b82f6" },
+            { key: "delivered", label: "Delivered", color: "#10b981" },
           ].map((stat) => (
-            <Card key={stat.key} className="bg-wl-bg-surface border-wl-border-default p-4 min-w-[120px]">
+            <Card
+              key={stat.key}
+              className="bg-wl-bg-surface border-wl-border-default p-4 min-w-[120px]"
+            >
               <p className="text-xs text-gray-400 mb-1">{stat.label}</p>
-              <p className="text-lg font-semibold" style={{ color: stat.color }}>
+              <p
+                className="text-lg font-semibold"
+                style={{ color: stat.color }}
+              >
                 {statusCounts[stat.key] ?? 0}
               </p>
             </Card>
@@ -221,17 +258,19 @@ export default function LocalOrdersPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_350px]">
         {/* Left Column - Orders List or Map */}
         <div>
-          {view === 'map' ? (
+          {view === "map" ? (
             <div
               className="relative rounded-lg overflow-hidden border border-wl-border-default"
-              style={{ height: 'calc(100vh - 320px)', minHeight: '400px' }}
+              style={{ height: "calc(100vh - 320px)", minHeight: "400px" }}
             >
               {orderPins.length === 0 ? (
                 <div className="flex items-center justify-center h-full bg-wl-bg-surface text-gray-400 text-sm">
                   <div className="text-center">
                     <MapPin size={28} className="mx-auto mb-2 opacity-40" />
                     <p>No geocoded orders to display</p>
-                    <p className="text-xs mt-1 opacity-60">Orders need delivery coordinates to appear on the map</p>
+                    <p className="text-xs mt-1 opacity-60">
+                      Orders need delivery coordinates to appear on the map
+                    </p>
                   </div>
                 </div>
               ) : (
@@ -244,95 +283,108 @@ export default function LocalOrdersPage() {
             </div>
           ) : (
             <>
-          {/* Status filter tabs */}
-          <div className="flex gap-2 mb-4 flex-wrap">
-            {['all', ...ALL_STATUSES].map(s => (
-              <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className={cn(
-                  'px-3 py-1.5 rounded text-xs font-medium transition-all border',
-                  statusFilter === s
-                    ? 'bg-blue-500 text-white border-blue-500'
-                    : 'bg-wl-bg-surface text-gray-400 border-wl-border-default hover:border-blue-500 hover:text-blue-400',
-                )}
-              >
-                {s === 'all' ? 'All' : s.replace(/_/g, ' ')}
-                <span className="ml-1.5 opacity-70">({statusCounts[s] ?? 0})</span>
-              </button>
-            ))}
-          </div>
+              {/* Status filter tabs */}
+              <div className="flex gap-2 mb-4 flex-wrap">
+                {["all", ...ALL_STATUSES].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setStatusFilter(s)}
+                    className={cn(
+                      "px-3 py-1.5 rounded text-xs font-medium transition-all border",
+                      statusFilter === s
+                        ? "bg-blue-500 text-white border-blue-500"
+                        : "bg-wl-bg-surface text-gray-400 border-wl-border-default hover:border-blue-500 hover:text-blue-400",
+                    )}
+                  >
+                    {s === "all" ? "All" : s.replace(/_/g, " ")}
+                    <span className="ml-1.5 opacity-70">
+                      ({statusCounts[s] ?? 0})
+                    </span>
+                  </button>
+                ))}
+              </div>
 
-          {/* Orders List */}
-          {filteredOrders.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              <Package size={32} className="mx-auto mb-3 opacity-50" />
-              <p>No orders found</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {filteredOrders.map((order) => (
-                <Card
-                  key={order.id}
-                  className={cn(
-                    'cursor-pointer transition-all',
-                    selectedOrderId === order.id
-                      ? 'bg-wl-bg-elevated border-blue-500 border-2'
-                      : 'bg-wl-bg-surface border-wl-border-default',
-                  )}
-                  onClick={() => setSelectedOrderId(order.id)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex gap-3 items-start">
-                      <input
-                        type="checkbox"
-                        checked={selectedOrderIds.has(order.id)}
-                        onChange={() => handleToggleSelect(order.id)}
-                        onClick={(e) => e.stopPropagation()}
-                        className="w-4 h-4 cursor-pointer mt-0.5 accent-blue-500"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-center mb-1">
-                          <p className="text-sm font-semibold text-white font-mono">
-                            #{order.id.slice(0, 8)}
-                          </p>
-                          <Badge variant={STATUS_VARIANT[order.status] ?? 'default'}>
-                            {order.status.replace(/_/g, ' ')}
-                          </Badge>
+              {/* Orders List */}
+              {filteredOrders.length === 0 ? (
+                <div className="text-center py-12 text-gray-400">
+                  <Package size={32} className="mx-auto mb-3 opacity-50" />
+                  <p>No orders found</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {filteredOrders.map((order) => (
+                    <Card
+                      key={order.id}
+                      className={cn(
+                        "cursor-pointer transition-all",
+                        selectedOrderId === order.id
+                          ? "bg-wl-bg-elevated border-blue-500 border-2"
+                          : "bg-wl-bg-surface border-wl-border-default",
+                      )}
+                      onClick={() => setSelectedOrderId(order.id)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex gap-3 items-start">
+                          <input
+                            type="checkbox"
+                            checked={selectedOrderIds.has(order.id)}
+                            onChange={() => handleToggleSelect(order.id)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-4 h-4 cursor-pointer mt-0.5 accent-blue-500"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center mb-1">
+                              <p className="text-sm font-semibold text-white font-mono">
+                                #{order.id.slice(0, 8)}
+                              </p>
+                              <Badge
+                                variant={
+                                  STATUS_VARIANT[order.status] ?? "default"
+                                }
+                              >
+                                {order.status.replace(/_/g, " ")}
+                              </Badge>
+                            </div>
+
+                            <p className="text-xs text-gray-400 mb-2">
+                              {order.customerName}
+                            </p>
+
+                            <div className="grid grid-cols-2 gap-2 mb-2">
+                              <span className="text-xs text-gray-400 flex items-center gap-1">
+                                <Clock size={12} />
+                                {formatTimeWindow(
+                                  order.timeSlot,
+                                  order.deliveryDate,
+                                )}
+                              </span>
+                              <span className="text-xs text-gray-400 flex items-center gap-1">
+                                <Package size={12} /> {order.items.length} items
+                              </span>
+                              <span className="text-xs text-gray-400 flex items-center gap-1 col-span-2">
+                                <MapPin size={12} />{" "}
+                                {formatAddress(order.deliveryAddress)}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-semibold text-blue-500">
+                                {order.currency || "₹"}
+                                {order.totalAmount.toLocaleString()}
+                              </span>
+                              {order.driver && (
+                                <span className="text-xs text-blue-400 flex items-center gap-1">
+                                  <Truck size={12} /> {order.driver.name}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
-
-                        <p className="text-xs text-gray-400 mb-2">{order.customerName}</p>
-
-                        <div className="grid grid-cols-2 gap-2 mb-2">
-                          <span className="text-xs text-gray-400 flex items-center gap-1">
-                            <Clock size={12} />
-                            {formatTimeWindow(order.timeSlot, order.deliveryDate)}
-                          </span>
-                          <span className="text-xs text-gray-400 flex items-center gap-1">
-                            <Package size={12} /> {order.items.length} items
-                          </span>
-                          <span className="text-xs text-gray-400 flex items-center gap-1 col-span-2">
-                            <MapPin size={12} /> {formatAddress(order.deliveryAddress)}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-semibold text-blue-500">
-                            {order.currency || '₹'}{order.totalAmount.toLocaleString()}
-                          </span>
-                          {order.driver && (
-                            <span className="text-xs text-blue-400 flex items-center gap-1">
-                              <Truck size={12} /> {order.driver.name}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </>
           )}
         </div>
@@ -352,7 +404,9 @@ export default function LocalOrdersPage() {
                   <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
                     <User size={14} /> Customer
                   </p>
-                  <p className="text-sm font-semibold text-white">{selectedOrder.customerName}</p>
+                  <p className="text-sm font-semibold text-white">
+                    {selectedOrder.customerName}
+                  </p>
                   {selectedOrder.customerPhone && (
                     <a
                       href={`tel:${selectedOrder.customerPhone}`}
@@ -376,14 +430,25 @@ export default function LocalOrdersPage() {
                   <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
                     <MapPin size={14} /> Delivery
                   </p>
-                  <p className="text-xs text-gray-300">{formatAddress(selectedOrder.deliveryAddress)}</p>
+                  <p className="text-xs text-gray-300">
+                    {formatAddress(selectedOrder.deliveryAddress)}
+                  </p>
                   <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
                     <Clock size={12} />
-                    {formatTimeWindow(selectedOrder.timeSlot, selectedOrder.deliveryDate)}
+                    {formatTimeWindow(
+                      selectedOrder.timeSlot,
+                      selectedOrder.deliveryDate,
+                    )}
                   </p>
                   {selectedOrder.estimatedDelivery && (
                     <p className="text-xs text-blue-400 mt-1">
-                      ETA: {new Date(selectedOrder.estimatedDelivery).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      ETA:{" "}
+                      {new Date(
+                        selectedOrder.estimatedDelivery,
+                      ).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </p>
                   )}
                 </div>
@@ -392,12 +457,15 @@ export default function LocalOrdersPage() {
                 <div className="border-t border-wl-border-default pt-3">
                   <div className="mb-2">
                     <p className="text-xs text-gray-400 mb-0.5">Items</p>
-                    <p className="text-sm font-semibold text-white">{selectedOrder.items.length}</p>
+                    <p className="text-sm font-semibold text-white">
+                      {selectedOrder.items.length}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-400 mb-0.5">Total</p>
                     <p className="text-base font-semibold text-blue-500">
-                      {selectedOrder.currency || '₹'}{selectedOrder.totalAmount.toLocaleString()}
+                      {selectedOrder.currency || "₹"}
+                      {selectedOrder.totalAmount.toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -405,8 +473,12 @@ export default function LocalOrdersPage() {
                 {/* Driver Info */}
                 {selectedOrder.driver ? (
                   <div className="border-t border-wl-border-default pt-3 bg-wl-bg-root rounded p-3">
-                    <p className="text-xs text-gray-400 mb-1">Assigned Driver</p>
-                    <p className="text-sm font-semibold text-white">{selectedOrder.driver.name}</p>
+                    <p className="text-xs text-gray-400 mb-1">
+                      Assigned Driver
+                    </p>
+                    <p className="text-sm font-semibold text-white">
+                      {selectedOrder.driver.name}
+                    </p>
                     {selectedOrder.driver.phone && (
                       <a
                         href={`tel:${selectedOrder.driver.phone}`}
@@ -427,7 +499,9 @@ export default function LocalOrdersPage() {
                   variant="primary"
                   size="md"
                   className="w-full flex items-center justify-center gap-1.5"
-                  onClick={() => window.location.href = `/orders/${selectedOrder.id}`}
+                  onClick={() =>
+                    (window.location.href = `/orders/${selectedOrder.id}`)
+                  }
                 >
                   <ChevronRight size={14} /> View Full Details
                 </Button>
@@ -437,7 +511,9 @@ export default function LocalOrdersPage() {
             <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardContent className="p-6 text-center">
                 <AlertCircle size={24} className="text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-400 text-sm">Select an order to view details</p>
+                <p className="text-gray-400 text-sm">
+                  Select an order to view details
+                </p>
               </CardContent>
             </Card>
           )}

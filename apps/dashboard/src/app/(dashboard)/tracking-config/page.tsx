@@ -55,8 +55,15 @@ const DEFAULT_CONFIG: TrackingConfig = {
 };
 
 export default function TrackingConfigPage() {
-  const { data: shop, loading, error } = useApiQuery<ShopData>("/api/v4/shops/me");
-  const saveMutation = useApiMutation<{ data: ShopData }>("PATCH", "/api/v4/shops/me");
+  const {
+    data: shop,
+    loading,
+    error,
+  } = useApiQuery<ShopData>("/api/v4/shops/me");
+  const saveMutation = useApiMutation<{ data: ShopData }>(
+    "PATCH",
+    "/api/v4/shops/me",
+  );
 
   const [config, setConfig] = useState<TrackingConfig>(DEFAULT_CONFIG);
   const [copied, setCopied] = useState(false);
@@ -70,7 +77,10 @@ export default function TrackingConfigPage() {
     setConfig({ ...DEFAULT_CONFIG, ...stored });
   }, [shop]);
 
-  const update = <K extends keyof TrackingConfig>(key: K, value: TrackingConfig[K]) => {
+  const update = <K extends keyof TrackingConfig>(
+    key: K,
+    value: TrackingConfig[K],
+  ) => {
     setConfig((prev) => ({ ...prev, [key]: value }));
     setIsDirty(true);
   };
@@ -113,10 +123,30 @@ export default function TrackingConfigPage() {
   if (error) return <ErrorState message={error.message} />;
 
   const featureToggles = [
-    { key: "liveMap" as const, icon: MapPin, label: "Live Map", desc: "Show real-time driver location on the tracking page" },
-    { key: "etaDisplay" as const, icon: Clock, label: "ETA Display", desc: "Show estimated time of arrival" },
-    { key: "ratingWidget" as const, icon: Star, label: "Rating Widget", desc: "Allow customers to rate their delivery" },
-    { key: "deliveryPreferences" as const, icon: Settings, label: "Delivery Preferences", desc: "Let customers set delivery notes and preferences" },
+    {
+      key: "liveMap" as const,
+      icon: MapPin,
+      label: "Live Map",
+      desc: "Show real-time driver location on the tracking page",
+    },
+    {
+      key: "etaDisplay" as const,
+      icon: Clock,
+      label: "ETA Display",
+      desc: "Show estimated time of arrival",
+    },
+    {
+      key: "ratingWidget" as const,
+      icon: Star,
+      label: "Rating Widget",
+      desc: "Allow customers to rate their delivery",
+    },
+    {
+      key: "deliveryPreferences" as const,
+      icon: Settings,
+      label: "Delivery Preferences",
+      desc: "Let customers set delivery notes and preferences",
+    },
   ];
 
   return (
@@ -125,12 +155,18 @@ export default function TrackingConfigPage() {
       <div className="sticky top-0 z-20 bg-wl-bg-root/95 backdrop-blur border-b border-wl-border-default p-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Tracking Page Configuration</h1>
-            <p className="text-gray-400 text-sm mt-0.5">Customize your branded tracking page for customers</p>
+            <h1 className="text-2xl font-bold text-white">
+              Tracking Page Configuration
+            </h1>
+            <p className="text-gray-400 text-sm mt-0.5">
+              Customize your branded tracking page for customers
+            </p>
           </div>
           {isDirty && (
             <div className="flex items-center gap-2">
-              <Button variant="secondary" size="md" onClick={handleDiscard}>Discard</Button>
+              <Button variant="secondary" size="md" onClick={handleDiscard}>
+                Discard
+              </Button>
               <Button
                 variant="primary"
                 size="md"
@@ -166,8 +202,12 @@ export default function TrackingConfigPage() {
           <div className="flex flex-col gap-6">
             {/* Feature Toggles */}
             <Card className="bg-wl-bg-surface border border-wl-border-default p-6">
-              <h3 className="text-lg font-semibold text-white mb-1">Page Features</h3>
-              <p className="text-gray-400 text-xs mb-4">Enable or disable tracking page features</p>
+              <h3 className="text-lg font-semibold text-white mb-1">
+                Page Features
+              </h3>
+              <p className="text-gray-400 text-xs mb-4">
+                Enable or disable tracking page features
+              </p>
               <div className="space-y-3">
                 {featureToggles.map((feature) => {
                   const Icon = feature.icon;
@@ -180,8 +220,12 @@ export default function TrackingConfigPage() {
                       <div className="flex items-center gap-3">
                         <Icon size={18} className="text-blue-500 shrink-0" />
                         <div>
-                          <p className="text-white text-sm font-medium">{feature.label}</p>
-                          <p className="text-gray-400 text-xs">{feature.desc}</p>
+                          <p className="text-white text-sm font-medium">
+                            {feature.label}
+                          </p>
+                          <p className="text-gray-400 text-xs">
+                            {feature.desc}
+                          </p>
                         </div>
                       </div>
                       <button
@@ -190,13 +234,13 @@ export default function TrackingConfigPage() {
                         aria-label={`Toggle ${feature.label}`}
                         className={cn(
                           "relative w-12 h-7 rounded-full border-none cursor-pointer transition-colors shrink-0",
-                          enabled ? "bg-blue-500" : "bg-wl-bg-overlay"
+                          enabled ? "bg-blue-500" : "bg-wl-bg-overlay",
                         )}
                       >
                         <span
                           className={cn(
                             "absolute top-1 w-5 h-5 rounded-full bg-white transition-transform",
-                            enabled ? "translate-x-6" : "translate-x-1"
+                            enabled ? "translate-x-6" : "translate-x-1",
                           )}
                         />
                       </button>
@@ -208,8 +252,12 @@ export default function TrackingConfigPage() {
 
             {/* Custom Domain */}
             <Card className="bg-wl-bg-surface border border-wl-border-default p-6">
-              <h3 className="text-lg font-semibold text-white mb-1">Custom Domain</h3>
-              <p className="text-gray-400 text-xs mb-4">Your branded tracking page domain</p>
+              <h3 className="text-lg font-semibold text-white mb-1">
+                Custom Domain
+              </h3>
+              <p className="text-gray-400 text-xs mb-4">
+                Your branded tracking page domain
+              </p>
               <div className="flex gap-2 items-center mb-3">
                 <input
                   type="text"
@@ -229,16 +277,25 @@ export default function TrackingConfigPage() {
                   {copied ? "Copied" : "Copy"}
                 </Button>
               </div>
-              <p className="text-gray-500 text-xs">Configure a CNAME DNS record pointing to <code className="text-blue-400">tracking.witylogix.com</code></p>
+              <p className="text-gray-500 text-xs">
+                Configure a CNAME DNS record pointing to{" "}
+                <code className="text-blue-400">tracking.witylogix.com</code>
+              </p>
             </Card>
 
             {/* SEO Settings */}
             <Card className="bg-wl-bg-surface border border-wl-border-default p-6">
-              <h3 className="text-lg font-semibold text-white mb-1">SEO Configuration</h3>
-              <p className="text-gray-400 text-xs mb-4">Meta tags shown in search results</p>
+              <h3 className="text-lg font-semibold text-white mb-1">
+                SEO Configuration
+              </h3>
+              <p className="text-gray-400 text-xs mb-4">
+                Meta tags shown in search results
+              </p>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-gray-300 text-xs font-medium mb-2">Meta Title</label>
+                  <label className="block text-gray-300 text-xs font-medium mb-2">
+                    Meta Title
+                  </label>
                   <input
                     type="text"
                     value={config.metaTitle}
@@ -246,12 +303,21 @@ export default function TrackingConfigPage() {
                     maxLength={60}
                     className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-xs focus:outline-none focus:border-blue-500/50"
                   />
-                  <p className={cn("text-xs mt-1", config.metaTitle.length > 55 ? "text-amber-400" : "text-gray-500")}>
+                  <p
+                    className={cn(
+                      "text-xs mt-1",
+                      config.metaTitle.length > 55
+                        ? "text-amber-400"
+                        : "text-gray-500",
+                    )}
+                  >
                     {config.metaTitle.length}/60 characters
                   </p>
                 </div>
                 <div>
-                  <label className="block text-gray-300 text-xs font-medium mb-2">Meta Description</label>
+                  <label className="block text-gray-300 text-xs font-medium mb-2">
+                    Meta Description
+                  </label>
                   <textarea
                     value={config.metaDescription}
                     onChange={(e) => update("metaDescription", e.target.value)}
@@ -259,7 +325,14 @@ export default function TrackingConfigPage() {
                     className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-xs focus:outline-none focus:border-blue-500/50 resize-none"
                     rows={3}
                   />
-                  <p className={cn("text-xs mt-1", config.metaDescription.length > 150 ? "text-amber-400" : "text-gray-500")}>
+                  <p
+                    className={cn(
+                      "text-xs mt-1",
+                      config.metaDescription.length > 150
+                        ? "text-amber-400"
+                        : "text-gray-500",
+                    )}
+                  >
                     {config.metaDescription.length}/160 characters
                   </p>
                 </div>
@@ -273,7 +346,9 @@ export default function TrackingConfigPage() {
             <Card className="bg-wl-bg-surface border border-wl-border-default p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Eye size={18} className="text-blue-500" />
-                <h3 className="text-lg font-semibold text-white">Page Preview</h3>
+                <h3 className="text-lg font-semibold text-white">
+                  Page Preview
+                </h3>
               </div>
 
               {/* Mini preview */}
@@ -283,26 +358,39 @@ export default function TrackingConfigPage() {
               >
                 {config.logoUrl && (
                   <div className="pb-3 border-b border-white/10">
-                    <img src={config.logoUrl} alt="Logo" className="h-7 object-contain" />
+                    <img
+                      src={config.logoUrl}
+                      alt="Logo"
+                      className="h-7 object-contain"
+                    />
                   </div>
                 )}
                 <div className="flex items-center justify-between pb-3 border-b border-white/10">
                   <p className="text-gray-400 text-xs">Preview URL:</p>
-                  <code className="text-blue-400 text-xs font-mono truncate max-w-[180px]">{trackingPageUrl}</code>
+                  <code className="text-blue-400 text-xs font-mono truncate max-w-[180px]">
+                    {trackingPageUrl}
+                  </code>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-white text-sm font-semibold">Order #12345</p>
+                  <p className="text-white text-sm font-semibold">
+                    Order #12345
+                  </p>
                   <Badge variant="primary">In Transit</Badge>
                   {config.liveMap && (
                     <div className="p-3 rounded text-xs border border-white/10 bg-white/5 flex items-center gap-2">
-                      <MapPin size={14} style={{ color: config.primaryColor }} />
+                      <MapPin
+                        size={14}
+                        style={{ color: config.primaryColor }}
+                      />
                       <span className="text-gray-300">Live map enabled</span>
                     </div>
                   )}
                   {config.etaDisplay && (
                     <div className="flex items-center gap-2 p-2 rounded text-xs border border-white/10 bg-white/5">
                       <Clock size={14} style={{ color: config.primaryColor }} />
-                      <span className="text-gray-300">Arrives today by 6:30 PM</span>
+                      <span className="text-gray-300">
+                        Arrives today by 6:30 PM
+                      </span>
                     </div>
                   )}
                   {config.ratingWidget && (
@@ -310,7 +398,11 @@ export default function TrackingConfigPage() {
                       <p className="text-gray-400 mb-1">Rate your delivery</p>
                       <div className="flex gap-1">
                         {[1, 2, 3, 4, 5].map((s) => (
-                          <Star key={s} size={14} style={{ color: config.primaryColor }} />
+                          <Star
+                            key={s}
+                            size={14}
+                            style={{ color: config.primaryColor }}
+                          />
                         ))}
                       </div>
                     </div>
@@ -320,12 +412,24 @@ export default function TrackingConfigPage() {
 
               {/* Active features summary */}
               <div className="flex flex-wrap gap-2 mt-3">
-                {featureToggles.filter((f) => config[f.key]).map((f) => (
-                  <Badge key={f.key} variant="success" className="text-xs">{f.label}</Badge>
-                ))}
-                {featureToggles.filter((f) => !config[f.key]).map((f) => (
-                  <Badge key={f.key} variant="default" className="text-xs opacity-50">{f.label}</Badge>
-                ))}
+                {featureToggles
+                  .filter((f) => config[f.key])
+                  .map((f) => (
+                    <Badge key={f.key} variant="success" className="text-xs">
+                      {f.label}
+                    </Badge>
+                  ))}
+                {featureToggles
+                  .filter((f) => !config[f.key])
+                  .map((f) => (
+                    <Badge
+                      key={f.key}
+                      variant="default"
+                      className="text-xs opacity-50"
+                    >
+                      {f.label}
+                    </Badge>
+                  ))}
               </div>
             </Card>
 
@@ -335,10 +439,14 @@ export default function TrackingConfigPage() {
                 <Palette size={18} className="text-blue-500" />
                 <h3 className="text-lg font-semibold text-white">Branding</h3>
               </div>
-              <p className="text-gray-400 text-xs mb-4">Customize colors and logo for the tracking page</p>
+              <p className="text-gray-400 text-xs mb-4">
+                Customize colors and logo for the tracking page
+              </p>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-gray-300 text-xs font-medium mb-2">Primary Color</label>
+                  <label className="block text-gray-300 text-xs font-medium mb-2">
+                    Primary Color
+                  </label>
                   <div className="flex gap-2 items-center">
                     <input
                       type="color"
@@ -356,7 +464,9 @@ export default function TrackingConfigPage() {
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 text-xs font-medium mb-2">Secondary Color</label>
+                  <label className="block text-gray-300 text-xs font-medium mb-2">
+                    Secondary Color
+                  </label>
                   <div className="flex gap-2 items-center">
                     <input
                       type="color"
@@ -374,7 +484,9 @@ export default function TrackingConfigPage() {
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 text-xs font-medium mb-2">Logo URL</label>
+                  <label className="block text-gray-300 text-xs font-medium mb-2">
+                    Logo URL
+                  </label>
                   <input
                     type="url"
                     value={config.logoUrl}
@@ -382,7 +494,9 @@ export default function TrackingConfigPage() {
                     placeholder="https://example.com/logo.png"
                     className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-gray-300 text-xs focus:outline-none focus:border-blue-500/50"
                   />
-                  <p className="text-gray-500 text-xs mt-1">Recommended: 200×50px PNG or SVG</p>
+                  <p className="text-gray-500 text-xs mt-1">
+                    Recommended: 200×50px PNG or SVG
+                  </p>
                 </div>
               </div>
             </Card>
@@ -391,7 +505,11 @@ export default function TrackingConfigPage() {
 
         {/* Save Button (bottom) */}
         <div className="flex gap-3 justify-end mt-4 pb-8">
-          <Button variant="secondary" onClick={handleDiscard} disabled={!isDirty || saveMutation.loading}>
+          <Button
+            variant="secondary"
+            onClick={handleDiscard}
+            disabled={!isDirty || saveMutation.loading}
+          >
             Discard Changes
           </Button>
           <Button
@@ -400,7 +518,11 @@ export default function TrackingConfigPage() {
             disabled={!isDirty || saveMutation.loading}
             className="flex items-center gap-2"
           >
-            {saveMutation.loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            {saveMutation.loading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
             {saveSuccess ? "Configuration saved!" : "Save Configuration"}
           </Button>
         </div>

@@ -108,10 +108,7 @@ export class ELDComplianceEngine {
   /**
    * Detect all HOS violations for a driver on a specific date.
    */
-  detectDailyViolations(
-    logs: ELDDriverLog[],
-    date: Date
-  ): ELDViolation[] {
+  detectDailyViolations(logs: ELDDriverLog[], date: Date): ELDViolation[] {
     const violations: ELDViolation[] = [];
 
     if (logs.length === 0) {
@@ -140,7 +137,7 @@ export class ELDComplianceEngine {
         vehicleId: logs[0].vehicleId,
         violationType: "hours-11",
         description: `Driver exceeded 11-hour driving limit: ${drivingHours.toFixed(
-          2
+          2,
         )} hours`,
         severity: "critical",
         detectedAt: new Date(),
@@ -165,7 +162,7 @@ export class ELDComplianceEngine {
         vehicleId: logs[0].vehicleId,
         violationType: "hours-14",
         description: `Driver exceeded 14-hour on-duty period: ${totalOnDutyHours.toFixed(
-          2
+          2,
         )} hours`,
         severity: "critical",
         detectedAt: new Date(),
@@ -190,8 +187,7 @@ export class ELDComplianceEngine {
         driverId,
         vehicleId: logs[0].vehicleId,
         violationType: "break-30min",
-        description:
-          "Driver drove more than 8 hours without a 30-minute break",
+        description: "Driver drove more than 8 hours without a 30-minute break",
         severity: "error",
         detectedAt: new Date(),
         violationTimeRange: breakViolation,
@@ -226,10 +222,7 @@ export class ELDComplianceEngine {
   /**
    * Detect 60/70-hour violations for 8-day window.
    */
-  detect8DayViolations(
-    logs: ELDDriverLog[],
-    endDate: Date
-  ): ELDViolation[] {
+  detect8DayViolations(logs: ELDDriverLog[], endDate: Date): ELDViolation[] {
     const violations: ELDViolation[] = [];
 
     if (logs.length === 0) {
@@ -242,9 +235,7 @@ export class ELDComplianceEngine {
     // Calculate 8-day totals
     const startDate = new Date(endDate.getTime() - 7 * 86400000);
     const eightyDayLogs = logs.filter(
-      (l) =>
-        l.startTime >= startDate &&
-        l.startTime <= endDate
+      (l) => l.startTime >= startDate && l.startTime <= endDate,
     );
 
     const drivingHours = this.calculateDrivingHours(eightyDayLogs);
@@ -266,7 +257,7 @@ export class ELDComplianceEngine {
         vehicleId: logs[0].vehicleId,
         violationType: "hours-60-70",
         description: `Driver exceeded 60-hour 8-day limit: ${total60Hours.toFixed(
-          2
+          2,
         )} hours`,
         severity: "critical",
         detectedAt: new Date(),
@@ -292,7 +283,7 @@ export class ELDComplianceEngine {
         vehicleId: logs[0].vehicleId,
         violationType: "hours-60-70",
         description: `Driver exceeded 70-hour 8-day limit: ${total70Hours.toFixed(
-          2
+          2,
         )} hours`,
         severity: "critical",
         detectedAt: new Date(),
@@ -318,7 +309,7 @@ export class ELDComplianceEngine {
   aggregateMultiProviderHOS(
     driverId: string,
     logs: ELDDriverLog[],
-    date: Date
+    date: Date,
   ): HOSSummary {
     const dailyLogs = logs.filter((l) => this.isSameDay(l.startTime, date));
 
@@ -335,7 +326,7 @@ export class ELDComplianceEngine {
       availableDriving: Math.max(0, HOS_LIMITS.DRIVING_11_HOURS - drivingHours),
       availableOnDuty: Math.max(
         0,
-        HOS_LIMITS.ON_DUTY_14_HOURS - (drivingHours + onDutyHours)
+        HOS_LIMITS.ON_DUTY_14_HOURS - (drivingHours + onDutyHours),
       ),
       violations: [],
     };
@@ -348,18 +339,18 @@ export class ELDComplianceEngine {
    */
   calculateComplianceScore(
     driverId: string,
-    violations: ELDViolation[]
+    violations: ELDViolation[],
   ): ComplianceScore {
     const baseScore = 100;
     let deductions = 0;
 
     // Count violations by severity
     const criticalCount = violations.filter(
-      (v) => v.severity === "critical"
+      (v) => v.severity === "critical",
     ).length;
     const errorCount = violations.filter((v) => v.severity === "error").length;
     const warningCount = violations.filter(
-      (v) => v.severity === "warning"
+      (v) => v.severity === "warning",
     ).length;
 
     // Deduct points based on severity
@@ -392,24 +383,31 @@ export class ELDComplianceEngine {
    */
   calculateFleetCompliance(
     accountId: string,
-    drivers: Array<{ id: string; violations: ELDViolation[] }>
+    drivers: Array<{ id: string; violations: ELDViolation[] }>,
   ): FleetCompliance {
-    const scores = drivers.map((d) => this.calculateComplianceScore(d.id, d.violations));
-    const avgScore = scores.length > 0
-      ? Math.round(scores.reduce((sum, s) => sum + s.overallScore, 0) / scores.length)
-      : 100;
+    const scores = drivers.map((d) =>
+      this.calculateComplianceScore(d.id, d.violations),
+    );
+    const avgScore =
+      scores.length > 0
+        ? Math.round(
+            scores.reduce((sum, s) => sum + s.overallScore, 0) / scores.length,
+          )
+        : 100;
 
     const allViolations = drivers.flatMap((d) => d.violations);
     const criticalViolations = allViolations.filter(
-      (v) => v.severity === "critical"
+      (v) => v.severity === "critical",
     ).length;
 
     return {
       accountId,
       date: new Date(),
       totalDrivers: drivers.length,
-      driversInCompliance: scores.filter((s) => s.hosViolationCount === 0).length,
-      driversWithViolations: scores.filter((s) => s.hosViolationCount > 0).length,
+      driversInCompliance: scores.filter((s) => s.hosViolationCount === 0)
+        .length,
+      driversWithViolations: scores.filter((s) => s.hosViolationCount > 0)
+        .length,
       criticalViolations,
       avgComplianceScore: avgScore,
       violations: allViolations,
@@ -429,9 +427,7 @@ export class ELDComplianceEngine {
    * Remove an exemption.
    */
   removeExemption(exemptionId: string, driverId: string): void {
-    this.exemptions = this.exemptions.filter(
-      (e) => !(e.driverId === driverId)
-    );
+    this.exemptions = this.exemptions.filter((e) => !(e.driverId === driverId));
   }
 
   /**
@@ -440,9 +436,7 @@ export class ELDComplianceEngine {
   private isExempted(driverId: string, date: Date): boolean {
     return this.exemptions.some(
       (e) =>
-        e.driverId === driverId &&
-        date >= e.startDate &&
-        date <= e.endDate
+        e.driverId === driverId && date >= e.startDate && date <= e.endDate,
     );
   }
 
@@ -452,9 +446,7 @@ export class ELDComplianceEngine {
   getActiveExemptions(driverId: string, date: Date): HOSExemption[] {
     return this.exemptions.filter(
       (e) =>
-        e.driverId === driverId &&
-        date >= e.startDate &&
-        date <= e.endDate
+        e.driverId === driverId && date >= e.startDate && date <= e.endDate,
     );
   }
 
@@ -467,7 +459,7 @@ export class ELDComplianceEngine {
     accountId: string,
     driverId: string,
     date: Date,
-    violations: ELDViolation[]
+    violations: ELDViolation[],
   ): AuditLogEntry {
     const entry: AuditLogEntry = {
       id: `audit_${Date.now()}`,
@@ -494,17 +486,14 @@ export class ELDComplianceEngine {
     return this.auditLog.filter(
       (e) =>
         (!accountId || e.accountId === accountId) &&
-        (!driverId || e.driverId === driverId)
+        (!driverId || e.driverId === driverId),
     );
   }
 
   /**
    * Export audit log for DOT inspection (PDF/CSV).
    */
-  exportAuditLog(
-    accountId: string,
-    format: "csv" | "json" = "csv"
-  ): string {
+  exportAuditLog(accountId: string, format: "csv" | "json" = "csv"): string {
     const entries = this.getAuditLog(accountId);
 
     if (format === "json") {
@@ -558,7 +547,9 @@ export class ELDComplianceEngine {
   /**
    * Check for 30-minute break violation.
    */
-  private checkBreakViolation(logs: ELDDriverLog[]): { start: Date; end: Date } | null {
+  private checkBreakViolation(
+    logs: ELDDriverLog[],
+  ): { start: Date; end: Date } | null {
     let drivingTime = 0;
     let lastDrivingLog: ELDDriverLog | null = null;
 
@@ -584,7 +575,9 @@ export class ELDComplianceEngine {
   /**
    * Check for 8-hour continuous driving violation.
    */
-  private checkEightHourViolation(logs: ELDDriverLog[]): { start: Date; end: Date } | null {
+  private checkEightHourViolation(
+    logs: ELDDriverLog[],
+  ): { start: Date; end: Date } | null {
     let continuousDriving = 0;
     let startLog: ELDDriverLog | null = null;
 

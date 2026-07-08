@@ -36,7 +36,7 @@ describe("RequestValidator", () => {
 
       const result = await validator.validateBody(
         { name: "John", email: "john@example.com" },
-        schema
+        schema,
       );
 
       expect(result.success).toBe(true);
@@ -85,7 +85,7 @@ describe("RequestValidator", () => {
 
       const result = await validator.validateQuery(
         { page: "2", limit: "50" },
-        schema
+        schema,
       );
 
       expect(result.success).toBe(true);
@@ -159,7 +159,7 @@ describe("RequestValidator", () => {
 
       const result = await validator.validateHeaders(
         { "Content-Type": "application/json" },
-        schema
+        schema,
       );
 
       expect(result.success).toBe(true);
@@ -186,7 +186,7 @@ describe("RequestValidator", () => {
       const schema = validator.createPaginationSchema();
       const result = await validator.validateQuery(
         { page: "2", limit: "50" },
-        schema
+        schema,
       );
 
       expect(result.success).toBe(true);
@@ -198,7 +198,7 @@ describe("RequestValidator", () => {
       const schema = validator.createPaginationSchema();
       const result = await validator.validateQuery(
         { page: "1", limit: "101" },
-        schema
+        schema,
       );
 
       expect(result.success).toBe(false);
@@ -219,7 +219,7 @@ describe("RequestValidator", () => {
       const schema = validator.createSortSchema(["id", "name", "createdAt"]);
       const result = await validator.validateQuery(
         { sortBy: "name", sortOrder: "asc" },
-        schema
+        schema,
       );
 
       expect(result.success).toBe(true);
@@ -231,7 +231,7 @@ describe("RequestValidator", () => {
       const schema = validator.createSortSchema(["id", "name"]);
       const result = await validator.validateQuery(
         { sortBy: "invalid" },
-        schema
+        schema,
       );
 
       expect(result.success).toBe(false);
@@ -241,7 +241,7 @@ describe("RequestValidator", () => {
       const schema = validator.createSortSchema(["id"]);
       const result = await validator.validateQuery(
         { sortOrder: "invalid" },
-        schema
+        schema,
       );
 
       expect(result.success).toBe(false);
@@ -253,7 +253,7 @@ describe("RequestValidator", () => {
       const schema = validator.createFilterSchema(["status", "category"]);
       const result = await validator.validateQuery(
         { status: "active", category: "tech", secret: "hidden" },
-        schema
+        schema,
       );
 
       expect(result.success).toBe(true);
@@ -271,7 +271,7 @@ describe("RequestValidator", () => {
           startDate: "2024-01-01",
           endDate: "2024-12-31",
         },
-        schema
+        schema,
       );
 
       expect(result.success).toBe(true);
@@ -283,7 +283,7 @@ describe("RequestValidator", () => {
       const schema = validator.createDateRangeSchema();
       const result = await validator.validateQuery(
         { startDate: "invalid" },
-        schema
+        schema,
       );
 
       expect(result.success).toBe(false);
@@ -296,7 +296,7 @@ describe("RequestValidator", () => {
           startDate: "2024-12-31",
           endDate: "2024-01-01",
         },
-        schema
+        schema,
       );
 
       expect(result.success).toBe(false);
@@ -334,9 +334,7 @@ describe("RequestValidator", () => {
     it("should strip unknown fields when enabled", async () => {
       const schema = {
         validate: (data: any, opts: any) => {
-          const stripped = opts?.stripUnknown
-            ? { name: data?.name }
-            : data;
+          const stripped = opts?.stripUnknown ? { name: data?.name } : data;
           return { value: stripped };
         },
       };
@@ -344,7 +342,7 @@ describe("RequestValidator", () => {
       const result = await validator.validateBody(
         { name: "John", secret: "hidden" },
         schema,
-        { stripUnknown: true }
+        { stripUnknown: true },
       );
 
       expect(result.success).toBe(true);

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Component, ReactNode, ErrorInfo } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { Button } from './button';
-import { cn } from '../../lib/utils';
+import { Component, ReactNode, ErrorInfo } from "react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Button } from "./button";
+import { cn } from "../../lib/utils";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -36,7 +36,10 @@ interface ErrorBoundaryState {
  *   <MyComponent />
  * </ErrorBoundary>
  */
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = {
@@ -54,7 +57,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log error details
-    console.error('ErrorBoundary caught:', error, errorInfo);
+    console.error("ErrorBoundary caught:", error, errorInfo);
 
     // Call custom error handler if provided
     if (this.props.onError) {
@@ -81,7 +84,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     if (this.state.hasError && this.state.error) {
       // Use custom fallback if provided
       if (this.props.fallback) {
-        if (typeof this.props.fallback === 'function') {
+        if (typeof this.props.fallback === "function") {
           return this.props.fallback(this.state.error, this.handleReset);
         }
         return this.props.fallback;
@@ -89,22 +92,28 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
       // Default fallback UI
       return (
-        <div className={cn(
-          'flex items-center justify-center min-h-screen',
-          'bg-wl-bg-root px-4 py-12'
-        )}>
-          <div className={cn(
-            'w-full max-w-md',
-            'bg-wl-bg-elevated border border-wl-border-subtle rounded-lg',
-            'p-8 space-y-6'
-          )}>
+        <div
+          className={cn(
+            "flex items-center justify-center min-h-screen",
+            "bg-wl-bg-root px-4 py-12",
+          )}
+        >
+          <div
+            className={cn(
+              "w-full max-w-md",
+              "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg",
+              "p-8 space-y-6",
+            )}
+          >
             {/* Icon */}
             <div className="flex justify-center">
-              <div className={cn(
-                'w-14 h-14 rounded-lg',
-                'bg-wl-danger-bg border border-wl-danger-400/30',
-                'flex items-center justify-center'
-              )}>
+              <div
+                className={cn(
+                  "w-14 h-14 rounded-lg",
+                  "bg-wl-danger-bg border border-wl-danger-400/30",
+                  "flex items-center justify-center",
+                )}
+              >
                 <AlertTriangle className="w-7 h-7 text-wl-danger-400" />
               </div>
             </div>
@@ -120,12 +129,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             </div>
 
             {/* Error details (dev mode) */}
-            {process.env.NODE_ENV === 'development' && (
-              <details className={cn(
-                'p-3 rounded-md',
-                'bg-wl-danger-bg border border-wl-danger-400/30',
-                'max-h-48 overflow-auto'
-              )}>
+            {process.env.NODE_ENV === "development" && (
+              <details
+                className={cn(
+                  "p-3 rounded-md",
+                  "bg-wl-danger-bg border border-wl-danger-400/30",
+                  "max-h-48 overflow-auto",
+                )}
+              >
                 <summary className="text-xs font-medium text-wl-danger-400 cursor-pointer mb-2">
                   Error details
                 </summary>
@@ -154,7 +165,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               <Button
                 variant="secondary"
                 size="md"
-                onClick={() => window.location.href = '/'}
+                onClick={() => (window.location.href = "/")}
                 className="w-full"
               >
                 Go home
@@ -163,7 +174,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
             {/* Help text */}
             <p className="text-xs text-wl-text-tertiary text-center">
-              If the problem persists, please{' '}
+              If the problem persists, please{" "}
               <a
                 href="mailto:support@witylogix.com"
                 className="text-wl-primary-500 hover:text-wl-primary-400 transition-colors"

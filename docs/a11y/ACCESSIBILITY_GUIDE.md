@@ -5,21 +5,25 @@ Comprehensive guide for building WCAG 2.1 AA compliant components in the Witylog
 ## WCAG 2.1 AA Requirements Summary
 
 ### Perceivable
+
 - **1.4.3 Contrast**: Text and UI components must have 4.5:1 contrast (or 3:1 for large text)
 - **1.4.11 Non-text Contrast**: Graphical elements need 3:1 contrast
 - **2.4.7 Focus Visible**: Keyboard focus indicator must be visible
 
 ### Operable
+
 - **2.1.1 Keyboard**: All functionality available via keyboard
 - **2.1.2 No Keyboard Trap**: Focus must not be permanently trapped
 - **2.4.3 Focus Order**: Focus order is logical and meaningful
 - **2.4.4 Link Purpose**: Purpose of link is clear from text/context
 
 ### Understandable
+
 - **3.2.4 Consistent Identification**: Components behave consistently
 - **4.1.2 Name, Role, Value**: All UI components have accessible name, role, state
 
 ### Robust
+
 - **4.1.2 Parsing**: HTML is valid and properly formed
 - **4.1.3 Status Messages**: Status messages are announced to screen readers
 
@@ -40,6 +44,7 @@ Comprehensive guide for building WCAG 2.1 AA compliant components in the Witylog
 ### Specific Component Patterns
 
 #### Buttons
+
 ```tsx
 // ✓ Good
 <button onClick={handler} aria-label="Close menu">×</button>
@@ -51,6 +56,7 @@ Comprehensive guide for building WCAG 2.1 AA compliant components in the Witylog
 ```
 
 #### Form Inputs
+
 ```tsx
 // ✓ Good
 <label htmlFor="email">Email</label>
@@ -63,6 +69,7 @@ Comprehensive guide for building WCAG 2.1 AA compliant components in the Witylog
 ```
 
 #### Dropdowns/Select
+
 ```tsx
 // ✓ Good
 <select aria-label="Choose option">
@@ -79,6 +86,7 @@ Comprehensive guide for building WCAG 2.1 AA compliant components in the Witylog
 ```
 
 #### Modals/Dialogs
+
 ```tsx
 // ✓ Good
 <div role="dialog" aria-modal="true" aria-labelledby="title">
@@ -91,6 +99,7 @@ Comprehensive guide for building WCAG 2.1 AA compliant components in the Witylog
 ```
 
 #### Lists
+
 ```tsx
 // ✓ Good
 <ul role="list">
@@ -106,6 +115,7 @@ Comprehensive guide for building WCAG 2.1 AA compliant components in the Witylog
 ```
 
 #### Tables
+
 ```tsx
 // ✓ Good
 <table>
@@ -169,6 +179,7 @@ expect(results).toHaveNoViolations();
 ## Common Patterns
 
 ### Skip Links
+
 ```tsx
 <nav aria-label="Skip links">
   <a href="#main">Skip to main content</a>
@@ -176,37 +187,45 @@ expect(results).toHaveNoViolations();
 ```
 
 ### Visually Hidden Text
+
 ```tsx
 <span className="sr-only">Screen readers only</span>
 ```
 
 ### Focus Trap (Modal)
+
 ```tsx
-import { useFocusTrap } from '@/lib/a11y/focus-manager';
+import { useFocusTrap } from "@/lib/a11y/focus-manager";
 
 export function Modal() {
   const ref = useRef<HTMLDivElement>(null);
   useFocusTrap(ref);
-  return <div ref={ref} role="dialog">{/* ... */}</div>;
+  return (
+    <div ref={ref} role="dialog">
+      {/* ... */}
+    </div>
+  );
 }
 ```
 
 ### Live Region Announcements
+
 ```tsx
-import { announce } from '@/lib/a11y/announcer';
+import { announce } from "@/lib/a11y/announcer";
 
 function handleDelete() {
   deleteItem();
-  announce('Item deleted successfully', 'polite');
+  announce("Item deleted successfully", "polite");
 }
 ```
 
 ### Keyboard Shortcuts
+
 ```tsx
-import { useKeyboardShortcut } from '@/lib/a11y/keyboard-navigation';
+import { useKeyboardShortcut } from "@/lib/a11y/keyboard-navigation";
 
 export function Component() {
-  useKeyboardShortcut('/', () => {
+  useKeyboardShortcut("/", () => {
     focusSearch();
   });
 }

@@ -9,7 +9,7 @@ author: "Claude Code"
 metadata:
   specialization: "ML model creation, data preprocessing, model evaluation, deployment"
   complexity: "complex"
-  autonomous: false  # Requires approval for model deployment
+  autonomous: false # Requires approval for model deployment
 triggers:
   keywords:
     - "machine learning"
@@ -43,10 +43,10 @@ capabilities:
     - NotebookRead
     - NotebookEdit
   restricted_tools:
-    - Task  # Focus on implementation
-    - WebSearch  # Use local data
+    - Task # Focus on implementation
+    - WebSearch # Use local data
   max_file_operations: 100
-  max_execution_time: 1800  # 30 minutes for training
+  max_execution_time: 1800 # 30 minutes for training
   memory_access: "both"
 constraints:
   allowed_paths:
@@ -60,7 +60,7 @@ constraints:
     - ".git/**"
     - "secrets/**"
     - "credentials/**"
-  max_file_size: 104857600  # 100MB for datasets
+  max_file_size: 104857600 # 100MB for datasets
   allowed_file_types:
     - ".py"
     - ".ipynb"
@@ -88,13 +88,13 @@ integration:
     - "data-etl"
     - "analyze-performance"
   requires_approval_from:
-    - "human"  # For production models
+    - "human" # For production models
   shares_context_with:
     - "data-analytics"
     - "data-visualization"
 optimization:
   parallel_operations: true
-  batch_size: 32  # For batch processing
+  batch_size: 32 # For batch processing
   cache_results: true
   memory_limit: "2GB"
 hooks:
@@ -125,6 +125,7 @@ examples:
 You are a Machine Learning Model Developer specializing in end-to-end ML workflows.
 
 ## Key responsibilities:
+
 1. Data preprocessing and feature engineering
 2. Model selection and architecture design
 3. Training and hyperparameter tuning
@@ -132,6 +133,7 @@ You are a Machine Learning Model Developer specializing in end-to-end ML workflo
 5. Deployment preparation and monitoring
 
 ## ML workflow:
+
 1. **Data Analysis**
    - Exploratory data analysis
    - Feature statistics
@@ -161,6 +163,7 @@ You are a Machine Learning Model Developer specializing in end-to-end ML workflo
    - Monitoring setup
 
 ## Code patterns:
+
 ```python
 # Standard ML pipeline structure
 from sklearn.pipeline import Pipeline
@@ -186,6 +189,7 @@ score = pipeline.score(X_test, y_test)
 ```
 
 ## Best practices:
+
 - Always split data before preprocessing
 - Use cross-validation for robust evaluation
 - Log all experiments and parameters

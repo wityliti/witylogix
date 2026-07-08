@@ -69,6 +69,7 @@ The Witylogix Driver mobile app is built with React Native using Expo, providing
 ## Technology Stack
 
 ### Frontend
+
 - **React Native 0.76**: Cross-platform mobile framework
 - **Expo 52**: Development platform and build service
 - **React Navigation 7**: Navigation and routing
@@ -76,6 +77,7 @@ The Witylogix Driver mobile app is built with React Native using Expo, providing
 - **React Context API**: State management
 
 ### External Services
+
 - **expo-camera**: Photo capture
 - **expo-image-picker**: Image selection
 - **expo-location**: Location tracking (foreground & background)
@@ -88,10 +90,12 @@ The Witylogix Driver mobile app is built with React Native using Expo, providing
 ### 1. Navigation Layer (`src/navigation/`)
 
 #### AuthStack.tsx
+
 - Stack navigator for unauthenticated users
 - Contains: LoginScreen
 
 #### MainTabs.tsx
+
 - Bottom tab navigator for authenticated users
 - Tabs: Today (Home), Routes, Profile
 - Nested stack navigators for navigation within tabs
@@ -99,12 +103,14 @@ The Witylogix Driver mobile app is built with React Native using Expo, providing
 ### 2. Screens Layer (`src/screens/`)
 
 #### LoginScreen.tsx
+
 - Phone + password input form
 - Calls auth service to login
 - Stores JWT token securely
 - Navigates to MainTabs on success
 
 #### HomeScreen.tsx
+
 - Dashboard showing today's summary
 - Stats: orders remaining, completed, success rate
 - Active delivery card with quick action
@@ -112,18 +118,21 @@ The Witylogix Driver mobile app is built with React Native using Expo, providing
 - Pull to refresh
 
 #### RoutesScreen.tsx
+
 - List of assigned routes for today
 - Shows: route name, stop count, progress
 - Tap to navigate to route details
 - Refresh data on focus
 
 #### RouteDetailScreen.tsx
+
 - Map view with route stops
 - List of stops with status and sequence
 - Navigation button for each stop
 - Start/Complete route actions
 
 #### DeliveryScreen.tsx
+
 - Customer info and address
 - Map view to destination
 - Status action buttons (Arrived, Delivered, Failed)
@@ -133,6 +142,7 @@ The Witylogix Driver mobile app is built with React Native using Expo, providing
 - Complete delivery button
 
 #### ProfileScreen.tsx
+
 - Driver profile information
 - Vehicle details
 - Today's statistics
@@ -142,6 +152,7 @@ The Witylogix Driver mobile app is built with React Native using Expo, providing
 ### 3. Services Layer (`src/services/`)
 
 #### api.ts (ApiClient)
+
 - Centralized HTTP client using native fetch
 - Automatic JWT token injection from SecureStore
 - Methods: get, post, patch, delete
@@ -149,6 +160,7 @@ The Witylogix Driver mobile app is built with React Native using Expo, providing
 - Error handling
 
 #### auth.ts (AuthService)
+
 - login(phone, password): Calls API, stores token
 - logout(): Clears token and user data
 - getToken(): Retrieves stored JWT
@@ -157,6 +169,7 @@ The Witylogix Driver mobile app is built with React Native using Expo, providing
 - Uses expo-secure-store for secure storage
 
 #### location.ts (LocationService)
+
 - startTracking(driverId): Initiates foreground + background tracking
 - stopTracking(): Stops all location tracking
 - Sends location updates via HTTP API
@@ -166,6 +179,7 @@ The Witylogix Driver mobile app is built with React Native using Expo, providing
 ### 4. Hooks (`src/hooks/`)
 
 #### useAuth.ts
+
 - AuthContext provider wrapping entire app
 - Provides: isAuthenticated, user, isLoading, login, logout
 - Checks auth on app startup
@@ -174,6 +188,7 @@ The Witylogix Driver mobile app is built with React Native using Expo, providing
 ## Data Flow
 
 ### Authentication Flow
+
 ```
 LoginScreen
   ↓ (phone, password)
@@ -191,6 +206,7 @@ RootNavigator switches to MainTabs
 ```
 
 ### Delivery Status Update Flow
+
 ```
 DeliveryScreen
   ↓ (user taps "Complete Delivery")
@@ -208,6 +224,7 @@ UI refreshes with new data
 ```
 
 ### Location Tracking Flow
+
 ```
 HomeScreen/DeliveryScreen
   ↓ (component mounted)
@@ -228,17 +245,20 @@ Background tracking continues even when app minimized
 ## State Management Strategy
 
 ### Authentication State
+
 - Stored in React Context (AuthContext)
 - Persisted via expo-secure-store (JWT token)
 - Restored on app launch (useEffect in AuthProvider)
 - Provides: isAuthenticated, user, login(), logout()
 
 ### Component State
+
 - Local useState for form inputs, UI state
 - No Redux/Redux-like patterns needed for this app
 - API responses fetched on screen focus (useFocusEffect)
 
 ### Async Operations
+
 - API calls via fetch wrapped in try-catch
 - Loading states managed locally in components
 - Errors displayed via Alert.alert()
@@ -290,12 +310,14 @@ Background tracking continues even when app minimized
 ## Deployment
 
 ### Development
+
 ```bash
 npm install
 expo start
 ```
 
 ### Testing
+
 ```bash
 npm run typecheck
 npm run lint
@@ -303,6 +325,7 @@ expo start --ios / --android
 ```
 
 ### Production
+
 ```bash
 eas build --platform ios
 eas build --platform android
@@ -312,12 +335,14 @@ eas submit
 ## Environment Configuration
 
 ### .env Variables
+
 ```
 EXPO_PUBLIC_API_URL=http://your-api.com
 EXPO_PUBLIC_SOCKET_URL=http://your-api.com
 ```
 
 ### app.json (Expo Config)
+
 - App name: "Witylogix Driver"
 - Package name: com.witylogix.driver
 - Plugins configured for permissions

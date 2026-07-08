@@ -97,7 +97,8 @@ export class EmailChannel {
         messageId: mockMessageId,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       return {
         accepted: false,
         error: errorMessage,
@@ -140,7 +141,7 @@ export class EmailChannel {
   static buildBrandedTemplate(
     title: string,
     content: string,
-    footerText: string = "Witylogix - Last Mile Delivery Platform"
+    footerText: string = "Witylogix - Last Mile Delivery Platform",
   ): string {
     return `
       <!DOCTYPE html>

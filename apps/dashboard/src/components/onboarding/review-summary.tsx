@@ -51,24 +51,27 @@ interface ReviewSummaryProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const ReviewSummary = forwardRef<HTMLDivElement, ReviewSummaryProps>(
-  ({
-    deployment,
-    company,
-    industry,
-    goals,
-    integrations,
-    dashboard,
-    data,
-    onEditDeployment,
-    onEditCompany,
-    onEditIndustry,
-    onEditGoals,
-    onEditIntegrations,
-    onEditDashboard,
-    onEditData,
-    className,
-    ...props
-  }, ref) => {
+  (
+    {
+      deployment,
+      company,
+      industry,
+      goals,
+      integrations,
+      dashboard,
+      data,
+      onEditDeployment,
+      onEditCompany,
+      onEditIndustry,
+      onEditGoals,
+      onEditIntegrations,
+      onEditDashboard,
+      onEditData,
+      className,
+      ...props
+    },
+    ref,
+  ) => {
     const [expandedSections, setExpandedSections] = useState<Set<string>>(
       new Set([
         "deployment",
@@ -78,7 +81,7 @@ const ReviewSummary = forwardRef<HTMLDivElement, ReviewSummaryProps>(
         "integrations",
         "dashboard",
         "data",
-      ])
+      ]),
     );
 
     const toggleSection = (sectionId: string) => {
@@ -95,7 +98,7 @@ const ReviewSummary = forwardRef<HTMLDivElement, ReviewSummaryProps>(
       id: string,
       title: string,
       content: React.ReactNode,
-      onEdit?: () => void
+      onEdit?: () => void,
     ) => {
       const isExpanded = expandedSections.has(id);
       return (
@@ -129,7 +132,7 @@ const ReviewSummary = forwardRef<HTMLDivElement, ReviewSummaryProps>(
               <ChevronDown
                 className={cn(
                   "w-4 h-4 text-wl-text-tertiary transition-transform flex-shrink-0",
-                  isExpanded && "rotate-180"
+                  isExpanded && "rotate-180",
                 )}
               />
             </div>
@@ -146,26 +149,15 @@ const ReviewSummary = forwardRef<HTMLDivElement, ReviewSummaryProps>(
     };
 
     return (
-      <div
-        ref={ref}
-        className={cn(
-          "w-full space-y-3",
-          className
-        )}
-        {...props}
-      >
+      <div ref={ref} className={cn("w-full space-y-3", className)} {...props}>
         {/* Deployment */}
         {deployment &&
           renderSection(
             "deployment",
             "Deployment",
             <div className="flex items-center gap-2">
-              <Badge
-                variant={deployment.type === "cloud" ? "info" : "default"}
-              >
-                {deployment.type === "cloud"
-                  ? "Cloud Hosted"
-                  : "Self-Managed"}
+              <Badge variant={deployment.type === "cloud" ? "info" : "default"}>
+                {deployment.type === "cloud" ? "Cloud Hosted" : "Self-Managed"}
               </Badge>
               <p className="text-xs text-wl-text-tertiary">
                 {deployment.type === "cloud"
@@ -173,7 +165,7 @@ const ReviewSummary = forwardRef<HTMLDivElement, ReviewSummaryProps>(
                   : "Hosted on your infrastructure"}
               </p>
             </div>,
-            onEditDeployment
+            onEditDeployment,
           )}
 
         {/* Company */}
@@ -208,7 +200,7 @@ const ReviewSummary = forwardRef<HTMLDivElement, ReviewSummaryProps>(
                 </div>
               )}
             </div>,
-            onEditCompany
+            onEditCompany,
           )}
 
         {/* Industry */}
@@ -224,11 +216,12 @@ const ReviewSummary = forwardRef<HTMLDivElement, ReviewSummaryProps>(
                 </p>
               )}
             </div>,
-            onEditIndustry
+            onEditIndustry,
           )}
 
         {/* Goals */}
-        {goals && goals.length > 0 &&
+        {goals &&
+          goals.length > 0 &&
           renderSection(
             "goals",
             "Goals",
@@ -239,7 +232,7 @@ const ReviewSummary = forwardRef<HTMLDivElement, ReviewSummaryProps>(
                 </Badge>
               ))}
             </div>,
-            onEditGoals
+            onEditGoals,
           )}
 
         {/* Integrations */}
@@ -249,7 +242,8 @@ const ReviewSummary = forwardRef<HTMLDivElement, ReviewSummaryProps>(
             "Integrations",
             <div className="space-y-2">
               <p className="text-sm font-semibold text-wl-text-primary">
-                {integrations.count} integration{integrations.count !== 1 ? "s" : ""} selected
+                {integrations.count} integration
+                {integrations.count !== 1 ? "s" : ""} selected
               </p>
               {integrations.topNames && integrations.topNames.length > 0 && (
                 <>
@@ -268,7 +262,7 @@ const ReviewSummary = forwardRef<HTMLDivElement, ReviewSummaryProps>(
                 </>
               )}
             </div>,
-            onEditIntegrations
+            onEditIntegrations,
           )}
 
         {/* Dashboard */}
@@ -289,7 +283,7 @@ const ReviewSummary = forwardRef<HTMLDivElement, ReviewSummaryProps>(
                 </div>
               )}
             </div>,
-            onEditDashboard
+            onEditDashboard,
           )}
 
         {/* Data */}
@@ -316,11 +310,11 @@ const ReviewSummary = forwardRef<HTMLDivElement, ReviewSummaryProps>(
                 </Badge>
               )}
             </div>,
-            onEditData
+            onEditData,
           )}
       </div>
     );
-  }
+  },
 );
 
 ReviewSummary.displayName = "ReviewSummary";

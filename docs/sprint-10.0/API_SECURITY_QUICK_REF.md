@@ -18,23 +18,23 @@ SHUTDOWN_TIMEOUT_MS=30000
 
 ## Security Headers Applied
 
-| Header | Value | What It Does |
-|--------|-------|-------------|
-| `X-Content-Type-Options` | `nosniff` | Prevents MIME sniffing |
-| `X-Frame-Options` | `SAMEORIGIN` | Prevents clickjacking |
-| `X-XSS-Protection` | `1; mode=block` | Legacy XSS protection |
-| `Strict-Transport-Security` | `max-age=31536000` | Forces HTTPS |
-| `Referrer-Policy` | `strict-no-referrer` | Hides referrer |
-| `Permissions-Policy` | `geolocation=(),...` | Disables features |
+| Header                      | Value                | What It Does           |
+| --------------------------- | -------------------- | ---------------------- |
+| `X-Content-Type-Options`    | `nosniff`            | Prevents MIME sniffing |
+| `X-Frame-Options`           | `SAMEORIGIN`         | Prevents clickjacking  |
+| `X-XSS-Protection`          | `1; mode=block`      | Legacy XSS protection  |
+| `Strict-Transport-Security` | `max-age=31536000`   | Forces HTTPS           |
+| `Referrer-Policy`           | `strict-no-referrer` | Hides referrer         |
+| `Permissions-Policy`        | `geolocation=(),...` | Disables features      |
 
 ## Rate Limits
 
-| Endpoint Type | Limit | Per |
-|---------------|-------|-----|
-| Unauthenticated | 200/min | IP |
-| Authenticated | 1000/min | shopId |
-| Auth (login) | 10/min | IP |
-| API Key | 10,000/min | API Key |
+| Endpoint Type   | Limit      | Per     |
+| --------------- | ---------- | ------- |
+| Unauthenticated | 200/min    | IP      |
+| Authenticated   | 1000/min   | shopId  |
+| Auth (login)    | 10/min     | IP      |
+| API Key         | 10,000/min | API Key |
 
 ## Health Checks
 
@@ -51,18 +51,21 @@ curl https://api.witylogix.com/ready
 ## Monitoring & Testing
 
 ### Load test (should see rate limiting)
+
 ```bash
 ab -n 300 -c 10 https://api.witylogix.com/api/v4/health
 # Expected: ~200 succeed (200), ~100 fail (429)
 ```
 
 ### Verify security headers
+
 ```bash
 curl -I https://api.witylogix.com/health
 # Should show X-Content-Type-Options, X-Frame-Options, HSTS header
 ```
 
 ### Check CORS
+
 ```bash
 curl -X OPTIONS https://api.witylogix.com/api/v4/orders \
   -H "Origin: https://app.witylogix.com"

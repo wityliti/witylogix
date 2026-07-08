@@ -48,7 +48,10 @@ export class TwilioSMSProvider implements NotificationProvider {
   async send(message: NotificationMessage): Promise<NotificationResult> {
     try {
       if (!this.config.accountSid || !this.config.authToken) {
-        throw new AuthenticationError("twilio", "Missing credentials (accountSid or authToken)");
+        throw new AuthenticationError(
+          "twilio",
+          "Missing credentials (accountSid or authToken)",
+        );
       }
 
       // Validate recipient phone number
@@ -63,7 +66,12 @@ export class TwilioSMSProvider implements NotificationProvider {
       // Twilio expects plain text body for SMS
       const body = message.textBody || message.body;
       if (!body || body.length === 0) {
-        throw new ProviderError("EMPTY_MESSAGE", "Message body cannot be empty", "twilio", false);
+        throw new ProviderError(
+          "EMPTY_MESSAGE",
+          "Message body cannot be empty",
+          "twilio",
+          false,
+        );
       }
 
       // Build Twilio request payload
@@ -99,13 +107,15 @@ export class TwilioSMSProvider implements NotificationProvider {
       }
 
       // Make test API call to validate credentials
-      const auth = Buffer.from(`${config.accountSid}:${config.authToken}`).toString("base64");
+      const auth = Buffer.from(
+        `${config.accountSid}:${config.authToken}`,
+      ).toString("base64");
       const url = `https://api.twilio.com/2010-04-01/Accounts/${config.accountSid}`;
 
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          "Authorization": `Basic ${auth}`,
+          Authorization: `Basic ${auth}`,
         },
       });
 
@@ -120,7 +130,10 @@ export class TwilioSMSProvider implements NotificationProvider {
    */
   async getStatus(): Promise<ProviderStatus> {
     // Cache status for 60 seconds
-    if (this.lastStatusCheck && Date.now() - this.lastStatusCheck.timestamp < 60000) {
+    if (
+      this.lastStatusCheck &&
+      Date.now() - this.lastStatusCheck.timestamp < 60000
+    ) {
       return this.lastStatusCheck.status;
     }
 
@@ -128,13 +141,15 @@ export class TwilioSMSProvider implements NotificationProvider {
       const startTime = Date.now();
 
       // Make health check request
-      const auth = Buffer.from(`${this.config.accountSid}:${this.config.authToken}`).toString("base64");
+      const auth = Buffer.from(
+        `${this.config.accountSid}:${this.config.authToken}`,
+      ).toString("base64");
       const url = `https://api.twilio.com/2010-04-01/Accounts/${this.config.accountSid}`;
 
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          "Authorization": `Basic ${auth}`,
+          Authorization: `Basic ${auth}`,
         },
       });
 
@@ -191,13 +206,16 @@ export class TwilioSMSProvider implements NotificationProvider {
     const response = await fetch(url, {
       method: "POST",
       headers: {
-        "Authorization": `Basic ${auth}`,
+        Authorization: `Basic ${auth}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams(payload).toString(),
     });
 
-    const data = await response.json() as { sid?: string; error_code?: string };
+    const data = (await response.json()) as {
+      sid?: string;
+      error_code?: string;
+    };
 
     // Handle response status codes and Twilio error codes
     if (response.status === 429) {
@@ -205,7 +223,10 @@ export class TwilioSMSProvider implements NotificationProvider {
     }
 
     if (response.status === 401 || data.error_code === "20003") {
-      throw new AuthenticationError("twilio", "Invalid credentials (accountSid or authToken)");
+      throw new AuthenticationError(
+        "twilio",
+        "Invalid credentials (accountSid or authToken)",
+      );
     }
 
     if (!response.ok) {

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import {
   Settings,
   MapPin,
@@ -18,10 +18,10 @@ import {
   Edit,
   Clock,
   AlertCircle,
-} from 'lucide-react';
-import { useApiQuery, useApiMutation } from '@/hooks/use-api';
-import { useParams, useRouter } from 'next/navigation';
-import { formatCurrency } from '@/lib/utils';
+} from "lucide-react";
+import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { useParams, useRouter } from "next/navigation";
+import { formatCurrency } from "@/lib/utils";
 
 interface ShippingProfileDetail {
   id: string;
@@ -54,20 +54,20 @@ interface ShippingProfileDetail {
 }
 
 const DELIVERY_METHOD_LABELS: Record<string, string> = {
-  LOCAL_DELIVERY: 'Local Delivery',
-  STORE_PICKUP: 'Store Pickup',
-  STANDARD_SHIPPING: 'Standard Shipping',
-  EXPRESS_SHIPPING: 'Express Shipping',
-  SAME_DAY: 'Same Day',
+  LOCAL_DELIVERY: "Local Delivery",
+  STORE_PICKUP: "Store Pickup",
+  STANDARD_SHIPPING: "Standard Shipping",
+  EXPRESS_SHIPPING: "Express Shipping",
+  SAME_DAY: "Same Day",
 };
 
 const RATE_TYPE_LABELS: Record<string, string> = {
-  FLAT: 'Flat Rate',
-  WEIGHT_BASED: 'Weight-Based',
-  DISTANCE_BASED: 'Distance-Based',
-  ZONE_BASED: 'Zone-Based',
-  TIERED: 'Tiered',
-  CALCULATED: 'Calculated',
+  FLAT: "Flat Rate",
+  WEIGHT_BASED: "Weight-Based",
+  DISTANCE_BASED: "Distance-Based",
+  ZONE_BASED: "Zone-Based",
+  TIERED: "Tiered",
+  CALCULATED: "Calculated",
 };
 
 export default function ShippingProfileDetailPage() {
@@ -76,22 +76,26 @@ export default function ShippingProfileDetailPage() {
   const id = params.id as string;
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState('');
-  const [editDescription, setEditDescription] = useState('');
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
 
-  const { data: profile, loading, error, refetch } = useApiQuery<ShippingProfileDetail>(
-    `/api/v4/shipping-profiles/${id}`,
-  );
+  const {
+    data: profile,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<ShippingProfileDetail>(`/api/v4/shipping-profiles/${id}`);
 
-  const { execute: updateProfile, loading: saving } = useApiMutation<ShippingProfileDetail>(
-    'PATCH',
-    `/api/v4/shipping-profiles/${id}`,
-  );
+  const { execute: updateProfile, loading: saving } =
+    useApiMutation<ShippingProfileDetail>(
+      "PATCH",
+      `/api/v4/shipping-profiles/${id}`,
+    );
 
   const handleEdit = () => {
     if (profile) {
       setEditName(profile.name);
-      setEditDescription(profile.description ?? '');
+      setEditDescription(profile.description ?? "");
       setIsEditing(true);
     }
   };
@@ -134,7 +138,9 @@ export default function ShippingProfileDetailPage() {
                 className="text-3xl font-bold bg-transparent border-b border-blue-500 text-white outline-none mb-1 w-full"
               />
             ) : (
-              <h1 className="text-4xl font-bold text-white mb-1">{profile.name}</h1>
+              <h1 className="text-4xl font-bold text-white mb-1">
+                {profile.name}
+              </h1>
             )}
             <p className="text-gray-400 text-sm">ID: {profile.id}</p>
           </div>
@@ -148,7 +154,7 @@ export default function ShippingProfileDetailPage() {
                   onClick={handleSave}
                   disabled={saving}
                 >
-                  <Save size={16} /> {saving ? 'Saving...' : 'Save Changes'}
+                  <Save size={16} /> {saving ? "Saving..." : "Save Changes"}
                 </Button>
                 <Button
                   variant="ghost"
@@ -172,12 +178,10 @@ export default function ShippingProfileDetailPage() {
           </div>
         </div>
         <div className="flex gap-3 items-center flex-wrap">
-          <Badge variant={profile.isActive ? 'success' : 'warning'}>
-            {profile.isActive ? 'ACTIVE' : 'INACTIVE'}
+          <Badge variant={profile.isActive ? "success" : "warning"}>
+            {profile.isActive ? "ACTIVE" : "INACTIVE"}
           </Badge>
-          {profile.isDefault && (
-            <Badge variant="primary">DEFAULT</Badge>
-          )}
+          {profile.isDefault && <Badge variant="primary">DEFAULT</Badge>}
           <span className="text-xs text-gray-400">
             Updated: {new Date(profile.updatedAt).toLocaleDateString()}
           </span>
@@ -192,7 +196,8 @@ export default function ShippingProfileDetailPage() {
               <Truck size={14} /> Delivery Method
             </p>
             <p className="text-base text-white font-semibold">
-              {DELIVERY_METHOD_LABELS[profile.deliveryMethod] ?? profile.deliveryMethod}
+              {DELIVERY_METHOD_LABELS[profile.deliveryMethod] ??
+                profile.deliveryMethod}
             </p>
           </CardContent>
         </Card>
@@ -205,8 +210,8 @@ export default function ShippingProfileDetailPage() {
               {profile.flatRate !== null
                 ? profile.flatRate > 0
                   ? formatCurrency(Number(profile.flatRate))
-                  : 'FREE'
-                : '—'}
+                  : "FREE"
+                : "—"}
             </p>
           </CardContent>
         </Card>
@@ -260,7 +265,8 @@ export default function ShippingProfileDetailPage() {
       <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
         <CardHeader className="pb-4 border-b border-wl-border-default">
           <CardTitle className="flex items-center gap-2">
-            <DollarSign size={18} className="text-blue-500" /> Rate Configuration
+            <DollarSign size={18} className="text-blue-500" /> Rate
+            Configuration
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -271,8 +277,8 @@ export default function ShippingProfileDetailPage() {
                 {profile.flatRate !== null
                   ? profile.flatRate > 0
                     ? formatCurrency(Number(profile.flatRate))
-                    : 'FREE'
-                  : '—'}
+                    : "FREE"
+                  : "—"}
               </p>
             </div>
             <div>
@@ -280,7 +286,7 @@ export default function ShippingProfileDetailPage() {
               <p className="text-sm font-semibold text-emerald-400">
                 {profile.freeShippingAbove
                   ? formatCurrency(Number(profile.freeShippingAbove))
-                  : '—'}
+                  : "—"}
               </p>
             </div>
             <div>
@@ -288,7 +294,7 @@ export default function ShippingProfileDetailPage() {
               <p className="text-sm font-semibold text-white">
                 {profile.minOrderAmount
                   ? formatCurrency(Number(profile.minOrderAmount))
-                  : '—'}
+                  : "—"}
               </p>
             </div>
           </div>
@@ -307,7 +313,9 @@ export default function ShippingProfileDetailPage() {
         </CardHeader>
         <CardContent className="p-6">
           {profile.locations.length === 0 ? (
-            <p className="text-gray-500 text-sm">No locations linked to this profile.</p>
+            <p className="text-gray-500 text-sm">
+              No locations linked to this profile.
+            </p>
           ) : (
             <div className="flex flex-col gap-3">
               {profile.locations.map((location) => (
@@ -316,11 +324,13 @@ export default function ShippingProfileDetailPage() {
                   className="p-3 rounded bg-wl-bg-root border border-wl-border-default flex justify-between items-start"
                 >
                   <div>
-                    <p className="text-sm text-white font-semibold">{location.name}</p>
+                    <p className="text-sm text-white font-semibold">
+                      {location.name}
+                    </p>
                     <p className="text-xs text-gray-400 mt-1">
                       {[location.city, location.province, location.country]
                         .filter(Boolean)
-                        .join(', ')}
+                        .join(", ")}
                     </p>
                   </div>
                 </div>
@@ -342,7 +352,9 @@ export default function ShippingProfileDetailPage() {
         </CardHeader>
         <CardContent className="p-6">
           {profile.calendarRules.length === 0 ? (
-            <p className="text-gray-500 text-sm">No calendar rules configured.</p>
+            <p className="text-gray-500 text-sm">
+              No calendar rules configured.
+            </p>
           ) : (
             <div className="flex flex-col gap-3">
               {profile.calendarRules.map((rule) => (
@@ -351,13 +363,15 @@ export default function ShippingProfileDetailPage() {
                   className="p-3 rounded bg-wl-bg-root border border-wl-border-default flex justify-between items-center"
                 >
                   <div>
-                    <p className="text-sm text-white font-semibold">{rule.name}</p>
+                    <p className="text-sm text-white font-semibold">
+                      {rule.name}
+                    </p>
                     <p className="text-xs text-gray-400 mt-1">
                       Type: {rule.type} · Priority: {rule.priority}
                     </p>
                   </div>
-                  <Badge variant={rule.isActive ? 'success' : 'default'}>
-                    {rule.isActive ? 'Active' : 'Inactive'}
+                  <Badge variant={rule.isActive ? "success" : "default"}>
+                    {rule.isActive ? "Active" : "Inactive"}
                   </Badge>
                 </div>
               ))}

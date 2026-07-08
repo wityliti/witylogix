@@ -4,21 +4,21 @@
  * API key authentication
  */
 
-import type { NormalizedVehicle, NormalizedPosition } from './types.js';
+import type { NormalizedVehicle, NormalizedPosition } from "./types.js";
 
 /**
  * Titan GPS API Client
  */
 export class TitanGPSClient {
   private apiKey: string;
-  private apiUrl: string = 'https://api.tithangps.com/v1';
+  private apiUrl: string = "https://api.tithangps.com/v1";
 
   /**
    * Initialize Titan GPS client
    */
   constructor(apiKey: string) {
     if (!apiKey) {
-      throw new Error('Missing Titan GPS API key');
+      throw new Error("Missing Titan GPS API key");
     }
     this.apiKey = apiKey;
   }
@@ -28,7 +28,7 @@ export class TitanGPSClient {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      await this.request('GET', '/units?limit=1');
+      await this.request("GET", "/units?limit=1");
       return true;
     } catch {
       return false;
@@ -38,10 +38,14 @@ export class TitanGPSClient {
   /**
    * Make HTTP request
    */
-  private async request(method: string, endpoint: string, body?: unknown): Promise<any> {
+  private async request(
+    method: string,
+    endpoint: string,
+    body?: unknown,
+  ): Promise<any> {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.apiKey}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${this.apiKey}`,
     };
 
     const response = await fetch(`${this.apiUrl}${endpoint}`, {
@@ -62,7 +66,7 @@ export class TitanGPSClient {
    * Get all units (vehicles/assets)
    */
   async getVehicles(): Promise<NormalizedVehicle[]> {
-    const response = await this.request('GET', '/units');
+    const response = await this.request("GET", "/units");
     return (response.units || []).map((unit: any) => ({
       externalVehicleId: unit.id,
       name: unit.name,
@@ -71,9 +75,9 @@ export class TitanGPSClient {
       make: unit.make,
       model: unit.model,
       year: unit.year,
-      status: unit.status === 'online' ? 'ACTIVE' : 'INACTIVE',
+      status: unit.status === "online" ? "ACTIVE" : "INACTIVE",
       odometer: unit.odometer
-        ? { value: unit.odometer, unit: 'miles' as const }
+        ? { value: unit.odometer, unit: "miles" as const }
         : undefined,
     }));
   }
@@ -82,14 +86,14 @@ export class TitanGPSClient {
    * Get unit location
    */
   async getVehiclePosition(vehicleId: string): Promise<NormalizedPosition> {
-    const response = await this.request('GET', `/units/${vehicleId}/location`);
+    const response = await this.request("GET", `/units/${vehicleId}/location`);
     return {
       externalVehicleId: vehicleId,
       latitude: response.latitude,
       longitude: response.longitude,
       altitude: response.altitude,
       speed: response.speed_mph
-        ? { value: response.speed_mph, unit: 'mph' as const }
+        ? { value: response.speed_mph, unit: "mph" as const }
         : undefined,
       heading: response.bearing,
       accuracy: response.accuracy,
@@ -110,13 +114,16 @@ export class TitanGPSClient {
       end: endDate.toISOString(),
     });
 
-    const response = await this.request('GET', `/units/${vehicleId}/track?${queryParams}`);
+    const response = await this.request(
+      "GET",
+      `/units/${vehicleId}/track?${queryParams}`,
+    );
     return (response.track || []).map((point: any) => ({
       externalVehicleId: vehicleId,
       latitude: point.latitude,
       longitude: point.longitude,
       speed: point.speed_mph
-        ? { value: point.speed_mph, unit: 'mph' as const }
+        ? { value: point.speed_mph, unit: "mph" as const }
         : undefined,
       heading: point.bearing,
       timestamp: new Date(point.timestamp),
@@ -126,12 +133,15 @@ export class TitanGPSClient {
   /**
    * Create geofence
    */
-  async createGeofence(name: string, polygon: Array<[number, number]>): Promise<any> {
+  async createGeofence(
+    name: string,
+    polygon: Array<[number, number]>,
+  ): Promise<any> {
     const data = {
       name,
       polygon: polygon.map(([lat, lng]) => ({ lat, lng })),
     };
-    const response = await this.request('POST', '/geofences', data);
+    const response = await this.request("POST", "/geofences", data);
     return response;
   }
 
@@ -139,7 +149,7 @@ export class TitanGPSClient {
    * List geofences
    */
   async listGeofences(): Promise<any[]> {
-    const response = await this.request('GET', '/geofences');
+    const response = await this.request("GET", "/geofences");
     return response.geofences || [];
   }
 
@@ -147,7 +157,11 @@ export class TitanGPSClient {
    * Update geofence
    */
   async updateGeofence(geofenceId: string, data: any): Promise<any> {
-    const response = await this.request('PUT', `/geofences/${geofenceId}`, data);
+    const response = await this.request(
+      "PUT",
+      `/geofences/${geofenceId}`,
+      data,
+    );
     return response;
   }
 
@@ -155,7 +169,7 @@ export class TitanGPSClient {
    * Delete geofence
    */
   async deleteGeofence(geofenceId: string): Promise<void> {
-    await this.request('DELETE', `/geofences/${geofenceId}`);
+    await this.request("DELETE", `/geofences/${geofenceId}`);
   }
 
   /**
@@ -167,20 +181,27 @@ export class TitanGPSClient {
     config: Record<string, unknown>,
   ): Promise<any> {
     const data = { name, type, config };
-    const response = await this.request('POST', '/alerts', data);
+    const response = await this.request("POST", "/alerts", data);
     return response;
   }
 
   /**
    * Get dashcam footage
    */
-  async getDashcamFootage(vehicleId: string, startDate: Date, endDate: Date): Promise<any[]> {
+  async getDashcamFootage(
+    vehicleId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<any[]> {
     const queryParams = new URLSearchParams({
       start: startDate.toISOString(),
       end: endDate.toISOString(),
     });
 
-    const response = await this.request('GET', `/units/${vehicleId}/dashcam/footage?${queryParams}`);
+    const response = await this.request(
+      "GET",
+      `/units/${vehicleId}/dashcam/footage?${queryParams}`,
+    );
     return response.footage || [];
   }
 
@@ -188,7 +209,10 @@ export class TitanGPSClient {
    * Get dashcam events (accidents, harsh driving)
    */
   async getDashcamEvents(vehicleId: string): Promise<any[]> {
-    const response = await this.request('GET', `/units/${vehicleId}/dashcam/events`);
+    const response = await this.request(
+      "GET",
+      `/units/${vehicleId}/dashcam/events`,
+    );
     return response.events || [];
   }
 
@@ -201,7 +225,10 @@ export class TitanGPSClient {
       end: endDate.toISOString(),
     });
 
-    const response = await this.request('GET', `/reports/utilization?${queryParams}`);
+    const response = await this.request(
+      "GET",
+      `/reports/utilization?${queryParams}`,
+    );
     return {
       period: { start: startDate, end: endDate },
       totalUnits: response.total_units,
@@ -218,8 +245,10 @@ export class TitanGPSClient {
    * Get maintenance alerts
    */
   async getMaintenanceAlerts(vehicleId?: string): Promise<any[]> {
-    const endpoint = vehicleId ? `/units/${vehicleId}/maintenance-alerts` : '/maintenance-alerts';
-    const response = await this.request('GET', endpoint);
+    const endpoint = vehicleId
+      ? `/units/${vehicleId}/maintenance-alerts`
+      : "/maintenance-alerts";
+    const response = await this.request("GET", endpoint);
     return response.alerts || [];
   }
 
@@ -236,7 +265,10 @@ export class TitanGPSClient {
       end: endDate.toISOString(),
     });
 
-    const response = await this.request('GET', `/units/${vehicleId}/fuel-report?${queryParams}`);
+    const response = await this.request(
+      "GET",
+      `/units/${vehicleId}/fuel-report?${queryParams}`,
+    );
     return {
       vehicleId,
       totalFuelConsumed: response.total_fuel_consumed,
@@ -250,13 +282,20 @@ export class TitanGPSClient {
   /**
    * Get driver HOS (Hours of Service) compliance
    */
-  async getHOSCompliance(driverId: string, startDate: Date, endDate: Date): Promise<any> {
+  async getHOSCompliance(
+    driverId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<any> {
     const queryParams = new URLSearchParams({
       start: startDate.toISOString(),
       end: endDate.toISOString(),
     });
 
-    const response = await this.request('GET', `/drivers/${driverId}/hos-compliance?${queryParams}`);
+    const response = await this.request(
+      "GET",
+      `/drivers/${driverId}/hos-compliance?${queryParams}`,
+    );
     return {
       driverId,
       compliant: response.compliant,

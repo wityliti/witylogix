@@ -26,6 +26,7 @@ apps/dashboard/src/app/
 ```
 
 **CRITICAL:** All pages MUST be inside `(dashboard)/`. Pages outside this route group don't get the sidebar, header, or auth protection. Always verify after each sprint:
+
 ```bash
 ls apps/dashboard/src/app/ | grep -v '(auth)\|(dashboard)\|layout\|page\|error\|loading\|not-found\|offline'
 ```
@@ -44,63 +45,65 @@ const { data, loading, error, refetch } = useApiQuery<T>(url);
 const { items, loading, error, refetch, pagination } = useApiList<T>(url);
 
 // Create/update/delete
-const { mutate, loading, error } = useApiMutation(url, 'POST');
+const { mutate, loading, error } = useApiMutation(url, "POST");
 ```
 
 ### Domain Hooks
 
-| File | Hooks Exported |
-|------|---------------|
-| `use-orders.ts` | useOrders, useOrder, useCreateOrder, useUpdateOrderStatus |
-| `use-drivers.ts` | useDrivers, useDriver, useDriverLocations |
-| `use-customers.ts` | useCustomers (with tier support) |
-| `use-returns.ts` | useReturns + mutations for lifecycle transitions |
-| `use-zones.ts` | useZones, useZone, useCreateZone |
-| `use-dashboard-stats.ts` | useDashboardStats, useRecentOrders |
-| `use-fleet.ts` | useVehicles, useMaintenanceEvents, useFuelTransactions |
-| `use-notifications.ts` | useNotifications + CRUD mutations |
-| `use-supply-chain.ts` | useInventory, useFulfillment, useReorderAlerts |
-| `use-realtime.ts` | WebSocket client, useOrderUpdates, useDriverLocations |
+| File                     | Hooks Exported                                            |
+| ------------------------ | --------------------------------------------------------- |
+| `use-orders.ts`          | useOrders, useOrder, useCreateOrder, useUpdateOrderStatus |
+| `use-drivers.ts`         | useDrivers, useDriver, useDriverLocations                 |
+| `use-customers.ts`       | useCustomers (with tier support)                          |
+| `use-returns.ts`         | useReturns + mutations for lifecycle transitions          |
+| `use-zones.ts`           | useZones, useZone, useCreateZone                          |
+| `use-dashboard-stats.ts` | useDashboardStats, useRecentOrders                        |
+| `use-fleet.ts`           | useVehicles, useMaintenanceEvents, useFuelTransactions    |
+| `use-notifications.ts`   | useNotifications + CRUD mutations                         |
+| `use-supply-chain.ts`    | useInventory, useFulfillment, useReorderAlerts            |
+| `use-realtime.ts`        | WebSocket client, useOrderUpdates, useDriverLocations     |
 
 ### API Client (`lib/api.ts`)
 
 Low-level fetch wrapper used by all hooks:
-```typescript
-import { api } from '@/lib/api';
 
-const orders = await api.get('/api/v4/orders');
-const created = await api.post('/api/v4/orders', { data: orderData });
+```typescript
+import { api } from "@/lib/api";
+
+const orders = await api.get("/api/v4/orders");
+const created = await api.post("/api/v4/orders", { data: orderData });
 ```
 
 ## UI Components
 
 ### Core Components (`components/ui/`)
 
-| Component | File | Purpose |
-|-----------|------|---------|
-| Button | `button.tsx` | Primary/secondary/ghost/danger buttons |
-| Badge | `badge.tsx` | Status badges with 6 variants + status variant support |
-| Card | `card.tsx` | Card container with CardHeader/CardTitle/CardContent |
-| DataTable | `data-table.tsx` | Full-featured data table with sort/filter/pagination |
-| Dialog | `dialog.tsx` | Modal dialogs (also aliased as Modal) |
-| Input | `input.tsx` | Form inputs |
-| LoadingSkeleton | `loading-skeleton.tsx` | Skeleton loader for loading states |
-| ErrorState | `error-state.tsx` | Error display with retry button |
-| EmptyState | `empty-state.tsx` | Empty data state with action button |
-| Pagination | `pagination.tsx` | Page navigation component |
+| Component       | File                   | Purpose                                                |
+| --------------- | ---------------------- | ------------------------------------------------------ |
+| Button          | `button.tsx`           | Primary/secondary/ghost/danger buttons                 |
+| Badge           | `badge.tsx`            | Status badges with 6 variants + status variant support |
+| Card            | `card.tsx`             | Card container with CardHeader/CardTitle/CardContent   |
+| DataTable       | `data-table.tsx`       | Full-featured data table with sort/filter/pagination   |
+| Dialog          | `dialog.tsx`           | Modal dialogs (also aliased as Modal)                  |
+| Input           | `input.tsx`            | Form inputs                                            |
+| LoadingSkeleton | `loading-skeleton.tsx` | Skeleton loader for loading states                     |
+| ErrorState      | `error-state.tsx`      | Error display with retry button                        |
+| EmptyState      | `empty-state.tsx`      | Empty data state with action button                    |
+| Pagination      | `pagination.tsx`       | Page navigation component                              |
 
 ### Layout Components (`components/layout/`)
 
-| Component | Purpose |
-|-----------|---------|
-| `header.tsx` | Top navigation bar |
+| Component                | Purpose                        |
+| ------------------------ | ------------------------------ |
+| `header.tsx`             | Top navigation bar             |
 | `responsive-sidebar.tsx` | Collapsible sidebar navigation |
-| `responsive-nav.tsx` | Mobile navigation |
-| `responsive-table.tsx` | Mobile-friendly tables |
+| `responsive-nav.tsx`     | Mobile navigation              |
+| `responsive-table.tsx`   | Mobile-friendly tables         |
 
 ## Design Standards
 
 ### Color System
+
 ```
 Page background:   bg-zinc-950
 Card background:   bg-zinc-900
@@ -113,6 +116,7 @@ Text secondary:    text-zinc-400
 ```
 
 ### Spacing
+
 ```
 Page padding:       p-6
 Card padding:       p-6
@@ -122,6 +126,7 @@ Compact gap:        gap-2
 ```
 
 ### Responsive Breakpoints
+
 ```
 Mobile:   default (< 768px)
 Tablet:   md: (768px+)

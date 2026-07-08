@@ -84,7 +84,10 @@ describe("TenantProvisioner.createTenant", () => {
   it("maps plan 'starter' to PlanTier.STARTER", async () => {
     (prisma.organization.findUnique as any).mockResolvedValue(null);
     (prisma.organization.create as any).mockResolvedValue({ id: "o" });
-    (prisma.tenantConfig.create as any).mockResolvedValue({ id: "t", subdomain: "x" });
+    (prisma.tenantConfig.create as any).mockResolvedValue({
+      id: "t",
+      subdomain: "x",
+    });
 
     await new TenantProvisioner().createTenant({
       slug: "x",
@@ -100,7 +103,10 @@ describe("TenantProvisioner.createTenant", () => {
   it("maps plan 'pro' to PlanTier.GROWTH", async () => {
     (prisma.organization.findUnique as any).mockResolvedValue(null);
     (prisma.organization.create as any).mockResolvedValue({ id: "o" });
-    (prisma.tenantConfig.create as any).mockResolvedValue({ id: "t", subdomain: "x" });
+    (prisma.tenantConfig.create as any).mockResolvedValue({
+      id: "t",
+      subdomain: "x",
+    });
 
     await new TenantProvisioner().createTenant({
       slug: "x",
@@ -109,15 +115,18 @@ describe("TenantProvisioner.createTenant", () => {
       plan: "pro",
     });
 
-    expect((prisma.organization.create as any).mock.calls[0][0].data.planTier).toBe(
-      "GROWTH",
-    );
+    expect(
+      (prisma.organization.create as any).mock.calls[0][0].data.planTier,
+    ).toBe("GROWTH");
   });
 
   it("defaults plan to STARTER when unspecified", async () => {
     (prisma.organization.findUnique as any).mockResolvedValue(null);
     (prisma.organization.create as any).mockResolvedValue({ id: "o" });
-    (prisma.tenantConfig.create as any).mockResolvedValue({ id: "t", subdomain: "x" });
+    (prisma.tenantConfig.create as any).mockResolvedValue({
+      id: "t",
+      subdomain: "x",
+    });
 
     await new TenantProvisioner().createTenant({
       slug: "x",
@@ -125,8 +134,8 @@ describe("TenantProvisioner.createTenant", () => {
       ownerName: "A",
     });
 
-    expect((prisma.organization.create as any).mock.calls[0][0].data.planTier).toBe(
-      "STARTER",
-    );
+    expect(
+      (prisma.organization.create as any).mock.calls[0][0].data.planTier,
+    ).toBe("STARTER");
   });
 });

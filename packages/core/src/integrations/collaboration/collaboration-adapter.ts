@@ -22,10 +22,10 @@ import {
   PresenceStatus,
   ChannelType,
   MessageType,
-} from './types';
+} from "./types";
 
 export abstract class CollaborationAdapter implements CollaborationAdapterInterface {
-  readonly platform: 'slack' | 'teams' | 'pusher';
+  readonly platform: "slack" | "teams" | "pusher";
   readonly config: CollaborationConfig;
   protected connected: boolean = false;
 
@@ -34,7 +34,7 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
 
   // Circuit breaker
   protected circuitBreakerState: CircuitBreakerState = {
-    status: 'closed',
+    status: "closed",
     failureCount: 0,
   };
 
@@ -48,7 +48,10 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
     (event: CollaborationWebhookEvent) => Promise<void>
   > = new Map();
 
-  constructor(platform: 'slack' | 'teams' | 'pusher', config: CollaborationConfig) {
+  constructor(
+    platform: "slack" | "teams" | "pusher",
+    config: CollaborationConfig,
+  ) {
     this.platform = platform;
     this.config = config;
     this.rateLimitState = {
@@ -64,11 +67,12 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
   protected async applyRateLimit(): Promise<void> {
     const now = Date.now();
     const timeSinceLastRefill = now - this.rateLimitState.lastRefillTime;
-    const tokensToAdd = (timeSinceLastRefill / 1000) * this.config.rateLimitPerSecond;
+    const tokensToAdd =
+      (timeSinceLastRefill / 1000) * this.config.rateLimitPerSecond;
 
     this.rateLimitState.tokensAvailable = Math.min(
       this.config.rateLimitPerSecond,
-      this.rateLimitState.tokensAvailable + tokensToAdd
+      this.rateLimitState.tokensAvailable + tokensToAdd,
     );
     this.rateLimitState.lastRefillTime = now;
 
@@ -85,24 +89,24 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
    * Circuit breaker pattern implementation
    */
   protected async executeWithCircuitBreaker<T>(
-    operation: () => Promise<T>
+    operation: () => Promise<T>,
   ): Promise<T> {
-    if (this.circuitBreakerState.status === 'open') {
+    if (this.circuitBreakerState.status === "open") {
       const now = Date.now();
       if (
         this.circuitBreakerState.nextAttemptTime &&
         now >= this.circuitBreakerState.nextAttemptTime
       ) {
-        this.circuitBreakerState.status = 'half-open';
+        this.circuitBreakerState.status = "half-open";
       } else {
-        throw new Error('Circuit breaker is open');
+        throw new Error("Circuit breaker is open");
       }
     }
 
     try {
       const result = await operation();
-      if (this.circuitBreakerState.status === 'half-open') {
-        this.circuitBreakerState.status = 'closed';
+      if (this.circuitBreakerState.status === "half-open") {
+        this.circuitBreakerState.status = "closed";
         this.circuitBreakerState.failureCount = 0;
       }
       return result;
@@ -113,7 +117,7 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
         this.circuitBreakerState.failureCount >=
         this.config.circuitBreakerThreshold
       ) {
-        this.circuitBreakerState.status = 'open';
+        this.circuitBreakerState.status = "open";
         this.circuitBreakerState.nextAttemptTime =
           Date.now() + this.config.circuitBreakerResetMs;
       }
@@ -127,7 +131,7 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
    */
   protected async executeWithRetry<T>(
     operation: () => Promise<T>,
-    config?: Partial<RetryConfig>
+    config?: Partial<RetryConfig>,
   ): Promise<T> {
     const retryConfig: RetryConfig = {
       attempts: config?.attempts ?? this.config.retryAttempts,
@@ -146,13 +150,11 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
         if (attempt < retryConfig.attempts - 1) {
           const backoff = Math.min(
             retryConfig.backoffMs * Math.pow(2, attempt),
-            retryConfig.maxBackoffMs || 30000
+            retryConfig.maxBackoffMs || 30000,
           );
           const jitter =
             backoff * (retryConfig.jitterFactor ?? 0.1) * Math.random();
-          await new Promise((resolve) =>
-            setTimeout(resolve, backoff + jitter)
-          );
+          await new Promise((resolve) => setTimeout(resolve, backoff + jitter));
         }
       }
     }
@@ -169,7 +171,7 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
       mentions?: string[];
       markdown?: boolean;
       emoji?: boolean;
-    }
+    },
   ): string {
     let formatted = content;
 
@@ -204,18 +206,18 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
   protected normalizeEmoji(content: string): string {
     // Basic emoji normalization
     const emojiMap: Record<string, string> = {
-      ':+1:': '👍',
-      ':-1:': '👎',
-      ':fire:': '🔥',
-      ':heart:': '❤️',
-      ':laughing:': '😆',
-      ':thinking:': '🤔',
-      ':tada:': '🎉',
+      ":+1:": "👍",
+      ":-1:": "👎",
+      ":fire:": "🔥",
+      ":heart:": "❤️",
+      ":laughing:": "😆",
+      ":thinking:": "🤔",
+      ":tada:": "🎉",
     };
 
     let normalized = content;
     for (const [code, emoji] of Object.entries(emojiMap)) {
-      normalized = normalized.replace(new RegExp(code, 'g'), emoji);
+      normalized = normalized.replace(new RegExp(code, "g"), emoji);
     }
     return normalized;
   }
@@ -227,8 +229,8 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
     // Platform-specific markdown processing
     // This is a base implementation that can be overridden
     return content
-      .replace(/\*\*(.*?)\*\*/g, '_$1_') // Bold to underscore
-      .replace(/\*(.*?)\*/g, '_$1_'); // Italic to underscore
+      .replace(/\*\*(.*?)\*\*/g, "_$1_") // Bold to underscore
+      .replace(/\*(.*?)\*/g, "_$1_"); // Italic to underscore
   }
 
   /**
@@ -264,7 +266,7 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
    */
   protected trackPresence(
     userId: string,
-    presence: CollaborationPresence
+    presence: CollaborationPresence,
   ): void {
     this.presenceCache[userId] = {
       presence,
@@ -300,7 +302,7 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
       blocks?: unknown[];
       actions?: Array<{ label: string; value: string }>;
       metadata?: Record<string, unknown>;
-    }
+    },
   ): Record<string, unknown> {
     return {
       content,
@@ -317,7 +319,7 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
    */
   public async registerWebhook(
     eventTypes: WebhookEventType[],
-    callback: (event: CollaborationWebhookEvent) => Promise<void>
+    callback: (event: CollaborationWebhookEvent) => Promise<void>,
   ): Promise<string> {
     const webhookId = `webhook_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     this.webhookHandlers.set(webhookId, callback);
@@ -335,12 +337,12 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
    * Trigger webhook handlers
    */
   protected async triggerWebhookHandlers(
-    event: CollaborationWebhookEvent
+    event: CollaborationWebhookEvent,
   ): Promise<void> {
     const promises = Array.from(this.webhookHandlers.values()).map((handler) =>
       handler(event).catch((error) => {
         console.error(`Webhook handler error: ${error}`);
-      })
+      }),
     );
 
     await Promise.all(promises);
@@ -352,22 +354,24 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
   public abstract validateWebhook(
     signature: string,
     timestamp: string,
-    body: string
+    body: string,
   ): boolean;
 
   /**
    * Health check
    */
-  public async health(): Promise<{ status: 'healthy' | 'degraded' | 'unhealthy' }> {
+  public async health(): Promise<{
+    status: "healthy" | "degraded" | "unhealthy";
+  }> {
     if (!this.connected) {
-      return { status: 'unhealthy' };
+      return { status: "unhealthy" };
     }
 
-    if (this.circuitBreakerState.status === 'open') {
-      return { status: 'degraded' };
+    if (this.circuitBreakerState.status === "open") {
+      return { status: "degraded" };
     }
 
-    return { status: 'healthy' };
+    return { status: "healthy" };
   }
 
   /**
@@ -396,11 +400,11 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
       type?: ChannelType;
       isPrivate?: boolean;
       members?: string[];
-    }
+    },
   ): Promise<CollaborationChannel>;
   abstract updateChannel(
     channelId: string,
-    updates: Partial<CollaborationChannel>
+    updates: Partial<CollaborationChannel>,
   ): Promise<CollaborationChannel>;
   abstract archiveChannel(channelId: string): Promise<void>;
   abstract unarchiveChannel(channelId: string): Promise<void>;
@@ -413,13 +417,13 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
       attachments?: CollaborationAttachment[];
       threadId?: string;
       metadata?: Record<string, unknown>;
-    }
+    },
   ): Promise<CollaborationMessage>;
   abstract getMessage(messageId: string): Promise<CollaborationMessage | null>;
   abstract editMessage(
     messageId: string,
     content: string,
-    richContent?: Record<string, unknown>
+    richContent?: Record<string, unknown>,
   ): Promise<CollaborationMessage>;
   abstract deleteMessage(messageId: string): Promise<void>;
   abstract getMessageThread(messageId: string): Promise<CollaborationMessage[]>;
@@ -430,33 +434,38 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
     includeInactive?: boolean;
   }): Promise<{ users: CollaborationUser[]; cursor?: string }>;
   abstract getUsersByEmail(email: string): Promise<CollaborationUser[]>;
-  abstract getUserPresence(userId: string): Promise<CollaborationPresence | null>;
+  abstract getUserPresence(
+    userId: string,
+  ): Promise<CollaborationPresence | null>;
   abstract setUserPresence(
     userId: string,
     status: PresenceStatus,
-    statusMessage?: string
+    statusMessage?: string,
   ): Promise<void>;
   abstract addReaction(
     messageId: string,
-    emoji: string
+    emoji: string,
   ): Promise<CollaborationReaction>;
   abstract removeReaction(messageId: string, emoji: string): Promise<void>;
   abstract listReactions(messageId: string): Promise<CollaborationReaction[]>;
   abstract addChannelMember(
     channelId: string,
-    userId: string
+    userId: string,
   ): Promise<CollaborationUser>;
-  abstract removeChannelMember(channelId: string, userId: string): Promise<void>;
+  abstract removeChannelMember(
+    channelId: string,
+    userId: string,
+  ): Promise<void>;
   abstract listChannelMembers(
     channelId: string,
-    options?: { limit?: number; cursor?: string }
+    options?: { limit?: number; cursor?: string },
   ): Promise<{ members: CollaborationUser[]; cursor?: string }>;
   abstract uploadFile(
     channelId: string,
-    file: { name: string; buffer: Buffer; mimeType: string }
+    file: { name: string; buffer: Buffer; mimeType: string },
   ): Promise<CollaborationAttachment>;
   abstract shareFile(
     messageId: string,
-    fileId: string
+    fileId: string,
   ): Promise<CollaborationAttachment>;
 }

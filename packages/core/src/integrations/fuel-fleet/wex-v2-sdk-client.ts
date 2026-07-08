@@ -43,7 +43,7 @@ export class WEXAPIError extends Error {
     public code: string,
     message: string,
     public details?: Record<string, unknown>,
-    public requestId?: string
+    public requestId?: string,
   ) {
     super(message);
     this.name = "WEXAPIError";
@@ -113,7 +113,7 @@ export class WEXv2SDKClient {
       if (!response.ok) {
         throw new WEXAPIError(
           "AUTH_FAILED",
-          `Authentication failed: ${response.statusText}`
+          `Authentication failed: ${response.statusText}`,
         );
       }
 
@@ -137,7 +137,7 @@ export class WEXv2SDKClient {
       this.failureCount += 1;
       throw new WEXAPIError(
         "AUTH_ERROR",
-        `Authentication failed: ${error instanceof Error ? error.message : String(error)}`
+        `Authentication failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -148,13 +148,17 @@ export class WEXv2SDKClient {
   private async apiRequest<T>(
     method: string,
     endpoint: string,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     await this.checkRateLimit();
     const token = await this.authenticate();
     const url = new URL(endpoint, this.config.baseUrl).toString();
 
-    for (let attempt = 0; attempt < (this.config.retryConfig?.maxAttempts || 3); attempt++) {
+    for (
+      let attempt = 0;
+      attempt < (this.config.retryConfig?.maxAttempts || 3);
+      attempt++
+    ) {
       try {
         const response = (await nodeFetch(url, {
           method,
@@ -175,7 +179,7 @@ export class WEXv2SDKClient {
             errorData.code || `HTTP_${response.status}`,
             errorData.message || response.statusText,
             errorData.details,
-            errorData.requestId
+            errorData.requestId,
           );
         }
 
@@ -187,10 +191,9 @@ export class WEXv2SDKClient {
           this.failureCount += 1;
           throw error;
         }
-        const delay = (this.config.retryConfig?.delayMs || 1000) * Math.pow(
-          this.config.retryConfig?.backoffMultiplier || 2,
-          attempt
-        );
+        const delay =
+          (this.config.retryConfig?.delayMs || 1000) *
+          Math.pow(this.config.retryConfig?.backoffMultiplier || 2, attempt);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
@@ -240,7 +243,9 @@ export class WEXv2SDKClient {
   /**
    * Issue a new fuel card
    */
-  async issueCard(request: CardIssuanceRequest): Promise<{ cardId: string; cardNumber: string; last4: string }> {
+  async issueCard(
+    request: CardIssuanceRequest,
+  ): Promise<{ cardId: string; cardNumber: string; last4: string }> {
     return this.apiRequest("POST", "/api/v2/cards/issue", {
       cardholderName: request.cardholderName,
       cardholderEmail: request.cardholderEmail,
@@ -266,78 +271,118 @@ export class WEXv2SDKClient {
   /**
    * Suspend a fuel card
    */
-  async suspendCard(cardId: string, reason?: string): Promise<{ status: string; timestamp: Date }> {
-    return this.apiRequest("POST", `/api/v2/cards/${cardId}/suspend`, { reason });
+  async suspendCard(
+    cardId: string,
+    reason?: string,
+  ): Promise<{ status: string; timestamp: Date }> {
+    return this.apiRequest("POST", `/api/v2/cards/${cardId}/suspend`, {
+      reason,
+    });
   }
 
   /**
    * Reactivate a suspended card
    */
-  async reactivateCard(cardId: string): Promise<{ status: string; timestamp: Date }> {
+  async reactivateCard(
+    cardId: string,
+  ): Promise<{ status: string; timestamp: Date }> {
     return this.apiRequest("POST", `/api/v2/cards/${cardId}/reactivate`);
   }
 
   /**
    * Cancel a fuel card
    */
-  async cancelCard(cardId: string, reason?: string): Promise<{ status: string; timestamp: Date }> {
-    return this.apiRequest("POST", `/api/v2/cards/${cardId}/cancel`, { reason });
+  async cancelCard(
+    cardId: string,
+    reason?: string,
+  ): Promise<{ status: string; timestamp: Date }> {
+    return this.apiRequest("POST", `/api/v2/cards/${cardId}/cancel`, {
+      reason,
+    });
   }
 
   /**
    * Set daily spending limit
    */
-  async setDailyLimit(cardId: string, amount: number): Promise<SpendingLimitConfig> {
-    return this.apiRequest("POST", `/api/v2/cards/${cardId}/limits/daily`, { amount });
+  async setDailyLimit(
+    cardId: string,
+    amount: number,
+  ): Promise<SpendingLimitConfig> {
+    return this.apiRequest("POST", `/api/v2/cards/${cardId}/limits/daily`, {
+      amount,
+    });
   }
 
   /**
    * Set weekly spending limit
    */
-  async setWeeklyLimit(cardId: string, amount: number): Promise<SpendingLimitConfig> {
-    return this.apiRequest("POST", `/api/v2/cards/${cardId}/limits/weekly`, { amount });
+  async setWeeklyLimit(
+    cardId: string,
+    amount: number,
+  ): Promise<SpendingLimitConfig> {
+    return this.apiRequest("POST", `/api/v2/cards/${cardId}/limits/weekly`, {
+      amount,
+    });
   }
 
   /**
    * Set monthly spending limit
    */
-  async setMonthlyLimit(cardId: string, amount: number): Promise<SpendingLimitConfig> {
-    return this.apiRequest("POST", `/api/v2/cards/${cardId}/limits/monthly`, { amount });
+  async setMonthlyLimit(
+    cardId: string,
+    amount: number,
+  ): Promise<SpendingLimitConfig> {
+    return this.apiRequest("POST", `/api/v2/cards/${cardId}/limits/monthly`, {
+      amount,
+    });
   }
 
   /**
    * Set per-transaction limit
    */
-  async setTransactionLimit(cardId: string, amount: number): Promise<SpendingLimitConfig> {
-    return this.apiRequest("POST", `/api/v2/cards/${cardId}/limits/transaction`, { amount });
+  async setTransactionLimit(
+    cardId: string,
+    amount: number,
+  ): Promise<SpendingLimitConfig> {
+    return this.apiRequest(
+      "POST",
+      `/api/v2/cards/${cardId}/limits/transaction`,
+      { amount },
+    );
   }
 
   /**
    * Configure product restrictions (fuel only, fuel + maintenance, etc)
    */
-  async setProductRestrictions(config: ProductRestrictionConfig): Promise<ProductRestrictionConfig> {
+  async setProductRestrictions(
+    config: ProductRestrictionConfig,
+  ): Promise<ProductRestrictionConfig> {
     return this.apiRequest(
       "POST",
       `/api/v2/cards/${config.cardId}/restrictions/products`,
-      config
+      config,
     );
   }
 
   /**
    * Configure time-of-day restrictions
    */
-  async setTimeRestrictions(config: TimeRestrictionConfig): Promise<TimeRestrictionConfig> {
+  async setTimeRestrictions(
+    config: TimeRestrictionConfig,
+  ): Promise<TimeRestrictionConfig> {
     return this.apiRequest(
       "POST",
       `/api/v2/cards/${config.cardId}/restrictions/time`,
-      config
+      config,
     );
   }
 
   /**
    * Get real-time transaction feed
    */
-  async getRealTimeTransactionFeed(): Promise<PaginatedResponse<RealTimeTransaction>> {
+  async getRealTimeTransactionFeed(): Promise<
+    PaginatedResponse<RealTimeTransaction>
+  > {
     return this.apiRequest("GET", "/api/v2/transactions/realtime");
   }
 
@@ -345,7 +390,7 @@ export class WEXv2SDKClient {
    * Search historical transactions
    */
   async searchTransactions(
-    criteria: TransactionSearchCriteria
+    criteria: TransactionSearchCriteria,
   ): Promise<PaginatedResponse<TransactionDetail>> {
     const params = new URLSearchParams();
     params.append("startDate", criteria.startDate.toISOString());
@@ -354,21 +399,31 @@ export class WEXv2SDKClient {
     if (criteria.cardId) params.append("cardId", criteria.cardId);
     if (criteria.vehicleId) params.append("vehicleId", criteria.vehicleId);
     if (criteria.driverId) params.append("driverId", criteria.driverId);
-    if (criteria.minAmount) params.append("minAmount", String(criteria.minAmount));
-    if (criteria.maxAmount) params.append("maxAmount", String(criteria.maxAmount));
+    if (criteria.minAmount)
+      params.append("minAmount", String(criteria.minAmount));
+    if (criteria.maxAmount)
+      params.append("maxAmount", String(criteria.maxAmount));
     if (criteria.status) params.append("status", criteria.status);
     if (criteria.includeDeclined) params.append("includeDeclined", "true");
     if (criteria.limit) params.append("limit", String(criteria.limit));
     if (criteria.offset) params.append("offset", String(criteria.offset));
 
-    return this.apiRequest("GET", `/api/v2/transactions/search?${params.toString()}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/transactions/search?${params.toString()}`,
+    );
   }
 
   /**
    * Get detailed transaction information (Level 3 data)
    */
-  async getTransactionDetails(transactionId: string): Promise<TransactionDetail> {
-    return this.apiRequest("GET", `/api/v2/transactions/${transactionId}/details`);
+  async getTransactionDetails(
+    transactionId: string,
+  ): Promise<TransactionDetail> {
+    return this.apiRequest(
+      "GET",
+      `/api/v2/transactions/${transactionId}/details`,
+    );
   }
 
   /**
@@ -376,9 +431,14 @@ export class WEXv2SDKClient {
    */
   async getDeclinedTransactions(
     startDate: Date,
-    endDate: Date
-  ): Promise<Array<{ transactionId: string; reason: DeclineReason; timestamp: Date }>> {
-    return this.apiRequest("GET", `/api/v2/transactions/declined?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`);
+    endDate: Date,
+  ): Promise<
+    Array<{ transactionId: string; reason: DeclineReason; timestamp: Date }>
+  > {
+    return this.apiRequest(
+      "GET",
+      `/api/v2/transactions/declined?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`,
+    );
   }
 
   /**
@@ -387,14 +447,17 @@ export class WEXv2SDKClient {
   async getFuelUsageByVehicle(
     startDate: Date,
     endDate: Date,
-    vehicleId?: string
+    vehicleId?: string,
   ): Promise<FuelUsageAnalytics> {
     const params = new URLSearchParams();
     params.append("startDate", startDate.toISOString());
     params.append("endDate", endDate.toISOString());
     if (vehicleId) params.append("vehicleId", vehicleId);
 
-    return this.apiRequest("GET", `/api/v2/analytics/fuel-usage/vehicle?${params.toString()}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/analytics/fuel-usage/vehicle?${params.toString()}`,
+    );
   }
 
   /**
@@ -403,14 +466,17 @@ export class WEXv2SDKClient {
   async getFuelUsageByDriver(
     startDate: Date,
     endDate: Date,
-    driverId?: string
+    driverId?: string,
   ): Promise<FuelUsageAnalytics> {
     const params = new URLSearchParams();
     params.append("startDate", startDate.toISOString());
     params.append("endDate", endDate.toISOString());
     if (driverId) params.append("driverId", driverId);
 
-    return this.apiRequest("GET", `/api/v2/analytics/fuel-usage/driver?${params.toString()}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/analytics/fuel-usage/driver?${params.toString()}`,
+    );
   }
 
   /**
@@ -418,11 +484,17 @@ export class WEXv2SDKClient {
    */
   async getCostCenterAllocation(
     startDate: Date,
-    endDate: Date
-  ): Promise<Array<{ costCenter: string; totalSpend: number; allocationPercentage: number }>> {
+    endDate: Date,
+  ): Promise<
+    Array<{
+      costCenter: string;
+      totalSpend: number;
+      allocationPercentage: number;
+    }>
+  > {
     return this.apiRequest(
       "GET",
-      `/api/v2/reporting/cost-center?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`
+      `/api/v2/reporting/cost-center?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`,
     );
   }
 
@@ -431,11 +503,11 @@ export class WEXv2SDKClient {
    */
   async getExceptionReport(
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<ExceptionReport> {
     return this.apiRequest(
       "GET",
-      `/api/v2/reporting/exceptions?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`
+      `/api/v2/reporting/exceptions?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`,
     );
   }
 
@@ -446,7 +518,7 @@ export class WEXv2SDKClient {
     jurisdiction: string,
     startDate: Date,
     endDate: Date,
-    vehicleId?: string
+    vehicleId?: string,
   ): Promise<IFTAReportingData> {
     const params = new URLSearchParams();
     params.append("jurisdiction", jurisdiction);
@@ -454,39 +526,51 @@ export class WEXv2SDKClient {
     params.append("endDate", endDate.toISOString());
     if (vehicleId) params.append("vehicleId", vehicleId);
 
-    return this.apiRequest("GET", `/api/v2/reporting/ifta?${params.toString()}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/reporting/ifta?${params.toString()}`,
+    );
   }
 
   /**
    * Require driver ID for transactions
    */
-  async requireDriverId(cardId: string, required: boolean): Promise<{ cardId: string; driverIdRequired: boolean }> {
+  async requireDriverId(
+    cardId: string,
+    required: boolean,
+  ): Promise<{ cardId: string; driverIdRequired: boolean }> {
     return this.apiRequest(
       "POST",
       `/api/v2/cards/${cardId}/controls/driver-id`,
-      { required }
+      { required },
     );
   }
 
   /**
    * Require odometer entry for transactions
    */
-  async requireOdometer(cardId: string, required: boolean): Promise<{ cardId: string; odometerRequired: boolean }> {
+  async requireOdometer(
+    cardId: string,
+    required: boolean,
+  ): Promise<{ cardId: string; odometerRequired: boolean }> {
     return this.apiRequest(
       "POST",
       `/api/v2/cards/${cardId}/controls/odometer`,
-      { required }
+      { required },
     );
   }
 
   /**
    * Require vehicle number prompts
    */
-  async requireVehicleNumber(cardId: string, required: boolean): Promise<{ cardId: string; vehicleNumberRequired: boolean }> {
+  async requireVehicleNumber(
+    cardId: string,
+    required: boolean,
+  ): Promise<{ cardId: string; vehicleNumberRequired: boolean }> {
     return this.apiRequest(
       "POST",
       `/api/v2/cards/${cardId}/controls/vehicle-number`,
-      { required }
+      { required },
     );
   }
 
@@ -495,12 +579,12 @@ export class WEXv2SDKClient {
    */
   async setMerchantCategoryRestrictions(
     cardId: string,
-    allowedCategories: string[]
+    allowedCategories: string[],
   ): Promise<{ cardId: string; restrictions: string[] }> {
     return this.apiRequest(
       "POST",
       `/api/v2/cards/${cardId}/controls/merchant-categories`,
-      { allowedCategories }
+      { allowedCategories },
     );
   }
 
@@ -509,7 +593,7 @@ export class WEXv2SDKClient {
    */
   async subscribeWebhook(
     webhookUrl: string,
-    eventTypes: WebhookEventType[]
+    eventTypes: WebhookEventType[],
   ): Promise<{ webhookId: string; url: string; events: WebhookEventType[] }> {
     return this.apiRequest("POST", "/api/v2/webhooks/subscribe", {
       url: webhookUrl,
@@ -528,10 +612,7 @@ export class WEXv2SDKClient {
   /**
    * Verify webhook signature
    */
-  verifyWebhookSignature(
-    payload: string,
-    signature: string
-  ): boolean {
+  verifyWebhookSignature(payload: string, signature: string): boolean {
     if (!this.config.webhookSecret) return false;
 
     const crypto = require("crypto");
@@ -558,7 +639,12 @@ export class WEXv2SDKClient {
     const uptime = now.getTime() - this.lastHealthCheck.getTime();
 
     return {
-      status: this.failureCount === 0 ? "healthy" : this.failureCount < 5 ? "degraded" : "unhealthy",
+      status:
+        this.failureCount === 0
+          ? "healthy"
+          : this.failureCount < 5
+            ? "degraded"
+            : "unhealthy",
       provider: "wex_v2" as SDKProvider,
       lastChecked: now,
       circuitBreaker: {
@@ -578,14 +664,18 @@ export class WEXv2SDKClient {
   /**
    * Generate custom report
    */
-  async generateReport(params: ReportingParams): Promise<{ reportId: string; status: string; downloadUrl?: string }> {
+  async generateReport(
+    params: ReportingParams,
+  ): Promise<{ reportId: string; status: string; downloadUrl?: string }> {
     return this.apiRequest("POST", "/api/v2/reporting/generate", params);
   }
 
   /**
    * Get report status and download
    */
-  async getReportStatus(reportId: string): Promise<{ reportId: string; status: string; downloadUrl?: string }> {
+  async getReportStatus(
+    reportId: string,
+  ): Promise<{ reportId: string; status: string; downloadUrl?: string }> {
     return this.apiRequest("GET", `/api/v2/reporting/${reportId}`);
   }
 }

@@ -56,7 +56,7 @@ describe("Manhattan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(oauthResponse), { status: 200 })
+        new Response(JSON.stringify(oauthResponse), { status: 200 }),
       );
 
       expect(oauthResponse.access_token).toMatch(/^manhattan_token_/);
@@ -69,7 +69,7 @@ describe("Manhattan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(refreshResponse), { status: 200 })
+        new Response(JSON.stringify(refreshResponse), { status: 200 }),
       );
 
       expect(refreshResponse.access_token).toMatch(/^manhattan_token_/);
@@ -82,7 +82,7 @@ describe("Manhattan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(tokenData), { status: 200 })
+        new Response(JSON.stringify(tokenData), { status: 200 }),
       );
 
       expect(tokenData.scopes).toContain("inventory.read");
@@ -100,7 +100,7 @@ describe("Manhattan Adapter Integration", () => {
 
     it("should create warehouse inbound operation", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockOperation), { status: 201 })
+        new Response(JSON.stringify(mockOperation), { status: 201 }),
       );
 
       expect(mockOperation.type).toBe("inbound");
@@ -115,7 +115,7 @@ describe("Manhattan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(statusUpdate), { status: 200 })
+        new Response(JSON.stringify(statusUpdate), { status: 200 }),
       );
 
       expect(statusUpdate.status).toBe("completed");
@@ -129,7 +129,7 @@ describe("Manhattan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(operationsList), { status: 200 })
+        new Response(JSON.stringify(operationsList), { status: 200 }),
       );
 
       expect(operationsList.operations).toHaveLength(1);
@@ -146,7 +146,7 @@ describe("Manhattan Adapter Integration", () => {
 
     it("should retrieve inventory by SKU", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockInventory), { status: 200 })
+        new Response(JSON.stringify(mockInventory), { status: 200 }),
       );
 
       expect(mockInventory.sku).toBe("SKU123");
@@ -161,7 +161,7 @@ describe("Manhattan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(updatedInventory), { status: 200 })
+        new Response(JSON.stringify(updatedInventory), { status: 200 }),
       );
 
       expect(updatedInventory.quantity).toBeLessThan(mockInventory.quantity);
@@ -176,7 +176,7 @@ describe("Manhattan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(transfer), { status: 200 })
+        new Response(JSON.stringify(transfer), { status: 200 }),
       );
 
       expect(transfer.status).toBe("completed");
@@ -192,7 +192,7 @@ describe("Manhattan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(cycleCount), { status: 200 })
+        new Response(JSON.stringify(cycleCount), { status: 200 }),
       );
 
       expect(cycleCount.discrepancy).toBe(-5);
@@ -212,7 +212,7 @@ describe("Manhattan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(wave), { status: 201 })
+        new Response(JSON.stringify(wave), { status: 201 }),
       );
 
       expect(wave.orderCount).toBe(50);
@@ -228,7 +228,7 @@ describe("Manhattan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(releasedWave), { status: 200 })
+        new Response(JSON.stringify(releasedWave), { status: 200 }),
       );
 
       expect(releasedWave.status).toBe("released");
@@ -246,7 +246,7 @@ describe("Manhattan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(waveProgress), { status: 200 })
+        new Response(JSON.stringify(waveProgress), { status: 200 }),
       );
 
       expect(waveProgress.progressPercent).toBe(70);
@@ -264,7 +264,7 @@ describe("Manhattan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(checkIn), { status: 200 })
+        new Response(JSON.stringify(checkIn), { status: 200 }),
       );
 
       expect(checkIn.status).toBe("checked_in");
@@ -279,7 +279,7 @@ describe("Manhattan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(appointment), { status: 201 })
+        new Response(JSON.stringify(appointment), { status: 201 }),
       );
 
       expect(appointment.scheduledTime).toBeGreaterThan(Date.now());
@@ -294,7 +294,7 @@ describe("Manhattan Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(dockStats), { status: 200 })
+        new Response(JSON.stringify(dockStats), { status: 200 }),
       );
 
       expect(dockStats.utilizationPercent).toBeLessThanOrEqual(100);
@@ -324,7 +324,7 @@ describe("Blue Yonder Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(oauthToken), { status: 200 })
+        new Response(JSON.stringify(oauthToken), { status: 200 }),
       );
 
       expect(oauthToken.access_token).toMatch(/^blueyonder_token_/);
@@ -342,7 +342,7 @@ describe("Blue Yonder Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(forecast), { status: 200 })
+        new Response(JSON.stringify(forecast), { status: 200 }),
       );
 
       expect(forecast.confidence).toBeGreaterThan(0.9);
@@ -357,7 +357,7 @@ describe("Blue Yonder Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(replenishment), { status: 201 })
+        new Response(JSON.stringify(replenishment), { status: 201 }),
       );
 
       expect(replenishment.quantity).toBeGreaterThan(0);
@@ -372,11 +372,11 @@ describe("Blue Yonder Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(adjustment), { status: 200 })
+        new Response(JSON.stringify(adjustment), { status: 200 }),
       );
 
       expect(adjustment.adjustedForecast).toBeGreaterThan(
-        adjustment.originalForecast
+        adjustment.originalForecast,
       );
     });
   });
@@ -391,7 +391,7 @@ describe("Blue Yonder Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(fulfillmentOrder), { status: 201 })
+        new Response(JSON.stringify(fulfillmentOrder), { status: 201 }),
       );
 
       expect(fulfillmentOrder.items).toHaveLength(1);
@@ -407,7 +407,7 @@ describe("Blue Yonder Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(allocation), { status: 200 })
+        new Response(JSON.stringify(allocation), { status: 200 }),
       );
 
       expect(allocation.status).toBe("allocated");
@@ -423,7 +423,7 @@ describe("Blue Yonder Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(packingEvent), { status: 200 })
+        new Response(JSON.stringify(packingEvent), { status: 200 }),
       );
 
       expect(packingEvent.status).toBe("packed");
@@ -441,7 +441,7 @@ describe("Blue Yonder Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(shipment), { status: 201 })
+        new Response(JSON.stringify(shipment), { status: 201 }),
       );
 
       expect(shipment.carrier).toBe("UPS");
@@ -458,7 +458,7 @@ describe("Blue Yonder Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(rateShop), { status: 200 })
+        new Response(JSON.stringify(rateShop), { status: 200 }),
       );
 
       expect(rateShop.availableCarriers).toHaveLength(3);
@@ -473,7 +473,7 @@ describe("Blue Yonder Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(tracking), { status: 200 })
+        new Response(JSON.stringify(tracking), { status: 200 }),
       );
 
       expect(tracking.status).toBe("in_transit");
@@ -502,7 +502,7 @@ describe("Körber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authResponse), { status: 200 })
+        new Response(JSON.stringify(authResponse), { status: 200 }),
       );
 
       expect(authResponse.sessionId).toBeDefined();
@@ -520,7 +520,7 @@ describe("Körber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(receiveTask), { status: 201 })
+        new Response(JSON.stringify(receiveTask), { status: 201 }),
       );
 
       expect(receiveTask.status).toBe("created");
@@ -536,7 +536,7 @@ describe("Körber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(putAwayTask), { status: 201 })
+        new Response(JSON.stringify(putAwayTask), { status: 201 }),
       );
 
       expect(putAwayTask.targetLocation).toBe("A-01-01");
@@ -553,7 +553,7 @@ describe("Körber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(pickTask), { status: 201 })
+        new Response(JSON.stringify(pickTask), { status: 201 }),
       );
 
       expect(pickTask.sourceLocation).toBeDefined();
@@ -569,7 +569,7 @@ describe("Körber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(shipTask), { status: 201 })
+        new Response(JSON.stringify(shipTask), { status: 201 }),
       );
 
       expect(shipTask.cartonId).toBeDefined();
@@ -586,7 +586,7 @@ describe("Körber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(voiceTask), { status: 200 })
+        new Response(JSON.stringify(voiceTask), { status: 200 }),
       );
 
       expect(voiceTask.status).toBe("in_progress");
@@ -601,7 +601,7 @@ describe("Körber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(voiceConfirm), { status: 200 })
+        new Response(JSON.stringify(voiceConfirm), { status: 200 }),
       );
 
       expect(voiceConfirm.status).toBe("confirmed");
@@ -615,7 +615,7 @@ describe("Körber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(exceptionResponse), { status: 200 })
+        new Response(JSON.stringify(exceptionResponse), { status: 200 }),
       );
 
       expect(exceptionResponse.exception).toBeDefined();
@@ -633,7 +633,7 @@ describe("Körber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(roboticsTask), { status: 201 })
+        new Response(JSON.stringify(roboticsTask), { status: 201 }),
       );
 
       expect(roboticsTask.status).toBe("queued");
@@ -649,7 +649,7 @@ describe("Körber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(roboticStatus), { status: 200 })
+        new Response(JSON.stringify(roboticStatus), { status: 200 }),
       );
 
       expect(roboticStatus.status).toBe("completed");
@@ -665,7 +665,7 @@ describe("Körber Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(roboticError), { status: 200 })
+        new Response(JSON.stringify(roboticError), { status: 200 }),
       );
 
       expect(roboticError.status).toBe("reassigned");
@@ -695,7 +695,7 @@ describe("Deposco Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authResponse), { status: 200 })
+        new Response(JSON.stringify(authResponse), { status: 200 }),
       );
 
       expect(authResponse.isValid).toBe(true);
@@ -715,7 +715,7 @@ describe("Deposco Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(order), { status: 201 })
+        new Response(JSON.stringify(order), { status: 201 }),
       );
 
       expect(order.items).toHaveLength(2);
@@ -730,7 +730,7 @@ describe("Deposco Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(orderStatus), { status: 200 })
+        new Response(JSON.stringify(orderStatus), { status: 200 }),
       );
 
       expect(orderStatus.status).toBe("picked");
@@ -745,7 +745,7 @@ describe("Deposco Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(cancelResponse), { status: 200 })
+        new Response(JSON.stringify(cancelResponse), { status: 200 }),
       );
 
       expect(cancelResponse.status).toBe("cancelled");
@@ -762,7 +762,7 @@ describe("Deposco Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(inventorySync), { status: 200 })
+        new Response(JSON.stringify(inventorySync), { status: 200 }),
       );
 
       expect(inventorySync.status).toBe("synced");
@@ -777,7 +777,7 @@ describe("Deposco Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(allocation), { status: 200 })
+        new Response(JSON.stringify(allocation), { status: 200 }),
       );
 
       expect(allocation.status).toBe("allocated");
@@ -795,7 +795,7 @@ describe("Deposco Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(shipment), { status: 201 })
+        new Response(JSON.stringify(shipment), { status: 201 }),
       );
 
       expect(shipment.status).toBe("shipped");
@@ -810,7 +810,7 @@ describe("Deposco Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(tracking), { status: 200 })
+        new Response(JSON.stringify(tracking), { status: 200 }),
       );
 
       expect(tracking.status).toBe("in_transit");
@@ -827,7 +827,7 @@ describe("Deposco Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(label), { status: 200 })
+        new Response(JSON.stringify(label), { status: 200 }),
       );
 
       expect(label.format).toBe("pdf");
@@ -843,7 +843,7 @@ describe("Deposco Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(rates), { status: 200 })
+        new Response(JSON.stringify(rates), { status: 200 }),
       );
 
       expect(rates.quotes).toHaveLength(2);
@@ -873,7 +873,7 @@ describe("Extensiv Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(oauthToken), { status: 200 })
+        new Response(JSON.stringify(oauthToken), { status: 200 }),
       );
 
       expect(oauthToken.access_token).toMatch(/^extensiv_oauth_/);
@@ -893,7 +893,7 @@ describe("Extensiv Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(facilities), { status: 200 })
+        new Response(JSON.stringify(facilities), { status: 200 }),
       );
 
       expect(facilities.facilities).toHaveLength(1);
@@ -909,7 +909,7 @@ describe("Extensiv Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(syncJob), { status: 200 })
+        new Response(JSON.stringify(syncJob), { status: 200 }),
       );
 
       expect(syncJob.status).toBe("completed");
@@ -918,13 +918,13 @@ describe("Extensiv Adapter Integration", () => {
     it("should manage 3PL fee structure", async () => {
       const feeStructure = {
         facilityId: "fac_001",
-        handlingFee: 0.50,
-        storageFeePerUnit: 0.10,
-        pickFee: 1.00,
+        handlingFee: 0.5,
+        storageFeePerUnit: 0.1,
+        pickFee: 1.0,
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(feeStructure), { status: 200 })
+        new Response(JSON.stringify(feeStructure), { status: 200 }),
       );
 
       expect(feeStructure.handlingFee).toBeGreaterThan(0);
@@ -942,7 +942,7 @@ describe("Extensiv Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(invoice), { status: 200 })
+        new Response(JSON.stringify(invoice), { status: 200 }),
       );
 
       expect(invoice.amount).toBeGreaterThan(0);
@@ -959,7 +959,7 @@ describe("Extensiv Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(transactions), { status: 200 })
+        new Response(JSON.stringify(transactions), { status: 200 }),
       );
 
       expect(transactions.transactions).toHaveLength(3);
@@ -978,7 +978,7 @@ describe("Extensiv Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(transfer), { status: 201 })
+        new Response(JSON.stringify(transfer), { status: 201 }),
       );
 
       expect(transfer.status).toBe("created");
@@ -993,7 +993,7 @@ describe("Extensiv Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(transferStatus), { status: 200 })
+        new Response(JSON.stringify(transferStatus), { status: 200 }),
       );
 
       expect(transferStatus.status).toBe("in_transit");
@@ -1008,7 +1008,7 @@ describe("Extensiv Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(receipt), { status: 200 })
+        new Response(JSON.stringify(receipt), { status: 200 }),
       );
 
       expect(receipt.status).toBe("received");
@@ -1037,7 +1037,7 @@ describe("Fishbowl Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(tokenAuth), { status: 200 })
+        new Response(JSON.stringify(tokenAuth), { status: 200 }),
       );
 
       expect(tokenAuth.token).toBeDefined();
@@ -1055,7 +1055,7 @@ describe("Fishbowl Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(workOrder), { status: 201 })
+        new Response(JSON.stringify(workOrder), { status: 201 }),
       );
 
       expect(workOrder.quantity).toBe(50);
@@ -1072,7 +1072,7 @@ describe("Fishbowl Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(bom), { status: 200 })
+        new Response(JSON.stringify(bom), { status: 200 }),
       );
 
       expect(bom.components).toHaveLength(2);
@@ -1087,7 +1087,7 @@ describe("Fishbowl Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(progress), { status: 200 })
+        new Response(JSON.stringify(progress), { status: 200 }),
       );
 
       expect(progress.percentComplete).toBe(60);
@@ -1105,7 +1105,7 @@ describe("Fishbowl Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(adjustment), { status: 200 })
+        new Response(JSON.stringify(adjustment), { status: 200 }),
       );
 
       expect(adjustment.quantityAdjustment).toBeLessThan(0);
@@ -1121,7 +1121,7 @@ describe("Fishbowl Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(count), { status: 200 })
+        new Response(JSON.stringify(count), { status: 200 }),
       );
 
       expect(count.variance).toBeLessThan(0);
@@ -1138,7 +1138,7 @@ describe("Fishbowl Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(qbSync), { status: 200 })
+        new Response(JSON.stringify(qbSync), { status: 200 }),
       );
 
       expect(qbSync.status).toBe("completed");
@@ -1153,7 +1153,7 @@ describe("Fishbowl Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(financialSync), { status: 200 })
+        new Response(JSON.stringify(financialSync), { status: 200 }),
       );
 
       expect(financialSync.transactionCount).toBeGreaterThan(0);
@@ -1187,7 +1187,7 @@ describe("Supply Chain Orchestrator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(aggregated), { status: 200 })
+        new Response(JSON.stringify(aggregated), { status: 200 }),
       );
 
       expect(aggregated.totalQuantity).toBeGreaterThan(0);
@@ -1202,7 +1202,7 @@ describe("Supply Chain Orchestrator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(optimization), { status: 200 })
+        new Response(JSON.stringify(optimization), { status: 200 }),
       );
 
       expect(optimization.recommendedSourceWarehouse).toBeDefined();
@@ -1219,7 +1219,7 @@ describe("Supply Chain Orchestrator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(routing), { status: 200 })
+        new Response(JSON.stringify(routing), { status: 200 }),
       );
 
       expect(routing.selectedWarehouse).toBeDefined();
@@ -1243,7 +1243,7 @@ describe("Supply Chain Orchestrator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(splitShipment), { status: 201 })
+        new Response(JSON.stringify(splitShipment), { status: 201 }),
       );
 
       expect(splitShipment.shipments).toHaveLength(2);
@@ -1258,11 +1258,11 @@ describe("Supply Chain Orchestrator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(consolidation), { status: 200 })
+        new Response(JSON.stringify(consolidation), { status: 200 }),
       );
 
       expect(consolidation.consolidatedShipmentCount).toBeLessThan(
-        consolidation.originalShipmentCount
+        consolidation.originalShipmentCount,
       );
     });
   });
@@ -1272,7 +1272,7 @@ describe("Supply Chain Orchestrator Integration", () => {
       mockFetch.mockResolvedValueOnce(
         new Response(JSON.stringify({ error: "Provider unavailable" }), {
           status: 503,
-        })
+        }),
       );
 
       mockFetch.mockResolvedValueOnce(
@@ -1281,8 +1281,8 @@ describe("Supply Chain Orchestrator Integration", () => {
             failoverProvider: "backup_provider",
             status: "success",
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       expect(mockFetch).toBeDefined();
@@ -1298,7 +1298,7 @@ describe("Supply Chain Orchestrator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(failoverResult), { status: 200 })
+        new Response(JSON.stringify(failoverResult), { status: 200 }),
       );
 
       expect(failoverResult.continuityMaintained).toBe(true);
@@ -1313,7 +1313,7 @@ describe("Supply Chain Orchestrator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(reversion), { status: 200 })
+        new Response(JSON.stringify(reversion), { status: 200 }),
       );
 
       expect(reversion.revertingToProvider).toBe("primary_provider");
@@ -1331,7 +1331,7 @@ describe("Supply Chain Orchestrator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(slaMonitor), { status: 200 })
+        new Response(JSON.stringify(slaMonitor), { status: 200 }),
       );
 
       expect(slaMonitor.slaStatus).toBe("on_track");
@@ -1347,7 +1347,7 @@ describe("Supply Chain Orchestrator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(atRiskAlert), { status: 200 })
+        new Response(JSON.stringify(atRiskAlert), { status: 200 }),
       );
 
       expect(atRiskAlert.hoursRemaining).toBeLessThan(6);

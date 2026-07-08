@@ -5,10 +5,19 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { ChevronUp, ChevronDown, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import {
+  ChevronUp,
+  ChevronDown,
+  ArrowUpRight,
+  ArrowDownRight,
+} from "lucide-react";
 import type { DriverLeaderboardProps } from "@witylogix/core/analytics";
 
-type SortKey = "compositeScore" | "onTimePercentage" | "deliveriesCompleted" | "customerRatingAvg";
+type SortKey =
+  | "compositeScore"
+  | "onTimePercentage"
+  | "deliveriesCompleted"
+  | "customerRatingAvg";
 
 /**
  * Driver Leaderboard Component
@@ -55,7 +64,13 @@ export function DriverLeaderboard({
     }
   };
 
-  const SortIcon = ({ isActive, direction }: { isActive: boolean; direction: "asc" | "desc" }) => {
+  const SortIcon = ({
+    isActive,
+    direction,
+  }: {
+    isActive: boolean;
+    direction: "asc" | "desc";
+  }) => {
     if (!isActive) return null;
     return direction === "desc" ? (
       <ChevronDown className="w-4 h-4 ml-1 inline" />
@@ -85,7 +100,7 @@ export function DriverLeaderboard({
         <div className="flex items-center justify-between">
           <CardTitle>Top Drivers</CardTitle>
           <div className="flex gap-2">
-            {["24h", "7d", "30d"].map(p => (
+            {["24h", "7d", "30d"].map((p) => (
               <button
                 key={p}
                 onClick={() => onPeriodChange?.(p as any)}
@@ -93,7 +108,7 @@ export function DriverLeaderboard({
                   "px-3 py-1 text-sm rounded-md transition-colors",
                   period === p
                     ? "bg-wl-primary-500 text-white"
-                    : "bg-wl-bg-secondary text-wl-text-secondary hover:text-wl-text-primary border border-wl-neutral-800"
+                    : "bg-wl-bg-secondary text-wl-text-secondary hover:text-wl-text-primary border border-wl-neutral-800",
                 )}
               >
                 {p}
@@ -118,28 +133,40 @@ export function DriverLeaderboard({
                   onClick={() => handleSort("deliveriesCompleted")}
                 >
                   Deliveries
-                  <SortIcon isActive={sortKey === "deliveriesCompleted"} direction={sortDirection} />
+                  <SortIcon
+                    isActive={sortKey === "deliveriesCompleted"}
+                    direction={sortDirection}
+                  />
                 </th>
                 <th
                   className="text-left py-3 px-4 text-sm font-semibold text-wl-text-secondary cursor-pointer hover:text-wl-text-primary transition-colors"
                   onClick={() => handleSort("onTimePercentage")}
                 >
                   On-Time %
-                  <SortIcon isActive={sortKey === "onTimePercentage"} direction={sortDirection} />
+                  <SortIcon
+                    isActive={sortKey === "onTimePercentage"}
+                    direction={sortDirection}
+                  />
                 </th>
                 <th
                   className="text-left py-3 px-4 text-sm font-semibold text-wl-text-secondary cursor-pointer hover:text-wl-text-primary transition-colors"
                   onClick={() => handleSort("customerRatingAvg")}
                 >
                   Avg Rating
-                  <SortIcon isActive={sortKey === "customerRatingAvg"} direction={sortDirection} />
+                  <SortIcon
+                    isActive={sortKey === "customerRatingAvg"}
+                    direction={sortDirection}
+                  />
                 </th>
                 <th
                   className="text-left py-3 px-4 text-sm font-semibold text-wl-text-secondary cursor-pointer hover:text-wl-text-primary transition-colors"
                   onClick={() => handleSort("compositeScore")}
                 >
                   Score
-                  <SortIcon isActive={sortKey === "compositeScore"} direction={sortDirection} />
+                  <SortIcon
+                    isActive={sortKey === "compositeScore"}
+                    direction={sortDirection}
+                  />
                 </th>
                 <th className="text-left py-3 px-4 text-sm font-semibold text-wl-text-secondary">
                   Trend
@@ -158,7 +185,13 @@ export function DriverLeaderboard({
                     <div className="flex items-center gap-2">
                       {index < 3 ? (
                         <Badge
-                          variant={index === 0 ? "success" : index === 1 ? "info" : "warning"}
+                          variant={
+                            index === 0
+                              ? "success"
+                              : index === 1
+                                ? "info"
+                                : "warning"
+                          }
                           className="w-6 h-6 flex items-center justify-center rounded-full"
                         >
                           {driver.rank}
@@ -176,10 +209,16 @@ export function DriverLeaderboard({
                     <div className="flex items-center gap-3">
                       <Avatar size="sm">
                         {driver.driverAvatarUrl && (
-                          <AvatarImage src={driver.driverAvatarUrl} alt={driver.driverName} />
+                          <AvatarImage
+                            src={driver.driverAvatarUrl}
+                            alt={driver.driverName}
+                          />
                         )}
                         <AvatarFallback>
-                          {driver.driverName.split(" ").map((n: string) => n[0]).join("")}
+                          {driver.driverName
+                            .split(" ")
+                            .map((n: string) => n[0])
+                            .join("")}
                         </AvatarFallback>
                       </Avatar>
                       <span className="text-sm font-medium text-wl-text-primary">
@@ -254,7 +293,9 @@ export function DriverLeaderboard({
                         </div>
                       )}
                       {driver.trend === "neutral" && (
-                        <span className="text-xs text-wl-text-secondary">—</span>
+                        <span className="text-xs text-wl-text-secondary">
+                          —
+                        </span>
                       )}
                     </div>
                   </td>

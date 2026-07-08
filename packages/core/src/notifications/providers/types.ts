@@ -156,7 +156,12 @@ export class RateLimitError extends ProviderError {
  */
 export class InvalidRecipientError extends ProviderError {
   constructor(provider: string, recipient: string, message: string) {
-    super("INVALID_RECIPIENT", `Invalid recipient "${recipient}": ${message}`, provider, false);
+    super(
+      "INVALID_RECIPIENT",
+      `Invalid recipient "${recipient}": ${message}`,
+      provider,
+      false,
+    );
     this.name = "InvalidRecipientError";
   }
 }

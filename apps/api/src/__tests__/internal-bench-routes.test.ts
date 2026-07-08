@@ -57,7 +57,7 @@ describe("GET /internal/bench/health", () => {
   it("returns applied=0 when _prisma_migrations table is missing", async () => {
     const { prisma } = await import("@witylogix/db");
     (prisma.$queryRawUnsafe as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-      new Error("relation \"_prisma_migrations\" does not exist"),
+      new Error('relation "_prisma_migrations" does not exist'),
     );
     const app = await buildApp();
     const r = await app.inject({

@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
-import { forwardRef, type HTMLAttributes } from 'react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { forwardRef, type HTMLAttributes } from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Download,
   Printer,
   Copy,
   CheckCircle,
   AlertCircle,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface ShipmentLabel {
   id: string;
   trackingNumber: string;
   labelUrl?: string;
-  format: 'PDF' | 'ZPL' | 'PNG';
-  status: 'created' | 'voided';
+  format: "PDF" | "ZPL" | "PNG";
+  status: "created" | "voided";
   createdAt: Date;
   carrier: string;
   weight?: number;
@@ -29,7 +29,7 @@ interface LabelPreviewProps extends HTMLAttributes<HTMLDivElement> {
   /** Callback when print is clicked */
   onPrint?: () => void;
   /** Callback when download is clicked */
-  onDownload?: (format: 'PDF' | 'PNG' | 'ZPL') => void;
+  onDownload?: (format: "PDF" | "PNG" | "ZPL") => void;
   /** Callback when label is voided */
   onVoid?: () => void;
 }
@@ -50,33 +50,19 @@ interface LabelPreviewProps extends HTMLAttributes<HTMLDivElement> {
  * ```
  */
 const LabelPreview = forwardRef<HTMLDivElement, LabelPreviewProps>(
-  (
-    {
-      label,
-      onPrint,
-      onDownload,
-      onVoid,
-      className,
-      ...props
-    },
-    ref
-  ) => {
+  ({ label, onPrint, onDownload, onVoid, className, ...props }, ref) => {
     const handleCopyTracking = async () => {
       try {
         await navigator.clipboard.writeText(label.trackingNumber);
       } catch (err) {
-        console.error('Failed to copy tracking number:', err);
+        console.error("Failed to copy tracking number:", err);
       }
     };
 
-    const isVoided = label.status === 'voided';
+    const isVoided = label.status === "voided";
 
     return (
-      <div
-        ref={ref}
-        className={cn('space-y-4', className)}
-        {...props}
-      >
+      <div ref={ref} className={cn("space-y-4", className)} {...props}>
         {/* Status section */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -94,12 +80,12 @@ const LabelPreview = forwardRef<HTMLDivElement, LabelPreviewProps>(
           </div>
 
           <p className="text-xs text-wl-text-tertiary">
-            {new Date(label.createdAt).toLocaleString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
+            {new Date(label.createdAt).toLocaleString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
             })}
           </p>
         </div>
@@ -107,12 +93,12 @@ const LabelPreview = forwardRef<HTMLDivElement, LabelPreviewProps>(
         {/* Label preview or placeholder */}
         <div
           className={cn(
-            'relative w-full aspect-[8.5/11] rounded-lg border-2 border-dashed',
-            'flex items-center justify-center',
-            'bg-wl-bg-surface',
+            "relative w-full aspect-[8.5/11] rounded-lg border-2 border-dashed",
+            "flex items-center justify-center",
+            "bg-wl-bg-surface",
             isVoided
-              ? 'border-wl-danger-400/30 opacity-50'
-              : 'border-wl-border-default'
+              ? "border-wl-danger-400/30 opacity-50"
+              : "border-wl-border-default",
           )}
         >
           {label.labelUrl ? (
@@ -120,8 +106,8 @@ const LabelPreview = forwardRef<HTMLDivElement, LabelPreviewProps>(
               src={label.labelUrl}
               alt="Shipping label preview"
               className={cn(
-                'w-full h-full object-contain rounded-md',
-                isVoided && 'grayscale opacity-50'
+                "w-full h-full object-contain rounded-md",
+                isVoided && "grayscale opacity-50",
               )}
             />
           ) : (
@@ -195,7 +181,7 @@ const LabelPreview = forwardRef<HTMLDivElement, LabelPreviewProps>(
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => onDownload?.('PDF')}
+            onClick={() => onDownload?.("PDF")}
             disabled={isVoided}
             title="Download as PDF"
             className="flex-1 sm:flex-initial gap-2"
@@ -207,7 +193,7 @@ const LabelPreview = forwardRef<HTMLDivElement, LabelPreviewProps>(
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => onDownload?.('PNG')}
+            onClick={() => onDownload?.("PNG")}
             disabled={isVoided}
             title="Download as PNG"
             className="flex-1 sm:flex-initial gap-2"
@@ -216,11 +202,11 @@ const LabelPreview = forwardRef<HTMLDivElement, LabelPreviewProps>(
             PNG
           </Button>
 
-          {label.format === 'ZPL' && (
+          {label.format === "ZPL" && (
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => onDownload?.('ZPL')}
+              onClick={() => onDownload?.("ZPL")}
               disabled={isVoided}
               title="Download as ZPL"
               className="flex-1 sm:flex-initial gap-2"
@@ -243,10 +229,10 @@ const LabelPreview = forwardRef<HTMLDivElement, LabelPreviewProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
-LabelPreview.displayName = 'LabelPreview';
+LabelPreview.displayName = "LabelPreview";
 
 export { LabelPreview };
 export type { ShipmentLabel };

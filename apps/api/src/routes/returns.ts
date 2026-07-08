@@ -19,7 +19,11 @@ import { prisma } from "@witylogix/db";
 import { paginationSchema } from "@witylogix/validators";
 import { requireAuth } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
-import { NotFoundError, ValidationError, ConflictError } from "../lib/errors.js";
+import {
+  NotFoundError,
+  ValidationError,
+  ConflictError,
+} from "../lib/errors.js";
 
 // Enums for returns
 const ReturnStatus = {
@@ -124,7 +128,16 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const query = listReturnsQuery.parse(request.query);
-      const { page, limit, status, customerId, dateFrom, dateTo, sortBy, sortOrder } = query;
+      const {
+        page,
+        limit,
+        status,
+        customerId,
+        dateFrom,
+        dateTo,
+        sortBy,
+        sortOrder,
+      } = query;
 
       const shopId = (request as any).shopId as string;
 
@@ -162,7 +175,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
         id: r.id,
         orderId: r.orderId,
         customerId: r.customerId ?? undefined,
-        customerName: r.customerName ?? r.order?.customerName ?? '',
+        customerName: r.customerName ?? r.order?.customerName ?? "",
         customerEmail: r.customerEmail ?? r.order?.customerEmail ?? undefined,
         status: r.status,
         reason: r.reason,
@@ -239,7 +252,9 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
       const body = createReturnSchema.parse(request.body);
       const shopId = (request as any).shopId as string;
 
-      const order = await prisma.order.findUnique({ where: { id: body.orderId } });
+      const order = await prisma.order.findUnique({
+        where: { id: body.orderId },
+      });
       if (!order || order.shopId !== shopId) {
         throw new NotFoundError("Order", body.orderId);
       }
@@ -272,167 +287,236 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── APPROVE RETURN ──────────────────────────────────────────
 
-  fastify.post("/:id/approve", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const { id } = request.params as { id: string };
-      const body = approveReturnSchema.parse(request.body);
-      const shopId = (request as any).shopId as string;
+  fastify.post(
+    "/:id/approve",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const { id } = request.params as { id: string };
+        const body = approveReturnSchema.parse(request.body);
+        const shopId = (request as any).shopId as string;
 
-      const ret = await prisma.returnRequest.findUnique({ where: { id } });
-      if (!ret || ret.shopId !== shopId) throw new NotFoundError("Return", id);
-      if (!canTransition(ret.status, ReturnStatus.APPROVED)) {
-        throw new ValidationError(`Cannot approve return in '${ret.status}' status`);
+        const ret = await prisma.returnRequest.findUnique({ where: { id } });
+        if (!ret || ret.shopId !== shopId)
+          throw new NotFoundError("Return", id);
+        if (!canTransition(ret.status, ReturnStatus.APPROVED)) {
+          throw new ValidationError(
+            `Cannot approve return in '${ret.status}' status`,
+          );
+        }
+
+        const updated = await prisma.returnRequest.update({
+          where: { id },
+          data: {
+            status: "APPROVED",
+            approvedAt: new Date(),
+            notes: body.notes ?? ret.notes,
+          },
+        });
+        return { data: updated };
+      } catch (err) {
+        throw err;
       }
-
-      const updated = await prisma.returnRequest.update({
-        where: { id },
-        data: { status: "APPROVED", approvedAt: new Date(), notes: body.notes ?? ret.notes },
-      });
-      return { data: updated };
-    } catch (err) {
-      throw err;
-    }
-  });
+    },
+  );
 
   // ── REJECT RETURN ───────────────────────────────────────────
 
-  fastify.post("/:id/reject", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const { id } = request.params as { id: string };
-      const body = rejectReturnSchema.parse(request.body);
-      const shopId = (request as any).shopId as string;
+  fastify.post(
+    "/:id/reject",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const { id } = request.params as { id: string };
+        const body = rejectReturnSchema.parse(request.body);
+        const shopId = (request as any).shopId as string;
 
-      const ret = await prisma.returnRequest.findUnique({ where: { id } });
-      if (!ret || ret.shopId !== shopId) throw new NotFoundError("Return", id);
-      if (!canTransition(ret.status, ReturnStatus.REJECTED)) {
-        throw new ValidationError(`Cannot reject return in '${ret.status}' status`);
+        const ret = await prisma.returnRequest.findUnique({ where: { id } });
+        if (!ret || ret.shopId !== shopId)
+          throw new NotFoundError("Return", id);
+        if (!canTransition(ret.status, ReturnStatus.REJECTED)) {
+          throw new ValidationError(
+            `Cannot reject return in '${ret.status}' status`,
+          );
+        }
+
+        const updated = await prisma.returnRequest.update({
+          where: { id },
+          data: {
+            status: "REJECTED",
+            rejectedAt: new Date(),
+            rejectionReason: body.reason,
+          },
+        });
+        return { data: updated };
+      } catch (err) {
+        throw err;
       }
-
-      const updated = await prisma.returnRequest.update({
-        where: { id },
-        data: { status: "REJECTED", rejectedAt: new Date(), rejectionReason: body.reason },
-      });
-      return { data: updated };
-    } catch (err) {
-      throw err;
-    }
-  });
+    },
+  );
 
   // ── MARK AS RECEIVED ────────────────────────────────────────
 
-  fastify.post("/:id/receive", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const { id } = request.params as { id: string };
-      const shopId = (request as any).shopId as string;
+  fastify.post(
+    "/:id/receive",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const { id } = request.params as { id: string };
+        const shopId = (request as any).shopId as string;
 
-      const ret = await prisma.returnRequest.findUnique({ where: { id } });
-      if (!ret || ret.shopId !== shopId) throw new NotFoundError("Return", id);
-      if (!canTransition(ret.status, ReturnStatus.RECEIVED)) {
-        throw new ValidationError(`Cannot mark return as received in '${ret.status}' status`);
+        const ret = await prisma.returnRequest.findUnique({ where: { id } });
+        if (!ret || ret.shopId !== shopId)
+          throw new NotFoundError("Return", id);
+        if (!canTransition(ret.status, ReturnStatus.RECEIVED)) {
+          throw new ValidationError(
+            `Cannot mark return as received in '${ret.status}' status`,
+          );
+        }
+
+        const updated = await prisma.returnRequest.update({
+          where: { id },
+          data: { status: "RECEIVED", receivedAt: new Date() },
+        });
+        return { data: updated };
+      } catch (err) {
+        throw err;
       }
-
-      const updated = await prisma.returnRequest.update({
-        where: { id },
-        data: { status: "RECEIVED", receivedAt: new Date() },
-      });
-      return { data: updated };
-    } catch (err) {
-      throw err;
-    }
-  });
+    },
+  );
 
   // ── INSPECT ITEMS ───────────────────────────────────────────
 
-  fastify.post("/:id/inspect", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const { id } = request.params as { id: string };
-      const body = inspectItemsSchema.parse(request.body);
-      const shopId = (request as any).shopId as string;
+  fastify.post(
+    "/:id/inspect",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const { id } = request.params as { id: string };
+        const body = inspectItemsSchema.parse(request.body);
+        const shopId = (request as any).shopId as string;
 
-      const ret = await prisma.returnRequest.findUnique({ where: { id } });
-      if (!ret || ret.shopId !== shopId) throw new NotFoundError("Return", id);
-      if (!canTransition(ret.status, ReturnStatus.INSPECTED)) {
-        throw new ValidationError(`Cannot inspect return in '${ret.status}' status`);
+        const ret = await prisma.returnRequest.findUnique({ where: { id } });
+        if (!ret || ret.shopId !== shopId)
+          throw new NotFoundError("Return", id);
+        if (!canTransition(ret.status, ReturnStatus.INSPECTED)) {
+          throw new ValidationError(
+            `Cannot inspect return in '${ret.status}' status`,
+          );
+        }
+
+        const updated = await prisma.returnRequest.update({
+          where: { id },
+          data: { status: "INSPECTED", notes: body.notes ?? ret.notes },
+        });
+        return { data: updated };
+      } catch (err) {
+        throw err;
       }
-
-      const updated = await prisma.returnRequest.update({
-        where: { id },
-        data: { status: "INSPECTED", notes: body.notes ?? ret.notes },
-      });
-      return { data: updated };
-    } catch (err) {
-      throw err;
-    }
-  });
+    },
+  );
 
   // ── PROCESS REFUND ──────────────────────────────────────────
 
-  fastify.post("/:id/refund", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const { id } = request.params as { id: string };
-      processRefundSchema.parse(request.body);
-      const shopId = (request as any).shopId as string;
+  fastify.post(
+    "/:id/refund",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const { id } = request.params as { id: string };
+        processRefundSchema.parse(request.body);
+        const shopId = (request as any).shopId as string;
 
-      const ret = await prisma.returnRequest.findUnique({
-        where: { id },
-        include: { order: { select: { id: true } } },
-      });
-      if (!ret || ret.shopId !== shopId) throw new NotFoundError("Return", id);
-      if (ret.status !== "INSPECTED") {
-        throw new ValidationError(`Can only refund INSPECTED returns, current: '${ret.status}'`);
+        const ret = await prisma.returnRequest.findUnique({
+          where: { id },
+          include: { order: { select: { id: true } } },
+        });
+        if (!ret || ret.shopId !== shopId)
+          throw new NotFoundError("Return", id);
+        if (ret.status !== "INSPECTED") {
+          throw new ValidationError(
+            `Can only refund INSPECTED returns, current: '${ret.status}'`,
+          );
+        }
+
+        const updated = await prisma.returnRequest.update({
+          where: { id },
+          data: { status: "REFUNDED", refundedAt: new Date() },
+        });
+        return { data: updated };
+      } catch (err) {
+        throw err;
       }
-
-      const updated = await prisma.returnRequest.update({
-        where: { id },
-        data: { status: "REFUNDED", refundedAt: new Date() },
-      });
-      return { data: updated };
-    } catch (err) {
-      throw err;
-    }
-  });
+    },
+  );
 
   // ── RETURN STATISTICS ───────────────────────────────────────
 
-  fastify.get("/stats", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const shopId = (request as any).shopId as string;
-      const where = { shopId };
+  fastify.get(
+    "/stats",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const shopId = (request as any).shopId as string;
+        const where = { shopId };
 
-      const [pending, approved, rejected, received, inspected, refunded, refundStats] = await Promise.all([
-        prisma.returnRequest.count({ where: { ...where, status: "PENDING" } }),
-        prisma.returnRequest.count({ where: { ...where, status: "APPROVED" } }),
-        prisma.returnRequest.count({ where: { ...where, status: "REJECTED" } }),
-        prisma.returnRequest.count({ where: { ...where, status: "RECEIVED" } }),
-        prisma.returnRequest.count({ where: { ...where, status: "INSPECTED" } }),
-        prisma.returnRequest.count({ where: { ...where, status: "REFUNDED" } }),
-        prisma.returnRequest.aggregate({
-          where: { ...where, status: "REFUNDED" },
-          _sum: { refundAmount: true },
-        }),
-      ]);
+        const [
+          pending,
+          approved,
+          rejected,
+          received,
+          inspected,
+          refunded,
+          refundStats,
+        ] = await Promise.all([
+          prisma.returnRequest.count({
+            where: { ...where, status: "PENDING" },
+          }),
+          prisma.returnRequest.count({
+            where: { ...where, status: "APPROVED" },
+          }),
+          prisma.returnRequest.count({
+            where: { ...where, status: "REJECTED" },
+          }),
+          prisma.returnRequest.count({
+            where: { ...where, status: "RECEIVED" },
+          }),
+          prisma.returnRequest.count({
+            where: { ...where, status: "INSPECTED" },
+          }),
+          prisma.returnRequest.count({
+            where: { ...where, status: "REFUNDED" },
+          }),
+          prisma.returnRequest.aggregate({
+            where: { ...where, status: "REFUNDED" },
+            _sum: { refundAmount: true },
+          }),
+        ]);
 
-      const statusCounts = [pending, approved, rejected, received, inspected, refunded, refunded];
+        const statusCounts = [
+          pending,
+          approved,
+          rejected,
+          received,
+          inspected,
+          refunded,
+          refunded,
+        ];
 
-      return {
-        data: {
-          counts: {
-            requested: statusCounts[0],
-            approved: statusCounts[1],
-            rejected: statusCounts[2],
-            received: statusCounts[3],
-            inspected: statusCounts[4],
-            refunded: statusCounts[5],
-            closed: statusCounts[6],
+        return {
+          data: {
+            counts: {
+              requested: statusCounts[0],
+              approved: statusCounts[1],
+              rejected: statusCounts[2],
+              received: statusCounts[3],
+              inspected: statusCounts[4],
+              refunded: statusCounts[5],
+              closed: statusCounts[6],
+            },
+            totalRefundAmount: refundStats._sum.refundAmount || 0,
+            totalReturns: statusCounts.reduce((a, b) => a + b, 0),
           },
-          totalRefundAmount: refundStats._sum.refundAmount || 0,
-          totalReturns: statusCounts.reduce((a, b) => a + b, 0),
-        },
-      };
-    } catch (err) {
-      throw err;
-    }
-  });
+        };
+      } catch (err) {
+        throw err;
+      }
+    },
+  );
 }
 
 export default returnsRoutes;

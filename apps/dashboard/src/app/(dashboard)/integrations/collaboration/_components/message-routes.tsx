@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Settings, Send, Plus, Trash2 } from 'lucide-react';
+import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Settings, Send, Plus, Trash2 } from "lucide-react";
 
 interface MessageRoute {
   id: string;
@@ -93,7 +93,10 @@ export function MessageRoutes({ routes, onAddRoute }: MessageRoutesProps) {
       ))}
 
       {onAddRoute && (
-        <Button variant="primary" className="w-full bg-blue-500 hover:bg-blue-500/90">
+        <Button
+          variant="primary"
+          className="w-full bg-blue-500 hover:bg-blue-500/90"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Create New Routing Rule
         </Button>

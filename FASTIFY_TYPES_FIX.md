@@ -1,31 +1,37 @@
 # Fastify Type Augmentation Fix Summary
 
 ## Overview
+
 Fixed Fastify type augmentation issues across the Witylogix API codebase. All TypeScript errors related to missing properties on `FastifyRequest` and `FastifyInstance` have been resolved by centralizing type definitions.
 
 ## Issues Fixed
 
 ### 1. **Property 'session' does not exist on type 'FastifyRequest'**
-   - Added `session?: SessionContext` to FastifyRequest interface
-   - Defined `SessionContext` interface for optional session-based auth flows
+
+- Added `session?: SessionContext` to FastifyRequest interface
+- Defined `SessionContext` interface for optional session-based auth flows
 
 ### 2. **Property 'db' does not exist on type 'FastifyInstance'**
-   - Added `db: typeof prisma` to FastifyInstance interface
-   - Available for admin operations and schema migrations
+
+- Added `db: typeof prisma` to FastifyInstance interface
+- Available for admin operations and schema migrations
 
 ### 3. **Property 'tenantId' does not exist on type 'string | object | Buffer'**
-   - Added `tenantId?: string` to FastifyRequest interface
-   - Middleware now explicitly sets `request.tenantId = shopId` as an alias
-   - Allows routes using `request.tenantId` to work correctly
+
+- Added `tenantId?: string` to FastifyRequest interface
+- Middleware now explicitly sets `request.tenantId = shopId` as an alias
+- Allows routes using `request.tenantId` to work correctly
 
 ### 4. **Property 'auth' does not exist on type 'FastifyRequest'**
-   - Centralized `AuthContext` interface definition
-   - Added `auth: AuthContext` to FastifyRequest interface
-   - Properly typed with all required fields (shopId, userId, role, etc.)
+
+- Centralized `AuthContext` interface definition
+- Added `auth: AuthContext` to FastifyRequest interface
+- Properly typed with all required fields (shopId, userId, role, etc.)
 
 ## Files Modified
 
 ### New Files Created
+
 - **`apps/api/src/types/fastify.d.ts`** - Central type augmentation file
   - Consolidates all Fastify module augmentations
   - Defines AuthContext and SessionContext interfaces
@@ -73,27 +79,29 @@ Fixed Fastify type augmentation issues across the Witylogix API codebase. All Ty
 ## Type Augmentations Summary
 
 ### FastifyRequest Extended Properties
+
 ```typescript
 interface FastifyRequest {
-  auth: AuthContext;                    // Required: JWT/session auth
-  session?: SessionContext;              // Optional: session-based auth
-  tenantId?: string;                     // Alias for shopId
-  shopId: string;                        // Tenant identifier
-  orgId?: string;                        // Organization context
+  auth: AuthContext; // Required: JWT/session auth
+  session?: SessionContext; // Optional: session-based auth
+  tenantId?: string; // Alias for shopId
+  shopId: string; // Tenant identifier
+  orgId?: string; // Organization context
   tenantDb: ReturnType<typeof forTenant>; // RLS-scoped Prisma client
-  orgDb?: ReturnType<typeof forOrg>;     // Org-scoped Prisma client
-  tenantRedis: TenantRedis;              // Tenant-scoped Redis
-  requestId: string;                     // Correlation ID
-  rawBody?: Buffer;                      // Raw body for HMAC verification
-  startTime?: number;                    // Request start time
+  orgDb?: ReturnType<typeof forOrg>; // Org-scoped Prisma client
+  tenantRedis: TenantRedis; // Tenant-scoped Redis
+  requestId: string; // Correlation ID
+  rawBody?: Buffer; // Raw body for HMAC verification
+  startTime?: number; // Request start time
 }
 ```
 
 ### FastifyInstance Extended Properties
+
 ```typescript
 interface FastifyInstance {
-  db: typeof prisma;                     // Primary Prisma client
-  eventBus: TypedEventBus<any>;         // Event pub/sub
+  db: typeof prisma; // Primary Prisma client
+  eventBus: TypedEventBus<any>; // Event pub/sub
   eventWebhookBridge: EventWebhookBridge; // Webhook manager
 }
 ```
@@ -130,6 +138,7 @@ interface FastifyInstance {
 ## No Runtime Changes
 
 This fix is **purely a TypeScript type augmentation issue**. There are no runtime behavior changes:
+
 - No middleware logic was modified
 - No route logic was changed
 - Only type definitions and property assignments were updated

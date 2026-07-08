@@ -209,7 +209,15 @@ export interface NormalizedField {
   fieldId: string;
 
   /** Field type */
-  type: "signature" | "initial" | "date" | "text" | "checkbox" | "dropdown" | "email" | "fullname";
+  type:
+    | "signature"
+    | "initial"
+    | "date"
+    | "text"
+    | "checkbox"
+    | "dropdown"
+    | "email"
+    | "fullname";
 
   /** Page number (1-based) */
   pageNumber: number;
@@ -454,7 +462,7 @@ export class ESignatureSDKError extends Error {
     public provider: string,
     public code?: string,
     public statusCode?: number,
-    public providerError?: Record<string, unknown>
+    public providerError?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "ESignatureSDKError";
@@ -469,7 +477,7 @@ export class RateLimitError extends ESignatureSDKError {
     message: string,
     provider: string,
     public resetAt: Date,
-    public remaining: number
+    public remaining: number,
   ) {
     super(message, provider, "RATE_LIMIT");
     this.name = "RateLimitError";
@@ -490,7 +498,11 @@ export class AuthenticationError extends ESignatureSDKError {
  * Validation error.
  */
 export class ValidationError extends ESignatureSDKError {
-  constructor(message: string, provider: string, public fields?: Record<string, string[]>) {
+  constructor(
+    message: string,
+    provider: string,
+    public fields?: Record<string, string[]>,
+  ) {
     super(message, provider, "VALIDATION_ERROR");
     this.name = "ValidationError";
   }

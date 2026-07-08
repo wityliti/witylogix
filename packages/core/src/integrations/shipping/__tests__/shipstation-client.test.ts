@@ -71,7 +71,7 @@ describe("ShipStationClient", () => {
       });
 
       await expect(invalidClient.validateConfig()).rejects.toThrow(
-        "API key is required"
+        "API key is required",
       );
     });
 
@@ -81,7 +81,7 @@ describe("ShipStationClient", () => {
       });
 
       await expect(invalidClient.validateConfig()).rejects.toThrow(
-        "API secret is required"
+        "API secret is required",
       );
     });
 
@@ -202,7 +202,10 @@ describe("ShipStationClient", () => {
           }),
         });
 
-      const label = await client.createShipment(mockShipmentRequest, "rate_123");
+      const label = await client.createShipment(
+        mockShipmentRequest,
+        "rate_123",
+      );
 
       expect(label).toMatchObject({
         labelId: "456",
@@ -221,7 +224,7 @@ describe("ShipStationClient", () => {
       });
 
       await expect(
-        client.createShipment(mockShipmentRequest, "rate_123")
+        client.createShipment(mockShipmentRequest, "rate_123"),
       ).rejects.toThrow();
     });
   });
@@ -326,9 +329,7 @@ describe("ShipStationClient", () => {
     });
 
     it("should handle validation errors gracefully", async () => {
-      (global.fetch as any).mockRejectedValueOnce(
-        new Error("Network error")
-      );
+      (global.fetch as any).mockRejectedValueOnce(new Error("Network error"));
 
       const result = await client.validateAddress(mockAddress);
 
@@ -422,7 +423,7 @@ describe("ShipStationClient", () => {
 
       // Next request should fail immediately due to open circuit
       await expect(client.getRates(mockShipmentRequest)).rejects.toThrow(
-        /Circuit breaker/
+        /Circuit breaker/,
       );
     });
   });

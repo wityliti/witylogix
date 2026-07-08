@@ -32,21 +32,21 @@ witylogix-platform/
 
 ## Tech Stack
 
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| **Runtime** | Node.js | 20 LTS |
-| **Package Manager** | pnpm | 9.15.0 |
-| **Monorepo** | Turborepo | latest |
-| **API** | Fastify | 5.x |
-| **Dashboard** | Next.js | 15.x |
-| **Database** | PostgreSQL + PostGIS | 16 |
-| **ORM** | Prisma | 6.19.2 (local binary) |
-| **Cache** | Redis | 7.x |
-| **Queue** | BullMQ | latest |
-| **Validation** | Zod | 3.x |
-| **CSS** | Tailwind CSS | 3.4 (NOT v4) |
-| **Testing** | Vitest | 1.6.1 |
-| **Auth** | JWT + refresh tokens | — |
+| Layer               | Technology           | Version               |
+| ------------------- | -------------------- | --------------------- |
+| **Runtime**         | Node.js              | 20 LTS                |
+| **Package Manager** | pnpm                 | 9.15.0                |
+| **Monorepo**        | Turborepo            | latest                |
+| **API**             | Fastify              | 5.x                   |
+| **Dashboard**       | Next.js              | 15.x                  |
+| **Database**        | PostgreSQL + PostGIS | 16                    |
+| **ORM**             | Prisma               | 6.19.2 (local binary) |
+| **Cache**           | Redis                | 7.x                   |
+| **Queue**           | BullMQ               | latest                |
+| **Validation**      | Zod                  | 3.x                   |
+| **CSS**             | Tailwind CSS         | 3.4 (NOT v4)          |
+| **Testing**         | Vitest               | 1.6.1                 |
+| **Auth**            | JWT + refresh tokens | —                     |
 
 ## Critical Path Dependencies
 
@@ -77,6 +77,7 @@ The `packages/core/src/` directory contains all business logic organized by doma
 ## Database Schema
 
 44 Prisma schema files in `packages/db/prisma/schema/`:
+
 - 00-config.prisma through 62-tenant.prisma
 - Total: 4,472 lines of schema definitions
 - Root `schema.prisma` configured with `prismaSchemaFolder` preview feature

@@ -202,7 +202,9 @@ function MapShipmentCard({ shipment, onClose, onView }: MapShipmentCardProps) {
           {shipment.driver?.name && (
             <div>
               <div className="text-xs text-gray-500 mb-0.5">Driver</div>
-              <div className="text-xs text-gray-300">{shipment.driver.name}</div>
+              <div className="text-xs text-gray-300">
+                {shipment.driver.name}
+              </div>
             </div>
           )}
 
@@ -216,12 +218,7 @@ function MapShipmentCard({ shipment, onClose, onView }: MapShipmentCardProps) {
           )}
         </div>
 
-        <Button
-          variant="primary"
-          size="sm"
-          className="w-full"
-          onClick={onView}
-        >
+        <Button variant="primary" size="sm" className="w-full" onClick={onView}>
           View Full Details
         </Button>
       </CardContent>
@@ -293,19 +290,14 @@ export default function ShipmentsPage() {
   const stats = useMemo(() => {
     const total = pagination.total;
     const inTransit = shipments.filter(
-      (s) =>
-        s.status === "IN_TRANSIT" || s.status === "OUT_FOR_DELIVERY",
+      (s) => s.status === "IN_TRANSIT" || s.status === "OUT_FOR_DELIVERY",
     ).length;
-    const delivered = shipments.filter(
-      (s) => s.status === "DELIVERED",
-    ).length;
+    const delivered = shipments.filter((s) => s.status === "DELIVERED").length;
     const failed = shipments.filter((s) => s.status === "FAILED").length;
     const revenue =
       Math.round(
-        shipments.reduce(
-          (sum, s) => sum + (Number(s.shippingCost) || 0),
-          0,
-        ) * 100,
+        shipments.reduce((sum, s) => sum + (Number(s.shippingCost) || 0), 0) *
+          100,
       ) / 100;
     return { total, inTransit, delivered, failed, revenue };
   }, [shipments, pagination.total]);
@@ -668,8 +660,7 @@ export default function ShipmentsPage() {
                             className={cn(
                               "p-4 font-mono text-xs",
                               shipment.estimatedArrival &&
-                                new Date(shipment.estimatedArrival) >
-                                  new Date()
+                                new Date(shipment.estimatedArrival) > new Date()
                                 ? "text-blue-400"
                                 : "text-gray-500",
                             )}

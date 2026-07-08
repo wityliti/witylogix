@@ -6,7 +6,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
 import { NAV_GROUPS, hasRequiredRole } from "@/config/navigation";
-import type { NavGroup, NavItem, NavChild, UserRole } from "@/config/navigation";
+import type {
+  NavGroup,
+  NavItem,
+  NavChild,
+  UserRole,
+} from "@/config/navigation";
 
 // ─── Icon ──────────────────────────────────────────────────────────────────────
 
@@ -51,7 +56,7 @@ function ChevronIcon({ open }: { open: boolean }) {
       aria-hidden="true"
       className={cn(
         "transition-transform duration-200 ease-in-out flex-shrink-0",
-        open ? "rotate-90" : "rotate-0"
+        open ? "rotate-90" : "rotate-0",
       )}
     >
       <path d="M9 18l6-6-6-6" />
@@ -96,7 +101,7 @@ function SearchBox({ value, onChange }: SearchBoxProps) {
           "bg-white/[0.05] border border-white/[0.08]",
           "rounded-md outline-none",
           "transition-colors duration-150",
-          "focus:border-[rgba(245,166,35,0.4)] focus:bg-white/[0.07]"
+          "focus:border-[rgba(245,166,35,0.4)] focus:bg-white/[0.07]",
         )}
       />
       {value && (
@@ -106,10 +111,18 @@ function SearchBox({ value, onChange }: SearchBoxProps) {
           className={cn(
             "absolute right-2 top-1/2 -translate-y-1/2",
             "text-wl-text-tertiary hover:text-wl-text-secondary",
-            "transition-colors duration-100"
+            "transition-colors duration-100",
           )}
         >
-          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
+          <svg
+            width={12}
+            height={12}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+          >
             <path d="M18 6L6 18M6 6l12 12" />
           </svg>
         </button>
@@ -137,13 +150,13 @@ function NavChildItem({ child, isActive }: NavChildItemProps) {
         "transition-all duration-150",
         isActive
           ? "text-wl-primary-500 bg-wl-primary-500/[0.08]"
-          : "text-wl-text-tertiary hover:text-wl-text-secondary hover:bg-white/[0.03]"
+          : "text-wl-text-tertiary hover:text-wl-text-secondary hover:bg-white/[0.03]",
       )}
     >
       <span
         className={cn(
           "w-1 h-1 rounded-full flex-shrink-0",
-          isActive ? "bg-wl-primary-500" : "bg-wl-text-tertiary/40"
+          isActive ? "bg-wl-primary-500" : "bg-wl-text-tertiary/40",
         )}
         aria-hidden="true"
       />
@@ -194,14 +207,14 @@ function NavItemRow({
             collapsed ? "justify-center" : "justify-between",
             isHighlighted
               ? "text-wl-primary-500 bg-wl-primary-500/10 border border-wl-primary-500/[0.15] shadow-[0_0_12px_rgba(245,166,35,0.08)]"
-              : "text-wl-text-secondary border border-transparent hover:text-wl-text-primary hover:bg-white/[0.04]"
+              : "text-wl-text-secondary border border-transparent hover:text-wl-text-primary hover:bg-white/[0.04]",
           )}
         >
           <span className="flex items-center gap-3 flex-1 min-w-0">
             <span
               className={cn(
                 "flex flex-shrink-0",
-                isHighlighted && "drop-shadow-[0_0_6px_rgba(245,166,35,0.5)]"
+                isHighlighted && "drop-shadow-[0_0_6px_rgba(245,166,35,0.5)]",
               )}
             >
               <Icon d={item.icon} />
@@ -214,7 +227,7 @@ function NavItemRow({
               className={cn(
                 "absolute left-0 top-1/2 -translate-y-1/2",
                 "w-[3px] h-5 rounded-r-full",
-                "bg-wl-primary-500 shadow-[0_0_8px_rgba(245,166,35,0.6)]"
+                "bg-wl-primary-500 shadow-[0_0_8px_rgba(245,166,35,0.6)]",
               )}
               aria-hidden="true"
             />
@@ -224,15 +237,15 @@ function NavItemRow({
         </button>
 
         {!collapsed && isOpen && (
-          <div
-            id={`nav-children-${item.href}`}
-            className="mt-0.5 space-y-0.5"
-          >
+          <div id={`nav-children-${item.href}`} className="mt-0.5 space-y-0.5">
             {item.children!.map((child) => (
               <NavChildItem
                 key={child.href}
                 child={child}
-                isActive={pathname === child.href || pathname.startsWith(child.href + "/")}
+                isActive={
+                  pathname === child.href ||
+                  pathname.startsWith(child.href + "/")
+                }
               />
             ))}
           </div>
@@ -255,14 +268,14 @@ function NavItemRow({
         collapsed ? "justify-center" : "justify-between",
         isItemActive
           ? "text-wl-primary-500 bg-wl-primary-500/10 border border-wl-primary-500/[0.15] shadow-[0_0_12px_rgba(245,166,35,0.08)]"
-          : "text-wl-text-secondary border border-transparent hover:text-wl-text-primary hover:bg-white/[0.04]"
+          : "text-wl-text-secondary border border-transparent hover:text-wl-text-primary hover:bg-white/[0.04]",
       )}
     >
       <span className="flex items-center gap-3 flex-1 min-w-0">
         <span
           className={cn(
             "flex flex-shrink-0",
-            isItemActive && "drop-shadow-[0_0_6px_rgba(245,166,35,0.5)]"
+            isItemActive && "drop-shadow-[0_0_6px_rgba(245,166,35,0.5)]",
           )}
         >
           <Icon d={item.icon} />
@@ -275,7 +288,7 @@ function NavItemRow({
           className={cn(
             "absolute left-0 top-1/2 -translate-y-1/2",
             "w-[3px] h-5 rounded-r-full",
-            "bg-wl-primary-500 shadow-[0_0_8px_rgba(245,166,35,0.6)]"
+            "bg-wl-primary-500 shadow-[0_0_8px_rgba(245,166,35,0.6)]",
           )}
           aria-hidden="true"
         />
@@ -322,7 +335,7 @@ function GroupSection({
             "border-none bg-transparent cursor-pointer font-sans",
             "text-xs font-bold uppercase tracking-wider",
             "text-wl-text-tertiary hover:text-wl-text-secondary",
-            "transition-colors duration-150"
+            "transition-colors duration-150",
           )}
         >
           <span>{group.label}</span>
@@ -337,7 +350,7 @@ function GroupSection({
             aria-hidden="true"
             className={cn(
               "transition-transform duration-200",
-              isGroupOpen ? "rotate-180" : "rotate-0"
+              isGroupOpen ? "rotate-180" : "rotate-0",
             )}
           >
             <path d="M6 9l6 6 6-6" />
@@ -351,12 +364,13 @@ function GroupSection({
           {group.items.map((item) => {
             const isItemActive =
               pathname === item.href ||
-              (item.href !== "/" && pathname.startsWith(item.href + "/") &&
+              (item.href !== "/" &&
+                pathname.startsWith(item.href + "/") &&
                 !item.children?.some((c) => pathname.startsWith(c.href)));
             const isChildActive = Boolean(
               item.children?.some(
-                (c) => pathname === c.href || pathname.startsWith(c.href + "/")
-              )
+                (c) => pathname === c.href || pathname.startsWith(c.href + "/"),
+              ),
             );
             const isOpen = openItems.has(item.href);
 
@@ -387,7 +401,7 @@ function useGroupState(initialGroups: NavGroup[]) {
     if (typeof window === "undefined") {
       // Default: all non-collapsed groups start open
       return new Set(
-        initialGroups.filter((g) => !g.defaultCollapsed).map((g) => g.label)
+        initialGroups.filter((g) => !g.defaultCollapsed).map((g) => g.label),
       );
     }
     try {
@@ -397,7 +411,7 @@ function useGroupState(initialGroups: NavGroup[]) {
       // ignore parse errors
     }
     return new Set(
-      initialGroups.filter((g) => !g.defaultCollapsed).map((g) => g.label)
+      initialGroups.filter((g) => !g.defaultCollapsed).map((g) => g.label),
     );
   });
 
@@ -508,7 +522,7 @@ export function NavSidebar({
       setInternalCollapsed(val);
       onCollapsedChange?.(val);
     },
-    [onCollapsedChange]
+    [onCollapsedChange],
   );
 
   const userRole = user?.role as UserRole | undefined;
@@ -516,7 +530,7 @@ export function NavSidebar({
   // Filter groups by role
   const visibleGroups = useMemo(
     () => NAV_GROUPS.filter((g) => hasRequiredRole(userRole, g.requiredRole)),
-    [userRole]
+    [userRole],
   );
 
   const { openGroups, toggleGroup, openGroup } = useGroupState(visibleGroups);
@@ -530,7 +544,7 @@ export function NavSidebar({
           pathname === item.href ||
           (item.href !== "/" && pathname.startsWith(item.href + "/"));
         const childMatch = item.children?.some(
-          (c) => pathname === c.href || pathname.startsWith(c.href + "/")
+          (c) => pathname === c.href || pathname.startsWith(c.href + "/"),
         );
 
         if (itemMatch || childMatch) {
@@ -556,7 +570,7 @@ export function NavSidebar({
           const itemMatch = item.label.toLowerCase().includes(query);
           const matchedChildren =
             item.children?.filter((c) =>
-              c.label.toLowerCase().includes(query)
+              c.label.toLowerCase().includes(query),
             ) ?? [];
           if (itemMatch || matchedChildren.length > 0) {
             acc.push({
@@ -603,7 +617,7 @@ export function NavSidebar({
         collapsed
           ? "w-[var(--wl-sidebar-collapsed,56px)]"
           : "w-[var(--wl-sidebar-width,240px)]",
-        className
+        className,
       )}
       aria-label="Main navigation"
     >
@@ -615,17 +629,23 @@ export function NavSidebar({
           "px-4 gap-3",
           "border-b border-wl-border-subtle",
           "flex-shrink-0",
-          collapsed ? "justify-center" : ""
+          collapsed ? "justify-center" : "",
         )}
       >
         <div
           className={cn(
             "w-8 h-8 flex-shrink-0 rounded-md",
             "bg-gradient-to-br from-wl-primary-500 to-wl-primary-700",
-            "flex items-center justify-center"
+            "flex items-center justify-center",
           )}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
             <path
               d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
               stroke="#0a0a0c"
@@ -658,7 +678,7 @@ export function NavSidebar({
       <nav
         className={cn(
           "flex-1 p-3 flex flex-col gap-0 overflow-y-auto",
-          "scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
+          "scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent",
         )}
         aria-label="Sidebar navigation"
       >
@@ -693,7 +713,7 @@ export function NavSidebar({
                 "w-8 h-8 rounded-full flex-shrink-0",
                 "bg-gradient-to-br from-wl-primary-500 to-wl-primary-700",
                 "flex items-center justify-center",
-                "text-sm font-bold text-wl-text-inverse"
+                "text-sm font-bold text-wl-text-inverse",
               )}
               aria-hidden="true"
             >
@@ -721,7 +741,7 @@ export function NavSidebar({
             "text-wl-text-tertiary text-sm",
             "transition-colors duration-150",
             "hover:text-red-400 hover:bg-wl-bg-overlay",
-            collapsed ? "justify-center" : "justify-start gap-3"
+            collapsed ? "justify-center" : "justify-start gap-3",
           )}
         >
           <svg
@@ -752,7 +772,7 @@ export function NavSidebar({
             "text-wl-text-tertiary text-sm",
             "transition-colors duration-150",
             "hover:text-wl-text-primary hover:bg-wl-bg-overlay",
-            collapsed ? "justify-center" : "justify-start gap-3"
+            collapsed ? "justify-center" : "justify-start gap-3",
           )}
         >
           <svg
@@ -767,7 +787,7 @@ export function NavSidebar({
             aria-hidden="true"
             className={cn(
               "transition-transform duration-200",
-              collapsed ? "rotate-180" : ""
+              collapsed ? "rotate-180" : "",
             )}
           >
             <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" />

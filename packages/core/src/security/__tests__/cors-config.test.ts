@@ -199,7 +199,9 @@ describe("CorsManager", () => {
         path: "/api/data",
       });
 
-      expect(result.headers["Access-Control-Allow-Credentials"]).toBeUndefined();
+      expect(
+        result.headers["Access-Control-Allow-Credentials"],
+      ).toBeUndefined();
     });
   });
 
@@ -259,10 +261,14 @@ describe("CorsManager", () => {
     it("should remove origin from whitelist", () => {
       // Add a non-wildcard-covered origin, then remove it
       corsManager.addOrigin("https://external.example.com");
-      expect(corsManager.isWhitelisted("https://external.example.com")).toBe(true);
+      expect(corsManager.isWhitelisted("https://external.example.com")).toBe(
+        true,
+      );
 
       corsManager.removeOrigin("https://external.example.com");
-      expect(corsManager.isWhitelisted("https://external.example.com")).toBe(false);
+      expect(corsManager.isWhitelisted("https://external.example.com")).toBe(
+        false,
+      );
     });
 
     it("should get current whitelist", () => {
@@ -284,7 +290,7 @@ describe("CorsManager", () => {
       });
 
       expect(result.headers["Access-Control-Allow-Origin"]).toBe(
-        "https://app.witylogix.com"
+        "https://app.witylogix.com",
       );
     });
 
@@ -317,11 +323,11 @@ describe("CorsManager", () => {
     it("should return CORS headers for request", () => {
       const headers = corsManager.getHeaders(
         "https://app.witylogix.com",
-        "GET"
+        "GET",
       );
 
       expect(headers["Access-Control-Allow-Origin"]).toBe(
-        "https://app.witylogix.com"
+        "https://app.witylogix.com",
       );
     });
   });

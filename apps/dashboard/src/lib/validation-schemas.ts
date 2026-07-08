@@ -10,7 +10,8 @@
 export const emailSchema = (maxLength = 254) => ({
   validation: (email: string) => {
     if (!email) return "Email is required";
-    if (email.length > maxLength) return `Email cannot exceed ${maxLength} characters`;
+    if (email.length > maxLength)
+      return `Email cannot exceed ${maxLength} characters`;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) return "Invalid email format";
     return null;
@@ -24,9 +25,12 @@ export const emailSchema = (maxLength = 254) => ({
 export const passwordSchema = (minLength = 12) => ({
   validation: (password: string) => {
     if (!password) return "Password is required";
-    if (password.length < minLength) return `Password must be at least ${minLength} characters`;
-    if (!/[A-Z]/.test(password)) return "Password must contain an uppercase letter";
-    if (!/[a-z]/.test(password)) return "Password must contain a lowercase letter";
+    if (password.length < minLength)
+      return `Password must be at least ${minLength} characters`;
+    if (!/[A-Z]/.test(password))
+      return "Password must contain an uppercase letter";
+    if (!/[a-z]/.test(password))
+      return "Password must contain a lowercase letter";
     if (!/\d/.test(password)) return "Password must contain a number";
     if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
       return "Password must contain a special character";
@@ -222,7 +226,10 @@ export const maxLengthSchema = (fieldName: string, maxLength: number) => ({
  * Match field validation schema
  * Validates that two fields have matching values (e.g., password confirmation)
  */
-export const matchFieldSchema = (fieldName: string, otherFieldName: string) => ({
+export const matchFieldSchema = (
+  fieldName: string,
+  otherFieldName: string,
+) => ({
   validation: (value: string, otherValue: string) => {
     if (value !== otherValue) {
       return `${fieldName} and ${otherFieldName} must match`;

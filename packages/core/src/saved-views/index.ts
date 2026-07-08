@@ -3,9 +3,7 @@
  * Export public API
  */
 
-export {
-  ViewEngine,
-} from './view-engine';
+export { ViewEngine } from "./view-engine";
 
 export type {
   SavedView,
@@ -17,10 +15,6 @@ export type {
   FilterOperator,
   TableName,
   SortDirection,
-} from './types';
+} from "./types";
 
-export {
-  TABLE_COLUMNS,
-  ViewNotFoundError,
-  ViewValidationError,
-} from './types';
+export { TABLE_COLUMNS, ViewNotFoundError, ViewValidationError } from "./types";

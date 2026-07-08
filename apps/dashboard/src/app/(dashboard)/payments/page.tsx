@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from "react";
 import {
   Search,
   Download,
@@ -8,21 +8,21 @@ import {
   TrendingUp,
   DollarSign,
   Clock,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { Select } from '@/components/ui/select';
-import { Table } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { MetricCard } from '@/components/ui/metric-card';
-import { useApiList } from '@/hooks/use-api';
-import { ErrorState } from '@/components/ui/error-state';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Select } from "@/components/ui/select";
+import { Table } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { MetricCard } from "@/components/ui/metric-card";
+import { useApiList } from "@/hooks/use-api";
+import { ErrorState } from "@/components/ui/error-state";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
 
-type PaymentMethod = 'bank_transfer' | 'card' | 'cash' | 'check';
-type PaymentStatus = 'completed' | 'pending' | 'failed' | 'cancelled';
+type PaymentMethod = "bank_transfer" | "card" | "cash" | "check";
+type PaymentStatus = "completed" | "pending" | "failed" | "cancelled";
 
 interface Payment {
   id: string;
@@ -43,7 +43,7 @@ interface MonthlyRevenue {
 }
 
 const getStatusBadgeVariant = (
-  status: PaymentStatus
+  status: PaymentStatus,
 ): "default" | "success" | "warning" | "danger" | "info" | "primary" => {
   switch (status) {
     case "completed":
@@ -161,14 +161,19 @@ const RevenueChart = ({ data }: { data: MonthlyRevenue[] }) => {
 };
 
 export default function PaymentsPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | ''>('');
-  const [selectedStatus, setSelectedStatus] = useState<PaymentStatus | ''>('');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-  const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | "">("");
+  const [selectedStatus, setSelectedStatus] = useState<PaymentStatus | "">("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [sortBy, setSortBy] = useState<"date" | "amount" | "status">("date");
 
-  const { items: payments, loading, error, refetch } = useApiList<Payment>('/api/v4/payments', {
+  const {
+    items: payments,
+    loading,
+    error,
+    refetch,
+  } = useApiList<Payment>("/api/v4/payments", {
     limit: 200,
   });
 
@@ -176,11 +181,14 @@ export default function PaymentsPage() {
   const monthlyRevenue = useMemo<MonthlyRevenue[]>(() => {
     const byMonth: Record<string, { revenue: number; payments: number }> = {};
     payments
-      .filter((p) => p.status === 'completed')
+      .filter((p) => p.status === "completed")
       .forEach((p) => {
         const d = new Date(p.date);
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-        const label = d.toLocaleString('default', { month: 'short', year: '2-digit' });
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        const label = d.toLocaleString("default", {
+          month: "short",
+          year: "2-digit",
+        });
         if (!byMonth[key]) byMonth[key] = { revenue: 0, payments: 0 };
         byMonth[key].revenue += p.amount;
         byMonth[key].payments += 1;
@@ -189,7 +197,11 @@ export default function PaymentsPage() {
     return Object.entries(byMonth)
       .sort(([a], [b]) => a.localeCompare(b))
       .slice(-6)
-      .map(([, v]) => ({ month: (v as any)._label, revenue: v.revenue, payments: v.payments }));
+      .map(([, v]) => ({
+        month: (v as any)._label,
+        revenue: v.revenue,
+        payments: v.payments,
+      }));
   }, [payments]);
 
   // Filter payments
@@ -202,7 +214,7 @@ export default function PaymentsPage() {
         (p) =>
           p.invoiceNumber.toLowerCase().includes(query) ||
           p.customerName.toLowerCase().includes(query) ||
-          p.reference.toLowerCase().includes(query)
+          p.reference.toLowerCase().includes(query),
       );
     }
 
@@ -226,22 +238,32 @@ export default function PaymentsPage() {
 
     // Sort
     const sorted = [...result];
-    if (sortBy === 'date') {
-      sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    } else if (sortBy === 'amount') {
+    if (sortBy === "date") {
+      sorted.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+      );
+    } else if (sortBy === "amount") {
       sorted.sort((a, b) => b.amount - a.amount);
-    } else if (sortBy === 'status') {
+    } else if (sortBy === "status") {
       sorted.sort((a, b) => a.status.localeCompare(b.status));
     }
 
     return sorted;
-  }, [searchQuery, selectedMethod, selectedStatus, dateFrom, dateTo, sortBy, payments]);
+  }, [
+    searchQuery,
+    selectedMethod,
+    selectedStatus,
+    dateFrom,
+    dateTo,
+    sortBy,
+    payments,
+  ]);
 
   // Calculate summary stats
   const stats = useMemo(() => {
-    const completed = payments.filter((p) => p.status === 'completed');
-    const pending = payments.filter((p) => p.status === 'pending');
-    const failed = payments.filter((p) => p.status === 'failed');
+    const completed = payments.filter((p) => p.status === "completed");
+    const pending = payments.filter((p) => p.status === "pending");
+    const failed = payments.filter((p) => p.status === "failed");
 
     const totalCompleted = completed.reduce((sum, p) => sum + p.amount, 0);
     const totalPending = pending.reduce((sum, p) => sum + p.amount, 0);
@@ -289,29 +311,29 @@ export default function PaymentsPage() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `payments-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `payments-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   }, [filtered]);
 
   const handleClearFilters = useCallback(() => {
-    setSearchQuery('');
-    setSelectedMethod('');
-    setSelectedStatus('');
-    setDateFrom('');
-    setDateTo('');
-    setSortBy('date');
+    setSearchQuery("");
+    setSelectedMethod("");
+    setSelectedStatus("");
+    setDateFrom("");
+    setDateTo("");
+    setSortBy("date");
   }, []);
 
   const hasActiveFilters = Boolean(
-    searchQuery || selectedMethod || selectedStatus || dateFrom || dateTo
+    searchQuery || selectedMethod || selectedStatus || dateFrom || dateTo,
   );
 
   if (loading) return <TableSkeleton columns={6} rows={10} />;
   if (error) {
     return (
       <ErrorState
-        message={error.message || 'Failed to load payments'}
+        message={error.message || "Failed to load payments"}
         onRetry={refetch}
       />
     );
@@ -322,12 +344,8 @@ export default function PaymentsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-white">
-            Payment Tracking
-          </h1>
-          <p className="text-gray-400">
-            Monitor and manage incoming payments
-          </p>
+          <h1 className="text-3xl font-bold text-white">Payment Tracking</h1>
+          <p className="text-gray-400">Monitor and manage incoming payments</p>
         </div>
         <Button variant="secondary" size="lg" onClick={handleExportCSV}>
           <Download className="w-4 h-4" />
@@ -360,7 +378,9 @@ export default function PaymentsPage() {
       </div>
 
       {/* Revenue Chart */}
-      <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
+      <Card
+        className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}
+      >
         <h2 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
           <TrendingUp className="w-5 h-5" />
           Monthly Revenue
@@ -371,15 +391,11 @@ export default function PaymentsPage() {
         <div className="mt-6 grid grid-cols-3 gap-4">
           {monthlyRevenue.map((item) => (
             <div key={item.month} className="text-center">
-              <p className="text-sm text-gray-400 mb-1">
-                {item.month}
-              </p>
+              <p className="text-sm text-gray-400 mb-1">{item.month}</p>
               <p className="text-lg font-bold text-white">
                 ${item.revenue.toLocaleString()}
               </p>
-              <p className="text-xs text-gray-400">
-                {item.payments} payments
-              </p>
+              <p className="text-xs text-gray-400">{item.payments} payments</p>
             </div>
           ))}
         </div>
@@ -387,7 +403,9 @@ export default function PaymentsPage() {
 
       {/* Outstanding vs Collected Comparison */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
+        <Card
+          className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}
+        >
           <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4 flex items-center gap-2">
             <DollarSign className="w-4 h-4" />
             Collected
@@ -408,7 +426,9 @@ export default function PaymentsPage() {
           </div>
         </Card>
 
-        <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
+        <Card
+          className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}
+        >
           <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4 flex items-center gap-2">
             <Clock className="w-4 h-4" />
             Outstanding
@@ -431,7 +451,11 @@ export default function PaymentsPage() {
       </div>
 
       {/* Filters & Controls */}
-      <Card className={cn("flex flex-col gap-4 bg-wl-bg-surface border border-wl-border-default p-6")}>
+      <Card
+        className={cn(
+          "flex flex-col gap-4 bg-wl-bg-surface border border-wl-border-default p-6",
+        )}
+      >
         <div className="flex gap-3 flex-wrap items-end">
           <div className="flex-1 min-w-[200px]">
             <Input
@@ -445,7 +469,9 @@ export default function PaymentsPage() {
 
           <Select
             value={selectedMethod}
-            onChange={(e) => setSelectedMethod((e.target.value as PaymentMethod) || "")}
+            onChange={(e) =>
+              setSelectedMethod((e.target.value as PaymentMethod) || "")
+            }
             label="Method"
             className="w-40"
             options={[
@@ -459,7 +485,9 @@ export default function PaymentsPage() {
 
           <Select
             value={selectedStatus}
-            onChange={(e) => setSelectedStatus((e.target.value as PaymentStatus) || "")}
+            onChange={(e) =>
+              setSelectedStatus((e.target.value as PaymentStatus) || "")
+            }
             label="Status"
             className="w-32"
             options={[
@@ -473,7 +501,9 @@ export default function PaymentsPage() {
 
           <Select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "date" | "amount" | "status")}
+            onChange={(e) =>
+              setSortBy(e.target.value as "date" | "amount" | "status")
+            }
             label="Sort By"
             className="w-32"
             options={[
@@ -521,7 +551,11 @@ export default function PaymentsPage() {
 
       {/* Payments Table */}
       {filtered.length === 0 ? (
-        <Card className={cn("flex flex-col items-center justify-center gap-4 py-16 bg-wl-bg-surface border border-wl-border-default")}>
+        <Card
+          className={cn(
+            "flex flex-col items-center justify-center gap-4 py-16 bg-wl-bg-surface border border-wl-border-default",
+          )}
+        >
           <Search className="w-12 h-12 text-gray-500" />
           <div className="flex flex-col items-center gap-2">
             <h3 className="text-lg font-semibold text-gray-400">
@@ -533,7 +567,11 @@ export default function PaymentsPage() {
           </div>
         </Card>
       ) : (
-        <Card className={cn("overflow-hidden bg-wl-bg-surface border border-wl-border-default")}>
+        <Card
+          className={cn(
+            "overflow-hidden bg-wl-bg-surface border border-wl-border-default",
+          )}
+        >
           <Table<Payment>
             columns={[
               {
@@ -613,7 +651,9 @@ export default function PaymentsPage() {
       )}
 
       {/* Recent Payments Feed */}
-      <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
+      <Card
+        className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}
+      >
         <h2 className="text-lg font-semibold text-white mb-4">
           Recent Payments
         </h2>
@@ -621,12 +661,12 @@ export default function PaymentsPage() {
           {filtered.slice(0, 5).map((payment) => (
             <div
               key={payment.id}
-              className={cn("flex items-center justify-between p-4 rounded border border-wl-border-default hover:bg-wl-bg-elevated transition-colors")}
+              className={cn(
+                "flex items-center justify-between p-4 rounded border border-wl-border-default hover:bg-wl-bg-elevated transition-colors",
+              )}
             >
               <div className="flex-1">
-                <p className="font-medium text-white">
-                  {payment.customerName}
-                </p>
+                <p className="font-medium text-white">{payment.customerName}</p>
                 <p className="text-xs text-gray-400">
                   {payment.invoiceNumber} • {getMethodLabel(payment.method)}
                 </p>

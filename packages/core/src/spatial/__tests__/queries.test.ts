@@ -164,7 +164,11 @@ describe("Spatial Queries", () => {
         ORDER BY distance ASC
       `;
 
-      const params = [center.coordinates[0], center.coordinates[1], radiusMeters];
+      const params = [
+        center.coordinates[0],
+        center.coordinates[1],
+        radiusMeters,
+      ];
 
       expect(sql).toContain("ST_DistanceSphere");
       expect(params[2]).toBe(5000);

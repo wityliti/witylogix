@@ -43,11 +43,11 @@ export class InvoiceAuditor {
    */
   auditLineItems(
     lineItems: InvoiceLineItem[],
-    rateSheets: RateSheet[]
+    rateSheets: RateSheet[],
   ): AuditLineItem[] {
     return lineItems.map((item) => {
       const contractRate = this.getContractedRate(item, rateSheets);
-      const variance = item.baseCharge - (contractRate * item.miles);
+      const variance = item.baseCharge - contractRate * item.miles;
       const variancePercent = (variance / (contractRate * item.miles)) * 100;
 
       let status: "approved" | "flagged" | "disputed" = "approved";
@@ -81,14 +81,12 @@ export class InvoiceAuditor {
    */
   private getContractedRate(
     item: InvoiceLineItem,
-    rateSheets: RateSheet[]
+    rateSheets: RateSheet[],
   ): number {
     // Find applicable rate sheet by date
     const applicableSheet = rateSheets.find((sheet) => {
       const now = new Date();
-      return (
-        sheet.effectiveDate <= now && now <= sheet.expiryDate
-      );
+      return sheet.effectiveDate <= now && now <= sheet.expiryDate;
     });
 
     if (!applicableSheet) {
@@ -145,12 +143,10 @@ export class AccessorialValidator {
    */
   validateCharges(
     charges: AccessorialCharge[],
-    contractedCharges: AccessorialCharge[]
+    contractedCharges: AccessorialCharge[],
   ): AccessorialValidationResult[] {
     return charges.map((charge) => {
-      const contracted = contractedCharges.find(
-        (c) => c.type === charge.type
-      );
+      const contracted = contractedCharges.find((c) => c.type === charge.type);
 
       if (!contracted) {
         return {
@@ -184,7 +180,7 @@ export class AccessorialValidator {
    */
   private validateAmount(
     charge: AccessorialCharge,
-    contractedCharge: AccessorialCharge
+    contractedCharge: AccessorialCharge,
   ): number {
     const tariffRate = this.tariffRates.get(charge.type) ?? 0;
     const maxAllowed = Math.min(contractedCharge.amount, tariffRate);
@@ -228,9 +224,7 @@ export class DuplicateDetector {
   /**
    * Detect duplicate charges in invoice
    */
-  detectDuplicates(
-    invoice: FreightInvoice
-  ): DuplicateDetection[] {
+  detectDuplicates(invoice: FreightInvoice): DuplicateDetection[] {
     const duplicates: DuplicateDetection[] = [];
 
     for (let i = 0; i < invoice.loads.length; i++) {
@@ -261,7 +255,7 @@ export class DuplicateDetector {
    */
   private calculateSimilarity(
     item1: InvoiceLineItem,
-    item2: InvoiceLineItem
+    item2: InvoiceLineItem,
   ): number {
     let similarity = 0;
 
@@ -273,9 +267,7 @@ export class DuplicateDetector {
     }
 
     // Check BOL
-    if (
-      item1.loadNumber === item2.loadNumber
-    ) {
+    if (item1.loadNumber === item2.loadNumber) {
       similarity += 25;
     }
 
@@ -283,9 +275,7 @@ export class DuplicateDetector {
     // (Would need date from invoice context)
 
     // Check amount (within threshold %)
-    const amountVariance = Math.abs(
-      item1.total - item2.total
-    ) / item1.total;
+    const amountVariance = Math.abs(item1.total - item2.total) / item1.total;
     if (amountVariance < this.config.amountThreshold / 100) {
       similarity += 25;
     }
@@ -362,15 +352,17 @@ export class DisputeManager {
   private escalationTiers = [
     { tier: 1, maxDaysToResolve: 7, notify: ["carrier_manager"] },
     { tier: 2, maxDaysToResolve: 14, notify: ["finance", "carrier_manager"] },
-    { tier: 3, maxDaysToResolve: 30, notify: ["cfo", "carrier_manager", "legal"] },
+    {
+      tier: 3,
+      maxDaysToResolve: 30,
+      notify: ["cfo", "carrier_manager", "legal"],
+    },
   ];
 
   /**
    * Generate dispute from audit findings
    */
-  generateDispute(
-    request: DisputeGenerationRequest
-  ): DisputeItem[] {
+  generateDispute(request: DisputeGenerationRequest): DisputeItem[] {
     return request.lineItemIds.map((lineItemId) => ({
       disputeId: this.generateDisputeId(),
       invoiceId: request.invoiceId,
@@ -388,7 +380,7 @@ export class DisputeManager {
    */
   resolveDispute(
     dispute: DisputeItem,
-    resolution: DisputeResolution
+    resolution: DisputeResolution,
   ): DisputeItem {
     return {
       ...dispute,
@@ -415,11 +407,9 @@ export class DisputeManager {
   /**
    * Get escalation notifications for dispute
    */
-  getEscalationNotifications(
-    daysSinceCreated: number
-  ): string[] {
+  getEscalationNotifications(daysSinceCreated: number): string[] {
     const tier = this.escalationTiers.find(
-      (t) => daysSinceCreated > t.maxDaysToResolve
+      (t) => daysSinceCreated > t.maxDaysToResolve,
     );
 
     return tier?.notify ?? [];
@@ -432,11 +422,12 @@ export class DisputeManager {
     if (!dispute.createdAt) return false;
 
     const daysSinceCreated = Math.floor(
-      (new Date().getTime() - dispute.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+      (new Date().getTime() - dispute.createdAt.getTime()) /
+        (1000 * 60 * 60 * 24),
     );
 
     return this.escalationTiers.some(
-      (t) => daysSinceCreated > t.maxDaysToResolve
+      (t) => daysSinceCreated > t.maxDaysToResolve,
     );
   }
 
@@ -474,9 +465,7 @@ export class AuditReporter {
   /**
    * Generate audit metrics report
    */
-  generateMetrics(
-    auditResults: AuditResult[]
-  ): AuditMetrics {
+  generateMetrics(auditResults: AuditResult[]): AuditMetrics {
     const carrierMap = new Map<
       string,
       { audited: number; overcharges: number }
@@ -505,7 +494,7 @@ export class AuditReporter {
     });
 
     const carrierAccuracyRanking: CarrierAccuracy[] = Array.from(
-      carrierMap.entries()
+      carrierMap.entries(),
     ).map(([id, data]) => ({
       carrierId: id,
       carrierName: `Carrier-${id}`,
@@ -520,7 +509,8 @@ export class AuditReporter {
       totalInvoicesAudited: auditResults.length,
       totalSavingsAmount: totalSavings,
       averageSavingsPerInvoice: totalSavings / auditResults.length,
-      disputeWinRate: disputeTotal > 0 ? (disputeResolved / disputeTotal) * 100 : 0,
+      disputeWinRate:
+        disputeTotal > 0 ? (disputeResolved / disputeTotal) * 100 : 0,
       carrierAccuracyRanking,
       topOverchargedItems: this.getTopViolations(auditResults),
       topDuplicateRates: this.getTopDuplicates(auditResults),
@@ -531,15 +521,13 @@ export class AuditReporter {
   /**
    * Calculate carrier scorecard from audit history
    */
-  calculateCarrierScore(
-    auditResults: AuditResult[]
-  ): number {
+  calculateCarrierScore(auditResults: AuditResult[]): number {
     if (auditResults.length === 0) return 100;
 
     const flaggedCount = auditResults.filter(
       (r) =>
         r.lineItems.some((li) => li.status === "flagged") ||
-        r.duplicates.length > 0
+        r.duplicates.length > 0,
     ).length;
 
     return Math.max(50, 100 - (flaggedCount / auditResults.length) * 25);
@@ -596,7 +584,7 @@ export class AuditReporter {
     auditResults.forEach((result) => {
       totalLines += result.lineItems.length;
       approvedLines += result.lineItems.filter(
-        (li) => li.status === "approved"
+        (li) => li.status === "approved",
       ).length;
     });
 

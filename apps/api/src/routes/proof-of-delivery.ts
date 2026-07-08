@@ -13,13 +13,23 @@ import { z } from "zod";
 import { prisma } from "@witylogix/db";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
-import { NotFoundError, ValidationError, ConflictError } from "../lib/errors.js";
+import {
+  NotFoundError,
+  ValidationError,
+  ConflictError,
+} from "../lib/errors.js";
 
 // ─── VALIDATION SCHEMAS ─────────────────────────────────────────
 
 const podSubmissionSchema = z.object({
   deliveryId: z.string().uuid(),
-  method: z.enum(["photo", "signature", "qr_scan", "barcode", "manual_confirm"]),
+  method: z.enum([
+    "photo",
+    "signature",
+    "qr_scan",
+    "barcode",
+    "manual_confirm",
+  ]),
   photoUrl: z.string().url().optional(),
   signatureUrl: z.string().url().optional(),
   recipientName: z.string().min(1).optional(),
@@ -82,7 +92,7 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
 
       if (!["ARRIVED", "OUT_FOR_DELIVERY"].includes(delivery.status)) {
         throw new ValidationError(
-          `Cannot submit POD for delivery in status: ${delivery.status}`
+          `Cannot submit POD for delivery in status: ${delivery.status}`,
         );
       }
 
@@ -94,10 +104,13 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
           signatureUrl: payload.signatureUrl,
           recipientName: payload.recipientName || delivery.customerName,
           notes: payload.notes,
-          deliveryLocation: payload.latitude && payload.longitude ? {
-            latitude: payload.latitude,
-            longitude: payload.longitude,
-          } : undefined,
+          deliveryLocation:
+            payload.latitude && payload.longitude
+              ? {
+                  latitude: payload.latitude,
+                  longitude: payload.longitude,
+                }
+              : undefined,
         } as any,
       });
 
@@ -118,13 +131,16 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
           status: "pending",
           recipientName: pod.recipientName,
           submittedAt: pod.createdAt,
-          location: deliveryLocation.latitude && deliveryLocation.longitude ? {
-            latitude: deliveryLocation.latitude,
-            longitude: deliveryLocation.longitude,
-          } : null,
+          location:
+            deliveryLocation.latitude && deliveryLocation.longitude
+              ? {
+                  latitude: deliveryLocation.latitude,
+                  longitude: deliveryLocation.longitude,
+                }
+              : null,
         },
       });
-    }
+    },
   );
 
   // ── GET POD FOR DELIVERY ────────────────────────────────────
@@ -155,18 +171,24 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
           status: (pod as any).status,
           submittedAt: (pod as any).submittedAt,
           verifiedAt: (pod as any).verifiedAt,
-          location: deliveryLocation.latitude && deliveryLocation.longitude ? {
-            latitude: deliveryLocation.latitude,
-            longitude: deliveryLocation.longitude,
-          } : null,
+          location:
+            deliveryLocation.latitude && deliveryLocation.longitude
+              ? {
+                  latitude: deliveryLocation.latitude,
+                  longitude: deliveryLocation.longitude,
+                }
+              : null,
         },
       };
-    }
+    },
   );
 
   // ── GET ALL PODS FOR AN ORDER ───────────────────────────────
 
-  fastify.get<{ Params: { orderId: string }; Querystring: { page: number; limit: number } }>(
+  fastify.get<{
+    Params: { orderId: string };
+    Querystring: { page: number; limit: number };
+  }>(
     "/order/:orderId",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { orderId } = orderIdParamSchema.parse(request.params);
@@ -206,10 +228,13 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
             status: (pod as any).status,
             submittedAt: (pod as any).submittedAt,
             verifiedAt: (pod as any).verifiedAt,
-            location: deliveryLocation.latitude && deliveryLocation.longitude ? {
-              latitude: deliveryLocation.latitude,
-              longitude: deliveryLocation.longitude,
-            } : null,
+            location:
+              deliveryLocation.latitude && deliveryLocation.longitude
+                ? {
+                    latitude: deliveryLocation.latitude,
+                    longitude: deliveryLocation.longitude,
+                  }
+                : null,
           };
         }),
         pagination: {
@@ -219,7 +244,7 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
           totalPages: Math.ceil(total / query.limit),
         },
       };
-    }
+    },
   );
 
   // ── VERIFY/APPROVE POD SUBMISSION ───────────────────────────
@@ -241,7 +266,9 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       if ((pod as any).status !== "pending") {
-        throw new ConflictError(`POD already has status: ${(pod as any).status}`);
+        throw new ConflictError(
+          `POD already has status: ${(pod as any).status}`,
+        );
       }
 
       const newStatus = payload.verified ? "verified" : "rejected";
@@ -272,7 +299,7 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
           comments: payload.comments,
         },
       };
-    }
+    },
   );
 }
 

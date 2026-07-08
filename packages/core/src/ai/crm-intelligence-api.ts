@@ -8,7 +8,7 @@
  * - Churn prediction and relationship analysis
  */
 
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyRequest, FastifyReply } from "fastify";
 import {
   createCustomerLTVPredictor,
   type CustomerContact,
@@ -17,7 +17,7 @@ import {
   type CustomerActivity,
   type LTVPrediction,
   type ChurnRisk,
-} from './customer-ltv-predictor.js';
+} from "./customer-ltv-predictor.js";
 import {
   createCRMIntelligence,
   type Deal,
@@ -27,7 +27,7 @@ import {
   type LeadScore,
   type ActivityRecommendation,
   type SalesForecast,
-} from './crm-intelligence.js';
+} from "./crm-intelligence.js";
 
 // ─── TYPES ─────────────────────────────────────────────────────────────────
 
@@ -115,13 +115,18 @@ const crm = createCRMIntelligence();
  */
 export async function handleLTVPredict(
   request: FastifyRequest<{ Body: LTVPredictRequest }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   try {
     const { customerId, contact, orders, payments, activities } = request.body;
 
     // Fuse customer data
-    const fusedData = ltv.dataFuser.fuseCustomerData(contact, orders, payments, activities);
+    const fusedData = ltv.dataFuser.fuseCustomerData(
+      contact,
+      orders,
+      payments,
+      activities,
+    );
 
     // Predict LTV
     const prediction = ltv.ltvPredictor.predictLTV({
@@ -141,7 +146,7 @@ export async function handleLTVPredict(
   } catch (error) {
     const response: ApiResponse<null> = {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
       timestamp: new Date().toISOString(),
     };
 
@@ -155,19 +160,19 @@ export async function handleLTVPredict(
  */
 export async function handleGetSegments(
   request: FastifyRequest<{ Querystring: { period?: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   try {
     // In real implementation, would fetch customers from database
     // For now return mock data structure
     const segments = [
-      { segment: 'CHAMPION', count: 45, averageLTV: 12500, retention: 0.95 },
-      { segment: 'LOYAL', count: 120, averageLTV: 8200, retention: 0.85 },
-      { segment: 'POTENTIAL', count: 200, averageLTV: 3500, retention: 0.65 },
-      { segment: 'NEW', count: 85, averageLTV: 1200, retention: 0.5 },
-      { segment: 'AT_RISK', count: 35, averageLTV: 4800, retention: 0.25 },
-      { segment: 'HIBERNATING', count: 60, averageLTV: 5200, retention: 0.1 },
-      { segment: 'LOST', count: 25, averageLTV: 0, retention: 0 },
+      { segment: "CHAMPION", count: 45, averageLTV: 12500, retention: 0.95 },
+      { segment: "LOYAL", count: 120, averageLTV: 8200, retention: 0.85 },
+      { segment: "POTENTIAL", count: 200, averageLTV: 3500, retention: 0.65 },
+      { segment: "NEW", count: 85, averageLTV: 1200, retention: 0.5 },
+      { segment: "AT_RISK", count: 35, averageLTV: 4800, retention: 0.25 },
+      { segment: "HIBERNATING", count: 60, averageLTV: 5200, retention: 0.1 },
+      { segment: "LOST", count: 25, averageLTV: 0, retention: 0 },
     ];
 
     const response: ApiResponse<LTVSegmentsResponse> = {
@@ -183,7 +188,7 @@ export async function handleGetSegments(
   } catch (error) {
     const response: ApiResponse<null> = {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
       timestamp: new Date().toISOString(),
     };
 
@@ -197,16 +202,16 @@ export async function handleGetSegments(
  */
 export async function handleGetCohorts(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   try {
     // In real implementation, would fetch customers and analyze cohorts
     // For now return mock data
     const cohorts = [
-      { month: '2026-Q1', size: 150, averageLTV: 6500, retentionRate: 0.72 },
-      { month: '2026-Q2', size: 200, averageLTV: 8200, retentionRate: 0.78 },
-      { month: '2026-Q3', size: 180, averageLTV: 7900, retentionRate: 0.75 },
-      { month: '2026-Q4', size: 160, averageLTV: 6800, retentionRate: 0.68 },
+      { month: "2026-Q1", size: 150, averageLTV: 6500, retentionRate: 0.72 },
+      { month: "2026-Q2", size: 200, averageLTV: 8200, retentionRate: 0.78 },
+      { month: "2026-Q3", size: 180, averageLTV: 7900, retentionRate: 0.75 },
+      { month: "2026-Q4", size: 160, averageLTV: 6800, retentionRate: 0.68 },
     ];
 
     const response: ApiResponse<CohortsResponse> = {
@@ -219,7 +224,7 @@ export async function handleGetCohorts(
   } catch (error) {
     const response: ApiResponse<null> = {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
       timestamp: new Date().toISOString(),
     };
 
@@ -243,7 +248,7 @@ export async function handleGetCohorts(
  */
 export async function handleScoreDeal(
   request: FastifyRequest<{ Body: DealScoringRequest }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   try {
     const { deal } = request.body;
@@ -260,7 +265,7 @@ export async function handleScoreDeal(
   } catch (error) {
     const response: ApiResponse<null> = {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
       timestamp: new Date().toISOString(),
     };
 
@@ -282,7 +287,7 @@ export async function handleScoreDeal(
  */
 export async function handleScoreLead(
   request: FastifyRequest<{ Body: LeadScoringRequest }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   try {
     const { lead } = request.body;
@@ -299,7 +304,7 @@ export async function handleScoreLead(
   } catch (error) {
     const response: ApiResponse<null> = {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
       timestamp: new Date().toISOString(),
     };
 
@@ -316,12 +321,15 @@ export async function handleGetRecommendations(
     Params: { contactId: string };
     Body: { contact: Contact; deal?: Deal };
   }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   try {
     const { contact, deal } = request.body;
 
-    const recommendation = crm.activityRecommender.recommendActivity(contact, deal);
+    const recommendation = crm.activityRecommender.recommendActivity(
+      contact,
+      deal,
+    );
 
     const response: ApiResponse<ActivityRecommendation> = {
       success: true,
@@ -333,7 +341,7 @@ export async function handleGetRecommendations(
   } catch (error) {
     const response: ApiResponse<null> = {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
       timestamp: new Date().toISOString(),
     };
 
@@ -347,7 +355,7 @@ export async function handleGetRecommendations(
  */
 export async function handleGetForecast(
   request: FastifyRequest<{ Body: ForecastRequest }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   try {
     const { deals, period } = request.body;
@@ -364,7 +372,7 @@ export async function handleGetForecast(
   } catch (error) {
     const response: ApiResponse<null> = {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
       timestamp: new Date().toISOString(),
     };
 
@@ -389,16 +397,25 @@ export async function handleGetForecast(
  */
 export async function handleChurnRisk(
   request: FastifyRequest<{ Body: ChurnRiskRequest }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   try {
     const { customerId, contact, orders, activities } = request.body;
 
     // Fuse customer data
-    const fusedData = ltv.dataFuser.fuseCustomerData(contact, orders, [], activities);
+    const fusedData = ltv.dataFuser.fuseCustomerData(
+      contact,
+      orders,
+      [],
+      activities,
+    );
 
     // Extract features
-    const rfm = ltv.featureExtractor.extractRFM(fusedData.acquisitionDate, fusedData.completedOrders, fusedData.recentActivities);
+    const rfm = ltv.featureExtractor.extractRFM(
+      fusedData.acquisitionDate,
+      fusedData.completedOrders,
+      fusedData.recentActivities,
+    );
 
     // Predict LTV
     const ltvPrediction = ltv.ltvPredictor.predictLTV({
@@ -421,7 +438,7 @@ export async function handleChurnRisk(
   } catch (error) {
     const response: ApiResponse<null> = {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
       timestamp: new Date().toISOString(),
     };
 

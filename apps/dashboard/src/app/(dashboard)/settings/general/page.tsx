@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useApiQuery, useApiMutation } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import Link from 'next/link';
-import { ChevronLeft, Clock, MapPin, DollarSign, Weight } from 'lucide-react';
+import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { ChevronLeft, Clock, MapPin, DollarSign, Weight } from "lucide-react";
 
 interface GeneralSettings {
   companyName: string;
@@ -27,12 +27,25 @@ interface GeneralSettings {
   weightUnit: string;
   distanceUnit: string;
   dateFormat: string;
-  businessHours: Array<{ day: string; open: string; close: string; closed: boolean }>;
+  businessHours: Array<{
+    day: string;
+    open: string;
+    close: string;
+    closed: boolean;
+  }>;
 }
 
 export default function GeneralSettingsPage() {
-  const { data: settings, loading, error, refetch } = useApiQuery<GeneralSettings>('/api/v4/settings/general');
-  const { execute: updateSettings } = useApiMutation('PATCH', '/api/v4/settings/general');
+  const {
+    data: settings,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<GeneralSettings>("/api/v4/settings/general");
+  const { execute: updateSettings } = useApiMutation(
+    "PATCH",
+    "/api/v4/settings/general",
+  );
 
   const businessHours = settings?.businessHours ?? [
     { day: "Monday", open: "09:00 AM", close: "06:00 PM", closed: false },
@@ -299,9 +312,7 @@ export default function GeneralSettingsPage() {
                   className="flex items-center justify-between p-4 rounded-lg border border-wl-border-default hover:bg-wl-bg-elevated transition-colors"
                 >
                   <div className="flex-1">
-                    <p className="font-medium text-white">
-                      {day.day}
-                    </p>
+                    <p className="font-medium text-white">{day.day}</p>
                   </div>
                   {day.closed ? (
                     <Badge variant="default">Closed</Badge>

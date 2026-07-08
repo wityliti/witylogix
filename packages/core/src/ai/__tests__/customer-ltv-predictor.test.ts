@@ -9,7 +9,7 @@
  * - ChurnPredictor identifying at-risk customers
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   createCustomerLTVPredictor,
   getCustomerLTVPredictor,
@@ -22,9 +22,9 @@ import {
   type OrderData,
   type PaymentData,
   type CustomerActivity,
-} from '../customer-ltv-predictor.js';
+} from "../customer-ltv-predictor.js";
 
-describe('Customer LTV Predictor', () => {
+describe("Customer LTV Predictor", () => {
   let service: ReturnType<typeof createCustomerLTVPredictor>;
   let sampleContact: CustomerContact;
   let sampleOrders: OrderData[];
@@ -36,120 +36,135 @@ describe('Customer LTV Predictor', () => {
 
     // Create sample contact
     sampleContact = {
-      id: 'cust_123',
-      email: 'john@example.com',
-      createdAt: new Date('2025-01-15'),
-      lastActivityAt: new Date('2026-03-10'),
+      id: "cust_123",
+      email: "john@example.com",
+      createdAt: new Date("2025-01-15"),
+      lastActivityAt: new Date("2026-03-10"),
       totalDeals: 3,
       dealValue: 15000,
     };
 
     // Create sample orders (relative to reference date of 2026-03-17)
-    const refDate = new Date('2026-03-17');
+    const refDate = new Date("2026-03-17");
     sampleOrders = [
       {
-        orderId: 'order_1',
-        customerId: 'cust_123',
+        orderId: "order_1",
+        customerId: "cust_123",
         amount: 5000,
         date: new Date(refDate.getTime() - 60 * 24 * 60 * 60 * 1000), // 60 days before ref
-        status: 'completed',
+        status: "completed",
       },
       {
-        orderId: 'order_2',
-        customerId: 'cust_123',
+        orderId: "order_2",
+        customerId: "cust_123",
         amount: 7500,
         date: new Date(refDate.getTime() - 30 * 24 * 60 * 60 * 1000), // 30 days before ref
-        status: 'completed',
+        status: "completed",
       },
       {
-        orderId: 'order_3',
-        customerId: 'cust_123',
+        orderId: "order_3",
+        customerId: "cust_123",
         amount: 3000,
         date: new Date(refDate.getTime() - 7 * 24 * 60 * 60 * 1000), // 7 days before ref
-        status: 'completed',
+        status: "completed",
       },
     ];
 
     // Create sample payments
     samplePayments = [
       {
-        paymentId: 'pay_1',
-        customerId: 'cust_123',
+        paymentId: "pay_1",
+        customerId: "cust_123",
         amount: 5000,
         date: sampleOrders[0].date,
-        status: 'successful',
+        status: "successful",
       },
       {
-        paymentId: 'pay_2',
-        customerId: 'cust_123',
+        paymentId: "pay_2",
+        customerId: "cust_123",
         amount: 7500,
         date: sampleOrders[1].date,
-        status: 'successful',
+        status: "successful",
       },
       {
-        paymentId: 'pay_3',
-        customerId: 'cust_123',
+        paymentId: "pay_3",
+        customerId: "cust_123",
         amount: 3000,
         date: sampleOrders[2].date,
-        status: 'successful',
+        status: "successful",
       },
     ];
 
     // Create sample activities
     sampleActivities = [
       {
-        type: 'email_open',
-        timestamp: new Date('2026-03-10'),
+        type: "email_open",
+        timestamp: new Date("2026-03-10"),
       },
       {
-        type: 'email_click',
-        timestamp: new Date('2026-03-09'),
+        type: "email_click",
+        timestamp: new Date("2026-03-09"),
       },
       {
-        type: 'login',
-        timestamp: new Date('2026-03-08'),
+        type: "login",
+        timestamp: new Date("2026-03-08"),
       },
       {
-        type: 'email_open',
-        timestamp: new Date('2026-03-01'),
+        type: "email_open",
+        timestamp: new Date("2026-03-01"),
       },
     ];
   });
 
-  describe('DataFuser', () => {
-    it('should fuse customer data from multiple sources', () => {
-      const fused = service.dataFuser.fuseCustomerData(sampleContact, sampleOrders, samplePayments, sampleActivities);
+  describe("DataFuser", () => {
+    it("should fuse customer data from multiple sources", () => {
+      const fused = service.dataFuser.fuseCustomerData(
+        sampleContact,
+        sampleOrders,
+        samplePayments,
+        sampleActivities,
+      );
 
-      expect(fused.customerId).toBe('cust_123');
-      expect(fused.email).toBe('john@example.com');
+      expect(fused.customerId).toBe("cust_123");
+      expect(fused.email).toBe("john@example.com");
       expect(fused.totalOrders).toBe(3);
       expect(fused.totalRevenue).toBe(15500);
     });
 
-    it('should identify last activity date correctly', () => {
-      const fused = service.dataFuser.fuseCustomerData(sampleContact, sampleOrders, samplePayments, sampleActivities);
+    it("should identify last activity date correctly", () => {
+      const fused = service.dataFuser.fuseCustomerData(
+        sampleContact,
+        sampleOrders,
+        samplePayments,
+        sampleActivities,
+      );
 
       expect(fused.lastActivityDate).toBeDefined();
       expect(fused.lastActivityDate?.getTime()).toBeGreaterThanOrEqual(
-        new Date('2026-03-10').getTime()
+        new Date("2026-03-10").getTime(),
       );
     });
 
-    it('should handle empty orders array', () => {
-      const fused = service.dataFuser.fuseCustomerData(sampleContact, [], samplePayments, sampleActivities);
+    it("should handle empty orders array", () => {
+      const fused = service.dataFuser.fuseCustomerData(
+        sampleContact,
+        [],
+        samplePayments,
+        sampleActivities,
+      );
 
       expect(fused.totalOrders).toBe(0);
       expect(fused.totalRevenue).toBe(0);
     });
   });
 
-  describe('FeatureExtractor', () => {
-    it('should calculate RFM features correctly', () => {
+  describe("FeatureExtractor", () => {
+    it("should calculate RFM features correctly", () => {
       const rfm = service.featureExtractor.extractRFM(
         sampleContact.createdAt,
         sampleOrders,
         sampleActivities,
-        new Date('2026-03-17')
+        new Date("2026-03-17"),
       );
 
       expect(rfm.recency).toBeLessThan(30); // Last order was ~90 days ago
@@ -159,51 +174,51 @@ describe('Customer LTV Predictor', () => {
       expect(rfm.tenure).toBeGreaterThan(0);
     });
 
-    it('should calculate engagement score', () => {
+    it("should calculate engagement score", () => {
       const rfm = service.featureExtractor.extractRFM(
         sampleContact.createdAt,
         sampleOrders,
-        sampleActivities
+        sampleActivities,
       );
 
       expect(rfm.engagement).toBeGreaterThanOrEqual(0);
       expect(rfm.engagement).toBeLessThanOrEqual(100);
     });
 
-    it('should calculate growth factor', () => {
+    it("should calculate growth factor", () => {
       const rfm = service.featureExtractor.extractRFM(
         sampleContact.createdAt,
         sampleOrders,
-        sampleActivities
+        sampleActivities,
       );
 
       expect(rfm.growthFactor).toBeGreaterThan(0);
       expect(rfm.growthFactor).toBeLessThanOrEqual(2.0);
     });
 
-    it('should handle low engagement', () => {
+    it("should handle low engagement", () => {
       const noActivities: CustomerActivity[] = [];
 
       const rfm = service.featureExtractor.extractRFM(
         sampleContact.createdAt,
         sampleOrders,
-        noActivities
+        noActivities,
       );
 
       expect(rfm.engagement).toBe(0);
     });
   });
 
-  describe('LTVPredictor', () => {
-    it('should predict LTV for a customer', () => {
+  describe("LTVPredictor", () => {
+    it("should predict LTV for a customer", () => {
       const prediction = service.ltvPredictor.predictLTV({
-        customerId: 'cust_123',
+        customerId: "cust_123",
         acquisitionDate: sampleContact.createdAt,
         completedOrders: sampleOrders,
         activities: sampleActivities,
       });
 
-      expect(prediction.customerId).toBe('cust_123');
+      expect(prediction.customerId).toBe("cust_123");
       expect(prediction.historicalLTV).toBe(15500);
       expect(prediction.predictedLTV).toBeGreaterThan(0);
       expect(prediction.retentionProbability).toBeGreaterThanOrEqual(0);
@@ -213,50 +228,56 @@ describe('Customer LTV Predictor', () => {
       expect(prediction.confidence).toBeLessThanOrEqual(100);
     });
 
-    it('should assign correct segment for active customer', () => {
+    it("should assign correct segment for active customer", () => {
       const prediction = service.ltvPredictor.predictLTV({
-        customerId: 'cust_123',
+        customerId: "cust_123",
         acquisitionDate: sampleContact.createdAt,
         completedOrders: sampleOrders,
         activities: sampleActivities,
       });
 
-      expect(['CHAMPION', 'LOYAL', 'POTENTIAL', 'NEW', 'AT_RISK', 'HIBERNATING', 'LOST']).toContain(
-        prediction.segment
-      );
+      expect([
+        "CHAMPION",
+        "LOYAL",
+        "POTENTIAL",
+        "NEW",
+        "AT_RISK",
+        "HIBERNATING",
+        "LOST",
+      ]).toContain(prediction.segment);
     });
 
-    it('should assign NEW segment for new customers', () => {
+    it("should assign NEW segment for new customers", () => {
       const newCustomerOrders = [
         {
-          orderId: 'order_1',
-          customerId: 'cust_456',
+          orderId: "order_1",
+          customerId: "cust_456",
           amount: 1000,
           date: new Date(),
-          status: 'completed' as const,
+          status: "completed" as const,
         },
       ];
 
       const newCustomerActivities: CustomerActivity[] = [
         {
-          type: 'email_open',
+          type: "email_open",
           timestamp: new Date(),
         },
       ];
 
       const prediction = service.ltvPredictor.predictLTV({
-        customerId: 'cust_456',
+        customerId: "cust_456",
         acquisitionDate: new Date(),
         completedOrders: newCustomerOrders,
         activities: newCustomerActivities,
       });
 
-      expect(prediction.segment).toBe('NEW');
+      expect(prediction.segment).toBe("NEW");
     });
 
-    it('should provide explanations for prediction', () => {
+    it("should provide explanations for prediction", () => {
       const prediction = service.ltvPredictor.predictLTV({
-        customerId: 'cust_123',
+        customerId: "cust_123",
         acquisitionDate: sampleContact.createdAt,
         completedOrders: sampleOrders,
         activities: sampleActivities,
@@ -268,23 +289,26 @@ describe('Customer LTV Predictor', () => {
     });
   });
 
-  describe('CohortAnalyzer', () => {
-    it('should analyze customer cohorts', () => {
+  describe("CohortAnalyzer", () => {
+    it("should analyze customer cohorts", () => {
       const prediction1 = service.ltvPredictor.predictLTV({
-        customerId: 'cust_123',
-        acquisitionDate: new Date('2026-01-15'),
+        customerId: "cust_123",
+        acquisitionDate: new Date("2026-01-15"),
         completedOrders: sampleOrders,
         activities: sampleActivities,
       });
 
       const prediction2 = service.ltvPredictor.predictLTV({
-        customerId: 'cust_456',
-        acquisitionDate: new Date('2026-02-15'),
+        customerId: "cust_456",
+        acquisitionDate: new Date("2026-02-15"),
         completedOrders: sampleOrders,
         activities: sampleActivities,
       });
 
-      const cohorts = service.cohortAnalyzer.analyzeCohorts([prediction1, prediction2]);
+      const cohorts = service.cohortAnalyzer.analyzeCohorts([
+        prediction1,
+        prediction2,
+      ]);
 
       expect(Array.isArray(cohorts)).toBe(true);
       expect(cohorts.length).toBeGreaterThan(0);
@@ -299,24 +323,27 @@ describe('Customer LTV Predictor', () => {
     });
   });
 
-  describe('ChurnPredictor', () => {
-    it('should predict churn risk for customer', () => {
+  describe("ChurnPredictor", () => {
+    it("should predict churn risk for customer", () => {
       const rfm = service.featureExtractor.extractRFM(
         sampleContact.createdAt,
         sampleOrders,
-        sampleActivities
+        sampleActivities,
       );
 
       const prediction = service.ltvPredictor.predictLTV({
-        customerId: 'cust_123',
+        customerId: "cust_123",
         acquisitionDate: sampleContact.createdAt,
         completedOrders: sampleOrders,
         activities: sampleActivities,
       });
 
-      const churnRisk = service.churnPredictor.predictChurnRisk(prediction, rfm);
+      const churnRisk = service.churnPredictor.predictChurnRisk(
+        prediction,
+        rfm,
+      );
 
-      expect(churnRisk.customerId).toBe('cust_123');
+      expect(churnRisk.customerId).toBe("cust_123");
       expect(churnRisk.churnProbability).toBeGreaterThanOrEqual(0);
       expect(churnRisk.churnProbability).toBeLessThanOrEqual(1);
       expect(churnRisk.riskFactors).toBeDefined();
@@ -324,41 +351,47 @@ describe('Customer LTV Predictor', () => {
       expect(Array.isArray(churnRisk.recommendations)).toBe(true);
     });
 
-    it('should identify risk factors correctly', () => {
+    it("should identify risk factors correctly", () => {
       // Create inactive customer
       const inactiveOrders: OrderData[] = [
         {
-          orderId: 'order_1',
-          customerId: 'cust_inactive',
+          orderId: "order_1",
+          customerId: "cust_inactive",
           amount: 5000,
-          date: new Date('2025-01-01'),
-          status: 'completed',
+          date: new Date("2025-01-01"),
+          status: "completed",
         },
       ];
 
       const noActivities: CustomerActivity[] = [];
 
       const rfm = service.featureExtractor.extractRFM(
-        new Date('2024-06-01'),
+        new Date("2024-06-01"),
         inactiveOrders,
-        noActivities
+        noActivities,
       );
 
       const prediction = service.ltvPredictor.predictLTV({
-        customerId: 'cust_inactive',
-        acquisitionDate: new Date('2024-06-01'),
+        customerId: "cust_inactive",
+        acquisitionDate: new Date("2024-06-01"),
         completedOrders: inactiveOrders,
         activities: noActivities,
       });
 
-      const churnRisk = service.churnPredictor.predictChurnRisk(prediction, rfm);
+      const churnRisk = service.churnPredictor.predictChurnRisk(
+        prediction,
+        rfm,
+      );
 
-      expect(churnRisk.riskFactors.longInactivity || churnRisk.riskFactors.decayingEngagement).toBe(true);
+      expect(
+        churnRisk.riskFactors.longInactivity ||
+          churnRisk.riskFactors.decayingEngagement,
+      ).toBe(true);
     });
   });
 
-  describe('Singleton pattern', () => {
-    it('should return same instance for repeated calls', () => {
+  describe("Singleton pattern", () => {
+    it("should return same instance for repeated calls", () => {
       const instance1 = getCustomerLTVPredictor();
       const instance2 = getCustomerLTVPredictor();
 

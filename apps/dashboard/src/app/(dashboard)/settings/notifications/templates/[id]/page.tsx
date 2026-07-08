@@ -1,35 +1,27 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useParams } from 'next/navigation';
-import { useApiQuery, useApiMutation } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Header } from '@/components/layout/header';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Header } from "@/components/layout/header";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
   CardDescription,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import {
-  Save,
-  X,
-  Send,
-  History,
-  Copy,
-  Eye,
-  Code,
-} from 'lucide-react';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { Save, X, Send, History, Copy, Eye, Code } from "lucide-react";
 
-type Channel = 'email' | 'sms' | 'whatsapp' | 'push';
+type Channel = "email" | "sms" | "whatsapp" | "push";
 
 interface TemplateContent {
   email: {
@@ -42,12 +34,12 @@ interface TemplateContent {
   };
   whatsapp: {
     templateId: string;
-    headerType: 'text' | 'image' | 'video' | 'document';
+    headerType: "text" | "image" | "video" | "document";
     headerText?: string;
     body: string;
     footer?: string;
     buttons: Array<{
-      type: 'quick_reply' | 'url' | 'phone';
+      type: "quick_reply" | "url" | "phone";
       text: string;
       value: string;
     }>;
@@ -127,7 +119,9 @@ const INITIAL_TEMPLATE: TemplateContent = {
 const renderPreview = (text: string) => {
   return text.replace(/\{\{(\w+)\}\}/g, (match, variable) => {
     return (
-      TEMPLATE_PREVIEW_VALUES[variable as keyof typeof TEMPLATE_PREVIEW_VALUES] || match
+      TEMPLATE_PREVIEW_VALUES[
+        variable as keyof typeof TEMPLATE_PREVIEW_VALUES
+      ] || match
     );
   });
 };
@@ -144,17 +138,23 @@ export default function TemplateEditorPage() {
   const params = useParams();
   const templateId = params?.id as string | undefined;
 
-  const { data: apiTemplate, loading: templateLoading } = useApiQuery<ApiTemplate>(
-    templateId ? `/api/v4/notification-templates/${templateId}` : null,
-  );
+  const { data: apiTemplate, loading: templateLoading } =
+    useApiQuery<ApiTemplate>(
+      templateId ? `/api/v4/notification-templates/${templateId}` : null,
+    );
 
-  const { execute: saveDraft, loading: savingDraft } = useApiMutation<ApiTemplate>(
-    "PATCH",
-    templateId ? `/api/v4/notification-templates/${templateId}` : "/api/v4/notification-templates",
-  );
+  const { execute: saveDraft, loading: savingDraft } =
+    useApiMutation<ApiTemplate>(
+      "PATCH",
+      templateId
+        ? `/api/v4/notification-templates/${templateId}`
+        : "/api/v4/notification-templates",
+    );
   const { execute: publish, loading: publishing } = useApiMutation<ApiTemplate>(
     "PATCH",
-    templateId ? `/api/v4/notification-templates/${templateId}` : "/api/v4/notification-templates",
+    templateId
+      ? `/api/v4/notification-templates/${templateId}`
+      : "/api/v4/notification-templates",
   );
 
   const [content, setContent] = useState<TemplateContent>(INITIAL_TEMPLATE);
@@ -174,7 +174,10 @@ export default function TemplateEditorPage() {
   if (templateLoading) {
     return (
       <div className="min-h-screen bg-wl-bg-primary">
-        <Header title="Edit Notification Template" subtitle="Loading template…" />
+        <Header
+          title="Edit Notification Template"
+          subtitle="Loading template…"
+        />
         <LoadingSkeleton />
       </div>
     );
@@ -229,7 +232,10 @@ export default function TemplateEditorPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Editor */}
           <div className="lg:col-span-2">
-            <Tabs value={activeChannel} onValueChange={(v) => setActiveChannel(v as Channel)}>
+            <Tabs
+              value={activeChannel}
+              onValueChange={(v) => setActiveChannel(v as Channel)}
+            >
               <Card className="border border-wl-border-default bg-wl-bg-surface">
                 <CardHeader>
                   <div className="flex items-center justify-between gap-4">
@@ -339,7 +345,7 @@ export default function TemplateEditorPage() {
                             style={{
                               width: `${Math.min(
                                 (content.sms.text.length / 160) * 100,
-                                100
+                                100,
                               )}%`,
                             }}
                           />
@@ -403,9 +409,7 @@ export default function TemplateEditorPage() {
                 {activeChannel === "email" && (
                   <div className="space-y-2">
                     <div className="p-3 bg-wl-bg-overlay rounded-lg">
-                      <p className="text-xs text-gray-400 mb-1">
-                        Subject:
-                      </p>
+                      <p className="text-xs text-gray-400 mb-1">Subject:</p>
                       <p className="text-sm text-white break-words">
                         {renderPreview(content.email.subject)}
                       </p>
@@ -422,9 +426,7 @@ export default function TemplateEditorPage() {
                 )}
                 {activeChannel === "sms" && (
                   <div className="p-3 bg-wl-bg-overlay rounded-lg">
-                    <p className="text-xs text-gray-400 mb-2">
-                      SMS Preview:
-                    </p>
+                    <p className="text-xs text-gray-400 mb-2">SMS Preview:</p>
                     <div className="bg-white text-black p-3 rounded text-sm">
                       {renderPreview(content.sms.text)}
                     </div>
@@ -502,8 +504,8 @@ export default function TemplateEditorPage() {
                     {activeChannel === "email"
                       ? "Email Address"
                       : activeChannel === "sms"
-                      ? "Phone Number"
-                      : "Recipient"}
+                        ? "Phone Number"
+                        : "Recipient"}
                   </label>
                   <Input
                     value={testRecipient}
@@ -541,4 +543,3 @@ export default function TemplateEditorPage() {
     </div>
   );
 }
-

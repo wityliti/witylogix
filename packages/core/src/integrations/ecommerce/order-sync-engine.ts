@@ -169,10 +169,7 @@ export class OrderSyncEngine {
   /**
    * Register field mapping for platform
    */
-  registerFieldMapping(
-    platform: string,
-    mappings: FieldMapping[],
-  ): void {
+  registerFieldMapping(platform: string, mappings: FieldMapping[]): void {
     this.fieldMappings.set(platform, mappings);
   }
 
@@ -287,7 +284,10 @@ export class OrderSyncEngine {
       // Calculate changes if order exists
       let existingSyncState = this.syncStates.get(syncKey);
       const changes = existingSyncState
-        ? this.calculateOrderChanges(existingSyncState, externalOrder as unknown as ECommerceOrder)
+        ? this.calculateOrderChanges(
+            existingSyncState,
+            externalOrder as unknown as ECommerceOrder,
+          )
         : [];
 
       // Update sync state
@@ -362,8 +362,7 @@ export class OrderSyncEngine {
         }
       } catch (error) {
         failed++;
-        const errorMsg =
-          error instanceof Error ? error.message : String(error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
         results.push({
           orderId: order.id,
           platform,
@@ -413,7 +412,10 @@ export class OrderSyncEngine {
   /**
    * Retry failed syncs
    */
-  async retryFailedSyncs(platform: string, maxRetries: number = 3): Promise<void> {
+  async retryFailedSyncs(
+    platform: string,
+    maxRetries: number = 3,
+  ): Promise<void> {
     for (const [key, syncState] of this.syncStates.entries()) {
       if (
         syncState.platform === platform &&
@@ -644,8 +646,7 @@ export class OrderSyncEngine {
 
     // Update success rate
     metrics.successRate =
-      ((metrics.totalSynced - metrics.totalFailed) / metrics.totalSynced) *
-      100;
+      ((metrics.totalSynced - metrics.totalFailed) / metrics.totalSynced) * 100;
 
     metrics.lastSyncAt = new Date();
   }

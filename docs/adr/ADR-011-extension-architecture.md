@@ -20,6 +20,7 @@ Witylogix is implementing **Preact-based extensions** for Shopify checkout-ui an
 6. **Runtime performance** — No virtual DOM overhead for simple UI updates; reactive theme updates via CSS custom properties
 
 **Key Architecture:**
+
 - `@witylogix/extension-core` package (< 20KB) providing theme bridge, app bridge wrappers, and Preact hooks
 - Vite-based build with aggressive code splitting and dynamic imports
 - Theme token detection (dark/light) with localStorage persistence
@@ -35,12 +36,14 @@ Witylogix is implementing **Preact-based extensions** for Shopify checkout-ui an
 Shopify's checkout and POS extensibility model requires **lightweight, sandbox-safe** UI components:
 
 **Checkout Extensions:**
+
 - Inject custom fields into post-purchase experience
 - Deliver order data via Shopify's App Bridge (100% reliable, queued)
 - Bundle must be < 64KB (Shopify hard limit)
 - Executed in sandboxed iframe with restricted DOM access
 
 **POS Extensions:**
+
 - Overlay UI on Square/Shopify POS system
 - Communicate via `window.postMessage()` to parent frame
 - No direct DOM manipulation (POS owns the tree)
@@ -49,6 +52,7 @@ Shopify's checkout and POS extensibility model requires **lightweight, sandbox-s
 ### Legacy Pain Points
 
 Currently, Witylogix has **empty extension stubs** at `extensions/checkout-ui/` and `extensions/pos-ui/`. Developers lack:
+
 - Shared utilities for common patterns (theme reading, app bridge communication)
 - Type safety for extension APIs
 - Build optimization strategy to meet 64KB limit
@@ -57,14 +61,16 @@ Currently, Witylogix has **empty extension stubs** at `extensions/checkout-ui/` 
 ### Design System Continuity
 
 Witylogix dashboard uses **CSS custom properties** (tokens.css):
+
 ```css
---wl-primary-500: #f5a623;        /* Amber logistics warmth */
---wl-danger-500: #ef4444;         /* Error red */
---wl-space-4: 1rem;               /* 16px spacing */
---wl-text-primary: #f0f0f5;       /* Dark theme text */
+--wl-primary-500: #f5a623; /* Amber logistics warmth */
+--wl-danger-500: #ef4444; /* Error red */
+--wl-space-4: 1rem; /* 16px spacing */
+--wl-text-primary: #f0f0f5; /* Dark theme text */
 ```
 
 Extensions must **consume the same tokens**, ensuring:
+
 - Visual consistency across dashboard, checkout, POS
 - Single source of truth for design updates
 - Theme switching (dark/light) affects all surfaces atomically
@@ -72,6 +78,7 @@ Extensions must **consume the same tokens**, ensuring:
 ### Shopify App Bridge Reality
 
 Shopify's App Bridge (`@shopify/app-bridge`) provides:
+
 - **Reliable messaging** to checkout iframe (messages are queued if not ready)
 - **Action types** for domain operations: `ApplyDiscount`, `UpdateShippingAddress`, `RequestSession`
 - **Error handling** via Promise-based API
@@ -85,14 +92,14 @@ Shopify's App Bridge (`@shopify/app-bridge`) provides:
 
 **Stack Comparison:**
 
-| Criteria | React | Preact | Vanilla JS | Solid.js |
-|----------|-------|--------|-----------|----------|
-| Bundle size | ~42KB | 3KB | 0KB | ~8KB |
-| Tree-shaking | Moderate | Excellent | N/A | Good |
-| Dev velocity | ★★★★★ | ★★★★★ | ★★ | ★★★ |
-| Type safety | ★★★★★ | ★★★★★ | ★★ | ★★★★ |
-| Ecosystem | ★★★★★ | ★★★ | ★★ | ★★★ |
-| Deployment < 64KB | Hard | Easy | Easy (if complex) | Easy |
+| Criteria          | React    | Preact    | Vanilla JS        | Solid.js |
+| ----------------- | -------- | --------- | ----------------- | -------- |
+| Bundle size       | ~42KB    | 3KB       | 0KB               | ~8KB     |
+| Tree-shaking      | Moderate | Excellent | N/A               | Good     |
+| Dev velocity      | ★★★★★    | ★★★★★     | ★★                | ★★★      |
+| Type safety       | ★★★★★    | ★★★★★     | ★★                | ★★★★     |
+| Ecosystem         | ★★★★★    | ★★★       | ★★                | ★★★      |
+| Deployment < 64KB | Hard     | Easy      | Easy (if complex) | Easy     |
 
 **Decision Rationale:**
 
@@ -218,6 +225,7 @@ packages/extension-core/
 ```
 
 **File Sizes (target):**
+
 - `types.ts` — 100 lines / ~2KB
 - `theme-bridge.ts` — 150 lines / ~4KB
 - `app-bridge.ts` — 200 lines / ~6KB
@@ -227,42 +235,44 @@ packages/extension-core/
 ### Build Strategy: Vite Configuration
 
 **Extension (Checkout) Vite Config:**
+
 ```typescript
 export default defineConfig({
   plugins: [preact()],
   build: {
     lib: {
-      entry: 'src/index.tsx',
-      formats: ['es'],
-      fileName: 'checkout-extension'
+      entry: "src/index.tsx",
+      formats: ["es"],
+      fileName: "checkout-extension",
     },
-    minify: 'terser',
+    minify: "terser",
     terserOptions: {
-      compress: { pure_funcs: ['console.log', 'console.debug'] }
+      compress: { pure_funcs: ["console.log", "console.debug"] },
     },
     rollupOptions: {
       external: [],
       output: {
-        assetFileNames: 'assets/[name].[hash][extname]',
-      }
-    }
-  }
+        assetFileNames: "assets/[name].[hash][extname]",
+      },
+    },
+  },
 });
 ```
 
 **Code-Splitting Strategy:**
+
 ```typescript
 // themes.ts — loaded dynamically only if needed
-import { defineAsyncComponent } from 'preact/async';
+import { defineAsyncComponent } from "preact/async";
 
 const POSSpecificUI = defineAsyncComponent(
-  () => import('./features/pos-specific')
+  () => import("./features/pos-specific"),
 );
 
 // Theme module loaded on-demand based on query param
-const theme = new URL(window.location).searchParams.get('theme');
-if (theme === 'pos') {
-  const mod = await import('./themes/pos-specific.css');
+const theme = new URL(window.location).searchParams.get("theme");
+if (theme === "pos") {
+  const mod = await import("./themes/pos-specific.css");
 }
 ```
 
@@ -275,24 +285,27 @@ if (theme === 'pos') {
 **Responsibility:** Map dashboard CSS custom properties (`--wl-*`) to JavaScript objects and observe changes.
 
 **Key functions:**
+
 ```typescript
-export async function readThemeTokens(): Promise<ThemeTokens>
-  // Read --wl-* from parent frame's computed style
-  // Parse colors, spacing, typography into objects
-  // Detect dark/light mode from prefers-color-scheme
+export async function readThemeTokens(): Promise<ThemeTokens>;
+// Read --wl-* from parent frame's computed style
+// Parse colors, spacing, typography into objects
+// Detect dark/light mode from prefers-color-scheme
 
-export function observeThemeChanges(callback: (tokens: ThemeTokens) => void): () => void
-  // Watch for CSS custom property changes
-  // Use CSS.supports('@supports') for media query changes
-  // Return unsubscribe function
+export function observeThemeChanges(
+  callback: (tokens: ThemeTokens) => void,
+): () => void;
+// Watch for CSS custom property changes
+// Use CSS.supports('@supports') for media query changes
+// Return unsubscribe function
 
-export function getThemeVar(name: string, fallback?: string): string
-  // Get single CSS custom property value
-  // e.g., getThemeVar('--wl-primary-500') → '#f5a623'
+export function getThemeVar(name: string, fallback?: string): string;
+// Get single CSS custom property value
+// e.g., getThemeVar('--wl-primary-500') → '#f5a623'
 
-export function detectColorScheme(): 'light' | 'dark'
-  // Check prefers-color-scheme
-  // Fall back to manual detection via --wl-bg-root luminance
+export function detectColorScheme(): "light" | "dark";
+// Check prefers-color-scheme
+// Fall back to manual detection via --wl-bg-root luminance
 ```
 
 ### 2. App Bridge (`app-bridge.ts`)
@@ -300,6 +313,7 @@ export function detectColorScheme(): 'light' | 'dark'
 **Responsibility:** Typed wrapper around Shopify App Bridge with error boundaries.
 
 **Key functions:**
+
 ```typescript
 export class AppBridgeClient {
   async applyDiscount(code: string, value: number): Promise<DiscountResult>
@@ -323,15 +337,15 @@ export class ErrorBoundary extends Component
 **Responsibility:** Preact hooks for common extension patterns.
 
 ```typescript
-export function useTheme(): ThemeTokens
-  // useEffect → readThemeTokens()
-  // Subscribe to changes via observeThemeChanges()
-  // Return theme object, re-render on change
+export function useTheme(): ThemeTokens;
+// useEffect → readThemeTokens()
+// Subscribe to changes via observeThemeChanges()
+// Return theme object, re-render on change
 
-export function useAppBridge(): AppBridgeClient
-  // useMemo → createAppBridgeClient()
-  // Inject config from window.__EXTENSION_CONFIG__
-  // Cache client across component tree
+export function useAppBridge(): AppBridgeClient;
+// useMemo → createAppBridgeClient()
+// Inject config from window.__EXTENSION_CONFIG__
+// Cache client across component tree
 
 export function useDeliveryOptions(filters?: DeliveryFilter): {
   options: DeliveryOption[];
@@ -339,15 +353,15 @@ export function useDeliveryOptions(filters?: DeliveryFilter): {
   select: (opt: DeliveryOption) => void;
   isLoading: boolean;
   error?: Error;
-}
-  // Fetch delivery options from backend via App Bridge
-  // Implement local caching + invalidation
-  // Return state tuple with loading/error states
+};
+// Fetch delivery options from backend via App Bridge
+// Implement local caching + invalidation
+// Return state tuple with loading/error states
 
-export function useExtensionApi(): ExtensionApi
-  // For POS extensions
-  // Enable typed postMessage communication with parent
-  // Return { invoke, register, subscribe } API
+export function useExtensionApi(): ExtensionApi;
+// For POS extensions
+// Enable typed postMessage communication with parent
+// Return { invoke, register, subscribe } API
 ```
 
 ### 4. Types (`types.ts`)
@@ -461,6 +475,7 @@ checkout-extension.js
 ```
 
 **Minified Comparison:**
+
 - With React: ~75KB (fails Shopify limit)
 - With Preact: ~45KB (comfortable headroom)
 
@@ -488,25 +503,27 @@ pos-extension.js
 ### Checkout Extension (App Bridge)
 
 **Pattern 1: Apply Discount**
+
 ```typescript
 const bridge = useAppBridge();
 
 const applyCode = async () => {
   try {
-    const result = await bridge.applyDiscount('SUMMER2024', 10);
+    const result = await bridge.applyDiscount("SUMMER2024", 10);
     if (result.success) {
-      showNotification('Discount applied!');
+      showNotification("Discount applied!");
       updateUI({ newTotal: result.newTotal });
     } else {
       showError(result.error);
     }
   } catch (err) {
-    showError('Network error');
+    showError("Network error");
   }
 };
 ```
 
 **App Bridge Flow:**
+
 1. Extension calls `applyDiscount(code, value)`
 2. App Bridge serializes action → `{ type: 'ApplyDiscount', payload: { ... } }`
 3. Queues message if checkout iframe not ready
@@ -518,16 +535,18 @@ const applyCode = async () => {
 ### POS Extension (postMessage)
 
 **Pattern: Request Order Summary**
+
 ```typescript
 const api = useExtensionApi();
 
 const getOrderSummary = async () => {
-  const summary = await api.invoke('getOrderSummary', {});
+  const summary = await api.invoke("getOrderSummary", {});
   console.log(summary.total);
 };
 ```
 
 **postMessage Flow:**
+
 1. Extension calls `invoke('getOrderSummary', {})`
 2. postMessage sent to parent: `{ type: 'wl:invoke', id: '123', method: 'getOrderSummary' }`
 3. Parent frame receives, calls registered handler
@@ -542,14 +561,14 @@ const getOrderSummary = async () => {
 ### Unit Tests (Hooks)
 
 ```typescript
-describe('useTheme', () => {
-  it('should read CSS custom properties from parent frame', async () => {
+describe("useTheme", () => {
+  it("should read CSS custom properties from parent frame", async () => {
     // Mock parent frame's computed style
     // Render component with useTheme
     // Assert themeTokens are correct
   });
 
-  it('should observe theme changes and re-render', async () => {
+  it("should observe theme changes and re-render", async () => {
     // Spy on CSS.supports calls
     // Trigger synthetic theme change
     // Assert component re-renders
@@ -560,8 +579,8 @@ describe('useTheme', () => {
 ### Integration Tests (Extensions)
 
 ```typescript
-describe('CheckoutExtension', () => {
-  it('should apply discount via App Bridge', async () => {
+describe("CheckoutExtension", () => {
+  it("should apply discount via App Bridge", async () => {
     // Mock Shopify App Bridge
     // Render extension
     // Simulate user clicking "Apply Discount"
@@ -574,9 +593,9 @@ describe('CheckoutExtension', () => {
 ### Bundle Size Tests
 
 ```typescript
-describe('bundle size', () => {
-  it('checkout extension should be < 50KB gzipped', async () => {
-    const bytes = await getGzippedSize('dist/checkout-extension.js');
+describe("bundle size", () => {
+  it("checkout extension should be < 50KB gzipped", async () => {
+    const bytes = await getGzippedSize("dist/checkout-extension.js");
     expect(bytes).toBeLessThan(50 * 1024);
   });
 });
@@ -597,6 +616,7 @@ describe('bundle size', () => {
 ### 3. Solid.js
 
 **Evaluated** — Solid.js is ~8KB and has fine-grained reactivity (no virtual DOM). However:
+
 - Smaller ecosystem; fewer Shopify examples
 - Steeper learning curve vs React/Preact
 - Hooks API differs from React (scoping rules)
@@ -637,6 +657,7 @@ describe('bundle size', () => {
 ## Implementation Roadmap
 
 **Phase 1: Extension-Core Package**
+
 - [ ] Implement `types.ts` (TypeScript types)
 - [ ] Implement `theme-bridge.ts` (CSS custom property reading)
 - [ ] Implement `app-bridge.ts` (Shopify App Bridge wrapper)
@@ -645,6 +666,7 @@ describe('bundle size', () => {
 - [ ] Publish `@witylogix/extension-core` to npm
 
 **Phase 2: Checkout Extension**
+
 - [ ] Scaffold `extensions/checkout-ui/` with Vite
 - [ ] Create CheckoutForm component (Preact)
 - [ ] Integrate useTheme() for styling
@@ -653,6 +675,7 @@ describe('bundle size', () => {
 - [ ] Test with Shopify checkout simulator
 
 **Phase 3: POS Extension**
+
 - [ ] Scaffold `extensions/pos-ui/` with Vite
 - [ ] Create OrderOverlay component
 - [ ] Implement postMessage API bridge
@@ -660,6 +683,7 @@ describe('bundle size', () => {
 - [ ] Performance profiling (no UI thread blocks)
 
 **Phase 4: Documentation & Examples**
+
 - [ ] Write extension developer guide
 - [ ] Create tutorial: "Build Your First Extension"
 - [ ] Add Storybook stories for common components
@@ -684,29 +708,34 @@ POST /shopify/apps/extensions/register
 ### Extension Version Tracking
 
 Each deployed extension includes version metadata:
+
 ```typescript
 // Window object available to extension
 window.__EXTENSION_METADATA__ = {
-  version: '1.2.3',
-  deployedAt: '2026-03-07T19:34:00Z',
-  commitSha: 'abc123def456'
+  version: "1.2.3",
+  deployedAt: "2026-03-07T19:34:00Z",
+  commitSha: "abc123def456",
 };
 ```
 
 ### Error Tracking
 
 Extension errors are captured and sent to Witylogix monitoring:
+
 ```typescript
 class ErrorBoundary extends Component {
   componentDidCatch(error) {
     // postMessage to parent for reporting
     if (window.parent && window.parent !== window) {
-      window.parent.postMessage({
-        type: 'wl:extension-error',
-        error: error.message,
-        stack: error.stack,
-        version: window.__EXTENSION_METADATA__.version
-      }, '*');
+      window.parent.postMessage(
+        {
+          type: "wl:extension-error",
+          error: error.message,
+          stack: error.stack,
+          version: window.__EXTENSION_METADATA__.version,
+        },
+        "*",
+      );
     }
   }
 }
@@ -727,8 +756,8 @@ class ErrorBoundary extends Component {
 
 ```typescript
 // Only accept messages from expected origin
-window.addEventListener('message', (e) => {
-  if (e.origin !== 'https://square-pos.com') {
+window.addEventListener("message", (e) => {
+  if (e.origin !== "https://square-pos.com") {
     return; // Ignore
   }
   // Process message

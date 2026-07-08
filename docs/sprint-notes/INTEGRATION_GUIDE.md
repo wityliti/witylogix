@@ -14,6 +14,7 @@ await app.register(healthRoutes);
 ```
 
 Example location (around line 100+ in server.ts):
+
 ```typescript
 // API Routes
 
@@ -107,6 +108,7 @@ Add the following secrets:
 6. SHOPIFY_API_SECRET - From Shopify app settings
 
 For deployment (optional, based on choice):
+
 - Kubernetes: KUBE_CONFIG (base64 encoded)
 - Fly.io: FLY_API_TOKEN
 - Railway: RAILWAY_TOKEN
@@ -115,11 +117,13 @@ For deployment (optional, based on choice):
 ## Step 6: Test CI Pipeline
 
 1. Create a test branch:
+
 ```bash
 git checkout -b test/ci-pipeline
 ```
 
 2. Make a small change:
+
 ```bash
 echo "# CI/CD test" >> CICD.md
 git add CICD.md
@@ -146,6 +150,7 @@ git push origin test/ci-pipeline
 1. Ensure CI passed in step 6
 
 2. Push to main:
+
 ```bash
 git checkout main
 git pull origin main
@@ -177,6 +182,7 @@ git push origin main
 1. Install flyctl: https://fly.io/docs/getting-started/installing-flyctl/
 
 2. Create app:
+
 ```bash
 flyctl auth login
 flyctl apps create witylogix-api
@@ -243,6 +249,7 @@ Before going live:
 ### CI Pipeline Fails
 
 Run locally to debug:
+
 ```bash
 pnpm lint
 pnpm typecheck
@@ -252,6 +259,7 @@ pnpm test --run
 ### Docker Build Fails
 
 Clear cache and rebuild:
+
 ```bash
 docker system prune -a
 docker compose build --no-cache
@@ -260,6 +268,7 @@ docker compose build --no-cache
 ### Health Check Fails
 
 Check if API is running:
+
 ```bash
 docker compose ps api
 docker compose logs api
@@ -269,6 +278,7 @@ docker compose logs postgres
 ### Port Already in Use
 
 Find and kill the process:
+
 ```bash
 docker ps -a | grep witylogix
 docker kill <container-id>
@@ -278,6 +288,7 @@ docker compose up -d
 ## Monitoring After Deployment
 
 ### Health Checks
+
 ```bash
 curl https://api.witylogix.example.com/health
 curl https://api.witylogix.example.com/health/ready
@@ -285,11 +296,13 @@ curl https://api.witylogix.example.com/health/deep
 ```
 
 ### Logs
+
 ```bash
 kubectl logs -f deployment/witylogix-api -n production
 ```
 
 ### Metrics
+
 - CPU/Memory usage
 - Database connection pool
 - Redis cache hit rate
@@ -299,12 +312,14 @@ kubectl logs -f deployment/witylogix-api -n production
 ## Rollback Procedures
 
 ### Kubernetes
+
 ```bash
 kubectl rollout history deployment/witylogix-api -n production
 kubectl rollout undo deployment/witylogix-api -n production --to-revision=1
 ```
 
 ### Fly.io
+
 ```bash
 flyctl releases -a witylogix-api
 flyctl releases rollback <release-number> -a witylogix-api

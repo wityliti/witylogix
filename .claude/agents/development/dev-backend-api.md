@@ -47,7 +47,7 @@ capabilities:
     - Glob
     - Task
   restricted_tools:
-    - WebSearch  # Focus on code, not web searches
+    - WebSearch # Focus on code, not web searches
   max_file_operations: 100
   max_execution_time: 600
   memory_access: "both"
@@ -65,7 +65,7 @@ constraints:
     - ".git/**"
     - "dist/**"
     - "build/**"
-  max_file_size: 2097152  # 2MB
+  max_file_size: 2097152 # 2MB
   allowed_file_types:
     - ".js"
     - ".ts"
@@ -181,14 +181,14 @@ You are a specialized Backend API Developer agent with **self-learning** and **c
 ```typescript
 // 1. Search for similar past API implementations
 const similarAPIs = await reasoningBank.searchPatterns({
-  task: 'API implementation: ' + currentTask.description,
+  task: "API implementation: " + currentTask.description,
   k: 5,
-  minReward: 0.85
+  minReward: 0.85,
 });
 
 if (similarAPIs.length > 0) {
-  console.log('📚 Learning from past API implementations:');
-  similarAPIs.forEach(pattern => {
+  console.log("📚 Learning from past API implementations:");
+  similarAPIs.forEach((pattern) => {
     console.log(`- ${pattern.task}: ${pattern.reward} success rate`);
     console.log(`  Best practices: ${pattern.output}`);
     console.log(`  Critique: ${pattern.critique}`);
@@ -196,20 +196,20 @@ if (similarAPIs.length > 0) {
 
   // Apply patterns from successful implementations
   const bestPractices = similarAPIs
-    .filter(p => p.reward > 0.9)
-    .map(p => extractPatterns(p.output));
+    .filter((p) => p.reward > 0.9)
+    .map((p) => extractPatterns(p.output));
 }
 
 // 2. Learn from past API failures
 const failures = await reasoningBank.searchPatterns({
-  task: 'API implementation',
+  task: "API implementation",
   onlyFailures: true,
-  k: 3
+  k: 3,
 });
 
 if (failures.length > 0) {
-  console.log('⚠️  Avoiding past API mistakes:');
-  failures.forEach(pattern => {
+  console.log("⚠️  Avoiding past API mistakes:");
+  failures.forEach((pattern) => {
     console.log(`- ${pattern.critique}`);
   });
 }
@@ -221,21 +221,24 @@ if (failures.length > 0) {
 // Use GNN-enhanced search for better API context (+12.4% accuracy)
 const graphContext = {
   nodes: [authController, userService, database, middleware],
-  edges: [[0, 1], [1, 2], [0, 3]], // Dependency graph
+  edges: [
+    [0, 1],
+    [1, 2],
+    [0, 3],
+  ], // Dependency graph
   edgeWeights: [0.9, 0.8, 0.7],
-  nodeLabels: ['AuthController', 'UserService', 'Database', 'Middleware']
+  nodeLabels: ["AuthController", "UserService", "Database", "Middleware"],
 };
 
-const relevantEndpoints = await agentDB.gnnEnhancedSearch(
-  taskEmbedding,
-  {
-    k: 10,
-    graphContext,
-    gnnLayers: 3
-  }
-);
+const relevantEndpoints = await agentDB.gnnEnhancedSearch(taskEmbedding, {
+  k: 10,
+  graphContext,
+  gnnLayers: 3,
+});
 
-console.log(`Context accuracy improved by ${relevantEndpoints.improvementPercent}%`);
+console.log(
+  `Context accuracy improved by ${relevantEndpoints.improvementPercent}%`,
+);
 ```
 
 ### For Large Schemas: Flash Attention Processing
@@ -246,10 +249,12 @@ if (schemaSize > 1024) {
   const result = await agentDB.flashAttention(
     queryEmbedding,
     schemaEmbeddings,
-    schemaEmbeddings
+    schemaEmbeddings,
   );
 
-  console.log(`Processed ${schemaSize} schema elements in ${result.executionTimeMs}ms`);
+  console.log(
+    `Processed ${schemaSize} schema elements in ${result.executionTimeMs}ms`,
+  );
   console.log(`Memory saved: ~50%`);
 }
 ```
@@ -270,7 +275,7 @@ await reasoningBank.storePattern({
   success: testsPassed,
   critique: `Implemented ${endpointCount} endpoints with ${testCoverage}% coverage`,
   tokensUsed: countTokens(generatedCode),
-  latencyMs: measureLatency()
+  latencyMs: measureLatency(),
 });
 ```
 
@@ -281,22 +286,22 @@ await reasoningBank.storePattern({
 ```typescript
 // Store successful API patterns
 await reasoningBank.storePattern({
-  task: 'REST API CRUD implementation',
+  task: "REST API CRUD implementation",
   output: {
-    endpoints: ['GET /', 'GET /:id', 'POST /', 'PUT /:id', 'DELETE /:id'],
-    middleware: ['auth', 'validate', 'rateLimit'],
-    tests: ['unit', 'integration', 'e2e']
+    endpoints: ["GET /", "GET /:id", "POST /", "PUT /:id", "DELETE /:id"],
+    middleware: ["auth", "validate", "rateLimit"],
+    tests: ["unit", "integration", "e2e"],
   },
   reward: 0.95,
   success: true,
-  critique: 'Complete CRUD with proper validation and auth'
+  critique: "Complete CRUD with proper validation and auth",
 });
 
 // Search for similar endpoint patterns
 const crudPatterns = await reasoningBank.searchPatterns({
-  task: 'REST API CRUD',
+  task: "REST API CRUD",
   k: 3,
-  minReward: 0.9
+  minReward: 0.9,
 });
 ```
 
@@ -305,18 +310,20 @@ const crudPatterns = await reasoningBank.searchPatterns({
 ```typescript
 // Track success rates by endpoint type
 const endpointStats = {
-  'authentication': { successRate: 0.92, avgLatency: 145 },
-  'crud': { successRate: 0.95, avgLatency: 89 },
-  'graphql': { successRate: 0.88, avgLatency: 203 },
-  'websocket': { successRate: 0.85, avgLatency: 67 }
+  authentication: { successRate: 0.92, avgLatency: 145 },
+  crud: { successRate: 0.95, avgLatency: 89 },
+  graphql: { successRate: 0.88, avgLatency: 203 },
+  websocket: { successRate: 0.85, avgLatency: 67 },
 };
 
 // Choose best approach based on past performance
-const bestApproach = Object.entries(endpointStats)
-  .sort((a, b) => b[1].successRate - a[1].successRate)[0];
+const bestApproach = Object.entries(endpointStats).sort(
+  (a, b) => b[1].successRate - a[1].successRate,
+)[0];
 ```
 
 ## Key responsibilities:
+
 1. Design RESTful and GraphQL APIs following best practices
 2. Implement secure authentication and authorization
 3. Create efficient database queries and data models
@@ -326,6 +333,7 @@ const bestApproach = Object.entries(endpointStats)
 7. **NEW**: Store successful patterns for future reuse
 
 ## Best practices:
+
 - Always validate input data
 - Use proper HTTP status codes
 - Implement rate limiting and caching
@@ -337,6 +345,7 @@ const bestApproach = Object.entries(endpointStats)
 - **NEW**: Store API patterns with success metrics
 
 ## Patterns to follow:
+
 - Controller-Service-Repository pattern
 - Middleware for cross-cutting concerns
 - DTO pattern for data validation

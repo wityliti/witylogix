@@ -1,7 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Textarea, Select, Checkbox } from "@/components/ui";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+  Input,
+  Textarea,
+  Select,
+  Checkbox,
+} from "@/components/ui";
 
 export default function FormsPage() {
   const [formData, setFormData] = useState({
@@ -12,10 +22,14 @@ export default function FormsPage() {
     agreeTerms: false,
   });
 
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value, type } = e.target;
     const finalValue =
@@ -98,8 +112,8 @@ export default function FormsPage() {
             Form Components
           </h1>
           <p className="text-gray-300 max-w-2xl">
-            Complete showcase of form components with validation states, accessibility
-            features, and real-world usage patterns.
+            Complete showcase of form components with validation states,
+            accessibility features, and real-world usage patterns.
           </p>
         </div>
       </div>
@@ -257,10 +271,7 @@ export default function FormsPage() {
 
                 {/* Form Actions */}
                 <div className="flex gap-3 pt-4 border-t border-[#1e1e2e]">
-                  <Button
-                    type="submit"
-                    variant="primary"
-                  >
+                  <Button type="submit" variant="primary">
                     Submit Form
                   </Button>
                   <Button
@@ -358,9 +369,7 @@ export default function FormsPage() {
                 <p>
                   Labels are properly connected to inputs for screen readers
                 </p>
-                <p>
-                  Labels have font-semibold for visual hierarchy
-                </p>
+                <p>Labels have font-semibold for visual hierarchy</p>
               </CardContent>
             </Card>
 
@@ -369,15 +378,9 @@ export default function FormsPage() {
                 <CardTitle className="text-sm">Error Messages</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-gray-300 space-y-2">
-                <p>
-                  Error messages use color and icon, not color alone
-                </p>
-                <p>
-                  Error text is associated with input for screen readers
-                </p>
-                <p>
-                  Errors appear below input field consistently
-                </p>
+                <p>Error messages use color and icon, not color alone</p>
+                <p>Error text is associated with input for screen readers</p>
+                <p>Errors appear below input field consistently</p>
               </CardContent>
             </Card>
 
@@ -386,15 +389,9 @@ export default function FormsPage() {
                 <CardTitle className="text-sm">Focus Management</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-gray-300 space-y-2">
-                <p>
-                  All inputs have visible focus indicators
-                </p>
-                <p>
-                  Focus outline uses --blue-500 color
-                </p>
-                <p>
-                  Tab order follows logical form structure
-                </p>
+                <p>All inputs have visible focus indicators</p>
+                <p>Focus outline uses --blue-500 color</p>
+                <p>Tab order follows logical form structure</p>
               </CardContent>
             </Card>
 
@@ -403,15 +400,9 @@ export default function FormsPage() {
                 <CardTitle className="text-sm">Helper Text</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-gray-300 space-y-2">
-                <p>
-                  Hint text provides context without overwhelming users
-                </p>
-                <p>
-                  Helper text is associated with input
-                </p>
-                <p>
-                  Text uses secondary color for visual distinction
-                </p>
+                <p>Hint text provides context without overwhelming users</p>
+                <p>Helper text is associated with input</p>
+                <p>Text uses secondary color for visual distinction</p>
               </CardContent>
             </Card>
           </div>
@@ -419,9 +410,7 @@ export default function FormsPage() {
 
         {/* Input Types */}
         <section>
-          <h2 className="text-2xl font-bold text-white mb-6">
-            Input Types
-          </h2>
+          <h2 className="text-2xl font-bold text-white mb-6">Input Types</h2>
 
           <div className="space-y-4">
             <Card>
@@ -492,7 +481,8 @@ export default function FormsPage() {
                 <CardTitle className="text-sm">Labels are Required</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-gray-300">
-                Always use the label prop on inputs. Use an asterisk (*) for required fields.
+                Always use the label prop on inputs. Use an asterisk (*) for
+                required fields.
               </CardContent>
             </Card>
 
@@ -501,7 +491,8 @@ export default function FormsPage() {
                 <CardTitle className="text-sm">Clear Error Messages</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-gray-300">
-                Error messages should be specific and actionable. Tell users what went wrong and how to fix it.
+                Error messages should be specific and actionable. Tell users
+                what went wrong and how to fix it.
               </CardContent>
             </Card>
 
@@ -510,7 +501,8 @@ export default function FormsPage() {
                 <CardTitle className="text-sm">Provide Helper Text</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-gray-300">
-                Use the hint prop to provide context. For email fields, explain that it will be kept private.
+                Use the hint prop to provide context. For email fields, explain
+                that it will be kept private.
               </CardContent>
             </Card>
 
@@ -519,25 +511,32 @@ export default function FormsPage() {
                 <CardTitle className="text-sm">Group Related Fields</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-gray-300">
-                Use whitespace and card sections to group logically related form fields together.
+                Use whitespace and card sections to group logically related form
+                fields together.
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm">Validate on Blur and Submit</CardTitle>
+                <CardTitle className="text-sm">
+                  Validate on Blur and Submit
+                </CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-gray-300">
-                Validate individual fields on blur, then validate the entire form on submit. Use the error prop to display messages.
+                Validate individual fields on blur, then validate the entire
+                form on submit. Use the error prop to display messages.
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm">Disable Submit While Loading</CardTitle>
+                <CardTitle className="text-sm">
+                  Disable Submit While Loading
+                </CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-gray-300">
-                Always disable the submit button while the form is being submitted to prevent duplicate submissions.
+                Always disable the submit button while the form is being
+                submitted to prevent duplicate submissions.
               </CardContent>
             </Card>
           </div>

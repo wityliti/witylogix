@@ -1,60 +1,75 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import dynamic from 'next/dynamic';
-import { useState } from 'react';
-import { Header } from '@/components/layout/header';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { cn } from '@/lib/utils';
-import { useCustomerSegmentStats } from '@/hooks/use-customers';
+import Link from "next/link";
+import dynamic from "next/dynamic";
+import { useState } from "react";
+import { Header } from "@/components/layout/header";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { cn } from "@/lib/utils";
+import { useCustomerSegmentStats } from "@/hooks/use-customers";
 import {
-  ArrowLeft, Star, TrendingUp, Users, MapPin, BarChart2, Map as MapIcon,
-} from 'lucide-react';
+  ArrowLeft,
+  Star,
+  TrendingUp,
+  Users,
+  MapPin,
+  BarChart2,
+  Map as MapIcon,
+} from "lucide-react";
 
 // Leaflet map for top-city visualization
 const WLMap = dynamic(
-  () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
-  { ssr: false, loading: () => <div className="h-full bg-wl-bg-root rounded-xl animate-pulse" /> },
+  () => import("@/components/map/wl-map").then((m) => ({ default: m.WLMap })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full bg-wl-bg-root rounded-xl animate-pulse" />
+    ),
+  },
 );
 
-const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+const fmt = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
 const fmtPct = (val: number, total: number) =>
-  total > 0 ? `${((val / total) * 100).toFixed(1)}%` : '0%';
+  total > 0 ? `${((val / total) * 100).toFixed(1)}%` : "0%";
 
 const TIER_CONFIG = {
   enterprise: {
-    label: 'Enterprise',
-    color: '#f59e0b',
-    bgClass: 'bg-amber-400/10 border-amber-400/30',
-    dotClass: 'bg-amber-400',
-    badgeVariant: 'warning' as const,
-    description: 'Top 5%+ by lifetime spend — highest-value accounts',
+    label: "Enterprise",
+    color: "#f59e0b",
+    bgClass: "bg-amber-400/10 border-amber-400/30",
+    dotClass: "bg-amber-400",
+    badgeVariant: "warning" as const,
+    description: "Top 5%+ by lifetime spend — highest-value accounts",
   },
   premium: {
-    label: 'Premium',
-    color: '#60a5fa',
-    bgClass: 'bg-blue-400/10 border-blue-400/30',
-    dotClass: 'bg-blue-400',
-    badgeVariant: 'primary' as const,
-    description: 'Regular buyers with solid order history',
+    label: "Premium",
+    color: "#60a5fa",
+    bgClass: "bg-blue-400/10 border-blue-400/30",
+    dotClass: "bg-blue-400",
+    badgeVariant: "primary" as const,
+    description: "Regular buyers with solid order history",
   },
   standard: {
-    label: 'Standard',
-    color: '#6b7280',
-    bgClass: 'bg-gray-500/10 border-gray-500/30',
-    dotClass: 'bg-gray-500',
-    badgeVariant: 'default' as const,
-    description: 'New or low-frequency customers',
+    label: "Standard",
+    color: "#6b7280",
+    bgClass: "bg-gray-500/10 border-gray-500/30",
+    dotClass: "bg-gray-500",
+    badgeVariant: "default" as const,
+    description: "New or low-frequency customers",
   },
 } as const;
 
 export default function CustomerSegmentsPage() {
   const { data: stats, loading, error, refetch } = useCustomerSegmentStats();
-  const [activeView, setActiveView] = useState<'cards' | 'geo'>('cards');
+  const [activeView, setActiveView] = useState<"cards" | "geo">("cards");
 
   const total = stats?.total ?? 0;
 
@@ -62,7 +77,11 @@ export default function CustomerSegmentsPage() {
     <>
       <Header
         title="Customer Segments"
-        subtitle={loading ? 'Loading…' : `${total} customers across ${Object.keys(stats?.tiers ?? {}).length} tiers`}
+        subtitle={
+          loading
+            ? "Loading…"
+            : `${total} customers across ${Object.keys(stats?.tiers ?? {}).length} tiers`
+        }
         actions={
           <div className="flex gap-2">
             <Link href="/customers">
@@ -72,19 +91,23 @@ export default function CustomerSegmentsPage() {
             </Link>
             <div className="flex rounded-md border border-wl-border-default overflow-hidden">
               <button
-                onClick={() => setActiveView('cards')}
+                onClick={() => setActiveView("cards")}
                 className={cn(
-                  'px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors',
-                  activeView === 'cards' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white',
+                  "px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors",
+                  activeView === "cards"
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-400 hover:text-white",
                 )}
               >
                 <BarChart2 className="w-3.5 h-3.5" /> Tiers
               </button>
               <button
-                onClick={() => setActiveView('geo')}
+                onClick={() => setActiveView("geo")}
                 className={cn(
-                  'px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors',
-                  activeView === 'geo' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white',
+                  "px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors",
+                  activeView === "geo"
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-400 hover:text-white",
                 )}
               >
                 <MapIcon className="w-3.5 h-3.5" /> Geography
@@ -96,19 +119,23 @@ export default function CustomerSegmentsPage() {
 
       <div className="p-6 space-y-6">
         {error && !loading && (
-          <ErrorState title="Failed to load segment data" error={error} onRetry={() => refetch()} />
+          <ErrorState
+            title="Failed to load segment data"
+            error={error}
+            onRetry={() => refetch()}
+          />
         )}
 
-        {activeView === 'cards' && (
+        {activeView === "cards" && (
           <>
             {/* Tier breakdown */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {(['enterprise', 'premium', 'standard'] as const).map((tier) => {
+              {(["enterprise", "premium", "standard"] as const).map((tier) => {
                 const cfg = TIER_CONFIG[tier];
                 const seg = stats?.tiers?.[tier];
 
                 return (
-                  <Card key={tier} className={cn('p-5 border', cfg.bgClass)}>
+                  <Card key={tier} className={cn("p-5 border", cfg.bgClass)}>
                     {loading ? (
                       <div className="space-y-3">
                         <Skeleton type="text" className="w-24 h-5" />
@@ -119,16 +146,27 @@ export default function CustomerSegmentsPage() {
                       <>
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
-                            <span className={cn('w-3 h-3 rounded-full', cfg.dotClass)} />
-                            <span className="font-semibold text-white text-sm">{cfg.label}</span>
+                            <span
+                              className={cn(
+                                "w-3 h-3 rounded-full",
+                                cfg.dotClass,
+                              )}
+                            />
+                            <span className="font-semibold text-white text-sm">
+                              {cfg.label}
+                            </span>
                           </div>
-                          <Badge variant={cfg.badgeVariant}>{fmtPct(seg?.count ?? 0, total)}</Badge>
+                          <Badge variant={cfg.badgeVariant}>
+                            {fmtPct(seg?.count ?? 0, total)}
+                          </Badge>
                         </div>
 
                         <div className="text-3xl font-bold text-white mb-1">
                           {(seg?.count ?? 0).toLocaleString()}
                         </div>
-                        <div className="text-xs text-gray-500 mb-4">customers</div>
+                        <div className="text-xs text-gray-500 mb-4">
+                          customers
+                        </div>
 
                         <div className="space-y-2 text-xs border-t border-white/[0.06] pt-3">
                           <div className="flex justify-between">
@@ -140,13 +178,17 @@ export default function CustomerSegmentsPage() {
                           <div className="flex justify-between">
                             <span className="text-gray-500">Avg orders</span>
                             <span className="text-gray-200 font-semibold">
-                              {seg && seg.count > 0 ? (seg.totalOrders / seg.count).toFixed(1) : '0'}
+                              {seg && seg.count > 0
+                                ? (seg.totalOrders / seg.count).toFixed(1)
+                                : "0"}
                             </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-500">Avg spend</span>
                             <span className="text-gray-200 font-semibold">
-                              {seg && seg.count > 0 ? fmt.format(seg.totalSpent / seg.count) : '—'}
+                              {seg && seg.count > 0
+                                ? fmt.format(seg.totalSpent / seg.count)
+                                : "—"}
                             </span>
                           </div>
                         </div>
@@ -173,23 +215,27 @@ export default function CustomerSegmentsPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-4">
-                  {(['active', 'inactive'] as const).map((status) => {
+                  {(["active", "inactive"] as const).map((status) => {
                     const count = stats?.statuses?.[status] ?? 0;
                     return (
                       <div
                         key={status}
                         className={cn(
-                          'p-4 rounded-lg border',
-                          status === 'active'
-                            ? 'bg-green-400/5 border-green-400/20'
-                            : 'bg-gray-500/5 border-gray-500/20',
+                          "p-4 rounded-lg border",
+                          status === "active"
+                            ? "bg-green-400/5 border-green-400/20"
+                            : "bg-gray-500/5 border-gray-500/20",
                         )}
                       >
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm text-gray-300 capitalize font-medium">
                             {status}
                           </span>
-                          <Badge variant={status === 'active' ? 'success' : 'default'}>
+                          <Badge
+                            variant={
+                              status === "active" ? "success" : "default"
+                            }
+                          >
                             {fmtPct(count, total)}
                           </Badge>
                         </div>
@@ -197,16 +243,18 @@ export default function CustomerSegmentsPage() {
                           {count.toLocaleString()}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
-                          {status === 'active'
-                            ? 'Have placed at least one order'
-                            : 'No orders on record'}
+                          {status === "active"
+                            ? "Have placed at least one order"
+                            : "No orders on record"}
                         </div>
                         {/* Progress bar */}
                         <div className="mt-3 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                           <div
                             className={cn(
-                              'h-full rounded-full transition-all',
-                              status === 'active' ? 'bg-green-400' : 'bg-gray-500',
+                              "h-full rounded-full transition-all",
+                              status === "active"
+                                ? "bg-green-400"
+                                : "bg-gray-500",
                             )}
                             style={{ width: fmtPct(count, total) }}
                           />
@@ -224,28 +272,53 @@ export default function CustomerSegmentsPage() {
                 <Star className="w-4 h-4 text-amber-400" /> Segment Criteria
               </h3>
               <div className="space-y-3 text-sm">
-                {([
-                  { tier: 'enterprise', rule: 'Lifetime spend ≥ $5,000', color: 'text-amber-400' },
-                  { tier: 'premium', rule: 'Lifetime spend $1,000 – $4,999', color: 'text-blue-400' },
-                  { tier: 'standard', rule: 'Lifetime spend < $1,000', color: 'text-gray-400' },
-                ] as const).map(({ tier, rule, color }) => (
-                  <div key={tier} className="flex items-center justify-between py-2 border-b border-wl-border-default last:border-0">
+                {(
+                  [
+                    {
+                      tier: "enterprise",
+                      rule: "Lifetime spend ≥ $5,000",
+                      color: "text-amber-400",
+                    },
+                    {
+                      tier: "premium",
+                      rule: "Lifetime spend $1,000 – $4,999",
+                      color: "text-blue-400",
+                    },
+                    {
+                      tier: "standard",
+                      rule: "Lifetime spend < $1,000",
+                      color: "text-gray-400",
+                    },
+                  ] as const
+                ).map(({ tier, rule, color }) => (
+                  <div
+                    key={tier}
+                    className="flex items-center justify-between py-2 border-b border-wl-border-default last:border-0"
+                  >
                     <div className="flex items-center gap-2">
-                      <span className={cn('w-2 h-2 rounded-full', TIER_CONFIG[tier].dotClass)} />
-                      <span className="capitalize font-medium text-white">{TIER_CONFIG[tier].label}</span>
+                      <span
+                        className={cn(
+                          "w-2 h-2 rounded-full",
+                          TIER_CONFIG[tier].dotClass,
+                        )}
+                      />
+                      <span className="capitalize font-medium text-white">
+                        {TIER_CONFIG[tier].label}
+                      </span>
                     </div>
-                    <span className={cn('text-xs', color)}>{rule}</span>
+                    <span className={cn("text-xs", color)}>{rule}</span>
                   </div>
                 ))}
               </div>
               <p className="text-xs text-gray-500 mt-3">
-                Tiers are computed automatically based on cumulative spend synced from your store.
+                Tiers are computed automatically based on cumulative spend
+                synced from your store.
               </p>
             </Card>
           </>
         )}
 
-        {activeView === 'geo' && (
+        {activeView === "geo" && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Top cities table */}
             <Card className="overflow-hidden p-0">
@@ -263,7 +336,9 @@ export default function CustomerSegmentsPage() {
               ) : !stats?.topCities || stats.topCities.length === 0 ? (
                 <div className="p-10 text-center">
                   <MapPin className="w-8 h-8 text-gray-600 mx-auto mb-3" />
-                  <p className="text-sm text-gray-400">No city data available</p>
+                  <p className="text-sm text-gray-400">
+                    No city data available
+                  </p>
                   <p className="text-xs text-gray-500 mt-1">
                     Sync customers with addresses to see geographic breakdown
                   </p>
@@ -273,11 +348,21 @@ export default function CustomerSegmentsPage() {
                   <table className="w-full border-collapse text-sm">
                     <thead>
                       <tr className="border-b border-wl-border-default bg-wl-bg-surface">
-                        <th className="p-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">#</th>
-                        <th className="p-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">City</th>
-                        <th className="p-3 px-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">Customers</th>
-                        <th className="p-3 px-4 text-right text-xs font-semibold text-gray-400 uppercase tracking-wide">Revenue</th>
-                        <th className="p-3 px-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">Avg Orders</th>
+                        <th className="p-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                          #
+                        </th>
+                        <th className="p-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                          City
+                        </th>
+                        <th className="p-3 px-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                          Customers
+                        </th>
+                        <th className="p-3 px-4 text-right text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                          Revenue
+                        </th>
+                        <th className="p-3 px-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                          Avg Orders
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -287,18 +372,26 @@ export default function CustomerSegmentsPage() {
                           <tr
                             key={city.city}
                             className={cn(
-                              'border-b border-wl-border-default hover:bg-wl-bg-elevated/30 transition-colors',
-                              i % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-surface/40',
+                              "border-b border-wl-border-default hover:bg-wl-bg-elevated/30 transition-colors",
+                              i % 2 === 0
+                                ? "bg-transparent"
+                                : "bg-wl-bg-surface/40",
                             )}
                           >
-                            <td className="p-3 px-4 text-xs text-gray-500 font-mono">{i + 1}</td>
+                            <td className="p-3 px-4 text-xs text-gray-500 font-mono">
+                              {i + 1}
+                            </td>
                             <td className="p-3 px-4">
                               <div className="flex items-center gap-2">
                                 <div
                                   className="h-1.5 bg-blue-500 rounded-full"
-                                  style={{ width: `${Math.max(4, (city.count / maxCount) * 60)}px` }}
+                                  style={{
+                                    width: `${Math.max(4, (city.count / maxCount) * 60)}px`,
+                                  }}
                                 />
-                                <span className="text-white text-xs font-medium">{city.city}</span>
+                                <span className="text-white text-xs font-medium">
+                                  {city.city}
+                                </span>
                               </div>
                             </td>
                             <td className="p-3 px-4 text-center font-semibold text-white">
@@ -323,84 +416,127 @@ export default function CustomerSegmentsPage() {
             <div className="space-y-4">
               <Card className="p-5">
                 <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-gray-500" /> Revenue Distribution by Tier
+                  <TrendingUp className="w-4 h-4 text-gray-500" /> Revenue
+                  Distribution by Tier
                 </h3>
                 {loading ? (
                   <div className="space-y-3">
-                    {[0, 1, 2].map((i) => <Skeleton key={i} type="rect" className="h-8" />)}
+                    {[0, 1, 2].map((i) => (
+                      <Skeleton key={i} type="rect" className="h-8" />
+                    ))}
                   </div>
-                ) : stats?.tiers ? (() => {
-                  const totalRevenue = Object.values(stats.tiers).reduce((s, t) => s + t.totalSpent, 0);
-                  return (
-                    <div className="space-y-4">
-                      {(['enterprise', 'premium', 'standard'] as const).map((tier) => {
-                        const seg = stats.tiers[tier];
-                        const pct = totalRevenue > 0 ? (seg.totalSpent / totalRevenue) * 100 : 0;
-                        const cfg = TIER_CONFIG[tier];
-                        return (
-                          <div key={tier}>
-                            <div className="flex items-center justify-between text-xs mb-1.5">
-                              <div className="flex items-center gap-2">
-                                <span className={cn('w-2 h-2 rounded-full', cfg.dotClass)} />
-                                <span className="text-gray-300 capitalize font-medium">{cfg.label}</span>
+                ) : stats?.tiers ? (
+                  (() => {
+                    const totalRevenue = Object.values(stats.tiers).reduce(
+                      (s, t) => s + t.totalSpent,
+                      0,
+                    );
+                    return (
+                      <div className="space-y-4">
+                        {(["enterprise", "premium", "standard"] as const).map(
+                          (tier) => {
+                            const seg = stats.tiers[tier];
+                            const pct =
+                              totalRevenue > 0
+                                ? (seg.totalSpent / totalRevenue) * 100
+                                : 0;
+                            const cfg = TIER_CONFIG[tier];
+                            return (
+                              <div key={tier}>
+                                <div className="flex items-center justify-between text-xs mb-1.5">
+                                  <div className="flex items-center gap-2">
+                                    <span
+                                      className={cn(
+                                        "w-2 h-2 rounded-full",
+                                        cfg.dotClass,
+                                      )}
+                                    />
+                                    <span className="text-gray-300 capitalize font-medium">
+                                      {cfg.label}
+                                    </span>
+                                  </div>
+                                  <span className="text-gray-400">
+                                    {fmt.format(seg.totalSpent)} (
+                                    {pct.toFixed(1)}%)
+                                  </span>
+                                </div>
+                                <div className="h-2 bg-wl-bg-overlay rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full rounded-full transition-all duration-500"
+                                    style={{
+                                      width: `${pct}%`,
+                                      backgroundColor: cfg.color,
+                                    }}
+                                  />
+                                </div>
                               </div>
-                              <span className="text-gray-400">
-                                {fmt.format(seg.totalSpent)} ({pct.toFixed(1)}%)
-                              </span>
-                            </div>
-                            <div className="h-2 bg-wl-bg-overlay rounded-full overflow-hidden">
-                              <div
-                                className="h-full rounded-full transition-all duration-500"
-                                style={{ width: `${pct}%`, backgroundColor: cfg.color }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })() : null}
+                            );
+                          },
+                        )}
+                      </div>
+                    );
+                  })()
+                ) : null}
               </Card>
 
               {/* Customer count by tier */}
               <Card className="p-5">
                 <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-gray-500" /> Customer Count by Tier
+                  <Users className="w-4 h-4 text-gray-500" /> Customer Count by
+                  Tier
                 </h3>
                 {loading ? (
                   <div className="space-y-3">
-                    {[0, 1, 2].map((i) => <Skeleton key={i} type="rect" className="h-8" />)}
+                    {[0, 1, 2].map((i) => (
+                      <Skeleton key={i} type="rect" className="h-8" />
+                    ))}
                   </div>
-                ) : stats?.tiers ? (() => {
-                  return (
-                    <div className="space-y-4">
-                      {(['enterprise', 'premium', 'standard'] as const).map((tier) => {
-                        const seg = stats.tiers[tier];
-                        const pct = total > 0 ? (seg.count / total) * 100 : 0;
-                        const cfg = TIER_CONFIG[tier];
-                        return (
-                          <div key={tier}>
-                            <div className="flex items-center justify-between text-xs mb-1.5">
-                              <div className="flex items-center gap-2">
-                                <span className={cn('w-2 h-2 rounded-full', cfg.dotClass)} />
-                                <span className="text-gray-300 capitalize font-medium">{cfg.label}</span>
+                ) : stats?.tiers ? (
+                  (() => {
+                    return (
+                      <div className="space-y-4">
+                        {(["enterprise", "premium", "standard"] as const).map(
+                          (tier) => {
+                            const seg = stats.tiers[tier];
+                            const pct =
+                              total > 0 ? (seg.count / total) * 100 : 0;
+                            const cfg = TIER_CONFIG[tier];
+                            return (
+                              <div key={tier}>
+                                <div className="flex items-center justify-between text-xs mb-1.5">
+                                  <div className="flex items-center gap-2">
+                                    <span
+                                      className={cn(
+                                        "w-2 h-2 rounded-full",
+                                        cfg.dotClass,
+                                      )}
+                                    />
+                                    <span className="text-gray-300 capitalize font-medium">
+                                      {cfg.label}
+                                    </span>
+                                  </div>
+                                  <span className="text-gray-400">
+                                    {seg.count.toLocaleString()} (
+                                    {pct.toFixed(1)}%)
+                                  </span>
+                                </div>
+                                <div className="h-2 bg-wl-bg-overlay rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full rounded-full transition-all duration-500"
+                                    style={{
+                                      width: `${pct}%`,
+                                      backgroundColor: cfg.color,
+                                    }}
+                                  />
+                                </div>
                               </div>
-                              <span className="text-gray-400">
-                                {seg.count.toLocaleString()} ({pct.toFixed(1)}%)
-                              </span>
-                            </div>
-                            <div className="h-2 bg-wl-bg-overlay rounded-full overflow-hidden">
-                              <div
-                                className="h-full rounded-full transition-all duration-500"
-                                style={{ width: `${pct}%`, backgroundColor: cfg.color }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })() : null}
+                            );
+                          },
+                        )}
+                      </div>
+                    );
+                  })()
+                ) : null}
               </Card>
             </div>
           </div>

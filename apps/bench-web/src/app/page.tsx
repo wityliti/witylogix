@@ -20,7 +20,8 @@ export default async function OverviewPage() {
     <div className="max-w-4xl">
       <h1 className="text-2xl font-semibold mb-1">Overview</h1>
       <p className="text-gray-500 mb-8 text-sm">
-        Live status from the Witylogix admin API (<code className="font-mono">/internal/bench/health</code>).
+        Live status from the Witylogix admin API (
+        <code className="font-mono">/internal/bench/health</code>).
       </p>
 
       {h.ok ? (

@@ -57,7 +57,12 @@ export interface Zone {
   isActive: boolean;
 }
 
-export type RateMethod = "flat" | "per_km" | "per_mile" | "weight_based" | "cart_value_tiers";
+export type RateMethod =
+  | "flat"
+  | "per_km"
+  | "per_mile"
+  | "weight_based"
+  | "cart_value_tiers";
 
 export interface ZoneRate {
   zoneId: string;

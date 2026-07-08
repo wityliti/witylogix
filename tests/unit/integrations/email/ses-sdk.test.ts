@@ -102,7 +102,8 @@ describe("SesSDKClient", () => {
         },
       });
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       const headers = fetchCall[1].headers;
       expect(headers.Authorization).toContain("AWS4-HMAC-SHA256");
     });
@@ -221,7 +222,8 @@ describe("SesSDKClient", () => {
         subjectPart: "Updated Subject",
       });
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[1].method).toBe("PUT");
     });
 
@@ -234,7 +236,8 @@ describe("SesSDKClient", () => {
 
       await client.deleteTemplate("welcome");
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[1].method).toBe("DELETE");
     });
 
@@ -267,10 +270,7 @@ describe("SesSDKClient", () => {
         headers: new Map([["content-type", "application/json"]]),
       });
 
-      const result = await client.testTemplate(
-        "welcome",
-        '{"name":"John"}'
-      );
+      const result = await client.testTemplate("welcome", '{"name":"John"}');
 
       expect(result).toBeDefined();
     });
@@ -300,7 +300,8 @@ describe("SesSDKClient", () => {
 
       await client.deleteConfigSet("test-config-set");
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[1].method).toBe("DELETE");
     });
 
@@ -433,7 +434,8 @@ describe("SesSDKClient", () => {
 
       await client.deleteSuppressedDestination("bounced@example.com");
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[1].method).toBe("DELETE");
     });
   });
@@ -499,7 +501,7 @@ describe("SesSDKClient", () => {
             subject: { data: "Test" },
             body: { text: { data: "Test" } },
           },
-        })
+        }),
       ).rejects.toThrow("AWS SES API error");
     });
 
@@ -536,7 +538,8 @@ describe("SesSDKClient", () => {
         },
       });
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       const headers = fetchCall[1].headers;
       expect(headers["X-Amz-Security-Token"]).toBe("test-session-token");
     });

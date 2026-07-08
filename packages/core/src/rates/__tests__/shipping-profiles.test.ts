@@ -33,7 +33,7 @@ const createPackage = (
   weight = 5,
   weightUnit = "lb" as const,
   quantity = 1,
-  declaredValue = 100
+  declaredValue = 100,
 ): RatePackage => ({
   weight,
   weightUnit,
@@ -250,10 +250,7 @@ describe("Shipping Profile Rate Calculator", () => {
       const request: RateCalculationRequest = {
         origin: createAddress("94105"),
         destination: createAddress("10001"),
-        packages: [
-          createPackage(5, "lb", 2),
-          createPackage(10, "lb", 1),
-        ],
+        packages: [createPackage(5, "lb", 2), createPackage(10, "lb", 1)],
         shipDate: new Date(),
         options: {},
       };

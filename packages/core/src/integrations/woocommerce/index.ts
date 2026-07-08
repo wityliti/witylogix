@@ -8,10 +8,7 @@ export {
   createWooCommerceClient as createWCRestApiClient,
 } from "./wc-client.js";
 
-export {
-  OrderSyncService,
-  createOrderSyncService,
-} from "./order-sync.js";
+export { OrderSyncService, createOrderSyncService } from "./order-sync.js";
 
 export {
   ProductSyncService,
@@ -23,10 +20,7 @@ export {
   createCustomerSyncService,
 } from "./customer-sync.js";
 
-export {
-  WebhookConsumer,
-  createWebhookConsumer,
-} from "./webhook-consumer.js";
+export { WebhookConsumer, createWebhookConsumer } from "./webhook-consumer.js";
 
 export type {
   WCOrder,

@@ -68,10 +68,7 @@ export type { TenantIntegrationConfig } from "./resolver.js";
 
 // ─── Metering ────────────────────────────────────────────────
 
-export {
-  onIntegrationMeter,
-  emitIntegrationEvent,
-} from "./metering.js";
+export { onIntegrationMeter, emitIntegrationEvent } from "./metering.js";
 
 export type { IntegrationMeteringCallback } from "./metering.js";
 

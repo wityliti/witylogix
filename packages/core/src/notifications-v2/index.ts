@@ -57,13 +57,13 @@ export { SMSChannel } from "./channels/sms-channel.js";
 export type { SMSParams } from "./channels/sms-channel.js";
 
 export { WhatsAppChannel } from "./channels/whatsapp-channel.js";
-export type { WhatsAppParams, WhatsAppTemplateType } from "./channels/whatsapp-channel.js";
+export type {
+  WhatsAppParams,
+  WhatsAppTemplateType,
+} from "./channels/whatsapp-channel.js";
 
 export { PushChannel } from "./channels/push-channel.js";
-export type {
-  PushSubscription,
-  PushParams,
-} from "./channels/push-channel.js";
+export type { PushSubscription, PushParams } from "./channels/push-channel.js";
 
 // Webhook Manager
 export { WebhookManager } from "./webhook-delivery.js";

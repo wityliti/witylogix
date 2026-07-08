@@ -88,7 +88,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   try {
     const response = await client.get<{ data: CustomerDetailData }>(
-      `/api/v4/customers/${customerId}`
+      `/api/v4/customers/${customerId}`,
     );
 
     return response.data;
@@ -106,7 +106,9 @@ export default function CustomerDetail() {
   const averageOrderValue =
     customer.ordersCount > 0 ? customer.totalSpent / customer.ordersCount : 0;
 
-  const getOrderStatusTone = (status: string): "success" | "info" | "warning" | "critical" | undefined => {
+  const getOrderStatusTone = (
+    status: string,
+  ): "success" | "info" | "warning" | "critical" | undefined => {
     switch (status.toLowerCase()) {
       case "completed":
         return "success";
@@ -153,7 +155,9 @@ export default function CustomerDetail() {
         <Badge tone={getOrderStatusTone(order.status)}>{order.status}</Badge>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" variant="bodySm">{order.itemsCount}</Text>
+        <Text as="span" variant="bodySm">
+          {order.itemsCount}
+        </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
         <Text as="span" variant="bodyMd" fontWeight="semibold">
@@ -195,54 +199,104 @@ export default function CustomerDetail() {
           <InlineGrid columns={{ xs: 2, sm: 3, md: 5 }} gap="400">
             <Card>
               <BlockStack gap="100" inlineAlign="center">
-                <Text as="p" variant="headingLg" fontWeight="bold" alignment="center">
+                <Text
+                  as="p"
+                  variant="headingLg"
+                  fontWeight="bold"
+                  alignment="center"
+                >
                   {customer.ordersCount}
                 </Text>
-                <Text as="span" variant="bodySm" tone="subdued" alignment="center">
+                <Text
+                  as="span"
+                  variant="bodySm"
+                  tone="subdued"
+                  alignment="center"
+                >
                   Total Orders
                 </Text>
               </BlockStack>
             </Card>
             <Card>
               <BlockStack gap="100" inlineAlign="center">
-                <Text as="p" variant="headingLg" fontWeight="bold" alignment="center">
+                <Text
+                  as="p"
+                  variant="headingLg"
+                  fontWeight="bold"
+                  alignment="center"
+                >
                   ${Number(customer.totalSpent).toFixed(2)}
                 </Text>
-                <Text as="span" variant="bodySm" tone="subdued" alignment="center">
+                <Text
+                  as="span"
+                  variant="bodySm"
+                  tone="subdued"
+                  alignment="center"
+                >
                   Total Spent
                 </Text>
               </BlockStack>
             </Card>
             <Card>
               <BlockStack gap="100" inlineAlign="center">
-                <Text as="p" variant="headingLg" fontWeight="bold" alignment="center">
+                <Text
+                  as="p"
+                  variant="headingLg"
+                  fontWeight="bold"
+                  alignment="center"
+                >
                   ${Number(averageOrderValue).toFixed(2)}
                 </Text>
-                <Text as="span" variant="bodySm" tone="subdued" alignment="center">
+                <Text
+                  as="span"
+                  variant="bodySm"
+                  tone="subdued"
+                  alignment="center"
+                >
                   Average Order Value
                 </Text>
               </BlockStack>
             </Card>
             <Card>
               <BlockStack gap="100" inlineAlign="center">
-                <Text as="p" variant="headingLg" fontWeight="bold" alignment="center">
+                <Text
+                  as="p"
+                  variant="headingLg"
+                  fontWeight="bold"
+                  alignment="center"
+                >
                   {customer.firstOrderDate
                     ? new Date(customer.firstOrderDate).toLocaleDateString()
                     : "\u2014"}
                 </Text>
-                <Text as="span" variant="bodySm" tone="subdued" alignment="center">
+                <Text
+                  as="span"
+                  variant="bodySm"
+                  tone="subdued"
+                  alignment="center"
+                >
                   First Order
                 </Text>
               </BlockStack>
             </Card>
             <Card>
               <BlockStack gap="100" inlineAlign="center">
-                <Text as="p" variant="headingLg" fontWeight="bold" alignment="center">
+                <Text
+                  as="p"
+                  variant="headingLg"
+                  fontWeight="bold"
+                  alignment="center"
+                >
                   {customer.lastOrderDate
                     ? new Date(customer.lastOrderDate).toLocaleDateString()
                     : "\u2014"}
                 </Text>
-                <Text as="span" variant="bodySm" tone="subdued" alignment="center">
+                <Text
+                  as="span"
+                  variant="bodySm"
+                  tone="subdued"
+                  alignment="center"
+                >
                   Last Order
                 </Text>
               </BlockStack>

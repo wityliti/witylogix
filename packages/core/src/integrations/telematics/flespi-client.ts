@@ -318,7 +318,9 @@ export class FlespiClient extends TelematicsAdapter {
    * Get diagnostics for a device
    * GET /gw/devices/{id}/messages with time range
    */
-  async getVehicleDiagnostics(vehicleId: string): Promise<NormalizedDiagnostic> {
+  async getVehicleDiagnostics(
+    vehicleId: string,
+  ): Promise<NormalizedDiagnostic> {
     const cacheKey = `flespi:diagnostics:${vehicleId}`;
     const cached = this.cache.get(cacheKey) as NormalizedDiagnostic | undefined;
     if (cached) return cached;
@@ -388,7 +390,9 @@ export class FlespiClient extends TelematicsAdapter {
    */
   async getFuelLevel(vehicleId: string): Promise<NormalizedFuelReading> {
     const cacheKey = `flespi:fuel:${vehicleId}`;
-    const cached = this.cache.get(cacheKey) as NormalizedFuelReading | undefined;
+    const cached = this.cache.get(cacheKey) as
+      | NormalizedFuelReading
+      | undefined;
     if (cached) return cached;
 
     return this.retryWithBackoff(async () => {
@@ -443,14 +447,17 @@ export class FlespiClient extends TelematicsAdapter {
     eventTypes: string[],
   ): Promise<WebhookSubscription> {
     return this.retryWithBackoff(async () => {
-      const response = await this.fetchWithTimeout(`${this.baseUrl}/gw/webhooks`, {
-        method: "POST",
-        headers: this.buildHeaders(),
-        body: JSON.stringify({
-          url: webhookUrl,
-          events: eventTypes,
-        }),
-      });
+      const response = await this.fetchWithTimeout(
+        `${this.baseUrl}/gw/webhooks`,
+        {
+          method: "POST",
+          headers: this.buildHeaders(),
+          body: JSON.stringify({
+            url: webhookUrl,
+            events: eventTypes,
+          }),
+        },
+      );
 
       if (!response.ok) {
         const error = await this.parseErrorResponse(response);
@@ -693,7 +700,9 @@ export class FlespiClient extends TelematicsAdapter {
         );
       }
 
-      const data = (await response.json()) as { result: Record<string, unknown> };
+      const data = (await response.json()) as {
+        result: Record<string, unknown>;
+      };
       return data.result;
     });
   }

@@ -132,7 +132,12 @@ export interface SendbirdMute {
 export interface SendbirdReport {
   offending_user_id: string;
   offending_message_id?: number;
-  category: "spam" | "harassment" | "inappropriate" | "profanity" | "suspicious";
+  category:
+    | "spam"
+    | "harassment"
+    | "inappropriate"
+    | "profanity"
+    | "suspicious";
   report_description?: string;
 }
 
@@ -243,7 +248,10 @@ export class SendbirdSDKClient {
   /**
    * Update user information.
    */
-  async updateUser(userId: string, updates: Partial<SendbirdUser>): Promise<Record<string, unknown>> {
+  async updateUser(
+    userId: string,
+    updates: Partial<SendbirdUser>,
+  ): Promise<Record<string, unknown>> {
     return this.request("PUT", `/users/${userId}`, updates);
   }
 
@@ -456,7 +464,11 @@ export class SendbirdSDKClient {
     channelUrl: string,
     message: SendbirdMessage,
   ): Promise<SendbirdMessageResponse> {
-    return this.request("POST", `/group_channels/${channelUrl}/messages`, message);
+    return this.request(
+      "POST",
+      `/group_channels/${channelUrl}/messages`,
+      message,
+    );
   }
 
   /**
@@ -466,7 +478,11 @@ export class SendbirdSDKClient {
     channelUrl: string,
     message: SendbirdMessage,
   ): Promise<SendbirdMessageResponse> {
-    return this.request("POST", `/open_channels/${channelUrl}/messages`, message);
+    return this.request(
+      "POST",
+      `/open_channels/${channelUrl}/messages`,
+      message,
+    );
   }
 
   /**
@@ -477,17 +493,21 @@ export class SendbirdSDKClient {
     messageId: number,
     updates: Partial<SendbirdMessage>,
   ): Promise<SendbirdMessageResponse> {
-    return this.request("PUT", `/group_channels/${channelUrl}/messages/${messageId}`, updates);
+    return this.request(
+      "PUT",
+      `/group_channels/${channelUrl}/messages/${messageId}`,
+      updates,
+    );
   }
 
   /**
    * Delete a message.
    */
-  async deleteMessage(
-    channelUrl: string,
-    messageId: number,
-  ): Promise<void> {
-    await this.request("DELETE", `/group_channels/${channelUrl}/messages/${messageId}`);
+  async deleteMessage(channelUrl: string, messageId: number): Promise<void> {
+    await this.request(
+      "DELETE",
+      `/group_channels/${channelUrl}/messages/${messageId}`,
+    );
   }
 
   /**
@@ -591,7 +611,10 @@ export class SendbirdSDKClient {
    * Unmute a user in a channel.
    */
   async unmuteUser(userId: string, channelUrl: string): Promise<void> {
-    await this.request("DELETE", `/group_channels/${channelUrl}/mute/${userId}`);
+    await this.request(
+      "DELETE",
+      `/group_channels/${channelUrl}/mute/${userId}`,
+    );
   }
 
   /**
@@ -609,10 +632,7 @@ export class SendbirdSDKClient {
   /**
    * Verify webhook payload signature using timing-safe comparison.
    */
-  verifyWebhookSignature(
-    payload: string,
-    signature: string,
-  ): boolean {
+  verifyWebhookSignature(payload: string, signature: string): boolean {
     if (!this.webhookSecret) {
       throw new Error("Webhook secret is not configured");
     }

@@ -43,14 +43,18 @@ The Event Bus is the backbone of Witylogix's event-driven architecture, enabling
 ### 1. Setup with Redis
 
 ```typescript
-import Redis from 'ioredis';
-import { TypedEventBus, RedisStreamAdapter, WitylogixEvents } from '@witylogix/core/event-bus';
+import Redis from "ioredis";
+import {
+  TypedEventBus,
+  RedisStreamAdapter,
+  WitylogixEvents,
+} from "@witylogix/core/event-bus";
 
-const redisClient = new Redis({ host: 'localhost', port: 6379 });
+const redisClient = new Redis({ host: "localhost", port: 6379 });
 const adapter = new RedisStreamAdapter(redisClient);
 
 const bus = new TypedEventBus<WitylogixEvents>({
-  name: 'witylogix-events',
+  name: "witylogix-events",
   adapter,
   retryPolicy: {
     maxAttempts: 3,
@@ -59,7 +63,7 @@ const bus = new TypedEventBus<WitylogixEvents>({
     backoffMultiplier: 2,
   },
   consumerGroup: {
-    name: 'notification-service',
+    name: "notification-service",
     consumerId: process.env.WORKER_ID,
     batchSize: 10,
   },
@@ -71,36 +75,48 @@ await bus.connect();
 ### 2. Emit an Event
 
 ```typescript
-await bus.emit('order.created', {
-  orderId: 'order_123',
-  shopId: 'shop_456',
-  customerId: 'cust_789',
-  totalAmount: 99.99,
-  currency: 'USD',
-  createdAt: new Date().toISOString(),
-}, {
-  tenantId: 'shop_456',
-  correlationId: 'req_uuid',  // For tracing
-  userId: 'user_123',
-});
+await bus.emit(
+  "order.created",
+  {
+    orderId: "order_123",
+    shopId: "shop_456",
+    customerId: "cust_789",
+    totalAmount: 99.99,
+    currency: "USD",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    tenantId: "shop_456",
+    correlationId: "req_uuid", // For tracing
+    userId: "user_123",
+  },
+);
 ```
 
 ### 3. Subscribe to Events
 
 ```typescript
 // Single event type
-await bus.subscribe('order.created', async (envelope) => {
-  console.log('Order created:', envelope.data);
-}, {
-  consumerGroup: 'notification-service',
-});
+await bus.subscribe(
+  "order.created",
+  async (envelope) => {
+    console.log("Order created:", envelope.data);
+  },
+  {
+    consumerGroup: "notification-service",
+  },
+);
 
 // Wildcard patterns
-await bus.subscribe('order.*', async (envelope) => {
-  console.log('Order event:', envelope.type);
-}, {
-  consumerGroup: 'analytics-service',
-});
+await bus.subscribe(
+  "order.*",
+  async (envelope) => {
+    console.log("Order event:", envelope.type);
+  },
+  {
+    consumerGroup: "analytics-service",
+  },
+);
 ```
 
 ### 4. Start Consuming (Blocking Loop)
@@ -110,8 +126,8 @@ await bus.subscribe('order.*', async (envelope) => {
 await bus.startConsuming();
 
 // Listen for shutdown signal
-process.on('SIGTERM', async () => {
-  await bus.shutdown(30000);  // 30 second timeout
+process.on("SIGTERM", async () => {
+  await bus.shutdown(30000); // 30 second timeout
   process.exit(0);
 });
 ```
@@ -157,31 +173,37 @@ await bus.emit('order.created', {
 All domain events are defined in `WitylogixEvents`:
 
 ### Order Events
+
 - `order.created` — New order created
 - `order.confirmed` — Order confirmed by shop
 - `order.cancelled` — Order cancelled
 
 ### Delivery Events
+
 - `delivery.started` — Delivery route started
 - `delivery.completed` — Delivery completed
 - `delivery.failed` — Delivery failed
 
 ### Driver Events
+
 - `driver.assigned` — Driver assigned to route
 - `driver.unassigned` — Driver unassigned
 - `driver.location_updated` — Real-time location update
 
 ### Workflow Events
+
 - `workflow.started` — Workflow execution started
 - `workflow.completed` — Workflow execution completed
 - `workflow.failed` — Workflow execution failed
 - `workflow.step_completed` — Individual workflow step completed
 
 ### Webhook Events
+
 - `webhook.delivered` — Webhook delivered successfully
 - `webhook.failed` — Webhook delivery failed
 
 ### Billing Events
+
 - `billing.invoice_created` — Invoice created
 - `billing.payment_received` — Payment received
 
@@ -209,15 +231,15 @@ Every event carries structured metadata:
 
 ```typescript
 interface EventMetadata {
-  id: string;           // UUID — unique event ID
-  type: string;         // e.g., "order.created"
-  source: string;       // e.g., "order-service"
-  timestamp: string;    // ISO 8601
-  tenantId: string;     // For multi-tenancy isolation
+  id: string; // UUID — unique event ID
+  type: string; // e.g., "order.created"
+  source: string; // e.g., "order-service"
+  timestamp: string; // ISO 8601
+  tenantId: string; // For multi-tenancy isolation
   correlationId: string; // For tracing related events
-  version: number;      // Schema version
-  userId?: string;      // Who triggered the event
-  requestId?: string;   // HTTP request ID
+  version: number; // Schema version
+  userId?: string; // Who triggered the event
+  requestId?: string; // HTTP request ID
   tags?: Record<string, string>;
 }
 ```
@@ -225,7 +247,7 @@ interface EventMetadata {
 ### Usage
 
 ```typescript
-await bus.subscribe('order.created', async (envelope) => {
+await bus.subscribe("order.created", async (envelope) => {
   const metadata = envelope.metadata;
   const data = envelope.data;
 
@@ -257,7 +279,9 @@ const loggingMiddleware = {
     console.log(`Handled ${envelope.metadata.type}`);
   },
   onError: async (envelope, error) => {
-    console.error(`Failed to handle ${envelope.metadata.type}: ${error.message}`);
+    console.error(
+      `Failed to handle ${envelope.metadata.type}: ${error.message}`,
+    );
   },
 };
 
@@ -275,10 +299,10 @@ Failed handlers are retried with exponential backoff:
 const bus = new TypedEventBus({
   retryPolicy: {
     maxAttempts: 3,
-    initialDelayMs: 100,      // 100ms first retry
-    maxDelayMs: 5000,         // Cap at 5 seconds
-    backoffMultiplier: 2,     // 100ms → 200ms → 400ms
-    jitterFactor: 0.1,        // Add ±10% randomness
+    initialDelayMs: 100, // 100ms first retry
+    maxDelayMs: 5000, // Cap at 5 seconds
+    backoffMultiplier: 2, // 100ms → 200ms → 400ms
+    jitterFactor: 0.1, // Add ±10% randomness
   },
   // ...
 });
@@ -299,8 +323,8 @@ Failed messages can be sent to a dead-letter queue for manual review:
 const bus = new TypedEventBus({
   deadLetter: {
     enabled: true,
-    streamKey: 'events:dead-letter',
-    consumerGroup: 'dead-letter-processor',
+    streamKey: "events:dead-letter",
+    consumerGroup: "dead-letter-processor",
     handler: async (envelope, error) => {
       // Log to database for manual inspection
       await db.deadLetters.create({
@@ -324,8 +348,8 @@ Use consumer groups to scale message processing across workers:
 // Worker 1
 const bus1 = new TypedEventBus({
   consumerGroup: {
-    name: 'notification-service',  // Same group
-    consumerId: 'worker-1',         // Different ID
+    name: "notification-service", // Same group
+    consumerId: "worker-1", // Different ID
   },
   // ...
 });
@@ -334,8 +358,8 @@ await bus1.startConsuming();
 // Worker 2
 const bus2 = new TypedEventBus({
   consumerGroup: {
-    name: 'notification-service',  // Same group
-    consumerId: 'worker-2',         // Different ID
+    name: "notification-service", // Same group
+    consumerId: "worker-2", // Different ID
   },
   // ...
 });
@@ -372,31 +396,33 @@ for (const group of metrics.consumerGroups) {
 Use the In-Memory adapter for unit tests (no Redis required):
 
 ```typescript
-import { InMemoryStreamAdapter } from '@witylogix/core/event-bus';
+import { InMemoryStreamAdapter } from "@witylogix/core/event-bus";
 
-describe('Order Creation Workflow', () => {
+describe("Order Creation Workflow", () => {
   let bus: TypedEventBus<WitylogixEvents>;
 
   beforeEach(() => {
     bus = new TypedEventBus({
-      adapter: new InMemoryStreamAdapter(),  // No Redis needed
-      name: 'test-bus',
+      adapter: new InMemoryStreamAdapter(), // No Redis needed
+      name: "test-bus",
     });
   });
 
-  it('should emit order.created event', async () => {
+  it("should emit order.created event", async () => {
     const received: EventEnvelope[] = [];
 
-    await bus.subscribe('order.created', (envelope) => {
+    await bus.subscribe("order.created", (envelope) => {
       received.push(envelope);
     });
 
-    await bus.emit('order.created', { /* ... */ });
+    await bus.emit("order.created", {
+      /* ... */
+    });
     await bus.startConsuming();
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 100));
 
     expect(received).toHaveLength(1);
-    expect(received[0].data.orderId).toBe('order_123');
+    expect(received[0].data.orderId).toBe("order_123");
   });
 });
 ```
@@ -406,23 +432,23 @@ describe('Order Creation Workflow', () => {
 Emit events from workflow steps:
 
 ```typescript
-import { emitEventStep } from '@witylogix/framework/workflows';
+import { emitEventStep } from "@witylogix/framework/workflows";
 
 export const orderCreationWorkflow = createWorkflow(
-  'create-delivery-order',
-  async (input: { orderId; shopId; customerId; }) => {
+  "create-delivery-order",
+  async (input: { orderId; shopId; customerId }) => {
     // Step 1: Create order
     const order = await orderStep(input);
 
     // Step 2: Emit event (explicit step)
     await emitEventStep({
-      type: 'order.created',
+      type: "order.created",
       data: order,
     });
 
     // Step 3: Other steps can be triggered by event subscribers
     // (e.g., notification service subscribes to order.created)
-  }
+  },
 );
 ```
 
@@ -430,15 +456,15 @@ export const orderCreationWorkflow = createWorkflow(
 
 ```typescript
 interface EventBusConfig {
-  name: string;                        // Bus instance name
-  adapter: StreamAdapter;              // Redis, In-Memory, etc.
-  retryPolicy?: RetryPolicy;          // Retry behavior
-  deadLetter?: DeadLetterConfig;      // DLQ configuration
+  name: string; // Bus instance name
+  adapter: StreamAdapter; // Redis, In-Memory, etc.
+  retryPolicy?: RetryPolicy; // Retry behavior
+  deadLetter?: DeadLetterConfig; // DLQ configuration
   consumerGroup?: ConsumerGroupConfig; // Consumer group settings
-  middleware?: EventMiddleware[];      // Middleware pipeline
-  maxStreamLength?: number;            // Max messages per stream (default: 10000)
-  autoCreateConsumerGroups?: boolean;  // Auto-create groups (default: true)
-  enableMetrics?: boolean;             // Metrics collection (default: true)
+  middleware?: EventMiddleware[]; // Middleware pipeline
+  maxStreamLength?: number; // Max messages per stream (default: 10000)
+  autoCreateConsumerGroups?: boolean; // Auto-create groups (default: true)
+  enableMetrics?: boolean; // Metrics collection (default: true)
 }
 ```
 
@@ -447,14 +473,15 @@ interface EventBusConfig {
 ### RedisStreamAdapter
 
 ```typescript
-import { RedisStreamAdapter } from '@witylogix/core/event-bus';
-import Redis from 'ioredis';
+import { RedisStreamAdapter } from "@witylogix/core/event-bus";
+import Redis from "ioredis";
 
 const client = new Redis();
-const adapter = new RedisStreamAdapter(client, 'events' /* key prefix */);
+const adapter = new RedisStreamAdapter(client, "events" /* key prefix */);
 ```
 
 **Features:**
+
 - XADD for publishing
 - XREADGROUP for consumer groups
 - XACK for acknowledgment
@@ -464,12 +491,13 @@ const adapter = new RedisStreamAdapter(client, 'events' /* key prefix */);
 ### InMemoryStreamAdapter
 
 ```typescript
-import { InMemoryStreamAdapter } from '@witylogix/core/event-bus';
+import { InMemoryStreamAdapter } from "@witylogix/core/event-bus";
 
 const adapter = new InMemoryStreamAdapter();
 ```
 
 **Features:**
+
 - Map-based in-memory storage
 - Identical interface to Redis adapter
 - Perfect for unit tests
@@ -477,16 +505,19 @@ const adapter = new InMemoryStreamAdapter();
 ## Performance Considerations
 
 ### Throughput
+
 - **Typical:** 10k–100k events/sec per Redis node
 - **Bottleneck:** Handler latency (not publish)
 - **Scaling:** Add consumer group workers
 
 ### Latency
+
 - **Publish:** ~5–10ms (Redis round-trip)
 - **Consume:** ~10–20ms (batch read + process)
 - **End-to-end:** 20–50ms (publish → handler start)
 
 ### Memory
+
 - **Redis:** Streams stored in memory (use MAXLEN trimming)
 - **Recommended:** Trim to 10k messages per stream type
 
@@ -506,11 +537,13 @@ for (const group of metrics.consumerGroups) {
 ### Consumer stuck / messages not being processed
 
 1. Check consumer group lag:
+
    ```bash
    redis-cli XINFO GROUPS <stream-key>
    ```
 
 2. Check pending messages:
+
    ```bash
    redis-cli XPENDING <stream-key> <group-name>
    ```
@@ -523,18 +556,20 @@ for (const group of metrics.consumerGroups) {
 ### Dead-letter queue filling up
 
 1. Check DLQ size:
+
    ```bash
    redis-cli XLEN events:dead-letter
    ```
 
 2. Inspect failed events:
+
    ```typescript
    const dlq = await adapter.readGroup(
-     'events:dead-letter',
-     'dead-letter-processor',
-     'inspector',
+     "events:dead-letter",
+     "dead-letter-processor",
+     "inspector",
      10,
-     0
+     0,
    );
    ```
 

@@ -21,11 +21,18 @@ import { Badge } from "@/components/ui/badge";
 import { Table } from "@/components/ui/table";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
-import { useApiQuery } from '@/hooks/use-api';
-import { api } from '@/lib/api';
-import { useToast } from '@/components/ui/toast';
+import { useApiQuery } from "@/hooks/use-api";
+import { api } from "@/lib/api";
+import { useToast } from "@/components/ui/toast";
 
-type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled" | "finalized" | "voided";
+type InvoiceStatus =
+  | "draft"
+  | "sent"
+  | "paid"
+  | "overdue"
+  | "cancelled"
+  | "finalized"
+  | "voided";
 
 interface LineItem {
   id: string;
@@ -115,8 +122,18 @@ interface RawApiInvoice {
 
 function normalizeStatus(raw: string): InvoiceStatus {
   if (raw === "voided") return "cancelled";
-  const allowed: InvoiceStatus[] = ["draft", "sent", "paid", "overdue", "cancelled", "finalized", "voided"];
-  return (allowed.includes(raw as InvoiceStatus) ? raw : "draft") as InvoiceStatus;
+  const allowed: InvoiceStatus[] = [
+    "draft",
+    "sent",
+    "paid",
+    "overdue",
+    "cancelled",
+    "finalized",
+    "voided",
+  ];
+  return (
+    allowed.includes(raw as InvoiceStatus) ? raw : "draft"
+  ) as InvoiceStatus;
 }
 
 function normalizeInvoice(raw: RawApiInvoice): Invoice {
@@ -159,7 +176,7 @@ function normalizeInvoice(raw: RawApiInvoice): Invoice {
 }
 
 const getStatusBadgeVariant = (
-  status: InvoiceStatus
+  status: InvoiceStatus,
 ): "default" | "success" | "warning" | "danger" | "info" | "primary" => {
   switch (status) {
     case "paid":
@@ -183,12 +200,18 @@ const getStatusBadgeVariant = (
 
 const getActivityIcon = (type: ActivityLog["type"]) => {
   switch (type) {
-    case "created": return <FileText className="w-4 h-4" />;
-    case "sent": return <Send className="w-4 h-4" />;
-    case "viewed": return <Eye className="w-4 h-4" />;
-    case "paid": return <CreditCard className="w-4 h-4" />;
-    case "reminder_sent": return <Bell className="w-4 h-4" />;
-    default: return <Clock className="w-4 h-4" />;
+    case "created":
+      return <FileText className="w-4 h-4" />;
+    case "sent":
+      return <Send className="w-4 h-4" />;
+    case "viewed":
+      return <Eye className="w-4 h-4" />;
+    case "paid":
+      return <CreditCard className="w-4 h-4" />;
+    case "reminder_sent":
+      return <Bell className="w-4 h-4" />;
+    default:
+      return <Clock className="w-4 h-4" />;
   }
 };
 
@@ -198,9 +221,12 @@ export default function InvoiceDetailPage() {
   const invoiceId = params.id as string;
   const { addToast } = useToast();
 
-  const { data: rawInvoice, loading, error, refetch } = useApiQuery<RawApiInvoice>(
-    `/api/v4/invoices/${invoiceId}`,
-  );
+  const {
+    data: rawInvoice,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<RawApiInvoice>(`/api/v4/invoices/${invoiceId}`);
 
   const [invoice, setInvoice] = useState<Invoice | null>(null);
 
@@ -219,15 +245,15 @@ export default function InvoiceDetailPage() {
 
   const isOverdue = useMemo(() => {
     if (!invoice) return false;
-    return (
-      invoice.status !== "paid" &&
-      invoice.dueDate < new Date()
-    );
+    return invoice.status !== "paid" && invoice.dueDate < new Date();
   }, [invoice]);
 
   const daysOverdue = useMemo(() => {
     if (!isOverdue || !invoice) return 0;
-    return Math.floor((new Date().getTime() - invoice.dueDate.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.floor(
+      (new Date().getTime() - invoice.dueDate.getTime()) /
+        (1000 * 60 * 60 * 24),
+    );
   }, [isOverdue, invoice]);
 
   const amountPaid = useMemo(() => {
@@ -252,9 +278,17 @@ export default function InvoiceDetailPage() {
       a.download = `invoice-${invoiceNumber}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
-      addToast({ type: "success", title: "PDF downloaded", message: `Invoice ${invoice.number} downloaded.` });
+      addToast({
+        type: "success",
+        title: "PDF downloaded",
+        message: `Invoice ${invoice.number} downloaded.`,
+      });
     } catch (err) {
-      addToast({ type: "error", title: "Download failed", message: err instanceof Error ? err.message : "Failed to download PDF." });
+      addToast({
+        type: "error",
+        title: "Download failed",
+        message: err instanceof Error ? err.message : "Failed to download PDF.",
+      });
     } finally {
       setIsPdfLoading(false);
     }
@@ -265,18 +299,26 @@ export default function InvoiceDetailPage() {
     setIsSending(true);
     try {
       await api.post(`/api/v4/invoices/${invoiceId}/send`, {});
-      setInvoice((prev) => prev ? ({
-        ...prev,
-        status: "sent",
-        sentDate: new Date(),
-      }) : prev);
+      setInvoice((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "sent",
+              sentDate: new Date(),
+            }
+          : prev,
+      );
       addToast({
-        type: 'success',
-        title: 'Invoice sent',
-        message: `Invoice ${invoice?.number ?? ''} has been sent to the customer.`,
+        type: "success",
+        title: "Invoice sent",
+        message: `Invoice ${invoice?.number ?? ""} has been sent to the customer.`,
       });
     } catch (err) {
-      addToast({ type: "error", title: "Send failed", message: err instanceof Error ? err.message : "Failed to send invoice." });
+      addToast({
+        type: "error",
+        title: "Send failed",
+        message: err instanceof Error ? err.message : "Failed to send invoice.",
+      });
     } finally {
       setIsSending(false);
     }
@@ -288,39 +330,48 @@ export default function InvoiceDetailPage() {
     try {
       await api.post(`/api/v4/invoices/${invoiceId}/payment`, {
         amount: invoice.total,
-        method: 'bank_transfer',
+        method: "bank_transfer",
       });
-      setInvoice((prev) => prev ? ({
-        ...prev,
-        status: "paid",
-        paidDate: new Date(),
-        payments: [
-          ...prev.payments,
-          {
-            id: `pay-${Date.now()}`,
-            date: new Date(),
-            amount: prev.total,
-            method: "bank_transfer",
-            reference: "MAN-" + Date.now(),
-          },
-        ],
-        activity: [
-          ...prev.activity,
-          {
-            id: `act-${Date.now()}`,
-            type: "paid" as const,
-            timestamp: new Date(),
-            description: "Invoice marked as paid",
-          },
-        ],
-      }) : prev);
+      setInvoice((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "paid",
+              paidDate: new Date(),
+              payments: [
+                ...prev.payments,
+                {
+                  id: `pay-${Date.now()}`,
+                  date: new Date(),
+                  amount: prev.total,
+                  method: "bank_transfer",
+                  reference: "MAN-" + Date.now(),
+                },
+              ],
+              activity: [
+                ...prev.activity,
+                {
+                  id: `act-${Date.now()}`,
+                  type: "paid" as const,
+                  timestamp: new Date(),
+                  description: "Invoice marked as paid",
+                },
+              ],
+            }
+          : prev,
+      );
       addToast({
-        type: 'success',
-        title: 'Invoice marked as paid',
-        message: 'The invoice status has been updated to Paid.',
+        type: "success",
+        title: "Invoice marked as paid",
+        message: "The invoice status has been updated to Paid.",
       });
     } catch (err) {
-      addToast({ type: "error", title: "Failed to mark as paid", message: err instanceof Error ? err.message : "Could not update invoice." });
+      addToast({
+        type: "error",
+        title: "Failed to mark as paid",
+        message:
+          err instanceof Error ? err.message : "Could not update invoice.",
+      });
     } finally {
       setIsMarkingPaid(false);
     }
@@ -330,24 +381,39 @@ export default function InvoiceDetailPage() {
     if (isVoiding || !invoice) return;
     setIsVoiding(true);
     try {
-      await api.post(`/api/v4/invoices/${invoiceId}/void`, { reason: 'Voided by user' });
-      setInvoice((prev) => prev ? ({
-        ...prev,
-        status: "cancelled",
-        activity: [
-          ...prev.activity,
-          {
-            id: `act-${Date.now()}`,
-            type: "created" as const,
-            timestamp: new Date(),
-            description: "Invoice voided",
-          },
-        ],
-      }) : prev);
+      await api.post(`/api/v4/invoices/${invoiceId}/void`, {
+        reason: "Voided by user",
+      });
+      setInvoice((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "cancelled",
+              activity: [
+                ...prev.activity,
+                {
+                  id: `act-${Date.now()}`,
+                  type: "created" as const,
+                  timestamp: new Date(),
+                  description: "Invoice voided",
+                },
+              ],
+            }
+          : prev,
+      );
       setShowDeleteConfirm(false);
-      addToast({ type: "success", title: "Invoice voided", message: "The invoice has been voided." });
+      addToast({
+        type: "success",
+        title: "Invoice voided",
+        message: "The invoice has been voided.",
+      });
     } catch (err) {
-      addToast({ type: "error", title: "Failed to void invoice", message: err instanceof Error ? err.message : "Could not void the invoice." });
+      addToast({
+        type: "error",
+        title: "Failed to void invoice",
+        message:
+          err instanceof Error ? err.message : "Could not void the invoice.",
+      });
     } finally {
       setIsVoiding(false);
     }
@@ -358,25 +424,34 @@ export default function InvoiceDetailPage() {
     setIsSendingReminder(true);
     try {
       await api.post(`/api/v4/invoices/${invoiceId}/send-reminder`, {});
-      setInvoice((prev) => prev ? ({
-        ...prev,
-        activity: [
-          ...prev.activity,
-          {
-            id: `act-${Date.now()}`,
-            type: "reminder_sent" as const,
-            timestamp: new Date(),
-            description: "Reminder email sent to customer",
-          },
-        ],
-      }) : prev);
+      setInvoice((prev) =>
+        prev
+          ? {
+              ...prev,
+              activity: [
+                ...prev.activity,
+                {
+                  id: `act-${Date.now()}`,
+                  type: "reminder_sent" as const,
+                  timestamp: new Date(),
+                  description: "Reminder email sent to customer",
+                },
+              ],
+            }
+          : prev,
+      );
       addToast({
-        type: 'success',
-        title: 'Reminder sent',
-        message: 'Payment reminder has been sent to the customer.',
+        type: "success",
+        title: "Reminder sent",
+        message: "Payment reminder has been sent to the customer.",
       });
     } catch (err) {
-      addToast({ type: "error", title: "Reminder failed", message: err instanceof Error ? err.message : "Failed to send reminder." });
+      addToast({
+        type: "error",
+        title: "Reminder failed",
+        message:
+          err instanceof Error ? err.message : "Failed to send reminder.",
+      });
     } finally {
       setIsSendingReminder(false);
     }
@@ -411,40 +486,71 @@ export default function InvoiceDetailPage() {
           </Button>
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-white">{invoice.number}</h1>
+              <h1 className="text-3xl font-bold text-white">
+                {invoice.number}
+              </h1>
               <Badge variant={getStatusBadgeVariant(invoice.status)}>
-                {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                {invoice.status.charAt(0).toUpperCase() +
+                  invoice.status.slice(1)}
               </Badge>
-              {isOverdue && <Badge variant="danger">{daysOverdue} days overdue</Badge>}
+              {isOverdue && (
+                <Badge variant="danger">{daysOverdue} days overdue</Badge>
+              )}
             </div>
-            <p className="text-gray-400">Created {invoice.createdDate.toLocaleDateString()}</p>
+            <p className="text-gray-400">
+              Created {invoice.createdDate.toLocaleDateString()}
+            </p>
           </div>
         </div>
 
         <div className="flex gap-2">
           {invoice.status === "draft" && (
-            <Button variant="secondary" size="lg" onClick={handleSendInvoice} disabled={isSending}>
+            <Button
+              variant="secondary"
+              size="lg"
+              onClick={handleSendInvoice}
+              disabled={isSending}
+            >
               <Send className="w-4 h-4" />
               {isSending ? "Sending..." : "Send"}
             </Button>
           )}
           {(invoice.status === "sent" || invoice.status === "overdue") && (
             <>
-              <Button variant="secondary" size="lg" onClick={handleSendReminder} disabled={isSendingReminder}>
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={handleSendReminder}
+                disabled={isSendingReminder}
+              >
                 <Bell className="w-4 h-4" />
                 {isSendingReminder ? "Sending..." : "Send Reminder"}
               </Button>
-              <Button variant="secondary" size="lg" onClick={handleMarkPaid} disabled={isMarkingPaid}>
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={handleMarkPaid}
+                disabled={isMarkingPaid}
+              >
                 <CheckCircle className="w-4 h-4" />
                 {isMarkingPaid ? "Marking Paid..." : "Mark Paid"}
               </Button>
             </>
           )}
-          <Button variant="secondary" size="lg" onClick={handleDownloadPDF} disabled={isPdfLoading}>
+          <Button
+            variant="secondary"
+            size="lg"
+            onClick={handleDownloadPDF}
+            disabled={isPdfLoading}
+          >
             <Download className="w-4 h-4" />
             {isPdfLoading ? "Generating…" : "PDF"}
           </Button>
-          <Button variant="danger" size="lg" onClick={() => setShowDeleteConfirm(true)}>
+          <Button
+            variant="danger"
+            size="lg"
+            onClick={() => setShowDeleteConfirm(true)}
+          >
             <Trash2 className="w-4 h-4" />
             Void
           </Button>
@@ -456,10 +562,16 @@ export default function InvoiceDetailPage() {
         {/* Left Column */}
         <div className="col-span-2 flex flex-col gap-6">
           {/* Invoice Header */}
-          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
+          <Card
+            className={cn(
+              "p-6 bg-wl-bg-surface border border-wl-border-default",
+            )}
+          >
             <div className="grid grid-cols-2 gap-8">
               <div>
-                <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4">Bill To</h3>
+                <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4">
+                  Bill To
+                </h3>
                 <div className="flex flex-col gap-1">
                   <p className="font-semibold text-white">
                     {invoice.customerName}
@@ -479,12 +591,21 @@ export default function InvoiceDetailPage() {
               <div className="text-right">
                 <div className="space-y-3">
                   <div>
-                    <p className="text-xs uppercase text-gray-400">Invoice Date</p>
-                    <p className="font-semibold text-white">{invoice.createdDate.toLocaleDateString()}</p>
+                    <p className="text-xs uppercase text-gray-400">
+                      Invoice Date
+                    </p>
+                    <p className="font-semibold text-white">
+                      {invoice.createdDate.toLocaleDateString()}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs uppercase text-gray-400">Due Date</p>
-                    <p className={cn("font-semibold", isOverdue ? "text-red-500" : "text-white")}>
+                    <p
+                      className={cn(
+                        "font-semibold",
+                        isOverdue ? "text-red-500" : "text-white",
+                      )}
+                    >
                       {invoice.dueDate.toLocaleDateString()}
                     </p>
                   </div>
@@ -494,7 +615,9 @@ export default function InvoiceDetailPage() {
           </Card>
 
           {/* Line Items */}
-          <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
+          <Card
+            className={cn("bg-wl-bg-surface border border-wl-border-default")}
+          >
             <Table
               columns={[
                 {
@@ -567,16 +690,24 @@ export default function InvoiceDetailPage() {
 
           {/* Notes & Terms */}
           {(invoice.notes || invoice.terms) && (
-            <Card className={cn("p-6 space-y-4 bg-wl-bg-surface border border-wl-border-default")}>
+            <Card
+              className={cn(
+                "p-6 space-y-4 bg-wl-bg-surface border border-wl-border-default",
+              )}
+            >
               {invoice.notes && (
                 <div>
-                  <h3 className="text-sm font-semibold uppercase text-gray-400 mb-2">Notes</h3>
+                  <h3 className="text-sm font-semibold uppercase text-gray-400 mb-2">
+                    Notes
+                  </h3>
                   <p className="text-sm text-white">{invoice.notes}</p>
                 </div>
               )}
               {invoice.terms && (
                 <div>
-                  <h3 className="text-sm font-semibold uppercase text-gray-400 mb-2">Terms & Conditions</h3>
+                  <h3 className="text-sm font-semibold uppercase text-gray-400 mb-2">
+                    Terms & Conditions
+                  </h3>
                   <p className="text-sm text-white">{invoice.terms}</p>
                 </div>
               )}
@@ -587,19 +718,21 @@ export default function InvoiceDetailPage() {
         {/* Right Column */}
         <div className="flex flex-col gap-6">
           {/* Payment Summary */}
-          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-            <h3 className="font-semibold text-white mb-4">
-              Payment Summary
-            </h3>
+          <Card
+            className={cn(
+              "p-6 bg-wl-bg-surface border border-wl-border-default",
+            )}
+          >
+            <h3 className="font-semibold text-white mb-4">Payment Summary</h3>
             <div className="space-y-3">
               <div>
                 <p className="text-xs uppercase text-gray-400">Total Amount</p>
-                <p className="text-xl font-bold text-white">${invoice.total.toFixed(2)}</p>
+                <p className="text-xl font-bold text-white">
+                  ${invoice.total.toFixed(2)}
+                </p>
               </div>
               <div className="border-t border-wl-border-default pt-3">
-                <p className="text-xs uppercase text-gray-400">
-                  Amount Paid
-                </p>
+                <p className="text-xs uppercase text-gray-400">Amount Paid</p>
                 <p className="text-lg font-bold text-emerald-600">
                   ${amountPaid.toFixed(2)}
                 </p>
@@ -611,9 +744,7 @@ export default function InvoiceDetailPage() {
                 <p
                   className={cn(
                     "text-lg font-bold",
-                    remainingBalance > 0
-                      ? "text-red-500"
-                      : "text-emerald-600"
+                    remainingBalance > 0 ? "text-red-500" : "text-emerald-600",
                   )}
                 >
                   ${remainingBalance.toFixed(2)}
@@ -624,10 +755,12 @@ export default function InvoiceDetailPage() {
 
           {/* Payments */}
           {invoice.payments.length > 0 && (
-            <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-              <h3 className="font-semibold text-white mb-4">
-                Payment History
-              </h3>
+            <Card
+              className={cn(
+                "p-6 bg-wl-bg-surface border border-wl-border-default",
+              )}
+            >
+              <h3 className="font-semibold text-white mb-4">Payment History</h3>
               <div className="space-y-3">
                 {invoice.payments.map((payment) => (
                   <div
@@ -635,8 +768,12 @@ export default function InvoiceDetailPage() {
                     className="border-b border-wl-border-default pb-3 last:border-b-0 last:pb-0"
                   >
                     <div className="flex justify-between mb-1">
-                      <p className="text-sm font-medium text-white">${payment.amount.toFixed(2)}</p>
-                      <span className="text-xs text-gray-400">{payment.date.toLocaleDateString()}</span>
+                      <p className="text-sm font-medium text-white">
+                        ${payment.amount.toFixed(2)}
+                      </p>
+                      <span className="text-xs text-gray-400">
+                        {payment.date.toLocaleDateString()}
+                      </span>
                     </div>
                     <p className="text-xs text-gray-400">
                       {payment.method.replace("_", " ")}
@@ -654,10 +791,12 @@ export default function InvoiceDetailPage() {
 
           {/* Activity Log */}
           {invoice.activity.length > 0 && (
-            <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-              <h3 className="font-semibold text-white mb-4">
-                Activity Log
-              </h3>
+            <Card
+              className={cn(
+                "p-6 bg-wl-bg-surface border border-wl-border-default",
+              )}
+            >
+              <h3 className="font-semibold text-white mb-4">Activity Log</h3>
               <div className="space-y-3">
                 {invoice.activity.map((activity) => (
                   <div
@@ -683,18 +822,30 @@ export default function InvoiceDetailPage() {
       {/* Void Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className={cn("max-w-md p-6 bg-wl-bg-surface border border-wl-border-default")}>
-            <h2 className="text-lg font-bold text-white mb-2">
-              Void Invoice?
-            </h2>
+          <Card
+            className={cn(
+              "max-w-md p-6 bg-wl-bg-surface border border-wl-border-default",
+            )}
+          >
+            <h2 className="text-lg font-bold text-white mb-2">Void Invoice?</h2>
             <p className="text-sm text-gray-400 mb-6">
-              Are you sure you want to void this invoice? This action cannot be undone.
+              Are you sure you want to void this invoice? This action cannot be
+              undone.
             </p>
             <div className="flex gap-3">
-              <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)} className="flex-1">
+              <Button
+                variant="secondary"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1"
+              >
                 Cancel
               </Button>
-              <Button variant="danger" onClick={handleVoidInvoice} disabled={isVoiding} className="flex-1">
+              <Button
+                variant="danger"
+                onClick={handleVoidInvoice}
+                disabled={isVoiding}
+                className="flex-1"
+              >
                 {isVoiding ? "Voiding..." : "Void Invoice"}
               </Button>
             </div>

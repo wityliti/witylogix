@@ -1,20 +1,28 @@
-'use client';
+"use client";
 
 /**
  * Driver-specific API hooks for the dashboard
  */
 
-import { useApiMutation, useApiList, useApiQuery, ApiFilters, UseApiQueryResult, UseApiMutationResult, UseApiListResult } from './use-api';
+import {
+  useApiMutation,
+  useApiList,
+  useApiQuery,
+  ApiFilters,
+  UseApiQueryResult,
+  UseApiMutationResult,
+  UseApiListResult,
+} from "./use-api";
 
 /**
  * Driver status enum
  */
 export enum DriverStatus {
-  OFFLINE = 'offline',
-  ONLINE = 'online',
-  ON_DELIVERY = 'on_delivery',
-  ON_BREAK = 'on_break',
-  UNAVAILABLE = 'unavailable',
+  OFFLINE = "offline",
+  ONLINE = "online",
+  ON_DELIVERY = "on_delivery",
+  ON_BREAK = "on_break",
+  UNAVAILABLE = "unavailable",
 }
 
 /**
@@ -85,10 +93,8 @@ export interface DriverFilters extends ApiFilters {
  * @param filters - Driver filter options
  * @returns List of drivers with pagination
  */
-export function useDrivers(
-  filters?: DriverFilters,
-): UseApiListResult<Driver> {
-  return useApiList<Driver>('/api/v4/drivers', filters);
+export function useDrivers(filters?: DriverFilters): UseApiListResult<Driver> {
+  return useApiList<Driver>("/api/v4/drivers", filters);
 }
 
 /**
@@ -96,9 +102,7 @@ export function useDrivers(
  * @param id - Driver ID
  * @returns Single driver
  */
-export function useDriver(
-  id: string | null,
-): UseApiQueryResult<Driver> {
+export function useDriver(id: string | null): UseApiQueryResult<Driver> {
   return useApiQuery<Driver>(id ? `/drivers/${id}` : null);
 }
 
@@ -107,7 +111,7 @@ export function useDriver(
  * @returns Array of driver locations
  */
 export function useDriverLocations(): UseApiQueryResult<DriverLocation[]> {
-  return useApiQuery<DriverLocation[]>('/api/v4/drivers/locations');
+  return useApiQuery<DriverLocation[]>("/api/v4/drivers/locations");
 }
 
 /**
@@ -118,5 +122,5 @@ export function useDriverLocations(): UseApiQueryResult<DriverLocation[]> {
 export function useUpdateDriverStatus(
   id: string,
 ): UseApiMutationResult<Driver> {
-  return useApiMutation<Driver>('PATCH', `/drivers/${id}/status`);
+  return useApiMutation<Driver>("PATCH", `/drivers/${id}/status`);
 }

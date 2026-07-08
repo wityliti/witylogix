@@ -14,7 +14,13 @@
 
 "use client";
 
-import { forwardRef, TextareaHTMLAttributes, useState, useCallback, useEffect } from "react";
+import {
+  forwardRef,
+  TextareaHTMLAttributes,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import { cn } from "@/lib/utils";
 
 export interface FormTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -63,7 +69,7 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
       rows,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [textValue, setTextValue] = useState<string>(String(value || ""));
     const [height, setHeight] = useState<string>("auto");
@@ -71,21 +77,26 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
     /**
      * Calculate textarea height based on content
      */
-    const updateHeight = useCallback((val: string) => {
-      const textarea = document.createElement("textarea");
-      textarea.style.visibility = "hidden";
-      textarea.style.position = "fixed";
-      textarea.style.height = "auto";
-      textarea.value = val;
-      document.body.appendChild(textarea);
+    const updateHeight = useCallback(
+      (val: string) => {
+        const textarea = document.createElement("textarea");
+        textarea.style.visibility = "hidden";
+        textarea.style.position = "fixed";
+        textarea.style.height = "auto";
+        textarea.value = val;
+        document.body.appendChild(textarea);
 
-      const lineHeight = parseFloat(window.getComputedStyle(textarea).lineHeight);
-      const lines = Math.ceil(textarea.scrollHeight / lineHeight);
-      const boundedLines = Math.max(minRows, Math.min(lines, maxRows));
+        const lineHeight = parseFloat(
+          window.getComputedStyle(textarea).lineHeight,
+        );
+        const lines = Math.ceil(textarea.scrollHeight / lineHeight);
+        const boundedLines = Math.max(minRows, Math.min(lines, maxRows));
 
-      setHeight(`${boundedLines * lineHeight}px`);
-      document.body.removeChild(textarea);
-    }, [minRows, maxRows]);
+        setHeight(`${boundedLines * lineHeight}px`);
+        document.body.removeChild(textarea);
+      },
+      [minRows, maxRows],
+    );
 
     const handleChange = useCallback(
       (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -98,7 +109,7 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
 
         onChange?.(e);
       },
-      [autoResize, updateHeight, onChange]
+      [autoResize, updateHeight, onChange],
     );
 
     /**
@@ -134,7 +145,7 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
               : "border-wl-border-default hover:border-wl-border-strong focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/20",
             "disabled:opacity-50 disabled:cursor-not-allowed",
             "focus-visible:outline-none",
-            className
+            className,
           )}
           aria-invalid={hasError}
           {...props}
@@ -148,7 +159,9 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
               {showCharacterCount && (
                 <span
                   className={cn(
-                    maxLength && charCount > maxLength * 0.9 && "text-wl-warning-400"
+                    maxLength &&
+                      charCount > maxLength * 0.9 &&
+                      "text-wl-warning-400",
                   )}
                 >
                   {charCount}
@@ -161,7 +174,7 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 FormTextarea.displayName = "FormTextarea";

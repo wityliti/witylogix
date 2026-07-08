@@ -15,12 +15,14 @@ Witylogix is a multi-tenant last-mile delivery SaaS platform currently supportin
 - Some organizations require generic OpenID Connect (OIDC) compatibility
 
 Currently, adding a new auth provider requires:
+
 1. Hardcoding logic in `/apps/api/src/routes/auth.ts`
 2. Adding provider-specific token storage to the User model
 3. Writing custom middleware for token validation
 4. Duplicating JIT user provisioning logic
 
 This creates:
+
 - **Scaling friction** — every new provider doubles auth complexity
 - **Security debt** — mixed token storage patterns, inconsistent refresh handling
 - **Testing burden** — no unified interface to mock providers
@@ -51,19 +53,21 @@ Implement a **multi-provider authentication registry** following the **BYOK (Bri
 
 **Approach:** Add each new provider inline to `routes/auth.ts` with provider-specific logic.
 
-| Dimension | Assessment |
-|-----------|-----------|
-| Development time | Quick for 1st provider, exponential slowdown after 5+ |
-| Testing | No unified test suite; each provider needs end-to-end tests |
-| Operator control | Zero — must edit code and redeploy for new providers |
-| Security | Inconsistent token storage, refresh logic; risk of leaks |
-| Scaling | Fails at enterprise adoption — too much custom code |
+| Dimension        | Assessment                                                  |
+| ---------------- | ----------------------------------------------------------- |
+| Development time | Quick for 1st provider, exponential slowdown after 5+       |
+| Testing          | No unified test suite; each provider needs end-to-end tests |
+| Operator control | Zero — must edit code and redeploy for new providers        |
+| Security         | Inconsistent token storage, refresh logic; risk of leaks    |
+| Scaling          | Fails at enterprise adoption — too much custom code         |
 
 **Pros:**
+
 - Fastest initial implementation
 - No abstraction overhead
 
 **Cons:**
+
 - Code duplication (token exchange, JIT, role mapping, refresh logic)
 - Provider-specific bugs scattered across codebase
 - Impossible for operators (deployers) to test without code changes
@@ -76,20 +80,22 @@ Implement a **multi-provider authentication registry** following the **BYOK (Bri
 
 **Approach:** Build an internal OAuth 2.0 server that all providers feed into, like a full IdP proxy.
 
-| Dimension | Assessment |
-|-----------|-----------|
-| Development time | 6-8 weeks (build proxy + integrate all providers) |
-| Testing | Excellent — proxy is fully tested, providers are mocked |
+| Dimension        | Assessment                                                      |
+| ---------------- | --------------------------------------------------------------- |
+| Development time | 6-8 weeks (build proxy + integrate all providers)               |
+| Testing          | Excellent — proxy is fully tested, providers are mocked         |
 | Operator control | Maximum — proxy handles discovery, provisioning, token exchange |
-| Security | Excellent — centralized token management, single refresh flow |
-| Complexity | High — requires understanding OAuth 2.0 spec intimately |
+| Security         | Excellent — centralized token management, single refresh flow   |
+| Complexity       | High — requires understanding OAuth 2.0 spec intimately         |
 
 **Pros:**
+
 - Single token validation endpoint for all downstream services
 - Could be productized for other SaaS platforms
 - Unified audit trail for all auth events
 
 **Cons:**
+
 - Massive over-engineering for MVP requirements
 - Adds latency (internal auth hop) and operational overhead
 - Makes deployment more complex (requires separate proxy service)
@@ -102,15 +108,16 @@ Implement a **multi-provider authentication registry** following the **BYOK (Bri
 
 **Approach:** Implement a registry of providers (like routing/notifications) where each provider handles its own token exchange and validation. Tenants can bring their own IdP credentials.
 
-| Dimension | Assessment |
-|-----------|-----------|
-| Development time | 3-4 weeks (build registry + 2-3 concrete providers) |
-| Testing | Good — each provider is a testable unit, registry is testable |
+| Dimension        | Assessment                                                           |
+| ---------------- | -------------------------------------------------------------------- |
+| Development time | 3-4 weeks (build registry + 2-3 concrete providers)                  |
+| Testing          | Good — each provider is a testable unit, registry is testable        |
 | Operator control | High — operators configure default, tenants override via Settings UI |
-| Security | Good — encrypted storage, isolated token handling per provider |
-| Complexity | Medium — familiar pattern from routing/notifications |
+| Security         | Good — encrypted storage, isolated token handling per provider       |
+| Complexity       | Medium — familiar pattern from routing/notifications                 |
 
 **Pros:**
+
 - Consistent with existing platform architecture (routing, notifications)
 - Each provider is a small, focused unit (250-300 lines)
 - Operators gain autonomy — can test providers without code changes
@@ -119,6 +126,7 @@ Implement a **multi-provider authentication registry** following the **BYOK (Bri
 - Minimal changes to existing auth routes
 
 **Cons:**
+
 - Each provider must handle its own token refresh/revocation
 - No central OAuth proxy — apps must know about multiple token formats
 - Requires each provider to document its capabilities (SAML vs OIDC, MFA support)
@@ -151,6 +159,7 @@ Implement a **multi-provider authentication registry** following the **BYOK (Bri
 ## Implementation Roadmap
 
 ### Phase 1 (MVP — now)
+
 - Build provider registry + abstraction layer
 - Implement Auth0 (most requested by enterprise)
 - Implement local provider (fallback)
@@ -159,16 +168,19 @@ Implement a **multi-provider authentication registry** following the **BYOK (Bri
 - Prisma: `AuthProvider`, `ExternalAuthSession` models
 
 ### Phase 2 (Q2 2026)
+
 - Implement Cognito (AWS-native enterprises)
 - Implement generic OIDC (works with Keycloak, Okta, custom IdPs)
 - Settings UI: provider configuration forms + credential management
 
 ### Phase 3 (Q3 2026)
+
 - Implement SAML 2.0 support
 - Implement Firebase Auth
 - Multi-provider login page (user picks "Sign in with Auth0" or "Email")
 
 ### Phase 4 (Q4 2026+)
+
 - MFA enforcement per provider
 - Session management dashboard
 - Provider health monitoring + fallback logic
@@ -178,14 +190,14 @@ Implement a **multi-provider authentication registry** following the **BYOK (Bri
 
 Track these metrics to validate the decision:
 
-| Metric | Target | Rationale |
-|--------|--------|-----------|
-| Providers in registry | 7+ by Q4 2026 | Validates extensibility |
-| Tenant provider adoption | > 15% of tenants use external auth | Validates tenant demand |
-| Fallback usage | < 5% of login events (per shop) | External auth is preferred, fallback rare |
-| Auth provider latency | < 500ms p99 | User experience |
-| JIT provisioning errors | < 0.1% | Role mapping accuracy |
-| Provider config validation success | > 95% | Good UX for setup |
+| Metric                             | Target                             | Rationale                                 |
+| ---------------------------------- | ---------------------------------- | ----------------------------------------- |
+| Providers in registry              | 7+ by Q4 2026                      | Validates extensibility                   |
+| Tenant provider adoption           | > 15% of tenants use external auth | Validates tenant demand                   |
+| Fallback usage                     | < 5% of login events (per shop)    | External auth is preferred, fallback rare |
+| Auth provider latency              | < 500ms p99                        | User experience                           |
+| JIT provisioning errors            | < 0.1%                             | Role mapping accuracy                     |
+| Provider config validation success | > 95%                              | Good UX for setup                         |
 
 ## Related Decisions
 
@@ -197,7 +209,7 @@ Track these metrics to validate the decision:
 
 ### Q: Why not use a third-party auth service like Supabase or Firebase Auth directly?
 
-**A:** Supabase/Firebase Auth are hard to embed in a self-hosted deployment. Witylogix is AGPL-3.0 open-source and must support self-hosted deployments where cloud services aren't available. The registry pattern allows tenants to use cloud Auth0/Firebase *or* self-hosted Keycloak/custom OIDC.
+**A:** Supabase/Firebase Auth are hard to embed in a self-hosted deployment. Witylogix is AGPL-3.0 open-source and must support self-hosted deployments where cloud services aren't available. The registry pattern allows tenants to use cloud Auth0/Firebase _or_ self-hosted Keycloak/custom OIDC.
 
 ### Q: What happens if a tenant configures Auth0 but then the Auth0 integration breaks?
 

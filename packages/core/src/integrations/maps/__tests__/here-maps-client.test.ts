@@ -11,14 +11,18 @@
  * - Error handling
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { HEREMapsClient } from '../here-maps-client.js';
-import type { MapsAdapterConfig, GeocodingRequest, ReverseGeocodeRequest } from '../types.js';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { HEREMapsClient } from "../here-maps-client.js";
+import type {
+  MapsAdapterConfig,
+  GeocodingRequest,
+  ReverseGeocodeRequest,
+} from "../types.js";
 
-describe('HEREMapsClient', () => {
+describe("HEREMapsClient", () => {
   let client: HEREMapsClient;
   const mockConfig: MapsAdapterConfig = {
-    apiKey: 'test-api-key',
+    apiKey: "test-api-key",
     rateLimit: 50,
     cacheTtl: 300000,
     timeout: 30000,
@@ -33,23 +37,23 @@ describe('HEREMapsClient', () => {
     vi.resetAllMocks();
   });
 
-  describe('geocode', () => {
-    it('should geocode an address successfully', async () => {
+  describe("geocode", () => {
+    it("should geocode an address successfully", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           items: [
             {
-              id: 'loc-1',
-              title: 'New York, NY, United States',
-              resultType: 'place',
+              id: "loc-1",
+              title: "New York, NY, United States",
+              resultType: "place",
               address: {
-                label: '4, 5th Ave, New York, NY 10003, United States',
-                countryCode: 'USA',
-                countryName: 'United States',
-                state: 'NY',
-                city: 'New York',
-                postalCode: '10003',
+                label: "4, 5th Ave, New York, NY 10003, United States",
+                countryCode: "USA",
+                countryName: "United States",
+                state: "NY",
+                city: "New York",
+                postalCode: "10003",
               },
               position: {
                 lat: 40.7128,
@@ -74,19 +78,19 @@ describe('HEREMapsClient', () => {
       });
 
       const request: GeocodingRequest = {
-        address: 'New York',
+        address: "New York",
         limit: 10,
       };
 
       const response = await client.geocode(request);
 
-      expect(response.status).toBe('OK');
+      expect(response.status).toBe("OK");
       expect(response.results).toHaveLength(1);
       expect(response.results[0].location.lat).toBe(40.7128);
       expect(response.results[0].location.lng).toBe(-74.006);
     });
 
-    it('should return ZERO_RESULTS when no addresses found', async () => {
+    it("should return ZERO_RESULTS when no addresses found", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -95,43 +99,43 @@ describe('HEREMapsClient', () => {
       });
 
       const request: GeocodingRequest = {
-        address: 'xyznonexistentplace',
+        address: "xyznonexistentplace",
       };
 
       const response = await client.geocode(request);
 
-      expect(response.status).toBe('ZERO_RESULTS');
+      expect(response.status).toBe("ZERO_RESULTS");
       expect(response.results).toHaveLength(0);
     });
 
-    it('should handle API errors gracefully', async () => {
+    it("should handle API errors gracefully", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: false,
-        statusText: 'Unauthorized',
+        statusText: "Unauthorized",
       });
 
       const request: GeocodingRequest = {
-        address: 'New York',
+        address: "New York",
       };
 
       const response = await client.geocode(request);
 
-      expect(response.status).toBe('ERROR');
+      expect(response.status).toBe("ERROR");
       expect(response.error).toBeDefined();
     });
 
-    it('should cache geocoding results', async () => {
+    it("should cache geocoding results", async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({
           items: [
             {
-              id: 'loc-1',
-              title: 'New York',
+              id: "loc-1",
+              title: "New York",
               address: {
-                label: 'New York, NY, United States',
-                countryCode: 'USA',
-                countryName: 'United States',
+                label: "New York, NY, United States",
+                countryCode: "USA",
+                countryName: "United States",
               },
               position: { lat: 40.7128, lng: -74.006 },
             },
@@ -139,7 +143,7 @@ describe('HEREMapsClient', () => {
         }),
       });
 
-      const request: GeocodingRequest = { address: 'New York' };
+      const request: GeocodingRequest = { address: "New York" };
 
       await client.geocode(request);
       const metrics1 = client.getMetrics();
@@ -150,18 +154,18 @@ describe('HEREMapsClient', () => {
       expect(metrics2.cacheHits).toBe(metrics1.cacheHits + 1);
     });
 
-    it('should filter by country code', async () => {
+    it("should filter by country code", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           items: [
             {
-              id: 'loc-1',
-              title: 'Paris',
+              id: "loc-1",
+              title: "Paris",
               address: {
-                label: 'Paris, France',
-                countryCode: 'FRA',
-                countryName: 'France',
+                label: "Paris, France",
+                countryCode: "FRA",
+                countryName: "France",
               },
               position: { lat: 48.8566, lng: 2.3522 },
             },
@@ -170,34 +174,34 @@ describe('HEREMapsClient', () => {
       });
 
       const request: GeocodingRequest = {
-        address: 'Paris',
-        country_code: 'FRA',
+        address: "Paris",
+        country_code: "FRA",
       };
 
       const response = await client.geocode(request);
 
-      expect(response.status).toBe('OK');
+      expect(response.status).toBe("OK");
       expect(global.fetch).toHaveBeenCalled();
       const callUrl = (global.fetch as any).mock.calls[0][0];
-      expect(callUrl).toContain('countryCode%3AFRA');
+      expect(callUrl).toContain("countryCode%3AFRA");
     });
   });
 
-  describe('reverseGeocode', () => {
-    it('should reverse geocode coordinates to address', async () => {
+  describe("reverseGeocode", () => {
+    it("should reverse geocode coordinates to address", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           items: [
             {
-              id: 'loc-1',
-              title: 'New York',
+              id: "loc-1",
+              title: "New York",
               address: {
-                label: '5th Avenue, New York, NY, United States',
-                countryCode: 'USA',
-                countryName: 'United States',
-                state: 'NY',
-                city: 'New York',
+                label: "5th Avenue, New York, NY, United States",
+                countryCode: "USA",
+                countryName: "United States",
+                state: "NY",
+                city: "New York",
               },
               position: { lat: 40.7128, lng: -74.006 },
             },
@@ -211,23 +215,23 @@ describe('HEREMapsClient', () => {
 
       const response = await client.reverseGeocode(request);
 
-      expect(response.status).toBe('OK');
+      expect(response.status).toBe("OK");
       expect(response.results).toHaveLength(1);
-      expect(response.results[0].city).toBe('New York');
+      expect(response.results[0].city).toBe("New York");
     });
 
-    it('should handle array coordinates', async () => {
+    it("should handle array coordinates", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           items: [
             {
-              id: 'loc-1',
-              title: 'London',
+              id: "loc-1",
+              title: "London",
               address: {
-                label: 'London, UK',
-                countryCode: 'GBR',
-                countryName: 'United Kingdom',
+                label: "London, UK",
+                countryCode: "GBR",
+                countryName: "United Kingdom",
               },
               position: { lat: 51.5074, lng: -0.1278 },
             },
@@ -241,10 +245,10 @@ describe('HEREMapsClient', () => {
 
       const response = await client.reverseGeocode(request);
 
-      expect(response.status).toBe('OK');
+      expect(response.status).toBe("OK");
     });
 
-    it('should return NOT_FOUND when no address found', async () => {
+    it("should return NOT_FOUND when no address found", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -258,24 +262,24 @@ describe('HEREMapsClient', () => {
 
       const response = await client.reverseGeocode(request);
 
-      expect(response.status).toBe('NOT_FOUND');
+      expect(response.status).toBe("NOT_FOUND");
     });
   });
 
-  describe('autosuggest', () => {
-    it('should provide autocomplete suggestions', async () => {
+  describe("autosuggest", () => {
+    it("should provide autocomplete suggestions", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           items: [
             {
-              id: 'loc-1',
-              title: 'New York',
-              resultType: 'place',
+              id: "loc-1",
+              title: "New York",
+              resultType: "place",
               address: {
-                label: 'New York, United States',
-                countryCode: 'USA',
-                countryName: 'United States',
+                label: "New York, United States",
+                countryCode: "USA",
+                countryName: "United States",
               },
               position: { lat: 40.7128, lng: -74.006 },
               distance: 100,
@@ -285,18 +289,18 @@ describe('HEREMapsClient', () => {
       });
 
       const request = {
-        query: 'New',
+        query: "New",
         limit: 5,
       };
 
       const response = await client.autosuggest(request);
 
-      expect(response.status).toBe('OK');
+      expect(response.status).toBe("OK");
       expect(response.results).toHaveLength(1);
-      expect(response.results[0].title).toBe('New York');
+      expect(response.results[0].title).toBe("New York");
     });
 
-    it('should support proximity bias', async () => {
+    it("should support proximity bias", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -305,7 +309,7 @@ describe('HEREMapsClient', () => {
       });
 
       const request = {
-        query: 'restaurant',
+        query: "restaurant",
         location: { lat: 40.7128, lng: -74.006 },
         radius_m: 1000,
       };
@@ -313,11 +317,11 @@ describe('HEREMapsClient', () => {
       await client.autosuggest(request);
 
       const callUrl = (global.fetch as any).mock.calls[0][0];
-      expect(callUrl).toContain('at=40.7128');
-      expect(callUrl).toContain('r=1000');
+      expect(callUrl).toContain("at=40.7128");
+      expect(callUrl).toContain("r=1000");
     });
 
-    it('should filter by bounding box', async () => {
+    it("should filter by bounding box", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -326,7 +330,7 @@ describe('HEREMapsClient', () => {
       });
 
       const request = {
-        query: 'park',
+        query: "park",
         bounds: {
           ne: { lat: 40.8, lng: -74 },
           sw: { lat: 40.7, lng: -74.1 },
@@ -336,25 +340,25 @@ describe('HEREMapsClient', () => {
       await client.autosuggest(request);
 
       const callUrl = (global.fetch as any).mock.calls[0][0];
-      expect(callUrl).toContain('bbox');
+      expect(callUrl).toContain("bbox");
     });
   });
 
-  describe('placeSearch', () => {
-    it('should search for places', async () => {
+  describe("placeSearch", () => {
+    it("should search for places", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           items: [
             {
-              id: 'place-1',
-              title: 'Central Park',
-              type: 'venue',
+              id: "place-1",
+              title: "Central Park",
+              type: "venue",
               address: {
-                label: 'Central Park, New York, NY',
-                countryCode: 'USA',
-                countryName: 'United States',
-                city: 'New York',
+                label: "Central Park, New York, NY",
+                countryCode: "USA",
+                countryName: "United States",
+                city: "New York",
               },
               position: { lat: 40.7829, lng: -73.9654 },
               distance: 500,
@@ -364,19 +368,19 @@ describe('HEREMapsClient', () => {
       });
 
       const request = {
-        query: 'parks',
+        query: "parks",
         location: { lat: 40.7128, lng: -74.006 },
         radius_m: 5000,
       };
 
       const response = await client.placeSearch(request);
 
-      expect(response.status).toBe('OK');
+      expect(response.status).toBe("OK");
       expect(response.results).toHaveLength(1);
-      expect(response.results[0].name).toBe('Central Park');
+      expect(response.results[0].name).toBe("Central Park");
     });
 
-    it('should return NOT_FOUND when no places match', async () => {
+    it("should return NOT_FOUND when no places match", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -385,49 +389,51 @@ describe('HEREMapsClient', () => {
       });
 
       const request = {
-        query: 'xyznonexistent',
+        query: "xyznonexistent",
         location: { lat: 0, lng: 0 },
       };
 
       const response = await client.placeSearch(request);
 
-      expect(response.status).toBe('NOT_FOUND');
+      expect(response.status).toBe("NOT_FOUND");
     });
   });
 
-  describe('getPlaceDetail', () => {
-    it('should retrieve detailed place information', async () => {
+  describe("getPlaceDetail", () => {
+    it("should retrieve detailed place information", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           items: [
             {
-              id: 'place-1',
-              title: 'Central Park',
+              id: "place-1",
+              title: "Central Park",
               address: {
-                label: 'Central Park, New York',
-                countryCode: 'USA',
-                countryName: 'United States',
+                label: "Central Park, New York",
+                countryCode: "USA",
+                countryName: "United States",
               },
               position: { lat: 40.7829, lng: -73.9654 },
               distance: 0,
-              contacts: [{
-                phone: [{ value: '+1-555-0123' }],
-                website: [{ value: 'https://www.centralparknyc.org' }],
-              }],
+              contacts: [
+                {
+                  phone: [{ value: "+1-555-0123" }],
+                  website: [{ value: "https://www.centralparknyc.org" }],
+                },
+              ],
             },
           ],
         }),
       });
 
-      const detail = await client.getPlaceDetail('place-1');
+      const detail = await client.getPlaceDetail("place-1");
 
-      expect(detail.name).toBe('Central Park');
-      expect(detail.phone).toBe('+1-555-0123');
-      expect(detail.website).toBe('https://www.centralparknyc.org');
+      expect(detail.name).toBe("Central Park");
+      expect(detail.phone).toBe("+1-555-0123");
+      expect(detail.website).toBe("https://www.centralparknyc.org");
     });
 
-    it('should throw error when place not found', async () => {
+    it("should throw error when place not found", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -435,68 +441,68 @@ describe('HEREMapsClient', () => {
         }),
       });
 
-      await expect(client.getPlaceDetail('nonexistent')).rejects.toThrow();
+      await expect(client.getPlaceDetail("nonexistent")).rejects.toThrow();
     });
   });
 
-  describe('getTileUrl', () => {
-    it('should generate vector tile URL', () => {
+  describe("getTileUrl", () => {
+    it("should generate vector tile URL", () => {
       const request = {
         x: 1,
         y: 2,
         zoom: 10,
-        format: 'pbf' as const,
+        format: "pbf" as const,
       };
 
       const url = client.getTileUrl(request);
 
-      expect(url).toContain('vector');
-      expect(url).toContain('tile_10_1_2');
-      expect(url).toContain('apiKey=test-api-key');
+      expect(url).toContain("vector");
+      expect(url).toContain("tile_10_1_2");
+      expect(url).toContain("apiKey=test-api-key");
     });
 
-    it('should generate raster tile URL with size', () => {
+    it("should generate raster tile URL with size", () => {
       const request = {
         x: 5,
         y: 10,
         zoom: 12,
-        format: 'png' as const,
-        size: '512' as const,
+        format: "png" as const,
+        size: "512" as const,
       };
 
       const url = client.getTileUrl(request);
 
-      expect(url).toContain('512');
-      expect(url).toContain('png');
+      expect(url).toContain("512");
+      expect(url).toContain("png");
     });
 
-    it('should generate JPEG tile URL', () => {
+    it("should generate JPEG tile URL", () => {
       const request = {
         x: 1,
         y: 1,
         zoom: 5,
-        format: 'jpg' as const,
+        format: "jpg" as const,
       };
 
       const url = client.getTileUrl(request);
 
-      expect(url).toContain('jpg');
+      expect(url).toContain("jpg");
     });
   });
 
-  describe('Rate limiting', () => {
-    it('should enforce rate limiting', async () => {
+  describe("Rate limiting", () => {
+    it("should enforce rate limiting", async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({
           items: [
             {
-              id: 'loc-1',
-              title: 'Test',
+              id: "loc-1",
+              title: "Test",
               address: {
-                label: 'Test',
-                countryCode: 'US',
-                countryName: 'USA',
+                label: "Test",
+                countryCode: "US",
+                countryName: "USA",
               },
               position: { lat: 0, lng: 0 },
             },
@@ -514,7 +520,7 @@ describe('HEREMapsClient', () => {
       // Make multiple requests — first 2 are instant (use initial tokens),
       // remaining 3 must wait for refills
       const requests = Array.from({ length: 5 }, () =>
-        slowClient.geocode({ address: `location${Math.random()}` })
+        slowClient.geocode({ address: `location${Math.random()}` }),
       );
 
       await Promise.all(requests);
@@ -525,19 +531,19 @@ describe('HEREMapsClient', () => {
     });
   });
 
-  describe('Metrics', () => {
-    it('should track request metrics', async () => {
+  describe("Metrics", () => {
+    it("should track request metrics", async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({
           items: [
             {
-              id: 'loc-1',
-              title: 'Test',
+              id: "loc-1",
+              title: "Test",
               address: {
-                label: 'Test',
-                countryCode: 'US',
-                countryName: 'USA',
+                label: "Test",
+                countryCode: "US",
+                countryName: "USA",
               },
               position: { lat: 0, lng: 0 },
             },
@@ -545,7 +551,7 @@ describe('HEREMapsClient', () => {
         }),
       });
 
-      const request = { address: 'Test' };
+      const request = { address: "Test" };
 
       await client.geocode(request);
       await client.geocode(request);
@@ -559,18 +565,18 @@ describe('HEREMapsClient', () => {
       expect(metrics.cacheHits).toBe(1); // Second geocode request is cached
     });
 
-    it('should calculate cache hit rate', async () => {
+    it("should calculate cache hit rate", async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({
           items: [
             {
-              id: 'loc-1',
-              title: 'Test',
+              id: "loc-1",
+              title: "Test",
               address: {
-                label: 'Test',
-                countryCode: 'US',
-                countryName: 'USA',
+                label: "Test",
+                countryCode: "US",
+                countryName: "USA",
               },
               position: { lat: 0, lng: 0 },
             },
@@ -578,7 +584,7 @@ describe('HEREMapsClient', () => {
         }),
       });
 
-      const request = { address: 'Test' };
+      const request = { address: "Test" };
 
       for (let i = 0; i < 10; i++) {
         await client.geocode(request);
@@ -590,34 +596,34 @@ describe('HEREMapsClient', () => {
     });
   });
 
-  describe('Error handling', () => {
-    it('should handle network timeout', async () => {
-      global.fetch = vi.fn().mockRejectedValueOnce(new Error('Timeout'));
+  describe("Error handling", () => {
+    it("should handle network timeout", async () => {
+      global.fetch = vi.fn().mockRejectedValueOnce(new Error("Timeout"));
 
-      const request = { address: 'Test' };
+      const request = { address: "Test" };
 
       const response = await client.geocode(request);
 
-      expect(response.status).toBe('ERROR');
+      expect(response.status).toBe("ERROR");
       expect(response.error).toBeDefined();
     });
 
-    it('should track failed requests', async () => {
+    it("should track failed requests", async () => {
       global.fetch = vi
         .fn()
         .mockResolvedValueOnce({
           ok: false,
-          statusText: 'Internal Server Error',
+          statusText: "Internal Server Error",
         })
         .mockResolvedValueOnce({
           ok: false,
-          statusText: 'Bad Gateway',
+          statusText: "Bad Gateway",
         });
 
-      const request = { address: 'Test' };
+      const request = { address: "Test" };
 
       await client.geocode(request);
-      await client.geocode({ address: 'Different' });
+      await client.geocode({ address: "Different" });
 
       const metrics = client.getMetrics();
 
@@ -625,19 +631,19 @@ describe('HEREMapsClient', () => {
     });
   });
 
-  describe('Cache management', () => {
-    it('should clear cache', async () => {
+  describe("Cache management", () => {
+    it("should clear cache", async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({
           items: [
             {
-              id: 'loc-1',
-              title: 'Test',
+              id: "loc-1",
+              title: "Test",
               address: {
-                label: 'Test',
-                countryCode: 'US',
-                countryName: 'USA',
+                label: "Test",
+                countryCode: "US",
+                countryName: "USA",
               },
               position: { lat: 0, lng: 0 },
             },
@@ -645,7 +651,7 @@ describe('HEREMapsClient', () => {
         }),
       });
 
-      const request = { address: 'Test' };
+      const request = { address: "Test" };
 
       await client.geocode(request);
       const metrics1 = client.getMetrics();
@@ -658,18 +664,18 @@ describe('HEREMapsClient', () => {
       expect(metrics2.cacheHits).toBe(metrics1.cacheHits); // No additional hits
     });
 
-    it('should reset metrics', async () => {
+    it("should reset metrics", async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({
           items: [
             {
-              id: 'loc-1',
-              title: 'Test',
+              id: "loc-1",
+              title: "Test",
               address: {
-                label: 'Test',
-                countryCode: 'US',
-                countryName: 'USA',
+                label: "Test",
+                countryCode: "US",
+                countryName: "USA",
               },
               position: { lat: 0, lng: 0 },
             },
@@ -677,7 +683,7 @@ describe('HEREMapsClient', () => {
         }),
       });
 
-      await client.geocode({ address: 'Test' });
+      await client.geocode({ address: "Test" });
 
       client.resetMetrics();
       const metrics = client.getMetrics();

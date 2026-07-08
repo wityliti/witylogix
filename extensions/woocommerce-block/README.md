@@ -17,21 +17,27 @@ A production-ready WooCommerce checkout block for delivery date/time slot select
 ### Block Components
 
 #### `src/components/date-picker.tsx`
+
 Calendar date picker with:
+
 - Month navigation
 - Availability indicators (available/limited/unavailable)
 - Date range validation
 - Legend display
 
 #### `src/components/time-slots.tsx`
+
 Time slot grid with:
+
 - Grouping by time period (morning/afternoon/evening)
 - Capacity indicators and availability status
 - Price display
 - Selection state management
 
 #### `src/components/rate-display.tsx`
+
 Zone rate display showing:
+
 - Base fee
 - Per-mile rate
 - Estimated delivery time
@@ -39,7 +45,9 @@ Zone rate display showing:
 - Loading and error states
 
 #### `src/components/delivery-notes.tsx`
+
 Text area for delivery instructions with:
+
 - Character counter
 - 500-character limit
 - Focus/blur states
@@ -48,7 +56,9 @@ Text area for delivery instructions with:
 ### API Client
 
 #### `src/api/witylogix-api.ts`
+
 WooCommerce-native API client with:
+
 - `fetchAvailableSlots(date, zoneId)` - Get slots for specific date
 - `fetchZoneRates(address)` - Get rates for address
 - `reserveSlot(slotId, orderId)` - Reserve time slot
@@ -60,7 +70,9 @@ Uses WC Store API nonce for authentication.
 ### PHP Plugin
 
 #### `php/witylogix-delivery.php`
+
 WordPress plugin providing:
+
 - Block registration via `block.json`
 - REST API endpoints for proxy to Witylogix backend:
   - `/wc/v1/witylogix/slots` - Get available slots
@@ -75,6 +87,7 @@ WordPress plugin providing:
 ## Installation
 
 ### Prerequisites
+
 - WordPress 5.9+
 - WooCommerce 8.0+
 - PHP 8.0+
@@ -104,6 +117,7 @@ WordPress plugin providing:
 ### Plugin Settings
 
 Set these as WordPress options:
+
 - `witylogix_delivery_api_url` - Witylogix API endpoint
 - `witylogix_delivery_merchant_id` - Merchant ID
 - `witylogix_delivery_api_key` - API key for server-to-server requests
@@ -140,7 +154,7 @@ All styling uses CSS custom properties for easy customization:
 ### Block Registration
 
 ```tsx
-registerBlockType('witylogix/delivery-scheduler', {
+registerBlockType("witylogix/delivery-scheduler", {
   edit: DeliverySchedulerBlock,
   save: () => null, // Dynamic block
 });
@@ -152,27 +166,30 @@ Block dispatches custom events for integration:
 
 ```javascript
 // Selection changed event
-window.addEventListener('witylogix:selection-changed', (event) => {
+window.addEventListener("witylogix:selection-changed", (event) => {
   console.log(event.detail); // { date, slotId, notes }
 });
 
 // Address changed event
-window.dispatchEvent(new CustomEvent('witylogix:address-changed', {
-  detail: addressObject
-}));
+window.dispatchEvent(
+  new CustomEvent("witylogix:address-changed", {
+    detail: addressObject,
+  }),
+);
 ```
 
 ### Data Storage
 
 Selection is stored in window object:
+
 ```javascript
 window.__WITYLOGIX_DELIVERY__ = {
-  date: '2024-01-20',
-  slotId: 'slot-123',
-  slotLabel: 'Morning (8am-12pm)',
-  timeGroup: 'morning',
-  notes: 'Please ring doorbell'
-}
+  date: "2024-01-20",
+  slotId: "slot-123",
+  slotLabel: "Morning (8am-12pm)",
+  timeGroup: "morning",
+  notes: "Please ring doorbell",
+};
 ```
 
 ## Order Meta
@@ -240,6 +257,7 @@ npm run lint
 ### Witylogix API Endpoints
 
 All requests require:
+
 - `X-Merchant-ID` header
 - `X-WC-Store-API-Nonce` header (client-side)
 
@@ -250,6 +268,7 @@ GET /wc/v1/witylogix/slots?date=2024-01-20&zone_id=zone-1
 ```
 
 Response:
+
 ```json
 {
   "slots": [
@@ -276,6 +295,7 @@ GET /wc/v1/witylogix/rates?zip=10001&country=US
 ```
 
 Response:
+
 ```json
 {
   "zone": "New York",
@@ -298,6 +318,7 @@ Content-Type: application/json
 ```
 
 Response:
+
 ```json
 {
   "slotId": "slot-1",
@@ -311,17 +332,20 @@ Response:
 ## Troubleshooting
 
 ### Block Not Appearing
+
 - Verify plugin is activated
 - Check `block.json` is valid
 - Ensure WordPress version 5.9+
 
 ### API Errors
+
 - Check merchant ID configuration
 - Verify API URL is correct
 - Ensure API key is valid
 - Check network tab for failed requests
 
 ### Styling Issues
+
 - Clear browser cache
 - Verify CSS custom properties are set
 - Check for conflicting styles from theme

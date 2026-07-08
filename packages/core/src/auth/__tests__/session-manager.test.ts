@@ -33,7 +33,12 @@ vi.mock("@witylogix/db", () => ({
   db: { authSession: mockPrisma.session },
 }));
 
-import { SessionManager, getSessionManager, resetSessionManager, type CreateSessionInput } from "../session-manager";
+import {
+  SessionManager,
+  getSessionManager,
+  resetSessionManager,
+  type CreateSessionInput,
+} from "../session-manager";
 import type { AuthResult } from "../types";
 
 // ─── TEST SUITE ─────────────────────────────────────────────
@@ -128,9 +133,18 @@ describe("SessionManager", () => {
 
       // Simulate 3 existing sessions (at max)
       const existingSessions = [
-        { id: "session-1", createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000) },
-        { id: "session-2", createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000) },
-        { id: "session-3", createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000) },
+        {
+          id: "session-1",
+          createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
+        },
+        {
+          id: "session-2",
+          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+        },
+        {
+          id: "session-3",
+          createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+        },
       ];
 
       mockPrisma.session.findMany.mockResolvedValue(existingSessions);
@@ -311,7 +325,11 @@ describe("SessionManager", () => {
         createdAt: new Date(),
       });
 
-      const result = await sessionManager.refreshSession("session-123", newToken, newExpiresAt);
+      const result = await sessionManager.refreshSession(
+        "session-123",
+        newToken,
+        newExpiresAt,
+      );
 
       expect(result.accessToken).toBe(newToken);
       expect(result.expiresAt).toEqual(newExpiresAt);
@@ -417,7 +435,10 @@ describe("SessionManager", () => {
 
       mockPrisma.session.findMany.mockResolvedValue(sessions);
 
-      const result = await sessionManager.listActiveSessions("user-456", "org-123");
+      const result = await sessionManager.listActiveSessions(
+        "user-456",
+        "org-123",
+      );
 
       expect(result).toHaveLength(2);
       expect(result[0].sessionId).toBe("session-1");
@@ -436,7 +457,10 @@ describe("SessionManager", () => {
     it("should return empty list if no active sessions", async () => {
       mockPrisma.session.findMany.mockResolvedValue([]);
 
-      const result = await sessionManager.listActiveSessions("user-456", "org-123");
+      const result = await sessionManager.listActiveSessions(
+        "user-456",
+        "org-123",
+      );
 
       expect(result).toEqual([]);
     });
@@ -470,7 +494,11 @@ describe("SessionManager", () => {
         count: 2,
       });
 
-      await sessionManager.revokeAllSessions("user-456", "org-123", "session-999");
+      await sessionManager.revokeAllSessions(
+        "user-456",
+        "org-123",
+        "session-999",
+      );
 
       expect(mockPrisma.session.updateMany).toHaveBeenCalledWith({
         where: {
@@ -540,20 +568,28 @@ describe("SessionManager", () => {
 
       mockPrisma.session.findMany
         .mockResolvedValueOnce([]) // org-1 sessions
-        .mockResolvedValueOnce([{
-          id: "session-org2",
-          userId: user,
-          orgId: "org-2",
-          providerId: "provider-local",
-          token: "token-org2",
-          createdAt: new Date(),
-          expiresAt: new Date(Date.now() + 60 * 60 * 1000),
-          isRevoked: false,
-          mfaVerified: false,
-        }]); // org-2 sessions
+        .mockResolvedValueOnce([
+          {
+            id: "session-org2",
+            userId: user,
+            orgId: "org-2",
+            providerId: "provider-local",
+            token: "token-org2",
+            createdAt: new Date(),
+            expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+            isRevoked: false,
+            mfaVerified: false,
+          },
+        ]); // org-2 sessions
 
-      const org1Sessions = await sessionManager.listActiveSessions(user, "org-1");
-      const org2Sessions = await sessionManager.listActiveSessions(user, "org-2");
+      const org1Sessions = await sessionManager.listActiveSessions(
+        user,
+        "org-1",
+      );
+      const org2Sessions = await sessionManager.listActiveSessions(
+        user,
+        "org-2",
+      );
 
       expect(org1Sessions).toHaveLength(0);
       expect(org2Sessions).toHaveLength(1);

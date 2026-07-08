@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,18 +10,18 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { useAuth } from '../hooks/useAuth';
+} from "react-native";
+import { useAuth } from "../hooks/useAuth";
 
 const LoginScreen: React.FC = () => {
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
 
   const handleLogin = async () => {
     if (!phone || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert("Error", "Please fill in all fields");
       return;
     }
 
@@ -29,7 +29,10 @@ const LoginScreen: React.FC = () => {
     try {
       await login(phone, password);
     } catch (error) {
-      Alert.alert('Login Failed', error instanceof Error ? error.message : 'An error occurred');
+      Alert.alert(
+        "Login Failed",
+        error instanceof Error ? error.message : "An error occurred",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -37,7 +40,10 @@ const LoginScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.content}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.content}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>Witylogix Driver</Text>
           <Text style={styles.subtitle}>Delivery Management</Text>
@@ -84,7 +90,9 @@ const LoginScreen: React.FC = () => {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Need help? Contact support@witylogix.com</Text>
+          <Text style={styles.footerText}>
+            Need help? Contact support@witylogix.com
+          </Text>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -94,26 +102,26 @@ const LoginScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   content: {
     flex: 1,
     paddingHorizontal: 20,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   header: {
     marginBottom: 40,
-    alignItems: 'center',
+    alignItems: "center",
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
-    color: '#005bd3',
+    fontWeight: "700",
+    color: "#005bd3",
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   form: {
     marginBottom: 40,
@@ -123,40 +131,40 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#202223',
+    fontWeight: "600",
+    color: "#202223",
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#202223',
+    color: "#202223",
   },
   button: {
-    backgroundColor: '#005bd3',
+    backgroundColor: "#005bd3",
     borderRadius: 8,
     paddingVertical: 14,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   footer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   footerText: {
     fontSize: 12,
-    color: '#999',
+    color: "#999",
   },
 });
 

@@ -78,7 +78,7 @@ describe("Usage Meter", () => {
         42,
         128,
         1024,
-        "192.168.1.1"
+        "192.168.1.1",
       );
 
       // Flush to ensure write
@@ -104,7 +104,7 @@ describe("Usage Meter", () => {
         156,
         2048, // request
         4096, // response
-        "192.168.1.1"
+        "192.168.1.1",
       );
 
       await shutdownUsageMeter();
@@ -127,7 +127,7 @@ describe("Usage Meter", () => {
         50,
         100,
         500,
-        "192.168.1.2"
+        "192.168.1.2",
       );
 
       await shutdownUsageMeter();
@@ -150,7 +150,7 @@ describe("Usage Meter", () => {
           Math.random() * 200,
           Math.random() * 1024,
           Math.random() * 4096,
-          `192.168.1.${i}`
+          `192.168.1.${i}`,
         );
       }
 

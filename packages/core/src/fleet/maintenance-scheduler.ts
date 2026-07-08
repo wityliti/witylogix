@@ -51,7 +51,11 @@ export class PreventiveScheduler {
     });
 
     if (!vehicle) {
-      throw new FleetManagementError(`Vehicle not found: ${vehicleId}`, "VEHICLE_NOT_FOUND", 404);
+      throw new FleetManagementError(
+        `Vehicle not found: ${vehicleId}`,
+        "VEHICLE_NOT_FOUND",
+        404,
+      );
     }
 
     const nextServiceDate = this.calculateNextServiceDate(new Date(), config);
@@ -106,7 +110,10 @@ export class PreventiveScheduler {
   /**
    * Check if maintenance is due
    */
-  async isMaintenanceDue(vehicleId: string, scheduleId: string): Promise<{
+  async isMaintenanceDue(
+    vehicleId: string,
+    scheduleId: string,
+  ): Promise<{
     isDue: boolean;
     daysOverdue: number;
     milesOverdue: number;
@@ -122,17 +129,28 @@ export class PreventiveScheduler {
     ]);
 
     if (!schedule || !vehicle) {
-      throw new FleetManagementError("Schedule or vehicle not found", "NOT_FOUND", 404);
+      throw new FleetManagementError(
+        "Schedule or vehicle not found",
+        "NOT_FOUND",
+        404,
+      );
     }
 
     const now = new Date();
     const daysOverdue = Math.max(
       0,
-      Math.ceil((now.getTime() - schedule.nextServiceDate.getTime()) / (1000 * 60 * 60 * 24)),
+      Math.ceil(
+        (now.getTime() - schedule.nextServiceDate.getTime()) /
+          (1000 * 60 * 60 * 24),
+      ),
     );
 
     const milesOverdue = schedule.intervalMiles
-      ? Math.max(0, vehicle.mileage - (schedule.lastServiceDate ? 0 : schedule.intervalMiles))
+      ? Math.max(
+          0,
+          vehicle.mileage -
+            (schedule.lastServiceDate ? 0 : schedule.intervalMiles),
+        )
       : 0;
 
     const isDue =
@@ -153,7 +171,10 @@ export class PreventiveScheduler {
   /**
    * Reschedule maintenance
    */
-  async reschedule(scheduleId: string, newDate: Date): Promise<MaintenanceSchedule> {
+  async reschedule(
+    scheduleId: string,
+    newDate: Date,
+  ): Promise<MaintenanceSchedule> {
     const schedule = await (this.prisma as any).maintenanceSchedule.update({
       where: { id: scheduleId },
       data: { nextServiceDate: newDate },
@@ -292,9 +313,11 @@ export class ReactiveHandler {
     estimatedRepairTime: number;
     dispatchVendors: string[];
   }> {
-    const maintenance = await (this.prisma as any).maintenanceRecord.findUnique({
-      where: { id: maintenanceId },
-    });
+    const maintenance = await (this.prisma as any).maintenanceRecord.findUnique(
+      {
+        where: { id: maintenanceId },
+      },
+    );
 
     if (!maintenance) {
       throw new MaintenanceNotFoundError(maintenanceId);
@@ -360,7 +383,9 @@ export class ReactiveHandler {
     });
 
     if (vehicle.status === "MAINTENANCE") {
-      const pendingMaintenance = await (this.prisma as any).maintenanceRecord.count({
+      const pendingMaintenance = await (
+        this.prisma as any
+      ).maintenanceRecord.count({
         where: {
           vehicleId: maintenance.vehicleId,
           status: { in: ["SCHEDULED", "IN_PROGRESS", "OVERDUE"] },
@@ -426,7 +451,11 @@ export class PredictiveEngine {
     });
 
     if (!vehicle) {
-      throw new FleetManagementError(`Vehicle not found: ${vehicleId}`, "VEHICLE_NOT_FOUND", 404);
+      throw new FleetManagementError(
+        `Vehicle not found: ${vehicleId}`,
+        "VEHICLE_NOT_FOUND",
+        404,
+      );
     }
 
     const age = new Date().getFullYear() - vehicle.year;
@@ -465,14 +494,18 @@ export class PredictiveEngine {
     // Adjust probability based on age and mileage
     const ageAdjustment = age * 0.02;
     const mileageAdjustment =
-      mileage > mileageThreshold ? ((mileage - mileageThreshold) / mileageThreshold) * 0.1 : 0;
+      mileage > mileageThreshold
+        ? ((mileage - mileageThreshold) / mileageThreshold) * 0.1
+        : 0;
     const failureProbability = Math.min(
       0.95,
       baseProbability + ageAdjustment + mileageAdjustment,
     );
 
     const estimatedFailureDate = new Date();
-    estimatedFailureDate.setMonth(estimatedFailureDate.getMonth() + Math.round(6 / failureProbability));
+    estimatedFailureDate.setMonth(
+      estimatedFailureDate.getMonth() + Math.round(6 / failureProbability),
+    );
 
     let recommendedAction = "Monitor";
     if (failureProbability > 0.7) {
@@ -509,7 +542,9 @@ export class PredictiveEngine {
       "SUSPENSION",
     ];
     const predictions = await Promise.all(
-      components.map((comp) => this.calculateFailureProbability(vehicleId, comp)),
+      components.map((comp) =>
+        this.calculateFailureProbability(vehicleId, comp),
+      ),
     );
 
     return predictions
@@ -536,7 +571,9 @@ export class PredictiveEngine {
 
   private formatTimeToFailure(date: Date): string {
     const now = new Date();
-    const months = Math.round((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30));
+    const months = Math.round(
+      (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30),
+    );
     if (months < 1) return "Urgent";
     if (months < 3) return "Within 3 months";
     if (months < 6) return "Within 6 months";
@@ -589,7 +626,10 @@ export class MaintenanceOptimizer {
   /**
    * Get cost estimation
    */
-  async estimateCost(maintenanceType: MaintenanceType, category: MaintenanceCategory): Promise<{
+  async estimateCost(
+    maintenanceType: MaintenanceType,
+    category: MaintenanceCategory,
+  ): Promise<{
     laborCost: number;
     partsCost: number;
     totalCost: number;
@@ -702,7 +742,12 @@ export class RecallManager {
    */
   async registerRecall(
     vehicleId: string,
-    recallInfo: { recallId: string; manufacturer: string; reason: string; deadline: Date },
+    recallInfo: {
+      recallId: string;
+      manufacturer: string;
+      reason: string;
+      deadline: Date;
+    },
   ): Promise<MaintenanceRecord> {
     const maintenance = await (this.prisma as any).maintenanceRecord.create({
       data: {
@@ -721,7 +766,11 @@ export class RecallManager {
   /**
    * Find affected vehicles by recall
    */
-  async findAffectedVehicles(make: string, model: string, year: number): Promise<string[]> {
+  async findAffectedVehicles(
+    make: string,
+    model: string,
+    year: number,
+  ): Promise<string[]> {
     const vehicles = await (this.prisma as any).vehicle.findMany({
       where: {
         make,
@@ -737,7 +786,10 @@ export class RecallManager {
   /**
    * Track recall completion
    */
-  async trackRecallCompletion(vehicleId: string, recallId: string): Promise<boolean> {
+  async trackRecallCompletion(
+    vehicleId: string,
+    recallId: string,
+  ): Promise<boolean> {
     const maintenance = await (this.prisma as any).maintenanceRecord.findFirst({
       where: {
         vehicleId,
@@ -766,17 +818,22 @@ export class RecallManager {
       },
     });
 
-    const completed = recalls.filter((r: any) => r.status === "COMPLETED").length;
+    const completed = recalls.filter(
+      (r: any) => r.status === "COMPLETED",
+    ).length;
     const pending = recalls.filter((r: any) => r.status !== "COMPLETED").length;
     const overdueRecalls = recalls
-      .filter((r: any) => r.status !== "COMPLETED" && new Date() > r.scheduledDate)
+      .filter(
+        (r: any) => r.status !== "COMPLETED" && new Date() > r.scheduledDate,
+      )
       .map((r: any) => r.notes);
 
     return {
       totalRecalls: recalls.length,
       completedRecalls: completed,
       pendingRecalls: pending,
-      compliancePercentage: recalls.length > 0 ? (completed / recalls.length) * 100 : 100,
+      compliancePercentage:
+        recalls.length > 0 ? (completed / recalls.length) * 100 : 100,
       overdueRecalls,
     };
   }
@@ -815,7 +872,10 @@ export class MaintenanceCostTracker {
   /**
    * Track per-vehicle budget
    */
-  async trackVehicleBudget(vehicleId: string, month: Date): Promise<{
+  async trackVehicleBudget(
+    vehicleId: string,
+    month: Date,
+  ): Promise<{
     allocated: number;
     spent: number;
     remaining: number;
@@ -831,7 +891,10 @@ export class MaintenanceCostTracker {
       },
     });
 
-    const spent = maintenance.reduce((sum: number, m: any) => sum + (m.cost || 0), 0);
+    const spent = maintenance.reduce(
+      (sum: number, m: any) => sum + (m.cost || 0),
+      0,
+    );
     const allocated = 1000; // Placeholder
 
     return {
@@ -860,18 +923,18 @@ export class MaintenanceCostTracker {
       },
     });
 
-    const spent = maintenance.reduce((sum: number, m: any) => sum + (m.cost || 0), 0);
+    const spent = maintenance.reduce(
+      (sum: number, m: any) => sum + (m.cost || 0),
+      0,
+    );
     const allocated = 50000; // Placeholder
 
     const byVehicle = Array.from(
-      maintenance.reduce(
-        (map, m: any) => {
-          const current = map.get(m.vehicleId) || 0;
-          map.set(m.vehicleId, current + (m.cost || 0));
-          return map;
-        },
-        new Map<string, number>(),
-      ),
+      maintenance.reduce((map, m: any) => {
+        const current = map.get(m.vehicleId) || 0;
+        map.set(m.vehicleId, current + (m.cost || 0));
+        return map;
+      }, new Map<string, number>()),
     ).map(([vehicleId, vehicleSpent]) => ({ vehicleId, spent: vehicleSpent }));
 
     return {
@@ -902,10 +965,7 @@ export class MaintenanceCostTracker {
       },
     });
 
-    const vendorData = new Map<
-      string,
-      { count: number; totalCost: number }
-    >();
+    const vendorData = new Map<string, { count: number; totalCost: number }>();
 
     maintenance.forEach((m: any) => {
       if (m.vendor) {

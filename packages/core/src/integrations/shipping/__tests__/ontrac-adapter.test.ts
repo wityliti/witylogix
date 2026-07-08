@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { OnTracAdapter } from "../ontrac-adapter.js";
 import type { ShipmentRequest } from "../types.js";
 
-const makeRequest = (overrides?: Partial<ShipmentRequest>): ShipmentRequest => ({
+const makeRequest = (
+  overrides?: Partial<ShipmentRequest>,
+): ShipmentRequest => ({
   shipmentId: "ontrac-test-1",
   from: {
     name: "West Coast Warehouse",
@@ -34,16 +36,22 @@ describe("OnTracAdapter", () => {
 
   describe("validateConfig", () => {
     it("throws if account missing", async () => {
-      const adapter = new OnTracAdapter({ account: "", password: "p" } as never);
+      const adapter = new OnTracAdapter({
+        account: "",
+        password: "p",
+      } as never);
       await expect(adapter.validateConfig()).rejects.toThrow(
-        "OnTrac adapter requires account and password"
+        "OnTrac adapter requires account and password",
       );
     });
 
     it("throws if password missing", async () => {
-      const adapter = new OnTracAdapter({ account: "a", password: "" } as never);
+      const adapter = new OnTracAdapter({
+        account: "a",
+        password: "",
+      } as never);
       await expect(adapter.validateConfig()).rejects.toThrow(
-        "OnTrac adapter requires account and password"
+        "OnTrac adapter requires account and password",
       );
     });
   });
@@ -168,7 +176,7 @@ describe("OnTracAdapter", () => {
       });
 
       await expect(adapter.createShipment(makeRequest(), "G")).rejects.toThrow(
-        "OnTrac shipment creation failed: Invalid ZIP code"
+        "OnTrac shipment creation failed: Invalid ZIP code",
       );
     });
   });
@@ -222,7 +230,9 @@ describe("OnTracAdapter", () => {
     it("returns UNKNOWN status for unrecognized tracking number", async () => {
       const adapter = makeAdapter();
 
-      vi.spyOn(adapter as never, "request").mockResolvedValue({ Shipments: [] });
+      vi.spyOn(adapter as never, "request").mockResolvedValue({
+        Shipments: [],
+      });
 
       const result = await adapter.track("NOTFOUND");
       expect(result.status).toBe("UNKNOWN");
@@ -255,7 +265,9 @@ describe("OnTracAdapter", () => {
         country: "US",
       });
       expect(result.valid).toBe(false);
-      expect(result.messages?.[0]).toContain("OnTrac only covers Western US states");
+      expect(result.messages?.[0]).toContain(
+        "OnTrac only covers Western US states",
+      );
     });
   });
 
@@ -269,7 +281,9 @@ describe("OnTracAdapter", () => {
 
     it("returns false when cancellation fails", async () => {
       const adapter = makeAdapter();
-      vi.spyOn(adapter as never, "request").mockRejectedValue(new Error("Not found"));
+      vi.spyOn(adapter as never, "request").mockRejectedValue(
+        new Error("Not found"),
+      );
       const result = await adapter.cancelShipment("OT-99999");
       expect(result).toBe(false);
     });

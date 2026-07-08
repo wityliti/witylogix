@@ -91,12 +91,14 @@ export function ComplianceBadge({
           config.text,
           config.border,
           pulse && "animate-pulse",
-          details && "cursor-help"
+          details && "cursor-help",
         )}
         title={details || config.description}
       >
         {showIcon && (
-          <span className={cn(iconSize[size], "flex items-center justify-center")}>
+          <span
+            className={cn(iconSize[size], "flex items-center justify-center")}
+          >
             {config.icon}
           </span>
         )}
@@ -106,10 +108,16 @@ export function ComplianceBadge({
       {/* Tooltip on hover */}
       {details && (
         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 hover:opacity-100 transition-opacity z-50 pointer-events-none hover:pointer-events-auto">
-          <div className={cn(
-            "bg-wl-bg-elevated border border-wl-border-default rounded-md p-2 shadow-lg",
-            size === "sm" ? "text-xs w-40" : size === "md" ? "text-xs w-48" : "text-sm w-56"
-          )}>
+          <div
+            className={cn(
+              "bg-wl-bg-elevated border border-wl-border-default rounded-md p-2 shadow-lg",
+              size === "sm"
+                ? "text-xs w-40"
+                : size === "md"
+                  ? "text-xs w-48"
+                  : "text-sm w-56",
+            )}
+          >
             <p className="text-wl-text-secondary">{details}</p>
             <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-wl-bg-elevated border-r border-b border-wl-border-default" />
           </div>

@@ -30,7 +30,7 @@ import type {
   HealthCheckResult,
   RateLimitInfo,
   PaginatedResponse,
-} from './analytics-sdk-types.js';
+} from "./analytics-sdk-types.js";
 
 // ─── QLIK SPECIFIC TYPES ────────────────────────────────────────────
 
@@ -97,7 +97,7 @@ interface QlikSpace {
   name: string;
   description?: string;
   ownerId?: string;
-  type: 'shared' | 'personal' | 'managed';
+  type: "shared" | "personal" | "managed";
   createdDate?: string;
   modifiedDate?: string;
 }
@@ -131,7 +131,7 @@ interface QlikTheme {
 interface QlikExtension {
   id: string;
   name: string;
-  type: 'visualization' | 'interaction' | 'data-connector' | 'auth';
+  type: "visualization" | "interaction" | "data-connector" | "auth";
   version: string;
   owner?: { id: string; name: string };
   enabled: boolean;
@@ -142,7 +142,7 @@ interface QlikReloadTask {
   appId: string;
   startTime?: string;
   endTime?: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
+  status: "pending" | "running" | "completed" | "failed";
   logId?: string;
   message?: string;
 }
@@ -162,7 +162,7 @@ class RateLimiter {
   async acquire(): Promise<void> {
     const now = Date.now();
     this.requestTimestamps = this.requestTimestamps.filter(
-      (ts) => now - ts < this.windowMs
+      (ts) => now - ts < this.windowMs,
     );
 
     if (this.requestTimestamps.length >= this.maxRequests) {
@@ -178,7 +178,7 @@ class RateLimiter {
   getInfo(): RateLimitInfo {
     const now = Date.now();
     const recentRequests = this.requestTimestamps.filter(
-      (ts) => now - ts < this.windowMs
+      (ts) => now - ts < this.windowMs,
     );
     const remaining = Math.max(0, this.maxRequests - recentRequests.length);
 
@@ -213,13 +213,12 @@ class RetryHandler {
       try {
         return await fn();
       } catch (error: unknown) {
-        lastError =
-          error instanceof Error ? error : new Error(String(error));
+        lastError = error instanceof Error ? error : new Error(String(error));
 
         const statusCode =
           lastError instanceof Error &&
-          'statusCode' in lastError &&
-          typeof (lastError as Record<string, unknown>).statusCode === 'number'
+          "statusCode" in lastError &&
+          typeof (lastError as Record<string, unknown>).statusCode === "number"
             ? ((lastError as Record<string, unknown>).statusCode as number)
             : 500;
 
@@ -233,7 +232,7 @@ class RetryHandler {
         const delay = Math.min(
           this.config.maxDelayMs,
           this.config.initialDelayMs *
-            Math.pow(this.config.backoffMultiplier, attempt)
+            Math.pow(this.config.backoffMultiplier, attempt),
         );
 
         await new Promise((resolve) => setTimeout(resolve, delay));
@@ -259,7 +258,7 @@ export class QlikV2SDKClient {
 
   constructor(authConfig: QlikAuthConfig) {
     this.authConfig = authConfig;
-    this.baseUrl = authConfig.tenantUrl.replace(/\/$/, '');
+    this.baseUrl = authConfig.tenantUrl.replace(/\/$/, "");
     this.rateLimiter = new RateLimiter(100, 60000);
     this.retryHandler = new RetryHandler({
       maxAttempts: 3,
@@ -285,13 +284,13 @@ export class QlikV2SDKClient {
       await this.rateLimiter.acquire();
 
       const payload = new URLSearchParams();
-      payload.append('grant_type', 'client_credentials');
-      payload.append('client_id', this.authConfig.clientId);
-      payload.append('client_secret', this.authConfig.clientSecret);
+      payload.append("grant_type", "client_credentials");
+      payload.append("client_id", this.authConfig.clientId);
+      payload.append("client_secret", this.authConfig.clientSecret);
 
       const response = await fetch(`${this.baseUrl}/oauth/token`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: payload.toString(),
       });
 
@@ -313,14 +312,14 @@ export class QlikV2SDKClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     return this.retryHandler.execute(async () => {
       await this.rateLimiter.acquire();
 
       const token = await this.ensureAuthenticated();
       const headers = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
         ...(options.headers as Record<string, string>),
       };
@@ -332,14 +331,15 @@ export class QlikV2SDKClient {
 
       if (!response.ok) {
         const error = new Error(
-          `API request failed: ${response.status} ${response.statusText}`
+          `API request failed: ${response.status} ${response.statusText}`,
         );
-        (error as unknown as Record<string, unknown>).statusCode = response.status;
+        (error as unknown as Record<string, unknown>).statusCode =
+          response.status;
         throw error;
       }
 
-      const contentType = response.headers.get('content-type');
-      if (contentType?.includes('application/json')) {
+      const contentType = response.headers.get("content-type");
+      if (contentType?.includes("application/json")) {
         return (await response.json()) as T;
       }
 
@@ -358,19 +358,20 @@ export class QlikV2SDKClient {
     offset?: number;
   }): Promise<PaginatedResponse<NormalizedDataset>> {
     const params = new URLSearchParams();
-    if (options?.spaceId) params.append('spaceId', options.spaceId);
-    if (options?.limit) params.append('limit', String(options.limit));
-    if (options?.offset) params.append('offset', String(options.offset));
+    if (options?.spaceId) params.append("spaceId", options.spaceId);
+    if (options?.limit) params.append("limit", String(options.limit));
+    if (options?.offset) params.append("offset", String(options.offset));
 
     const data = (await this.request<{ items: QlikApp[]; totalCount: number }>(
-      `/v1/apps?${params.toString()}`
+      `/v1/apps?${params.toString()}`,
     )) as { items: QlikApp[]; totalCount: number };
 
     return {
       items: data.items.map((app) => this.normalizeApp(app)),
       totalCount: data.totalCount,
       pageSize: options?.limit || 25,
-      pageNumber: Math.floor((options?.offset || 0) / (options?.limit || 25)) + 1,
+      pageNumber:
+        Math.floor((options?.offset || 0) / (options?.limit || 25)) + 1,
       hasMore:
         (options?.offset || 0) + (options?.limit || 25) < data.totalCount,
     };
@@ -400,7 +401,7 @@ export class QlikV2SDKClient {
     };
 
     const data = (await this.request<QlikApp>(`/v1/apps`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(payload),
     })) as QlikApp;
 
@@ -416,10 +417,10 @@ export class QlikV2SDKClient {
       name?: string;
       description?: string;
       published?: boolean;
-    }
+    },
   ): Promise<NormalizedDataset> {
     const data = (await this.request<QlikApp>(`/v1/apps/${appId}`, {
-      method: 'PATCH',
+      method: "PATCH",
       body: JSON.stringify(updates),
     })) as QlikApp;
 
@@ -430,7 +431,7 @@ export class QlikV2SDKClient {
    * Delete an app
    */
   async deleteApp(appId: string): Promise<void> {
-    await this.request(`/v1/apps/${appId}`, { method: 'DELETE' });
+    await this.request(`/v1/apps/${appId}`, { method: "DELETE" });
   }
 
   /**
@@ -440,9 +441,9 @@ export class QlikV2SDKClient {
     const data = (await this.request<{ id: string }>(
       `/v1/apps/${appId}/reload`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({}),
-      }
+      },
     )) as { id: string };
 
     return { taskId: data.id };
@@ -453,10 +454,10 @@ export class QlikV2SDKClient {
    */
   async getReloadTaskStatus(
     appId: string,
-    taskId: string
+    taskId: string,
   ): Promise<QlikReloadTask> {
     const data = (await this.request<QlikReloadTask>(
-      `/v1/apps/${appId}/reload-tasks/${taskId}`
+      `/v1/apps/${appId}/reload-tasks/${taskId}`,
     )) as QlikReloadTask;
 
     return data;
@@ -467,7 +468,7 @@ export class QlikV2SDKClient {
    */
   async publishApp(appId: string, spaceId?: string): Promise<void> {
     await this.request(`/v1/apps/${appId}/publish`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ spaceId }),
     });
   }
@@ -479,7 +480,7 @@ export class QlikV2SDKClient {
    */
   async listSheets(appId: string): Promise<NormalizedDashboard[]> {
     const data = (await this.request<{ items: QlikSheet[] }>(
-      `/v1/apps/${appId}/sheets`
+      `/v1/apps/${appId}/sheets`,
     )) as { items: QlikSheet[] };
 
     return data.items.map((sheet) => this.normalizeSheet(sheet));
@@ -490,7 +491,7 @@ export class QlikV2SDKClient {
    */
   async getSheet(appId: string, sheetId: string): Promise<NormalizedDashboard> {
     const data = (await this.request<QlikSheet>(
-      `/v1/apps/${appId}/sheets/${sheetId}`
+      `/v1/apps/${appId}/sheets/${sheetId}`,
     )) as QlikSheet;
 
     return this.normalizeSheet(data);
@@ -505,10 +506,10 @@ export class QlikV2SDKClient {
       title: string;
       description?: string;
       rank?: number;
-    }
+    },
   ): Promise<NormalizedDashboard> {
     const data = (await this.request<QlikSheet>(`/v1/apps/${appId}/sheets`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(config),
     })) as QlikSheet;
 
@@ -525,14 +526,14 @@ export class QlikV2SDKClient {
       title?: string;
       description?: string;
       published?: boolean;
-    }
+    },
   ): Promise<NormalizedDashboard> {
     const data = (await this.request<QlikSheet>(
       `/v1/apps/${appId}/sheets/${sheetId}`,
       {
-        method: 'PATCH',
+        method: "PATCH",
         body: JSON.stringify(updates),
-      }
+      },
     )) as QlikSheet;
 
     return this.normalizeSheet(data);
@@ -545,7 +546,7 @@ export class QlikV2SDKClient {
    */
   async listBookmarks(appId: string): Promise<QlikBookmark[]> {
     const data = (await this.request<{ items: QlikBookmark[] }>(
-      `/v1/apps/${appId}/bookmarks`
+      `/v1/apps/${appId}/bookmarks`,
     )) as { items: QlikBookmark[] };
 
     return data.items;
@@ -556,7 +557,7 @@ export class QlikV2SDKClient {
    */
   async getBookmark(appId: string, bookmarkId: string): Promise<QlikBookmark> {
     const data = (await this.request<QlikBookmark>(
-      `/v1/apps/${appId}/bookmarks/${bookmarkId}`
+      `/v1/apps/${appId}/bookmarks/${bookmarkId}`,
     )) as QlikBookmark;
 
     return data;
@@ -571,14 +572,14 @@ export class QlikV2SDKClient {
       title: string;
       description?: string;
       selectionState?: Record<string, unknown>;
-    }
+    },
   ): Promise<QlikBookmark> {
     const data = (await this.request<QlikBookmark>(
       `/v1/apps/${appId}/bookmarks`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(config),
-      }
+      },
     )) as QlikBookmark;
 
     return data;
@@ -589,7 +590,7 @@ export class QlikV2SDKClient {
    */
   async deleteBookmark(appId: string, bookmarkId: string): Promise<void> {
     await this.request(`/v1/apps/${appId}/bookmarks/${bookmarkId}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   }
 
@@ -600,7 +601,7 @@ export class QlikV2SDKClient {
    */
   async listDataConnections(): Promise<QlikDataConnection[]> {
     const data = (await this.request<{ items: QlikDataConnection[] }>(
-      `/v1/data-connections`
+      `/v1/data-connections`,
     )) as { items: QlikDataConnection[] };
 
     return data.items;
@@ -610,14 +611,14 @@ export class QlikV2SDKClient {
    * Create a data connection
    */
   async createDataConnection(
-    config: QlikDataConnection
+    config: QlikDataConnection,
   ): Promise<QlikDataConnection> {
     const data = (await this.request<QlikDataConnection>(
       `/v1/data-connections`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(config),
-      }
+      },
     )) as QlikDataConnection;
 
     return data;
@@ -628,14 +629,14 @@ export class QlikV2SDKClient {
    */
   async updateDataConnection(
     connectionId: string,
-    updates: Partial<QlikDataConnection>
+    updates: Partial<QlikDataConnection>,
   ): Promise<QlikDataConnection> {
     const data = (await this.request<QlikDataConnection>(
       `/v1/data-connections/${connectionId}`,
       {
-        method: 'PATCH',
+        method: "PATCH",
         body: JSON.stringify(updates),
-      }
+      },
     )) as QlikDataConnection;
 
     return data;
@@ -647,9 +648,9 @@ export class QlikV2SDKClient {
    * List spaces
    */
   async listSpaces(): Promise<QlikSpace[]> {
-    const data = (await this.request<{ items: QlikSpace[] }>(
-      `/v1/spaces`
-    )) as { items: QlikSpace[] };
+    const data = (await this.request<{ items: QlikSpace[] }>(`/v1/spaces`)) as {
+      items: QlikSpace[];
+    };
 
     return data.items;
   }
@@ -660,10 +661,10 @@ export class QlikV2SDKClient {
   async createSpace(config: {
     name: string;
     description?: string;
-    type?: 'shared' | 'personal' | 'managed';
+    type?: "shared" | "personal" | "managed";
   }): Promise<QlikSpace> {
     const data = (await this.request<QlikSpace>(`/v1/spaces`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(config),
     })) as QlikSpace;
 
@@ -677,7 +678,7 @@ export class QlikV2SDKClient {
    */
   async listAutomations(): Promise<QlikAutomation[]> {
     const data = (await this.request<{ items: QlikAutomation[] }>(
-      `/v1/automations`
+      `/v1/automations`,
     )) as { items: QlikAutomation[] };
 
     return data.items;
@@ -686,11 +687,9 @@ export class QlikV2SDKClient {
   /**
    * Create an automation
    */
-  async createAutomation(
-    config: QlikAutomation
-  ): Promise<QlikAutomation> {
+  async createAutomation(config: QlikAutomation): Promise<QlikAutomation> {
     const data = (await this.request<QlikAutomation>(`/v1/automations`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(config),
     })) as QlikAutomation;
 
@@ -702,14 +701,14 @@ export class QlikV2SDKClient {
    */
   async updateAutomation(
     automationId: string,
-    updates: Partial<QlikAutomation>
+    updates: Partial<QlikAutomation>,
   ): Promise<QlikAutomation> {
     const data = (await this.request<QlikAutomation>(
       `/v1/automations/${automationId}`,
       {
-        method: 'PATCH',
+        method: "PATCH",
         body: JSON.stringify(updates),
-      }
+      },
     )) as QlikAutomation;
 
     return data;
@@ -720,7 +719,7 @@ export class QlikV2SDKClient {
    */
   async deleteAutomation(automationId: string): Promise<void> {
     await this.request(`/v1/automations/${automationId}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   }
 
@@ -730,9 +729,9 @@ export class QlikV2SDKClient {
    * List themes
    */
   async listThemes(): Promise<QlikTheme[]> {
-    const data = (await this.request<{ items: QlikTheme[] }>(
-      `/v1/themes`
-    )) as { items: QlikTheme[] };
+    const data = (await this.request<{ items: QlikTheme[] }>(`/v1/themes`)) as {
+      items: QlikTheme[];
+    };
 
     return data.items;
   }
@@ -746,7 +745,7 @@ export class QlikV2SDKClient {
     published?: boolean;
   }): Promise<QlikTheme> {
     const data = (await this.request<QlikTheme>(`/v1/themes`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(config),
     })) as QlikTheme;
 
@@ -760,7 +759,7 @@ export class QlikV2SDKClient {
    */
   async listExtensions(): Promise<QlikExtension[]> {
     const data = (await this.request<{ items: QlikExtension[] }>(
-      `/v1/extensions`
+      `/v1/extensions`,
     )) as { items: QlikExtension[] };
 
     return data.items;
@@ -775,20 +774,20 @@ export class QlikV2SDKClient {
       type: string;
       version: string;
     },
-    fileBuffer: Buffer
+    fileBuffer: Buffer,
   ): Promise<QlikExtension> {
     const formData = new FormData();
-    formData.append('name', config.name);
-    formData.append('type', config.type);
-    formData.append('version', config.version);
+    formData.append("name", config.name);
+    formData.append("type", config.type);
+    formData.append("version", config.version);
     formData.append(
-      'file',
-      new Blob([fileBuffer], { type: 'application/octet-stream' })
+      "file",
+      new Blob([fileBuffer], { type: "application/octet-stream" }),
     );
 
     const token = await this.ensureAuthenticated();
     const response = await fetch(`${this.baseUrl}/v1/extensions`, {
-      method: 'POST',
+      method: "POST",
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
@@ -808,12 +807,12 @@ export class QlikV2SDKClient {
    */
   async generateInsights(
     appId: string,
-    prompt: string
+    prompt: string,
   ): Promise<{ insights: Array<{ title: string; description: string }> }> {
     const data = (await this.request<{
       insights: Array<{ title: string; description: string }>;
     }>(`/v1/apps/${appId}/insights`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ prompt }),
     })) as {
       insights: Array<{ title: string; description: string }>;
@@ -833,12 +832,12 @@ export class QlikV2SDKClient {
     limit?: number;
   }): Promise<Array<any>> {
     const params = new URLSearchParams();
-    if (options?.startDate) params.append('startDate', options.startDate);
-    if (options?.endDate) params.append('endDate', options.endDate);
-    if (options?.limit) params.append('limit', String(options.limit));
+    if (options?.startDate) params.append("startDate", options.startDate);
+    if (options?.endDate) params.append("endDate", options.endDate);
+    if (options?.limit) params.append("limit", String(options.limit));
 
     const data = (await this.request<{ items: Array<any> }>(
-      `/v1/audit/events?${params.toString()}`
+      `/v1/audit/events?${params.toString()}`,
     )) as { items: Array<any> };
 
     return data.items;
@@ -853,13 +852,13 @@ export class QlikV2SDKClient {
     const data = (await this.request<{ token: string; expiresIn: number }>(
       `/v1/apps/${appId}/embed-token`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({}),
-      }
+      },
     )) as { token: string; expiresIn: number };
 
     return {
-      type: 'dashboard',
+      type: "dashboard",
       contentId: appId,
       token: data.token,
       tokenExpiresAt: new Date(Date.now() + data.expiresIn * 1000),
@@ -872,18 +871,18 @@ export class QlikV2SDKClient {
    */
   async generateSheetEmbedToken(
     appId: string,
-    sheetId: string
+    sheetId: string,
   ): Promise<EmbedConfig> {
     const data = (await this.request<{ token: string; expiresIn: number }>(
       `/v1/apps/${appId}/sheets/${sheetId}/embed-token`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({}),
-      }
+      },
     )) as { token: string; expiresIn: number };
 
     return {
-      type: 'dashboard',
+      type: "dashboard",
       contentId: sheetId,
       token: data.token,
       tokenExpiresAt: new Date(Date.now() + data.expiresIn * 1000),
@@ -916,8 +915,8 @@ export class QlikV2SDKClient {
       isPublished: sheet.published || false,
       items: (sheet.cells || []).map((cell, idx) => ({
         id: cell.name || `cell-${idx}`,
-        title: cell.name || 'Cell',
-        type: (cell.type as any) || 'visualization',
+        title: cell.name || "Cell",
+        type: (cell.type as any) || "visualization",
         x: 0,
         y: idx * 4,
         width: 12,
@@ -939,17 +938,17 @@ export class QlikV2SDKClient {
       const duration = Date.now() - startTime;
 
       return {
-        status: 'healthy',
+        status: "healthy",
         timestamp: new Date(),
         responseTimeMs: duration,
       };
     } catch (error: unknown) {
       return {
-        status: 'unhealthy',
+        status: "unhealthy",
         timestamp: new Date(),
         responseTimeMs: Date.now() - startTime,
         details: {
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         },
       };
     }

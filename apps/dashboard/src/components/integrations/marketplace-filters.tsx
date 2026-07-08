@@ -56,7 +56,9 @@ export function MarketplaceFilters({
   const [showAllCategories, setShowAllCategories] = useState(false);
 
   const activeFilterCount = selectedCategories.length + (searchValue ? 1 : 0);
-  const displayedCategories = showAllCategories ? categories : categories.slice(0, 8);
+  const displayedCategories = showAllCategories
+    ? categories
+    : categories.slice(0, 8);
 
   return (
     <aside className={cn("w-56 flex-shrink-0")}>
@@ -74,14 +76,14 @@ export function MarketplaceFilters({
                 "w-full pl-10 pr-4 py-2 bg-wl-bg-overlay border border-wl-border-default rounded-lg",
                 "text-wl-text-primary text-sm",
                 "focus:border-wl-primary-500 outline-none",
-                "transition-all duration-fast"
+                "transition-all duration-fast",
               )}
             />
             {searchValue && (
               <button
                 onClick={() => onSearchChange("")}
                 className={cn(
-                  "absolute right-2 top-2 p-1 hover:bg-wl-bg-surface rounded transition-all"
+                  "absolute right-2 top-2 p-1 hover:bg-wl-bg-surface rounded transition-all",
                 )}
               >
                 <X className="w-4 h-4 text-wl-text-tertiary" />
@@ -131,7 +133,7 @@ export function MarketplaceFilters({
           <div
             className={cn(
               "flex items-center justify-between cursor-pointer p-2 rounded hover:bg-wl-bg-overlay transition-all",
-              "mb-2"
+              "mb-2",
             )}
             onClick={() => setIsExpanded(!isExpanded)}
           >
@@ -141,7 +143,7 @@ export function MarketplaceFilters({
             <ChevronDown
               className={cn(
                 "w-4 h-4 text-wl-text-tertiary transition-transform",
-                !isExpanded && "-rotate-90"
+                !isExpanded && "-rotate-90",
               )}
             />
           </div>
@@ -152,17 +154,19 @@ export function MarketplaceFilters({
                 <label
                   key={cat.key}
                   className={cn(
-                    "flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-wl-bg-overlay transition-all"
+                    "flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-wl-bg-overlay transition-all",
                   )}
                 >
                   <input
                     type="checkbox"
                     checked={selectedCategories.includes(cat.key)}
-                    onChange={(e) => onCategoryChange(cat.key, e.target.checked)}
+                    onChange={(e) =>
+                      onCategoryChange(cat.key, e.target.checked)
+                    }
                     className={cn(
                       "w-4 h-4 rounded border-wl-border-default bg-wl-bg-surface",
                       "checked:bg-wl-primary-500 checked:border-wl-primary-500",
-                      "cursor-pointer"
+                      "cursor-pointer",
                     )}
                   />
                   <span className={cn("text-sm text-wl-text-primary flex-1")}>
@@ -191,7 +195,9 @@ export function MarketplaceFilters({
         {/* Auth Type Filter */}
         {authTypes.length > 0 && onAuthTypeChange && (
           <div>
-            <h3 className={cn("text-sm font-semibold text-wl-text-primary mb-2")}>
+            <h3
+              className={cn("text-sm font-semibold text-wl-text-primary mb-2")}
+            >
               Authentication
             </h3>
             <div className={cn("space-y-2")}>
@@ -199,7 +205,7 @@ export function MarketplaceFilters({
                 <label
                   key={authType}
                   className={cn(
-                    "flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-wl-bg-overlay transition-all"
+                    "flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-wl-bg-overlay transition-all",
                   )}
                 >
                   <input
@@ -210,7 +216,7 @@ export function MarketplaceFilters({
                     className={cn(
                       "w-4 h-4 rounded-full border-wl-border-default bg-wl-bg-surface",
                       "checked:bg-wl-primary-500 checked:border-wl-primary-500",
-                      "cursor-pointer"
+                      "cursor-pointer",
                     )}
                   />
                   <span className={cn("text-sm text-wl-text-primary")}>
@@ -227,7 +233,9 @@ export function MarketplaceFilters({
         {/* Connection Status Filter */}
         {onConnectStatusChange && (
           <div>
-            <h3 className={cn("text-sm font-semibold text-wl-text-primary mb-2")}>
+            <h3
+              className={cn("text-sm font-semibold text-wl-text-primary mb-2")}
+            >
               Status
             </h3>
             <div className={cn("space-y-2")}>
@@ -235,7 +243,7 @@ export function MarketplaceFilters({
                 <label
                   key={status}
                   className={cn(
-                    "flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-wl-bg-overlay transition-all"
+                    "flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-wl-bg-overlay transition-all",
                   )}
                 >
                   <input
@@ -248,7 +256,7 @@ export function MarketplaceFilters({
                     className={cn(
                       "w-4 h-4 rounded-full border-wl-border-default bg-wl-bg-surface",
                       "checked:bg-wl-primary-500 checked:border-wl-primary-500",
-                      "cursor-pointer"
+                      "cursor-pointer",
                     )}
                   />
                   <span className={cn("text-sm text-wl-text-primary")}>
@@ -293,7 +301,11 @@ export interface FilterPillsProps {
   onClearAll?: () => void;
 }
 
-export function FilterPills({ filters, onRemove, onClearAll }: FilterPillsProps) {
+export function FilterPills({
+  filters,
+  onRemove,
+  onClearAll,
+}: FilterPillsProps) {
   if (filters.length === 0) {
     return null;
   }

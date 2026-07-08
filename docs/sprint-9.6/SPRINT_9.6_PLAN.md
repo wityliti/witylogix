@@ -10,18 +10,18 @@
 
 ## Sprint Backlog (10 Agents)
 
-| # | Agent | Owner | Deliverable | ECC Skill |
-|---|-------|-------|-------------|-----------|
-| 1 | Typed Prisma Migration — API routes | RG | Replace `(prisma as any)` with typed helpers in all `apps/api/src/routes/*.ts` files | backend-patterns |
-| 2 | Typed Prisma Migration — Core modules (A-M) | PK | Replace `(prisma as any)` in `packages/core/src/` (a* through m*) | backend-patterns |
-| 3 | Typed Prisma Migration — Core modules (N-Z) | SP | Replace `(prisma as any)` in `packages/core/src/` (n* through z*) | backend-patterns |
-| 4 | Route Optimization API | ZR | New `apps/api/src/routes/route-optimization.ts` exposing optimizer, ETA calc, distance matrix; register in server.ts | api-design |
-| 5 | Live Tracking + POD API | AM | New `apps/api/src/routes/live-tracking.ts` and `proof-of-delivery.ts`; register in server.ts | api-design |
-| 6 | Dashboard Polish Batch 1 | NK | Redesign: analytics, demand-planning, supply-chain, freight — professional dark theme | frontend-patterns |
-| 7 | Dashboard Polish Batch 2 | DM | Redesign: billing, invoices, field-service, healthcare — professional dark theme | frontend-patterns |
-| 8 | Dashboard Polish Batch 3 | VS | Redesign: pos, esignatures, notifications, integrations — professional dark theme | frontend-patterns |
-| 9 | README + CHANGELOG + package.json | KS | Update README (features, architecture, quickstart), CHANGELOG (9.3-9.6), package.json version bump | coding-standards |
-| 10 | Test Suite Triage | AR | Fix top 50 test failures, update validators test import, remove broken test fixtures | python-testing |
+| #   | Agent                                       | Owner | Deliverable                                                                                                          | ECC Skill         |
+| --- | ------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| 1   | Typed Prisma Migration — API routes         | RG    | Replace `(prisma as any)` with typed helpers in all `apps/api/src/routes/*.ts` files                                 | backend-patterns  |
+| 2   | Typed Prisma Migration — Core modules (A-M) | PK    | Replace `(prisma as any)` in `packages/core/src/` (a* through m*)                                                    | backend-patterns  |
+| 3   | Typed Prisma Migration — Core modules (N-Z) | SP    | Replace `(prisma as any)` in `packages/core/src/` (n* through z*)                                                    | backend-patterns  |
+| 4   | Route Optimization API                      | ZR    | New `apps/api/src/routes/route-optimization.ts` exposing optimizer, ETA calc, distance matrix; register in server.ts | api-design        |
+| 5   | Live Tracking + POD API                     | AM    | New `apps/api/src/routes/live-tracking.ts` and `proof-of-delivery.ts`; register in server.ts                         | api-design        |
+| 6   | Dashboard Polish Batch 1                    | NK    | Redesign: analytics, demand-planning, supply-chain, freight — professional dark theme                                | frontend-patterns |
+| 7   | Dashboard Polish Batch 2                    | DM    | Redesign: billing, invoices, field-service, healthcare — professional dark theme                                     | frontend-patterns |
+| 8   | Dashboard Polish Batch 3                    | VS    | Redesign: pos, esignatures, notifications, integrations — professional dark theme                                    | frontend-patterns |
+| 9   | README + CHANGELOG + package.json           | KS    | Update README (features, architecture, quickstart), CHANGELOG (9.3-9.6), package.json version bump                   | coding-standards  |
+| 10  | Test Suite Triage                           | AR    | Fix top 50 test failures, update validators test import, remove broken test fixtures                                 | python-testing    |
 
 ## Acceptance Criteria
 

@@ -127,7 +127,7 @@ export class FuelmanClient extends FuelFleetAdapter {
   private async apiRequest<T>(
     endpoint: string,
     method: string = "GET",
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     await this.preRequestCheck();
 
@@ -145,7 +145,7 @@ export class FuelmanClient extends FuelFleetAdapter {
             },
             body: body ? JSON.stringify(body) : undefined,
           }),
-        `Fuelman ${method} ${endpoint}`
+        `Fuelman ${method} ${endpoint}`,
       )) as Response;
 
       if (!response.ok) {
@@ -184,7 +184,7 @@ export class FuelmanClient extends FuelFleetAdapter {
         vehicleId: cardData.vehicleId,
         singleTransactionLimit: cardData.dailyLimit,
         monthlyLimit: cardData.monthlyLimit,
-      }
+      },
     );
 
     return this.mapFuelmanCardToFuelCard(response);
@@ -200,7 +200,7 @@ export class FuelmanClient extends FuelFleetAdapter {
     const response = await this.apiRequest<FuelmanCardResponse>(
       `/api/v2/cards/${cardId}/activate`,
       "POST",
-      {}
+      {},
     );
 
     return this.mapFuelmanCardToFuelCard(response);
@@ -216,7 +216,7 @@ export class FuelmanClient extends FuelFleetAdapter {
     const response = await this.apiRequest<FuelmanCardResponse>(
       `/api/v2/cards/${cardId}/suspend`,
       "POST",
-      {}
+      {},
     );
 
     return this.mapFuelmanCardToFuelCard(response);
@@ -232,7 +232,7 @@ export class FuelmanClient extends FuelFleetAdapter {
     const response = await this.apiRequest<FuelmanCardResponse>(
       `/api/v2/cards/${cardId}/close`,
       "POST",
-      {}
+      {},
     );
 
     return this.mapFuelmanCardToFuelCard(response);
@@ -246,7 +246,7 @@ export class FuelmanClient extends FuelFleetAdapter {
    */
   async getCard(cardId: string): Promise<FuelCard> {
     const response = await this.apiRequest<FuelmanCardResponse>(
-      `/api/v2/cards/${cardId}`
+      `/api/v2/cards/${cardId}`,
     );
 
     return this.mapFuelmanCardToFuelCard(response);
@@ -261,7 +261,7 @@ export class FuelmanClient extends FuelFleetAdapter {
    */
   async getTransactions(
     cardId: string,
-    criteria?: Record<string, unknown>
+    criteria?: Record<string, unknown>,
   ): Promise<FuelTransaction[]> {
     const params = new URLSearchParams();
 
@@ -274,10 +274,11 @@ export class FuelmanClient extends FuelFleetAdapter {
     }
 
     const endpoint = `/api/v2/cards/${cardId}/transactions?${params.toString()}`;
-    const responses = await this.apiRequest<FuelmanTransactionResponse[]>(endpoint);
+    const responses =
+      await this.apiRequest<FuelmanTransactionResponse[]>(endpoint);
 
     return responses.map((response) =>
-      this.mapFuelmanTransactionToFuelTransaction(response)
+      this.mapFuelmanTransactionToFuelTransaction(response),
     );
   }
 
@@ -289,7 +290,7 @@ export class FuelmanClient extends FuelFleetAdapter {
    */
   async getTransaction(transactionId: string): Promise<FuelTransaction> {
     const response = await this.apiRequest<FuelmanTransactionResponse>(
-      `/api/v2/transactions/${transactionId}`
+      `/api/v2/transactions/${transactionId}`,
     );
 
     return this.mapFuelmanTransactionToFuelTransaction(response);
@@ -302,11 +303,7 @@ export class FuelmanClient extends FuelFleetAdapter {
    * @returns Created/updated policy
    */
   async setPolicy(policy: Partial<FuelPolicy>): Promise<FuelPolicy> {
-    const response = await this.apiRequest(
-      "/api/v2/policies",
-      "POST",
-      policy
-    );
+    const response = await this.apiRequest("/api/v2/policies", "POST", policy);
 
     return response as FuelPolicy;
   }
@@ -318,9 +315,7 @@ export class FuelmanClient extends FuelFleetAdapter {
    * @returns Policy data
    */
   async getPolicy(policyId: string): Promise<FuelPolicy> {
-    const response = await this.apiRequest(
-      `/api/v2/policies/${policyId}`
-    );
+    const response = await this.apiRequest(`/api/v2/policies/${policyId}`);
 
     return response as FuelPolicy;
   }
@@ -331,7 +326,9 @@ export class FuelmanClient extends FuelFleetAdapter {
    * @param criteria - Filter criteria
    * @returns Array of station locations
    */
-  async listStations(criteria?: Record<string, unknown>): Promise<StationLocation[]> {
+  async listStations(
+    criteria?: Record<string, unknown>,
+  ): Promise<StationLocation[]> {
     const params = new URLSearchParams();
 
     if (criteria) {
@@ -371,7 +368,7 @@ export class FuelmanClient extends FuelFleetAdapter {
    */
   async detectFraud(cardId: string): Promise<FraudAlert[]> {
     const response = await this.apiRequest<FraudAlert[]>(
-      `/api/v2/cards/${cardId}/fraud-alerts`
+      `/api/v2/cards/${cardId}/fraud-alerts`,
     );
 
     return response;
@@ -383,11 +380,13 @@ export class FuelmanClient extends FuelFleetAdapter {
    * @param assignment - Assignment data
    * @returns Created assignment
    */
-  async assignCard(assignment: Partial<CardAssignment>): Promise<CardAssignment> {
+  async assignCard(
+    assignment: Partial<CardAssignment>,
+  ): Promise<CardAssignment> {
     const response = await this.apiRequest(
       "/api/v2/assignments",
       "POST",
-      assignment
+      assignment,
     );
 
     return response as CardAssignment;
@@ -414,12 +413,10 @@ export class FuelmanClient extends FuelFleetAdapter {
    * @param limit - Limit configuration
    * @returns Created/updated limit
    */
-  async setPurchaseLimit(limit: Partial<PurchaseLimit>): Promise<PurchaseLimit> {
-    const response = await this.apiRequest(
-      "/api/v2/limits",
-      "POST",
-      limit
-    );
+  async setPurchaseLimit(
+    limit: Partial<PurchaseLimit>,
+  ): Promise<PurchaseLimit> {
+    const response = await this.apiRequest("/api/v2/limits", "POST", limit);
 
     return response as PurchaseLimit;
   }
@@ -432,7 +429,7 @@ export class FuelmanClient extends FuelFleetAdapter {
    */
   async getPurchaseLimits(cardId: string): Promise<PurchaseLimit[]> {
     const limits = await this.apiRequest<PurchaseLimit[]>(
-      `/api/v2/cards/${cardId}/limits`
+      `/api/v2/cards/${cardId}/limits`,
     );
 
     return limits;
@@ -447,12 +444,12 @@ export class FuelmanClient extends FuelFleetAdapter {
    */
   async setMerchantRestrictions(
     cardId: string,
-    restrictions: Record<string, unknown>
+    restrictions: Record<string, unknown>,
   ): Promise<FuelCard> {
     const response = await this.apiRequest<FuelmanCardResponse>(
       `/api/v2/cards/${cardId}/merchant-restrictions`,
       "POST",
-      restrictions
+      restrictions,
     );
 
     return this.mapFuelmanCardToFuelCard(response);
@@ -465,7 +462,10 @@ export class FuelmanClient extends FuelFleetAdapter {
    * @param periodEnd - Period end date (YYYY-MM-DD)
    * @returns IFTA report
    */
-  async getIFTAReport(periodStart: string, periodEnd: string): Promise<IFTAReport> {
+  async getIFTAReport(
+    periodStart: string,
+    periodEnd: string,
+  ): Promise<IFTAReport> {
     const endpoint = `/api/v2/ifta-report?start=${periodStart}&end=${periodEnd}`;
     const report = await this.apiRequest<IFTAReport>(endpoint);
 
@@ -478,11 +478,13 @@ export class FuelmanClient extends FuelFleetAdapter {
    * @param criteria - Report generation criteria
    * @returns Generated IFTA report
    */
-  async generateIFTAReport(criteria: Record<string, unknown>): Promise<IFTAReport> {
+  async generateIFTAReport(
+    criteria: Record<string, unknown>,
+  ): Promise<IFTAReport> {
     const report = await this.apiRequest<IFTAReport>(
       "/api/v2/ifta-report/generate",
       "POST",
-      criteria
+      criteria,
     );
 
     return report;
@@ -494,11 +496,13 @@ export class FuelmanClient extends FuelFleetAdapter {
    * @param criteria - Export criteria
    * @returns Export URL
    */
-  async exportTransactionData(criteria: Record<string, unknown>): Promise<Record<string, unknown>> {
+  async exportTransactionData(
+    criteria: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
     const result = await this.apiRequest<Record<string, unknown>>(
       "/api/v2/export/transactions",
       "POST",
-      criteria
+      criteria,
     );
 
     return result;
@@ -536,7 +540,7 @@ export class FuelmanClient extends FuelFleetAdapter {
    * @returns FuelTransaction object
    */
   private mapFuelmanTransactionToFuelTransaction(
-    response: FuelmanTransactionResponse
+    response: FuelmanTransactionResponse,
   ): FuelTransaction {
     return {
       transactionId: response.transactionId,

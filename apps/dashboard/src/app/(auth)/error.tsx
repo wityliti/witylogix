@@ -27,14 +27,16 @@ export default function AuthError({ error, reset }: AuthErrorProps) {
       <div
         className="absolute -top-1/2 -right-1/5 w-96 h-96 rounded-full pointer-events-none"
         style={{
-          background: "radial-gradient(circle, rgba(245, 166, 35, 0.08) 0%, transparent 70%)",
+          background:
+            "radial-gradient(circle, rgba(245, 166, 35, 0.08) 0%, transparent 70%)",
           filter: "blur(80px)",
         }}
       />
       <div
         className="absolute -bottom-2/5 -left-1/4 w-96 h-96 rounded-full pointer-events-none"
         style={{
-          background: "radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 70%)",
+          background:
+            "radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 70%)",
           filter: "blur(80px)",
         }}
       />
@@ -52,7 +54,8 @@ export default function AuthError({ error, reset }: AuthErrorProps) {
           <div
             className="flex items-center justify-center w-14 h-14 rounded-lg mb-4"
             style={{
-              background: "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
+              background:
+                "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
               boxShadow: "0 8px 24px rgba(245, 166, 35, 0.2)",
             }}
           >
@@ -93,7 +96,7 @@ export default function AuthError({ error, reset }: AuthErrorProps) {
           <div
             className={cn(
               "p-3 rounded-md mb-6",
-              "bg-wl-danger-bg border border-wl-danger-400/30"
+              "bg-wl-danger-bg border border-wl-danger-400/30",
             )}
           >
             <p className="text-xs text-wl-danger-400 font-mono break-all">
@@ -118,7 +121,7 @@ export default function AuthError({ error, reset }: AuthErrorProps) {
               Try again
             </Button>
             <Button
-              onClick={() => window.location.href = "/login"}
+              onClick={() => (window.location.href = "/login")}
               variant="ghost"
               size="md"
               className="w-full"

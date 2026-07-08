@@ -9,9 +9,9 @@
  * - Traffic overlay data for maps
  */
 
-import { GoogleDirectionsClient } from './google-directions-client.js';
-import { TomTomTrafficClient } from './tomtom-traffic-client.js';
-import { TrafficNormalizer } from './traffic-normalizer.js';
+import { GoogleDirectionsClient } from "./google-directions-client.js";
+import { TomTomTrafficClient } from "./tomtom-traffic-client.js";
+import { TrafficNormalizer } from "./traffic-normalizer.js";
 import type {
   TrafficProviderConfig,
   TrafficAwareETARequest,
@@ -24,7 +24,7 @@ import type {
   ProviderHealth,
   NormalizedRoute,
   TrafficImpact,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Traffic Provider Service
@@ -32,12 +32,12 @@ import type {
 export class TrafficProvider {
   private googleClient?: GoogleDirectionsClient;
   private tomtomClient?: TomTomTrafficClient;
-  private primaryProvider: 'google' | 'tomtom';
-  private fallbackProvider?: 'google' | 'tomtom';
+  private primaryProvider: "google" | "tomtom";
+  private fallbackProvider?: "google" | "tomtom";
 
   // Health monitoring
   private providerHealth: Map<
-    'google' | 'tomtom',
+    "google" | "tomtom",
     {
       healthy: boolean;
       lastCheck: Date;
@@ -62,12 +62,21 @@ export class TrafficProvider {
     }
 
     if (config.tomtomApiKey) {
-      this.tomtomClient = new TomTomTrafficClient(config.tomtomApiKey, config.tomtomRateLimit);
+      this.tomtomClient = new TomTomTrafficClient(
+        config.tomtomApiKey,
+        config.tomtomRateLimit,
+      );
     }
 
     this.providerHealth = new Map([
-      ['google', { healthy: true, lastCheck: new Date(), consecutiveFailures: 0 }],
-      ['tomtom', { healthy: true, lastCheck: new Date(), consecutiveFailures: 0 }],
+      [
+        "google",
+        { healthy: true, lastCheck: new Date(), consecutiveFailures: 0 },
+      ],
+      [
+        "tomtom",
+        { healthy: true, lastCheck: new Date(), consecutiveFailures: 0 },
+      ],
     ]);
 
     this.validateConfig();
@@ -77,11 +86,11 @@ export class TrafficProvider {
    * Validate configuration
    */
   private validateConfig(): void {
-    if (this.primaryProvider === 'google' && !this.googleClient) {
-      throw new Error('Google API key is required for primary provider');
+    if (this.primaryProvider === "google" && !this.googleClient) {
+      throw new Error("Google API key is required for primary provider");
     }
-    if (this.primaryProvider === 'tomtom' && !this.tomtomClient) {
-      throw new Error('TomTom API key is required for primary provider');
+    if (this.primaryProvider === "tomtom" && !this.tomtomClient) {
+      throw new Error("TomTom API key is required for primary provider");
     }
   }
 
@@ -89,11 +98,11 @@ export class TrafficProvider {
    * Get primary provider client
    */
   private getPrimaryClient(): GoogleDirectionsClient | TomTomTrafficClient {
-    if (this.primaryProvider === 'google') {
-      if (!this.googleClient) throw new Error('Google client not configured');
+    if (this.primaryProvider === "google") {
+      if (!this.googleClient) throw new Error("Google client not configured");
       return this.googleClient;
     } else {
-      if (!this.tomtomClient) throw new Error('TomTom client not configured');
+      if (!this.tomtomClient) throw new Error("TomTom client not configured");
       return this.tomtomClient;
     }
   }
@@ -101,10 +110,13 @@ export class TrafficProvider {
   /**
    * Get fallback provider client
    */
-  private getFallbackClient(): GoogleDirectionsClient | TomTomTrafficClient | null {
+  private getFallbackClient():
+    | GoogleDirectionsClient
+    | TomTomTrafficClient
+    | null {
     if (!this.fallbackProvider) return null;
 
-    if (this.fallbackProvider === 'google') {
+    if (this.fallbackProvider === "google") {
       return this.googleClient || null;
     } else {
       return this.tomtomClient || null;
@@ -114,7 +126,11 @@ export class TrafficProvider {
   /**
    * Update provider health status
    */
-  private updateProviderHealth(provider: 'google' | 'tomtom', success: boolean, error?: Error): void {
+  private updateProviderHealth(
+    provider: "google" | "tomtom",
+    success: boolean,
+    error?: Error,
+  ): void {
     const health = this.providerHealth.get(provider);
     if (!health) return;
 
@@ -137,7 +153,9 @@ export class TrafficProvider {
   /**
    * Get traffic-aware ETA with primary/fallback providers
    */
-  async getTrafficAwareETA(request: TrafficAwareETARequest): Promise<TrafficAwareETAResponse> {
+  async getTrafficAwareETA(
+    request: TrafficAwareETARequest,
+  ): Promise<TrafficAwareETAResponse> {
     this.requestCount++;
 
     const departureTime = request.departureTime || new Date();
@@ -152,7 +170,11 @@ export class TrafficProvider {
       this.updateProviderHealth(this.primaryProvider, true);
       return result;
     } catch (error) {
-      this.updateProviderHealth(this.primaryProvider, false, error instanceof Error ? error : new Error(String(error)));
+      this.updateProviderHealth(
+        this.primaryProvider,
+        false,
+        error instanceof Error ? error : new Error(String(error)),
+      );
 
       // Try fallback provider
       if (this.fallbackProvider) {
@@ -166,7 +188,13 @@ export class TrafficProvider {
           this.updateProviderHealth(this.fallbackProvider, true);
           return result;
         } catch (fallbackError) {
-          this.updateProviderHealth(this.fallbackProvider, false, fallbackError instanceof Error ? fallbackError : new Error(String(fallbackError)));
+          this.updateProviderHealth(
+            this.fallbackProvider,
+            false,
+            fallbackError instanceof Error
+              ? fallbackError
+              : new Error(String(fallbackError)),
+          );
           throw new Error(
             `Both primary and fallback providers failed: ${error instanceof Error ? error.message : String(error)}`,
           );
@@ -181,34 +209,41 @@ export class TrafficProvider {
    * Get ETA from specific provider
    */
   private async getTrafficAwareETAFromProvider(
-    provider: 'google' | 'tomtom',
+    provider: "google" | "tomtom",
     request: TrafficAwareETARequest,
     departureTime: Date,
   ): Promise<TrafficAwareETAResponse> {
-    if (provider === 'google') {
-      if (!this.googleClient) throw new Error('Google client not configured');
+    if (provider === "google") {
+      if (!this.googleClient) throw new Error("Google client not configured");
 
-      const result = await this.googleClient.getRoute(request.origin, request.destination, {
-        departureTime,
-        alternatives: request.alternatives,
-        travelMode: request.travelMode,
-        waypoints: request.waypoints,
-        avoidTolls: request.avoidTolls,
-        avoidHighways: request.avoidHighways,
-        avoidFerries: request.avoidFerries,
-      });
+      const result = await this.googleClient.getRoute(
+        request.origin,
+        request.destination,
+        {
+          departureTime,
+          alternatives: request.alternatives,
+          travelMode: request.travelMode,
+          waypoints: request.waypoints,
+          avoidTolls: request.avoidTolls,
+          avoidHighways: request.avoidHighways,
+          avoidFerries: request.avoidFerries,
+        },
+      );
 
       const route = TrafficNormalizer.normalizeGoogleRoute(result);
 
       // Calculate traffic impact
       const trafficImpact: TrafficImpact = {
-        delay_minutes: Math.max(0, route.duration_in_traffic_min - route.duration_min),
+        delay_minutes: Math.max(
+          0,
+          route.duration_in_traffic_min - route.duration_min,
+        ),
         congestion_level:
           route.duration_in_traffic_min > route.duration_min * 1.3
-            ? 'heavy'
+            ? "heavy"
             : route.duration_in_traffic_min > route.duration_min * 1.15
-              ? 'moderate'
-              : 'light',
+              ? "moderate"
+              : "light",
         confidence: 0.85,
         affected_segments: [
           {
@@ -216,10 +251,10 @@ export class TrafficProvider {
             end_km: route.distance_km,
             condition:
               route.duration_in_traffic_min > route.duration_min * 1.3
-                ? 'heavy'
+                ? "heavy"
                 : route.duration_in_traffic_min > route.duration_min * 1.15
-                  ? 'moderate'
-                  : 'light',
+                  ? "moderate"
+                  : "light",
           },
         ],
       };
@@ -227,17 +262,21 @@ export class TrafficProvider {
       return {
         route,
         traffic_impact: trafficImpact,
-        provider: 'google',
+        provider: "google",
         timestamp: new Date(),
         confidence: 0.85,
       };
     } else {
-      if (!this.tomtomClient) throw new Error('TomTom client not configured');
+      if (!this.tomtomClient) throw new Error("TomTom client not configured");
 
-      const route = await this.tomtomClient.getRoute(request.origin, request.destination, {
-        departureTime,
-        alternatives: request.alternatives,
-      });
+      const route = await this.tomtomClient.getRoute(
+        request.origin,
+        request.destination,
+        {
+          departureTime,
+          alternatives: request.alternatives,
+        },
+      );
 
       const normalizedRoute = TrafficNormalizer.normalizeTomTomRoute(route);
 
@@ -245,25 +284,30 @@ export class TrafficProvider {
       const trafficImpact: TrafficImpact = {
         delay_minutes: Math.max(
           0,
-          normalizedRoute.duration_in_traffic_min - normalizedRoute.duration_min,
+          normalizedRoute.duration_in_traffic_min -
+            normalizedRoute.duration_min,
         ),
         congestion_level:
-          normalizedRoute.duration_in_traffic_min > normalizedRoute.duration_min * 1.3
-            ? 'heavy'
-            : normalizedRoute.duration_in_traffic_min > normalizedRoute.duration_min * 1.15
-              ? 'moderate'
-              : 'light',
+          normalizedRoute.duration_in_traffic_min >
+          normalizedRoute.duration_min * 1.3
+            ? "heavy"
+            : normalizedRoute.duration_in_traffic_min >
+                normalizedRoute.duration_min * 1.15
+              ? "moderate"
+              : "light",
         confidence: 0.85,
         affected_segments: [
           {
             start_km: 0,
             end_km: normalizedRoute.distance_km,
             condition:
-              normalizedRoute.duration_in_traffic_min > normalizedRoute.duration_min * 1.3
-                ? 'heavy'
-                : normalizedRoute.duration_in_traffic_min > normalizedRoute.duration_min * 1.15
-                  ? 'moderate'
-                  : 'light',
+              normalizedRoute.duration_in_traffic_min >
+              normalizedRoute.duration_min * 1.3
+                ? "heavy"
+                : normalizedRoute.duration_in_traffic_min >
+                    normalizedRoute.duration_min * 1.15
+                  ? "moderate"
+                  : "light",
           },
         ],
       };
@@ -271,7 +315,7 @@ export class TrafficProvider {
       return {
         route: normalizedRoute,
         traffic_impact: trafficImpact,
-        provider: 'tomtom',
+        provider: "tomtom",
         timestamp: new Date(),
         confidence: 0.85,
       };
@@ -285,21 +329,31 @@ export class TrafficProvider {
     this.requestCount++;
 
     // Use primary provider (only TomTom has traffic flow endpoint)
-    if (this.primaryProvider === 'tomtom' && this.tomtomClient) {
+    if (this.primaryProvider === "tomtom" && this.tomtomClient) {
       try {
         const result = await this.tomtomClient.getTrafficFlow(bounds);
-        this.updateProviderHealth('tomtom', true);
+        this.updateProviderHealth("tomtom", true);
         return result;
       } catch (error) {
-        this.updateProviderHealth('tomtom', false, error instanceof Error ? error : new Error(String(error)));
+        this.updateProviderHealth(
+          "tomtom",
+          false,
+          error instanceof Error ? error : new Error(String(error)),
+        );
 
-        if (this.fallbackProvider === 'tomtom' && this.tomtomClient) {
+        if (this.fallbackProvider === "tomtom" && this.tomtomClient) {
           try {
             const result = await this.tomtomClient.getTrafficFlow(bounds);
-            this.updateProviderHealth('tomtom', true);
+            this.updateProviderHealth("tomtom", true);
             return result;
           } catch (fallbackError) {
-            this.updateProviderHealth('tomtom', false, fallbackError instanceof Error ? fallbackError : new Error(String(fallbackError)));
+            this.updateProviderHealth(
+              "tomtom",
+              false,
+              fallbackError instanceof Error
+                ? fallbackError
+                : new Error(String(fallbackError)),
+            );
           }
         }
 
@@ -308,15 +362,19 @@ export class TrafficProvider {
     } else if (this.tomtomClient) {
       try {
         const result = await this.tomtomClient.getTrafficFlow(bounds);
-        this.updateProviderHealth('tomtom', true);
+        this.updateProviderHealth("tomtom", true);
         return result;
       } catch (error) {
-        this.updateProviderHealth('tomtom', false, error instanceof Error ? error : new Error(String(error)));
+        this.updateProviderHealth(
+          "tomtom",
+          false,
+          error instanceof Error ? error : new Error(String(error)),
+        );
         throw error;
       }
     }
 
-    throw new Error('TomTom client required for traffic overlay');
+    throw new Error("TomTom client required for traffic overlay");
   }
 
   /**
@@ -367,7 +425,7 @@ export class TrafficProvider {
     }
 
     if (candidates.length === 0) {
-      throw new Error('No valid departure times found in window');
+      throw new Error("No valid departure times found in window");
     }
 
     // Find candidate with minimum traffic duration
@@ -375,7 +433,9 @@ export class TrafficProvider {
       current.duration < min.duration ? current : min,
     );
 
-    const eta = new Date(best.departureTime.getTime() + best.duration * 60 * 1000);
+    const eta = new Date(
+      best.departureTime.getTime() + best.duration * 60 * 1000,
+    );
 
     return {
       optimal_departure: best.departureTime,
@@ -401,12 +461,12 @@ export class TrafficProvider {
   getProviderHealth(): ProviderHealth[] {
     return [
       {
-        provider: 'google',
-        ...this.providerHealth.get('google')!,
+        provider: "google",
+        ...this.providerHealth.get("google")!,
       },
       {
-        provider: 'tomtom',
-        ...this.providerHealth.get('tomtom')!,
+        provider: "tomtom",
+        ...this.providerHealth.get("tomtom")!,
       },
     ];
   }
@@ -423,7 +483,8 @@ export class TrafficProvider {
     return {
       totalRequests: this.requestCount,
       failoverCount: this.failoverCount,
-      failoverRate: this.requestCount === 0 ? 0 : this.failoverCount / this.requestCount,
+      failoverRate:
+        this.requestCount === 0 ? 0 : this.failoverCount / this.requestCount,
       providerHealth: this.getProviderHealth(),
     };
   }

@@ -3,25 +3,25 @@
  * Unit tests for job management, customers, technicians, estimates, invoices, and dispatch
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ServiceTitanV2Client } from '../servicetitan-v2-sdk-client.js';
-import { APIError, RateLimitError } from '../field-service-sdk-types.js';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { ServiceTitanV2Client } from "../servicetitan-v2-sdk-client.js";
+import { APIError, RateLimitError } from "../field-service-sdk-types.js";
 
 const mockConfig = {
-  appKey: 'st_' + 'FAKE_APP_KEY_123',
-  appSecret: 'st_' + 'FAKE_SECRET_456',
-  tenantId: 'tenant_' + '789',
-  apiUrl: 'https://api.servicetitan.com',
+  appKey: "st_" + "FAKE_APP_KEY_123",
+  appSecret: "st_" + "FAKE_SECRET_456",
+  tenantId: "tenant_" + "789",
+  apiUrl: "https://api.servicetitan.com",
 };
 
 const mockFetch = vi.fn();
 
-describe('ServiceTitanV2Client', () => {
+describe("ServiceTitanV2Client", () => {
   let client: ServiceTitanV2Client;
 
   beforeEach(() => {
     mockFetch.mockReset();
-    vi.stubGlobal('fetch', mockFetch);
+    vi.stubGlobal("fetch", mockFetch);
     client = new ServiceTitanV2Client(mockConfig);
   });
 
@@ -31,14 +31,14 @@ describe('ServiceTitanV2Client', () => {
 
   // ─── AUTHENTICATION TESTS ─────────────────────────────────────────────────
 
-  describe('Authentication', () => {
-    it('should authenticate with valid credentials', async () => {
+  describe("Authentication", () => {
+    it("should authenticate with valid credentials", async () => {
       mockFetch.mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            access_token: 'token_' + 'abc123',
+            access_token: "token_" + "abc123",
             expires_in: 3600,
-            token_type: 'Bearer',
+            token_type: "Bearer",
           }),
           { status: 200 },
         ),
@@ -47,17 +47,21 @@ describe('ServiceTitanV2Client', () => {
       await client.authenticate();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/auth/v1/oauth/token'),
+        expect.stringContaining("/auth/v1/oauth/token"),
         expect.objectContaining({
-          method: 'POST',
-          headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+          }),
         }),
       );
     });
 
-    it('should throw APIError on authentication failure', async () => {
+    it("should throw APIError on authentication failure", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ error: 'invalid_credentials' }), { status: 401 }),
+        new Response(JSON.stringify({ error: "invalid_credentials" }), {
+          status: 401,
+        }),
       );
 
       await expect(client.authenticate()).rejects.toThrow();
@@ -66,16 +70,16 @@ describe('ServiceTitanV2Client', () => {
 
   // ─── JOB MANAGEMENT TESTS ─────────────────────────────────────────────────
 
-  describe('Job Management', () => {
+  describe("Job Management", () => {
     beforeEach(async () => {
       mockFetch.mockImplementation((url: any) => {
-        if (url.includes('/auth/v1/oauth/token')) {
+        if (url.includes("/auth/v1/oauth/token")) {
           return Promise.resolve(
             new Response(
               JSON.stringify({
-                access_token: 'token_' + 'test123',
+                access_token: "token_" + "test123",
                 expires_in: 3600,
-                token_type: 'Bearer',
+                token_type: "Bearer",
               }),
               { status: 200 },
             ),
@@ -85,9 +89,9 @@ describe('ServiceTitanV2Client', () => {
           new Response(JSON.stringify({}), {
             status: 200,
             headers: new Headers({
-              'X-RateLimit-Remaining': '99',
-              'X-RateLimit-Limit': '100',
-              'X-RateLimit-Reset': Math.ceil(Date.now() / 1000 + 60).toString(),
+              "X-RateLimit-Remaining": "99",
+              "X-RateLimit-Limit": "100",
+              "X-RateLimit-Reset": Math.ceil(Date.now() / 1000 + 60).toString(),
             }),
           }),
         );
@@ -95,20 +99,20 @@ describe('ServiceTitanV2Client', () => {
       await client.authenticate();
     });
 
-    it('should create a job', async () => {
+    it("should create a job", async () => {
       mockFetch.mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            id: 'job_' + '123',
-            number: 'JOB-001',
-            customerId: 'cust_' + '456',
-            description: 'Fix HVAC',
-            status: 'scheduled',
+            id: "job_" + "123",
+            number: "JOB-001",
+            customerId: "cust_" + "456",
+            description: "Fix HVAC",
+            status: "scheduled",
             priority: 1,
-            locationStreet: '123 Main St',
-            locationCity: 'Springfield',
-            locationZip: '12345',
-            locationState: 'IL',
+            locationStreet: "123 Main St",
+            locationCity: "Springfield",
+            locationZip: "12345",
+            locationState: "IL",
             jobTotal: 500,
             createdDate: new Date().toISOString(),
             modifiedDate: new Date().toISOString(),
@@ -116,49 +120,49 @@ describe('ServiceTitanV2Client', () => {
           {
             status: 201,
             headers: new Headers({
-              'X-RateLimit-Remaining': '98',
-              'X-RateLimit-Limit': '100',
+              "X-RateLimit-Remaining": "98",
+              "X-RateLimit-Limit": "100",
             }),
           },
         ),
       );
 
       const response = await client.createJob({
-        customerId: 'cust_' + '456',
-        title: 'Fix HVAC',
-        priority: 'high',
+        customerId: "cust_" + "456",
+        title: "Fix HVAC",
+        priority: "high",
         location: {
-          address: '123 Main St',
-          city: 'Springfield',
-          postalCode: '12345',
-          state: 'IL',
-          country: 'US',
+          address: "123 Main St",
+          city: "Springfield",
+          postalCode: "12345",
+          state: "IL",
+          country: "US",
         },
       });
 
-      expect(response.id).toBe('job_' + '123');
-      expect(response.title).toBe('Fix HVAC');
-      expect(response.status).toBe('scheduled');
+      expect(response.id).toBe("job_" + "123");
+      expect(response.title).toBe("Fix HVAC");
+      expect(response.status).toBe("scheduled");
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/jobs/v2/jobs'),
-        expect.objectContaining({ method: 'POST' }),
+        expect.stringContaining("/jobs/v2/jobs"),
+        expect.objectContaining({ method: "POST" }),
       );
     });
 
-    it('should get a job', async () => {
+    it("should get a job", async () => {
       mockFetch.mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            id: 'job_' + '123',
-            number: 'JOB-001',
-            customerId: 'cust_' + '456',
-            description: 'Fix HVAC',
-            status: 'scheduled',
+            id: "job_" + "123",
+            number: "JOB-001",
+            customerId: "cust_" + "456",
+            description: "Fix HVAC",
+            status: "scheduled",
             priority: 1,
-            locationStreet: '123 Main St',
-            locationCity: 'Springfield',
-            locationZip: '12345',
-            locationState: 'IL',
+            locationStreet: "123 Main St",
+            locationCity: "Springfield",
+            locationZip: "12345",
+            locationState: "IL",
             createdDate: new Date().toISOString(),
             modifiedDate: new Date().toISOString(),
           }),
@@ -166,26 +170,26 @@ describe('ServiceTitanV2Client', () => {
         ),
       );
 
-      const response = await client.getJob('job_' + '123');
+      const response = await client.getJob("job_" + "123");
 
-      expect(response.id).toBe('job_' + '123');
-      expect(response.title).toBe('Fix HVAC');
+      expect(response.id).toBe("job_" + "123");
+      expect(response.title).toBe("Fix HVAC");
     });
 
-    it('should update a job', async () => {
+    it("should update a job", async () => {
       mockFetch.mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            id: 'job_' + '123',
-            number: 'JOB-001',
-            customerId: 'cust_' + '456',
-            description: 'Fix HVAC - Updated',
-            status: 'in_progress',
+            id: "job_" + "123",
+            number: "JOB-001",
+            customerId: "cust_" + "456",
+            description: "Fix HVAC - Updated",
+            status: "in_progress",
             priority: 1,
-            locationStreet: '123 Main St',
-            locationCity: 'Springfield',
-            locationZip: '12345',
-            locationState: 'IL',
+            locationStreet: "123 Main St",
+            locationCity: "Springfield",
+            locationZip: "12345",
+            locationState: "IL",
             createdDate: new Date().toISOString(),
             modifiedDate: new Date().toISOString(),
           }),
@@ -193,29 +197,29 @@ describe('ServiceTitanV2Client', () => {
         ),
       );
 
-      const response = await client.updateJob('job_' + '123', {
-        title: 'Fix HVAC - Updated',
-        status: 'in_progress',
+      const response = await client.updateJob("job_" + "123", {
+        title: "Fix HVAC - Updated",
+        status: "in_progress",
       });
 
-      expect(response.title).toBe('Fix HVAC - Updated');
-      expect(response.status).toBe('in_progress');
+      expect(response.title).toBe("Fix HVAC - Updated");
+      expect(response.status).toBe("in_progress");
     });
 
-    it('should complete a job', async () => {
+    it("should complete a job", async () => {
       mockFetch.mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            id: 'job_' + '123',
-            number: 'JOB-001',
-            customerId: 'cust_' + '456',
-            description: 'Fix HVAC',
-            status: 'completed',
+            id: "job_" + "123",
+            number: "JOB-001",
+            customerId: "cust_" + "456",
+            description: "Fix HVAC",
+            status: "completed",
             priority: 1,
-            locationStreet: '123 Main St',
-            locationCity: 'Springfield',
-            locationZip: '12345',
-            locationState: 'IL',
+            locationStreet: "123 Main St",
+            locationCity: "Springfield",
+            locationZip: "12345",
+            locationState: "IL",
             completionDate: new Date().toISOString(),
             createdDate: new Date().toISOString(),
             modifiedDate: new Date().toISOString(),
@@ -224,28 +228,31 @@ describe('ServiceTitanV2Client', () => {
         ),
       );
 
-      const response = await client.completeJob('job_' + '123', 'Job completed successfully');
+      const response = await client.completeJob(
+        "job_" + "123",
+        "Job completed successfully",
+      );
 
-      expect(response.status).toBe('completed');
+      expect(response.status).toBe("completed");
       expect(response.completedAt).toBeDefined();
     });
 
-    it('should list jobs with pagination', async () => {
+    it("should list jobs with pagination", async () => {
       mockFetch.mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             data: [
               {
-                id: 'job_' + '123',
-                number: 'JOB-001',
-                customerId: 'cust_' + '456',
-                description: 'Fix HVAC',
-                status: 'scheduled',
+                id: "job_" + "123",
+                number: "JOB-001",
+                customerId: "cust_" + "456",
+                description: "Fix HVAC",
+                status: "scheduled",
                 priority: 1,
-                locationStreet: '123 Main St',
-                locationCity: 'Springfield',
-                locationZip: '12345',
-                locationState: 'IL',
+                locationStreet: "123 Main St",
+                locationCity: "Springfield",
+                locationZip: "12345",
+                locationState: "IL",
                 createdDate: new Date().toISOString(),
                 modifiedDate: new Date().toISOString(),
               },
@@ -270,16 +277,16 @@ describe('ServiceTitanV2Client', () => {
 
   // ─── CUSTOMER MANAGEMENT TESTS ────────────────────────────────────────────
 
-  describe('Customer Management', () => {
+  describe("Customer Management", () => {
     beforeEach(async () => {
       mockFetch.mockImplementation((url: any) => {
-        if (url.includes('/auth/v1/oauth/token')) {
+        if (url.includes("/auth/v1/oauth/token")) {
           return Promise.resolve(
             new Response(
               JSON.stringify({
-                access_token: 'token_' + 'test123',
+                access_token: "token_" + "test123",
                 expires_in: 3600,
-                token_type: 'Bearer',
+                token_type: "Bearer",
               }),
               { status: 200 },
             ),
@@ -289,8 +296,8 @@ describe('ServiceTitanV2Client', () => {
           new Response(JSON.stringify({}), {
             status: 200,
             headers: new Headers({
-              'X-RateLimit-Remaining': '99',
-              'X-RateLimit-Limit': '100',
+              "X-RateLimit-Remaining": "99",
+              "X-RateLimit-Limit": "100",
             }),
           }),
         );
@@ -298,22 +305,22 @@ describe('ServiceTitanV2Client', () => {
       await client.authenticate();
     });
 
-    it('should create a customer', async () => {
+    it("should create a customer", async () => {
       mockFetch.mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            id: 'cust_' + '123',
-            firstName: 'John',
-            lastName: 'Doe',
-            email: 'john@example.com',
-            phone: '555-1234',
-            street: '123 Main St',
-            city: 'Springfield',
-            state: 'IL',
-            zip: '12345',
-            country: 'US',
-            type: 'Residential',
-            status: 'active',
+            id: "cust_" + "123",
+            firstName: "John",
+            lastName: "Doe",
+            email: "john@example.com",
+            phone: "555-1234",
+            street: "123 Main St",
+            city: "Springfield",
+            state: "IL",
+            zip: "12345",
+            country: "US",
+            type: "Residential",
+            status: "active",
             createdDate: new Date().toISOString(),
             modifiedDate: new Date().toISOString(),
           }),
@@ -322,41 +329,41 @@ describe('ServiceTitanV2Client', () => {
       );
 
       const response = await client.createCustomer({
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john@example.com',
-        phone: '555-1234',
-        type: 'residential',
+        firstName: "John",
+        lastName: "Doe",
+        email: "john@example.com",
+        phone: "555-1234",
+        type: "residential",
         primaryAddress: {
-          address: '123 Main St',
-          city: 'Springfield',
-          state: 'IL',
-          postalCode: '12345',
-          country: 'US',
+          address: "123 Main St",
+          city: "Springfield",
+          state: "IL",
+          postalCode: "12345",
+          country: "US",
         },
       });
 
-      expect(response.id).toBe('cust_' + '123');
-      expect(response.firstName).toBe('John');
-      expect(response.email).toBe('john@example.com');
+      expect(response.id).toBe("cust_" + "123");
+      expect(response.firstName).toBe("John");
+      expect(response.email).toBe("john@example.com");
     });
 
-    it('should get a customer', async () => {
+    it("should get a customer", async () => {
       mockFetch.mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            id: 'cust_' + '123',
-            firstName: 'John',
-            lastName: 'Doe',
-            email: 'john@example.com',
-            phone: '555-1234',
-            street: '123 Main St',
-            city: 'Springfield',
-            state: 'IL',
-            zip: '12345',
-            country: 'US',
-            type: 'Residential',
-            status: 'active',
+            id: "cust_" + "123",
+            firstName: "John",
+            lastName: "Doe",
+            email: "john@example.com",
+            phone: "555-1234",
+            street: "123 Main St",
+            city: "Springfield",
+            state: "IL",
+            zip: "12345",
+            country: "US",
+            type: "Residential",
+            status: "active",
             createdDate: new Date().toISOString(),
             modifiedDate: new Date().toISOString(),
           }),
@@ -364,25 +371,25 @@ describe('ServiceTitanV2Client', () => {
         ),
       );
 
-      const response = await client.getCustomer('cust_' + '123');
+      const response = await client.getCustomer("cust_" + "123");
 
-      expect(response.id).toBe('cust_' + '123');
-      expect(response.firstName).toBe('John');
+      expect(response.id).toBe("cust_" + "123");
+      expect(response.firstName).toBe("John");
     });
   });
 
   // ─── INVOICE MANAGEMENT TESTS ─────────────────────────────────────────────
 
-  describe('Invoice Management', () => {
+  describe("Invoice Management", () => {
     beforeEach(async () => {
       mockFetch.mockImplementation((url: any) => {
-        if (url.includes('/auth/v1/oauth/token')) {
+        if (url.includes("/auth/v1/oauth/token")) {
           return Promise.resolve(
             new Response(
               JSON.stringify({
-                access_token: 'token_' + 'test123',
+                access_token: "token_" + "test123",
                 expires_in: 3600,
-                token_type: 'Bearer',
+                token_type: "Bearer",
               }),
               { status: 200 },
             ),
@@ -392,8 +399,8 @@ describe('ServiceTitanV2Client', () => {
           new Response(JSON.stringify({}), {
             status: 200,
             headers: new Headers({
-              'X-RateLimit-Remaining': '99',
-              'X-RateLimit-Limit': '100',
+              "X-RateLimit-Remaining": "99",
+              "X-RateLimit-Limit": "100",
             }),
           }),
         );
@@ -401,16 +408,18 @@ describe('ServiceTitanV2Client', () => {
       await client.authenticate();
     });
 
-    it('should create an invoice', async () => {
+    it("should create an invoice", async () => {
       mockFetch.mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            id: 'inv_' + '123',
-            number: 'INV-001',
-            customerId: 'cust_' + '456',
-            status: 'draft',
+            id: "inv_" + "123",
+            number: "INV-001",
+            customerId: "cust_" + "456",
+            status: "draft",
             invoiceDate: new Date().toISOString(),
-            dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            dueDate: new Date(
+              Date.now() + 30 * 24 * 60 * 60 * 1000,
+            ).toISOString(),
             lineItems: [],
             total: 500,
             createdDate: new Date().toISOString(),
@@ -421,32 +430,34 @@ describe('ServiceTitanV2Client', () => {
       );
 
       const invoiceDate = new Date();
-      const dueDate = new Date(invoiceDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const dueDate = new Date(
+        invoiceDate.getTime() + 30 * 24 * 60 * 60 * 1000,
+      );
 
       const response = await client.createInvoice({
-        customerId: 'cust_' + '456',
+        customerId: "cust_" + "456",
         invoiceDate,
         dueDate,
         lineItems: [
           {
-            description: 'Service',
+            description: "Service",
             quantity: 1,
             unitPrice: 500,
           },
         ],
       });
 
-      expect(response.id).toBe('inv_' + '123');
+      expect(response.id).toBe("inv_" + "123");
       expect(response.total).toBe(500);
     });
 
-    it('should record invoice payment', async () => {
+    it("should record invoice payment", async () => {
       mockFetch.mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            invoiceId: 'inv_' + '123',
+            invoiceId: "inv_" + "123",
             amount: 250,
-            paymentMethod: 'card',
+            paymentMethod: "card",
             paymentDate: new Date().toISOString(),
           }),
           { status: 200 },
@@ -457,10 +468,10 @@ describe('ServiceTitanV2Client', () => {
       mockFetch.mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            id: 'inv_' + '123',
-            number: 'INV-001',
-            customerId: 'cust_' + '456',
-            status: 'partially_paid',
+            id: "inv_" + "123",
+            number: "INV-001",
+            customerId: "cust_" + "456",
+            status: "partially_paid",
             invoiceDate: new Date().toISOString(),
             dueDate: new Date().toISOString(),
             lineItems: [],
@@ -474,28 +485,28 @@ describe('ServiceTitanV2Client', () => {
       );
 
       const response = await client.recordPayment({
-        invoiceId: 'inv_' + '123',
+        invoiceId: "inv_" + "123",
         amount: 250,
-        method: 'card',
+        method: "card",
       });
 
       expect(response.amountPaid).toBe(250);
-      expect(response.status).toBe('partially_paid');
+      expect(response.status).toBe("partially_paid");
     });
   });
 
   // ─── DISPATCH MANAGEMENT TESTS ────────────────────────────────────────────
 
-  describe('Dispatch Management', () => {
+  describe("Dispatch Management", () => {
     beforeEach(async () => {
       mockFetch.mockImplementation((url: any) => {
-        if (url.includes('/auth/v1/oauth/token')) {
+        if (url.includes("/auth/v1/oauth/token")) {
           return Promise.resolve(
             new Response(
               JSON.stringify({
-                access_token: 'token_' + 'test123',
+                access_token: "token_" + "test123",
                 expires_in: 3600,
-                token_type: 'Bearer',
+                token_type: "Bearer",
               }),
               { status: 200 },
             ),
@@ -505,8 +516,8 @@ describe('ServiceTitanV2Client', () => {
           new Response(JSON.stringify({}), {
             status: 200,
             headers: new Headers({
-              'X-RateLimit-Remaining': '99',
-              'X-RateLimit-Limit': '100',
+              "X-RateLimit-Remaining": "99",
+              "X-RateLimit-Limit": "100",
             }),
           }),
         );
@@ -514,14 +525,14 @@ describe('ServiceTitanV2Client', () => {
       await client.authenticate();
     });
 
-    it('should create a dispatch assignment', async () => {
+    it("should create a dispatch assignment", async () => {
       mockFetch.mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            id: 'disp_' + '123',
-            jobId: 'job_' + '456',
-            resourceId: 'tech_' + '789',
-            status: 'assigned',
+            id: "disp_" + "123",
+            jobId: "job_" + "456",
+            resourceId: "tech_" + "789",
+            status: "assigned",
             priority: 1,
             createdDate: new Date().toISOString(),
           }),
@@ -530,55 +541,59 @@ describe('ServiceTitanV2Client', () => {
       );
 
       const response = await client.createDispatchAssignment({
-        jobId: 'job_' + '456',
-        technicianId: 'tech_' + '789',
-        priority: 'high',
+        jobId: "job_" + "456",
+        technicianId: "tech_" + "789",
+        priority: "high",
       });
 
-      expect(response.id).toBe('disp_' + '123');
-      expect(response.status).toBe('assigned');
-      expect(response.jobId).toBe('job_' + '456');
-      expect(response.technicianId).toBe('tech_' + '789');
+      expect(response.id).toBe("disp_" + "123");
+      expect(response.status).toBe("assigned");
+      expect(response.jobId).toBe("job_" + "456");
+      expect(response.technicianId).toBe("tech_" + "789");
     });
   });
 
   // ─── WEBHOOK VERIFICATION TESTS ───────────────────────────────────────────
 
-  describe('Webhook Verification', () => {
-    it('should verify webhook signature', () => {
-      const secret = 'secret_' + 'key123';
-      const payload = JSON.stringify({ eventId: '123', type: 'job.created' });
-      const signature = require('crypto')
-        .createHmac('sha256', secret)
+  describe("Webhook Verification", () => {
+    it("should verify webhook signature", () => {
+      const secret = "secret_" + "key123";
+      const payload = JSON.stringify({ eventId: "123", type: "job.created" });
+      const signature = require("crypto")
+        .createHmac("sha256", secret)
         .update(payload)
-        .digest('hex');
+        .digest("hex");
 
       const isValid = client.verifyWebhookSignature(payload, signature, secret);
       expect(isValid).toBe(true);
     });
 
-    it('should reject invalid webhook signature', () => {
-      const secret = 'secret_' + 'key123';
-      const payload = JSON.stringify({ eventId: '123', type: 'job.created' });
-      const invalidSignature = 'invalid_sig_' + 'abc123';
+    it("should reject invalid webhook signature", () => {
+      const secret = "secret_" + "key123";
+      const payload = JSON.stringify({ eventId: "123", type: "job.created" });
+      const invalidSignature = "invalid_sig_" + "abc123";
 
-      const isValid = client.verifyWebhookSignature(payload, invalidSignature, secret);
+      const isValid = client.verifyWebhookSignature(
+        payload,
+        invalidSignature,
+        secret,
+      );
       expect(isValid).toBe(false);
     });
   });
 
   // ─── HEALTH CHECK TESTS ───────────────────────────────────────────────────
 
-  describe('Health Check', () => {
+  describe("Health Check", () => {
     beforeEach(async () => {
       mockFetch.mockImplementation((url: any) => {
-        if (url.includes('/auth/v1/oauth/token')) {
+        if (url.includes("/auth/v1/oauth/token")) {
           return Promise.resolve(
             new Response(
               JSON.stringify({
-                access_token: 'token_' + 'test123',
+                access_token: "token_" + "test123",
                 expires_in: 3600,
-                token_type: 'Bearer',
+                token_type: "Bearer",
               }),
               { status: 200 },
             ),
@@ -588,8 +603,8 @@ describe('ServiceTitanV2Client', () => {
           new Response(JSON.stringify({}), {
             status: 200,
             headers: new Headers({
-              'X-RateLimit-Remaining': '99',
-              'X-RateLimit-Limit': '100',
+              "X-RateLimit-Remaining": "99",
+              "X-RateLimit-Limit": "100",
             }),
           }),
         );
@@ -597,13 +612,13 @@ describe('ServiceTitanV2Client', () => {
       await client.authenticate();
     });
 
-    it('should return true for successful health check', async () => {
+    it("should return true for successful health check", async () => {
       const isHealthy = await client.healthCheck();
       expect(isHealthy).toBe(true);
     });
 
-    it('should return false when health check fails', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+    it("should return false when health check fails", async () => {
+      mockFetch.mockRejectedValueOnce(new Error("Network error"));
       const isHealthy = await client.healthCheck();
       expect(isHealthy).toBe(false);
     });

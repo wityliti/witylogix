@@ -9,9 +9,11 @@ Comprehensive search and filtering infrastructure for the Witylogix platform wit
 ### Backend (packages/core/src/search/)
 
 #### 1. **search-engine.ts** (458 lines)
+
 PostgreSQL tsvector/tsquery wrapper with BM25-style ranking.
 
 **Key Features:**
+
 - Multi-entity full-text search (orders, drivers, deliveries, integrations, customers)
 - PostgreSQL tsvector/tsquery with rank_cd scoring
 - Configurable search weights (A=title, B=description, C=metadata, D=content)
@@ -21,11 +23,13 @@ PostgreSQL tsvector/tsquery wrapper with BM25-style ranking.
 - Type-ahead suggestions
 
 **Exports:**
+
 - `SearchEngine` class
 - `createSearchEngine()` factory
 - `SearchableEntity`, `SearchConfig`, `SearchResult`, `SearchHighlight` types
 
 **Database Requirements:**
+
 ```sql
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 -- Search indexes will be created by migration
@@ -37,9 +41,11 @@ CREATE INDEX idx_orders_tsvector ON orders USING GIN(
 ```
 
 #### 2. **search-api.ts** (314 lines)
+
 RESTful search API with Zod validation.
 
 **Endpoints:**
+
 - `GET /api/search?q={query}&type={entity}&limit=20&offset=0` - Search
 - `GET /api/search/suggestions?q={prefix}&limit=5` - Type-ahead
 - `GET /api/search/saved` - List saved searches
@@ -47,6 +53,7 @@ RESTful search API with Zod validation.
 - `DELETE /api/search/saved/:id` - Delete saved search
 
 **Key Features:**
+
 - Zod validation for all endpoints
 - Search analytics tracking (query terms, result counts)
 - Popular searches aggregation
@@ -54,20 +61,24 @@ RESTful search API with Zod validation.
 - Saved searches with metadata
 
 **Exports:**
+
 - `SearchApiService` class
 - `createSearchApiService()` factory
 - Validation schemas: `searchQuerySchema`, `suggestionsQuerySchema`, `savedSearchSchema`
 
 #### 3. **filter-builder.ts** (363 lines)
+
 Dynamic filter builder with SQL injection prevention.
 
 **Operators Supported:**
+
 - Comparison: `eq`, `ne`, `gt`, `gte`, `lt`, `lte`
 - Containment: `in`, `not_in`, `contains`, `starts_with`
 - Range: `between`
 - Null: `is_null`
 
 **Features:**
+
 - Composite filters: AND, OR, NOT
 - Date shortcuts: `today`, `yesterday`, `this_week`, `this_month`, `last_30_days`, `custom`
 - Status shortcuts for each entity (ORDER_FILTERS, DRIVER_FILTERS)
@@ -75,15 +86,18 @@ Dynamic filter builder with SQL injection prevention.
 - Field type awareness (string, number, date, enum, boolean, array)
 
 **Exports:**
+
 - `FilterBuilder` class with static helpers
 - Filter types: `FilterRule`, `CompositeFilter`, `FilterConfig`
 - Preset filters: `ORDER_FILTERS`, `DRIVER_FILTERS`
 - `validateFilter()` helper
 
 #### 4. **search-analytics.ts** (370 lines)
+
 Search analytics and quality metrics.
 
 **Tracked Events:**
+
 - Query terms and frequency
 - Result counts (including zero-result queries)
 - Click-through rates
@@ -91,31 +105,37 @@ Search analytics and quality metrics.
 - Entity type distribution
 
 **Reports Generated:**
+
 - Comprehensive analytics report (totals, trends, top queries)
 - Zero-result queries (content gaps)
 - Click-through rates per query
 - Search trends over time (hourly, daily, weekly buckets)
 
 **Features:**
+
 - Event recording with automatic aggregation
 - Click-through tracking
 - Retention policy cleanup
 - Slow query detection (>100ms)
 
 **Exports:**
+
 - `SearchAnalytics` class
 - `createSearchAnalytics()` factory
 - `SearchAnalyticsEvent`, `SearchAnalyticsReport` types
 
 #### 5. **index.ts** (41 lines)
+
 Module exports and re-exports.
 
 **Exports all public APIs from search modules.**
 
-#### 6. **__tests__/filter-builder.test.ts** (360 lines)
+#### 6. \***\*tests**/filter-builder.test.ts\*\* (360 lines)
+
 Comprehensive test suite for FilterBuilder.
 
 **Test Coverage:**
+
 - ✓ Single filter rules (eq, ne, gt, contains, etc.)
 - ✓ Composite filters (AND, OR, NOT with nesting)
 - ✓ SQL injection prevention
@@ -128,9 +148,11 @@ Comprehensive test suite for FilterBuilder.
 ### Frontend (apps/dashboard/src/)
 
 #### 1. **hooks/use-search.ts** (376 lines)
+
 React hook for search with debouncing and state management.
 
 **Features:**
+
 - Debounced search (300ms default, configurable)
 - Type-ahead suggestions from API
 - Recent searches (persisted to localStorage)
@@ -140,6 +162,7 @@ React hook for search with debouncing and state management.
 - Query string builder
 
 **Usage:**
+
 ```tsx
 const search = useSearch({ limit: 20, debounceMs: 300 });
 
@@ -147,19 +170,24 @@ return (
   <>
     <input {...search.register} />
     {search.isLoading && <Spinner />}
-    {search.results.map(r => <div key={r.id}>{r.title}</div>)}
+    {search.results.map((r) => (
+      <div key={r.id}>{r.title}</div>
+    ))}
   </>
 );
 ```
 
 **Exports:**
+
 - `useSearch()` hook
 - `SearchResult`, `SearchSuggestion`, `UseSearchOptions`, `UseSearchState` types
 
 #### 2. **components/search/search-command-palette.tsx** (373 lines)
+
 Global command palette with Cmd+K hotkey.
 
 **Features:**
+
 - Cmd+K hotkey to toggle (Ctrl+K on Linux/Windows)
 - Search across all entities
 - Grouped results by entity type (Orders, Drivers, Deliveries, etc.)
@@ -170,6 +198,7 @@ Global command palette with Cmd+K hotkey.
 - Result highlighting with entity-type badges
 
 **Component Structure:**
+
 - Search input with debounce
 - Loading indicator
 - Grouped result list
@@ -178,8 +207,9 @@ Global command palette with Cmd+K hotkey.
 - Navigation hints (footer)
 
 **Usage:**
+
 ```tsx
-import { SearchCommandPalette } from '@/components/search/search-command-palette';
+import { SearchCommandPalette } from "@/components/search/search-command-palette";
 
 export default function Layout() {
   return (
@@ -192,9 +222,11 @@ export default function Layout() {
 ```
 
 #### 3. **components/search/filter-panel.tsx** (364 lines)
+
 Collapsible sidebar for advanced filtering.
 
 **Features:**
+
 - Collapsible filter sections
 - Active filter chips (removable)
 - Multi-select status dropdown
@@ -205,11 +237,13 @@ Collapsible sidebar for advanced filtering.
 - Dark theme with Tailwind CSS v3.4
 
 **Filter Sections:**
+
 - Status (multi-select)
 - Date Range (shortcuts + custom picker)
 - Extensible for entity-specific filters
 
 **Component Structure:**
+
 - Collapsible header
 - Active filters display as removable chips
 - Filter input sections
@@ -217,6 +251,7 @@ Collapsible sidebar for advanced filtering.
 - Action buttons (Save, Clear)
 
 **Usage:**
+
 ```tsx
 const [filters, setFilters] = useState<Filter[]>([]);
 
@@ -286,6 +321,7 @@ Reports generated on demand
 ### Tailwind CSS Setup
 
 All components use:
+
 - **Base:** `cn()` utility from `@/lib/utils`
 - **Theme:** Dark mode (gray-900, gray-800, etc.)
 - **Colors:** Blue accents for active states
@@ -344,7 +380,7 @@ Add these routes to your Next.js API:
 
 ```typescript
 // apps/api/search/route.ts
-import { SearchApiService, SearchEngine } from '@witylogix/core/search';
+import { SearchApiService, SearchEngine } from "@witylogix/core/search";
 
 export async function GET(req) {
   const { q, type, limit, offset } = req.nextUrl.searchParams;
@@ -362,11 +398,13 @@ export async function GET(req) {
 ## Testing
 
 ### Run Filter Builder Tests
+
 ```bash
 npm test -- filter-builder.test.ts
 ```
 
 ### Test Coverage
+
 - 30+ test cases covering operators, composition, injection prevention
 - Vitest with vi mocking
 - Validates edge cases (NULL, ranges, arrays)
@@ -374,17 +412,20 @@ npm test -- filter-builder.test.ts
 ## Performance Characteristics
 
 ### Search Performance
+
 - PostgreSQL tsvector lookup: O(log n) with GIN index
 - Fuzzy matching with pg_trgm: O(n) but indexed
 - Pagination: limit 20-100 results per request
 - Debounce: 300ms prevents excessive queries
 
 ### Filter Performance
+
 - Parameterized queries: Safe from injection
 - Index utilization on filtered fields
 - Support for composite indexes on (tenant_id, field)
 
 ### Analytics Performance
+
 - Async tracking (non-blocking)
 - Aggregation queries run on read, not write
 - Retention policy (cleanup old events)
@@ -392,6 +433,7 @@ npm test -- filter-builder.test.ts
 ## Conventions Applied
 
 ### Code Style
+
 - Named imports: `import { SearchEngine } from '@/search'`
 - Prisma as any: `(prisma as any).modelName`
 - Zod validation for all input
@@ -399,6 +441,7 @@ npm test -- filter-builder.test.ts
 - No test secret keys
 
 ### Component Design
+
 - Button variants: "primary" | "secondary" | "ghost" | "danger"
 - Tailwind CSS v3.4 with dark theme
 - Fully accessible keyboard navigation
@@ -406,6 +449,7 @@ npm test -- filter-builder.test.ts
 - Proper error boundaries
 
 ### Naming Conventions
+
 - Classes: `SearchEngine`, `FilterBuilder`, `SearchAnalytics`
 - Hooks: `useSearch` (not `useSearchHook`)
 - Components: `SearchCommandPalette`, `FilterPanel`
@@ -414,6 +458,7 @@ npm test -- filter-builder.test.ts
 ## Extensions & Future Work
 
 ### Potential Enhancements
+
 1. **Advanced Analytics:**
    - A/B testing search UX changes
    - ML-based result ranking
@@ -438,18 +483,18 @@ npm test -- filter-builder.test.ts
 
 ## File Locations Summary
 
-| File | Location | Lines |
-|------|----------|-------|
-| search-engine.ts | packages/core/src/search/ | 458 |
-| search-api.ts | packages/core/src/search/ | 314 |
-| filter-builder.ts | packages/core/src/search/ | 363 |
-| search-analytics.ts | packages/core/src/search/ | 370 |
-| index.ts | packages/core/src/search/ | 41 |
-| filter-builder.test.ts | packages/core/src/search/__tests__/ | 360 |
-| use-search.ts | apps/dashboard/src/hooks/ | 376 |
-| search-command-palette.tsx | apps/dashboard/src/components/search/ | 373 |
-| filter-panel.tsx | apps/dashboard/src/components/search/ | 364 |
-| **Total** | | **3,019** |
+| File                       | Location                              | Lines     |
+| -------------------------- | ------------------------------------- | --------- |
+| search-engine.ts           | packages/core/src/search/             | 458       |
+| search-api.ts              | packages/core/src/search/             | 314       |
+| filter-builder.ts          | packages/core/src/search/             | 363       |
+| search-analytics.ts        | packages/core/src/search/             | 370       |
+| index.ts                   | packages/core/src/search/             | 41        |
+| filter-builder.test.ts     | packages/core/src/search/**tests**/   | 360       |
+| use-search.ts              | apps/dashboard/src/hooks/             | 376       |
+| search-command-palette.tsx | apps/dashboard/src/components/search/ | 373       |
+| filter-panel.tsx           | apps/dashboard/src/components/search/ | 364       |
+| **Total**                  |                                       | **3,019** |
 
 ## Validation Checklist
 

@@ -76,23 +76,23 @@ metadata:
   name: backup-verification
   namespace: production
 spec:
-  schedule: "0 18 * * FRI"  # Friday 6 PM UTC
+  schedule: "0 18 * * FRI" # Friday 6 PM UTC
   jobTemplate:
     spec:
       template:
         spec:
           containers:
-          - name: verify
-            image: postgres:15
-            command:
-            - /scripts/verify-backup.sh
-            volumeMounts:
-            - name: backup-scripts
-              mountPath: /scripts
+            - name: verify
+              image: postgres:15
+              command:
+                - /scripts/verify-backup.sh
+              volumeMounts:
+                - name: backup-scripts
+                  mountPath: /scripts
           volumes:
-          - name: backup-scripts
-            configMap:
-              name: backup-scripts
+            - name: backup-scripts
+              configMap:
+                name: backup-scripts
           restartPolicy: OnFailure
 ```
 
@@ -221,33 +221,37 @@ kubectl set env deployment/api-server \
 
 ## Recovery Time Objectives (RTO/RPO)
 
-| Component | RTO | RPO | Strategy |
-|-----------|-----|-----|----------|
-| Database | 15 min | 1 hour | Full backup + WAL replay |
-| Redis Cache | 5 min | 6 hours | Snapshot restore |
-| Application State | 5 min | 0 | Stateless, redeploy |
-| Elasticsearch | 30 min | 1 hour | Snapshot restore |
+| Component         | RTO    | RPO     | Strategy                 |
+| ----------------- | ------ | ------- | ------------------------ |
+| Database          | 15 min | 1 hour  | Full backup + WAL replay |
+| Redis Cache       | 5 min  | 6 hours | Snapshot restore         |
+| Application State | 5 min  | 0       | Stateless, redeploy      |
+| Elasticsearch     | 30 min | 1 hour  | Snapshot restore         |
 
 ## Disaster Recovery Checklist
 
 ### Daily Checklist (5 min)
+
 - [ ] Backup completion status in CloudWatch
 - [ ] Backup storage quota check
 - [ ] Replication lag <1 minute
 
 ### Weekly Checklist (Friday)
+
 - [ ] Test backup integrity
 - [ ] Test PITR with dummy database
 - [ ] Verify S3 cross-region replication
 - [ ] Check backup documentation is current
 
 ### Monthly Checklist
+
 - [ ] Full DR drill with recovery
 - [ ] Update runbook based on findings
 - [ ] Review backup costs
 - [ ] Test failover to secondary region
 
 ### Quarterly Checklist
+
 - [ ] Full system DR simulation
 - [ ] Load test recovered environment
 - [ ] Train new team members on procedure

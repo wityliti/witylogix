@@ -1,10 +1,15 @@
 // @ts-nocheck
-import { h } from 'preact';
-import { useState, useEffect } from 'preact/hooks';
-import { DeliveryDate, TimeSlot, CartItem, ErrorState } from './types';
-import { fetchDeliveryDates, fetchTimeSlots, saveDeliverySelection, formatDateLabel } from './api';
-import { TimeSlotSelector } from './TimeSlotSelector';
-import { componentStyles, colors, spacing } from './styles';
+import { h } from "preact";
+import { useState, useEffect } from "preact/hooks";
+import { DeliveryDate, TimeSlot, CartItem, ErrorState } from "./types";
+import {
+  fetchDeliveryDates,
+  fetchTimeSlots,
+  saveDeliverySelection,
+  formatDateLabel,
+} from "./api";
+import { TimeSlotSelector } from "./TimeSlotSelector";
+import { componentStyles, colors, spacing } from "./styles";
 
 interface DeliveryDatePickerProps {
   shopId: string;
@@ -30,7 +35,7 @@ export function DeliveryDatePicker({
   cartItems = [],
   blackoutDates = [],
   minimumLeadTime = 240, // Default: 4 hours
-  onSelectionChange
+  onSelectionChange,
 }: DeliveryDatePickerProps) {
   const [dates, setDates] = useState<DeliveryDate[]>([]);
   const [slots, setSlots] = useState<TimeSlot[]>([]);
@@ -58,9 +63,9 @@ export function DeliveryDatePicker({
         }
       } catch (err) {
         setError({
-          type: 'fetch',
-          message: 'Failed to load delivery dates. Please refresh the page.',
-          retry: loadDates
+          type: "fetch",
+          message: "Failed to load delivery dates. Please refresh the page.",
+          retry: loadDates,
         });
       } finally {
         setLoadingDates(false);
@@ -92,16 +97,16 @@ export function DeliveryDatePicker({
             date: selectedDate,
             slotId: firstAvailable.id,
             timeLabel: firstAvailable.label,
-            deliveryFee: firstAvailable.price
+            deliveryFee: firstAvailable.price,
           });
         }
       } catch (err) {
         setError({
-          type: 'fetch',
-          message: 'Failed to load time slots. Please try again.',
+          type: "fetch",
+          message: "Failed to load time slots. Please try again.",
           retry: () => {
             loadSlots();
-          }
+          },
         });
       } finally {
         setLoadingSlots(false);
@@ -129,7 +134,8 @@ export function DeliveryDatePicker({
     if (isSameDay) {
       const timeUntilMidnight = new Date(today);
       timeUntilMidnight.setHours(24, 0, 0, 0);
-      const minutesUntilMidnight = (timeUntilMidnight.getTime() - today.getTime()) / (1000 * 60);
+      const minutesUntilMidnight =
+        (timeUntilMidnight.getTime() - today.getTime()) / (1000 * 60);
       return minutesUntilMidnight >= minimumLeadTime;
     }
 
@@ -149,7 +155,7 @@ export function DeliveryDatePicker({
       const date = new Date(dateStr);
       return new Intl.DateTimeFormat(
         Intl.DateTimeFormat().resolvedOptions().locale,
-        { weekday: 'short', month: 'short', day: 'numeric' }
+        { weekday: "short", month: "short", day: "numeric" },
       ).format(date);
     } catch {
       return formatDateLabel(dateStr);
@@ -157,10 +163,12 @@ export function DeliveryDatePicker({
   };
 
   // Get capacity level for a date
-  const getCapacityLevel = (date: DeliveryDate): 'available' | 'limited' | 'full' => {
-    if (!date.available) return 'full';
-    if (date.slotCount <= 2) return 'limited';
-    return 'available';
+  const getCapacityLevel = (
+    date: DeliveryDate,
+  ): "available" | "limited" | "full" => {
+    if (!date.available) return "full";
+    if (date.slotCount <= 2) return "limited";
+    return "available";
   };
 
   // Handle time slot selection
@@ -171,7 +179,7 @@ export function DeliveryDatePicker({
         date: selectedDate,
         slotId: slot.id,
         timeLabel: slot.label,
-        deliveryFee: slot.price
+        deliveryFee: slot.price,
       });
 
       // Auto-save to checkout attributes
@@ -179,48 +187,54 @@ export function DeliveryDatePicker({
         date: selectedDate,
         slotId: slot.id,
         timeLabel: slot.label,
-        deliveryFee: slot.price
+        deliveryFee: slot.price,
       }).catch((err) => {
-        console.error('Failed to save selection:', err);
+        console.error("Failed to save selection:", err);
       });
     }
   };
 
   return (
-    <div style={{
-      ...componentStyles.container as any,
-      padding: spacing.lg,
-      borderRadius: '8px'
-    }}>
+    <div
+      style={{
+        ...(componentStyles.container as any),
+        padding: spacing.lg,
+        borderRadius: "8px",
+      }}
+    >
       {/* Header */}
-      <h2 style={{
-        ...componentStyles.sectionTitle as any,
-        marginTop: 0,
-        marginBottom: spacing.md,
-        fontSize: '18px'
-      }}>
+      <h2
+        style={{
+          ...(componentStyles.sectionTitle as any),
+          marginTop: 0,
+          marginBottom: spacing.md,
+          fontSize: "18px",
+        }}
+      >
         Delivery Details
       </h2>
 
       {/* Error message */}
       {error && (
-        <div style={{
-          ...componentStyles.errorMessage as any,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        <div
+          style={{
+            ...(componentStyles.errorMessage as any),
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <span>{error.message}</span>
           {error.retry && (
             <button
               onClick={error.retry}
               style={{
-                background: 'none',
-                border: 'none',
+                background: "none",
+                border: "none",
                 color: colors.warning,
-                textDecoration: 'underline',
-                cursor: 'pointer',
-                fontWeight: 500
+                textDecoration: "underline",
+                cursor: "pointer",
+                fontWeight: 500,
               }}
               aria-label="Retry loading delivery options"
             >
@@ -237,30 +251,38 @@ export function DeliveryDatePicker({
         </label>
 
         {loadingDates ? (
-          <div style={{
-            padding: spacing.lg,
-            textAlign: 'center',
-            color: colors.neutral500
-          }}>
+          <div
+            style={{
+              padding: spacing.lg,
+              textAlign: "center",
+              color: colors.neutral500,
+            }}
+          >
             <span style={componentStyles.loadingSpinner as any} />
-            <span style={{ marginLeft: spacing.md }}>Loading available dates...</span>
+            <span style={{ marginLeft: spacing.md }}>
+              Loading available dates...
+            </span>
           </div>
         ) : dates.length === 0 ? (
-          <div style={{
-            padding: spacing.lg,
-            backgroundColor: '#fef3f2',
-            color: colors.warning,
-            borderRadius: '6px',
-            border: `1px solid ${colors.warning}`
-          }}>
+          <div
+            style={{
+              padding: spacing.lg,
+              backgroundColor: "#fef3f2",
+              color: colors.warning,
+              borderRadius: "6px",
+              border: `1px solid ${colors.warning}`,
+            }}
+          >
             No delivery dates available in your area.
           </div>
         ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-            gap: spacing.sm
-          }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
+              gap: spacing.sm,
+            }}
+          >
             {dates.map((date) => {
               const isSelectable = isDateSelectable(date.date);
               const isBlackedOut = blackoutDates.includes(date.date);
@@ -273,38 +295,47 @@ export function DeliveryDatePicker({
                   disabled={!isSelectable || !date.available}
                   onKeyDown={(e) => {
                     // Keyboard navigation support
-                    if (e.key === 'Enter' || e.key === ' ') {
+                    if (e.key === "Enter" || e.key === " ") {
                       handleDateSelect(date);
                     }
                   }}
                   style={{
-                    ...componentStyles.dateButton as any,
-                    backgroundColor: selectedDate === date.date
-                      ? colors.primary
-                      : !isSelectable
-                      ? colors.disabled
-                      : date.available
-                      ? colors.neutral100
-                      : colors.disabled,
-                    borderColor: selectedDate === date.date
-                      ? colors.primary
-                      : date.available && isSelectable
-                      ? colors.neutral300
-                      : colors.neutral300,
-                    color: selectedDate === date.date
-                      ? colors.neutral100
-                      : colors.neutral900,
+                    ...(componentStyles.dateButton as any),
+                    backgroundColor:
+                      selectedDate === date.date
+                        ? colors.primary
+                        : !isSelectable
+                          ? colors.disabled
+                          : date.available
+                            ? colors.neutral100
+                            : colors.disabled,
+                    borderColor:
+                      selectedDate === date.date
+                        ? colors.primary
+                        : date.available && isSelectable
+                          ? colors.neutral300
+                          : colors.neutral300,
+                    color:
+                      selectedDate === date.date
+                        ? colors.neutral100
+                        : colors.neutral900,
                     fontWeight: selectedDate === date.date ? 600 : 400,
-                    cursor: isSelectable && date.available ? 'pointer' : 'not-allowed',
+                    cursor:
+                      isSelectable && date.available
+                        ? "pointer"
+                        : "not-allowed",
                     opacity: isSelectable && date.available ? 1 : 0.6,
-                    transition: 'all 0.2s ease',
-                    position: 'relative'
+                    transition: "all 0.2s ease",
+                    position: "relative",
                   }}
                   aria-label={`${formatDateWithLocale(date.date)} - ${date.slotCount} slots - ${
-                    isBlackedOut ? 'Blackout date' :
-                    !isSelectable ? 'Not available yet' :
-                    capacityLevel === 'limited' ? 'Limited capacity' :
-                    'Available'
+                    isBlackedOut
+                      ? "Blackout date"
+                      : !isSelectable
+                        ? "Not available yet"
+                        : capacityLevel === "limited"
+                          ? "Limited capacity"
+                          : "Available"
                   }`}
                   aria-pressed={selectedDate === date.date}
                   aria-disabled={!isSelectable || !date.available}
@@ -312,17 +343,19 @@ export function DeliveryDatePicker({
                   <div style={{ fontWeight: 600 }}>
                     {formatDateWithLocale(date.date)}
                   </div>
-                  <div style={{
-                    fontSize: '11px',
-                    marginTop: '4px',
-                    opacity: 0.8
-                  }}>
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      marginTop: "4px",
+                      opacity: 0.8,
+                    }}
+                  >
                     {isBlackedOut ? (
                       <span style={{ color: colors.warning }}>Holiday</span>
-                    ) : capacityLevel === 'limited' ? (
+                    ) : capacityLevel === "limited" ? (
                       <span style={{ color: colors.warning }}>Limited</span>
                     ) : (
-                      `${date.slotCount} ${date.slotCount === 1 ? 'slot' : 'slots'}`
+                      `${date.slotCount} ${date.slotCount === 1 ? "slot" : "slots"}`
                     )}
                   </div>
                 </button>
@@ -340,31 +373,37 @@ export function DeliveryDatePicker({
           selectedSlotId={selectedSlot?.id || null}
           onSlotSelect={handleSlotSelect}
           loading={loadingSlots}
-          error={error?.type === 'fetch' ? error.message : undefined}
+          error={error?.type === "fetch" ? error.message : undefined}
         />
       )}
 
       {/* Summary */}
       {selectedDate && selectedSlot && !loadingDates && !loadingSlots && (
-        <div style={{
-          marginTop: spacing.lg,
-          padding: spacing.md,
-          backgroundColor: colors.neutral200,
-          borderRadius: '6px',
-          borderLeft: `4px solid ${colors.success}`
-        }}>
-          <div style={{
-            fontWeight: 600,
-            color: colors.success,
-            marginBottom: spacing.xs
-          }}>
+        <div
+          style={{
+            marginTop: spacing.lg,
+            padding: spacing.md,
+            backgroundColor: colors.neutral200,
+            borderRadius: "6px",
+            borderLeft: `4px solid ${colors.success}`,
+          }}
+        >
+          <div
+            style={{
+              fontWeight: 600,
+              color: colors.success,
+              marginBottom: spacing.xs,
+            }}
+          >
             Delivery Confirmed
           </div>
-          <div style={{
-            fontSize: '13px',
-            color: colors.neutral700,
-            lineHeight: '1.5'
-          }}>
+          <div
+            style={{
+              fontSize: "13px",
+              color: colors.neutral700,
+              lineHeight: "1.5",
+            }}
+          >
             <div>
               <strong>Date:</strong> {formatDateLabel(selectedDate)}
             </div>
@@ -379,21 +418,25 @@ export function DeliveryDatePicker({
       )}
 
       {/* Capacity legend */}
-      <div style={{
-        marginTop: spacing.lg,
-        padding: spacing.md,
-        backgroundColor: colors.neutral200,
-        borderRadius: '6px',
-        fontSize: '12px'
-      }}>
+      <div
+        style={{
+          marginTop: spacing.lg,
+          padding: spacing.md,
+          backgroundColor: colors.neutral200,
+          borderRadius: "6px",
+          fontSize: "12px",
+        }}
+      >
         <div style={{ marginBottom: spacing.sm, fontWeight: 500 }}>
           Availability Legend:
         </div>
         <div style={{ marginBottom: spacing.xs }}>
-          <span style={{ color: colors.success }}>Available</span> - Plenty of slots
+          <span style={{ color: colors.success }}>Available</span> - Plenty of
+          slots
         </div>
         <div style={{ marginBottom: spacing.xs }}>
-          <span style={{ color: colors.warning }}>Limited</span> - 2 or fewer slots remaining
+          <span style={{ color: colors.warning }}>Limited</span> - 2 or fewer
+          slots remaining
         </div>
         <div>
           <span style={{ color: colors.warning }}>Holiday</span> - Blackout date
@@ -401,13 +444,16 @@ export function DeliveryDatePicker({
       </div>
 
       {/* Help text */}
-      <div style={{
-        ...componentStyles.helpText as any,
-        marginTop: spacing.lg,
-        fontSize: '12px',
-        color: colors.neutral500
-      }}>
-        You can change your delivery date and time at any point before checkout. Use arrow keys to navigate dates.
+      <div
+        style={{
+          ...(componentStyles.helpText as any),
+          marginTop: spacing.lg,
+          fontSize: "12px",
+          color: colors.neutral500,
+        }}
+      >
+        You can change your delivery date and time at any point before checkout.
+        Use arrow keys to navigate dates.
       </div>
     </div>
   );

@@ -9,21 +9,28 @@
  * - Budget forecasting: monthly prediction, seasonal adjustment
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   createMockVehicle,
   createMockFuelTransaction,
   createMockFuelCard,
-} from '../fixtures/fleet-fixtures.js';
-import type { FuelTransaction, Vehicle } from '../../../packages/core/src/fleet/fleet-types.js';
+} from "../fixtures/fleet-fixtures.js";
+import type {
+  FuelTransaction,
+  Vehicle,
+} from "../../../packages/core/src/fleet/fleet-types.js";
 
 // ─────────────────────────────────────────────────────────────────────────
 // SETUP & HELPERS
 // ─────────────────────────────────────────────────────────────────────────
 
 interface FuelAnomalyAlert {
-  type: 'location_mismatch' | 'capacity_overflow' | 'unusual_frequency' | 'price_spike';
-  severity: 'warning' | 'critical';
+  type:
+    | "location_mismatch"
+    | "capacity_overflow"
+    | "unusual_frequency"
+    | "price_spike";
+  severity: "warning" | "critical";
   message: string;
 }
 
@@ -74,7 +81,7 @@ class FuelAnalyticsEngine {
 
   calculateMPG(vehicleId: string): number {
     const vehicleTransactions = this.getVehicleTransactions(vehicleId).sort(
-      (a, b) => a.date.getTime() - b.date.getTime()
+      (a, b) => a.date.getTime() - b.date.getTime(),
     );
 
     if (vehicleTransactions.length < 2) return 0;
@@ -82,8 +89,12 @@ class FuelAnalyticsEngine {
     const firstTransaction = vehicleTransactions[0];
     const lastTransaction = vehicleTransactions[vehicleTransactions.length - 1];
 
-    const totalMiles = lastTransaction.odometerReading - firstTransaction.odometerReading;
-    const totalGallons = vehicleTransactions.reduce((sum, t) => sum + t.gallons, 0);
+    const totalMiles =
+      lastTransaction.odometerReading - firstTransaction.odometerReading;
+    const totalGallons = vehicleTransactions.reduce(
+      (sum, t) => sum + t.gallons,
+      0,
+    );
 
     if (totalGallons === 0) return 0;
     return Math.round((totalMiles / totalGallons) * 100) / 100;
@@ -91,7 +102,7 @@ class FuelAnalyticsEngine {
 
   calculateDriverMPG(driverId: string): number {
     const driverTransactions = this.getTransactionsByDriver(driverId).sort(
-      (a, b) => a.date.getTime() - b.date.getTime()
+      (a, b) => a.date.getTime() - b.date.getTime(),
     );
 
     if (driverTransactions.length < 2) return 0;
@@ -99,8 +110,12 @@ class FuelAnalyticsEngine {
     const firstTransaction = driverTransactions[0];
     const lastTransaction = driverTransactions[driverTransactions.length - 1];
 
-    const totalMiles = lastTransaction.odometerReading - firstTransaction.odometerReading;
-    const totalGallons = driverTransactions.reduce((sum, t) => sum + t.gallons, 0);
+    const totalMiles =
+      lastTransaction.odometerReading - firstTransaction.odometerReading;
+    const totalGallons = driverTransactions.reduce(
+      (sum, t) => sum + t.gallons,
+      0,
+    );
 
     if (totalGallons === 0) return 0;
     return Math.round((totalMiles / totalGallons) * 100) / 100;
@@ -175,39 +190,51 @@ class FuelAnalyticsEngine {
     const locationLons = transactions.map((t) => t.location?.longitude || 0);
 
     if (locationLats.length >= 2) {
-      const avgLat = locationLats.reduce((a, b) => a + b, 0) / locationLats.length;
-      const avgLon = locationLons.reduce((a, b) => a + b, 0) / locationLons.length;
+      const avgLat =
+        locationLats.reduce((a, b) => a + b, 0) / locationLats.length;
+      const avgLon =
+        locationLons.reduce((a, b) => a + b, 0) / locationLons.length;
 
       const lastTransaction = transactions[transactions.length - 1];
       if (lastTransaction.location) {
         const distance = this.calculateDistance(
           { lat: avgLat, lon: avgLon },
-          { lat: lastTransaction.location.latitude, lon: lastTransaction.location.longitude }
+          {
+            lat: lastTransaction.location.latitude,
+            lon: lastTransaction.location.longitude,
+          },
         );
 
         if (distance > 500) {
           // > 500 miles from average
           alerts.push({
-            type: 'location_mismatch',
-            severity: 'warning',
-            message: 'Vehicle fueled significantly outside normal area',
+            type: "location_mismatch",
+            severity: "warning",
+            message: "Vehicle fueled significantly outside normal area",
           });
         }
       }
     }
 
     // Check for capacity overflow
-    const maxTransaction = transactions.reduce((max, t) => (t.gallons > max.gallons ? t : max));
+    const maxTransaction = transactions.reduce((max, t) =>
+      t.gallons > max.gallons ? t : max,
+    );
     const otherTransactions = transactions.filter((t) => t !== maxTransaction);
-    const baselineAvgGallons = otherTransactions.length > 0
-      ? otherTransactions.reduce((sum, t) => sum + t.gallons, 0) / otherTransactions.length
-      : maxTransaction.gallons;
+    const baselineAvgGallons =
+      otherTransactions.length > 0
+        ? otherTransactions.reduce((sum, t) => sum + t.gallons, 0) /
+          otherTransactions.length
+        : maxTransaction.gallons;
 
     if (maxTransaction.gallons > baselineAvgGallons * 2) {
       alerts.push({
-        type: 'capacity_overflow',
-        severity: 'critical',
-        message: 'Unusually high fuel purchase: ' + maxTransaction.gallons + ' gallons',
+        type: "capacity_overflow",
+        severity: "critical",
+        message:
+          "Unusually high fuel purchase: " +
+          maxTransaction.gallons +
+          " gallons",
       });
     }
 
@@ -226,9 +253,12 @@ class FuelAnalyticsEngine {
       if (avgGapHours < 48) {
         // Less than 2 days between fills
         alerts.push({
-          type: 'unusual_frequency',
-          severity: 'warning',
-          message: 'Frequent fuel purchases: every ' + Math.round(avgGapHours) + ' hours',
+          type: "unusual_frequency",
+          severity: "warning",
+          message:
+            "Frequent fuel purchases: every " +
+            Math.round(avgGapHours) +
+            " hours",
         });
       }
     }
@@ -237,16 +267,22 @@ class FuelAnalyticsEngine {
     const prices = transactions.map((t) => t.pricePerGallon);
     const lastPrice = prices[prices.length - 1];
     const prevPrices = prices.slice(0, -1);
-    const avgPrevPrice = prevPrices.length > 0
-      ? prevPrices.reduce((a, b) => a + b, 0) / prevPrices.length
-      : lastPrice;
+    const avgPrevPrice =
+      prevPrices.length > 0
+        ? prevPrices.reduce((a, b) => a + b, 0) / prevPrices.length
+        : lastPrice;
 
     if (lastPrice > avgPrevPrice * 1.15) {
       // > 15% above average
       alerts.push({
-        type: 'price_spike',
-        severity: 'warning',
-        message: 'Fuel price spike: $' + lastPrice.toFixed(2) + '/gal vs $' + avgPrevPrice.toFixed(2) + ' average',
+        type: "price_spike",
+        severity: "warning",
+        message:
+          "Fuel price spike: $" +
+          lastPrice.toFixed(2) +
+          "/gal vs $" +
+          avgPrevPrice.toFixed(2) +
+          " average",
       });
     }
 
@@ -255,7 +291,7 @@ class FuelAnalyticsEngine {
 
   private calculateDistance(
     point1: { lat: number; lon: number },
-    point2: { lat: number; lon: number }
+    point2: { lat: number; lon: number },
   ): number {
     const R = 3959; // Earth's radius in miles
     const dLat = ((point2.lat - point1.lat) * Math.PI) / 180;
@@ -264,9 +300,9 @@ class FuelAnalyticsEngine {
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos((point1.lat * Math.PI) / 180) *
-      Math.cos((point2.lat * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+        Math.cos((point2.lat * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
@@ -286,7 +322,9 @@ class FuelAnalyticsEngine {
 
     // Get last 30 days
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const recentTransactions = transactions.filter((t) => t.date >= thirtyDaysAgo);
+    const recentTransactions = transactions.filter(
+      (t) => t.date >= thirtyDaysAgo,
+    );
 
     if (recentTransactions.length === 0) {
       // Use overall average
@@ -295,7 +333,10 @@ class FuelAnalyticsEngine {
       return Math.round(avgCostPerDay * 30);
     }
 
-    const totalCost = recentTransactions.reduce((sum, t) => sum + t.totalCost, 0);
+    const totalCost = recentTransactions.reduce(
+      (sum, t) => sum + t.totalCost,
+      0,
+    );
     return Math.round(totalCost);
   }
 
@@ -303,7 +344,7 @@ class FuelAnalyticsEngine {
     const vehicles = Array.from(this.vehicles.keys());
     const totalForecast = vehicles.reduce(
       (sum, vehicleId) => sum + this.forecastMonthlyBudget(vehicleId),
-      0
+      0,
     );
 
     return totalForecast;
@@ -332,11 +373,19 @@ class FuelAnalyticsEngine {
   }
 
   getTotalFuelCost(): number {
-    return Math.round(this.transactions.reduce((sum, t) => sum + t.totalCost, 0) * 100) / 100;
+    return (
+      Math.round(
+        this.transactions.reduce((sum, t) => sum + t.totalCost, 0) * 100,
+      ) / 100
+    );
   }
 
   getTotalGallons(): number {
-    return Math.round(this.transactions.reduce((sum, t) => sum + t.gallons, 0) * 100) / 100;
+    return (
+      Math.round(
+        this.transactions.reduce((sum, t) => sum + t.gallons, 0) * 100,
+      ) / 100
+    );
   }
 }
 
@@ -344,7 +393,7 @@ class FuelAnalyticsEngine {
 // TESTS
 // ─────────────────────────────────────────────────────────────────────────
 
-describe('Fuel Analytics', () => {
+describe("Fuel Analytics", () => {
   let engine: FuelAnalyticsEngine;
 
   beforeEach(() => {
@@ -355,9 +404,9 @@ describe('Fuel Analytics', () => {
   // TRANSACTION RECONCILIATION
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Transaction Reconciliation', () => {
-    it('should match transactions to vehicles', () => {
-      const vehicle = createMockVehicle({ id: 'v1' });
+  describe("Transaction Reconciliation", () => {
+    it("should match transactions to vehicles", () => {
+      const vehicle = createMockVehicle({ id: "v1" });
       engine.registerVehicle(vehicle);
 
       const transaction = createMockFuelTransaction({ vehicleId: vehicle.id });
@@ -368,8 +417,10 @@ describe('Fuel Analytics', () => {
       expect(result.unmatched).toBe(0);
     });
 
-    it('should detect unmatched transactions', () => {
-      const transaction = createMockFuelTransaction({ vehicleId: 'unknown_vehicle' });
+    it("should detect unmatched transactions", () => {
+      const transaction = createMockFuelTransaction({
+        vehicleId: "unknown_vehicle",
+      });
       engine.recordTransaction(transaction);
 
       const result = engine.reconcileTransactions();
@@ -377,8 +428,8 @@ describe('Fuel Analytics', () => {
       expect(result.matched).toBe(0);
     });
 
-    it('should retrieve vehicle transactions', () => {
-      const vehicle = createMockVehicle({ id: 'v1' });
+    it("should retrieve vehicle transactions", () => {
+      const vehicle = createMockVehicle({ id: "v1" });
       engine.registerVehicle(vehicle);
 
       const t1 = createMockFuelTransaction({ vehicleId: vehicle.id });
@@ -396,13 +447,22 @@ describe('Fuel Analytics', () => {
   // MPG CALCULATION
   // ─────────────────────────────────────────────────────────────────
 
-  describe('MPG Calculation', () => {
-    it('should calculate per-vehicle MPG', () => {
-      const vehicle = createMockVehicle({ id: 'v1', mileage: 100000 });
+  describe("MPG Calculation", () => {
+    it("should calculate per-vehicle MPG", () => {
+      const vehicle = createMockVehicle({ id: "v1", mileage: 100000 });
       engine.registerVehicle(vehicle);
 
-      const t1 = createMockFuelTransaction({ vehicleId: vehicle.id, odometerReading: 100000, gallons: 50 });
-      const t2 = createMockFuelTransaction({ vehicleId: vehicle.id, odometerReading: 100600, gallons: 50, daysAgo: 0 });
+      const t1 = createMockFuelTransaction({
+        vehicleId: vehicle.id,
+        odometerReading: 100000,
+        gallons: 50,
+      });
+      const t2 = createMockFuelTransaction({
+        vehicleId: vehicle.id,
+        odometerReading: 100600,
+        gallons: 50,
+        daysAgo: 0,
+      });
 
       engine.recordTransaction(t1);
       engine.recordTransaction(t2);
@@ -412,19 +472,19 @@ describe('Fuel Analytics', () => {
       expect(mpg).toBeLessThanOrEqual(10);
     });
 
-    it('should calculate per-driver MPG', () => {
-      const vehicle = createMockVehicle({ id: 'v1' });
+    it("should calculate per-driver MPG", () => {
+      const vehicle = createMockVehicle({ id: "v1" });
       engine.registerVehicle(vehicle);
 
       const t1 = createMockFuelTransaction({
         vehicleId: vehicle.id,
-        driverId: 'driver_1',
+        driverId: "driver_1",
         odometerReading: 50000,
         gallons: 50,
       });
       const t2 = createMockFuelTransaction({
         vehicleId: vehicle.id,
-        driverId: 'driver_1',
+        driverId: "driver_1",
         odometerReading: 50500,
         gallons: 50,
         daysAgo: 0,
@@ -433,22 +493,38 @@ describe('Fuel Analytics', () => {
       engine.recordTransaction(t1);
       engine.recordTransaction(t2);
 
-      const mpg = engine.calculateDriverMPG('driver_1');
+      const mpg = engine.calculateDriverMPG("driver_1");
       expect(mpg).toBeGreaterThan(0);
     });
 
-    it('should calculate fleet average MPG', () => {
-      const v1 = createMockVehicle({ id: 'v1' });
-      const v2 = createMockVehicle({ id: 'v2' });
+    it("should calculate fleet average MPG", () => {
+      const v1 = createMockVehicle({ id: "v1" });
+      const v2 = createMockVehicle({ id: "v2" });
 
       engine.registerVehicle(v1);
       engine.registerVehicle(v2);
 
-      engine.recordTransaction(createMockFuelTransaction({ vehicleId: v1.id, odometerReading: 50000 }));
-      engine.recordTransaction(createMockFuelTransaction({ vehicleId: v1.id, odometerReading: 50600, daysAgo: 0 }));
+      engine.recordTransaction(
+        createMockFuelTransaction({ vehicleId: v1.id, odometerReading: 50000 }),
+      );
+      engine.recordTransaction(
+        createMockFuelTransaction({
+          vehicleId: v1.id,
+          odometerReading: 50600,
+          daysAgo: 0,
+        }),
+      );
 
-      engine.recordTransaction(createMockFuelTransaction({ vehicleId: v2.id, odometerReading: 75000 }));
-      engine.recordTransaction(createMockFuelTransaction({ vehicleId: v2.id, odometerReading: 75650, daysAgo: 0 }));
+      engine.recordTransaction(
+        createMockFuelTransaction({ vehicleId: v2.id, odometerReading: 75000 }),
+      );
+      engine.recordTransaction(
+        createMockFuelTransaction({
+          vehicleId: v2.id,
+          odometerReading: 75650,
+          daysAgo: 0,
+        }),
+      );
 
       const avgMpg = engine.calculateFleetAverageMPG();
       expect(avgMpg).toBeGreaterThan(0);
@@ -459,13 +535,13 @@ describe('Fuel Analytics', () => {
   // IDLE MONITORING
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Idle Monitoring', () => {
-    it('should detect idle time', () => {
-      const vehicle = createMockVehicle({ id: 'v1' });
+  describe("Idle Monitoring", () => {
+    it("should detect idle time", () => {
+      const vehicle = createMockVehicle({ id: "v1" });
       engine.registerVehicle(vehicle);
 
-      const date1 = new Date('2026-03-01');
-      const date2 = new Date('2026-03-20'); // 19 days gap
+      const date1 = new Date("2026-03-01");
+      const date2 = new Date("2026-03-20"); // 19 days gap
 
       const t1 = createMockFuelTransaction({ vehicleId: vehicle.id });
       t1.date = date1;
@@ -480,16 +556,16 @@ describe('Fuel Analytics', () => {
       expect(idleHours).toBeGreaterThan(0);
     });
 
-    it('should get fleet idle ranking', () => {
-      const v1 = createMockVehicle({ id: 'v1' });
-      const v2 = createMockVehicle({ id: 'v2' });
+    it("should get fleet idle ranking", () => {
+      const v1 = createMockVehicle({ id: "v1" });
+      const v2 = createMockVehicle({ id: "v2" });
 
       engine.registerVehicle(v1);
       engine.registerVehicle(v2);
 
       // v1 with idle time
-      const date1 = new Date('2026-03-01');
-      const date2 = new Date('2026-03-20');
+      const date1 = new Date("2026-03-01");
+      const date2 = new Date("2026-03-20");
 
       const t1 = createMockFuelTransaction({ vehicleId: v1.id });
       t1.date = date1;
@@ -502,7 +578,7 @@ describe('Fuel Analytics', () => {
 
       const ranking = engine.getFleetIdleRanking();
       expect(ranking.length).toBe(2);
-      expect(ranking[0].vehicleId).toBe('v1');
+      expect(ranking[0].vehicleId).toBe("v1");
     });
   });
 
@@ -510,9 +586,9 @@ describe('Fuel Analytics', () => {
   // ANOMALY DETECTION
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Anomaly Detection', () => {
-    it('should detect location mismatch', () => {
-      const vehicle = createMockVehicle({ id: 'v1' });
+  describe("Anomaly Detection", () => {
+    it("should detect location mismatch", () => {
+      const vehicle = createMockVehicle({ id: "v1" });
       engine.registerVehicle(vehicle);
 
       const t1 = createMockFuelTransaction({ vehicleId: vehicle.id });
@@ -523,52 +599,70 @@ describe('Fuel Analytics', () => {
       engine.recordTransaction(t2);
 
       const alerts = engine.detectAnomalies(vehicle.id);
-      const locationAlert = alerts.find((a) => a.type === 'location_mismatch');
+      const locationAlert = alerts.find((a) => a.type === "location_mismatch");
 
       expect(locationAlert).toBeDefined();
     });
 
-    it('should detect capacity overflow', () => {
-      const vehicle = createMockVehicle({ id: 'v1' });
+    it("should detect capacity overflow", () => {
+      const vehicle = createMockVehicle({ id: "v1" });
       engine.registerVehicle(vehicle);
 
-      engine.recordTransaction(createMockFuelTransaction({ vehicleId: vehicle.id, gallons: 30 }));
-      engine.recordTransaction(createMockFuelTransaction({ vehicleId: vehicle.id, gallons: 100 })); // Overflow
+      engine.recordTransaction(
+        createMockFuelTransaction({ vehicleId: vehicle.id, gallons: 30 }),
+      );
+      engine.recordTransaction(
+        createMockFuelTransaction({ vehicleId: vehicle.id, gallons: 100 }),
+      ); // Overflow
 
       const alerts = engine.detectAnomalies(vehicle.id);
-      const overflowAlert = alerts.find((a) => a.type === 'capacity_overflow');
+      const overflowAlert = alerts.find((a) => a.type === "capacity_overflow");
 
       expect(overflowAlert).toBeDefined();
-      expect(overflowAlert?.severity).toBe('critical');
+      expect(overflowAlert?.severity).toBe("critical");
     });
 
-    it('should detect unusual frequency', () => {
-      const vehicle = createMockVehicle({ id: 'v1' });
+    it("should detect unusual frequency", () => {
+      const vehicle = createMockVehicle({ id: "v1" });
       engine.registerVehicle(vehicle);
 
-      const baseDate = new Date('2026-03-17T08:00:00Z');
+      const baseDate = new Date("2026-03-17T08:00:00Z");
 
       for (let i = 0; i < 6; i++) {
-        const transaction = createMockFuelTransaction({ vehicleId: vehicle.id });
-        transaction.date = new Date(baseDate.getTime() + i * 24 * 60 * 60 * 1000);
+        const transaction = createMockFuelTransaction({
+          vehicleId: vehicle.id,
+        });
+        transaction.date = new Date(
+          baseDate.getTime() + i * 24 * 60 * 60 * 1000,
+        );
         engine.recordTransaction(transaction);
       }
 
       const alerts = engine.detectAnomalies(vehicle.id);
-      const frequencyAlert = alerts.find((a) => a.type === 'unusual_frequency');
+      const frequencyAlert = alerts.find((a) => a.type === "unusual_frequency");
 
       expect(frequencyAlert).toBeDefined();
     });
 
-    it('should detect price spike', () => {
-      const vehicle = createMockVehicle({ id: 'v1' });
+    it("should detect price spike", () => {
+      const vehicle = createMockVehicle({ id: "v1" });
       engine.registerVehicle(vehicle);
 
-      engine.recordTransaction(createMockFuelTransaction({ vehicleId: vehicle.id, pricePerGallon: 3.5 }));
-      engine.recordTransaction(createMockFuelTransaction({ vehicleId: vehicle.id, pricePerGallon: 4.2 }));
+      engine.recordTransaction(
+        createMockFuelTransaction({
+          vehicleId: vehicle.id,
+          pricePerGallon: 3.5,
+        }),
+      );
+      engine.recordTransaction(
+        createMockFuelTransaction({
+          vehicleId: vehicle.id,
+          pricePerGallon: 4.2,
+        }),
+      );
 
       const alerts = engine.detectAnomalies(vehicle.id);
-      const priceAlert = alerts.find((a) => a.type === 'price_spike');
+      const priceAlert = alerts.find((a) => a.type === "price_spike");
 
       expect(priceAlert).toBeDefined();
     });
@@ -578,22 +672,24 @@ describe('Fuel Analytics', () => {
   // BUDGET FORECASTING
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Budget Forecasting', () => {
-    it('should forecast monthly budget for vehicle', () => {
-      const vehicle = createMockVehicle({ id: 'v1' });
+  describe("Budget Forecasting", () => {
+    it("should forecast monthly budget for vehicle", () => {
+      const vehicle = createMockVehicle({ id: "v1" });
       engine.registerVehicle(vehicle);
 
       for (let i = 0; i < 5; i++) {
-        engine.recordTransaction(createMockFuelTransaction({ vehicleId: vehicle.id, daysAgo: i }));
+        engine.recordTransaction(
+          createMockFuelTransaction({ vehicleId: vehicle.id, daysAgo: i }),
+        );
       }
 
       const forecast = engine.forecastMonthlyBudget(vehicle.id);
       expect(forecast).toBeGreaterThan(0);
     });
 
-    it('should forecast fleet budget', () => {
-      const v1 = createMockVehicle({ id: 'v1' });
-      const v2 = createMockVehicle({ id: 'v2' });
+    it("should forecast fleet budget", () => {
+      const v1 = createMockVehicle({ id: "v1" });
+      const v2 = createMockVehicle({ id: "v2" });
 
       engine.registerVehicle(v1);
       engine.registerVehicle(v2);
@@ -605,7 +701,7 @@ describe('Fuel Analytics', () => {
       expect(forecast).toBeGreaterThan(0);
     });
 
-    it('should adjust for seasonality', () => {
+    it("should adjust for seasonality", () => {
       const baseBudget = 5000;
 
       // Winter (December = 11)
@@ -626,34 +722,54 @@ describe('Fuel Analytics', () => {
   // HELPERS
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Fuel Analytics Helpers', () => {
-    it('should calculate total transactions', () => {
-      const vehicle = createMockVehicle({ id: 'v1' });
+  describe("Fuel Analytics Helpers", () => {
+    it("should calculate total transactions", () => {
+      const vehicle = createMockVehicle({ id: "v1" });
       engine.registerVehicle(vehicle);
 
-      engine.recordTransaction(createMockFuelTransaction({ vehicleId: vehicle.id }));
-      engine.recordTransaction(createMockFuelTransaction({ vehicleId: vehicle.id }));
+      engine.recordTransaction(
+        createMockFuelTransaction({ vehicleId: vehicle.id }),
+      );
+      engine.recordTransaction(
+        createMockFuelTransaction({ vehicleId: vehicle.id }),
+      );
 
       expect(engine.getTotalTransactions()).toBe(2);
     });
 
-    it('should calculate total fuel cost', () => {
-      const vehicle = createMockVehicle({ id: 'v1' });
+    it("should calculate total fuel cost", () => {
+      const vehicle = createMockVehicle({ id: "v1" });
       engine.registerVehicle(vehicle);
 
-      engine.recordTransaction(createMockFuelTransaction({ vehicleId: vehicle.id, pricePerGallon: 3.5, gallons: 50 }));
-      engine.recordTransaction(createMockFuelTransaction({ vehicleId: vehicle.id, pricePerGallon: 3.45, gallons: 50 }));
+      engine.recordTransaction(
+        createMockFuelTransaction({
+          vehicleId: vehicle.id,
+          pricePerGallon: 3.5,
+          gallons: 50,
+        }),
+      );
+      engine.recordTransaction(
+        createMockFuelTransaction({
+          vehicleId: vehicle.id,
+          pricePerGallon: 3.45,
+          gallons: 50,
+        }),
+      );
 
       const totalCost = engine.getTotalFuelCost();
       expect(totalCost).toBeGreaterThan(0);
     });
 
-    it('should calculate total gallons', () => {
-      const vehicle = createMockVehicle({ id: 'v1' });
+    it("should calculate total gallons", () => {
+      const vehicle = createMockVehicle({ id: "v1" });
       engine.registerVehicle(vehicle);
 
-      engine.recordTransaction(createMockFuelTransaction({ vehicleId: vehicle.id, gallons: 50 }));
-      engine.recordTransaction(createMockFuelTransaction({ vehicleId: vehicle.id, gallons: 45 }));
+      engine.recordTransaction(
+        createMockFuelTransaction({ vehicleId: vehicle.id, gallons: 50 }),
+      );
+      engine.recordTransaction(
+        createMockFuelTransaction({ vehicleId: vehicle.id, gallons: 45 }),
+      );
 
       const totalGallons = engine.getTotalGallons();
       expect(totalGallons).toBe(95);

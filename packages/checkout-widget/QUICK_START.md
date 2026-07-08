@@ -27,32 +27,32 @@ pnpm run type-check
 ### 1. Define Delivery Methods
 
 ```typescript
-import { DeliveryMethodType } from '@witylogix/checkout-widget';
+import { DeliveryMethodType } from "@witylogix/checkout-widget";
 
 const deliveryMethods = [
   {
     id: DeliveryMethodType.STANDARD,
-    name: 'Standard Delivery',
-    description: 'Delivery in 1-2 business days',
-    estimatedTime: 'Next business day',
+    name: "Standard Delivery",
+    description: "Delivery in 1-2 business days",
+    estimatedTime: "Next business day",
     estimatedMinutes: 1440,
     price: 5.99,
     enabled: true,
   },
   {
     id: DeliveryMethodType.EXPRESS,
-    name: 'Express Delivery',
-    description: 'Delivery today or tomorrow',
-    estimatedTime: 'Today or tomorrow',
+    name: "Express Delivery",
+    description: "Delivery today or tomorrow",
+    estimatedTime: "Today or tomorrow",
     estimatedMinutes: 480,
     price: 12.99,
     enabled: true,
   },
   {
     id: DeliveryMethodType.PICKUP,
-    name: 'Store Pickup',
-    description: 'Pick up at your nearest store',
-    estimatedTime: 'Ready in 2 hours',
+    name: "Store Pickup",
+    description: "Pick up at your nearest store",
+    estimatedTime: "Ready in 2 hours",
     estimatedMinutes: 120,
     price: 0,
     enabled: true,
@@ -63,24 +63,24 @@ const deliveryMethods = [
 ### 2. Render the Widget
 
 ```tsx
-import React from 'react';
-import { CheckoutWidget } from '@witylogix/checkout-widget';
+import React from "react";
+import { CheckoutWidget } from "@witylogix/checkout-widget";
 
 export function CheckoutPage() {
   return (
     <CheckoutWidget
-      apiBaseUrl={process.env.REACT_APP_API_URL || 'https://api.example.com'}
+      apiBaseUrl={process.env.REACT_APP_API_URL || "https://api.example.com"}
       deliveryMethods={deliveryMethods}
       defaultOrderValue={100}
       onComplete={(selection) => {
-        console.log('Delivery selection:', selection);
+        console.log("Delivery selection:", selection);
         // Save to your backend
         saveCheckoutSelection(selection);
       }}
       onError={(error) => {
-        console.error('Checkout error:', error);
+        console.error("Checkout error:", error);
         // Show error notification
-        showNotification('Error: ' + error.message, 'error');
+        showNotification("Error: " + error.message, "error");
       }}
     />
   );
@@ -93,7 +93,7 @@ The widget expects these API endpoints. Here's a sample implementation with Node
 
 ```typescript
 // Address validation endpoint
-app.post('/api/address/validate', async (req, res) => {
+app.post("/api/address/validate", async (req, res) => {
   const { address, zipcode } = req.body;
 
   try {
@@ -103,7 +103,7 @@ app.post('/api/address/validate', async (req, res) => {
     // Detect zone from coordinates
     const zone = await zoneService.detectZone(
       validated.latitude,
-      validated.longitude
+      validated.longitude,
     );
 
     res.json({
@@ -114,7 +114,9 @@ app.post('/api/address/validate', async (req, res) => {
       longitude: validated.longitude,
       zoneId: zone?.id,
       zoneName: zone?.name,
-      message: zone ? 'We deliver to your area!' : 'Sorry, outside delivery zone',
+      message: zone
+        ? "We deliver to your area!"
+        : "Sorry, outside delivery zone",
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -122,7 +124,7 @@ app.post('/api/address/validate', async (req, res) => {
 });
 
 // Availability endpoint
-app.post('/api/availability', async (req, res) => {
+app.post("/api/availability", async (req, res) => {
   const { zoneId, startDate, endDate, deliveryMethod } = req.body;
 
   try {
@@ -130,7 +132,7 @@ app.post('/api/availability', async (req, res) => {
       zoneId,
       new Date(startDate),
       new Date(endDate),
-      deliveryMethod
+      deliveryMethod,
     );
 
     res.json(availability);
@@ -140,7 +142,7 @@ app.post('/api/availability', async (req, res) => {
 });
 
 // Rates endpoint
-app.post('/api/rates', async (req, res) => {
+app.post("/api/rates", async (req, res) => {
   const { zoneId, orderValue, estimatedWeight, deliveryMethod } = req.body;
 
   try {
@@ -148,7 +150,7 @@ app.post('/api/rates', async (req, res) => {
       zoneId,
       orderValue,
       estimatedWeight,
-      deliveryMethod
+      deliveryMethod,
     );
 
     res.json(rate);
@@ -171,13 +173,14 @@ The widget is built as a multi-step form with these screens:
 ## API Response Examples
 
 ### Address Validation Response
+
 ```json
 {
   "valid": true,
   "address": "123 Main St, New York, NY 10001",
   "zipcode": "10001",
   "latitude": 40.7128,
-  "longitude": -74.0060,
+  "longitude": -74.006,
   "zoneId": "zone-manhattan",
   "zoneName": "Manhattan",
   "message": "We deliver to your area!"
@@ -185,6 +188,7 @@ The widget is built as a multi-step form with these screens:
 ```
 
 ### Availability Response
+
 ```json
 [
   {
@@ -219,13 +223,14 @@ The widget is built as a multi-step form with these screens:
 ```
 
 ### Rates Response
+
 ```json
 {
   "zoneId": "zone-manhattan",
   "zoneName": "Manhattan",
   "baseRate": 5.99,
-  "distanceFeePerKm": 0.50,
-  "weightSurchargePerKg": 1.00,
+  "distanceFeePerKm": 0.5,
+  "weightSurchargePerKg": 1.0,
   "freeDeliveryThreshold": 50,
   "currency": "USD",
   "enabled": true
@@ -235,35 +240,33 @@ The widget is built as a multi-step form with these screens:
 ## Customization
 
 ### Dark Mode
+
 ```tsx
-<CheckoutWidget
-  {...props}
-  darkMode={true}
-/>
+<CheckoutWidget {...props} darkMode={true} />
 ```
 
 ### Compact Mode (for embedded contexts)
+
 ```tsx
-<CheckoutWidget
-  {...props}
-  compactMode={true}
-/>
+<CheckoutWidget {...props} compactMode={true} />
 ```
 
 ### Custom Colors
+
 ```tsx
 <CheckoutWidget
   {...props}
   customVariables={{
-    '--wl-accent': '220 90% 56%',      // Custom blue
-    '--wl-success': '134 61% 41%',    // Custom green
-    '--wl-warning': '45 93% 47%',     // Custom amber
-    '--wl-destructive': '0 84% 60%',  // Custom red
+    "--wl-accent": "220 90% 56%", // Custom blue
+    "--wl-success": "134 61% 41%", // Custom green
+    "--wl-warning": "45 93% 47%", // Custom amber
+    "--wl-destructive": "0 84% 60%", // Custom red
   }}
 />
 ```
 
 ### Custom Date Range
+
 ```tsx
 <CheckoutWidget
   {...props}
@@ -277,7 +280,7 @@ The widget is built as a multi-step form with these screens:
 ### Shopify Checkout Extension
 
 ```tsx
-import { CheckoutWidget } from '@witylogix/checkout-widget';
+import { CheckoutWidget } from "@witylogix/checkout-widget";
 
 export function CheckoutUiExtension() {
   return (
@@ -287,14 +290,14 @@ export function CheckoutUiExtension() {
       defaultOrderValue={100}
       onComplete={(selection) => {
         // Update Shopify checkout with metafield
-        fetch('/api/checkout/metafield', {
-          method: 'PUT',
+        fetch("/api/checkout/metafield", {
+          method: "PUT",
           body: JSON.stringify({
             metafield: {
-              namespace: 'witylogix',
-              key: 'delivery_selection',
+              namespace: "witylogix",
+              key: "delivery_selection",
               value: JSON.stringify(selection),
-              type: 'json',
+              type: "json",
             },
           }),
         });
@@ -339,42 +342,48 @@ export function CheckoutUiExtension() {
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Delivery Checkout</title>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-</head>
-<body>
-  <div id="app"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Delivery Checkout</title>
+    <script
+      crossorigin
+      src="https://unpkg.com/react@18/umd/react.production.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+    ></script>
+  </head>
+  <body>
+    <div id="app"></div>
 
-  <script>
-    import { CheckoutWidget } from '@witylogix/checkout-widget';
+    <script>
+      import { CheckoutWidget } from "@witylogix/checkout-widget";
 
-    const root = ReactDOM.createRoot(document.getElementById('app'));
-    root.render(
-      <CheckoutWidget
-        apiBaseUrl="https://api.mysite.com"
-        deliveryMethods={[
-          {
-            id: 'standard',
-            name: 'Standard Delivery',
-            description: 'Next business day',
-            estimatedTime: 'Next business day',
-            estimatedMinutes: 1440,
-            price: 5.99,
-            enabled: true,
-          },
-        ]}
-        onComplete={(selection) => {
-          console.log('Selection:', selection);
-          // POST to your backend
-        }}
-      />
-    );
-  </script>
-</body>
+      const root = ReactDOM.createRoot(document.getElementById("app"));
+      root.render(
+        <CheckoutWidget
+          apiBaseUrl="https://api.mysite.com"
+          deliveryMethods={[
+            {
+              id: "standard",
+              name: "Standard Delivery",
+              description: "Next business day",
+              estimatedTime: "Next business day",
+              estimatedMinutes: 1440,
+              price: 5.99,
+              enabled: true,
+            },
+          ]}
+          onComplete={(selection) => {
+            console.log("Selection:", selection);
+            // POST to your backend
+          }}
+        />,
+      );
+    </script>
+  </body>
 </html>
 ```
 
@@ -386,10 +395,10 @@ Enable debugging to see API calls and state changes:
 <CheckoutWidget
   {...props}
   onSelectionChange={(selection) => {
-    console.log('Selection updated:', selection);
+    console.log("Selection updated:", selection);
   }}
   onError={(error) => {
-    console.error('Widget error:', error);
+    console.error("Widget error:", error);
   }}
 />
 ```
@@ -397,6 +406,7 @@ Enable debugging to see API calls and state changes:
 ## Browser DevTools
 
 The widget logs to console in development mode:
+
 - API requests/responses
 - State changes
 - Validation errors
@@ -415,21 +425,25 @@ Check the Network tab in DevTools to debug API issues.
 ## Troubleshooting
 
 ### Widget not rendering
+
 - Check that React 18+ is available in parent
 - Verify API base URL is correct
 - Check browser console for errors
 
 ### API calls failing
+
 - Verify CORS headers in your API
 - Check Content-Type is application/json
 - Verify request/response shapes match spec
 
 ### Styles not applying
+
 - Ensure Tailwind CSS is configured
 - Check that custom CSS variables are in root
 - Verify no CSS conflicts with parent styles
 
 ### Date picker not showing availability
+
 - Verify availability API endpoint is working
 - Check that date range includes available slots
 - Ensure zone detection is working correctly
@@ -437,6 +451,7 @@ Check the Network tab in DevTools to debug API issues.
 ## Support
 
 For issues or questions:
+
 1. Check the README.md for comprehensive docs
 2. Review IMPLEMENTATION_SUMMARY.md for architecture
 3. Check the Network tab in DevTools for API issues

@@ -12,4 +12,4 @@ export {
   type IHttpClient,
   type StoredToken,
   type TokenManagerEvent,
-} from './token-manager.js';
+} from "./token-manager.js";

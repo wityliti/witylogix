@@ -65,12 +65,12 @@ railway add                                   # interactive, prompts for type
 
 Before adding a database, check for existing database services to avoid duplicates. Run `railway environment config --json` and inspect `source.image` for each service:
 
-| Image pattern | Database |
-|---|---|
+| Image pattern                               | Database |
+| ------------------------------------------- | -------- |
 | `ghcr.io/railway/postgres*` or `postgres:*` | Postgres |
-| `ghcr.io/railway/redis*` or `redis:*` | Redis |
-| `ghcr.io/railway/mysql*` or `mysql:*` | MySQL |
-| `ghcr.io/railway/mongo*` or `mongo:*` | MongoDB |
+| `ghcr.io/railway/redis*` or `redis:*`       | Redis    |
+| `ghcr.io/railway/mysql*` or `mysql:*`       | MySQL    |
+| `ghcr.io/railway/mongo*` or `mongo:*`       | MongoDB  |
 
 If a matching database already exists, skip creation and wire the existing service's variables to the app.
 
@@ -80,12 +80,12 @@ Empty services have no source until you configure one. This is the right pattern
 
 After `railway add --database <type>`, the database creates connection variables automatically. Wire them to your app service using variable references:
 
-| Database | Connection variable |
-|---|---|
+| Database | Connection variable          |
+| -------- | ---------------------------- |
 | Postgres | `${{Postgres.DATABASE_URL}}` |
-| Redis | `${{Redis.REDIS_URL}}` |
-| MySQL | `${{MySQL.MYSQL_URL}}` |
-| MongoDB | `${{MongoDB.MONGO_URL}}` |
+| Redis    | `${{Redis.REDIS_URL}}`       |
+| MySQL    | `${{MySQL.MYSQL_URL}}`       |
+| MongoDB  | `${{MongoDB.MONGO_URL}}`     |
 
 ```bash
 railway variable set DATABASE_URL='${{Postgres.DATABASE_URL}}' --service <app-service>
@@ -151,11 +151,11 @@ railway bucket create --region iad --json                 # auto-named, JSON out
 
 Available regions:
 
-| Code | Location |
-|---|---|
-| `sjc` | US West (California) |
-| `iad` | US East (Virginia) |
-| `ams` | EU West (Amsterdam) |
+| Code  | Location                 |
+| ----- | ------------------------ |
+| `sjc` | US West (California)     |
+| `iad` | US East (Virginia)       |
+| `ams` | EU West (Amsterdam)      |
 | `sin` | Asia Pacific (Singapore) |
 
 Without `--region`, the CLI prompts interactively. For scripted use, always pass `--region`.
@@ -228,22 +228,22 @@ All subcommands support `--bucket (-b)` and `--environment (-e)` as global flags
 
 When setting up a new service from source, detect the project type from marker files:
 
-| Marker file | Type |
-|---|---|
-| `package.json` | Node.js |
-| `requirements.txt` or `pyproject.toml` | Python |
-| `go.mod` | Go |
-| `Cargo.toml` | Rust |
-| `index.html` (no package.json) | Static site |
+| Marker file                            | Type        |
+| -------------------------------------- | ----------- |
+| `package.json`                         | Node.js     |
+| `requirements.txt` or `pyproject.toml` | Python      |
+| `go.mod`                               | Go          |
+| `Cargo.toml`                           | Rust        |
+| `index.html` (no package.json)         | Static site |
 
 ### Monorepo detection
 
-| Marker | Monorepo type |
-|---|---|
-| `pnpm-workspace.yaml` | pnpm workspace (shared) |
-| `package.json` with `workspaces` field | npm/yarn workspace (shared) |
-| `turbo.json` | Turborepo (shared) |
-| Multiple subdirectories with separate `package.json`, no workspace config | Isolated monorepo |
+| Marker                                                                    | Monorepo type               |
+| ------------------------------------------------------------------------- | --------------------------- |
+| `pnpm-workspace.yaml`                                                     | pnpm workspace (shared)     |
+| `package.json` with `workspaces` field                                    | npm/yarn workspace (shared) |
+| `turbo.json`                                                              | Turborepo (shared)          |
+| Multiple subdirectories with separate `package.json`, no workspace config | Isolated monorepo           |
 
 **Isolated monorepo** (apps don't share code): set `rootDirectory` to the app's subdirectory (for example, `/apps/api`).
 

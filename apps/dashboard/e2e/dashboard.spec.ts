@@ -9,13 +9,16 @@ const TEST_CREDS = {
  * Helper: login via the auth API directly and set cookies/localStorage
  */
 async function loginViaAPI(page: Page) {
-  const response = await page.request.post("http://localhost:8000/api/v4/auth/login", {
-    data: {
-      email: TEST_CREDS.email,
-      password: TEST_CREDS.password,
-      shopDomain: "demo.witylogix.io",
+  const response = await page.request.post(
+    "http://localhost:8000/api/v4/auth/login",
+    {
+      data: {
+        email: TEST_CREDS.email,
+        password: TEST_CREDS.password,
+        shopDomain: "demo.witylogix.io",
+      },
     },
-  });
+  );
 
   expect(response.ok()).toBeTruthy();
   const body = await response.json();
@@ -53,7 +56,11 @@ async function loginViaAPI(page: Page) {
 /**
  * Helper: navigate to a page and verify it loads without critical errors.
  */
-async function verifyPageLoads(page: Page, path: string, contentPattern?: RegExp) {
+async function verifyPageLoads(
+  page: Page,
+  path: string,
+  contentPattern?: RegExp,
+) {
   // Use 'commit' to handle redirects gracefully
   const resp = await page.goto(path, { waitUntil: "commit", timeout: 25000 });
 
@@ -83,7 +90,9 @@ test.describe("Dashboard Pages", () => {
     expect(body).toBeTruthy();
 
     // Check that key navigation items are present
-    const hasNav = await page.locator("text=/Orders|Drivers|Routes|Settings/i").count();
+    const hasNav = await page
+      .locator("text=/Orders|Drivers|Routes|Settings/i")
+      .count();
     expect(hasNav).toBeGreaterThan(0);
   });
 
@@ -100,7 +109,11 @@ test.describe("Dashboard Pages", () => {
   });
 
   test("settings page loads", async ({ page }) => {
-    await verifyPageLoads(page, "/settings/general", /setting|general|configuration|preference/);
+    await verifyPageLoads(
+      page,
+      "/settings/general",
+      /setting|general|configuration|preference/,
+    );
   });
 
   test("zones page loads", async ({ page }) => {

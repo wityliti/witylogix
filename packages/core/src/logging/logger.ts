@@ -4,12 +4,19 @@
  * Supports request tracing, child loggers, and performance monitoring
  */
 
-import { LogLevel, LogEntry, LoggerConfig, RequestContext, SENSITIVE_FIELD_PATTERNS, SENSITIVE_HEADERS } from './types.js';
+import {
+  LogLevel,
+  LogEntry,
+  LoggerConfig,
+  RequestContext,
+  SENSITIVE_FIELD_PATTERNS,
+  SENSITIVE_HEADERS,
+} from "./types.js";
 
 /**
  * Redaction mask for sensitive values
  */
-const REDACTION_MASK = '[REDACTED]';
+const REDACTION_MASK = "[REDACTED]";
 
 /**
  * Main Logger class - JSON structured logging with Pino-compatible API
@@ -61,11 +68,14 @@ export class Logger {
    * Log at ERROR level
    * Before serialization, checks if ERROR level is enabled for performance
    */
-  error(message: string, errorOrMetadata?: Error | Record<string, unknown>): void {
+  error(
+    message: string,
+    errorOrMetadata?: Error | Record<string, unknown>,
+  ): void {
     if (!this.shouldLog(LogLevel.ERROR)) return;
 
     let metadata: Record<string, unknown> = {};
-    let error: LogEntry['error'] | undefined;
+    let error: LogEntry["error"] | undefined;
 
     if (errorOrMetadata instanceof Error) {
       error = {
@@ -85,11 +95,14 @@ export class Logger {
    * Log at FATAL level
    * Before serialization, checks if FATAL level is enabled for performance
    */
-  fatal(message: string, errorOrMetadata?: Error | Record<string, unknown>): void {
+  fatal(
+    message: string,
+    errorOrMetadata?: Error | Record<string, unknown>,
+  ): void {
     if (!this.shouldLog(LogLevel.FATAL)) return;
 
     let metadata: Record<string, unknown> = {};
-    let error: LogEntry['error'] | undefined;
+    let error: LogEntry["error"] | undefined;
 
     if (errorOrMetadata instanceof Error) {
       error = {
@@ -154,7 +167,7 @@ export class Logger {
     level: LogLevel | string,
     message: string,
     metadata?: Record<string, unknown>,
-    error?: LogEntry['error']
+    error?: LogEntry["error"],
   ): void {
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
@@ -183,7 +196,7 @@ export class Logger {
     }
 
     const output = this.formatOutput(entry);
-    this.config.outputStream?.write(output + '\n');
+    this.config.outputStream?.write(output + "\n");
   }
 
   /**
@@ -206,7 +219,7 @@ export class Logger {
       return obj;
     }
 
-    if (typeof obj !== 'object') {
+    if (typeof obj !== "object") {
       return obj;
     }
 
@@ -220,12 +233,12 @@ export class Logger {
 
       // Check if this key matches any sensitive pattern
       const isSensitive = SENSITIVE_FIELD_PATTERNS.some((pattern) =>
-        lowerKey.includes(pattern.toLowerCase())
+        lowerKey.includes(pattern.toLowerCase()),
       );
 
       if (isSensitive && value !== null && value !== undefined) {
         redacted[key] = REDACTION_MASK;
-      } else if (typeof value === 'object') {
+      } else if (typeof value === "object") {
         redacted[key] = this.redactSensitiveFields(value);
       } else {
         redacted[key] = value;

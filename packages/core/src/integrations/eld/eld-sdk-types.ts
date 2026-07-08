@@ -117,7 +117,12 @@ export interface SamsaraHarshEvent {
   id: string;
   driverId: string;
   vehicleId: string;
-  eventType: "speeding" | "hard_accel" | "hard_brake" | "hard_turn" | "collision";
+  eventType:
+    | "speeding"
+    | "hard_accel"
+    | "hard_brake"
+    | "hard_turn"
+    | "collision";
   severity: "low" | "medium" | "high";
   timestamp: string;
   location?: {
@@ -218,7 +223,13 @@ export interface KeepTruckinHOSLogEntry {
   id: string;
   driverId: string;
   vehicleId?: string;
-  status: "Driving" | "OnDuty" | "SleepBerth" | "OffDuty" | "PersonalConveyance" | "YardMove";
+  status:
+    | "Driving"
+    | "OnDuty"
+    | "SleepBerth"
+    | "OffDuty"
+    | "PersonalConveyance"
+    | "YardMove";
   startTime: string;
   endTime: string;
   milesDriven?: number;

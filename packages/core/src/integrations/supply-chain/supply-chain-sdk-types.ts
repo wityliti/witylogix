@@ -15,8 +15,8 @@ export interface NormalizedWarehouse {
   code: string;
   name: string;
   description?: string;
-  status: 'active' | 'inactive' | 'planned' | 'closed';
-  type: 'distribution' | 'fulfillment' | 'cross_dock' | 'returns' | 'pick_pack';
+  status: "active" | "inactive" | "planned" | "closed";
+  type: "distribution" | "fulfillment" | "cross_dock" | "returns" | "pick_pack";
   address: WarehouseAddress;
   timezone?: string;
   operatingHours?: OperatingHours;
@@ -81,10 +81,10 @@ export interface WarehouseCapacity {
  */
 export interface WarehouseEquipment {
   id: string;
-  type: 'rack' | 'conveyor' | 'sorter' | 'wcs' | 'forklift' | 'scanner';
+  type: "rack" | "conveyor" | "sorter" | "wcs" | "forklift" | "scanner";
   name: string;
   quantity: number;
-  status: 'active' | 'maintenance' | 'decommissioned';
+  status: "active" | "maintenance" | "decommissioned";
 }
 
 /**
@@ -120,7 +120,7 @@ export interface NormalizedInventory {
   lastMovedDate?: Date;
   unitOfMeasure: string;
   cost?: number;
-  velocity?: 'fast' | 'medium' | 'slow';
+  velocity?: "fast" | "medium" | "slow";
   damageFlag?: boolean;
   holdFlag?: boolean;
   tags?: string[];
@@ -136,7 +136,13 @@ export interface InventoryLocation {
   aisle: string;
   level: string;
   position: string;
-  locationType: 'storage' | 'pick' | 'pack' | 'staging' | 'overstock' | 'damaged';
+  locationType:
+    | "storage"
+    | "pick"
+    | "pack"
+    | "staging"
+    | "overstock"
+    | "damaged";
   capacity: number;
   currentQuantity: number;
   lastCountDate?: Date;
@@ -151,7 +157,13 @@ export interface InventoryAdjustment {
   warehouseId: string;
   skuId: string;
   locationId?: string;
-  adjustmentType: 'physical_count' | 'damage' | 'loss' | 'transfer' | 'correction' | 'return';
+  adjustmentType:
+    | "physical_count"
+    | "damage"
+    | "loss"
+    | "transfer"
+    | "correction"
+    | "return";
   quantityBefore: number;
   quantityAfter: number;
   reason: string;
@@ -173,7 +185,7 @@ export interface InventoryTransfer {
   toLocationId?: string;
   skuId: string;
   quantity: number;
-  status: 'pending' | 'in_transit' | 'completed' | 'cancelled';
+  status: "pending" | "in_transit" | "completed" | "cancelled";
   createdAt: Date;
   shippedAt?: Date;
   receivedAt?: Date;
@@ -187,8 +199,8 @@ export interface CycleCount {
   id: string;
   warehouseId: string;
   locationId?: string;
-  status: 'planned' | 'in_progress' | 'completed' | 'variance_found';
-  countType: 'full' | 'zone' | 'location' | 'sku';
+  status: "planned" | "in_progress" | "completed" | "variance_found";
+  countType: "full" | "zone" | "location" | "sku";
   plannedStartDate: Date;
   actualStartDate?: Date;
   completedDate?: Date;
@@ -208,7 +220,7 @@ export interface NormalizedOrder {
   orderNumber: string;
   orderDate: Date;
   status: OrderStatus;
-  source: 'ecommerce' | 'wholesale' | 'retail' | 'marketplace' | 'manual';
+  source: "ecommerce" | "wholesale" | "retail" | "marketplace" | "manual";
   customer: Customer;
   shippingAddress: ShippingAddress;
   billingAddress?: ShippingAddress;
@@ -220,7 +232,7 @@ export interface NormalizedOrder {
   currency: string;
   shipMethod?: string;
   trackingNumber?: string;
-  priority?: 'standard' | 'expedited' | 'overnight';
+  priority?: "standard" | "expedited" | "overnight";
   notes?: string;
   tags?: string[];
   createdAt: Date;
@@ -231,15 +243,15 @@ export interface NormalizedOrder {
  * Order status types.
  */
 export type OrderStatus =
-  | 'pending'
-  | 'acknowledged'
-  | 'allocated'
-  | 'picked'
-  | 'packed'
-  | 'shipped'
-  | 'delivered'
-  | 'returned'
-  | 'cancelled';
+  | "pending"
+  | "acknowledged"
+  | "allocated"
+  | "picked"
+  | "packed"
+  | "shipped"
+  | "delivered"
+  | "returned"
+  | "cancelled";
 
 /**
  * Customer information.
@@ -293,13 +305,13 @@ export interface ReturnAuthorization {
   raNumber: string;
   orderId: string;
   orderNumber: string;
-  status: 'open' | 'in_transit' | 'received' | 'processed' | 'closed';
+  status: "open" | "in_transit" | "received" | "processed" | "closed";
   returnDate: Date;
   receiveDate?: Date;
   lines: ReturnLine[];
   reason?: string;
-  condition?: 'new' | 'unopened' | 'used' | 'damaged' | 'defective';
-  refundStatus?: 'pending' | 'approved' | 'processed';
+  condition?: "new" | "unopened" | "used" | "damaged" | "defective";
+  refundStatus?: "pending" | "approved" | "processed";
 }
 
 /**
@@ -330,7 +342,7 @@ export interface NormalizedWave {
   orders: string[]; // order IDs
   orderCount: number;
   lineCount: number;
-  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  priority?: "low" | "medium" | "high" | "urgent";
   shipMethod?: string;
   carrier?: string;
   loadNumber?: string;
@@ -343,27 +355,27 @@ export interface NormalizedWave {
  * Wave status types.
  */
 export type WaveStatus =
-  | 'planned'
-  | 'allocated'
-  | 'pick_in_progress'
-  | 'pick_complete'
-  | 'pack_in_progress'
-  | 'pack_complete'
-  | 'ready_to_ship'
-  | 'shipped'
-  | 'completed';
+  | "planned"
+  | "allocated"
+  | "pick_in_progress"
+  | "pick_complete"
+  | "pack_in_progress"
+  | "pack_complete"
+  | "ready_to_ship"
+  | "shipped"
+  | "completed";
 
 /**
  * Wave plan configuration.
  */
 export interface WavePlanConfig {
-  waveType: 'order' | 'time' | 'route' | 'shipment' | 'combined';
+  waveType: "order" | "time" | "route" | "shipment" | "combined";
   maxOrdersPerWave?: number;
   maxLinesPerWave?: number;
   maxPalletCount?: number;
   consolidateByShipping?: boolean;
   priorityRules?: string[];
-  timeBasedFrequency?: 'hourly' | 'twice_daily' | 'daily' | 'custom';
+  timeBasedFrequency?: "hourly" | "twice_daily" | "daily" | "custom";
 }
 
 // ─── SHIPMENT TYPES ─────────────────────────────────────────────────
@@ -388,7 +400,7 @@ export interface NormalizedShipment {
   trackingNumber?: string;
   scac?: string; // Standard Carrier Alpha Code
   weight?: number;
-  weightUnit?: 'lb' | 'kg';
+  weightUnit?: "lb" | "kg";
   dimensions?: ShipmentDimensions;
   palletCount?: number;
   cost?: number;
@@ -402,16 +414,16 @@ export interface NormalizedShipment {
  * Shipment status types.
  */
 export type ShipmentStatus =
-  | 'planned'
-  | 'picked'
-  | 'packed'
-  | 'manifested'
-  | 'shipped'
-  | 'in_transit'
-  | 'out_for_delivery'
-  | 'delivered'
-  | 'exception'
-  | 'cancelled';
+  | "planned"
+  | "picked"
+  | "packed"
+  | "manifested"
+  | "shipped"
+  | "in_transit"
+  | "out_for_delivery"
+  | "delivered"
+  | "exception"
+  | "cancelled";
 
 /**
  * Shipment line item.
@@ -432,7 +444,7 @@ export interface ShipmentDimensions {
   length: number;
   width: number;
   height: number;
-  unit: 'in' | 'cm';
+  unit: "in" | "cm";
 }
 
 // ─── DEMAND & FORECAST TYPES ────────────────────────────────────────
@@ -445,13 +457,13 @@ export interface DemandForecast {
   skuId: string;
   warehouseId?: string;
   forecastDate: Date;
-  forecastPeriod: 'daily' | 'weekly' | 'monthly';
+  forecastPeriod: "daily" | "weekly" | "monthly";
   forecastQuantity: number;
   confidence?: number; // 0-100
   seasonalFactor?: number;
   trendFactor?: number;
   promotionalLift?: number;
-  method: 'statistical' | 'ai' | 'manual' | 'hybrid';
+  method: "statistical" | "ai" | "manual" | "hybrid";
   notes?: string;
   createdAt: Date;
 }
@@ -467,7 +479,7 @@ export interface ReplenishmentRecommendation {
   safetyStock: number;
   recommendedQuantity: number;
   recommendedDate: Date;
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  priority: "low" | "medium" | "high" | "critical";
   reason: string;
   leadTime: number; // days
   supplierSuggestedQuantity?: number;
@@ -487,12 +499,12 @@ export interface WMSConfig {
   enableSlotting: boolean;
   enableYardManagement: boolean;
   enableQualityChecks: boolean;
-  pickingStrategy: 'batch' | 'wave' | 'single_order';
-  packingStrategy: 'case_pack' | 'each' | 'custom';
-  sortingStrategy: 'by_destination' | 'by_carrier' | 'by_shipment';
-  receiptLocationRule: 'directed' | 'user_directed' | 'default';
-  putawayLocationRule: 'directed' | 'user_directed' | 'random';
-  defaultBinSize?: 'pallet' | 'case' | 'each';
+  pickingStrategy: "batch" | "wave" | "single_order";
+  packingStrategy: "case_pack" | "each" | "custom";
+  sortingStrategy: "by_destination" | "by_carrier" | "by_shipment";
+  receiptLocationRule: "directed" | "user_directed" | "default";
+  putawayLocationRule: "directed" | "user_directed" | "random";
+  defaultBinSize?: "pallet" | "case" | "each";
 }
 
 // ─── LABOR & MANAGEMENT TYPES ───────────────────────────────────────
@@ -505,7 +517,14 @@ export interface LaborTransaction {
   employeeId: string;
   employeeName: string;
   warehouseId: string;
-  activityType: 'receiving' | 'putaway' | 'picking' | 'packing' | 'shipping' | 'counting' | 'management';
+  activityType:
+    | "receiving"
+    | "putaway"
+    | "picking"
+    | "packing"
+    | "shipping"
+    | "counting"
+    | "management";
   startTime: Date;
   endTime?: Date;
   durationMinutes?: number;
@@ -522,7 +541,7 @@ export interface LaborTransaction {
 export interface LaborStandard {
   id: string;
   activityType: string;
-  method: 'per_unit' | 'per_line' | 'per_transaction' | 'per_hour';
+  method: "per_unit" | "per_line" | "per_transaction" | "per_hour";
   standardTime: number; // seconds
   warehouseId?: string;
   effectiveDate: Date;
@@ -540,9 +559,14 @@ export interface SlottingRecommendation {
   skuId: string;
   recommendedLocationId: string;
   currentLocationId?: string;
-  reason: 'velocity' | 'aisle_balance' | 'light_travel' | 'proximity' | 'weight';
+  reason:
+    | "velocity"
+    | "aisle_balance"
+    | "light_travel"
+    | "proximity"
+    | "weight";
   expectedProductivityGain?: number; // percentage
-  priority: 'low' | 'medium' | 'high';
+  priority: "low" | "medium" | "high";
   createdAt: Date;
 }
 
@@ -555,8 +579,8 @@ export interface DockDoor {
   id: string;
   warehouseId: string;
   doorNumber: string;
-  type: 'inbound' | 'outbound' | 'cross_dock' | 'shipping';
-  status: 'available' | 'occupied' | 'reserved' | 'maintenance';
+  type: "inbound" | "outbound" | "cross_dock" | "shipping";
+  status: "available" | "occupied" | "reserved" | "maintenance";
   currentActivity?: string;
   occupiedUntil?: Date;
   equipment?: string[];
@@ -570,7 +594,7 @@ export interface Appointment {
   warehouseId: string;
   appointmentNumber: string;
   carrierName: string;
-  appointmentType: 'inbound' | 'outbound' | 'pickup' | 'return';
+  appointmentType: "inbound" | "outbound" | "pickup" | "return";
   scheduledDate: Date;
   scheduledStartTime: string; // HH:mm
   scheduledEndTime: string; // HH:mm
@@ -579,7 +603,7 @@ export interface Appointment {
   dockDoorId?: string;
   shipmentCount?: number;
   palletCount?: number;
-  status: 'confirmed' | 'check_in' | 'in_progress' | 'completed' | 'cancelled';
+  status: "confirmed" | "check_in" | "in_progress" | "completed" | "cancelled";
   notes?: string;
 }
 
@@ -604,7 +628,7 @@ export interface AutomationRule {
  * Automation trigger.
  */
 export interface AutomationTrigger {
-  type: 'event' | 'schedule' | 'threshold';
+  type: "event" | "schedule" | "threshold";
   eventType?: string;
   schedule?: string; // cron
   threshold?: number;
@@ -615,7 +639,13 @@ export interface AutomationTrigger {
  */
 export interface AutomationCondition {
   field: string;
-  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains' | 'in';
+  operator:
+    | "equals"
+    | "not_equals"
+    | "greater_than"
+    | "less_than"
+    | "contains"
+    | "in";
   value: unknown;
 }
 
@@ -623,7 +653,7 @@ export interface AutomationCondition {
  * Automation action.
  */
 export interface AutomationAction {
-  type: 'notify' | 'create' | 'update' | 'execute' | 'send';
+  type: "notify" | "create" | "update" | "execute" | "send";
   target: string;
   payload?: Record<string, unknown>;
 }
@@ -634,20 +664,20 @@ export interface AutomationAction {
  * Supply chain webhook event types.
  */
 export type SCWebhookEventType =
-  | 'order.created'
-  | 'order.updated'
-  | 'order.shipped'
-  | 'shipment.created'
-  | 'shipment.shipped'
-  | 'shipment.delivered'
-  | 'inventory.adjusted'
-  | 'inventory.low'
-  | 'wave.created'
-  | 'wave.released'
-  | 'wave.completed'
-  | 'appointment.confirmed'
-  | 'forecast.updated'
-  | 'exception.raised';
+  | "order.created"
+  | "order.updated"
+  | "order.shipped"
+  | "shipment.created"
+  | "shipment.shipped"
+  | "shipment.delivered"
+  | "inventory.adjusted"
+  | "inventory.low"
+  | "wave.created"
+  | "wave.released"
+  | "wave.completed"
+  | "appointment.confirmed"
+  | "forecast.updated"
+  | "exception.raised";
 
 /**
  * Supply chain webhook configuration.
@@ -672,7 +702,13 @@ export interface SCWebhookPayload {
   timestamp: Date;
   eventType: SCWebhookEventType;
   resourceId: string;
-  resourceType: 'order' | 'shipment' | 'inventory' | 'wave' | 'appointment' | 'forecast';
+  resourceType:
+    | "order"
+    | "shipment"
+    | "inventory"
+    | "wave"
+    | "appointment"
+    | "forecast";
   data: Record<string, unknown>;
   source?: string;
 }
@@ -729,7 +765,7 @@ export interface PaginatedResponse<T> {
  * Health check result.
  */
 export interface HealthCheckResult {
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: "healthy" | "degraded" | "unhealthy";
   timestamp: Date;
   responseTimeMs: number;
   details?: Record<string, unknown>;

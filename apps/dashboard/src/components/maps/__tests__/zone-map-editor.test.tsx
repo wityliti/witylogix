@@ -2,12 +2,12 @@
  * Zone Map Editor Component Tests
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { ZoneMapEditor } from '../zone-map-editor';
-import { GoogleMapsProvider } from '../google-maps-provider';
-import type { MapZone } from '../types';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { ZoneMapEditor } from "../zone-map-editor";
+import { GoogleMapsProvider } from "../google-maps-provider";
+import type { MapZone } from "../types";
 
 // Mock Google Maps API
 const mockGoogleMaps = {
@@ -60,17 +60,17 @@ const mockGoogleMaps = {
   },
 };
 
-Object.defineProperty(window, 'google', {
+Object.defineProperty(window, "google", {
   value: mockGoogleMaps,
   writable: true,
 });
 
-describe('ZoneMapEditor', () => {
+describe("ZoneMapEditor", () => {
   const mockZones: MapZone[] = [
     {
-      id: 'zone1',
-      name: 'Downtown',
-      color: '#dc2626',
+      id: "zone1",
+      name: "Downtown",
+      color: "#dc2626",
       vertices: [
         { lat: 37.7749, lng: -122.4194 },
         { lat: 37.7849, lng: -122.4094 },
@@ -87,35 +87,29 @@ describe('ZoneMapEditor', () => {
     vi.clearAllMocks();
   });
 
-  it('renders map container', () => {
+  it("renders map container", () => {
     render(
       <GoogleMapsProvider apiKey="test-key">
-        <ZoneMapEditor
-          zones={mockZones}
-          onZonesChange={mockOnZonesChange}
-        />
-      </GoogleMapsProvider>
+        <ZoneMapEditor zones={mockZones} onZonesChange={mockOnZonesChange} />
+      </GoogleMapsProvider>,
     );
 
     // Check if it renders without errors
-    expect(screen.getByText('Zone Editor')).toBeInTheDocument();
+    expect(screen.getByText("Zone Editor")).toBeInTheDocument();
   });
 
-  it('displays zone list', () => {
+  it("displays zone list", () => {
     render(
       <GoogleMapsProvider apiKey="test-key">
-        <ZoneMapEditor
-          zones={mockZones}
-          onZonesChange={mockOnZonesChange}
-        />
-      </GoogleMapsProvider>
+        <ZoneMapEditor zones={mockZones} onZonesChange={mockOnZonesChange} />
+      </GoogleMapsProvider>,
     );
 
-    expect(screen.getByText('Downtown')).toBeInTheDocument();
-    expect(screen.getByText('1 zone created')).toBeInTheDocument();
+    expect(screen.getByText("Downtown")).toBeInTheDocument();
+    expect(screen.getByText("1 zone created")).toBeInTheDocument();
   });
 
-  it('allows zone selection', async () => {
+  it("allows zone selection", async () => {
     const mockOnZoneSelect = vi.fn();
 
     render(
@@ -125,38 +119,32 @@ describe('ZoneMapEditor', () => {
           onZonesChange={mockOnZonesChange}
           onZoneSelect={mockOnZoneSelect}
         />
-      </GoogleMapsProvider>
+      </GoogleMapsProvider>,
     );
 
-    const zoneItem = screen.getByText('Downtown').closest('div');
+    const zoneItem = screen.getByText("Downtown").closest("div");
     expect(zoneItem).toBeInTheDocument();
   });
 
-  it('displays color picker', () => {
+  it("displays color picker", () => {
     render(
       <GoogleMapsProvider apiKey="test-key">
-        <ZoneMapEditor
-          zones={mockZones}
-          onZonesChange={mockOnZonesChange}
-        />
-      </GoogleMapsProvider>
+        <ZoneMapEditor zones={mockZones} onZonesChange={mockOnZonesChange} />
+      </GoogleMapsProvider>,
     );
 
-    expect(screen.getByText('Zone Color')).toBeInTheDocument();
+    expect(screen.getByText("Zone Color")).toBeInTheDocument();
   });
 
-  it('shows undo/redo buttons', () => {
+  it("shows undo/redo buttons", () => {
     render(
       <GoogleMapsProvider apiKey="test-key">
-        <ZoneMapEditor
-          zones={mockZones}
-          onZonesChange={mockOnZonesChange}
-        />
-      </GoogleMapsProvider>
+        <ZoneMapEditor zones={mockZones} onZonesChange={mockOnZonesChange} />
+      </GoogleMapsProvider>,
     );
 
-    const undoButton = screen.getByRole('button', { name: /undo/i });
-    const redoButton = screen.getByRole('button', { name: /redo/i });
+    const undoButton = screen.getByRole("button", { name: /undo/i });
+    const redoButton = screen.getByRole("button", { name: /redo/i });
 
     expect(undoButton).toBeInTheDocument();
     expect(redoButton).toBeInTheDocument();
@@ -164,38 +152,32 @@ describe('ZoneMapEditor', () => {
     expect(redoButton).toBeDisabled();
   });
 
-  it('shows export and import buttons', () => {
+  it("shows export and import buttons", () => {
     render(
       <GoogleMapsProvider apiKey="test-key">
-        <ZoneMapEditor
-          zones={mockZones}
-          onZonesChange={mockOnZonesChange}
-        />
-      </GoogleMapsProvider>
+        <ZoneMapEditor zones={mockZones} onZonesChange={mockOnZonesChange} />
+      </GoogleMapsProvider>,
     );
 
-    const exportButton = screen.getByRole('button', { name: /export/i });
-    const importButton = screen.getByRole('button', { name: /import/i });
+    const exportButton = screen.getByRole("button", { name: /export/i });
+    const importButton = screen.getByRole("button", { name: /import/i });
 
     expect(exportButton).toBeInTheDocument();
     expect(importButton).toBeInTheDocument();
   });
 
-  it('displays check overlaps button', () => {
+  it("displays check overlaps button", () => {
     render(
       <GoogleMapsProvider apiKey="test-key">
-        <ZoneMapEditor
-          zones={mockZones}
-          onZonesChange={mockOnZonesChange}
-        />
-      </GoogleMapsProvider>
+        <ZoneMapEditor zones={mockZones} onZonesChange={mockOnZonesChange} />
+      </GoogleMapsProvider>,
     );
 
-    const checkButton = screen.getByRole('button', { name: /check overlaps/i });
+    const checkButton = screen.getByRole("button", { name: /check overlaps/i });
     expect(checkButton).toBeInTheDocument();
   });
 
-  it('hides controls in read-only mode', () => {
+  it("hides controls in read-only mode", () => {
     render(
       <GoogleMapsProvider apiKey="test-key">
         <ZoneMapEditor
@@ -203,44 +185,40 @@ describe('ZoneMapEditor', () => {
           onZonesChange={mockOnZonesChange}
           readOnly={true}
         />
-      </GoogleMapsProvider>
+      </GoogleMapsProvider>,
     );
 
-    expect(screen.queryByText('Zone Editor')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /export/i })).not.toBeInTheDocument();
+    expect(screen.queryByText("Zone Editor")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /export/i }),
+    ).not.toBeInTheDocument();
   });
 
-  it('allows zone name editing', async () => {
+  it("allows zone name editing", async () => {
     render(
       <GoogleMapsProvider apiKey="test-key">
-        <ZoneMapEditor
-          zones={mockZones}
-          onZonesChange={mockOnZonesChange}
-        />
-      </GoogleMapsProvider>
+        <ZoneMapEditor zones={mockZones} onZonesChange={mockOnZonesChange} />
+      </GoogleMapsProvider>,
     );
 
-    const input = screen.getByDisplayValue('Downtown') as HTMLInputElement;
+    const input = screen.getByDisplayValue("Downtown") as HTMLInputElement;
     expect(input).toBeInTheDocument();
 
     await userEvent.clear(input);
-    await userEvent.type(input, 'Midtown');
+    await userEvent.type(input, "Midtown");
 
     // Zone name should be updated
     expect(mockOnZonesChange).toHaveBeenCalled();
   });
 
-  it('exports zones as GeoJSON', async () => {
+  it("exports zones as GeoJSON", async () => {
     render(
       <GoogleMapsProvider apiKey="test-key">
-        <ZoneMapEditor
-          zones={mockZones}
-          onZonesChange={mockOnZonesChange}
-        />
-      </GoogleMapsProvider>
+        <ZoneMapEditor zones={mockZones} onZonesChange={mockOnZonesChange} />
+      </GoogleMapsProvider>,
     );
 
-    const exportButton = screen.getByRole('button', { name: /export/i });
+    const exportButton = screen.getByRole("button", { name: /export/i });
 
     // Mock window.URL.createObjectURL
     window.URL.createObjectURL = vi.fn();
@@ -252,7 +230,7 @@ describe('ZoneMapEditor', () => {
     expect(window.URL.createObjectURL).toHaveBeenCalled();
   });
 
-  it('respects readOnly prop', () => {
+  it("respects readOnly prop", () => {
     const { rerender } = render(
       <GoogleMapsProvider apiKey="test-key">
         <ZoneMapEditor
@@ -260,10 +238,10 @@ describe('ZoneMapEditor', () => {
           onZonesChange={mockOnZonesChange}
           readOnly={false}
         />
-      </GoogleMapsProvider>
+      </GoogleMapsProvider>,
     );
 
-    expect(screen.getByText('Zone Editor')).toBeInTheDocument();
+    expect(screen.getByText("Zone Editor")).toBeInTheDocument();
 
     rerender(
       <GoogleMapsProvider apiKey="test-key">
@@ -272,20 +250,17 @@ describe('ZoneMapEditor', () => {
           onZonesChange={mockOnZonesChange}
           readOnly={true}
         />
-      </GoogleMapsProvider>
+      </GoogleMapsProvider>,
     );
 
-    expect(screen.queryByText('Zone Editor')).not.toBeInTheDocument();
+    expect(screen.queryByText("Zone Editor")).not.toBeInTheDocument();
   });
 
-  it('displays empty state when no zones', () => {
+  it("displays empty state when no zones", () => {
     render(
       <GoogleMapsProvider apiKey="test-key">
-        <ZoneMapEditor
-          zones={[]}
-          onZonesChange={mockOnZonesChange}
-        />
-      </GoogleMapsProvider>
+        <ZoneMapEditor zones={[]} onZonesChange={mockOnZonesChange} />
+      </GoogleMapsProvider>,
     );
 
     expect(screen.getByText(/no zones yet/i)).toBeInTheDocument();

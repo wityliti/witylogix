@@ -11,7 +11,10 @@ export interface TablePreferences {
   pageSize: number;
 }
 
-const DEFAULT_PREFERENCES: Omit<TablePreferences, "columnOrder" | "visibleColumns"> = {
+const DEFAULT_PREFERENCES: Omit<
+  TablePreferences,
+  "columnOrder" | "visibleColumns"
+> = {
   columnWidths: {},
   sortState: null,
   pageSize: 25,
@@ -59,50 +62,44 @@ export function useTablePreferences(tableId: string, defaultColumns: string[]) {
         console.error("Failed to save table preferences:", error);
       }
     },
-    [tableId, preferences]
+    [tableId, preferences],
   );
 
   const updateColumnOrder = useCallback(
     (order: string[]) => {
       savePreferences({ columnOrder: order });
     },
-    [savePreferences]
+    [savePreferences],
   );
 
   const updateColumnWidths = useCallback(
     (widths: Record<string, number>) => {
       savePreferences({ columnWidths: widths });
     },
-    [savePreferences]
+    [savePreferences],
   );
 
   const updateVisibleColumns = useCallback(
     (visible: string[]) => {
       savePreferences({ visibleColumns: visible });
     },
-    [savePreferences]
+    [savePreferences],
   );
 
   const updateSortState = useCallback(
-    (
-      columnId: string,
-      direction: "asc" | "desc" | null
-    ) => {
+    (columnId: string, direction: "asc" | "desc" | null) => {
       savePreferences({
-        sortState:
-          direction === null
-            ? null
-            : { columnId, direction },
+        sortState: direction === null ? null : { columnId, direction },
       });
     },
-    [savePreferences]
+    [savePreferences],
   );
 
   const updatePageSize = useCallback(
     (size: number) => {
       savePreferences({ pageSize: size });
     },
-    [savePreferences]
+    [savePreferences],
   );
 
   const resetToDefaults = useCallback(() => {

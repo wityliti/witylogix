@@ -45,7 +45,7 @@ describe("KeepTruckinSDKClient", () => {
         new Response(JSON.stringify({ id: "org_kt_123" }), {
           status: 200,
           headers: { "content-type": "application/json" },
-        })
+        }),
       );
 
       await expect(client.initialize()).resolves.not.toThrow();
@@ -56,7 +56,7 @@ describe("KeepTruckinSDKClient", () => {
           headers: expect.objectContaining({
             "X-API-Key": config.apiKey,
           }),
-        })
+        }),
       );
 
       mockFetch.mockRestore();
@@ -75,7 +75,7 @@ describe("KeepTruckinSDKClient", () => {
         new Response(JSON.stringify({ id: "org_kt_123" }), {
           status: 200,
           headers: { "content-type": "application/json" },
-        })
+        }),
       );
 
       await expect(oauthClient.initialize()).resolves.not.toThrow();
@@ -84,9 +84,9 @@ describe("KeepTruckinSDKClient", () => {
         expect.stringContaining("/organization"),
         expect.objectContaining({
           headers: expect.objectContaining({
-            "Authorization": "Bearer access_TOKEN123",
+            Authorization: "Bearer access_TOKEN123",
           }),
-        })
+        }),
       );
 
       mockFetch.mockRestore();
@@ -98,7 +98,9 @@ describe("KeepTruckinSDKClient", () => {
 
       expect(() => {
         noCredClient.initialize();
-      }).rejects.toThrow("KeepTruckin API key or OAuth2 access token is required");
+      }).rejects.toThrow(
+        "KeepTruckin API key or OAuth2 access token is required",
+      );
     });
   });
 
@@ -130,14 +132,14 @@ describe("KeepTruckinSDKClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.getDriverLogs(
         "driver_kt_001",
         new Date("2026-03-17"),
-        new Date("2026-03-18")
+        new Date("2026-03-18"),
       );
 
       expect(result).toHaveLength(1);
@@ -170,11 +172,14 @@ describe("KeepTruckinSDKClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
-      const result = await client.getDailyLog("driver_kt_001", new Date("2026-03-17"));
+      const result = await client.getDailyLog(
+        "driver_kt_001",
+        new Date("2026-03-17"),
+      );
 
       expect(result.id).toBe("daily_log_001");
       expect(result.isCertified).toBe(false);
@@ -194,14 +199,14 @@ describe("KeepTruckinSDKClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.certifyDailyLog(
         "driver_kt_001",
         new Date("2026-03-17"),
-        "digital_signature_base64"
+        "digital_signature_base64",
       );
 
       expect(result.isCertified).toBe(true);
@@ -237,8 +242,8 @@ describe("KeepTruckinSDKClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.getViolations("driver_kt_001", 30);
@@ -252,7 +257,8 @@ describe("KeepTruckinSDKClient", () => {
 
   describe("vehicles", () => {
     it("should retrieve vehicle information", async () => {
-      const mockFetch = vi.spyOn(global, "fetch")
+      const mockFetch = vi
+        .spyOn(global, "fetch")
         .mockResolvedValueOnce(
           new Response(
             JSON.stringify({
@@ -272,8 +278,8 @@ describe("KeepTruckinSDKClient", () => {
             {
               status: 200,
               headers: { "content-type": "application/json" },
-            }
-          )
+            },
+          ),
         )
         .mockResolvedValueOnce(
           new Response(
@@ -289,8 +295,8 @@ describe("KeepTruckinSDKClient", () => {
             {
               status: 200,
               headers: { "content-type": "application/json" },
-            }
-          )
+            },
+          ),
         );
 
       const result = await client.getVehicle("vehicle_kt_001");
@@ -317,8 +323,8 @@ describe("KeepTruckinSDKClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.getEngineData("vehicle_kt_001");
@@ -358,8 +364,8 @@ describe("KeepTruckinSDKClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.submitDVIR({
@@ -397,14 +403,14 @@ describe("KeepTruckinSDKClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.resolveDVIRDefect(
         "dvir_kt_001",
         "defect_001",
-        "Repaired"
+        "Repaired",
       );
 
       expect(result.id).toBe("dvir_kt_001");
@@ -452,14 +458,14 @@ describe("KeepTruckinSDKClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.getIFTATrips(
         "driver_kt_001",
         new Date("2026-03-15"),
-        new Date("2026-03-17")
+        new Date("2026-03-17"),
       );
 
       expect(result).toHaveLength(1);
@@ -486,15 +492,15 @@ describe("KeepTruckinSDKClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.uploadDocument(
         "driver_kt_001",
         "license",
         "CDL",
-        "https://example.com/license.pdf"
+        "https://example.com/license.pdf",
       );
 
       expect(result.id).toBe("doc_kt_001");
@@ -528,13 +534,13 @@ describe("KeepTruckinSDKClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.exporteRODS(
         new Date("2026-03-01"),
-        new Date("2026-03-17")
+        new Date("2026-03-17"),
       );
 
       expect(result.format).toBe("eRODS");
@@ -573,7 +579,7 @@ describe("KeepTruckinSDKClient", () => {
         new Response(JSON.stringify({ id: "org_kt_123" }), {
           status: 200,
           headers: { "content-type": "application/json" },
-        })
+        }),
       );
 
       const result = await client.healthCheck();
@@ -584,9 +590,9 @@ describe("KeepTruckinSDKClient", () => {
     });
 
     it("should return false on health check failure", async () => {
-      const mockFetch = vi.spyOn(global, "fetch").mockRejectedValueOnce(
-        new Error("Connection timeout")
-      );
+      const mockFetch = vi
+        .spyOn(global, "fetch")
+        .mockRejectedValueOnce(new Error("Connection timeout"));
 
       const result = await client.healthCheck();
 

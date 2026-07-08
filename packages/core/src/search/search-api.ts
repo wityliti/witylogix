@@ -79,7 +79,7 @@ export class SearchApiService {
       limit?: number;
       offset?: number;
       useFuzzy?: boolean;
-    } = {}
+    } = {},
   ): Promise<{ results: SearchResult[]; total: number }> {
     // Validate inputs
     const validated = searchQuerySchema.parse({
@@ -117,11 +117,15 @@ export class SearchApiService {
   async getSuggestions(
     prefix: string,
     tenant: TenantContext,
-    limit: number = 5
+    limit: number = 5,
   ): Promise<string[]> {
     const validated = suggestionsQuerySchema.parse({ q: prefix, limit });
 
-    const suggestions = await this.engine.getSuggestions(validated.q, tenant, validated.limit);
+    const suggestions = await this.engine.getSuggestions(
+      validated.q,
+      tenant,
+      validated.limit,
+    );
 
     return suggestions;
   }
@@ -132,7 +136,7 @@ export class SearchApiService {
   async saveSearch(
     userId: string,
     tenant: TenantContext,
-    search: z.infer<typeof savedSearchSchema>
+    search: z.infer<typeof savedSearchSchema>,
   ): Promise<SavedSearch> {
     const validated = savedSearchSchema.parse(search);
 
@@ -167,7 +171,7 @@ export class SearchApiService {
   async listSavedSearches(
     userId: string,
     tenant: TenantContext,
-    options: { limit?: number; offset?: number } = {}
+    options: { limit?: number; offset?: number } = {},
   ): Promise<SavedSearch[]> {
     const { limit = 20, offset = 0 } = options;
 
@@ -197,7 +201,10 @@ export class SearchApiService {
   /**
    * Delete a saved search.
    */
-  async deleteSavedSearch(searchId: string, tenant: TenantContext): Promise<void> {
+  async deleteSavedSearch(
+    searchId: string,
+    tenant: TenantContext,
+  ): Promise<void> {
     await (this.prisma as any).savedSearch.deleteMany({
       where: {
         id: searchId,
@@ -212,7 +219,7 @@ export class SearchApiService {
   private async trackSearch(
     tenant: TenantContext,
     query: string,
-    entityType?: SearchableEntity
+    entityType?: SearchableEntity,
   ): Promise<void> {
     try {
       await (this.prisma as any).searchAnalytics.create({
@@ -235,7 +242,7 @@ export class SearchApiService {
    */
   async getPopularSearches(
     tenant: TenantContext,
-    options: { limit?: number; days?: number } = {}
+    options: { limit?: number; days?: number } = {},
   ): Promise<Array<{ query: string; count: number }>> {
     const { limit = 10, days = 7 } = options;
 
@@ -253,7 +260,7 @@ export class SearchApiService {
     `,
       tenant.orgId,
       cutoffDate,
-      limit
+      limit,
     );
 
     return (results as any[]).map((r) => ({
@@ -267,7 +274,7 @@ export class SearchApiService {
    */
   async getSearchMetrics(
     tenant: TenantContext,
-    options: { days?: number } = {}
+    options: { days?: number } = {},
   ): Promise<{
     totalSearches: number;
     zeroResultQueries: number;
@@ -290,7 +297,7 @@ export class SearchApiService {
       WHERE tenant_id = $1 AND timestamp >= $2
     `,
       tenant.orgId,
-      cutoffDate
+      cutoffDate,
     );
 
     const row = results[0];
@@ -308,7 +315,7 @@ export class SearchApiService {
  */
 export function createSearchApiService(
   engine: SearchEngine,
-  prisma: PrismaClient
+  prisma: PrismaClient,
 ): SearchApiService {
   return new SearchApiService(engine, prisma);
 }

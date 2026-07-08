@@ -313,7 +313,11 @@ export class SLAEnforcer {
         metrics: {
           pickupTime: { compliant: true, targetMinutes: 0 },
           deliveryTime: { compliant: true, targetMinutes: 0 },
-          noticedDamage: { compliant: true, maxRate: 100, actualDamaged: false },
+          noticedDamage: {
+            compliant: true,
+            maxRate: 100,
+            actualDamaged: false,
+          },
           customerRating: { compliant: true, minRating: 0 },
         },
         breaches: [],
@@ -327,10 +331,13 @@ export class SLAEnforcer {
     let compliant = true;
 
     // Check pickup time
-    const pickupCompliant = !deliveryData.pickupTime || deliveryData.pickupTime <= slaConfig.maxPickupTimeMinutes;
+    const pickupCompliant =
+      !deliveryData.pickupTime ||
+      deliveryData.pickupTime <= slaConfig.maxPickupTimeMinutes;
     if (!pickupCompliant) {
       compliant = false;
-      const variance = (deliveryData.pickupTime || 0) - slaConfig.maxPickupTimeMinutes;
+      const variance =
+        (deliveryData.pickupTime || 0) - slaConfig.maxPickupTimeMinutes;
       penaltyAmount += variance * slaConfig.penalties.latePickupPenalty;
       breaches.push({
         metric: "pickup_time",
@@ -340,10 +347,13 @@ export class SLAEnforcer {
     }
 
     // Check delivery time
-    const deliveryCompliant = !deliveryData.deliveryTime || deliveryData.deliveryTime <= slaConfig.maxDeliveryTimeMinutes;
+    const deliveryCompliant =
+      !deliveryData.deliveryTime ||
+      deliveryData.deliveryTime <= slaConfig.maxDeliveryTimeMinutes;
     if (!deliveryCompliant) {
       compliant = false;
-      const variance = (deliveryData.deliveryTime || 0) - slaConfig.maxDeliveryTimeMinutes;
+      const variance =
+        (deliveryData.deliveryTime || 0) - slaConfig.maxDeliveryTimeMinutes;
       penaltyAmount += variance * slaConfig.penalties.lateDeliveryPenalty;
       breaches.push({
         metric: "delivery_time",
@@ -365,7 +375,9 @@ export class SLAEnforcer {
     }
 
     // Check rating
-    const ratingCompliant = !deliveryData.customerRating || deliveryData.customerRating >= slaConfig.minRating;
+    const ratingCompliant =
+      !deliveryData.customerRating ||
+      deliveryData.customerRating >= slaConfig.minRating;
     if (!ratingCompliant) {
       compliant = false;
       penaltyAmount += slaConfig.penalties.lowRatingPenalty;
@@ -407,13 +419,17 @@ export class SLAEnforcer {
           compliant: pickupCompliant,
           targetMinutes: slaConfig.maxPickupTimeMinutes,
           actualMinutes: deliveryData.pickupTime,
-          variance: deliveryData.pickupTime ? deliveryData.pickupTime - slaConfig.maxPickupTimeMinutes : 0,
+          variance: deliveryData.pickupTime
+            ? deliveryData.pickupTime - slaConfig.maxPickupTimeMinutes
+            : 0,
         },
         deliveryTime: {
           compliant: deliveryCompliant,
           targetMinutes: slaConfig.maxDeliveryTimeMinutes,
           actualMinutes: deliveryData.deliveryTime,
-          variance: deliveryData.deliveryTime ? deliveryData.deliveryTime - slaConfig.maxDeliveryTimeMinutes : 0,
+          variance: deliveryData.deliveryTime
+            ? deliveryData.deliveryTime - slaConfig.maxDeliveryTimeMinutes
+            : 0,
         },
         noticedDamage: {
           compliant: damageCompliant,
@@ -439,14 +455,19 @@ export class SLAEnforcer {
    * @param periodDays Number of days to look back
    * @returns Compliance report
    */
-  getComplianceReport(partnerId: string, periodDays: number = 30): ComplianceReport {
+  getComplianceReport(
+    partnerId: string,
+    periodDays: number = 30,
+  ): ComplianceReport {
     const slaConfig = this.getSLA(partnerId);
     if (!slaConfig) {
       throw new Error(`No SLA configured for partner ${partnerId}`);
     }
 
     const cutoff = new Date(Date.now() - periodDays * 24 * 60 * 60 * 1000);
-    const relevantBreaches = this.breachHistory.filter((b) => b.partnerId === partnerId && b.recordedAt > cutoff);
+    const relevantBreaches = this.breachHistory.filter(
+      (b) => b.partnerId === partnerId && b.recordedAt > cutoff,
+    );
 
     // Count breach types
     const breachByType: Record<string, number> = {};
@@ -460,17 +481,27 @@ export class SLAEnforcer {
     }
 
     // Get recent escalations
-    const recentEscalations = this.escalations.filter((e) => e.partnerId === partnerId && e.triggeredAt > cutoff);
+    const recentEscalations = this.escalations.filter(
+      (e) => e.partnerId === partnerId && e.triggeredAt > cutoff,
+    );
 
     let escalationStatus: ComplianceReport["escalationStatus"] = "none";
     if (recentEscalations.length > 0) {
       const latest = recentEscalations[recentEscalations.length - 1];
       if (!latest.resolvedAt) {
-        escalationStatus = latest.level === "warning" ? "warning" : latest.level === "review" ? "under_review" : "suspended";
+        escalationStatus =
+          latest.level === "warning"
+            ? "warning"
+            : latest.level === "review"
+              ? "under_review"
+              : "suspended";
       }
     }
 
-    const totalPenalties = relevantBreaches.reduce((sum, b) => sum + b.penaltyAmount, 0);
+    const totalPenalties = relevantBreaches.reduce(
+      (sum, b) => sum + b.penaltyAmount,
+      0,
+    );
     const estimatedDeliveries = Math.max(1, relevantBreaches.length * 10); // Rough estimate
 
     return {
@@ -482,11 +513,18 @@ export class SLAEnforcer {
       },
       totalDeliveries: estimatedDeliveries,
       metrics: {
-        pickupTimeCompliance: 100 - (((breachByType["late_pickup"] || 0) / estimatedDeliveries) * 100),
-        deliveryTimeCompliance: 100 - (((breachByType["late_delivery"] || 0) / estimatedDeliveries) * 100),
-        damageCompliance: 100 - (((breachByType["damage"] || 0) / estimatedDeliveries) * 100),
-        ratingCompliance: 100 - (((breachByType["low_rating"] || 0) / estimatedDeliveries) * 100),
-        overallCompliance: 100 - ((relevantBreaches.length / estimatedDeliveries) * 100),
+        pickupTimeCompliance:
+          100 -
+          ((breachByType["late_pickup"] || 0) / estimatedDeliveries) * 100,
+        deliveryTimeCompliance:
+          100 -
+          ((breachByType["late_delivery"] || 0) / estimatedDeliveries) * 100,
+        damageCompliance:
+          100 - ((breachByType["damage"] || 0) / estimatedDeliveries) * 100,
+        ratingCompliance:
+          100 - ((breachByType["low_rating"] || 0) / estimatedDeliveries) * 100,
+        overallCompliance:
+          100 - (relevantBreaches.length / estimatedDeliveries) * 100,
       },
       breaches: {
         totalBreaches: relevantBreaches.length,
@@ -498,12 +536,22 @@ export class SLAEnforcer {
       },
       financialImpact: {
         totalPenalties: Math.round(totalPenalties * 100) / 100,
-        averagePenaltyPerDelivery: Math.round((totalPenalties / estimatedDeliveries) * 100) / 100,
+        averagePenaltyPerDelivery:
+          Math.round((totalPenalties / estimatedDeliveries) * 100) / 100,
         costAvoidedByCompliance: 0,
       },
       escalationStatus,
-      nextEscalation: this.getNextEscalationThreshold(partnerId, slaConfig, relevantBreaches.length),
-      recommendations: this.generateRecommendations(partnerId, slaConfig, relevantBreaches.length, escalationStatus),
+      nextEscalation: this.getNextEscalationThreshold(
+        partnerId,
+        slaConfig,
+        relevantBreaches.length,
+      ),
+      recommendations: this.generateRecommendations(
+        partnerId,
+        slaConfig,
+        relevantBreaches.length,
+        escalationStatus,
+      ),
     };
   }
 
@@ -518,7 +566,9 @@ export class SLAEnforcer {
 
     // Count recent breaches (last 30 days)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const recentBreaches = this.breachHistory.filter((b) => b.partnerId === partnerId && b.recordedAt > thirtyDaysAgo);
+    const recentBreaches = this.breachHistory.filter(
+      (b) => b.partnerId === partnerId && b.recordedAt > thirtyDaysAgo,
+    );
 
     const breachCount = recentBreaches.length;
     const escalation = slaConfig.escalation;
@@ -533,9 +583,15 @@ export class SLAEnforcer {
     // Determine if escalation threshold exceeded
     let newLevel: EscalationEvent["level"] | null = null;
 
-    if (breachCount >= escalation.suspensionThreshold && currentLevel !== "suspension") {
+    if (
+      breachCount >= escalation.suspensionThreshold &&
+      currentLevel !== "suspension"
+    ) {
       newLevel = "suspension";
-    } else if (breachCount >= escalation.reviewThreshold && (!currentLevel || currentLevel === "warning")) {
+    } else if (
+      breachCount >= escalation.reviewThreshold &&
+      (!currentLevel || currentLevel === "warning")
+    ) {
       newLevel = "review";
     } else if (breachCount >= escalation.warningThreshold && !currentLevel) {
       newLevel = "warning";
@@ -558,7 +614,11 @@ export class SLAEnforcer {
   /**
    * Get next escalation threshold.
    */
-  private getNextEscalationThreshold(partnerId: string, slaConfig: SLAConfig, currentBreaches: number) {
+  private getNextEscalationThreshold(
+    partnerId: string,
+    slaConfig: SLAConfig,
+    currentBreaches: number,
+  ) {
     const escalation = slaConfig.escalation;
 
     if (currentBreaches < escalation.warningThreshold) {
@@ -577,7 +637,8 @@ export class SLAEnforcer {
       return {
         threshold: escalation.suspensionThreshold,
         currentBreaches,
-        breachesUntilEscalation: escalation.suspensionThreshold - currentBreaches,
+        breachesUntilEscalation:
+          escalation.suspensionThreshold - currentBreaches,
       };
     }
 
@@ -596,15 +657,23 @@ export class SLAEnforcer {
     const recommendations: string[] = [];
 
     if (escalationStatus === "warning") {
-      recommendations.push("Partner is under warning status. Address compliance issues immediately.");
+      recommendations.push(
+        "Partner is under warning status. Address compliance issues immediately.",
+      );
     } else if (escalationStatus === "under_review") {
-      recommendations.push("Partner is under review. Consider contract renegotiation or replacement.");
+      recommendations.push(
+        "Partner is under review. Consider contract renegotiation or replacement.",
+      );
     } else if (escalationStatus === "suspended") {
-      recommendations.push("Partner is suspended. Route deliveries to alternative couriers.");
+      recommendations.push(
+        "Partner is suspended. Route deliveries to alternative couriers.",
+      );
     }
 
     if (breachCount > 5) {
-      recommendations.push("High breach rate detected. Review partner performance and service areas.");
+      recommendations.push(
+        "High breach rate detected. Review partner performance and service areas.",
+      );
     }
 
     recommendations.push("Monitor SLA metrics closely over next 30 days.");
@@ -633,7 +702,9 @@ export class SLAEnforcer {
    * @returns Array of escalation events
    */
   getEscalationHistory(partnerId: string): EscalationEvent[] {
-    return this.escalations.filter((e) => e.partnerId === partnerId).sort((a, b) => b.triggeredAt.getTime() - a.triggeredAt.getTime());
+    return this.escalations
+      .filter((e) => e.partnerId === partnerId)
+      .sort((a, b) => b.triggeredAt.getTime() - a.triggeredAt.getTime());
   }
 }
 

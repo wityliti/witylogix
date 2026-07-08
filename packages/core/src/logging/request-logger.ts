@@ -5,9 +5,9 @@
  * Warns about slow requests (>5s)
  */
 
-import { randomUUID } from 'crypto';
-import { Logger } from './logger.js';
-import { RequestContext, SENSITIVE_HEADERS } from './types.js';
+import { randomUUID } from "crypto";
+import { Logger } from "./logger.js";
+import { RequestContext, SENSITIVE_HEADERS } from "./types.js";
 
 /**
  * Slow request threshold in milliseconds (5 seconds)
@@ -43,7 +43,10 @@ interface FastifyReply {
 interface FastifyInstance {
   addHook(
     hookName: string,
-    handler: (request: FastifyRequest, reply: FastifyReply) => Promise<void> | void
+    handler: (
+      request: FastifyRequest,
+      reply: FastifyReply,
+    ) => Promise<void> | void,
   ): void;
 }
 
@@ -54,64 +57,79 @@ interface FastifyInstance {
 export function createRequestLoggerPlugin(logger: Logger) {
   return async function requestLoggerPlugin(fastify: FastifyInstance) {
     // Pre-handler hook: capture request start and generate trace ID
-    fastify.addHook('preHandler', async (request: FastifyRequest, reply: FastifyReply) => {
-      // Generate or extract trace ID from request headers
-      const traceId = (request.headers['x-request-id'] as string) || randomUUID();
+    fastify.addHook(
+      "preHandler",
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        // Generate or extract trace ID from request headers
+        const traceId =
+          (request.headers["x-request-id"] as string) || randomUUID();
 
-      // Store request context on request object for later retrieval
-      (request as any).requestContext = {
-        traceId,
-        spanId: request.headers['x-span-id'] as string,
-        tenantId: request.user?.tenantId,
-        userId: request.user?.id,
-        method: request.method,
-        path: request.url.split('?')[0], // Remove query string
-        startTime: Date.now(),
-      } as RequestContext;
+        // Store request context on request object for later retrieval
+        (request as any).requestContext = {
+          traceId,
+          spanId: request.headers["x-span-id"] as string,
+          tenantId: request.user?.tenantId,
+          userId: request.user?.id,
+          method: request.method,
+          path: request.url.split("?")[0], // Remove query string
+          startTime: Date.now(),
+        } as RequestContext;
 
-      // Send trace ID back in response header
-      reply.header('x-request-id', traceId);
-    });
+        // Send trace ID back in response header
+        reply.header("x-request-id", traceId);
+      },
+    );
 
     // OnResponse hook: log request/response details
-    fastify.addHook('onResponse', async (request: FastifyRequest, reply: FastifyReply) => {
-      const requestContext = (request as any).requestContext as RequestContext | undefined;
-      if (!requestContext) return;
+    fastify.addHook(
+      "onResponse",
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const requestContext = (request as any).requestContext as
+          | RequestContext
+          | undefined;
+        if (!requestContext) return;
 
-      const duration = Date.now() - requestContext.startTime;
-      const requestLogger = logger.withContext(requestContext);
+        const duration = Date.now() - requestContext.startTime;
+        const requestLogger = logger.withContext(requestContext);
 
-      // Extract safe headers for logging (redact sensitive ones)
-      const safeHeaders = this.extractSafeHeaders(request.headers);
+        // Extract safe headers for logging (redact sensitive ones)
+        const safeHeaders = this.extractSafeHeaders(request.headers);
 
-      // Determine log level based on status code
-      const statusCode = reply.statusCode;
-      const isError = statusCode >= 400;
+        // Determine log level based on status code
+        const statusCode = reply.statusCode;
+        const isError = statusCode >= 400;
 
-      const logMetadata = {
-        method: request.method,
-        path: requestContext.path,
-        statusCode,
-        duration,
-        ip: request.ip,
-        ...(Object.keys(safeHeaders).length > 0 && { headers: safeHeaders }),
-      };
-
-      if (isError) {
-        requestLogger.warn(`HTTP ${statusCode} ${request.method} ${requestContext.path}`, logMetadata);
-      } else {
-        requestLogger.info(`${request.method} ${requestContext.path}`, logMetadata);
-      }
-
-      // Warn about slow requests
-      if (duration > SLOW_REQUEST_THRESHOLD_MS) {
-        requestLogger.warn(`Slow request detected: ${duration}ms`, {
-          slowRequest: true,
+        const logMetadata = {
+          method: request.method,
+          path: requestContext.path,
+          statusCode,
           duration,
-          threshold: SLOW_REQUEST_THRESHOLD_MS,
-        });
-      }
-    });
+          ip: request.ip,
+          ...(Object.keys(safeHeaders).length > 0 && { headers: safeHeaders }),
+        };
+
+        if (isError) {
+          requestLogger.warn(
+            `HTTP ${statusCode} ${request.method} ${requestContext.path}`,
+            logMetadata,
+          );
+        } else {
+          requestLogger.info(
+            `${request.method} ${requestContext.path}`,
+            logMetadata,
+          );
+        }
+
+        // Warn about slow requests
+        if (duration > SLOW_REQUEST_THRESHOLD_MS) {
+          requestLogger.warn(`Slow request detected: ${duration}ms`, {
+            slowRequest: true,
+            duration,
+            threshold: SLOW_REQUEST_THRESHOLD_MS,
+          });
+        }
+      },
+    );
   };
 }
 
@@ -119,7 +137,9 @@ export function createRequestLoggerPlugin(logger: Logger) {
  * Extract safe (non-sensitive) headers for logging
  * Redacts Authorization, Cookie, Set-Cookie, and X-API-Key headers
  */
-function extractSafeHeaders(headers: Record<string, string | string[] | undefined>): Record<string, string> {
+function extractSafeHeaders(
+  headers: Record<string, string | string[] | undefined>,
+): Record<string, string> {
   const safeHeaders: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(headers)) {
@@ -133,10 +153,10 @@ function extractSafeHeaders(headers: Record<string, string | string[] | undefine
       continue;
     }
 
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       safeHeaders[key] = value;
     } else if (Array.isArray(value)) {
-      safeHeaders[key] = value.join('; ');
+      safeHeaders[key] = value.join("; ");
     }
   }
 
@@ -157,13 +177,13 @@ function isSensitiveHeader(headerName: string): boolean {
 function shouldSkipHeader(headerName: string): boolean {
   const lowerName = headerName.toLowerCase();
   const noisyHeaders = [
-    'user-agent',
-    'accept',
-    'accept-encoding',
-    'accept-language',
-    'cache-control',
-    'sec-',
-    'content-type',
+    "user-agent",
+    "accept",
+    "accept-encoding",
+    "accept-language",
+    "cache-control",
+    "sec-",
+    "content-type",
   ];
 
   return noisyHeaders.some((noisy) => lowerName.includes(noisy));
@@ -173,7 +193,10 @@ function shouldSkipHeader(headerName: string): boolean {
  * Attach request context to a logger
  * Useful for manually creating contextualized loggers outside of request handlers
  */
-export function attachRequestContext(logger: Logger, requestContext: RequestContext): Logger {
+export function attachRequestContext(
+  logger: Logger,
+  requestContext: RequestContext,
+): Logger {
   return logger.withContext(requestContext);
 }
 
@@ -189,6 +212,8 @@ export function generateTraceId(): string {
  * Extract request context from a Fastify request object
  * Returns the context created by the request logger plugin
  */
-export function getRequestContext(request: FastifyRequest): RequestContext | undefined {
+export function getRequestContext(
+  request: FastifyRequest,
+): RequestContext | undefined {
   return (request as any).requestContext;
 }

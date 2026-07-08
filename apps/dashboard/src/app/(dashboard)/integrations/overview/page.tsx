@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { useApiList } from '@/hooks/use-api';
-import { ErrorState } from '@/components/ui/error-state';
-import { cn } from '@/lib/utils';
-import { Header } from '@/components/layout/header';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { useState, useMemo } from "react";
+import { useApiList } from "@/hooks/use-api";
+import { ErrorState } from "@/components/ui/error-state";
+import { cn } from "@/lib/utils";
+import { Header } from "@/components/layout/header";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Search,
   Plus,
@@ -17,7 +17,7 @@ import {
   Activity,
   ArrowRight,
   Settings,
-} from 'lucide-react';
+} from "lucide-react";
 
 /* ═══════════════════════════════════════════════════════════
    INTEGRATION OVERVIEW / HUB PAGE
@@ -28,7 +28,7 @@ interface IntegrationConnection {
   id: string;
   name: string;
   category: string;
-  status: 'active' | 'inactive' | 'error';
+  status: "active" | "inactive" | "error";
 }
 
 interface CategorySummary {
@@ -40,36 +40,38 @@ interface CategorySummary {
 }
 
 export default function IntegrationOverviewPage() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'error'>('all');
+  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "error">(
+    "all",
+  );
 
   const {
     items: connections,
     loading: connectionsLoading,
     error: connectionsError,
     refetch: refetchConnections,
-  } = useApiList<IntegrationConnection>('/api/v4/integrations/connections');
+  } = useApiList<IntegrationConnection>("/api/v4/integrations/connections");
 
   // Derive category summaries from API data
   const categories = useMemo<CategorySummary[]>(() => {
     const map = new Map<string, CategorySummary>();
     for (const conn of connections) {
-      const cat = conn.category || 'Uncategorized';
+      const cat = conn.category || "Uncategorized";
       if (!map.has(cat)) {
         map.set(cat, { id: cat, name: cat, total: 0, active: 0, error: 0 });
       }
       const entry = map.get(cat)!;
       entry.total += 1;
-      if (conn.status === 'active') entry.active += 1;
-      if (conn.status === 'error') entry.error += 1;
+      if (conn.status === "active") entry.active += 1;
+      if (conn.status === "error") entry.error += 1;
     }
     return Array.from(map.values());
   }, [connections]);
 
   const totalProviders = connections.length;
-  const totalActive = connections.filter((c) => c.status === 'active').length;
-  const totalError = connections.filter((c) => c.status === 'error').length;
+  const totalActive = connections.filter((c) => c.status === "active").length;
+  const totalError = connections.filter((c) => c.status === "error").length;
 
   // Health score: 100 minus penalty for errors
   const healthScore =
@@ -90,9 +92,9 @@ export default function IntegrationOverviewPage() {
       items = items.filter((c) => c.name.toLowerCase().includes(q));
     }
 
-    if (filterStatus === 'active') {
+    if (filterStatus === "active") {
       items = items.filter((c) => c.active > 0);
-    } else if (filterStatus === 'error') {
+    } else if (filterStatus === "error") {
       items = items.filter((c) => c.error > 0);
     }
 
@@ -102,7 +104,10 @@ export default function IntegrationOverviewPage() {
   if (connectionsError && !connectionsLoading) {
     return (
       <>
-        <Header title="Integration Hub" subtitle="Manage and monitor all your connected integrations" />
+        <Header
+          title="Integration Hub"
+          subtitle="Manage and monitor all your connected integrations"
+        />
         <div className="p-6">
           <ErrorState error={connectionsError} onRetry={refetchConnections} />
         </div>
@@ -116,7 +121,7 @@ export default function IntegrationOverviewPage() {
         title="Integration Hub"
         subtitle={
           connectionsLoading
-            ? 'Loading...'
+            ? "Loading..."
             : `${totalActive} of ${totalProviders} providers active`
         }
       />
@@ -151,10 +156,10 @@ export default function IntegrationOverviewPage() {
                   strokeDasharray={`${(healthScore / 100) * 220} 220`}
                   className={
                     healthScore > 80
-                      ? 'text-emerald-500'
+                      ? "text-emerald-500"
                       : healthScore > 60
-                        ? 'text-amber-500'
-                        : 'text-red-500'
+                        ? "text-amber-500"
+                        : "text-red-500"
                   }
                 />
                 {/* Center text */}
@@ -170,8 +175,12 @@ export default function IntegrationOverviewPage() {
               </svg>
 
               <div className="text-center mt-2">
-                <Badge variant={healthScore > 80 ? 'success' : 'warning'}>
-                  {healthScore > 80 ? 'Healthy' : healthScore > 60 ? 'Degraded' : 'Critical'}
+                <Badge variant={healthScore > 80 ? "success" : "warning"}>
+                  {healthScore > 80
+                    ? "Healthy"
+                    : healthScore > 60
+                      ? "Degraded"
+                      : "Critical"}
                 </Badge>
               </div>
             </CardContent>
@@ -191,17 +200,25 @@ export default function IntegrationOverviewPage() {
               ) : (
                 <div className="space-y-3">
                   <div className="flex items-end gap-2">
-                    <span className="text-4xl font-bold text-white">{totalActive}</span>
-                    <span className="text-gray-400 text-sm mb-1">of {totalProviders}</span>
+                    <span className="text-4xl font-bold text-white">
+                      {totalActive}
+                    </span>
+                    <span className="text-gray-400 text-sm mb-1">
+                      of {totalProviders}
+                    </span>
                   </div>
                   <div className="w-full h-2 bg-wl-bg-root rounded-full overflow-hidden">
                     <div
                       className="h-full bg-emerald-500 rounded-full transition-all"
-                      style={{ width: `${totalProviders > 0 ? (totalActive / totalProviders) * 100 : 0}%` }}
+                      style={{
+                        width: `${totalProviders > 0 ? (totalActive / totalProviders) * 100 : 0}%`,
+                      }}
                     />
                   </div>
                   <p className="text-xs text-gray-500">
-                    {totalError > 0 ? `${totalError} with errors` : 'All connections healthy'}
+                    {totalError > 0
+                      ? `${totalError} with errors`
+                      : "All connections healthy"}
                   </p>
                 </div>
               )}
@@ -213,7 +230,12 @@ export default function IntegrationOverviewPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-white">Integration Health</h3>
-                <AlertCircle className={cn('w-5 h-5', totalError > 0 ? 'text-red-500' : 'text-emerald-500')} />
+                <AlertCircle
+                  className={cn(
+                    "w-5 h-5",
+                    totalError > 0 ? "text-red-500" : "text-emerald-500",
+                  )}
+                />
               </div>
               {connectionsLoading ? (
                 <div className="h-24 flex items-center justify-center">
@@ -222,22 +244,43 @@ export default function IntegrationOverviewPage() {
               ) : (
                 <div className="space-y-3">
                   <div className="flex items-end gap-2">
-                    <span className={cn('text-4xl font-bold', totalError > 0 ? 'text-red-400' : 'text-emerald-400')}>
-                      {totalProviders > 0 ? Math.round(((totalProviders - totalError) / totalProviders) * 100) : 100}
+                    <span
+                      className={cn(
+                        "text-4xl font-bold",
+                        totalError > 0 ? "text-red-400" : "text-emerald-400",
+                      )}
+                    >
+                      {totalProviders > 0
+                        ? Math.round(
+                            ((totalProviders - totalError) / totalProviders) *
+                              100,
+                          )
+                        : 100}
                     </span>
                     <span className="text-gray-400 text-sm mb-1">%</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     <div className="text-center">
-                      <div className="text-emerald-400 font-semibold">{totalActive}</div>
+                      <div className="text-emerald-400 font-semibold">
+                        {totalActive}
+                      </div>
                       <div className="text-gray-500">Active</div>
                     </div>
                     <div className="text-center">
-                      <div className={cn('font-semibold', totalError > 0 ? 'text-red-400' : 'text-gray-400')}>{totalError}</div>
+                      <div
+                        className={cn(
+                          "font-semibold",
+                          totalError > 0 ? "text-red-400" : "text-gray-400",
+                        )}
+                      >
+                        {totalError}
+                      </div>
                       <div className="text-gray-500">Errors</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-gray-400 font-semibold">{totalProviders - totalActive - totalError}</div>
+                      <div className="text-gray-400 font-semibold">
+                        {totalProviders - totalActive - totalError}
+                      </div>
                       <div className="text-gray-500">Inactive</div>
                     </div>
                   </div>
@@ -261,15 +304,15 @@ export default function IntegrationOverviewPage() {
           </div>
 
           <div className="flex gap-2">
-            {(['all', 'active', 'error'] as const).map((status) => (
+            {(["all", "active", "error"] as const).map((status) => (
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}
                 className={cn(
-                  'px-4 py-2 rounded-lg border text-sm font-medium transition-all',
+                  "px-4 py-2 rounded-lg border text-sm font-medium transition-all",
                   filterStatus === status
-                    ? 'bg-blue-500 text-black border-blue-600'
-                    : 'border-wl-border-default text-gray-400 hover:border-blue-500/50'
+                    ? "bg-blue-500 text-black border-blue-600"
+                    : "border-wl-border-default text-gray-400 hover:border-blue-500/50",
                 )}
               >
                 {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -285,7 +328,9 @@ export default function IntegrationOverviewPage() {
 
         {/* Category Grid */}
         <div className="space-y-6 mb-8">
-          <h2 className="text-xl font-bold text-white">Integration Categories</h2>
+          <h2 className="text-xl font-bold text-white">
+            Integration Categories
+          </h2>
 
           {connectionsLoading ? (
             <div className="py-12 text-center text-wl-text-tertiary text-sm">
@@ -300,8 +345,8 @@ export default function IntegrationOverviewPage() {
               <CardContent className="pt-6">
                 <div className="py-8 text-center text-wl-text-tertiary text-sm">
                   {connections.length === 0
-                    ? 'Connect an integration to see categories here.'
-                    : 'No categories match your current filter.'}
+                    ? "Connect an integration to see categories here."
+                    : "No categories match your current filter."}
                 </div>
               </CardContent>
             </Card>
@@ -319,17 +364,22 @@ export default function IntegrationOverviewPage() {
                   <Card
                     key={category.id}
                     className={cn(
-                      'bg-wl-bg-elevated border-wl-border-default cursor-pointer transition-all hover:border-blue-500/50',
-                      selectedCategory === category.id && 'ring-1 ring-blue-500'
+                      "bg-wl-bg-elevated border-wl-border-default cursor-pointer transition-all hover:border-blue-500/50",
+                      selectedCategory === category.id &&
+                        "ring-1 ring-blue-500",
                     )}
                     onClick={() =>
-                      setSelectedCategory(selectedCategory === category.id ? null : category.id)
+                      setSelectedCategory(
+                        selectedCategory === category.id ? null : category.id,
+                      )
                     }
                   >
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between mb-4">
                         <div>
-                          <h3 className="font-semibold text-white">{category.name}</h3>
+                          <h3 className="font-semibold text-white">
+                            {category.name}
+                          </h3>
                           <div className="text-xs text-gray-500 mt-1">
                             {category.active} of {category.total} active
                           </div>
@@ -342,7 +392,9 @@ export default function IntegrationOverviewPage() {
                           <div className="text-xs text-gray-500 uppercase tracking-wide">
                             Active
                           </div>
-                          <div className="font-bold text-white mt-1">{category.active}</div>
+                          <div className="font-bold text-white mt-1">
+                            {category.active}
+                          </div>
                         </div>
                         <div>
                           <div className="text-xs text-gray-500 uppercase tracking-wide">
@@ -350,8 +402,10 @@ export default function IntegrationOverviewPage() {
                           </div>
                           <div
                             className={cn(
-                              'font-bold mt-1',
-                              category.error > 0 ? 'text-red-400' : 'text-white'
+                              "font-bold mt-1",
+                              category.error > 0
+                                ? "text-red-400"
+                                : "text-white",
                             )}
                           >
                             {category.error}
@@ -394,7 +448,9 @@ export default function IntegrationOverviewPage() {
             <CardContent className="pt-6">
               <Plus className="w-6 h-6 text-blue-500 mb-3" />
               <h3 className="font-semibold text-white">Connect New</h3>
-              <p className="text-xs text-gray-500 mt-1">Add a new integration</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Add a new integration
+              </p>
             </CardContent>
           </Card>
 
@@ -402,7 +458,9 @@ export default function IntegrationOverviewPage() {
             <CardContent className="pt-6">
               <Zap className="w-6 h-6 text-blue-500 mb-3" />
               <h3 className="font-semibold text-white">Run Sync</h3>
-              <p className="text-xs text-gray-500 mt-1">Manually trigger sync</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Manually trigger sync
+              </p>
             </CardContent>
           </Card>
 
@@ -418,7 +476,9 @@ export default function IntegrationOverviewPage() {
             <CardContent className="pt-6">
               <Settings className="w-6 h-6 text-blue-500 mb-3" />
               <h3 className="font-semibold text-white">Settings</h3>
-              <p className="text-xs text-gray-500 mt-1">Global integration config</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Global integration config
+              </p>
             </CardContent>
           </Card>
         </div>

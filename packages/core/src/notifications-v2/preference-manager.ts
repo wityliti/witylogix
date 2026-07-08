@@ -99,7 +99,10 @@ export class PreferenceManager {
   /**
    * Update preferences for a customer
    */
-  static updatePreferences(customerId: string, prefs: Partial<NotificationPreferences>): void {
+  static updatePreferences(
+    customerId: string,
+    prefs: Partial<NotificationPreferences>,
+  ): void {
     const existing = this.getPreferences(customerId);
 
     if (prefs.channels) {
@@ -123,7 +126,7 @@ export class PreferenceManager {
   static shouldSend(
     customerId: string,
     channel: NotificationChannel,
-    eventType: NotificationEventType
+    eventType: NotificationEventType,
   ): boolean {
     const prefs = this.getPreferences(customerId);
 
@@ -148,7 +151,10 @@ export class PreferenceManager {
   /**
    * Disable a channel for a customer
    */
-  static disableChannel(customerId: string, channel: NotificationChannel): void {
+  static disableChannel(
+    customerId: string,
+    channel: NotificationChannel,
+  ): void {
     const prefs = this.getPreferences(customerId);
     prefs.channels[channel].enabled = false;
     prefs.updatedAt = new Date();
@@ -161,7 +167,7 @@ export class PreferenceManager {
   static enableEventType(
     customerId: string,
     channel: NotificationChannel,
-    eventType: NotificationEventType
+    eventType: NotificationEventType,
   ): void {
     const prefs = this.getPreferences(customerId);
     if (!prefs.channels[channel].eventTypes) {
@@ -178,7 +184,7 @@ export class PreferenceManager {
   static disableEventType(
     customerId: string,
     channel: NotificationChannel,
-    eventType: NotificationEventType
+    eventType: NotificationEventType,
   ): void {
     const prefs = this.getPreferences(customerId);
     if (!prefs.channels[channel].eventTypes) {
@@ -194,13 +200,15 @@ export class PreferenceManager {
    */
   static getAvailableChannels(
     customerId: string,
-    eventType: NotificationEventType
+    eventType: NotificationEventType,
   ): NotificationChannel[] {
     const prefs = this.getPreferences(customerId);
     const channels: NotificationChannel[] = [];
 
     for (const [channel, preference] of Object.entries(prefs.channels)) {
-      if (this.shouldSend(customerId, channel as NotificationChannel, eventType)) {
+      if (
+        this.shouldSend(customerId, channel as NotificationChannel, eventType)
+      ) {
         channels.push(channel as NotificationChannel);
       }
     }

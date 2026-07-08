@@ -15,7 +15,7 @@ try {
   MapMouseEvent = mapboxModule.MapMouseEvent;
 } catch (err) {
   console.warn(
-    "Mapbox GL JS not installed. Install with: npm install mapbox-gl"
+    "Mapbox GL JS not installed. Install with: npm install mapbox-gl",
   );
 }
 import { DriverPopover } from "./driver-popover";
@@ -49,9 +49,9 @@ export function DeliveryMap({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [currentLayer, setCurrentLayer] = useState<"street" | "satellite" | "terrain">(
-    "street"
-  );
+  const [currentLayer, setCurrentLayer] = useState<
+    "street" | "satellite" | "terrain"
+  >("street");
   const [popover, setPopover] = useState<{
     driver: Driver;
     position: { x: number; y: number };
@@ -123,7 +123,15 @@ export function DeliveryMap({
         filter: ["has", "point_count"],
         paint: {
           "circle-color": "#3b82f6",
-          "circle-radius": ["step", ["get", "point_count"], 20, 100, 30, 750, 40],
+          "circle-radius": [
+            "step",
+            ["get", "point_count"],
+            20,
+            100,
+            30,
+            750,
+            40,
+          ],
           "circle-opacity": 0.8,
         },
       });
@@ -168,7 +176,7 @@ export function DeliveryMap({
           ],
           "circle-stroke-width": 2,
           "circle-stroke-color": "#ffffff",
-            "circle-opacity": 0.9,
+          "circle-opacity": 0.9,
         },
       });
 
@@ -249,41 +257,56 @@ export function DeliveryMap({
       });
 
       // Click handlers
-      map.current?.on("click", "driver-markers", (e: mapboxgl.MapMouseEvent) => {
-        const feature = e.features?.[0];
-        if (feature?.properties) {
-          const driverId = String(feature.properties.id);
-          onDriverSelect(driverId);
+      map.current?.on(
+        "click",
+        "driver-markers",
+        (e: mapboxgl.MapMouseEvent) => {
+          const feature = e.features?.[0];
+          if (feature?.properties) {
+            const driverId = String(feature.properties.id);
+            onDriverSelect(driverId);
 
-          // Show popover
-          const canvas = map.current?.getCanvas();
-          if (canvas) {
-            const driver = driversRef.current.find((d) => d.id === driverId);
-            if (driver) {
-              setPopover({
-                driver,
-                position: { x: e.originalEvent.clientX, y: e.originalEvent.clientY },
-              });
+            // Show popover
+            const canvas = map.current?.getCanvas();
+            if (canvas) {
+              const driver = driversRef.current.find((d) => d.id === driverId);
+              if (driver) {
+                setPopover({
+                  driver,
+                  position: {
+                    x: e.originalEvent.clientX,
+                    y: e.originalEvent.clientY,
+                  },
+                });
+              }
             }
           }
-        }
-      });
+        },
+      );
 
-      map.current?.on("click", "delivery-pickups", (e: mapboxgl.MapMouseEvent) => {
-        const feature = e.features?.[0];
-        if (feature?.properties) {
-          const deliveryId = String(feature.properties.id);
-          onDeliverySelect(deliveryId);
-        }
-      });
+      map.current?.on(
+        "click",
+        "delivery-pickups",
+        (e: mapboxgl.MapMouseEvent) => {
+          const feature = e.features?.[0];
+          if (feature?.properties) {
+            const deliveryId = String(feature.properties.id);
+            onDeliverySelect(deliveryId);
+          }
+        },
+      );
 
-      map.current?.on("click", "delivery-dropoffs", (e: mapboxgl.MapMouseEvent) => {
-        const feature = e.features?.[0];
-        if (feature?.properties) {
-          const deliveryId = String(feature.properties.id);
-          onDeliverySelect(deliveryId);
-        }
-      });
+      map.current?.on(
+        "click",
+        "delivery-dropoffs",
+        (e: mapboxgl.MapMouseEvent) => {
+          const feature = e.features?.[0];
+          if (feature?.properties) {
+            const deliveryId = String(feature.properties.id);
+            onDeliverySelect(deliveryId);
+          }
+        },
+      );
 
       // Change cursor on hover
       map.current?.on("mouseenter", "driver-markers", () => {
@@ -334,7 +357,9 @@ export function DeliveryMap({
       },
     }));
 
-    const source = map.current.getSource("drivers") as mapboxgl.GeoJSONSource | undefined;
+    const source = map.current.getSource("drivers") as
+      | mapboxgl.GeoJSONSource
+      | undefined;
     if (source) {
       source.setData({
         type: "FeatureCollection" as const,
@@ -422,7 +447,8 @@ export function DeliveryMap({
     const routeFeatures = deliveries
       .filter((d) => d.driverId)
       .map((delivery) => {
-        const routeType = delivery.status === "completed" ? "completed" : "planned";
+        const routeType =
+          delivery.status === "completed" ? "completed" : "planned";
 
         return {
           type: "Feature" as const,
@@ -494,18 +520,21 @@ export function DeliveryMap({
     }
   }, [selectedDriverId, drivers, mapLoaded]);
 
-  const handleLayerChange = useCallback((layer: "street" | "satellite" | "terrain") => {
-    if (!map.current) return;
+  const handleLayerChange = useCallback(
+    (layer: "street" | "satellite" | "terrain") => {
+      if (!map.current) return;
 
-    const styleMap = {
-      street: "mapbox://styles/mapbox/dark-v11",
-      satellite: "mapbox://styles/mapbox/satellite-streets-v12",
-      terrain: "mapbox://styles/mapbox/outdoors-v12",
-    };
+      const styleMap = {
+        street: "mapbox://styles/mapbox/dark-v11",
+        satellite: "mapbox://styles/mapbox/satellite-streets-v12",
+        terrain: "mapbox://styles/mapbox/outdoors-v12",
+      };
 
-    map.current.setStyle(styleMap[layer]);
-    setCurrentLayer(layer);
-  }, []);
+      map.current.setStyle(styleMap[layer]);
+      setCurrentLayer(layer);
+    },
+    [],
+  );
 
   const handleZoomIn = useCallback(() => {
     if (map.current) {
@@ -530,10 +559,7 @@ export function DeliveryMap({
 
     const bounds = new mapboxgl.LngLatBounds();
     drivers.forEach((driver) => {
-      bounds.extend([
-        driver.location.longitude,
-        driver.location.latitude,
-      ]);
+      bounds.extend([driver.location.longitude, driver.location.latitude]);
     });
 
     map.current.fitBounds(bounds, { padding: 50, duration: 1000 });

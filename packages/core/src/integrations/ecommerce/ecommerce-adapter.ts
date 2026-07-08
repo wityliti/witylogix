@@ -40,7 +40,9 @@ export class RateLimiter {
 
   async waitIfNeeded(): Promise<void> {
     const now = Date.now();
-    this.requestTimes = this.requestTimes.filter((t) => t > now - this.windowMs);
+    this.requestTimes = this.requestTimes.filter(
+      (t) => t > now - this.windowMs,
+    );
 
     if (this.requestTimes.length >= this.maxBurst) {
       const oldestTime = this.requestTimes[0];
@@ -73,9 +75,7 @@ export class CircuitBreaker {
     this.resetTimeoutMs = config.resetTimeoutMs;
   }
 
-  async execute<T>(
-    fn: () => Promise<T>,
-  ): Promise<T> {
+  async execute<T>(fn: () => Promise<T>): Promise<T> {
     if (this.state === "open") {
       if (Date.now() - this.lastFailureTime > this.resetTimeoutMs) {
         this.state = "half-open";
@@ -137,10 +137,7 @@ export class RetryHandler {
     this.retryableStatuses = config.retryableStatuses;
   }
 
-  async execute<T>(
-    fn: () => Promise<T>,
-    context?: string,
-  ): Promise<T> {
+  async execute<T>(fn: () => Promise<T>, context?: string): Promise<T> {
     let lastError: unknown = null;
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
@@ -174,7 +171,8 @@ export class RetryHandler {
   }
 
   private calculateBackoff(attempt: number): number {
-    const exponentialDelay = this.initialDelayMs * Math.pow(this.backoffMultiplier, attempt);
+    const exponentialDelay =
+      this.initialDelayMs * Math.pow(this.backoffMultiplier, attempt);
     return Math.min(exponentialDelay, this.maxDelayMs);
   }
 }
@@ -252,7 +250,10 @@ export abstract class ECommerceAdapterBase implements IECommerceAdapter {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async updateOrder(_orderId: string, _data: Partial<ECommerceOrder>): Promise<ECommerceOrder> {
+  async updateOrder(
+    _orderId: string,
+    _data: Partial<ECommerceOrder>,
+  ): Promise<ECommerceOrder> {
     throw new Error("Not implemented");
   }
 
@@ -272,7 +273,10 @@ export abstract class ECommerceAdapterBase implements IECommerceAdapter {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async updateProduct(_productId: string, _data: Partial<ECommerceProduct>): Promise<ECommerceProduct> {
+  async updateProduct(
+    _productId: string,
+    _data: Partial<ECommerceProduct>,
+  ): Promise<ECommerceProduct> {
     throw new Error("Not implemented");
   }
 
@@ -287,22 +291,34 @@ export abstract class ECommerceAdapterBase implements IECommerceAdapter {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async updateCustomer(_customerId: string, _data: Partial<ECommerceCustomer>): Promise<ECommerceCustomer> {
+  async updateCustomer(
+    _customerId: string,
+    _data: Partial<ECommerceCustomer>,
+  ): Promise<ECommerceCustomer> {
     throw new Error("Not implemented");
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async createFulfillment(_orderId: string, _request: FulfillmentRequest): Promise<FulfillmentResponse> {
+  async createFulfillment(
+    _orderId: string,
+    _request: FulfillmentRequest,
+  ): Promise<FulfillmentResponse> {
     throw new Error("Not implemented");
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async updateFulfillment(_orderId: string, _fulfillmentId: string, _data: Partial<FulfillmentResponse>): Promise<FulfillmentResponse> {
+  async updateFulfillment(
+    _orderId: string,
+    _fulfillmentId: string,
+    _data: Partial<FulfillmentResponse>,
+  ): Promise<FulfillmentResponse> {
     throw new Error("Not implemented");
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async updateInventory(_request: InventoryUpdateRequest): Promise<ECommerceInventory> {
+  async updateInventory(
+    _request: InventoryUpdateRequest,
+  ): Promise<ECommerceInventory> {
     throw new Error("Not implemented");
   }
 
@@ -348,7 +364,10 @@ export abstract class ECommerceAdapterBase implements IECommerceAdapter {
             signal: controller.signal,
           };
 
-          if (options.body && (method === "POST" || method === "PUT" || method === "PATCH")) {
+          if (
+            options.body &&
+            (method === "POST" || method === "PUT" || method === "PATCH")
+          ) {
             fetchOptions.body = JSON.stringify(options.body);
           }
 
@@ -360,7 +379,9 @@ export abstract class ECommerceAdapterBase implements IECommerceAdapter {
           }
 
           if (!response.ok) {
-            const errorData = (await response.json().catch(() => ({}))) as unknown;
+            const errorData = (await response
+              .json()
+              .catch(() => ({}))) as unknown;
             const error = new Error(
               `HTTP ${response.status}: ${JSON.stringify(errorData)}`,
             ) as Error & { statusCode: number };
@@ -401,9 +422,7 @@ export abstract class ECommerceAdapterBase implements IECommerceAdapter {
    * Generate HMAC-SHA256 signature for webhook verification
    */
   protected generateSignature(payload: string, secret: string): string {
-    return createHmac("sha256", secret)
-      .update(payload)
-      .digest("base64");
+    return createHmac("sha256", secret).update(payload).digest("base64");
   }
 
   /**
@@ -431,7 +450,9 @@ export abstract class ECommerceAdapterBase implements IECommerceAdapter {
 
     // Log to console in development
     if (process.env.NODE_ENV !== "production") {
-      console.debug(`[${log.statusCode}] ${log.method} ${log.endpoint} (${log.duration}ms)`);
+      console.debug(
+        `[${log.statusCode}] ${log.method} ${log.endpoint} (${log.duration}ms)`,
+      );
     }
   }
 
@@ -464,7 +485,9 @@ export abstract class ECommerceAdapterBase implements IECommerceAdapter {
   private calculateFailureRate(): number {
     if (this.requestLogs.length === 0) return 0;
 
-    const failures = this.requestLogs.filter((log) => log.statusCode >= 400).length;
+    const failures = this.requestLogs.filter(
+      (log) => log.statusCode >= 400,
+    ).length;
     return failures / this.requestLogs.length;
   }
 

@@ -23,6 +23,7 @@ All TypeScript files use strict compiler options:
 ```
 
 **This means**:
+
 - No `any` types (use proper typing instead)
 - Explicit return types on functions
 - Unused variables not allowed
@@ -36,13 +37,13 @@ The only acceptable use of `any` is for Prisma's dynamic query API:
 // Good: Prisma exception
 const result = await prisma.users.findMany({
   where: {
-    [filterField]: filterValue  // Dynamic field - ok to use any
-  } as any
+    [filterField]: filterValue, // Dynamic field - ok to use any
+  } as any,
 });
 
 // Bad: Never do this
-const name: any = 'John';  // ✗ Use string instead
-function process(data: any) {}  // ✗ Use proper typing
+const name: any = "John"; // ✗ Use string instead
+function process(data: any) {} // ✗ Use proper typing
 ```
 
 ### Named Exports Over Default Exports
@@ -79,10 +80,10 @@ interface User {
   createdAt: Date;
 }
 
-interface UserCreateInput extends Omit<User, 'id' | 'createdAt'> {}
+interface UserCreateInput extends Omit<User, "id" | "createdAt"> {}
 
 // Good: Type for unions
-type UserRole = 'admin' | 'manager' | 'user';
+type UserRole = "admin" | "manager" | "user";
 type Result<T> = T | Error;
 
 // Bad: Type for object shapes (use interface instead)
@@ -112,7 +113,7 @@ function getUserEmail(user: User): string | null {
 // Bad
 interface User {
   id: string;
-  email?: string;  // Optional is different from nullable
+  email?: string; // Optional is different from nullable
   middleName?: string;
 }
 ```
@@ -135,8 +136,10 @@ async function fetchUser(id: string): Promise<User> {
 // Avoid: Chained promises
 function fetchUser(id: string): Promise<User> {
   return fetch(`/api/users/${id}`)
-    .then(res => res.json())
-    .catch(err => { throw new Error(`Failed to fetch user: ${err}`); });
+    .then((res) => res.json())
+    .catch((err) => {
+      throw new Error(`Failed to fetch user: ${err}`);
+    });
 }
 ```
 
@@ -298,6 +301,7 @@ Use `--wl-*` prefixed CSS variables for theme values:
 ```
 
 Use in components:
+
 ```tsx
 <div className="border border-[var(--wl-border-light)] dark:border-[var(--wl-border-dark)]">
   Content
@@ -435,12 +439,12 @@ export const Badge: React.FC<BadgeProps> = ({ variant = 'primary', children }) =
 Always validate inputs with Zod:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 const createUserSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  name: z.string().min(1, 'Name is required'),
-  role: z.enum(['admin', 'manager', 'user']).default('user')
+  email: z.string().email("Invalid email address"),
+  name: z.string().min(1, "Name is required"),
+  role: z.enum(["admin", "manager", "user"]).default("user"),
 });
 
 type CreateUserInput = z.infer<typeof createUserSchema>;
@@ -458,23 +462,26 @@ Use structured error handling:
 
 ```typescript
 class ValidationError extends Error {
-  constructor(message: string, public fields: Record<string, string[]>) {
+  constructor(
+    message: string,
+    public fields: Record<string, string[]>,
+  ) {
     super(message);
-    this.name = 'ValidationError';
+    this.name = "ValidationError";
   }
 }
 
 class NotFoundError extends Error {
   constructor(resource: string, id: string) {
     super(`${resource} with id ${id} not found`);
-    this.name = 'NotFoundError';
+    this.name = "NotFoundError";
   }
 }
 
 async function getUserOrThrow(id: string): Promise<User> {
   const user = await db.users.findUnique({ where: { id } });
   if (!user) {
-    throw new NotFoundError('User', id);
+    throw new NotFoundError("User", id);
   }
   return user;
 }
@@ -488,7 +495,7 @@ Use Prisma middleware for consistent patterns:
 // Good: Single database call
 const user = await prisma.users.findUnique({
   where: { id: userId },
-  include: { orders: true, profile: true }
+  include: { orders: true, profile: true },
 });
 
 // Bad: N+1 queries
@@ -502,6 +509,7 @@ const profile = await prisma.profiles.findUnique({ where: { userId } });
 ### Component Files
 
 PascalCase for React components:
+
 - `UserCard.tsx` - Component file
 - `UserCard.test.tsx` - Test file
 - `useUserQuery.ts` - Custom hook
@@ -509,6 +517,7 @@ PascalCase for React components:
 ### Utility Functions
 
 camelCase for utilities:
+
 - `formatDate.ts`
 - `calculateDistance.ts`
 - `validateEmail.ts`
@@ -516,6 +525,7 @@ camelCase for utilities:
 ### Constants
 
 UPPER_SNAKE_CASE for constants:
+
 - `MAX_RETRY_ATTEMPTS.ts`
 - `DEFAULT_PAGE_SIZE.ts`
 - `API_TIMEOUT_MS.ts`
@@ -523,6 +533,7 @@ UPPER_SNAKE_CASE for constants:
 ### Type Definitions
 
 PascalCase for types/interfaces:
+
 - `User.ts`
 - `OrderStatus.ts`
 - `ApiResponse.ts`
@@ -533,12 +544,12 @@ Use index files to organize exports:
 
 ```typescript
 // lib/index.ts
-export { cn } from './cn';
-export { formatDate } from './formatDate';
-export { calculateDistance } from './calculateDistance';
+export { cn } from "./cn";
+export { formatDate } from "./formatDate";
+export { calculateDistance } from "./calculateDistance";
 
 // In components
-import { cn, formatDate } from '@/lib';
+import { cn, formatDate } from "@/lib";
 ```
 
 ## Import Ordering
@@ -551,13 +562,13 @@ Group imports in this order:
 4. Side effects (last)
 
 ```typescript
-import React, { useState, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Button } from '@/components/button';
-import { formatDate } from '@/lib/formatDate';
-import { useAuth } from './useAuth';
-import { handleError } from '../utils';
-import './styles.css';
+import React, { useState, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/button";
+import { formatDate } from "@/lib/formatDate";
+import { useAuth } from "./useAuth";
+import { handleError } from "../utils";
+import "./styles.css";
 ```
 
 ## Comments & Documentation
@@ -578,7 +589,7 @@ async function fetchWithRetry(url: string, maxRetries = 3): Promise<Response> {
     try {
       return await fetch(url);
     } catch (error) {
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
       delay *= 2;
     }
   }
@@ -613,7 +624,7 @@ if (!result.ok) {
  */
 export function calculateDistance(
   from: { lat: number; lon: number },
-  to: { lat: number; lon: number }
+  to: { lat: number; lon: number },
 ): number {
   // Implementation
 }
@@ -654,6 +665,7 @@ pnpm typecheck
 ### Pre-commit Hooks
 
 Husky automatically runs checks before commit:
+
 - Prettier formatting
 - ESLint validation
 - Commit message validation
@@ -661,6 +673,7 @@ Husky automatically runs checks before commit:
 ## Summary
 
 Follow these principles:
+
 1. **Type safety**: Strict TypeScript, no `any`
 2. **Clarity**: Code should be easy to understand
 3. **Consistency**: Follow conventions throughout

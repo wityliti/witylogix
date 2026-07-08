@@ -37,20 +37,21 @@ apps/dashboard/
 Manages supported locales and their metadata:
 
 ```typescript
-import { getLocaleFromRequest } from '@/i18n/config';
+import { getLocaleFromRequest } from "@/i18n/config";
 
 // Detect locale from request
 const locale = getLocaleFromRequest(cookieLocale, acceptLanguage);
 
 // Get locale metadata
-const metadata = localeMetadata['en'];
+const metadata = localeMetadata["en"];
 // → { name, nativeName, flag, direction, dateFormat, timeFormat, currencyCode, timezones }
 
 // Check RTL support
-const isRtl = isRTL('ar');
+const isRtl = isRTL("ar");
 ```
 
 **Supported Locales:**
+
 - `en` - English (US, 12h time, MM/dd/yyyy, USD)
 - `es` - Spanish (Spain, 24h time, dd/MM/yyyy, EUR)
 - `fr` - French (France, 24h time, dd/MM/yyyy, EUR)
@@ -105,34 +106,34 @@ import {
   formatWeight,
   formatDuration,
   getTimeAgoLabel,
-} from '@/i18n/formatting';
+} from "@/i18n/formatting";
 
 // Currency formatting
-formatCurrency(1234.56, 'USD', 'en') // "$1,234.56"
-formatCurrency(1234.56, 'EUR', 'es') // "1.234,56 €"
+formatCurrency(1234.56, "USD", "en"); // "$1,234.56"
+formatCurrency(1234.56, "EUR", "es"); // "1.234,56 €"
 
 // Date formatting
-formatDate(new Date(), 'relative', 'en') // "2 hours ago"
-formatDate(new Date(), 'absolute', 'en') // "March 16, 2026, 10:30 AM"
+formatDate(new Date(), "relative", "en"); // "2 hours ago"
+formatDate(new Date(), "absolute", "en"); // "March 16, 2026, 10:30 AM"
 
 // Numbers
-formatNumber(1234567.89, 'en') // "1,234,567.89"
-formatNumber(1234567.89, 'fr') // "1 234 567,89"
+formatNumber(1234567.89, "en"); // "1,234,567.89"
+formatNumber(1234567.89, "fr"); // "1 234 567,89"
 
 // Distance (km/miles based on locale)
-formatDistance(5000, 'en')  // "3.11 mi"
-formatDistance(5000, 'es')  // "5 km"
+formatDistance(5000, "en"); // "3.11 mi"
+formatDistance(5000, "es"); // "5 km"
 
 // Weight (lbs/kg based on locale)
-formatWeight(2000, 'en')  // "4.41 lbs"
-formatWeight(2000, 'es')  // "2 kg"
+formatWeight(2000, "en"); // "4.41 lbs"
+formatWeight(2000, "es"); // "2 kg"
 
 // Duration
-formatDuration(3661, 'en')  // "1h 1min"
-formatDuration(3661, 'fr')  // "1h 1min"
+formatDuration(3661, "en"); // "1h 1min"
+formatDuration(3661, "fr"); // "1h 1min"
 
 // Time ago labels
-getTimeAgoLabel(new Date(Date.now() - 5*60000), 'en') // "5m ago"
+getTimeAgoLabel(new Date(Date.now() - 5 * 60000), "en"); // "5m ago"
 ```
 
 ### 6. RTL Support (`src/i18n/rtl-support.ts`)
@@ -173,6 +174,7 @@ import { LanguageSwitcher } from '@/components/i18n/language-switcher';
 ```
 
 Features:
+
 - Flag emoji indicators
 - Smooth locale switching without full page reload
 - Persists selection to cookie
@@ -211,6 +213,7 @@ node -e "require('./src/i18n/extract-keys.ts').generateReport()"
 All translations in `apps/dashboard/messages/`:
 
 **en.json** (450 lines)
+
 - `common`: Navigation, actions, status, time, errors, success
 - `auth`: Login, register, forgot password, MFA
 - `onboarding`: 8-step wizard translations
@@ -226,6 +229,7 @@ All translations in `apps/dashboard/messages/`:
 ### Using Translations in Components
 
 **Server Components:**
+
 ```typescript
 import { useTranslations } from 'next-intl';
 
@@ -237,6 +241,7 @@ export default function Page() {
 ```
 
 **Client Components:**
+
 ```typescript
 'use client';
 
@@ -255,16 +260,17 @@ export function OrderCard() {
 ```
 
 **Nested Keys:**
+
 ```typescript
 const t = useTranslations();
 
 // Access nested: common.actions.save
-t('common.actions.save')
-t.rich('common.actions.save') // With markup support
+t("common.actions.save");
+t.rich("common.actions.save"); // With markup support
 
 // With default namespace
-const t = useTranslations('common');
-t('actions.save')
+const t = useTranslations("common");
+t("actions.save");
 ```
 
 ## Integration Checklist
@@ -279,11 +285,9 @@ pnpm add -D @types/date-fns date-fns glob
 ### 2. Update next.config.ts
 
 ```typescript
-import createNextIntlPlugin from 'next-intl/plugin';
+import createNextIntlPlugin from "next-intl/plugin";
 
-const withNextIntl = createNextIntlPlugin(
-  './src/i18n/request.ts'
-);
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 export default withNextIntl({
   // ... rest of config
@@ -350,9 +354,9 @@ export function Header() {
 
 ```typescript
 // Always use formatting utilities for consistency
-formatCurrency(amount, undefined, locale)  // Uses locale-specific currency
-formatDate(date, 'relative', locale)        // Relative dates
-formatDistance(meters, locale)              // Unit conversion
+formatCurrency(amount, undefined, locale); // Uses locale-specific currency
+formatDate(date, "relative", locale); // Relative dates
+formatDistance(meters, locale); // Unit conversion
 ```
 
 ### 3. Timezone Awareness
@@ -360,7 +364,7 @@ formatDistance(meters, locale)              // Unit conversion
 ```typescript
 // Pass timezone to operations
 const formatted = new Intl.DateTimeFormat(locale, {
-  timeZone: 'America/New_York',
+  timeZone: "America/New_York",
 }).format(date);
 
 // Use getLocaleFormatting() for metadata
@@ -388,16 +392,16 @@ const [value, setValue] = useState(rendered);
 ```typescript
 // app/[locale]/page.tsx
 export async function generateMetadata({ params }): Promise<Metadata> {
-  const t = getTranslations({ locale: params.locale, namespace: 'orders' });
+  const t = getTranslations({ locale: params.locale, namespace: "orders" });
 
   return {
-    title: t('title'),
-    description: t('list.description'),
+    title: t("title"),
+    description: t("list.description"),
     alternates: {
       languages: {
-        'en': '/en/orders',
-        'es': '/es/orders',
-        'fr': '/fr/orders',
+        en: "/en/orders",
+        es: "/es/orders",
+        fr: "/fr/orders",
       },
     },
   };
@@ -414,6 +418,7 @@ node -e "require('./src/i18n/extract-keys.ts').generateReport()"
 ```
 
 This will:
+
 1. Scan all .tsx/.ts files
 2. Find useTranslations() and t() calls
 3. Report missing keys per locale
@@ -423,11 +428,11 @@ This will:
 
 ```typescript
 // Test locale detection
-import { getLocaleFromRequest } from '@/i18n/config';
+import { getLocaleFromRequest } from "@/i18n/config";
 
-getLocaleFromRequest(undefined, 'es-ES,es;q=0.9,en;q=0.8') // → 'es'
-getLocaleFromRequest('fr', 'en') // → 'fr' (cookie takes priority)
-getLocaleFromRequest(undefined, 'de') // → 'en' (default)
+getLocaleFromRequest(undefined, "es-ES,es;q=0.9,en;q=0.8"); // → 'es'
+getLocaleFromRequest("fr", "en"); // → 'fr' (cookie takes priority)
+getLocaleFromRequest(undefined, "de"); // → 'en' (default)
 ```
 
 ## Troubleshooting

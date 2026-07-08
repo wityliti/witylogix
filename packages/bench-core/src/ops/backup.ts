@@ -14,13 +14,7 @@
  */
 import { createHash } from "node:crypto";
 import { createReadStream, createWriteStream } from "node:fs";
-import {
-  copyFile,
-  mkdir,
-  rm,
-  stat,
-  writeFile,
-} from "node:fs/promises";
+import { copyFile, mkdir, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { createGzip } from "node:zlib";
@@ -169,18 +163,21 @@ export async function run(
 ): Promise<BackupResult> {
   const startedAt = Date.now();
   const archivePath = input.to ?? defaultArchivePath(ctx);
-  const scratch = resolve(
-    ctx.cwd,
-    ".bench",
-    `backup-scratch-${Date.now()}`,
-  );
+  const scratch = resolve(ctx.cwd, ".bench", `backup-scratch-${Date.now()}`);
 
   await mkdir(scratch, { recursive: true });
   await mkdir(join(scratch, "config"), { recursive: true });
 
   try {
     const provider = await resolveProvider(ctx.config.provider.type);
-    return await runWithProvider(ctx, input, provider, scratch, archivePath, startedAt);
+    return await runWithProvider(
+      ctx,
+      input,
+      provider,
+      scratch,
+      archivePath,
+      startedAt,
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     emitAudit(ctx, "bench.backup.failed", {
@@ -263,5 +260,11 @@ async function runWithProvider(
     durationMs,
   });
 
-  return { ok: true, archive: archivePath, sizeBytes: sz, manifest, durationMs };
+  return {
+    ok: true,
+    archive: archivePath,
+    sizeBytes: sz,
+    manifest,
+    durationMs,
+  };
 }

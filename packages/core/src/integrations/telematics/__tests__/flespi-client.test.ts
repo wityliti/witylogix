@@ -47,7 +47,9 @@ describe("FlespiClient", () => {
         } as Response),
       );
 
-      await expect(client.authenticate()).rejects.toThrow("authentication failed");
+      await expect(client.authenticate()).rejects.toThrow(
+        "authentication failed",
+      );
     });
   });
 
@@ -306,7 +308,9 @@ describe("FlespiClient", () => {
         } as Response),
       );
 
-      await expect(client.unsubscribeFromEvents("123")).resolves.toBeUndefined();
+      await expect(
+        client.unsubscribeFromEvents("123"),
+      ).resolves.toBeUndefined();
     });
   });
 
@@ -493,9 +497,7 @@ describe("FlespiClient", () => {
 
   describe("error handling", () => {
     it("should handle network errors", async () => {
-      global.fetch = vi.fn(() =>
-        Promise.reject(new Error("Network error")),
-      );
+      global.fetch = vi.fn(() => Promise.reject(new Error("Network error")));
 
       await expect(client.getVehicles()).rejects.toThrow("Network error");
     });

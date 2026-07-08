@@ -128,7 +128,10 @@ interface MagentoTokenResponse {
 /**
  * Magento 2 Client
  */
-export class MagentoClient extends ECommerceAdapterBase implements IECommerceAdapter {
+export class MagentoClient
+  extends ECommerceAdapterBase
+  implements IECommerceAdapter
+{
   private accessToken: string | null = null;
   private tokenExpiresAt = 0;
   private baseUrl: string;
@@ -184,16 +187,12 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
   ): Promise<T> {
     const token = await this.getAccessToken();
 
-    return this.makeRequest<T>(
-      method,
-      `${this.baseUrl}/rest/V1${endpoint}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        ...options,
+    return this.makeRequest<T>(method, `${this.baseUrl}/rest/V1${endpoint}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    );
+      ...options,
+    });
   }
 
   /**
@@ -204,9 +203,18 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
       const params = new URLSearchParams();
 
       if (options?.since) {
-        params.append("searchCriteria[filter_groups][0][filters][0][field]", "updated_at");
-        params.append("searchCriteria[filter_groups][0][filters][0][value]", options.since.toISOString());
-        params.append("searchCriteria[filter_groups][0][filters][0][condition_type]", "gteq");
+        params.append(
+          "searchCriteria[filter_groups][0][filters][0][field]",
+          "updated_at",
+        );
+        params.append(
+          "searchCriteria[filter_groups][0][filters][0][value]",
+          options.since.toISOString(),
+        );
+        params.append(
+          "searchCriteria[filter_groups][0][filters][0][condition_type]",
+          "gteq",
+        );
       }
 
       if (options?.limit) {
@@ -218,11 +226,9 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
       const response = await this.magentoRequest<{
         items: MagentoOrderData[];
         total_count: number;
-      }>(
-        "GET",
-        `/orders?${params.toString()}`,
-        { context: "Fetch Magento orders" },
-      );
+      }>("GET", `/orders?${params.toString()}`, {
+        context: "Fetch Magento orders",
+      });
 
       return response.items.map((order) => this.normalizeMagentoOrder(order));
     } catch (error) {
@@ -247,7 +253,10 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
   /**
    * Update order
    */
-  async updateOrder(orderId: string, data: Partial<ECommerceOrder>): Promise<ECommerceOrder> {
+  async updateOrder(
+    orderId: string,
+    data: Partial<ECommerceOrder>,
+  ): Promise<ECommerceOrder> {
     const updateData: Record<string, unknown> = {};
 
     if (data.notes) {
@@ -282,23 +291,35 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
       }
 
       if (options?.since) {
-        params.append("searchCriteria[filter_groups][0][filters][0][field]", "updated_at");
-        params.append("searchCriteria[filter_groups][0][filters][0][value]", options.since.toISOString());
-        params.append("searchCriteria[filter_groups][0][filters][0][condition_type]", "gteq");
+        params.append(
+          "searchCriteria[filter_groups][0][filters][0][field]",
+          "updated_at",
+        );
+        params.append(
+          "searchCriteria[filter_groups][0][filters][0][value]",
+          options.since.toISOString(),
+        );
+        params.append(
+          "searchCriteria[filter_groups][0][filters][0][condition_type]",
+          "gteq",
+        );
       }
 
-      params.append("fields", "items[id,sku,name,description,type_id,status,price,extension_attributes]");
+      params.append(
+        "fields",
+        "items[id,sku,name,description,type_id,status,price,extension_attributes]",
+      );
 
       const response = await this.magentoRequest<{
         items: MagentoProduct[];
         total_count: number;
-      }>(
-        "GET",
-        `/products?${params.toString()}`,
-        { context: "Fetch Magento products" },
-      );
+      }>("GET", `/products?${params.toString()}`, {
+        context: "Fetch Magento products",
+      });
 
-      return response.items.map((product) => this.normalizeMagentoProduct(product));
+      return response.items.map((product) =>
+        this.normalizeMagentoProduct(product),
+      );
     } catch (error) {
       console.error("Failed to fetch Magento products:", error);
       throw error;
@@ -354,7 +375,10 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
   /**
    * Update product
    */
-  async updateProduct(productId: string, data: Partial<ECommerceProduct>): Promise<ECommerceProduct> {
+  async updateProduct(
+    productId: string,
+    data: Partial<ECommerceProduct>,
+  ): Promise<ECommerceProduct> {
     const variant = data.variants?.[0];
 
     const updateData: Record<string, unknown> = {
@@ -403,11 +427,9 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
       const response = await this.magentoRequest<{
         items: MagentoCustomer[];
         total_count: number;
-      }>(
-        "GET",
-        `/customers/search?${params.toString()}`,
-        { context: "Fetch Magento customers" },
-      );
+      }>("GET", `/customers/search?${params.toString()}`, {
+        context: "Fetch Magento customers",
+      });
 
       return response.items.map((customer) => ({
         id: customer.entity_id.toString(),
@@ -481,7 +503,10 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
   /**
    * Create fulfillment (shipment)
    */
-  async createFulfillment(orderId: string, request: FulfillmentRequest): Promise<FulfillmentResponse> {
+  async createFulfillment(
+    orderId: string,
+    request: FulfillmentRequest,
+  ): Promise<FulfillmentResponse> {
     const shipmentData: Record<string, unknown> = {
       entity: {
         items: request.items.map((item) => ({
@@ -565,7 +590,9 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
   /**
    * Update inventory
    */
-  async updateInventory(request: InventoryUpdateRequest): Promise<ECommerceInventory> {
+  async updateInventory(
+    request: InventoryUpdateRequest,
+  ): Promise<ECommerceInventory> {
     // In Magento, inventory is managed via stock items
     const sku = request.variantId;
 
@@ -576,19 +603,15 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
           qty: number;
         };
       };
-    }>(
-      "PUT",
-      `/products/${sku}/stockItems/1`,
-      {
-        body: {
-          stockItem: {
-            qty: request.quantity,
-            is_in_stock: request.quantity > 0,
-          },
+    }>("PUT", `/products/${sku}/stockItems/1`, {
+      body: {
+        stockItem: {
+          qty: request.quantity,
+          is_in_stock: request.quantity > 0,
         },
-        context: `Update Magento inventory for ${sku}`,
       },
-    );
+      context: `Update Magento inventory for ${sku}`,
+    });
 
     return {
       variantId: sku,
@@ -626,8 +649,13 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
   verifyWebhookSignature(payload: unknown, signature: string): boolean {
     if (!this.config.webhookSecret) return false;
 
-    const payloadString = typeof payload === "string" ? payload : JSON.stringify(payload);
-    return this.verifySignature(payloadString, signature, this.config.webhookSecret);
+    const payloadString =
+      typeof payload === "string" ? payload : JSON.stringify(payload);
+    return this.verifySignature(
+      payloadString,
+      signature,
+      this.config.webhookSecret,
+    );
   }
 
   /**
@@ -637,13 +665,18 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
     const raw = payload as Record<string, unknown>;
 
     return {
-      id: typeof raw["event_id"] === "string" ? raw["event_id"] : crypto.randomUUID(),
+      id:
+        typeof raw["event_id"] === "string"
+          ? raw["event_id"]
+          : crypto.randomUUID(),
       platform: "magento",
       topic: typeof raw["topic"] === "string" ? raw["topic"] : "",
       event: typeof raw["resource"] === "string" ? raw["resource"] : "",
-      createdAt: typeof raw["created_at"] === "string" || typeof raw["created_at"] === "number"
-        ? new Date(raw["created_at"] as string)
-        : new Date(),
+      createdAt:
+        typeof raw["created_at"] === "string" ||
+        typeof raw["created_at"] === "number"
+          ? new Date(raw["created_at"] as string)
+          : new Date(),
       data: raw as unknown as ECommerceWebhookEvent["data"],
     };
   }
@@ -734,7 +767,8 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
    */
   private normalizeMagentoProduct(product: MagentoProduct): ECommerceProduct {
     const qty = product.extension_attributes?.stock_item?.qty || 0;
-    const status: ECommerceProduct["status"] = product.status === 1 ? "active" : "archived";
+    const status: ECommerceProduct["status"] =
+      product.status === 1 ? "active" : "archived";
 
     return {
       id: product.id.toString(),
@@ -750,8 +784,10 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
           inventory: {
             variantId: product.id.toString(),
             quantity: qty,
-            trackQuantity: product.extension_attributes?.stock_item?.manage_stock ?? true,
-            allowNegativeStock: (product.extension_attributes?.stock_item?.backorders ?? 0) > 0,
+            trackQuantity:
+              product.extension_attributes?.stock_item?.manage_stock ?? true,
+            allowNegativeStock:
+              (product.extension_attributes?.stock_item?.backorders ?? 0) > 0,
             updatedAt: new Date(),
           },
         },
@@ -782,6 +818,8 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
 /**
  * Factory function to create Magento client
  */
-export function createMagentoClient(config: ECommerceAdapterConfig): MagentoClient {
+export function createMagentoClient(
+  config: ECommerceAdapterConfig,
+): MagentoClient {
   return new MagentoClient(config);
 }

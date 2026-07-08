@@ -39,7 +39,7 @@ export default function HealthcareLayout({ children }: HealthcareLayoutProps) {
                   "border-b-2 transition-colors",
                   pathname === tab.href
                     ? "border-wl-border-active text-wl-text-primary"
-                    : "border-transparent text-wl-text-secondary hover:text-wl-text-primary hover:border-wl-border-hover"
+                    : "border-transparent text-wl-text-secondary hover:text-wl-text-primary hover:border-wl-border-hover",
                 )}
               >
                 {tab.label}
@@ -50,9 +50,7 @@ export default function HealthcareLayout({ children }: HealthcareLayoutProps) {
       </div>
 
       {/* Content */}
-      <div className={cn("flex-1 overflow-y-auto")}>
-        {children}
-      </div>
+      <div className={cn("flex-1 overflow-y-auto")}>{children}</div>
     </div>
   );
 }

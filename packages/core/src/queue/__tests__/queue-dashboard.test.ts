@@ -1,16 +1,16 @@
 // @ts-nocheck
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { QueueDashboard } from '../queue-dashboard';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { QueueDashboard } from "../queue-dashboard";
 
 // Mock bullmq and ioredis so no real connections are attempted
-vi.mock('bullmq', () => ({
+vi.mock("bullmq", () => ({
   Queue: vi.fn(),
   Worker: vi.fn(),
   QueueEvents: vi.fn(),
 }));
 
-vi.mock('ioredis', () => {
+vi.mock("ioredis", () => {
   const RedisMock = vi.fn().mockImplementation(() => ({
     get: vi.fn().mockResolvedValue(null),
     disconnect: vi.fn().mockResolvedValue(undefined),
@@ -19,19 +19,19 @@ vi.mock('ioredis', () => {
 });
 
 // Import after mocks are in place
-import { Redis } from 'ioredis';
+import { Redis } from "ioredis";
 
-describe('QueueDashboard', () => {
+describe("QueueDashboard", () => {
   let redis: any;
   let dashboard: QueueDashboard;
   let mockQueue: any;
 
   beforeEach(() => {
     redis = new Redis();
-    dashboard = new QueueDashboard(redis, ['test-queue']);
+    dashboard = new QueueDashboard(redis, ["test-queue"]);
 
     mockQueue = {
-      name: 'test-queue',
+      name: "test-queue",
       getJobCounts: vi.fn().mockResolvedValue({
         active: 5,
         waiting: 10,
@@ -48,20 +48,20 @@ describe('QueueDashboard', () => {
       getFailed: vi.fn().mockResolvedValue([]),
     };
 
-    dashboard.registerQueue('test-queue', mockQueue as any);
+    dashboard.registerQueue("test-queue", mockQueue as any);
   });
 
   afterEach(async () => {
     await redis.disconnect();
   });
 
-  describe('getAllQueuesStats', () => {
-    it('should return stats for all queues', async () => {
+  describe("getAllQueuesStats", () => {
+    it("should return stats for all queues", async () => {
       const stats = await dashboard.getAllQueuesStats();
 
       expect(stats).toHaveLength(1);
       expect(stats[0]).toMatchObject({
-        name: 'test-queue',
+        name: "test-queue",
         active: 5,
         waiting: 10,
         completed: 100,
@@ -70,20 +70,20 @@ describe('QueueDashboard', () => {
       });
     });
 
-    it('should handle missing queues gracefully', async () => {
-      const emptyDashboard = new QueueDashboard(redis, ['nonexistent']);
+    it("should handle missing queues gracefully", async () => {
+      const emptyDashboard = new QueueDashboard(redis, ["nonexistent"]);
       const stats = await emptyDashboard.getAllQueuesStats();
 
       expect(stats).toHaveLength(0);
     });
   });
 
-  describe('getJobDetails', () => {
-    it('should return job details', async () => {
+  describe("getJobDetails", () => {
+    it("should return job details", async () => {
       const mockJob = {
-        id: 'job-123',
-        name: 'test-job',
-        data: { test: 'data' },
+        id: "job-123",
+        name: "test-job",
+        data: { test: "data" },
         progress: vi.fn().mockReturnValue(50),
         attemptsMade: 1,
         opts: { attempts: 3 },
@@ -91,107 +91,112 @@ describe('QueueDashboard', () => {
         timestamp: Date.now(),
         processedOn: Date.now() - 1000,
         finishedOn: null,
-        logs: vi.fn().mockResolvedValue([
-          { msg: 'Starting job' },
-          { msg: 'Processing data' },
-        ]),
-        getState: vi.fn().mockResolvedValue('active'),
+        logs: vi
+          .fn()
+          .mockResolvedValue([
+            { msg: "Starting job" },
+            { msg: "Processing data" },
+          ]),
+        getState: vi.fn().mockResolvedValue("active"),
       };
 
       mockQueue.getJob.mockResolvedValue(mockJob);
 
-      const details = await dashboard.getJobDetails('test-queue', 'job-123');
+      const details = await dashboard.getJobDetails("test-queue", "job-123");
 
       expect(details).toMatchObject({
-        id: 'job-123',
-        name: 'test-job',
-        data: { test: 'data' },
+        id: "job-123",
+        name: "test-job",
+        data: { test: "data" },
         progress: 50,
         attempts: 1,
         maxAttempts: 3,
-        status: 'active',
+        status: "active",
       });
-      expect(details?.logs).toContain('Starting job');
+      expect(details?.logs).toContain("Starting job");
     });
 
-    it('should return null for missing job', async () => {
+    it("should return null for missing job", async () => {
       mockQueue.getJob.mockResolvedValue(null);
 
-      const details = await dashboard.getJobDetails('test-queue', 'nonexistent');
+      const details = await dashboard.getJobDetails(
+        "test-queue",
+        "nonexistent",
+      );
 
       expect(details).toBeNull();
     });
   });
 
-  describe('retryJob', () => {
-    it('should retry a single job', async () => {
+  describe("retryJob", () => {
+    it("should retry a single job", async () => {
       const mockJob = {
-        id: 'job-123',
+        id: "job-123",
         retry: vi.fn().mockResolvedValue(undefined),
       };
 
       mockQueue.getJob.mockResolvedValue(mockJob);
 
-      const success = await dashboard.retryJob('test-queue', 'job-123');
+      const success = await dashboard.retryJob("test-queue", "job-123");
 
       expect(success).toBe(true);
-      expect(mockJob.retry).toHaveBeenCalledWith('failed');
+      expect(mockJob.retry).toHaveBeenCalledWith("failed");
     });
 
-    it('should handle retry failure', async () => {
+    it("should handle retry failure", async () => {
       mockQueue.getJob.mockResolvedValue(null);
 
-      const success = await dashboard.retryJob('test-queue', 'nonexistent');
+      const success = await dashboard.retryJob("test-queue", "nonexistent");
 
       expect(success).toBe(false);
     });
   });
 
-  describe('pauseQueue and resumeQueue', () => {
-    it('should pause a queue', async () => {
-      const success = await dashboard.pauseQueue('test-queue');
+  describe("pauseQueue and resumeQueue", () => {
+    it("should pause a queue", async () => {
+      const success = await dashboard.pauseQueue("test-queue");
 
       expect(success).toBe(true);
       expect(mockQueue.pause).toHaveBeenCalled();
     });
 
-    it('should resume a queue', async () => {
-      const success = await dashboard.resumeQueue('test-queue');
+    it("should resume a queue", async () => {
+      const success = await dashboard.resumeQueue("test-queue");
 
       expect(success).toBe(true);
       expect(mockQueue.resume).toHaveBeenCalled();
     });
   });
 
-  describe('removeJob', () => {
-    it('should remove a job', async () => {
+  describe("removeJob", () => {
+    it("should remove a job", async () => {
       const mockJob = {
-        id: 'job-123',
+        id: "job-123",
         remove: vi.fn().mockResolvedValue(undefined),
       };
 
       mockQueue.getJob.mockResolvedValue(mockJob);
 
-      const success = await dashboard.removeJob('test-queue', 'job-123');
+      const success = await dashboard.removeJob("test-queue", "job-123");
 
       expect(success).toBe(true);
       expect(mockJob.remove).toHaveBeenCalled();
     });
   });
 
-  describe('cleanCompletedJobs', () => {
-    it('should clean completed jobs older than X days', async () => {
+  describe("cleanCompletedJobs", () => {
+    it("should clean completed jobs older than X days", async () => {
       const oldDate = Date.now() - 10 * 24 * 60 * 60 * 1000; // 10 days ago
       const recentDate = Date.now() - 1 * 24 * 60 * 60 * 1000; // 1 day ago
 
       const mockJobs = [
         {
-          id: 'old-job',
+          id: "old-job",
           finishedOn: oldDate,
           remove: vi.fn().mockResolvedValue(undefined),
         },
         {
-          id: 'recent-job',
+          id: "recent-job",
           finishedOn: recentDate,
           remove: vi.fn(),
         },
@@ -199,7 +204,7 @@ describe('QueueDashboard', () => {
 
       mockQueue.getCompleted.mockResolvedValue(mockJobs);
 
-      const cleaned = await dashboard.cleanCompletedJobs('test-queue', 7);
+      const cleaned = await dashboard.cleanCompletedJobs("test-queue", 7);
 
       expect(cleaned).toBe(1);
       expect(mockJobs[0].remove).toHaveBeenCalled();
@@ -207,20 +212,20 @@ describe('QueueDashboard', () => {
     });
   });
 
-  describe('retryAllFailed', () => {
-    it('should retry all failed jobs', async () => {
+  describe("retryAllFailed", () => {
+    it("should retry all failed jobs", async () => {
       const mockJobs = [
-        { id: 'fail-1', retry: vi.fn().mockResolvedValue(undefined) },
-        { id: 'fail-2', retry: vi.fn().mockResolvedValue(undefined) },
+        { id: "fail-1", retry: vi.fn().mockResolvedValue(undefined) },
+        { id: "fail-2", retry: vi.fn().mockResolvedValue(undefined) },
       ];
 
       mockQueue.getFailed.mockResolvedValue(mockJobs);
 
-      const count = await dashboard.retryAllFailed('test-queue');
+      const count = await dashboard.retryAllFailed("test-queue");
 
       expect(count).toBe(2);
-      expect(mockJobs[0].retry).toHaveBeenCalledWith('failed');
-      expect(mockJobs[1].retry).toHaveBeenCalledWith('failed');
+      expect(mockJobs[0].retry).toHaveBeenCalledWith("failed");
+      expect(mockJobs[1].retry).toHaveBeenCalledWith("failed");
     });
   });
 });

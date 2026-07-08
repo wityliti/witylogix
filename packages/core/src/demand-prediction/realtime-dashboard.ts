@@ -10,13 +10,13 @@
  * - Real-time update event emitter
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
 import type {
   DemandForecast,
   DemandAnomaly,
   ModelPerformanceMetrics,
   ZoneProfile,
-} from './types';
+} from "./types";
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -33,7 +33,7 @@ export interface DemandSnapshot {
   demandGap: number; // actual - predicted
   demandGapPercent: number; // (actual - predicted) / predicted
   confidence: number; // 0-1 forecast confidence
-  trend: 'up' | 'down' | 'stable'; // direction of change
+  trend: "up" | "down" | "stable"; // direction of change
   capacity: number; // current allocated drivers/slots
   utilization: number; // 0-1, actual/capacity
   anomalyDetected: boolean;
@@ -60,7 +60,7 @@ export interface ZoneRanking {
   zoneName?: string;
   demandGap: number; // absolute gap
   demandGapPercent: number;
-  severity: 'critical' | 'high' | 'medium' | 'low' | 'ok';
+  severity: "critical" | "high" | "medium" | "low" | "ok";
   actualDemand: number;
   predictedDemand: number;
   capacity: number;
@@ -89,7 +89,11 @@ export interface ModelAccuracyDashboard {
  * Dashboard event types
  */
 export interface DashboardEvent {
-  type: 'snapshot_update' | 'anomaly_detected' | 'model_updated' | 'alert_triggered';
+  type:
+    | "snapshot_update"
+    | "anomaly_detected"
+    | "model_updated"
+    | "alert_triggered";
   timestamp: Date;
   data: any;
 }
@@ -143,7 +147,7 @@ export class RealtimeDashboard extends EventEmitter {
       this.refreshSnapshots();
     }, this.updateIntervalMs);
 
-    this.emit('monitoring_started', { zoneIds, timestamp: new Date() });
+    this.emit("monitoring_started", { zoneIds, timestamp: new Date() });
   }
 
   /**
@@ -153,7 +157,7 @@ export class RealtimeDashboard extends EventEmitter {
     if (this.updateInterval) {
       clearInterval(this.updateInterval);
       this.updateInterval = null;
-      this.emit('monitoring_stopped', { timestamp: new Date() });
+      this.emit("monitoring_stopped", { timestamp: new Date() });
     }
   }
 
@@ -209,20 +213,22 @@ export class RealtimeDashboard extends EventEmitter {
    */
   getModelAccuracyDashboard(): ModelAccuracyDashboard {
     const now = new Date();
-    const byZone = Array.from(this.demandSnapshots.entries()).map(([zoneId, snapshot]) => ({
-      zoneId,
-      metrics: {
-        mae: 5.2, // Mock values - would be calculated from actual vs predicted
-        rmse: 7.1,
-        mape: 8.3,
-        r2Score: 0.87,
-        precision: 0.92,
-        recall: 0.89,
-      } as ModelPerformanceMetrics,
-      forecastCount: 24,
-      successRate: 0.88,
-      lastUpdated: now,
-    }));
+    const byZone = Array.from(this.demandSnapshots.entries()).map(
+      ([zoneId, snapshot]) => ({
+        zoneId,
+        metrics: {
+          mae: 5.2, // Mock values - would be calculated from actual vs predicted
+          rmse: 7.1,
+          mape: 8.3,
+          r2Score: 0.87,
+          precision: 0.92,
+          recall: 0.89,
+        } as ModelPerformanceMetrics,
+        forecastCount: 24,
+        successRate: 0.88,
+        lastUpdated: now,
+      }),
+    );
 
     return {
       overallMetrics: this.modelMetrics || {
@@ -236,7 +242,7 @@ export class RealtimeDashboard extends EventEmitter {
       byZone,
       modelVersion: 2,
       lastRetrainedAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
-      retrainSchedule: 'Weekly on Monday 2:00 AM UTC',
+      retrainSchedule: "Weekly on Monday 2:00 AM UTC",
     };
   }
 
@@ -249,22 +255,22 @@ export class RealtimeDashboard extends EventEmitter {
 
     for (const snapshot of this.demandSnapshots.values()) {
       const severityPercent = Math.abs(snapshot.demandGapPercent);
-      let severity: ZoneRanking['severity'];
+      let severity: ZoneRanking["severity"];
 
-      if (severityPercent > 0.5) severity = 'critical';
-      else if (severityPercent > 0.3) severity = 'high';
-      else if (severityPercent > 0.15) severity = 'medium';
-      else if (severityPercent > 0.05) severity = 'low';
-      else severity = 'ok';
+      if (severityPercent > 0.5) severity = "critical";
+      else if (severityPercent > 0.3) severity = "high";
+      else if (severityPercent > 0.15) severity = "medium";
+      else if (severityPercent > 0.05) severity = "low";
+      else severity = "ok";
 
       // Generate recommendation based on gap
       let recommendation: string;
       if (snapshot.demandGap > 0) {
         const driverShortage = Math.ceil(snapshot.demandGap / 3); // ~3 deliveries per driver
-        recommendation = `Add ${driverShortage} driver${driverShortage !== 1 ? 's' : ''} (demand exceeding capacity)`;
+        recommendation = `Add ${driverShortage} driver${driverShortage !== 1 ? "s" : ""} (demand exceeding capacity)`;
       } else {
         const excessCapacity = Math.ceil(Math.abs(snapshot.demandGap) / 3);
-        recommendation = `Reduce capacity by ${excessCapacity} driver${excessCapacity !== 1 ? 's' : ''} (idle resources)`;
+        recommendation = `Reduce capacity by ${excessCapacity} driver${excessCapacity !== 1 ? "s" : ""} (idle resources)`;
       }
 
       rankings.push({
@@ -282,7 +288,9 @@ export class RealtimeDashboard extends EventEmitter {
     }
 
     // Sort by demand gap magnitude descending
-    return rankings.sort((a, b) => Math.abs(b.demandGap) - Math.abs(a.demandGap));
+    return rankings.sort(
+      (a, b) => Math.abs(b.demandGap) - Math.abs(a.demandGap),
+    );
   }
 
   /**
@@ -297,19 +305,20 @@ export class RealtimeDashboard extends EventEmitter {
       confidence?: number;
       anomalyDetected?: boolean;
       anomalySeverity?: number;
-    }
+    },
   ): DemandSnapshot {
     const timestamp = new Date();
     const demandGap = actualDemand - predictedDemand;
-    const demandGapPercent = predictedDemand > 0 ? demandGap / predictedDemand : 0;
+    const demandGapPercent =
+      predictedDemand > 0 ? demandGap / predictedDemand : 0;
 
     // Determine trend
     const previousSnapshot = this.demandSnapshots.get(zoneId);
-    let trend: 'up' | 'down' | 'stable' = 'stable';
+    let trend: "up" | "down" | "stable" = "stable";
     if (previousSnapshot) {
       const change = actualDemand - previousSnapshot.actualDemand;
-      if (change > previousSnapshot.actualDemand * 0.05) trend = 'up';
-      else if (change < -previousSnapshot.actualDemand * 0.05) trend = 'down';
+      if (change > previousSnapshot.actualDemand * 0.05) trend = "up";
+      else if (change < -previousSnapshot.actualDemand * 0.05) trend = "down";
     }
 
     const snapshot: DemandSnapshot = {
@@ -347,7 +356,7 @@ export class RealtimeDashboard extends EventEmitter {
     this.demandHistory.set(zoneId, history);
 
     // Emit update event
-    this.emit('snapshot_updated', snapshot);
+    this.emit("snapshot_updated", snapshot);
 
     return snapshot;
   }
@@ -368,7 +377,7 @@ export class RealtimeDashboard extends EventEmitter {
 
     // Emit anomaly event for each
     for (const anomaly of anomalies) {
-      this.emit('anomaly_detected', anomaly);
+      this.emit("anomaly_detected", anomaly);
     }
   }
 
@@ -377,7 +386,7 @@ export class RealtimeDashboard extends EventEmitter {
    */
   updateModelMetrics(metrics: ModelPerformanceMetrics): void {
     this.modelMetrics = metrics;
-    this.emit('model_metrics_updated', metrics);
+    this.emit("model_metrics_updated", metrics);
   }
 
   /**
@@ -394,7 +403,7 @@ export class RealtimeDashboard extends EventEmitter {
   private refreshSnapshots(): void {
     // In production, this would fetch actual current demand from database
     // For now, it emits a tick event for external refresh
-    this.emit('refresh_tick', { timestamp: new Date() });
+    this.emit("refresh_tick", { timestamp: new Date() });
   }
 
   /**

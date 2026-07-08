@@ -49,19 +49,17 @@ export const SidebarCollapsed: Story = {
     <div className="flex h-96 bg-wl-bg-root">
       {/* Collapsed Sidebar */}
       <div className="w-20 bg-wl-bg-sidebar border-r border-wl-border-subtle p-2 space-y-2">
-        {[
-          { icon: Home },
-          { icon: Users },
-          { icon: Settings },
-        ].map((item, i) => (
-          <button
-            key={i}
-            className="w-full flex items-center justify-center p-3 rounded-md text-wl-text-secondary hover:bg-wl-bg-overlay transition-colors"
-            title={item.icon.displayName}
-          >
-            <item.icon size={20} />
-          </button>
-        ))}
+        {[{ icon: Home }, { icon: Users }, { icon: Settings }].map(
+          (item, i) => (
+            <button
+              key={i}
+              className="w-full flex items-center justify-center p-3 rounded-md text-wl-text-secondary hover:bg-wl-bg-overlay transition-colors"
+              title={item.icon.displayName}
+            >
+              <item.icon size={20} />
+            </button>
+          ),
+        )}
       </div>
 
       <div className="flex-1 bg-wl-bg-root p-6">
@@ -131,9 +129,15 @@ export const Tabs: Story = {
         </div>
 
         <div className="p-4 bg-wl-bg-surface rounded-md">
-          {activeTab === "tab1" && <p className="text-wl-text-secondary">Content for Tab 1</p>}
-          {activeTab === "tab2" && <p className="text-wl-text-secondary">Content for Tab 2</p>}
-          {activeTab === "tab3" && <p className="text-wl-text-secondary">Content for Tab 3</p>}
+          {activeTab === "tab1" && (
+            <p className="text-wl-text-secondary">Content for Tab 1</p>
+          )}
+          {activeTab === "tab2" && (
+            <p className="text-wl-text-secondary">Content for Tab 2</p>
+          )}
+          {activeTab === "tab3" && (
+            <p className="text-wl-text-secondary">Content for Tab 3</p>
+          )}
         </div>
       </div>
     );

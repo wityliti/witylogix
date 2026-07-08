@@ -223,15 +223,14 @@ describe("Failover Behavior - Timeout Detection", () => {
       await Promise.race([
         slowClient.fetch("https://here.example.com/slow"),
         new Promise((_, reject) =>
-          setTimeout(
-            () => reject(new Error("Timeout")),
-            timeout,
-          ),
+          setTimeout(() => reject(new Error("Timeout")), timeout),
         ),
       ]);
     } catch {
       // Failover to secondary
-      const response = await fastClient.fetch("https://google.example.com/fast");
+      const response = await fastClient.fetch(
+        "https://google.example.com/fast",
+      );
       expect(response.status).toBe(200);
       usedSecondary = true;
     }
@@ -542,7 +541,7 @@ describe("Failover Behavior - Cache Hit & Miss", () => {
 
     const route2: RouteRequest = {
       origin: { lat: 40.7128, lng: -74.006 },
-      destination: { lat: 40.7590, lng: -73.9850 }, // Slightly different
+      destination: { lat: 40.759, lng: -73.985 }, // Slightly different
     };
 
     const key1 = JSON.stringify(route1);

@@ -229,7 +229,7 @@ export class AuditLogger {
       errorMessage?: string;
       orgId?: string;
       durationMs?: number;
-    }
+    },
   ): Promise<AuditLogEntry> {
     const entry: AuditLogEntry = {
       id: this.generateEntryId(),
@@ -270,7 +270,7 @@ export class AuditLogger {
     options?: {
       mfaUsed?: boolean;
       orgId?: string;
-    }
+    },
   ): Promise<AuditLogEntry> {
     return this.log(
       AuditEventType.LOGIN,
@@ -281,7 +281,7 @@ export class AuditLogger {
         outcome: "SUCCESS",
         details: { mfaUsed: options?.mfaUsed || false },
         orgId: options?.orgId,
-      }
+      },
     );
   }
 
@@ -294,7 +294,7 @@ export class AuditLogger {
     sessionId?: string,
     options?: {
       orgId?: string;
-    }
+    },
   ): Promise<AuditLogEntry> {
     return this.log(
       AuditEventType.LOGOUT,
@@ -304,7 +304,7 @@ export class AuditLogger {
       {
         outcome: "SUCCESS",
         orgId: options?.orgId,
-      }
+      },
     );
   }
 
@@ -319,7 +319,7 @@ export class AuditLogger {
     after: Record<string, unknown>,
     options?: {
       orgId?: string;
-    }
+    },
   ): Promise<AuditLogEntry> {
     return this.log(
       AuditEventType.PERMISSION_CHANGE,
@@ -330,7 +330,7 @@ export class AuditLogger {
         outcome: "SUCCESS",
         stateChange: { before, after },
         orgId: options?.orgId,
-      }
+      },
     );
   }
 
@@ -344,19 +344,13 @@ export class AuditLogger {
     options?: {
       orgId?: string;
       resultCount?: number;
-    }
+    },
   ): Promise<AuditLogEntry> {
-    return this.log(
-      AuditEventType.DATA_ACCESS,
-      actor,
-      resource,
-      "read",
-      {
-        outcome: "SUCCESS",
-        details: { query, resultCount: options?.resultCount },
-        orgId: options?.orgId,
-      }
-    );
+    return this.log(AuditEventType.DATA_ACCESS, actor, resource, "read", {
+      outcome: "SUCCESS",
+      details: { query, resultCount: options?.resultCount },
+      orgId: options?.orgId,
+    });
   }
 
   /**
@@ -370,19 +364,13 @@ export class AuditLogger {
     after: Record<string, unknown>,
     options?: {
       orgId?: string;
-    }
+    },
   ): Promise<AuditLogEntry> {
-    return this.log(
-      AuditEventType.DATA_MODIFY,
-      actor,
-      resource,
-      action,
-      {
-        outcome: "SUCCESS",
-        stateChange: { before, after },
-        orgId: options?.orgId,
-      }
-    );
+    return this.log(AuditEventType.DATA_MODIFY, actor, resource, action, {
+      outcome: "SUCCESS",
+      stateChange: { before, after },
+      orgId: options?.orgId,
+    });
   }
 
   /**

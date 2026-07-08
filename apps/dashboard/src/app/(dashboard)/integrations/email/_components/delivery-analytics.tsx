@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from "@/components/ui/card";
 
 interface DeliveryMetrics {
   template: string;
@@ -18,9 +18,7 @@ interface DeliveryAnalyticsProps {
 export function DeliveryAnalytics({ metrics }: DeliveryAnalyticsProps) {
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-white">
-        Delivery Analytics (24h)
-      </h2>
+      <h2 className="text-xl font-bold text-white">Delivery Analytics (24h)</h2>
 
       <Card className="bg-wl-bg-elevated border-wl-border-default">
         <CardContent className="pt-6">
@@ -30,10 +28,9 @@ export function DeliveryAnalytics({ metrics }: DeliveryAnalyticsProps) {
                 (metric.delivered / metric.sent) *
                 100
               ).toFixed(0);
-              const opened = (
-                (metric.opened / metric.delivered) *
-                100
-              ).toFixed(0);
+              const opened = ((metric.opened / metric.delivered) * 100).toFixed(
+                0,
+              );
               const clicked = (
                 (metric.clicked / metric.delivered) *
                 100

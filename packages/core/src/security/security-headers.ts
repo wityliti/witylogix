@@ -134,7 +134,7 @@ export class SecurityHeadersMiddleware {
    */
   private buildPermissionsPolicyHeader(): string {
     const policies = this.config.disabledPermissions.map(
-      (permission) => `${permission}=()`
+      (permission) => `${permission}=()`,
     );
     return policies.join(", ");
   }
@@ -221,9 +221,7 @@ export class SecurityHeadersMiddleware {
    * @returns true if path matches
    */
   private pathMatches(path: string, pattern: string): boolean {
-    const regexPattern = pattern
-      .replace(/\./g, "\\.")
-      .replace(/\*/g, ".*");
+    const regexPattern = pattern.replace(/\./g, "\\.").replace(/\*/g, ".*");
     return new RegExp(`^${regexPattern}$`).test(path);
   }
 

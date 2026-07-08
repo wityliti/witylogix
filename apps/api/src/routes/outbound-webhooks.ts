@@ -44,7 +44,9 @@ const paginationSchema = z.object({
 });
 
 const deliveryFiltersSchema = paginationSchema.extend({
-  status: z.enum(["pending", "delivering", "delivered", "failed", "circuit_open"]).optional(),
+  status: z
+    .enum(["pending", "delivering", "delivered", "failed", "circuit_open"])
+    .optional(),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
 });
@@ -70,7 +72,7 @@ async function outboundWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
 
         request.log.info(
           { tenantId, url: body.url, events: body.events },
-          "Creating webhook endpoint"
+          "Creating webhook endpoint",
         );
 
         const endpoint = await webhookManager.registerEndpoint(tenantId, body);
@@ -92,10 +94,11 @@ async function outboundWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
         request.log.error(error, "Failed to create webhook");
         reply.status(500);
         return {
-          error: error instanceof Error ? error.message : "Internal server error",
+          error:
+            error instanceof Error ? error.message : "Internal server error",
         };
       }
-    }
+    },
   );
 
   // ── LIST WEBHOOK ENDPOINTS ─────────────────────────────────
@@ -107,11 +110,10 @@ async function outboundWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
         const query = paginationSchema.parse(request.query);
         const tenantId = request.shopId;
 
-        const result = await webhookManager.listEndpoints(
-          tenantId,
-          undefined,
-          { page: query.page, limit: query.limit }
-        );
+        const result = await webhookManager.listEndpoints(tenantId, undefined, {
+          page: query.page,
+          limit: query.limit,
+        });
 
         return {
           data: result.data,
@@ -129,7 +131,7 @@ async function outboundWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
           error: "Failed to list webhooks",
         };
       }
-    }
+    },
   );
 
   // ── GET WEBHOOK ENDPOINT DETAILS ───────────────────────────
@@ -162,7 +164,7 @@ async function outboundWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
         reply.status(500);
         return { error: "Failed to get webhook" };
       }
-    }
+    },
   );
 
   // ── UPDATE WEBHOOK ENDPOINT ────────────────────────────────
@@ -207,10 +209,11 @@ async function outboundWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
         request.log.error(error, "Failed to update webhook");
         reply.status(500);
         return {
-          error: error instanceof Error ? error.message : "Internal server error",
+          error:
+            error instanceof Error ? error.message : "Internal server error",
         };
       }
-    }
+    },
   );
 
   // ── DELETE WEBHOOK ENDPOINT ────────────────────────────────
@@ -245,7 +248,7 @@ async function outboundWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
         reply.status(500);
         return { error: "Failed to delete webhook" };
       }
-    }
+    },
   );
 
   // ── SEND TEST WEBHOOK ──────────────────────────────────────
@@ -280,10 +283,13 @@ async function outboundWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
         request.log.error(error, "Failed to send test webhook");
         reply.status(500);
         return {
-          error: error instanceof Error ? error.message : "Failed to send test webhook",
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to send test webhook",
         };
       }
-    }
+    },
   );
 
   // ── GET DELIVERY HISTORY ───────────────────────────────────
@@ -332,7 +338,7 @@ async function outboundWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
         reply.status(500);
         return { error: "Failed to get delivery history" };
       }
-    }
+    },
   );
 
   // ── MANUAL RETRY DELIVERY ──────────────────────────────────
@@ -372,10 +378,11 @@ async function outboundWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
         request.log.error(error, "Failed to retry delivery");
         reply.status(500);
         return {
-          error: error instanceof Error ? error.message : "Failed to retry delivery",
+          error:
+            error instanceof Error ? error.message : "Failed to retry delivery",
         };
       }
-    }
+    },
   );
 
   // ── ROTATE WEBHOOK SECRET ──────────────────────────────────
@@ -414,10 +421,11 @@ async function outboundWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
         request.log.error(error, "Failed to rotate secret");
         reply.status(500);
         return {
-          error: error instanceof Error ? error.message : "Failed to rotate secret",
+          error:
+            error instanceof Error ? error.message : "Failed to rotate secret",
         };
       }
-    }
+    },
   );
 
   // ── WEBHOOK STATISTICS ─────────────────────────────────────
@@ -438,7 +446,7 @@ async function outboundWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
         reply.status(500);
         return { error: "Failed to get statistics" };
       }
-    }
+    },
   );
 
   // ── AD-HOC TEST SEND (no webhook ID required) ──────────────────────────────
@@ -461,13 +469,20 @@ async function outboundWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
       try {
         const res = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "X-Witylogix-Event": eventType },
+          headers: {
+            "Content-Type": "application/json",
+            "X-Witylogix-Event": eventType,
+          },
           body: JSON.stringify(payload ?? {}),
           signal: AbortSignal.timeout(10_000),
         });
         const duration = Date.now() - start;
         let responseBody: string | null = null;
-        try { responseBody = await res.text(); } catch { /* ignore */ }
+        try {
+          responseBody = await res.text();
+        } catch {
+          /* ignore */
+        }
         return {
           data: {
             success: res.ok,
@@ -487,7 +502,7 @@ async function outboundWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
           },
         };
       }
-    }
+    },
   );
 }
 

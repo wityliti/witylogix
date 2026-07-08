@@ -260,9 +260,11 @@ export interface CostForecast {
  * Cost optimization service.
  */
 export class CostOptimizer {
-  private surgeHistory: Map<string, SurgePricingDetection["history"]> = new Map();
+  private surgeHistory: Map<string, SurgePricingDetection["history"]> =
+    new Map();
   private volumeDiscounts: Map<string, VolumeDiscount> = new Map();
-  private costHistory: Array<{ date: Date; provider: string; cost: number }> = [];
+  private costHistory: Array<{ date: Date; provider: string; cost: number }> =
+    [];
 
   /**
    * Register volume discount tier.
@@ -299,7 +301,10 @@ export class CostOptimizer {
    * @param courierOption Courier option with quote
    * @returns Cost estimate
    */
-  estimateCost(delivery: DeliveryRequest, courierOption: CourierOption): CostEstimate {
+  estimateCost(
+    delivery: DeliveryRequest,
+    courierOption: CourierOption,
+  ): CostEstimate {
     const basePrice = courierOption.quote.price;
     let effectiveCost = basePrice;
     let surgeMultiplier = 1.0;
@@ -348,15 +353,23 @@ export class CostOptimizer {
    * @param options Courier options
    * @returns Cost comparison
    */
-  compareCosts(delivery: DeliveryRequest, options: CourierOption[]): CostComparison {
-    const estimates = options.map((opt) => this.estimateCost(delivery, opt)).filter((e) => e.effectiveCost > 0);
+  compareCosts(
+    delivery: DeliveryRequest,
+    options: CourierOption[],
+  ): CostComparison {
+    const estimates = options
+      .map((opt) => this.estimateCost(delivery, opt))
+      .filter((e) => e.effectiveCost > 0);
 
     if (estimates.length === 0) {
       throw new Error("No valid cost estimates");
     }
 
-    const cheapest = estimates.reduce((prev, current) => (prev.effectiveCost < current.effectiveCost ? prev : current));
-    const avgCost = estimates.reduce((sum, e) => sum + e.effectiveCost, 0) / estimates.length;
+    const cheapest = estimates.reduce((prev, current) =>
+      prev.effectiveCost < current.effectiveCost ? prev : current,
+    );
+    const avgCost =
+      estimates.reduce((sum, e) => sum + e.effectiveCost, 0) / estimates.length;
     const costs = estimates.map((e) => e.effectiveCost);
     const min = Math.min(...costs);
     const max = Math.max(...costs);
@@ -417,13 +430,17 @@ export class CostOptimizer {
 
         for (const option of result.options) {
           const estimate = this.estimateCost(delivery, option);
-          const currentCount = (providerDeliveryCounts.get(option.provider) || 0) + 1;
+          const currentCount =
+            (providerDeliveryCounts.get(option.provider) || 0) + 1;
 
           // Recalculate with volume discount for this count
           let cost = estimate.effectiveCost;
           const discount = this.volumeDiscounts.get(option.provider);
           if (discount) {
-            const discountPercent = this.calculateVolumeDiscount(discount, currentCount);
+            const discountPercent = this.calculateVolumeDiscount(
+              discount,
+              currentCount,
+            );
             if (discountPercent > 0) {
               cost *= 1 - discountPercent / 100;
             }
@@ -442,7 +459,10 @@ export class CostOptimizer {
         });
 
         optimizedTotal += bestCost;
-        providerDeliveryCounts.set(bestProvider, (providerDeliveryCounts.get(bestProvider) || 0) + 1);
+        providerDeliveryCounts.set(
+          bestProvider,
+          (providerDeliveryCounts.get(bestProvider) || 0) + 1,
+        );
       }
     }
 
@@ -456,7 +476,9 @@ export class CostOptimizer {
           const totalValue = assignments
             .filter((a) => a.provider === provider)
             .reduce((sum, a) => sum + a.estimatedCost, 0);
-          const discountValue = (totalValue / (1 - discountPercent / 100)) * (discountPercent / 100);
+          const discountValue =
+            (totalValue / (1 - discountPercent / 100)) *
+            (discountPercent / 100);
           volumeDiscounts.push({
             provider,
             orderQuantity: count,
@@ -475,13 +497,18 @@ export class CostOptimizer {
         ifRoutedIndividually: Math.round(individualTotal * 100) / 100,
         ifOptimized: Math.round(optimizedTotal * 100) / 100,
         totalSavings: Math.round(savings * 100) / 100,
-        savingsPercent: individualTotal > 0 ? (savings / individualTotal) * 100 : 0,
+        savingsPercent:
+          individualTotal > 0 ? (savings / individualTotal) * 100 : 0,
       },
       assignments,
       volumeDiscounts,
       recommendations: [
-        savings > 0 ? `Batch optimization saves $${savings.toFixed(2)} (${((savings / individualTotal) * 100).toFixed(1)}%)` : "No cost savings available",
-        volumeDiscounts.length > 0 ? `Leverage volume discounts with ${volumeDiscounts.length} provider(s)` : "Consider consolidating with fewer providers for volume discounts",
+        savings > 0
+          ? `Batch optimization saves $${savings.toFixed(2)} (${((savings / individualTotal) * 100).toFixed(1)}%)`
+          : "No cost savings available",
+        volumeDiscounts.length > 0
+          ? `Leverage volume discounts with ${volumeDiscounts.length} provider(s)`
+          : "Consider consolidating with fewer providers for volume discounts",
       ],
     };
   }
@@ -493,9 +520,16 @@ export class CostOptimizer {
    * @param singleCourierProvider Provider to compare against
    * @returns ROI analysis
    */
-  calculateROI(period: string = "30d", singleCourierProvider?: string): ROIAnalysis {
+  calculateROI(
+    period: string = "30d",
+    singleCourierProvider?: string,
+  ): ROIAnalysis {
     const periodMs =
-      period === "90d" ? 90 * 24 * 60 * 60 * 1000 : period === "7d" ? 7 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
+      period === "90d"
+        ? 90 * 24 * 60 * 60 * 1000
+        : period === "7d"
+          ? 7 * 24 * 60 * 60 * 1000
+          : 30 * 24 * 60 * 60 * 1000;
 
     const cutoff = new Date(Date.now() - periodMs);
     const relevantHistory = this.costHistory.filter((h) => h.date > cutoff);
@@ -545,7 +579,10 @@ export class CostOptimizer {
     } else {
       const avgByProvider = new Map<string, number>();
       for (const [provider, costs] of byProvider) {
-        avgByProvider.set(provider, costs.reduce((a, b) => a + b, 0) / costs.length);
+        avgByProvider.set(
+          provider,
+          costs.reduce((a, b) => a + b, 0) / costs.length,
+        );
       }
       const cheapest = Math.min(...Array.from(avgByProvider.values()));
       for (const [provider, costs] of byProvider) {
@@ -556,7 +593,10 @@ export class CostOptimizer {
       }
     }
 
-    const multiCourierCost = relevantHistory.reduce((sum, h) => sum + h.cost, 0);
+    const multiCourierCost = relevantHistory.reduce(
+      (sum, h) => sum + h.cost,
+      0,
+    );
     const savings = singleCourierCost - multiCourierCost;
 
     return {
@@ -566,7 +606,8 @@ export class CostOptimizer {
         singleCourierCost: Math.round(singleCourierCost * 100) / 100,
         multiCourierCost: Math.round(multiCourierCost * 100) / 100,
         savings: Math.round(savings * 100) / 100,
-        savingsPercent: singleCourierCost > 0 ? (savings / singleCourierCost) * 100 : 0,
+        savingsPercent:
+          singleCourierCost > 0 ? (savings / singleCourierCost) * 100 : 0,
       },
       volumeDiscounts: {
         totalDiscountValue: Math.round(savings * 0.3 * 100) / 100, // Estimate 30% from volume
@@ -579,7 +620,8 @@ export class CostOptimizer {
       },
       roi: {
         value: Math.round(savings * 100) / 100,
-        percent: singleCourierCost > 0 ? (savings / singleCourierCost) * 100 : 0,
+        percent:
+          singleCourierCost > 0 ? (savings / singleCourierCost) * 100 : 0,
         paybackMonths: 1,
       },
       recommendations: [
@@ -615,9 +657,15 @@ export class CostOptimizer {
    * @param quantity Order quantity
    * @returns Discount percentage
    */
-  private calculateVolumeDiscount(discount: VolumeDiscount, quantity: number): number {
+  private calculateVolumeDiscount(
+    discount: VolumeDiscount,
+    quantity: number,
+  ): number {
     for (const tier of discount.tiers) {
-      if (quantity >= tier.minDeliveries && (!tier.maxDeliveries || quantity <= tier.maxDeliveries)) {
+      if (
+        quantity >= tier.minDeliveries &&
+        (!tier.maxDeliveries || quantity <= tier.maxDeliveries)
+      ) {
         return tier.discountPercent;
       }
     }
@@ -632,8 +680,14 @@ export class CostOptimizer {
    * @param periods Number of periods to forecast
    * @returns Cost forecast
    */
-  forecastCosts(provider: string, period: "daily" | "weekly" | "monthly" = "daily", periods: number = 30): CostForecast {
-    const relevantCosts = this.costHistory.filter((h) => h.provider === provider).map((h) => h.cost);
+  forecastCosts(
+    provider: string,
+    period: "daily" | "weekly" | "monthly" = "daily",
+    periods: number = 30,
+  ): CostForecast {
+    const relevantCosts = this.costHistory
+      .filter((h) => h.provider === provider)
+      .map((h) => h.cost);
 
     if (relevantCosts.length === 0) {
       return {
@@ -646,7 +700,8 @@ export class CostOptimizer {
     }
 
     // Simple moving average forecast
-    const avgCost = relevantCosts.reduce((a, b) => a + b, 0) / relevantCosts.length;
+    const avgCost =
+      relevantCosts.reduce((a, b) => a + b, 0) / relevantCosts.length;
     const forecasts: CostForecast["forecasts"] = [];
 
     let periodStart = new Date();

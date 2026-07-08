@@ -9,7 +9,12 @@
 /**
  * Base rate type that supports multiple calculation methods
  */
-export type RateType = 'flat' | 'weight_based' | 'price_based' | 'distance_based' | 'tiered';
+export type RateType =
+  | "flat"
+  | "weight_based"
+  | "price_based"
+  | "distance_based"
+  | "tiered";
 
 /**
  * Represents a single shipping rate with its calculation method and rules
@@ -89,7 +94,13 @@ export interface TieredRate {
  * Surcharge applied to rates (fuel, remote area, etc)
  */
 export interface RateSurcharge {
-  type: 'fuel' | 'remote_area' | 'residential' | 'oversize' | 'insurance' | 'custom';
+  type:
+    | "fuel"
+    | "remote_area"
+    | "residential"
+    | "oversize"
+    | "insurance"
+    | "custom";
   amount?: number;
   percentage?: number;
   condition?: SurchargeCondition;
@@ -100,7 +111,7 @@ export interface RateSurcharge {
  * Condition for applying a surcharge
  */
 export interface SurchargeCondition {
-  type: 'weight_above' | 'distance_above' | 'zone' | 'address_type' | 'custom';
+  type: "weight_above" | "distance_above" | "zone" | "address_type" | "custom";
   value?: unknown;
   metadata?: Record<string, unknown>;
 }
@@ -117,7 +128,7 @@ export interface ShippingZone {
 
   // Zone boundary (GeoJSON polygon when PostGIS available)
   boundary?: {
-    type: 'Polygon';
+    type: "Polygon";
     coordinates: number[][][]; // [[[lng, lat], ...]]
   };
 
@@ -234,7 +245,7 @@ export interface BlackoutDate {
  * Calendar rule for conditional cutoffs
  */
 export interface CalendarRule {
-  type: 'blackout' | 'special_hours' | 'capacity_override' | 'surge_pricing';
+  type: "blackout" | "special_hours" | "capacity_override" | "surge_pricing";
   effectiveFrom: Date;
   effectiveTo?: Date;
 
@@ -275,7 +286,7 @@ export interface PrepTime {
 
   // Additional prep time based on conditions
   conditionalMinutes?: {
-    condition: 'weekend' | 'holiday' | 'high_volume' | 'custom';
+    condition: "weekend" | "holiday" | "high_volume" | "custom";
     additionalMinutes: number;
   }[];
 }
@@ -339,7 +350,7 @@ export interface LocationAttachment {
 /**
  * Type of delivery method
  */
-export type DeliveryMethod = 'local' | 'standard' | 'express' | 'pickup';
+export type DeliveryMethod = "local" | "standard" | "express" | "pickup";
 
 /**
  * Delivery method configuration
@@ -501,7 +512,7 @@ export interface RateCalculationRequest {
 
   // Shipment details
   weight?: number; // kg
-  weightUnit?: 'g' | 'kg' | 'oz' | 'lb';
+  weightUnit?: "g" | "kg" | "oz" | "lb";
   orderAmount?: number;
   distance?: number; // km
 

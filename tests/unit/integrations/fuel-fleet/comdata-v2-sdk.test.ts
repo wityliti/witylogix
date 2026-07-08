@@ -3,8 +3,15 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { Comdatav2SDKClient, ComdataAPIError } from "../../../../packages/core/src/integrations/fuel-fleet/comdata-v2-sdk-client";
-import type { SDKConfig, VirtualCardIssuanceRequest, CardIssuanceRequest } from "../../../../packages/core/src/integrations/fuel-fleet/fuel-fleet-sdk-types";
+import {
+  Comdatav2SDKClient,
+  ComdataAPIError,
+} from "../../../../packages/core/src/integrations/fuel-fleet/comdata-v2-sdk-client";
+import type {
+  SDKConfig,
+  VirtualCardIssuanceRequest,
+  CardIssuanceRequest,
+} from "../../../../packages/core/src/integrations/fuel-fleet/fuel-fleet-sdk-types";
 
 describe("Comdatav2SDKClient", () => {
   let client: Comdatav2SDKClient;
@@ -258,7 +265,11 @@ describe("Comdatav2SDKClient", () => {
       const timestamp = String(Date.now() / 1000);
       const signature = "test_sig";
 
-      const result = client.verifyWebhookSignature(payload, signature, timestamp);
+      const result = client.verifyWebhookSignature(
+        payload,
+        signature,
+        timestamp,
+      );
       expect(typeof result).toBe("boolean");
     });
 
@@ -267,7 +278,11 @@ describe("Comdatav2SDKClient", () => {
       const oldTimestamp = String((Date.now() - 10 * 60 * 1000) / 1000); // 10 minutes ago
       const signature = "test_sig";
 
-      const result = client.verifyWebhookSignature(payload, signature, oldTimestamp);
+      const result = client.verifyWebhookSignature(
+        payload,
+        signature,
+        oldTimestamp,
+      );
       expect(result).toBe(false);
     });
   });
@@ -316,7 +331,9 @@ describe("Comdatav2SDKClient", () => {
 
   describe("Error Handling", () => {
     it("should throw ComdataAPIError", () => {
-      const error = new ComdataAPIError("API_ERROR", "Something went wrong", { reason: "test" });
+      const error = new ComdataAPIError("API_ERROR", "Something went wrong", {
+        reason: "test",
+      });
 
       expect(error).toBeInstanceOf(ComdataAPIError);
       expect(error.code).toBe("API_ERROR");

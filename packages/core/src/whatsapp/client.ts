@@ -12,14 +12,14 @@ import {
   WhatsAppApiResponse,
   MessageStatus,
   MessageStatusEvent,
-} from './types';
+} from "./types";
 
 /**
  * WhatsApp client for sending messages via Meta Cloud API
  */
 export class WhatsAppClient {
   private config: WhatsAppConfig;
-  private readonly apiVersion = 'v18.0';
+  private readonly apiVersion = "v18.0";
 
   constructor(config: WhatsAppConfig) {
     this.validateConfig(config);
@@ -30,17 +30,18 @@ export class WhatsAppClient {
    * Validate configuration on initialization
    */
   private validateConfig(config: WhatsAppConfig): void {
-    if (!config.apiUrl) throw new Error('apiUrl is required');
-    if (!config.accessToken) throw new Error('accessToken is required');
-    if (!config.phoneNumberId) throw new Error('phoneNumberId is required');
-    if (!config.businessAccountId) throw new Error('businessAccountId is required');
+    if (!config.apiUrl) throw new Error("apiUrl is required");
+    if (!config.accessToken) throw new Error("accessToken is required");
+    if (!config.phoneNumberId) throw new Error("phoneNumberId is required");
+    if (!config.businessAccountId)
+      throw new Error("businessAccountId is required");
   }
 
   /**
    * Build API endpoint URL
    */
   private getEndpoint(path: string): string {
-    const baseUrl = this.config.apiUrl.replace(/\/$/, '');
+    const baseUrl = this.config.apiUrl.replace(/\/$/, "");
     return `${baseUrl}/${this.apiVersion}/${path}`;
   }
 
@@ -50,7 +51,7 @@ export class WhatsAppClient {
   private getAuthHeader(): Record<string, string> {
     return {
       Authorization: `Bearer ${this.config.accessToken}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
   }
 
@@ -58,9 +59,9 @@ export class WhatsAppClient {
    * Make API request to WhatsApp Cloud API
    */
   private async request(
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+    method: "GET" | "POST" | "PUT" | "DELETE",
     path: string,
-    body?: Record<string, unknown>
+    body?: Record<string, unknown>,
   ): Promise<WhatsAppApiResponse> {
     const url = this.getEndpoint(path);
     const options: RequestInit = {
@@ -77,7 +78,7 @@ export class WhatsAppClient {
 
     if (!response.ok) {
       throw new Error(
-        `WhatsApp API Error: ${data.error?.message || response.statusText}`
+        `WhatsApp API Error: ${data.error?.message || response.statusText}`,
       );
     }
 
@@ -92,14 +93,14 @@ export class WhatsAppClient {
    */
   async sendTextMessage(to: string, text: string): Promise<string> {
     if (!to || !text) {
-      throw new Error('to and text are required');
+      throw new Error("to and text are required");
     }
 
     const body = {
-      messaging_product: 'whatsapp',
-      recipient_type: 'individual',
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
       to,
-      type: 'text',
+      type: "text",
       text: {
         preview_url: false,
         body: text,
@@ -107,13 +108,13 @@ export class WhatsAppClient {
     };
 
     const response = await this.request(
-      'POST',
+      "POST",
       `${this.config.phoneNumberId}/messages`,
-      body
+      body,
     );
 
     if (!response.messages?.[0]?.id) {
-      throw new Error('Failed to send text message: No message ID returned');
+      throw new Error("Failed to send text message: No message ID returned");
     }
 
     return response.messages[0].id;
@@ -131,17 +132,17 @@ export class WhatsAppClient {
     to: string,
     templateName: string,
     parameters?: Record<string, string>,
-    languageCode?: string
+    languageCode?: string,
   ): Promise<string> {
     if (!to || !templateName) {
-      throw new Error('to and templateName are required');
+      throw new Error("to and templateName are required");
     }
 
-    const lang = languageCode || 'en';
+    const lang = languageCode || "en";
     const body: Record<string, unknown> = {
-      messaging_product: 'whatsapp',
+      messaging_product: "whatsapp",
       to,
-      type: 'template',
+      type: "template",
       template: {
         name: templateName,
         language: {
@@ -153,26 +154,28 @@ export class WhatsAppClient {
     // Add parameters if provided
     if (parameters && Object.keys(parameters).length > 0) {
       const paramValues = Object.values(parameters).map((value) => ({
-        type: 'text',
+        type: "text",
         text: value,
       }));
 
       (body.template as Record<string, unknown>).components = [
         {
-          type: 'body',
+          type: "body",
           parameters: paramValues,
         },
       ];
     }
 
     const response = await this.request(
-      'POST',
+      "POST",
       `${this.config.phoneNumberId}/messages`,
-      body
+      body,
     );
 
     if (!response.messages?.[0]?.id) {
-      throw new Error('Failed to send template message: No message ID returned');
+      throw new Error(
+        "Failed to send template message: No message ID returned",
+      );
     }
 
     return response.messages[0].id;
@@ -189,37 +192,37 @@ export class WhatsAppClient {
   async sendMediaMessage(
     to: string,
     mediaUrl: string,
-    mediaType: 'image' | 'document' | 'video' | 'audio' = 'image',
-    caption?: string
+    mediaType: "image" | "document" | "video" | "audio" = "image",
+    caption?: string,
   ): Promise<string> {
     if (!to || !mediaUrl) {
-      throw new Error('to and mediaUrl are required');
+      throw new Error("to and mediaUrl are required");
     }
 
     const mediaPayload: Record<string, unknown> = {
       link: mediaUrl,
     };
 
-    if (caption && (mediaType === 'image' || mediaType === 'video')) {
+    if (caption && (mediaType === "image" || mediaType === "video")) {
       (mediaPayload as Record<string, unknown>).caption = caption;
     }
 
     const body = {
-      messaging_product: 'whatsapp',
-      recipient_type: 'individual',
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
       to,
       type: mediaType,
       [mediaType]: mediaPayload,
     };
 
     const response = await this.request(
-      'POST',
+      "POST",
       `${this.config.phoneNumberId}/messages`,
-      body
+      body,
     );
 
     if (!response.messages?.[0]?.id) {
-      throw new Error('Failed to send media message: No message ID returned');
+      throw new Error("Failed to send media message: No message ID returned");
     }
 
     return response.messages[0].id;
@@ -239,24 +242,24 @@ export class WhatsAppClient {
     body: string,
     buttons: Array<{ id: string; title: string }>,
     header?: string,
-    footer?: string
+    footer?: string,
   ): Promise<string> {
     if (!to || !body || !buttons || buttons.length === 0) {
-      throw new Error('to, body, and buttons are required');
+      throw new Error("to, body, and buttons are required");
     }
 
     if (buttons.length > 3) {
-      throw new Error('Maximum 3 buttons allowed per message');
+      throw new Error("Maximum 3 buttons allowed per message");
     }
 
     const interactive: Record<string, unknown> = {
-      type: 'button',
+      type: "button",
       body: {
         text: body,
       },
       action: {
         buttons: buttons.map((btn) => ({
-          type: 'reply',
+          type: "reply",
           reply: {
             id: btn.id,
             title: btn.title,
@@ -267,7 +270,7 @@ export class WhatsAppClient {
 
     if (header) {
       (interactive as Record<string, unknown>).header = {
-        type: 'text',
+        type: "text",
         text: header,
       };
     }
@@ -279,21 +282,23 @@ export class WhatsAppClient {
     }
 
     const messageBody = {
-      messaging_product: 'whatsapp',
-      recipient_type: 'individual',
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
       to,
-      type: 'interactive',
+      type: "interactive",
       interactive,
     };
 
     const response = await this.request(
-      'POST',
+      "POST",
       `${this.config.phoneNumberId}/messages`,
-      messageBody
+      messageBody,
     );
 
     if (!response.messages?.[0]?.id) {
-      throw new Error('Failed to send interactive message: No message ID returned');
+      throw new Error(
+        "Failed to send interactive message: No message ID returned",
+      );
     }
 
     return response.messages[0].id;
@@ -318,14 +323,14 @@ export class WhatsAppClient {
     }>,
     header?: string,
     footer?: string,
-    buttonText: string = 'Select'
+    buttonText: string = "Select",
   ): Promise<string> {
     if (!to || !body || !sections || sections.length === 0) {
-      throw new Error('to, body, and sections are required');
+      throw new Error("to, body, and sections are required");
     }
 
     const interactive: Record<string, unknown> = {
-      type: 'list',
+      type: "list",
       body: {
         text: body,
       },
@@ -337,7 +342,7 @@ export class WhatsAppClient {
 
     if (header) {
       (interactive as Record<string, unknown>).header = {
-        type: 'text',
+        type: "text",
         text: header,
       };
     }
@@ -349,21 +354,21 @@ export class WhatsAppClient {
     }
 
     const messageBody = {
-      messaging_product: 'whatsapp',
-      recipient_type: 'individual',
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
       to,
-      type: 'interactive',
+      type: "interactive",
       interactive,
     };
 
     const response = await this.request(
-      'POST',
+      "POST",
       `${this.config.phoneNumberId}/messages`,
-      messageBody
+      messageBody,
     );
 
     if (!response.messages?.[0]?.id) {
-      throw new Error('Failed to send list message: No message ID returned');
+      throw new Error("Failed to send list message: No message ID returned");
     }
 
     return response.messages[0].id;
@@ -376,7 +381,7 @@ export class WhatsAppClient {
    */
   async getMessageStatus(messageId: string): Promise<MessageStatusEvent> {
     if (!messageId) {
-      throw new Error('messageId is required');
+      throw new Error("messageId is required");
     }
 
     // Note: Meta API doesn't provide a direct status lookup endpoint
@@ -385,7 +390,7 @@ export class WhatsAppClient {
     // or integration with a local message store
 
     throw new Error(
-      'Message status lookup not available. Use webhook for status updates.'
+      "Message status lookup not available. Use webhook for status updates.",
     );
   }
 
@@ -395,16 +400,16 @@ export class WhatsAppClient {
    */
   async markAsRead(messageId: string): Promise<void> {
     if (!messageId) {
-      throw new Error('messageId is required');
+      throw new Error("messageId is required");
     }
 
     const body = {
-      messaging_product: 'whatsapp',
-      status: 'read',
+      messaging_product: "whatsapp",
+      status: "read",
       message_id: messageId,
     };
 
-    await this.request('POST', `${this.config.phoneNumberId}/messages`, body);
+    await this.request("POST", `${this.config.phoneNumberId}/messages`, body);
   }
 
   /**
@@ -413,13 +418,13 @@ export class WhatsAppClient {
    * @returns Promise with media URL and metadata
    */
   async getMediaUrl(
-    mediaId: string
+    mediaId: string,
   ): Promise<{ url: string; mime_type: string }> {
     if (!mediaId) {
-      throw new Error('mediaId is required');
+      throw new Error("mediaId is required");
     }
 
-    const response = await this.request('GET', mediaId);
+    const response = await this.request("GET", mediaId);
 
     if (!response.error && (response as Record<string, unknown>).url) {
       return {
@@ -428,7 +433,7 @@ export class WhatsAppClient {
       };
     }
 
-    throw new Error('Failed to retrieve media URL');
+    throw new Error("Failed to retrieve media URL");
   }
 
   /**
@@ -439,15 +444,15 @@ export class WhatsAppClient {
    */
   async uploadMedia(
     mediaPath: string,
-    mediaType: 'image' | 'document' | 'video' | 'audio'
+    mediaType: "image" | "document" | "video" | "audio",
   ): Promise<string> {
     if (!mediaPath || !mediaType) {
-      throw new Error('mediaPath and mediaType are required');
+      throw new Error("mediaPath and mediaType are required");
     }
 
     // This would typically use FormData for file upload
     // Implementation depends on runtime environment
-    throw new Error('Media upload requires FormData support');
+    throw new Error("Media upload requires FormData support");
   }
 
   /**

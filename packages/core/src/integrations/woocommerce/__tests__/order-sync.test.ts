@@ -196,11 +196,7 @@ describe("OrderSyncService", () => {
       const wlTime = new Date("2024-01-02T15:00:00Z");
       const wcTime = new Date("2024-01-01T10:00:00Z");
 
-      const result = OrderSyncService.resolveConflict(
-        wlTime,
-        wcTime,
-        "status",
-      );
+      const result = OrderSyncService.resolveConflict(wlTime, wcTime, "status");
 
       expect(result.winner).toBe("wl");
       expect(result.reason).toContain("Witylogix version");
@@ -210,11 +206,7 @@ describe("OrderSyncService", () => {
       const wlTime = new Date("2024-01-01T10:00:00Z");
       const wcTime = new Date("2024-01-02T15:00:00Z");
 
-      const result = OrderSyncService.resolveConflict(
-        wlTime,
-        wcTime,
-        "status",
-      );
+      const result = OrderSyncService.resolveConflict(wlTime, wcTime, "status");
 
       expect(result.winner).toBe("wc");
       expect(result.reason).toContain("WooCommerce version");
@@ -362,10 +354,7 @@ describe("OrderSyncService", () => {
         total: "105",
         shipping_total: "10",
         total_tax: "5",
-        line_items: [
-          { quantity: 2 },
-          { quantity: 1 },
-        ] as any,
+        line_items: [{ quantity: 2 }, { quantity: 1 }] as any,
       };
 
       const summary = OrderSyncService.calculateOrderSummary(order as WCOrder);

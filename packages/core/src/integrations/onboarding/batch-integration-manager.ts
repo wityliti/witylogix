@@ -6,10 +6,14 @@
  * validation and error handling.
  */
 
-import { prisma } from '@witylogix/db';
-import { IntegrationConnection, BatchEnableResult, HealthStatus } from './types';
-import { getSetupConfig } from './integration-setup-registry';
-import { CredentialValidator } from './credential-validator';
+import { prisma } from "@witylogix/db";
+import {
+  IntegrationConnection,
+  BatchEnableResult,
+  HealthStatus,
+} from "./types";
+import { getSetupConfig } from "./integration-setup-registry";
+import { CredentialValidator } from "./credential-validator";
 
 /**
  * Batch Integration Manager
@@ -27,9 +31,9 @@ export class BatchIntegrationManager {
       credentials: Record<string, unknown>;
       config?: Record<string, unknown>;
     }>,
-    prisma: any
+    prisma: any,
   ): Promise<BatchEnableResult> {
-    const results: BatchEnableResult['results'] = [];
+    const results: BatchEnableResult["results"] = [];
     let enabledCount = 0;
     let failedCount = 0;
 
@@ -49,13 +53,13 @@ export class BatchIntegrationManager {
         // Validate required fields
         const validationErrors = this.validateCredentials(
           integration.credentials,
-          config.requiredFields
+          config.requiredFields,
         );
         if (validationErrors.length > 0) {
           results.push({
             providerId: integration.providerId,
             success: false,
-            error: `Validation error: ${validationErrors.join(', ')}`,
+            error: `Validation error: ${validationErrors.join(", ")}`,
           });
           failedCount++;
           continue;
@@ -64,14 +68,14 @@ export class BatchIntegrationManager {
         // Test credentials
         const testResult = await CredentialValidator.validateCredentials(
           integration.providerId,
-          integration.credentials
+          integration.credentials,
         );
 
         if (!testResult.valid) {
           results.push({
             providerId: integration.providerId,
             success: false,
-            error: `Credential validation failed: ${testResult.errors?.[0] || 'Unknown error'}`,
+            error: `Credential validation failed: ${testResult.errors?.[0] || "Unknown error"}`,
           });
           failedCount++;
           continue;
@@ -85,7 +89,9 @@ export class BatchIntegrationManager {
               providerId: integration.providerId,
               isEnabled: true,
               config: integration.config || {},
-              credentialsEncrypted: this.encryptCredentials(integration.credentials),
+              credentialsEncrypted: this.encryptCredentials(
+                integration.credentials,
+              ),
               healthStatus: HealthStatus.HEALTHY,
               createdAt: new Date(),
               updatedAt: new Date(),
@@ -100,7 +106,7 @@ export class BatchIntegrationManager {
         } catch (dbError) {
           // Handle duplicate or other DB errors
           const errorMsg =
-            dbError instanceof Error ? dbError.message : 'Database error';
+            dbError instanceof Error ? dbError.message : "Database error";
           results.push({
             providerId: integration.providerId,
             success: false,
@@ -112,7 +118,7 @@ export class BatchIntegrationManager {
         results.push({
           providerId: integration.providerId,
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         });
         failedCount++;
       }
@@ -132,9 +138,9 @@ export class BatchIntegrationManager {
   static async disableIntegrations(
     orgId: string,
     providerIds: string[],
-    prisma: any
+    prisma: any,
   ): Promise<BatchEnableResult> {
-    const results: BatchEnableResult['results'] = [];
+    const results: BatchEnableResult["results"] = [];
     let enabledCount = 0;
     let failedCount = 0;
 
@@ -160,7 +166,7 @@ export class BatchIntegrationManager {
         results.push({
           providerId,
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         });
         failedCount++;
       }
@@ -179,7 +185,7 @@ export class BatchIntegrationManager {
    */
   static async getEnabledIntegrations(
     orgId: string,
-    prisma: any
+    prisma: any,
   ): Promise<IntegrationConnection[]> {
     const connections = await prisma.integrationConnection.findMany({
       where: {
@@ -207,7 +213,7 @@ export class BatchIntegrationManager {
    */
   static async getAllIntegrations(
     orgId: string,
-    prisma: any
+    prisma: any,
   ): Promise<IntegrationConnection[]> {
     const connections = await prisma.integrationConnection.findMany({
       where: { orgId },
@@ -237,7 +243,7 @@ export class BatchIntegrationManager {
     orgId: string,
     providerId: string,
     config: Record<string, unknown>,
-    prisma: any
+    prisma: any,
   ): Promise<IntegrationConnection | null> {
     try {
       const updated = await prisma.integrationConnection.updateMany({
@@ -266,7 +272,7 @@ export class BatchIntegrationManager {
       return connection || null;
     } catch (error) {
       throw new Error(
-        `Failed to configure integration: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to configure integration: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }
@@ -278,7 +284,7 @@ export class BatchIntegrationManager {
     orgId: string,
     providerId: string,
     healthStatus: HealthStatus,
-    prisma: any
+    prisma: any,
   ): Promise<void> {
     await prisma.integrationConnection.updateMany({
       where: {
@@ -299,7 +305,7 @@ export class BatchIntegrationManager {
   static async getIntegration(
     orgId: string,
     providerId: string,
-    prisma: any
+    prisma: any,
   ): Promise<IntegrationConnection | null> {
     const connection = await prisma.integrationConnection.findFirst({
       where: {
@@ -330,7 +336,7 @@ export class BatchIntegrationManager {
   static async deleteIntegration(
     orgId: string,
     providerId: string,
-    prisma: any
+    prisma: any,
   ): Promise<boolean> {
     const result = await prisma.integrationConnection.deleteMany({
       where: {
@@ -349,7 +355,7 @@ export class BatchIntegrationManager {
    */
   private static validateCredentials(
     credentials: Record<string, unknown>,
-    requiredFields: any[]
+    requiredFields: any[],
   ): string[] {
     const errors: string[] = [];
 
@@ -367,10 +373,12 @@ export class BatchIntegrationManager {
    *
    * In production, use proper encryption (AES-256-GCM or similar).
    */
-  private static encryptCredentials(credentials: Record<string, unknown>): string {
+  private static encryptCredentials(
+    credentials: Record<string, unknown>,
+  ): string {
     // TODO: Implement proper encryption
     // For now, return base64 encoded JSON
-    return Buffer.from(JSON.stringify(credentials)).toString('base64');
+    return Buffer.from(JSON.stringify(credentials)).toString("base64");
   }
 
   /**
@@ -380,7 +388,7 @@ export class BatchIntegrationManager {
     // TODO: Implement proper decryption
     // For now, decode base64 JSON
     try {
-      return JSON.parse(Buffer.from(encrypted, 'base64').toString('utf-8'));
+      return JSON.parse(Buffer.from(encrypted, "base64").toString("utf-8"));
     } catch {
       return {};
     }
@@ -391,7 +399,7 @@ export class BatchIntegrationManager {
    */
   static async getIntegrationStats(
     orgId: string,
-    prisma: any
+    prisma: any,
   ): Promise<{
     total: number;
     enabled: number;
@@ -408,10 +416,16 @@ export class BatchIntegrationManager {
       total: connections.length,
       enabled: connections.filter((c: any) => c.isEnabled).length,
       disabled: connections.filter((c: any) => !c.isEnabled).length,
-      healthy: connections.filter((c: any) => c.healthStatus === HealthStatus.HEALTHY).length,
-      degraded: connections.filter((c: any) => c.healthStatus === HealthStatus.DEGRADED).length,
+      healthy: connections.filter(
+        (c: any) => c.healthStatus === HealthStatus.HEALTHY,
+      ).length,
+      degraded: connections.filter(
+        (c: any) => c.healthStatus === HealthStatus.DEGRADED,
+      ).length,
       down: connections.filter(
-        (c: any) => c.healthStatus === HealthStatus.DOWN || c.healthStatus === HealthStatus.UNAUTHORIZED
+        (c: any) =>
+          c.healthStatus === HealthStatus.DOWN ||
+          c.healthStatus === HealthStatus.UNAUTHORIZED,
       ).length,
     };
   }

@@ -2,7 +2,7 @@
  * Admin UI component types
  */
 
-export type ServiceStatus = 'healthy' | 'degraded' | 'unhealthy';
+export type ServiceStatus = "healthy" | "degraded" | "unhealthy";
 
 export interface ServiceHealthData {
   id: string;
@@ -15,16 +15,20 @@ export interface ServiceHealthData {
 }
 
 export type IntegrationProvider =
-  | 'shopify'
-  | 'woocommerce'
-  | 'stripe'
-  | 'paypal'
-  | 'slack'
-  | 'twilio'
-  | 'sendgrid'
-  | 'custom';
+  | "shopify"
+  | "woocommerce"
+  | "stripe"
+  | "paypal"
+  | "slack"
+  | "twilio"
+  | "sendgrid"
+  | "custom";
 
-export type ConnectionStatus = 'connected' | 'disconnected' | 'error' | 'syncing';
+export type ConnectionStatus =
+  | "connected"
+  | "disconnected"
+  | "error"
+  | "syncing";
 
 export interface IntegrationStatusData {
   id: string;
@@ -43,7 +47,13 @@ export interface IntegrationError {
   code?: string;
 }
 
-export type ActivityAction = 'login' | 'create' | 'update' | 'delete' | 'export' | 'import';
+export type ActivityAction =
+  | "login"
+  | "create"
+  | "update"
+  | "delete"
+  | "export"
+  | "import";
 
 export interface ActivityEntry {
   id: string;

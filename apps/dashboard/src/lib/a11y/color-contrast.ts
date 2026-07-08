@@ -17,17 +17,17 @@ export function parseColor(color: string): RGB {
   const trimmed = color.trim();
 
   // Handle hex colors
-  if (trimmed.startsWith('#')) {
+  if (trimmed.startsWith("#")) {
     return parseHexColor(trimmed);
   }
 
   // Handle rgb() colors
-  if (trimmed.startsWith('rgb')) {
+  if (trimmed.startsWith("rgb")) {
     return parseRgbColor(trimmed);
   }
 
   // Handle hsl() colors
-  if (trimmed.startsWith('hsl')) {
+  if (trimmed.startsWith("hsl")) {
     return parseHslColor(trimmed);
   }
 
@@ -36,11 +36,14 @@ export function parseColor(color: string): RGB {
 }
 
 function parseHexColor(hex: string): RGB {
-  let h = hex.replace('#', '');
+  let h = hex.replace("#", "");
 
   // Expand shorthand (e.g., #fff -> #ffffff)
   if (h.length === 3) {
-    h = h.split('').map((c) => c + c).join('');
+    h = h
+      .split("")
+      .map((c) => c + c)
+      .join("");
   }
 
   const num = parseInt(h, 16);
@@ -118,7 +121,7 @@ export function getRelativeLuminance(rgb: RGB): number {
  */
 export function calculateContrastRatio(
   fgColor: string,
-  bgColor: string
+  bgColor: string,
 ): number {
   const fgRGB = parseColor(fgColor);
   const bgRGB = parseColor(bgColor);
@@ -136,16 +139,22 @@ export function calculateContrastRatio(
  * Check WCAG AA compliance
  * Requires 4.5:1 for normal text, 3:1 for large text (18pt+ or 14pt+ bold)
  */
-export function meetsAA(ratio: number, size: 'normal' | 'large' = 'normal'): boolean {
-  return size === 'large' ? ratio >= 3 : ratio >= 4.5;
+export function meetsAA(
+  ratio: number,
+  size: "normal" | "large" = "normal",
+): boolean {
+  return size === "large" ? ratio >= 3 : ratio >= 4.5;
 }
 
 /**
  * Check WCAG AAA compliance
  * Requires 7:1 for normal text, 4.5:1 for large text
  */
-export function meetsAAA(ratio: number, size: 'normal' | 'large' = 'normal'): boolean {
-  return size === 'large' ? ratio >= 4.5 : ratio >= 7;
+export function meetsAAA(
+  ratio: number,
+  size: "normal" | "large" = "normal",
+): boolean {
+  return size === "large" ? ratio >= 4.5 : ratio >= 7;
 }
 
 /**
@@ -155,7 +164,7 @@ export function meetsAAA(ratio: number, size: 'normal' | 'large' = 'normal'): bo
 export function suggestAccessibleColor(
   fgColor: string,
   bgColor: string,
-  targetRatio: number = 4.5
+  targetRatio: number = 4.5,
 ): string {
   let fgRGB = parseColor(fgColor);
   let currentRatio = calculateContrastRatio(fgColor, bgColor);
@@ -182,9 +191,9 @@ export function suggestAccessibleColor(
     const rgb2hex = `#${[fgRGB.r, fgRGB.g, fgRGB.b]
       .map((x) => {
         const hex = x.toString(16);
-        return hex.length === 1 ? '0' + hex : hex;
+        return hex.length === 1 ? "0" + hex : hex;
       })
-      .join('')}`;
+      .join("")}`;
 
     currentRatio = calculateContrastRatio(rgb2hex, bgColor);
     if (currentRatio >= targetRatio) {
@@ -193,7 +202,7 @@ export function suggestAccessibleColor(
   }
 
   // Fallback to pure black or white
-  return isLightBg ? '#000000' : '#FFFFFF';
+  return isLightBg ? "#000000" : "#FFFFFF";
 }
 
 /**
@@ -201,7 +210,7 @@ export function suggestAccessibleColor(
  */
 export function analyzeContrast(
   fgColor: string,
-  bgColor: string
+  bgColor: string,
 ): {
   ratio: number;
   aa: boolean;
@@ -213,9 +222,9 @@ export function analyzeContrast(
 
   return {
     ratio: Math.round(ratio * 100) / 100,
-    aa: meetsAA(ratio, 'normal'),
-    aaa: meetsAAA(ratio, 'normal'),
-    aaLarge: meetsAA(ratio, 'large'),
-    aaaLarge: meetsAAA(ratio, 'large'),
+    aa: meetsAA(ratio, "normal"),
+    aaa: meetsAAA(ratio, "normal"),
+    aaLarge: meetsAA(ratio, "large"),
+    aaaLarge: meetsAAA(ratio, "large"),
   };
 }

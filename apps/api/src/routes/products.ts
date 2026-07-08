@@ -87,127 +87,140 @@ async function productRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── SYNC PRODUCTS (UPSERT) ────────────────────────────────
 
-  fastify.post("/sync", async (request: FastifyRequest, reply: FastifyReply) => {
-    const body = syncProductsSchema.parse(request.body);
-    const { products: incomingProducts } = body;
+  fastify.post(
+    "/sync",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const body = syncProductsSchema.parse(request.body);
+      const { products: incomingProducts } = body;
 
-    // Upsert all products in a transaction
-    const synced = await request.tenantDb.$transaction(async (tx) => {
-      const results = await Promise.all(
-        incomingProducts.map((product: any) =>
-          tx.product.upsert({
-            where: {
-              // Unique constraint: shopId + shopifyProductId
-              shopId_shopifyProductId: {
+      // Upsert all products in a transaction
+      const synced = await request.tenantDb.$transaction(async (tx) => {
+        const results = await Promise.all(
+          incomingProducts.map((product: any) =>
+            tx.product.upsert({
+              where: {
+                // Unique constraint: shopId + shopifyProductId
+                shopId_shopifyProductId: {
+                  shopId: request.shopId,
+                  shopifyProductId: product.externalId,
+                },
+              },
+              update: {
+                title: product.title,
+                productType: product.productType,
+                vendor: product.vendor,
+                weight: product.weight
+                  ? new Prisma.Decimal(product.weight)
+                  : null,
+                requiresShipping: product.requiresShipping,
+                variants: product.metadata ?? {},
+                lastSyncAt: new Date(),
+              },
+              create: {
                 shopId: request.shopId,
                 shopifyProductId: product.externalId,
+                title: product.title,
+                productType: product.productType,
+                vendor: product.vendor,
+                weight: product.weight
+                  ? new Prisma.Decimal(product.weight)
+                  : null,
+                requiresShipping: product.requiresShipping,
+                variants: product.metadata ?? {},
               },
-            },
-            update: {
-              title: product.title,
-              productType: product.productType,
-              vendor: product.vendor,
-              weight: product.weight ? new Prisma.Decimal(product.weight) : null,
-              requiresShipping: product.requiresShipping,
-              variants: product.metadata ?? {},
-              lastSyncAt: new Date(),
-            },
-            create: {
-              shopId: request.shopId,
-              shopifyProductId: product.externalId,
-              title: product.title,
-              productType: product.productType,
-              vendor: product.vendor,
-              weight: product.weight ? new Prisma.Decimal(product.weight) : null,
-              requiresShipping: product.requiresShipping,
-              variants: product.metadata ?? {},
-            },
-          }),
-        ),
-      );
-      return results;
-    });
+            }),
+          ),
+        );
+        return results;
+      });
 
-    reply.status(200);
-    return {
-      data: synced,
-      message: `Synced ${synced.length} products`,
-    };
-  });
+      reply.status(200);
+      return {
+        data: synced,
+        message: `Synced ${synced.length} products`,
+      };
+    },
+  );
 
   // ── DELETE PRODUCT ────────────────────────────────────────
 
-  fastify.delete("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
+  fastify.delete(
+    "/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { id } = request.params as { id: string };
 
-    const product = await request.tenantDb.product.findUnique({
-      where: { id },
-    });
+      const product = await request.tenantDb.product.findUnique({
+        where: { id },
+      });
 
-    if (!product) throw new NotFoundError("Product", id);
-    if (product.shopId !== request.shopId) {
-      throw new NotFoundError("Product", id);
-    }
+      if (!product) throw new NotFoundError("Product", id);
+      if (product.shopId !== request.shopId) {
+        throw new NotFoundError("Product", id);
+      }
 
-    const deleted = await request.tenantDb.product.delete({
-      where: { id },
-    });
+      const deleted = await request.tenantDb.product.delete({
+        where: { id },
+      });
 
-    return { data: deleted };
-  });
+      return { data: deleted };
+    },
+  );
 
   // ── PRODUCT STATS ──────────────────────────────────────────
 
-  fastify.get("/stats", async (request: FastifyRequest, reply: FastifyReply) => {
-    // Total products
-    const total = await request.tenantDb.product.count({
-      where: { shopId: request.shopId },
-    });
+  fastify.get(
+    "/stats",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      // Total products
+      const total = await request.tenantDb.product.count({
+        where: { shopId: request.shopId },
+      });
 
-    // Products synced today
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const syncedToday = await request.tenantDb.product.count({
-      where: {
-        shopId: request.shopId,
-        lastSyncAt: { gte: today },
-      },
-    });
+      // Products synced today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const syncedToday = await request.tenantDb.product.count({
+        where: {
+          shopId: request.shopId,
+          lastSyncAt: { gte: today },
+        },
+      });
 
-    // Products missing weight
-    const missingWeight = await request.tenantDb.product.count({
-      where: {
-        shopId: request.shopId,
-        weight: null,
-        requiresShipping: true,
-      },
-    });
+      // Products missing weight
+      const missingWeight = await request.tenantDb.product.count({
+        where: {
+          shopId: request.shopId,
+          weight: null,
+          requiresShipping: true,
+        },
+      });
 
-    // Products without productType
-    const missingSkus = await request.tenantDb.product.count({
-      where: {
-        shopId: request.shopId,
-        productType: null,
-      },
-    });
+      // Products without productType
+      const missingSkus = await request.tenantDb.product.count({
+        where: {
+          shopId: request.shopId,
+          productType: null,
+        },
+      });
 
-    // Last sync timestamp
-    const lastSync = await request.tenantDb.product.findFirst({
-      where: { shopId: request.shopId },
-      orderBy: { lastSyncAt: "desc" },
-      select: { lastSyncAt: true },
-    });
+      // Last sync timestamp
+      const lastSync = await request.tenantDb.product.findFirst({
+        where: { shopId: request.shopId },
+        orderBy: { lastSyncAt: "desc" },
+        select: { lastSyncAt: true },
+      });
 
-    return {
-      data: {
-        total,
-        syncedToday,
-        missingWeight,
-        missingSkus,
-        lastSync: lastSync?.lastSyncAt || null,
-      },
-    };
-  });
+      return {
+        data: {
+          total,
+          syncedToday,
+          missingWeight,
+          missingSkus,
+          lastSync: lastSync?.lastSyncAt || null,
+        },
+      };
+    },
+  );
 }
 
 export default productRoutes;

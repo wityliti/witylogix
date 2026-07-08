@@ -3,4 +3,4 @@
  * This package provides backwards compatibility for imports using the @repo scope
  */
 
-export * from '@witylogix/core';
+export * from "@witylogix/core";

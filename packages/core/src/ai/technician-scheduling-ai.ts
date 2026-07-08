@@ -160,22 +160,25 @@ export class SkillMatchScorer {
     const techLevel = skillLevel ? skillLevels.indexOf(skillLevel) : -1;
 
     const skillSufficiency = hasSkill && techLevel >= requiredLevel ? 100 : 0;
-    const skillConfidence = hasSkill ? SKILL_LEVEL_CONFIDENCE[skillLevel] * 100 : 0;
-    const skillMatch = (skillSufficiency * 0.6 + skillConfidence * 0.4) / 100 * 100;
+    const skillConfidence = hasSkill
+      ? SKILL_LEVEL_CONFIDENCE[skillLevel] * 100
+      : 0;
+    const skillMatch =
+      ((skillSufficiency * 0.6 + skillConfidence * 0.4) / 100) * 100;
 
     // Certification matching
     const certificationMatch = job.requiredSkill
       .split(",")
       .some((cert) =>
         technician.certifications.some((c) =>
-          c.toLowerCase().includes(cert.trim().toLowerCase())
-        )
+          c.toLowerCase().includes(cert.trim().toLowerCase()),
+        ),
       );
 
     // Experience score based on job completion count
     const experienceMatch = Math.min(
       100,
-      (technician.jobsCompleted / 100) * 100
+      (technician.jobsCompleted / 100) * 100,
     );
 
     // Rework risk
@@ -218,7 +221,7 @@ export class SkillMatchScorer {
   findCandidates(
     job: ServiceJob,
     technicians: Technician[],
-    topN: number = 3
+    topN: number = 3,
   ): SkillMatch[] {
     return technicians
       .map((tech) => this.scoreSkillMatch(tech, job))
@@ -237,7 +240,7 @@ export class TravelTimeEstimator {
     from: { latitude: number; longitude: number },
     to: { latitude: number; longitude: number },
     timeOfDay: Date,
-    weather: "clear" | "rain" | "snow" = "clear"
+    weather: "clear" | "rain" | "snow" = "clear",
   ): TravelTime {
     // Haversine distance
     const R = 6371; // Earth radius in km
@@ -257,9 +260,12 @@ export class TravelTimeEstimator {
     // Traffic factor based on time of day
     const hour = timeOfDay.getHours();
     let trafficFactor = 1.0;
-    if (hour >= 7 && hour <= 9) trafficFactor = 1.5; // Morning rush
-    else if (hour >= 16 && hour <= 19) trafficFactor = 1.4; // Evening rush
-    else if (hour >= 11 && hour <= 13) trafficFactor = 1.15; // Lunch
+    if (hour >= 7 && hour <= 9)
+      trafficFactor = 1.5; // Morning rush
+    else if (hour >= 16 && hour <= 19)
+      trafficFactor = 1.4; // Evening rush
+    else if (hour >= 11 && hour <= 13)
+      trafficFactor = 1.15; // Lunch
     else if (hour >= 0 && hour <= 5) trafficFactor = 0.8; // Night
 
     // Weather factor
@@ -267,7 +273,8 @@ export class TravelTimeEstimator {
     if (weather === "rain") weatherFactor = 1.2;
     else if (weather === "snow") weatherFactor = 1.5;
 
-    const effectiveSpeed = BASE_TRAVEL_SPEED_KMH / (trafficFactor * weatherFactor);
+    const effectiveSpeed =
+      BASE_TRAVEL_SPEED_KMH / (trafficFactor * weatherFactor);
     const estimatedMinutes = Math.round((distanceKm / effectiveSpeed) * 60);
 
     return {
@@ -292,7 +299,7 @@ export class WorkloadOptimizer {
    */
   optimizeWorkload(
     jobs: ServiceJob[],
-    technicians: Technician[]
+    technicians: Technician[],
   ): WorkloadDistribution[] {
     // Assign jobs using weighted matching: priority + skill match + availability
     const assignments = new Map<string, ServiceJob[]>();
@@ -335,7 +342,7 @@ export class WorkloadOptimizer {
       const assignedJobs = assignments.get(tech.id) || [];
       const totalHours = assignedJobs.reduce(
         (sum, job) => sum + job.estimatedDuration / 60,
-        0
+        0,
       );
 
       // Calculate travel times between jobs
@@ -345,16 +352,14 @@ export class WorkloadOptimizer {
         const travel = estimator.estimateTravelTime(
           assignedJobs[i].location,
           assignedJobs[i + 1].location,
-          new Date()
+          new Date(),
         );
         travelTimes.push(travel.estimatedMinutes);
       }
 
       const totalTravelMinutes = travelTimes.reduce((a, b) => a + b, 0);
       const workingHours = 8;
-      const utilizationPercent = Math.round(
-        (totalHours / workingHours) * 100
-      );
+      const utilizationPercent = Math.round((totalHours / workingHours) * 100);
 
       return {
         technicianId: tech.id,
@@ -365,8 +370,7 @@ export class WorkloadOptimizer {
         utilizationPercent: Math.min(100, utilizationPercent),
         firstJobTime: assignedJobs[0]?.timeWindow.start || new Date(),
         lastJobTime:
-          assignedJobs[assignedJobs.length - 1]?.timeWindow.end ||
-          new Date(),
+          assignedJobs[assignedJobs.length - 1]?.timeWindow.end || new Date(),
         gapsBetweenJobs: travelTimes,
       };
     });
@@ -382,7 +386,7 @@ export class LearningScheduler {
   scheduleTraining(
     technicians: Technician[],
     demandForecast: Array<{ date: Date; jobCount: number }>,
-    avgDailyJobs: number
+    avgDailyJobs: number,
   ): LearningSchedule[] {
     const schedules: LearningSchedule[] = [];
 
@@ -396,7 +400,7 @@ export class LearningScheduler {
         if (lowDemandWeeks.length > 0) {
           const recommendedDate = lowDemandWeeks[0];
           const weekNum = Math.ceil(
-            (recommendedDate.getDate() - recommendedDate.getDay() + 4) / 7
+            (recommendedDate.getDate() - recommendedDate.getDay() + 4) / 7,
           );
 
           schedules.push({
@@ -424,7 +428,7 @@ export class PerformancePredictor {
    */
   predictCompletionTime(
     job: ServiceJob,
-    technician: Technician
+    technician: Technician,
   ): PerformancePrediction {
     const skillLevel = technician.skills.get(job.requiredSkill) || "novice";
     const skillLevels = ["novice", "intermediate", "expert", "master"];
@@ -453,14 +457,18 @@ export class PerformancePredictor {
     const riskFactors: string[] = [];
     if (technician.reworkRate > REWORK_DETECTION_THRESHOLD) {
       riskFactors.push(
-        `High rework rate (${(technician.reworkRate * 100).toFixed(1)}%)`
+        `High rework rate (${(technician.reworkRate * 100).toFixed(1)}%)`,
       );
     }
     if (technician.avgRating < 4.0) {
-      riskFactors.push(`Below-average customer rating (${technician.avgRating})`);
+      riskFactors.push(
+        `Below-average customer rating (${technician.avgRating})`,
+      );
     }
     if (skillIndex < 2) {
-      riskFactors.push(`Skill level is ${skillLevel}; job is ${job.complexity}`);
+      riskFactors.push(
+        `Skill level is ${skillLevel}; job is ${job.complexity}`,
+      );
     }
 
     const confidence = skillIndex >= 1 ? 90 : 70;
@@ -488,13 +496,13 @@ export class CustomerPreferenceManager {
     job: ServiceJob,
     candidates: SkillMatch[],
     technicians: Map<string, Technician>,
-    customerHistory: Array<{ technicianId: string; rating: number }>
+    customerHistory: Array<{ technicianId: string; rating: number }>,
   ): SkillMatch | null {
     if (candidates.length === 0) return null;
 
     // Check preferred technicians
     const preferred = candidates.filter((c) =>
-      job.customerPreferences.includes(c.technicianName)
+      job.customerPreferences.includes(c.technicianName),
     );
 
     if (preferred.length > 0) {
@@ -513,8 +521,8 @@ export class CustomerPreferenceManager {
     });
 
     if (filteredCandidates.length > 0) {
-      return filteredCandidates.sort((a, b) =>
-        b.overallScore - a.overallScore
+      return filteredCandidates.sort(
+        (a, b) => b.overallScore - a.overallScore,
       )[0];
     }
 

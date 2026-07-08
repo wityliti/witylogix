@@ -3,7 +3,11 @@
  * Supports OAuth2, API token authentication, and advanced deal flow management
  */
 
-import { CRMAdapterBase, FieldMappingEngine, PaginationHandler } from './crm-adapter.js';
+import {
+  CRMAdapterBase,
+  FieldMappingEngine,
+  PaginationHandler,
+} from "./crm-adapter.js";
 import type {
   CRMContact,
   CRMAccount,
@@ -19,7 +23,7 @@ import type {
   OAuth2Token,
   TokenRefreshResponse,
   PipedriveConfig,
-} from './types.js';
+} from "./types.js";
 
 // ─── PIPEDRIVE-SPECIFIC TYPES ────────────────────────────────────────
 
@@ -103,14 +107,14 @@ interface PipedriveStage extends PipedriveEntity {
 
 export class PipedriveAdapter extends CRMAdapterBase {
   private config: PipedriveConfig;
-  private baseUrl: string = 'https://api.pipedrive.com/v1';
+  private baseUrl: string = "https://api.pipedrive.com/v1";
   private authToken: string;
   private pipedriveMappingEngine: FieldMappingEngine;
 
   constructor(
     config: PipedriveConfig,
     connection: CRMConnection,
-    fieldMappings: CRMFieldMapping[] = []
+    fieldMappings: CRMFieldMapping[] = [],
   ) {
     super(connection, fieldMappings);
     this.config = config;
@@ -129,13 +133,13 @@ export class PipedriveAdapter extends CRMAdapterBase {
   private async pipedriveRequest<T>(
     method: string,
     endpoint: string,
-    body?: Record<string, unknown> | null
+    body?: Record<string, unknown> | null,
   ): Promise<T> {
     const url = new URL(`${this.baseUrl}${endpoint}`);
-    url.searchParams.append('api_token', this.authToken);
+    url.searchParams.append("api_token", this.authToken);
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     const options: RequestInit = { method, headers };
@@ -160,13 +164,16 @@ export class PipedriveAdapter extends CRMAdapterBase {
 
   async getContacts(
     filters?: Record<string, unknown>,
-    pagination?: CRMPaginationParams
+    pagination?: CRMPaginationParams,
   ): Promise<CRMPagedResult<CRMContact>> {
     const limit = pagination?.limit || 500;
     const start = pagination?.offset || 0;
 
     const endpoint = `/persons?limit=${limit}&start=${start}`;
-    const response = await this.pipedriveRequest<PipedrivePerson[]>('GET', endpoint);
+    const response = await this.pipedriveRequest<PipedrivePerson[]>(
+      "GET",
+      endpoint,
+    );
 
     return {
       data: response.map((person) => this.transformPipedriveToContact(person)),
@@ -176,31 +183,44 @@ export class PipedriveAdapter extends CRMAdapterBase {
   }
 
   async getContact(id: string): Promise<CRMContact> {
-    const response = await this.pipedriveRequest<PipedrivePerson>('GET', `/persons/${id}`);
-    return this.transformPipedriveToContact(response);
-  }
-
-  async createContact(contact: Omit<CRMContact, 'id' | 'lastModifiedAt'>): Promise<CRMContact> {
-    const pipedriveData = {
-      name: `${contact.firstName}${contact.lastName ? ' ' + contact.lastName : ''}`,
-      email: contact.email ? [{ value: contact.email, primary: true }] : undefined,
-      phone: contact.phone ? [{ value: contact.phone, primary: true }] : undefined,
-      org_id: contact.company ? { name: contact.company } : undefined,
-    };
-
     const response = await this.pipedriveRequest<PipedrivePerson>(
-      'POST',
-      '/persons',
-      pipedriveData as unknown as Record<string, unknown>
+      "GET",
+      `/persons/${id}`,
     );
     return this.transformPipedriveToContact(response);
   }
 
-  async updateContact(id: string, updates: Partial<CRMContact>): Promise<CRMContact> {
+  async createContact(
+    contact: Omit<CRMContact, "id" | "lastModifiedAt">,
+  ): Promise<CRMContact> {
+    const pipedriveData = {
+      name: `${contact.firstName}${contact.lastName ? " " + contact.lastName : ""}`,
+      email: contact.email
+        ? [{ value: contact.email, primary: true }]
+        : undefined,
+      phone: contact.phone
+        ? [{ value: contact.phone, primary: true }]
+        : undefined,
+      org_id: contact.company ? { name: contact.company } : undefined,
+    };
+
+    const response = await this.pipedriveRequest<PipedrivePerson>(
+      "POST",
+      "/persons",
+      pipedriveData as unknown as Record<string, unknown>,
+    );
+    return this.transformPipedriveToContact(response);
+  }
+
+  async updateContact(
+    id: string,
+    updates: Partial<CRMContact>,
+  ): Promise<CRMContact> {
     const pipedriveData: Record<string, unknown> = {};
 
     if (updates.firstName || updates.lastName) {
-      pipedriveData.name = `${updates.firstName || ''}${updates.lastName ? ' ' + updates.lastName : ''}`.trim();
+      pipedriveData.name =
+        `${updates.firstName || ""}${updates.lastName ? " " + updates.lastName : ""}`.trim();
     }
 
     if (updates.email) {
@@ -215,7 +235,7 @@ export class PipedriveAdapter extends CRMAdapterBase {
       pipedriveData.org_id = { name: updates.company };
     }
 
-    await this.pipedriveRequest('PUT', `/persons/${id}`, pipedriveData);
+    await this.pipedriveRequest("PUT", `/persons/${id}`, pipedriveData);
     return this.getContact(id);
   }
 
@@ -223,13 +243,16 @@ export class PipedriveAdapter extends CRMAdapterBase {
 
   async getAccounts(
     filters?: Record<string, unknown>,
-    pagination?: CRMPaginationParams
+    pagination?: CRMPaginationParams,
   ): Promise<CRMPagedResult<CRMAccount>> {
     const limit = pagination?.limit || 500;
     const start = pagination?.offset || 0;
 
     const endpoint = `/organizations?limit=${limit}&start=${start}`;
-    const response = await this.pipedriveRequest<PipedriveOrganization[]>('GET', endpoint);
+    const response = await this.pipedriveRequest<PipedriveOrganization[]>(
+      "GET",
+      endpoint,
+    );
 
     return {
       data: response.map((org) => this.transformPipedriveToAccount(org)),
@@ -240,28 +263,35 @@ export class PipedriveAdapter extends CRMAdapterBase {
 
   async getAccount(id: string): Promise<CRMAccount> {
     const response = await this.pipedriveRequest<PipedriveOrganization>(
-      'GET',
-      `/organizations/${id}`
+      "GET",
+      `/organizations/${id}`,
     );
     return this.transformPipedriveToAccount(response);
   }
 
-  async createAccount(account: Omit<CRMAccount, 'id' | 'lastModifiedAt'>): Promise<CRMAccount> {
+  async createAccount(
+    account: Omit<CRMAccount, "id" | "lastModifiedAt">,
+  ): Promise<CRMAccount> {
     const pipedriveData = {
       name: account.name,
-      address: account.address ? `${account.address.street}, ${account.address.city}, ${account.address.state}` : undefined,
+      address: account.address
+        ? `${account.address.street}, ${account.address.city}, ${account.address.state}`
+        : undefined,
       cc_email: account.website,
     };
 
     const response = await this.pipedriveRequest<PipedriveOrganization>(
-      'POST',
-      '/organizations',
-      pipedriveData as unknown as Record<string, unknown>
+      "POST",
+      "/organizations",
+      pipedriveData as unknown as Record<string, unknown>,
     );
     return this.transformPipedriveToAccount(response);
   }
 
-  async updateAccount(id: string, updates: Partial<CRMAccount>): Promise<CRMAccount> {
+  async updateAccount(
+    id: string,
+    updates: Partial<CRMAccount>,
+  ): Promise<CRMAccount> {
     const pipedriveData: Record<string, unknown> = {};
 
     if (updates.name) {
@@ -272,7 +302,7 @@ export class PipedriveAdapter extends CRMAdapterBase {
       pipedriveData.cc_email = updates.website;
     }
 
-    await this.pipedriveRequest('PUT', `/organizations/${id}`, pipedriveData);
+    await this.pipedriveRequest("PUT", `/organizations/${id}`, pipedriveData);
     return this.getAccount(id);
   }
 
@@ -280,13 +310,16 @@ export class PipedriveAdapter extends CRMAdapterBase {
 
   async getDeals(
     filters?: Record<string, unknown>,
-    pagination?: CRMPaginationParams
+    pagination?: CRMPaginationParams,
   ): Promise<CRMPagedResult<CRMDeal>> {
     const limit = pagination?.limit || 500;
     const start = pagination?.offset || 0;
 
     const endpoint = `/deals?limit=${limit}&start=${start}`;
-    const response = await this.pipedriveRequest<PipedriveDeal[]>('GET', endpoint);
+    const response = await this.pipedriveRequest<PipedriveDeal[]>(
+      "GET",
+      endpoint,
+    );
 
     return {
       data: response.map((deal) => this.transformPipedriveToDeal(deal)),
@@ -296,24 +329,29 @@ export class PipedriveAdapter extends CRMAdapterBase {
   }
 
   async getDeal(id: string): Promise<CRMDeal> {
-    const response = await this.pipedriveRequest<PipedriveDeal>('GET', `/deals/${id}`);
+    const response = await this.pipedriveRequest<PipedriveDeal>(
+      "GET",
+      `/deals/${id}`,
+    );
     return this.transformPipedriveToDeal(response);
   }
 
-  async createDeal(deal: Omit<CRMDeal, 'id' | 'lastModifiedAt'>): Promise<CRMDeal> {
+  async createDeal(
+    deal: Omit<CRMDeal, "id" | "lastModifiedAt">,
+  ): Promise<CRMDeal> {
     const pipedriveData = {
       title: deal.name,
       value: deal.amount,
-      currency: deal.currency || 'USD',
+      currency: deal.currency || "USD",
       person_id: deal.contactId ? parseInt(deal.contactId, 10) : undefined,
       org_id: deal.companyId ? parseInt(deal.companyId, 10) : undefined,
       stage_id: deal.stageId ? parseInt(deal.stageId, 10) : undefined,
     };
 
     const response = await this.pipedriveRequest<PipedriveDeal>(
-      'POST',
-      '/deals',
-      pipedriveData as unknown as Record<string, unknown>
+      "POST",
+      "/deals",
+      pipedriveData as unknown as Record<string, unknown>,
     );
     return this.transformPipedriveToDeal(response);
   }
@@ -333,18 +371,24 @@ export class PipedriveAdapter extends CRMAdapterBase {
       pipedriveData.stage_id = parseInt(updates.stageId, 10);
     }
 
-    await this.pipedriveRequest('PUT', `/deals/${id}`, pipedriveData);
+    await this.pipedriveRequest("PUT", `/deals/${id}`, pipedriveData);
     return this.getDeal(id);
   }
 
   // ─── DEAL FLOW & ROTTING DETECTION ──────────────────────────────────
 
-  async getDealsByStage(stageId: number, pagination?: CRMPaginationParams): Promise<CRMPagedResult<CRMDeal>> {
+  async getDealsByStage(
+    stageId: number,
+    pagination?: CRMPaginationParams,
+  ): Promise<CRMPagedResult<CRMDeal>> {
     const limit = pagination?.limit || 500;
     const start = pagination?.offset || 0;
 
     const endpoint = `/stages/${stageId}/deals?limit=${limit}&start=${start}`;
-    const response = await this.pipedriveRequest<PipedriveDeal[]>('GET', endpoint);
+    const response = await this.pipedriveRequest<PipedriveDeal[]>(
+      "GET",
+      endpoint,
+    );
 
     return {
       data: response.map((deal) => this.transformPipedriveToDeal(deal)),
@@ -353,7 +397,9 @@ export class PipedriveAdapter extends CRMAdapterBase {
     };
   }
 
-  async detectRottingDeals(daysInStage: number = 30): Promise<Array<CRMDeal & { daysInStage: number }>> {
+  async detectRottingDeals(
+    daysInStage: number = 30,
+  ): Promise<Array<CRMDeal & { daysInStage: number }>> {
     const allDeals = await this.getDeals({}, { limit: 500 });
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysInStage);
@@ -363,13 +409,16 @@ export class PipedriveAdapter extends CRMAdapterBase {
       .map((deal) => ({
         ...deal,
         daysInStage: Math.floor(
-          (new Date().getTime() - (deal.lastModifiedAt?.getTime() || 0)) / (1000 * 60 * 60 * 24)
+          (new Date().getTime() - (deal.lastModifiedAt?.getTime() || 0)) /
+            (1000 * 60 * 60 * 24),
         ),
       }));
   }
 
   async moveDealToStage(dealId: string, stageId: number): Promise<CRMDeal> {
-    await this.pipedriveRequest('PUT', `/deals/${dealId}`, { stage_id: stageId });
+    await this.pipedriveRequest("PUT", `/deals/${dealId}`, {
+      stage_id: stageId,
+    });
     return this.getDeal(dealId);
   }
 
@@ -377,35 +426,48 @@ export class PipedriveAdapter extends CRMAdapterBase {
 
   async getActivities(
     recordId: string,
-    pagination?: CRMPaginationParams
+    pagination?: CRMPaginationParams,
   ): Promise<CRMPagedResult<CRMActivity>> {
     const limit = pagination?.limit || 500;
     const start = pagination?.offset || 0;
 
     const endpoint = `/activities?limit=${limit}&start=${start}`;
-    const response = await this.pipedriveRequest<PipedriveActivity[]>('GET', endpoint);
+    const response = await this.pipedriveRequest<PipedriveActivity[]>(
+      "GET",
+      endpoint,
+    );
 
     return {
-      data: response.map((activity) => this.transformPipedriveToActivity(activity)),
+      data: response.map((activity) =>
+        this.transformPipedriveToActivity(activity),
+      ),
       total: response.length,
       hasMore: response.length >= limit,
     };
   }
 
-  async createActivity(activity: Omit<CRMActivity, 'id' | 'lastModifiedAt'>): Promise<CRMActivity> {
+  async createActivity(
+    activity: Omit<CRMActivity, "id" | "lastModifiedAt">,
+  ): Promise<CRMActivity> {
     const pipedriveData = {
       type: activity.type,
       subject: activity.subject,
       body: activity.description,
-      due_date: activity.dueDate?.toISOString().split('T')[0],
-      person_id: activity.recordType === 'contact' ? parseInt(activity.recordId, 10) : undefined,
-      deal_id: activity.recordType === 'deal' ? parseInt(activity.recordId, 10) : undefined,
+      due_date: activity.dueDate?.toISOString().split("T")[0],
+      person_id:
+        activity.recordType === "contact"
+          ? parseInt(activity.recordId, 10)
+          : undefined,
+      deal_id:
+        activity.recordType === "deal"
+          ? parseInt(activity.recordId, 10)
+          : undefined,
     };
 
     const response = await this.pipedriveRequest<PipedriveActivity>(
-      'POST',
-      '/activities',
-      pipedriveData as unknown as Record<string, unknown>
+      "POST",
+      "/activities",
+      pipedriveData as unknown as Record<string, unknown>,
     );
     return this.transformPipedriveToActivity(response);
   }
@@ -413,21 +475,26 @@ export class PipedriveAdapter extends CRMAdapterBase {
   // ─── PIPELINE OPERATIONS ────────────────────────────────────────────
 
   async getPipelines(): Promise<CRMPipeline[]> {
-    const response = await this.pipedriveRequest<PipedrivePipeline[]>('GET', '/pipelines');
+    const response = await this.pipedriveRequest<PipedrivePipeline[]>(
+      "GET",
+      "/pipelines",
+    );
 
     return response.map((pipeline) => ({
       id: pipeline.id.toString(),
       name: pipeline.name,
-      provider: 'pipedrive',
+      provider: "pipedrive",
       isActive: pipeline.active,
       stages: [],
     }));
   }
 
-  async getPipelineStages(pipelineId: number): Promise<Array<{ id: string; name: string }>> {
+  async getPipelineStages(
+    pipelineId: number,
+  ): Promise<Array<{ id: string; name: string }>> {
     const response = await this.pipedriveRequest<PipedriveStage[]>(
-      'GET',
-      `/pipelines/${pipelineId}/stages`
+      "GET",
+      `/pipelines/${pipelineId}/stages`,
     );
 
     return response.map((stage) => ({
@@ -438,13 +505,21 @@ export class PipedriveAdapter extends CRMAdapterBase {
 
   // ─── CUSTOM FIELDS OPERATIONS ───────────────────────────────────────
 
-  async getCustomFields(entityType: 'person' | 'organization' | 'deal' | 'activity'): Promise<Array<Record<string, unknown>>> {
-    const endpoint = entityType === 'person' ? '/personFields'
-      : entityType === 'organization' ? '/organizationFields'
-      : entityType === 'deal' ? '/dealFields'
-      : '/activityFields';
+  async getCustomFields(
+    entityType: "person" | "organization" | "deal" | "activity",
+  ): Promise<Array<Record<string, unknown>>> {
+    const endpoint =
+      entityType === "person"
+        ? "/personFields"
+        : entityType === "organization"
+          ? "/organizationFields"
+          : entityType === "deal"
+            ? "/dealFields"
+            : "/activityFields";
 
-    const response = await this.pipedriveRequest<Array<Record<string, unknown>>>('GET', endpoint);
+    const response = await this.pipedriveRequest<
+      Array<Record<string, unknown>>
+    >("GET", endpoint);
     return response;
   }
 
@@ -453,13 +528,15 @@ export class PipedriveAdapter extends CRMAdapterBase {
   async search(
     query: string,
     recordType: string,
-    pagination?: CRMPaginationParams
+    pagination?: CRMPaginationParams,
   ): Promise<CRMPagedResult<unknown>> {
     const limit = pagination?.limit || 100;
     const start = pagination?.offset || 0;
 
     const endpoint = `/search?term=${encodeURIComponent(query)}&limit=${limit}&start=${start}`;
-    const response = await this.pipedriveRequest<{ items: Array<Record<string, unknown>> }>('GET', endpoint);
+    const response = await this.pipedriveRequest<{
+      items: Array<Record<string, unknown>>;
+    }>("GET", endpoint);
 
     return {
       data: response.items,
@@ -470,21 +547,24 @@ export class PipedriveAdapter extends CRMAdapterBase {
 
   // ─── WEBHOOKS ───────────────────────────────────────────────────────
 
-  async registerWebhook(subscriptionUrl: string, events: string[]): Promise<Record<string, unknown>> {
+  async registerWebhook(
+    subscriptionUrl: string,
+    events: string[],
+  ): Promise<Record<string, unknown>> {
     const response = await this.pipedriveRequest<Record<string, unknown>>(
-      'POST',
-      '/webhooks',
+      "POST",
+      "/webhooks",
       {
         subscription_url: subscriptionUrl,
         event_action: events,
         user_id: 0,
-      }
+      },
     );
     return response;
   }
 
   async unregisterWebhook(webhookId: number): Promise<void> {
-    await this.pipedriveRequest('DELETE', `/webhooks/${webhookId}`, null);
+    await this.pipedriveRequest("DELETE", `/webhooks/${webhookId}`, null);
   }
 
   // ─── TRANSFORMATION HELPERS ─────────────────────────────────────────
@@ -498,9 +578,9 @@ export class PipedriveAdapter extends CRMAdapterBase {
       ? person.phone.find((p) => p.primary)?.value || person.phone[0]?.value
       : undefined;
 
-    const nameParts = person.name?.split(' ') || [];
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
+    const nameParts = person.name?.split(" ") || [];
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
 
     return {
       id: person.id.toString(),
@@ -508,7 +588,10 @@ export class PipedriveAdapter extends CRMAdapterBase {
       lastName,
       email,
       phone,
-      company: typeof person.org_id === 'object' ? (person.org_id?.name as string) : undefined,
+      company:
+        typeof person.org_id === "object"
+          ? (person.org_id?.name as string)
+          : undefined,
       customFields: person.custom_fields || {},
     };
   }
@@ -517,7 +600,7 @@ export class PipedriveAdapter extends CRMAdapterBase {
     return {
       id: org.id.toString(),
       name: org.name,
-      website: org.cc_email || '',
+      website: org.cc_email || "",
       customFields: org.custom_fields || {},
     };
   }
@@ -527,7 +610,7 @@ export class PipedriveAdapter extends CRMAdapterBase {
       id: deal.id.toString(),
       name: deal.title,
       amount: deal.value || 0,
-      currency: deal.currency || 'USD',
+      currency: deal.currency || "USD",
       companyId: deal.org_id?.toString(),
       contactId: deal.person_id?.toString(),
       stageId: deal.stage_id?.toString(),
@@ -537,15 +620,26 @@ export class PipedriveAdapter extends CRMAdapterBase {
     };
   }
 
-  private transformPipedriveToActivity(activity: PipedriveActivity): CRMActivity {
+  private transformPipedriveToActivity(
+    activity: PipedriveActivity,
+  ): CRMActivity {
     return {
       id: activity.id.toString(),
-      type: (activity.type as 'call' | 'email' | 'meeting' | 'task' | 'note') || 'task',
+      type:
+        (activity.type as "call" | "email" | "meeting" | "task" | "note") ||
+        "task",
       subject: activity.subject,
-      description: activity.body || '',
-      recordType: activity.person_id ? 'contact' : 'account',
-      recordId: (activity.person_id || activity.deal_id || activity.org_id || '').toString(),
-      dueDate: activity.due_date ? new Date(`${activity.due_date}T${activity.due_time || '00:00:00'}`) : undefined,
+      description: activity.body || "",
+      recordType: activity.person_id ? "contact" : "account",
+      recordId: (
+        activity.person_id ||
+        activity.deal_id ||
+        activity.org_id ||
+        ""
+      ).toString(),
+      dueDate: activity.due_date
+        ? new Date(`${activity.due_date}T${activity.due_time || "00:00:00"}`)
+        : undefined,
     };
   }
 

@@ -50,7 +50,9 @@ type PrismaDbDeliveryStatus =
  * DB enum value (uppercase). The two enums mirror the same states but use
  * different string casing.
  */
-function toPrismaDeliveryStatus(status: DeliveryStatusType): PrismaDbDeliveryStatus {
+function toPrismaDeliveryStatus(
+  status: DeliveryStatusType,
+): PrismaDbDeliveryStatus {
   const map: Record<DeliveryStatusType, PrismaDbDeliveryStatus> = {
     pending: "PENDING",
     picked_up: "PICKED_UP",
@@ -72,7 +74,7 @@ function toPrismaDeliveryStatus(status: DeliveryStatusType): PrismaDbDeliverySta
 export function verifyOnfleetSignature(
   payload: string,
   signature: string,
-  secret: string
+  secret: string,
 ): boolean {
   try {
     const computed = createHmac("sha512", secret).update(payload).digest("hex");
@@ -89,7 +91,7 @@ export function verifyOnfleetSignature(
 export function verifyStuartSignature(
   payload: string,
   signature: string,
-  secret: string
+  secret: string,
 ): boolean {
   try {
     const computed = createHmac("sha256", secret).update(payload).digest("hex");
@@ -106,7 +108,7 @@ export function verifyStuartSignature(
 export function verifyUberDirectSignature(
   payload: string,
   signature: string,
-  secret: string
+  secret: string,
 ): boolean {
   try {
     const computed = createHmac("sha256", secret).update(payload).digest("hex");
@@ -121,7 +123,9 @@ export function verifyUberDirectSignature(
 /**
  * Normalize Onfleet webhook payload to unified event format
  */
-function normalizeOnfleetEvent(payload: OnfleetWebhookPayload): NormalizedDeliveryEvent | null {
+function normalizeOnfleetEvent(
+  payload: OnfleetWebhookPayload,
+): NormalizedDeliveryEvent | null {
   const { taskId, data, time, action } = payload;
 
   // Only process task update events
@@ -131,7 +135,9 @@ function normalizeOnfleetEvent(payload: OnfleetWebhookPayload): NormalizedDelive
 
   const taskData = data as Record<string, unknown>;
   const status = taskData.status as string | undefined;
-  const completionDetails = taskData.completionDetails as Record<string, unknown> | undefined;
+  const completionDetails = taskData.completionDetails as
+    | Record<string, unknown>
+    | undefined;
 
   // Map Onfleet status to normalized status
   let normalizedStatus: DeliveryStatusType | undefined;
@@ -185,7 +191,9 @@ function normalizeOnfleetEvent(payload: OnfleetWebhookPayload): NormalizedDelive
 /**
  * Normalize Stuart webhook payload to unified event format
  */
-function normalizeStuartEvent(payload: StuartWebhookPayload): NormalizedDeliveryEvent | null {
+function normalizeStuartEvent(
+  payload: StuartWebhookPayload,
+): NormalizedDeliveryEvent | null {
   const { event_id, event, timestamp, data } = payload;
   const deliveryId = data.id;
 
@@ -238,7 +246,7 @@ function normalizeStuartEvent(payload: StuartWebhookPayload): NormalizedDelivery
  * Normalize Uber Direct webhook payload to unified event format
  */
 function normalizeUberDirectEvent(
-  payload: UberDirectWebhookPayload
+  payload: UberDirectWebhookPayload,
 ): NormalizedDeliveryEvent | null {
   const { delivery_id, event_type, event_id, timestamp, data } = payload;
 
@@ -317,7 +325,7 @@ export async function processWebhook(
   signature: string,
   secret: string,
   partnerId: string,
-  requestBody: string
+  requestBody: string,
 ): Promise<WebhookProcessResult> {
   try {
     // Step 1: Check supported provider
@@ -341,7 +349,10 @@ export async function processWebhook(
     }
 
     // Step 3: Parse payload
-    let parsedPayload: OnfleetWebhookPayload | StuartWebhookPayload | UberDirectWebhookPayload;
+    let parsedPayload:
+      | OnfleetWebhookPayload
+      | StuartWebhookPayload
+      | UberDirectWebhookPayload;
     try {
       parsedPayload = JSON.parse(payload);
     } catch (error) {
@@ -427,13 +438,16 @@ export async function processWebhook(
               ? {
                   latitude: normalizedEvent.driver.location.latitude,
                   longitude: normalizedEvent.driver.location.longitude,
-                  updatedAt: normalizedEvent.driver.location.timestamp.toISOString(),
+                  updatedAt:
+                    normalizedEvent.driver.location.timestamp.toISOString(),
                 }
               : Prisma.DbNull,
             proofOfDelivery: normalizedEvent.proofOfDelivery
               ? {
-                  timestamp: normalizedEvent.proofOfDelivery.timestamp.toISOString(),
-                  recipientName: normalizedEvent.proofOfDelivery.recipientName ?? null,
+                  timestamp:
+                    normalizedEvent.proofOfDelivery.timestamp.toISOString(),
+                  recipientName:
+                    normalizedEvent.proofOfDelivery.recipientName ?? null,
                   signature: normalizedEvent.proofOfDelivery.signature ?? null,
                   photo: normalizedEvent.proofOfDelivery.photo ?? null,
                 }
@@ -507,7 +521,7 @@ function verifySignature(
   provider: "onfleet" | "stuart" | "uber_direct",
   payload: string,
   signature: string,
-  secret: string
+  secret: string,
 ): boolean {
   switch (provider) {
     case "onfleet":
@@ -527,7 +541,7 @@ function verifySignature(
  */
 function emitDeliveryEvent(
   event: NormalizedDeliveryEvent,
-  deliveryId: string
+  deliveryId: string,
 ): void {
   // This would integrate with an event bus like Redis Streams, Kafka, or RabbitMQ
   // For now, we just log for demonstration
@@ -542,7 +556,9 @@ function emitDeliveryEvent(
   //   data: event
   // });
 
-  console.log(`[Webhook] Emitted event: ${eventName} for delivery ${deliveryId}`);
+  console.log(
+    `[Webhook] Emitted event: ${eventName} for delivery ${deliveryId}`,
+  );
 }
 
 /** Type for a single webhook log row (includes all scalar fields from the model). */
@@ -554,7 +570,7 @@ type CourierWebhookLogRow = Awaited<
  * Get webhook log by ID for auditing
  */
 export async function getWebhookLog(
-  webhookLogId: string
+  webhookLogId: string,
 ): Promise<CourierWebhookLogRow | null> {
   return prisma.courierWebhookLog.findUnique({
     where: { id: webhookLogId },
@@ -567,7 +583,7 @@ export async function getWebhookLog(
 export async function getPartnerWebhookLogs(
   partnerId: string,
   limit: number = 50,
-  offset: number = 0
+  offset: number = 0,
 ): Promise<CourierWebhookLogRow[]> {
   return prisma.courierWebhookLog.findMany({
     where: { partnerId },
@@ -580,7 +596,9 @@ export async function getPartnerWebhookLogs(
 /**
  * Count unprocessed webhooks for a partner
  */
-export async function countUnprocessedWebhooks(partnerId: string): Promise<number> {
+export async function countUnprocessedWebhooks(
+  partnerId: string,
+): Promise<number> {
   return await prisma.courierWebhookLog.count({
     where: {
       partnerId,
@@ -594,7 +612,7 @@ export async function countUnprocessedWebhooks(partnerId: string): Promise<numbe
  */
 export async function retryFailedWebhooks(
   partnerId: string,
-  limit: number = 10
+  limit: number = 10,
 ): Promise<number> {
   const failedLogs = await prisma.courierWebhookLog.findMany({
     where: {
@@ -640,7 +658,7 @@ export async function retryFailedWebhooks(
           signature,
           secret,
           partnerId,
-          payload
+          payload,
         );
 
         if (result.success) {

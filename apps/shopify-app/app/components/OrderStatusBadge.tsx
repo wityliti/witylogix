@@ -13,7 +13,10 @@ interface OrderStatusBadgeProps {
   size?: "small" | "medium";
 }
 
-const STATUS_CONFIG: Record<string, { label: string; tone?: BadgeProps["tone"] }> = {
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; tone?: BadgeProps["tone"] }
+> = {
   PENDING: { label: "Pending", tone: "attention" },
   ACCEPTED: { label: "Accepted", tone: "info" },
   ASSIGNED: { label: "Assigned", tone: "info" },

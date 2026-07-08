@@ -5,7 +5,7 @@
  */
 export {};
 
-declare module 'vitest' {
+declare module "vitest" {
   interface Assertion<R = unknown> {
     toBeInTheDocument(): R;
     toBeVisible(): R;
@@ -18,7 +18,10 @@ declare module 'vitest' {
     toHaveAttribute(attr: string, value?: string | RegExp): R;
     toHaveClass(...classNames: string[]): R;
     toHaveStyle(css: string | Record<string, unknown>): R;
-    toHaveTextContent(text: string | RegExp, options?: { normalizeWhitespace?: boolean }): R;
+    toHaveTextContent(
+      text: string | RegExp,
+      options?: { normalizeWhitespace?: boolean },
+    ): R;
     toHaveFormValues(values: Record<string, unknown>): R;
     toHaveFocus(): R;
     toBeEmptyDOMElement(): R;

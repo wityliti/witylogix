@@ -79,9 +79,7 @@ export {
 
 // ─── API EXPORTS ────────────────────────────────────────────────
 
-export type {
-  ApiResponse,
-} from "./field-service-api.js";
+export type { ApiResponse } from "./field-service-api.js";
 
 export {
   ApiError,

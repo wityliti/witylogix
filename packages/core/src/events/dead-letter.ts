@@ -8,7 +8,12 @@
  * - Alert on DLQ threshold
  */
 
-import { BaseEvent, DeadLetterEntry, DeadLetterStats, EventBusError } from './types.js';
+import {
+  BaseEvent,
+  DeadLetterEntry,
+  DeadLetterStats,
+  EventBusError,
+} from "./types.js";
 
 /**
  * Dead Letter Queue Interface
@@ -33,7 +38,7 @@ export interface IDeadLetterQueue {
    * Query DLQ entries
    */
   query(opts: {
-    status?: 'pending' | 'resolved' | 'ignored';
+    status?: "pending" | "resolved" | "ignored";
     eventType?: string;
     limit?: number;
     offset?: number;
@@ -105,13 +110,13 @@ export class InMemoryDeadLetterQueue implements IDeadLetterQueue {
       event,
       error: {
         message: error.message,
-        code: (error as any).code || 'UNKNOWN',
+        code: (error as any).code || "UNKNOWN",
         stack: error.stack,
       },
       retryCount,
       lastErrorAt: new Date(),
       createdAt: new Date(),
-      status: 'pending',
+      status: "pending",
       context,
     };
 
@@ -124,7 +129,7 @@ export class InMemoryDeadLetterQueue implements IDeadLetterQueue {
   }
 
   async query(opts: {
-    status?: 'pending' | 'resolved' | 'ignored';
+    status?: "pending" | "resolved" | "ignored";
     eventType?: string;
     limit?: number;
     offset?: number;
@@ -160,29 +165,29 @@ export class InMemoryDeadLetterQueue implements IDeadLetterQueue {
     const entry = this.entries.find((e) => e.id === id);
     if (!entry) {
       throw new EventBusError(
-        'DLQ_ENTRY_NOT_FOUND',
+        "DLQ_ENTRY_NOT_FOUND",
         `Dead letter entry ${id} not found`,
       );
     }
-    entry.status = 'resolved';
+    entry.status = "resolved";
   }
 
   async ignore(id: string): Promise<void> {
     const entry = this.entries.find((e) => e.id === id);
     if (!entry) {
       throw new EventBusError(
-        'DLQ_ENTRY_NOT_FOUND',
+        "DLQ_ENTRY_NOT_FOUND",
         `Dead letter entry ${id} not found`,
       );
     }
-    entry.status = 'ignored';
+    entry.status = "ignored";
   }
 
   async replay(id: string): Promise<void> {
     const entry = this.entries.find((e) => e.id === id);
     if (!entry) {
       throw new EventBusError(
-        'DLQ_ENTRY_NOT_FOUND',
+        "DLQ_ENTRY_NOT_FOUND",
         `Dead letter entry ${id} not found`,
       );
     }
@@ -191,26 +196,26 @@ export class InMemoryDeadLetterQueue implements IDeadLetterQueue {
     const handler = this.replayHandlers.get(entry.event.type);
     if (!handler) {
       throw new EventBusError(
-        'NO_REPLAY_HANDLER',
+        "NO_REPLAY_HANDLER",
         `No replay handler registered for event type ${entry.event.type}`,
       );
     }
 
     try {
       await handler(entry.event);
-      entry.status = 'resolved';
+      entry.status = "resolved";
     } catch (error) {
       throw new EventBusError(
-        'REPLAY_FAILED',
+        "REPLAY_FAILED",
         `Failed to replay event: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
 
   async getStats(): Promise<DeadLetterStats> {
-    const pending = this.entries.filter((e) => e.status === 'pending');
-    const resolved = this.entries.filter((e) => e.status === 'resolved');
-    const ignored = this.entries.filter((e) => e.status === 'ignored');
+    const pending = this.entries.filter((e) => e.status === "pending");
+    const resolved = this.entries.filter((e) => e.status === "resolved");
+    const ignored = this.entries.filter((e) => e.status === "ignored");
 
     let oldestPending: Date | undefined;
     if (pending.length > 0) {
@@ -280,13 +285,13 @@ export class DeadLetterQueueFactory {
   /**
    * Get or create a DLQ
    */
-  static get(name: string = 'memory'): IDeadLetterQueue {
+  static get(name: string = "memory"): IDeadLetterQueue {
     if (!this.queues.has(name)) {
-      if (name === 'memory') {
+      if (name === "memory") {
         this.queues.set(name, new InMemoryDeadLetterQueue());
       } else {
         throw new EventBusError(
-          'DLQ_NOT_FOUND',
+          "DLQ_NOT_FOUND",
           `Dead letter queue '${name}' not registered`,
         );
       }
@@ -306,7 +311,7 @@ export class DeadLetterQueueFactory {
  * Convenience function to get default DLQ
  */
 export function getDeadLetterQueue(): IDeadLetterQueue {
-  return DeadLetterQueueFactory.get('memory');
+  return DeadLetterQueueFactory.get("memory");
 }
 
 /**

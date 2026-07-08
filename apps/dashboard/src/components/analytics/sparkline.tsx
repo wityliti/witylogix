@@ -29,7 +29,13 @@ export function Sparkline({
 }: SparklineProps) {
   const { points, min, max, trend, finalColor } = useMemo(() => {
     if (!data || data.length === 0) {
-      return { points: [], min: 0, max: 100, trend: "flat", finalColor: "#999" };
+      return {
+        points: [],
+        min: 0,
+        max: 100,
+        trend: "flat",
+        finalColor: "#999",
+      };
     }
 
     const min = Math.min(...data);
@@ -86,13 +92,7 @@ export function Sparkline({
       className="overflow-visible"
     >
       {/* Area under line */}
-      {showArea && (
-        <path
-          d={areaPath}
-          fill={finalColor}
-          fillOpacity={0.1}
-        />
-      )}
+      {showArea && <path d={areaPath} fill={finalColor} fillOpacity={0.1} />}
 
       {/* Line */}
       <path

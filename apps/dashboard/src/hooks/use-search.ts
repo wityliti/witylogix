@@ -163,39 +163,44 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchState {
         setIsLoading(false);
       }
     },
-    [type, limit, onSearch, onError]
+    [type, limit, onSearch, onError],
   );
 
   /**
    * Fetch suggestions from API.
    */
-  const fetchSuggestions = useCallback(async (q: string): Promise<void> => {
-    if (!q.trim()) {
-      // Show recent searches if empty
-      const recentSuggestions: SearchSuggestion[] = recentSearches
-        .slice(0, 5)
-        .map((s) => ({
-          title: s,
-          type: "recent" as const,
-        }));
-      setSuggestions(recentSuggestions);
-      return;
-    }
+  const fetchSuggestions = useCallback(
+    async (q: string): Promise<void> => {
+      if (!q.trim()) {
+        // Show recent searches if empty
+        const recentSuggestions: SearchSuggestion[] = recentSearches
+          .slice(0, 5)
+          .map((s) => ({
+            title: s,
+            type: "recent" as const,
+          }));
+        setSuggestions(recentSuggestions);
+        return;
+      }
 
-    try {
-      const params = new URLSearchParams({ q, limit: "5" });
-      const data = await api.get<{ suggestions: string[] }>(`/api/v4/search/suggestions?${params}`);
-      const suggestionList: SearchSuggestion[] = (data.suggestions || []).map(
-        (s: string) => ({
-          title: s,
-          type: "suggestion" as const,
-        })
-      );
-      setSuggestions(suggestionList);
-    } catch (e) {
-      // Silently fail on suggestions
-    }
-  }, [recentSearches]);
+      try {
+        const params = new URLSearchParams({ q, limit: "5" });
+        const data = await api.get<{ suggestions: string[] }>(
+          `/api/v4/search/suggestions?${params}`,
+        );
+        const suggestionList: SearchSuggestion[] = (data.suggestions || []).map(
+          (s: string) => ({
+            title: s,
+            type: "suggestion" as const,
+          }),
+        );
+        setSuggestions(suggestionList);
+      } catch (e) {
+        // Silently fail on suggestions
+      }
+    },
+    [recentSearches],
+  );
 
   /**
    * Handle input change with debounce.
@@ -223,7 +228,7 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchState {
         fetchSuggestions(newQuery);
       }, debounceMs);
     },
-    [debounceMs, executeSearch, fetchSuggestions]
+    [debounceMs, executeSearch, fetchSuggestions],
   );
 
   /**
@@ -236,12 +241,12 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchState {
       if (e.key === "ArrowDown") {
         e.preventDefault();
         setSelectedIndex((prev) =>
-          prev < suggestionsToShow.length - 1 ? prev + 1 : 0
+          prev < suggestionsToShow.length - 1 ? prev + 1 : 0,
         );
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setSelectedIndex((prev) =>
-          prev > 0 ? prev - 1 : suggestionsToShow.length - 1
+          prev > 0 ? prev - 1 : suggestionsToShow.length - 1,
         );
       } else if (e.key === "Enter") {
         e.preventDefault();
@@ -258,7 +263,7 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchState {
         setSuggestions([]);
       }
     },
-    [suggestions, results, selectedIndex, query]
+    [suggestions, results, selectedIndex, query],
   );
 
   /**
@@ -279,15 +284,15 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchState {
 
       if (direction === "down") {
         setSelectedIndex((prev) =>
-          prev < suggestionsToShow.length - 1 ? prev + 1 : 0
+          prev < suggestionsToShow.length - 1 ? prev + 1 : 0,
         );
       } else {
         setSelectedIndex((prev) =>
-          prev > 0 ? prev - 1 : suggestionsToShow.length - 1
+          prev > 0 ? prev - 1 : suggestionsToShow.length - 1,
         );
       }
     },
-    [suggestions, results]
+    [suggestions, results],
   );
 
   /**

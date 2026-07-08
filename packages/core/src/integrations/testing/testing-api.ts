@@ -135,15 +135,21 @@ const ChaosResultResponseSchema = z.object({
 
 // ─── Type Exports ─────────────────────────────────────────────
 
-export type CreateChaosScenarioRequest = z.infer<typeof CreateChaosScenarioRequestSchema>;
+export type CreateChaosScenarioRequest = z.infer<
+  typeof CreateChaosScenarioRequestSchema
+>;
 export type ExecuteChaosRequest = z.infer<typeof ExecuteChaosRequestSchema>;
 export type CreateContractRequest = z.infer<typeof CreateContractRequestSchema>;
-export type ValidateContractRequest = z.infer<typeof ValidateContractRequestSchema>;
+export type ValidateContractRequest = z.infer<
+  typeof ValidateContractRequestSchema
+>;
 export type MockServerConfig = z.infer<typeof MockServerConfigSchema>;
 export type RegressionRunRequest = z.infer<typeof RegressionRunRequestSchema>;
 
 export type ChaosScenarioResponse = z.infer<typeof ChaosScenarioResponseSchema>;
-export type ChaosExecutionResponse = z.infer<typeof ChaosExecutionResponseSchema>;
+export type ChaosExecutionResponse = z.infer<
+  typeof ChaosExecutionResponseSchema
+>;
 export type ChaosResultResponse = z.infer<typeof ChaosResultResponseSchema>;
 
 // ─── API Route Handlers ────────────────────────────────────────
@@ -160,7 +166,7 @@ export interface TestingAPIHandler {
    * Create a new chaos scenario.
    */
   createChaosScenario(
-    req: CreateChaosScenarioRequest
+    req: CreateChaosScenarioRequest,
   ): Promise<{ id: string; message: string }>;
 
   /**
@@ -181,14 +187,16 @@ export interface TestingAPIHandler {
    */
   executeChaosScenario(
     scenarioId: string,
-    req?: ExecuteChaosRequest
+    req?: ExecuteChaosRequest,
   ): Promise<ChaosExecutionResponse>;
 
   /**
    * GET /testing/chaos/executions/:id
    * Get a specific chaos execution.
    */
-  getChaosExecution(executionId: string): Promise<ChaosExecutionResponse | null>;
+  getChaosExecution(
+    executionId: string,
+  ): Promise<ChaosExecutionResponse | null>;
 
   /**
    * POST /testing/chaos/stop/:id
@@ -202,7 +210,7 @@ export interface TestingAPIHandler {
    */
   getChaosResults(
     scenarioId?: string,
-    limit?: number
+    limit?: number,
   ): Promise<ChaosResultResponse[]>;
 
   // Contract Testing endpoints
@@ -218,7 +226,7 @@ export interface TestingAPIHandler {
    * Validate request/response against a contract.
    */
   validateContract(
-    req: ValidateContractRequest
+    req: ValidateContractRequest,
   ): Promise<{ passed: boolean; errors: string[]; schemaDrift: any }>;
 
   // Regression Testing endpoints
@@ -248,14 +256,16 @@ export interface TestingAPIHandler {
    * GET /testing/mock-servers
    * List all mock servers.
    */
-  getMockServers(): Promise<Array<{ id: string; provider: string; port: number }>>;
+  getMockServers(): Promise<
+    Array<{ id: string; provider: string; port: number }>
+  >;
 
   /**
    * POST /testing/mock-servers
    * Create a new mock server.
    */
   createMockServer(
-    config: MockServerConfig
+    config: MockServerConfig,
   ): Promise<{ id: string; baseUrl: string }>;
 }
 
@@ -263,7 +273,7 @@ export interface TestingAPIHandler {
 
 export class TestingAPIValidator {
   static validateCreateChaosScenario(
-    data: unknown
+    data: unknown,
   ): CreateChaosScenarioRequest {
     return CreateChaosScenarioRequestSchema.parse(data);
   }
@@ -301,35 +311,39 @@ export class TestingAPIValidator {
  */
 export abstract class TestingAPIBase implements TestingAPIHandler {
   abstract createChaosScenario(
-    req: CreateChaosScenarioRequest
+    req: CreateChaosScenarioRequest,
   ): Promise<{ id: string; message: string }>;
 
-  abstract getChaosScenarios(provider?: string): Promise<ChaosScenarioResponse[]>;
+  abstract getChaosScenarios(
+    provider?: string,
+  ): Promise<ChaosScenarioResponse[]>;
 
   abstract getChaosScenario(
-    scenarioId: string
+    scenarioId: string,
   ): Promise<ChaosScenarioResponse | null>;
 
   abstract executeChaosScenario(
     scenarioId: string,
-    req?: ExecuteChaosRequest
+    req?: ExecuteChaosRequest,
   ): Promise<ChaosExecutionResponse>;
 
   abstract getChaosExecution(
-    executionId: string
+    executionId: string,
   ): Promise<ChaosExecutionResponse | null>;
 
-  abstract stopChaosExecution(executionId: string): Promise<{ message: string }>;
+  abstract stopChaosExecution(
+    executionId: string,
+  ): Promise<{ message: string }>;
 
   abstract getChaosResults(
     scenarioId?: string,
-    limit?: number
+    limit?: number,
   ): Promise<ChaosResultResponse[]>;
 
   abstract getContracts(provider?: string): Promise<any[]>;
 
   abstract validateContract(
-    req: ValidateContractRequest
+    req: ValidateContractRequest,
   ): Promise<{ passed: boolean; errors: string[]; schemaDrift: any }>;
 
   abstract getRegressionStatus(): Promise<{
@@ -339,22 +353,21 @@ export abstract class TestingAPIBase implements TestingAPIHandler {
   }>;
 
   abstract runRegressionTests(
-    req: RegressionRunRequest
+    req: RegressionRunRequest,
   ): Promise<{ executionId: string; message: string }>;
 
-  abstract getMockServers(): Promise<Array<{ id: string; provider: string; port: number }>>;
+  abstract getMockServers(): Promise<
+    Array<{ id: string; provider: string; port: number }>
+  >;
 
   abstract createMockServer(
-    config: MockServerConfig
+    config: MockServerConfig,
   ): Promise<{ id: string; baseUrl: string }>;
 
   /**
    * Helper to validate request data.
    */
-  protected validateRequest<T>(
-    data: unknown,
-    schema: z.ZodSchema<T>
-  ): T {
+  protected validateRequest<T>(data: unknown, schema: z.ZodSchema<T>): T {
     return schema.parse(data);
   }
 
@@ -374,25 +387,25 @@ export abstract class TestingAPIBase implements TestingAPIHandler {
 
 export interface TestingRoutes {
   "POST /testing/chaos/scenarios": (
-    body: CreateChaosScenarioRequest
+    body: CreateChaosScenarioRequest,
   ) => Promise<{ id: string; message: string }>;
 
   "GET /testing/chaos/scenarios": (query?: {
     provider?: string;
   }) => Promise<ChaosScenarioResponse[]>;
 
-  "GET /testing/chaos/scenarios/:id": (
-    params: { id: string }
-  ) => Promise<ChaosScenarioResponse | null>;
+  "GET /testing/chaos/scenarios/:id": (params: {
+    id: string;
+  }) => Promise<ChaosScenarioResponse | null>;
 
   "POST /testing/chaos/execute/:id": (
     params: { id: string },
-    body?: ExecuteChaosRequest
+    body?: ExecuteChaosRequest,
   ) => Promise<ChaosExecutionResponse>;
 
-  "GET /testing/chaos/executions/:id": (
-    params: { id: string }
-  ) => Promise<ChaosExecutionResponse | null>;
+  "GET /testing/chaos/executions/:id": (params: {
+    id: string;
+  }) => Promise<ChaosExecutionResponse | null>;
 
   "POST /testing/chaos/stop/:id": (params: {
     id: string;
@@ -403,12 +416,10 @@ export interface TestingRoutes {
     limit?: number;
   }) => Promise<ChaosResultResponse[]>;
 
-  "GET /testing/contracts": (query?: {
-    provider?: string;
-  }) => Promise<any[]>;
+  "GET /testing/contracts": (query?: { provider?: string }) => Promise<any[]>;
 
   "POST /testing/contracts/validate": (
-    body: ValidateContractRequest
+    body: ValidateContractRequest,
   ) => Promise<{ passed: boolean; errors: string[]; schemaDrift: any }>;
 
   "GET /testing/regression/status": () => Promise<{
@@ -418,7 +429,7 @@ export interface TestingRoutes {
   }>;
 
   "POST /testing/regression/run": (
-    body: RegressionRunRequest
+    body: RegressionRunRequest,
   ) => Promise<{ executionId: string; message: string }>;
 
   "GET /testing/mock-servers": () => Promise<
@@ -426,7 +437,7 @@ export interface TestingRoutes {
   >;
 
   "POST /testing/mock-servers": (
-    body: MockServerConfig
+    body: MockServerConfig,
   ) => Promise<{ id: string; baseUrl: string }>;
 }
 
@@ -436,7 +447,7 @@ export class TestingAPIError extends Error {
   constructor(
     public code: string,
     public statusCode: number,
-    message: string
+    message: string,
   ) {
     super(message);
     this.name = "TestingAPIError";

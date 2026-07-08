@@ -9,9 +9,11 @@ Sprint 4.6 delivers a comprehensive notification system with advanced settings, 
 ### Dashboard Pages
 
 #### 1. Notification Settings Page
+
 **Path:** `/apps/dashboard/src/app/(dashboard)/settings/notifications/page.tsx`
 
 Complete notification channel configuration with:
+
 - Per-channel provider selection (Email: SMTP/SendGrid/SES, SMS: Twilio/Vonage, WhatsApp: Meta/Twilio, Push: Firebase/OneSignal)
 - Masked credential inputs with reveal toggle
 - Rate limiting configuration (per minute, hour, day) for each channel
@@ -21,6 +23,7 @@ Complete notification channel configuration with:
 - Save/discard functionality
 
 **Features:**
+
 - Multi-provider support for each channel
 - Secure credential handling with visibility toggle
 - Granular rate limit controls
@@ -28,9 +31,11 @@ Complete notification channel configuration with:
 - Channel-specific test send buttons
 
 #### 2. Notification Templates Page
+
 **Path:** `/apps/dashboard/src/app/(dashboard)/settings/notifications/templates/page.tsx`
 
 Template management interface with:
+
 - List of all notification templates grouped by event type
 - Filter by event type (order_confirmed, dispatched, out_for_delivery, delivered, delayed, failed, feedback_request)
 - Template status display (active/draft)
@@ -39,6 +44,7 @@ Template management interface with:
 - Summary statistics
 
 **Features:**
+
 - Event-based filtering
 - Status badges (active/draft)
 - Template duplication
@@ -46,9 +52,11 @@ Template management interface with:
 - Template analytics
 
 #### 3. Template Editor
+
 **Path:** `/apps/dashboard/src/app/(dashboard)/settings/notifications/templates/[id]/page.tsx`
 
 Rich template editor supporting:
+
 - Multi-channel editing with tabs (Email, SMS, WhatsApp, Push)
 - Variable insertion with click-to-add interface
 - Live preview panel with sample data rendering
@@ -59,6 +67,7 @@ Rich template editor supporting:
 - Test send functionality with recipient input
 
 **Variables Supported:**
+
 - {{customer_name}}
 - {{order_id}}
 - {{delivery_date}}
@@ -68,9 +77,11 @@ Rich template editor supporting:
 - {{delivery_address}}
 
 #### 4. WhatsApp Template Manager
+
 **Path:** `/apps/dashboard/src/app/(dashboard)/settings/notifications/whatsapp/page.tsx`
 
 Specialized WhatsApp Business template CRUD with:
+
 - Template categories (UTILITY, MARKETING, AUTHENTICATION)
 - Component builder (HEADER, BODY, FOOTER, BUTTONS)
 - Button types (quick_reply, url, phone)
@@ -81,6 +92,7 @@ Specialized WhatsApp Business template CRUD with:
 - Template detail cards showing components
 
 **WhatsApp Features:**
+
 - Full template composition UI
 - Header type support (text, image, video, document)
 - Button management
@@ -89,9 +101,11 @@ Specialized WhatsApp Business template CRUD with:
 - Meta API synchronization
 
 #### 5. Notification Log Page
+
 **Path:** `/apps/dashboard/src/app/(dashboard)/notifications/log/page.tsx`
 
 Comprehensive notification delivery tracking with:
+
 - Paginated table of all sent notifications
 - Columns: timestamp, recipient, channel, event, template, status, cost
 - Multi-filter support (channel, status, date range, event type)
@@ -100,6 +114,7 @@ Comprehensive notification delivery tracking with:
 - Summary statistics (total sent, delivery rate, bounce rate, cost)
 
 **Tracking Features:**
+
 - Status badges (sent, delivered, failed, bounced, pending)
 - Delivery attempt history
 - Error code and message capture
@@ -109,9 +124,11 @@ Comprehensive notification delivery tracking with:
 ### Components
 
 #### 6. Notification Stats Widget
+
 **Path:** `/apps/dashboard/src/components/notifications/notification-stats-widget.tsx`
 
 Dashboard widget showing:
+
 - Daily sent count with trend indicator
 - Delivery rate percentage
 - Bounce rate percentage
@@ -120,6 +137,7 @@ Dashboard widget showing:
 - Top 5 failed templates list
 
 **Widget Features:**
+
 - Real-time statistics
 - Visual trend indicators
 - Channel distribution visualization
@@ -129,40 +147,48 @@ Dashboard widget showing:
 ### API Routes
 
 #### 7. Notification Preferences API
+
 **Path:** `/apps/api/src/routes/notification-preferences.ts`
 
 Comprehensive API endpoints:
 
 **GET /notifications/preferences/:customerId**
+
 - Fetch customer notification preferences
 - Returns: all preference settings with defaults
 
 **PUT /notifications/preferences/:customerId**
+
 - Update customer preferences
 - Accepts: full preferences object
 - Returns: updated preferences
 
 **POST /notifications/preferences/unsubscribe**
+
 - Handle unsubscribe via link
 - Accepts: customerId, channel, token
 - Returns: updated preferences
 
 **GET /notifications/preferences/:customerId/check**
+
 - Check if notification should be sent
 - Query params: channel, eventType
 - Returns: canSend boolean with reason
 
 **PATCH /notifications/preferences/:customerId/quiet-hours**
+
 - Update quiet hours settings
 - Accepts: enabled, startTime, endTime, timezone
 - Returns: updated quiet hours config
 
 **PATCH /notifications/preferences/:customerId/channel/:channel**
+
 - Enable/disable specific channel
 - Accepts: enabled boolean
 - Returns: updated channel preference
 
 **POST /notifications/preferences/bulk**
+
 - Get preferences for multiple customers
 - Accepts: customerIds array
 - Returns: preferences for all customers
@@ -170,9 +196,11 @@ Comprehensive API endpoints:
 ### Tests
 
 #### 8. Preference Manager Tests
+
 **Path:** `/packages/core/src/notifications-v2/__tests__/preference-manager.test.ts`
 
 Comprehensive test suite covering:
+
 - Preference CRUD operations
 - Channel enable/disable logic
 - Event type preferences
@@ -182,6 +210,7 @@ Comprehensive test suite covering:
 - Edge cases and error handling
 
 **Test Categories:**
+
 - Basic CRUD operations
 - Channel management (12 tests)
 - Event type management (8 tests)
@@ -194,12 +223,14 @@ Comprehensive test suite covering:
 ## Key Features Implemented
 
 ### 1. Multi-Channel Support
+
 - **Email**: SMTP, SendGrid, AWS SES
 - **SMS**: Twilio, Vonage
 - **WhatsApp**: Meta (WhatsApp Business), Twilio
 - **Push**: Firebase Cloud Messaging, OneSignal
 
 ### 2. Template Management
+
 - 7 event types pre-configured
 - Multi-channel templates per event
 - Variable interpolation
@@ -207,6 +238,7 @@ Comprehensive test suite covering:
 - Version history tracking
 
 ### 3. Preference Management
+
 - Per-customer settings
 - Per-channel configuration
 - Event-type granularity
@@ -214,6 +246,7 @@ Comprehensive test suite covering:
 - Unsubscribe handling
 
 ### 4. WhatsApp Integration
+
 - Business template components
 - Button management
 - Meta API synchronization
@@ -221,6 +254,7 @@ Comprehensive test suite covering:
 - Rejection handling
 
 ### 5. Analytics & Monitoring
+
 - Send statistics
 - Delivery rate tracking
 - Bounce rate monitoring
@@ -231,6 +265,7 @@ Comprehensive test suite covering:
 ## Database Schema
 
 ### NotificationPreference
+
 ```sql
 CREATE TABLE notification_preferences (
   id UUID PRIMARY KEY,
@@ -254,7 +289,8 @@ CREATE TABLE notification_preferences (
 ## Styling & Design
 
 All components follow Witylogix design standards:
-- **Theme**: Dark sidebar layout with --wl-* CSS variables
+
+- **Theme**: Dark sidebar layout with --wl-\* CSS variables
 - **Colors**: Primary, secondary, success, warning, danger variants
 - **Components**: Button (primary|secondary|ghost|danger), Badge (default|success|warning|danger|info|primary)
 - **Utilities**: cn() from @/lib/utils for className composition
@@ -262,7 +298,9 @@ All components follow Witylogix design standards:
 ## Integration Points
 
 ### Settings Layout Integration
+
 Added navigation link in `/apps/dashboard/src/app/(dashboard)/settings/layout.tsx`:
+
 ```tsx
 {
   href: "/settings/notifications",
@@ -273,6 +311,7 @@ Added navigation link in `/apps/dashboard/src/app/(dashboard)/settings/layout.ts
 ```
 
 ### API Integration
+
 - All dashboard pages make API calls to notification preference endpoints
 - WhatsApp template manager syncs with Meta Business API
 - Notification log fetches from delivery database
@@ -280,30 +319,33 @@ Added navigation link in `/apps/dashboard/src/app/(dashboard)/settings/layout.ts
 ## Usage Examples
 
 ### Getting Customer Preferences
+
 ```typescript
-const response = await fetch('/api/notifications/preferences/CUSTOMER_ID');
+const response = await fetch("/api/notifications/preferences/CUSTOMER_ID");
 const preferences = await response.json();
 ```
 
 ### Updating Preferences
+
 ```typescript
-await fetch('/api/notifications/preferences/CUSTOMER_ID', {
-  method: 'PUT',
-  headers: { 'Content-Type': 'application/json' },
+await fetch("/api/notifications/preferences/CUSTOMER_ID", {
+  method: "PUT",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
     email_enabled: true,
     sms_enabled: false,
     quiet_hours_enabled: true,
-    quiet_hours_start: '22:00',
-    quiet_hours_end: '08:00'
-  })
+    quiet_hours_start: "22:00",
+    quiet_hours_end: "08:00",
+  }),
 });
 ```
 
 ### Checking Before Send
+
 ```typescript
 const response = await fetch(
-  '/api/notifications/preferences/CUSTOMER_ID/check?channel=email&eventType=order_confirmed'
+  "/api/notifications/preferences/CUSTOMER_ID/check?channel=email&eventType=order_confirmed",
 );
 const { canSend, reason } = await response.json();
 if (canSend) {
@@ -314,11 +356,13 @@ if (canSend) {
 ## Testing
 
 Run the preference manager tests:
+
 ```bash
 npm test -- preference-manager.test.ts
 ```
 
 Test coverage includes:
+
 - 59 individual test cases
 - 8 describe blocks
 - Edge case handling
@@ -360,6 +404,7 @@ Test coverage includes:
 ## Support & Documentation
 
 For additional documentation, see:
+
 - `/packages/core/src/notifications-v2/README.md` - Notification system overview
 - `/packages/core/src/notifications-v2/QUICKSTART.md` - Quick start guide
 - Template variable documentation in template editor component

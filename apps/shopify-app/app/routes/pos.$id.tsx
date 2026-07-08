@@ -26,7 +26,9 @@ import {
   Modal,
   TextField,
   Banner,
-  Toast, Link as PolarisLink, } from "@shopify/polaris";
+  Toast,
+  Link as PolarisLink,
+} from "@shopify/polaris";
 import { Link } from "react-router";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -96,13 +98,25 @@ const MOCK_ORDERS: Record<string, POSOrderDetail> = {
       email: "john.smith@email.com",
     },
     items: [
-      { id: "item-1", name: "Burger Deluxe", quantity: 1, price: 12.99, total: 12.99 },
-      { id: "item-2", name: "Fries (Large)", quantity: 2, price: 5.99, total: 11.98 },
-      { id: "item-3", name: "Soft Drink", quantity: 1, price: 3.50, total: 3.50 },
+      {
+        id: "item-1",
+        name: "Burger Deluxe",
+        quantity: 1,
+        price: 12.99,
+        total: 12.99,
+      },
+      {
+        id: "item-2",
+        name: "Fries (Large)",
+        quantity: 2,
+        price: 5.99,
+        total: 11.98,
+      },
+      { id: "item-3", name: "Soft Drink", quantity: 1, price: 3.5, total: 3.5 },
     ],
     subtotal: 28.47,
     tax: 2.14,
-    deliveryFee: 5.00,
+    deliveryFee: 5.0,
     total: 35.61,
     status: "DELIVERED",
     createdAt: "2026-03-07T10:30:00Z",
@@ -158,13 +172,25 @@ const MOCK_ORDERS: Record<string, POSOrderDetail> = {
       email: "sarah.j@email.com",
     },
     items: [
-      { id: "item-1", name: "Pizza (Large)", quantity: 1, price: 18.99, total: 18.99 },
-      { id: "item-2", name: "Caesar Salad", quantity: 1, price: 9.99, total: 9.99 },
+      {
+        id: "item-1",
+        name: "Pizza (Large)",
+        quantity: 1,
+        price: 18.99,
+        total: 18.99,
+      },
+      {
+        id: "item-2",
+        name: "Caesar Salad",
+        quantity: 1,
+        price: 9.99,
+        total: 9.99,
+      },
     ],
     subtotal: 28.98,
     tax: 2.32,
     deliveryFee: 0,
-    total: 31.30,
+    total: 31.3,
     status: "READY",
     createdAt: "2026-03-07T09:45:00Z",
     timeline: [
@@ -195,9 +221,27 @@ const MOCK_ORDERS: Record<string, POSOrderDetail> = {
       email: "mbrown@email.com",
     },
     items: [
-      { id: "item-1", name: "Coffee (Espresso)", quantity: 3, price: 4.50, total: 13.50 },
-      { id: "item-2", name: "Croissant", quantity: 2, price: 3.99, total: 7.98 },
-      { id: "item-3", name: "Muffin (Blueberry)", quantity: 3, price: 2.99, total: 8.97 },
+      {
+        id: "item-1",
+        name: "Coffee (Espresso)",
+        quantity: 3,
+        price: 4.5,
+        total: 13.5,
+      },
+      {
+        id: "item-2",
+        name: "Croissant",
+        quantity: 2,
+        price: 3.99,
+        total: 7.98,
+      },
+      {
+        id: "item-3",
+        name: "Muffin (Blueberry)",
+        quantity: 3,
+        price: 2.99,
+        total: 8.97,
+      },
     ],
     subtotal: 30.45,
     tax: 2.44,
@@ -238,11 +282,17 @@ const MOCK_ORDERS: Record<string, POSOrderDetail> = {
       email: "emily.davis@email.com",
     },
     items: [
-      { id: "item-1", name: "Sandwich (Turkey)", quantity: 1, price: 9.99, total: 9.99 },
+      {
+        id: "item-1",
+        name: "Sandwich (Turkey)",
+        quantity: 1,
+        price: 9.99,
+        total: 9.99,
+      },
     ],
     subtotal: 9.99,
-    tax: 0.80,
-    deliveryFee: 5.00,
+    tax: 0.8,
+    deliveryFee: 5.0,
     total: 15.79,
     status: "PENDING",
     createdAt: "2026-03-07T14:20:00Z",
@@ -272,7 +322,7 @@ const MOCK_ORDERS: Record<string, POSOrderDetail> = {
 export default function POSOrderDetail() {
   const { id } = useParams<{ id: string }>();
   const [order, setOrder] = useState<POSOrderDetail | null>(
-    (id && MOCK_ORDERS[id]) || null
+    (id && MOCK_ORDERS[id]) || null,
   );
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [actionNotes, setActionNotes] = useState("");
@@ -286,7 +336,9 @@ export default function POSOrderDetail() {
         <Page title="Order Not Found">
           <Card>
             <BlockStack gap="400">
-              <Text as="span">The order you're looking for does not exist.</Text>
+              <Text as="span">
+                The order you're looking for does not exist.
+              </Text>
               <Link to="/pos">
                 <Button>Back to POS Orders</Button>
               </Link>
@@ -336,7 +388,7 @@ export default function POSOrderDetail() {
   };
 
   const getStatusTone = (
-    status: "PENDING" | "CONFIRMED" | "READY" | "PICKED_UP" | "DELIVERED"
+    status: "PENDING" | "CONFIRMED" | "READY" | "PICKED_UP" | "DELIVERED",
   ) => {
     switch (status) {
       case "PENDING":
@@ -355,7 +407,7 @@ export default function POSOrderDetail() {
   };
 
   const getTypeLabel = (
-    type: "LOCAL_DELIVERY" | "IN_STORE_PICKUP" | "CURBSIDE"
+    type: "LOCAL_DELIVERY" | "IN_STORE_PICKUP" | "CURBSIDE",
   ) => {
     switch (type) {
       case "LOCAL_DELIVERY":
@@ -370,7 +422,7 @@ export default function POSOrderDetail() {
   };
 
   const getTypeColor = (
-    type: "LOCAL_DELIVERY" | "IN_STORE_PICKUP" | "CURBSIDE"
+    type: "LOCAL_DELIVERY" | "IN_STORE_PICKUP" | "CURBSIDE",
   ) => {
     switch (type) {
       case "LOCAL_DELIVERY":
@@ -388,7 +440,8 @@ export default function POSOrderDetail() {
     label: string;
     status: POSOrderDetail["status"];
   }> => {
-    const actions: Array<{ label: string; status: POSOrderDetail["status"] }> = [];
+    const actions: Array<{ label: string; status: POSOrderDetail["status"] }> =
+      [];
     switch (order.status) {
       case "PENDING":
         actions.push({ label: "Confirm Order", status: "CONFIRMED" });
@@ -429,7 +482,6 @@ export default function POSOrderDetail() {
     return new Date(dateString).toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
-      
     });
   };
 
@@ -449,9 +501,7 @@ export default function POSOrderDetail() {
                 <Text as="h2" variant="bodyMd" fontWeight="bold">
                   {order.customer.name}
                 </Text>
-                <Badge tone={getStatusTone(order.status)}>
-                  {order.status}
-                </Badge>
+                <Badge tone={getStatusTone(order.status)}>{order.status}</Badge>
                 <Badge tone={getTypeColor(order.type)}>
                   {getTypeLabel(order.type)}
                 </Badge>
@@ -527,17 +577,77 @@ export default function POSOrderDetail() {
               </Text>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <tr>
-                  <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid var(--p-color-border)" }}>Item</th>
-                  <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid var(--p-color-border)" }}>Quantity</th>
-                  <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid var(--p-color-border)" }}>Price</th>
-                  <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid var(--p-color-border)" }}>Total</th>
+                  <th
+                    style={{
+                      textAlign: "left",
+                      padding: "8px",
+                      borderBottom: "1px solid var(--p-color-border)",
+                    }}
+                  >
+                    Item
+                  </th>
+                  <th
+                    style={{
+                      textAlign: "left",
+                      padding: "8px",
+                      borderBottom: "1px solid var(--p-color-border)",
+                    }}
+                  >
+                    Quantity
+                  </th>
+                  <th
+                    style={{
+                      textAlign: "left",
+                      padding: "8px",
+                      borderBottom: "1px solid var(--p-color-border)",
+                    }}
+                  >
+                    Price
+                  </th>
+                  <th
+                    style={{
+                      textAlign: "left",
+                      padding: "8px",
+                      borderBottom: "1px solid var(--p-color-border)",
+                    }}
+                  >
+                    Total
+                  </th>
                 </tr>
                 {order.items.map((item) => (
                   <tr key={item.id}>
-                    <td style={{ padding: "8px", borderBottom: "1px solid var(--p-color-border)" }}>{item.name}</td>
-                    <td style={{ padding: "8px", borderBottom: "1px solid var(--p-color-border)" }}>{item.quantity}</td>
-                    <td style={{ padding: "8px", borderBottom: "1px solid var(--p-color-border)" }}>${Number(item.price).toFixed(2)}</td>
-                    <td style={{ padding: "8px", borderBottom: "1px solid var(--p-color-border)" }}>${Number(item.total).toFixed(2)}</td>
+                    <td
+                      style={{
+                        padding: "8px",
+                        borderBottom: "1px solid var(--p-color-border)",
+                      }}
+                    >
+                      {item.name}
+                    </td>
+                    <td
+                      style={{
+                        padding: "8px",
+                        borderBottom: "1px solid var(--p-color-border)",
+                      }}
+                    >
+                      {item.quantity}
+                    </td>
+                    <td
+                      style={{
+                        padding: "8px",
+                        borderBottom: "1px solid var(--p-color-border)",
+                      }}
+                    >
+                      ${Number(item.price).toFixed(2)}
+                    </td>
+                    <td
+                      style={{
+                        padding: "8px",
+                        borderBottom: "1px solid var(--p-color-border)",
+                      }}
+                    >
+                      ${Number(item.total).toFixed(2)}
+                    </td>
                   </tr>
                 ))}
               </table>
@@ -556,8 +666,12 @@ export default function POSOrderDetail() {
                     marginBottom: "8px",
                   }}
                 >
-                  <Text as="span" variant="bodySm">Subtotal:</Text>
-                  <Text as="span" variant="bodySm">${Number(order.subtotal).toFixed(2)}</Text>
+                  <Text as="span" variant="bodySm">
+                    Subtotal:
+                  </Text>
+                  <Text as="span" variant="bodySm">
+                    ${Number(order.subtotal).toFixed(2)}
+                  </Text>
                 </div>
                 <div
                   style={{
@@ -566,8 +680,12 @@ export default function POSOrderDetail() {
                     marginBottom: "8px",
                   }}
                 >
-                  <Text as="span" variant="bodySm">Tax:</Text>
-                  <Text as="span" variant="bodySm">${Number(order.tax).toFixed(2)}</Text>
+                  <Text as="span" variant="bodySm">
+                    Tax:
+                  </Text>
+                  <Text as="span" variant="bodySm">
+                    ${Number(order.tax).toFixed(2)}
+                  </Text>
                 </div>
                 {order.deliveryFee > 0 && (
                   <div
@@ -577,8 +695,12 @@ export default function POSOrderDetail() {
                       marginBottom: "8px",
                     }}
                   >
-                    <Text as="span" variant="bodySm">Delivery Fee:</Text>
-                    <Text as="span" variant="bodySm">${Number(order.deliveryFee).toFixed(2)}</Text>
+                    <Text as="span" variant="bodySm">
+                      Delivery Fee:
+                    </Text>
+                    <Text as="span" variant="bodySm">
+                      ${Number(order.deliveryFee).toFixed(2)}
+                    </Text>
                   </div>
                 )}
                 <div
@@ -657,7 +779,12 @@ export default function POSOrderDetail() {
               <Text as="h3" variant="bodyMd" fontWeight="bold">
                 Order Timeline
               </Text>
-              <div style={{ paddingLeft: "12px", borderLeft: "2px solid var(--p-color-border)" }}>
+              <div
+                style={{
+                  paddingLeft: "12px",
+                  borderLeft: "2px solid var(--p-color-border)",
+                }}
+              >
                 <BlockStack gap="300">
                   {order.timeline.map((event, index) => (
                     <div key={index}>
@@ -667,7 +794,8 @@ export default function POSOrderDetail() {
                             width: "8px",
                             height: "8px",
                             borderRadius: "50%",
-                            backgroundColor: "var(--p-color-bg-fill-success, #22c55e)",
+                            backgroundColor:
+                              "var(--p-color-bg-fill-success, #22c55e)",
                             marginTop: "6px",
                             marginLeft: "-15px",
                           }}
@@ -680,7 +808,9 @@ export default function POSOrderDetail() {
                             {formatDate(event.timestamp)}
                           </Text>
                           {event.message && (
-                            <Text as="span" variant="bodySm">{event.message}</Text>
+                            <Text as="span" variant="bodySm">
+                              {event.message}
+                            </Text>
                           )}
                         </BlockStack>
                       </InlineStack>
@@ -702,10 +832,9 @@ export default function POSOrderDetail() {
         }}
         title="Update Order Status"
         primaryAction={{
-          content: `Update to ${
-            availableActions[0]?.label || "Update"
-          }`,
-          onAction: () => handleStatusAction(availableActions[0]?.status || "CONFIRMED"),
+          content: `Update to ${availableActions[0]?.label || "Update"}`,
+          onAction: () =>
+            handleStatusAction(availableActions[0]?.status || "CONFIRMED"),
           loading: isLoading,
           disabled: availableActions.length === 0,
         }}
@@ -753,10 +882,7 @@ export default function POSOrderDetail() {
       </Modal>
 
       {toastActive && (
-        <Toast
-          content={toastMessage}
-          onDismiss={() => setToastActive(false)}
-        />
+        <Toast content={toastMessage} onDismiss={() => setToastActive(false)} />
       )}
     </Frame>
   );

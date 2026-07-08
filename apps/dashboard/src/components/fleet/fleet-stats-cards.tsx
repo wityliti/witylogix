@@ -23,8 +23,18 @@ export function FleetStatsCards({ stats, className }: FleetStatsCardsProps) {
       title: "Total Vehicles",
       value: stats.totalVehicles.toString(),
       icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M13 10V3L4 14h7v7l9-11h-7z"
+          />
         </svg>
       ),
       color: "text-wl-primary-400",
@@ -34,7 +44,12 @@ export function FleetStatsCards({ stats, className }: FleetStatsCardsProps) {
       title: "Active Now",
       value: stats.activeNow.toString(),
       icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -50,7 +65,12 @@ export function FleetStatsCards({ stats, className }: FleetStatsCardsProps) {
       title: "Avg Speed",
       value: `${Math.round(stats.avgSpeed)} km/h`,
       icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -66,7 +86,12 @@ export function FleetStatsCards({ stats, className }: FleetStatsCardsProps) {
       title: "Total Distance",
       value: `${Math.round(stats.totalDistance)} km`,
       icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -82,7 +107,12 @@ export function FleetStatsCards({ stats, className }: FleetStatsCardsProps) {
       title: "Fuel Consumed",
       value: `${Math.round(stats.fuelConsumed)} L`,
       icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -98,7 +128,12 @@ export function FleetStatsCards({ stats, className }: FleetStatsCardsProps) {
       title: "Alerts Count",
       value: stats.alertsCount.toString(),
       icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -113,7 +148,12 @@ export function FleetStatsCards({ stats, className }: FleetStatsCardsProps) {
   ];
 
   return (
-    <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4", className)}>
+    <div
+      className={cn(
+        "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4",
+        className,
+      )}
+    >
       {cards.map((card, idx) => (
         <div
           key={idx}
@@ -121,18 +161,22 @@ export function FleetStatsCards({ stats, className }: FleetStatsCardsProps) {
         >
           {/* Header */}
           <div className="flex items-start justify-between mb-3">
-            <h3 className="text-sm font-medium text-wl-text-secondary">{card.title}</h3>
+            <h3 className="text-sm font-medium text-wl-text-secondary">
+              {card.title}
+            </h3>
             <div className={cn("opacity-70", card.color)}>{card.icon}</div>
           </div>
 
           {/* Value */}
           <div className="flex items-baseline justify-between">
-            <div className="text-2xl font-bold text-wl-text-primary">{card.value}</div>
+            <div className="text-2xl font-bold text-wl-text-primary">
+              {card.value}
+            </div>
             {card.trend !== undefined && (
               <div
                 className={cn(
                   "text-sm font-semibold flex items-center gap-0.5",
-                  getTrendColor(card.trend)
+                  getTrendColor(card.trend),
                 )}
               >
                 <span>{getTrendArrow(card.trend)}</span>
@@ -147,7 +191,9 @@ export function FleetStatsCards({ stats, className }: FleetStatsCardsProps) {
               <div
                 className={cn(
                   "h-full transition-all duration-300",
-                  card.trend >= 0 ? "bg-gradient-to-r from-wl-danger-400 to-wl-danger-500" : "bg-gradient-to-r from-wl-success-400 to-wl-success-500"
+                  card.trend >= 0
+                    ? "bg-gradient-to-r from-wl-danger-400 to-wl-danger-500"
+                    : "bg-gradient-to-r from-wl-success-400 to-wl-success-500",
                 )}
                 style={{
                   width: `${Math.min(Math.abs(card.trend), 100)}%`,

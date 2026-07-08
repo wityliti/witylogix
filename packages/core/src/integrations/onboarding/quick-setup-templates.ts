@@ -5,210 +5,231 @@
  * Provides pre-filled configurations and setup instructions for faster onboarding.
  */
 
-import { IntegrationQuickSetup, IndustryTemplate } from './types';
+import { IntegrationQuickSetup, IndustryTemplate } from "./types";
 
 // ─── Industry-Specific Integration Templates ──────────────────
 
 export const INDUSTRY_TEMPLATES: Record<string, IndustryTemplate> = {
-  'ecommerce': {
-    industry: 'E-Commerce',
-    description: 'Complete e-commerce solution with order management, payments, shipping',
-    integrations: ['shopify', 'stripe', 'shipstation', 'mailgun'],
+  ecommerce: {
+    industry: "E-Commerce",
+    description:
+      "Complete e-commerce solution with order management, payments, shipping",
+    integrations: ["shopify", "stripe", "shipstation", "mailgun"],
     suggestedWebhooks: {
-      'shopify': 'https://yourapp.com/webhooks/shopify',
-      'stripe': 'https://yourapp.com/webhooks/stripe',
-      'shipstation': 'https://yourapp.com/webhooks/shipstation',
+      shopify: "https://yourapp.com/webhooks/shopify",
+      stripe: "https://yourapp.com/webhooks/stripe",
+      shipstation: "https://yourapp.com/webhooks/shipstation",
     },
     defaultConfig: {
-      'shopify': {
+      shopify: {
         syncOrders: true,
         syncProducts: true,
         syncInventory: true,
       },
-      'stripe': {
-        environment: 'live',
-        webhookEvents: ['charge.succeeded', 'charge.failed', 'payment_intent.succeeded'],
+      stripe: {
+        environment: "live",
+        webhookEvents: [
+          "charge.succeeded",
+          "charge.failed",
+          "payment_intent.succeeded",
+        ],
       },
-      'shipstation': {
+      shipstation: {
         autoDownloadOrders: true,
         markAsShipped: true,
       },
-      'mailgun': {
-        template: 'order-confirmation',
+      mailgun: {
+        template: "order-confirmation",
         automationEnabled: true,
       },
     },
   },
 
-  'food-beverage': {
-    industry: 'Food & Beverage',
-    description: 'Restaurant and food service integrations for delivery, orders, and payments',
-    integrations: ['doordash-drive', 'uber-eats', 'toast-pos', 'square-payments'],
+  "food-beverage": {
+    industry: "Food & Beverage",
+    description:
+      "Restaurant and food service integrations for delivery, orders, and payments",
+    integrations: [
+      "doordash-drive",
+      "uber-eats",
+      "toast-pos",
+      "square-payments",
+    ],
     suggestedWebhooks: {
-      'toast-pos': 'https://yourapp.com/webhooks/toast',
-      'doordash-drive': 'https://yourapp.com/webhooks/doordash',
+      "toast-pos": "https://yourapp.com/webhooks/toast",
+      "doordash-drive": "https://yourapp.com/webhooks/doordash",
     },
     defaultConfig: {
-      'toast-pos': {
+      "toast-pos": {
         syncMenus: true,
         trackOrders: true,
         laborTracking: true,
       },
-      'doordash-drive': {
+      "doordash-drive": {
         automateDelivery: true,
-        estimatedTime: 'accurate',
+        estimatedTime: "accurate",
       },
-      'uber-eats': {
+      "uber-eats": {
         menuSync: true,
         orderNotifications: true,
       },
-      'square-payments': {
+      "square-payments": {
         receiptEmail: true,
         itemization: true,
       },
     },
   },
 
-  'logistics-3pl': {
-    industry: 'Logistics & 3PL',
-    description: 'Fleet management, vehicle tracking, fuel cards, and load boards',
-    integrations: ['samsara', 'dat-load-board', 'wex', 'motive-eld'],
+  "logistics-3pl": {
+    industry: "Logistics & 3PL",
+    description:
+      "Fleet management, vehicle tracking, fuel cards, and load boards",
+    integrations: ["samsara", "dat-load-board", "wex", "motive-eld"],
     suggestedWebhooks: {
-      'samsara': 'https://yourapp.com/webhooks/samsara',
-      'motive-eld': 'https://yourapp.com/webhooks/motive',
+      samsara: "https://yourapp.com/webhooks/samsara",
+      "motive-eld": "https://yourapp.com/webhooks/motive",
     },
     defaultConfig: {
-      'samsara': {
+      samsara: {
         trackFleet: true,
         monitorSafety: true,
         fuelTracking: true,
       },
-      'dat-load-board': {
+      "dat-load-board": {
         postTrucks: true,
         searchLoads: true,
         rateAnalytics: true,
       },
-      'wex': {
+      wex: {
         cardTracking: true,
         spendManagement: true,
         driverLimits: true,
       },
-      'motive-eld': {
+      "motive-eld": {
         hosCompliance: true,
         dvirAutomation: true,
       },
     },
   },
 
-  'healthcare': {
-    industry: 'Healthcare',
-    description: 'Healthcare integration with EHR systems and FHIR standard',
-    integrations: ['epic', 'cerner', 'hl7-fhir'],
+  healthcare: {
+    industry: "Healthcare",
+    description: "Healthcare integration with EHR systems and FHIR standard",
+    integrations: ["epic", "cerner", "hl7-fhir"],
     suggestedWebhooks: {
-      'epic': 'https://yourapp.com/webhooks/epic',
+      epic: "https://yourapp.com/webhooks/epic",
     },
     defaultConfig: {
-      'epic': {
+      epic: {
         patientSync: true,
         appointmentManagement: true,
         ehr: true,
       },
-      'cerner': {
+      cerner: {
         fhir: true,
         patientData: true,
       },
-      'hl7-fhir': {
+      "hl7-fhir": {
         standardCompliance: true,
       },
     },
   },
 
-  'field-service': {
-    industry: 'Field Service',
-    description: 'Field service management with dispatch, scheduling, and payments',
-    integrations: ['servicetitan', 'jobber', 'motive-eld', 'square-payments'],
+  "field-service": {
+    industry: "Field Service",
+    description:
+      "Field service management with dispatch, scheduling, and payments",
+    integrations: ["servicetitan", "jobber", "motive-eld", "square-payments"],
     suggestedWebhooks: {
-      'servicetitan': 'https://yourapp.com/webhooks/servicetitan',
-      'jobber': 'https://yourapp.com/webhooks/jobber',
+      servicetitan: "https://yourapp.com/webhooks/servicetitan",
+      jobber: "https://yourapp.com/webhooks/jobber",
     },
     defaultConfig: {
-      'servicetitan': {
+      servicetitan: {
         jobManagement: true,
         dispatchOptimization: true,
         invoicing: true,
       },
-      'jobber': {
+      jobber: {
         scheduleSync: true,
         quoteManagement: true,
       },
-      'motive-eld': {
+      "motive-eld": {
         vehicleTracking: true,
         driverCompliance: true,
       },
-      'square-payments': {
+      "square-payments": {
         onSitePayments: true,
         receipts: true,
       },
     },
   },
 
-  'saas': {
-    industry: 'SaaS',
-    description: 'SaaS infrastructure with analytics, communication, and billing',
-    integrations: ['stripe', 'sendgrid', 'slack', 'google-analytics'],
+  saas: {
+    industry: "SaaS",
+    description:
+      "SaaS infrastructure with analytics, communication, and billing",
+    integrations: ["stripe", "sendgrid", "slack", "google-analytics"],
     suggestedWebhooks: {
-      'stripe': 'https://yourapp.com/webhooks/stripe',
+      stripe: "https://yourapp.com/webhooks/stripe",
     },
     defaultConfig: {
-      'stripe': {
+      stripe: {
         subscriptions: true,
         webhooks: true,
         invoicing: true,
       },
-      'sendgrid': {
+      sendgrid: {
         transactionalEmail: true,
         templates: true,
       },
-      'slack': {
+      slack: {
         notifications: true,
         botIntegration: true,
       },
-      'google-analytics': {
+      "google-analytics": {
         eventTracking: true,
         userAnalytics: true,
       },
     },
   },
 
-  'marketplaces': {
-    industry: 'Marketplaces',
-    description: 'Multi-channel integration for Amazon, eBay, Etsy, and Shopify',
-    integrations: ['amazon-seller-central', 'ebay', 'etsy', 'shopify', 'square-online'],
+  marketplaces: {
+    industry: "Marketplaces",
+    description:
+      "Multi-channel integration for Amazon, eBay, Etsy, and Shopify",
+    integrations: [
+      "amazon-seller-central",
+      "ebay",
+      "etsy",
+      "shopify",
+      "square-online",
+    ],
     suggestedWebhooks: {
-      'shopify': 'https://yourapp.com/webhooks/shopify',
-      'amazon-seller-central': 'https://yourapp.com/webhooks/amazon',
+      shopify: "https://yourapp.com/webhooks/shopify",
+      "amazon-seller-central": "https://yourapp.com/webhooks/amazon",
     },
     defaultConfig: {
-      'amazon-seller-central': {
+      "amazon-seller-central": {
         orderSync: true,
         inventorySync: true,
         fulfillmentTracking: true,
       },
-      'ebay': {
+      ebay: {
         listingManagement: true,
         orderImport: true,
         inventorySync: true,
       },
-      'etsy': {
+      etsy: {
         listingSync: true,
         orderManagement: true,
         reviewTracking: true,
       },
-      'shopify': {
+      shopify: {
         multiChannel: true,
         orderManagement: true,
       },
-      'square-online': {
+      "square-online": {
         catalogSync: true,
         orderTracking: true,
       },
@@ -221,12 +242,12 @@ export const INDUSTRY_TEMPLATES: Record<string, IndustryTemplate> = {
 export const QUICK_SETUP_TEMPLATES: Record<string, IntegrationQuickSetup> = {
   // Routing & Logistics
   samsara: {
-    providerId: 'samsara',
+    providerId: "samsara",
     prefilledConfig: {
       syncInterval: 5 * 60 * 1000, // Every 5 minutes
-      dataTypes: ['locations', 'vehicles', 'drivers', 'safety'],
+      dataTypes: ["locations", "vehicles", "drivers", "safety"],
       dashboardEnabled: true,
-      webhookEvents: ['vehicle_data', 'driver_safety', 'geofence'],
+      webhookEvents: ["vehicle_data", "driver_safety", "geofence"],
     },
     setupInstructions: `## Quick Setup: Samsara
 
@@ -255,17 +276,28 @@ export const QUICK_SETUP_TEMPLATES: Record<string, IntegrationQuickSetup> = {
     estimatedTime: 5,
     commonMistakes: [
       'Token format should not include "Bearer" prefix',
-      'Tokens expire after 90 days - set reminder to refresh',
-      'Fleet ID is optional - leave blank to get all fleets',
-      'Webhook endpoint must be publicly accessible',
+      "Tokens expire after 90 days - set reminder to refresh",
+      "Fleet ID is optional - leave blank to get all fleets",
+      "Webhook endpoint must be publicly accessible",
     ],
   },
 
   shopify: {
-    providerId: 'shopify',
+    providerId: "shopify",
     prefilledConfig: {
-      scopes: ['read_orders', 'write_orders', 'read_products', 'write_products', 'read_inventory'],
-      webhookTopics: ['orders/created', 'orders/updated', 'orders/fulfilled', 'products/create'],
+      scopes: [
+        "read_orders",
+        "write_orders",
+        "read_products",
+        "write_products",
+        "read_inventory",
+      ],
+      webhookTopics: [
+        "orders/created",
+        "orders/updated",
+        "orders/fulfilled",
+        "products/create",
+      ],
       syncInterval: 15 * 60 * 1000, // Every 15 minutes
       autoFulfillment: true,
       inventoryTracking: true,
@@ -297,24 +329,24 @@ export const QUICK_SETUP_TEMPLATES: Record<string, IntegrationQuickSetup> = {
 **Estimated Time:** 10 minutes`,
     estimatedTime: 10,
     commonMistakes: [
-      'Shop domain must not include https://',
-      'OAuth scope mismatch - ensure all required scopes are requested',
-      'HMAC validation required for webhook security',
-      'API version must match (2024-01 or later)',
+      "Shop domain must not include https://",
+      "OAuth scope mismatch - ensure all required scopes are requested",
+      "HMAC validation required for webhook security",
+      "API version must match (2024-01 or later)",
     ],
   },
 
   stripe: {
-    providerId: 'stripe',
+    providerId: "stripe",
     prefilledConfig: {
-      mode: 'live',
+      mode: "live",
       webhookEvents: [
-        'charge.succeeded',
-        'charge.failed',
-        'payment_intent.succeeded',
-        'payment_intent.payment_failed',
-        'invoice.paid',
-        'invoice.payment_failed',
+        "charge.succeeded",
+        "charge.failed",
+        "payment_intent.succeeded",
+        "payment_intent.payment_failed",
+        "invoice.paid",
+        "invoice.payment_failed",
       ],
       automaticRetry: true,
       idempotency: true,
@@ -345,20 +377,20 @@ export const QUICK_SETUP_TEMPLATES: Record<string, IntegrationQuickSetup> = {
 **Estimated Time:** 8 minutes`,
     estimatedTime: 8,
     commonMistakes: [
-      'Using test key in production or vice versa',
-      'Missing webhook signing secret verification',
-      'Idempotency key not implemented for retries',
-      'API version mismatch',
+      "Using test key in production or vice versa",
+      "Missing webhook signing secret verification",
+      "Idempotency key not implemented for retries",
+      "API version mismatch",
     ],
   },
 
   slack: {
-    providerId: 'slack',
+    providerId: "slack",
     prefilledConfig: {
-      scopes: ['chat:write', 'channels:read', 'users:read'],
+      scopes: ["chat:write", "channels:read", "users:read"],
       slashCommands: true,
       botMentions: true,
-      eventSubscriptions: ['app_mention', 'message.app_mention'],
+      eventSubscriptions: ["app_mention", "message.app_mention"],
     },
     setupInstructions: `## Quick Setup: Slack
 
@@ -395,24 +427,24 @@ export const QUICK_SETUP_TEMPLATES: Record<string, IntegrationQuickSetup> = {
 **Estimated Time:** 12 minutes`,
     estimatedTime: 12,
     commonMistakes: [
-      'Missing Request URL verification step',
-      'Signing secret must be saved for webhook validation',
-      'Scopes too broad - request only what you need',
-      'Token format: xoxb-... (bot) vs xoxp-... (user)',
+      "Missing Request URL verification step",
+      "Signing secret must be saved for webhook validation",
+      "Scopes too broad - request only what you need",
+      "Token format: xoxb-... (bot) vs xoxp-... (user)",
     ],
   },
 
   sendgrid: {
-    providerId: 'sendgrid',
+    providerId: "sendgrid",
     prefilledConfig: {
-      fromEmail: 'noreply@example.com',
+      fromEmail: "noreply@example.com",
       trackingSettings: {
         opens: true,
         clicks: true,
         unsubscribe: true,
       },
       dynamicTemplates: true,
-      webhookEvents: ['bounce', 'click', 'open', 'spamreport', 'unsubscribe'],
+      webhookEvents: ["bounce", "click", "open", "spamreport", "unsubscribe"],
     },
     setupInstructions: `## Quick Setup: SendGrid
 
@@ -446,19 +478,19 @@ export const QUICK_SETUP_TEMPLATES: Record<string, IntegrationQuickSetup> = {
 **Estimated Time:** 8 minutes`,
     estimatedTime: 8,
     commonMistakes: [
-      'API key format: Should start with SG.',
-      'Sender email must be verified before sending',
-      'Rate limiting: 100 requests/second per API key',
-      'Test emails go to sandbox subdomain',
+      "API key format: Should start with SG.",
+      "Sender email must be verified before sending",
+      "Rate limiting: 100 requests/second per API key",
+      "Test emails go to sandbox subdomain",
     ],
   },
 
   salesforce: {
-    providerId: 'salesforce',
+    providerId: "salesforce",
     prefilledConfig: {
-      instanceType: 'production',
-      objects: ['Account', 'Contact', 'Opportunity', 'Lead'],
-      syncDirection: 'bidirectional',
+      instanceType: "production",
+      objects: ["Account", "Contact", "Opportunity", "Lead"],
+      syncDirection: "bidirectional",
       batchSize: 50,
     },
     setupInstructions: `## Quick Setup: Salesforce
@@ -497,10 +529,10 @@ export const QUICK_SETUP_TEMPLATES: Record<string, IntegrationQuickSetup> = {
 **Estimated Time:** 15 minutes`,
     estimatedTime: 15,
     commonMistakes: [
-      'Instance URL must match org type (production vs sandbox)',
-      'Scope requirements vary by org - may need admin approval',
-      'API version may need to match installed packages',
-      'Refresh tokens expire if not used for 6 months',
+      "Instance URL must match org type (production vs sandbox)",
+      "Scope requirements vary by org - may need admin approval",
+      "API version may need to match installed packages",
+      "Refresh tokens expire if not used for 6 months",
     ],
   },
 };
@@ -508,14 +540,18 @@ export const QUICK_SETUP_TEMPLATES: Record<string, IntegrationQuickSetup> = {
 /**
  * Get quick setup template for a provider.
  */
-export function getQuickSetupTemplate(providerId: string): IntegrationQuickSetup | undefined {
+export function getQuickSetupTemplate(
+  providerId: string,
+): IntegrationQuickSetup | undefined {
   return QUICK_SETUP_TEMPLATES[providerId];
 }
 
 /**
  * Get industry template for a given industry.
  */
-export function getIndustryTemplate(industry: string): IndustryTemplate | undefined {
+export function getIndustryTemplate(
+  industry: string,
+): IndustryTemplate | undefined {
   return INDUSTRY_TEMPLATES[industry.toLowerCase()];
 }
 
@@ -523,7 +559,9 @@ export function getIndustryTemplate(industry: string): IndustryTemplate | undefi
  * Get all available industries.
  */
 export function getAvailableIndustries(): string[] {
-  return Object.keys(INDUSTRY_TEMPLATES).map((key) => INDUSTRY_TEMPLATES[key].industry);
+  return Object.keys(INDUSTRY_TEMPLATES).map(
+    (key) => INDUSTRY_TEMPLATES[key].industry,
+  );
 }
 
 /**
@@ -539,7 +577,7 @@ export function getIndustryProviders(industry: string): string[] {
  */
 export function getDefaultConfig(
   providerId: string,
-  industry?: string
+  industry?: string,
 ): Record<string, unknown> {
   if (industry) {
     const industryTemplate = getIndustryTemplate(industry);

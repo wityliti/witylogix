@@ -26,12 +26,12 @@ This document describes the implementation of the Shopify billing and subscripti
 
 ### Available Plans
 
-| Plan | Shipments/Month | Drivers | API Calls/Month | Notifications/Month | Features | Price |
-|------|-----------------|---------|-----------------|---------------------|----------|-------|
-| **FREE** | 50 | 1 | 1,000 | 100 | Basic | $0 |
-| **STARTER** | 500 | 5 | 10,000 | 5,000 | + Route Optimization, Analytics | $29 |
-| **GROWTH** | 5,000 | 25 | 100,000 | 50,000 | + Multi-Carrier Support | $99 |
-| **ENTERPRISE** | Unlimited | Unlimited | Unlimited | Unlimited | + Dedicated Support | $299+ |
+| Plan           | Shipments/Month | Drivers   | API Calls/Month | Notifications/Month | Features                        | Price |
+| -------------- | --------------- | --------- | --------------- | ------------------- | ------------------------------- | ----- |
+| **FREE**       | 50              | 1         | 1,000           | 100                 | Basic                           | $0    |
+| **STARTER**    | 500             | 5         | 10,000          | 5,000               | + Route Optimization, Analytics | $29   |
+| **GROWTH**     | 5,000           | 25        | 100,000         | 50,000              | + Multi-Carrier Support         | $99   |
+| **ENTERPRISE** | Unlimited       | Unlimited | Unlimited       | Unlimited           | + Dedicated Support             | $299+ |
 
 ### Plan Features Mapping
 
@@ -50,7 +50,7 @@ export const PLANS: Record<PlanTier, PlanFeatures> = {
     billingCycle: "monthly",
   },
   // ... other plans
-}
+};
 ```
 
 ## API Endpoints
@@ -60,16 +60,19 @@ export const PLANS: Record<PlanTier, PlanFeatures> = {
 List available subscription plans with features comparison matrix.
 
 **Response:**
+
 ```json
 {
   "plans": [
     {
       "tier": "FREE",
-      "features": { /* plan features */ },
+      "features": {
+        /* plan features */
+      },
       "displayName": "Free",
       "description": "Perfect for testing and small operations",
       "recommendedFor": "Startups, testing"
-    },
+    }
     // ... other plans
   ],
   "metadata": {
@@ -84,6 +87,7 @@ List available subscription plans with features comparison matrix.
 Get current shop's subscription status, plan, and usage limits.
 
 **Response:**
+
 ```json
 {
   "plan": "STARTER",
@@ -135,6 +139,7 @@ Get current shop's subscription status, plan, and usage limits.
 Create or upgrade subscription to a new plan. Requires ADMIN or SUPER_ADMIN role.
 
 **Request:**
+
 ```json
 {
   "planId": "GROWTH",
@@ -143,18 +148,20 @@ Create or upgrade subscription to a new plan. Requires ADMIN or SUPER_ADMIN role
 ```
 
 **Response:**
+
 ```json
 {
   "plan": "GROWTH",
   "shopifyChargeId": "gid://shopify/RecurringApplicationCharge/1234567890",
   "confirmationUrl": "https://admin.shopify.com/charges/gid://shopify/RecurringApplicationCharge/1234567890",
-  "proratedAmount": 45.50,
+  "proratedAmount": 45.5,
   "nextBillingDate": "2026-03-31T23:59:59.999Z",
   "message": "Subscription updated. Please confirm in Shopify admin."
 }
 ```
 
 **Behavior:**
+
 - Validates plan exists and is different from current plan
 - Calculates proration credit/charge for plan changes mid-cycle
 - Creates Shopify recurring application charge (mocked in MVP)
@@ -166,6 +173,7 @@ Create or upgrade subscription to a new plan. Requires ADMIN or SUPER_ADMIN role
 Cancel subscription (effective end of billing cycle). Requires ADMIN or SUPER_ADMIN role.
 
 **Response:**
+
 ```json
 {
   "status": "cancelled",
@@ -175,6 +183,7 @@ Cancel subscription (effective end of billing cycle). Requires ADMIN or SUPER_AD
 ```
 
 **Behavior:**
+
 - Sets shop plan to FREE effective end of current billing period
 - Records cancellation timestamp for audit
 - Logs cancellation action
@@ -184,9 +193,11 @@ Cancel subscription (effective end of billing cycle). Requires ADMIN or SUPER_AD
 Detailed usage metrics with daily breakdown and trend analysis.
 
 **Query Parameters:**
+
 - None required
 
 **Response:**
+
 ```json
 {
   "billingPeriod": {
@@ -222,7 +233,7 @@ Detailed usage metrics with daily breakdown and trend analysis.
       {
         "date": "2026-03-01T00:00:00Z",
         "count": 5
-      },
+      }
       // ... more days
     ],
     "dailyApiCalls": [
@@ -240,6 +251,7 @@ Detailed usage metrics with daily breakdown and trend analysis.
 Record a usage/metering event. Called internally by other routes.
 
 **Request:**
+
 ```json
 {
   "type": "shipment_created",
@@ -251,6 +263,7 @@ Record a usage/metering event. Called internally by other routes.
 ```
 
 **Supported Event Types:**
+
 - `shipment_created` - When a new shipment is created
 - `label_generated` - When a shipping label is generated
 - `notification_sent` - When a notification is sent
@@ -261,23 +274,27 @@ Record a usage/metering event. Called internally by other routes.
 List billing history and invoices with pagination.
 
 **Query Parameters:**
+
 - `page` (default: 1)
 - `limit` (default: 20, max: 100)
 
 **Response:**
+
 ```json
 {
   "invoices": [
     {
       "id": "uuid",
       "date": "2026-02-01T00:00:00Z",
-      "amount": 99.00,
+      "amount": 99.0,
       "currency": "USD",
       "status": "paid",
       "description": "GROWTH plan - February 2026",
-      "metadata": { /* charge metadata */ },
+      "metadata": {
+        /* charge metadata */
+      },
       "downloadUrl": "/billing/invoices/{id}/pdf"
-    },
+    }
     // ... more invoices
   ],
   "pagination": {
@@ -296,11 +313,13 @@ List billing history and invoices with pagination.
 Verify if current usage is within plan limits.
 
 **Parameters:**
+
 - `plan` - Plan tier (FREE | STARTER | GROWTH | ENTERPRISE)
 - `metric` - Usage metric (shipments | drivers | apiCalls | notifications)
 - `currentUsage` - Current count
 
 **Returns:**
+
 ```typescript
 {
   allowed: boolean;
@@ -311,6 +330,7 @@ Verify if current usage is within plan limits.
 ```
 
 **Example:**
+
 ```typescript
 const result = checkUsageLimit("STARTER", "shipments", 250);
 // { allowed: true, remaining: 250, limit: 500, percentageUsed: 50 }
@@ -321,6 +341,7 @@ const result = checkUsageLimit("STARTER", "shipments", 250);
 Calculate credit/charge for mid-cycle plan changes.
 
 **Parameters:**
+
 - `currentPlan` - Current plan tier
 - `newPlan` - New plan tier
 - `daysRemaining` - Days left in billing cycle
@@ -328,6 +349,7 @@ Calculate credit/charge for mid-cycle plan changes.
 **Returns:** Amount due (positive = charge, negative = credit)
 
 **Example:**
+
 ```typescript
 // Upgrading from STARTER ($29) to GROWTH ($99) with 15 days remaining
 const amount = calculateProration("STARTER", "GROWTH", 15);
@@ -382,6 +404,7 @@ mutation CreateRecurringCharge($input: AppRecurringChargeInput!) {
 ```
 
 **Charge Statuses:**
+
 - `PENDING` - Awaiting merchant confirmation
 - `ACCEPTED` - Merchant confirmed the charge
 - `DECLINED` - Merchant declined the charge
@@ -394,7 +417,11 @@ mutation CreateRecurringCharge($input: AppRecurringChargeInput!) {
 In the current MVP, Shopify charge creation is mocked with:
 
 ```typescript
-async function createShopifyRecurringCharge(shop, plan, proratedAmount): Promise<string> {
+async function createShopifyRecurringCharge(
+  shop,
+  plan,
+  proratedAmount,
+): Promise<string> {
   const chargeId = `gid://shopify/RecurringApplicationCharge/${Date.now()}`;
   // TODO: Call Shopify GraphQL API
   return chargeId;
@@ -402,6 +429,7 @@ async function createShopifyRecurringCharge(shop, plan, proratedAmount): Promise
 ```
 
 **Production Steps:**
+
 1. Implement Shopify GraphQL client (using Admin API)
 2. Create recurring charge with plan price
 3. Store charge ID in shop settings
@@ -423,6 +451,7 @@ async function createShopifyRecurringCharge(shop, plan, proratedAmount): Promise
 ### Enum: PlanTier
 
 Already defined in `02-shops.prisma`:
+
 ```prisma
 enum PlanTier {
   FREE
@@ -437,20 +466,21 @@ enum PlanTier {
 ### Middleware
 
 All endpoints require:
+
 1. **Authentication** - `requireAuth` middleware
 2. **Tenant Context** - `tenantContext` middleware (sets shop scope)
 
 ### Role Requirements
 
-| Endpoint | Role Required |
-|----------|---------------|
-| GET /plans | None |
-| GET /subscription | None |
-| POST /subscription | ADMIN, SUPER_ADMIN |
+| Endpoint                  | Role Required      |
+| ------------------------- | ------------------ |
+| GET /plans                | None               |
+| GET /subscription         | None               |
+| POST /subscription        | ADMIN, SUPER_ADMIN |
 | POST /subscription/cancel | ADMIN, SUPER_ADMIN |
-| GET /usage | None |
-| POST /usage/event | None |
-| GET /invoices | None |
+| GET /usage                | None               |
+| POST /usage/event         | None               |
+| GET /invoices             | None               |
 
 ## Error Handling
 
@@ -467,13 +497,13 @@ The API follows standard error responses:
 
 ### Error Types
 
-| Scenario | Status | Code |
-|----------|--------|------|
-| Invalid plan | 422 | VALIDATION_ERROR |
-| Shop not found | 404 | NOT_FOUND |
-| Same plan upgrade | 409 | CONFLICT |
-| Unauthorized | 401 | UNAUTHORIZED |
-| Insufficient permissions | 403 | FORBIDDEN |
+| Scenario                 | Status | Code             |
+| ------------------------ | ------ | ---------------- |
+| Invalid plan             | 422    | VALIDATION_ERROR |
+| Shop not found           | 404    | NOT_FOUND        |
+| Same plan upgrade        | 409    | CONFLICT         |
+| Unauthorized             | 401    | UNAUTHORIZED     |
+| Insufficient permissions | 403    | FORBIDDEN        |
 
 ## Future Enhancements
 
@@ -620,13 +650,16 @@ await request.tenantDb.activityLog.create({
 ## Files Summary
 
 ### New Files
+
 - `/packages/core/src/billing/index.ts` - 300 lines
 - `/apps/api/src/routes/billing.ts` - 400 lines
 
 ### Modified Files
+
 - `/apps/api/src/server.ts` - Added billing route registration
 
 ### No Database Migrations Required
+
 - Uses existing `Shop.planTier` enum
 - Uses existing metering models
 - Uses existing activity logs
@@ -638,6 +671,7 @@ await request.tenantDb.activityLog.create({
 - **Total**: ~700 lines of production code
 
 All code follows the existing Witylogix patterns:
+
 - Fastify plugin architecture
 - Zod validation schemas
 - Prisma database access
