@@ -267,21 +267,21 @@ export default function HomePage() {
     createdAt: o.createdAt,
   }));
 
-  const displayDrivers: Driver[] = drivers.map((d: any) => ({
-    id: d.id,
-    name: d.name,
-    status: (["available", "en-route", "delivering", "offline"].includes(
-      d.status,
-    )
-      ? d.status
-      : d.status === "on_delivery"
-        ? "delivering"
-        : d.status === "online"
-          ? "available"
-          : "offline") as Driver["status"],
-    activeDeliveries: d.activeDeliveries ?? 0,
-    utilization: d.completionRate ?? 0,
-  }));
+  const displayDrivers: ApiDriver[] = drivers.map((d) => {
+    const statusMap: Record<string, string> = {
+      online: "AVAILABLE",
+      on_delivery: "ON_ROUTE",
+      on_break: "ON_BREAK",
+      offline: "OFFLINE",
+      unavailable: "OFFLINE",
+    };
+    return {
+      id: d.id,
+      name: d.name,
+      status: statusMap[d.status] ?? "OFFLINE",
+      _count: { orders: 0 },
+    };
+  });
 
   const totalOrders =
     dashStats?.totalOrdersToday ?? orderStats?.totalOrders ?? 0;
