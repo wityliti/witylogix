@@ -313,7 +313,7 @@ export default function TransactionsPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1e1e2e]">
+                <tbody className="divide-y divide-wl-border-default">
                   {filteredTransactions.map((txn) => (
                     <tr
                       key={txn.id}
