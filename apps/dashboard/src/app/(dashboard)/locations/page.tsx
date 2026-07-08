@@ -167,7 +167,7 @@ export default function LocationsPage() {
                   aria-pressed={viewMode === v}
                   className={cn(
                     "px-3 py-1.5 text-xs font-semibold transition-colors capitalize",
-                    view === v
+                    viewMode === v
                       ? "bg-blue-600 text-white"
                       : "bg-wl-bg-surface text-gray-400 hover:text-white",
                   )}
@@ -747,33 +747,30 @@ function LocationDetailPanel({
               <WLMap
                 center={[loc.latitude, loc.longitude]}
                 zoom={13}
-                onReady={setDetailMapId}
                 className="w-full h-full"
               >
-                {detailMapId && (
-                  <LocationMarkerLayer
-                    mapId="detail-map"
-                    locations={[
-                      {
-                        id: loc.id,
-                        name: loc.name,
-                        type: loc.type,
-                        status: loc.status,
-                        addressLine1: loc.addressLine1,
-                        city: loc.city,
-                        province: loc.province,
-                        country: loc.country,
-                        latitude: loc.latitude,
-                        longitude: loc.longitude,
-                        activeShipments: loc.activeShipments,
-                        totalProcessed: loc.totalProcessed,
-                        avgPrepTime: loc.avgPrepTime,
-                        isDefault: loc.isDefault,
-                      },
-                    ]}
-                    selectedId={loc.id}
-                  />
-                )}
+                <LocationMarkerLayer
+                  mapId="detail-map"
+                  locations={[
+                    {
+                      id: loc.id,
+                      name: loc.name,
+                      type: loc.type,
+                      status: loc.status,
+                      addressLine1: loc.addressLine1,
+                      city: loc.city,
+                      province: loc.province,
+                      country: loc.country,
+                      latitude: loc.latitude,
+                      longitude: loc.longitude,
+                      activeShipments: loc.activeShipments,
+                      totalProcessed: loc.totalProcessed,
+                      avgPrepTime: loc.avgPrepTime,
+                      isDefault: loc.isDefault,
+                    },
+                  ]}
+                  selectedId={loc.id}
+                />
               </WLMap>
             </div>
             <div

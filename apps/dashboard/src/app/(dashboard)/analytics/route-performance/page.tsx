@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import { BarChart2, Map } from "lucide-react";
 import { useApiQuery } from "@/hooks/use-api";
 import { Header } from "@/components/layout/header";
 import { StatCard } from "@/components/ui/stat-card";
@@ -204,7 +205,7 @@ export default function RoutePerformancePage() {
                       : "text-white/30 hover:text-white/50",
                   )}
                 >
-                  <MapIcon className="w-3.5 h-3.5" />
+                  <Map className="w-3.5 h-3.5" />
                   Map
                 </button>
               </div>
@@ -257,7 +258,7 @@ export default function RoutePerformancePage() {
               ) : (
                 <div className="h-full w-full flex items-center justify-center bg-wl-bg-elevated">
                   <div className="flex flex-col items-center gap-3 text-center max-w-xs">
-                    <MapIcon className="w-10 h-10 text-white/10" />
+                    <Map className="w-10 h-10 text-white/10" />
                     <p className="text-sm font-medium text-white/30">
                       No geo-tagged deliveries
                     </p>

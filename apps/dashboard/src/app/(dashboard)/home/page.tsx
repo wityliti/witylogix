@@ -284,8 +284,8 @@ export default function HomePage() {
   });
 
   const totalOrders =
-    dashStats?.totalOrdersToday ?? orderStats?.totalOrders ?? 0;
-  const activeDeliveries = dashStats?.pendingDeliveries ?? 0;
+    dashStats?.totalOrders ?? orderStats?.total ?? 0;
+  const activeDeliveries = dashStats?.pendingOrders ?? 0;
   const driverUtilization =
     drivers.length > 0
       ? Math.round(
@@ -295,11 +295,9 @@ export default function HomePage() {
         )
       : 0;
   const todayRevenue =
-    dashStats?.totalRevenueToday != null
-      ? `$${dashStats.totalRevenueToday.toFixed(2)}`
-      : orderStats?.totalRevenue != null
-        ? `$${orderStats.totalRevenue.toFixed(2)}`
-        : "—";
+    dashStats?.revenue != null
+      ? `$${dashStats.revenue.toFixed(2)}`
+      : "—";
 
   const overallLoading = statsLoading && dashLoading;
 
@@ -343,8 +341,6 @@ export default function HomePage() {
             label="Total Orders"
             value={totalOrders}
             subtitle="Today"
-            trend="up"
-            trendValue={undefined}
             variant="primary"
             loading={overallLoading}
           />
@@ -352,25 +348,19 @@ export default function HomePage() {
             label="Active Deliveries"
             value={activeDeliveries}
             subtitle="In progress"
-            trend="up"
-            trendValue={undefined}
             variant="success"
             loading={overallLoading}
           />
           <KPICard
             label="Driver Utilization"
             value={`${driverUtilization}%`}
-            subtitle={`${drivers.filter((d: any) => d.status !== "offline").length} active drivers`}
-            trend={driverUtilization > 70 ? "up" : "down"}
-            trendValue={undefined}
+            subtitle={`${drivers.filter((d) => d.status !== "offline").length} active drivers`}
             loading={driversLoading}
           />
           <KPICard
             label="Revenue"
             value={todayRevenue}
             subtitle="Today"
-            trend="up"
-            trendValue={undefined}
             variant="success"
             loading={overallLoading}
           />
@@ -380,20 +370,20 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <KPICard
             label="Pending Orders"
-            value={stats?.pendingOrders ?? "—"}
+            value={dashStats?.pendingOrders ?? "—"}
             subtitle="Awaiting dispatch"
             variant="warning"
             loading={statsLoading}
           />
           <KPICard
             label="Total Customers"
-            value={stats?.totalCustomers ?? "—"}
+            value={dashStats?.totalCustomers ?? "—"}
             subtitle="Registered customers"
             loading={statsLoading}
           />
           <KPICard
             label="Total Drivers"
-            value={stats?.totalDrivers ?? "—"}
+            value={dashStats?.totalDrivers ?? "—"}
             subtitle="Active driver roster"
             loading={statsLoading}
           />

@@ -89,7 +89,7 @@ export default function PaymentSettingsPage() {
   };
 
   const handleTestPayment = async (code: string): Promise<void> => {
-    setIsTestPaymentLoading(true);
+    setIsTestPaymentLoading(code);
     try {
       await api.post("/api/v4/payments", {
         paymentType: "TEST",
@@ -99,7 +99,7 @@ export default function PaymentSettingsPage() {
         metadata: { test: true },
       });
     } finally {
-      setIsTestPaymentLoading(false);
+      setIsTestPaymentLoading(null);
     }
   };
 
@@ -262,7 +262,7 @@ export default function PaymentSettingsPage() {
                         variant="ghost"
                         size="sm"
                         className="flex-1"
-                        onClick={() => handleTestPayment(gateway)}
+                        onClick={() => handleTestPayment(gateway.code)}
                         disabled={
                           gateway.status === "disconnected" ||
                           isTestPaymentLoading === gateway.id

@@ -51,10 +51,10 @@ const driverStatusLabels: Record<DriverStatus, string> = {
 const STATUS_MAP: Record<string, DriverStatus> = {
   available: "available",
   AVAILABLE: "available",
-  on_route: "busy",
-  ON_ROUTE: "busy",
-  on_break: "break",
-  ON_BREAK: "break",
+  on_route: "on-delivery",
+  ON_ROUTE: "on-delivery",
+  on_break: "offline",
+  ON_BREAK: "offline",
   offline: "offline",
   OFFLINE: "offline",
 };
