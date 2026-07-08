@@ -325,7 +325,7 @@ export default function PaymentsPage() {
           <h1 className="text-3xl font-bold text-white">
             Payment Tracking
           </h1>
-          <p className="text-gray-400">
+          <p className="text-wl-text-secondary">
             Monitor and manage incoming payments
           </p>
         </div>
@@ -371,13 +371,13 @@ export default function PaymentsPage() {
         <div className="mt-6 grid grid-cols-3 gap-4">
           {monthlyRevenue.map((item) => (
             <div key={item.month} className="text-center">
-              <p className="text-sm text-gray-400 mb-1">
+              <p className="text-sm text-wl-text-secondary mb-1">
                 {item.month}
               </p>
               <p className="text-lg font-bold text-white">
                 ${item.revenue.toLocaleString()}
               </p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-wl-text-secondary">
                 {item.payments} payments
               </p>
             </div>
@@ -388,14 +388,14 @@ export default function PaymentsPage() {
       {/* Outstanding vs Collected Comparison */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-          <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-semibold uppercase text-wl-text-secondary mb-4 flex items-center gap-2">
             <DollarSign className="w-4 h-4" />
             Collected
           </h3>
           <p className="text-3xl font-bold text-emerald-500 mb-2">
             ${stats.totalCollected.toFixed(2)}
           </p>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-wl-text-secondary">
             {stats.completedCount} completed payments
           </p>
           <div className="mt-4 w-full bg-wl-bg-elevated rounded-full h-2">
@@ -409,14 +409,14 @@ export default function PaymentsPage() {
         </Card>
 
         <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-          <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-semibold uppercase text-wl-text-secondary mb-4 flex items-center gap-2">
             <Clock className="w-4 h-4" />
             Outstanding
           </h3>
           <p className="text-3xl font-bold text-amber-500 mb-2">
             ${stats.totalPending.toFixed(2)}
           </p>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-wl-text-secondary">
             {stats.pendingCount} pending payments
           </p>
           <div className="mt-4 w-full bg-wl-bg-elevated rounded-full h-2">
@@ -499,7 +499,7 @@ export default function PaymentsPage() {
         {/* Additional Filters */}
         <div className="flex gap-3 flex-wrap items-end border-t border-wl-border-default pt-4">
           <div className="flex gap-2 items-end">
-            <label className="text-xs font-semibold uppercase text-gray-400">
+            <label className="text-xs font-semibold uppercase text-wl-text-secondary">
               Date Range
             </label>
             <input
@@ -508,7 +508,7 @@ export default function PaymentsPage() {
               onChange={(e) => setDateFrom(e.target.value)}
               className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white"
             />
-            <span className="text-gray-400">to</span>
+            <span className="text-wl-text-secondary">to</span>
             <input
               type="date"
               value={dateTo}
@@ -522,12 +522,12 @@ export default function PaymentsPage() {
       {/* Payments Table */}
       {filtered.length === 0 ? (
         <Card className={cn("flex flex-col items-center justify-center gap-4 py-16 bg-wl-bg-surface border border-wl-border-default")}>
-          <Search className="w-12 h-12 text-gray-500" />
+          <Search className="w-12 h-12 text-wl-text-tertiary" />
           <div className="flex flex-col items-center gap-2">
-            <h3 className="text-lg font-semibold text-gray-400">
+            <h3 className="text-lg font-semibold text-wl-text-secondary">
               No payments found
             </h3>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-wl-text-tertiary">
               Try adjusting your search or filters
             </p>
           </div>
@@ -569,7 +569,7 @@ export default function PaymentsPage() {
                 key: "method",
                 header: "Method",
                 render: (item) => (
-                  <div className="text-sm text-gray-300">
+                  <div className="text-sm text-wl-text-secondary">
                     {getMethodLabel(item.method)}
                   </div>
                 ),
@@ -589,7 +589,7 @@ export default function PaymentsPage() {
                 key: "date",
                 header: "Date",
                 render: (item) => (
-                  <div className="text-sm text-gray-300">
+                  <div className="text-sm text-wl-text-secondary">
                     {new Date(item.date).toLocaleDateString()}
                   </div>
                 ),
@@ -600,7 +600,7 @@ export default function PaymentsPage() {
                 key: "reference",
                 header: "Reference",
                 render: (item) => (
-                  <div className="font-mono text-xs text-gray-400">
+                  <div className="font-mono text-xs text-wl-text-secondary">
                     {item.reference}
                   </div>
                 ),
@@ -627,7 +627,7 @@ export default function PaymentsPage() {
                 <p className="font-medium text-white">
                   {payment.customerName}
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-wl-text-secondary">
                   {payment.invoiceNumber} • {getMethodLabel(payment.method)}
                 </p>
               </div>
@@ -640,7 +640,7 @@ export default function PaymentsPage() {
                   <Badge variant={getStatusBadgeVariant(payment.status)}>
                     {getStatusLabel(payment.status)}
                   </Badge>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-wl-text-secondary">
                     {new Date(payment.date).toLocaleDateString()}
                   </span>
                 </div>

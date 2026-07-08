@@ -76,7 +76,7 @@ export function PlatformCard({
               <div className="flex gap-2 mt-1">
                 <StatusBadge status={platform.status} />
                 {platform.lastSync && (
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-wl-text-tertiary">
                     Last sync: {new Date(platform.lastSync).toLocaleString()}
                   </span>
                 )}
@@ -86,17 +86,17 @@ export function PlatformCard({
           <div className="flex items-center gap-3">
             {platform.status === 'connected' && (
               <>
-                <Button variant="ghost" size="sm" className="text-gray-500">
+                <Button variant="ghost" size="sm" className="text-wl-text-tertiary">
                   <RotateCw className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="sm" className="text-gray-500">
+                <Button variant="ghost" size="sm" className="text-wl-text-tertiary">
                   <Settings className="w-4 h-4" />
                 </Button>
               </>
             )}
             <ChevronRight
               className={cn(
-                'w-5 h-5 text-gray-500 transition-transform',
+                'w-5 h-5 text-wl-text-tertiary transition-transform',
                 isExpanded && 'rotate-90'
               )}
             />
@@ -108,25 +108,25 @@ export function PlatformCard({
             {/* Sync Stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
-                <div className="text-sm text-gray-500">Products Synced</div>
+                <div className="text-sm text-wl-text-tertiary">Products Synced</div>
                 <div className="text-2xl font-bold text-white mt-1">
                   {platform.productsSynced.toLocaleString()}
                 </div>
               </div>
               <div>
-                <div className="text-sm text-gray-500">Orders Synced</div>
+                <div className="text-sm text-wl-text-tertiary">Orders Synced</div>
                 <div className="text-2xl font-bold text-white mt-1">
                   {platform.ordersSynced.toLocaleString()}
                 </div>
               </div>
               <div>
-                <div className="text-sm text-gray-500">Product Sync</div>
+                <div className="text-sm text-wl-text-tertiary">Product Sync</div>
                 <div className="text-sm font-medium text-white mt-1">
                   {platform.syncSettings.productSync.direction.toUpperCase()}
                 </div>
               </div>
               <div>
-                <div className="text-sm text-gray-500">Order Sync</div>
+                <div className="text-sm text-wl-text-tertiary">Order Sync</div>
                 <div className="text-sm font-medium text-white mt-1">
                   {platform.syncSettings.orderSync.direction.toUpperCase()}
                 </div>
@@ -161,7 +161,7 @@ export function PlatformCard({
                     key={setting.label}
                     className="flex items-center justify-between"
                   >
-                    <span className="text-sm text-gray-400">
+                    <span className="text-sm text-wl-text-secondary">
                       {setting.label}
                     </span>
                     <Badge variant={setting.enabled ? 'success' : 'default'}>
@@ -185,7 +185,7 @@ export function PlatformCard({
                       className="flex items-center justify-between p-2 bg-wl-bg-surface rounded text-sm"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-gray-400">{hook.event}</span>
+                        <span className="text-wl-text-secondary">{hook.event}</span>
                         <Badge
                           variant={
                             hook.status === 'active' ? 'success' : 'danger'
@@ -195,7 +195,7 @@ export function PlatformCard({
                           {hook.status}
                         </Badge>
                       </div>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-wl-text-tertiary">
                         {new Date(hook.lastTriggered).toLocaleString()}
                       </span>
                     </div>

@@ -53,13 +53,13 @@ export function ProviderConfig({
             Authentication Method
           </h4>
           <div className="p-4 bg-wl-bg-surface rounded-lg border border-wl-border-default">
-            <div className="text-sm text-gray-400 mb-2">
+            <div className="text-sm text-wl-text-secondary mb-2">
               {configType === 'api_key' ? 'API Key' : 'OAuth 2.0'}
             </div>
             {apiKey && (
-              <div className="font-mono text-xs text-gray-500 flex items-center justify-between p-2 bg-wl-bg-root rounded">
+              <div className="font-mono text-xs text-wl-text-tertiary flex items-center justify-between p-2 bg-wl-bg-root rounded">
                 <span>{apiKey}</span>
-                <Copy className="w-4 h-4 cursor-pointer hover:text-gray-400" />
+                <Copy className="w-4 h-4 cursor-pointer hover:text-wl-text-secondary" />
               </div>
             )}
           </div>
@@ -95,13 +95,13 @@ export function ProviderConfig({
                     {domain.dnsRecords.map((record, ridx) => (
                       <div
                         key={ridx}
-                        className="text-xs p-2 bg-wl-bg-root rounded font-mono text-gray-500"
+                        className="text-xs p-2 bg-wl-bg-root rounded font-mono text-wl-text-tertiary"
                       >
                         <div>
                           <span className="text-cyan-400">{record.type}</span>{' '}
                           {record.name}
                         </div>
-                        <div className="text-gray-400 mt-1">{record.value}</div>
+                        <div className="text-wl-text-secondary mt-1">{record.value}</div>
                       </div>
                     ))}
                   </div>
@@ -118,7 +118,7 @@ export function ProviderConfig({
           </h4>
           <div className="grid grid-cols-3 gap-3">
             <div className="p-3 bg-wl-bg-surface rounded-lg border border-wl-border-default">
-              <div className="text-xs text-gray-500 uppercase tracking-wide">
+              <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
                 Per Day
               </div>
               <div className="text-lg font-bold text-white mt-1">
@@ -126,7 +126,7 @@ export function ProviderConfig({
               </div>
             </div>
             <div className="p-3 bg-wl-bg-surface rounded-lg border border-wl-border-default">
-              <div className="text-xs text-gray-500 uppercase tracking-wide">
+              <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
                 Per Second
               </div>
               <div className="text-lg font-bold text-white mt-1">
@@ -134,7 +134,7 @@ export function ProviderConfig({
               </div>
             </div>
             <div className="p-3 bg-wl-bg-surface rounded-lg border border-wl-border-default">
-              <div className="text-xs text-gray-500 uppercase tracking-wide">
+              <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
                 Sent (24h)
               </div>
               <div className="text-lg font-bold text-white mt-1">

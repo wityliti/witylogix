@@ -56,9 +56,9 @@ function ZoneCardSkeleton() {
 function EmptyZones() {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
-      <MapPin className="w-12 h-12 text-gray-600 mb-4" />
-      <h3 className="text-lg font-semibold text-gray-300 mb-2">No delivery zones yet</h3>
-      <p className="text-sm text-gray-500 mb-6 max-w-sm">
+      <MapPin className="w-12 h-12 text-wl-text-tertiary mb-4" />
+      <h3 className="text-lg font-semibold text-wl-text-secondary mb-2">No delivery zones yet</h3>
+      <p className="text-sm text-wl-text-tertiary mb-6 max-w-sm">
         Create your first delivery zone to define service areas, set pricing rules, and manage time slots.
       </p>
       <Button variant="primary">Create Zone</Button>

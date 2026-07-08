@@ -88,7 +88,7 @@ function IntegrationRow({
           </div>
           <div className="flex-1">
             <h4 className="text-sm font-semibold text-white">{integration.name}</h4>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-wl-text-secondary mt-0.5">
               {integration.shopName ? `Store: ${integration.shopName} · ` : ""}
               {integration.lastSyncTime
                 ? `Last sync: ${new Date(integration.lastSyncTime).toLocaleString()}`
@@ -98,15 +98,15 @@ function IntegrationRow({
           <div className="flex items-center gap-4">
             <div className="text-right">
               <p className="text-sm font-semibold text-white">{integration.successRate}%</p>
-              <p className="text-xs text-gray-400">Success Rate</p>
+              <p className="text-xs text-wl-text-secondary">Success Rate</p>
             </div>
             <div className="text-right min-w-fit">
               <p className="text-sm font-semibold text-white">{integration.errorCount}</p>
-              <p className="text-xs text-gray-400">Errors</p>
+              <p className="text-xs text-wl-text-secondary">Errors</p>
             </div>
             <StatusBadge status={integration.status} />
             <div className="ml-2">
-              {expanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+              {expanded ? <ChevronUp className="w-4 h-4 text-wl-text-secondary" /> : <ChevronDown className="w-4 h-4 text-wl-text-secondary" />}
             </div>
           </div>
         </div>
@@ -116,20 +116,20 @@ function IntegrationRow({
         <div className="px-5 py-4 bg-wl-bg-elevated border-t border-wl-border-default">
           <div className="grid grid-cols-2 gap-6 mb-6">
             <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Performance Metrics</p>
+              <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">Performance Metrics</p>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-400">Total Syncs:</span>
+                  <span className="text-sm text-wl-text-secondary">Total Syncs:</span>
                   <span className="text-sm font-semibold text-white">{integration.totalSyncs.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-400">Success Rate:</span>
+                  <span className="text-sm text-wl-text-secondary">Success Rate:</span>
                   <span className={cn("text-sm font-semibold", integration.successRate >= 99 ? "text-emerald-500" : "text-amber-500")}>
                     {integration.successRate}%
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-400">Error Count:</span>
+                  <span className="text-sm text-wl-text-secondary">Error Count:</span>
                   <span className={cn("text-sm font-semibold", integration.errorCount === 0 ? "text-emerald-500" : "text-red-500")}>
                     {integration.errorCount}
                   </span>
@@ -137,7 +137,7 @@ function IntegrationRow({
               </div>
             </div>
             <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Actions</p>
+              <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">Actions</p>
               <div className="flex gap-2 flex-wrap">
                 <Button variant="secondary" size="sm">
                   <RefreshCw className="w-4 h-4" />
@@ -151,7 +151,7 @@ function IntegrationRow({
 
           {integration.errors.length > 0 ? (
             <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-3 font-semibold">
+              <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-3 font-semibold">
                 Recent Errors ({integration.errors.length})
               </p>
               <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -160,9 +160,9 @@ function IntegrationRow({
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-xs font-semibold text-red-500">{error.code}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">{error.message}</p>
+                        <p className="text-xs text-wl-text-secondary mt-0.5">{error.message}</p>
                       </div>
-                      <span className="text-xs text-gray-400 whitespace-nowrap ml-2">{error.timestamp}</span>
+                      <span className="text-xs text-wl-text-secondary whitespace-nowrap ml-2">{error.timestamp}</span>
                     </div>
                   </div>
                 ))}
@@ -232,16 +232,16 @@ export default function IntegrationsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
                 <CardContent className="pt-5">
-                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Connected</p>
+                  <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">Connected</p>
                   <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-bold text-emerald-500">{connectedCount}</span>
-                    <span className="text-sm text-gray-400">of {filteredIntegrations.length}</span>
+                    <span className="text-sm text-wl-text-secondary">of {filteredIntegrations.length}</span>
                   </div>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="pt-5">
-                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Avg Success Rate</p>
+                  <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">Avg Success Rate</p>
                   <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-bold text-white">{avgSuccessRate}%</span>
                   </div>
@@ -249,7 +249,7 @@ export default function IntegrationsPage() {
               </Card>
               <Card>
                 <CardContent className="pt-5">
-                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">With Errors</p>
+                  <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">With Errors</p>
                   <div className="flex items-baseline gap-2">
                     <span className={cn("text-3xl font-bold", errorCount === 0 ? "text-emerald-500" : "text-red-500")}>
                       {errorCount}
@@ -265,7 +265,7 @@ export default function IntegrationsPage() {
                 onClick={() => setSelectedCategory(null)}
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                  !selectedCategory ? "bg-blue-600 text-white" : "bg-wl-bg-elevated text-gray-400 hover:text-white hover:bg-wl-bg-elevated"
+                  !selectedCategory ? "bg-blue-600 text-white" : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated"
                 )}
               >
                 All ({allIntegrations.length})
@@ -276,7 +276,7 @@ export default function IntegrationsPage() {
                   onClick={() => setSelectedCategory(cat.id)}
                   className={cn(
                     "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                    selectedCategory === cat.id ? "bg-blue-600 text-white" : "bg-wl-bg-elevated text-gray-400 hover:text-white hover:bg-wl-bg-elevated"
+                    selectedCategory === cat.id ? "bg-blue-600 text-white" : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated"
                   )}
                 >
                   {cat.label} ({cat.count})
@@ -291,7 +291,7 @@ export default function IntegrationsPage() {
               </CardHeader>
               <CardContent className="p-0">
                 {filteredIntegrations.length === 0 ? (
-                  <div className="p-6 text-center text-gray-400">
+                  <div className="p-6 text-center text-wl-text-secondary">
                     No integrations found{selectedCategory ? ` in the ${selectedCategory} category` : ""}. Integrations are added via the Integrations marketplace.
                   </div>
                 ) : (
@@ -316,7 +316,7 @@ export default function IntegrationsPage() {
                       <h4 className="text-sm font-semibold text-red-500">
                         {errorCount} Integration{errorCount !== 1 ? "s" : ""} Require Attention
                       </h4>
-                      <p className="text-sm text-gray-400 mt-1">
+                      <p className="text-sm text-wl-text-secondary mt-1">
                         Review and fix the issues above to restore full integration functionality.
                       </p>
                     </div>

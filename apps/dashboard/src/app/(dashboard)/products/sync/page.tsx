@@ -240,7 +240,7 @@ export default function ProductSyncPage() {
         </CardHeader>
         <CardContent>
           {platforms.length === 0 ? (
-            <div className="text-center py-10 text-gray-400">
+            <div className="text-center py-10 text-wl-text-secondary">
               <p className="font-medium mb-1">No ecommerce platforms connected</p>
               <p className="text-sm">Connect a platform in Integrations to start syncing products.</p>
             </div>
@@ -262,7 +262,7 @@ export default function ProductSyncPage() {
                     <h4 className="font-semibold text-white">
                       {platform.name}
                     </h4>
-                    <p className="text-sm text-gray-300">
+                    <p className="text-sm text-wl-text-secondary">
                       {platform.platform} • {platform.productCount} products
                     </p>
                   </div>
@@ -273,19 +273,19 @@ export default function ProductSyncPage() {
                         {platform.status.charAt(0).toUpperCase() + platform.status.slice(1)}
                       </Badge>
                       {platform.lastSyncAt && (
-                        <span className="text-xs text-gray-300">
+                        <span className="text-xs text-wl-text-secondary">
                           {new Date(platform.lastSyncAt).toLocaleTimeString()}
                         </span>
                       )}
                     </div>
                     <ChevronRight
-                      className={cn('w-5 h-5 text-gray-300 transition-transform', selectedPlatformId === platform.id && 'rotate-90')}
+                      className={cn('w-5 h-5 text-wl-text-secondary transition-transform', selectedPlatformId === platform.id && 'rotate-90')}
                     />
                   </div>
 
                   <ChevronRight
                     className={cn(
-                      'w-5 h-5 text-gray-300 transition-transform',
+                      'w-5 h-5 text-wl-text-secondary transition-transform',
                       effectivePlatformId === platform.id && 'rotate-90'
                     )}
                   />
@@ -309,7 +309,7 @@ export default function ProductSyncPage() {
                   'px-4 py-3 font-medium text-sm transition-colors border-b-2',
                   activeTab === tab
                     ? 'border-blue-500 text-blue-500'
-                    : 'border-transparent text-gray-300 hover:text-white'
+                    : 'border-transparent text-wl-text-secondary hover:text-white'
                 )}
               >
                 {tab === 'mapping' && 'Field Mapping'}
@@ -337,7 +337,7 @@ export default function ProductSyncPage() {
                     <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                     <div>
                       <h4 className="font-semibold text-amber-600 mb-1">Unmapped Required Fields</h4>
-                      <p className="text-sm text-gray-300">{unmappedRequired.map((f) => f.name).join(', ')}</p>
+                      <p className="text-sm text-wl-text-secondary">{unmappedRequired.map((f) => f.name).join(', ')}</p>
                     </div>
                   </div>
                 )}
@@ -365,7 +365,7 @@ export default function ProductSyncPage() {
                       className={cn(
                         'flex-1 px-3 py-2 text-sm rounded-md',
                         'bg-wl-bg-surface border border-wl-border-default',
-                        'text-white placeholder:text-gray-300',
+                        'text-white placeholder:text-wl-text-secondary',
                         'focus:outline-none focus:ring-2 focus:ring-blue-500'
                       )}
                     />
@@ -436,7 +436,7 @@ export default function ProductSyncPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <h5 className="text-sm font-medium text-gray-300 mb-3">Source ({selectedPlatform.name})</h5>
+                      <h5 className="text-sm font-medium text-wl-text-secondary mb-3">Source ({selectedPlatform.name})</h5>
                       <div className="space-y-2 text-sm">
                         {previewProduct?.source &&
                           Object.entries(previewProduct.source).map(([key, value]) => (
@@ -444,14 +444,14 @@ export default function ProductSyncPage() {
                               key={key}
                               className="flex justify-between p-2 bg-wl-bg-elevated rounded"
                             >
-                              <span className="text-gray-300">{key}:</span>
+                              <span className="text-wl-text-secondary">{key}:</span>
                               <span className="text-white font-medium">{String(value)}</span>
                             </div>
                           ))}
                       </div>
                     </div>
                     <div>
-                      <h5 className="text-sm font-medium text-gray-300 mb-3">Target (Witylogix)</h5>
+                      <h5 className="text-sm font-medium text-wl-text-secondary mb-3">Target (Witylogix)</h5>
                       <div className="space-y-2 text-sm">
                         {previewProduct?.target &&
                           Object.entries(previewProduct.target).map(([key, value]) => (
@@ -459,7 +459,7 @@ export default function ProductSyncPage() {
                               key={key}
                               className="flex justify-between p-2 bg-wl-bg-elevated rounded"
                             >
-                              <span className="text-gray-300">{key}:</span>
+                              <span className="text-wl-text-secondary">{key}:</span>
                               <span className="text-white font-medium">{String(value)}</span>
                             </div>
                           ))}
@@ -470,7 +470,7 @@ export default function ProductSyncPage() {
                 {testSyncInProgress && (
                   <div className="p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg flex items-center gap-3">
                     <RefreshCw className="w-5 h-5 text-blue-500 animate-spin" />
-                    <span className="text-sm text-gray-300">Testing sync with 5 sample products...</span>
+                    <span className="text-sm text-wl-text-secondary">Testing sync with 5 sample products...</span>
                   </div>
                 )}
               </CardContent>

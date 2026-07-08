@@ -58,7 +58,7 @@ export default function InvoicesPage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-white">Invoices</h1>
-              <p className="text-sm text-gray-400 mt-1">Manage customer invoices</p>
+              <p className="text-sm text-wl-text-secondary mt-1">Manage customer invoices</p>
             </div>
             <Button variant="primary" size="md">
               <Plus className="w-4 h-4" />
@@ -68,7 +68,7 @@ export default function InvoicesPage() {
 
           <div className="flex gap-4 mt-6">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary" />
               <input
                 type="text"
                 placeholder="Search invoices..."
@@ -109,30 +109,30 @@ export default function InvoicesPage() {
         <div className="space-y-4 max-w-7xl">
           {filtered.length === 0 ? (
             <Card className={cn("p-12 bg-wl-bg-surface border border-wl-border-default text-center")}>
-              <p className="text-gray-400">No invoices found</p>
+              <p className="text-wl-text-secondary">No invoices found</p>
             </Card>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-wl-border-default">
-                    <th className="text-left px-4 py-3 font-semibold text-gray-400">Invoice #</th>
-                    <th className="text-left px-4 py-3 font-semibold text-gray-400">Customer</th>
-                    <th className="text-right px-4 py-3 font-semibold text-gray-400">Amount</th>
-                    <th className="text-left px-4 py-3 font-semibold text-gray-400">Due Date</th>
-                    <th className="text-center px-4 py-3 font-semibold text-gray-400">Status</th>
-                    <th className="text-right px-4 py-3 font-semibold text-gray-400">Actions</th>
+                    <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Invoice #</th>
+                    <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Customer</th>
+                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Amount</th>
+                    <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Due Date</th>
+                    <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">Status</th>
+                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((inv) => (
                     <tr key={inv.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
                       <td className="px-4 py-3 font-medium text-white">{inv.invoiceNumber}</td>
-                      <td className="px-4 py-3 text-gray-300">{inv.customer}</td>
+                      <td className="px-4 py-3 text-wl-text-secondary">{inv.customer}</td>
                       <td className="text-right px-4 py-3 font-medium text-white">
                         ${inv.amount.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 text-gray-300">
+                      <td className="px-4 py-3 text-wl-text-secondary">
                         {new Date(inv.dueDate).toLocaleDateString()}
                       </td>
                       <td className="text-center px-4 py-3">

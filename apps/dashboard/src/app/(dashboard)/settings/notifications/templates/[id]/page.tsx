@@ -330,7 +330,7 @@ export default function TemplateEditorPage() {
                         className="w-full h-32 px-3 py-2 bg-wl-bg-overlay text-white border border-wl-border-default rounded-md text-sm font-mono"
                       />
                       <div className="mt-3 p-3 bg-wl-bg-overlay rounded-lg border border-wl-border-default">
-                        <p className="text-xs text-gray-400 mb-2">
+                        <p className="text-xs text-wl-text-secondary mb-2">
                           Character count: {content.sms.text.length} / 160
                         </p>
                         <div className="relative h-2 bg-wl-bg-overlay rounded-full overflow-hidden">
@@ -385,7 +385,7 @@ export default function TemplateEditorPage() {
                     className="w-full text-left px-3 py-2 bg-wl-bg-overlay hover:bg-wl-bg-overlay text-white rounded-lg text-sm transition-colors border border-wl-border-default"
                   >
                     <code className="font-mono">{`{{${variable.name}}}`}</code>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-wl-text-secondary mt-1">
                       {variable.label}
                     </p>
                   </button>
@@ -403,7 +403,7 @@ export default function TemplateEditorPage() {
                 {activeChannel === "email" && (
                   <div className="space-y-2">
                     <div className="p-3 bg-wl-bg-overlay rounded-lg">
-                      <p className="text-xs text-gray-400 mb-1">
+                      <p className="text-xs text-wl-text-secondary mb-1">
                         Subject:
                       </p>
                       <p className="text-sm text-white break-words">
@@ -411,7 +411,7 @@ export default function TemplateEditorPage() {
                       </p>
                     </div>
                     <div className="p-3 bg-wl-bg-overlay rounded-lg">
-                      <p className="text-xs text-gray-400 mb-1">
+                      <p className="text-xs text-wl-text-secondary mb-1">
                         Text Preview:
                       </p>
                       <p className="text-sm text-white whitespace-pre-wrap break-words">
@@ -422,7 +422,7 @@ export default function TemplateEditorPage() {
                 )}
                 {activeChannel === "sms" && (
                   <div className="p-3 bg-wl-bg-overlay rounded-lg">
-                    <p className="text-xs text-gray-400 mb-2">
+                    <p className="text-xs text-wl-text-secondary mb-2">
                       SMS Preview:
                     </p>
                     <div className="bg-white text-black p-3 rounded text-sm">

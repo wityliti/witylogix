@@ -46,7 +46,7 @@ function KPICardComponent({ card }: { card: KPICard }) {
       <CardContent className={cn("pt-6")}>
         <div className={cn("flex items-start justify-between")}>
           <div className={cn("flex-1")}>
-            <p className={cn("text-sm font-medium text-gray-400 mb-2")}>
+            <p className={cn("text-sm font-medium text-wl-text-secondary mb-2")}>
               {card.label}
             </p>
             <div className={cn("flex items-baseline gap-2")}>
@@ -54,7 +54,7 @@ function KPICardComponent({ card }: { card: KPICard }) {
                 {card.value}
               </span>
               {card.unit && (
-                <span className={cn("text-sm text-gray-400")}>
+                <span className={cn("text-sm text-wl-text-secondary")}>
                   {card.unit}
                 </span>
               )}
@@ -73,7 +73,7 @@ function KPICardComponent({ card }: { card: KPICard }) {
               </div>
             )}
           </div>
-          <div className={cn("text-gray-400 opacity-20 ml-4")}>
+          <div className={cn("text-wl-text-secondary opacity-20 ml-4")}>
             <Icon d={card.icon} size={32} />
           </div>
         </div>
@@ -95,7 +95,7 @@ function CompletionRateChart({ rate }: { rate: number }) {
               <p className={cn("text-4xl font-bold text-white")}>
                 {Math.round(rate)}%
               </p>
-              <p className={cn("text-sm text-gray-400 mt-1")}>
+              <p className={cn("text-sm text-wl-text-secondary mt-1")}>
                 Average completion rate
               </p>
             </div>
@@ -149,16 +149,16 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
           <table className={cn("w-full text-sm")}>
             <thead>
               <tr className={cn("border-b border-wl-border-default")}>
-                <th className={cn("text-left py-3 px-4 font-medium text-gray-400")}>
+                <th className={cn("text-left py-3 px-4 font-medium text-wl-text-secondary")}>
                   Name
                 </th>
-                <th className={cn("text-left py-3 px-4 font-medium text-gray-400")}>
+                <th className={cn("text-left py-3 px-4 font-medium text-wl-text-secondary")}>
                   Sender
                 </th>
-                <th className={cn("text-left py-3 px-4 font-medium text-gray-400")}>
+                <th className={cn("text-left py-3 px-4 font-medium text-wl-text-secondary")}>
                   Status
                 </th>
-                <th className={cn("text-left py-3 px-4 font-medium text-gray-400")}>
+                <th className={cn("text-left py-3 px-4 font-medium text-wl-text-secondary")}>
                   Completion
                 </th>
               </tr>
@@ -174,7 +174,7 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
                   <td className={cn("py-3 px-4 text-white font-medium")}>
                     {env.name}
                   </td>
-                  <td className={cn("py-3 px-4 text-gray-400")}>
+                  <td className={cn("py-3 px-4 text-wl-text-secondary")}>
                     {env.sender.name}
                   </td>
                   <td className={cn("py-3 px-4")}>
@@ -200,7 +200,7 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
                           style={{ width: `${env.completionRate}%` }}
                         />
                       </div>
-                      <span className={cn("text-xs text-gray-400 min-w-fit")}>
+                      <span className={cn("text-xs text-wl-text-secondary min-w-fit")}>
                         {env.completionRate}%
                       </span>
                     </div>
@@ -228,7 +228,7 @@ function TemplateUsageCard({ templates }: { templates: Array<{ name: string; cou
               key={tpl.name}
               className={cn("flex items-center justify-between")}
             >
-              <span className={cn("text-sm text-gray-400")}>
+              <span className={cn("text-sm text-wl-text-secondary")}>
                 {tpl.name}
               </span>
               <span className={cn("text-sm font-medium text-white")}>
@@ -301,7 +301,7 @@ export default function ESignaturesPage() {
           <h1 className={cn("text-2xl font-bold text-white")}>
             E-Signature Overview
           </h1>
-          <p className={cn("text-sm text-gray-400 mt-1")}>
+          <p className={cn("text-sm text-wl-text-secondary mt-1")}>
             Track and manage digital document signing
           </p>
         </div>
@@ -334,39 +334,39 @@ export default function ESignaturesPage() {
       <div className={cn("grid grid-cols-1 md:grid-cols-3 gap-4")}>
         <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
           <CardContent className={cn("pt-6")}>
-            <p className={cn("text-sm font-medium text-gray-400 mb-2")}>
+            <p className={cn("text-sm font-medium text-wl-text-secondary mb-2")}>
               Decline Rate
             </p>
             <p className={cn("text-2xl font-bold text-white")}>
               {analytics?.declineRate || 0}%
             </p>
-            <p className={cn("text-xs text-gray-400 mt-2")}>
+            <p className={cn("text-xs text-wl-text-secondary mt-2")}>
               Of total envelopes
             </p>
           </CardContent>
         </Card>
         <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
           <CardContent className={cn("pt-6")}>
-            <p className={cn("text-sm font-medium text-gray-400 mb-2")}>
+            <p className={cn("text-sm font-medium text-wl-text-secondary mb-2")}>
               Avg Signers per Envelope
             </p>
             <p className={cn("text-2xl font-bold text-white")}>
               {analytics?.avgSignersPerEnvelope || 0}
             </p>
-            <p className={cn("text-xs text-gray-400 mt-2")}>
+            <p className={cn("text-xs text-wl-text-secondary mt-2")}>
               Across all envelopes
             </p>
           </CardContent>
         </Card>
         <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
           <CardContent className={cn("pt-6")}>
-            <p className={cn("text-sm font-medium text-gray-400 mb-2")}>
+            <p className={cn("text-sm font-medium text-wl-text-secondary mb-2")}>
               Active Templates
             </p>
             <p className={cn("text-2xl font-bold text-white")}>
               {signingTemplates.filter((t: { isActive: boolean }) => t.isActive).length}
             </p>
-            <p className={cn("text-xs text-gray-400 mt-2")}>
+            <p className={cn("text-xs text-wl-text-secondary mt-2")}>
               Ready to use
             </p>
           </CardContent>

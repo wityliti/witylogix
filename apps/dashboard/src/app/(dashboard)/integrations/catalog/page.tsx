@@ -503,13 +503,13 @@ export default function IntegrationCatalogPage() {
                     <h3 className={cn("font-bold text-white text-sm")}>
                       {integration.name}
                     </h3>
-                    <p className={cn("text-xs text-gray-500 mt-1 line-clamp-2")}>
+                    <p className={cn("text-xs text-wl-text-tertiary mt-1 line-clamp-2")}>
                       {integration.provider}
                     </p>
                   </div>
                   <ChevronDown
                     className={cn(
-                      "h-4 w-4 text-gray-500 transition-transform",
+                      "h-4 w-4 text-wl-text-tertiary transition-transform",
                       expandedId === integration.id && "rotate-180"
                     )}
                   />
@@ -554,7 +554,7 @@ export default function IntegrationCatalogPage() {
                 </div>
 
                 {/* Description */}
-                <p className={cn("text-xs text-gray-400 mb-3 line-clamp-2")}>
+                <p className={cn("text-xs text-wl-text-secondary mb-3 line-clamp-2")}>
                   {integration.description}
                 </p>
 
@@ -571,7 +571,7 @@ export default function IntegrationCatalogPage() {
                           <span
                             key={feature}
                             className={cn(
-                              "px-2 py-1 rounded text-xs bg-wl-bg-elevated text-gray-500 font-medium"
+                              "px-2 py-1 rounded text-xs bg-wl-bg-elevated text-wl-text-tertiary font-medium"
                             )}
                           >
                             {feature}
@@ -581,7 +581,7 @@ export default function IntegrationCatalogPage() {
                     </div>
 
                     {/* Setup Time */}
-                    <div className={cn("flex items-center gap-2 text-xs text-gray-400")}>
+                    <div className={cn("flex items-center gap-2 text-xs text-wl-text-secondary")}>
                       <Zap className={cn("h-3 w-3")} />
                       <span>Setup: {integration.setupTime}</span>
                     </div>

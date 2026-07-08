@@ -304,9 +304,9 @@ export function NotificationStatsWidget({ className }: NotificationStatsWidgetPr
                 </div>
               ))}
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

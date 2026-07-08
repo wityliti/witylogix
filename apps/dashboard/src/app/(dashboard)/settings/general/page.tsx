@@ -59,7 +59,7 @@ export default function GeneralSettingsPage() {
         <Link href="/settings">
           <Button
             variant="ghost"
-            className="mb-8 text-gray-400 hover:text-white"
+            className="mb-8 text-wl-text-secondary hover:text-white"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back to Settings
@@ -80,7 +80,7 @@ export default function GeneralSettingsPage() {
                 <input
                   type="text"
                   defaultValue="Witylogix Inc."
-                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
@@ -90,7 +90,7 @@ export default function GeneralSettingsPage() {
                 <input
                   type="text"
                   defaultValue="Logistics & Supply Chain"
-                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
             </div>
@@ -114,7 +114,7 @@ export default function GeneralSettingsPage() {
                 <input
                   type="email"
                   defaultValue="support@witylogix.com"
-                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
               <div>
@@ -124,7 +124,7 @@ export default function GeneralSettingsPage() {
                 <input
                   type="tel"
                   defaultValue="+1 (555) 123-4567"
-                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
             </div>
@@ -159,7 +159,7 @@ export default function GeneralSettingsPage() {
                 <input
                   type="text"
                   defaultValue="California"
-                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
             </div>
@@ -172,7 +172,7 @@ export default function GeneralSettingsPage() {
                 <input
                   type="text"
                   defaultValue="San Francisco"
-                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
               <div>
@@ -182,7 +182,7 @@ export default function GeneralSettingsPage() {
                 <input
                   type="text"
                   defaultValue="94105"
-                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
             </div>
@@ -312,7 +312,7 @@ export default function GeneralSettingsPage() {
                         defaultValue={day.open.replace(/[AP]M/, "").trim()}
                         className="px-3 py-1 text-sm rounded border border-wl-border-default bg-wl-bg-root text-white"
                       />
-                      <span className="text-gray-400">to</span>
+                      <span className="text-wl-text-secondary">to</span>
                       <input
                         type="time"
                         defaultValue={day.close.replace(/[AP]M/, "").trim()}

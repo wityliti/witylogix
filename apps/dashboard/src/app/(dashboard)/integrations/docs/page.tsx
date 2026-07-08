@@ -28,7 +28,7 @@ export default function DocsPortal() {
       {/* Header */}
       <div className="border-b border-wl-border-default bg-wl-bg-root px-8 py-6">
         <h1 className="text-3xl font-bold text-white">Integration Documentation</h1>
-        <p className="mt-2 text-gray-400">
+        <p className="mt-2 text-wl-text-secondary">
           Complete reference for all providers, webhooks, and integration guides
         </p>
       </div>
@@ -44,7 +44,7 @@ export default function DocsPortal() {
                 'border-b-2 px-1 py-4 text-sm font-medium transition-colors',
                 activeTab === tab
                   ? 'border-blue-500 text-blue-500'
-                  : 'border-transparent text-gray-400 hover:text-white'
+                  : 'border-transparent text-wl-text-secondary hover:text-white'
               )}
             >
               {tab === 'ratelimits' ? 'Rate Limits' : tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -106,16 +106,16 @@ function SDKReference({
           <div className="mb-6 space-y-4">
             <div>
               <h3 className="text-lg font-semibold text-white">{selectedProvider} SDK</h3>
-              <p className="mt-1 text-sm text-gray-400">Version: {sdk.version}</p>
+              <p className="mt-1 text-sm text-wl-text-secondary">Version: {sdk.version}</p>
             </div>
 
             <div className="rounded bg-wl-bg-root p-4">
-              <div className="text-sm text-gray-400">Base URL</div>
+              <div className="text-sm text-wl-text-secondary">Base URL</div>
               <code className="mt-1 block text-sm font-mono text-blue-500">{sdk.baseUrl}</code>
             </div>
 
             <div className="rounded bg-wl-bg-root p-4">
-              <div className="text-sm text-gray-400">Authentication</div>
+              <div className="text-sm text-wl-text-secondary">Authentication</div>
               <code className="mt-1 block text-sm font-mono text-blue-500">{sdk.authentication}</code>
             </div>
           </div>
@@ -132,12 +132,12 @@ function SDKReference({
               {displayedMethods.map((method) => (
                 <div key={method.name} className="rounded border border-wl-border-default bg-wl-bg-root p-4">
                   <h4 className="font-mono text-sm font-semibold text-blue-500">{method.name}</h4>
-                  <p className="mt-2 text-sm text-gray-400">{method.description}</p>
+                  <p className="mt-2 text-sm text-wl-text-secondary">{method.description}</p>
 
                   {method.parameters.length > 0 && (
                     <div className="mt-3">
                       <div className="text-xs font-semibold text-white">Parameters:</div>
-                      <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                      <ul className="mt-2 space-y-1 text-xs text-wl-text-secondary">
                         {method.parameters.map((param) => (
                           <li key={param.name}>
                             <code className="text-blue-500">{param.name}</code> ({param.type})
@@ -190,7 +190,7 @@ function WebhookCatalog({
         <div className="space-y-4">
           {results.length === 0 ? (
             <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
-              <p className="text-gray-400">No events found</p>
+              <p className="text-wl-text-secondary">No events found</p>
             </Card>
           ) : (
             results.map(({ provider, event }, idx) => (
@@ -198,7 +198,7 @@ function WebhookCatalog({
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="font-mono text-sm font-semibold text-blue-500">{event.type}</h4>
-                    <p className="mt-1 text-sm text-gray-400">{event.description}</p>
+                    <p className="mt-1 text-sm text-wl-text-secondary">{event.description}</p>
                   </div>
                   <Badge variant="info">{provider}</Badge>
                 </div>
@@ -220,12 +220,12 @@ function WebhookCatalog({
               <h3 className="text-lg font-semibold text-white">{catalog.provider}</h3>
               <div className="mt-4 space-y-2">
                 {catalog.events.slice(0, 5).map((event) => (
-                  <div key={event.type} className="text-sm text-gray-400">
+                  <div key={event.type} className="text-sm text-wl-text-secondary">
                     <code className="text-blue-500">{event.type}</code>
                   </div>
                 ))}
                 {catalog.events.length > 5 && (
-                  <div className="text-sm text-gray-400">
+                  <div className="text-sm text-wl-text-secondary">
                     +{catalog.events.length - 5} more events
                   </div>
                 )}
@@ -259,10 +259,10 @@ function RateLimitReference() {
             {rateLimits.map((limit) => (
               <tr key={limit.provider} className="border-b border-wl-border-default">
                 <td className="px-4 py-2 font-medium text-white">{limit.provider}</td>
-                <td className="px-4 py-2 text-gray-400">{limit.requestsPerSecond}</td>
-                <td className="px-4 py-2 text-gray-400">{limit.requestsPerMinute}</td>
-                <td className="px-4 py-2 text-gray-400">{limit.burstCapacity}</td>
-                <td className="px-4 py-2 text-gray-400">{limit.window}</td>
+                <td className="px-4 py-2 text-wl-text-secondary">{limit.requestsPerSecond}</td>
+                <td className="px-4 py-2 text-wl-text-secondary">{limit.requestsPerMinute}</td>
+                <td className="px-4 py-2 text-wl-text-secondary">{limit.burstCapacity}</td>
+                <td className="px-4 py-2 text-wl-text-secondary">{limit.window}</td>
               </tr>
             ))}
           </tbody>
@@ -316,7 +316,7 @@ function ConfigurationGuides({
                   {step === 4 && 'Test & Deploy'}
                 </h3>
               </div>
-              <p className="mt-3 text-sm text-gray-400">
+              <p className="mt-3 text-sm text-wl-text-secondary">
                 {step === 1 && 'Visit the provider dashboard, create an account, and generate your API keys in the settings.'}
                 {step === 2 && 'Install the official SDK via npm/pip and configure with your API credentials.'}
                 {step === 3 && 'Implement proper error handling for rate limits, timeouts, and failed requests.'}
@@ -366,7 +366,7 @@ function TroubleshootingSection({
       <div className="space-y-4">
         {playbooks.length === 0 && searchQuery && (
           <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
-            <p className="text-gray-400">No troubleshooting guides found</p>
+            <p className="text-wl-text-secondary">No troubleshooting guides found</p>
           </Card>
         )}
 
@@ -380,13 +380,13 @@ function TroubleshootingSection({
                     {playbook.errorCode}
                   </Badge>
                 )}
-                <p className="mt-2 text-sm text-gray-400">{playbook.description}</p>
+                <p className="mt-2 text-sm text-wl-text-secondary">{playbook.description}</p>
               </div>
             </div>
 
             <div className="mt-4">
               <h4 className="font-semibold text-white">Resolution Steps:</h4>
-              <ol className="mt-2 space-y-2 text-sm text-gray-400">
+              <ol className="mt-2 space-y-2 text-sm text-wl-text-secondary">
                 {playbook.steps.map((step, idx) => (
                   <li key={idx} className="ml-5 list-decimal">
                     {step}
@@ -443,21 +443,21 @@ function APIChangelog({
       <div className="space-y-4">
         {changelog.length === 0 ? (
           <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
-            <p className="text-gray-400">No changelog available</p>
+            <p className="text-wl-text-secondary">No changelog available</p>
           </Card>
         ) : (
           changelog.map((entry) => (
             <Card key={entry.version} className="border border-wl-border-default bg-wl-bg-surface p-6">
               <div className="flex items-center gap-3">
                 <Badge variant="primary">{entry.version}</Badge>
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-wl-text-secondary">
                   {new Date(entry.date).toLocaleDateString()}
                 </span>
               </div>
 
               <div className="mt-4 space-y-2">
                 {entry.changes.map((change, idx) => (
-                  <div key={idx} className="text-sm text-gray-400">
+                  <div key={idx} className="text-sm text-wl-text-secondary">
                     <Badge variant={change.type as any} className="mb-2">
                       {change.type}
                     </Badge>

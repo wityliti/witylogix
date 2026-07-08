@@ -41,7 +41,7 @@ const getStatusColor = (status: string) => {
     case "fail":
       return "bg-red-500/20 text-red-400 border-red-500/50";
     case "pending":
-      return "bg-gray-500/20 text-gray-400 border-gray-500/50";
+      return "bg-wl-bg-overlay/20 text-wl-text-secondary border-wl-border-default/50";
     default:
       return "";
   }
@@ -70,7 +70,7 @@ export function DVIRReportCard({ report }: DVIRReportCardProps) {
             <h3 className="text-base font-semibold text-white">
               {report.vehicle}
             </h3>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-wl-text-tertiary mt-1">
               {report.driverName} • {report.date}
             </p>
           </div>
@@ -90,7 +90,7 @@ export function DVIRReportCard({ report }: DVIRReportCardProps) {
         {/* Issues */}
         {report.issues.length > 0 && (
           <div className="mb-4 pb-4 border-b border-wl-border-default">
-            <p className="text-xs font-medium text-gray-500 uppercase mb-3">
+            <p className="text-xs font-medium text-wl-text-tertiary uppercase mb-3">
               Reported Issues
             </p>
             <div className="space-y-2">
@@ -108,7 +108,7 @@ export function DVIRReportCard({ report }: DVIRReportCardProps) {
                         {issue.severity}
                       </Badge>
                     </div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-wl-text-tertiary">
                       {issue.description}
                     </p>
                   </div>

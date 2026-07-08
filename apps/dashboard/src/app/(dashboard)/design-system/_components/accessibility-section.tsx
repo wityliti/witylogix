@@ -9,7 +9,7 @@ export function AccessibilitySection() {
         <h2 className="text-2xl font-bold text-white mb-2">
           Accessibility Features
         </h2>
-        <p className="text-gray-300 mb-8">
+        <p className="text-wl-text-secondary mb-8">
           All components follow WCAG 2.1 accessibility guidelines with proper ARIA
           attributes, semantic HTML, and keyboard navigation support.
         </p>
@@ -19,7 +19,7 @@ export function AccessibilitySection() {
             <CardHeader>
               <CardTitle>Keyboard Navigation</CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-gray-300 space-y-2">
+            <CardContent className="text-sm text-wl-text-secondary space-y-2">
               <p>
                 Tab: Move focus to the next interactive element
               </p>
@@ -39,7 +39,7 @@ export function AccessibilitySection() {
             <CardHeader>
               <CardTitle>ARIA Attributes</CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-gray-300 space-y-2">
+            <CardContent className="text-sm text-wl-text-secondary space-y-2">
               <p>
                 aria-label: Provides accessible names for unlabeled elements
               </p>
@@ -59,7 +59,7 @@ export function AccessibilitySection() {
             <CardHeader>
               <CardTitle>Focus Management</CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-gray-300 space-y-2">
+            <CardContent className="text-sm text-wl-text-secondary space-y-2">
               <p>
                 All interactive elements have visible focus indicators
               </p>
@@ -76,7 +76,7 @@ export function AccessibilitySection() {
             <CardHeader>
               <CardTitle>Color Contrast</CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-gray-300 space-y-2">
+            <CardContent className="text-sm text-wl-text-secondary space-y-2">
               <p>
                 All text meets WCAG AA contrast ratio requirements (4.5:1)
               </p>

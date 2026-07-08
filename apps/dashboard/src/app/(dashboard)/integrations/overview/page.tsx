@@ -192,7 +192,7 @@ export default function IntegrationOverviewPage() {
                 <div className="space-y-3">
                   <div className="flex items-end gap-2">
                     <span className="text-4xl font-bold text-white">{totalActive}</span>
-                    <span className="text-gray-400 text-sm mb-1">of {totalProviders}</span>
+                    <span className="text-wl-text-secondary text-sm mb-1">of {totalProviders}</span>
                   </div>
                   <div className="w-full h-2 bg-wl-bg-root rounded-full overflow-hidden">
                     <div
@@ -200,7 +200,7 @@ export default function IntegrationOverviewPage() {
                       style={{ width: `${totalProviders > 0 ? (totalActive / totalProviders) * 100 : 0}%` }}
                     />
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-wl-text-tertiary">
                     {totalError > 0 ? `${totalError} with errors` : 'All connections healthy'}
                   </p>
                 </div>
@@ -225,20 +225,20 @@ export default function IntegrationOverviewPage() {
                     <span className={cn('text-4xl font-bold', totalError > 0 ? 'text-red-400' : 'text-emerald-400')}>
                       {totalProviders > 0 ? Math.round(((totalProviders - totalError) / totalProviders) * 100) : 100}
                     </span>
-                    <span className="text-gray-400 text-sm mb-1">%</span>
+                    <span className="text-wl-text-secondary text-sm mb-1">%</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     <div className="text-center">
                       <div className="text-emerald-400 font-semibold">{totalActive}</div>
-                      <div className="text-gray-500">Active</div>
+                      <div className="text-wl-text-tertiary">Active</div>
                     </div>
                     <div className="text-center">
-                      <div className={cn('font-semibold', totalError > 0 ? 'text-red-400' : 'text-gray-400')}>{totalError}</div>
-                      <div className="text-gray-500">Errors</div>
+                      <div className={cn('font-semibold', totalError > 0 ? 'text-red-400' : 'text-wl-text-secondary')}>{totalError}</div>
+                      <div className="text-wl-text-tertiary">Errors</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-gray-400 font-semibold">{totalProviders - totalActive - totalError}</div>
-                      <div className="text-gray-500">Inactive</div>
+                      <div className="text-wl-text-secondary font-semibold">{totalProviders - totalActive - totalError}</div>
+                      <div className="text-wl-text-tertiary">Inactive</div>
                     </div>
                   </div>
                 </div>
@@ -250,7 +250,7 @@ export default function IntegrationOverviewPage() {
         {/* Search and Filter */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="flex-1 relative">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-gray-500" />
+            <Search className="w-4 h-4 absolute left-3 top-3 text-wl-text-tertiary" />
             <input
               type="text"
               placeholder="Search integrations..."
@@ -269,7 +269,7 @@ export default function IntegrationOverviewPage() {
                   'px-4 py-2 rounded-lg border text-sm font-medium transition-all',
                   filterStatus === status
                     ? 'bg-blue-500 text-black border-blue-600'
-                    : 'border-wl-border-default text-gray-400 hover:border-blue-500/50'
+                    : 'border-wl-border-default text-wl-text-secondary hover:border-blue-500/50'
                 )}
               >
                 {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -330,7 +330,7 @@ export default function IntegrationOverviewPage() {
                       <div className="flex items-start justify-between mb-4">
                         <div>
                           <h3 className="font-semibold text-white">{category.name}</h3>
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className="text-xs text-wl-text-tertiary mt-1">
                             {category.active} of {category.total} active
                           </div>
                         </div>
@@ -339,13 +339,13 @@ export default function IntegrationOverviewPage() {
 
                       <div className="grid grid-cols-2 gap-3 pt-4 border-t border-wl-border-default">
                         <div>
-                          <div className="text-xs text-gray-500 uppercase tracking-wide">
+                          <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
                             Active
                           </div>
                           <div className="font-bold text-white mt-1">{category.active}</div>
                         </div>
                         <div>
-                          <div className="text-xs text-gray-500 uppercase tracking-wide">
+                          <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
                             Errors
                           </div>
                           <div
@@ -370,7 +370,7 @@ export default function IntegrationOverviewPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-white">Recent Activity</h2>
-            <Button variant="ghost" size="sm" className="text-gray-500">
+            <Button variant="ghost" size="sm" className="text-wl-text-tertiary">
               View All
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
@@ -394,7 +394,7 @@ export default function IntegrationOverviewPage() {
             <CardContent className="pt-6">
               <Plus className="w-6 h-6 text-blue-500 mb-3" />
               <h3 className="font-semibold text-white">Connect New</h3>
-              <p className="text-xs text-gray-500 mt-1">Add a new integration</p>
+              <p className="text-xs text-wl-text-tertiary mt-1">Add a new integration</p>
             </CardContent>
           </Card>
 
@@ -402,7 +402,7 @@ export default function IntegrationOverviewPage() {
             <CardContent className="pt-6">
               <Zap className="w-6 h-6 text-blue-500 mb-3" />
               <h3 className="font-semibold text-white">Run Sync</h3>
-              <p className="text-xs text-gray-500 mt-1">Manually trigger sync</p>
+              <p className="text-xs text-wl-text-tertiary mt-1">Manually trigger sync</p>
             </CardContent>
           </Card>
 
@@ -410,7 +410,7 @@ export default function IntegrationOverviewPage() {
             <CardContent className="pt-6">
               <Activity className="w-6 h-6 text-blue-500 mb-3" />
               <h3 className="font-semibold text-white">View Logs</h3>
-              <p className="text-xs text-gray-500 mt-1">Integration logs</p>
+              <p className="text-xs text-wl-text-tertiary mt-1">Integration logs</p>
             </CardContent>
           </Card>
 
@@ -418,7 +418,7 @@ export default function IntegrationOverviewPage() {
             <CardContent className="pt-6">
               <Settings className="w-6 h-6 text-blue-500 mb-3" />
               <h3 className="font-semibold text-white">Settings</h3>
-              <p className="text-xs text-gray-500 mt-1">Global integration config</p>
+              <p className="text-xs text-wl-text-tertiary mt-1">Global integration config</p>
             </CardContent>
           </Card>
         </div>

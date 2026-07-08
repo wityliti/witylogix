@@ -213,7 +213,7 @@ export default function NotificationsPage() {
                   "border cursor-pointer",
                   selectedCategory === cat.id
                     ? "border-blue-500 bg-blue-500/20 text-blue-400"
-                    : "border-wl-border-default text-gray-400 hover:border-wl-border-strong"
+                    : "border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong"
                 )}
               >
                 {cat.label}
@@ -225,7 +225,7 @@ export default function NotificationsPage() {
           {selectedNotifications.size > 0 && (
             <Card className={cn("border-blue-500/30 bg-blue-500/5")}>
               <CardContent className="flex items-center justify-between py-3">
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-wl-text-secondary">
                   {selectedNotifications.size} selected
                 </span>
                 <div className="flex gap-2">
@@ -257,12 +257,12 @@ export default function NotificationsPage() {
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Bell className="w-12 h-12 text-red-500 mb-3" />
                   <p className="text-red-400 font-medium">Failed to load notifications</p>
-                  <p className="text-gray-500 text-sm mt-1">Check your connection and try again</p>
+                  <p className="text-wl-text-tertiary text-sm mt-1">Check your connection and try again</p>
                 </div>
               ) : filteredNotifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <Bell className="w-12 h-12 text-gray-400 mb-3" />
-                  <p className="text-gray-400">
+                  <Bell className="w-12 h-12 text-wl-text-secondary mb-3" />
+                  <p className="text-wl-text-secondary">
                     {isLoading ? "Loading notifications…" : "No notifications to display"}
                   </p>
                 </div>
@@ -277,13 +277,13 @@ export default function NotificationsPage() {
                       }
                       onChange={handleSelectAll}
                     />
-                    <span className="flex-1 text-xs font-semibold uppercase text-gray-400 tracking-wide">
+                    <span className="flex-1 text-xs font-semibold uppercase text-wl-text-secondary tracking-wide">
                       Message
                     </span>
-                    <span className="w-24 text-xs font-semibold uppercase text-gray-400 tracking-wide">
+                    <span className="w-24 text-xs font-semibold uppercase text-wl-text-secondary tracking-wide">
                       Channel
                     </span>
-                    <span className="w-24 text-xs font-semibold uppercase text-gray-400 tracking-wide">
+                    <span className="w-24 text-xs font-semibold uppercase text-wl-text-secondary tracking-wide">
                       Time
                     </span>
                   </div>
@@ -335,7 +335,7 @@ export default function NotificationsPage() {
                             <div className="font-medium text-white">
                               {notif.title}
                             </div>
-                            <div className="text-sm text-gray-400 truncate">
+                            <div className="text-sm text-wl-text-secondary truncate">
                               {notif.message}
                             </div>
                           </div>
@@ -351,14 +351,14 @@ export default function NotificationsPage() {
                           </div>
 
                           {/* Timestamp */}
-                          <div className="w-24 text-sm text-gray-500 text-right">
+                          <div className="w-24 text-sm text-wl-text-tertiary text-right">
                             {formatTime(notif.timestamp)}
                           </div>
 
                           {/* Expand Icon */}
                           <ChevronDown
                             className={cn(
-                              "w-4 h-4 text-gray-500 transition-transform",
+                              "w-4 h-4 text-wl-text-tertiary transition-transform",
                               isExpanded && "rotate-180"
                             )}
                           />
@@ -372,14 +372,14 @@ export default function NotificationsPage() {
                                 <h4 className="text-sm font-semibold text-white mb-2">
                                   Details
                                 </h4>
-                                <p className="text-sm text-gray-400">
+                                <p className="text-sm text-wl-text-secondary">
                                   {notif.message}
                                 </p>
                               </div>
 
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                  <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">
+                                  <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold">
                                     Status
                                   </p>
                                   <Badge
@@ -393,10 +393,10 @@ export default function NotificationsPage() {
                                   </Badge>
                                 </div>
                                 <div>
-                                  <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">
+                                  <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold">
                                     Timestamp
                                   </p>
-                                  <p className="text-sm text-gray-400">
+                                  <p className="text-sm text-wl-text-secondary">
                                     {new Date(
                                       notif.timestamp
                                     ).toLocaleString()}
@@ -496,7 +496,7 @@ export default function NotificationsPage() {
 // Helpers
 
 function getChannelIcon(channel: NotificationChannel): ReactNode {
-  const iconProps = "w-5 h-5 text-gray-400";
+  const iconProps = "w-5 h-5 text-wl-text-secondary";
 
   switch (channel) {
     case "EMAIL":

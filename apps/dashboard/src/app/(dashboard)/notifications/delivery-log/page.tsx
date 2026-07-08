@@ -129,7 +129,7 @@ export default function DeliveryLogPage() {
                   <div className="text-2xl font-bold text-white">
                     {stats.total}
                   </div>
-                  <p className="text-sm text-gray-300 mt-1">
+                  <p className="text-sm text-wl-text-secondary mt-1">
                     Total Sent
                   </p>
                 </div>
@@ -142,7 +142,7 @@ export default function DeliveryLogPage() {
                   <div className="text-2xl font-bold text-emerald-500">
                     {stats.delivered}
                   </div>
-                  <p className="text-sm text-gray-300 mt-1">
+                  <p className="text-sm text-wl-text-secondary mt-1">
                     Delivered
                   </p>
                 </div>
@@ -155,7 +155,7 @@ export default function DeliveryLogPage() {
                   <div className="text-2xl font-bold text-red-500">
                     {stats.failed}
                   </div>
-                  <p className="text-sm text-gray-300 mt-1">
+                  <p className="text-sm text-wl-text-secondary mt-1">
                     Failed
                   </p>
                 </div>
@@ -168,7 +168,7 @@ export default function DeliveryLogPage() {
                   <div className="text-2xl font-bold text-amber-500">
                     {stats.rate}%
                   </div>
-                  <p className="text-sm text-gray-300 mt-1">
+                  <p className="text-sm text-wl-text-secondary mt-1">
                     Success Rate
                   </p>
                 </div>
@@ -286,8 +286,8 @@ export default function DeliveryLogPage() {
             <CardContent className="p-0">
               {entries.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <Calendar className="w-12 h-12 text-gray-400 mb-3" />
-                  <p className="text-gray-300">
+                  <Calendar className="w-12 h-12 text-wl-text-secondary mb-3" />
+                  <p className="text-wl-text-secondary">
                     No delivery logs found
                   </p>
                 </div>
@@ -296,19 +296,19 @@ export default function DeliveryLogPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-wl-border-default bg-wl-bg-root">
-                        <th className="text-left py-3 px-6 font-semibold text-gray-400 text-xs uppercase tracking-wide">
+                        <th className="text-left py-3 px-6 font-semibold text-wl-text-secondary text-xs uppercase tracking-wide">
                           Message
                         </th>
-                        <th className="text-left py-3 px-6 font-semibold text-gray-400 text-xs uppercase tracking-wide">
+                        <th className="text-left py-3 px-6 font-semibold text-wl-text-secondary text-xs uppercase tracking-wide">
                           Channel
                         </th>
-                        <th className="text-left py-3 px-6 font-semibold text-gray-400 text-xs uppercase tracking-wide">
+                        <th className="text-left py-3 px-6 font-semibold text-wl-text-secondary text-xs uppercase tracking-wide">
                           Recipient
                         </th>
-                        <th className="text-left py-3 px-6 font-semibold text-gray-400 text-xs uppercase tracking-wide">
+                        <th className="text-left py-3 px-6 font-semibold text-wl-text-secondary text-xs uppercase tracking-wide">
                           Status
                         </th>
-                        <th className="text-left py-3 px-6 font-semibold text-gray-400 text-xs uppercase tracking-wide">
+                        <th className="text-left py-3 px-6 font-semibold text-wl-text-secondary text-xs uppercase tracking-wide">
                           Timestamp
                         </th>
                         <th className="w-10" />
@@ -329,10 +329,10 @@ export default function DeliveryLogPage() {
                             <td className="py-4 px-6 text-white font-medium">
                               {entry.message}
                             </td>
-                            <td className="py-4 px-6 text-gray-300">
+                            <td className="py-4 px-6 text-wl-text-secondary">
                               <Badge variant="info">{entry.channel}</Badge>
                             </td>
-                            <td className="py-4 px-6 text-gray-300 text-xs font-mono">
+                            <td className="py-4 px-6 text-wl-text-secondary text-xs font-mono">
                               {truncate(entry.recipient, 30)}
                             </td>
                             <td className="py-4 px-6">
@@ -340,7 +340,7 @@ export default function DeliveryLogPage() {
                                 {entry.status}
                               </Badge>
                             </td>
-                            <td className="py-4 px-6 text-gray-300 text-sm">
+                            <td className="py-4 px-6 text-wl-text-secondary text-sm">
                               {formatDateTime(entry.timestamp)}
                             </td>
                             <td
@@ -353,7 +353,7 @@ export default function DeliveryLogPage() {
                             >
                               <ChevronDown
                                 className={cn(
-                                  "w-4 h-4 text-gray-400 transition-transform inline",
+                                  "w-4 h-4 text-wl-text-secondary transition-transform inline",
                                   isExpanded && "rotate-180"
                                 )}
                               />
@@ -378,26 +378,26 @@ export default function DeliveryLogPage() {
                 >
                   <div className="grid grid-cols-2 gap-6 text-sm">
                     <div>
-                      <p className="text-gray-400 uppercase text-xs font-semibold tracking-wide mb-1">
+                      <p className="text-wl-text-secondary uppercase text-xs font-semibold tracking-wide mb-1">
                         Full Recipient
                       </p>
-                      <p className="font-mono text-gray-300 break-all">
+                      <p className="font-mono text-wl-text-secondary break-all">
                         {entry.recipient}
                       </p>
                     </div>
 
                     <div>
-                      <p className="text-gray-400 uppercase text-xs font-semibold tracking-wide mb-1">
+                      <p className="text-wl-text-secondary uppercase text-xs font-semibold tracking-wide mb-1">
                         Sent At
                       </p>
-                      <p className="text-gray-300">
+                      <p className="text-wl-text-secondary">
                         {new Date(entry.timestamp).toLocaleString()}
                       </p>
                     </div>
 
                     {entry.deliveredAt && (
                       <div>
-                        <p className="text-gray-400 uppercase text-xs font-semibold tracking-wide mb-1">
+                        <p className="text-wl-text-secondary uppercase text-xs font-semibold tracking-wide mb-1">
                           Delivered At
                         </p>
                         <p className="text-emerald-500">
@@ -410,7 +410,7 @@ export default function DeliveryLogPage() {
 
                     {entry.readAt && (
                       <div>
-                        <p className="text-gray-400 uppercase text-xs font-semibold tracking-wide mb-1">
+                        <p className="text-wl-text-secondary uppercase text-xs font-semibold tracking-wide mb-1">
                           Read At
                         </p>
                         <p className="text-emerald-500">
@@ -420,17 +420,17 @@ export default function DeliveryLogPage() {
                     )}
 
                     <div>
-                      <p className="text-gray-400 uppercase text-xs font-semibold tracking-wide mb-1">
+                      <p className="text-wl-text-secondary uppercase text-xs font-semibold tracking-wide mb-1">
                         Retries
                       </p>
-                      <p className="text-gray-300">
+                      <p className="text-wl-text-secondary">
                         {entry.retryCount}
                       </p>
                     </div>
 
                     {entry.error && (
                       <div>
-                        <p className="text-gray-400 uppercase text-xs font-semibold tracking-wide mb-1">
+                        <p className="text-wl-text-secondary uppercase text-xs font-semibold tracking-wide mb-1">
                           Error
                         </p>
                         <p className="text-red-500">{entry.error}</p>

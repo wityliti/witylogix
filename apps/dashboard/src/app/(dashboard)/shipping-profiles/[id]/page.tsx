@@ -116,7 +116,7 @@ export default function ShippingProfileDetailPage() {
   if (!profile) {
     return (
       <div className="p-6 min-h-screen bg-wl-bg-surface">
-        <p className="text-gray-400">Profile not found</p>
+        <p className="text-wl-text-secondary">Profile not found</p>
       </div>
     );
   }
@@ -136,7 +136,7 @@ export default function ShippingProfileDetailPage() {
             ) : (
               <h1 className="text-4xl font-bold text-white mb-1">{profile.name}</h1>
             )}
-            <p className="text-gray-400 text-sm">ID: {profile.id}</p>
+            <p className="text-wl-text-secondary text-sm">ID: {profile.id}</p>
           </div>
           <div className="flex gap-2">
             {isEditing ? (
@@ -178,7 +178,7 @@ export default function ShippingProfileDetailPage() {
           {profile.isDefault && (
             <Badge variant="primary">DEFAULT</Badge>
           )}
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-wl-text-secondary">
             Updated: {new Date(profile.updatedAt).toLocaleDateString()}
           </span>
         </div>
@@ -188,7 +188,7 @@ export default function ShippingProfileDetailPage() {
       <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6">
         <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardContent className="p-5">
-            <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
+            <p className="text-xs text-wl-text-secondary font-semibold mb-2 flex items-center gap-1.5">
               <Truck size={14} /> Delivery Method
             </p>
             <p className="text-base text-white font-semibold">
@@ -198,7 +198,7 @@ export default function ShippingProfileDetailPage() {
         </Card>
         <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardContent className="p-5">
-            <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
+            <p className="text-xs text-wl-text-secondary font-semibold mb-2 flex items-center gap-1.5">
               <DollarSign size={14} /> Flat Rate
             </p>
             <p className="text-base font-semibold text-blue-500">
@@ -212,7 +212,7 @@ export default function ShippingProfileDetailPage() {
         </Card>
         <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardContent className="p-5">
-            <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
+            <p className="text-xs text-wl-text-secondary font-semibold mb-2 flex items-center gap-1.5">
               <Settings size={14} /> Rate Type
             </p>
             <p className="text-base text-white font-semibold">
@@ -222,7 +222,7 @@ export default function ShippingProfileDetailPage() {
         </Card>
         <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardContent className="p-5">
-            <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
+            <p className="text-xs text-wl-text-secondary font-semibold mb-2 flex items-center gap-1.5">
               <Clock size={14} /> Processing Time
             </p>
             <p className="text-base text-white font-semibold">
@@ -250,7 +250,7 @@ export default function ShippingProfileDetailPage() {
                 placeholder="Profile description..."
               />
             ) : (
-              <p className="text-sm text-gray-300">{profile.description}</p>
+              <p className="text-sm text-wl-text-secondary">{profile.description}</p>
             )}
           </CardContent>
         </Card>
@@ -266,7 +266,7 @@ export default function ShippingProfileDetailPage() {
         <CardContent className="p-6">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
-              <p className="text-xs text-gray-400 mb-1">Flat Rate</p>
+              <p className="text-xs text-wl-text-secondary mb-1">Flat Rate</p>
               <p className="text-sm font-semibold text-white">
                 {profile.flatRate !== null
                   ? profile.flatRate > 0
@@ -276,7 +276,7 @@ export default function ShippingProfileDetailPage() {
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-400 mb-1">Free Shipping Above</p>
+              <p className="text-xs text-wl-text-secondary mb-1">Free Shipping Above</p>
               <p className="text-sm font-semibold text-emerald-400">
                 {profile.freeShippingAbove
                   ? formatCurrency(Number(profile.freeShippingAbove))
@@ -284,7 +284,7 @@ export default function ShippingProfileDetailPage() {
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-400 mb-1">Min Order Amount</p>
+              <p className="text-xs text-wl-text-secondary mb-1">Min Order Amount</p>
               <p className="text-sm font-semibold text-white">
                 {profile.minOrderAmount
                   ? formatCurrency(Number(profile.minOrderAmount))
@@ -307,7 +307,7 @@ export default function ShippingProfileDetailPage() {
         </CardHeader>
         <CardContent className="p-6">
           {profile.locations.length === 0 ? (
-            <p className="text-gray-500 text-sm">No locations linked to this profile.</p>
+            <p className="text-wl-text-tertiary text-sm">No locations linked to this profile.</p>
           ) : (
             <div className="flex flex-col gap-3">
               {profile.locations.map((location) => (
@@ -317,7 +317,7 @@ export default function ShippingProfileDetailPage() {
                 >
                   <div>
                     <p className="text-sm text-white font-semibold">{location.name}</p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-wl-text-secondary mt-1">
                       {[location.city, location.province, location.country]
                         .filter(Boolean)
                         .join(', ')}
@@ -342,7 +342,7 @@ export default function ShippingProfileDetailPage() {
         </CardHeader>
         <CardContent className="p-6">
           {profile.calendarRules.length === 0 ? (
-            <p className="text-gray-500 text-sm">No calendar rules configured.</p>
+            <p className="text-wl-text-tertiary text-sm">No calendar rules configured.</p>
           ) : (
             <div className="flex flex-col gap-3">
               {profile.calendarRules.map((rule) => (
@@ -352,7 +352,7 @@ export default function ShippingProfileDetailPage() {
                 >
                   <div>
                     <p className="text-sm text-white font-semibold">{rule.name}</p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-wl-text-secondary mt-1">
                       Type: {rule.type} · Priority: {rule.priority}
                     </p>
                   </div>

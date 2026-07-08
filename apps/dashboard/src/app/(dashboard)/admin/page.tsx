@@ -105,7 +105,7 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
                 <Icon style={{ color: metric.color, width: "20px", height: "20px" }} />
               </div>
               <div className="flex-1">
-                <p className="text-gray-400 text-xs font-semibold m-0 uppercase tracking-wider">
+                <p className="text-wl-text-secondary text-xs font-semibold m-0 uppercase tracking-wider">
                   {metric.label}
                 </p>
                 <p className="text-white text-lg font-bold m-0 mt-1">
@@ -133,7 +133,7 @@ const SystemHealth = () => {
     <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
-          <Server className="w-5 h-5 text-gray-400" />
+          <Server className="w-5 h-5 text-wl-text-secondary" />
           System Health
         </CardTitle>
       </CardHeader>
@@ -152,7 +152,7 @@ const SystemHealth = () => {
                   <Icon style={{ color: metric.status === "healthy" ? "#10b981" : "#f59e0b", width: "18px", height: "18px" }} />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 m-0 mb-0.5 font-semibold uppercase">
+                  <p className="text-xs text-wl-text-secondary m-0 mb-0.5 font-semibold uppercase">
                     {metric.label}
                   </p>
                   <p className="text-white font-semibold m-0 text-sm">
@@ -174,7 +174,7 @@ const QuickActions = () => {
     <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
-          <Zap className="w-5 h-5 text-gray-400" />
+          <Zap className="w-5 h-5 text-wl-text-secondary" />
           Quick Actions
         </CardTitle>
       </CardHeader>
@@ -241,7 +241,7 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full p-2 pl-8 bg-wl-bg-elevated text-white border border-wl-border-default rounded-md text-sm"
             />
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary pointer-events-none" />
           </div>
         </div>
       </CardHeader>
@@ -254,7 +254,7 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
                 {['Store', 'Plan', 'Orders (30d)', 'Revenue', 'Users', 'Status', 'Last Active', 'Actions'].map((header) => (
                   <th
                     key={header}
-                    className="p-3 text-left text-gray-400 font-semibold text-xs uppercase tracking-wider"
+                    className="p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wider"
                   >
                     {header}
                   </th>
@@ -277,7 +277,7 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
                     >
                       {store.name}
                     </Link>
-                    <p className="text-gray-400 m-0 mt-0.5 text-xs">
+                    <p className="text-wl-text-secondary m-0 mt-0.5 text-xs">
                       {store.domain}
                     </p>
                   </td>
@@ -311,11 +311,11 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
                       {store.status}
                     </Badge>
                   </td>
-                  <td className="p-3 text-gray-400 text-xs">
+                  <td className="p-3 text-wl-text-secondary text-xs">
                     {store.lastActive}
                   </td>
                   <td className="p-3 text-center">
-                    <button className="bg-transparent border-0 text-gray-400 cursor-pointer p-1 inline-flex items-center justify-center transition-all duration-200 hover:text-white">
+                    <button className="bg-transparent border-0 text-wl-text-secondary cursor-pointer p-1 inline-flex items-center justify-center transition-all duration-200 hover:text-white">
                       <MoreVertical className="w-4 h-4" />
                     </button>
                   </td>

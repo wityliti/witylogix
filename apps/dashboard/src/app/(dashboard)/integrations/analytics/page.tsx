@@ -230,7 +230,7 @@ export default function AnalyticsIntegrationsPage() {
                 'px-3 py-1 rounded-sm border-none text-xs font-semibold cursor-pointer capitalize',
                 view === v
                   ? 'bg-blue-500 text-white'
-                  : 'bg-transparent text-gray-500'
+                  : 'bg-transparent text-wl-text-tertiary'
               )}
             >
               {v}
@@ -275,7 +275,7 @@ export default function AnalyticsIntegrationsPage() {
                       <p className={cn('text-sm font-semibold text-white')}>
                         {provider.name}
                       </p>
-                      <p className={cn('text-xs text-gray-500 mt-1')}>
+                      <p className={cn('text-xs text-wl-text-tertiary mt-1')}>
                         {provider.description}
                       </p>
                     </div>
@@ -305,7 +305,7 @@ export default function AnalyticsIntegrationsPage() {
                 ))
               ) : connections.length === 0 ? (
                 <Card className="p-6 text-center">
-                  <p className="text-gray-400">No connections configured</p>
+                  <p className="text-wl-text-secondary">No connections configured</p>
                 </Card>
               ) : (
                 connections.map((connection, idx) => {
@@ -336,7 +336,7 @@ export default function AnalyticsIntegrationsPage() {
                               <p className={cn('text-sm font-semibold text-white')}>
                                 {connection.name}
                               </p>
-                              <p className={cn('text-xs text-gray-500 mt-1')}>
+                              <p className={cn('text-xs text-wl-text-tertiary mt-1')}>
                                 {connection.dashboardCount} dashboards • {connection.embedCount} embeds
                               </p>
                             </div>
@@ -352,7 +352,7 @@ export default function AnalyticsIntegrationsPage() {
                           </div>
                         </div>
 
-                        <div className={cn('flex items-center justify-between text-xs text-gray-500 mb-3')}>
+                        <div className={cn('flex items-center justify-between text-xs text-wl-text-tertiary mb-3')}>
                           <span>
                             Last sync: {connection.lastSync}
                           </span>
@@ -373,19 +373,19 @@ export default function AnalyticsIntegrationsPage() {
                           <div className={cn('border-t border-wl-border-default pt-3 mt-3')}>
                             <div className={cn('grid grid-cols-3 gap-3 mb-4')}>
                               <div>
-                                <p className={cn('text-xs text-gray-500 mb-1')}>Dashboards</p>
+                                <p className={cn('text-xs text-wl-text-tertiary mb-1')}>Dashboards</p>
                                 <p className={cn('text-lg font-bold text-white')}>
                                   {connection.dashboardCount}
                                 </p>
                               </div>
                               <div>
-                                <p className={cn('text-xs text-gray-500 mb-1')}>Embeds</p>
+                                <p className={cn('text-xs text-wl-text-tertiary mb-1')}>Embeds</p>
                                 <p className={cn('text-lg font-bold text-white')}>
                                   {connection.embedCount}
                                 </p>
                               </div>
                               <div>
-                                <p className={cn('text-xs text-gray-500 mb-1')}>Status</p>
+                                <p className={cn('text-xs text-wl-text-tertiary mb-1')}>Status</p>
                                 <p
                                   className={cn(
                                     'text-lg font-bold',
@@ -452,7 +452,7 @@ export default function AnalyticsIntegrationsPage() {
               ))
             ) : reports.length === 0 ? (
               <Card className="p-6 text-center">
-                <p className="text-gray-400">No scheduled reports</p>
+                <p className="text-wl-text-secondary">No scheduled reports</p>
               </Card>
             ) : (
               reports.map((report, idx) => {
@@ -473,7 +473,7 @@ export default function AnalyticsIntegrationsPage() {
                             <p className={cn('text-sm font-semibold text-white truncate')}>
                               {report.title}
                             </p>
-                            <p className={cn('text-xs text-gray-500 mt-1')}>
+                            <p className={cn('text-xs text-wl-text-tertiary mt-1')}>
                               {report.frequency} • {report.format}
                             </p>
                           </div>
@@ -495,13 +495,13 @@ export default function AnalyticsIntegrationsPage() {
                       <div className={cn('bg-wl-bg-surface rounded p-3 mb-3')}>
                         <div className={cn('grid grid-cols-2 gap-3 text-xs')}>
                           <div>
-                            <p className={cn('text-gray-500 mb-1')}>Next Run</p>
+                            <p className={cn('text-wl-text-tertiary mb-1')}>Next Run</p>
                             <p className={cn('font-semibold text-white')}>
                               {report.nextRun}
                             </p>
                           </div>
                           <div>
-                            <p className={cn('text-gray-500 mb-1')}>Last Run</p>
+                            <p className={cn('text-wl-text-tertiary mb-1')}>Last Run</p>
                             <p className={cn('font-semibold text-white')}>
                               {report.lastRun}
                             </p>
@@ -510,7 +510,7 @@ export default function AnalyticsIntegrationsPage() {
                       </div>
 
                       <div className={cn('mb-3')}>
-                        <p className={cn('text-xs text-gray-500 mb-2')}>
+                        <p className={cn('text-xs text-wl-text-tertiary mb-2')}>
                           Recipients ({report.recipients.length})
                         </p>
                         <div className={cn('flex flex-wrap gap-1')}>
@@ -518,7 +518,7 @@ export default function AnalyticsIntegrationsPage() {
                             <span
                               key={recipient}
                               className={cn(
-                                'text-xs px-2 py-1 rounded bg-wl-bg-elevated text-gray-400'
+                                'text-xs px-2 py-1 rounded bg-wl-bg-elevated text-wl-text-secondary'
                               )}
                             >
                               {recipient}
@@ -574,7 +574,7 @@ export default function AnalyticsIntegrationsPage() {
               ))
             ) : dataSources.length === 0 ? (
               <Card className="p-6 text-center">
-                <p className="text-gray-400">No data sources configured</p>
+                <p className="text-wl-text-secondary">No data sources configured</p>
               </Card>
             ) : (
               <div className={cn('space-y-2')}>
@@ -598,14 +598,14 @@ export default function AnalyticsIntegrationsPage() {
                           <p className={cn('text-sm font-semibold text-white')}>
                             {source.name}
                           </p>
-                          <p className={cn('text-xs text-gray-500 mt-0.5')}>
+                          <p className={cn('text-xs text-wl-text-tertiary mt-0.5')}>
                             {source.type} • Refreshes {source.refreshSchedule}
                           </p>
                         </div>
                       </div>
                       <div className={cn('flex items-center gap-3 text-right shrink-0')}>
                         <div>
-                          <p className={cn('text-xs text-gray-500')}>Last Refresh</p>
+                          <p className={cn('text-xs text-wl-text-tertiary')}>Last Refresh</p>
                           <p className={cn('text-xs font-semibold text-white')}>
                             {source.lastRefresh}
                           </p>

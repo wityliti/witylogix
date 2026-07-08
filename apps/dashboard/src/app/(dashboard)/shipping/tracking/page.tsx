@@ -138,7 +138,7 @@ export default function TrackingPage() {
                         'px-4 py-2 rounded-md text-sm font-medium transition-colors',
                         filterStatus === status
                           ? 'bg-blue-500 text-white'
-                          : 'bg-wl-bg-elevated text-gray-400 hover:text-white',
+                          : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-white',
                       )}
                     >
                       {status.replace(/_/g, ' ')}
@@ -189,7 +189,7 @@ export default function TrackingPage() {
           <div className="h-[600px] rounded-xl overflow-hidden">
             {mappableCount === 0 ? (
               <div className="w-full h-full bg-wl-bg-overlay border border-wl-border-default rounded-xl flex items-center justify-center">
-                <div className="text-center text-gray-400">
+                <div className="text-center text-wl-text-secondary">
                   <Map className="w-8 h-8 mx-auto mb-3 opacity-40" />
                   <p className="text-sm font-semibold text-wl-text-primary mb-1">No location data</p>
                   <p className="text-xs">Shipments need delivery coordinates to appear on the map.</p>
@@ -213,13 +213,13 @@ export default function TrackingPage() {
                 <table className="w-full border-collapse text-sm">
                   <thead>
                     <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
-                      <th className="p-3 px-4 text-left font-semibold text-gray-400">Tracking #</th>
-                      <th className="p-3 px-4 text-left font-semibold text-gray-400">Recipient</th>
-                      <th className="p-3 px-4 text-left font-semibold text-gray-400">Carrier</th>
-                      <th className="p-3 px-4 text-left font-semibold text-gray-400">Last Known Location</th>
-                      <th className="p-3 px-4 text-center font-semibold text-gray-400">Status</th>
-                      <th className="p-3 px-4 text-center font-semibold text-gray-400">ETA</th>
-                      <th className="p-3 px-4 text-center font-semibold text-gray-400">Actions</th>
+                      <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Tracking #</th>
+                      <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Recipient</th>
+                      <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Carrier</th>
+                      <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Last Known Location</th>
+                      <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Status</th>
+                      <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">ETA</th>
+                      <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -234,13 +234,13 @@ export default function TrackingPage() {
                         <td className="p-3 px-4 text-white font-mono text-xs">
                           {shipment.trackingNumber ?? shipment.shipmentNumber}
                         </td>
-                        <td className="p-3 px-4 text-gray-400 text-sm">
+                        <td className="p-3 px-4 text-wl-text-secondary text-sm">
                           {shipment.recipientName ?? '—'}
                         </td>
-                        <td className="p-3 px-4 text-gray-400 text-sm">
+                        <td className="p-3 px-4 text-wl-text-secondary text-sm">
                           {shipment.carrier ?? '—'}
                         </td>
-                        <td className="p-3 px-4 text-gray-400 text-sm">
+                        <td className="p-3 px-4 text-wl-text-secondary text-sm">
                           {[shipment.city, shipment.province].filter(Boolean).join(', ') || '—'}
                         </td>
                         <td className="p-3 px-4 text-center">
@@ -248,7 +248,7 @@ export default function TrackingPage() {
                             {shipment.status.replace(/_/g, ' ')}
                           </Badge>
                         </td>
-                        <td className="p-3 px-4 text-center text-gray-400 text-sm">
+                        <td className="p-3 px-4 text-center text-wl-text-secondary text-sm">
                           {shipment.estimatedArrival
                             ? new Date(shipment.estimatedArrival).toLocaleDateString()
                             : '—'}
@@ -268,7 +268,7 @@ export default function TrackingPage() {
                     ))}
                     {filteredShipments.length === 0 && (
                       <tr>
-                        <td colSpan={7} className="p-8 text-center text-gray-500 text-sm">
+                        <td colSpan={7} className="p-8 text-center text-wl-text-tertiary text-sm">
                           No shipments found
                         </td>
                       </tr>
@@ -288,7 +288,7 @@ export default function TrackingPage() {
                 >
                   Previous
                 </Button>
-                <span className="text-sm text-gray-400 self-center">
+                <span className="text-sm text-wl-text-secondary self-center">
                   Page {pagination.page} of {pagination.totalPages}
                 </span>
                 <Button

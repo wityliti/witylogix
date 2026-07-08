@@ -265,7 +265,7 @@ export default function CreateInvoicePage() {
             <h1 className="text-3xl font-bold text-white">
               Create Invoice
             </h1>
-            <p className="text-gray-400">
+            <p className="text-wl-text-secondary">
               Create and send a new invoice to your customer
             </p>
           </div>
@@ -302,10 +302,10 @@ export default function CreateInvoicePage() {
                   <p className="font-semibold text-white">
                     {selectedCustomer.name}
                   </p>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-wl-text-secondary">
                     {selectedCustomer.email}
                   </p>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-wl-text-secondary">
                     {selectedCustomer.address}
                   </p>
                 </div>
@@ -336,7 +336,7 @@ export default function CreateInvoicePage() {
             </h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-sm font-medium text-wl-text-secondary mb-2">
                   Billing Start Date
                 </label>
                 <input
@@ -347,7 +347,7 @@ export default function CreateInvoicePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-sm font-medium text-wl-text-secondary mb-2">
                   Billing End Date
                 </label>
                 <input
@@ -378,7 +378,7 @@ export default function CreateInvoicePage() {
                 { value: "subscription", label: "Subscription" },
               ]}
             />
-            <p className="mt-2 text-xs text-gray-400">
+            <p className="mt-2 text-xs text-wl-text-secondary">
               {billingRuleType === "per-delivery" &&
                 "Charge a fixed amount per delivery"}
               {billingRuleType === "per-mile" &&
@@ -407,7 +407,7 @@ export default function CreateInvoicePage() {
             </div>
 
             {lineItems.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8 text-wl-text-secondary">
                 <p className="mb-3">No line items yet</p>
                 <Button
                   variant="secondary"
@@ -426,7 +426,7 @@ export default function CreateInvoicePage() {
                     className={cn("flex gap-3 p-4 bg-wl-bg-elevated rounded border border-wl-border-default items-end")}
                   >
                     <div className="flex-1">
-                      <label className="block text-xs font-medium text-gray-400 mb-1">
+                      <label className="block text-xs font-medium text-wl-text-secondary mb-1">
                         Description
                       </label>
                       <input
@@ -445,7 +445,7 @@ export default function CreateInvoicePage() {
                     </div>
 
                     <div className="w-20">
-                      <label className="block text-xs font-medium text-gray-400 mb-1">
+                      <label className="block text-xs font-medium text-wl-text-secondary mb-1">
                         Qty
                       </label>
                       <input
@@ -465,7 +465,7 @@ export default function CreateInvoicePage() {
                     </div>
 
                     <div className="w-24">
-                      <label className="block text-xs font-medium text-gray-400 mb-1">
+                      <label className="block text-xs font-medium text-wl-text-secondary mb-1">
                         Rate
                       </label>
                       <input
@@ -485,7 +485,7 @@ export default function CreateInvoicePage() {
                     </div>
 
                     <div className="w-20 text-right">
-                      <label className="block text-xs font-medium text-gray-400 mb-1">
+                      <label className="block text-xs font-medium text-wl-text-secondary mb-1">
                         Amount
                       </label>
                       <p className="font-semibold text-white">
@@ -536,7 +536,7 @@ export default function CreateInvoicePage() {
                 </Button>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-sm font-medium text-wl-text-secondary mb-2">
                   Custom Date
                 </label>
                 <input
@@ -559,7 +559,7 @@ export default function CreateInvoicePage() {
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-sm font-medium text-wl-text-secondary mb-2">
                   Notes
                 </label>
                 <textarea
@@ -571,7 +571,7 @@ export default function CreateInvoicePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-sm font-medium text-wl-text-secondary mb-2">
                   Terms & Conditions
                 </label>
                 <textarea
@@ -596,7 +596,7 @@ export default function CreateInvoicePage() {
 
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-gray-400">Subtotal</span>
+                <span className="text-wl-text-secondary">Subtotal</span>
                 <span className="font-medium text-white">
                   ${subtotal.toFixed(2)}
                 </span>
@@ -605,7 +605,7 @@ export default function CreateInvoicePage() {
               {parseFloat(discountPercentage) > 0 && (
                 <div>
                   <div className="flex justify-between mb-2">
-                    <span className="text-gray-400">
+                    <span className="text-wl-text-secondary">
                       Discount ({discountPercentage}%)
                     </span>
                     <span className="font-medium text-emerald-600">
@@ -625,7 +625,7 @@ export default function CreateInvoicePage() {
 
               {parseFloat(discountPercentage) === 0 && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-2">
+                  <label className="block text-xs font-medium text-wl-text-secondary mb-2">
                     Discount %
                   </label>
                   <input
@@ -641,7 +641,7 @@ export default function CreateInvoicePage() {
 
               <div className="border-t border-wl-border-default pt-3">
                 <div className="flex justify-between mb-2">
-                  <span className="text-gray-400">
+                  <span className="text-wl-text-secondary">
                     Tax ({taxRate}%)
                   </span>
                   <span className="font-medium text-white">
@@ -690,11 +690,11 @@ export default function CreateInvoicePage() {
             />
 
             {customersLoading ? (
-              <p className="text-center py-6 text-gray-400">
+              <p className="text-center py-6 text-wl-text-secondary">
                 Loading customers...
               </p>
             ) : filteredCustomers.length === 0 ? (
-              <p className="text-center py-6 text-gray-400">
+              <p className="text-center py-6 text-wl-text-secondary">
                 No customers found
               </p>
             ) : (
@@ -708,7 +708,7 @@ export default function CreateInvoicePage() {
                     <p className="font-medium text-white">
                       {customer.name}
                     </p>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-wl-text-secondary">
                       {customer.email}
                     </p>
                   </button>

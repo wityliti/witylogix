@@ -167,16 +167,16 @@ function DeliveryCard({
       className={cn(
         "p-4 rounded-lg border cursor-pointer transition-all duration-200",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-        "hover:border-zinc-600 hover:bg-zinc-800/60",
+        "hover:border-wl-border-default hover:bg-wl-bg-elevated/60",
         isSelected
           ? "bg-blue-500/10 border-blue-500 ring-1 ring-blue-500/25"
-          : "bg-zinc-800/40 border-zinc-700",
+          : "bg-wl-bg-elevated/40 border-wl-border-default",
       )}
     >
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-white text-sm truncate">{delivery.orderId}</p>
-          <p className="text-xs text-zinc-300 mt-0.5 truncate">
+          <p className="text-xs text-wl-text-secondary mt-0.5 truncate">
             {delivery.recipient?.name ?? "Unknown Recipient"}
           </p>
         </div>
@@ -188,13 +188,13 @@ function DeliveryCard({
         </Badge>
       </div>
 
-      <div className="space-y-1.5 text-xs text-zinc-400 mb-3">
+      <div className="space-y-1.5 text-xs text-wl-text-secondary mb-3">
         <div className="flex items-start gap-2">
-          <MapPin className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-zinc-500" />
+          <MapPin className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-wl-text-tertiary" />
           <span className="line-clamp-1">{delivery.dropoff.address}</span>
         </div>
         <div className="flex items-center gap-2">
-          <Package className="w-3.5 h-3.5 text-zinc-500" />
+          <Package className="w-3.5 h-3.5 text-wl-text-tertiary" />
           <span>
             {delivery.package?.itemCount ?? 1} item
             {(delivery.package?.itemCount ?? 1) !== 1 ? "s" : ""}
@@ -229,7 +229,7 @@ function DeliveryCard({
 // ── Skeleton ──────────────────────────────────────────────────
 
 function SkeletonCard({ height = "h-28" }: { height?: string }) {
-  return <div className={cn(height, "bg-zinc-800 rounded-lg animate-pulse")} />;
+  return <div className={cn(height, "bg-wl-bg-elevated rounded-lg animate-pulse")} />;
 }
 
 // ── Main Page ─────────────────────────────────────────────────
@@ -374,7 +374,7 @@ export default function CourierDispatchPage() {
 
   if (couriersError || deliveriesError) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-zinc-950">
+      <div className="flex items-center justify-center min-h-screen bg-wl-bg-root">
         <ErrorState
           message={
             (couriersError ?? deliveriesError)?.message ?? "Failed to load data"
@@ -392,16 +392,16 @@ export default function CourierDispatchPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-zinc-950 overflow-hidden">
+    <div className="flex flex-col h-screen bg-wl-bg-root overflow-hidden">
       {/* Stats Bar */}
       <DispatchStatsBar stats={stats} isLoading={isLoading} />
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden gap-0 min-h-0">
         {/* Left Panel — Deliveries Queue */}
-        <div className="flex flex-col w-80 flex-shrink-0 bg-zinc-900 border-r border-zinc-800 overflow-hidden">
+        <div className="flex flex-col w-80 flex-shrink-0 bg-wl-bg-root border-r border-wl-border-strong overflow-hidden">
           {/* Header */}
-          <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-800/30">
+          <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-wl-border-strong bg-wl-bg-elevated/30">
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-semibold text-white">Pending Deliveries</h2>
               <Badge variant="danger" className="text-[10px] px-1.5">
@@ -412,7 +412,7 @@ export default function CourierDispatchPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 w-7 p-0 text-zinc-400 hover:text-white"
+                className="h-7 w-7 p-0 text-wl-text-secondary hover:text-white"
                 onClick={handleRefresh}
                 aria-label="Refresh"
               >
@@ -440,7 +440,7 @@ export default function CourierDispatchPage() {
                 ))}
               </>
             ) : pendingDeliveries.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-zinc-500 py-12 text-center">
+              <div className="flex flex-col items-center justify-center h-full text-wl-text-tertiary py-12 text-center">
                 <Package className="w-10 h-10 mb-2 opacity-30" />
                 <p className="text-sm font-medium">No pending deliveries</p>
               </div>
@@ -466,14 +466,14 @@ export default function CourierDispatchPage() {
           {/* Map area */}
           <div className="flex-1 min-h-0 relative">
             {/* Map header overlay */}
-            <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-2 bg-zinc-900/90 border-b border-zinc-800 backdrop-blur-sm">
+            <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-2 bg-wl-bg-root/90 border-b border-wl-border-strong backdrop-blur-sm">
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-cyan-400" />
                 <span className="text-xs font-semibold text-white uppercase tracking-wider">
                   Live Courier Map
                 </span>
               </div>
-              <div className="flex items-center gap-3 text-[11px] text-zinc-400">
+              <div className="flex items-center gap-3 text-[11px] text-wl-text-secondary">
                 <span>
                   <span className="text-white font-semibold">
                     {couriers.filter((c) => c.status !== "idle").length}
@@ -491,7 +491,7 @@ export default function CourierDispatchPage() {
                       setSelectedDelivery(null);
                       setAssignmentPanelOpen(false);
                     }}
-                    className="flex items-center gap-1 text-zinc-400 hover:text-white transition-colors"
+                    className="flex items-center gap-1 text-wl-text-secondary hover:text-white transition-colors"
                   >
                     <X className="w-3.5 h-3.5" /> Clear
                   </button>
@@ -516,12 +516,12 @@ export default function CourierDispatchPage() {
 
           {/* Selected Delivery Details */}
           {selectedDelivery && (
-            <div className="flex-shrink-0 bg-zinc-900 border-t border-zinc-800 max-h-56 overflow-y-auto">
+            <div className="flex-shrink-0 bg-wl-bg-root border-t border-wl-border-strong max-h-56 overflow-y-auto">
               <div className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h3 className="text-sm font-semibold text-white">Delivery Details</h3>
-                    <p className="text-xs text-zinc-400 mt-0.5">{selectedDelivery.orderId}</p>
+                    <p className="text-xs text-wl-text-secondary mt-0.5">{selectedDelivery.orderId}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     {selectedDelivery.status === "pending" && (
@@ -536,11 +536,11 @@ export default function CourierDispatchPage() {
                     )}
                     <button
                       type="button"
-                      className="p-1 hover:bg-zinc-800 rounded-md transition-colors"
+                      className="p-1 hover:bg-wl-bg-elevated rounded-md transition-colors"
                       onClick={() => setSelectedDelivery(null)}
                       aria-label="Close delivery details"
                     >
-                      <X className="w-4 h-4 text-zinc-400" />
+                      <X className="w-4 h-4 text-wl-text-secondary" />
                     </button>
                   </div>
                 </div>

@@ -73,7 +73,7 @@ export default function StoresManagement() {
       <div className="px-6 py-8 border-b border-wl-border-default flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-white mb-2">Connected Stores</h1>
-          <p className="text-gray-400 text-sm">Manage your connected e-commerce store</p>
+          <p className="text-wl-text-secondary text-sm">Manage your connected e-commerce store</p>
         </div>
         <Button onClick={handleRefresh} variant="secondary" disabled={loading}>
           <RefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} />
@@ -100,7 +100,7 @@ export default function StoresManagement() {
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-gray-400 mb-2 text-xs">Total Orders</p>
+                      <p className="text-wl-text-secondary mb-2 text-xs">Total Orders</p>
                       <p className="text-2xl font-bold text-white">
                         {stats?.orders.total?.toLocaleString() ?? shop._count?.orders?.toLocaleString() ?? '—'}
                       </p>
@@ -114,7 +114,7 @@ export default function StoresManagement() {
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-gray-400 mb-2 text-xs">Today's Orders</p>
+                      <p className="text-wl-text-secondary mb-2 text-xs">Today's Orders</p>
                       <p className="text-2xl font-bold text-white">{stats?.orders.today ?? '—'}</p>
                     </div>
                     <Package size={28} className="text-purple-500" />
@@ -126,7 +126,7 @@ export default function StoresManagement() {
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-gray-400 mb-2 text-xs">Active Drivers</p>
+                      <p className="text-wl-text-secondary mb-2 text-xs">Active Drivers</p>
                       <p className="text-2xl font-bold text-white">{stats?.drivers.active ?? '—'}</p>
                     </div>
                     <Zap size={28} className="text-emerald-500" />
@@ -138,7 +138,7 @@ export default function StoresManagement() {
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-gray-400 mb-2 text-xs">Active Zones</p>
+                      <p className="text-wl-text-secondary mb-2 text-xs">Active Zones</p>
                       <p className="text-2xl font-bold text-white">{stats?.zones.active ?? '—'}</p>
                     </div>
                     <Globe size={28} className="text-blue-400" />
@@ -155,7 +155,7 @@ export default function StoresManagement() {
                     <Store size={24} className="text-blue-500" />
                     <div>
                       <h3 className="text-base font-semibold text-white">{shop.name}</h3>
-                      {shop.domain && <p className="text-gray-400 text-xs">{shop.domain}</p>}
+                      {shop.domain && <p className="text-wl-text-secondary text-xs">{shop.domain}</p>}
                     </div>
                   </div>
                   <Badge variant={getStatusVariant(shop.status)}>
@@ -165,19 +165,19 @@ export default function StoresManagement() {
 
                 <div className="grid grid-cols-2 gap-3 mb-4 pb-4 border-b border-wl-border-default">
                   <div>
-                    <p className="text-gray-400 mb-1 text-xs">Platform</p>
+                    <p className="text-wl-text-secondary mb-1 text-xs">Platform</p>
                     <p className="text-white font-semibold capitalize">{shop.platform ?? 'Shopify'}</p>
                   </div>
                   <div>
-                    <p className="text-gray-400 mb-1 text-xs">In Transit</p>
+                    <p className="text-wl-text-secondary mb-1 text-xs">In Transit</p>
                     <p className="text-white font-semibold">{stats?.orders.inTransit ?? '—'}</p>
                   </div>
                   <div>
-                    <p className="text-gray-400 mb-1 text-xs">Pending Orders</p>
+                    <p className="text-wl-text-secondary mb-1 text-xs">Pending Orders</p>
                     <p className="text-white font-semibold">{stats?.orders.pending ?? '—'}</p>
                   </div>
                   <div>
-                    <p className="text-gray-400 mb-1 text-xs">Delivery Zones</p>
+                    <p className="text-wl-text-secondary mb-1 text-xs">Delivery Zones</p>
                     <p className="text-white font-semibold">{shop._count?.deliveryZones ?? stats?.zones.total ?? '—'}</p>
                   </div>
                 </div>

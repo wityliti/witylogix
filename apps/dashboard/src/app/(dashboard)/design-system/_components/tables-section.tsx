@@ -9,7 +9,7 @@ export function TablesSection() {
         <h2 className="text-2xl font-bold text-white mb-2">
           Tables
         </h2>
-        <p className="text-gray-300 mb-8">
+        <p className="text-wl-text-secondary mb-8">
           Responsive table component for displaying structured data.
         </p>
 
@@ -56,7 +56,7 @@ export function TablesSection() {
                   key={idx}
                   className="border-b border-[#1e1e2e] hover:bg-[#12121a] transition-colors"
                 >
-                  <td className="px-4 py-3 text-gray-300">
+                  <td className="px-4 py-3 text-wl-text-secondary">
                     {row.id}
                   </td>
                   <td className="px-4 py-3 text-white">
@@ -75,7 +75,7 @@ export function TablesSection() {
                       {row.status}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-gray-300">
+                  <td className="px-4 py-3 text-wl-text-secondary">
                     {row.date}
                   </td>
                 </tr>

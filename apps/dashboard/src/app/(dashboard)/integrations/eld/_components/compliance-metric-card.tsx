@@ -42,7 +42,7 @@ export function ComplianceMetricCard({ metric }: ComplianceMetricCardProps) {
             <p className="text-3xl font-bold text-white">
               {metric.value}%
             </p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-wl-text-tertiary mt-1">
               Target: {metric.target}%
             </p>
           </div>

@@ -65,7 +65,7 @@ export default function ReconciliationPage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-white">Reconciliation</h1>
-              <p className="text-sm text-gray-400 mt-1">Match bank transactions with records</p>
+              <p className="text-sm text-wl-text-secondary mt-1">Match bank transactions with records</p>
             </div>
             <Button variant="primary" size="md">
               <Check className="w-4 h-4" />
@@ -80,7 +80,7 @@ export default function ReconciliationPage() {
                 'px-4 py-2 rounded-md text-sm font-medium transition-colors',
                 showUnmatched
                   ? 'bg-blue-500 text-white'
-                  : 'bg-wl-bg-elevated text-gray-400'
+                  : 'bg-wl-bg-elevated text-wl-text-secondary'
               )}
             >
               Unmatched ({data?.unmatchedCount || 0})
@@ -91,7 +91,7 @@ export default function ReconciliationPage() {
                 'px-4 py-2 rounded-md text-sm font-medium transition-colors',
                 !showUnmatched
                   ? 'bg-blue-500 text-white'
-                  : 'bg-wl-bg-elevated text-gray-400'
+                  : 'bg-wl-bg-elevated text-wl-text-secondary'
               )}
             >
               All Transactions
@@ -104,23 +104,23 @@ export default function ReconciliationPage() {
         <div className="space-y-6 max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className={cn("p-4 bg-wl-bg-surface border border-wl-border-default")}>
-              <p className="text-xs font-medium text-gray-400 uppercase">Unmatched</p>
+              <p className="text-xs font-medium text-wl-text-secondary uppercase">Unmatched</p>
               <p className="text-2xl font-bold text-red-500 mt-2">{data?.unmatchedCount || 0}</p>
-              <p className="text-xs text-gray-400 mt-2">Transactions</p>
+              <p className="text-xs text-wl-text-secondary mt-2">Transactions</p>
             </Card>
             <Card className={cn("p-4 bg-wl-bg-surface border border-wl-border-default")}>
-              <p className="text-xs font-medium text-gray-400 uppercase">Discrepancy Total</p>
+              <p className="text-xs font-medium text-wl-text-secondary uppercase">Discrepancy Total</p>
               <p className="text-2xl font-bold text-amber-500 mt-2">
                 ${(data?.discrepancyTotal || 0).toLocaleString()}
               </p>
-              <p className="text-xs text-gray-400 mt-2">Variance</p>
+              <p className="text-xs text-wl-text-secondary mt-2">Variance</p>
             </Card>
             <Card className={cn("p-4 bg-wl-bg-surface border border-wl-border-default")}>
-              <p className="text-xs font-medium text-gray-400 uppercase">Match Rate</p>
+              <p className="text-xs font-medium text-wl-text-secondary uppercase">Match Rate</p>
               <p className="text-2xl font-bold text-white mt-2">
                 {bankTx.length > 0 ? Math.round(((bankTx.length - (data?.unmatchedCount || 0)) / bankTx.length) * 100) : 0}%
               </p>
-              <p className="text-xs text-gray-400 mt-2">Success</p>
+              <p className="text-xs text-wl-text-secondary mt-2">Success</p>
             </Card>
           </div>
 
@@ -131,15 +131,15 @@ export default function ReconciliationPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-wl-border-default">
-                      <th className="text-left px-4 py-3 font-semibold text-gray-400">Date</th>
-                      <th className="text-right px-4 py-3 font-semibold text-gray-400">Amount</th>
-                      <th className="text-center px-4 py-3 font-semibold text-gray-400">Status</th>
+                      <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Date</th>
+                      <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Amount</th>
+                      <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {bankTx.map((tx) => (
                       <tr key={tx.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
-                        <td className="px-4 py-3 text-gray-300">{new Date(tx.date).toLocaleDateString()}</td>
+                        <td className="px-4 py-3 text-wl-text-secondary">{new Date(tx.date).toLocaleDateString()}</td>
                         <td className="text-right px-4 py-3 font-medium text-white">
                           ${tx.amount.toLocaleString()}
                         </td>
@@ -161,15 +161,15 @@ export default function ReconciliationPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-wl-border-default">
-                      <th className="text-left px-4 py-3 font-semibold text-gray-400">Date</th>
-                      <th className="text-right px-4 py-3 font-semibold text-gray-400">Amount</th>
-                      <th className="text-center px-4 py-3 font-semibold text-gray-400">Status</th>
+                      <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Date</th>
+                      <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Amount</th>
+                      <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {internalRecs.map((rec) => (
                       <tr key={rec.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
-                        <td className="px-4 py-3 text-gray-300">{new Date(rec.date).toLocaleDateString()}</td>
+                        <td className="px-4 py-3 text-wl-text-secondary">{new Date(rec.date).toLocaleDateString()}</td>
                         <td className="text-right px-4 py-3 font-medium text-white">
                           ${rec.amount.toLocaleString()}
                         </td>

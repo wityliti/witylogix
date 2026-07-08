@@ -256,8 +256,7 @@ export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
     if (rect) {
       setPopoverPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
     }
-    return result;
-  }, [rawDrivers]);
+  };
 
   return (
     <Card className={cn("flex flex-col h-full relative overflow-hidden", className)}>

@@ -61,7 +61,7 @@ export default function CalendarPage() {
           <div className="flex items-center justify-between gap-4 mb-6">
             <div>
               <h1 className="text-2xl font-bold text-white">Calendar Rules</h1>
-              <p className="text-sm text-gray-400 mt-1">Manage delivery calendar</p>
+              <p className="text-sm text-wl-text-secondary mt-1">Manage delivery calendar</p>
             </div>
             <Button variant="primary" size="md">
               <Plus className="w-4 h-4 mr-2" />
@@ -112,8 +112,8 @@ export default function CalendarPage() {
         <div className="space-y-4 max-w-5xl">
           {filtered.length === 0 ? (
             <Card className="p-12 bg-wl-bg-surface border-wl-border-default text-center">
-              <Calendar className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-              <p className="text-gray-400">No calendar rules found</p>
+              <Calendar className="w-12 h-12 text-wl-text-tertiary mx-auto mb-4" />
+              <p className="text-wl-text-secondary">No calendar rules found</p>
             </Card>
           ) : (
             <div className="space-y-3">
@@ -126,10 +126,10 @@ export default function CalendarPage() {
                         <Badge variant={getRuleTypeColor(rule.type) as any}>{rule.type}</Badge>
                         {!rule.isActive && <Badge variant="default">Inactive</Badge>}
                       </div>
-                      <p className="text-sm text-gray-400 mb-3">
+                      <p className="text-sm text-wl-text-secondary mb-3">
                         {new Date(rule.startDate).toLocaleDateString()} to {new Date(rule.endDate).toLocaleDateString()}
                       </p>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <div className="flex items-center gap-4 text-sm text-wl-text-tertiary">
                         <span>Zones: {rule.zones.join(", ")}</span>
                         {rule.capacity && <span>Capacity: {rule.capacity}</span>}
                         {rule.recurrencePattern && <span>Pattern: {rule.recurrencePattern}</span>}

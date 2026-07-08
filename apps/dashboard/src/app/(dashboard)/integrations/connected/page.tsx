@@ -151,7 +151,7 @@ export default function ConnectedIntegrationsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm text-gray-500 mb-1">
+                  <div className="text-sm text-wl-text-tertiary mb-1">
                     Total Connected
                   </div>
                   <div className="text-3xl font-bold text-white">
@@ -167,7 +167,7 @@ export default function ConnectedIntegrationsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm text-gray-500 mb-1">
+                  <div className="text-sm text-wl-text-tertiary mb-1">
                     Healthy
                   </div>
                   <div className="text-3xl font-bold text-emerald-500">
@@ -183,7 +183,7 @@ export default function ConnectedIntegrationsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm text-gray-500 mb-1">
+                  <div className="text-sm text-wl-text-tertiary mb-1">
                     Errors
                   </div>
                   <div className="text-3xl font-bold text-red-500">
@@ -200,7 +200,7 @@ export default function ConnectedIntegrationsPage() {
       {/* Search and Filter */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 relative">
-          <Search className="w-4 h-4 absolute left-3 top-3 text-gray-500" />
+          <Search className="w-4 h-4 absolute left-3 top-3 text-wl-text-tertiary" />
           <input
             type="text"
             placeholder="Search integrations..."
@@ -219,7 +219,7 @@ export default function ConnectedIntegrationsPage() {
                 "px-4 py-2 rounded-lg border text-sm font-medium transition-all whitespace-nowrap",
                 statusFilter === status
                   ? "bg-blue-500 text-black border-blue-600"
-                  : "border-wl-border-default text-gray-400 hover:border-blue-500/50"
+                  : "border-wl-border-default text-wl-text-secondary hover:border-blue-500/50"
               )}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -303,7 +303,7 @@ export default function ConnectedIntegrationsPage() {
                         <CardTitle className="text-lg">
                           {connection.providerName}
                         </CardTitle>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-wl-text-tertiary mt-1">
                           {connection.category}
                         </p>
                       </div>
@@ -321,7 +321,7 @@ export default function ConnectedIntegrationsPage() {
                   </div>
 
                   {/* Last Sync Time */}
-                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <div className="flex items-center gap-2 text-sm text-wl-text-secondary">
                     <Clock className="w-4 h-4" />
                     <span>Last sync: {lastSyncStr}</span>
                   </div>
@@ -329,7 +329,7 @@ export default function ConnectedIntegrationsPage() {
                   {/* API Calls and Errors */}
                   <div className="grid grid-cols-2 gap-3 pt-4 border-t border-wl-border-default">
                     <div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                      <div className="text-xs text-wl-text-tertiary uppercase tracking-wide mb-1">
                         API Calls
                       </div>
                       <div className="font-semibold text-white flex items-center gap-2">
@@ -338,7 +338,7 @@ export default function ConnectedIntegrationsPage() {
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                      <div className="text-xs text-wl-text-tertiary uppercase tracking-wide mb-1">
                         Errors
                       </div>
                       <div className="font-semibold text-red-500 flex items-center gap-2">
@@ -351,7 +351,7 @@ export default function ConnectedIntegrationsPage() {
                   {/* Uptime */}
                   <div className="pt-2">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-wl-text-tertiary">
                         Uptime
                       </span>
                       <span className="text-sm font-semibold text-white">
@@ -378,7 +378,7 @@ export default function ConnectedIntegrationsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="flex-1 text-gray-400 hover:text-white"
+                      className="flex-1 text-wl-text-secondary hover:text-white"
                     >
                       <Pause className="w-4 h-4 mr-2" />
                       Pause
@@ -386,7 +386,7 @@ export default function ConnectedIntegrationsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="flex-1 text-gray-400 hover:text-white"
+                      className="flex-1 text-wl-text-secondary hover:text-white"
                     >
                       <Zap className="w-4 h-4 mr-2" />
                       Sync
@@ -411,11 +411,11 @@ export default function ConnectedIntegrationsPage() {
         </div>
       ) : (
         <div className="text-center py-12">
-          <Filter className="w-12 h-12 text-gray-500 mx-auto mb-4 opacity-50" />
+          <Filter className="w-12 h-12 text-wl-text-tertiary mx-auto mb-4 opacity-50" />
           <h3 className="text-lg font-semibold text-white mb-2">
             No integrations found
           </h3>
-          <p className="text-gray-400 mb-4">
+          <p className="text-wl-text-secondary mb-4">
             Try adjusting your filters or search query
           </p>
           <button

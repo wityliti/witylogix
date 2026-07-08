@@ -181,7 +181,7 @@ function SpacingBar({ size, value }: { size: string; value: string }) {
         className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-sm transition-all"
         style={{ height: "24px", width: `${Math.min(numValue * 2, 100)}%` }}
       />
-      <div className="text-xs text-gray-400">{size}</div>
+      <div className="text-xs text-wl-text-secondary">{size}</div>
     </div>
   );
 }
@@ -294,7 +294,7 @@ export default function DesignTokensPage() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="mb-6">
             <h1 className="text-3xl font-bold tracking-tight mb-2">Design Tokens</h1>
-            <p className="text-gray-300">Complete reference of all design system tokens</p>
+            <p className="text-wl-text-secondary">Complete reference of all design system tokens</p>
           </div>
 
           {/* Search */}
@@ -330,11 +330,11 @@ export default function DesignTokensPage() {
               <span className="text-2xl">{category.icon}</span>
               <div className="text-left flex-1">
                 <h2 className="text-lg font-semibold">{category.name}</h2>
-                <p className="text-sm text-gray-300">{category.description}</p>
+                <p className="text-sm text-wl-text-secondary">{category.description}</p>
               </div>
               <span
                 className={cn(
-                  "text-gray-400 transition-transform",
+                  "text-wl-text-secondary transition-transform",
                   expandedCategory === category.id && "rotate-180"
                 )}
               >
@@ -360,7 +360,7 @@ export default function DesignTokensPage() {
                             <div className="text-sm font-semibold text-white">
                               {token.name}
                             </div>
-                            <div className="text-xs text-gray-400 font-mono">
+                            <div className="text-xs text-wl-text-secondary font-mono">
                               {token.value}
                             </div>
                           </div>
@@ -427,9 +427,9 @@ export default function DesignTokensPage() {
                             <div className="text-sm font-semibold text-white mb-2">
                               {token.name}
                             </div>
-                            <div className="text-xs text-gray-400 space-y-1 font-mono">
+                            <div className="text-xs text-wl-text-secondary space-y-1 font-mono">
                               <div>{token.cssVar}</div>
-                              <div className="text-gray-300">{token.value}</div>
+                              <div className="text-wl-text-secondary">{token.value}</div>
                               {token.tailwind && <div>{token.tailwind}</div>}
                             </div>
                           </div>
@@ -479,7 +479,7 @@ export default function DesignTokensPage() {
                           <div className="text-sm font-semibold text-white mb-2">
                             {token.name}
                           </div>
-                          <div className="text-xs text-gray-400 font-mono mb-3">
+                          <div className="text-xs text-wl-text-secondary font-mono mb-3">
                             {token.value}
                           </div>
                           <SpacingBar size={token.value} value={token.value} />
@@ -523,9 +523,9 @@ export default function DesignTokensPage() {
                             <div className="text-sm font-semibold text-white mb-2">
                               {token.name}
                             </div>
-                            <div className="text-xs text-gray-400 font-mono space-y-1">
+                            <div className="text-xs text-wl-text-secondary font-mono space-y-1">
                               <div>{token.cssVar}</div>
-                              <div className="text-gray-300">{token.value}</div>
+                              <div className="text-wl-text-secondary">{token.value}</div>
                               {token.tailwind && <div>{token.tailwind}</div>}
                             </div>
                           </div>
@@ -569,7 +569,7 @@ export default function DesignTokensPage() {
                           <div className="text-sm font-semibold text-white mb-2">
                             {token.name}
                           </div>
-                          <div className="text-xs text-gray-400 font-mono mb-3">
+                          <div className="text-xs text-wl-text-secondary font-mono mb-3">
                             {token.value}
                           </div>
                           <ShadowPreview shadow={token.value} />
@@ -613,7 +613,7 @@ export default function DesignTokensPage() {
                             <div className="text-sm font-semibold text-white">
                               {token.name}
                             </div>
-                            <div className="text-xs text-gray-400 font-mono">
+                            <div className="text-xs text-wl-text-secondary font-mono">
                               {token.value}
                             </div>
                           </div>
@@ -650,7 +650,7 @@ export default function DesignTokensPage() {
 
             {/* Empty State */}
             {expandedCategory === category.id && category.tokens.length === 0 && (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8 text-wl-text-secondary">
                 No tokens found matching your search
               </div>
             )}
@@ -659,7 +659,7 @@ export default function DesignTokensPage() {
 
         {filteredTokens.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-400 mb-4">No tokens found matching your search</p>
+            <p className="text-wl-text-secondary mb-4">No tokens found matching your search</p>
             <Button
               variant="secondary"
               onClick={() => setSearchQuery("")}

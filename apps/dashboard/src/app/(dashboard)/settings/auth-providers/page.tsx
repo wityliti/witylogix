@@ -207,9 +207,9 @@ export default function AuthProvidersPage() {
             {providers.length === 0 ? (
               <Card className="bg-wl-bg-surface border border-wl-border-default">
                 <CardContent className="flex flex-col items-center justify-center py-16 gap-4">
-                  <Shield className="w-12 h-12 text-gray-600" />
+                  <Shield className="w-12 h-12 text-wl-text-tertiary" />
                   <p className="text-lg font-semibold text-white">No auth providers configured</p>
-                  <p className="text-sm text-gray-400 text-center max-w-md">
+                  <p className="text-sm text-wl-text-secondary text-center max-w-md">
                     Connect an SSO provider to enable single sign-on for your team.
                   </p>
                   <Button variant="primary" onClick={() => setIsAddModalOpen(true)}>
@@ -251,7 +251,7 @@ export default function AuthProvidersPage() {
                           <CardTitle className="text-xl mb-1 text-white">
                             {meta?.label ?? provider.displayName}
                           </CardTitle>
-                          <CardDescription className="text-gray-400">
+                          <CardDescription className="text-wl-text-secondary">
                             {provider.displayName}
                           </CardDescription>
                         </CardHeader>
@@ -259,7 +259,7 @@ export default function AuthProvidersPage() {
                         <CardContent>
                           {meta?.capabilities && (
                             <div className="mb-4">
-                              <div className="text-sm font-semibold text-gray-400 mb-2">Capabilities</div>
+                              <div className="text-sm font-semibold text-wl-text-secondary mb-2">Capabilities</div>
                               <div className="flex flex-wrap gap-2">
                                 {meta.capabilities.map((cap) => (
                                   <Badge key={cap} variant="info" className="text-xs">{cap}</Badge>
@@ -268,7 +268,7 @@ export default function AuthProvidersPage() {
                             </div>
                           )}
                           {provider.lastValidatedAt && (
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-wl-text-tertiary">
                               Last validated: {new Date(provider.lastValidatedAt).toLocaleString()}
                             </p>
                           )}
@@ -343,7 +343,7 @@ export default function AuthProvidersPage() {
           <Card className="mb-8 bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">Role Mapping Configuration</CardTitle>
-              <CardDescription className="text-gray-400">
+              <CardDescription className="text-wl-text-secondary">
                 Map external authentication provider roles to Witylogix platform roles
               </CardDescription>
             </CardHeader>
@@ -352,10 +352,10 @@ export default function AuthProvidersPage() {
                 <table className="w-full border-collapse text-sm">
                   <thead>
                     <tr className="border-b-2 border-wl-border-default">
-                      <th className="py-4 px-4 text-left text-gray-400 font-semibold">External Role</th>
-                      <th className="py-4 px-4 text-left text-gray-400 font-semibold">Witylogix Role</th>
-                      <th className="py-4 px-4 text-left text-gray-400 font-semibold">Permissions</th>
-                      <th className="py-4 px-4 text-center text-gray-400 font-semibold">Action</th>
+                      <th className="py-4 px-4 text-left text-wl-text-secondary font-semibold">External Role</th>
+                      <th className="py-4 px-4 text-left text-wl-text-secondary font-semibold">Witylogix Role</th>
+                      <th className="py-4 px-4 text-left text-wl-text-secondary font-semibold">Permissions</th>
+                      <th className="py-4 px-4 text-center text-wl-text-secondary font-semibold">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -365,14 +365,14 @@ export default function AuthProvidersPage() {
                         className={cn('border-b border-wl-border-default', idx % 2 === 1 && 'bg-wl-bg-elevated')}
                       >
                         <td className="py-4 px-4">
-                          <code className="bg-wl-bg-root px-2 py-1 rounded text-xs text-gray-400">
+                          <code className="bg-wl-bg-root px-2 py-1 rounded text-xs text-wl-text-secondary">
                             {mapping.externalRole}
                           </code>
                         </td>
                         <td className="py-4 px-4">
                           <Badge variant="primary">{mapping.witylogixRole}</Badge>
                         </td>
-                        <td className="py-4 px-4 text-gray-400 text-xs">{mapping.permissions}</td>
+                        <td className="py-4 px-4 text-wl-text-secondary text-xs">{mapping.permissions}</td>
                         <td className="py-4 px-4 text-center">
                           <Button variant="ghost" onClick={() => setIsMappingModalOpen(true)} className="p-1 text-xs">
                             Edit
@@ -395,14 +395,14 @@ export default function AuthProvidersPage() {
           <Card className="mb-8 bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">Authentication Settings</CardTitle>
-              <CardDescription className="text-gray-400">Configure global SSO and security options</CardDescription>
+              <CardDescription className="text-wl-text-secondary">Configure global SSO and security options</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-8">
                 <div className="flex items-center justify-between pb-6 border-b border-wl-border-default">
                   <div>
                     <div className="text-sm font-semibold text-white mb-1">Just-In-Time Provisioning</div>
-                    <div className="text-sm text-gray-400">Automatically create users on first SSO login</div>
+                    <div className="text-sm text-wl-text-secondary">Automatically create users on first SSO login</div>
                   </div>
                   <Button
                     variant={jitProvisioning ? 'primary' : 'secondary'}
@@ -416,7 +416,7 @@ export default function AuthProvidersPage() {
                 <div className="flex items-center justify-between pb-6 border-b border-wl-border-default">
                   <div>
                     <div className="text-sm font-semibold text-white mb-1">Enforce MFA for All Users</div>
-                    <div className="text-sm text-gray-400">Require multi-factor authentication on login</div>
+                    <div className="text-sm text-wl-text-secondary">Require multi-factor authentication on login</div>
                   </div>
                   <Button variant="secondary" className="min-w-[100px]">Disabled</Button>
                 </div>
@@ -424,7 +424,7 @@ export default function AuthProvidersPage() {
                 <div className="flex items-start justify-between pb-6 border-b border-wl-border-default">
                   <div>
                     <div className="text-sm font-semibold text-white mb-1">Session Timeout</div>
-                    <div className="text-sm text-gray-400">Auto-logout after period of inactivity</div>
+                    <div className="text-sm text-wl-text-secondary">Auto-logout after period of inactivity</div>
                   </div>
                   <Select
                     options={[
@@ -441,7 +441,7 @@ export default function AuthProvidersPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="text-sm font-semibold text-white mb-1">IP Whitelist</div>
-                    <div className="text-sm text-gray-400">Restrict access to specific IP addresses (optional)</div>
+                    <div className="text-sm text-wl-text-secondary">Restrict access to specific IP addresses (optional)</div>
                   </div>
                   <Button variant="secondary">Manage IPs</Button>
                 </div>

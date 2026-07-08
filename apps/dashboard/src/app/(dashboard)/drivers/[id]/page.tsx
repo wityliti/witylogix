@@ -88,7 +88,7 @@ type HistoryResponse = { history: HistoryEntry[] };
 const TIER_STYLE: Record<string, { bg: string; text: string; border: string; label: string }> = {
   platinum: { bg: 'bg-indigo-500/15', text: 'text-indigo-300', border: 'border-indigo-400/30', label: 'Platinum' },
   gold:     { bg: 'bg-amber-500/15',  text: 'text-amber-300',  border: 'border-amber-400/30',  label: 'Gold' },
-  silver:   { bg: 'bg-gray-400/15',   text: 'text-gray-300',   border: 'border-gray-300/30',   label: 'Silver' },
+  silver:   { bg: 'bg-wl-neutral-400/15',   text: 'text-wl-text-secondary',   border: 'border-wl-border-subtle/30',   label: 'Silver' },
   bronze:   { bg: 'bg-orange-700/15', text: 'text-orange-400', border: 'border-orange-600/30', label: 'Bronze' },
 };
 

@@ -211,7 +211,6 @@ export function NotificationCenter({
   [rawNotifs]);
 
   // Local overlay for optimistic read/delete operations
-  const [readIds, setReadIds] = useState<Set<string>>(new Set());
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
 
   const notifications = useMemo(() =>

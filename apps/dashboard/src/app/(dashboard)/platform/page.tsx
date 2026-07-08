@@ -108,14 +108,14 @@ function ServiceRow({ service }: { service: ServiceStatus }) {
         )}
         <div>
           <h4 className="font-medium text-sm text-white">{service.name}</h4>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-wl-text-tertiary mt-0.5">
             Checked {service.lastChecked ? new Date(service.lastChecked).toLocaleTimeString() : '—'}
           </p>
         </div>
       </div>
       <div className="flex items-center gap-4">
         {service.responseTime != null && (
-          <p className="text-xs font-mono text-gray-400">{service.responseTime}ms</p>
+          <p className="text-xs font-mono text-wl-text-secondary">{service.responseTime}ms</p>
         )}
         <Badge
           variant={service.status === 'healthy' ? 'success' : service.status === 'degraded' ? 'warning' : 'danger'}
@@ -134,14 +134,14 @@ function IntegrationCard({ integration }: { integration: IntegrationStatus }) {
       <div className="flex items-start justify-between mb-3">
         <div>
           <h4 className="font-semibold text-sm text-white">{integration.name}</h4>
-          <p className="text-xs text-gray-400 capitalize">{integration.provider}</p>
+          <p className="text-xs text-wl-text-secondary capitalize">{integration.provider}</p>
         </div>
         <Badge variant={integration.status === 'connected' ? 'success' : integration.status === 'error' ? 'danger' : 'warning'}>
           {integration.status === 'connected' ? 'Connected' : integration.status === 'error' ? 'Error' : 'Inactive'}
         </Badge>
       </div>
       {integration.lastSync && (
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-wl-text-tertiary">
           Last sync: {new Date(integration.lastSync).toLocaleTimeString()}
         </p>
       )}
@@ -164,8 +164,8 @@ function AlertItem({ alert, onAcknowledge }: { alert: PlatformAlert; onAcknowled
           </Badge>
           <div>
             <h4 className="font-semibold text-sm text-white">{alert.title}</h4>
-            <p className="text-xs text-gray-400 mt-1">{alert.description}</p>
-            <p className="text-xs text-gray-500 mt-2">{new Date(alert.timestamp).toLocaleString()}</p>
+            <p className="text-xs text-wl-text-secondary mt-1">{alert.description}</p>
+            <p className="text-xs text-wl-text-tertiary mt-2">{new Date(alert.timestamp).toLocaleString()}</p>
           </div>
         </div>
         {!acked ? (
@@ -193,16 +193,16 @@ function MetricCard({ label, value, unit, sublabel }: {
   return (
     <Card className="bg-wl-bg-surface border-wl-border-default">
       <CardContent className="pt-5 pb-4">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{label}</p>
+        <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">{label}</p>
         <div className="flex items-baseline gap-1">
           {value == null ? (
-            <span className="text-2xl font-bold text-gray-500">—</span>
+            <span className="text-2xl font-bold text-wl-text-tertiary">—</span>
           ) : (
             <span className="text-2xl font-bold text-white">{value}</span>
           )}
-          {unit && value != null && <span className="text-xs text-gray-400">{unit}</span>}
+          {unit && value != null && <span className="text-xs text-wl-text-secondary">{unit}</span>}
         </div>
-        {sublabel && <p className="text-xs text-gray-500 mt-1">{sublabel}</p>}
+        {sublabel && <p className="text-xs text-wl-text-tertiary mt-1">{sublabel}</p>}
       </CardContent>
     </Card>
   );
@@ -268,7 +268,7 @@ export default function PlatformHealthPage() {
       <div className="space-y-8 bg-wl-bg-root min-h-screen p-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-white">Platform Health</h1>
-          <p className="text-gray-400 mt-2">Live system status and integration monitoring</p>
+          <p className="text-wl-text-secondary mt-2">Live system status and integration monitoring</p>
         </div>
         <ErrorState error={criticalError} onRetry={handleRefresh} />
       </div>
@@ -281,7 +281,7 @@ export default function PlatformHealthPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-white">Platform Health</h1>
-          <p className="text-gray-400 mt-2">Live system status and integration monitoring</p>
+          <p className="text-wl-text-secondary mt-2">Live system status and integration monitoring</p>
         </div>
         <Button onClick={handleRefresh} disabled={loading} variant="primary">
           <RefreshCw className={cn('w-4 h-4 mr-2', loading && 'animate-spin')} />
@@ -376,7 +376,7 @@ export default function PlatformHealthPage() {
               ))}
             </div>
           ) : services.length === 0 ? (
-            <div className="py-8 text-center text-gray-400 text-sm">
+            <div className="py-8 text-center text-wl-text-secondary text-sm">
               No services reported
             </div>
           ) : (
@@ -408,8 +408,8 @@ export default function PlatformHealthPage() {
             </div>
           ) : integrations.length === 0 ? (
             <div className="py-8 text-center">
-              <p className="text-sm text-gray-400">No integrations installed</p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-sm text-wl-text-secondary">No integrations installed</p>
+              <p className="text-xs text-wl-text-tertiary mt-1">
                 Connect your first integration from the{' '}
                 <a href="/integrations/catalog" className="text-blue-400 hover:underline">
                   Integration Catalog
@@ -440,8 +440,8 @@ export default function PlatformHealthPage() {
               <div className="w-8 h-8 mx-auto mb-3 rounded-full bg-emerald-500/10 flex items-center justify-center">
                 <span className="text-emerald-500 text-lg">✓</span>
               </div>
-              <p className="text-sm text-gray-400">No active alerts</p>
-              <p className="text-xs text-gray-500 mt-1">All systems operating normally</p>
+              <p className="text-sm text-wl-text-secondary">No active alerts</p>
+              <p className="text-xs text-wl-text-tertiary mt-1">All systems operating normally</p>
             </div>
           ) : (
             alerts.map((alert) => (

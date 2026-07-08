@@ -63,30 +63,6 @@ export default function CollectionsPage() {
   const [sortBy, setSortBy] = useState<"title" | "productCount" | "lastUpdated">("title");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const handleRemoveProduct = async (collectionId: string, productId: string) => {
-    setRemovingProductId(productId);
-    try {
-      await api.delete(`/api/v4/collections/${collectionId}/products`, {
-        body: JSON.stringify({ productIds: [productId] }),
-      });
-      await refetch();
-    } finally {
-      setRemovingProductId(null);
-    }
-  };
-
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<"all" | "auto" | "manual">("all");
-  const [expandedCollection, setExpandedCollection] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<"title" | "productCount" | "lastUpdated">("title");
-  const [currentPage, setCurrentPage] = useState(1);
-
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
   const pageSize = 10;
 
   const totalCollections = items.length;
@@ -153,7 +129,7 @@ export default function CollectionsPage() {
         {/* Filters */}
         <div className="flex gap-4 mb-5 items-center flex-wrap">
           <div className="flex-1 min-w-[300px] max-w-[400px] relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-wl-text-secondary" />
             <input
               type="text"
               placeholder="Search collections..."
@@ -172,7 +148,7 @@ export default function CollectionsPage() {
                   "px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer transition-all capitalize",
                   typeFilter === type
                     ? "bg-blue-500 text-white border-blue-500"
-                    : "bg-transparent text-gray-400 border-wl-border-default"
+                    : "bg-transparent text-wl-text-secondary border-wl-border-default"
                 )}
               >
                 {type === "all" ? "All Types" : type}
@@ -197,19 +173,19 @@ export default function CollectionsPage() {
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-wl-border-default bg-wl-bg-root">
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400 w-10"> </th>
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Title</th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Type</th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Products</th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Status</th>
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Last Updated</th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Actions</th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary w-10"> </th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Title</th>
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Type</th>
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Products</th>
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Status</th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Last Updated</th>
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedItems.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-gray-400">
+                    <td colSpan={7} className="py-12 text-center text-wl-text-secondary">
                       No collections found
                     </td>
                   </tr>
@@ -224,7 +200,7 @@ export default function CollectionsPage() {
                       )}
                     >
                       <td
-                        className="p-3 px-4 text-center cursor-pointer text-gray-400"
+                        className="p-3 px-4 text-center cursor-pointer text-wl-text-secondary"
                         onClick={() => setExpandedCollection(expandedCollection === collection.id ? null : collection.id)}
                       >
                         {expandedCollection === collection.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -237,7 +213,7 @@ export default function CollectionsPage() {
                       <td className="p-3 px-4 text-center">
                         <Badge variant={collection.status === "active" ? "success" : "warning"}>{collection.status}</Badge>
                       </td>
-                      <td className="p-3 px-4 text-gray-400 text-xs">{formatDateTime(collection.lastUpdated)}</td>
+                      <td className="p-3 px-4 text-wl-text-secondary text-xs">{formatDateTime(collection.lastUpdated)}</td>
                       <td className="p-3 px-4 text-center">
                         <div className="flex gap-1 justify-center">
                           <Button variant="secondary" size="sm"><Edit2 size={14} /></Button>
@@ -252,10 +228,10 @@ export default function CollectionsPage() {
                           <div className="p-4">
                             <div className="grid gap-6 grid-cols-[200px_1fr]">
                               <div>
-                                <div className="bg-wl-bg-elevated border border-dashed border-wl-border-default rounded-lg h-45 flex items-center justify-center mb-3 text-gray-500">
+                                <div className="bg-wl-bg-elevated border border-dashed border-wl-border-default rounded-lg h-45 flex items-center justify-center mb-3 text-wl-text-tertiary">
                                   <ImageIcon size={32} opacity={0.5} />
                                 </div>
-                                <p className="text-xs text-gray-400 m-0">{collection.description}</p>
+                                <p className="text-xs text-wl-text-secondary m-0">{collection.description}</p>
                               </div>
 
                               <div>
@@ -263,10 +239,10 @@ export default function CollectionsPage() {
                                 <div className="flex flex-col gap-2 mb-4">
                                   {collection.products?.map((product) => (
                                     <div key={product.id} className="flex items-center gap-3 p-2 px-3 bg-wl-bg-elevated rounded-lg hover:bg-wl-bg-elevated/80 transition-colors">
-                                      <GripVertical size={14} className="text-gray-500 cursor-grab" />
+                                      <GripVertical size={14} className="text-wl-text-tertiary cursor-grab" />
                                       <div className="flex-1">
                                         <p className="text-sm text-white m-0 font-medium">{product.title}</p>
-                                        <p className="text-xs text-gray-400 m-0 mt-1">SKU: {product.sku}</p>
+                                        <p className="text-xs text-wl-text-secondary m-0 mt-1">SKU: {product.sku}</p>
                                       </div>
                                       <Button
                                         variant="danger"
@@ -279,7 +255,7 @@ export default function CollectionsPage() {
                                     </div>
                                   ))}
                                   {(!collection.products || collection.products.length === 0) && (
-                                    <p className="text-sm text-gray-500 italic">No products in this collection</p>
+                                    <p className="text-sm text-wl-text-tertiary italic">No products in this collection</p>
                                   )}
                                 </div>
 
@@ -288,7 +264,7 @@ export default function CollectionsPage() {
                                     <h4 className="text-sm font-semibold text-white mb-2">Sort Rules</h4>
                                     <ul className="list-none p-0 m-0 flex flex-col gap-2">
                                       {collection.sortRules.map((rule, rIdx) => (
-                                        <li key={rIdx} className="text-sm text-gray-400 p-2 px-3 bg-wl-bg-elevated rounded-lg">
+                                        <li key={rIdx} className="text-sm text-wl-text-secondary p-2 px-3 bg-wl-bg-elevated rounded-lg">
                                           {rule}
                                         </li>
                                       ))}
@@ -307,7 +283,7 @@ export default function CollectionsPage() {
             </table>
           </div>
 
-          <div className="flex items-center justify-between p-4 border-t border-wl-border-default bg-wl-bg-elevated/40 text-sm text-gray-400">
+          <div className="flex items-center justify-between p-4 border-t border-wl-border-default bg-wl-bg-elevated/40 text-sm text-wl-text-secondary">
             <div>
               Showing {paginatedItems.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{" "}
               {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length}

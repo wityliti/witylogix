@@ -233,7 +233,7 @@ export default function LastMileIntegrationPage() {
           ) : (partners ?? []).length === 0 ? (
             <Card>
               <CardContent>
-                <div className="py-8 text-center text-gray-400 text-sm">
+                <div className="py-8 text-center text-wl-text-secondary text-sm">
                   No courier partners configured. Add a courier to start dispatching deliveries.
                 </div>
               </CardContent>
@@ -268,7 +268,7 @@ export default function LastMileIntegrationPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-2 text-xs text-gray-400 mb-3">
+                    <div className="space-y-2 text-xs text-wl-text-secondary mb-3">
                       <div className="flex justify-between">
                         <span>Active Deliveries:</span>
                         <span className="text-white font-semibold">
@@ -319,10 +319,10 @@ export default function LastMileIntegrationPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-wl-border-default">
-                      <th className="p-3 text-left font-semibold text-gray-400">Provider</th>
-                      <th className="p-3 text-center font-semibold text-gray-400">Active</th>
-                      <th className="p-3 text-center font-semibold text-gray-400">Total</th>
-                      <th className="p-3 text-center font-semibold text-gray-400">Success Rate</th>
+                      <th className="p-3 text-left font-semibold text-wl-text-secondary">Provider</th>
+                      <th className="p-3 text-center font-semibold text-wl-text-secondary">Active</th>
+                      <th className="p-3 text-center font-semibold text-wl-text-secondary">Total</th>
+                      <th className="p-3 text-center font-semibold text-wl-text-secondary">Success Rate</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -341,7 +341,7 @@ export default function LastMileIntegrationPage() {
                           {stat.successRate != null ? (
                             <Badge variant="success">{stat.successRate}%</Badge>
                           ) : (
-                            <span className="text-gray-500">—</span>
+                            <span className="text-wl-text-tertiary">—</span>
                           )}
                         </td>
                       </tr>
@@ -368,7 +368,7 @@ export default function LastMileIntegrationPage() {
                       'px-2 py-1 text-xs font-semibold rounded border capitalize transition-all',
                       deliveryFilter === s
                         ? 'bg-blue-500 text-white border-blue-500'
-                        : 'bg-transparent text-gray-400 border-wl-border-default'
+                        : 'bg-transparent text-wl-text-secondary border-wl-border-default'
                     )}
                   >
                     {s === 'all' ? 'All' : s === 'IN_TRANSIT' ? 'Transit' : s.charAt(0) + s.slice(1).toLowerCase()}
@@ -386,7 +386,7 @@ export default function LastMileIntegrationPage() {
               ) : deliveriesError ? (
                 <div className="py-4 text-center text-red-400 text-sm">{deliveriesError.message}</div>
               ) : (deliveries ?? []).length === 0 ? (
-                <div className="py-8 text-center text-gray-400 text-sm">No deliveries found.</div>
+                <div className="py-8 text-center text-wl-text-secondary text-sm">No deliveries found.</div>
               ) : (
                 <div className="space-y-2">
                   {(deliveries ?? []).map((d) => (
@@ -408,20 +408,20 @@ export default function LastMileIntegrationPage() {
                           <p className="text-xs font-semibold text-white truncate">
                             {d.externalId}
                           </p>
-                          <p className="text-xs text-gray-400">{d.partner.name}</p>
+                          <p className="text-xs text-wl-text-secondary">{d.partner.name}</p>
                         </div>
                         <Badge variant={getDeliveryStatusVariant(d.status)} className="text-xs ml-2 shrink-0">
                           {d.status.replace(/_/g, ' ')}
                         </Badge>
                       </div>
-                      <div className="flex items-center justify-between text-xs text-gray-400">
+                      <div className="flex items-center justify-between text-xs text-wl-text-secondary">
                         <span>{d.driverName ?? 'Unassigned'}</span>
                         <span>
                           {d.quote?.distanceKm != null ? `${d.quote.distanceKm} km` : ''}
                           {d.actualCost != null ? ` · ${formatCurrency(d.actualCost)}` : ''}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">{formatRelative(d.createdAt)}</p>
+                      <p className="text-xs text-wl-text-tertiary mt-1">{formatRelative(d.createdAt)}</p>
                     </div>
                   ))}
                 </div>
@@ -442,7 +442,7 @@ export default function LastMileIntegrationPage() {
                       'px-2 py-1 text-xs font-semibold rounded border capitalize transition-all',
                       driverFilter === s
                         ? 'bg-blue-500 text-white border-blue-500'
-                        : 'bg-transparent text-gray-400 border-wl-border-default'
+                        : 'bg-transparent text-wl-text-secondary border-wl-border-default'
                     )}
                   >
                     {s === 'all' ? 'All' : s === 'ON_ROUTE' ? 'En Route' : s.charAt(0) + s.slice(1).toLowerCase()}
@@ -458,7 +458,7 @@ export default function LastMileIntegrationPage() {
                   ))}
                 </div>
               ) : (drivers ?? []).length === 0 ? (
-                <div className="py-8 text-center text-gray-400 text-sm">No drivers found.</div>
+                <div className="py-8 text-center text-wl-text-secondary text-sm">No drivers found.</div>
               ) : (
                 <div className="space-y-2">
                   {(drivers ?? []).map((driver) => (
@@ -476,7 +476,7 @@ export default function LastMileIntegrationPage() {
                       <div className="flex items-start justify-between mb-1">
                         <div>
                           <p className="text-sm font-semibold text-white">{driver.name}</p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-wl-text-secondary">
                             {driver.vehicleType ?? 'Vehicle unknown'}
                           </p>
                         </div>
@@ -484,7 +484,7 @@ export default function LastMileIntegrationPage() {
                           {driver.status.replace(/_/g, ' ')}
                         </Badge>
                       </div>
-                      <div className="flex justify-between text-xs text-gray-400 mt-1">
+                      <div className="flex justify-between text-xs text-wl-text-secondary mt-1">
                         <span>Active orders: {driver._count.orders}</span>
                         {driver.lastLocationAt && (
                           <span>Seen {formatRelative(driver.lastLocationAt)}</span>

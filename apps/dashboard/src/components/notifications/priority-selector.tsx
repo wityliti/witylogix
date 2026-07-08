@@ -54,8 +54,8 @@ const PRIORITY_CONFIG: Record<NotificationPriority, PriorityConfig> = {
     label: "Low",
     description: "Low priority. Can be batched or delayed.",
     color: "text-[var(--wl-text-primary)]",
-    bgColor: "bg-gray-500",
-    borderColor: "border-gray-400",
+    bgColor: "bg-wl-bg-overlay",
+    borderColor: "border-wl-border-subtle",
     icon: Clock,
   },
   digest: {

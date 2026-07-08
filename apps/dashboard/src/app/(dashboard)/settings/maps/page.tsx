@@ -143,7 +143,7 @@ export default function MapsSettingsPage() {
               <Map className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-emerald-400">Maps work without an API key</p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-wl-text-secondary mt-1">
                   All dashboard maps use free CARTO basemaps (MapLibre GL) — no API key required. The
                   optional Google Maps API key below enables enhanced geocoding, places autocomplete, and
                   satellite imagery features only.
@@ -167,20 +167,20 @@ export default function MapsSettingsPage() {
                 Google Cloud Console →
               </a>
             </div>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-wl-text-secondary mt-1">
               Required only for Places autocomplete, geocoding, and satellite view. Leave empty to use
               keyless CARTO maps.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+              <label className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider block mb-2">
                 API Key
               </label>
               {!isEditingApiKey ? (
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 px-4 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-gray-400 font-mono text-sm">
-                    {maskedKey || <span className="text-gray-500 italic">Not configured (keyless CARTO active)</span>}
+                  <div className="flex-1 px-4 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-wl-text-secondary font-mono text-sm">
+                    {maskedKey || <span className="text-wl-text-tertiary italic">Not configured (keyless CARTO active)</span>}
                   </div>
                   {maskedKey && <Badge variant="success" dot>Configured</Badge>}
                   <Button
@@ -214,7 +214,7 @@ export default function MapsSettingsPage() {
                     className={cn(
                       'w-full px-4 py-2.5 rounded-md',
                       'bg-wl-bg-root border border-wl-border-default',
-                      'text-white placeholder:text-gray-500',
+                      'text-white placeholder:text-wl-text-tertiary',
                       'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
                       'font-mono text-sm'
                     )}
@@ -291,7 +291,7 @@ export default function MapsSettingsPage() {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+                <label className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider block mb-2">
                   Default Latitude
                 </label>
                 <input
@@ -313,7 +313,7 @@ export default function MapsSettingsPage() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+                <label className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider block mb-2">
                   Default Longitude
                 </label>
                 <input
@@ -335,7 +335,7 @@ export default function MapsSettingsPage() {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+                <label className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider block mb-2">
                   Default Zoom Level: <span className="text-white">{config.defaultZoom}</span>
                 </label>
                 <input
@@ -346,7 +346,7 @@ export default function MapsSettingsPage() {
                   onChange={e => handleSettingChange('defaultZoom', parseInt(e.target.value))}
                   className="w-full accent-blue-500"
                 />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <div className="flex justify-between text-xs text-wl-text-tertiary mt-1">
                   <span>1 — World</span>
                   <span>10 — City</span>
                   <span>18 — Street</span>
@@ -373,7 +373,7 @@ export default function MapsSettingsPage() {
                 >
                   <div>
                     <p className="text-sm font-semibold text-white">{label}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+                    <p className="text-xs text-wl-text-secondary mt-0.5">{desc}</p>
                   </div>
                   <button
                     role="switch"
@@ -406,7 +406,7 @@ export default function MapsSettingsPage() {
               <Settings2 className="w-4 h-4 text-blue-400" />
               Preview
             </CardTitle>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-wl-text-secondary mt-1">
               This is how your default map view will appear across the dashboard.
             </p>
           </CardHeader>
@@ -417,7 +417,7 @@ export default function MapsSettingsPage() {
                 zoom={config.defaultZoom}
               />
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-wl-text-tertiary mt-2">
               Map rendered with free CARTO basemaps (keyless). Adjust lat/lng/zoom above and save to update.
             </p>
           </CardContent>

@@ -130,7 +130,7 @@ export default function SupplyChainPage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-white">Supply Chain</h1>
-              <p className="text-sm text-gray-400 mt-1">Inventory, orders, and warehouse operations</p>
+              <p className="text-sm text-wl-text-secondary mt-1">Inventory, orders, and warehouse operations</p>
             </div>
             <div className="flex gap-3">
               <Button variant="secondary" size="md">
@@ -176,7 +176,7 @@ export default function SupplyChainPage() {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex-1 cursor-pointer" onClick={() => setSelectedStage(selectedStage === stage.stage ? null : stage.stage)}>
                         <h4 className="font-medium text-white">{stage.stage}</h4>
-                        <p className="text-xs text-gray-500">{stage.count} orders</p>
+                        <p className="text-xs text-wl-text-tertiary">{stage.count} orders</p>
                       </div>
                       <Badge variant={stage.status === 'healthy' ? 'success' : stage.status === 'warning' ? 'warning' : 'danger'}>
                         {stage.count}
@@ -198,21 +198,21 @@ export default function SupplyChainPage() {
                 <div className="mt-6 p-4 rounded-lg bg-wl-bg-elevated border border-wl-border-default">
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div>
-                      <span className="text-gray-400">Total Orders:</span>
+                      <span className="text-wl-text-secondary">Total Orders:</span>
                       <p className="font-semibold text-white mt-1">
                         {pipelineStages.reduce((sum, s) => sum + s.count, 0)}
                       </p>
                     </div>
                     <div>
-                      <span className="text-gray-400">Avg Process Time:</span>
+                      <span className="text-wl-text-secondary">Avg Process Time:</span>
                       <p className="font-semibold text-white mt-1">{avgProcessTime !== null ? `${avgProcessTime} days` : '—'}</p>
                     </div>
                     <div>
-                      <span className="text-gray-400">On-Time Rate:</span>
+                      <span className="text-wl-text-secondary">On-Time Rate:</span>
                       <p className="font-semibold text-white mt-1">{onTimeRate}%</p>
                     </div>
                     <div>
-                      <span className="text-gray-400">Backlog:</span>
+                      <span className="text-wl-text-secondary">Backlog:</span>
                       <p className="font-semibold text-white mt-1">{backlogOrders} orders</p>
                     </div>
                   </div>
@@ -242,7 +242,7 @@ export default function SupplyChainPage() {
                         style={{ width: `${wh.utilizationPercentage}%` }}
                       />
                     </div>
-                    <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                    <div className="flex gap-4 mt-2 text-xs text-wl-text-tertiary">
                       <span>{wh.activeOrders} active orders</span>
                       <span>{wh.pendingPutaway} pending putaway</span>
                       <span>{wh.cycleCountsScheduled} cycle counts</span>
@@ -253,9 +253,9 @@ export default function SupplyChainPage() {
                 {/* Warehouse Summary */}
                 <div className="mt-6 p-4 rounded-lg bg-wl-bg-elevated border border-wl-border-default">
                   <div className="text-center">
-                    <p className="text-xs text-gray-400 mb-1">Highest Utilization</p>
+                    <p className="text-xs text-wl-text-secondary mb-1">Highest Utilization</p>
                     <p className="text-lg font-bold text-white">{warehouse.highestUtilization.name}</p>
-                    <p className="text-xs text-gray-500 mt-1">{warehouse.highestUtilization.utilizationPercentage.toFixed(1)}% capacity used</p>
+                    <p className="text-xs text-wl-text-tertiary mt-1">{warehouse.highestUtilization.utilizationPercentage.toFixed(1)}% capacity used</p>
                   </div>
                 </div>
               </div>
@@ -281,14 +281,14 @@ export default function SupplyChainPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
                         <div className="w-3 h-3 rounded-full bg-blue-500" />
-                        <span className="text-xs text-gray-400">Demand:</span>
+                        <span className="text-xs text-wl-text-secondary">Demand:</span>
                         <span className="text-sm font-semibold text-white flex-1">{data.demand.toLocaleString()} units</span>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
                         <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                        <span className="text-xs text-gray-400">Supply:</span>
+                        <span className="text-xs text-wl-text-secondary">Supply:</span>
                         <span className="text-sm font-semibold text-white flex-1">{data.supply.toLocaleString()} units</span>
                       </div>
                     </div>
@@ -310,11 +310,11 @@ export default function SupplyChainPage() {
                   <div className="flex items-center justify-between mb-2">
                     <div>
                       <h4 className="font-medium text-white">{item.category}</h4>
-                      <p className="text-xs text-gray-500">{item.description}</p>
+                      <p className="text-xs text-wl-text-tertiary">{item.description}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold text-white">{item.count} SKUs</p>
-                      <p className="text-xs text-gray-500">{item.percentage}% of inventory</p>
+                      <p className="text-xs text-wl-text-tertiary">{item.percentage}% of inventory</p>
                     </div>
                   </div>
                   <div className="w-full bg-wl-bg-elevated rounded-full h-2">
@@ -332,21 +332,21 @@ export default function SupplyChainPage() {
                 <Plus className="w-4 h-4 mr-2" />
                 Create Transfer Order
               </Button>
-              <p className="text-xs text-gray-500 text-center">Move inventory between warehouses</p>
+              <p className="text-xs text-wl-text-tertiary text-center">Move inventory between warehouses</p>
             </Card>
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:border-emerald-500/30 transition-colors">
               <Button variant="primary" className="w-full mb-3">
                 <Plus className="w-4 h-4 mr-2" />
                 Schedule Cycle Count
               </Button>
-              <p className="text-xs text-gray-500 text-center">Plan inventory verification</p>
+              <p className="text-xs text-wl-text-tertiary text-center">Plan inventory verification</p>
             </Card>
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:border-amber-500/30 transition-colors">
               <Button variant="primary" className="w-full mb-3">
                 <Plus className="w-4 h-4 mr-2" />
                 Process Reorders
               </Button>
-              <p className="text-xs text-gray-500 text-center">Create purchase orders for low stock</p>
+              <p className="text-xs text-wl-text-tertiary text-center">Create purchase orders for low stock</p>
             </Card>
           </div>
         </div>
