@@ -26,10 +26,10 @@ export default function CalendarPage() {
   const [filterType, setFilterType] = useState<string>("all");
   const [selectedZone, setSelectedZone] = useState<string>("all");
 
-  const { items: rules, loading, error } = useApiList<CalendarRule>("/api/v4/calendar-rules");
+  const { items: rules, loading, error, refetch } = useApiList<CalendarRule>("/api/v4/calendar-rules");
 
   if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const filtered = rules.filter((rule) => {
     if (filterType !== "all" && rule.type !== filterType) return false;

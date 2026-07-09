@@ -57,7 +57,7 @@ interface ShopStats {
 
 export default function StoresManagement() {
   const { data: shop, loading: shopLoading, error: shopError, refetch: refetchShop } = useApiQuery<ShopProfile>('/api/v4/shops/me');
-  const { data: stats, loading: statsLoading, refetch: refetchStats } = useApiQuery<ShopStats>('/api/v4/shops/me/stats');
+  const { data: stats, loading: statsLoading, error: statsError, refetch: refetchStats } = useApiQuery<ShopStats>('/api/v4/shops/me/stats');
   const { data: zonesGeoJson, loading: zonesLoading } = useZonesGeoJson();
 
   const loading = shopLoading || statsLoading;
@@ -97,6 +97,12 @@ export default function StoresManagement() {
       </div>
 
       <div className="p-6">
+        {statsError && !statsLoading && shop && (
+          <div className="mb-4 px-4 py-2 rounded-md bg-wl-warning-bg/20 border border-wl-warning-400/30 text-wl-warning-400 text-sm flex items-center justify-between">
+            <span>Could not load store statistics. Some counts may be unavailable.</span>
+            <button onClick={refetchStats} className="text-xs underline hover:no-underline">Retry</button>
+          </div>
+        )}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {Array.from({ length: 4 }).map((_, i) => (

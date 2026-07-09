@@ -121,6 +121,7 @@ export default function PartnersPage() {
   const {
     data: partnerStatsData,
     loading: statsLoading,
+    error: partnerStatsError,
   } = useApiQuery<PartnerStatsResponse>("/api/v4/couriers/partner-stats");
 
   const statsByProvider = useMemo<Map<string, PartnerStat>>(() => {
@@ -239,6 +240,12 @@ export default function PartnersPage() {
         averageCostPerDelivery={stats.averageCostPerDelivery}
         isLoading={loading}
       />
+
+      {partnerStatsError && !statsLoading && (
+        <div className="px-4 py-2 rounded-md bg-wl-warning-bg/20 border border-wl-warning-400/30 text-wl-warning-400 text-sm">
+          Delivery statistics unavailable — some metrics may be incomplete.
+        </div>
+      )}
 
       {/* Filters & View Controls */}
       <Card className="flex flex-col gap-4 lg:flex-row lg:items-end lg:gap-3">

@@ -16,6 +16,7 @@ import { DataImport } from "./steps/data-import";
 import { ReviewSummary } from "./steps/review-summary";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import type { OnboardingData } from "./types";
+import { api } from "@/lib/api";
 
 type MainStep = "verify-email" | "choose-deployment" | "configure-workspace";
 type SubStep =
@@ -84,35 +85,30 @@ export default function OnboardingPage() {
 
     const loadProgress = async () => {
       try {
-        const res = await fetch(`${API_URL}/onboarding/progress`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const body = await api.get<{
+          data: Record<string, unknown> | null;
+          completed?: boolean;
+        }>('/api/v4/onboarding/progress');
         if (cancelled) return;
-        if (res.ok) {
-          const body = (await res.json()) as {
-            data: Record<string, unknown> | null;
-            completed?: boolean;
-          };
-          const progress = body.data;
-          if (body.completed) {
-            router.push("/");
-            return;
+        const progress = body.data;
+        if (body.completed) {
+          router.push("/");
+          return;
+        }
+        if (progress && typeof progress === "object") {
+          const step = progress.currentStep as MainStep;
+          const sub = progress.currentSubStep as SubStep;
+          if (step && mainSteps.some((s) => s.id === step)) {
+            setCurrentMainStep(step);
           }
-          if (progress && typeof progress === "object") {
-            const step = progress.currentStep as MainStep;
-            const sub = progress.currentSubStep as SubStep;
-            if (step && mainSteps.some((s) => s.id === step)) {
-              setCurrentMainStep(step);
-            }
-            if (sub && subSteps.some((s) => s.id === sub)) {
-              setCurrentSubStep(sub);
-            }
-            if (progress.data && typeof progress.data === "object") {
-              setData((prev) => ({
-                ...prev,
-                ...(progress.data as Partial<OnboardingData>),
-              }));
-            }
+          if (sub && subSteps.some((s) => s.id === sub)) {
+            setCurrentSubStep(sub);
+          }
+          if (progress.data && typeof progress.data === "object") {
+            setData((prev) => ({
+              ...prev,
+              ...(progress.data as Partial<OnboardingData>),
+            }));
           }
         }
       } catch (err) {
@@ -126,7 +122,7 @@ export default function OnboardingPage() {
     return () => {
       cancelled = true;
     };
-  }, [token, API_URL, router]);
+  }, [token, router]);
 
   useEffect(() => {
     if (!user?.email) return;
@@ -141,18 +137,11 @@ export default function OnboardingPage() {
     if (!token || !progressHydrated) return;
 
     const handle = setTimeout(() => {
-      void fetch(`${API_URL}/onboarding/progress`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          currentStep: currentMainStep,
-          currentSubStep:
-            currentMainStep === "configure-workspace" ? currentSubStep : undefined,
-          data,
-        }),
+      void api.put('/api/v4/onboarding/progress', {
+        currentStep: currentMainStep,
+        currentSubStep:
+          currentMainStep === "configure-workspace" ? currentSubStep : undefined,
+        data,
       }).catch((err) => {
         console.warn("Failed to persist onboarding progress:", err);
       });
@@ -161,7 +150,6 @@ export default function OnboardingPage() {
     return () => clearTimeout(handle);
   }, [
     token,
-    API_URL,
     currentMainStep,
     currentSubStep,
     data,
@@ -258,28 +246,16 @@ export default function OnboardingPage() {
       return;
     }
     try {
-      const res = await fetch(`${API_URL}/onboarding/complete`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          workspaceName: data.companyName || "default-workspace",
-          deploymentType: data.deploymentType === "cloud" ? "CLOUD" : "SELF_MANAGED",
-          industry: data.industry,
-          goals: data.goals,
-          selectedIntegrations: data.integrations,
-          dashboardLayout: data.dashboardLayout ? { type: data.dashboardLayout } : undefined,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
-        }),
+      await api.post('/api/v4/onboarding/complete', {
+        workspaceName: data.companyName || "default-workspace",
+        deploymentType: data.deploymentType === "cloud" ? "CLOUD" : "SELF_MANAGED",
+        industry: data.industry,
+        goals: data.goals,
+        selectedIntegrations: data.integrations,
+        dashboardLayout: data.dashboardLayout ? { type: data.dashboardLayout } : undefined,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
       });
-
-      if (res.ok) {
-        router.push("/");
-      } else {
-        console.error("Failed to complete onboarding:", await res.text());
-      }
+      router.push("/");
     } catch (err) {
       console.error("Failed to complete onboarding:", err);
       // Fallback: redirect anyway

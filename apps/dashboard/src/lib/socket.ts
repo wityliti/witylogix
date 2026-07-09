@@ -54,6 +54,8 @@ import type {
 } from "@witylogix/core/realtime";
 import { EVENTS, SUBSCRIPTIONS } from "@witylogix/core/realtime";
 
+const isDev = process.env.NODE_ENV === 'development';
+
 // ─── Types ──────────────────────────────────────────────────
 
 export interface SocketEvent {
@@ -155,14 +157,14 @@ export function useSocket(shopId?: string, options: UseSocketOptions = {}): UseS
     // ─── Connection Events ──────────────────────────────
 
     socketInstance.on("connect", () => {
-      console.log("[Socket] Connected:", socketInstance.id);
+      if (isDev) console.log("[Socket] Connected:", socketInstance.id);
       setIsConnected(true);
       setIsConnecting(false);
       setError(null);
     });
 
     socketInstance.on("disconnect", (reason) => {
-      console.log("[Socket] Disconnected:", reason);
+      if (isDev) console.log("[Socket] Disconnected:", reason);
       setIsConnected(false);
     });
 
@@ -226,7 +228,7 @@ export function useSocket(shopId?: string, options: UseSocketOptions = {}): UseS
 
     socketRef.current.emit(SUBSCRIPTIONS.SUBSCRIBE_SHOP, targetShopId, (ack: boolean) => {
       if (ack) {
-        console.log("[Socket] Subscribed to shop:", targetShopId);
+        if (isDev) console.log("[Socket] Subscribed to shop:", targetShopId);
       } else {
         console.error("[Socket] Failed to subscribe to shop:", targetShopId);
         setError(`Failed to subscribe to shop ${targetShopId}`);
@@ -244,7 +246,7 @@ export function useSocket(shopId?: string, options: UseSocketOptions = {}): UseS
       targetShopId,
       (ack: boolean) => {
         if (ack) {
-          console.log("[Socket] Unsubscribed from shop:", targetShopId);
+          if (isDev) console.log("[Socket] Unsubscribed from shop:", targetShopId);
         }
       },
     );
@@ -260,7 +262,7 @@ export function useSocket(shopId?: string, options: UseSocketOptions = {}): UseS
 
     socketRef.current.emit(SUBSCRIPTIONS.SUBSCRIBE_SHIPMENT, shipmentId, (ack: boolean) => {
       if (ack) {
-        console.log("[Socket] Subscribed to shipment:", shipmentId);
+        if (isDev) console.log("[Socket] Subscribed to shipment:", shipmentId);
       } else {
         console.error("[Socket] Failed to subscribe to shipment:", shipmentId);
       }
@@ -277,7 +279,7 @@ export function useSocket(shopId?: string, options: UseSocketOptions = {}): UseS
 
     socketRef.current.emit(SUBSCRIPTIONS.SUBSCRIBE_DRIVER, driverId, (ack: boolean) => {
       if (ack) {
-        console.log("[Socket] Subscribed to driver:", driverId);
+        if (isDev) console.log("[Socket] Subscribed to driver:", driverId);
       } else {
         console.error("[Socket] Failed to subscribe to driver:", driverId);
       }
