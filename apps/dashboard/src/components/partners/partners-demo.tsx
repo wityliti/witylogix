@@ -170,8 +170,8 @@ export function PartnersDemo() {
             <CourierPartnerCard
               key={partner.id}
               {...partner}
-              onView={(id) => console.log("View partner:", id)}
-              onDispatch={(id) => console.log("Dispatch to:", id)}
+              onView={() => undefined}
+              onDispatch={() => undefined}
             />
           ))}
         </div>

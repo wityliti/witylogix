@@ -60,7 +60,7 @@ export function FormRadio({
   name?: string;
   cardStyle?: boolean;
 }) {
-  const radioId = `radio-${option.value}-${Math.random().toString(36).substr(2, 9)}`;
+  const radioId = `radio-${option.value}-${crypto.randomUUID()}`;
 
   if (cardStyle) {
     return (
@@ -169,7 +169,7 @@ export function FormRadioGroup({
   cardStyle = false,
   hasError = false,
   disabled = false,
-  name = `radio-group-${Math.random().toString(36).substr(2, 9)}`,
+  name = crypto.randomUUID(),
 }: FormRadioGroupProps) {
   return (
     <div

@@ -78,7 +78,7 @@ interface DriverPerformanceMapViewProps {
 export default function DriverPerformanceMapView({ drivers }: DriverPerformanceMapViewProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const { data: apiDrivers } = useApiQuery<ApiDriver[]>('/api/v4/drivers');
+  const { data: apiDrivers, loading: driversLoading } = useApiQuery<ApiDriver[]>('/api/v4/drivers');
 
   const markers = useMemo<DriverMarker[]>(() => {
     if (!apiDrivers?.length) return [];
@@ -106,6 +106,12 @@ export default function DriverPerformanceMapView({ drivers }: DriverPerformanceM
   }, [apiDrivers, drivers]);
 
   const selectedDriver = drivers.find(d => d.id === selectedId);
+
+  if (driversLoading) {
+    return (
+      <div className="w-full h-full bg-wl-bg-sunken animate-pulse rounded-xl border border-wl-border-default" />
+    );
+  }
 
   if (markers.length === 0) {
     return (

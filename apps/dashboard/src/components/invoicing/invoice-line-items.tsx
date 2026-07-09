@@ -30,7 +30,7 @@ const billingRuleLabels: Record<BillingRule, string> = {
 };
 
 function generateId(): string {
-  return `item_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+  return crypto.randomUUID();
 }
 
 function calculateAmount(quantity: number, unitPrice: number, taxRate: number): number {

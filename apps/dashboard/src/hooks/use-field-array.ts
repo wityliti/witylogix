@@ -67,7 +67,7 @@ interface FormInstance {
  * Generate a unique ID for each field item
  */
 function generateId(): string {
-  return `field-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return crypto.randomUUID();
 }
 
 /**

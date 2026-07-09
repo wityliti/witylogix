@@ -296,7 +296,7 @@ export function ComposerAttachments() {
         setAttachments((prev) => [
           ...prev,
           {
-            id: Math.random().toString(36).slice(2),
+            id: crypto.randomUUID(),
             name: file.name,
             url,
             size: file.size,
@@ -317,7 +317,7 @@ export function ComposerAttachments() {
         setAttachments((prev) => [
           ...prev,
           {
-            id: Math.random().toString(36).slice(2),
+            id: crypto.randomUUID(),
             name: file.name,
             url,
             size: file.size,
