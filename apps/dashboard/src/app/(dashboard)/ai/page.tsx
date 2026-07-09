@@ -84,9 +84,11 @@ function useFeatureUsageCounts() {
   const slots = useApiQuery<SlotStats>('/api/ai/slots/recommend');
 
   const isLoading = eta.loading || leaderboard.loading || demand.loading || slots.loading;
+  const hasError = !isLoading && !!(eta.error || leaderboard.error || demand.error || slots.error);
 
   return {
     isLoading,
+    hasError,
     counts: {
       '/api/ai/eta/statistics': eta.data?.totalPredictions30d ?? eta.data?.count ?? 0,
       '/api/ai/analytics/leaderboard': leaderboard.data?.totalEntries ?? leaderboard.data?.count ?? 0,
@@ -152,7 +154,7 @@ function AiFeatureCard({ card, usageCount }: { card: FeatureCard; usageCount: nu
 }
 
 export default function AiHubPage() {
-  const { isLoading, counts } = useFeatureUsageCounts();
+  const { isLoading, hasError, counts } = useFeatureUsageCounts();
 
   return (
     <div className="flex flex-col gap-8 p-6 max-w-6xl mx-auto">
@@ -176,6 +178,11 @@ export default function AiHubPage() {
       </div>
 
       {/* Feature grid */}
+      {hasError && (
+        <p className="text-xs text-wl-text-tertiary text-center -mb-4">
+          Usage statistics temporarily unavailable
+        </p>
+      )}
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {FEATURE_CARDS.map((card) => (

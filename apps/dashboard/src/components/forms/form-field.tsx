@@ -56,7 +56,7 @@ export function FormField({
   id,
   disabled = false,
 }: FormFieldProps) {
-  const fieldId = id || `field-${Math.random().toString(36).substr(2, 9)}`;
+  const fieldId = id ?? crypto.randomUUID();
   const hasError = !!error;
 
   return (

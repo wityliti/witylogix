@@ -82,7 +82,7 @@ interface MaintenanceMapViewProps {
 export default function MaintenanceMapView({ maintenance }: MaintenanceMapViewProps) {
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleMapMarker | null>(null);
 
-  const { data: locations } = useApiQuery<FleetLocation[]>('/api/v4/fleet/locations');
+  const { data: locations, loading: locationsLoading } = useApiQuery<FleetLocation[]>('/api/v4/fleet/locations');
 
   const vehicles = useMemo<VehicleMapMarker[]>(() => {
     if (!locations?.length) return [];
@@ -116,6 +116,12 @@ export default function MaintenanceMapView({ maintenance }: MaintenanceMapViewPr
   const selectedRecord = selectedVehicle
     ? maintenance.find(m => m.vehicleId === selectedVehicle.id)
     : null;
+
+  if (locationsLoading) {
+    return (
+      <div className="w-full h-full bg-wl-bg-sunken animate-pulse rounded-xl border border-wl-border-default" />
+    );
+  }
 
   if (vehicles.length === 0) {
     return (

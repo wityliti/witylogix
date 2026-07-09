@@ -32,7 +32,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
       onChange?.(e);
       onCheckedChange?.(e.target.checked);
     };
-    const checkboxId = id || `checkbox-${Math.random().toString(36).substr(2, 9)}`;
+    const checkboxId = id ?? crypto.randomUUID();
 
     return (
       <div className={cn("flex flex-col gap-1.5", className)}>

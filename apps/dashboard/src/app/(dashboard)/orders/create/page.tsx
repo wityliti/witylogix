@@ -68,8 +68,8 @@ export default function CreateOrderPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [lineItemError, setLineItemError] = useState<string | null>(null);
 
-  const { items: customers, setSearch: setCustomerSearchApi } = useApiList<ApiCustomer>('/api/v4/customers', { limit: 10 });
-  const { items: products } = useApiList<ApiProduct>('/api/v4/products', { limit: 50 });
+  const { items: customers, loading: customersLoading, setSearch: setCustomerSearchApi } = useApiList<ApiCustomer>('/api/v4/customers', { limit: 10 });
+  const { items: products, loading: productsLoading } = useApiList<ApiProduct>('/api/v4/products', { limit: 50 });
   const { execute: createOrder, loading: creating } = useApiMutation<{ id: string }>('POST', '/api/v4/orders');
 
   const addLineItem = () => {
@@ -246,7 +246,12 @@ export default function CreateOrderPage() {
                   setCustomerSearchApi(e.target.value);
                 }}
               />
-              {customerSearch && customers.length > 0 && (
+              {customerSearch && customersLoading && (
+                <div className="absolute bg-wl-bg-surface border border-wl-border-default rounded mt-1 z-10 w-full p-3 text-sm text-wl-text-secondary">
+                  Searching…
+                </div>
+              )}
+              {customerSearch && !customersLoading && customers.length > 0 && (
                 <div className="absolute bg-wl-bg-surface border border-wl-border-default rounded mt-1 z-10 max-h-52 overflow-y-auto w-full">
                   {customers.map(c => (
                     <div
@@ -462,7 +467,7 @@ export default function CreateOrderPage() {
             <input
               type="text"
               className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
-              placeholder="Search product..."
+              placeholder={productsLoading ? 'Loading products…' : 'Search product…'}
               value={newLineItem.productName}
               onChange={(e) => {
                 const product = products.find(p => p.name === e.target.value);
