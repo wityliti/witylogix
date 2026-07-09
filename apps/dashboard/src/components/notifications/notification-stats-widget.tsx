@@ -116,10 +116,10 @@ function DonutChart({ data }: { data: Record<string, ChannelStat> }) {
               cy="50"
               r={radius}
               fill="none"
-              stroke={CHANNEL_COLORS[segment.channel] ?? "#6b7280"}
+              stroke={CHANNEL_CSS_VARS[segment.channel] ?? "#6b7280"}
               strokeWidth="8"
-              strokeDasharray={s.dashArray}
-              strokeDashoffset={-s.dashOffset}
+              strokeDasharray={segment.dashArray}
+              strokeDashoffset={-segment.dashOffset}
               strokeLinecap="round" />
           ))}
         </svg>
@@ -137,10 +137,10 @@ function DonutChart({ data }: { data: Record<string, ChannelStat> }) {
           <div key={channel} className="flex items-center gap-2">
             <div
               className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: CHANNEL_COLORS[channel] ?? "#6b7280" }}
+              style={{ backgroundColor: CHANNEL_CSS_VARS[channel] ?? "#6b7280" }}
             />
             <span className="text-xs text-[var(--wl-text-secondary)] capitalize">
-              {entry.channel}: {entry.percentage}%
+              {channel}: {stats.percentage}%
             </span>
           </div>
         ))}
@@ -186,7 +186,8 @@ export function NotificationStatsWidget({ className }: NotificationStatsWidgetPr
     const totalSent = daily.reduce((sum, d) => sum + d.count, 0);
     const failedCount = stats.failedTemplates?.reduce((sum, t) => sum + t.failureCount, 0) ?? 0;
     const failureRate = totalSent > 0 ? ((failedCount / totalSent) * 100).toFixed(1) : "0.0";
-    return { totalToday, changePercent, failureRate, failedCount };
+    const deliveryRate = totalSent > 0 ? parseFloat((100 - (failedCount / totalSent) * 100).toFixed(1)) : 100.0;
+    return { totalToday, changePercent, failureRate, failedCount, deliveryRate };
   }, [stats]);
 
   if (loading) return <StatsSkeletons />;
@@ -304,9 +305,9 @@ export function NotificationStatsWidget({ className }: NotificationStatsWidgetPr
                 </div>
               ))}
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

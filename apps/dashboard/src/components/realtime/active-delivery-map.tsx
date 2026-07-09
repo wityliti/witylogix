@@ -40,15 +40,29 @@ interface ActiveDeliveryMapProps {
   className?: string;
 }
 
-const STATUS_MAP: Record<string, DriverStatus> = {
+type DriverStatus = Driver["status"];
+
+const STATUS_MAP: Record<string, string> = {
   available: "available",
   AVAILABLE: "available",
-  on_route: "busy",
-  ON_ROUTE: "busy",
-  on_break: "break",
-  ON_BREAK: "break",
+  on_route: "on-delivery",
+  ON_ROUTE: "on-delivery",
+  on_break: "offline",
+  ON_BREAK: "offline",
   offline: "offline",
   OFFLINE: "offline",
+};
+
+const driverStatusColors: Record<DriverStatus, string> = {
+  available: "text-wl-success-400",
+  "on-delivery": "text-wl-primary-500",
+  offline: "text-wl-text-secondary",
+};
+
+const driverStatusLabels: Record<DriverStatus, string> = {
+  available: "Available",
+  "on-delivery": "On Delivery",
+  offline: "Offline",
 };
 
 function mapApiStatus(status: string): Driver["status"] {
@@ -242,11 +256,10 @@ export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
   // Refresh every 30s
   useEffect(() => {
     const interval = setInterval(() => {
-      refetchDrivers();
-      refetchDeliveries();
+      refetch();
     }, 30000);
     return () => clearInterval(interval);
-  }, [refetchDrivers, refetchDeliveries]);
+  }, [refetch]);
 
   const drivers = rawDrivers.map(toDriver);
   const activeDriverCount = drivers.filter((d) => d.status !== "offline").length;
@@ -256,8 +269,8 @@ export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
     if (rect) {
       setPopoverPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
     }
-    return result;
-  }, [rawDrivers]);
+    setSelectedDriver(driver);
+  };
 
   return (
     <Card className={cn("flex flex-col h-full relative overflow-hidden", className)}>

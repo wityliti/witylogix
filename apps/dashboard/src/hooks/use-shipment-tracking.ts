@@ -123,7 +123,8 @@ export function useShipmentTracking(trackingNumber: string): UseShipmentTracking
       const response = await fetch(`/api/tracking/${trackingNumber}`);
       if (!response.ok) throw new Error('Failed to fetch tracking data');
 
-      const shipment = result.data?.[0];
+      const data = await response.json() as { data?: ApiShipment[] };
+      const shipment = data.data?.[0];
       if (!shipment) {
         throw new Error('Tracking number not found');
       }

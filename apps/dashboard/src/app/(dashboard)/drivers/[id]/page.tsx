@@ -205,6 +205,10 @@ export default function DriverDetailPage() {
     `/api/v4/driver-scoring/${driverId}/history?period=weekly&days=56`,
   );
 
+  const { data: profileData } = useApiQuery<DriverProfile>(
+    `/api/v4/drivers/${driverId}`,
+  );
+
   const history = historyData?.history ?? [];
 
   if (scoreLoading) {

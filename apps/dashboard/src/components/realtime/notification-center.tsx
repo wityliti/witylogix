@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import {
   Settings,
   CheckCheck as CheckAll,
   X,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 
 interface ApiNotification {
@@ -72,48 +74,12 @@ const notificationIcons: Record<Notification["type"], React.ReactNode> = {
   system: <Settings className="w-4 h-4" />,
 };
 
-const CATEGORY_COLORS: Record<string, string> = {
-  ORDERS:     "bg-wl-primary-500/12 text-wl-primary-400",
-  DELIVERIES: "bg-wl-info-bg text-wl-info-400",
-  ALERTS:     "bg-wl-warning-bg text-wl-warning-400",
-  SYSTEM:     "bg-wl-bg-surface text-wl-text-secondary",
-  DRIVERS:    "bg-wl-info-bg text-wl-info-400",
-  PAYMENTS:   "bg-wl-success-bg text-wl-success-400",
-};
-
 const notificationTypeColors: Record<Notification["type"], string> = {
   order: "bg-wl-primary-500/12 text-wl-primary-400 border-wl-primary-500/20",
   delivery: "bg-wl-info-bg text-wl-info-400",
   alert: "bg-wl-warning-bg text-wl-warning-400",
   system: "bg-wl-bg-surface text-wl-text-secondary",
 };
-
-function mapApiNotification(n: ApiNotification): Notification {
-  const rawType = n.category?.toLowerCase() ?? "system";
-  const type: Notification["type"] = (
-    ["order", "delivery", "alert", "system"].includes(rawType)
-      ? rawType
-      : "system"
-  ) as Notification["type"];
-
-  const rawSeverity = n.severity?.toLowerCase() ?? "info";
-  const severity: Notification["severity"] = (
-    ["info", "warning", "critical"].includes(rawSeverity)
-      ? rawSeverity
-      : "info"
-  ) as Notification["severity"];
-
-  return {
-    id: n.id,
-    type,
-    title: n.title,
-    message: n.message,
-    severity,
-    read: n.status !== "UNREAD",
-    timestamp: new Date(n.timestamp),
-    actionUrl: n.actionUrl,
-  };
-}
 
 function timeAgo(date: Date): string {
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -132,31 +98,19 @@ function NotificationItem({
   onClick?: () => void;
   onMarkAsRead?: () => void;
 }) {
-  const isUnread = notification.status === "UNREAD";
-  const icon = CATEGORY_ICON[notification.category] ?? <Bell className="w-4 h-4" />;
-  const colorCls = CATEGORY_COLORS[notification.category] ?? "bg-wl-bg-surface text-wl-text-secondary";
-
   return (
     <div
       onClick={onClick}
       className={cn(
         "px-4 py-3 border-b border-wl-border-subtle flex items-start gap-3",
         "transition-colors duration-fast hover:bg-wl-bg-overlay cursor-pointer",
-        isUnread && "bg-wl-bg-surface"
+        !notification.read && "bg-wl-bg-surface"
       )}
     >
       <div className={cn("mt-1 p-2 rounded-lg flex-shrink-0", notificationTypeColors[notification.type])}>
         {notificationIcons[notification.type]}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">
-            {notification.category}
-          </span>
-          {isUnread && (
-            <div className="w-2 h-2 rounded-full bg-wl-primary-500 flex-shrink-0 mt-1" />
-          )}
-        </div>
         <h4 className="text-sm font-semibold text-wl-text-primary mb-1 line-clamp-1">
           {notification.title}
         </h4>
@@ -179,11 +133,6 @@ function NotificationItem({
   );
 }
 
-const CATEGORY_MAP: Record<string, Notification["category"]> = {
-  order: "ORDERS", shipment: "DELIVERIES", delivery: "DELIVERIES",
-  driver: "DRIVERS", system: "SYSTEM", webhook: "SYSTEM", workflow: "SYSTEM",
-};
-
 export function NotificationCenter({
   className,
   onNotificationClick,
@@ -194,40 +143,20 @@ export function NotificationCenter({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const { items: rawNotifs, loading: isLoading, refetch } = useApiList<any>('/api/v4/notifications', { limit: 20 });
+  const { items: rawNotifs, loading: isLoading, refetch } = useApiList<ApiNotification>('/api/v4/notifications', { limit: 20 });
 
-  const apiNotifs = useMemo<Notification[]>(() =>
-    rawNotifs.map((n) => ({
-      id: n.id,
-      category: (CATEGORY_MAP[n.type ?? n.category] ?? n.category ?? "SYSTEM") as Notification["category"],
-      channel: (n.channel ?? "EMAIL") as Notification["channel"],
-      iconChannel: (n.channel ?? "EMAIL") as Notification["channel"],
-      title: n.title ?? n.action ?? "Notification",
-      message: n.message ?? n.description ?? "",
-      status: ((n.read ?? n.status === "READ") ? "READ" : "UNREAD") as Notification["status"],
-      timestamp: typeof n.timestamp === "string" ? n.timestamp : (n.createdAt ?? new Date().toISOString()),
-      actionUrl: n.actionUrl,
-    })),
-  [rawNotifs]);
+  const notifications = useMemo<Notification[]>(() =>
+    rawNotifs
+      .map(toNotification)
+      .map((n) => readIds.has(n.id) ? { ...n, read: true } : n),
+  [rawNotifs, readIds]);
 
-  // Local overlay for optimistic read/delete operations
-  const [readIds, setReadIds] = useState<Set<string>>(new Set());
-  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
-
-  const notifications = useMemo(() =>
-    apiNotifs
-      .filter((n) => !deletedIds.has(n.id))
-      .map((n) => readIds.has(n.id) ? { ...n, status: "READ" as Notification["status"] } : n),
-  [apiNotifs, readIds, deletedIds]);
-
-  // Poll for new notifications every 60 seconds
   useEffect(() => {
     if (!isOpen) return;
     const interval = setInterval(() => { refetch(); }, 60_000);
     return () => clearInterval(interval);
   }, [isOpen, refetch]);
 
-  // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -243,10 +172,10 @@ export function NotificationCenter({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  const unreadCount = notifications.filter((n) => n.status === "UNREAD").length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAsRead = (id: string) => setReadIds((prev) => new Set([...prev, id]));
-  const markAllAsRead = () => setReadIds(new Set(rawItems.map((r) => r.id)));
+  const markAllAsRead = () => setReadIds(new Set(rawNotifs.map((r) => r.id)));
 
   const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id);
