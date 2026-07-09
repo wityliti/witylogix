@@ -64,6 +64,7 @@ export default function NotificationsPage() {
     hasMore,
     unreadCount,
     loadMore,
+    refetch: refetchNotifications,
     markAsRead,
     markAsUnread,
     markAllAsRead,
@@ -174,7 +175,7 @@ export default function NotificationsPage() {
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <ErrorState
             message={error instanceof Error ? error.message : "Failed to load notifications"}
-            onRetry={() => window.location.reload()}
+            onRetry={refetchNotifications}
           />
         </main>
       </div>
