@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { RefreshCw, Store, Package, ShoppingCart, Zap, Globe, Settings, MapPin } from 'lucide-react';
 import { useApiQuery } from '@/hooks/use-api';
 import { ErrorState } from '@/components/ui/error-state';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { LoadingSkeleton, CardSkeleton } from '@/components/ui/loading-skeleton';
 import { useZonesGeoJson } from '@/hooks/use-zones-geojson';
 
 const StoreZoneCoverageMap = dynamic(
@@ -106,7 +106,7 @@ export default function StoresManagement() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i} className="bg-wl-bg-surface border border-wl-border-default animate-pulse h-24">{" "}</Card>
+              <CardSkeleton key={i} className="h-24" />
             ))}
           </div>
         ) : shopError ? (

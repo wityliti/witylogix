@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -177,9 +177,37 @@ export default function ProvidersPage() {
   const [selectedProviderId, setSelectedProviderId] = useState("stripe");
   const [timeRange, setTimeRange] = useState<"1h" | "6h" | "24h" | "7d">("24h");
   const [configMode, setConfigMode] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | undefined>();
+  const [configFields, setConfigFields] = useState({
+    rateLimit: 1000,
+    timeout: 5000,
+    retryPolicy: 'exponential',
+    circuitBreakerThreshold: 50,
+  });
 
   const { metrics, isLoading, error, updateConfiguration } =
     useProviderDetail(selectedProviderId);
+
+  // Reset config to defaults when switching providers
+  useEffect(() => {
+    setConfigFields({ rateLimit: 1000, timeout: 5000, retryPolicy: 'exponential', circuitBreakerThreshold: 50 });
+    setConfigMode(false);
+    setSaveError(undefined);
+  }, [selectedProviderId]);
+
+  const handleSaveConfig = useCallback(async () => {
+    setSaving(true);
+    setSaveError(undefined);
+    try {
+      await updateConfiguration(configFields);
+      setConfigMode(false);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Save failed');
+    } finally {
+      setSaving(false);
+    }
+  }, [configFields, updateConfiguration]);
 
   const circuitBreakerColor = useMemo(() => {
     if (!metrics) return "text-wl-text-secondary";
@@ -458,7 +486,8 @@ export default function ProvidersPage() {
               </label>
               <input
                 type="number"
-                defaultValue="1000"
+                value={configFields.rateLimit}
+                onChange={(e) => setConfigFields((p) => ({ ...p, rateLimit: Number(e.target.value) }))}
                 disabled={!configMode}
                 className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
               />
@@ -470,7 +499,8 @@ export default function ProvidersPage() {
               </label>
               <input
                 type="number"
-                defaultValue="5000"
+                value={configFields.timeout}
+                onChange={(e) => setConfigFields((p) => ({ ...p, timeout: Number(e.target.value) }))}
                 disabled={!configMode}
                 className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
               />
@@ -481,7 +511,8 @@ export default function ProvidersPage() {
                 Retry Policy
               </label>
               <select
-                defaultValue="exponential"
+                value={configFields.retryPolicy}
+                onChange={(e) => setConfigFields((p) => ({ ...p, retryPolicy: e.target.value }))}
                 disabled={!configMode}
                 className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
               >
@@ -497,14 +528,21 @@ export default function ProvidersPage() {
               </label>
               <input
                 type="number"
-                defaultValue="50"
+                value={configFields.circuitBreakerThreshold}
+                onChange={(e) => setConfigFields((p) => ({ ...p, circuitBreakerThreshold: Number(e.target.value) }))}
                 disabled={!configMode}
                 className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
               />
             </div>
 
+            {saveError && (
+              <p className="text-sm text-red-400">{saveError}</p>
+            )}
+
             {configMode && (
-              <Button className="w-full">Save Configuration</Button>
+              <Button className="w-full" onClick={handleSaveConfig} disabled={saving}>
+                {saving ? 'Saving…' : 'Save Configuration'}
+              </Button>
             )}
           </div>
         </CardContent>

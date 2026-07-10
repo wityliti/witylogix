@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ErrorState } from '@/components/ui/error-state';
 import { ChevronDown, Search, Package, Zap } from 'lucide-react';
+import { Skeleton, CardSkeleton } from '@/components/ui/loading-skeleton';
 
 interface CatalogApp {
   slug: string;
@@ -245,7 +246,7 @@ export default function IntegrationCatalogPage() {
             {loading ? (
               <div className="space-y-1 px-2">
                 {Array.from({ length: 7 }).map((_, i) => (
-                  <div key={i} className="h-8 bg-wl-bg-elevated animate-pulse rounded-md" />
+                  <Skeleton key={i} variant="rect" className="h-8 w-full" />
                 ))}
               </div>
             ) : (
@@ -317,7 +318,7 @@ export default function IntegrationCatalogPage() {
             {loading ? (
               <div className={cn('grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4')}>
                 {Array.from({ length: 12 }).map((_, i) => (
-                  <div key={i} className="h-40 bg-wl-bg-elevated animate-pulse rounded-lg" />
+                  <CardSkeleton key={i} className="h-40" />
                 ))}
               </div>
             ) : (
