@@ -464,30 +464,23 @@ export default function OnboardPage() {
               </div>
 
               {/* Insurance */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-white">
-                  Offer Insurance
-                </label>
-                <select
-                  value={formData.defaultSettings.insurance ? "yes" : "no"}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      defaultSettings: {
-                        ...prev.defaultSettings,
-                        insurance: e.currentTarget.value === "yes",
-                      },
-                    }))
-                  }
-                  className={cn(
-                    "w-full px-4 py-2 rounded-md bg-wl-bg-surface text-white",
-                    "border border-wl-border-default focus:border-blue-400 outline-none"
-                  )}
-                >
-                  <option value="no">No</option>
-                  <option value="yes">Yes</option>
-                </select>
-              </div>
+              <Select
+                label="Offer Insurance"
+                value={formData.defaultSettings.insurance ? "yes" : "no"}
+                options={[
+                  { value: 'no', label: 'No' },
+                  { value: 'yes', label: 'Yes' },
+                ]}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    defaultSettings: {
+                      ...prev.defaultSettings,
+                      insurance: e.currentTarget.value === "yes",
+                    },
+                  }))
+                }
+              />
             </CardContent>
           </Card>
         )}

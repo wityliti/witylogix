@@ -198,9 +198,9 @@ export default function HealthcarePage() {
   const { items: patients, loading: patientsLoading, error: patientsError, refetch } =
     useApiList<LocalPatient>('/api/v4/customers?type=patient');
 
-  const { data: shopData, loading: shopLoading } = useApiQuery<ShopResponse>('/api/v4/shops/me');
+  const { data: shopData, loading: shopLoading, error: shopError } = useApiQuery<ShopResponse>('/api/v4/shops/me');
 
-  const { data: platformStatus, loading: platformLoading } =
+  const { data: platformStatus, loading: platformLoading, error: platformError } =
     useApiQuery<PlatformStatus>('/api/v4/platform/status');
 
   const compliance = useMemo<Compliance | null>(() => {
@@ -241,6 +241,18 @@ export default function HealthcarePage() {
 
   return (
     <div className="p-6 space-y-6 bg-wl-bg-root min-h-screen">
+      {/* Secondary error banners */}
+      {shopError && (
+        <div className="px-4 py-2 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm">
+          Could not load compliance settings: {shopError.message}
+        </div>
+      )}
+      {platformError && (
+        <div className="px-4 py-2 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm">
+          Could not load platform status: {platformError.message}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
