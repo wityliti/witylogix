@@ -52,7 +52,29 @@ export async function registerOrdersSyncRoutes(fastify: FastifyInstance): Promis
         isConnected: i.isEnabled,
       }));
 
-      return { platformHealth, recentSyncJobs: [] };
+      const syncEvents = await db.integrationEvent.findMany({
+        where: { shopId, eventType: 'SYNC', appSlug: { in: ECOMMERCE_SLUGS } },
+        orderBy: { timestamp: 'desc' },
+        take: 20,
+      });
+
+      const recentSyncJobs = syncEvents.map((e) => {
+        const meta = (e.metadata ?? {}) as Record<string, unknown>;
+        const hasError = typeof meta.error === 'string' && meta.error.length > 0;
+        return {
+          id: e.id,
+          platform: e.appSlug,
+          status: hasError ? 'failed' : (meta.status as string | undefined) ?? 'completed',
+          startTime: (meta.startTime as string | undefined) ?? e.timestamp.toISOString(),
+          endTime: (meta.endTime as string | undefined) ?? e.timestamp.toISOString(),
+          ordersProcessed: (meta.ordersProcessed as number | undefined) ?? 0,
+          ordersCreated: (meta.ordersCreated as number | undefined) ?? 0,
+          ordersFailed: (meta.ordersFailed as number | undefined) ?? 0,
+          errorMessage: hasError ? (meta.error as string) : null,
+        };
+      });
+
+      return { platformHealth, recentSyncJobs };
     },
   );
 

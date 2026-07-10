@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { StatCard } from '@/components/ui/stat-card';
@@ -25,7 +25,7 @@ import {
    ANALYTICS INTEGRATIONS — Dashboard for analytics providers
    ═══════════════════════════════════════════════════════════ */
 
-type ConnectionStatus = 'CONNECTED' | 'DISCONNECTED' | 'ERROR' | 'AUTHENTICATING';
+type ConnectionStatus = 'connected' | 'disconnected' | 'error' | 'pending';
 type ReportFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY';
 
 interface AnalyticsConnection {
@@ -33,11 +33,23 @@ interface AnalyticsConnection {
   provider: string;
   name: string;
   status: ConnectionStatus;
-  lastSync: string;
+  lastSync: string | null;
   nextSync: string;
   dashboardCount: number;
   embedCount: number;
   errorMessage?: string;
+}
+
+interface RawConnection {
+  id: string;
+  providerId: string;
+  providerName: string;
+  status: ConnectionStatus;
+  lastSyncTime: string | null;
+  apiCallsCount: number;
+  errorCount: number;
+  category: string;
+  icon: string;
 }
 
 interface ScheduledReport {
@@ -103,16 +115,13 @@ const ANALYTICS_PROVIDERS = [
 const connectionStatusVariant = (
   status: ConnectionStatus
 ): 'success' | 'warning' | 'danger' | 'info' | 'default' => {
-  const map: Record<
-    ConnectionStatus,
-    'success' | 'warning' | 'danger' | 'info' | 'default'
-  > = {
-    CONNECTED: 'success',
-    DISCONNECTED: 'warning',
-    ERROR: 'danger',
-    AUTHENTICATING: 'info',
+  const map: Record<ConnectionStatus, 'success' | 'warning' | 'danger' | 'info' | 'default'> = {
+    connected: 'success',
+    disconnected: 'warning',
+    error: 'danger',
+    pending: 'info',
   };
-  return map[status];
+  return map[status] ?? 'default';
 };
 
 const dataSourceStatusVariant = (
@@ -134,16 +143,34 @@ export default function AnalyticsIntegrationsPage() {
   const [view, setView] = useState<'connections' | 'reports' | 'metrics'>('connections');
 
   // Fetch data from API
-  const { items: connections, loading: connectionsLoading, error: connectionsError, refetch: refetchConnections } = useApiList<AnalyticsConnection>('/api/v4/integrations/analytics/connections');
-  const { items: reports, loading: reportsLoading } = useApiList<ScheduledReport>('/api/v4/integrations/analytics/reports');
-  const { items: dataSources, loading: dataSourcesLoading } = useApiList<DataSource>('/api/v4/integrations/analytics/datasources');
+  const { items: rawConnections, loading: connectionsLoading, error: connectionsError, refetch: refetchConnections } = useApiList<RawConnection>('/api/v4/integrations/connections?category=analytics');
+  const reports: ScheduledReport[] = [];
+  const reportsLoading = false;
+  const dataSources: DataSource[] = [];
+  const dataSourcesLoading = false;
+
+  const connections = useMemo<AnalyticsConnection[]>(
+    () =>
+      rawConnections.map((c) => ({
+        id: c.id,
+        provider: c.providerId,
+        name: c.providerName,
+        status: c.status,
+        lastSync: c.lastSyncTime,
+        nextSync: '—',
+        dashboardCount: c.apiCallsCount,
+        embedCount: 0,
+        errorMessage: c.errorCount > 0 ? `${c.errorCount} error(s) recorded` : undefined,
+      })),
+    [rawConnections]
+  );
 
   const activeConnections = useMemo(
-    () => connections.filter((c) => c.status === 'CONNECTED'),
+    () => connections.filter((c) => c.status === 'connected'),
     [connections]
   );
   const errorConnections = useMemo(
-    () => connections.filter((c) => c.status === 'ERROR'),
+    () => connections.filter((c) => c.status === 'error'),
     [connections]
   );
 
@@ -247,9 +274,9 @@ export default function AnalyticsIntegrationsPage() {
                       key={provider.slug}
                       className={cn(
                         'p-4 rounded-lg border cursor-pointer transition-all',
-                        connection?.status === 'CONNECTED'
+                        connection?.status === 'connected'
                           ? 'border-emerald-400 border-opacity-30 bg-[rgba(16,185,129,0.08)]'
-                          : connection?.status === 'ERROR'
+                          : connection?.status === 'error'
                             ? 'border-red-400 border-opacity-30 bg-[rgba(239,68,68,0.08)]'
                             : 'border-wl-border-default hover:border-blue-400'
                       )}
@@ -259,7 +286,7 @@ export default function AnalyticsIntegrationsPage() {
                         <span className={cn('text-2xl')}>{provider.icon}</span>
                         {connection && (
                           <Badge variant={connectionStatusVariant(connection.status)} dot>
-                            {connection.status === 'CONNECTED' ? 'Connected' : connection.status}
+                            {connection.status === 'connected' ? 'Connected' : connection.status}
                           </Badge>
                         )}
                       </div>
@@ -334,9 +361,9 @@ export default function AnalyticsIntegrationsPage() {
                           </div>
                           <div className={cn('flex items-center gap-2 shrink-0')}>
                             <Badge variant={connectionStatusVariant(connection.status)} dot>
-                              {connection.status === 'CONNECTED'
+                              {connection.status === 'connected'
                                 ? 'Connected'
-                                : connection.status === 'ERROR'
+                                : connection.status === 'error'
                                   ? 'Error'
                                   : 'Disconnected'}
                             </Badge>
@@ -352,7 +379,7 @@ export default function AnalyticsIntegrationsPage() {
                           </span>
                         </div>
 
-                        {connection.status === 'ERROR' && connection.errorMessage && (
+                        {connection.status === 'error' && connection.errorMessage && (
                           <div className={cn('mb-3 p-2 rounded bg-[rgba(239,68,68,0.1)] border border-red-400 border-opacity-30')}>
                             <p className={cn('text-xs text-red-400')}>
                               {connection.errorMessage}
@@ -380,12 +407,12 @@ export default function AnalyticsIntegrationsPage() {
                                 <p
                                   className={cn(
                                     'text-lg font-bold',
-                                    connection.status === 'CONNECTED'
+                                    connection.status === 'connected'
                                       ? 'text-emerald-400'
                                       : 'text-red-400'
                                   )}
                                 >
-                                  {connection.status === 'CONNECTED' ? 'Live' : 'Error'}
+                                  {connection.status === 'connected' ? 'Live' : 'Error'}
                                 </p>
                               </div>
                             </div>
@@ -393,13 +420,13 @@ export default function AnalyticsIntegrationsPage() {
                             <div className={cn('flex gap-2')}>
                               <Button
                                 variant={
-                                  connection.status === 'ERROR'
+                                  connection.status === 'error'
                                     ? 'primary'
                                     : 'secondary'
                                 }
                                 size="sm"
                               >
-                                {connection.status === 'ERROR'
+                                {connection.status === 'error'
                                   ? 'Reconnect'
                                   : 'Configure'}
                               </Button>

@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useSyncStatus } from "@/hooks/use-order-sync";
 import type { SyncPlatform } from "@/hooks/use-order-sync";
 import { useApiList, useApiQuery } from '@/hooks/use-api';
 import { useToast } from '@/components/ui/toast';
@@ -98,8 +99,22 @@ export default function OrderImportPage() {
       }),
   [connections]);
 
-  const recentSyncJobs: SyncJob[] = [];
-  const failedJobs: SyncJob[] = [];
+  const { recentSyncJobs: liveSyncJobs, isLoading: syncJobsLoading } = useSyncStatus({
+    pollInterval: 30000,
+    enablePolling: true,
+  });
+  const recentSyncJobs: SyncJob[] = liveSyncJobs.map((j) => ({
+    id: j.id,
+    platform: j.platform,
+    status: j.status === 'pending' ? 'running' : (j.status as 'running' | 'completed' | 'failed'),
+    startTime: j.startTime,
+    endTime: j.endTime ?? null,
+    ordersProcessed: j.ordersProcessed,
+    ordersCreated: j.ordersCreated,
+    ordersFailed: j.ordersFailed,
+    errorMessage: j.errorMessage ?? null,
+  }));
+  const failedJobs = recentSyncJobs.filter((j) => j.status === 'failed');
 
   const { data: statsData } = useApiQuery<{ totalOrders: number; pendingOrders: number }>(
     '/api/v4/dashboard/stats',
@@ -114,7 +129,9 @@ export default function OrderImportPage() {
     [statsData],
   );
 
-  const filteredSyncJobs = recentSyncJobs;
+  const filteredSyncJobs = filterPlatform === 'all'
+    ? recentSyncJobs
+    : recentSyncJobs.filter((j) => j.platform === filterPlatform);
 
   // Handle platform selection
   const handlePlatformSelect = (platform: SyncPlatform) => {
@@ -347,7 +364,13 @@ export default function OrderImportPage() {
             </div>
           </div>
 
-          {filteredSyncJobs.length === 0 ? (
+          {syncJobsLoading ? (
+            <div className="space-y-3">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="h-24 rounded-lg bg-wl-bg-surface border border-wl-border-subtle animate-pulse" />
+              ))}
+            </div>
+          ) : filteredSyncJobs.length === 0 ? (
             <div className="py-12 text-center">
               <div className="text-wl-text-tertiary text-sm">No sync jobs found</div>
             </div>

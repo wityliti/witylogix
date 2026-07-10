@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useIntegrationStatus } from '@/hooks/use-integration-status';
@@ -43,6 +44,7 @@ interface StatusStats {
  * - Filtering and sorting
  */
 export default function ConnectedIntegrationsPage() {
+  const router = useRouter();
   const { connections, isLoading, error, revalidate } = useIntegrationStatus({
     pollInterval: 30000,
     enablePolling: true,
@@ -136,7 +138,7 @@ export default function ConnectedIntegrationsPage() {
           icon={<Plug className="w-12 h-12" />}
           title="No integrations connected yet"
           description="Browse the marketplace to connect your first third-party provider"
-          action={{ label: "Browse Marketplace", onClick: () => {} }}
+          action={{ label: "Browse Marketplace", onClick: () => router.push('/integrations') }}
         />
       </div>
     );
