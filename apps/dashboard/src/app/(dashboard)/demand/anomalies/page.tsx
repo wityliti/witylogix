@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import {
   AlertTriangle,
   TrendingUp,
@@ -11,6 +12,8 @@ import {
   ChevronDown,
   Trash2,
   CheckCircle,
+  List,
+  Map as MapIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -19,6 +22,16 @@ import { Card } from '@/components/ui/card';
 import { useApiQuery } from '@/hooks/use-api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
+import { useZonesGeoJson } from '@/hooks/use-zones-geojson';
+
+const WLMap = dynamic(
+  () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
+  { ssr: false, loading: () => <div className="h-full bg-wl-bg-elevated rounded-xl animate-pulse" /> },
+);
+const DemandZoneLayer = dynamic(
+  () => import('@/components/map/demand-zone-layer').then((m) => m.DemandZoneLayer),
+  { ssr: false },
+);
 
 interface AnomalyEvent {
   id: string;
@@ -47,11 +60,13 @@ export default function AnomaliesPage() {
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
   const [selectedZone, setSelectedZone] = useState<string>('all');
   const [expandedAnomalies, setExpandedAnomalies] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   const { data: rawData, loading, error } = useApiQuery<{ items: AnomalyEvent[]; total: number }>(
     '/api/v4/analytics/demand-anomalies'
   );
   const anomalies = rawData?.items ?? [];
+  const { data: zonesGeojson } = useZonesGeoJson();
 
   const filteredAnomalies = useMemo(() => {
     return anomalies.filter((a) => {
@@ -98,6 +113,27 @@ export default function AnomaliesPage() {
     });
   }, []);
 
+  // Build demand data for zone map: weight anomalies by severity per zone
+  const anomalyDemandData = useMemo(() => {
+    if (!zonesGeojson?.features) return [];
+    const nameToId = new Map<string, string>(
+      zonesGeojson.features.map((f) => [
+        String(f.properties?.name ?? ''),
+        String(f.properties?.id ?? ''),
+      ])
+    );
+    const zoneScores = new Map<string, number>();
+    anomalies.forEach((a) => {
+      const score = a.severity === 'high' ? 3 : a.severity === 'medium' ? 2 : 1;
+      zoneScores.set(a.zone, (zoneScores.get(a.zone) ?? 0) + score);
+    });
+    return Array.from(zoneScores.entries()).flatMap(([zoneName, score]) => {
+      const id = nameToId.get(zoneName);
+      if (!id) return [];
+      return [{ id, name: zoneName, predictedVolume: score, actualVolume: 0, trend: 'stable' as const }];
+    });
+  }, [anomalies, zonesGeojson]);
+
   if (loading) {
     return <LoadingSkeleton />;
   }
@@ -138,10 +174,36 @@ export default function AnomaliesPage() {
               <h1 className="text-2xl font-bold text-wl-text-primary">Anomaly Monitoring</h1>
               <p className="text-sm text-wl-text-secondary mt-1">Track and manage demand anomalies</p>
             </div>
-            <Button variant="primary" size="md">
-              <AlertTriangle className="w-4 h-4" />
-              Export Report
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className="flex rounded-lg border border-wl-border-default overflow-hidden text-xs">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 transition-colors',
+                    viewMode === 'list'
+                      ? 'bg-wl-primary-600 text-white'
+                      : 'bg-wl-bg-surface text-wl-text-secondary hover:bg-wl-bg-elevated'
+                  )}
+                >
+                  <List className="w-3.5 h-3.5" /> List
+                </button>
+                <button
+                  onClick={() => setViewMode('map')}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 transition-colors',
+                    viewMode === 'map'
+                      ? 'bg-wl-primary-600 text-white'
+                      : 'bg-wl-bg-surface text-wl-text-secondary hover:bg-wl-bg-elevated'
+                  )}
+                >
+                  <MapIcon className="w-3.5 h-3.5" /> Map
+                </button>
+              </div>
+              <Button variant="primary" size="md">
+                <AlertTriangle className="w-4 h-4" />
+                Export Report
+              </Button>
+            </div>
           </div>
 
           {/* Stats Row */}
@@ -198,7 +260,61 @@ export default function AnomaliesPage() {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Map View */}
+      {viewMode === 'map' && (
+        <div className="flex-1 relative" style={{ minHeight: 'calc(100vh - 240px)' }}>
+          {zonesGeojson ? (
+            <WLMap center={[77.12, 28.65]} zoom={10} className="h-full w-full">
+              <DemandZoneLayer
+                zones={zonesGeojson}
+                demandData={anomalyDemandData}
+              />
+            </WLMap>
+          ) : (
+            <div className="h-full flex items-center justify-center bg-wl-bg-root">
+              <p className="text-wl-text-secondary text-sm">Loading zone map…</p>
+            </div>
+          )}
+          {/* Legend */}
+          <div className="absolute bottom-6 left-6 bg-wl-bg-surface/90 backdrop-blur border border-wl-border-default rounded-xl p-4 text-xs z-10">
+            <p className="font-semibold text-white mb-2">Anomaly Severity</p>
+            {[
+              { color: 'var(--wl-info-500)', label: 'No anomalies' },
+              { color: 'var(--wl-success-500)', label: 'Low' },
+              { color: 'var(--wl-warning-500)', label: 'Medium' },
+              { color: 'var(--wl-chart-orange)', label: 'High' },
+              { color: 'var(--wl-danger-500)', label: 'Critical' },
+            ].map(({ color, label }) => (
+              <div key={label} className="flex items-center gap-2 mt-1">
+                <div className="w-3 h-3 rounded-sm" style={{ background: color }} />
+                <span className="text-wl-neutral-300">{label}</span>
+              </div>
+            ))}
+          </div>
+          {/* Zone summary overlay */}
+          <div className="absolute top-4 right-4 bg-wl-bg-surface/90 backdrop-blur border border-wl-border-default rounded-xl p-4 max-w-xs z-10">
+            <p className="text-xs font-semibold text-white mb-3">Zones with Anomalies</p>
+            {anomalyDemandData.length === 0 ? (
+              <p className="text-xs text-wl-text-tertiary">No anomaly data to map</p>
+            ) : (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {anomalyDemandData
+                  .sort((a, b) => b.predictedVolume - a.predictedVolume)
+                  .slice(0, 8)
+                  .map((z) => (
+                    <div key={z.id} className="flex items-center justify-between gap-3">
+                      <span className="text-xs text-wl-neutral-300 truncate">{z.name}</span>
+                      <span className="text-xs font-mono text-white shrink-0">{z.predictedVolume} pts</span>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Main Content — List view */}
+      {viewMode === 'list' && (
       <div className="flex-1 overflow-auto p-6">
         <div className="space-y-6 max-w-5xl">
           {/* Anomalies List */}
@@ -280,6 +396,7 @@ export default function AnomaliesPage() {
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }

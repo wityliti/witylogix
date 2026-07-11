@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useDashboardStats } from '@/hooks/use-dashboard-stats';
 import { useApiList } from '@/hooks/use-api';
+import { ErrorState } from '@/components/ui/error-state';
 
 const HomeLiveMap = dynamic(
   () => import('./components/home-live-map').then((m) => m.HomeLiveMap),
@@ -217,9 +218,7 @@ export default function HomePage() {
 
         {/* Stats error */}
         {statsError && !statsLoading && (
-          <div className="p-4 bg-red-950/30 border border-red-900/50 rounded-lg">
-            <p className="text-sm text-red-300">Failed to load dashboard statistics. Please refresh.</p>
-          </div>
+          <ErrorState message={statsError.message} />
         )}
 
         {/* KPI Cards Row */}
