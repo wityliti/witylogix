@@ -16,12 +16,12 @@ export default function POSLayout({
   const pathname = usePathname();
 
   const tabs = [
-    { label: "Overview", href: "/dashboard/pos", icon: "📊" },
-    { label: "Transactions", href: "/dashboard/pos/transactions", icon: "📋" },
+    { label: "Overview", href: "/pos", icon: "📊" },
+    { label: "Transactions", href: "/pos/transactions", icon: "📋" },
   ];
 
   const isActive = (href: string) => {
-    if (href === "/dashboard/pos") {
+    if (href === "/pos") {
       return pathname === href;
     }
     return pathname.startsWith(href);

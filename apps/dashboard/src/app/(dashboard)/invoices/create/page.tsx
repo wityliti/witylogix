@@ -195,7 +195,7 @@ export default function CreateInvoicePage() {
         title: 'Draft saved',
         message: 'Your invoice draft has been saved.',
       });
-      router.push('/dashboard/invoices');
+      router.push('/invoices');
     } catch (err) {
       addToast({
         type: 'error',
@@ -240,7 +240,7 @@ export default function CreateInvoicePage() {
         title: 'Invoice created',
         message: 'The invoice has been created and sent.',
       });
-      router.push('/dashboard/invoices');
+      router.push('/invoices');
     } catch (err) {
       addToast({
         type: 'error',

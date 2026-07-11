@@ -16,13 +16,13 @@ export default function FieldServiceLayout({
   const pathname = usePathname();
 
   const tabs = [
-    { label: "Overview", href: "/dashboard/field-service", icon: "📊" },
-    { label: "Jobs", href: "/dashboard/field-service/jobs", icon: "📋" },
-    { label: "Dispatch", href: "/dashboard/field-service/dispatch", icon: "🗺️" },
+    { label: "Overview", href: "/field-service", icon: "📊" },
+    { label: "Jobs", href: "/field-service/jobs", icon: "📋" },
+    { label: "Dispatch", href: "/field-service/dispatch", icon: "🗺️" },
   ];
 
   const isActive = (href: string) => {
-    if (href === "/dashboard/field-service") {
+    if (href === "/field-service") {
       return pathname === href;
     }
     return pathname.startsWith(href);

@@ -137,7 +137,7 @@ export default function PartnerDetailPage() {
         <Card className="flex flex-col items-center gap-4 py-16">
           <Settings className="w-12 h-12 text-wl-neutral-300/50" />
           <p className="text-wl-text-secondary">Partner &quot;{params.id}&quot; not found or not installed.</p>
-          <Button variant="primary" size="md" onClick={() => router.push("/dashboard/partners/onboard")}>
+          <Button variant="primary" size="md" onClick={() => router.push("/partners/onboard")}>
             Install Partner
           </Button>
         </Card>
@@ -411,7 +411,7 @@ export default function PartnerDetailPage() {
                 <Button
                   variant="secondary"
                   size="md"
-                  onClick={() => router.push(`/dashboard/partners/onboard`)}
+                  onClick={() => router.push(`/partners/onboard`)}
                 >
                   Reconfigure Credentials
                 </Button>

@@ -154,7 +154,7 @@ export default function OnboardPage() {
             ...formData.defaultSettings,
           },
         });
-        router.push("/dashboard/partners");
+        router.push("/partners");
       } catch {
         addToast({ type: 'error', title: 'Onboarding failed', message: 'Could not save partner data. Please try again.' });
       }

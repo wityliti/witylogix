@@ -191,19 +191,19 @@ export default function PartnersPage() {
   }, [partners]);
 
   const handleViewDetails = useCallback(
-    (id: string) => router.push(`/dashboard/partners/${id}`),
+    (id: string) => router.push(`/partners/${id}`),
     [router]
   );
   const handleConfigure = useCallback(
-    (id: string) => router.push(`/dashboard/partners/${id}?tab=settings`),
+    (id: string) => router.push(`/partners/${id}?tab=settings`),
     [router]
   );
   const handleAddPartner = useCallback(
-    () => router.push("/dashboard/partners/onboard"),
+    () => router.push("/partners/onboard"),
     [router]
   );
   const handleCompare = useCallback(
-    () => router.push("/dashboard/partners/compare"),
+    () => router.push("/partners/compare"),
     [router]
   );
 
