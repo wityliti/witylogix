@@ -24,6 +24,8 @@ import {
   type FeatureVector,
 } from '@witylogix/core/ai-eta-v2';
 
+// Zone accuracy endpoint uses tenant-scoped DB via request.tenantDb (RLS-enforced)
+
 // ─── Global Instances ───────────────────────────────────────────
 // In production, these would be stored in a database/cache
 const ensemblePredictors = new Map<string, EnsemblePredictor>();
@@ -405,6 +407,80 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
         return reply.status(500).send({
           error: 'Failed to generate accuracy report',
         });
+      }
+    },
+  );
+
+  // ── GET /api/ai/eta-v2/zone-accuracy — Per-Zone ETA Accuracy ───
+
+  fastify.get(
+    '/zone-accuracy',
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { days } = request.query as { days?: string };
+      const daysBack = Math.min(Math.max(parseInt(days || '30', 10), 1), 365);
+      const since = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000);
+
+      try {
+        const db = (request as any).tenantDb;
+
+        const orders = await db.order.findMany({
+          where: {
+            estimatedArrival: { not: null, gte: since },
+            actualDelivery: { not: null },
+            timeSlotId: { not: null },
+          },
+          select: {
+            estimatedArrival: true,
+            actualDelivery: true,
+            timeSlot: {
+              select: {
+                deliveryZone: {
+                  select: { id: true, name: true, boundary: true },
+                },
+              },
+            },
+          },
+        });
+
+        // Group by zone
+        const byZone = new Map<string, {
+          name: string;
+          boundary: unknown;
+          delaysMs: number[];
+        }>();
+
+        for (const order of orders) {
+          const zone = order.timeSlot?.deliveryZone;
+          if (!zone) continue;
+          const delayMs =
+            Math.abs(
+              new Date(order.actualDelivery as Date).getTime() -
+              new Date(order.estimatedArrival as Date).getTime(),
+            );
+          if (!byZone.has(zone.id)) {
+            byZone.set(zone.id, { name: zone.name, boundary: zone.boundary, delaysMs: [] });
+          }
+          byZone.get(zone.id)!.delaysMs.push(delayMs);
+        }
+
+        const data = Array.from(byZone.entries()).map(([id, { name, boundary, delaysMs }]) => {
+          const count = delaysMs.length;
+          const onTimeCount = delaysMs.filter((d) => d <= 5 * 60 * 1000).length;
+          const avgMs = delaysMs.reduce((s, d) => s + d, 0) / count;
+          return {
+            id,
+            name,
+            boundary,
+            sampleCount: count,
+            onTimePercent: count > 0 ? (onTimeCount / count) * 100 : 0,
+            avgDelayMinutes: avgMs / 60_000,
+          };
+        });
+
+        return reply.send({ success: true, data, daysBack, timestamp: new Date().toISOString() });
+      } catch (error) {
+        fastify.log.error({ err: error }, 'Error computing zone accuracy:');
+        return reply.status(500).send({ error: 'Failed to compute zone accuracy' });
       }
     },
   );

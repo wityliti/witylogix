@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Brain,
   CheckCircle2,
@@ -9,10 +10,19 @@ import {
   BarChart3,
   Clock,
   Target,
+  Map,
+  LayoutGrid,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApiQuery } from '@/hooks/use-api';
 import { ErrorState } from '@/components/ui/error-state';
+import type { FeatureCollection } from 'geojson';
+import type { ZoneAccuracyEntry } from '@/components/map/eta-accuracy-zone-layer';
+
+const EtaAccuracyMapView = dynamic(
+  () => import('./components/eta-accuracy-map-view'),
+  { ssr: false },
+);
 
 // ── Types ─────────────────────────────────────────────────────────
 // Match actual /api/v4/ai/eta-v2/* response shapes
@@ -88,6 +98,13 @@ interface EtaHealthResponse {
     traffic_weight: string;
     weather_weight: string;
   };
+}
+
+interface ZoneAccuracyResponse {
+  success: boolean;
+  data: ZoneAccuracyEntry[];
+  daysBack: number;
+  timestamp: string;
 }
 
 
@@ -213,6 +230,7 @@ function ModelRow({ modelName, m, isEnsemble }: { modelName: string; m: Calibrat
 
 export default function EtaAccuracyPage() {
   const [period, setPeriod] = useState<'24h' | '7d' | '30d'>('7d');
+  const [view, setView] = useState<'charts' | 'map'>('charts');
 
   const days = period === '24h' ? 1 : period === '7d' ? 7 : 30;
 
@@ -230,6 +248,16 @@ export default function EtaAccuracyPage() {
   const { data: healthData } =
     useApiQuery<EtaHealthResponse>('/api/v4/ai/eta-v2/health');
 
+  const { data: zoneAccuracyData, loading: zoneAccuracyLoading } =
+    useApiQuery<ZoneAccuracyResponse>(
+      view === 'map' ? `/api/v4/ai/eta-v2/zone-accuracy?days=${days}` : null,
+    );
+
+  const { data: zoneGeoData, loading: zoneGeoLoading } =
+    useApiQuery<FeatureCollection>(
+      view === 'map' ? '/api/v4/zones?format=geojson' : null,
+    );
+
   if (perfError) return <ErrorState title="Failed to load ETA accuracy data" error={perfError} onRetry={refetchPerf} />;
 
   const metrics  = perfData?.metrics  ?? [];
@@ -246,6 +274,10 @@ export default function EtaAccuracyPage() {
 
   const ensembleMetrics = report?.by_model['ensemble'] ?? metrics.find((m) => m.modelName === 'ensemble')?.metrics;
   const subModelEntries = byModelEntries.filter(([name]) => name !== 'ensemble');
+
+  const zoneAccuracy: ZoneAccuracyEntry[] = zoneAccuracyData?.data ?? [];
+  const zoneGeoJSON: FeatureCollection = zoneGeoData ?? { type: 'FeatureCollection', features: [] };
+  const mapLoading = zoneAccuracyLoading || zoneGeoLoading;
 
   return (
     <div className="min-h-screen">
@@ -278,6 +310,33 @@ export default function EtaAccuracyPage() {
               )}
               {isHealthy ? 'Engine Operational' : 'Engine Degraded'}
             </div>
+            {/* Charts / Map toggle */}
+            <div className="flex items-center rounded-lg border border-white/[0.08] bg-white/[0.03] p-0.5">
+              <button
+                onClick={() => setView('charts')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all',
+                  view === 'charts'
+                    ? 'bg-white/10 text-white/80'
+                    : 'text-white/30 hover:text-white/50',
+                )}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                Charts
+              </button>
+              <button
+                onClick={() => setView('map')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all',
+                  view === 'map'
+                    ? 'bg-white/10 text-white/80'
+                    : 'text-white/30 hover:text-white/50',
+                )}
+              >
+                <Map className="w-3.5 h-3.5" />
+                Map
+              </button>
+            </div>
             {/* Period selector */}
             {(['24h', '7d', '30d'] as const).map((p) => (
               <button
@@ -298,6 +357,19 @@ export default function EtaAccuracyPage() {
       </div>
 
       <div className="px-6 lg:px-8 pb-8 space-y-5">
+        {/* Map view */}
+        {view === 'map' && (
+          <EtaAccuracyMapView
+            zoneGeoJSON={zoneGeoJSON}
+            accuracyData={zoneAccuracy}
+            loading={mapLoading}
+            days={days}
+          />
+        )}
+
+        {/* Charts view */}
+        {view === 'charts' && (
+        <>
         {/* KPI tiles — overall accuracy report */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {reportLoading || !overall ? (
@@ -502,6 +574,8 @@ export default function EtaAccuracyPage() {
             </div>
           )}
         </div>
+        </> // end charts view
+        )}
       </div>
     </div>
   );
