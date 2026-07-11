@@ -70,7 +70,7 @@ export function forTenant(shopId: string) {
         async $allOperations({ args, query }) {
           const [, result] = await prisma.$transaction([
             prisma.$executeRaw`SELECT set_config('app.current_shop_id', ${shopId}, TRUE)`,
-            query(args),
+            query(args) as never,
           ]);
           return result;
         },
@@ -91,7 +91,7 @@ export function forOrg(orgId: string) {
         async $allOperations({ args, query }) {
           const [, result] = await prisma.$transaction([
             prisma.$executeRaw`SELECT set_config('app.current_org_id', ${orgId}, TRUE)`,
-            query(args),
+            query(args) as never,
           ]);
           return result;
         },
@@ -113,7 +113,7 @@ export function forTenantInOrg(shopId: string, orgId: string) {
           const [,, result] = await prisma.$transaction([
             prisma.$executeRaw`SELECT set_config('app.current_shop_id', ${shopId}, TRUE)`,
             prisma.$executeRaw`SELECT set_config('app.current_org_id', ${orgId}, TRUE)`,
-            query(args),
+            query(args) as never,
           ]);
           return result;
         },
