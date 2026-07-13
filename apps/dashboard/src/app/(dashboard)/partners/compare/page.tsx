@@ -163,7 +163,7 @@ export default function ComparePage() {
             <Button
               variant="primary"
               size="sm"
-              onClick={() => router.push("/dashboard/partners/onboard")}
+              onClick={() => router.push("/partners/onboard")}
             >
               Add a Courier
             </Button>

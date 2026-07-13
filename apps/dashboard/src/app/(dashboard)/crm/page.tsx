@@ -129,7 +129,7 @@ export default function CrmDashboardPage() {
 
   const handleReconfigure = useCallback(
     (slug: string) => {
-      router.push(`/dashboard/crm/connect?crm=${slug}`);
+      router.push(`/crm/connect?crm=${slug}`);
     },
     [router]
   );
@@ -143,7 +143,7 @@ export default function CrmDashboardPage() {
         title="CRM Integrations"
         subtitle="Manage your connected CRM platforms and sync activity"
         actions={
-          <Button variant="primary" onClick={() => router.push("/dashboard/crm/connect")}>
+          <Button variant="primary" onClick={() => router.push("/crm/connect")}>
             Add Integration
           </Button>
         }
@@ -193,7 +193,7 @@ export default function CrmDashboardPage() {
               {crmIntegrations.length === 0 ? (
                 <div className="py-12 text-center">
                   <p className="text-wl-text-secondary mb-4">No CRM platforms connected yet</p>
-                  <Button onClick={() => router.push("/dashboard/crm/connect")}>
+                  <Button onClick={() => router.push("/crm/connect")}>
                     Add your first integration
                   </Button>
                 </div>

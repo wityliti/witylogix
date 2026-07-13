@@ -59,6 +59,7 @@ export default function InventoryPage() {
     data: warehouseData,
     loading: warehouseLoading,
     error: warehouseError,
+    refetch: refetchWarehouses,
   } = useApiQuery<{ data: WarehousePin[] }>('/api/v4/inventory/warehouses');
 
   const [selectedWarehouse, setSelectedWarehouse] = useState<string>("all");
@@ -203,7 +204,7 @@ export default function InventoryPage() {
                 </div>
               ) : warehouseError ? (
                 <div className={cn("h-[480px] flex items-center justify-center bg-wl-bg-elevated")}>
-                  <ErrorState message={warehouseError.message} onRetry={() => {}} />
+                  <ErrorState message={warehouseError.message} onRetry={refetchWarehouses} />
                 </div>
               ) : warehousePins.length === 0 ? (
                 <div className={cn("h-[480px] flex flex-col items-center justify-center bg-wl-bg-elevated gap-3")}>

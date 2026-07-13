@@ -57,14 +57,19 @@ export default function CollectionsPage() {
 
   const pageSize = 10;
 
+  const [removeError, setRemoveError] = useState<string | null>(null);
+
   const handleRemoveProduct = async (collectionId: string, productId: string) => {
     setRemovingProductId(productId);
+    setRemoveError(null);
     try {
       await api.delete(`/api/v4/collections/${collectionId}/products`, {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productIds: [productId] }),
       });
       await refetch();
+    } catch (err) {
+      setRemoveError(err instanceof Error ? err.message : 'Failed to remove product');
     } finally {
       setRemovingProductId(null);
     }
@@ -114,6 +119,11 @@ export default function CollectionsPage() {
 
   return (
     <div className="w-full bg-wl-bg-root min-h-screen">
+      {removeError && (
+        <div className="mx-6 mt-4 px-4 py-3 rounded-md bg-wl-danger-500/10 border border-wl-danger-500/30 text-wl-danger-400 text-sm">
+          {removeError}
+        </div>
+      )}
       <Header
         title="Collections"
         subtitle={`${totalCollections} total · ${totalProducts} products · ${autoCollections} auto`}
@@ -280,16 +290,10 @@ export default function CollectionsPage() {
                                       <Button
                                         variant="danger"
                                         size="sm"
-                                        onClick={() =>
-                                          api
-                                            .delete(`/api/v4/collections/${collection.id}/products`, {
-                                              body: JSON.stringify({ productIds: [product.id] }),
-                                            } as RequestInit)
-                                            .then(() => refetch())
-                                            .catch(console.error)
-                                        }
+                                        disabled={removingProductId === product.id}
+                                        onClick={() => handleRemoveProduct(collection.id, product.id)}
                                       >
-                                        Remove
+                                        {removingProductId === product.id ? "Removing…" : "Remove"}
                                       </Button>
                                     </div>
                                   ))}
