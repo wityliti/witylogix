@@ -57,19 +57,19 @@ export function ConnectionWizard({
     setCurrentStep(3);
   };
 
-  const handleTestConnection = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setTestResult({
-      success: true,
-      message: "Connection test successful! All permissions verified.",
-    });
-  };
-
-  const handleTestError = () => {
-    setTestResult({
-      success: false,
-      message: "Connection test failed. Please verify your credentials.",
-    });
+  const handleTestConnection = () => {
+    if (!selectedProvider || !config.credentials) {
+      setTestResult({ success: false, message: "Enter credentials first." });
+      return;
+    }
+    const hasValues = Object.values(config.credentials).some(
+      (v) => v !== undefined && v !== "" && v !== null,
+    );
+    setTestResult(
+      hasValues
+        ? { success: true, message: "Credentials look complete. Proceed to configure sync." }
+        : { success: false, message: "Please fill in all required credential fields." },
+    );
   };
 
   const handleProceedToSync = () => {

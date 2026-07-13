@@ -87,8 +87,7 @@ export function SyncStatusCard({
   const handleTriggerSync = async () => {
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      onTriggerSync?.();
+      await onTriggerSync?.();
     } finally {
       setIsLoading(false);
     }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
 import type { WebhookConfigProps } from "./types";
 
 /**
@@ -75,16 +76,22 @@ export function WebhookConfig({
     setTestResult({ status: 'loading', message: 'Testing webhook...' });
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const result = await api.post<{ data: { success: boolean; statusCode: number; duration: number; response: string | null } }>(
+        '/api/v4/outbound-webhooks/test',
+        { url, eventType: 'test.ping', payload: { source: 'webhook-config-test' } },
+      );
+      const { success, statusCode, duration } = result.data;
       setTestResult({
-        status: 'success',
-        message: `Webhook test successful! Sent to ${url}`,
+        status: success ? 'success' : 'error',
+        message: success
+          ? `Webhook test successful! HTTP ${statusCode} in ${duration}ms`
+          : `Server returned HTTP ${statusCode} after ${duration}ms`,
       });
       onTest?.(url);
-    } catch (error) {
+    } catch (err) {
       setTestResult({
         status: 'error',
-        message: 'Failed to test webhook. Please check the URL.',
+        message: err instanceof Error ? err.message : 'Failed to reach webhook URL',
       });
     } finally {
       setTestLoading(false);

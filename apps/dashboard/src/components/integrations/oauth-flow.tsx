@@ -106,8 +106,7 @@ export function OAuthFlow({
   const handleAuthorize = async () => {
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      onAuthorize?.();
+      await onAuthorize?.();
     } finally {
       setIsLoading(false);
     }
@@ -116,8 +115,7 @@ export function OAuthFlow({
   const handleRefreshToken = async () => {
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      onRefreshToken?.();
+      await onRefreshToken?.();
     } finally {
       setIsLoading(false);
     }

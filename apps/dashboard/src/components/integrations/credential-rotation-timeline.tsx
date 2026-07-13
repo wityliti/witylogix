@@ -102,8 +102,7 @@ export function CredentialRotationTimeline({
   const handleRotate = async (entryId: string) => {
     setIsRotating(entryId);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 600));
-      onRotate?.(entryId);
+      await onRotate?.(entryId);
     } finally {
       setIsRotating(null);
     }

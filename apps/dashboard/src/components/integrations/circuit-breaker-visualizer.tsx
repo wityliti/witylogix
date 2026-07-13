@@ -63,8 +63,7 @@ export function CircuitBreakerVisualizer({
   const handleReset = async () => {
     setIsResetting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      onReset?.();
+      await onReset?.();
     } finally {
       setIsResetting(false);
     }

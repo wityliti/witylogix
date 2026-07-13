@@ -67,7 +67,7 @@ export function ChaosScenarioCard({
       case "high":
         return "var(--wl-danger-500)";
       case "critical":
-        return "#8b0000"; // Dark red
+        return "var(--wl-danger-700)";
       default:
         return "var(--wl-border-subtle)";
     }
@@ -113,8 +113,7 @@ export function ChaosScenarioCard({
   const handleRun = async () => {
     setIsExecuting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      onRun?.();
+      await onRun?.();
     } finally {
       setIsExecuting(false);
     }
