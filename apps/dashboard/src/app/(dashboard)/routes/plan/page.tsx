@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { ChevronLeft, ChevronRight, Zap, Map, List } from 'lucide-react';
 import Link from 'next/link';
@@ -48,6 +49,7 @@ const STEPS: { id: StepType; label: string; description: string }[] = [
 const MAP_STEPS: StepType[] = ['optimize', 'review', 'dispatch'];
 
 export default function RoutePlanningPage() {
+  const router = useRouter();
   const {
     state,
     goToStep,
@@ -119,7 +121,7 @@ export default function RoutePlanningPage() {
     setSaveError(null);
     try {
       const result = await saveRoute();
-      window.location.href = result?.id ? `/routes/${result.id}` : '/routes';
+      router.push(result?.id ? `/routes/${result.id}` : '/routes');
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to save route');
       setIsSaving(false);

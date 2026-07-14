@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
@@ -121,6 +122,7 @@ function ProvidersSection({
   loading: boolean;
   error: Error | null;
 }) {
+  const router = useRouter();
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} />;
 
@@ -141,7 +143,7 @@ function ProvidersSection({
         <Button
           variant="primary"
           size="sm"
-          onClick={() => (window.location.href = '/integrations/catalog')}
+          onClick={() => (router.push('/integrations/catalog'))}
         >
           Browse Integrations
         </Button>
@@ -361,6 +363,7 @@ function DeliveryStatsSection({
 // ── Main Page ────────────────────────────────────────────────
 
 export default function CollaborationPage() {
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState<
     'providers' | 'team' | 'stats' | 'routes'
   >('providers');
@@ -413,7 +416,7 @@ export default function CollaborationPage() {
             <Button
               variant="primary"
               size="md"
-              onClick={() => (window.location.href = '/integrations/catalog')}
+              onClick={() => (router.push('/integrations/catalog'))}
             >
               <Plus className="w-4 h-4 mr-1.5" />
               Add Integration

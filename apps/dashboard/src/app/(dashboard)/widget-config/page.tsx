@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   Card,
@@ -31,6 +32,7 @@ interface ShopData {
 }
 
 export default function WidgetConfigPage() {
+  const router = useRouter();
   const [cartSelectorEnabled, setCartSelectorEnabled] = useState(true);
   const [shippingCalcEnabled, setShippingCalcEnabled] = useState(true);
   const [widgetPosition, setWidgetPosition] = useState("bottom-right");
@@ -480,7 +482,7 @@ export default function WidgetConfigPage() {
             <span className="text-xs text-red-400">{saveMutation.error.message}</span>
           )}
           {saveSuccess && <span className="text-xs text-green-400">Saved!</span>}
-          <Button variant="secondary" onClick={() => window.location.reload()}>
+          <Button variant="secondary" onClick={() => router.refresh()}>
             Discard
           </Button>
           <Button variant="primary" onClick={handleSave} disabled={saveMutation.loading}>

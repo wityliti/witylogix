@@ -54,8 +54,8 @@ const STATUS_OPTIONS = ['All', 'Received', 'Picked', 'Packed', 'Shipped', 'Deliv
 export default function OrdersPage() {
   const orders = useOrders();
   const fulfillment = useFulfillment();
-  const { items: wavePlans, loading: wavesLoading, error: wavesError } = useApiList<WavePlan>('/api/v4/supply-chain/waves');
-  const { items: batchPicking, loading: batchesLoading, error: batchesError } = useApiList<BatchPickingTask>('/api/v4/supply-chain/batches');
+  const { items: wavePlans, loading: wavesLoading, error: wavesError, refetch: refetchWaves } = useApiList<WavePlan>('/api/v4/supply-chain/waves');
+  const { items: batchPicking, loading: batchesLoading, error: batchesError, refetch: refetchBatches } = useApiList<BatchPickingTask>('/api/v4/supply-chain/batches');
   const { items: returnQueue, loading: returnsLoading, error: returnsError, refetch: refetchReturns } = useApiList<ReturnItem>('/api/v4/returns');
   const { items: warehouseItems } = useApiList<{ name: string }>('/api/v4/supply-chain/warehouses');
   const [returnsActionLoading, setReturnsActionLoading] = useState<string | null>(null);
@@ -129,7 +129,7 @@ export default function OrdersPage() {
       <>
         <Header title="Supply Chain Orders" subtitle="Order pipeline and fulfillment" />
         <div className="p-6">
-          <ErrorState message="Failed to load orders" onRetry={() => window.location.reload()} />
+          <ErrorState message="Failed to load orders" onRetry={orders.refetch} />
         </div>
       </>
     );
@@ -367,7 +367,7 @@ export default function OrdersPage() {
           </div>
 
           {wavesLoading && <TableSkeleton rows={3} columns={4} />}
-          {wavesError && <ErrorState message="Failed to load wave plans" onRetry={() => window.location.reload()} />}
+          {wavesError && <ErrorState message="Failed to load wave plans" onRetry={refetchWaves} />}
           {!wavesLoading && !wavesError && wavePlans.length === 0 ? (
             <div className="text-center py-10 text-wl-text-secondary">No wave plans found. Create a wave to start batch fulfillment.</div>
           ) : null}
@@ -418,7 +418,7 @@ export default function OrdersPage() {
           </h3>
 
           {batchesLoading && <TableSkeleton rows={3} columns={3} />}
-          {batchesError && <ErrorState message="Failed to load batch picking tasks" onRetry={() => window.location.reload()} />}
+          {batchesError && <ErrorState message="Failed to load batch picking tasks" onRetry={refetchBatches} />}
           {!batchesLoading && !batchesError && batchPicking.length === 0 ? (
             <div className="text-center py-10 text-wl-text-secondary">No batch picking tasks found.</div>
           ) : null}

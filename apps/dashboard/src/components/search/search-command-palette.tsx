@@ -14,6 +14,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSearch } from "@/hooks/use-search";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,7 @@ interface QuickAction {
 // ─── COMPONENT ──────────────────────────────────────────────────────
 
 export function SearchCommandPalette(): React.ReactElement {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const search = useSearch({ limit: 20 });
 
@@ -50,26 +52,19 @@ export function SearchCommandPalette(): React.ReactElement {
       id: "create-order",
       label: "Create Order",
       icon: "plus",
-      action: () => {
-        // Navigate to create order page
-        window.location.href = "/orders/new";
-      },
+      action: () => { setIsOpen(false); router.push("/orders/new"); },
     },
     {
       id: "add-driver",
       label: "Add Driver",
       icon: "user-plus",
-      action: () => {
-        window.location.href = "/drivers/new";
-      },
+      action: () => { setIsOpen(false); router.push("/drivers/new"); },
     },
     {
       id: "view-map",
       label: "View Map",
       icon: "map",
-      action: () => {
-        window.location.href = "/map";
-      },
+      action: () => { setIsOpen(false); router.push("/map"); },
     },
   ];
 
@@ -117,7 +112,7 @@ export function SearchCommandPalette(): React.ReactElement {
                 ? "/integrations"
                 : "/customers";
 
-      window.location.href = `${basePath}/${result.id}`;
+      router.push(`${basePath}/${result.id}`);
     },
     [search]
   );
