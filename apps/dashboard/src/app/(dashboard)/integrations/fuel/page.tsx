@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useApiList } from '@/hooks/use-api';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
@@ -101,6 +102,7 @@ function Empty({ icon: Icon, title, body, cta }: { icon: typeof Plug; title: str
 // ── Providers tab ────────────────────────────────────────────
 
 function ProvidersTab({ connections, loading, error }: { connections: Connection[]; loading: boolean; error: Error | null }) {
+  const router = useRouter();
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} />;
 
@@ -115,7 +117,7 @@ function ProvidersTab({ connections, loading, error }: { connections: Connection
         title="No fuel integrations connected"
         body="Connect WEX, Comdata, Fuelman, or EFS to manage fuel cards and track fuel costs in real time."
         cta={
-          <Button variant="primary" size="sm" onClick={() => window.location.href = '/integrations/catalog'}>
+          <Button variant="primary" size="sm" onClick={() => router.push('/integrations/catalog')}>
             Browse Fuel Integrations
           </Button>
         }
@@ -319,6 +321,7 @@ function AnalyticsTab({ transactions }: { transactions: FuelTransaction[] }) {
 // ── Main page ────────────────────────────────────────────────
 
 export default function FuelIntegrationsPage() {
+  const router = useRouter();
   const [view, setView] = useState<TabView>('providers');
 
   const {
@@ -388,7 +391,7 @@ export default function FuelIntegrationsPage() {
               <Download className="w-4 h-4 mr-1.5" />
               Export
             </Button>
-            <Button variant="primary" size="md" onClick={() => window.location.href = '/integrations/catalog'}>
+            <Button variant="primary" size="md" onClick={() => router.push('/integrations/catalog')}>
               <Plus className="w-4 h-4 mr-1.5" />
               Connect Provider
             </Button>
@@ -470,7 +473,7 @@ export default function FuelIntegrationsPage() {
             title="Station network requires a fuel card integration"
             body="Connect WEX, Comdata, or Fuelman to browse their station networks and see real-time pricing near your fleet."
             cta={
-              <Button variant="primary" size="sm" onClick={() => window.location.href = '/integrations/catalog'}>
+              <Button variant="primary" size="sm" onClick={() => router.push('/integrations/catalog')}>
                 Browse Integrations
               </Button>
             }

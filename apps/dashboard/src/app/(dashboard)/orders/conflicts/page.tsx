@@ -37,7 +37,7 @@ export default function ConflictsPage() {
   const [resolving, setResolving] = useState<Set<string>>(new Set());
   const [bulkResolvingField, setBulkResolvingField] = useState<string | null>(null);
 
-  const { conflicts, isLoading, error, resolveConflict, bulkResolveByType } = useConflicts();
+  const { conflicts, isLoading, error, resolveConflict, bulkResolveByType, revalidate } = useConflicts();
 
   // Filter conflicts
   const filteredConflicts = useMemo(() => {
@@ -116,10 +116,10 @@ export default function ConflictsPage() {
   const unresolved = conflicts.filter((c) => !c.resolved).length;
 
   if (isLoading) return <TableSkeleton columns={4} rows={6} />;
-  if (error) return <ErrorState message={String(error)} onRetry={() => window.location.reload()} />;
+  if (error) return <ErrorState message={String(error)} onRetry={revalidate} />;
 
   const headerActions = (
-    <Button variant="primary" size="md" onClick={() => window.location.reload()}>
+    <Button variant="primary" size="md" onClick={revalidate}>
       🔄 Refresh
     </Button>
   );
