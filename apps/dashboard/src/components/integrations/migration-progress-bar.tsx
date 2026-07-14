@@ -27,7 +27,6 @@ export function MigrationProgressBar({
   className,
 }: MigrationProgressBarProps) {
   const [expandedStep, setExpandedStep] = useState<MigrationStep | null>(null);
-  const [isRollingBack, setIsRollingBack] = useState<MigrationStep | null>(null);
 
   const steps: { id: MigrationStep; label: string }[] = [
     { id: "source", label: "Source" },
@@ -54,14 +53,8 @@ export function MigrationProgressBar({
     }
   };
 
-  const handleRollback = async (step: MigrationStep) => {
-    setIsRollingBack(step);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 600));
-      onRollback?.(step);
-    } finally {
-      setIsRollingBack(null);
-    }
+  const handleRollback = (step: MigrationStep) => {
+    onRollback?.(step);
   };
 
   const formatDuration = (minutes: number): string => {
@@ -263,15 +256,13 @@ export function MigrationProgressBar({
                     {status === "completed" && completedSteps.length > 1 && (
                       <button
                         onClick={() => handleRollback(step.id)}
-                        disabled={isRollingBack === step.id}
                         className={cn(
                           "w-full px-3 py-2 rounded text-xs font-medium transition-colors",
                           "bg-wl-danger-100 dark:bg-wl-danger-900/30 text-wl-danger-600 hover:bg-wl-danger-200 dark:hover:bg-wl-danger-900/50",
                           "border border-wl-danger-200 dark:border-wl-danger-800",
-                          isRollingBack === step.id && "opacity-60 cursor-not-allowed"
                         )}
                       >
-                        {isRollingBack === step.id ? "Rolling Back..." : "Rollback to This Step"}
+                        Rollback to This Step
                       </button>
                     )}
                   </div>

@@ -40,36 +40,21 @@ export function ImportExportWizard({
 }: ImportExportWizardProps) {
   const [mode, setMode] = useState<'import' | 'export'>(defaultMode);
   const [data, setData] = useState<ImportData>({ step: 'source' });
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const steps: WizardStep[] = ['source', 'mapping', 'preview', 'validate', 'complete'];
+  const STEP_ORDER: WizardStep[] = ['source', 'mapping', 'preview', 'validate', 'complete'];
+  const steps = STEP_ORDER;
   const currentStepIndex = steps.indexOf(data.step);
 
-  const handleNext = async () => {
-    setIsProcessing(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setIsProcessing(false);
-
-    if (data.step === 'source') {
-      setData({ ...data, step: 'mapping' });
-    } else if (data.step === 'mapping') {
-      setData({ ...data, step: 'preview' });
-    } else if (data.step === 'preview') {
-      setData({ ...data, step: 'validate' });
-    } else if (data.step === 'validate') {
-      setData({ ...data, step: 'complete' });
+  const handleNext = () => {
+    const idx = STEP_ORDER.indexOf(data.step);
+    if (idx < STEP_ORDER.length - 1) {
+      setData({ ...data, step: STEP_ORDER[idx + 1] });
     }
   };
 
   const handleBack = () => {
-    if (data.step === 'mapping') {
-      setData({ ...data, step: 'source' });
-    } else if (data.step === 'preview') {
-      setData({ ...data, step: 'mapping' });
-    } else if (data.step === 'validate') {
-      setData({ ...data, step: 'preview' });
-    } else if (data.step === 'complete') {
-      setData({ ...data, step: 'validate' });
+    const idx = STEP_ORDER.indexOf(data.step);
+    if (idx > 0) {
+      setData({ ...data, step: STEP_ORDER[idx - 1] });
     }
   };
 
@@ -412,7 +397,7 @@ export function ImportExportWizard({
       <div className="border-t border-wl-border-subtle bg-wl-surface-hover p-6 flex gap-3">
         <button
           onClick={handleBack}
-          disabled={data.step === 'source' || isProcessing}
+          disabled={data.step === 'source'}
           className={cn(
             'flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-colors',
             'bg-wl-surface-hover text-wl-text-primary hover:bg-wl-border-subtle',
@@ -426,7 +411,6 @@ export function ImportExportWizard({
           <button
             onClick={handleNext}
             disabled={
-              isProcessing ||
               (data.step === 'source' && !data.fileFormat) ||
               (data.step === 'source' && mode === 'import' && !data.fileName)
             }
@@ -436,7 +420,7 @@ export function ImportExportWizard({
               'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
           >
-            {isProcessing ? 'Processing...' : 'Next'}
+            Next
           </button>
         )}
 

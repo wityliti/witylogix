@@ -200,8 +200,11 @@ const AnalyticsWidget = ({
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await onRefresh?.();
-    setTimeout(() => setIsRefreshing(false), 1000);
+    try {
+      await onRefresh?.();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const renderContent = () => {
