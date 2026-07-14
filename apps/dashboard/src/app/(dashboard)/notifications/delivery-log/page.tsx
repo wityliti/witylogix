@@ -47,6 +47,7 @@ export default function DeliveryLogPage() {
     setFilters,
     loadMore,
     exportCSV,
+    refetch,
   } = useDeliveryLog();
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -124,7 +125,7 @@ export default function DeliveryLogPage() {
       <div className="min-h-screen bg-wl-bg-root">
         <Header title="Delivery Log" subtitle="Track notification delivery status and history" />
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <ErrorState message={error.message} onRetry={() => window.location.reload()} />
+          <ErrorState message={error.message} onRetry={refetch} />
         </main>
       </div>
     );

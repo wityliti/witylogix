@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -51,6 +51,7 @@ interface ErrorEntry {
 }
 
 export default function IntegrationDetailPage() {
+  const router = useRouter();
   const params = useParams();
   const connectionId = params.providerId as string;
 
@@ -556,7 +557,7 @@ export default function IntegrationDetailPage() {
                   try {
                     await disconnect(connectionId);
                     setShowDisconnectModal(false);
-                    window.location.href = "/integrations/connected";
+                    router.push("/integrations/connected");
                   } catch (err) {
                     console.error("Disconnect failed:", err);
                   }

@@ -243,9 +243,9 @@ function TemplateUsageCard({ templates }: { templates: Array<{ name: string; cou
 }
 
 export default function ESignaturesPage() {
-  const { items: envelopes, loading: envelopesLoading, error: envelopesError } = useEnvelopes();
-  const { data: analytics, loading: analyticsLoading, error: analyticsError } = useEsigAnalytics();
-  const { items: signingTemplates, loading: templatesLoading, error: templatesError } = useTemplates();
+  const { items: envelopes, loading: envelopesLoading, error: envelopesError, refetch: refetchEnvelopes } = useEnvelopes();
+  const { data: analytics, loading: analyticsLoading, error: analyticsError, refetch: refetchAnalytics } = useEsigAnalytics();
+  const { items: signingTemplates, loading: templatesLoading, error: templatesError, refetch: refetchTemplates } = useTemplates();
 
   const templateData = signingTemplates.map((t: { name: string; usageCount: number }) => ({ name: t.name, count: t.usageCount }));
 
@@ -283,11 +283,12 @@ export default function ESignaturesPage() {
 
   const anyError = envelopesError || analyticsError || templatesError;
   if (anyError) {
+    const retryAll = () => { void refetchEnvelopes(); void refetchAnalytics(); void refetchTemplates(); };
     return (
       <div className="p-6">
         <ErrorState
           message={anyError instanceof Error ? anyError.message : "Failed to load e-signatures data"}
-          onRetry={() => window.location.reload()}
+          onRetry={retryAll}
         />
       </div>
     );

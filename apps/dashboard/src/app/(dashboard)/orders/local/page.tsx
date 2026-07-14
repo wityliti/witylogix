@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -103,6 +104,7 @@ function formatAddress(addr: ApiOrder['deliveryAddress']): string {
 }
 
 export default function LocalOrdersPage() {
+  const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
@@ -427,7 +429,7 @@ export default function LocalOrdersPage() {
                   variant="primary"
                   size="md"
                   className="w-full flex items-center justify-center gap-1.5"
-                  onClick={() => window.location.href = `/orders/${selectedOrder.id}`}
+                  onClick={() => router.push(`/orders/${selectedOrder.id}`)}
                 >
                   <ChevronRight size={14} /> View Full Details
                 </Button>
