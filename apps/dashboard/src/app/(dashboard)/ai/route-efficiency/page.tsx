@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { useApiQuery } from '@/hooks/use-api';
 import { useApiList } from '@/hooks/use-api';
 import { ErrorState } from '@/components/ui/error-state';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import type { StopMarker } from '@/components/map/route-stop-markers-layer';
 
 const WLMap = dynamic(
@@ -179,6 +180,7 @@ export default function RouteEfficiencyPage() {
     '/api/v4/routes?status=COMPLETED&limit=20',
   );
 
+  if (routesLoading) return <div className="p-6"><LoadingSkeleton type="list" className="h-96" /></div>;
   if (routesError) return <ErrorState message={routesError.message} onRetry={refetchRoutes} />;
 
   const routes = (routesData ?? []).filter((r) =>

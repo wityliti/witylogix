@@ -57,28 +57,24 @@ export function CredentialForm({
     [fieldErrors]
   );
 
-  const handleTestConnection = async () => {
-    setTestLoading(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      const isValid = Object.values(credentials).every(
-        (v) => v !== undefined && v !== '' && v !== null
-      );
+  const handleTestConnection = () => {
+    const requiredFields = credentialConfig?.fields?.filter((f) => f.required) ?? [];
+    const missingFields = requiredFields.filter((f) => {
+      const val = credentials[f.name];
+      return val === undefined || val === '' || val === null;
+    });
 
-      if (isValid) {
-        setTestResult({
-          status: 'success',
-          message: 'Connection successful! Credentials are valid.',
-        });
-        onTest?.(credentials);
-      } else {
-        setTestResult({
-          status: 'error',
-          message: 'Please fill in all required fields.',
-        });
-      }
-    } finally {
-      setTestLoading(false);
+    if (missingFields.length === 0) {
+      setTestResult({
+        status: 'success',
+        message: 'All required fields are filled. Save credentials to complete setup.',
+      });
+      onTest?.(credentials);
+    } else {
+      setTestResult({
+        status: 'error',
+        message: `Please fill in: ${missingFields.map((f) => f.label).join(', ')}`,
+      });
     }
   };
 

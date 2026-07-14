@@ -6,6 +6,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { StatCard } from '@/components/ui/stat-card';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
 import { useApiList } from '@/hooks/use-api';
 
@@ -100,15 +102,18 @@ export default function CRMIntegrationPage() {
     [syncFilterType, syncLogs]
   );
 
+  if (providersLoading) {
+    return (
+      <div className="p-6">
+        <TableSkeleton rows={4} columns={4} />
+      </div>
+    );
+  }
+
   if (providersError) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
-          <p className="text-sm text-red-400">Failed to load CRM integrations</p>
-          <Button onClick={refetch} variant="secondary" size="sm" className="mt-3">
-            Retry
-          </Button>
-        </div>
+        <ErrorState error={providersError} onRetry={refetch} />
       </div>
     );
   }
