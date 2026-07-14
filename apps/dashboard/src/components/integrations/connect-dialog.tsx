@@ -87,14 +87,9 @@ export function ConnectDialog({
     setStep("testing");
 
     try {
-      if (onConnect) {
-        await onConnect(formData);
-      } else {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-      }
+      await onConnect?.(formData);
       setTestStatus("success");
-    } catch (error) {
+    } catch {
       setTestStatus("error");
     } finally {
       setIsLoading(false);

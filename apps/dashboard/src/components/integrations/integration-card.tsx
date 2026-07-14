@@ -54,7 +54,6 @@ export function IntegrationCard({
   className,
 }: IntegrationCardProps) {
   const [isHovering, setIsHovering] = useState(false);
-  const [isActionLoading, setIsActionLoading] = useState(false);
 
   // Truncate description to 2 lines
   const truncatedDescription = description.split("\n").slice(0, 2).join("\n");
@@ -90,38 +89,13 @@ export function IntegrationCard({
   const getActionButton = () => {
     switch (status) {
       case "available":
-        return {
-          label: "Connect",
-          onClick: () => {
-            setIsActionLoading(true);
-            onConnect?.(id);
-            setTimeout(() => setIsActionLoading(false), 300);
-          },
-        };
+        return { label: "Connect", onClick: () => onConnect?.(id) };
       case "connected":
-        return {
-          label: "Manage",
-          onClick: () => {
-            setIsActionLoading(true);
-            onManage?.(id);
-            setTimeout(() => setIsActionLoading(false), 300);
-          },
-        };
+        return { label: "Manage", onClick: () => onManage?.(id) };
       case "error":
-        return {
-          label: "Reconnect",
-          onClick: () => {
-            setIsActionLoading(true);
-            onReconnect?.(id);
-            setTimeout(() => setIsActionLoading(false), 300);
-          },
-        };
+        return { label: "Reconnect", onClick: () => onReconnect?.(id) };
       case "syncing":
-        return {
-          label: "Syncing...",
-          onClick: undefined,
-          disabled: true,
-        };
+        return { label: "Syncing...", onClick: undefined, disabled: true };
       default:
         return { label: "Connect", onClick: () => onConnect?.(id) };
     }
@@ -236,7 +210,7 @@ export function IntegrationCard({
         {/* Action button */}
         <button
           onClick={actionButton.onClick}
-          disabled={actionButton.disabled || isActionLoading}
+          disabled={actionButton.disabled}
           className={cn(
             "w-full px-4 py-2 rounded font-medium text-sm transition-all duration-200",
             status === "connected"
@@ -253,22 +227,10 @@ export function IntegrationCard({
                     "bg-wl-primary-500 text-white hover:bg-wl-primary-600",
                     "dark:bg-wl-primary-600 dark:hover:bg-wl-primary-700"
                   ),
-            (actionButton.disabled || isActionLoading) && "opacity-60 cursor-not-allowed"
+            actionButton.disabled && "opacity-60 cursor-not-allowed"
           )}
         >
-          {isActionLoading ? (
-            <span className="inline-flex items-center gap-2">
-              <span
-                className={cn(
-                  "w-3 h-3 rounded-full animate-spin",
-                  "border-2 border-current border-t-transparent"
-                )}
-              />
-              {actionButton.label}
-            </span>
-          ) : (
-            actionButton.label
-          )}
+          {actionButton.label}
         </button>
       </div>
     </div>

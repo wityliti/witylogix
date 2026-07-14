@@ -16,7 +16,6 @@ export function ProviderCard({
   onDisconnect,
   className,
 }: ProviderCardProps) {
-  const [isLoading, setIsLoading] = useState(false);
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
 
   // Get status badge color
@@ -70,14 +69,8 @@ export function ProviderCard({
     return { points, width, height, max };
   }, [provider.metrics.requestTrend]);
 
-  const handleTest = async () => {
-    setIsLoading(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      onTest?.(provider.id);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleTest = () => {
+    onTest?.(provider.id);
   };
 
   const handleConfigure = () => {
@@ -225,15 +218,13 @@ export function ProviderCard({
 
         <button
           onClick={handleTest}
-          disabled={isLoading}
           className={cn(
             'flex-1 px-3 py-2 rounded text-sm font-medium transition-colors',
             'bg-wl-surface-hover text-wl-text-primary hover:bg-wl-border-subtle',
             'dark:bg-wl-surface-hover dark:hover:bg-wl-border-default',
-            isLoading && 'opacity-60 cursor-not-allowed'
           )}
         >
-          {isLoading ? 'Testing...' : 'Test'}
+          Test
         </button>
 
         {confirmDisconnect ? (
