@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search, Home, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -10,6 +11,7 @@ import { cn } from '@/lib/utils';
  * Displayed when a route within the dashboard group doesn't exist
  */
 export default function DashboardNotFound() {
+  const router = useRouter();
   const [isAnimated, setIsAnimated] = useState(false);
 
   useEffect(() => {
@@ -104,7 +106,7 @@ export default function DashboardNotFound() {
             <Button
               variant="primary"
               size="md"
-              onClick={() => (window.location.href = '/dashboard')}
+              onClick={() => router.push('/home')}
               className="w-full"
             >
               <Home className="h-4 w-4" />
