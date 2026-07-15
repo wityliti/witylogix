@@ -68,9 +68,9 @@ export default function CreateRoutePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [draggedStop, setDraggedStop] = useState<number | null>(null);
 
-  const { items: drivers } = useApiList<ApiDriver>('/api/v4/drivers');
-  const { items: vehicles } = useApiList<ApiVehicle>('/api/v4/fleet/vehicles');
-  const { items: orders } = useApiList<ApiOrder>('/api/v4/orders', { limit: 50 });
+  const { items: drivers, loading: driversLoading, error: driversError } = useApiList<ApiDriver>('/api/v4/drivers');
+  const { items: vehicles, loading: vehiclesLoading, error: vehiclesError } = useApiList<ApiVehicle>('/api/v4/fleet/vehicles');
+  const { items: orders, loading: ordersLoading, error: ordersError } = useApiList<ApiOrder>('/api/v4/orders', { limit: 50 });
   const createRoute = useApiMutation<{ id: string }>('POST', '/api/v4/routes');
 
   const getOrderAddress = (order: ApiOrder): string => {
@@ -196,7 +196,7 @@ export default function CreateRoutePage() {
             className={cn(
               "flex-1 p-3 rounded-lg border text-center text-sm font-semibold cursor-pointer transition-all",
               step === idx + 1
-                ? "bg-blue-500 text-white border-blue-500"
+                ? "bg-wl-primary-500 text-white border-wl-primary-500"
                 : step > idx + 1
                   ? "bg-wl-bg-surface text-wl-text-secondary border-wl-border-default"
                   : "bg-wl-bg-surface text-wl-text-secondary border-wl-border-default"
@@ -254,15 +254,21 @@ export default function CreateRoutePage() {
                     name="driverId"
                     value={formData.driverId}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-white text-sm box-border"
+                    disabled={driversLoading}
+                    className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-white text-sm box-border disabled:opacity-60"
                   >
-                    <option value="">Select a driver</option>
+                    <option value="">
+                      {driversLoading ? 'Loading drivers…' : driversError ? 'Error loading drivers' : 'Select a driver'}
+                    </option>
                     {drivers.map((driver) => (
                       <option key={driver.id} value={driver.id}>
                         {driver.name}
                       </option>
                     ))}
                   </select>
+                  {driversError && (
+                    <p className="text-wl-danger-400 text-xs mt-1">{driversError.message}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-white text-sm font-semibold mb-2">Vehicle</label>
@@ -270,15 +276,21 @@ export default function CreateRoutePage() {
                     name="vehicleId"
                     value={formData.vehicleId}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-white text-sm box-border"
+                    disabled={vehiclesLoading}
+                    className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-white text-sm box-border disabled:opacity-60"
                   >
-                    <option value="">Select a vehicle</option>
+                    <option value="">
+                      {vehiclesLoading ? 'Loading vehicles…' : vehiclesError ? 'Error loading vehicles' : 'Select a vehicle'}
+                    </option>
                     {vehicles.map((vehicle) => (
                       <option key={vehicle.id} value={vehicle.id}>
                         {vehicle.year} {vehicle.make} {vehicle.model} ({vehicle.licensePlate})
                       </option>
                     ))}
                   </select>
+                  {vehiclesError && (
+                    <p className="text-wl-danger-400 text-xs mt-1">{vehiclesError.message}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -297,7 +309,18 @@ export default function CreateRoutePage() {
                 />
               </div>
 
-              {filteredOrders.length > 0 && (
+              {ordersLoading ? (
+                <div className="flex items-center gap-2 text-wl-text-secondary text-sm py-4">
+                  <div className="w-4 h-4 border-2 border-wl-border-strong border-t-wl-primary-500 rounded-full animate-spin" />
+                  Loading orders…
+                </div>
+              ) : ordersError ? (
+                <div className="p-3 rounded-md border border-wl-danger-400/20 bg-wl-danger-bg/10 text-wl-danger-400 text-sm mb-4">
+                  {ordersError.message}
+                </div>
+              ) : null}
+
+              {!ordersLoading && !ordersError && filteredOrders.length > 0 && (
                 <>
                   <h3 className="text-white text-sm font-semibold mb-3">
                     Available Orders ({filteredOrders.length})
@@ -377,19 +400,19 @@ export default function CreateRoutePage() {
 
                   <div className="grid grid-cols-4 gap-4 my-6">
                     <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default text-center">
-                      <div className="text-lg font-bold text-blue-500 mb-1">{formData.stops.length}</div>
+                      <div className="text-lg font-bold text-wl-primary-500 mb-1">{formData.stops.length}</div>
                       <div className="text-xs text-wl-text-secondary">Total Stops</div>
                     </div>
                     <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default text-center">
-                      <div className="text-lg font-bold text-blue-500 mb-1">{estimatedDistance.toFixed(1)}km</div>
+                      <div className="text-lg font-bold text-wl-primary-500 mb-1">{estimatedDistance.toFixed(1)}km</div>
                       <div className="text-xs text-wl-text-secondary">Est. Distance</div>
                     </div>
                     <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default text-center">
-                      <div className="text-lg font-bold text-blue-500 mb-1">{estimatedDuration}min</div>
+                      <div className="text-lg font-bold text-wl-primary-500 mb-1">{estimatedDuration}min</div>
                       <div className="text-xs text-wl-text-secondary">Est. Duration</div>
                     </div>
                     <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default text-center">
-                      <div className="text-lg font-bold text-blue-500 mb-1">850kg</div>
+                      <div className="text-lg font-bold text-wl-primary-500 mb-1">850kg</div>
                       <div className="text-xs text-wl-text-secondary">Est. Capacity</div>
                     </div>
                   </div>
@@ -515,7 +538,7 @@ export default function CreateRoutePage() {
                     className={cn(
                       "p-4 rounded-lg border text-center cursor-pointer transition-all",
                       formData.optimizationMode === (option.id as RouteFormData['optimizationMode'])
-                        ? "bg-blue-500 text-white border-blue-500"
+                        ? "bg-wl-primary-500 text-white border-wl-primary-500"
                         : "bg-wl-bg-surface text-white border-wl-border-default"
                     )}
                     onClick={() =>
