@@ -71,6 +71,7 @@ model Shop {
   deliveryOTPs                DeliveryOTP[]
   deliveryAuditLogs           DeliveryAuditLog[]
   activityFlows               ActivityFlow[]
+  returnRequests              ReturnRequest[]
 
   @@index([orgId])
   @@map("shops")

@@ -1,0 +1,29 @@
+# Build outputs
+node_modules/
+dist/
+.next/
+build/
+out/
+
+# Generated files
+packages/db/src/generated/
+*.generated.ts
+
+# Agent / Claude Code config files (not project source)
+.agents/
+.claude/
+
+# Skill / tool config
+**/.claude/
+**/.agents/
+
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Docs that are not source code
+docs/sprints/
+
+# Coverage
+coverage/
