@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { cn } from "@/lib/utils";
-import { useFleetCompliance, useViolations, useELDEvents, DutyStatus } from "@/hooks/use-eld";
+import { useFleetCompliance, useViolations, useELDEvents, DutyStatus, DriverComplianceStatus, DriverStatusInfo } from "@/hooks/use-eld";
 import { useApiList, ApiFilters } from "@/hooks/use-api";
 import { TableSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
@@ -63,7 +63,7 @@ const dutyStatusColor = (duty: DutyStatus): string => {
   return colors[duty];
 };
 
-function deriveDriverStatus(driver: ApiDriver, violationCounts: Record<string, number>): DriverStatus {
+function deriveDriverStatus(driver: ApiDriver, violationCounts: Record<string, number>): DriverComplianceStatus {
   const s = driver.status?.toLowerCase() ?? "";
   if (s === "offline" || s === "inactive") return "OFFLINE";
   const vCount = violationCounts[driver.id] ?? 0;
@@ -86,13 +86,8 @@ export default function ELDOverviewPage() {
   const violationsLoading = violationsResult.loading;
   const events            = eventsResult.items;
   const eventsLoading     = eventsResult.loading;
-  const drivers           = driversResult.items;
-  const driversLoading    = driversResult.loading;
 
-  if (driversLoading && !apiDrivers.length) return <TableSkeleton rows={10} columns={6} />;
-  if (driversError) return <ErrorState message={driversError.message} onRetry={driversRefetch} />;
-
-  // Build violation count per driverId
+  // Build violation count per driverId (computed before guards so useMemo below is valid)
   const violationCounts: Record<string, number> = {};
   for (const v of violations) {
     violationCounts[v.driverId] = (violationCounts[v.driverId] ?? 0) + 1;
@@ -120,14 +115,15 @@ export default function ELDOverviewPage() {
         ? "text-wl-warning-400"
         : "text-wl-danger-400";
 
-  const statusCounts = useMemo(() => {
-    return {
-      compliant: driverGrid.filter((d) => d.status === "COMPLIANT").length,
-      warning: driverGrid.filter((d) => d.status === "WARNING").length,
-      violation: driverGrid.filter((d) => d.status === "VIOLATION").length,
-      offline: driverGrid.filter((d) => d.status === "OFFLINE").length,
-    };
-  }, [driverGrid]);
+  const statusCounts = useMemo(() => ({
+    compliant: driverGrid.filter((d) => d.status === "COMPLIANT").length,
+    warning: driverGrid.filter((d) => d.status === "WARNING").length,
+    violation: driverGrid.filter((d) => d.status === "VIOLATION").length,
+    offline: driverGrid.filter((d) => d.status === "OFFLINE").length,
+  }), [driverGrid]);
+
+  if (driversLoading && !apiDrivers.length) return <TableSkeleton rows={10} columns={6} />;
+  if (driversError) return <ErrorState message={driversError.message} onRetry={driversRefetch} />;
 
   return (
     <div className="min-h-screen bg-wl-bg-root space-y-6 p-6">
@@ -247,10 +243,10 @@ export default function ELDOverviewPage() {
                           minute: "2-digit",
                         })}
                       </div>
-                    </button>
-                  ))}
-                </div>
-              )}
+                    </div>
+                  </button>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>

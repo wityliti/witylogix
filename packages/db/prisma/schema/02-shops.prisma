@@ -72,6 +72,8 @@ model Shop {
   deliveryAuditLogs           DeliveryAuditLog[]
   activityFlows               ActivityFlow[]
 
+  returnRequests          ReturnRequest[]
+
   @@index([orgId])
   @@map("shops")
 }

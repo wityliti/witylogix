@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -241,23 +241,20 @@ export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
 
   // Refresh every 30s
   useEffect(() => {
-    const interval = setInterval(() => {
-      refetchDrivers();
-      refetchDeliveries();
-    }, 30000);
+    const interval = setInterval(refetch, 30000);
     return () => clearInterval(interval);
-  }, [refetchDrivers, refetchDeliveries]);
+  }, [refetch]);
 
   const drivers = rawDrivers.map(toDriver);
   const activeDriverCount = drivers.filter((d) => d.status !== "offline").length;
 
-  const handleDriverClick = (driver: Driver, e: React.MouseEvent) => {
+  const handleDriverClick = useCallback((driver: Driver, e: React.MouseEvent) => {
     const rect = mapRef.current?.getBoundingClientRect();
     if (rect) {
       setPopoverPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
     }
-    return result;
-  }, [rawDrivers]);
+    setSelectedDriver(driver);
+  }, []);
 
   return (
     <Card className={cn("flex flex-col h-full relative overflow-hidden", className)}>
