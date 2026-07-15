@@ -9,7 +9,6 @@ import { TableSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { cn } from "@/lib/utils";
 import { useConflicts, type SyncPlatform, type SyncConflict } from "@/hooks/use-order-sync";
-import { useApiList } from '@/hooks/use-api';
 import { useToast } from '@/components/ui/toast';
 
 /* ═══════════════════════════════════════════════════════════

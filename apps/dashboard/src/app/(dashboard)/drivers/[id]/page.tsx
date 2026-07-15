@@ -213,11 +213,11 @@ export default function DriverDetailPage() {
     `/api/v4/driver-scoring/${driverId}`,
   );
 
-  const { data: historyData } = useApiQuery<HistoryEntry[]>(
+  const { data: historyData, loading: historyLoading, error: historyError } = useApiQuery<HistoryEntry[]>(
     `/api/v4/driver-scoring/${driverId}/history?period=weekly&days=56`,
   );
 
-  const { data: profileData } = useApiQuery<DriverProfile>(
+  const { data: profileData, loading: profileLoading } = useApiQuery<DriverProfile>(
     `/api/v4/drivers/${driverId}`,
   );
 
@@ -452,7 +452,15 @@ export default function DriverDetailPage() {
                   <h3 className="text-sm font-semibold text-white/60 tracking-wide">Score History</h3>
                   <span className="text-[11px] text-white/20 font-mono">8-week trend</span>
                 </div>
-                {history.length === 0 ? (
+                {historyLoading ? (
+                  <div className="h-24 flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-white/10 border-t-white/30 rounded-full animate-spin" />
+                  </div>
+                ) : historyError ? (
+                  <div className="h-24 flex items-center justify-center text-xs text-red-400/60">
+                    Failed to load history
+                  </div>
+                ) : history.length === 0 ? (
                   <div className="h-24 flex items-center justify-center text-xs text-white/20">
                     No history data yet
                   </div>
@@ -535,10 +543,14 @@ export default function DriverDetailPage() {
               </div>
             </div>
 
-            {mapProps ? (
+            {profileLoading ? (
+              <div className="h-[480px] rounded-xl bg-wl-bg-surface border border-wl-border-default animate-pulse" />
+            ) : mapProps ? (
               <DriverLocationMap {...mapProps} />
             ) : (
-              <div className="h-[480px] rounded-xl bg-wl-bg-surface border border-wl-border-default animate-pulse" />
+              <div className="h-[480px] rounded-xl bg-wl-bg-surface border border-wl-border-default flex items-center justify-center">
+                <p className="text-xs text-white/20">Location data unavailable</p>
+              </div>
             )}
 
             {/* Active orders summary below map */}

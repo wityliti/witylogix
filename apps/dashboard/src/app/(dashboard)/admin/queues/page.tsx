@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
-import { useApiQuery, useApiList } from '@/hooks/use-api';
+import { useApiQuery } from '@/hooks/use-api';
 
 interface QueueStats {
   name: string;

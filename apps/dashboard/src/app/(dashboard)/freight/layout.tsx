@@ -1,6 +1,8 @@
 "use client";
 
 import { ReactNode } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Header } from "@/components/layout/header";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +22,7 @@ const FREIGHT_TABS = [
 ];
 
 export default function FreightLayout({ children }: FreightLayoutProps) {
-  const currentPath = typeof window !== "undefined" ? window.location.pathname : "/freight";
+  const currentPath = usePathname();
   const isActive = (href: string) => {
     if (href === "/freight") return currentPath === "/freight";
     return currentPath.startsWith(href);
@@ -37,7 +39,7 @@ export default function FreightLayout({ children }: FreightLayoutProps) {
       <div className="sticky top-0 z-40 bg-wl-bg-surface border-b border-wl-border-default">
         <div className="flex gap-0">
           {FREIGHT_TABS.map((tab) => (
-            <a
+            <Link
               key={tab.href}
               href={tab.href}
               className={cn(
@@ -49,7 +51,7 @@ export default function FreightLayout({ children }: FreightLayoutProps) {
             >
               <span>{tab.icon}</span>
               {tab.label}
-            </a>
+            </Link>
           ))}
         </div>
       </div>

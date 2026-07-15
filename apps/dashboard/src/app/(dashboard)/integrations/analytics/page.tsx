@@ -144,10 +144,8 @@ export default function AnalyticsIntegrationsPage() {
 
   // Fetch data from API
   const { items: rawConnections, loading: connectionsLoading, error: connectionsError, refetch: refetchConnections } = useApiList<RawConnection>('/api/v4/integrations/connections?category=analytics');
-  const reports: ScheduledReport[] = [];
-  const reportsLoading = false;
-  const dataSources: DataSource[] = [];
-  const dataSourcesLoading = false;
+  const { items: reports, loading: reportsLoading } = useApiList<ScheduledReport>('/api/v4/integrations/reports?category=analytics');
+  const { items: dataSources, loading: dataSourcesLoading } = useApiList<DataSource>('/api/v4/integrations/data-sources?category=analytics');
 
   const connections = useMemo<AnalyticsConnection[]>(
     () =>

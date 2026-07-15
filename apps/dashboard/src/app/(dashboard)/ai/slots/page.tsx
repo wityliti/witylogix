@@ -77,7 +77,7 @@ export default function SlotAIPage() {
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [queryUrl, setQueryUrl] = useState<string | null>(null);
 
-  const { items: zones, loading: zonesLoading } = useApiList<Zone>('/api/v4/zones?limit=50');
+  const { items: zones, loading: zonesLoading, error: zonesError } = useApiList<Zone>('/api/v4/zones?limit=50');
 
   const activeZoneId = zoneId || zones[0]?.id || '';
 
@@ -131,11 +131,13 @@ export default function SlotAIPage() {
               <select
                 value={activeZoneId}
                 onChange={(e) => setZoneId(e.target.value)}
-                disabled={zonesLoading}
+                disabled={zonesLoading || !!zonesError}
                 className="w-full bg-wl-bg-sunken border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 focus:outline-none focus:border-white/20 transition-colors disabled:opacity-50"
               >
                 {zonesLoading ? (
                   <option>Loading zones…</option>
+                ) : zonesError ? (
+                  <option value="">Failed to load zones</option>
                 ) : zones.length === 0 ? (
                   <option value="">No zones configured</option>
                 ) : (
@@ -144,6 +146,9 @@ export default function SlotAIPage() {
                   ))
                 )}
               </select>
+              {zonesError && (
+                <p className="text-[10px] text-red-400/70 mt-1">{zonesError.message}</p>
+              )}
             </div>
 
             {/* Date */}
