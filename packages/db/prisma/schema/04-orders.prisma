@@ -70,6 +70,8 @@ model Order {
 
   @@unique([shopId, externalOrderId, source])
   @@index([shopId, status, createdAt(sort: Desc)])
+  returnRequests ReturnRequest[]
+
   @@index([shopId, driverId])
   @@index([shopId, deliveryDate])
   @@index([trackingToken])

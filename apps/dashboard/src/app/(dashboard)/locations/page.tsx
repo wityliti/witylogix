@@ -480,28 +480,27 @@ function LocationDetailPanel({ location: loc, onClose }: { location: Location; o
           <div>
             <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-3 tracking-wider")}>Map</div>
             <div className={cn("rounded-lg overflow-hidden border border-wl-border-default")} style={{ height: 160 }}>
-              <WLMap center={[loc.latitude, loc.longitude]} zoom={13} onReady={setDetailMapId} className="w-full h-full">
-                {detailMapId && (
-                  <LocationMarkerLayer
-                    mapId="detail-map"
-                    locations={[{
-                      id: loc.id,
-                      name: loc.name,
-                      type: loc.type,
-                      status: loc.status,
-                      addressLine1: loc.addressLine1,
-                      city: loc.city,
-                      province: loc.province,
-                      country: loc.country,
-                      latitude: loc.latitude,
-                      longitude: loc.longitude,
-                      activeShipments: loc.activeShipments,
-                      totalProcessed: loc.totalProcessed,
-                      avgPrepTime: loc.avgPrepTime,
-                      isDefault: loc.isDefault,
-                    }]}
-                    selectedId={loc.id}
-                  />
+              <WLMap center={[loc.latitude, loc.longitude]} zoom={13} className="w-full h-full">
+                <LocationMarkerLayer
+                  mapId="detail-map"
+                  locations={[{
+                    id: loc.id,
+                    name: loc.name,
+                    type: loc.type,
+                    status: loc.status,
+                    addressLine1: loc.addressLine1,
+                    city: loc.city,
+                    province: loc.province,
+                    country: loc.country,
+                    latitude: loc.latitude,
+                    longitude: loc.longitude,
+                    activeShipments: loc.activeShipments,
+                    totalProcessed: loc.totalProcessed,
+                    avgPrepTime: loc.avgPrepTime,
+                    isDefault: loc.isDefault,
+                  }]}
+                  selectedId={loc.id}
+                />
               </WLMap>
             </div>
             <div className={cn("text-xs font-mono text-gray-500 mt-1 text-center")}>
