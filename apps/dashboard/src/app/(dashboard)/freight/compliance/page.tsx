@@ -22,7 +22,7 @@ type FilterStatus = 'All' | 'Active' | 'Inactive' | 'Suspended';
 
 export default function FreightCompliancePage() {
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('All');
-  const { items: shipments, loading, error, refetch } = useApiList<Shipment>('/api/v4/shipments?type=freight&view=compliance');
+  const { items: shipments, loading, error, refetch } = useApiList<Shipment>('/api/v4/shipments?deliveryMethod=STANDARD_SHIPPING,EXPRESS_SHIPPING');
 
   const stats = useMemo(() => {
     const compliantCount = shipments.filter((s) =>

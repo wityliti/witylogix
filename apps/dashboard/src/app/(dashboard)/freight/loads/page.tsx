@@ -45,7 +45,7 @@ const statusBadgeVariant = (status: string): 'success' | 'warning' | 'danger' | 
 export default function FreightLoadsPage() {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { items: shipments, pagination, loading, error, refetch, setPage } = useApiList<Shipment>('/api/v4/shipments?type=freight&view=loads');
+  const { items: shipments, pagination, loading, error, refetch, setPage } = useApiList<Shipment>('/api/v4/shipments?deliveryMethod=STANDARD_SHIPPING,EXPRESS_SHIPPING');
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;

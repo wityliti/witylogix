@@ -101,7 +101,10 @@ async function shipmentsRoutes(fastify: FastifyInstance): Promise<void> {
       where.deliveryDate = { gte: date, lt: nextDay };
     }
     if (deliveryMethod) {
-      where.deliveryMethod = deliveryMethod as any;
+      const methods = deliveryMethod.split(',').map((m: string) => m.trim()).filter(Boolean);
+      where.deliveryMethod = methods.length === 1
+        ? (methods[0] as any)
+        : { in: methods as any[] };
     }
     if (search) {
       where.OR = [

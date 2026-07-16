@@ -41,7 +41,7 @@ interface Shipment {
 export default function FreightPage() {
   const [viewMode, setViewMode] = useState<'summary' | 'map'>('summary');
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { items: shipments, loading, error, refetch } = useApiList<Shipment>('/api/v4/shipments?type=freight');
+  const { items: shipments, loading, error, refetch } = useApiList<Shipment>('/api/v4/shipments?deliveryMethod=STANDARD_SHIPPING,EXPRESS_SHIPPING');
 
   const stats = useMemo(() => {
     const booked = shipments.filter((l) => l.status === 'Booked').length;
