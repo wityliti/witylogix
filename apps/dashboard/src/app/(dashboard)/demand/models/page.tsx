@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   AlertTriangle,
   Zap,
@@ -9,6 +10,8 @@ import {
   RefreshCw,
   Info,
   BrainCircuit,
+  Map,
+  LayoutGrid,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -17,6 +20,11 @@ import { Card } from '@/components/ui/card';
 import { useApiQuery } from '@/hooks/use-api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
+
+const DemandModelsMapView = dynamic(
+  () => import('./components/demand-models-map-view'),
+  { ssr: false, loading: () => <div className="h-[520px] rounded-2xl bg-wl-bg-surface animate-pulse" /> }
+);
 
 interface ModelMetric {
   name: string;
@@ -42,6 +50,7 @@ interface ModelMetric {
  */
 export default function ModelsPage() {
   const [expandedModel, setExpandedModel] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'charts' | 'map'>('charts');
 
   const { data: rawData, loading, error } = useApiQuery<{ items: ModelMetric[]; total: number }>(
     '/api/v4/analytics/demand-models'
@@ -88,10 +97,39 @@ export default function ModelsPage() {
               <h1 className="text-2xl font-bold text-wl-text-primary">Model Performance</h1>
               <p className="text-sm text-wl-text-secondary mt-1">Demand forecast model analytics</p>
             </div>
-            <Button variant="primary" size="md">
-              <RefreshCw className="w-4 h-4" />
-              Retrain Models
-            </Button>
+            <div className="flex items-center gap-3">
+              {/* Charts / Map toggle */}
+              <div className="flex items-center bg-wl-bg-overlay rounded-lg p-1 border border-wl-border-default">
+                <button
+                  onClick={() => setViewMode('charts')}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                    viewMode === 'charts'
+                      ? 'bg-wl-primary-500 text-white'
+                      : 'text-wl-text-secondary hover:text-wl-text-primary'
+                  )}
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                  Charts
+                </button>
+                <button
+                  onClick={() => setViewMode('map')}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                    viewMode === 'map'
+                      ? 'bg-wl-primary-500 text-white'
+                      : 'text-wl-text-secondary hover:text-wl-text-primary'
+                  )}
+                >
+                  <Map className="w-4 h-4" />
+                  Map
+                </button>
+              </div>
+              <Button variant="primary" size="md">
+                <RefreshCw className="w-4 h-4" />
+                Retrain Models
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -128,7 +166,13 @@ export default function ModelsPage() {
             </Card>
           </div>
 
+          {/* Map View */}
+          {viewMode === 'map' && (
+            <DemandModelsMapView models={models} />
+          )}
+
           {/* Model Cards */}
+          {viewMode === 'charts' && (
           <div className="space-y-4">
             {models.length === 0 ? (
               <Card className="p-12 bg-wl-bg-surface border-wl-border-default text-center">
@@ -207,6 +251,7 @@ export default function ModelsPage() {
               );
             })}
           </div>
+          )}
         </div>
       </div>
     </div>
