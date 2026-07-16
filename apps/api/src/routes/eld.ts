@@ -274,6 +274,135 @@ export default async function eldRoutes(fastify: FastifyInstance): Promise<void>
     });
   });
 
+  // ── GET /drivers/:id/daily-log ───────────────────────────────────────────
+  // Returns today's 24-hour duty-status log (derived from ELD events) and the
+  // last 8 days of per-day HOS totals for the 8-day cycle recap table.
+
+  fastify.get("/drivers/:id/daily-log", async (request: FastifyRequest, reply: FastifyReply) => {
+    const orgId = (request as any).orgId as string | undefined;
+    const { id } = request.params as { id: string };
+
+    const driver = await (prisma as any).driver.findFirst({
+      where: { id, ...(orgId ? { orgId } : {}) },
+      select: { id: true, name: true },
+    });
+    if (!driver) throw new NotFoundError("Driver not found");
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(todayStart);
+    todayEnd.setDate(todayEnd.getDate() + 1);
+
+    // Today's STATUS_CHANGE events, chronological
+    const events = await (prisma as any).eldEvent.findMany({
+      where: {
+        driverId: id,
+        ...(orgId ? { orgId } : {}),
+        type: "STATUS_CHANGE",
+        createdAt: { gte: todayStart, lt: todayEnd },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    const statusLabels: Record<string, string> = {
+      OFF_DUTY: "Off-Duty",
+      SLEEPER:  "Sleeper",
+      DRIVING:  "Driving",
+      ON_DUTY:  "On-Duty",
+    };
+
+    // Seed all 24 hours as OFF_DUTY, then replay each STATUS_CHANGE forward.
+    const hourStatus: string[] = Array(24).fill("OFF_DUTY");
+    for (const ev of events) {
+      const hour = new Date(ev.createdAt).getHours();
+      const data = (ev.data ?? {}) as Record<string, string>;
+      const status = data.to ?? data.status ?? "OFF_DUTY";
+      for (let h = hour; h < 24; h++) hourStatus[h] = status;
+    }
+
+    const dailyLog = Array.from({ length: 24 }, (_, i) => ({
+      hour:   i,
+      status: hourStatus[i],
+      label:  statusLabels[hourStatus[i]] ?? hourStatus[i],
+    }));
+
+    // Last 8 calendar days of HOS records for the 8-day recap
+    const eightDaysAgo = new Date(todayStart);
+    eightDaysAgo.setDate(eightDaysAgo.getDate() - 7);
+
+    const hosRecords = await (prisma as any).eldHosRecord.findMany({
+      where: {
+        driverId: id,
+        ...(orgId ? { orgId } : {}),
+        recordDate: { gte: eightDaysAgo },
+      },
+      orderBy: { recordDate: "asc" },
+      take: 8,
+    });
+
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const eightDayRecap = hosRecords.map((r: any) => {
+      const d = new Date(r.recordDate);
+      const isToday = d.toDateString() === new Date().toDateString();
+      const driving = Math.round((r.drivingMinutesToday / 60) * 10) / 10;
+      const onDuty  = Math.round((r.onDutyMinutesToday  / 60) * 10) / 10;
+      return {
+        day:     isToday ? "Today" : dayNames[d.getDay()],
+        date:    r.recordDate,
+        driving,
+        onDuty,
+        total:   Math.round((driving + onDuty) * 10) / 10,
+      };
+    });
+
+    return reply.send({ dailyLog, eightDayRecap });
+  });
+
+  // ── POST /drivers/:id/edit-request ──────────────────────────────────────
+  // Creates an EDIT_REQUEST ELD event for a driver. The fleet manager then
+  // reviews the request in the ELD event log.
+
+  fastify.post("/drivers/:id/edit-request", async (request: FastifyRequest, reply: FastifyReply) => {
+    const orgId = (request as any).orgId as string | undefined;
+    if (!orgId) return reply.status(403).send({ error: "Unauthorized" });
+
+    const { id } = request.params as { id: string };
+    const body = (request.body ?? {}) as { reason?: string };
+
+    const driver = await (prisma as any).driver.findFirst({
+      where: { id, orgId },
+      select: { id: true, name: true },
+    });
+    if (!driver) throw new NotFoundError("Driver not found");
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const hosRecord = await (prisma as any).eldHosRecord.findFirst({
+      where: { driverId: id, orgId, recordDate: { gte: today } },
+      orderBy: { updatedAt: "desc" },
+    });
+
+    const event = await (prisma as any).eldEvent.create({
+      data: {
+        orgId,
+        driverId:    id,
+        hosId:       hosRecord?.id ?? null,
+        type:        "EDIT_REQUEST",
+        description: body.reason ?? "Log edit requested via HOS dashboard",
+        data:        { requestedAt: new Date().toISOString(), reason: body.reason ?? null },
+      },
+    });
+
+    return reply.status(201).send({
+      id:          event.id,
+      driverId:    id,
+      driverName:  driver.name,
+      type:        "EDIT_REQUEST",
+      timestamp:   event.createdAt,
+      description: event.description,
+    });
+  });
+
   // ── GET /violations ──────────────────────────────────────────────────────
 
   fastify.get("/violations", async (request: FastifyRequest, reply: FastifyReply) => {

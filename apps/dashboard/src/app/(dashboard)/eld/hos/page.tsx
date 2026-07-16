@@ -1,67 +1,26 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useDriverHOS, useViolations, useELDDriverStatus, DutyStatus } from "@/hooks/use-eld";
-import { HOSClock, MultiHOSGauge } from "@/components/eld/hos-clock";
+import { useDriverHOS, useDriverHOSDetails, useViolations, useELDDriverStatus, DutyStatus } from "@/hooks/use-eld";
+import { api } from "@/lib/api";
+import { MultiHOSGauge } from "@/components/eld/hos-clock";
 import { ViolationTimeline } from "@/components/eld/violation-timeline";
 import { TableSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import {
   ChevronDown,
-  Clock,
   AlertTriangle,
   CheckCircle,
   Edit2,
   Download,
   RotateCw,
-  TrendingDown,
 } from "lucide-react";
-
-interface DailyLogEntry {
-  hour: number;
-  status: DutyStatus | "NONE";
-  label: string;
-}
-
-interface EightDayEntry {
-  day: string;
-  driving: number;
-  onDuty: number;
-  total: number;
-}
-
-const generateDailyLog = (): DailyLogEntry[] => {
-  const log: DailyLogEntry[] = [];
-  for (let i = 0; i < 24; i++) {
-    if (i < 6) {
-      log.push({ hour: i, status: "OFF_DUTY", label: "Off-Duty" });
-    } else if (i < 10) {
-      log.push({ hour: i, status: "DRIVING", label: "Driving" });
-    } else if (i < 11) {
-      log.push({ hour: i, status: "ON_DUTY", label: "Break" });
-    } else if (i < 18) {
-      log.push({ hour: i, status: "DRIVING", label: "Driving" });
-    } else {
-      log.push({ hour: i, status: "ON_DUTY", label: "On-Duty" });
-    }
-  }
-  return log;
-};
-
-const generateEightDayRecap = (cycleHoursUsed = 0, drivingRemaining = 660): EightDayEntry[] => {
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Today"];
-  const dailyAvg = cycleHoursUsed / 7;
-  return days.map((day, i) => {
-    const driving = i < 7 ? Math.round((dailyAvg * 0.7) * 10) / 10 : Math.round(((660 - drivingRemaining) / 60) * 10) / 10;
-    const onDuty = i < 7 ? Math.round((dailyAvg * 0.3) * 10) / 10 : 0;
-    return { day, driving, onDuty, total: Math.round((driving + onDuty) * 10) / 10 };
-  });
-};
 
 const dutyStatusColor = (status: DutyStatus): string => {
   const colors: Record<DutyStatus, string> = {
@@ -81,14 +40,18 @@ const dutyStatusLabel: Record<DutyStatus, string> = {
 };
 
 export default function HOSPage() {
+  const router = useRouter();
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [personalConveyance, setPersonalConveyance] = useState(false);
   const [yardMove, setYardMove] = useState(false);
+  const [requestingEdit, setRequestingEdit] = useState(false);
+  const [editRequestSent, setEditRequestSent] = useState(false);
 
   const { items: driverList, loading: driversLoading, error: driversError, refetch: refetchDrivers } = useELDDriverStatus();
   const { data: hos, loading: isLoading } = useDriverHOS(selectedDriverId);
+  const { data: hosDetails, loading: detailsLoading } = useDriverHOSDetails(selectedDriverId);
   const { items: violations, loading: violationsLoading } = useViolations({ search: selectedDriverId ?? undefined });
 
   // Auto-select first driver when loaded
@@ -98,11 +61,52 @@ export default function HOSPage() {
     }
   }, [driverList, selectedDriverId]);
 
-  const dailyLog = useMemo(() => generateDailyLog(), []);
-  const eightDayRecap = useMemo(
-    () => generateEightDayRecap(hos?.cycleHoursUsed, hos?.drivingTimeRemaining),
-    [hos?.cycleHoursUsed, hos?.drivingTimeRemaining]
-  );
+  // Reset edit-request sent state when driver changes
+  useEffect(() => {
+    setEditRequestSent(false);
+  }, [selectedDriverId]);
+
+  const dailyLog = hosDetails?.dailyLog ?? [];
+  const eightDayRecap = hosDetails?.eightDayRecap ?? [];
+
+  const handleRequestEdit = useCallback(async () => {
+    if (!selectedDriverId || requestingEdit) return;
+    setRequestingEdit(true);
+    try {
+      await api.post(`/api/v4/eld/drivers/${selectedDriverId}/edit-request`, {
+        reason: "Log edit requested via HOS dashboard",
+      });
+      setEditRequestSent(true);
+    } finally {
+      setRequestingEdit(false);
+    }
+  }, [selectedDriverId, requestingEdit]);
+
+  const handleExportHOS = useCallback(() => {
+    if (!hos || !selectedDriverId) return;
+    const driver = driverList.find((d) => d.driverId === selectedDriverId);
+    const lines = [
+      `HOS Report — ${driver?.name ?? selectedDriverId}`,
+      `Generated: ${new Date().toLocaleString()}`,
+      ``,
+      `Current Status: ${hos.currentStatus}`,
+      `Driving Time Remaining: ${hos.drivingTimeRemaining.toFixed(1)}h`,
+      `On-Duty Window Remaining: ${hos.onDutyWindowRemaining.toFixed(1)}h`,
+      `Cycle Hours Used: ${hos.cycleHoursUsed.toFixed(1)}h / ${hos.cycleHours}h`,
+      `Break Status: ${hos.breakStatus}`,
+      `Last Status Change: ${new Date(hos.lastStatusChange).toLocaleString()}`,
+      ``,
+      `8-Day Recap:`,
+      ...eightDayRecap.map((e) => `  ${e.day}: Driving ${e.driving.toFixed(1)}h  On-Duty ${e.onDuty.toFixed(1)}h  Total ${e.total.toFixed(1)}h`),
+    ];
+    const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `hos-report-${driver?.name?.replace(/\s+/g, "-") ?? selectedDriverId}-${new Date().toISOString().slice(0, 10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [hos, selectedDriverId, driverList, eightDayRecap]);
 
   const selectedDriver = driverList.find((d) => d.driverId === selectedDriverId);
   const filteredDrivers = useMemo(() => {
@@ -316,37 +320,46 @@ export default function HOSPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg text-white">24-Hour Daily Log</CardTitle>
-                <span className="text-xs text-wl-text-secondary">{new Date().toLocaleDateString()}</span>
+                <span className="text-xs text-wl-text-secondary">
+                  {detailsLoading ? "Loading…" : new Date().toLocaleDateString()}
+                </span>
               </div>
             </CardHeader>
 
             <CardContent>
+              {detailsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-6 h-6 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
+                </div>
+              ) : (
               <div className="space-y-2">
                 {/* Hour labels */}
                 <div className="flex text-xs text-wl-text-secondary">
-                  <div className="w-12" />
-                  <div className="flex-1 flex gap-2">
+                  <div className="w-16" />
+                  <div className="flex-1 flex">
                     {Array.from({ length: 24 }, (_, i) => (
-                      <div key={i} className="flex-1 text-center text-wl-text-secondary">
+                      <div key={i} className="flex-1 text-center" style={{ fontSize: "9px" }}>
                         {String(i).padStart(2, "0")}
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Status bars */}
-                {[hos.currentStatus].map((statusType) => (
+                {/* One row per duty status — filled where the driver was in that status */}
+                {(["OFF_DUTY", "SLEEPER", "DRIVING", "ON_DUTY"] as DutyStatus[]).map((statusType) => (
                   <div key={statusType} className="flex items-center gap-2">
-                    <div className="w-12 text-xs font-semibold text-wl-text-secondary">{dutyStatusLabel[statusType]}</div>
-                    <div className="flex-1 flex gap-2 h-8">
-                      {dailyLog.map((entry) => (
+                    <div className="w-16 text-xs font-semibold text-wl-text-secondary shrink-0">
+                      {dutyStatusLabel[statusType]}
+                    </div>
+                    <div className="flex-1 flex h-6">
+                      {(dailyLog.length === 24 ? dailyLog : Array.from({ length: 24 }, (_, i) => ({ hour: i, status: "OFF_DUTY" as DutyStatus, label: "Off-Duty" }))).map((entry) => (
                         <div
                           key={entry.hour}
                           className={cn(
-                            "flex-1 rounded-sm transition-all hover:opacity-80",
-                            entry.status === "NONE" ? "bg-white/3" : dutyStatusColor(entry.status)
+                            "flex-1 border-r border-wl-bg-root last:border-r-0 transition-all hover:opacity-80",
+                            entry.status === statusType ? dutyStatusColor(statusType) : "bg-white/3"
                           )}
-                          title={`${String(entry.hour).padStart(2, "0")}:00 - ${entry.label}`}
+                          title={`${String(entry.hour).padStart(2, "0")}:00 — ${entry.label}`}
                         />
                       ))}
                     </div>
@@ -373,6 +386,7 @@ export default function HOSPage() {
                   </div>
                 </div>
               </div>
+              )}
             </CardContent>
           </Card>
 
@@ -383,6 +397,15 @@ export default function HOSPage() {
             </CardHeader>
 
             <CardContent>
+              {detailsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-6 h-6 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
+                </div>
+              ) : eightDayRecap.length === 0 ? (
+                <p className="text-sm text-wl-text-secondary text-center py-6">
+                  No HOS records found for the past 8 days.
+                </p>
+              ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
@@ -401,14 +424,14 @@ export default function HOSPage() {
                         <td className="py-2 px-3 text-center text-white">{entry.driving.toFixed(1)}h</td>
                         <td className="py-2 px-3 text-center text-white">{entry.onDuty.toFixed(1)}h</td>
                         <td className="py-2 px-3 text-center text-white font-semibold">
-                          {(entry.driving + entry.onDuty).toFixed(1)}h
+                          {entry.total.toFixed(1)}h
                         </td>
                         <td className="py-2 px-3 text-center">
                           <div className="flex items-center justify-center gap-1">
                             <div className="w-16 h-1.5 rounded-full bg-white/5 overflow-hidden">
                               <div
                                 className="h-full bg-blue-500 transition-all"
-                                style={{ width: `${(entry.total / 70) * 100}%` }}
+                                style={{ width: `${Math.min((entry.total / 70) * 100, 100)}%` }}
                               />
                             </div>
                             <span
@@ -421,7 +444,7 @@ export default function HOSPage() {
                                     : "text-white"
                               )}
                             >
-                              {entry.total}h
+                              {entry.total.toFixed(1)}h
                             </span>
                           </div>
                         </td>
@@ -430,6 +453,7 @@ export default function HOSPage() {
                   </tbody>
                 </table>
               </div>
+              )}
             </CardContent>
           </Card>
 
@@ -458,11 +482,20 @@ export default function HOSPage() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button variant="primary" className="h-9 flex-1">
+                  <Button
+                    variant="primary"
+                    className="h-9 flex-1"
+                    onClick={handleRequestEdit}
+                    disabled={requestingEdit || editRequestSent}
+                  >
                     <Edit2 className="w-4 h-4 mr-2" />
-                    Request Edit
+                    {requestingEdit ? "Submitting…" : editRequestSent ? "Request Sent" : "Request Edit"}
                   </Button>
-                  <Button variant="secondary" className="h-9 flex-1">
+                  <Button
+                    variant="secondary"
+                    className="h-9 flex-1"
+                    onClick={() => router.push("/eld")}
+                  >
                     <RotateCw className="w-4 h-4 mr-2" />
                     View History
                   </Button>
@@ -473,7 +506,7 @@ export default function HOSPage() {
 
           {/* Export */}
           <div className="flex justify-end">
-            <Button variant="secondary" className="h-9">
+            <Button variant="secondary" className="h-9" onClick={handleExportHOS}>
               <Download className="w-4 h-4 mr-2" />
               Export HOS Report
             </Button>
