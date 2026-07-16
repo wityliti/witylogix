@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -40,6 +40,8 @@ interface ActiveDeliveryMapProps {
   className?: string;
 }
 
+type DriverStatus = "available" | "on-delivery" | "offline" | "busy" | "break";
+
 const STATUS_MAP: Record<string, DriverStatus> = {
   available: "available",
   AVAILABLE: "available",
@@ -49,6 +51,18 @@ const STATUS_MAP: Record<string, DriverStatus> = {
   ON_BREAK: "break",
   offline: "offline",
   OFFLINE: "offline",
+};
+
+const driverStatusColors: Record<Driver["status"], string> = {
+  "available": "text-wl-success-400",
+  "on-delivery": "text-wl-primary-400",
+  "offline": "text-wl-text-secondary",
+};
+
+const driverStatusLabels: Record<Driver["status"], string> = {
+  "available": "Available",
+  "on-delivery": "On Delivery",
+  "offline": "Offline",
 };
 
 function mapApiStatus(status: string): Driver["status"] {
@@ -242,21 +256,20 @@ export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
   // Refresh every 30s
   useEffect(() => {
     const interval = setInterval(() => {
-      refetchDrivers();
-      refetchDeliveries();
+      refetch();
     }, 30000);
     return () => clearInterval(interval);
-  }, [refetchDrivers, refetchDeliveries]);
+  }, [refetch]);
 
   const drivers = rawDrivers.map(toDriver);
   const activeDriverCount = drivers.filter((d) => d.status !== "offline").length;
 
-  const handleDriverClick = (driver: Driver, e: React.MouseEvent) => {
+  const handleDriverClick = useCallback((driver: Driver, e: React.MouseEvent) => {
     const rect = mapRef.current?.getBoundingClientRect();
     if (rect) {
       setPopoverPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
     }
-    return result;
+    setSelectedDriver(driver);
   }, [rawDrivers]);
 
   return (

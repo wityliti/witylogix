@@ -69,6 +69,17 @@ const CHANNEL_CSS_VARS: Record<string, string> = {
   push: "var(--wl-warning-500)",
 };
 
+const CHANNEL_COLORS: Record<string, string> = {
+  email: "#6366f1",
+  sms: "#22c55e",
+  whatsapp: "#14b8a6",
+  push: "#f59e0b",
+  EMAIL: "#6366f1",
+  SMS: "#22c55e",
+  WHATSAPP: "#14b8a6",
+  PUSH: "#f59e0b",
+};
+
 function SimpleLineChart({ data }: { data: DailyStatPoint[] }) {
   if (data.length === 0) return null;
   const maxValue = Math.max(...data.map((d) => d.count), 1);
@@ -118,8 +129,8 @@ function DonutChart({ data }: { data: Record<string, ChannelStat> }) {
               fill="none"
               stroke={CHANNEL_COLORS[segment.channel] ?? "#6b7280"}
               strokeWidth="8"
-              strokeDasharray={s.dashArray}
-              strokeDashoffset={-s.dashOffset}
+              strokeDasharray={segment.dashArray}
+              strokeDashoffset={-segment.dashOffset}
               strokeLinecap="round" />
           ))}
         </svg>
@@ -140,7 +151,7 @@ function DonutChart({ data }: { data: Record<string, ChannelStat> }) {
               style={{ backgroundColor: CHANNEL_COLORS[channel] ?? "#6b7280" }}
             />
             <span className="text-xs text-[var(--wl-text-secondary)] capitalize">
-              {entry.channel}: {entry.percentage}%
+              {channel}: {stats.percentage}%
             </span>
           </div>
         ))}
@@ -186,7 +197,8 @@ export function NotificationStatsWidget({ className }: NotificationStatsWidgetPr
     const totalSent = daily.reduce((sum, d) => sum + d.count, 0);
     const failedCount = stats.failedTemplates?.reduce((sum, t) => sum + t.failureCount, 0) ?? 0;
     const failureRate = totalSent > 0 ? ((failedCount / totalSent) * 100).toFixed(1) : "0.0";
-    return { totalToday, changePercent, failureRate, failedCount };
+    const deliveryRate = totalSent > 0 ? ((totalSent - failedCount) / totalSent) * 100 : 100;
+    return { totalToday, changePercent, failureRate, failedCount, deliveryRate };
   }, [stats]);
 
   if (loading) return <StatsSkeletons />;
@@ -304,9 +316,9 @@ export function NotificationStatsWidget({ className }: NotificationStatsWidgetPr
                 </div>
               ))}
             </div>
-          )}
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }

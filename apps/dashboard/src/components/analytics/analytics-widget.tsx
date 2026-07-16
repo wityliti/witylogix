@@ -68,7 +68,7 @@ const defaultConfig: WidgetConfig = {
   dataSource: "analytics-api",
 };
 
-const EmptyState = ({ label }: { label: string }) => (
+const EmptyState = ({ label = "No data" }: { label?: string }) => (
   <div className="flex flex-col items-center justify-center h-40 text-center p-4">
     <p className="text-sm text-wl-text-tertiary mb-1">{label}</p>
     <p className="text-xs text-wl-text-tertiary opacity-60">Connect a data source to display this widget</p>

@@ -1,0 +1,37 @@
+# Dependency directories
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+**/dist/
+.next/
+**/.next/
+out/
+build/
+
+# Generated files
+packages/db/src/generated/
+**/generated/
+
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Agent/AI tooling directories (not valid JS/TS)
+.agents/
+**/.agents/
+.claude/
+**/.claude/
+
+# Docs / markdown sprints (long-form prose; prettier reformats confusingly)
+docs/sprints/
+
+# Coverage and test artifacts
+coverage/
+**/coverage/
+
+# Infrastructure and config files that shouldn't be reformatted
+infra/
+*.sh

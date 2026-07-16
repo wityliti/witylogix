@@ -27,6 +27,20 @@ import {
   Zap,
 } from "lucide-react";
 
+type DriverComplianceStatus = "COMPLIANT" | "WARNING" | "VIOLATION" | "OFFLINE";
+type DriverStatus = "COMPLIANT" | "WARNING" | "VIOLATION" | "OFFLINE";
+
+interface DriverStatusInfo {
+  driverId: string;
+  name: string;
+  status: DriverStatus;
+  currentDuty: DutyStatus;
+  drivingRemaining: number;
+  breakStatus: string;
+  violations: number;
+  lastUpdate: string;
+}
+
 const statusVariant = (
   status: DriverComplianceStatus
 ): "success" | "warning" | "danger" | "info" | "default" => {
@@ -86,8 +100,6 @@ export default function ELDOverviewPage() {
   const violationsLoading = violationsResult.loading;
   const events            = eventsResult.items;
   const eventsLoading     = eventsResult.loading;
-  const drivers           = driversResult.items;
-  const driversLoading    = driversResult.loading;
 
   if (driversLoading && !apiDrivers.length) return <TableSkeleton rows={10} columns={6} />;
   if (driversError) return <ErrorState message={driversError.message} onRetry={driversRefetch} />;
@@ -247,10 +259,10 @@ export default function ELDOverviewPage() {
                           minute: "2-digit",
                         })}
                       </div>
-                    </button>
+                    </div>
+                  </button>
                   ))}
                 </div>
-              )}
             </CardContent>
           </Card>
         </div>

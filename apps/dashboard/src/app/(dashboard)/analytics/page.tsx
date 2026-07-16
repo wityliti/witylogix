@@ -20,6 +20,7 @@ import {
   MapPin,
   BarChart2,
   ArrowUpRight,
+  Globe2,
 } from 'lucide-react';
 
 const AnalyticsHeatmapView = dynamic(
@@ -124,7 +125,7 @@ function MiniBarChart({
             style={{ height: `${Math.max(h, 4)}%`, backgroundColor: color, opacity: 0.7 }}
           >
             <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-wl-bg-elevated text-[10px] text-white/60 px-1.5 py-0.5 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-              {d[dataKey] ?? d.orders}
+              {d.orders}
             </div>
           </div>
         );

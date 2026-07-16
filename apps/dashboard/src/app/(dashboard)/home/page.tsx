@@ -11,6 +11,23 @@ import { useOrderStats, useOrders } from '@/hooks/use-orders';
 import { useDrivers } from '@/hooks/use-drivers';
 import { useDashboardStats } from '@/hooks/use-dashboard-stats';
 
+interface Order {
+  id: string;
+  customerId: string;
+  status: 'pending' | 'assigned' | 'in-transit' | 'delivered' | 'cancelled';
+  eta?: string;
+  destination?: string;
+  createdAt: Date;
+}
+
+interface Driver {
+  id: string;
+  name: string;
+  status: 'available' | 'en-route' | 'delivering' | 'offline';
+  activeDeliveries: number;
+  utilization: number;
+}
+
 // Shapes matching the real API responses
 interface ApiOrder {
   id: string;
@@ -176,45 +193,38 @@ function DriverStatusCard({ driver, loading = false }: { driver?: ApiDriver; loa
 }
 
 export default function HomePage() {
-  const { data: orderStats, loading: statsLoading } = useOrderStats();
+  const { data: orderStats, loading: statsLoading, error: statsError } = useOrderStats();
   const { data: dashStats, loading: dashLoading } = useDashboardStats();
+  const stats = dashStats;
   const { items: recentApiOrders, loading: ordersLoading } = useOrders({ limit: 5, sort: '-createdAt' } as any);
   const { items: drivers, loading: driversLoading } = useDrivers({ limit: 4 });
 
-  const recentOrders: Order[] = recentApiOrders.map((o: any) => ({
+  const recentOrders: ApiOrder[] = recentApiOrders.map((o: any) => ({
     id: o.id,
-    customerId: o.customerId,
-    status: (o.status as Order['status']) ?? 'pending',
-    eta: o.estimatedDelivery
-      ? new Date(o.estimatedDelivery).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-      : undefined,
-    destination: o.deliveryAddress
-      ? `${o.deliveryAddress.street ?? ''}, ${o.deliveryAddress.city ?? ''}`.trim().replace(/^,\s*/, '')
-      : undefined,
-    createdAt: new Date(o.createdAt),
+    customerName: o.customerName ?? o.customerId ?? null,
+    status: o.status ?? 'PENDING',
+    addressLine1: o.deliveryAddress?.street ?? o.addressLine1 ?? null,
+    city: o.deliveryAddress?.city ?? o.city ?? null,
+    estimatedArrival: o.estimatedDelivery ?? o.estimatedArrival ?? null,
+    createdAt: typeof o.createdAt === 'string' ? o.createdAt : new Date(o.createdAt).toISOString(),
   }));
 
-  const displayDrivers: Driver[] = drivers.map((d: any) => ({
+  const displayDrivers: ApiDriver[] = drivers.map((d: any) => ({
     id: d.id,
     name: d.name,
-    status: (['available', 'en-route', 'delivering', 'offline'].includes(d.status)
-      ? d.status
-      : d.status === 'on_delivery' ? 'delivering'
-      : d.status === 'online' ? 'available'
-      : 'offline') as Driver['status'],
-    activeDeliveries: d.activeDeliveries ?? 0,
-    utilization: d.completionRate ?? 0,
+    status: d.status ?? 'OFFLINE',
+    _count: { orders: d.activeDeliveries ?? d._count?.orders ?? 0 },
   }));
 
-  const totalOrders = dashStats?.totalOrdersToday ?? orderStats?.totalOrders ?? 0;
-  const activeDeliveries = dashStats?.pendingDeliveries ?? 0;
+  const totalOrders = dashStats?.totalOrders ?? (orderStats as any)?.totalOrders ?? 0;
+  const activeDeliveries = dashStats?.pendingOrders ?? 0;
   const driverUtilization = drivers.length > 0
     ? Math.round((drivers.filter((d: any) => d.status !== 'offline').length / drivers.length) * 100)
     : 0;
-  const todayRevenue = dashStats?.totalRevenueToday != null
-    ? `$${dashStats.totalRevenueToday.toFixed(2)}`
-    : orderStats?.totalRevenue != null
-      ? `$${orderStats.totalRevenue.toFixed(2)}`
+  const todayRevenue = dashStats?.revenue != null
+    ? `$${dashStats.revenue.toFixed(2)}`
+    : (orderStats as any)?.totalRevenue != null
+      ? `$${(orderStats as any).totalRevenue.toFixed(2)}`
       : '—';
 
   const overallLoading = statsLoading && dashLoading;
@@ -253,8 +263,6 @@ export default function HomePage() {
             label="Total Orders"
             value={totalOrders}
             subtitle="Today"
-            trend="up"
-            trendValue={undefined}
             variant="primary"
             loading={overallLoading}
           />
@@ -262,8 +270,6 @@ export default function HomePage() {
             label="Active Deliveries"
             value={activeDeliveries}
             subtitle="In progress"
-            trend="up"
-            trendValue={undefined}
             variant="success"
             loading={overallLoading}
           />
@@ -271,16 +277,12 @@ export default function HomePage() {
             label="Driver Utilization"
             value={`${driverUtilization}%`}
             subtitle={`${drivers.filter((d: any) => d.status !== 'offline').length} active drivers`}
-            trend={driverUtilization > 70 ? 'up' : 'down'}
-            trendValue={undefined}
             loading={driversLoading}
           />
           <KPICard
             label="Revenue"
             value={todayRevenue}
             subtitle="Today"
-            trend="up"
-            trendValue={undefined}
             variant="success"
             loading={overallLoading}
           />

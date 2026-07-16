@@ -10,16 +10,25 @@ import { Tabs } from '@/components/ui/tabs';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
-import { useApiList } from '@/hooks/use-api';
+import { useApiList, useApiQuery } from '@/hooks/use-api';
 import Link from 'next/link';
-import { MessageCircle, Eye, Plus, Phone, Truck, Map, LayoutGrid, MapPin } from 'lucide-react';
+import { MessageCircle, Eye, Plus, Phone, Truck, Map as MapIcon, LayoutGrid, MapPin } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 /* ═══════════════════════════════════════════════════════════
    DRIVERS PAGE — driver management with live map view
    ═══════════════════════════════════════════════════════════ */
 
-// Lazy-load map to avoid SSR issues with maplibre-gl
+// Lazy-load map components to avoid SSR issues with maplibre-gl
+const WLMap = dynamic(
+  () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
+  { ssr: false }
+);
+const DriverLocationLayer = dynamic(
+  () => import('@/components/map/driver-location-layer').then((m) => ({ default: m.DriverLocationLayer })),
+  { ssr: false }
+);
+
 const DriversMapView = dynamic(() => import('./components/drivers-map-view'), {
   ssr: false,
   loading: () => (
@@ -31,6 +40,14 @@ const DriversMapView = dynamic(() => import('./components/drivers-map-view'), {
     </div>
   ),
 });
+
+interface DriverLocation {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  status: string;
+}
 
 interface ApiDriver {
   id: string;
@@ -151,20 +168,6 @@ const DriverCard = ({ driver, onLocate }: { driver: ApiDriver; onLocate?: () => 
   );
 };
 
-export default function DriversPage() {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('cards');
-
-  const { items: driversData, loading: driversLoading, error: driversError, refetch: refetchDrivers } =
-    useApiList<ApiDriver>('/api/v4/drivers');
-
-  const { items: dispatchDrivers, loading: dispatchLoading } =
-    useApiList<DispatchDriver>('/api/v4/dispatch/drivers');
-
-  const loading = driversLoading;
-  const error = driversError;
-
 function MapLegend() {
   return (
     <div className="absolute top-3 left-3 z-[1000] bg-black/75 backdrop-blur rounded-lg px-3 py-2 text-xs space-y-1.5 pointer-events-auto">
@@ -192,10 +195,12 @@ function DriverMapView({
   selectedId: string | null;
   onSelect: (id: string) => void;
 }) {
-  const [mapId, setMapId] = useState<string | null>(null);
   const { data, loading, error } = useApiQuery<DriverLocation[]>('/api/v4/drivers/locations');
 
   const locations: DriverLocation[] = data ?? [];
+
+  // Show the selected driver's location, or fall back to the first available one
+  const activeLocation = locations.find((l) => l.id === selectedId) ?? locations[0] ?? null;
 
   return (
     <div className="relative h-[520px] rounded-xl overflow-hidden border border-white/[0.06]">
@@ -223,18 +228,16 @@ function DriverMapView({
         center={[40.7128, -74.006]}
         zoom={11}
         className="w-full h-full"
-        onReady={setMapId}
       >
         <MapLegend />
+        {activeLocation && (
+          <DriverLocationLayer
+            latitude={activeLocation.latitude}
+            longitude={activeLocation.longitude}
+            driverName={activeLocation.name}
+          />
+        )}
       </WLMap>
-      {mapId && locations.length > 0 && (
-        <DriverLocationLayer
-          mapId={mapId}
-          drivers={locations}
-          selectedDriverId={selectedId}
-          onDriverClick={onSelect}
-        />
-      )}
     </div>
   );
 }
@@ -302,7 +305,7 @@ export default function DriversPage() {
                     : 'bg-transparent text-zinc-400 hover:text-white'
                 )}
               >
-                <Map className="w-3.5 h-3.5" />
+                <MapIcon className="w-3.5 h-3.5" />
                 Map
                 {driversWithLocation.length > 0 && (
                   <span className="text-[10px] bg-blue-500 text-white rounded-full px-1.5 py-0 font-bold">
