@@ -84,18 +84,18 @@ export default function PaymentSettingsPage() {
     }
   };
 
-  const handleTestPayment = async (code: string): Promise<void> => {
-    setIsTestPaymentLoading(true);
+  const handleTestPayment = async (gateway: GatewayConfig): Promise<void> => {
+    setIsTestPaymentLoading(gateway.id);
     try {
       await api.post('/api/v4/payments', {
         paymentType: 'TEST',
-        paymentMethod: code.toUpperCase(),
+        paymentMethod: gateway.code.toUpperCase(),
         amount: 100,
         currency: 'USD',
         metadata: { test: true },
       });
     } finally {
-      setIsTestPaymentLoading(false);
+      setIsTestPaymentLoading(null);
     }
   };
 

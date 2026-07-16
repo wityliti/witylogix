@@ -373,14 +373,6 @@ export default function OrdersPage() {
                       />
                     </div>
                   </div>
-                  <div className="w-full hover:bg-wl-bg-elevated rounded-full h-2">
-                    <div
-                      className="h-full rounded-full bg-blue-500 transition-all"
-                      style={{ width: `${batch.completionRate}%` }}
-                    />
-                  </div>
-                </div>
-
                 {batch.status !== 'completed' && (
                   <Button variant="secondary" size="sm" className="w-full">
                     Update Progress
@@ -394,50 +386,6 @@ export default function OrdersPage() {
 
       {/* Returns Queue Tab */}
       {selectedTab === 'returns' && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">Returns Queue</h3>
-
-          {returnQueue.length === 0 ? (
-            <div className="text-center py-10 text-gray-400">No returns in queue.</div>
-          ) : null}
-          {returnQueue.map((returnItem) => (
-            <Card key={returnItem.id}>
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h4 className="text-sm font-semibold text-white">
-                      {returnItem.orderNumber}
-                    </h4>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {returnItem.customerName}
-                    </p>
-                    {status === 'pending-approval' && (
-                      <div className="flex gap-2">
-                        <Button variant="secondary" size="sm" className="flex-1">Reject</Button>
-                        <Button variant="primary" size="sm" className="flex-1">Approve</Button>
-                      </div>
-                      <div className="w-full bg-[#1a1a2e] rounded-full h-2">
-                        <div
-                          className="h-full rounded-full bg-blue-500 transition-all"
-                          style={{ width: `${batch.completionRate}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {batch.status !== 'completed' && (
-                    <Button variant="secondary" size="sm" className="w-full">
-                      Update Progress
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Returns Queue Tab */}
-        {selectedTab === 'returns' && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-white">Returns Queue</h3>
 

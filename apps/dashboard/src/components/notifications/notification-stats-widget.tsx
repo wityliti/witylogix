@@ -116,10 +116,10 @@ function DonutChart({ data }: { data: Record<string, ChannelStat> }) {
               cy="50"
               r={radius}
               fill="none"
-              stroke={CHANNEL_COLORS[segment.channel] ?? "#6b7280"}
+              stroke={CHANNEL_CSS_VARS[segment.channel] ?? "#6b7280"}
               strokeWidth="8"
-              strokeDasharray={s.dashArray}
-              strokeDashoffset={-s.dashOffset}
+              strokeDasharray={segment.dashArray}
+              strokeDashoffset={-segment.dashOffset}
               strokeLinecap="round" />
           ))}
         </svg>
@@ -137,10 +137,10 @@ function DonutChart({ data }: { data: Record<string, ChannelStat> }) {
           <div key={channel} className="flex items-center gap-2">
             <div
               className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: CHANNEL_COLORS[channel] ?? "#6b7280" }}
+              style={{ backgroundColor: CHANNEL_CSS_VARS[channel] ?? "#6b7280" }}
             />
             <span className="text-xs text-[var(--wl-text-secondary)] capitalize">
-              {entry.channel}: {entry.percentage}%
+              {channel}: {stats.percentage}%
             </span>
           </div>
         ))}
@@ -232,10 +232,10 @@ export function NotificationStatsWidget({ className }: NotificationStatsWidgetPr
           <CardContent className="pt-6">
             <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">Delivery Rate</p>
             <p className="text-2xl font-bold text-[var(--wl-success)]">
-              {summary.deliveryRate.toFixed(1)}%
+              {(100 - parseFloat(summary.failureRate)).toFixed(1)}%
             </p>
             <p className="text-xs text-[var(--wl-text-secondary)] mt-1">
-              {(100 - summary.deliveryRate).toFixed(1)}% bounce
+              {summary.failureRate}% bounce
             </p>
             <p className="text-xs text-[var(--wl-text-secondary)] mt-1">{summary.failedCount} failed</p>
           </CardContent>
@@ -304,9 +304,9 @@ export function NotificationStatsWidget({ className }: NotificationStatsWidgetPr
                 </div>
               ))}
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
