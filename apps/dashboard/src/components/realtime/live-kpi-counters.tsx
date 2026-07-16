@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardStats } from "@/hooks/use-dashboard-stats";
@@ -21,18 +21,6 @@ interface KPIMetric {
   unit: string;
   status: "good" | "warning" | "critical";
   sparkline: number[];
-}
-
-interface DashboardStats {
-  ordersToday?: number;
-  activeDeliveries?: number;
-  availableDrivers?: number;
-  slaPerformance?: number;
-  // snake_case variants
-  orders_today?: number;
-  active_deliveries?: number;
-  available_drivers?: number;
-  sla_performance?: number;
 }
 
 interface LiveKPICountersProps {
@@ -100,7 +88,7 @@ function Sparkline({ data, color = "text-wl-primary-500" }: { data: number[]; co
 function KPICard({ metric }: { metric: KPIMetric }) {
   const trendPct = metric.previousValue
     ? ((metric.value - metric.previousValue) / metric.previousValue * 100).toFixed(1)
-    : 0;
+    : "0.0";
 
   const isPositiveTrend = metric.value >= metric.previousValue;
   const TrendIcon = isPositiveTrend ? TrendingUp : TrendingDown;
@@ -167,64 +155,6 @@ function KPICardSkeleton() {
       <Skeleton className="h-3 w-24 rounded" />
     </div>
   );
-}
-
-function getDriverStatus(value: number): "good" | "warning" | "critical" {
-  if (value < 10) return "critical";
-  if (value < 15) return "warning";
-  return "good";
-}
-
-function getSlaStatus(value: number): "good" | "warning" | "critical" {
-  if (value < 92) return "critical";
-  if (value < 95) return "warning";
-  return "good";
-}
-
-function buildMetrics(stats: DashboardStats): KPIMetric[] {
-  const ordersToday = stats.ordersToday ?? stats.orders_today ?? 0;
-  const activeDeliveries = stats.activeDeliveries ?? stats.active_deliveries ?? 0;
-  const availableDrivers = stats.availableDrivers ?? stats.available_drivers ?? 0;
-  const slaPerformance = stats.slaPerformance ?? stats.sla_performance ?? 0;
-
-  return [
-    {
-      label: "Orders Today",
-      value: ordersToday,
-      previousValue: 0,
-      icon: <Package className="w-5 h-5" />,
-      unit: "orders",
-      status: "good",
-      sparkline: [],
-    },
-    {
-      label: "Active Deliveries",
-      value: activeDeliveries,
-      previousValue: 0,
-      icon: <Truck className="w-5 h-5" />,
-      unit: "in transit",
-      status: "good",
-      sparkline: [],
-    },
-    {
-      label: "Available Drivers",
-      value: availableDrivers,
-      previousValue: 0,
-      icon: <Users className="w-5 h-5" />,
-      unit: "drivers",
-      status: getDriverStatus(availableDrivers),
-      sparkline: [],
-    },
-    {
-      label: "SLA Performance",
-      value: slaPerformance,
-      previousValue: 0,
-      icon: <Gauge className="w-5 h-5" />,
-      unit: "%",
-      status: getSlaStatus(slaPerformance),
-      sparkline: [],
-    },
-  ];
 }
 
 export function LiveKPICounters({ className }: LiveKPICountersProps) {

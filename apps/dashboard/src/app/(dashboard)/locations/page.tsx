@@ -11,13 +11,20 @@ import { StatCard } from "@/components/ui/stat-card";
 import { useApiList } from "@/hooks/use-api";
 import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
 import { LayoutGrid, Map } from "lucide-react";
+import type { WLMapProps } from "@/components/map/wl-map";
+import type { LocationMarker } from "@/components/map/location-marker-layer";
 
 // Dynamic imports — avoids SSR issues with Leaflet
-const WLMap = dynamic(
+const WLMap = dynamic<WLMapProps>(
   () => import("@/components/map/wl-map").then((m) => ({ default: m.WLMap })),
   { ssr: false }
 );
-const LocationMarkerLayer = dynamic(
+const LocationMarkerLayer = dynamic<{
+  mapId: string;
+  locations: LocationMarker[];
+  selectedId?: string | null;
+  onLocationClick?: (id: string) => void;
+}>(
   () => import("@/components/map/location-marker-layer").then((m) => ({ default: m.LocationMarkerLayer })),
   { ssr: false }
 );
