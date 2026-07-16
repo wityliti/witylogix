@@ -86,8 +86,6 @@ export default function ELDOverviewPage() {
   const violationsLoading = violationsResult.loading;
   const events            = eventsResult.items;
   const eventsLoading     = eventsResult.loading;
-  const drivers           = driversResult.items;
-  const driversLoading    = driversResult.loading;
 
   if (driversLoading && !apiDrivers.length) return <TableSkeleton rows={10} columns={6} />;
   if (driversError) return <ErrorState message={driversError.message} onRetry={driversRefetch} />;
@@ -247,10 +245,10 @@ export default function ELDOverviewPage() {
                           minute: "2-digit",
                         })}
                       </div>
-                    </button>
+                    </div>
+                  </button>
                   ))}
                 </div>
-              )}
             </CardContent>
           </Card>
         </div>

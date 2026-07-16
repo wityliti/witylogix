@@ -191,6 +191,7 @@ export function NotificationCenter({
   const [isOpen, setIsOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -209,10 +210,6 @@ export function NotificationCenter({
       actionUrl: n.actionUrl,
     })),
   [rawNotifs]);
-
-  // Local overlay for optimistic read/delete operations
-  const [readIds, setReadIds] = useState<Set<string>>(new Set());
-  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
 
   const notifications = useMemo(() =>
     apiNotifs

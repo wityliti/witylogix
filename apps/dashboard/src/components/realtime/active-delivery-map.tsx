@@ -242,11 +242,10 @@ export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
   // Refresh every 30s
   useEffect(() => {
     const interval = setInterval(() => {
-      refetchDrivers();
-      refetchDeliveries();
+      refetch();
     }, 30000);
     return () => clearInterval(interval);
-  }, [refetchDrivers, refetchDeliveries]);
+  }, [refetch]);
 
   const drivers = rawDrivers.map(toDriver);
   const activeDriverCount = drivers.filter((d) => d.status !== "offline").length;
@@ -256,8 +255,8 @@ export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
     if (rect) {
       setPopoverPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
     }
-    return result;
-  }, [rawDrivers]);
+    setSelectedDriver(driver);
+  };
 
   return (
     <Card className={cn("flex flex-col h-full relative overflow-hidden", className)}>
