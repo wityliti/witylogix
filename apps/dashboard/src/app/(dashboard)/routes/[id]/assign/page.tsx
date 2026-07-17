@@ -145,14 +145,14 @@ function DriverCard({ driver, isSelected, isCurrentDriver, onSelect }: DriverCar
               <span>Capacity: {driver.maxCapacity}</span>
             </div>
             {!canAssign && (
-              <p className="text-xs text-amber-500 mt-1 flex items-center gap-1">
+              <p className="text-xs text-wl-warning-500 mt-1 flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
                 Driver is currently {driver.status.toLowerCase().replace('_', ' ')}
               </p>
             )}
           </div>
           {isSelected && (
-            <CheckCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+            <CheckCircle className="w-5 h-5 text-wl-info-400 flex-shrink-0 mt-0.5" />
           )}
         </div>
       </CardContent>
@@ -326,8 +326,8 @@ export default function RouteAssignPage() {
             <CardContent className="p-4">
               {route.driver ? (
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                    <User className="w-4 h-4 text-blue-400" />
+                  <div className="w-8 h-8 rounded-full bg-wl-info-500/20 flex items-center justify-center">
+                    <User className="w-4 h-4 text-wl-info-400" />
                   </div>
                   <div>
                     <div className="text-sm font-medium text-white">{route.driver.name}</div>
@@ -344,7 +344,7 @@ export default function RouteAssignPage() {
           <Card className="bg-wl-bg-surface border border-wl-border-default flex-1">
             <CardHeader className="pb-3 border-b border-wl-border-default">
               <CardTitle className="text-sm text-white flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-blue-400" />
+                <MapPin className="w-4 h-4 text-wl-info-400" />
                 Route Stops ({route.stops.length})
               </CardTitle>
             </CardHeader>
@@ -379,7 +379,7 @@ export default function RouteAssignPage() {
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader className="pb-3 border-b border-wl-border-default">
               <CardTitle className="text-sm text-white flex items-center gap-2">
-                <Clock className="w-4 h-4 text-amber-400" />
+                <Clock className="w-4 h-4 text-wl-warning-400" />
                 Estimated Impact
               </CardTitle>
             </CardHeader>
@@ -408,7 +408,7 @@ export default function RouteAssignPage() {
                 {selectedDriver && (
                   <div className="flex justify-between pt-2 border-t border-wl-border-default">
                     <span>Selected Driver</span>
-                    <span className="text-blue-400">{selectedDriver.name}</span>
+                    <span className="text-wl-info-400">{selectedDriver.name}</span>
                   </div>
                 )}
               </div>
@@ -417,7 +417,7 @@ export default function RouteAssignPage() {
 
           {/* Error */}
           {assignError && (
-            <div className="p-3 bg-red-500/10 border border-red-500 rounded-lg text-red-400 text-sm flex items-center gap-2">
+            <div className="p-3 bg-wl-danger-500/10 border border-red-500 rounded-lg text-wl-danger-400 text-sm flex items-center gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               {assignError.message}
             </div>

@@ -143,7 +143,7 @@ export default function WidgetConfigPage() {
                 {/* Cart Selector Toggle */}
                 <div className="flex items-center justify-between p-3 bg-wl-bg-root rounded-lg border border-wl-border-default">
                   <div className="flex items-center gap-3">
-                    <Settings size={18} className="text-blue-400" />
+                    <Settings size={18} className="text-wl-info-400" />
                     <div>
                       <p className="text-white text-sm font-medium">Cart Delivery Selector</p>
                       <p className="text-wl-text-secondary text-xs">Show delivery options</p>
@@ -161,7 +161,7 @@ export default function WidgetConfigPage() {
                 {/* Shipping Calculator Toggle */}
                 <div className="flex items-center justify-between p-3 bg-wl-bg-root rounded-lg border border-wl-border-default">
                   <div className="flex items-center gap-3">
-                    <Globe size={18} className="text-blue-400" />
+                    <Globe size={18} className="text-wl-info-400" />
                     <div>
                       <p className="text-white text-sm font-medium">Shipping Calculator</p>
                       <p className="text-wl-text-secondary text-xs">Calculate shipping costs</p>
@@ -433,7 +433,7 @@ export default function WidgetConfigPage() {
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 <div className="bg-wl-bg-root rounded border border-wl-border-default p-3 max-h-64 overflow-y-auto">
-                  <pre className="text-blue-400 text-xs font-mono m-0 leading-relaxed whitespace-pre-wrap break-words">
+                  <pre className="text-wl-info-400 text-xs font-mono m-0 leading-relaxed whitespace-pre-wrap break-words">
                     {embedCode}
                   </pre>
                 </div>
@@ -479,9 +479,9 @@ export default function WidgetConfigPage() {
         {/* Save Button */}
         <div className="flex gap-3 justify-end items-center">
           {saveMutation.error && (
-            <span className="text-xs text-red-400">{saveMutation.error.message}</span>
+            <span className="text-xs text-wl-danger-400">{saveMutation.error.message}</span>
           )}
-          {saveSuccess && <span className="text-xs text-green-400">Saved!</span>}
+          {saveSuccess && <span className="text-xs text-wl-success-400">Saved!</span>}
           <Button variant="secondary" onClick={() => router.refresh()}>
             Discard
           </Button>

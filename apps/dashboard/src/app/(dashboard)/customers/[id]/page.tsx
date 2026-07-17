@@ -131,7 +131,7 @@ function CustomerMapView({ orders }: CustomerMapViewProps) {
 
   if (pins.length === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center gap-3 text-white/30">
+      <div className="h-full flex flex-col items-center justify-center gap-3 text-wl-text-tertiary">
         <MapPin className="w-8 h-8" />
         <p className="text-sm">No delivery locations on record</p>
       </div>
@@ -223,14 +223,14 @@ export default function CustomerDetailPage() {
   if (customerError || !customer) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-6">
-        <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center">
-          <Package className="w-8 h-8 text-red-400" />
+        <div className="w-16 h-16 rounded-2xl bg-wl-danger-500/10 flex items-center justify-center">
+          <Package className="w-8 h-8 text-wl-danger-400" />
         </div>
         <div className="text-center">
           <h2 className="text-lg font-semibold text-white mb-1">
             {customerError?.message?.includes('404') ? 'Customer not found' : 'Failed to load customer'}
           </h2>
-          <p className="text-sm text-white/40">
+          <p className="text-sm text-wl-text-tertiary">
             {customerError?.message ?? 'The customer you are looking for does not exist.'}
           </p>
         </div>
@@ -258,10 +258,10 @@ export default function CustomerDetailPage() {
   return (
     <div className="min-h-screen bg-wl-bg-root">
       {/* ── Back nav ──────────────────────────────────────────── */}
-      <div className="sticky top-0 z-10 bg-wl-bg-root/90 backdrop-blur border-b border-white/[0.06] px-6 py-3">
+      <div className="sticky top-0 z-10 bg-wl-bg-root/90 backdrop-blur border-b border-wl-border-subtle px-6 py-3">
         <button
           onClick={() => router.push('/customers')}
-          className="flex items-center gap-2 text-sm text-white/50 hover:text-white/80 transition-colors"
+          className="flex items-center gap-2 text-sm text-wl-text-secondary hover:text-wl-text-primary transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Customers
@@ -275,7 +275,7 @@ export default function CustomerDetailPage() {
           <div className="lg:col-span-1 space-y-4">
 
             {/* Profile card */}
-            <Card className="p-6 bg-wl-bg-surface border border-white/[0.06] text-center">
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-subtle text-center">
               <div
                 className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold mx-auto mb-4"
                 style={{ backgroundColor: avatarBg }}
@@ -298,24 +298,24 @@ export default function CustomerDetailPage() {
                 {customer.email && (
                   <div className="flex items-center gap-3 text-sm">
                     <div className="w-7 h-7 rounded bg-white/[0.05] flex items-center justify-center shrink-0">
-                      <Mail className="w-3.5 h-3.5 text-white/40" />
+                      <Mail className="w-3.5 h-3.5 text-wl-text-tertiary" />
                     </div>
-                    <span className="text-white/60 truncate">{customer.email}</span>
+                    <span className="text-wl-text-secondary truncate">{customer.email}</span>
                   </div>
                 )}
                 {customer.phone && (
                   <div className="flex items-center gap-3 text-sm">
                     <div className="w-7 h-7 rounded bg-white/[0.05] flex items-center justify-center shrink-0">
-                      <Phone className="w-3.5 h-3.5 text-white/40" />
+                      <Phone className="w-3.5 h-3.5 text-wl-text-tertiary" />
                     </div>
-                    <span className="text-white/60">{customer.phone}</span>
+                    <span className="text-wl-text-secondary">{customer.phone}</span>
                   </div>
                 )}
                 <div className="flex items-center gap-3 text-sm">
                   <div className="w-7 h-7 rounded bg-white/[0.05] flex items-center justify-center shrink-0">
-                    <Calendar className="w-3.5 h-3.5 text-white/40" />
+                    <Calendar className="w-3.5 h-3.5 text-wl-text-tertiary" />
                   </div>
-                  <span className="text-white/40">
+                  <span className="text-wl-text-tertiary">
                     Member since {fmtDate(customer.createdAt)}
                   </span>
                 </div>
@@ -352,14 +352,14 @@ export default function CustomerDetailPage() {
 
             {/* Tags */}
             {customer.addresses && customer.addresses.length > 0 && (
-              <Card className="p-4 bg-wl-bg-surface border border-white/[0.06]">
-                <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">
+              <Card className="p-4 bg-wl-bg-surface border border-wl-border-subtle">
+                <h3 className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-3">
                   Saved Addresses
                 </h3>
                 <div className="space-y-2">
                   {customer.addresses.slice(0, 3).map((addr, i) => (
-                    <div key={addr.id ?? i} className="flex items-start gap-2 text-xs text-white/50">
-                      <MapPin className="w-3 h-3 mt-0.5 shrink-0 text-white/30" />
+                    <div key={addr.id ?? i} className="flex items-start gap-2 text-xs text-wl-text-secondary">
+                      <MapPin className="w-3 h-3 mt-0.5 shrink-0 text-wl-text-tertiary" />
                       <span>{[addr.address1, addr.city, addr.province, addr.country].filter(Boolean).join(', ')}</span>
                     </div>
                   ))}
@@ -372,13 +372,13 @@ export default function CustomerDetailPage() {
           <div className="lg:col-span-2 space-y-6">
 
             {/* Map: delivery pin locations */}
-            <Card className="overflow-hidden border border-white/[0.06] bg-wl-bg-surface" style={{ height: 340 }}>
-              <CardHeader className="px-4 py-3 border-b border-white/[0.06]">
-                <CardTitle className="text-sm font-semibold text-white/70 flex items-center gap-2">
+            <Card className="overflow-hidden border border-wl-border-subtle bg-wl-bg-surface" style={{ height: 340 }}>
+              <CardHeader className="px-4 py-3 border-b border-wl-border-subtle">
+                <CardTitle className="text-sm font-semibold text-wl-text-secondary flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
                   Delivery Locations
                   {orders.length > 0 && (
-                    <span className="ml-auto text-xs font-normal text-white/30">
+                    <span className="ml-auto text-xs font-normal text-wl-text-tertiary">
                       {orders.filter((o) => {
                         const loc = o.deliveryLocation as { lat?: number; lng?: number } | null;
                         return loc?.lat && loc?.lng;
@@ -399,9 +399,9 @@ export default function CustomerDetailPage() {
             </Card>
 
             {/* Order history */}
-            <Card className="bg-wl-bg-surface border border-white/[0.06]">
-              <CardHeader className="px-5 py-4 border-b border-white/[0.06]">
-                <CardTitle className="text-sm font-semibold text-white/70 flex items-center gap-2">
+            <Card className="bg-wl-bg-surface border border-wl-border-subtle">
+              <CardHeader className="px-5 py-4 border-b border-wl-border-subtle">
+                <CardTitle className="text-sm font-semibold text-wl-text-secondary flex items-center gap-2">
                   <ShoppingBag className="w-4 h-4" />
                   Order History
                   <Badge variant="default" className="ml-auto">
@@ -417,11 +417,11 @@ export default function CustomerDetailPage() {
                     ))}
                   </div>
                 ) : ordersError ? (
-                  <div className="p-8 text-center text-white/30 text-sm">
+                  <div className="p-8 text-center text-wl-text-tertiary text-sm">
                     Failed to load orders
                   </div>
                 ) : orders.length === 0 ? (
-                  <div className="p-12 flex flex-col items-center gap-3 text-white/30">
+                  <div className="p-12 flex flex-col items-center gap-3 text-wl-text-tertiary">
                     <ShoppingBag className="w-8 h-8" />
                     <p className="text-sm">No orders yet</p>
                     <p className="text-xs">This customer has not placed any orders.</p>
@@ -431,23 +431,23 @@ export default function CustomerDetailPage() {
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-white/[0.06] bg-white/[0.02]">
-                            <th className="px-5 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider">
+                          <tr className="border-b border-wl-border-subtle bg-white/[0.02]">
+                            <th className="px-5 py-3 text-left text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">
                               Order
                             </th>
-                            <th className="px-5 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider">
+                            <th className="px-5 py-3 text-left text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">
                               Status
                             </th>
-                            <th className="px-5 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider">
+                            <th className="px-5 py-3 text-left text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">
                               Items
                             </th>
-                            <th className="px-5 py-3 text-right text-xs font-semibold text-white/40 uppercase tracking-wider">
+                            <th className="px-5 py-3 text-right text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">
                               Amount
                             </th>
-                            <th className="px-5 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider">
+                            <th className="px-5 py-3 text-left text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">
                               Date
                             </th>
-                            <th className="px-5 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider">
+                            <th className="px-5 py-3 text-left text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">
                               Driver
                             </th>
                             <th className="px-2 py-3" />
@@ -457,10 +457,10 @@ export default function CustomerDetailPage() {
                           {orders.map((order) => (
                             <tr
                               key={order.id}
-                              className="border-b border-white/[0.04] hover:bg-white/[0.02] cursor-pointer transition-colors"
+                              className="border-b border-wl-border-subtle hover:bg-white/[0.02] cursor-pointer transition-colors"
                               onClick={() => router.push(`/orders/${order.id}`)}
                             >
-                              <td className="px-5 py-3 font-mono text-xs text-white/70">
+                              <td className="px-5 py-3 font-mono text-xs text-wl-text-secondary">
                                 {order.externalOrderNumber ?? `#${order.id.slice(-6)}`}
                               </td>
                               <td className="px-5 py-3">
@@ -468,20 +468,20 @@ export default function CustomerDetailPage() {
                                   {order.status.replace(/_/g, ' ').toLowerCase()}
                                 </Badge>
                               </td>
-                              <td className="px-5 py-3 text-white/50 text-xs">
+                              <td className="px-5 py-3 text-wl-text-secondary text-xs">
                                 {order.itemCount} item{order.itemCount !== 1 ? 's' : ''}
                               </td>
-                              <td className="px-5 py-3 text-right font-semibold text-white/80 tabular-nums">
+                              <td className="px-5 py-3 text-right font-semibold text-wl-text-primary tabular-nums">
                                 {fmt(order.totalPrice)}
                               </td>
-                              <td className="px-5 py-3 text-white/40 text-xs">
+                              <td className="px-5 py-3 text-wl-text-tertiary text-xs">
                                 {fmtRelative(order.createdAt)}
                               </td>
-                              <td className="px-5 py-3 text-white/40 text-xs">
+                              <td className="px-5 py-3 text-wl-text-tertiary text-xs">
                                 {order.driver?.name ?? '—'}
                               </td>
                               <td className="px-2 py-3">
-                                <ChevronRight className="w-4 h-4 text-white/20" />
+                                <ChevronRight className="w-4 h-4 text-wl-text-tertiary" />
                               </td>
                             </tr>
                           ))}
@@ -490,8 +490,8 @@ export default function CustomerDetailPage() {
                     </div>
 
                     {orders.length >= 20 && (
-                      <div className="px-5 py-3 border-t border-white/[0.06] text-center">
-                        <span className="text-xs text-white/30">Showing most recent 20 orders</span>
+                      <div className="px-5 py-3 border-t border-wl-border-subtle text-center">
+                        <span className="text-xs text-wl-text-tertiary">Showing most recent 20 orders</span>
                       </div>
                     )}
                   </>
@@ -519,13 +519,13 @@ function StatTile({
   accent: string;
 }) {
   return (
-    <Card className="p-4 bg-wl-bg-surface border border-white/[0.06] relative overflow-hidden group hover:border-white/[0.10] transition-colors">
+    <Card className="p-4 bg-wl-bg-surface border border-wl-border-subtle relative overflow-hidden group hover:border-wl-border-default transition-colors">
       <div
         className="absolute top-0 left-0 right-0 h-[1px]"
         style={{ background: `linear-gradient(90deg, ${accent}60, transparent)` }}
       />
       <div className="flex items-start justify-between mb-2">
-        <span className="text-[11px] font-medium text-white/35 uppercase tracking-wider">{label}</span>
+        <span className="text-[11px] font-medium text-wl-text-tertiary uppercase tracking-wider">{label}</span>
         <div
           className="w-6 h-6 rounded flex items-center justify-center"
           style={{ backgroundColor: `${accent}18`, color: accent }}
@@ -533,7 +533,7 @@ function StatTile({
           <Icon className="w-3.5 h-3.5" />
         </div>
       </div>
-      <p className="text-base font-bold text-white/85 leading-none">{value}</p>
+      <p className="text-base font-bold text-wl-text-primary leading-none">{value}</p>
     </Card>
   );
 }

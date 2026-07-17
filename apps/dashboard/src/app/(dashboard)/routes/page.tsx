@@ -130,28 +130,28 @@ export default function RoutesPage() {
             <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
               Total Routes
             </div>
-            <div className="text-3xl font-bold text-blue-500">{stats.total}</div>
+            <div className="text-3xl font-bold text-wl-info-500">{stats.total}</div>
           </Card>
 
           <Card className="p-4 bg-wl-bg-surface border border-wl-border-default">
             <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
               Active Now
             </div>
-            <div className="text-3xl font-bold text-emerald-500">{stats.active}</div>
+            <div className="text-3xl font-bold text-wl-success-500">{stats.active}</div>
           </Card>
 
           <Card className="p-4 bg-wl-bg-surface border border-wl-border-default">
             <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
               Templates
             </div>
-            <div className="text-3xl font-bold text-blue-400">{stats.templates}</div>
+            <div className="text-3xl font-bold text-wl-info-400">{stats.templates}</div>
           </Card>
 
           <Card className="p-4 bg-wl-bg-surface border border-wl-border-default">
             <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
               Completed
             </div>
-            <div className="text-3xl font-bold text-amber-500">{stats.completed}</div>
+            <div className="text-3xl font-bold text-wl-warning-500">{stats.completed}</div>
           </Card>
         </div>
 
@@ -169,7 +169,7 @@ export default function RoutesPage() {
                 'bg-wl-bg-surface text-wl-text-primary',
                 'border border-wl-border-default',
                 'placeholder:text-wl-text-tertiary',
-                'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
+                'focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500',
                 'transition-colors',
               )}
             />
@@ -239,7 +239,7 @@ export default function RoutesPage() {
                       <td className="px-6 py-4">
                         <Link
                           href={`/routes/${route.id}`}
-                          className="text-blue-400 hover:text-blue-300 font-medium"
+                          className="text-wl-info-400 hover:text-wl-info-400 font-medium"
                         >
                           {route.name}
                           {route.isTemplate && (

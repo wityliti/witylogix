@@ -264,7 +264,7 @@ export default function SupplyChainIntegrationsPage() {
               <div className={cn("text-sm text-wl-text-secondary py-8 text-center")}>Loading connections...</div>
             )}
             {warehousesError && (
-              <div className={cn("text-sm text-red-400 py-8 text-center")}>
+              <div className={cn("text-sm text-wl-danger-400 py-8 text-center")}>
                 Failed to load warehouse connections.
               </div>
             )}
@@ -318,7 +318,7 @@ export default function SupplyChainIntegrationsPage() {
                     <div className={cn("flex items-center justify-between text-xs text-wl-neutral-300 mb-3")}>
                       <span>Last sync: {warehouse.lastSync}</span>
                       {warehouse.errorCount > 0 && (
-                        <span className={cn("text-red-500 font-semibold")}>
+                        <span className={cn("text-wl-danger-500 font-semibold")}>
                           {warehouse.errorCount} error{warehouse.errorCount !== 1 ? "s" : ""}
                         </span>
                       )}
@@ -339,7 +339,7 @@ export default function SupplyChainIntegrationsPage() {
                                   "p-2 rounded bg-wl-bg-surface border border-wl-border-default flex items-center gap-2"
                                 )}
                               >
-                                <Warehouse size={14} className={cn("text-blue-400")} />
+                                <Warehouse size={14} className={cn("text-wl-info-400")} />
                                 <span className={cn("text-xs text-wl-text-secondary")}>
                                   Location {i + 1}
                                 </span>
@@ -410,7 +410,7 @@ export default function SupplyChainIntegrationsPage() {
               <div className={cn("text-sm text-wl-text-secondary py-8 text-center")}>Loading inventory syncs...</div>
             )}
             {inventoryError && (
-              <div className={cn("text-sm text-red-400 py-8 text-center")}>
+              <div className={cn("text-sm text-wl-danger-400 py-8 text-center")}>
                 Failed to load inventory sync data.
               </div>
             )}
@@ -463,7 +463,7 @@ export default function SupplyChainIntegrationsPage() {
                       </div>
                       <div>
                         <p className={cn("text-wl-neutral-300 mb-1")}>Success Rate</p>
-                        <p className={cn("font-bold text-emerald-500")}>
+                        <p className={cn("font-bold text-wl-success-500")}>
                           {sync.successRate}%
                         </p>
                       </div>

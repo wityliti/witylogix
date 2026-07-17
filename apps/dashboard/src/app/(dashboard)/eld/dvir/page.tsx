@@ -82,7 +82,7 @@ export default function DVIRPage() {
         <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-wl-text-secondary uppercase">Total Defects</span>
-            <Wrench className="w-4 h-4 text-blue-500" />
+            <Wrench className="w-4 h-4 text-wl-info-500" />
           </div>
           <p className="text-2xl font-bold text-white">{defects.length}</p>
           <p className="text-xs text-wl-text-secondary mt-1">{openDefectsCount} open</p>
@@ -91,18 +91,18 @@ export default function DVIRPage() {
         <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-wl-text-secondary uppercase">Critical Issues</span>
-            <AlertTriangle className="w-4 h-4 text-red-500" />
+            <AlertTriangle className="w-4 h-4 text-wl-danger-500" />
           </div>
-          <p className="text-2xl font-bold text-red-500">{criticalDefectsCount}</p>
+          <p className="text-2xl font-bold text-wl-danger-500">{criticalDefectsCount}</p>
           <p className="text-xs text-wl-text-secondary mt-1">Require immediate action</p>
         </div>
 
         <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-wl-text-secondary uppercase">Repaired</span>
-            <CheckCircle className="w-4 h-4 text-emerald-500" />
+            <CheckCircle className="w-4 h-4 text-wl-success-500" />
           </div>
-          <p className="text-2xl font-bold text-emerald-500">
+          <p className="text-2xl font-bold text-wl-success-500">
             {defects.filter((d) => d.status === "REPAIRED").length}
           </p>
           <p className="text-xs text-wl-text-secondary mt-1">Awaiting certification</p>
@@ -111,9 +111,9 @@ export default function DVIRPage() {
         <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-wl-text-secondary uppercase">Certified</span>
-            <CheckCircle className="w-4 h-4 text-blue-500" />
+            <CheckCircle className="w-4 h-4 text-wl-info-500" />
           </div>
-          <p className="text-2xl font-bold text-blue-500">
+          <p className="text-2xl font-bold text-wl-info-500">
             {defects.filter((d) => d.status === "CERTIFIED").length}
           </p>
           <p className="text-xs text-wl-text-secondary mt-1">Resolved and closed</p>
@@ -163,7 +163,7 @@ export default function DVIRPage() {
               {/* Defects list */}
               {defectsLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="w-6 h-6 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
+                  <div className="w-6 h-6 rounded-full border-2 border-wl-info-500/30 border-t-blue-500 animate-spin" />
                 </div>
               ) : filteredDefects.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-wl-text-secondary">
@@ -176,7 +176,7 @@ export default function DVIRPage() {
                   {filteredDefects.map((defect) => (
                     <div
                       key={defect.id}
-                      className="p-3 rounded-lg bg-wl-bg-elevated border border-wl-border-default hover:border-blue-500/30 transition-all"
+                      className="p-3 rounded-lg bg-wl-bg-elevated border border-wl-border-default hover:border-wl-info-500/30 transition-all"
                     >
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex-1">
@@ -216,7 +216,7 @@ export default function DVIRPage() {
                       </div>
 
                       {defect.mechanicApproval && (
-                        <div className="text-xs text-emerald-500 pt-2 border-t border-wl-border-default">
+                        <div className="text-xs text-wl-success-500 pt-2 border-t border-wl-border-default">
                           ✓ Certified by {defect.mechanicApproval.mechanicName}
                         </div>
                       )}
@@ -254,7 +254,7 @@ export default function DVIRPage() {
                       onClick={() => { setSelectedVehicle(""); setShowVehicleSearch(false); }}
                       className={cn(
                         "w-full text-left px-3 py-2 text-xs transition-colors border-b border-wl-border-default",
-                        !selectedVehicle ? "bg-blue-500/10 text-blue-400" : "text-wl-text-secondary hover:bg-wl-bg-root"
+                        !selectedVehicle ? "bg-wl-info-500/10 text-wl-info-400" : "text-wl-text-secondary hover:bg-wl-bg-root"
                       )}
                     >
                       All vehicles
@@ -269,7 +269,7 @@ export default function DVIRPage() {
                         className={cn(
                           "w-full text-left px-3 py-2 text-xs transition-colors border-b border-wl-border-default last:border-0",
                           selectedVehicle === vehicle.vehicleNumber
-                            ? "bg-blue-500/10 text-blue-400"
+                            ? "bg-wl-info-500/10 text-wl-info-400"
                             : "text-wl-text-secondary hover:bg-wl-bg-root"
                         )}
                       >
@@ -284,7 +284,7 @@ export default function DVIRPage() {
             <CardContent>
               {inspectionsLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="w-6 h-6 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
+                  <div className="w-6 h-6 rounded-full border-2 border-wl-info-500/30 border-t-blue-500 animate-spin" />
                 </div>
               ) : filteredHistory.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-wl-text-secondary">
@@ -301,7 +301,7 @@ export default function DVIRPage() {
                   {filteredHistory.map((inspection) => (
                     <div
                       key={inspection.id}
-                      className="p-3 rounded-lg bg-wl-bg-elevated border border-wl-border-default hover:border-blue-500/30 transition-all"
+                      className="p-3 rounded-lg bg-wl-bg-elevated border border-wl-border-default hover:border-wl-info-500/30 transition-all"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
@@ -329,12 +329,12 @@ export default function DVIRPage() {
 
                           {inspection.defectsCount > 0 && (
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="text-xs text-amber-500">
+                              <span className="text-xs text-wl-warning-500">
                                 {inspection.defectsCount} defect
                                 {inspection.defectsCount > 1 ? "s" : ""}
                               </span>
                               {inspection.criticalDefects > 0 && (
-                                <span className="text-xs text-red-500">
+                                <span className="text-xs text-wl-danger-500">
                                   • {inspection.criticalDefects} critical
                                 </span>
                               )}

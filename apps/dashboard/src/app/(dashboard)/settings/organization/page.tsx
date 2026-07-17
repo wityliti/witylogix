@@ -204,7 +204,7 @@ export default function OrganizationPage() {
           </Card>
 
           {/* Billing Information */}
-          <Card className="bg-wl-bg-surface border border-wl-border-default border-l-4 border-l-blue-500">
+          <Card className="bg-wl-bg-surface border border-wl-border-default border-l-4 border-l-wl-info-500">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -280,16 +280,16 @@ export default function OrganizationPage() {
           </Card>
 
           {/* Danger Zone */}
-          <Card className="bg-wl-bg-surface border border-red-500/30">
+          <Card className="bg-wl-bg-surface border border-wl-danger-500/30">
             <CardHeader>
-              <CardTitle className="text-red-400 flex items-center gap-2">
+              <CardTitle className="text-wl-danger-400 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5" />
                 Danger Zone
               </CardTitle>
               <CardDescription className="text-wl-text-secondary">Irreversible and destructive actions</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-4 bg-red-500/5 border border-red-500/30 rounded-lg">
+              <div className="p-4 bg-red-500/5 border border-wl-danger-500/30 rounded-lg">
                 <h4 className="font-semibold text-white mb-2">
                   Delete Organization
                 </h4>
@@ -307,7 +307,7 @@ export default function OrganizationPage() {
               </div>
 
               {showDeleteConfirm && (
-                <div className="p-4 bg-red-500/10 border border-red-500/50 rounded-lg">
+                <div className="p-4 bg-wl-danger-500/10 border border-wl-danger-500/50 rounded-lg">
                   <p className="text-sm font-semibold text-white mb-3">
                     Are you absolutely sure? This action cannot be undone.
                   </p>

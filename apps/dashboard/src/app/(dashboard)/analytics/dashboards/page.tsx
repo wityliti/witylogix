@@ -72,7 +72,7 @@ function CreateDashboardModal({ onClose, onCreated }: { onClose: () => void; onC
             <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} className="rounded" />
             <span className="text-sm text-wl-text-secondary">Make public (visible to all team members)</span>
           </label>
-          {error && <p className="text-sm text-red-400">{error.message}</p>}
+          {error && <p className="text-sm text-wl-danger-400">{error.message}</p>}
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
             <Button type="submit" variant="primary" disabled={loading || !name.trim()}>
@@ -178,7 +178,7 @@ export default function DashboardsPage() {
                         <button
                           onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(dashboard.id); }}
                           disabled={deletingId === dashboard.id}
-                          className="p-1 rounded hover:bg-red-500/15 hover:text-red-400 text-wl-text-tertiary transition-colors"
+                          className="p-1 rounded hover:bg-wl-danger-500/15 hover:text-wl-danger-400 text-wl-text-tertiary transition-colors"
                           aria-label={`Delete ${dashboard.name}`}
                         >
                           <Trash2 className="w-3.5 h-3.5" />

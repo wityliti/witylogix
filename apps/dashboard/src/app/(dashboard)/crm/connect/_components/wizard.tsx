@@ -84,7 +84,7 @@ export function WizardNav({ steps, activeStep, onStepClick }: WizardNavProps) {
               'transition-all duration-base ease-default',
               'relative group',
               step.isActive
-                ? 'bg-blue-500/20 border border-blue-500'
+                ? 'bg-wl-info-500/20 border border-blue-500'
                 : 'hover:bg-wl-bg-elevated',
               !step.isAccessible && 'opacity-50 cursor-not-allowed'
             )}

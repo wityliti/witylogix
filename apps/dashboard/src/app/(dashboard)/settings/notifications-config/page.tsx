@@ -158,10 +158,10 @@ export default function NotificationsConfigPage() {
                 return (
                   <div
                     key={channel.id}
-                    className="p-4 rounded-lg border border-wl-border-default hover:border-blue-500/50 transition-colors"
+                    className="p-4 rounded-lg border border-wl-border-default hover:border-wl-info-500/50 transition-colors"
                   >
                     <div className="flex items-center gap-3 mb-3">
-                      <Icon className="w-5 h-5 text-blue-500" />
+                      <Icon className="w-5 h-5 text-wl-info-500" />
                       <h4 className="font-medium text-white">
                         {channel.name}
                       </h4>

@@ -413,7 +413,7 @@ export default function PaymentsPage() {
             <DollarSign className="w-4 h-4" />
             Collected
           </h3>
-          <p className="text-3xl font-bold text-emerald-500 mb-2">
+          <p className="text-3xl font-bold text-wl-success-500 mb-2">
             ${stats.totalCollected.toFixed(2)}
           </p>
           <p className="text-sm text-wl-text-secondary">
@@ -434,7 +434,7 @@ export default function PaymentsPage() {
             <Clock className="w-4 h-4" />
             Outstanding
           </h3>
-          <p className="text-3xl font-bold text-amber-500 mb-2">
+          <p className="text-3xl font-bold text-wl-warning-500 mb-2">
             ${stats.totalPending.toFixed(2)}
           </p>
           <p className="text-sm text-wl-text-secondary">
@@ -561,7 +561,7 @@ export default function PaymentsPage() {
                 key: "invoiceNumber",
                 header: "Invoice #",
                 render: (item) => (
-                  <div className="font-mono text-sm font-medium text-blue-500">
+                  <div className="font-mono text-sm font-medium text-wl-info-500">
                     {item.invoiceNumber}
                   </div>
                 ),

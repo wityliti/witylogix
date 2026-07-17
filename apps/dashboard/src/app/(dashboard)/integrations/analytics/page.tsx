@@ -379,7 +379,7 @@ export default function AnalyticsIntegrationsPage() {
 
                         {connection.status === 'error' && connection.errorMessage && (
                           <div className={cn('mb-3 p-2 rounded bg-[rgba(239,68,68,0.1)] border border-red-400 border-opacity-30')}>
-                            <p className={cn('text-xs text-red-400')}>
+                            <p className={cn('text-xs text-wl-danger-400')}>
                               {connection.errorMessage}
                             </p>
                           </div>
@@ -406,8 +406,8 @@ export default function AnalyticsIntegrationsPage() {
                                   className={cn(
                                     'text-lg font-bold',
                                     connection.status === 'connected'
-                                      ? 'text-emerald-400'
-                                      : 'text-red-400'
+                                      ? 'text-wl-success-400'
+                                      : 'text-wl-danger-400'
                                   )}
                                 >
                                   {connection.status === 'connected' ? 'Live' : 'Error'}
@@ -564,7 +564,7 @@ export default function AnalyticsIntegrationsPage() {
                           <Settings size={14} />
                         </Button>
                         <Button variant="ghost" size="sm">
-                          <Trash2 size={14} className={cn('text-red-400')} />
+                          <Trash2 size={14} className={cn('text-wl-danger-400')} />
                         </Button>
                       </div>
                     </div>

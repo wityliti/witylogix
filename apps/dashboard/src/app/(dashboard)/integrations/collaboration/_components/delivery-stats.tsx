@@ -39,7 +39,7 @@ export function DeliveryStats({ stats }: DeliveryStatsProps) {
                     <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                       Delivered
                     </p>
-                    <p className="text-xl font-bold text-green-400 mt-1">
+                    <p className="text-xl font-bold text-wl-success-400 mt-1">
                       {stat.delivered.toLocaleString()}
                     </p>
                   </div>
@@ -47,7 +47,7 @@ export function DeliveryStats({ stats }: DeliveryStatsProps) {
                     <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                       Failed
                     </p>
-                    <p className="text-xl font-bold text-red-400 mt-1">
+                    <p className="text-xl font-bold text-wl-danger-400 mt-1">
                       {stat.failed}
                     </p>
                   </div>
@@ -58,7 +58,7 @@ export function DeliveryStats({ stats }: DeliveryStatsProps) {
                     <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                       Success Rate
                     </p>
-                    <p className="text-sm font-bold text-green-400">
+                    <p className="text-sm font-bold text-wl-success-400">
                       {successRate}%
                     </p>
                   </div>

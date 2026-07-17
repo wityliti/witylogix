@@ -132,7 +132,7 @@ export default function FieldServicePage() {
       <div className="p-6 space-y-6 bg-wl-bg-root min-h-screen">
         {/* KPI Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-wl-bg-surface border-wl-border-default border-l-4 border-l-blue-500">
+          <Card className="bg-wl-bg-surface border-wl-border-default border-l-4 border-l-wl-info-500">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -140,7 +140,7 @@ export default function FieldServicePage() {
                   <p className="text-3xl font-bold text-white">{overview.activeJobs}</p>
                   <p className="text-xs text-wl-text-secondary mt-2">in progress now</p>
                 </div>
-                <TrendingUp className="w-8 h-8 text-blue-500/30" />
+                <TrendingUp className="w-8 h-8 text-wl-info-500/30" />
               </div>
             </CardContent>
           </Card>
@@ -166,7 +166,7 @@ export default function FieldServicePage() {
                   <p className="text-3xl font-bold text-white">{overview.completionRate}%</p>
                   <p className="text-xs text-wl-text-secondary mt-2">last 30 days</p>
                 </div>
-                <CheckCircle2 className="w-8 h-8 text-emerald-500/30" />
+                <CheckCircle2 className="w-8 h-8 text-wl-success-500/30" />
               </div>
             </CardContent>
           </Card>
@@ -179,7 +179,7 @@ export default function FieldServicePage() {
                   <p className="text-3xl font-bold text-white">{overview.completedToday}</p>
                   <p className="text-xs text-wl-text-secondary mt-2">jobs finished</p>
                 </div>
-                <Clock className="w-8 h-8 text-amber-500/30" />
+                <Clock className="w-8 h-8 text-wl-warning-500/30" />
               </div>
             </CardContent>
           </Card>
@@ -195,7 +195,7 @@ export default function FieldServicePage() {
                   <select
                     value={selectedTech ?? 'all'}
                     onChange={(e) => setSelectedTech(e.target.value === 'all' ? null : e.target.value)}
-                    className="px-3 py-2 text-xs rounded border border-wl-border-default bg-wl-bg-elevated text-wl-neutral-300 focus:outline-none focus:border-blue-500/50"
+                    className="px-3 py-2 text-xs rounded border border-wl-border-default bg-wl-bg-elevated text-wl-neutral-300 focus:outline-none focus:border-wl-info-500/50"
                   >
                     <option value="all">All Technicians</option>
                     {technicians.map((t) => (
@@ -212,10 +212,10 @@ export default function FieldServicePage() {
                     {filteredSchedule.map((item) => (
                       <div
                         key={item.jobId}
-                        className="flex items-center gap-4 p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default hover:border-blue-500/30 transition-colors"
+                        className="flex items-center gap-4 p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default hover:border-wl-info-500/30 transition-colors"
                       >
                         <div className="w-24 flex-shrink-0">
-                          <div className="text-sm font-semibold text-blue-400">{item.startTime}</div>
+                          <div className="text-sm font-semibold text-wl-info-400">{item.startTime}</div>
                           <div className="text-xs text-wl-text-tertiary">{item.endTime}</div>
                         </div>
                         <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
@@ -245,7 +245,7 @@ export default function FieldServicePage() {
               <div>
                 <div className="flex justify-between items-baseline mb-3">
                   <span className="text-sm font-medium text-wl-text-secondary">On-Time %</span>
-                  <span className="text-2xl font-bold text-emerald-400">{slaMetrics.onTimePercentage}%</span>
+                  <span className="text-2xl font-bold text-wl-success-400">{slaMetrics.onTimePercentage}%</span>
                 </div>
                 <div className="w-full bg-wl-bg-elevated rounded-full h-2.5 overflow-hidden">
                   <div
@@ -257,7 +257,7 @@ export default function FieldServicePage() {
               <div className="h-px bg-wl-border-default" />
               <div>
                 <div className="text-sm text-wl-text-secondary mb-2">Overdue Jobs</div>
-                <div className="text-3xl font-bold text-red-400">{slaMetrics.overdueCount}</div>
+                <div className="text-3xl font-bold text-wl-danger-400">{slaMetrics.overdueCount}</div>
                 <div className="text-xs text-wl-text-tertiary mt-1">of {slaMetrics.totalJobs} total</div>
               </div>
               <div className="h-px bg-wl-border-default" />
@@ -326,7 +326,7 @@ export default function FieldServicePage() {
                     >
                       <div className="flex justify-between items-start gap-2 mb-1">
                         <div>
-                          <div className="text-sm font-semibold text-emerald-400">✓ {job.jobNumber}</div>
+                          <div className="text-sm font-semibold text-wl-success-400">✓ {job.jobNumber}</div>
                           <div className="text-xs text-wl-text-secondary">{job.customerName}</div>
                         </div>
                       </div>

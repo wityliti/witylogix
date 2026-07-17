@@ -133,7 +133,7 @@ export function FuelCardItem({
               variant="ghost"
               size="sm"
               onClick={onDelete}
-              className="flex-1 text-red-400 hover:text-red-300"
+              className="flex-1 text-wl-danger-400 hover:text-wl-danger-400"
             >
               <Trash2 className="w-3 h-3 mr-1" /> Delete
             </Button>

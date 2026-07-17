@@ -62,7 +62,7 @@ function MapLegend() {
       {items.map((item) => (
         <div key={item.label} className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-          <span className="text-xs text-white/70">{item.label}</span>
+          <span className="text-xs text-wl-text-secondary">{item.label}</span>
         </div>
       ))}
     </div>
@@ -77,9 +77,9 @@ function MapStats({ pins }: { pins: DeliveryPin[] }) {
   const rate   = pins.length > 0 ? Math.round((onTime / (onTime + late)) * 100) : 0;
   return (
     <div className="absolute top-4 right-4 z-10 bg-black/60 backdrop-blur-sm rounded-xl px-4 py-3 space-y-1 min-w-[140px]">
-      <p className="text-xs text-white/40 font-medium">Delivery Map</p>
-      <p className="text-2xl font-bold text-white/90 font-mono">{rate}<span className="text-sm text-white/30">%</span></p>
-      <p className="text-xs text-white/35">on-time · {pins.length} deliveries</p>
+      <p className="text-xs text-wl-text-tertiary font-medium">Delivery Map</p>
+      <p className="text-2xl font-bold text-wl-text-primary font-mono">{rate}<span className="text-sm text-wl-text-tertiary">%</span></p>
+      <p className="text-xs text-wl-text-tertiary">on-time · {pins.length} deliveries</p>
     </div>
   );
 }
@@ -160,14 +160,14 @@ export default function RoutePerformancePage() {
             </h2>
             <div className="flex items-center gap-2">
               {/* View toggle */}
-              <div className="flex rounded-lg border border-white/[0.08] overflow-hidden">
+              <div className="flex rounded-lg border border-wl-border-default overflow-hidden">
                 <button
                   onClick={() => setView("charts")}
                   className={cn(
                     "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
                     view === "charts"
-                      ? "bg-white/10 text-white/80"
-                      : "text-white/30 hover:text-white/50"
+                      ? "bg-white/10 text-wl-text-primary"
+                      : "text-wl-text-tertiary hover:text-wl-text-secondary"
                   )}
                 >
                   <BarChart3 className="w-3.5 h-3.5" />
@@ -176,10 +176,10 @@ export default function RoutePerformancePage() {
                 <button
                   onClick={() => setView("map")}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors border-l border-white/[0.08]",
+                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors border-l border-wl-border-default",
                     view === "map"
-                      ? "bg-white/10 text-white/80"
-                      : "text-white/30 hover:text-white/50"
+                      ? "bg-white/10 text-wl-text-primary"
+                      : "text-wl-text-tertiary hover:text-wl-text-secondary"
                   )}
                 >
                   <Map className="w-3.5 h-3.5" />
@@ -215,12 +215,12 @@ export default function RoutePerformancePage() {
 
           {/* Map View */}
           {view === "map" && (
-            <div className="relative rounded-2xl overflow-hidden border border-white/[0.08] mb-8" style={{ height: 520 }}>
+            <div className="relative rounded-2xl overflow-hidden border border-wl-border-default mb-8" style={{ height: 520 }}>
               {geoQ.loading ? (
                 <div className="h-full w-full flex items-center justify-center bg-wl-bg-elevated">
                   <div className="flex flex-col items-center gap-3">
                     <div className="w-8 h-8 rounded-full border-2 border-wl-primary-400 border-t-transparent animate-spin" />
-                    <p className="text-sm text-white/40">Loading delivery map…</p>
+                    <p className="text-sm text-wl-text-tertiary">Loading delivery map…</p>
                   </div>
                 </div>
               ) : geoPins.length > 0 ? (
@@ -230,9 +230,9 @@ export default function RoutePerformancePage() {
               ) : (
                 <div className="h-full w-full flex items-center justify-center bg-wl-bg-elevated">
                   <div className="flex flex-col items-center gap-3 text-center max-w-xs">
-                    <Map className="w-10 h-10 text-white/10" />
-                    <p className="text-sm font-medium text-white/30">No geo-tagged deliveries</p>
-                    <p className="text-xs text-white/15">
+                    <Map className="w-10 h-10 text-wl-text-tertiary" />
+                    <p className="text-sm font-medium text-wl-text-tertiary">No geo-tagged deliveries</p>
+                    <p className="text-xs text-wl-text-tertiary">
                       Delivery map requires orders with lat/lng coordinates stored in the delivery location field.
                     </p>
                   </div>

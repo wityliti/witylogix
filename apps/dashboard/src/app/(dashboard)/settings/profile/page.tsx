@@ -317,7 +317,7 @@ export default function ProfilePage() {
                   </CardDescription>
                 </div>
                 {mfaEnabled && (
-                  <div className="flex items-center gap-1 px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-semibold rounded-full">
+                  <div className="flex items-center gap-1 px-3 py-1 bg-wl-success-500/10 text-wl-success-400 text-xs font-semibold rounded-full">
                     <Check className="w-3 h-3" />
                     Enabled
                   </div>
@@ -369,7 +369,7 @@ export default function ProfilePage() {
                           className="flex items-center justify-between p-2 bg-wl-bg-root rounded font-mono text-sm text-white"
                         >
                           <span>{code}</span>
-                          <button className="text-blue-400 hover:text-blue-300">
+                          <button className="text-wl-info-400 hover:text-wl-info-400">
                             <Copy className="w-4 h-4" />
                           </button>
                         </div>

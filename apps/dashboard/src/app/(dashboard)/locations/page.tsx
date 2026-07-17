@@ -229,7 +229,7 @@ export default function LocationsPage() {
                           {location.name}
                         </span>
                         {location.isDefault && (
-                          <span className={cn("text-sm opacity-80 text-blue-400")}>★</span>
+                          <span className={cn("text-sm opacity-80 text-wl-info-400")}>★</span>
                         )}
                       </div>
                       <Badge variant={typeVariant(location.type)} dot>
@@ -253,13 +253,13 @@ export default function LocationsPage() {
                   <div className={cn("grid grid-cols-3 gap-2")}>
                     <div>
                       <div className={cn("text-xs text-wl-text-secondary mb-1")}>Active</div>
-                      <div className={cn("text-lg font-bold font-mono text-blue-400")}>
+                      <div className={cn("text-lg font-bold font-mono text-wl-info-400")}>
                         {location.activeShipments}
                       </div>
                     </div>
                     <div>
                       <div className={cn("text-xs text-wl-text-secondary mb-1")}>Processed</div>
-                      <div className={cn("text-lg font-bold font-mono text-emerald-500")}>
+                      <div className={cn("text-lg font-bold font-mono text-wl-success-500")}>
                         {location.totalProcessed}
                       </div>
                     </div>
@@ -369,13 +369,13 @@ export default function LocationsPage() {
                 <div className={cn("grid grid-cols-3 gap-3")}>
                   <div>
                     <div className={cn("text-xs text-wl-text-secondary mb-1")}>Active</div>
-                    <div className={cn("text-lg font-bold font-mono text-blue-400")}>
+                    <div className={cn("text-lg font-bold font-mono text-wl-info-400")}>
                       {selectedLocation.activeShipments}
                     </div>
                   </div>
                   <div>
                     <div className={cn("text-xs text-wl-text-secondary mb-1")}>Processed</div>
-                    <div className={cn("text-lg font-bold font-mono text-emerald-500")}>
+                    <div className={cn("text-lg font-bold font-mono text-wl-success-500")}>
                       {selectedLocation.totalProcessed}
                     </div>
                   </div>
@@ -443,7 +443,7 @@ export default function LocationsPage() {
             {(typeFilter !== "ALL" || search) && (
               <button
                 onClick={() => { setTypeFilter("ALL"); setSearch(""); }}
-                className={cn("text-xs text-blue-400 hover:text-blue-300")}
+                className={cn("text-xs text-wl-info-400 hover:text-wl-info-400")}
               >
                 Clear filters
               </button>

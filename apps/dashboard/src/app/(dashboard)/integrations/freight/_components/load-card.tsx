@@ -29,7 +29,7 @@ interface LoadCardProps {
 
 export function LoadCard({ load, onBook, onDetails }: LoadCardProps) {
   return (
-    <Card className="bg-wl-bg-surface border-wl-border-default hover:border-blue-500/50 transition-colors">
+    <Card className="bg-wl-bg-surface border-wl-border-default hover:border-wl-info-500/50 transition-colors">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
@@ -45,7 +45,7 @@ export function LoadCard({ load, onBook, onDetails }: LoadCardProps) {
             </div>
           </div>
           <div className="text-right">
-            <div className="text-lg font-bold text-emerald-400">
+            <div className="text-lg font-bold text-wl-success-400">
               ${load.bestRate}
             </div>
             <div className="text-xs text-wl-text-secondary">best rate</div>

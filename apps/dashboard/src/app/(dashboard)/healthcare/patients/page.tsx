@@ -70,7 +70,7 @@ function PatientTable({ patients }: { patients: Patient[] }) {
               placeholder="Search by name or MRN..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 pl-10 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none transition-colors"
+              className="w-full px-4 py-2 pl-10 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder-gray-500 focus:border-wl-info-500 focus:outline-none transition-colors"
             />
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-wl-text-tertiary">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -111,7 +111,7 @@ function PatientTable({ patients }: { patients: Patient[] }) {
                     onClick={() => setSelectedPatientId(patient.id)}
                   >
                     <td className="py-3 px-4 text-white font-medium">
-                      <button className="hover:underline text-blue-500">
+                      <button className="hover:underline text-wl-info-500">
                         {patient.firstName} {patient.lastName}
                       </button>
                     </td>
@@ -238,7 +238,7 @@ function PatientTable({ patients }: { patients: Patient[] }) {
               <div className="space-y-4">
                 <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default">
                   <div className="flex items-center gap-2 mb-2">
-                    <Heart className="text-red-500" size={16} />
+                    <Heart className="text-wl-danger-500" size={16} />
                     <span className="text-sm font-semibold text-white">Active Conditions</span>
                   </div>
                   <p className="text-2xl font-bold text-white">{selectedPatient.activeConditionsCount}</p>
@@ -247,7 +247,7 @@ function PatientTable({ patients }: { patients: Patient[] }) {
 
                 <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default">
                   <div className="flex items-center gap-2 mb-2">
-                    <Pill className="text-emerald-500" size={16} />
+                    <Pill className="text-wl-success-500" size={16} />
                     <span className="text-sm font-semibold text-white">Medications</span>
                   </div>
                   <p className="text-2xl font-bold text-white">{selectedPatient.medicationsCount}</p>
@@ -324,7 +324,7 @@ export default function PatientsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-wl-text-secondary text-sm font-medium">Total Patients</span>
-              <Users className="text-blue-500" size={20} />
+              <Users className="text-wl-info-500" size={20} />
             </div>
             <p className="text-3xl font-bold text-white">{patients.length}</p>
             <p className="text-wl-text-secondary text-xs mt-2">
@@ -337,7 +337,7 @@ export default function PatientsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-wl-text-secondary text-sm font-medium">Avg. Conditions</span>
-              <Heart className="text-red-500" size={20} />
+              <Heart className="text-wl-danger-500" size={20} />
             </div>
             <p className="text-3xl font-bold text-white">
               {patients.length > 0
@@ -355,7 +355,7 @@ export default function PatientsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-wl-text-secondary text-sm font-medium">Avg. Medications</span>
-              <Pill className="text-emerald-500" size={20} />
+              <Pill className="text-wl-success-500" size={20} />
             </div>
             <p className="text-3xl font-bold text-white">
               {patients.length > 0

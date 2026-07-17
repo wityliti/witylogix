@@ -285,7 +285,7 @@ export default function PreferencesPage() {
                       className={cn(
                         "p-3 border border-wl-border-default rounded-lg cursor-pointer transition-all",
                         preferences.dashboardView === option.value
-                          ? "border-blue-500 bg-blue-500/10"
+                          ? "border-blue-500 bg-wl-info-500/10"
                           : "hover:border-wl-border-strong"
                       )}
                     >

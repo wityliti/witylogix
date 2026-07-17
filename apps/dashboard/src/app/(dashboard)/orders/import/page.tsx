@@ -183,8 +183,8 @@ export default function OrderImportPage() {
 
       <div className="p-6 space-y-6">
         {connectionsError && (
-          <div className="flex items-center gap-3 p-4 rounded-lg border border-amber-500/30 bg-amber-500/10">
-            <span className="text-amber-400 text-sm font-medium">
+          <div className="flex items-center gap-3 p-4 rounded-lg border border-wl-warning-500/30 bg-wl-warning-500/10">
+            <span className="text-wl-warning-400 text-sm font-medium">
               Could not load platform connections — platform status may be incomplete.
             </span>
           </div>
@@ -207,7 +207,7 @@ export default function OrderImportPage() {
               <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                 Pending
               </p>
-              <p className="text-3xl font-bold font-mono text-blue-500">
+              <p className="text-3xl font-bold font-mono text-wl-info-500">
                 {metrics.pendingOrders}
               </p>
               <p className="text-xs text-wl-text-secondary mt-2">awaiting sync</p>
@@ -217,7 +217,7 @@ export default function OrderImportPage() {
               <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                 Failed
               </p>
-              <p className="text-3xl font-bold font-mono text-red-500">
+              <p className="text-3xl font-bold font-mono text-wl-danger-500">
                 {metrics.failedOrders}
               </p>
               <p className="text-xs text-wl-text-secondary mt-2">errors</p>
@@ -227,7 +227,7 @@ export default function OrderImportPage() {
               <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                 Conflicts
               </p>
-              <p className="text-3xl font-bold font-mono text-amber-500">
+              <p className="text-3xl font-bold font-mono text-wl-warning-500">
                 {metrics.activeConflicts}
               </p>
               <p className="text-xs text-wl-text-secondary mt-2">unresolved</p>

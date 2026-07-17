@@ -124,7 +124,7 @@ export default function ChaosDashboard() {
               className={cn(
                 'border-b-2 px-1 py-4 text-sm font-medium transition-colors',
                 activeTab === tab
-                  ? 'border-blue-500 text-blue-500'
+                  ? 'border-blue-500 text-wl-info-500'
                   : 'border-transparent text-wl-text-secondary hover:text-white'
               )}
             >
@@ -427,7 +427,7 @@ function MetricCard({ label, value }: { label: string; value: string | number })
   return (
     <div className="rounded border border-wl-border-default bg-wl-bg-root p-4">
       <div className="text-xs text-wl-text-tertiary">{label}</div>
-      <div className="mt-1 text-2xl font-bold text-blue-500">{value}</div>
+      <div className="mt-1 text-2xl font-bold text-wl-info-500">{value}</div>
     </div>
   );
 }

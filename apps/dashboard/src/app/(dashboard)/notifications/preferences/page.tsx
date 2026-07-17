@@ -401,7 +401,7 @@ export default function NotificationPreferencesPage() {
                           "w-full px-4 py-2 rounded-md",
                           "bg-wl-bg-overlay border border-wl-border-default",
                           "text-white",
-                          "focus:outline-none focus:border-blue-500",
+                          "focus:outline-none focus:border-wl-info-500",
                           "transition-colors duration-fast"
                         )}
                       >
@@ -466,7 +466,7 @@ export default function NotificationPreferencesPage() {
                           "w-full px-4 py-2 rounded-md",
                           "bg-wl-bg-overlay border border-wl-border-default",
                           "text-white",
-                          "focus:outline-none focus:border-blue-500",
+                          "focus:outline-none focus:border-wl-info-500",
                           "transition-colors duration-fast"
                         )}
                       >

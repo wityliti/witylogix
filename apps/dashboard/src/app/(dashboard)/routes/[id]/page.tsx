@@ -102,11 +102,11 @@ const STOP_STATUS_BADGE: Record<StopStatus, 'default' | 'info' | 'success' | 'wa
 
 const STOP_STATUS_ICON: Record<StopStatus, React.ReactNode> = {
   PENDING: <Clock className="w-3.5 h-3.5 text-wl-text-secondary" />,
-  EN_ROUTE: <Navigation className="w-3.5 h-3.5 text-blue-400" />,
-  ARRIVED: <MapPin className="w-3.5 h-3.5 text-blue-400" />,
-  COMPLETED: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />,
-  SKIPPED: <SkipForward className="w-3.5 h-3.5 text-amber-400" />,
-  FAILED: <AlertCircle className="w-3.5 h-3.5 text-red-400" />,
+  EN_ROUTE: <Navigation className="w-3.5 h-3.5 text-wl-info-400" />,
+  ARRIVED: <MapPin className="w-3.5 h-3.5 text-wl-info-400" />,
+  COMPLETED: <CheckCircle2 className="w-3.5 h-3.5 text-wl-success-500" />,
+  SKIPPED: <SkipForward className="w-3.5 h-3.5 text-wl-warning-400" />,
+  FAILED: <AlertCircle className="w-3.5 h-3.5 text-wl-danger-400" />,
 };
 
 function formatTime(iso: string | null | undefined): string {
@@ -430,7 +430,7 @@ export default function RouteDetailPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-4">
           <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">Stops</div>
-          <div className="text-2xl font-bold text-blue-500">
+          <div className="text-2xl font-bold text-wl-info-500">
             {completedStops}/{totalStops}
           </div>
           {/* Progress bar */}
@@ -444,14 +444,14 @@ export default function RouteDetailPage() {
 
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-4">
           <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">Distance</div>
-          <div className="text-2xl font-bold text-emerald-400">
+          <div className="text-2xl font-bold text-wl-success-400">
             {route.totalDistance ? `${Number(route.totalDistance).toFixed(1)} km` : '—'}
           </div>
         </div>
 
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-4">
           <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">Duration</div>
-          <div className="text-2xl font-bold text-amber-400">
+          <div className="text-2xl font-bold text-wl-warning-400">
             {route.totalDuration ? formatDuration(Math.round(route.totalDuration / 60)) : '—'}
           </div>
         </div>
@@ -506,7 +506,7 @@ export default function RouteDetailPage() {
               <div className="space-y-1 text-wl-text-secondary">
                 <div className="flex justify-between gap-6">
                   <span>Completed</span>
-                  <span className="text-emerald-400 font-medium">{completedStops}</span>
+                  <span className="text-wl-success-400 font-medium">{completedStops}</span>
                 </div>
                 <div className="flex justify-between gap-6">
                   <span>Remaining</span>
@@ -553,7 +553,7 @@ export default function RouteDetailPage() {
           {/* Driver Card */}
           <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-4">
             <div className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-              <User className="w-4 h-4 text-blue-400" />
+              <User className="w-4 h-4 text-wl-info-400" />
               Driver
             </div>
             {route.driver ? (
@@ -585,7 +585,7 @@ export default function RouteDetailPage() {
             ) : (
               <div className="text-sm text-wl-text-tertiary">
                 No driver assigned.{' '}
-                <Link href={`/routes/${id}/assign`} className="text-blue-400 hover:underline">
+                <Link href={`/routes/${id}/assign`} className="text-wl-info-400 hover:underline">
                   Assign one
                 </Link>
               </div>
@@ -595,7 +595,7 @@ export default function RouteDetailPage() {
           {/* Route Timeline */}
           <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-4 flex-1">
             <div className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-amber-400" />
+              <Clock className="w-4 h-4 text-wl-warning-400" />
               Timeline
             </div>
             <div className="relative pl-5">

@@ -261,7 +261,7 @@ export default function NotificationsPage() {
                   "transition-colors duration-200",
                   "border cursor-pointer",
                   selectedCategory === cat.id
-                    ? "border-blue-500 bg-blue-500/20 text-blue-400"
+                    ? "border-blue-500 bg-wl-info-500/20 text-wl-info-400"
                     : "border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong"
                 )}
               >
@@ -272,7 +272,7 @@ export default function NotificationsPage() {
 
           {/* Bulk Actions Bar */}
           {selectedNotifications.size > 0 && (
-            <Card className={cn("border-blue-500/30 bg-blue-500/5")}>
+            <Card className={cn("border-wl-info-500/30 bg-blue-500/5")}>
               <CardContent className="flex items-center justify-between py-3">
                 <span className="text-sm text-wl-text-secondary">
                   {selectedNotifications.size} selected

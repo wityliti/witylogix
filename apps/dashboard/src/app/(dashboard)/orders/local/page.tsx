@@ -256,7 +256,7 @@ export default function LocalOrdersPage() {
                   'px-3 py-1.5 rounded text-xs font-medium transition-all border',
                   statusFilter === s
                     ? 'bg-blue-500 text-white border-blue-500'
-                    : 'bg-wl-bg-surface text-wl-text-secondary border-wl-border-default hover:border-blue-500 hover:text-blue-400',
+                    : 'bg-wl-bg-surface text-wl-text-secondary border-wl-border-default hover:border-blue-500 hover:text-wl-info-400',
                 )}
               >
                 {s === 'all' ? 'All' : s.replace(/_/g, ' ')}
@@ -319,11 +319,11 @@ export default function LocalOrdersPage() {
                         </div>
 
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-semibold text-blue-500">
+                          <span className="text-sm font-semibold text-wl-info-500">
                             {order.currency || '₹'}{order.totalAmount.toLocaleString()}
                           </span>
                           {order.driver && (
-                            <span className="text-xs text-blue-400 flex items-center gap-1">
+                            <span className="text-xs text-wl-info-400 flex items-center gap-1">
                               <Truck size={12} /> {order.driver.name}
                             </span>
                           )}
@@ -358,7 +358,7 @@ export default function LocalOrdersPage() {
                   {selectedOrder.customerPhone && (
                     <a
                       href={`tel:${selectedOrder.customerPhone}`}
-                      className="text-xs text-blue-500 flex items-center gap-1 mt-1 hover:text-blue-400"
+                      className="text-xs text-wl-info-500 flex items-center gap-1 mt-1 hover:text-wl-info-400"
                     >
                       <Phone size={12} /> {selectedOrder.customerPhone}
                     </a>
@@ -366,7 +366,7 @@ export default function LocalOrdersPage() {
                   {selectedOrder.customerEmail && (
                     <a
                       href={`mailto:${selectedOrder.customerEmail}`}
-                      className="text-xs text-blue-500 flex items-center gap-1 mt-0.5 hover:text-blue-400"
+                      className="text-xs text-wl-info-500 flex items-center gap-1 mt-0.5 hover:text-wl-info-400"
                     >
                       <Mail size={12} /> {selectedOrder.customerEmail}
                     </a>
@@ -384,7 +384,7 @@ export default function LocalOrdersPage() {
                     {formatTimeWindow(selectedOrder.timeSlot, selectedOrder.deliveryDate)}
                   </p>
                   {selectedOrder.estimatedDelivery && (
-                    <p className="text-xs text-blue-400 mt-1">
+                    <p className="text-xs text-wl-info-400 mt-1">
                       ETA: {new Date(selectedOrder.estimatedDelivery).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   )}
@@ -398,7 +398,7 @@ export default function LocalOrdersPage() {
                   </div>
                   <div>
                     <p className="text-xs text-wl-text-secondary mb-0.5">Total</p>
-                    <p className="text-base font-semibold text-blue-500">
+                    <p className="text-base font-semibold text-wl-info-500">
                       {selectedOrder.currency || '₹'}{selectedOrder.totalAmount.toLocaleString()}
                     </p>
                   </div>
@@ -412,7 +412,7 @@ export default function LocalOrdersPage() {
                     {selectedOrder.driver.phone && (
                       <a
                         href={`tel:${selectedOrder.driver.phone}`}
-                        className="text-xs text-blue-500 mt-0.5 block hover:text-blue-400"
+                        className="text-xs text-wl-info-500 mt-0.5 block hover:text-wl-info-400"
                       >
                         {selectedOrder.driver.phone}
                       </a>

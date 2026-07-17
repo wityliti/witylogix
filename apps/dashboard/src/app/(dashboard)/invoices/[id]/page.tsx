@@ -596,7 +596,7 @@ export default function InvoiceDetailPage() {
                       className={cn(
                         "font-semibold",
                         isOverdue
-                          ? "text-red-500"
+                          ? "text-wl-danger-500"
                           : "text-white"
                       )}
                     >
@@ -658,7 +658,7 @@ export default function InvoiceDetailPage() {
                     </span>
                   </div>
                   {invoice.discountAmount > 0 && (
-                    <div className="flex justify-between mb-2 text-emerald-600">
+                    <div className="flex justify-between mb-2 text-wl-success-500">
                       <span>Discount</span>
                       <span>-${invoice.discountAmount.toFixed(2)}</span>
                     </div>
@@ -671,7 +671,7 @@ export default function InvoiceDetailPage() {
                   </div>
                   <div className="flex justify-between text-lg font-bold border-t-2 border-wl-border-default pt-3 mt-3">
                     <span className="text-white">Total</span>
-                    <span className="text-blue-500">
+                    <span className="text-wl-info-500">
                       ${invoice.total.toFixed(2)}
                     </span>
                   </div>
@@ -727,7 +727,7 @@ export default function InvoiceDetailPage() {
                 <p className="text-xs uppercase text-wl-text-secondary">
                   Amount Paid
                 </p>
-                <p className="text-lg font-bold text-emerald-600">
+                <p className="text-lg font-bold text-wl-success-500">
                   ${amountPaid.toFixed(2)}
                 </p>
               </div>
@@ -739,8 +739,8 @@ export default function InvoiceDetailPage() {
                   className={cn(
                     "text-lg font-bold",
                     remainingBalance > 0
-                      ? "text-red-500"
-                      : "text-emerald-600"
+                      ? "text-wl-danger-500"
+                      : "text-wl-success-500"
                   )}
                 >
                   ${remainingBalance.toFixed(2)}

@@ -134,11 +134,11 @@ export default function MarketplacePage() {
               onChange={(e) => handleSearchChange(e.target.value)}
               className={cn(
                 'w-full pl-10 pr-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg',
-                'text-white text-sm focus:border-blue-500 outline-none transition-all',
+                'text-white text-sm focus:border-wl-info-500 outline-none transition-all',
               )}
             />
             {isSearching && (
-              <Loader2 className="w-4 h-4 absolute right-3 top-3 text-blue-500 animate-spin" />
+              <Loader2 className="w-4 h-4 absolute right-3 top-3 text-wl-info-500 animate-spin" />
             )}
           </div>
 
@@ -171,7 +171,7 @@ export default function MarketplacePage() {
                   className={cn(
                     'px-3 py-1.5 text-sm rounded-lg border transition-all',
                     sortBy === s
-                      ? 'bg-blue-500/15 text-blue-400 border-blue-500'
+                      ? 'bg-wl-info-500/15 text-wl-info-400 border-blue-500'
                       : 'bg-wl-bg-elevated border-wl-border-default text-white hover:border-blue-500',
                   )}
                 >
@@ -324,7 +324,7 @@ function ProviderCard({ provider, index, layout, categoryLabel }: ProviderCardPr
       <Card
         className={cn(
           'flex items-center justify-between p-4 hover:border-blue-500 transition-all',
-          provider.installed && 'border-emerald-500/30',
+          provider.installed && 'border-wl-success-500/30',
         )}
         style={{ animationDelay: delay } as React.CSSProperties}
       >
@@ -357,7 +357,7 @@ function ProviderCard({ provider, index, layout, categoryLabel }: ProviderCardPr
       <Card
         className={cn(
           'h-full flex flex-col hover:border-blue-500 cursor-pointer transition-all',
-          provider.installed && 'border-emerald-500/30',
+          provider.installed && 'border-wl-success-500/30',
         )}
         style={{ animationDelay: delay } as React.CSSProperties}
         hover

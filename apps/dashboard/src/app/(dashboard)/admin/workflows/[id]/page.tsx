@@ -69,13 +69,13 @@ interface ExecutionResponse {
 const getStatusIcon = (status: string) => {
   switch (status) {
     case "completed":
-      return <CheckCircle2 size={20} className="text-emerald-500" />;
+      return <CheckCircle2 size={20} className="text-wl-success-500" />;
     case "failed":
-      return <AlertCircle size={20} className="text-red-500" />;
+      return <AlertCircle size={20} className="text-wl-danger-500" />;
     case "running":
-      return <Loader2 size={20} className="text-blue-500 animate-spin" />;
+      return <Loader2 size={20} className="text-wl-info-500 animate-spin" />;
     case "compensating":
-      return <RotateCcw size={20} className="text-amber-500" />;
+      return <RotateCcw size={20} className="text-wl-warning-500" />;
     default:
       return null;
   }
@@ -180,9 +180,9 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                 )}
                 {step.error && (
                   <div className="mb-4">
-                    <h5 className="text-xs font-semibold text-red-500 uppercase mb-2 tracking-wider">Error Details</h5>
-                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-                      <p className="m-0 mb-2 text-red-500 text-sm font-medium">{step.error.message}</p>
+                    <h5 className="text-xs font-semibold text-wl-danger-500 uppercase mb-2 tracking-wider">Error Details</h5>
+                    <div className="bg-wl-danger-500/10 border border-wl-danger-500/20 rounded-lg p-3">
+                      <p className="m-0 mb-2 text-wl-danger-500 text-sm font-medium">{step.error.message}</p>
                       {step.error.stack && (
                         <pre className="m-0 text-xs text-wl-text-secondary font-mono overflow-auto whitespace-pre-wrap break-words">
                           {step.error.stack}
@@ -336,7 +336,7 @@ export default function WorkflowExecutionDetailPage() {
                 {execution.completedAt && (
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <CheckCircle2 size={14} className="text-emerald-500" />
+                      <CheckCircle2 size={14} className="text-wl-success-500" />
                       <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">Completed</span>
                     </div>
                     <span className="text-sm text-white block ml-5">{formatDateTime(execution.completedAt)}</span>
@@ -358,7 +358,7 @@ export default function WorkflowExecutionDetailPage() {
           <Card className="border-l-4 border-l-red-500 mb-6">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <AlertCircle size={20} className="text-red-500" />
+                <AlertCircle size={20} className="text-wl-danger-500" />
                 <CardTitle>Error Summary</CardTitle>
               </div>
             </CardHeader>
@@ -372,14 +372,14 @@ export default function WorkflowExecutionDetailPage() {
           <Card className="border-l-4 border-l-red-500 mb-6">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <AlertCircle size={20} className="text-red-500" />
+                <AlertCircle size={20} className="text-wl-danger-500" />
                 <CardTitle>Step Errors</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               {steps.filter(s => s.error).map(step => (
                 <div key={step.id} className="mb-3">
-                  <p className="m-0 mb-1 text-red-500 text-sm font-semibold">Step {step.number}: {step.name}</p>
+                  <p className="m-0 mb-1 text-wl-danger-500 text-sm font-semibold">Step {step.number}: {step.name}</p>
                   <p className="m-0 text-wl-text-secondary text-sm">{step.error?.message}</p>
                 </div>
               ))}

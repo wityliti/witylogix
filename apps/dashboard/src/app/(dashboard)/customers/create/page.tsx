@@ -93,7 +93,7 @@ export default function CreateCustomerPage() {
             </div>
             <div>
               <label htmlFor="cust-email" className="block text-sm font-medium text-wl-text-primary mb-1">
-                Email <span className="text-red-400">*</span>
+                Email <span className="text-wl-danger-400">*</span>
               </label>
               <input
                 id="cust-email"
@@ -116,7 +116,7 @@ export default function CreateCustomerPage() {
                 className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
               />
             </div>
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {error && <p className="text-sm text-wl-danger-400">{error}</p>}
             <div className="flex gap-3 pt-2">
               <Button type="submit" variant="primary" size="md" disabled={create.loading}>
                 {create.loading ? 'Creating…' : 'Create customer'}

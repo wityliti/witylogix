@@ -209,26 +209,26 @@ export default function TrackingPage() {
               label: "Active Deliveries",
               value: activeOrders.length,
               sub: `${orders.length} total orders`,
-              icon: <Truck className="w-5 h-5 text-blue-400" />,
-              color: "text-blue-400",
+              icon: <Truck className="w-5 h-5 text-wl-info-400" />,
+              color: "text-wl-info-400",
             },
             {
               label: "Drivers Online",
               value: onlineDriversCount,
               sub: `${drivers.length > 0 ? Math.round((onlineDriversCount / drivers.length) * 100) : 0}% of ${drivers.length} drivers`,
-              icon: <Users className="w-5 h-5 text-emerald-400" />,
-              color: "text-emerald-400",
+              icon: <Users className="w-5 h-5 text-wl-success-400" />,
+              color: "text-wl-success-400",
             },
             {
               label: "Completion Rate",
               value: `${completionRate}%`,
               sub: `${deliveredCount} delivered`,
               icon: (
-                <span className="w-5 h-5 text-emerald-400 font-bold flex items-center">
+                <span className="w-5 h-5 text-wl-success-400 font-bold flex items-center">
                   ✓
                 </span>
               ),
-              color: "text-emerald-400",
+              color: "text-wl-success-400",
             },
             {
               label: "Total Orders",
@@ -291,11 +291,11 @@ export default function TrackingPage() {
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {[
-                    { label: "Pending", status: "pending", color: "text-amber-400" },
-                    { label: "Confirmed", status: "confirmed", color: "text-blue-400" },
+                    { label: "Pending", status: "pending", color: "text-wl-warning-400" },
+                    { label: "Confirmed", status: "confirmed", color: "text-wl-info-400" },
                     { label: "In Transit", status: "in_transit", color: "text-indigo-400" },
-                    { label: "Delivered", status: "delivered", color: "text-emerald-400" },
-                    { label: "Cancelled", status: "cancelled", color: "text-red-400" },
+                    { label: "Delivered", status: "delivered", color: "text-wl-success-400" },
+                    { label: "Cancelled", status: "cancelled", color: "text-wl-danger-400" },
                   ].map((item) => (
                     <div
                       key={item.label}
@@ -417,7 +417,7 @@ export default function TrackingPage() {
                             </div>
                           </div>
                           {order.estimatedDelivery && (
-                            <p className="text-xs text-blue-400 font-semibold shrink-0 hidden sm:block">
+                            <p className="text-xs text-wl-info-400 font-semibold shrink-0 hidden sm:block">
                               ETA:{" "}
                               {new Date(
                                 order.estimatedDelivery,

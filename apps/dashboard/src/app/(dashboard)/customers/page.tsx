@@ -87,13 +87,13 @@ export default function CustomersPage() {
     {
       label: 'Total Customers',
       value: statsLoading ? null : stats?.total ?? 0,
-      icon: <Users className="w-5 h-5 text-blue-400" />,
+      icon: <Users className="w-5 h-5 text-wl-info-400" />,
       change: totalPct !== null ? fmtPct(totalPct) + ' vs prior period' : null,
     },
     {
       label: 'Active',
       value: statsLoading ? null : stats?.activeCount ?? 0,
-      icon: <TrendingUp className="w-5 h-5 text-green-400" />,
+      icon: <TrendingUp className="w-5 h-5 text-wl-success-400" />,
       change: activePct !== null ? `${activePct.toFixed(0)}% of total` : null,
     },
     {
@@ -105,7 +105,7 @@ export default function CustomersPage() {
     {
       label: 'Top Spender',
       value: statsLoading ? null : fmt.format(stats?.topSpenderAmount ?? 0),
-      icon: <Star className="w-5 h-5 text-amber-400" />,
+      icon: <Star className="w-5 h-5 text-wl-warning-400" />,
       change: null,
     },
   ];
@@ -180,7 +180,7 @@ export default function CustomersPage() {
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
             aria-label="Search customers"
-            className="w-72 px-4 py-2 bg-wl-bg-surface border border-wl-border-default rounded-md text-white text-sm outline-none focus:border-blue-500/50 transition-colors"
+            className="w-72 px-4 py-2 bg-wl-bg-surface border border-wl-border-default rounded-md text-white text-sm outline-none focus:border-wl-info-500/50 transition-colors"
           />
 
           <div className="flex gap-1">
@@ -273,7 +273,7 @@ export default function CustomersPage() {
                             {(search || statusFilter !== 'all' || tierFilter !== 'all') && (
                               <button
                                 onClick={() => { handleSearch(''); setStatusFilter('all'); setTierFilter('all'); }}
-                                className="text-xs text-blue-400 hover:underline"
+                                className="text-xs text-wl-info-400 hover:underline"
                               >
                                 Clear filters
                               </button>

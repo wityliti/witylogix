@@ -171,7 +171,7 @@ export default function HOSPage() {
                       className={cn(
                         "w-full text-left px-3 py-2 text-xs transition-colors border-b border-wl-border-default last:border-0",
                         selectedDriverId === driver.driverId
-                          ? "bg-blue-500/10 text-blue-400"
+                          ? "bg-wl-info-500/10 text-wl-info-400"
                           : "text-wl-text-secondary hover:bg-wl-bg-root"
                       )}
                     >
@@ -187,7 +187,7 @@ export default function HOSPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
+          <div className="w-8 h-8 rounded-full border-2 border-wl-info-500/30 border-t-blue-500 animate-spin" />
         </div>
       ) : hos ? (
         <>
@@ -281,26 +281,26 @@ export default function HOSPage() {
             <Card
               className={cn(
                 "bg-wl-bg-surface border-wl-border-default",
-                hosStatus === "critical" && "border-red-500/50 bg-red-500/5"
+                hosStatus === "critical" && "border-wl-danger-500/50 bg-red-500/5"
               )}
             >
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2 text-white">
                   {hosStatus === "compliant" && (
                     <>
-                      <CheckCircle className="w-4 h-4 text-emerald-500" />
+                      <CheckCircle className="w-4 h-4 text-wl-success-500" />
                       Compliant
                     </>
                   )}
                   {hosStatus === "warning" && (
                     <>
-                      <AlertTriangle className="w-4 h-4 text-amber-500" />
+                      <AlertTriangle className="w-4 h-4 text-wl-warning-500" />
                       Caution
                     </>
                   )}
                   {hosStatus === "critical" && (
                     <>
-                      <AlertTriangle className="w-4 h-4 text-red-500" />
+                      <AlertTriangle className="w-4 h-4 text-wl-danger-500" />
                       Critical
                     </>
                   )}
@@ -438,9 +438,9 @@ export default function HOSPage() {
                               className={cn(
                                 "font-semibold",
                                 entry.total > 70
-                                  ? "text-red-500"
+                                  ? "text-wl-danger-500"
                                   : entry.total > 60
-                                    ? "text-amber-500"
+                                    ? "text-wl-warning-500"
                                     : "text-white"
                               )}
                             >
@@ -464,7 +464,7 @@ export default function HOSPage() {
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2 text-white">
-                <Edit2 className="w-5 h-5 text-blue-500" />
+                <Edit2 className="w-5 h-5 text-wl-info-500" />
                 Edit Request Workflow
               </CardTitle>
             </CardHeader>

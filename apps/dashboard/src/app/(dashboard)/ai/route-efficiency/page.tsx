@@ -92,10 +92,10 @@ interface RouteDetail {
 // ── Helpers ──────────────────────────────────────────────────────
 
 function scoreColor(score: number) {
-  if (score >= 90) return 'text-emerald-400';
-  if (score >= 75) return 'text-blue-400';
-  if (score >= 60) return 'text-amber-400';
-  return 'text-red-400';
+  if (score >= 90) return 'text-wl-success-400';
+  if (score >= 75) return 'text-wl-info-400';
+  if (score >= 60) return 'text-wl-warning-400';
+  return 'text-wl-danger-400';
 }
 
 function scoreAccent(score: number) {
@@ -110,8 +110,8 @@ function BreakdownBar({ label, value, color, invert = false }: { label: string; 
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs">
-        <span className="text-white/40">{label}</span>
-        <span className="font-mono text-white/60">{(value * 100).toFixed(0)}%</span>
+        <span className="text-wl-text-tertiary">{label}</span>
+        <span className="font-mono text-wl-text-secondary">{(value * 100).toFixed(0)}%</span>
       </div>
       <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
         <div
@@ -227,12 +227,12 @@ export default function RouteEfficiencyPage() {
       {/* Header */}
       <div className="px-6 lg:px-8 pt-6 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-blue-500/15 flex items-center justify-center">
-            <Route className="w-5 h-5 text-blue-400" />
+          <div className="w-9 h-9 rounded-lg bg-wl-info-500/15 flex items-center justify-center">
+            <Route className="w-5 h-5 text-wl-info-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white/90 tracking-tight">Route Efficiency</h1>
-            <p className="text-sm text-white/35 mt-0.5">AI-scored route performance analysis</p>
+            <h1 className="text-2xl font-bold text-wl-text-primary tracking-tight">Route Efficiency</h1>
+            <p className="text-sm text-wl-text-tertiary mt-0.5">AI-scored route performance analysis</p>
           </div>
         </div>
       </div>
@@ -244,20 +244,20 @@ export default function RouteEfficiencyPage() {
           <div className="space-y-3">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-tertiary" />
               <input
                 type="text"
                 placeholder="Search routes…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-wl-bg-sunken border border-white/[0.06] rounded-lg pl-9 pr-4 py-2.5 text-sm text-white/70 placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-wl-bg-sunken border border-wl-border-subtle rounded-lg pl-9 pr-4 py-2.5 text-sm text-wl-text-secondary placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-border-strong transition-colors"
               />
             </div>
 
             {/* Route list */}
-            <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] overflow-hidden">
-              <div className="px-4 py-3 border-b border-white/[0.05]">
-                <p className="text-xs font-medium text-white/30 uppercase tracking-wider">Completed Routes</p>
+            <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle overflow-hidden">
+              <div className="px-4 py-3 border-b border-wl-border-subtle">
+                <p className="text-xs font-medium text-wl-text-tertiary uppercase tracking-wider">Completed Routes</p>
               </div>
               <div className="max-h-[480px] overflow-y-auto">
                 {routesLoading ? (
@@ -268,9 +268,9 @@ export default function RouteEfficiencyPage() {
                   </div>
                 ) : routes.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-10 gap-2 text-center px-4">
-                    <Route className="w-8 h-8 text-white/10" />
-                    <p className="text-sm text-white/25">No completed routes</p>
-                    <p className="text-xs text-white/15">Efficiency scores appear once routes are completed</p>
+                    <Route className="w-8 h-8 text-wl-text-tertiary" />
+                    <p className="text-sm text-wl-text-tertiary">No completed routes</p>
+                    <p className="text-xs text-wl-text-tertiary">Efficiency scores appear once routes are completed</p>
                   </div>
                 ) : (
                   routes.map((route) => (
@@ -278,16 +278,16 @@ export default function RouteEfficiencyPage() {
                       key={route.id}
                       onClick={() => setSelectedRouteId(route.id)}
                       className={cn(
-                        'w-full text-left px-4 py-3.5 border-b border-white/[0.03] last:border-0 transition-colors',
+                        'w-full text-left px-4 py-3.5 border-b border-wl-border-subtle last:border-0 transition-colors',
                         activeRouteId === route.id
-                          ? 'bg-blue-500/10 border-l-2 border-l-blue-500'
+                          ? 'bg-wl-info-500/10 border-l-2 border-l-wl-info-500'
                           : 'hover:bg-white/[0.02]',
                       )}
                     >
-                      <p className={cn('text-sm font-medium', activeRouteId === route.id ? 'text-white/90' : 'text-white/60')}>
+                      <p className={cn('text-sm font-medium', activeRouteId === route.id ? 'text-wl-text-primary' : 'text-wl-text-secondary')}>
                         {route.name ?? route.id.slice(0, 12)}
                       </p>
-                      <div className="flex items-center gap-3 mt-1 text-[11px] text-white/25">
+                      <div className="flex items-center gap-3 mt-1 text-[11px] text-wl-text-tertiary">
                         {route.driverName && <span>{route.driverName}</span>}
                         {route.stopCount != null && <><span>·</span><span>{route.stopCount} stops</span></>}
                         {route.date && <><span>·</span><span>{route.date}</span></>}
@@ -303,17 +303,17 @@ export default function RouteEfficiencyPage() {
           <div className="space-y-4">
             {activeRouteId && (
               <div className="flex items-center justify-end">
-                <div className="flex items-center rounded-lg border border-white/[0.08] overflow-hidden">
+                <div className="flex items-center rounded-lg border border-wl-border-default overflow-hidden">
                   <button
                     onClick={() => setScoreView('score')}
-                    className={cn('px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all', scoreView === 'score' ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50')}
+                    className={cn('px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all', scoreView === 'score' ? 'bg-white/10 text-wl-text-primary' : 'text-wl-text-tertiary hover:text-wl-text-secondary')}
                   >
                     <BarChart3 className="w-3.5 h-3.5" />
                     Score
                   </button>
                   <button
                     onClick={() => setScoreView('map')}
-                    className={cn('px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all', scoreView === 'map' ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50')}
+                    className={cn('px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all', scoreView === 'map' ? 'bg-white/10 text-wl-text-primary' : 'text-wl-text-tertiary hover:text-wl-text-secondary')}
                   >
                     <Map className="w-3.5 h-3.5" />
                     Map
@@ -323,15 +323,15 @@ export default function RouteEfficiencyPage() {
             )}
 
             {scoreView === 'map' && activeRouteId && (
-              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] overflow-hidden">
-                <div className="px-5 py-3 border-b border-white/[0.05]">
-                  <p className="text-xs font-medium text-white/40 uppercase tracking-wider">{selectedRoute?.name ?? 'Route'} — Stop Map</p>
+              <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle overflow-hidden">
+                <div className="px-5 py-3 border-b border-wl-border-subtle">
+                  <p className="text-xs font-medium text-wl-text-tertiary uppercase tracking-wider">{selectedRoute?.name ?? 'Route'} — Stop Map</p>
                 </div>
                 {mapCoords.length < 2 ? (
                   <div className="flex flex-col items-center justify-center h-80 gap-3">
-                    <MapPin className="w-10 h-10 text-white/10" />
-                    <p className="text-sm text-white/30">No stop coordinates available</p>
-                    <p className="text-xs text-white/15">Stops appear once delivery locations have GPS coordinates</p>
+                    <MapPin className="w-10 h-10 text-wl-text-tertiary" />
+                    <p className="text-sm text-wl-text-tertiary">No stop coordinates available</p>
+                    <p className="text-xs text-wl-text-tertiary">Stops appear once delivery locations have GPS coordinates</p>
                   </div>
                 ) : (
                   <div className="h-80">
@@ -345,37 +345,37 @@ export default function RouteEfficiencyPage() {
             )}
 
             {!activeRouteId && (
-              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] h-80 flex items-center justify-center">
+              <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle h-80 flex items-center justify-center">
                 <div className="text-center">
-                  <Gauge className="w-10 h-10 text-white/10 mx-auto mb-3" />
-                  <p className="text-sm text-white/30">Select a route to see its efficiency score</p>
+                  <Gauge className="w-10 h-10 text-wl-text-tertiary mx-auto mb-3" />
+                  <p className="text-sm text-wl-text-tertiary">Select a route to see its efficiency score</p>
                 </div>
               </div>
             )}
 
             {scoreView === 'score' && activeRouteId && (
               efficiencyLoading ? (
-              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] h-80 animate-pulse" />
+              <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle h-80 animate-pulse" />
             ) : !score ? (
-              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] h-80 flex items-center justify-center">
+              <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle h-80 flex items-center justify-center">
                 <div className="text-center">
-                  <BarChart3 className="w-10 h-10 text-white/10 mx-auto mb-3" />
-                  <p className="text-sm text-white/30">Score unavailable for this route</p>
-                  <p className="text-xs text-white/15 mt-1">Route may not have timing data</p>
+                  <BarChart3 className="w-10 h-10 text-wl-text-tertiary mx-auto mb-3" />
+                  <p className="text-sm text-wl-text-tertiary">Score unavailable for this route</p>
+                  <p className="text-xs text-wl-text-tertiary mt-1">Route may not have timing data</p>
                 </div>
               </div>
             ) : (
               <>
                 {/* Score card */}
-                <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-6">
+                <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h2 className="text-base font-semibold text-white/70">{selectedRoute?.name}</h2>
-                      <p className="text-sm text-white/30 mt-0.5">{selectedRoute?.driverName}</p>
+                      <h2 className="text-base font-semibold text-wl-text-secondary">{selectedRoute?.name}</h2>
+                      <p className="text-sm text-wl-text-tertiary mt-0.5">{selectedRoute?.driverName}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border',
-                        score.score >= 75 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                        score.score >= 75 ? 'bg-wl-success-500/10 border-wl-success-500/20 text-wl-success-400' : 'bg-wl-warning-500/10 border-wl-warning-500/20 text-wl-warning-400'
                       )}>
                         {score.score >= 75 ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertTriangle className="w-3.5 h-3.5" />}
                         {score.score >= 90 ? 'Excellent' : score.score >= 75 ? 'Good' : score.score >= 60 ? 'Average' : 'Needs Review'}
@@ -387,51 +387,51 @@ export default function RouteEfficiencyPage() {
                     {/* Gauge */}
                     <div className="shrink-0">
                       <GaugeDial score={score.score} accent={accent} />
-                      <p className="text-center text-[11px] text-white/25 -mt-1">Efficiency Score</p>
+                      <p className="text-center text-[11px] text-wl-text-tertiary -mt-1">Efficiency Score</p>
                     </div>
 
                     {/* Percentile + key stats */}
                     <div className="flex-1 grid grid-cols-2 gap-4">
                       <div className="rounded-lg bg-white/[0.03] p-3">
-                        <p className="text-[11px] text-white/30 mb-1">Percentile Rank</p>
+                        <p className="text-[11px] text-wl-text-tertiary mb-1">Percentile Rank</p>
                         <p className={cn('text-2xl font-bold font-mono', scoreColor(score.percentileRank))}>
-                          {score.percentileRank}<span className="text-sm font-normal text-white/30">th</span>
+                          {score.percentileRank}<span className="text-sm font-normal text-wl-text-tertiary">th</span>
                         </p>
                       </div>
                       <div className="rounded-lg bg-white/[0.03] p-3">
-                        <p className="text-[11px] text-white/30 mb-1">Idle Time</p>
-                        <p className="text-2xl font-bold font-mono text-white/70">
-                          {score.metrics.idleTime}<span className="text-sm font-normal text-white/30"> min</span>
+                        <p className="text-[11px] text-wl-text-tertiary mb-1">Idle Time</p>
+                        <p className="text-2xl font-bold font-mono text-wl-text-secondary">
+                          {score.metrics.idleTime}<span className="text-sm font-normal text-wl-text-tertiary"> min</span>
                         </p>
                       </div>
                       <div className="rounded-lg bg-white/[0.03] p-3">
                         <div className="flex items-center gap-1 mb-1">
-                          <MapPin className="w-3 h-3 text-white/20" />
-                          <p className="text-[11px] text-white/30">Distance vs Plan</p>
+                          <MapPin className="w-3 h-3 text-wl-text-tertiary" />
+                          <p className="text-[11px] text-wl-text-tertiary">Distance vs Plan</p>
                         </div>
                         <div className="flex items-center gap-1">
                           {distDiff > 0 ? (
-                            <TrendingUp className="w-4 h-4 text-amber-400" />
+                            <TrendingUp className="w-4 h-4 text-wl-warning-400" />
                           ) : (
-                            <TrendingDown className="w-4 h-4 text-emerald-400" />
+                            <TrendingDown className="w-4 h-4 text-wl-success-400" />
                           )}
-                          <p className={cn('text-lg font-bold font-mono', distDiff > 0 ? 'text-amber-400' : 'text-emerald-400')}>
+                          <p className={cn('text-lg font-bold font-mono', distDiff > 0 ? 'text-wl-warning-400' : 'text-wl-success-400')}>
                             {distDiff > 0 ? '+' : ''}{(distDiff / 1000).toFixed(1)} km
                           </p>
                         </div>
                       </div>
                       <div className="rounded-lg bg-white/[0.03] p-3">
                         <div className="flex items-center gap-1 mb-1">
-                          <Clock className="w-3 h-3 text-white/20" />
-                          <p className="text-[11px] text-white/30">Time vs Plan</p>
+                          <Clock className="w-3 h-3 text-wl-text-tertiary" />
+                          <p className="text-[11px] text-wl-text-tertiary">Time vs Plan</p>
                         </div>
                         <div className="flex items-center gap-1">
                           {timeDiff > 0 ? (
-                            <TrendingUp className="w-4 h-4 text-amber-400" />
+                            <TrendingUp className="w-4 h-4 text-wl-warning-400" />
                           ) : (
-                            <TrendingDown className="w-4 h-4 text-emerald-400" />
+                            <TrendingDown className="w-4 h-4 text-wl-success-400" />
                           )}
-                          <p className={cn('text-lg font-bold font-mono', timeDiff > 0 ? 'text-amber-400' : 'text-emerald-400')}>
+                          <p className={cn('text-lg font-bold font-mono', timeDiff > 0 ? 'text-wl-warning-400' : 'text-wl-success-400')}>
                             {timeDiff > 0 ? '+' : ''}{timeDiff} min
                           </p>
                         </div>
@@ -441,8 +441,8 @@ export default function RouteEfficiencyPage() {
                 </div>
 
                 {/* Breakdown bars */}
-                <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
-                  <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-5">Score Breakdown</h3>
+                <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle p-5">
+                  <h3 className="text-sm font-semibold text-wl-text-secondary tracking-wide mb-5">Score Breakdown</h3>
                   <div className="space-y-4">
                     <BreakdownBar
                       label="Distance Efficiency"
@@ -468,13 +468,13 @@ export default function RouteEfficiencyPage() {
                   </div>
 
                   {/* Deviations */}
-                  <div className="mt-5 pt-4 border-t border-white/[0.06] flex items-center gap-2">
+                  <div className="mt-5 pt-4 border-t border-wl-border-subtle flex items-center gap-2">
                     {score.breakdown.deviationCount === 0 ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-wl-success-400 shrink-0" />
                     ) : (
-                      <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+                      <AlertTriangle className="w-4 h-4 text-wl-warning-400 shrink-0" />
                     )}
-                    <span className="text-sm text-white/50">
+                    <span className="text-sm text-wl-text-secondary">
                       {score.breakdown.deviationCount === 0
                         ? 'No route deviations detected'
                         : `${score.breakdown.deviationCount} deviation${score.breakdown.deviationCount > 1 ? 's' : ''} detected (>500m off planned route)`}
@@ -483,8 +483,8 @@ export default function RouteEfficiencyPage() {
                 </div>
 
                 {/* Raw metrics */}
-                <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
-                  <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Raw Metrics</h3>
+                <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle p-5">
+                  <h3 className="text-sm font-semibold text-wl-text-secondary tracking-wide mb-4">Raw Metrics</h3>
                   <div className="grid grid-cols-3 gap-4">
                     {[
                       { label: 'Actual Distance',  value: `${(score.metrics.actualDistance / 1000).toFixed(1)} km` },
@@ -495,8 +495,8 @@ export default function RouteEfficiencyPage() {
                       { label: 'Route Deviations', value: `${score.metrics.deviations}` },
                     ].map(({ label, value }) => (
                       <div key={label} className="rounded-lg bg-white/[0.02] p-3">
-                        <p className="text-[10px] text-white/25 mb-1">{label}</p>
-                        <p className="text-sm font-mono text-white/60">{value}</p>
+                        <p className="text-[10px] text-wl-text-tertiary mb-1">{label}</p>
+                        <p className="text-sm font-mono text-wl-text-secondary">{value}</p>
                       </div>
                     ))}
                   </div>

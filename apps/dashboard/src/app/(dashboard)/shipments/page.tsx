@@ -162,7 +162,7 @@ function MapShipmentCard({ shipment, onClose, onView }: MapShipmentCardProps) {
       <CardContent className="p-5 space-y-4">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <div className="font-mono font-bold text-blue-400 text-sm">
+            <div className="font-mono font-bold text-wl-info-400 text-sm">
               {shipment.trackingNumber ?? shipment.shipmentNumber}
             </div>
             <div className="text-xs text-wl-text-tertiary mt-0.5">
@@ -209,7 +209,7 @@ function MapShipmentCard({ shipment, onClose, onView }: MapShipmentCardProps) {
           {shipment.estimatedArrival && (
             <div>
               <div className="text-xs text-wl-text-tertiary mb-0.5">ETA</div>
-              <div className="text-xs text-blue-400 font-mono">
+              <div className="text-xs text-wl-info-400 font-mono">
                 {formatRelativeTime(shipment.estimatedArrival)}
               </div>
             </div>
@@ -356,7 +356,7 @@ export default function ShipmentsPage() {
                       "text-[10px] px-1.5 rounded-full leading-tight py-0.5",
                       viewMode === "map"
                         ? "bg-white/25 text-white"
-                        : "bg-blue-500/20 text-blue-400",
+                        : "bg-wl-info-500/20 text-wl-info-400",
                     )}
                   >
                     {mappableShipments.length}
@@ -417,7 +417,7 @@ export default function ShipmentsPage() {
               className={cn(
                 "w-full p-2 px-4 bg-wl-bg-surface border border-wl-border-default rounded-md",
                 "text-white text-sm font-sans outline-none",
-                "focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
+                "focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/20",
                 "placeholder:text-wl-text-tertiary transition-colors",
               )}
             />
@@ -597,7 +597,7 @@ export default function ShipmentsPage() {
                           className="border-b border-wl-border-default cursor-pointer transition-all hover:bg-wl-bg-elevated"
                         >
                           {/* Tracking Number */}
-                          <td className="p-4 font-mono font-semibold text-blue-400 text-xs whitespace-nowrap">
+                          <td className="p-4 font-mono font-semibold text-wl-info-400 text-xs whitespace-nowrap">
                             {shipment.trackingNumber ?? "—"}
                             {shipment.tags.length > 0 && (
                               <div className="flex gap-1 mt-1">
@@ -607,10 +607,10 @@ export default function ShipmentsPage() {
                                     className={cn(
                                       "text-[9px] px-1 py-0.5 rounded font-semibold uppercase tracking-tighter",
                                       t === "priority"
-                                        ? "bg-red-500/20 text-red-400"
+                                        ? "bg-wl-danger-500/20 text-wl-danger-400"
                                         : t === "express"
-                                          ? "bg-amber-500/20 text-amber-400"
-                                          : "bg-blue-500/20 text-blue-400",
+                                          ? "bg-wl-warning-500/20 text-wl-warning-400"
+                                          : "bg-wl-info-500/20 text-wl-info-400",
                                     )}
                                   >
                                     {t}
@@ -670,7 +670,7 @@ export default function ShipmentsPage() {
                               shipment.estimatedArrival &&
                                 new Date(shipment.estimatedArrival) >
                                   new Date()
-                                ? "text-blue-400"
+                                ? "text-wl-info-400"
                                 : "text-wl-text-tertiary",
                             )}
                           >
@@ -698,7 +698,7 @@ export default function ShipmentsPage() {
                                     setMethodFilter("ALL");
                                     setSearch("");
                                   }}
-                                  className="text-xs text-blue-400 hover:underline mt-1"
+                                  className="text-xs text-wl-info-400 hover:underline mt-1"
                                 >
                                   Clear filters
                                 </button>

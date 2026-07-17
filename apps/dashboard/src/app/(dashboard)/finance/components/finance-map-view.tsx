@@ -115,7 +115,7 @@ export function FinanceMapView({ days = 30, className }: FinanceMapViewProps) {
         <p className="font-semibold text-wl-text-primary mb-2">Last {days} days</p>
         <div className="flex justify-between gap-4">
           <span className="text-wl-text-tertiary">Revenue</span>
-          <span className="font-medium text-emerald-400">
+          <span className="font-medium text-wl-success-400">
             ${total.revenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </span>
         </div>
@@ -130,7 +130,7 @@ export function FinanceMapView({ days = 30, className }: FinanceMapViewProps) {
         {selectedZone && (
           <div className="mt-2 pt-2 border-t border-wl-border-default">
             <p className="font-semibold text-wl-text-primary truncate">{selectedZone.zoneName}</p>
-            <p className="text-emerald-400 font-medium">
+            <p className="text-wl-success-400 font-medium">
               ${selectedZone.revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
           </div>

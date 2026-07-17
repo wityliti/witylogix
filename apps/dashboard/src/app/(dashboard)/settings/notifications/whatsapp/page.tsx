@@ -69,11 +69,11 @@ interface WhatsAppTemplate {
 const getStatusIcon = (status: TemplateStatus) => {
   switch (status) {
     case "APPROVED":
-      return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+      return <CheckCircle className="w-4 h-4 text-wl-success-500" />;
     case "PENDING":
-      return <Clock className="w-4 h-4 text-amber-500" />;
+      return <Clock className="w-4 h-4 text-wl-warning-500" />;
     case "REJECTED":
-      return <AlertCircle className="w-4 h-4 text-red-500" />;
+      return <AlertCircle className="w-4 h-4 text-wl-danger-500" />;
   }
 };
 
@@ -312,11 +312,11 @@ export default function WhatsAppPage() {
                               className={cn(
                                 "text-sm font-medium",
                                 template.status === "APPROVED" &&
-                                  "text-emerald-500",
+                                  "text-wl-success-500",
                                 template.status === "PENDING" &&
-                                  "text-amber-500",
+                                  "text-wl-warning-500",
                                 template.status === "REJECTED" &&
-                                  "text-red-500"
+                                  "text-wl-danger-500"
                               )}
                             >
                               {template.status}
@@ -345,7 +345,7 @@ export default function WhatsAppPage() {
                                 className="p-2 hover:bg-wl-bg-elevated rounded-lg transition-colors"
                                 title={template.rejectionReason}
                               >
-                                <AlertCircle className="w-4 h-4 text-red-500" />
+                                <AlertCircle className="w-4 h-4 text-wl-danger-500" />
                               </button>
                             )}
                             <button
@@ -359,9 +359,9 @@ export default function WhatsAppPage() {
                             </button>
                             <button
                               onClick={() => handleDelete(template.id)}
-                              className="p-2 hover:bg-red-500/10 rounded-lg transition-colors"
+                              className="p-2 hover:bg-wl-danger-500/10 rounded-lg transition-colors"
                             >
-                              <Trash2 className="w-4 h-4 text-red-500" />
+                              <Trash2 className="w-4 h-4 text-wl-danger-500" />
                             </button>
                           </div>
                         </TableCell>
@@ -416,7 +416,7 @@ export default function WhatsAppPage() {
                               key={bidx}
                               className="flex items-center gap-2 text-xs text-wl-text-secondary"
                             >
-                              <span className="px-2 py-1 bg-blue-500/10 rounded text-blue-500">
+                              <span className="px-2 py-1 bg-wl-info-500/10 rounded text-wl-info-500">
                                 [{btn.type}]
                               </span>
                               <span>{btn.text}</span>
@@ -427,8 +427,8 @@ export default function WhatsAppPage() {
                     </div>
                   ))}
                   {template.rejectionReason && (
-                    <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                      <p className="text-xs font-semibold text-red-500 mb-1">
+                    <div className="p-3 bg-wl-danger-500/10 border border-wl-danger-500/30 rounded-lg">
+                      <p className="text-xs font-semibold text-wl-danger-500 mb-1">
                         Rejection Reason:
                       </p>
                       <p className="text-xs text-wl-text-secondary">

@@ -78,8 +78,8 @@ const getTrendIndicator = (
 };
 
 const getTrendColor = (direction: TrendDirection): string => {
-  if (direction === "up") return "text-emerald-500";
-  if (direction === "down") return "text-red-500";
+  if (direction === "up") return "text-wl-success-500";
+  if (direction === "down") return "text-wl-danger-500";
   return "text-wl-text-secondary";
 };
 
@@ -362,7 +362,7 @@ export default function DriverPerformancePage() {
                               ? "bg-transparent hover:bg-wl-bg-elevated/50"
                               : "bg-wl-bg-elevated hover:bg-wl-bg-surface",
                             selectedDriver?.id === driver.id &&
-                              "bg-wl-bg-surface ring-1 ring-blue-500",
+                              "bg-wl-bg-surface ring-1 ring-wl-info-500",
                           )}
                         >
                           <td className="p-3 px-4 text-center font-bold text-white">

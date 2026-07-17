@@ -172,7 +172,7 @@ export default function OrdersPage() {
               className={cn(
                 'px-1 py-3 text-sm font-medium border-b-2 transition-colors capitalize',
                 selectedTab === tab
-                  ? 'border-blue-500 text-blue-500'
+                  ? 'border-blue-500 text-wl-info-500'
                   : 'border-transparent text-wl-neutral-300 hover:text-white'
               )}
             >
@@ -196,7 +196,7 @@ export default function OrdersPage() {
                   onChange={(e) =>
                     setFilters({ ...filters, searchTerm: e.target.value })
                   }
-                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white placeholder-wl-text-tertiary focus:outline-none focus:border-blue-500"
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white placeholder-wl-text-tertiary focus:outline-none focus:border-wl-info-500"
                 />
 
                 <select
@@ -204,7 +204,7 @@ export default function OrdersPage() {
                   onChange={(e) =>
                     setFilters({ ...filters, status: e.target.value })
                   }
-                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
                 >
                   {STATUS_OPTIONS.map((status) => (
                     <option key={status} value={status.toLowerCase()}>
@@ -218,7 +218,7 @@ export default function OrdersPage() {
                   onChange={(e) =>
                     setFilters({ ...filters, priority: e.target.value })
                   }
-                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
                 >
                   {PRIORITY_OPTIONS.map((priority) => (
                     <option key={priority} value={priority.toLowerCase()}>
@@ -232,7 +232,7 @@ export default function OrdersPage() {
                   onChange={(e) =>
                     setFilters({ ...filters, warehouse: e.target.value })
                   }
-                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
                 >
                   {warehouseOptions.map((warehouse) => (
                     <option key={warehouse} value={warehouse.toLowerCase()}>

@@ -78,7 +78,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
 
         {/* Test Email Form */}
         {showTestEmail && (
-          <div className="p-4 bg-wl-bg-surface rounded border border-blue-500/30 space-y-3">
+          <div className="p-4 bg-wl-bg-surface rounded border border-wl-info-500/30 space-y-3">
             <div>
               <label className="text-xs uppercase tracking-wide text-wl-text-tertiary font-semibold block mb-2">
                 Recipient Email

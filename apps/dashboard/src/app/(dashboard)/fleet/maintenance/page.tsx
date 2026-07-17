@@ -106,7 +106,7 @@ export default function MaintenancePage() {
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="pt-4">
               <div className="text-center">
-                <p className="text-3xl font-bold text-amber-400">{statusCounts.inProgress}</p>
+                <p className="text-3xl font-bold text-wl-warning-400">{statusCounts.inProgress}</p>
                 <p className="text-xs text-wl-text-secondary mt-1">In Progress</p>
               </div>
             </CardContent>
@@ -114,15 +114,15 @@ export default function MaintenancePage() {
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="pt-4">
               <div className="text-center">
-                <p className="text-3xl font-bold text-emerald-400">{statusCounts.completed}</p>
+                <p className="text-3xl font-bold text-wl-success-400">{statusCounts.completed}</p>
                 <p className="text-xs text-wl-text-secondary mt-1">Completed</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-wl-bg-surface border border-red-500/30">
+          <Card className="bg-wl-bg-surface border border-wl-danger-500/30">
             <CardContent className="pt-4">
               <div className="text-center">
-                <p className="text-3xl font-bold text-red-400">{statusCounts.overdue}</p>
+                <p className="text-3xl font-bold text-wl-danger-400">{statusCounts.overdue}</p>
                 <p className="text-xs text-wl-text-secondary mt-1">Overdue</p>
               </div>
             </CardContent>
@@ -131,9 +131,9 @@ export default function MaintenancePage() {
 
         {/* Overdue Alerts */}
         {overdueMaintenance.length > 0 && (
-          <Card className="bg-wl-bg-surface border border-red-500/30">
+          <Card className="bg-wl-bg-surface border border-wl-danger-500/30">
             <CardHeader>
-              <CardTitle className="text-sm text-red-400 flex items-center gap-2">
+              <CardTitle className="text-sm text-wl-danger-400 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
                 Overdue Maintenance ({overdueMaintenance.length})
               </CardTitle>
@@ -141,7 +141,7 @@ export default function MaintenancePage() {
             <CardContent>
               <div className="space-y-2">
                 {overdueMaintenance.slice(0, 3).map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 bg-red-500/10 rounded-md border border-wl-border-default">
+                  <div key={item.id} className="flex items-center justify-between p-3 bg-wl-danger-500/10 rounded-md border border-wl-border-default">
                     <div>
                       <p className="text-sm font-medium text-white">{item.type.replace('-', ' ').toUpperCase()}</p>
                       <p className="text-xs text-wl-text-secondary">{item.vehicleName} • Due {formatDate(item.scheduledDate)}</p>

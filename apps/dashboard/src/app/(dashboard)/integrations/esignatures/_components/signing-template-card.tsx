@@ -31,7 +31,7 @@ export function SigningTemplateCard({ template }: SigningTemplateCardProps) {
             </p>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold text-blue-500">{template.usage}</p>
+            <p className="text-2xl font-bold text-wl-info-500">{template.usage}</p>
             <p className="text-xs text-wl-text-tertiary">times used</p>
           </div>
         </div>
@@ -47,7 +47,7 @@ export function SigningTemplateCard({ template }: SigningTemplateCardProps) {
           </div>
           <div>
             <p className="text-xs font-medium text-wl-text-tertiary uppercase">Status</p>
-            <Badge variant="success" className="mt-1 bg-green-500/20 text-green-400">
+            <Badge variant="success" className="mt-1 bg-wl-success-500/20 text-wl-success-400">
               Active
             </Badge>
           </div>

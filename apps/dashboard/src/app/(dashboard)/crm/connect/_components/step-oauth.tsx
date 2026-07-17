@@ -38,11 +38,11 @@ export function StepOAuth({
 
             <div
               className={cn(
-                'bg-blue-500/10 border border-blue-500/30',
+                'bg-wl-info-500/10 border border-wl-info-500/30',
                 'rounded-md p-4'
               )}
             >
-              <p className={cn('text-sm text-blue-400', 'm-0')}>
+              <p className={cn('text-sm text-wl-info-400', 'm-0')}>
                 We're requesting access to manage contacts, deals, and company records.
               </p>
             </div>

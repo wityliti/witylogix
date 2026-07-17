@@ -331,8 +331,8 @@ export default function DemandPage() {
                   'px-3 py-2 rounded-md text-sm font-medium',
                   'bg-wl-bg-elevated border border-wl-border-default',
                   'text-white',
-                  'focus:outline-none focus:ring-2 focus:ring-blue-500',
-                  'cursor-pointer hover:border-blue-500/50 transition-colors'
+                  'focus:outline-none focus:ring-2 focus:ring-wl-info-500',
+                  'cursor-pointer hover:border-wl-info-500/50 transition-colors'
                 )}
               >
                 <option value="all">All Zones</option>
@@ -358,8 +358,8 @@ export default function DemandPage() {
                   'px-3 py-2 rounded-md text-sm font-medium',
                   'bg-wl-bg-elevated border border-wl-border-default',
                   'text-white',
-                  'focus:outline-none focus:ring-2 focus:ring-blue-500',
-                  'cursor-pointer hover:border-blue-500/50 transition-colors'
+                  'focus:outline-none focus:ring-2 focus:ring-wl-info-500',
+                  'cursor-pointer hover:border-wl-info-500/50 transition-colors'
                 )}
               >
                 <option value="today">Today</option>
@@ -421,9 +421,9 @@ export default function DemandPage() {
                   <div className="flex items-center gap-1.5 shrink-0">
                     <span className="text-xs font-mono text-white">{z.predictedVolume}</span>
                     {z.trend === 'up' ? (
-                      <TrendingUp className="w-3 h-3 text-emerald-400" />
+                      <TrendingUp className="w-3 h-3 text-wl-success-400" />
                     ) : z.trend === 'down' ? (
-                      <TrendingDown className="w-3 h-3 text-red-400" />
+                      <TrendingDown className="w-3 h-3 text-wl-danger-400" />
                     ) : (
                       <span className="text-wl-text-tertiary text-[10px]">—</span>
                     )}
@@ -457,13 +457,13 @@ export default function DemandPage() {
               <div className="flex items-center gap-2 mt-2">
                 {volumeDeviation >= 0 ? (
                   <>
-                    <ArrowUpRight className="w-4 h-4 text-emerald-500" />
-                    <span className="text-xs text-emerald-400">+{volumeDeviation}%</span>
+                    <ArrowUpRight className="w-4 h-4 text-wl-success-500" />
+                    <span className="text-xs text-wl-success-400">+{volumeDeviation}%</span>
                   </>
                 ) : (
                   <>
-                    <ArrowDownRight className="w-4 h-4 text-red-500" />
-                    <span className="text-xs text-red-400">{volumeDeviation}%</span>
+                    <ArrowDownRight className="w-4 h-4 text-wl-danger-500" />
+                    <span className="text-xs text-wl-danger-400">{volumeDeviation}%</span>
                   </>
                 )}
               </div>
@@ -554,9 +554,9 @@ export default function DemandPage() {
                       </td>
                       <td className="text-center px-4 py-3">
                         {zone.trend === 'up' ? (
-                          <TrendingUp className="w-4 h-4 text-emerald-500 mx-auto" />
+                          <TrendingUp className="w-4 h-4 text-wl-success-500 mx-auto" />
                         ) : zone.trend === 'down' ? (
-                          <TrendingDown className="w-4 h-4 text-red-500 mx-auto" />
+                          <TrendingDown className="w-4 h-4 text-wl-danger-500 mx-auto" />
                         ) : (
                           <div className="w-4 h-4 border-l-2 border-wl-border-strong mx-auto" />
                         )}
@@ -578,7 +578,7 @@ export default function DemandPage() {
           {/* Anomaly Alerts */}
           <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              <AlertTriangle className="w-5 h-5 text-wl-warning-500" />
               Anomaly Alerts
             </h2>
 
@@ -592,10 +592,10 @@ export default function DemandPage() {
 
                   const severityColor =
                     anomaly.severity === 'high'
-                      ? 'border-red-500/50 bg-red-500/5'
+                      ? 'border-wl-danger-500/50 bg-red-500/5'
                       : anomaly.severity === 'medium'
-                        ? 'border-amber-500/50 bg-amber-500/5'
-                        : 'border-blue-500/50 bg-blue-500/5';
+                        ? 'border-wl-warning-500/50 bg-amber-500/5'
+                        : 'border-wl-info-500/50 bg-blue-500/5';
 
                   const severityBadgeVariant =
                     anomaly.severity === 'high'

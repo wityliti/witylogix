@@ -280,9 +280,9 @@ export default function ProductsPage() {
 
         {/* Sync info banner */}
         {syncInfo && (
-          <div className={cn("mb-4 p-3 rounded-md bg-blue-500/10 border border-blue-500/30 flex items-center justify-between")}>
-            <span className="text-blue-300 text-sm">{syncInfo}</span>
-            <button onClick={() => setSyncInfo(null)} className="text-blue-400 hover:text-blue-200 text-xs ml-4">✕</button>
+          <div className={cn("mb-4 p-3 rounded-md bg-wl-info-500/10 border border-wl-info-500/30 flex items-center justify-between")}>
+            <span className="text-wl-info-400 text-sm">{syncInfo}</span>
+            <button onClick={() => setSyncInfo(null)} className="text-wl-info-400 hover:text-blue-200 text-xs ml-4">✕</button>
           </div>
         )}
 
@@ -295,7 +295,7 @@ export default function ProductsPage() {
                   Delete {selectedProducts.size} product{selectedProducts.size !== 1 ? "s" : ""}? This cannot be undone.
                 </div>
                 <div className="flex gap-2 items-center">
-                  {deleteError && <span className="text-red-300 text-xs">{deleteError}</span>}
+                  {deleteError && <span className="text-wl-danger-400 text-xs">{deleteError}</span>}
                   <Button
                     variant="secondary"
                     size="sm"
@@ -420,7 +420,7 @@ export default function ProductsPage() {
                     </td>
                     <td className={cn("p-3 px-4 text-center text-wl-neutral-300")}>
                       {product.weight ? `${product.weight} ${product.weightUnit}` : (
-                        <span className="text-red-400 font-semibold">Missing</span>
+                        <span className="text-wl-danger-400 font-semibold">Missing</span>
                       )}
                     </td>
                     <td className={cn("p-3 px-4 text-center")}>

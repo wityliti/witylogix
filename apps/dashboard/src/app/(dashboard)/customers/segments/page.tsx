@@ -74,7 +74,7 @@ const TIER_CONFIG = {
   enterprise: {
     label: "Enterprise",
     color: "var(--wl-warning-500)",
-    bgClass: "bg-amber-400/10 border-amber-400/30",
+    bgClass: "bg-wl-warning-400/10 border-wl-warning-400/30",
     dotClass: "bg-amber-400",
     badgeVariant: "warning" as const,
     description: "Top 5%+ by lifetime spend — highest-value accounts",
@@ -82,7 +82,7 @@ const TIER_CONFIG = {
   premium: {
     label: "Premium",
     color: "var(--wl-info-400)",
-    bgClass: "bg-blue-400/10 border-blue-400/30",
+    bgClass: "bg-wl-info-400/10 border-wl-info-400/30",
     dotClass: "bg-blue-400",
     badgeVariant: "primary" as const,
     description: "Regular buyers with solid order history",
@@ -203,7 +203,7 @@ export default function CustomerSegmentsPage() {
                           customers
                         </div>
 
-                        <div className="space-y-2 text-xs border-t border-white/[0.06] pt-3">
+                        <div className="space-y-2 text-xs border-t border-wl-border-subtle pt-3">
                           <div className="flex justify-between">
                             <span className="text-wl-text-tertiary">
                               Total revenue
@@ -311,7 +311,7 @@ export default function CustomerSegmentsPage() {
             {/* Top tier actions */}
             <Card className="p-5">
               <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                <Star className="w-4 h-4 text-amber-400" /> Segment Criteria
+                <Star className="w-4 h-4 text-wl-warning-400" /> Segment Criteria
               </h3>
               <div className="space-y-3 text-sm">
                 {(
@@ -319,12 +319,12 @@ export default function CustomerSegmentsPage() {
                     {
                       tier: "enterprise",
                       rule: "Lifetime spend ≥ $5,000",
-                      color: "text-amber-400",
+                      color: "text-wl-warning-400",
                     },
                     {
                       tier: "premium",
                       rule: "Lifetime spend $1,000 – $4,999",
-                      color: "text-blue-400",
+                      color: "text-wl-info-400",
                     },
                     {
                       tier: "standard",

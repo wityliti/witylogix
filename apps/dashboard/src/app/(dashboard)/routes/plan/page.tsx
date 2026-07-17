@@ -158,7 +158,7 @@ export default function RoutePlanningPage() {
                       'w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold',
                       'transition-colors cursor-pointer',
                       isActive
-                        ? 'bg-blue-500 text-white ring-2 ring-offset-2 ring-blue-500'
+                        ? 'bg-blue-500 text-white ring-2 ring-offset-2 ring-wl-info-500'
                         : isCompleted
                           ? 'bg-emerald-500 text-white'
                           : 'bg-wl-bg-surface border-2 border-wl-border-default text-wl-text-secondary',
@@ -187,7 +187,7 @@ export default function RoutePlanningPage() {
                   <div
                     className={cn(
                       'text-sm font-semibold',
-                      isActive ? 'text-blue-500' : 'text-wl-text-secondary',
+                      isActive ? 'text-wl-info-500' : 'text-wl-text-secondary',
                     )}
                   >
                     {step.label}
@@ -295,7 +295,7 @@ export default function RoutePlanningPage() {
                           'w-full px-4 py-2 rounded-md text-sm',
                           'bg-wl-bg-root text-wl-text-primary',
                           'border border-wl-border-default',
-                          'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors',
+                          'focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500 transition-colors',
                         )}
                       >
                         <option value="">Select vehicle type...</option>
@@ -326,7 +326,7 @@ export default function RoutePlanningPage() {
                           'bg-wl-bg-root text-wl-text-primary',
                           'border border-wl-border-default',
                           'placeholder:text-wl-text-tertiary',
-                          'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors',
+                          'focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500 transition-colors',
                         )}
                       />
                     </div>
@@ -348,7 +348,7 @@ export default function RoutePlanningPage() {
                           'bg-wl-bg-root text-wl-text-primary',
                           'border border-wl-border-default',
                           'placeholder:text-wl-text-tertiary',
-                          'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors',
+                          'focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500 transition-colors',
                         )}
                       />
                     </div>
@@ -364,7 +364,7 @@ export default function RoutePlanningPage() {
                           'w-full px-4 py-2 rounded-md text-sm',
                           'bg-wl-bg-root text-wl-text-primary',
                           'border border-wl-border-default',
-                          'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors',
+                          'focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500 transition-colors',
                         )}
                       >
                         <option value="">Any driver</option>
@@ -405,7 +405,7 @@ export default function RoutePlanningPage() {
                     onUpdateConstraints={updateConstraints}
                   />
                   {saveError && (
-                    <div className="mt-4 p-3 bg-red-500/10 border border-red-500 text-red-500 rounded-md text-sm">
+                    <div className="mt-4 p-3 bg-wl-danger-500/10 border border-red-500 text-wl-danger-500 rounded-md text-sm">
                       {saveError}
                     </div>
                   )}
@@ -445,7 +445,7 @@ export default function RoutePlanningPage() {
                           'w-full px-4 py-2 rounded-md text-sm',
                           'bg-wl-bg-root text-wl-text-primary',
                           'border border-wl-border-default',
-                          'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors',
+                          'focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500 transition-colors',
                         )}
                       >
                         <option value="">Select a driver...</option>
@@ -468,7 +468,7 @@ export default function RoutePlanningPage() {
                           'w-full px-4 py-2 rounded-md text-sm',
                           'bg-wl-bg-root text-wl-text-primary',
                           'border border-wl-border-default',
-                          'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors',
+                          'focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500 transition-colors',
                         )}
                       >
                         <option value="">Dispatch immediately</option>
@@ -491,7 +491,7 @@ export default function RoutePlanningPage() {
                           'bg-wl-bg-root text-wl-text-primary',
                           'border border-wl-border-default',
                           'placeholder:text-wl-text-tertiary',
-                          'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors',
+                          'focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500 transition-colors',
                         )}
                       />
                     </div>
@@ -508,20 +508,20 @@ export default function RoutePlanningPage() {
                 <div className="space-y-3">
                   <div>
                     <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">Stops</div>
-                    <div className="text-2xl font-bold text-blue-500">{state.stops.length}</div>
+                    <div className="text-2xl font-bold text-wl-info-500">{state.stops.length}</div>
                   </div>
 
                   {state.selectedResult && (
                     <>
                       <div>
                         <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">Distance</div>
-                        <div className="text-xl font-bold text-blue-400">
+                        <div className="text-xl font-bold text-wl-info-400">
                           {state.selectedResult.totalDistance.toFixed(1)} km
                         </div>
                       </div>
                       <div>
                         <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">Duration</div>
-                        <div className="text-xl font-bold text-amber-500">
+                        <div className="text-xl font-bold text-wl-warning-500">
                           {Math.round(state.selectedResult.totalDuration)} min
                         </div>
                       </div>
@@ -535,14 +535,14 @@ export default function RoutePlanningPage() {
               </Card>
 
               {state.currentStep === 'stops' && !canProceedFromStops && (
-                <Card className="p-3 bg-amber-500/10 border border-amber-500/30">
-                  <div className="text-sm text-amber-500">Add at least 2 stops to proceed</div>
+                <Card className="p-3 bg-wl-warning-500/10 border border-wl-warning-500/30">
+                  <div className="text-sm text-wl-warning-500">Add at least 2 stops to proceed</div>
                 </Card>
               )}
 
               {state.currentStep === 'optimize' && state.results.length === 0 && (
-                <Card className="p-3 bg-blue-500/10 border border-blue-500/30">
-                  <div className="text-sm text-blue-400">
+                <Card className="p-3 bg-wl-info-500/10 border border-wl-info-500/30">
+                  <div className="text-sm text-wl-info-400">
                     Click &quot;Optimize Route&quot; to calculate routes
                   </div>
                 </Card>

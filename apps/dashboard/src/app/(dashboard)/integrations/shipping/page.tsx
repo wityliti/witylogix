@@ -56,8 +56,8 @@ export default function ShippingIntegrationsPage() {
       <div className="p-6 bg-wl-bg-root space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[
-            { label: 'Carrier Adapters', value: stats.total, icon: Package, color: 'text-blue-400' },
-            { label: 'Enabled', value: stats.enabled, icon: CheckCircle2, color: 'text-emerald-400' },
+            { label: 'Carrier Adapters', value: stats.total, icon: Package, color: 'text-wl-info-400' },
+            { label: 'Enabled', value: stats.enabled, icon: CheckCircle2, color: 'text-wl-success-400' },
             { label: 'Disabled', value: stats.disabled, icon: XCircle, color: 'text-wl-text-muted' },
           ].map((s) => {
             const Icon = s.icon;

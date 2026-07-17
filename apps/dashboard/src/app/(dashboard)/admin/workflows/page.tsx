@@ -189,14 +189,14 @@ export default function WorkflowExecutionsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             aria-label="Search workflows"
-            className="w-full max-w-md px-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm font-sans outline-none transition-all focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10"
+            className="w-full max-w-md px-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm font-sans outline-none transition-all focus:border-wl-info-500 focus:ring-3 focus:ring-wl-info-500/10"
           />
         </div>
 
         {/* Error */}
         {error && !loading && (
           <Card className="p-6 text-center bg-wl-bg-surface border border-wl-border-default mb-5">
-            <AlertCircle size={32} className="mx-auto mb-2 text-red-400" />
+            <AlertCircle size={32} className="mx-auto mb-2 text-wl-danger-400" />
             <p className="text-sm text-wl-text-secondary mb-3">Failed to load workflow executions</p>
             <Button variant="secondary" size="sm" onClick={() => refetch()}>Retry</Button>
           </Card>

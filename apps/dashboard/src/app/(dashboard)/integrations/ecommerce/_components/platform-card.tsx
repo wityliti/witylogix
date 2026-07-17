@@ -62,7 +62,7 @@ export function PlatformCard({
   return (
     <Card
       className={cn(
-        'bg-wl-bg-elevated border-wl-border-default cursor-pointer transition-all hover:border-blue-500/50',
+        'bg-wl-bg-elevated border-wl-border-default cursor-pointer transition-all hover:border-wl-info-500/50',
         isExpanded && 'ring-1 ring-wl-primary-500'
       )}
       onClick={() => onToggleExpand(platform.id)}
@@ -222,7 +222,7 @@ export function PlatformCard({
               </Button>
             )}
             {platform.status === 'error' && (
-              <div className="p-3 bg-red-900 rounded text-sm text-red-400">
+              <div className="p-3 bg-red-900 rounded text-sm text-wl-danger-400">
                 Sync failed. Check webhooks configuration and try again.
               </div>
             )}

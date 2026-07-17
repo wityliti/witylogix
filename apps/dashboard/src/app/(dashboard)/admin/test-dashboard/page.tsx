@@ -72,7 +72,7 @@ export default function TestDashboardPage() {
           }
         />
         <div className="container mx-auto px-4 py-16 max-w-2xl text-center">
-          <Info className="w-12 h-12 text-blue-500 mx-auto mb-4 opacity-60" />
+          <Info className="w-12 h-12 text-wl-info-500 mx-auto mb-4 opacity-60" />
           <h2 className="text-lg font-semibold text-white mb-2">No Test Results Available</h2>
           <p className="text-sm text-wl-text-secondary mb-4">
             Test results are generated during CI runs. To populate this dashboard, run:
@@ -125,7 +125,7 @@ export default function TestDashboardPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-wl-text-secondary mb-2">Passed</p>
-                  <p className="text-3xl font-bold text-green-600">{stats.passed}</p>
+                  <p className="text-3xl font-bold text-wl-success-500">{stats.passed}</p>
                   <p className="text-xs text-wl-text-secondary mt-1">{passRate}% pass rate</p>
                 </div>
               </div>
@@ -137,7 +137,7 @@ export default function TestDashboardPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-wl-text-secondary mb-2">Failed</p>
-                  <p className="text-3xl font-bold text-red-600">{stats.failed}</p>
+                  <p className="text-3xl font-bold text-wl-danger-500">{stats.failed}</p>
                   <p className="text-xs text-wl-text-secondary mt-1">{failRate}% fail rate</p>
                 </div>
               </div>
@@ -149,9 +149,9 @@ export default function TestDashboardPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-wl-text-secondary mb-2">Skipped</p>
-                  <p className="text-3xl font-bold text-amber-500">{stats.skipped}</p>
+                  <p className="text-3xl font-bold text-wl-warning-500">{stats.skipped}</p>
                 </div>
-                <TrendingUp className="w-8 h-8 text-amber-500 opacity-60" />
+                <TrendingUp className="w-8 h-8 text-wl-warning-500 opacity-60" />
               </div>
             </CardContent>
           </Card>
@@ -177,7 +177,7 @@ export default function TestDashboardPage() {
             <CardContent>
               <div className="space-y-3">
                 {failedFiles.map((file, idx) => (
-                  <div key={idx} className="p-3 bg-red-600/10 rounded-lg border border-red-500/20 flex items-center justify-between">
+                  <div key={idx} className="p-3 bg-wl-danger-500/10 rounded-lg border border-wl-danger-500/20 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-white font-mono">
                         {file.file.replace(process.env.NEXT_PUBLIC_APP_URL ?? '', '')}
@@ -222,9 +222,9 @@ export default function TestDashboardPage() {
                           {file.file.split('/').slice(-2).join('/')}
                         </td>
                         <td className="py-3 px-4 text-wl-text-secondary">{file.tests}</td>
-                        <td className="py-3 px-4 text-green-600 font-medium">{file.passed}</td>
+                        <td className="py-3 px-4 text-wl-success-500 font-medium">{file.passed}</td>
                         <td className="py-3 px-4">
-                          <span className={cn("font-medium", file.failed > 0 ? "text-red-600" : "text-green-600")}>
+                          <span className={cn("font-medium", file.failed > 0 ? "text-wl-danger-500" : "text-wl-success-500")}>
                             {file.failed}
                           </span>
                         </td>
@@ -247,8 +247,8 @@ export default function TestDashboardPage() {
           <Card className="mt-6 border border-emerald-600/30 bg-emerald-600/5">
             <CardContent className="pt-5">
               <div className="flex items-center gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                <p className="text-sm font-semibold text-emerald-500">
+                <CheckCircle2 className="w-5 h-5 text-wl-success-500" />
+                <p className="text-sm font-semibold text-wl-success-500">
                   All {stats.total} tests passing
                 </p>
               </div>

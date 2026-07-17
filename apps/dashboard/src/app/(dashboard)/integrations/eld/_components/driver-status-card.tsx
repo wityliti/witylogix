@@ -38,13 +38,13 @@ interface DriverStatusCardProps {
 const getStatusColor = (status: string) => {
   switch (status) {
     case "driving":
-      return "bg-blue-500/20 text-blue-400 border-blue-500/50";
+      return "bg-wl-info-500/20 text-wl-info-400 border-wl-info-500/50";
     case "on-duty":
       return "bg-yellow-500/20 text-yellow-400 border-yellow-500/50";
     case "sleeper":
       return "bg-purple-500/20 text-purple-400 border-purple-500/50";
     case "off-duty":
-      return "bg-green-500/20 text-green-400 border-green-500/50";
+      return "bg-wl-success-500/20 text-wl-success-400 border-green-500/50";
     default:
       return "";
   }
@@ -99,7 +99,7 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
             <p className="text-xs font-medium text-wl-text-tertiary uppercase">
               Driving
             </p>
-            <p className="text-lg font-bold text-blue-400 mt-1">
+            <p className="text-lg font-bold text-wl-info-400 mt-1">
               {driver.currentHOS.driving}h
             </p>
           </div>
@@ -123,7 +123,7 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
             <p className="text-xs font-medium text-wl-text-tertiary uppercase">
               Off-Duty
             </p>
-            <p className="text-lg font-bold text-green-400 mt-1">
+            <p className="text-lg font-bold text-wl-success-400 mt-1">
               {driver.currentHOS.offDuty}h
             </p>
           </div>
@@ -136,7 +136,7 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
               Break Status
             </p>
             <p className={cn("text-sm font-semibold",
-              driver.nextBreak?.includes("URGENT") ? "text-red-400" : "text-green-400"
+              driver.nextBreak?.includes("URGENT") ? "text-wl-danger-400" : "text-wl-success-400"
             )}>
               {driver.nextBreak}
             </p>
@@ -146,7 +146,7 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
         {/* Violations & Actions */}
         <div className="flex items-center justify-between">
           {driver.hosViolations > 0 && (
-            <Badge variant="danger" className="bg-red-500/20 text-red-400">
+            <Badge variant="danger" className="bg-wl-danger-500/20 text-wl-danger-400">
               <AlertTriangle className="w-3 h-3 mr-1" />
               {driver.hosViolations} violation{driver.hosViolations > 1 ? "s" : ""}
             </Badge>

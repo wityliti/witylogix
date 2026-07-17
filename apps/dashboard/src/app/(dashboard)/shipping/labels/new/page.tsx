@@ -55,7 +55,7 @@ export default function CreateLabelPage() {
               key={s}
               className={`flex-1 h-2 rounded-full transition-colors ${
                 (['package', 'carrier', 'rates', 'review'] as const).indexOf(step) >= idx
-                  ? 'bg-blue-500'
+                  ? 'bg-wl-primary-500'
                   : 'bg-wl-bg-elevated'
               }`}
             />
@@ -98,7 +98,7 @@ export default function CreateLabelPage() {
                     key={carrier}
                     onClick={() => setFormData({ ...formData, carrier })}
                     className={`p-3 border-2 rounded cursor-pointer transition-colors ${
-                      formData.carrier === carrier ? 'border-blue-500 bg-blue-500/10' : 'border-wl-border-default bg-wl-bg-sunken'
+                      formData.carrier === carrier ? 'border-wl-primary-500 bg-wl-primary-500/10' : 'border-wl-border-default bg-wl-bg-sunken'
                     }`}
                   >
                     <p className="font-medium text-white">{carrier}</p>
@@ -114,7 +114,7 @@ export default function CreateLabelPage() {
                     key={service}
                     onClick={() => setFormData({ ...formData, service })}
                     className={`p-3 border-2 rounded cursor-pointer transition-colors ${
-                      formData.service === service ? 'border-blue-500 bg-blue-500/10' : 'border-wl-border-default bg-wl-bg-sunken'
+                      formData.service === service ? 'border-wl-primary-500 bg-wl-primary-500/10' : 'border-wl-border-default bg-wl-bg-sunken'
                     }`}
                   >
                     <p className="font-medium text-white">{service}</p>
@@ -132,7 +132,7 @@ export default function CreateLabelPage() {
                   <p className="text-sm text-wl-text-secondary">Carrier: {formData.carrier} {formData.service}</p>
                 </div>
                 {error && (
-                  <div className="p-3 bg-red-500/10 text-red-400 rounded flex gap-2 border border-red-500/30">
+                  <div className="p-3 bg-wl-danger-500/10 text-wl-danger-400 rounded flex gap-2 border border-wl-danger-500/30">
                     <AlertCircle className="w-5 h-5 flex-shrink-0" />
                     <p className="text-sm">{error.message}</p>
                   </div>

@@ -131,7 +131,7 @@ export default function FleetVehiclesMapView({ vehicles }: FleetVehiclesMapViewP
                 className="w-3 h-3 rounded-full shrink-0"
                 style={{ backgroundColor: color }}
               />
-              <span className="text-xs text-white/70">{label}</span>
+              <span className="text-xs text-wl-text-secondary">{label}</span>
             </div>
           ))}
         </div>
@@ -140,14 +140,14 @@ export default function FleetVehiclesMapView({ vehicles }: FleetVehiclesMapViewP
       {/* Stats overlay */}
       {markers.length > 0 && (
         <div className="absolute top-4 right-4 z-10 bg-black/70 backdrop-blur-sm rounded-xl px-4 py-3 space-y-1 min-w-[140px]">
-          <p className="text-xs text-white/40 font-medium">Fleet Map</p>
-          <p className="text-2xl font-bold text-white/90 font-mono">
+          <p className="text-xs text-wl-text-tertiary font-medium">Fleet Map</p>
+          <p className="text-2xl font-bold text-wl-text-primary font-mono">
             {withGps}
-            <span className="text-sm text-white/30"> /{vehicles.length}</span>
+            <span className="text-sm text-wl-text-tertiary"> /{vehicles.length}</span>
           </p>
-          <p className="text-xs text-white/35">vehicles with GPS</p>
+          <p className="text-xs text-wl-text-tertiary">vehicles with GPS</p>
           {withoutGps > 0 && (
-            <p className="text-xs text-amber-400/70">{withoutGps} no position</p>
+            <p className="text-xs text-wl-warning-400/70">{withoutGps} no position</p>
           )}
         </div>
       )}

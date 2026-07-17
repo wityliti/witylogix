@@ -64,7 +64,7 @@ export default function BrandingPage() {
                 <h4 className="font-medium text-white mb-4">
                   Primary Logo
                 </h4>
-                <div className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center hover:border-blue-500/50 transition-colors cursor-pointer">
+                <div className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center hover:border-wl-info-500/50 transition-colors cursor-pointer">
                   <div className="mb-4">
                     <div className="w-16 h-16 mx-auto rounded-lg bg-wl-bg-elevated flex items-center justify-center">
                       <img
@@ -97,7 +97,7 @@ export default function BrandingPage() {
                 <h4 className="font-medium text-white mb-4">
                   Favicon
                 </h4>
-                <div className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center hover:border-blue-500/50 transition-colors cursor-pointer">
+                <div className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center hover:border-wl-info-500/50 transition-colors cursor-pointer">
                   <div className="mb-4">
                     <div className="w-16 h-16 mx-auto rounded-lg bg-wl-bg-elevated flex items-center justify-center">
                       <div className="w-8 h-8 rounded bg-blue-500" />
@@ -144,7 +144,7 @@ export default function BrandingPage() {
                     <input
                       type="text"
                       defaultValue="#4f46e5"
-                      className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white font-mono focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                     />
                   </div>
                 </div>
@@ -224,7 +224,7 @@ export default function BrandingPage() {
               <input
                 type="text"
                 defaultValue="Track Your Shipment - Witylogix"
-                className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
               />
             </div>
 
@@ -235,7 +235,7 @@ export default function BrandingPage() {
               <textarea
                 rows={3}
                 defaultValue="Enter your tracking number to see real-time updates about your shipment."
-                className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
               />
             </div>
 

@@ -103,12 +103,12 @@ export default function ReconciliationPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className={cn("p-4 bg-wl-bg-surface border border-wl-border-default")}>
               <p className="text-xs font-medium text-wl-text-secondary uppercase">Unmatched</p>
-              <p className="text-2xl font-bold text-red-500 mt-2">{data?.unmatchedCount || 0}</p>
+              <p className="text-2xl font-bold text-wl-danger-500 mt-2">{data?.unmatchedCount || 0}</p>
               <p className="text-xs text-wl-text-tertiary mt-2">Transactions</p>
             </Card>
             <Card className={cn("p-4 bg-wl-bg-surface border border-wl-border-default")}>
               <p className="text-xs font-medium text-wl-text-secondary uppercase">Discrepancy Total</p>
-              <p className="text-2xl font-bold text-amber-500 mt-2">
+              <p className="text-2xl font-bold text-wl-warning-500 mt-2">
                 ${(data?.discrepancyTotal || 0).toLocaleString()}
               </p>
               <p className="text-xs text-wl-text-tertiary mt-2">Variance</p>

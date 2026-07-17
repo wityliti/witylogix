@@ -113,7 +113,7 @@ export default function CarriersSettingsPage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-white text-base flex items-center gap-2">
                     {carrier.configured ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-wl-success-400 shrink-0" />
                     ) : (
                       <AlertCircle className="w-4 h-4 text-wl-text-tertiary shrink-0" />
                     )}
@@ -123,7 +123,7 @@ export default function CarriersSettingsPage() {
                     variant="default"
                     className={
                       carrier.configured
-                        ? "border-green-500/40 text-green-400 bg-green-500/10"
+                        ? "border-green-500/40 text-wl-success-400 bg-wl-success-500/10"
                         : "border-wl-border-strong text-wl-text-tertiary"
                     }
                   >
@@ -162,9 +162,9 @@ export default function CarriersSettingsPage() {
                     {!carrier.configured && (
                       <div className="mt-3 p-3 rounded-md bg-white/5 border border-white/10">
                         <div className="flex gap-2">
-                          <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                          <Info className="w-4 h-4 text-wl-info-400 shrink-0 mt-0.5" />
                           <div>
-                            <p className="text-xs text-blue-300 font-medium mb-1">
+                            <p className="text-xs text-wl-info-400 font-medium mb-1">
                               Set these env vars to enable:
                             </p>
                             <ul className="space-y-0.5">

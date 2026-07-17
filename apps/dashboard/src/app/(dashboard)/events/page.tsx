@@ -44,10 +44,10 @@ function StatCard({
 }) {
   const colorMap = {
     primary: "bg-wl-primary-500/10 text-wl-primary-400",
-    info: "bg-blue-500/10 text-blue-400",
-    success: "bg-emerald-500/10 text-emerald-400",
-    warning: "bg-amber-500/10 text-amber-400",
-    danger: "bg-red-500/10 text-red-400",
+    info: "bg-wl-info-500/10 text-wl-info-400",
+    success: "bg-wl-success-500/10 text-wl-success-400",
+    warning: "bg-wl-warning-500/10 text-wl-warning-400",
+    danger: "bg-wl-danger-500/10 text-wl-danger-400",
   };
 
   return (
@@ -241,7 +241,7 @@ export default function EventsPage() {
                   "bg-wl-bg-elevated border border-wl-border-default",
                   "text-white text-sm",
                   "placeholder:text-wl-text-tertiary",
-                  "focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30",
+                  "focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30",
                   "transition-colors duration-200"
                 )}
               />
@@ -260,7 +260,7 @@ export default function EventsPage() {
                     "w-full px-3 py-2 rounded-md",
                     "bg-wl-bg-elevated border border-wl-border-default",
                     "text-white text-sm",
-                    "focus:outline-none focus:border-blue-500",
+                    "focus:outline-none focus:border-wl-info-500",
                     "transition-colors duration-200"
                   )}
                 >
@@ -284,7 +284,7 @@ export default function EventsPage() {
                     "w-full px-3 py-2 rounded-md",
                     "bg-wl-bg-elevated border border-wl-border-default",
                     "text-white text-sm",
-                    "focus:outline-none focus:border-blue-500",
+                    "focus:outline-none focus:border-wl-info-500",
                     "transition-colors duration-200"
                   )}
                 >
@@ -307,7 +307,7 @@ export default function EventsPage() {
                     "w-full px-3 py-2 rounded-md",
                     "bg-wl-bg-elevated border border-wl-border-default",
                     "text-white text-sm",
-                    "focus:outline-none focus:border-blue-500",
+                    "focus:outline-none focus:border-wl-info-500",
                     "transition-colors duration-200"
                   )}
                 >
@@ -332,7 +332,7 @@ export default function EventsPage() {
                     "w-full px-3 py-2 rounded-md",
                     "bg-wl-bg-elevated border border-wl-border-default",
                     "text-white text-sm",
-                    "focus:outline-none focus:border-blue-500",
+                    "focus:outline-none focus:border-wl-info-500",
                     "transition-colors duration-200"
                   )}
                 />

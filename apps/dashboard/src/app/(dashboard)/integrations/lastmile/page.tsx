@@ -182,7 +182,7 @@ export default function LastMileIntegrationPage() {
 
       <div className="p-6 bg-wl-bg-root min-h-screen">
         {partnersError && (
-          <div className="mb-6 p-3 rounded-lg bg-red-900/20 border border-red-500/50 text-red-400 text-sm">
+          <div className="mb-6 p-3 rounded-lg bg-red-900/20 border border-wl-danger-500/50 text-wl-danger-400 text-sm">
             {partnersError.message}
           </div>
         )}
@@ -250,12 +250,12 @@ export default function LastMileIntegrationPage() {
                     )}
                     className={cn(
                       'cursor-pointer transition-all',
-                      selectedPartnerId === partner.id && 'ring-2 ring-blue-500'
+                      selectedPartnerId === partner.id && 'ring-2 ring-wl-info-500'
                     )}
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-xs font-bold text-blue-400 uppercase">
+                        <div className="w-10 h-10 rounded-lg bg-wl-info-500/20 flex items-center justify-center text-xs font-bold text-wl-info-400 uppercase">
                           {partner.provider.slice(0, 2)}
                         </div>
                         <div>
@@ -282,7 +282,7 @@ export default function LastMileIntegrationPage() {
                       </div>
                       <div className="flex justify-between">
                         <span>Success Rate:</span>
-                        <span className="text-emerald-500 font-semibold">
+                        <span className="text-wl-success-500 font-semibold">
                           {stats?.successRate != null ? `${stats.successRate}%` : '—'}
                         </span>
                       </div>
@@ -383,7 +383,7 @@ export default function LastMileIntegrationPage() {
                   ))}
                 </div>
               ) : deliveriesError ? (
-                <div className="py-4 text-center text-red-400 text-sm">{deliveriesError.message}</div>
+                <div className="py-4 text-center text-wl-danger-400 text-sm">{deliveriesError.message}</div>
               ) : (deliveries ?? []).length === 0 ? (
                 <div className="py-8 text-center text-wl-text-secondary text-sm">No deliveries found.</div>
               ) : (
@@ -394,12 +394,12 @@ export default function LastMileIntegrationPage() {
                       className={cn(
                         'p-3 rounded-md border',
                         d.status === 'DELIVERED'
-                          ? 'border-emerald-500/20 bg-emerald-500/10'
+                          ? 'border-wl-success-500/20 bg-wl-success-500/10'
                           : d.status === 'IN_TRANSIT' || d.status === 'PICKED_UP'
-                          ? 'border-amber-500/20 bg-amber-500/10'
+                          ? 'border-wl-warning-500/20 bg-wl-warning-500/10'
                           : d.status === 'FAILED' || d.status === 'CANCELLED'
-                          ? 'border-red-500/20 bg-red-500/10'
-                          : 'border-blue-500/20 bg-blue-500/10'
+                          ? 'border-wl-danger-500/20 bg-wl-danger-500/10'
+                          : 'border-wl-info-500/20 bg-wl-info-500/10'
                       )}
                     >
                       <div className="flex items-start justify-between mb-1">
@@ -466,9 +466,9 @@ export default function LastMileIntegrationPage() {
                       className={cn(
                         'p-3 rounded-md border',
                         driver.status === 'AVAILABLE'
-                          ? 'border-emerald-500/20 bg-emerald-500/10'
+                          ? 'border-wl-success-500/20 bg-wl-success-500/10'
                           : driver.status === 'ON_ROUTE'
-                          ? 'border-amber-500/20 bg-amber-500/10'
+                          ? 'border-wl-warning-500/20 bg-wl-warning-500/10'
                           : 'border-neutral-600/20 bg-wl-bg-elevated/20'
                       )}
                     >

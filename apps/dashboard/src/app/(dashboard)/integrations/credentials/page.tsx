@@ -216,9 +216,9 @@ export default function CredentialsPage() {
     <div className="space-y-8">
       {/* Overdue Rotations Alert */}
       {overdueRotations.length > 0 && (
-        <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
+        <div className="rounded-lg bg-wl-danger-500/10 border border-wl-danger-500/20 p-4">
           <div className="flex gap-3">
-            <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
+            <AlertTriangle className="w-5 h-5 text-wl-danger-400 flex-shrink-0" />
             <div>
               <h3 className="font-semibold text-white">
                 {overdueRotations.length} Credential Rotation{overdueRotations.length !== 1 ? "s" : ""} Overdue
@@ -360,10 +360,10 @@ export default function CredentialsPage() {
                           <p className={cn(
                             "font-medium",
                             isExpired
-                              ? "text-red-400"
+                              ? "text-wl-danger-400"
                               : expiresIn <= 7
-                                ? "text-amber-400"
-                                : "text-emerald-400"
+                                ? "text-wl-warning-400"
+                                : "text-wl-success-400"
                           )}>
                             {isExpired ? "Expired" : `${expiresIn} days`}
                           </p>
@@ -404,7 +404,7 @@ export default function CredentialsPage() {
                             type="datetime-local"
                             value={scheduleDateInput}
                             onChange={(e) => setScheduleDateInput(e.target.value)}
-                            className="w-full px-2 py-1 text-sm rounded bg-wl-bg-surface border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
+                            className="w-full px-2 py-1 text-sm rounded bg-wl-bg-surface border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
                           />
                           <div className="flex gap-2">
                             <Button
@@ -445,9 +445,9 @@ export default function CredentialsPage() {
       </Card>
 
       {/* Secret Scan Results */}
-      <Card className="bg-amber-500/10 border border-amber-500/20">
+      <Card className="bg-wl-warning-500/10 border border-wl-warning-500/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-amber-400">
+          <CardTitle className="flex items-center gap-2 text-wl-warning-400">
             <AlertTriangle className="w-4 h-4" />
             Secret Scan Results
           </CardTitle>

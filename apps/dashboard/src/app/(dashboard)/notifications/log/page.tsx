@@ -66,10 +66,10 @@ const CHANNEL_ICON: Record<string, React.ReactNode> = {
 };
 
 const STATUS_ICON: Record<string, React.ReactNode> = {
-  SENT: <CheckCircle className="w-4 h-4 text-blue-400" />,
-  DELIVERED: <CheckCircle className="w-4 h-4 text-emerald-400" />,
-  FAILED: <XCircle className="w-4 h-4 text-red-400" />,
-  BOUNCED: <AlertCircle className="w-4 h-4 text-amber-400" />,
+  SENT: <CheckCircle className="w-4 h-4 text-wl-info-400" />,
+  DELIVERED: <CheckCircle className="w-4 h-4 text-wl-success-400" />,
+  FAILED: <XCircle className="w-4 h-4 text-wl-danger-400" />,
+  BOUNCED: <AlertCircle className="w-4 h-4 text-wl-warning-400" />,
   PENDING: <Clock className="w-4 h-4 text-wl-text-secondary" />,
 };
 
@@ -121,7 +121,7 @@ function DetailModal({ log, onClose }: { log: ApiNotificationLog; onClose: () =>
               <Field label="Order">
                 <Link
                   href={`/orders/${log.orderId}`}
-                  className="text-blue-400 hover:text-blue-300 font-mono text-xs"
+                  className="text-wl-info-400 hover:text-wl-info-400 font-mono text-xs"
                 >
                   {log.orderNumber ?? log.orderId.slice(0, 8)}
                 </Link>
@@ -131,9 +131,9 @@ function DetailModal({ log, onClose }: { log: ApiNotificationLog; onClose: () =>
             {log.deliveredAt && <Field label="Delivered" value={fmtTs(log.deliveredAt)} />}
           </div>
           {log.errorMessage && (
-            <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-3">
-              <p className="text-xs font-semibold text-red-400 uppercase tracking-wide mb-1">Error</p>
-              <p className="text-xs text-red-300">{log.errorMessage}</p>
+            <div className="rounded-lg bg-wl-danger-500/10 border border-wl-danger-500/20 p-3">
+              <p className="text-xs font-semibold text-wl-danger-400 uppercase tracking-wide mb-1">Error</p>
+              <p className="text-xs text-wl-danger-400">{log.errorMessage}</p>
             </div>
           )}
           <button
@@ -243,8 +243,8 @@ export default function NotificationLogPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Total (this page)", value: String(logs.length), sub: `of ${(pagination.total ?? 0).toLocaleString()} total` },
-            { label: "Delivery Rate", value: `${stats.deliveryRate}%`, accent: "text-emerald-400" },
-            { label: "Bounce Rate", value: `${stats.bounceRate}%`, accent: "text-amber-400" },
+            { label: "Delivery Rate", value: `${stats.deliveryRate}%`, accent: "text-wl-success-400" },
+            { label: "Bounce Rate", value: `${stats.bounceRate}%`, accent: "text-wl-warning-400" },
             { label: "Pending", value: String(stats.pending), accent: "text-wl-text-secondary" },
           ].map(({ label, value, sub, accent }) => (
             <Card key={label} className="border border-wl-border-default bg-wl-bg-surface">
@@ -394,7 +394,7 @@ export default function NotificationLogPage() {
                           {log.orderId ? (
                             <Link
                               href={`/orders/${log.orderId}`}
-                              className="text-xs text-blue-400 hover:text-blue-300 font-mono"
+                              className="text-xs text-wl-info-400 hover:text-wl-info-400 font-mono"
                             >
                               {log.orderNumber ?? log.orderId.slice(0, 8)}
                             </Link>

@@ -15,17 +15,17 @@ interface DeliveryStatsCardProps {
 }
 
 const variantClasses = {
-  success: 'text-emerald-400',
+  success: 'text-wl-success-400',
   info: 'text-cyan-400',
   warning: 'text-yellow-400',
-  danger: 'text-red-400',
+  danger: 'text-wl-danger-400',
 };
 
 const cardBorders = {
   success: '',
   info: '',
   warning: '',
-  danger: 'border border-red-500/20',
+  danger: 'border border-wl-danger-500/20',
 };
 
 export function DeliveryStatsCard({

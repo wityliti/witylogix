@@ -290,7 +290,7 @@ export default function PartnersPage() {
               className={cn(
                 "p-1.5 rounded transition-colors",
                 viewMode === "grid"
-                  ? "bg-blue-500/20 text-blue-400"
+                  ? "bg-wl-info-500/20 text-wl-info-400"
                   : "text-wl-text-secondary hover:text-white"
               )}
               title="Grid view"
@@ -302,7 +302,7 @@ export default function PartnersPage() {
               className={cn(
                 "p-1.5 rounded transition-colors",
                 viewMode === "list"
-                  ? "bg-blue-500/20 text-blue-400"
+                  ? "bg-wl-info-500/20 text-wl-info-400"
                   : "text-wl-text-secondary hover:text-white"
               )}
               title="List view"
@@ -314,7 +314,7 @@ export default function PartnersPage() {
               className={cn(
                 "p-1.5 rounded transition-colors",
                 viewMode === "map"
-                  ? "bg-blue-500/20 text-blue-400"
+                  ? "bg-wl-info-500/20 text-wl-info-400"
                   : "text-wl-text-secondary hover:text-white"
               )}
               title="Map view"

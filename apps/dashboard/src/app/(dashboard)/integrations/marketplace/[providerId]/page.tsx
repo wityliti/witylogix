@@ -246,7 +246,7 @@ export default function ProviderDetailPage() {
                   <div className={cn("grid grid-cols-2 gap-3")}>
                     {provider.capabilities.map((cap) => (
                       <div key={cap} className={cn("flex items-center gap-2 p-2 rounded bg-wl-bg-elevated")}>
-                        <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                        <CheckCircle className="w-4 h-4 text-wl-success-500 flex-shrink-0" />
                         <span className="text-sm text-white">{cap}</span>
                       </div>
                     ))}
@@ -265,10 +265,10 @@ export default function ProviderDetailPage() {
                   <div className={cn("space-y-2")}>
                     {credentialFields.map((field) => (
                       <div key={field.key} className={cn("flex items-center gap-2 p-3 rounded border border-wl-border-default")}>
-                        <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                        <Check className="w-4 h-4 text-wl-info-500 flex-shrink-0" />
                         <span className="text-sm text-white">
                           {field.label}
-                          {field.required && <span className="text-red-400 ml-1">*</span>}
+                          {field.required && <span className="text-wl-danger-400 ml-1">*</span>}
                         </span>
                       </div>
                     ))}
@@ -361,11 +361,11 @@ export default function ProviderDetailPage() {
                 <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide")}>Permissions Requested</div>
                 <div className={cn("text-sm text-white space-y-1 mt-1")}>
                   <div className={cn("flex items-center gap-2")}>
-                    <Check className="w-3 h-3 text-emerald-500" />
+                    <Check className="w-3 h-3 text-wl-success-500" />
                     Read access to {provider.name} data
                   </div>
                   <div className={cn("flex items-center gap-2")}>
-                    <Check className="w-3 h-3 text-emerald-500" />
+                    <Check className="w-3 h-3 text-wl-success-500" />
                     Write access to selected resources
                   </div>
                 </div>
@@ -425,7 +425,7 @@ export default function ProviderDetailPage() {
                           href={field.helpUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-blue-400 hover:underline mt-1 inline-block"
+                          className="text-xs text-wl-info-400 hover:underline mt-1 inline-block"
                         >
                           Where to find this?
                         </a>
@@ -465,7 +465,7 @@ export default function ProviderDetailPage() {
 
         {authStep === "installing" && (
           <div className={cn("space-y-4 text-center py-6")}>
-            <Loader2 className="w-8 h-8 mx-auto text-blue-500 animate-spin" />
+            <Loader2 className="w-8 h-8 mx-auto text-wl-info-500 animate-spin" />
             <p className={cn("text-white font-medium")}>Installing integration…</p>
             <p className={cn("text-sm text-wl-text-tertiary")}>Verifying credentials and connecting to {provider.name}</p>
           </div>
@@ -473,7 +473,7 @@ export default function ProviderDetailPage() {
 
         {authStep === "success" && (
           <div className={cn("space-y-4 text-center py-6")}>
-            <CheckCircle className="w-12 h-12 mx-auto text-emerald-500" />
+            <CheckCircle className="w-12 h-12 mx-auto text-wl-success-500" />
             <h3 className={cn("text-lg font-semibold text-white")}>All set!</h3>
             <p className={cn("text-sm text-wl-text-tertiary")}>
               {provider.name} has been successfully connected to your Witylogix account.
@@ -486,9 +486,9 @@ export default function ProviderDetailPage() {
 
         {authStep === "error" && (
           <div className={cn("space-y-4 text-center py-6")}>
-            <AlertCircle className="w-8 h-8 mx-auto text-red-500" />
+            <AlertCircle className="w-8 h-8 mx-auto text-wl-danger-500" />
             <p className={cn("text-white font-medium")}>Connection failed</p>
-            <p className={cn("text-sm text-red-400")}>{installError}</p>
+            <p className={cn("text-sm text-wl-danger-400")}>{installError}</p>
             <Button variant="ghost" className="w-full mt-4" onClick={() => setAuthStep("credentials")}>
               Try Again
             </Button>

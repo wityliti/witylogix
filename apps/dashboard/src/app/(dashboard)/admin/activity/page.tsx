@@ -47,14 +47,14 @@ function ActivityIcon({ type }: { type: string }) {
 
   const Icon = icons[type] || LogIn;
   const colors: Record<string, string> = {
-    login: "text-blue-500",
-    order_created: "text-emerald-500",
-    route_planned: "text-blue-500",
-    setting_changed: "text-amber-500",
+    login: "text-wl-info-500",
+    order_created: "text-wl-success-500",
+    route_planned: "text-wl-info-500",
+    setting_changed: "text-wl-warning-500",
     logout: "text-wl-text-secondary",
-    permission_changed: "text-red-500",
-    export: "text-blue-500",
-    payment: "text-emerald-500",
+    permission_changed: "text-wl-danger-500",
+    export: "text-wl-info-500",
+    payment: "text-wl-success-500",
   };
 
   return (
@@ -87,10 +87,10 @@ function UserAvatar({ name }: { name: string }) {
     .toUpperCase();
 
   const colors = [
-    "bg-blue-600/20 text-blue-500",
-    "bg-emerald-600/20 text-emerald-500",
-    "bg-amber-600/20 text-amber-500",
-    "bg-blue-600/20 text-blue-500",
+    "bg-wl-info-500/20 text-wl-info-500",
+    "bg-wl-success-500/20 text-wl-success-500",
+    "bg-wl-warning-500/20 text-wl-warning-500",
+    "bg-wl-info-500/20 text-wl-info-500",
   ];
 
   const colorIndex =

@@ -91,7 +91,7 @@ const DriverCard = ({ driver }: { driver: ApiDriver }) => {
   return (
     <Card hover className="group">
       <CardContent className="p-5">
-        <div className="flex items-start justify-between mb-4 pb-4 border-b border-white/[0.05]">
+        <div className="flex items-start justify-between mb-4 pb-4 border-b border-wl-border-subtle">
           <div className="flex items-start gap-3 flex-1 min-w-0">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
               <span className="text-sm font-semibold text-white">{initials}</span>
@@ -109,7 +109,7 @@ const DriverCard = ({ driver }: { driver: ApiDriver }) => {
           </Badge>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 mb-4 pb-4 border-b border-white/[0.05]">
+        <div className="grid grid-cols-3 gap-3 mb-4 pb-4 border-b border-wl-border-subtle">
           <div>
             <div className="text-xs text-wl-text-secondary mb-1">Active Orders</div>
             <div className="text-sm font-semibold text-white">{driver._count.orders}</div>
@@ -117,7 +117,7 @@ const DriverCard = ({ driver }: { driver: ApiDriver }) => {
           <div>
             <div className="text-xs text-wl-text-secondary mb-1">Vehicle</div>
             <div className="text-xs font-medium text-white flex items-center gap-1">
-              <Truck className="w-3 h-3 text-blue-400" />
+              <Truck className="w-3 h-3 text-wl-info-400" />
               {driver.vehicleType || '—'}
             </div>
           </div>
@@ -231,8 +231,8 @@ export default function DriversPage() {
           {/* Stats bar above map */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Available', count: driversData.filter((d) => normalizeStatus(d.status) === 'available').length, color: 'text-emerald-400' },
-              { label: 'En Route', count: driversData.filter((d) => normalizeStatus(d.status) === 'en_route').length, color: 'text-blue-400' },
+              { label: 'Available', count: driversData.filter((d) => normalizeStatus(d.status) === 'available').length, color: 'text-wl-success-400' },
+              { label: 'En Route', count: driversData.filter((d) => normalizeStatus(d.status) === 'en_route').length, color: 'text-wl-info-400' },
               { label: 'Delivering', count: driversData.filter((d) => normalizeStatus(d.status) === 'delivering').length, color: 'text-sky-400' },
               { label: 'Offline', count: driversData.filter((d) => normalizeStatus(d.status) === 'offline').length, color: 'text-wl-text-secondary' },
             ].map(({ label, count, color }) => (

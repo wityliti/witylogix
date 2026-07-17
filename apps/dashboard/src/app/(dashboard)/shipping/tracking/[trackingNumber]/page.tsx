@@ -165,7 +165,7 @@ export default function TrackingDetailPage() {
               {shipment.actualDelivery && (
                 <div>
                   <p className="text-sm text-wl-text-secondary">Delivered At</p>
-                  <p className="text-emerald-400 font-medium mt-1">
+                  <p className="text-wl-success-400 font-medium mt-1">
                     {new Date(shipment.actualDelivery).toLocaleString()}
                   </p>
                 </div>
@@ -176,7 +176,7 @@ export default function TrackingDetailPage() {
                     href={shipment.carrierTrackingUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-blue-400 text-sm hover:underline"
+                    className="text-wl-info-400 text-sm hover:underline"
                   >
                     Track on carrier website →
                   </a>

@@ -22,11 +22,11 @@ interface ViolationAlertCardProps {
 const getSeverityColor = (severity: string) => {
   switch (severity) {
     case "critical":
-      return "bg-red-500/20 text-red-400 border-red-500/50";
+      return "bg-wl-danger-500/20 text-wl-danger-400 border-wl-danger-500/50";
     case "warning":
       return "bg-yellow-500/20 text-yellow-400 border-yellow-500/50";
     case "info":
-      return "bg-blue-500/20 text-blue-400 border-blue-500/50";
+      return "bg-wl-info-500/20 text-wl-info-400 border-wl-info-500/50";
     default:
       return "";
   }
@@ -36,7 +36,7 @@ export function ViolationAlertCard({ alert }: ViolationAlertCardProps) {
   return (
     <Card className={cn(
       "bg-wl-bg-elevated",
-      alert.severity === "critical" && "border-red-500/50"
+      alert.severity === "critical" && "border-wl-danger-500/50"
     )}>
       <CardContent className="pt-6">
         <div className="flex items-start justify-between mb-3">
@@ -76,7 +76,7 @@ export function ViolationAlertCard({ alert }: ViolationAlertCardProps) {
             className={cn(
               "flex-1",
               alert.severity === "critical"
-                ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                ? "bg-wl-danger-500/20 text-wl-danger-400 hover:bg-red-500/30"
                 : "bg-blue-500 hover:bg-blue-500/90"
             )}
           >

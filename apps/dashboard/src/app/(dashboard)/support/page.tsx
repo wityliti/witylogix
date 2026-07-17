@@ -175,7 +175,7 @@ export default function SupportPage() {
               <CardContent className="flex flex-col gap-3">
                 {faqSections.map((section) => (
                   <div key={section.category} className="mb-2">
-                    <h3 className="text-blue-400 text-xs font-semibold mb-2 uppercase">
+                    <h3 className="text-wl-info-400 text-xs font-semibold mb-2 uppercase">
                       {section.category}
                     </h3>
                     {section.items.map((item) => (
@@ -194,7 +194,7 @@ export default function SupportPage() {
                           )}
                         </button>
                         {expandedFaq === item.id && (
-                          <div className="bg-wl-bg-elevated border-l-4 border-l-blue-500 border-r border-r-wl-border-default border-b border-b-wl-border-default rounded-bl rounded-br p-3 -mt-0.5 text-wl-text-secondary text-sm leading-relaxed">
+                          <div className="bg-wl-bg-elevated border-l-4 border-l-wl-info-500 border-r border-r-wl-border-default border-b border-b-wl-border-default rounded-bl rounded-br p-3 -mt-0.5 text-wl-text-secondary text-sm leading-relaxed">
                             {item.a}
                           </div>
                         )}
@@ -225,7 +225,7 @@ export default function SupportPage() {
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       required
                       minLength={5}
-                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                     />
                   </div>
 
@@ -239,7 +239,7 @@ export default function SupportPage() {
                           priority: e.target.value as typeof formData.priority,
                         })
                       }
-                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm cursor-pointer focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm cursor-pointer focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                     >
                       <option value="LOW">Low</option>
                       <option value="MEDIUM">Medium</option>
@@ -257,7 +257,7 @@ export default function SupportPage() {
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       required
                       minLength={10}
-                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm min-h-[100px] resize-vertical placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm min-h-[100px] resize-vertical placeholder-gray-500 focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                     />
                   </div>
 
@@ -289,13 +289,13 @@ export default function SupportPage() {
           </CardHeader>
           <CardContent>
             {error && (
-              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center justify-between">
-                <span className="text-sm text-red-400">Failed to load tickets</span>
+              <div className="mb-4 p-3 bg-wl-danger-500/10 border border-wl-danger-500/20 rounded-lg flex items-center justify-between">
+                <span className="text-sm text-wl-danger-400">Failed to load tickets</span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => refetch()}
-                  className="text-red-400"
+                  className="text-wl-danger-400"
                 >
                   Retry
                 </Button>

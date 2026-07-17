@@ -69,7 +69,7 @@ export default function RecordsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-wl-text-secondary text-sm font-medium">Total Records</span>
-              <FileText className="text-blue-500" size={20} />
+              <FileText className="text-wl-info-500" size={20} />
             </div>
             <p className="text-3xl font-bold text-white">{records.length}</p>
             <p className="text-wl-text-secondary text-xs mt-2">All documents</p>
@@ -161,7 +161,7 @@ export default function RecordsPage() {
                     onClick={() => setSelectedRecordId(record.id)}
                   >
                     <td className="py-3 px-4 text-white font-medium">
-                      <button className="hover:underline text-blue-500">{record.title}</button>
+                      <button className="hover:underline text-wl-info-500">{record.title}</button>
                     </td>
                     <td className="py-3 px-4">
                       <Badge variant={recordTypeVariants[record.type] || 'default'}>

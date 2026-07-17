@@ -89,7 +89,7 @@ export default function IntegrationDetailPage() {
       <div className="space-y-8">
         <Link
           href="/integrations/connected"
-          className="text-blue-500 hover:text-blue-400 inline-flex items-center gap-2"
+          className="text-wl-info-500 hover:text-wl-info-400 inline-flex items-center gap-2"
         >
           <ChevronLeft className="w-4 h-4" />
           Back to Connected Integrations
@@ -101,7 +101,7 @@ export default function IntegrationDetailPage() {
               {isLoading ? (
                 <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin mx-auto mb-4" />
               ) : (
-                <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                <AlertCircle className="w-12 h-12 text-wl-danger-500 mx-auto mb-4" />
               )}
               <h2 className="text-xl font-semibold text-white mb-2">
                 {isLoading ? "Loading…" : "Integration not found"}
@@ -131,7 +131,7 @@ export default function IntegrationDetailPage() {
       {/* Breadcrumb */}
       <Link
         href="/integrations/connected"
-        className="text-blue-500 hover:text-blue-400 inline-flex items-center gap-2"
+        className="text-wl-info-500 hover:text-wl-info-400 inline-flex items-center gap-2"
       >
         <ChevronLeft className="w-4 h-4" />
         Back to Connected Integrations
@@ -140,8 +140,8 @@ export default function IntegrationDetailPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
-            <CheckCircle className="w-6 h-6 text-blue-500" />
+          <div className="w-12 h-12 rounded-lg bg-wl-info-500/10 flex items-center justify-center">
+            <CheckCircle className="w-6 h-6 text-wl-info-500" />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-white">
@@ -267,16 +267,16 @@ export default function IntegrationDetailPage() {
               className={cn(
                 "bg-wl-bg-elevated border",
                 showTestResult.success
-                  ? "border-emerald-500/20"
-                  : "border-red-500/20"
+                  ? "border-wl-success-500/20"
+                  : "border-wl-danger-500/20"
               )}
             >
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3">
                   {showTestResult.success ? (
-                    <CheckCheck className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <CheckCheck className="w-5 h-5 text-wl-success-500 flex-shrink-0 mt-0.5" />
                   ) : (
-                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <AlertCircle className="w-5 h-5 text-wl-danger-500 flex-shrink-0 mt-0.5" />
                   )}
                   <div className="flex-1">
                     <p className="text-sm text-white">
@@ -359,7 +359,7 @@ export default function IntegrationDetailPage() {
           {errorLog.length > 0 && (
             <Card className="bg-wl-bg-elevated border-wl-border-default">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-red-500">
+                <CardTitle className="flex items-center gap-2 text-wl-danger-500">
                   <AlertTriangle className="w-5 h-5" />
                   Error Log
                 </CardTitle>
@@ -371,7 +371,7 @@ export default function IntegrationDetailPage() {
                   return (
                     <div
                       key={error.id}
-                      className="border border-red-500/20 rounded-lg bg-red-500/5"
+                      className="border border-wl-danger-500/20 rounded-lg bg-red-500/5"
                     >
                       <button
                         onClick={() => {
@@ -383,11 +383,11 @@ export default function IntegrationDetailPage() {
                           }
                           setExpandedErrors(newSet);
                         }}
-                        className="w-full p-3 text-left hover:bg-red-500/10 transition-colors"
+                        className="w-full p-3 text-left hover:bg-wl-danger-500/10 transition-colors"
                       >
                         <div className="flex items-start justify-between">
                           <div>
-                            <p className="text-sm font-medium text-red-500">
+                            <p className="text-sm font-medium text-wl-danger-500">
                               {error.error}
                             </p>
                             {error.context && (
@@ -403,7 +403,7 @@ export default function IntegrationDetailPage() {
                       </button>
 
                       {isExpanded && error.stackTrace && (
-                        <div className="border-t border-red-500/20 p-3 bg-wl-bg-root">
+                        <div className="border-t border-wl-danger-500/20 p-3 bg-wl-bg-root">
                           <pre className="text-xs text-wl-text-secondary font-mono overflow-auto bg-wl-bg-elevated p-2 rounded border border-wl-border-default">
                             {error.stackTrace}
                           </pre>
@@ -503,7 +503,7 @@ export default function IntegrationDetailPage() {
           </Card>
 
           {/* Documentation */}
-          <Card className="bg-blue-500/10 border border-blue-500/20">
+          <Card className="bg-wl-info-500/10 border border-wl-info-500/20">
             <CardContent className="pt-6">
               <p className="text-sm text-wl-text-secondary mb-4">
                 Need help? Check the integration documentation.

@@ -320,7 +320,7 @@ export default function TimeSlotsPage() {
             {
               label: "Active",
               value: slots.filter((s) => s.isActive).length,
-              color: "text-emerald-400",
+              color: "text-wl-success-400",
             },
             {
               label: "Inactive",
@@ -330,7 +330,7 @@ export default function TimeSlotsPage() {
             {
               label: "Total Capacity",
               value: slots.filter((s) => s.isActive).reduce((a, s) => a + s.maxCapacity, 0),
-              color: "text-blue-400",
+              color: "text-wl-info-400",
             },
           ].map((c) => (
             <Card key={c.label} className="bg-wl-bg-surface border-wl-border-default">
@@ -386,11 +386,11 @@ export default function TimeSlotsPage() {
                   <div className="p-4 flex items-center gap-4 flex-wrap sm:flex-nowrap">
                     {/* Time block */}
                     <div className="w-24 shrink-0 text-center p-2 bg-wl-bg-overlay rounded-lg border border-wl-border-default">
-                      <p className="text-xs font-bold font-mono text-blue-400">
+                      <p className="text-xs font-bold font-mono text-wl-info-400">
                         {formatTime(slot.startTime)}
                       </p>
                       <p className="text-xs text-wl-text-muted my-0.5">to</p>
-                      <p className="text-xs font-bold font-mono text-blue-400">
+                      <p className="text-xs font-bold font-mono text-wl-info-400">
                         {formatTime(slot.endTime)}
                       </p>
                     </div>
@@ -424,7 +424,7 @@ export default function TimeSlotsPage() {
                               className={cn(
                                 "w-7 h-6 rounded text-xs font-semibold flex items-center justify-center",
                                 active
-                                  ? "bg-amber-500/20 text-amber-400"
+                                  ? "bg-wl-warning-500/20 text-wl-warning-400"
                                   : "bg-wl-bg-overlay text-wl-text-muted",
                               )}
                             >

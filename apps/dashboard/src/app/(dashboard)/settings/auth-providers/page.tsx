@@ -271,15 +271,15 @@ export default function AuthProvidersPage() {
                             </p>
                           )}
                           {provider.lastValidationError && (
-                            <p className="text-xs text-red-400 mt-1">{provider.lastValidationError}</p>
+                            <p className="text-xs text-wl-danger-400 mt-1">{provider.lastValidationError}</p>
                           )}
                           {testResult && (
                             <div
                               className={cn(
                                 'mt-3 p-2 rounded text-xs flex items-center gap-2',
                                 testResult.status === 'success'
-                                  ? 'bg-emerald-500/10 text-emerald-400'
-                                  : 'bg-red-500/10 text-red-400',
+                                  ? 'bg-wl-success-500/10 text-wl-success-400'
+                                  : 'bg-wl-danger-500/10 text-wl-danger-400',
                               )}
                             >
                               {testResult.status === 'success' ? (

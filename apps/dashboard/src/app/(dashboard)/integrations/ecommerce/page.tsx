@@ -79,9 +79,9 @@ export default function EcommerceIntegrationsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Connected Platforms', value: stats.total, icon: ShoppingCart, color: 'text-blue-400' },
-            { label: 'Healthy', value: stats.healthy, icon: CheckCircle2, color: 'text-emerald-400' },
-            { label: 'With Errors', value: stats.errors, icon: AlertCircle, color: 'text-red-400' },
+            { label: 'Connected Platforms', value: stats.total, icon: ShoppingCart, color: 'text-wl-info-400' },
+            { label: 'Healthy', value: stats.healthy, icon: CheckCircle2, color: 'text-wl-success-400' },
+            { label: 'With Errors', value: stats.errors, icon: AlertCircle, color: 'text-wl-danger-400' },
             { label: 'API Calls (30d)', value: stats.apiCalls.toLocaleString(), icon: Clock, color: 'text-wl-text-primary' },
           ].map((s) => {
             const Icon = s.icon;

@@ -186,7 +186,7 @@ export default function CRMIntegrationPage() {
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-xs font-bold text-blue-400">
+                      <div className="w-10 h-10 rounded-lg bg-wl-info-500/20 flex items-center justify-center text-xs font-bold text-wl-info-400">
                         {provider.logo}
                       </div>
                       <div>
@@ -201,7 +201,7 @@ export default function CRMIntegrationPage() {
                   </div>
 
                   {provider.status === 'error' && provider.errorMessage && (
-                    <div className="bg-red-900/30 border border-red-400/30 rounded px-2 py-1.5 mb-2 text-xs text-red-400">
+                    <div className="bg-red-900/30 border border-wl-danger-400/30 rounded px-2 py-1.5 mb-2 text-xs text-wl-danger-400">
                       {provider.errorMessage}
                     </div>
                   )}
@@ -417,10 +417,10 @@ export default function CRMIntegrationPage() {
                     className={cn(
                       'p-3 rounded-md border',
                       log.status === 'success'
-                        ? 'border-emerald-400/20 bg-emerald-900/30'
+                        ? 'border-wl-success-400/20 bg-emerald-900/30'
                         : log.status === 'failed'
-                        ? 'border-red-400/20 bg-red-900/30'
-                        : 'border-amber-400/20 bg-amber-900/30'
+                        ? 'border-wl-danger-400/20 bg-red-900/30'
+                        : 'border-wl-warning-400/20 bg-amber-900/30'
                     )}
                   >
                     <div className="flex items-start justify-between gap-3">

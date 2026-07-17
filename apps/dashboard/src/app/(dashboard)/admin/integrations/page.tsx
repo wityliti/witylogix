@@ -124,13 +124,13 @@ function IntegrationRow({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-wl-text-secondary">Success Rate:</span>
-                  <span className={cn("text-sm font-semibold", integration.successRate >= 99 ? "text-emerald-500" : "text-amber-500")}>
+                  <span className={cn("text-sm font-semibold", integration.successRate >= 99 ? "text-wl-success-500" : "text-wl-warning-500")}>
                     {integration.successRate}%
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-wl-text-secondary">Error Count:</span>
-                  <span className={cn("text-sm font-semibold", integration.errorCount === 0 ? "text-emerald-500" : "text-red-500")}>
+                  <span className={cn("text-sm font-semibold", integration.errorCount === 0 ? "text-wl-success-500" : "text-wl-danger-500")}>
                     {integration.errorCount}
                   </span>
                 </div>
@@ -156,10 +156,10 @@ function IntegrationRow({
               </p>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {integration.errors.map((error, idx) => (
-                  <div key={idx} className="p-3 bg-red-600/50 rounded-md border border-red-500/30">
+                  <div key={idx} className="p-3 bg-red-600/50 rounded-md border border-wl-danger-500/30">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-xs font-semibold text-red-500">{error.code}</p>
+                        <p className="text-xs font-semibold text-wl-danger-500">{error.code}</p>
                         <p className="text-xs text-wl-text-secondary mt-0.5">{error.message}</p>
                       </div>
                       <span className="text-xs text-wl-text-secondary whitespace-nowrap ml-2">{error.timestamp}</span>
@@ -169,9 +169,9 @@ function IntegrationRow({
               </div>
             </div>
           ) : (
-            <div className="p-3 bg-emerald-600/50 rounded-md border border-emerald-500/30 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-              <span className="text-sm text-emerald-500">No recent errors. Integration is operating normally.</span>
+            <div className="p-3 bg-emerald-600/50 rounded-md border border-wl-success-500/30 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-wl-success-500 flex-shrink-0" />
+              <span className="text-sm text-wl-success-500">No recent errors. Integration is operating normally.</span>
             </div>
           )}
         </div>
@@ -234,7 +234,7 @@ export default function IntegrationsPage() {
                 <CardContent className="pt-5">
                   <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">Connected</p>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-emerald-500">{connectedCount}</span>
+                    <span className="text-3xl font-bold text-wl-success-500">{connectedCount}</span>
                     <span className="text-sm text-wl-text-secondary">of {filteredIntegrations.length}</span>
                   </div>
                 </CardContent>
@@ -251,7 +251,7 @@ export default function IntegrationsPage() {
                 <CardContent className="pt-5">
                   <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">With Errors</p>
                   <div className="flex items-baseline gap-2">
-                    <span className={cn("text-3xl font-bold", errorCount === 0 ? "text-emerald-500" : "text-red-500")}>
+                    <span className={cn("text-3xl font-bold", errorCount === 0 ? "text-wl-success-500" : "text-wl-danger-500")}>
                       {errorCount}
                     </span>
                   </div>
@@ -308,12 +308,12 @@ export default function IntegrationsPage() {
             </Card>
 
             {errorCount > 0 && (
-              <Card className="border border-red-600/30 bg-red-600/10">
+              <Card className="border border-red-600/30 bg-wl-danger-500/10">
                 <CardContent className="pt-5">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <AlertCircle className="w-5 h-5 text-wl-danger-500 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <h4 className="text-sm font-semibold text-red-500">
+                      <h4 className="text-sm font-semibold text-wl-danger-500">
                         {errorCount} Integration{errorCount !== 1 ? "s" : ""} Require Attention
                       </h4>
                       <p className="text-sm text-wl-text-secondary mt-1">

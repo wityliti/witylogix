@@ -324,7 +324,7 @@ export default function DesignTokensPage() {
                 "w-full flex items-center gap-3 mb-6 p-4 rounded-lg",
                 "bg-wl-bg-surface border border-wl-border-default",
                 "hover:border-wl-border-default transition-colors",
-                expandedCategory === category.id && "border-blue-500/30 bg-blue-500/5"
+                expandedCategory === category.id && "border-wl-info-500/30 bg-blue-500/5"
               )}
             >
               <span className="text-2xl">{category.icon}</span>

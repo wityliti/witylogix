@@ -87,10 +87,10 @@ export default function MessagingIntegrationsPage() {
       <div className="p-6 bg-wl-bg-root space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'SMS Providers', value: stats.sms, icon: MessageSquare, color: 'text-blue-400' },
+            { label: 'SMS Providers', value: stats.sms, icon: MessageSquare, color: 'text-wl-info-400' },
             { label: 'Push Providers', value: stats.push, icon: Bell, color: 'text-violet-400' },
-            { label: 'Healthy', value: stats.healthy, icon: CheckCircle2, color: 'text-emerald-400' },
-            { label: 'With Errors', value: stats.errors, icon: AlertCircle, color: 'text-red-400' },
+            { label: 'Healthy', value: stats.healthy, icon: CheckCircle2, color: 'text-wl-success-400' },
+            { label: 'With Errors', value: stats.errors, icon: AlertCircle, color: 'text-wl-danger-400' },
           ].map((s) => {
             const Icon = s.icon;
             return (

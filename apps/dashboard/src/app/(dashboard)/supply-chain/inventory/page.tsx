@@ -387,7 +387,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, searchTerm: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white placeholder-wl-text-tertiary focus:outline-none focus:border-blue-500"
+                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white placeholder-wl-text-tertiary focus:outline-none focus:border-wl-info-500"
               />
 
               <select
@@ -395,7 +395,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, warehouse: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
+                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
               >
                 {warehouseNames.map((wh) => (
                   <option key={wh} value={wh}>
@@ -409,7 +409,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, abcClass: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
+                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
               >
                 {ABC_CLASSES.map((cls) => (
                   <option key={cls.value} value={cls.value}>
@@ -423,7 +423,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, status: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
+                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
               >
                 {STATUS_FILTERS.map((st) => (
                   <option key={st.value} value={st.value}>
@@ -442,7 +442,7 @@ export default function InventoryPage() {
                   className={cn(
                     'p-4 rounded-lg border-2 cursor-pointer transition-all',
                     selectedItem === item.id
-                      ? 'border-blue-500 bg-blue-500/10'
+                      ? 'border-blue-500 bg-wl-info-500/10'
                       : 'border-wl-border-default hover:bg-wl-bg-elevated'
                   )}
                 >

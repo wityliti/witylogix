@@ -30,7 +30,7 @@ export function ComplianceMetricCard({ metric }: ComplianceMetricCardProps) {
           <Badge
             variant={metric.status === "compliant" ? "success" : "warning"}
             className={cn(
-              metric.status === "compliant" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"
+              metric.status === "compliant" ? "bg-wl-success-500/20 text-wl-success-400" : "bg-yellow-500/20 text-yellow-400"
             )}
           >
             {metric.status}
@@ -47,12 +47,12 @@ export function ComplianceMetricCard({ metric }: ComplianceMetricCardProps) {
             </p>
           </div>
           {difference >= 0 ? (
-            <div className="flex items-center gap-1 text-green-400 text-sm font-semibold">
+            <div className="flex items-center gap-1 text-wl-success-400 text-sm font-semibold">
               <TrendingUp className="w-4 h-4" />
               +{difference}%
             </div>
           ) : (
-            <div className="flex items-center gap-1 text-red-400 text-sm font-semibold">
+            <div className="flex items-center gap-1 text-wl-danger-400 text-sm font-semibold">
               <TrendingUp className="w-4 h-4 rotate-180" />
               {difference}%
             </div>

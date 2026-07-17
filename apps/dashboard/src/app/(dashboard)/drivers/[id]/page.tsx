@@ -98,7 +98,7 @@ interface DriverProfile {
 
 const TIER_STYLE: Record<string, { bg: string; text: string; border: string; label: string }> = {
   platinum: { bg: 'bg-indigo-500/15', text: 'text-indigo-300', border: 'border-indigo-400/30', label: 'Platinum' },
-  gold:     { bg: 'bg-amber-500/15',  text: 'text-amber-300',  border: 'border-amber-400/30',  label: 'Gold' },
+  gold:     { bg: 'bg-wl-warning-500/15',  text: 'text-wl-warning-400',  border: 'border-wl-warning-400/30',  label: 'Gold' },
   silver:   { bg: 'bg-wl-neutral-400/15',   text: 'text-wl-neutral-300',   border: 'border-wl-neutral-300/30',   label: 'Silver' },
   bronze:   { bg: 'bg-orange-700/15', text: 'text-orange-400', border: 'border-orange-600/30', label: 'Bronze' },
 };
@@ -151,7 +151,7 @@ function BreakdownRow({ label, value, icon: Icon, accent }: { label: string; val
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-xs">
-        <div className="flex items-center gap-1.5 text-white/45">
+        <div className="flex items-center gap-1.5 text-wl-text-tertiary">
           <Icon className="w-3 h-3" />
           <span>{label}</span>
         </div>
@@ -192,7 +192,7 @@ function HistoryChart({ history }: { history: HistoryEntry[] }) {
           return <circle key={i} cx={x} cy={y} r="2.5" fill="var(--wl-chart-violet)" opacity="0.8" />;
         })}
       </svg>
-      <div className="flex justify-between mt-1 text-[9px] text-white/15 px-0.5">
+      <div className="flex justify-between mt-1 text-[9px] text-wl-text-tertiary px-0.5">
         <span>{history[0]?.period}</span>
         <span>{history[history.length - 1]?.period}</span>
       </div>
@@ -271,14 +271,14 @@ export default function DriverDetailPage() {
   if (scoreError || !scoreData) {
     return (
       <div className="min-h-screen px-6 lg:px-8 pt-8">
-        <Link href="/drivers" className="inline-flex items-center gap-1.5 text-sm text-white/30 hover:text-white/60 mb-6">
+        <Link href="/drivers" className="inline-flex items-center gap-1.5 text-sm text-wl-text-tertiary hover:text-wl-text-secondary mb-6">
           <ArrowLeft className="w-4 h-4" />All Drivers
         </Link>
         <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <ShieldCheck className="w-10 h-10 text-white/10" />
-          <p className="text-sm font-medium text-white/30">Driver not found or score unavailable</p>
-          <p className="text-xs text-white/20">{scoreError?.message ?? 'No scoring data for this driver'}</p>
-          <button onClick={refetch} className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/60 mt-2">
+          <ShieldCheck className="w-10 h-10 text-wl-text-tertiary" />
+          <p className="text-sm font-medium text-wl-text-tertiary">Driver not found or score unavailable</p>
+          <p className="text-xs text-wl-text-tertiary">{scoreError?.message ?? 'No scoring data for this driver'}</p>
+          <button onClick={refetch} className="flex items-center gap-1.5 text-xs text-wl-text-tertiary hover:text-wl-text-secondary mt-2">
             <RefreshCw className="w-3.5 h-3.5" />Retry
           </button>
         </div>
@@ -300,7 +300,7 @@ export default function DriverDetailPage() {
     <div className="min-h-screen">
       {/* Back nav */}
       <div className="px-6 lg:px-8 pt-5">
-        <Link href="/drivers" className="inline-flex items-center gap-1.5 text-sm text-white/30 hover:text-white/60 transition-colors">
+        <Link href="/drivers" className="inline-flex items-center gap-1.5 text-sm text-wl-text-tertiary hover:text-wl-text-secondary transition-colors">
           <ArrowLeft className="w-4 h-4" />
           All Drivers
         </Link>
@@ -310,54 +310,54 @@ export default function DriverDetailPage() {
       <div className="px-6 lg:px-8 pt-4 pb-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
-            <div className="w-14 h-14 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0">
-              <User className="w-7 h-7 text-white/30" />
+            <div className="w-14 h-14 rounded-full bg-white/[0.06] border border-wl-border-default flex items-center justify-center shrink-0">
+              <User className="w-7 h-7 text-wl-text-tertiary" />
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-2xl font-bold text-white/90 tracking-tight">
+                <h1 className="text-2xl font-bold text-wl-text-primary tracking-tight">
                   {scoreData.driverName}
                 </h1>
                 <span className={cn('text-xs font-medium px-2 py-1 rounded border capitalize', tier.bg, tier.text, tier.border)}>
                   {tier.label}
                 </span>
-                <span className="text-xs font-mono text-white/20">#{score.rank}</span>
+                <span className="text-xs font-mono text-wl-text-tertiary">#{score.rank}</span>
                 {/* Live status from profile */}
                 {profile && (
-                  <span className="flex items-center gap-1.5 text-xs text-white/35">
+                  <span className="flex items-center gap-1.5 text-xs text-wl-text-tertiary">
                     <span className={cn('w-2 h-2 rounded-full', STATUS_DOT[profile.status] ?? 'bg-wl-text-tertiary')} />
                     {STATUS_LABEL[profile.status] ?? profile.status}
                   </span>
                 )}
               </div>
-              <p className="text-sm text-white/35 mt-0.5">{driver?.email ?? ''}</p>
+              <p className="text-sm text-wl-text-tertiary mt-0.5">{driver?.email ?? ''}</p>
               {/* Vehicle + phone info from profile */}
               <div className="flex flex-wrap items-center gap-3 mt-1.5">
                 {(profile?.phone || driver?.phone) && (
-                  <span className="inline-flex items-center gap-1 text-xs text-white/25">
+                  <span className="inline-flex items-center gap-1 text-xs text-wl-text-tertiary">
                     <Phone className="w-3 h-3" />
                     {profile?.phone ?? driver?.phone}
                   </span>
                 )}
                 {profile?.vehicleType && (
-                  <span className="inline-flex items-center gap-1 text-xs text-white/25">
+                  <span className="inline-flex items-center gap-1 text-xs text-wl-text-tertiary">
                     <Truck className="w-3 h-3" />
                     {profile.vehicleType}
                   </span>
                 )}
                 {profile?.vehiclePlate && (
-                  <span className="text-xs font-mono text-white/25 bg-white/[0.04] px-2 py-0.5 rounded">
+                  <span className="text-xs font-mono text-wl-text-tertiary bg-white/[0.04] px-2 py-0.5 rounded">
                     {profile.vehiclePlate}
                   </span>
                 )}
                 {profile && (profile.orders?.length ?? 0) > 0 && (
-                  <span className="inline-flex items-center gap-1 text-xs text-amber-400/70">
+                  <span className="inline-flex items-center gap-1 text-xs text-wl-warning-400/70">
                     <Package className="w-3 h-3" />
                     {profile.orders!.length} active order{profile.orders!.length !== 1 ? 's' : ''}
                   </span>
                 )}
                 {currentLat != null && (
-                  <span className="inline-flex items-center gap-1 text-xs text-emerald-400/70">
+                  <span className="inline-flex items-center gap-1 text-xs text-wl-success-400/70">
                     <MapPin className="w-3 h-3" />
                     Location active
                   </span>
@@ -367,7 +367,7 @@ export default function DriverDetailPage() {
           </div>
           <button
             onClick={() => refetch()}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs text-white/35 hover:text-white/60 border border-white/[0.06] rounded-lg transition-colors shrink-0"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs text-wl-text-tertiary hover:text-wl-text-secondary border border-wl-border-subtle rounded-lg transition-colors shrink-0"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Refresh
@@ -375,7 +375,7 @@ export default function DriverDetailPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mt-5 border-b border-white/[0.06]">
+        <div className="flex gap-1 mt-5 border-b border-wl-border-subtle">
           {(['score', 'map'] as Tab[]).map((tab) => (
             <button
               key={tab}
@@ -383,8 +383,8 @@ export default function DriverDetailPage() {
               className={cn(
                 'px-4 py-2.5 text-xs font-medium capitalize transition-colors border-b-2 -mb-px',
                 activeTab === tab
-                  ? 'text-white/90 border-indigo-400'
-                  : 'text-white/30 border-transparent hover:text-white/60',
+                  ? 'text-wl-text-primary border-indigo-400'
+                  : 'text-wl-text-tertiary border-transparent hover:text-wl-text-secondary',
               )}
             >
               {tab === 'map' ? 'Live Map' : 'Score & Metrics'}
@@ -401,12 +401,12 @@ export default function DriverDetailPage() {
           {/* Left: score dial + breakdown */}
           <div className="space-y-4">
             {/* Score dial */}
-            <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 flex flex-col items-center">
+            <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle p-5 flex flex-col items-center">
               <ScoreArc score={scoreData.compositeScore} />
-              <p className="text-xs text-white/30 mt-1">Composite Score</p>
+              <p className="text-xs text-wl-text-tertiary mt-1">Composite Score</p>
               {scoreDelta !== null && (
                 <div className={cn('flex items-center gap-1.5 mt-3 text-sm font-mono font-medium',
-                  scoreDelta > 0 ? 'text-emerald-400' : scoreDelta < 0 ? 'text-red-400' : 'text-white/30',
+                  scoreDelta > 0 ? 'text-wl-success-400' : scoreDelta < 0 ? 'text-wl-danger-400' : 'text-wl-text-tertiary',
                 )}>
                   {scoreDelta > 0 ? <TrendingUp className="w-4 h-4" /> : scoreDelta < 0 ? <TrendingDown className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
                   {scoreDelta > 0 ? '+' : ''}{scoreDelta.toFixed(1)} vs last period
@@ -415,8 +415,8 @@ export default function DriverDetailPage() {
             </div>
 
               {/* Score breakdown */}
-              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 space-y-4">
-                <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider">Score Breakdown</h3>
+              <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle p-5 space-y-4">
+                <h3 className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Score Breakdown</h3>
                 <BreakdownRow label="On-Time Delivery"    value={score.breakdown.onTimeScore}          icon={Clock}       accent="var(--wl-success-400)" />
                 <BreakdownRow label="Customer Rating"     value={score.breakdown.customerRatingScore}   icon={Star}        accent="var(--wl-warning-400)" />
                 <BreakdownRow label="POD Compliance"      value={score.breakdown.podComplianceScore}    icon={Camera}      accent="var(--wl-info-400)" />
@@ -440,28 +440,28 @@ export default function DriverDetailPage() {
                       : '—' },
                 ].map(({ label, value }) => (
                   <div key={label} className="bg-white/[0.02] rounded-lg p-3">
-                    <p className="text-[10px] text-white/25 mb-1">{label}</p>
-                    <p className="text-sm font-mono text-white/60">{value}</p>
+                    <p className="text-[10px] text-wl-text-tertiary mb-1">{label}</p>
+                    <p className="text-sm font-mono text-wl-text-secondary">{value}</p>
                   </div>
                 ))}
               </div>
 
               {/* Score history chart */}
-              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
+              <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-white/60 tracking-wide">Score History</h3>
-                  <span className="text-[11px] text-white/20 font-mono">8-week trend</span>
+                  <h3 className="text-sm font-semibold text-wl-text-secondary tracking-wide">Score History</h3>
+                  <span className="text-[11px] text-wl-text-tertiary font-mono">8-week trend</span>
                 </div>
                 {historyLoading ? (
                   <div className="h-24 flex items-center justify-center">
                     <div className="w-5 h-5 border-2 border-white/10 border-t-white/30 rounded-full animate-spin" />
                   </div>
                 ) : historyError ? (
-                  <div className="h-24 flex items-center justify-center text-xs text-red-400/60">
+                  <div className="h-24 flex items-center justify-center text-xs text-wl-danger-400/60">
                     Failed to load history
                   </div>
                 ) : history.length === 0 ? (
-                  <div className="h-24 flex items-center justify-center text-xs text-white/20">
+                  <div className="h-24 flex items-center justify-center text-xs text-wl-text-tertiary">
                     No history data yet
                   </div>
                 ) : (
@@ -470,8 +470,8 @@ export default function DriverDetailPage() {
               </div>
 
               {/* Raw metrics */}
-              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
-                <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Delivery Metrics</h3>
+              <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle p-5">
+                <h3 className="text-sm font-semibold text-wl-text-secondary tracking-wide mb-4">Delivery Metrics</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {[
                     { label: 'Avg Delivery Time', value: `${metrics.avgDeliveryMinutes} min` },
@@ -482,8 +482,8 @@ export default function DriverDetailPage() {
                     { label: 'Member Since',       value: driver?.createdAt ? new Date(driver.createdAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) : '—' },
                   ].map(({ label, value }) => (
                     <div key={label} className="bg-white/[0.02] rounded-lg p-3">
-                      <p className="text-[10px] text-white/25 mb-1">{label}</p>
-                      <p className="text-sm font-mono text-white/60">{value}</p>
+                      <p className="text-[10px] text-wl-text-tertiary mb-1">{label}</p>
+                      <p className="text-sm font-mono text-wl-text-secondary">{value}</p>
                     </div>
                   ))}
                 </div>
@@ -491,24 +491,24 @@ export default function DriverDetailPage() {
 
               {/* Active orders list (if any) */}
               {profile && profile.orders && profile.orders.length > 0 && (
-                <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
+                <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle p-5">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold text-white/60 tracking-wide">Active Orders</h3>
-                    <span className="text-[11px] text-white/20 font-mono">{profile.orders.length} total</span>
+                    <h3 className="text-sm font-semibold text-wl-text-secondary tracking-wide">Active Orders</h3>
+                    <span className="text-[11px] text-wl-text-tertiary font-mono">{profile.orders.length} total</span>
                   </div>
                   <div className="space-y-2">
                     {profile.orders.map((order) => (
-                      <div key={order.id} className="flex items-center gap-3 py-2 border-b border-white/[0.04] last:border-0">
+                      <div key={order.id} className="flex items-center gap-3 py-2 border-b border-wl-border-subtle last:border-0">
                         <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs text-white/60 truncate">
+                          <p className="text-xs text-wl-text-secondary truncate">
                             {order.customerName ?? order.externalOrderNumber ?? order.id.slice(0, 8)}
                           </p>
                           {order.addressLine1 && (
-                            <p className="text-[10px] text-white/25 truncate">{order.addressLine1}{order.city ? `, ${order.city}` : ''}</p>
+                            <p className="text-[10px] text-wl-text-tertiary truncate">{order.addressLine1}{order.city ? `, ${order.city}` : ''}</p>
                           )}
                         </div>
-                        <span className="text-[10px] text-white/30 font-mono shrink-0">{order.status}</span>
+                        <span className="text-[10px] text-wl-text-tertiary font-mono shrink-0">{order.status}</span>
                       </div>
                     ))}
                   </div>
@@ -549,7 +549,7 @@ export default function DriverDetailPage() {
               <DriverLocationMap {...mapProps} />
             ) : (
               <div className="h-[480px] rounded-xl bg-wl-bg-surface border border-wl-border-default flex items-center justify-center">
-                <p className="text-xs text-white/20">Location data unavailable</p>
+                <p className="text-xs text-wl-text-tertiary">Location data unavailable</p>
               </div>
             )}
 

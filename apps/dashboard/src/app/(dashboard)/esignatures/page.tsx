@@ -64,8 +64,8 @@ function KPICardComponent({ card }: { card: KPICard }) {
                 <span
                   className={cn(
                     card.trend === "up"
-                      ? "text-emerald-400"
-                      : "text-amber-400"
+                      ? "text-wl-success-400"
+                      : "text-wl-warning-400"
                   )}
                 >
                   {card.trend === "up" ? "↑" : "↓"} {card.trendValue || "0%"}
