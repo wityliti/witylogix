@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { cn } from "@/lib/utils";
-import { useFleetCompliance, useViolations, useELDEvents, DutyStatus } from "@/hooks/use-eld";
+import { useFleetCompliance, useViolations, useELDEvents, DutyStatus, DriverComplianceStatus, DriverStatusInfo } from "@/hooks/use-eld";
 import { useApiList, ApiFilters } from "@/hooks/use-api";
 import { TableSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
@@ -63,7 +63,7 @@ const dutyStatusColor = (duty: DutyStatus): string => {
   return colors[duty];
 };
 
-function deriveDriverStatus(driver: ApiDriver, violationCounts: Record<string, number>): DriverStatus {
+function deriveDriverStatus(driver: ApiDriver, violationCounts: Record<string, number>): DriverComplianceStatus {
   const s = driver.status?.toLowerCase() ?? "";
   if (s === "offline" || s === "inactive") return "OFFLINE";
   const vCount = violationCounts[driver.id] ?? 0;
@@ -86,9 +86,6 @@ export default function ELDOverviewPage() {
   const violationsLoading = violationsResult.loading;
   const events            = eventsResult.items;
   const eventsLoading     = eventsResult.loading;
-  const drivers           = driversResult.items;
-  const driversLoading    = driversResult.loading;
-
   if (driversLoading && !apiDrivers.length) return <TableSkeleton rows={10} columns={6} />;
   if (driversError) return <ErrorState message={driversError.message} onRetry={driversRefetch} />;
 
@@ -211,7 +208,7 @@ export default function ELDOverviewPage() {
 
                       <div className="flex items-center gap-2 text-xs mb-2">
                         <span className={cn("text-lg", dutyStatusColor(driver.currentDuty))}>
-                          {dutyStatusIcon[driver.currentDuty]}
+                          {dutyStatusIcon[driver.currentDuty as DutyStatus]}
                         </span>
                         <span className="text-gray-400">
                           {driver.currentDuty.replace(/_/g, " ")}
@@ -247,10 +244,10 @@ export default function ELDOverviewPage() {
                           minute: "2-digit",
                         })}
                       </div>
+                    </div>
                     </button>
                   ))}
                 </div>
-              )}
             </CardContent>
           </Card>
         </div>

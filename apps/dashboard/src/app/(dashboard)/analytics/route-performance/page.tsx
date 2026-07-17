@@ -21,6 +21,7 @@ import type {
   SLAComplianceData,
 } from "@witylogix/core/analytics";
 import type { DeliveryPin } from "@/components/map/delivery-performance-layer";
+import { BarChart2, MapIcon } from 'lucide-react';
 
 // Dynamically import map to avoid SSR
 const WLMap = dynamic(
