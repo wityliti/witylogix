@@ -103,7 +103,7 @@ const AnalyticsWidget = ({
       case "table":
         return <EmptyState label="No table data" />;
       default:
-        return <EmptyState />;
+        return <EmptyState label="No data" />;
     }
   };
 

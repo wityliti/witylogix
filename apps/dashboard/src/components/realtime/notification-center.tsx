@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,26 +12,42 @@ import {
   AlertTriangle,
   Settings,
   CheckCheck as CheckAll,
+  Volume2,
+  VolumeX,
   X,
 } from "lucide-react";
 
 interface ApiNotification {
   id: string;
-  channel: string;
-  eventType: string;
-  status: string;
-  recipient: string;
-  createdAt: string;
+  channel?: string;
+  eventType?: string;
+  type?: string;
+  category?: string;
+  status?: string;
+  read?: boolean;
+  recipient?: string;
+  title?: string;
+  action?: string;
+  message?: string;
+  description?: string;
+  severity?: string;
+  timestamp?: string;
+  createdAt?: string;
+  actionUrl?: string;
 }
 
 interface Notification {
   id: string;
   type: "order" | "delivery" | "alert" | "system";
+  category: string;
+  channel: string;
+  iconChannel?: string;
   title: string;
   message: string;
   severity: "info" | "warning" | "critical";
   read: boolean;
-  timestamp: Date;
+  status: "READ" | "UNREAD";
+  timestamp: string;
   actionUrl?: string;
 }
 
@@ -40,30 +56,6 @@ interface NotificationCenterProps {
   onNotificationClick?: (notification: Notification) => void;
 }
 
-function inferType(eventType: string): Notification["type"] {
-  const ev = eventType.toLowerCase();
-  if (ev.includes("order")) return "order";
-  if (ev.includes("delivery") || ev.includes("dispatch")) return "delivery";
-  if (ev.includes("alert") || ev.includes("violation") || ev.includes("fail")) return "alert";
-  return "system";
-}
-
-function inferTitle(eventType: string, channel: string): string {
-  const ev = eventType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  return `${ev} via ${channel}`;
-}
-
-function toNotification(raw: ApiNotification): Notification {
-  return {
-    id: raw.id,
-    type: inferType(raw.eventType),
-    title: inferTitle(raw.eventType, raw.channel),
-    message: `Sent to ${raw.recipient}`,
-    severity: raw.status === "FAILED" || raw.status === "BOUNCED" ? "warning" : "info",
-    read: raw.status === "DELIVERED" || raw.status === "SENT",
-    timestamp: new Date(raw.createdAt),
-  };
-}
 
 const notificationIcons: Record<Notification["type"], React.ReactNode> = {
   order: <Package className="w-4 h-4" />,
@@ -81,6 +73,15 @@ const CATEGORY_COLORS: Record<string, string> = {
   PAYMENTS:   "bg-wl-success-bg text-wl-success-400",
 };
 
+const CATEGORY_ICON: Record<string, React.ReactNode> = {
+  ORDERS:     <Package className="w-4 h-4" />,
+  DELIVERIES: <Truck className="w-4 h-4" />,
+  ALERTS:     <AlertTriangle className="w-4 h-4" />,
+  DRIVERS:    <Truck className="w-4 h-4" />,
+  SYSTEM:     <Settings className="w-4 h-4" />,
+  PAYMENTS:   <Settings className="w-4 h-4" />,
+};
+
 const notificationTypeColors: Record<Notification["type"], string> = {
   order: "bg-wl-primary-500/12 text-wl-primary-400 border-wl-primary-500/20",
   delivery: "bg-wl-info-bg text-wl-info-400",
@@ -88,35 +89,8 @@ const notificationTypeColors: Record<Notification["type"], string> = {
   system: "bg-wl-bg-surface text-wl-text-secondary",
 };
 
-function mapApiNotification(n: ApiNotification): Notification {
-  const rawType = n.category?.toLowerCase() ?? "system";
-  const type: Notification["type"] = (
-    ["order", "delivery", "alert", "system"].includes(rawType)
-      ? rawType
-      : "system"
-  ) as Notification["type"];
-
-  const rawSeverity = n.severity?.toLowerCase() ?? "info";
-  const severity: Notification["severity"] = (
-    ["info", "warning", "critical"].includes(rawSeverity)
-      ? rawSeverity
-      : "info"
-  ) as Notification["severity"];
-
-  return {
-    id: n.id,
-    type,
-    title: n.title,
-    message: n.message,
-    severity,
-    read: n.status !== "UNREAD",
-    timestamp: new Date(n.timestamp),
-    actionUrl: n.actionUrl,
-  };
-}
-
-function timeAgo(date: Date): string {
-  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+function timeAgo(ts: string): string {
+  const seconds = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
   if (seconds < 60) return `${seconds}s ago`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
@@ -196,25 +170,34 @@ export function NotificationCenter({
 
   const { items: rawNotifs, loading: isLoading, refetch } = useApiList<any>('/api/v4/notifications', { limit: 20 });
 
-  const apiNotifs = useMemo<Notification[]>(() =>
-    rawNotifs.map((n) => ({
-      id: n.id,
-      category: (CATEGORY_MAP[n.type ?? n.category] ?? n.category ?? "SYSTEM") as Notification["category"],
-      channel: (n.channel ?? "EMAIL") as Notification["channel"],
-      iconChannel: (n.channel ?? "EMAIL") as Notification["channel"],
-      title: n.title ?? n.action ?? "Notification",
-      message: n.message ?? n.description ?? "",
-      status: ((n.read ?? n.status === "READ") ? "READ" : "UNREAD") as Notification["status"],
-      timestamp: typeof n.timestamp === "string" ? n.timestamp : (n.createdAt ?? new Date().toISOString()),
-      actionUrl: n.actionUrl,
-    })),
-  [rawNotifs]);
-
-  // Local overlay for optimistic read/delete operations
-  const [readIds, setReadIds] = useState<Set<string>>(new Set());
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
 
-  const notifications = useMemo(() =>
+  const apiNotifs = useMemo<Notification[]>(() =>
+    rawNotifs.map((n) => {
+      const category = CATEGORY_MAP[n.type ?? n.category ?? ""] ?? n.category ?? "SYSTEM";
+      const rawType = (n.type ?? "").toLowerCase();
+      const type: Notification["type"] = (
+        ["order", "delivery", "alert", "system"].includes(rawType) ? rawType : "system"
+      ) as Notification["type"];
+      const isRead = n.read === true || n.status === "READ" || n.status === "DELIVERED" || n.status === "SENT";
+      return {
+        id: n.id,
+        type,
+        category,
+        channel: n.channel ?? "EMAIL",
+        iconChannel: n.channel ?? "EMAIL",
+        title: n.title ?? n.action ?? "Notification",
+        message: n.message ?? n.description ?? "",
+        severity: "info" as Notification["severity"],
+        read: isRead,
+        status: (isRead ? "READ" : "UNREAD") as Notification["status"],
+        timestamp: typeof n.timestamp === "string" ? n.timestamp : (n.createdAt ?? new Date().toISOString()),
+        actionUrl: n.actionUrl,
+      };
+    }),
+  [rawNotifs]);
+
+  const notifications = useMemo<Notification[]>(() =>
     apiNotifs
       .filter((n) => !deletedIds.has(n.id))
       .map((n) => readIds.has(n.id) ? { ...n, status: "READ" as Notification["status"] } : n),
@@ -246,7 +229,7 @@ export function NotificationCenter({
   const unreadCount = notifications.filter((n) => n.status === "UNREAD").length;
 
   const markAsRead = (id: string) => setReadIds((prev) => new Set([...prev, id]));
-  const markAllAsRead = () => setReadIds(new Set(rawItems.map((r) => r.id)));
+  const markAllAsRead = () => setReadIds(new Set(rawNotifs.map((r: ApiNotification) => r.id)));
 
   const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id);
