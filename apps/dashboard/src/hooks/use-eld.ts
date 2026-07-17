@@ -85,6 +85,25 @@ export interface EldEvent {
   data?: Record<string, unknown>;
 }
 
+export interface HOSDailyLogEntry {
+  hour: number;
+  status: DutyStatus;
+  label: string;
+}
+
+export interface HOSEightDayEntry {
+  day: string;
+  date: string;
+  driving: number;
+  onDuty: number;
+  total: number;
+}
+
+export interface DriverHOSDetails {
+  dailyLog: HOSDailyLogEntry[];
+  eightDayRecap: HOSEightDayEntry[];
+}
+
 export interface FleetCompliance {
   totalDrivers: number;
   compliantDrivers: number;
@@ -123,6 +142,10 @@ export interface DvirInspectionSummary {
 // Hooks
 export const useDriverHOS = (driverId: string | null): UseApiQueryResult<DriverHOS> => {
   return useApiQuery<DriverHOS>(driverId ? `/api/v4/eld/drivers/${driverId}/hos` : null);
+};
+
+export const useDriverHOSDetails = (driverId: string | null): UseApiQueryResult<DriverHOSDetails> => {
+  return useApiQuery<DriverHOSDetails>(driverId ? `/api/v4/eld/drivers/${driverId}/daily-log` : null);
 };
 
 export const useViolations = (filters?: ApiFilters): UseApiListResult<HosViolation> => {
