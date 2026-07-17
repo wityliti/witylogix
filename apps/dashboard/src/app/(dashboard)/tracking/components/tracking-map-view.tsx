@@ -164,8 +164,8 @@ export default function TrackingMapView({
             onClick={() => setShowDrivers((v) => !v)}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium border transition-all ${
               showDrivers
-                ? 'bg-emerald-600/80 border-emerald-500/50 text-white'
-                : 'bg-black/60 border-white/10 text-white/60'
+                ? 'bg-emerald-600/80 border-wl-success-500/50 text-white'
+                : 'bg-black/60 border-white/10 text-wl-text-secondary'
             }`}
           >
             {driverMarkers.length} drivers
@@ -175,20 +175,20 @@ export default function TrackingMapView({
 
       {/* Legend */}
       <div className="absolute bottom-3 left-3 z-10 bg-black/70 backdrop-blur-sm rounded-lg p-2.5 border border-white/10">
-        <p className="text-[10px] font-semibold text-white/60 uppercase mb-1.5">Orders</p>
+        <p className="text-[10px] font-semibold text-wl-text-secondary uppercase mb-1.5">Orders</p>
         {LEGEND_ORDERS.map((l) => (
           <div key={l.label} className="flex items-center gap-2 mb-1">
             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: l.color }} />
-            <span className="text-[10px] text-white/80">{l.label}</span>
+            <span className="text-[10px] text-wl-text-primary">{l.label}</span>
           </div>
         ))}
         {showDrivers && drivers.length > 0 && (
           <>
-            <p className="text-[10px] font-semibold text-white/60 uppercase mt-2 mb-1.5">Drivers</p>
+            <p className="text-[10px] font-semibold text-wl-text-secondary uppercase mt-2 mb-1.5">Drivers</p>
             {LEGEND_DRIVERS.map((l) => (
               <div key={l.label} className="flex items-center gap-2 mb-1">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: l.color }} />
-                <span className="text-[10px] text-white/80">{l.label}</span>
+                <span className="text-[10px] text-wl-text-primary">{l.label}</span>
               </div>
             ))}
           </>
@@ -199,7 +199,7 @@ export default function TrackingMapView({
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-xl">
           <div className="text-center text-white">
             <p className="text-sm font-semibold mb-1">No location data</p>
-            <p className="text-xs text-white/60">Orders need delivery coordinates to appear on the map.</p>
+            <p className="text-xs text-wl-text-secondary">Orders need delivery coordinates to appear on the map.</p>
           </div>
         </div>
       )}

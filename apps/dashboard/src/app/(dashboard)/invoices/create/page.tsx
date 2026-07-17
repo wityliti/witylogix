@@ -608,7 +608,7 @@ export default function CreateInvoicePage() {
                     <span className="text-wl-text-secondary">
                       Discount ({discountPercentage}%)
                     </span>
-                    <span className="font-medium text-emerald-600">
+                    <span className="font-medium text-wl-success-500">
                       -${discountAmount.toFixed(2)}
                     </span>
                   </div>
@@ -664,7 +664,7 @@ export default function CreateInvoicePage() {
                   <span className="font-semibold text-white">
                     Total
                   </span>
-                  <span className="text-2xl font-bold text-blue-500">
+                  <span className="text-2xl font-bold text-wl-info-500">
                     ${total.toFixed(2)}
                   </span>
                 </div>
@@ -767,7 +767,7 @@ export default function CreateInvoicePage() {
                   <span>${subtotal.toFixed(2)}</span>
                 </div>
                 {parseFloat(discountPercentage) > 0 && (
-                  <div className="flex justify-end gap-4 text-green-600">
+                  <div className="flex justify-end gap-4 text-wl-success-500">
                     <span>Discount:</span>
                     <span>-${discountAmount.toFixed(2)}</span>
                   </div>

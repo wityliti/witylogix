@@ -31,7 +31,7 @@ export function InventorySyncCard({ sync }: InventorySyncCardProps) {
               {sync.interval && ` • ${sync.interval}`}
             </p>
           </div>
-          <Badge variant={sync.status === "ACTIVE" ? "success" : "default"} className={cn(sync.status === "ACTIVE" && "bg-green-500/20 text-green-400")}>
+          <Badge variant={sync.status === "ACTIVE" ? "success" : "default"} className={cn(sync.status === "ACTIVE" && "bg-wl-success-500/20 text-wl-success-400")}>
             {sync.status}
           </Badge>
         </div>

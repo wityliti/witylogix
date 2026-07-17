@@ -17,7 +17,7 @@ interface PresenceGridProps {
 function getStatusColor(status: string) {
   switch (status) {
     case 'online':
-      return 'bg-green-500/20 text-green-400 border-green-500/50';
+      return 'bg-wl-success-500/20 text-wl-success-400 border-green-500/50';
     case 'away':
       return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
     case 'busy':

@@ -96,7 +96,7 @@ const LiveMap = dynamic(() => import('./components/map-view'), {
     <div className="flex-1 bg-wl-bg-sunken flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
         <div className="w-10 h-10 rounded-full border-2 border-white/10 border-t-wl-primary-500 animate-spin" />
-        <span className="text-sm text-white/40">Loading map…</span>
+        <span className="text-sm text-wl-text-tertiary">Loading map…</span>
       </div>
     </div>
   ),
@@ -126,7 +126,7 @@ function LayerButton({
         'flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all',
         active
           ? 'bg-white/[0.08] text-white'
-          : 'text-white/40 hover:text-white/60 hover:bg-white/[0.04]',
+          : 'text-wl-text-tertiary hover:text-wl-text-secondary hover:bg-white/[0.04]',
       )}
     >
       <div
@@ -138,7 +138,7 @@ function LayerButton({
       <span
         className={cn(
           'text-xs font-mono px-1.5 py-0.5 rounded',
-          active ? 'bg-white/10 text-white/70' : 'bg-white/[0.05] text-white/25',
+          active ? 'bg-white/10 text-wl-text-secondary' : 'bg-white/[0.05] text-wl-text-tertiary',
         )}
       >
         {count}
@@ -168,12 +168,12 @@ function DetailPanel({
   onClose: () => void;
 }) {
   return (
-    <div className="border-t border-white/[0.06] p-4 space-y-3">
+    <div className="border-t border-wl-border-subtle p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">
+        <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">
           {selected.type === 'order' ? 'Order' : selected.type === 'driver' ? 'Driver' : 'Route'}
         </span>
-        <button onClick={onClose} className="text-white/30 hover:text-white/60 transition-colors">
+        <button onClick={onClose} className="text-wl-text-tertiary hover:text-wl-text-secondary transition-colors">
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -184,13 +184,13 @@ function DetailPanel({
             {selected.item.externalOrderNumber ?? selected.item.id.slice(0, 8)}
           </div>
           {selected.item.customerName && (
-            <div className="flex items-center gap-1.5 text-xs text-white/50">
+            <div className="flex items-center gap-1.5 text-xs text-wl-text-secondary">
               <Users className="w-3 h-3" />
               <span>{selected.item.customerName}</span>
             </div>
           )}
           {selected.item.addressLine1 && (
-            <div className="flex items-start gap-1.5 text-xs text-white/50">
+            <div className="flex items-start gap-1.5 text-xs text-wl-text-secondary">
               <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
               <span>{[selected.item.addressLine1, selected.item.city].filter(Boolean).join(', ')}</span>
             </div>
@@ -199,7 +199,7 @@ function DetailPanel({
             {selected.item.status.replace(/_/g, ' ')}
           </Badge>
           {selected.item.totalAmount != null && (
-            <div className="text-xs font-mono text-white/50">
+            <div className="text-xs font-mono text-wl-text-secondary">
               ${Number(selected.item.totalAmount).toFixed(2)}
             </div>
           )}
@@ -213,19 +213,19 @@ function DetailPanel({
             {selected.item.status.replace(/_/g, ' ')}
           </Badge>
           {selected.item.vehicleType && (
-            <div className="flex items-center gap-1.5 text-xs text-white/50">
+            <div className="flex items-center gap-1.5 text-xs text-wl-text-secondary">
               <Truck className="w-3 h-3" />
               <span>{selected.item.vehicleType} · {selected.item.vehiclePlate ?? '—'}</span>
             </div>
           )}
           {selected.item.activeDeliveries != null && (
-            <div className="flex items-center gap-1.5 text-xs text-white/50">
+            <div className="flex items-center gap-1.5 text-xs text-wl-text-secondary">
               <Package className="w-3 h-3" />
               <span>{selected.item.activeDeliveries} active deliveries</span>
             </div>
           )}
           {selected.item.lat != null && (
-            <div className="text-xs font-mono text-white/30">
+            <div className="text-xs font-mono text-wl-text-tertiary">
               {selected.item.lat.toFixed(5)}, {selected.item.lng?.toFixed(5)}
             </div>
           )}
@@ -241,13 +241,13 @@ function DetailPanel({
             {selected.item.status.replace(/_/g, ' ')}
           </Badge>
           {selected.item.driver?.name && (
-            <div className="flex items-center gap-1.5 text-xs text-white/50">
+            <div className="flex items-center gap-1.5 text-xs text-wl-text-secondary">
               <Users className="w-3 h-3" />
               <span>{selected.item.driver.name}</span>
             </div>
           )}
           {selected.item._count?.stops != null && (
-            <div className="flex items-center gap-1.5 text-xs text-white/50">
+            <div className="flex items-center gap-1.5 text-xs text-wl-text-secondary">
               <MapPin className="w-3 h-3" />
               <span>{selected.item._count.stops} stops</span>
             </div>
@@ -390,7 +390,7 @@ export default function MapPage() {
         {/* Loading overlay */}
         {loading && (
           <div className="absolute inset-0 bg-wl-bg-root/60 flex items-center justify-center z-10 pointer-events-none">
-            <div className="flex items-center gap-2 px-4 py-2 bg-wl-bg-surface border border-white/[0.08] rounded-full text-sm text-white/60">
+            <div className="flex items-center gap-2 px-4 py-2 bg-wl-bg-surface border border-wl-border-default rounded-full text-sm text-wl-text-secondary">
               <div className="w-3.5 h-3.5 rounded-full border border-white/20 border-t-white/60 animate-spin" />
               Updating…
             </div>
@@ -400,7 +400,7 @@ export default function MapPage() {
         {/* Sidebar toggle */}
         <button
           onClick={() => setSidebarOpen((v) => !v)}
-          className="absolute top-4 right-4 z-20 flex items-center justify-center w-8 h-8 rounded-lg bg-wl-bg-surface/90 border border-white/[0.08] text-white/50 hover:text-white/80 hover:border-white/20 transition-all"
+          className="absolute top-4 right-4 z-20 flex items-center justify-center w-8 h-8 rounded-lg bg-wl-bg-surface/90 border border-wl-border-default text-wl-text-secondary hover:text-wl-text-primary hover:border-white/20 transition-all"
           aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
         >
           {sidebarOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -408,7 +408,7 @@ export default function MapPage() {
 
         {/* No-location note for orders */}
         {!loading && ordersWithLoc === 0 && rawOrders.length > 0 && showOrders && (
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 px-4 py-2 bg-wl-bg-surface/95 border border-white/[0.08] rounded-full text-xs text-white/40">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 px-4 py-2 bg-wl-bg-surface/95 border border-wl-border-default rounded-full text-xs text-wl-text-tertiary">
             Orders exist but have no geocoded delivery locations yet
           </div>
         )}
@@ -417,20 +417,20 @@ export default function MapPage() {
       {/* ── Sidebar ──────────────────────────────────────────── */}
       <div
         className={cn(
-          'flex flex-col bg-wl-bg-sunken border-l border-white/[0.06] transition-all duration-300 overflow-hidden',
+          'flex flex-col bg-wl-bg-sunken border-l border-wl-border-subtle transition-all duration-300 overflow-hidden',
           sidebarOpen ? 'w-72' : 'w-0',
         )}
       >
         {/* Header */}
-        <div className="flex-none px-4 pt-4 pb-3 border-b border-white/[0.06]">
+        <div className="flex-none px-4 pt-4 pb-3 border-b border-wl-border-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-white/40" />
+              <Layers className="w-4 h-4 text-wl-text-tertiary" />
               <span className="text-sm font-semibold text-white">Map Layers</span>
             </div>
             <button
               onClick={handleRefresh}
-              className="text-white/30 hover:text-white/60 transition-colors"
+              className="text-wl-text-tertiary hover:text-wl-text-secondary transition-colors"
               title="Refresh"
             >
               <RefreshCw className={cn('w-3.5 h-3.5', loading && 'animate-spin')} />
@@ -467,7 +467,7 @@ export default function MapPage() {
         </div>
 
         {/* Stats */}
-        <div className="flex-none grid grid-cols-2 gap-px bg-white/[0.04] border-b border-white/[0.06]">
+        <div className="flex-none grid grid-cols-2 gap-px bg-white/[0.04] border-b border-wl-border-subtle">
           {[
             { label: 'On map', value: orders.length + drivers.length },
             { label: 'Drivers online', value: driversOnline },
@@ -475,8 +475,8 @@ export default function MapPage() {
             { label: 'Total orders', value: rawOrders.length },
           ].map(({ label, value }) => (
             <div key={label} className="bg-wl-bg-sunken px-3 py-2.5">
-              <div className="text-[10px] text-white/30 mb-0.5">{label}</div>
-              <div className="text-base font-bold font-mono text-white/80">{loading ? '—' : value}</div>
+              <div className="text-[10px] text-wl-text-tertiary mb-0.5">{label}</div>
+              <div className="text-base font-bold font-mono text-wl-text-primary">{loading ? '—' : value}</div>
             </div>
           ))}
         </div>
@@ -494,7 +494,7 @@ export default function MapPage() {
               {/* Orders */}
               {showOrders && orders.length > 0 && (
                 <div>
-                  <div className="px-4 py-2 text-[10px] font-semibold text-white/30 uppercase tracking-wider sticky top-0 bg-wl-bg-sunken z-10">
+                  <div className="px-4 py-2 text-[10px] font-semibold text-wl-text-tertiary uppercase tracking-wider sticky top-0 bg-wl-bg-sunken z-10">
                     Orders ({orders.length})
                   </div>
                   {orders.slice(0, 30).map((o) => (
@@ -502,7 +502,7 @@ export default function MapPage() {
                       key={o.id}
                       onClick={() => handleOrderClick(o.id)}
                       className={cn(
-                        'w-full text-left px-4 py-2.5 flex items-center gap-2.5 hover:bg-white/[0.03] transition-colors border-b border-white/[0.03]',
+                        'w-full text-left px-4 py-2.5 flex items-center gap-2.5 hover:bg-white/[0.03] transition-colors border-b border-wl-border-subtle',
                         selected?.type === 'order' && selected.item.id === o.id && 'bg-white/[0.05]',
                       )}
                     >
@@ -520,13 +520,13 @@ export default function MapPage() {
                         }}
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-medium text-white/80 truncate">{o.orderNumber}</div>
-                        <div className="text-[10px] text-white/30 truncate">{o.address || o.customerName}</div>
+                        <div className="text-xs font-medium text-wl-text-primary truncate">{o.orderNumber}</div>
+                        <div className="text-[10px] text-wl-text-tertiary truncate">{o.address || o.customerName}</div>
                       </div>
                     </button>
                   ))}
                   {orders.length > 30 && (
-                    <div className="px-4 py-2 text-[10px] text-white/25 italic">
+                    <div className="px-4 py-2 text-[10px] text-wl-text-tertiary italic">
                       +{orders.length - 30} more
                     </div>
                   )}
@@ -536,7 +536,7 @@ export default function MapPage() {
               {/* Drivers */}
               {showDrivers && drivers.length > 0 && (
                 <div>
-                  <div className="px-4 py-2 text-[10px] font-semibold text-white/30 uppercase tracking-wider sticky top-0 bg-wl-bg-sunken z-10">
+                  <div className="px-4 py-2 text-[10px] font-semibold text-wl-text-tertiary uppercase tracking-wider sticky top-0 bg-wl-bg-sunken z-10">
                     Drivers ({drivers.length})
                   </div>
                   {drivers.map((d) => (
@@ -544,7 +544,7 @@ export default function MapPage() {
                       key={d.id}
                       onClick={() => handleDriverClick(d.id)}
                       className={cn(
-                        'w-full text-left px-4 py-2.5 flex items-center gap-2.5 hover:bg-white/[0.03] transition-colors border-b border-white/[0.03]',
+                        'w-full text-left px-4 py-2.5 flex items-center gap-2.5 hover:bg-white/[0.03] transition-colors border-b border-wl-border-subtle',
                         selected?.type === 'driver' && selected.item.id === d.id && 'bg-white/[0.05]',
                       )}
                     >
@@ -562,8 +562,8 @@ export default function MapPage() {
                         }}
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-medium text-white/80 truncate">{d.name}</div>
-                        <div className="text-[10px] text-white/30 capitalize">
+                        <div className="text-xs font-medium text-wl-text-primary truncate">{d.name}</div>
+                        <div className="text-[10px] text-wl-text-tertiary capitalize">
                           {d.status.replace(/_/g, ' ')}
                         </div>
                       </div>
@@ -575,9 +575,9 @@ export default function MapPage() {
               {/* Empty state */}
               {orders.length === 0 && drivers.length === 0 && !loading && (
                 <div className="flex flex-col items-center justify-center h-32 text-center px-4">
-                  <MapPin className="w-6 h-6 text-white/20 mb-2" />
-                  <p className="text-xs text-white/30">No located items to display</p>
-                  <p className="text-[10px] text-white/20 mt-1">
+                  <MapPin className="w-6 h-6 text-wl-text-tertiary mb-2" />
+                  <p className="text-xs text-wl-text-tertiary">No located items to display</p>
+                  <p className="text-[10px] text-wl-text-tertiary mt-1">
                     Locations appear once orders/drivers are geocoded
                   </p>
                 </div>

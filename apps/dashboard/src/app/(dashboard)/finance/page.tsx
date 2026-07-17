@@ -117,7 +117,7 @@ export default function FinancePage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
                 <p className="text-xs font-medium text-wl-text-secondary uppercase">Total Billed</p>
-                <p className="text-2xl font-bold text-emerald-500 mt-2">
+                <p className="text-2xl font-bold text-wl-success-500 mt-2">
                   ${summary.totalBilled.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </Card>
@@ -129,7 +129,7 @@ export default function FinancePage() {
               </Card>
               <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
                 <p className="text-xs font-medium text-wl-text-secondary uppercase">Outstanding</p>
-                <p className="text-2xl font-bold text-red-500 mt-2">
+                <p className="text-2xl font-bold text-wl-danger-500 mt-2">
                   ${summary.totalOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </Card>
@@ -160,9 +160,9 @@ export default function FinancePage() {
                           className={cn(
                             'text-2xl font-bold mt-2',
                             status === 'paid'
-                              ? 'text-emerald-500'
+                              ? 'text-wl-success-500'
                               : status === 'overdue'
-                                ? 'text-red-500'
+                                ? 'text-wl-danger-500'
                                 : status === 'voided'
                                   ? 'text-wl-text-tertiary'
                                   : 'text-white',

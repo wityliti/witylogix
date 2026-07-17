@@ -153,7 +153,7 @@ export default function NotificationsPage() {
                                   type="checkbox"
                                   checked={isChecked}
                                   onChange={() => handlePreferenceChange(channel.id, categoryKey)}
-                                  className="w-4 h-4 rounded border-wl-border-default text-blue-500 cursor-pointer"
+                                  className="w-4 h-4 rounded border-wl-border-default text-wl-info-500 cursor-pointer"
                                 />
                               </label>
                             </td>

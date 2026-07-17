@@ -166,10 +166,10 @@ function DeliveryCard({
       }}
       className={cn(
         "p-4 rounded-lg border cursor-pointer transition-all duration-200",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wl-info-500",
         "hover:border-wl-border-strong hover:bg-wl-bg-elevated/60",
         isSelected
-          ? "bg-blue-500/10 border-blue-500 ring-1 ring-blue-500/25"
+          ? "bg-wl-info-500/10 border-blue-500 ring-1 ring-wl-info-500/25"
           : "bg-wl-bg-elevated/40 border-wl-border-strong",
       )}
     >
@@ -203,7 +203,7 @@ function DeliveryCard({
         {courier && (
           <div className="flex items-center gap-2">
             <div className="w-3.5 h-3.5 rounded-full bg-blue-500 flex-shrink-0" />
-            <span className="text-blue-300">{courier.name}</span>
+            <span className="text-wl-info-400">{courier.name}</span>
           </div>
         )}
       </div>

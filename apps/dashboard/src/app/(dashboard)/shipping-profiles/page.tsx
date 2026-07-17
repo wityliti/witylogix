@@ -262,7 +262,7 @@ export default function ShippingProfilesPage() {
                         {profile.name}
                       </span>
                       {profile.isDefault && (
-                        <span className={cn("opacity-80 text-blue-500")}>
+                        <span className={cn("opacity-80 text-wl-info-500")}>
                           ★
                         </span>
                       )}
@@ -315,7 +315,7 @@ export default function ShippingProfilesPage() {
                       className={cn(
                         "text-base font-bold font-mono",
                         profile.flatRate && profile.flatRate > 0
-                          ? "text-blue-500"
+                          ? "text-wl-info-500"
                           : "text-wl-text-secondary",
                       )}
                     >
@@ -335,7 +335,7 @@ export default function ShippingProfilesPage() {
                       className={cn(
                         "text-base font-bold font-mono",
                         profile.freeShippingAbove
-                          ? "text-emerald-500"
+                          ? "text-wl-success-500"
                           : "text-wl-text-secondary",
                       )}
                     >

@@ -83,12 +83,12 @@ export function EnvelopeCard({ envelope }: EnvelopeCardProps) {
             className={cn(
               "capitalize flex items-center gap-1",
               envelope.status === "completed" || envelope.status === "signed"
-                ? "bg-green-500/20 text-green-400"
+                ? "bg-wl-success-500/20 text-wl-success-400"
                 : envelope.status === "viewed"
-                  ? "bg-blue-500/20 text-blue-400"
+                  ? "bg-wl-info-500/20 text-wl-info-400"
                   : envelope.status === "sent"
                     ? "bg-wl-neutral-500/20 text-wl-text-secondary"
-                      : "bg-red-500/20 text-red-400"
+                      : "bg-wl-danger-500/20 text-wl-danger-400"
             )}
           >
             {getStatusIcon(envelope.status)}
@@ -122,11 +122,11 @@ export function EnvelopeCard({ envelope }: EnvelopeCardProps) {
                 </div>
                 <div className={cn("px-2 py-1 rounded text-xs font-semibold capitalize",
                   signer.status === "signed"
-                    ? "bg-green-500/20 text-green-400"
+                    ? "bg-wl-success-500/20 text-wl-success-400"
                     : signer.status === "viewed"
-                      ? "bg-blue-500/20 text-blue-400"
+                      ? "bg-wl-info-500/20 text-wl-info-400"
                       : signer.status === "declined"
-                        ? "bg-red-500/20 text-red-400"
+                        ? "bg-wl-danger-500/20 text-wl-danger-400"
                         : "bg-wl-neutral-500/20 text-wl-text-secondary"
                 )}>
                   {signer.status}
@@ -144,7 +144,7 @@ export function EnvelopeCard({ envelope }: EnvelopeCardProps) {
             <DownloadCloud className="w-4 h-4 mr-2" />Download
           </Button>
           {envelope.status === "sent" || envelope.status === "viewed" ? (
-            <Button variant="danger" size="sm" className="flex-1 bg-red-500/10 text-red-400 hover:bg-red-500/20">
+            <Button variant="danger" size="sm" className="flex-1 bg-wl-danger-500/10 text-wl-danger-400 hover:bg-wl-danger-500/20">
               <Trash2 className="w-4 h-4 mr-2" />Void
             </Button>
           ) : null}

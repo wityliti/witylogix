@@ -24,11 +24,11 @@ interface WarehouseConnectionCardProps {
 const getSyncStatusColor = (status: string) => {
   switch (status) {
     case "SYNCED":
-      return "bg-green-500/20 text-green-400 border-green-500/50";
+      return "bg-wl-success-500/20 text-wl-success-400 border-green-500/50";
     case "SYNCING":
-      return "bg-blue-500/20 text-blue-400 border-blue-500/50";
+      return "bg-wl-info-500/20 text-wl-info-400 border-wl-info-500/50";
     case "FAILED":
-      return "bg-red-500/20 text-red-400 border-red-500/50";
+      return "bg-wl-danger-500/20 text-wl-danger-400 border-wl-danger-500/50";
     case "PENDING":
       return "bg-yellow-500/20 text-yellow-400 border-yellow-500/50";
     default:
@@ -62,9 +62,9 @@ export function WarehouseConnectionCard({ warehouse }: WarehouseConnectionCardPr
         </div>
 
         {warehouse.errorCount > 0 && (
-          <div className="mb-4 p-3 bg-red-500/10 rounded-lg border border-red-500/30 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
-            <p className="text-xs text-red-400">{warehouse.errorCount} sync error{warehouse.errorCount > 1 ? "s" : ""}</p>
+          <div className="mb-4 p-3 bg-wl-danger-500/10 rounded-lg border border-wl-danger-500/30 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-wl-danger-400 flex-shrink-0" />
+            <p className="text-xs text-wl-danger-400">{warehouse.errorCount} sync error{warehouse.errorCount > 1 ? "s" : ""}</p>
           </div>
         )}
 

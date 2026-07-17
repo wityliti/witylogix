@@ -271,7 +271,7 @@ export default function MobileConfigPage() {
                   type="text"
                   value={appName}
                   onChange={(e) => setAppName(e.target.value)}
-                  className="w-full px-3 py-2 border border-wl-border-default rounded-lg bg-wl-bg-elevated text-white text-sm outline-none transition-colors focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-wl-border-default rounded-lg bg-wl-bg-elevated text-white text-sm outline-none transition-colors focus:border-wl-info-500"
                 />
                 <p className="text-xs text-wl-text-secondary mt-1">
                   Displayed on home screen
@@ -294,7 +294,7 @@ export default function MobileConfigPage() {
                     type="text"
                     value={primaryColor}
                     onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-wl-border-default rounded-lg bg-wl-bg-elevated text-white text-sm font-mono outline-none transition-colors focus:border-blue-500"
+                    className="flex-1 px-3 py-2 border border-wl-border-default rounded-lg bg-wl-bg-elevated text-white text-sm font-mono outline-none transition-colors focus:border-wl-info-500"
                   />
                 </div>
               </div>
@@ -509,7 +509,7 @@ export default function MobileConfigPage() {
         {/* Configuration Summary */}
         <Card className="bg-emerald-900/20 border border-emerald-400">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-emerald-400">
+            <CardTitle className="flex items-center gap-2 text-wl-success-400">
               <CheckCircle className="w-5 h-5" />
               Ready to Deploy
             </CardTitle>

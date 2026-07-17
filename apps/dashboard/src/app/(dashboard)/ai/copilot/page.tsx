@@ -132,7 +132,7 @@ export default function AICopilotPage() {
             value={entityType}
             onChange={(e) => setEntityType(e.target.value as EntityType)}
             className={cn(
-              "rounded-lg border border-white/[0.08] bg-wl-bg-overlay",
+              "rounded-lg border border-wl-border-default bg-wl-bg-overlay",
               "px-3 py-2 text-sm text-wl-text-primary",
               "focus:outline-none focus:ring-2 focus:ring-wl-accent/50"
             )}
@@ -152,7 +152,7 @@ export default function AICopilotPage() {
             placeholder="Ask anything about your deliveries..."
             maxLength={500}
             className={cn(
-              "flex-1 rounded-lg border border-white/[0.08] bg-wl-bg-overlay",
+              "flex-1 rounded-lg border border-wl-border-default bg-wl-bg-overlay",
               "px-4 py-2 text-sm text-wl-text-primary placeholder:text-wl-text-tertiary",
               "focus:outline-none focus:ring-2 focus:ring-wl-accent/50"
             )}
@@ -181,7 +181,7 @@ export default function AICopilotPage() {
               onClick={() => handleExample(ex)}
               className={cn(
                 "rounded-full px-3 py-1 text-xs",
-                "border border-white/[0.08] text-wl-text-secondary",
+                "border border-wl-border-default text-wl-text-secondary",
                 "hover:bg-wl-bg-overlay hover:text-wl-text-primary transition-colors"
               )}
             >
@@ -193,7 +193,7 @@ export default function AICopilotPage() {
 
       {/* Error */}
       {error && (
-        <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+        <div className="rounded-lg border border-wl-danger-500/20 bg-wl-danger-500/10 px-4 py-3 text-sm text-wl-danger-400">
           {error}
         </div>
       )}
@@ -228,14 +228,14 @@ export default function AICopilotPage() {
           </div>
 
           {result.results.length === 0 ? (
-            <div className="rounded-lg border border-white/[0.06] bg-wl-bg-overlay px-6 py-12 text-center">
+            <div className="rounded-lg border border-wl-border-subtle bg-wl-bg-overlay px-6 py-12 text-center">
               <p className="text-sm text-wl-text-secondary">No results matched your query.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-white/[0.06]">
+            <div className="overflow-x-auto rounded-lg border border-wl-border-subtle">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/[0.06] bg-white/[0.02]">
+                  <tr className="border-b border-wl-border-subtle bg-white/[0.02]">
                     {columns.map((col) => (
                       <th
                         key={col}
@@ -246,7 +246,7 @@ export default function AICopilotPage() {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.04]">
+                <tbody className="divide-y divide-wl-border-subtle">
                   {result.results.map((row, idx) => (
                     <tr key={(row["id"] as string) ?? idx} className="hover:bg-white/[0.02] transition-colors">
                       {columns.map((col) => {
@@ -264,9 +264,9 @@ export default function AICopilotPage() {
                                 className={cn(
                                   "rounded-full px-2 py-0.5 text-xs font-medium",
                                   displayVal === "PENDING" && "bg-yellow-500/10 text-yellow-400",
-                                  displayVal === "COMPLETED" && "bg-green-500/10 text-green-400",
-                                  displayVal === "ACTIVE" && "bg-blue-500/10 text-blue-400",
-                                  displayVal === "FAILED" && "bg-red-500/10 text-red-400",
+                                  displayVal === "COMPLETED" && "bg-wl-success-500/10 text-wl-success-400",
+                                  displayVal === "ACTIVE" && "bg-wl-info-500/10 text-wl-info-400",
+                                  displayVal === "FAILED" && "bg-wl-danger-500/10 text-wl-danger-400",
                                   !["PENDING", "COMPLETED", "ACTIVE", "FAILED"].includes(displayVal) &&
                                     "bg-white/[0.06] text-wl-text-secondary"
                                 )}

@@ -217,13 +217,13 @@ export default function OrdersPage() {
             <div className="p-4 bg-red-950/30 border border-red-900/50 rounded-lg flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 bg-red-500 rounded-full" />
-                <p className="text-sm text-red-200">Failed to load orders</p>
+                <p className="text-sm text-wl-danger-400">Failed to load orders</p>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => refetch()}
-                className="text-red-300 hover:text-red-100"
+                className="text-wl-danger-400 hover:text-red-100"
               >
                 Retry
               </Button>
@@ -435,7 +435,7 @@ export default function OrdersPage() {
                           <Link
                             href={`/orders/${order.id}`}
                             onClick={(e) => e.stopPropagation()}
-                            className="font-mono font-semibold text-sm text-amber-400 hover:text-amber-300 transition-colors"
+                            className="font-mono font-semibold text-sm text-wl-warning-400 hover:text-wl-warning-400 transition-colors"
                           >
                             #{order.orderNumber ?? order.id.slice(0, 8)}
                           </Link>

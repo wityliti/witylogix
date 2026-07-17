@@ -100,7 +100,7 @@ function ServiceRow({ service }: { service: ServiceStatus }) {
     <div className="flex items-center justify-between py-3 px-4 border-b border-wl-border-default last:border-0">
       <div className="flex items-center gap-3 flex-1">
         {service.name === 'API Server' ? (
-          <Server className="w-4 h-4 text-blue-400 shrink-0" />
+          <Server className="w-4 h-4 text-wl-info-400 shrink-0" />
         ) : service.name.includes('Redis') ? (
           <Layers className="w-4 h-4 text-orange-400 shrink-0" />
         ) : (
@@ -146,7 +146,7 @@ function IntegrationCard({ integration }: { integration: IntegrationStatus }) {
         </p>
       )}
       {integration.error && (
-        <div className="text-red-400 mt-2 p-2 bg-red-500/10 rounded text-xs">{integration.error}</div>
+        <div className="text-wl-danger-400 mt-2 p-2 bg-wl-danger-500/10 rounded text-xs">{integration.error}</div>
       )}
     </div>
   );
@@ -411,7 +411,7 @@ export default function PlatformHealthPage() {
               <p className="text-sm text-wl-text-secondary">No integrations installed</p>
               <p className="text-xs text-wl-text-tertiary mt-1">
                 Connect your first integration from the{' '}
-                <a href="/integrations/catalog" className="text-blue-400 hover:underline">
+                <a href="/integrations/catalog" className="text-wl-info-400 hover:underline">
                   Integration Catalog
                 </a>
               </p>
@@ -437,8 +437,8 @@ export default function PlatformHealthPage() {
         <CardContent>
           {alerts.length === 0 ? (
             <div className="py-8 text-center">
-              <div className="w-8 h-8 mx-auto mb-3 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                <span className="text-emerald-500 text-lg">✓</span>
+              <div className="w-8 h-8 mx-auto mb-3 rounded-full bg-wl-success-500/10 flex items-center justify-center">
+                <span className="text-wl-success-500 text-lg">✓</span>
               </div>
               <p className="text-sm text-wl-text-secondary">No active alerts</p>
               <p className="text-xs text-wl-text-tertiary mt-1">All systems operating normally</p>

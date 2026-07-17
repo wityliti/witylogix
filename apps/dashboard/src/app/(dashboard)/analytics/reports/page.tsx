@@ -115,13 +115,13 @@ function CreateReportModal({ onClose, onCreated }: { onClose: () => void; onCrea
                 {recipients.map((r) => (
                   <span key={r} className="flex items-center gap-1 text-xs bg-wl-bg-overlay text-wl-text-secondary px-2 py-0.5 rounded-full">
                     {r}
-                    <button type="button" onClick={() => setRecipients((rs) => rs.filter((x) => x !== r))} className="hover:text-red-400">×</button>
+                    <button type="button" onClick={() => setRecipients((rs) => rs.filter((x) => x !== r))} className="hover:text-wl-danger-400">×</button>
                   </span>
                 ))}
               </div>
             )}
           </div>
-          {error && <p className="text-sm text-red-400">{error.message}</p>}
+          {error && <p className="text-sm text-wl-danger-400">{error.message}</p>}
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
             <Button type="submit" variant="primary" disabled={loading || !name.trim()}>
@@ -220,7 +220,7 @@ export default function ReportsPage() {
                         onClick={() => handleDelete(report.id)}
                         disabled={deletingId === report.id}
                         className={cn(
-                          'p-1.5 rounded hover:bg-red-500/15 hover:text-red-400 text-wl-text-tertiary transition-colors',
+                          'p-1.5 rounded hover:bg-wl-danger-500/15 hover:text-wl-danger-400 text-wl-text-tertiary transition-colors',
                           deletingId === report.id && 'opacity-50 cursor-not-allowed'
                         )}
                       >

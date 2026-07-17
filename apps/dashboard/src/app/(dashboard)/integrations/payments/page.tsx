@@ -242,7 +242,7 @@ export default function PaymentsIntegrationPage() {
               label: 'Connected Gateways',
               value: gwLoading ? '…' : `${connectedCount}/${gateways.length}`,
               sub: 'active integrations',
-              color: 'text-emerald-400',
+              color: 'text-wl-success-400',
             },
             {
               label: 'Total Volume',
@@ -260,7 +260,7 @@ export default function PaymentsIntegrationPage() {
               label: 'Avg Gateway Fee',
               value: `${totalFeesPct.toFixed(2)}%`,
               sub: 'across providers',
-              color: 'text-amber-400',
+              color: 'text-wl-warning-400',
             },
           ].map(({ label, value, sub, color }) => (
             <div
@@ -278,7 +278,7 @@ export default function PaymentsIntegrationPage() {
         <Section
           label="Payment Gateways"
           badge={
-            <Badge variant="success" className="bg-emerald-500/15 text-emerald-400 text-xs">
+            <Badge variant="success" className="bg-wl-success-500/15 text-wl-success-400 text-xs">
               {connectedCount} connected
             </Badge>
           }
@@ -320,7 +320,7 @@ export default function PaymentsIntegrationPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         {gw.isDefault && (
-                          <Badge variant="info" className="text-xs bg-blue-500/10 text-blue-400">Default</Badge>
+                          <Badge variant="info" className="text-xs bg-wl-info-500/10 text-wl-info-400">Default</Badge>
                         )}
                         <Badge
                           variant={gw.status === 'connected' ? 'success' : gw.status === 'error' ? 'danger' : 'default'}
@@ -336,7 +336,7 @@ export default function PaymentsIntegrationPage() {
                     {gw.status === 'connected' && (
                       <div className="flex items-center gap-2 mb-4 text-xs text-wl-text-tertiary">
                         <Clock className="w-3 h-3" />
-                        Health score: <span className="text-emerald-400 font-medium">{gw.healthScore}/100</span>
+                        Health score: <span className="text-wl-success-400 font-medium">{gw.healthScore}/100</span>
                         {gw.config?.lastDigits && (
                           <span className="ml-auto">•••• {gw.config.lastDigits}</span>
                         )}
@@ -377,7 +377,7 @@ export default function PaymentsIntegrationPage() {
         <Section
           label="Recent Transactions"
           badge={
-            <Badge variant="info" className="bg-blue-500/10 text-blue-400 text-xs">
+            <Badge variant="info" className="bg-wl-info-500/10 text-wl-info-400 text-xs">
               Last 10
             </Badge>
           }
@@ -413,7 +413,7 @@ export default function PaymentsIntegrationPage() {
                         })}
                       </td>
                       <td className="px-4 py-3 text-wl-text-secondary text-xs">{methodLabel(txn.method)}</td>
-                      <td className={cn('px-4 py-3 font-semibold font-mono text-sm', txn.type === 'REFUND' ? 'text-red-400' : 'text-wl-text-primary')}>
+                      <td className={cn('px-4 py-3 font-semibold font-mono text-sm', txn.type === 'REFUND' ? 'text-wl-danger-400' : 'text-wl-text-primary')}>
                         {txn.type === 'REFUND' ? '-' : ''}{fmtAmt(txn.amount)}
                       </td>
                       <td className="px-4 py-3">{txStatusBadge(txn.status)}</td>
@@ -478,7 +478,7 @@ export default function PaymentsIntegrationPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     {pm.isDefault && (
-                      <Badge variant="success" className="text-xs bg-emerald-500/10 text-emerald-400">Default</Badge>
+                      <Badge variant="success" className="text-xs bg-wl-success-500/10 text-wl-success-400">Default</Badge>
                     )}
                     <Link href="/settings/payments">
                       <Button variant="ghost" size="sm" className="text-wl-text-tertiary hover:text-wl-text-secondary">
@@ -503,11 +503,11 @@ export default function PaymentsIntegrationPage() {
           label="Reconciliation"
           badge={
             unmatchedCount > 0 ? (
-              <Badge variant="warning" className="bg-amber-500/10 text-amber-400 text-xs">
+              <Badge variant="warning" className="bg-wl-warning-500/10 text-wl-warning-400 text-xs">
                 {unmatchedCount} unmatched
               </Badge>
             ) : (
-              <Badge variant="success" className="bg-emerald-500/10 text-emerald-400 text-xs">All matched</Badge>
+              <Badge variant="success" className="bg-wl-success-500/10 text-wl-success-400 text-xs">All matched</Badge>
             )
           }
           expanded={sections.reconciliation}
@@ -519,7 +519,7 @@ export default function PaymentsIntegrationPage() {
             <ErrorState title="Failed to load reconciliation data" onRetry={reconRefetch} />
           ) : reconItems.length === 0 ? (
             <div className="rounded-xl bg-wl-bg-surface border border-wl-border-default p-8 text-center">
-              <CheckCircle2 className="w-7 h-7 text-emerald-400 mx-auto mb-3" />
+              <CheckCircle2 className="w-7 h-7 text-wl-success-400 mx-auto mb-3" />
               <p className="text-sm font-medium text-wl-text-secondary">No reconciliation issues</p>
               <p className="text-xs text-wl-text-tertiary mt-1">All transactions are matched</p>
             </div>
@@ -543,9 +543,9 @@ export default function PaymentsIntegrationPage() {
                       <td className="px-4 py-3 font-mono text-sm text-wl-text-primary">{fmtAmt(item.amount)}</td>
                       <td className="px-4 py-3">
                         {item.status === 'matched' ? (
-                          <Badge variant="success" className="text-xs bg-emerald-500/10 text-emerald-400">Matched</Badge>
+                          <Badge variant="success" className="text-xs bg-wl-success-500/10 text-wl-success-400">Matched</Badge>
                         ) : (
-                          <Badge variant="warning" className="text-xs bg-amber-500/10 text-amber-400">Unmatched</Badge>
+                          <Badge variant="warning" className="text-xs bg-wl-warning-500/10 text-wl-warning-400">Unmatched</Badge>
                         )}
                       </td>
                       <td className="px-4 py-3">

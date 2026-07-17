@@ -88,7 +88,7 @@ export default function DeliveryMapView({
     : DEFAULT_CENTER;
 
   return (
-    <div className="relative w-full h-full rounded-xl overflow-hidden border border-white/[0.06]">
+    <div className="relative w-full h-full rounded-xl overflow-hidden border border-wl-border-subtle">
       <WLMap center={center} zoom={11} className="w-full h-full">
         {hasMarkers && (
           <MapLayers
@@ -107,21 +107,21 @@ export default function DeliveryMapView({
               className="w-2.5 h-2.5 rounded-full flex-shrink-0"
               style={{ backgroundColor: item.color }}
             />
-            <span className="text-[11px] text-white/70">{item.label}</span>
+            <span className="text-[11px] text-wl-text-secondary">{item.label}</span>
           </div>
         ))}
       </div>
 
       {/* Stats overlay */}
       <div className="absolute top-4 right-4 z-10 bg-black/70 backdrop-blur-sm rounded-xl px-4 py-3 min-w-[130px]">
-        <p className="text-[11px] text-white/40 font-medium uppercase tracking-wide">
+        <p className="text-[11px] text-wl-text-tertiary font-medium uppercase tracking-wide">
           Mapped
         </p>
-        <p className="text-2xl font-bold text-white/90 font-mono leading-none mt-1">
+        <p className="text-2xl font-bold text-wl-text-primary font-mono leading-none mt-1">
           {markers.length}
         </p>
         {shipments.length > markers.length && (
-          <p className="text-[10px] text-white/30 mt-0.5">
+          <p className="text-[10px] text-wl-text-tertiary mt-0.5">
             {shipments.length - markers.length} without location
           </p>
         )}
@@ -131,11 +131,11 @@ export default function DeliveryMapView({
       {!hasMarkers && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center bg-black/70 backdrop-blur-sm rounded-xl px-6 py-5">
-            <MapPin className="w-8 h-8 text-white/20 mx-auto mb-3" />
-            <p className="text-sm font-medium text-white/50">
+            <MapPin className="w-8 h-8 text-wl-text-tertiary mx-auto mb-3" />
+            <p className="text-sm font-medium text-wl-text-secondary">
               No delivery locations available
             </p>
-            <p className="text-xs text-white/25 mt-1">
+            <p className="text-xs text-wl-text-tertiary mt-1">
               Assign coordinates to shipments to see them on the map
             </p>
           </div>

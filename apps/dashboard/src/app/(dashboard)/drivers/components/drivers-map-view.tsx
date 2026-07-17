@@ -158,8 +158,8 @@ export default function DriversMapView({ drivers }: { drivers: DispatchDriver[] 
                 Status:{' '}
                 <span className={cn(
                   'font-medium',
-                  normaliseStatus(selectedDriver.status) === 'available' ? 'text-emerald-400' :
-                  normaliseStatus(selectedDriver.status) === 'busy' ? 'text-amber-400' :
+                  normaliseStatus(selectedDriver.status) === 'available' ? 'text-wl-success-400' :
+                  normaliseStatus(selectedDriver.status) === 'busy' ? 'text-wl-warning-400' :
                   'text-wl-text-secondary'
                 )}>
                   {selectedDriver.status}

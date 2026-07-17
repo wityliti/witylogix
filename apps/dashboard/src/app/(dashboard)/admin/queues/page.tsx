@@ -95,9 +95,9 @@ export default function QueuesPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completed": return "bg-emerald-100 text-emerald-800";
-      case "failed": return "bg-red-100 text-red-800";
-      case "active": return "bg-blue-100 text-blue-800";
+      case "completed": return "bg-wl-success-bg text-wl-success-400";
+      case "failed": return "bg-wl-danger-bg text-wl-danger-400";
+      case "active": return "bg-wl-info-bg text-wl-info-400";
       case "waiting": return "bg-yellow-100 text-yellow-800";
       case "delayed": return "bg-purple-100 text-purple-800";
       default: return "bg-wl-bg-surface text-wl-text-primary";
@@ -164,7 +164,7 @@ export default function QueuesPage() {
                   key={queue.name}
                   className={cn(
                     "cursor-pointer transition hover:shadow-lg",
-                    selectedQueue === queue.name && "ring-2 ring-blue-500"
+                    selectedQueue === queue.name && "ring-2 ring-wl-info-500"
                   )}
                   onClick={() => setSelectedQueue(queue.name)}
                 >
@@ -178,7 +178,7 @@ export default function QueuesPage() {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-wl-text-tertiary">Active</span>
-                        <span className="font-semibold text-blue-600">{queue.active}</span>
+                        <span className="font-semibold text-wl-info-500">{queue.active}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-wl-text-tertiary">Waiting</span>
@@ -186,7 +186,7 @@ export default function QueuesPage() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-wl-text-tertiary">Failed</span>
-                        <span className={cn("font-semibold", queue.failed > 0 && "text-red-600")}>
+                        <span className={cn("font-semibold", queue.failed > 0 && "text-wl-danger-500")}>
                           {queue.failed}
                         </span>
                       </div>
@@ -380,7 +380,7 @@ export default function QueuesPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-red-600" />
+                <AlertCircle className="w-5 h-5 text-wl-danger-500" />
                 Dead Letter Queue ({dlqItems.length})
               </CardTitle>
               <div className="flex gap-2">

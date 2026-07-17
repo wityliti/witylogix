@@ -137,16 +137,16 @@ function OrderCard({
       onClick={() => onSelect(order.id)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelect(order.id); }}
       className={cn(
-        'p-4 rounded-lg border transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
+        'p-4 rounded-lg border transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wl-info-500',
         'bg-wl-bg-elevated/60 border-wl-border-strong hover:border-wl-border-strong hover:bg-wl-bg-elevated',
-        isSelected && 'border-blue-500 ring-1 ring-blue-500/25 bg-wl-bg-elevated',
+        isSelected && 'border-blue-500 ring-1 ring-wl-info-500/25 bg-wl-bg-elevated',
       )}
     >
       {/* Header row */}
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-1.5 min-w-0">
           {order.priority === 'high' && (
-            <AlertCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+            <AlertCircle className="w-3.5 h-3.5 text-wl-danger-400 flex-shrink-0" />
           )}
           <span className="text-sm font-bold text-white truncate">
             {order.orderNumber}
@@ -221,7 +221,7 @@ function OrderCard({
         <Button
           variant="ghost"
           size="sm"
-          className="w-full text-blue-400 hover:bg-blue-500/10 text-xs"
+          className="w-full text-wl-info-400 hover:bg-wl-info-500/10 text-xs"
           onClick={(e) => {
             e.stopPropagation();
             onSelect(order.id);
@@ -263,9 +263,9 @@ function DriverCard({ driver, isSelected, onClick }: DriverCardProps) {
       onClick={() => onClick(driver.id)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(driver.id); }}
       className={cn(
-        'p-3 rounded-lg border transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
+        'p-3 rounded-lg border transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wl-info-500',
         'bg-wl-bg-elevated/60 border-wl-border-strong hover:border-wl-border-strong',
-        isSelected && 'border-blue-500 ring-1 ring-blue-500/25',
+        isSelected && 'border-blue-500 ring-1 ring-wl-info-500/25',
       )}
     >
       <div className="flex items-start justify-between mb-2">
@@ -504,8 +504,8 @@ export default function DispatchPage() {
 
             {/* Connection */}
             <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-wl-bg-elevated border border-wl-border-strong">
-              <Signal className="w-3.5 h-3.5 text-emerald-500" />
-              <span className="text-xs font-medium text-emerald-400">Live</span>
+              <Signal className="w-3.5 h-3.5 text-wl-success-500" />
+              <span className="text-xs font-medium text-wl-success-400">Live</span>
             </div>
 
             {/* Refresh */}
@@ -531,7 +531,7 @@ export default function DispatchPage() {
           <div className="flex-shrink-0 px-4 py-3 border-b border-wl-border-default bg-wl-bg-elevated/30">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <Package className="w-4 h-4 text-amber-500" />
+                <Package className="w-4 h-4 text-wl-warning-500" />
                 <span className="text-xs font-semibold text-wl-text-primary uppercase tracking-wider">Queue</span>
                 {!ordersLoading && (
                   <Badge variant="danger" className="text-[10px] px-1.5">{filteredOrders.length}</Badge>
@@ -656,7 +656,7 @@ export default function DispatchPage() {
           {/* Panel header */}
           <div className="flex-shrink-0 px-4 py-3 border-b border-wl-border-default bg-wl-bg-elevated/30">
             <div className="flex items-center gap-2">
-              <Truck className="w-4 h-4 text-blue-400" />
+              <Truck className="w-4 h-4 text-wl-info-400" />
               <span className="text-xs font-semibold text-wl-text-primary uppercase tracking-wider">Fleet</span>
               {!driversLoading && (
                 <Badge variant="primary" className="text-[10px] px-1.5">{rawDrivers.length}</Badge>
@@ -697,11 +697,11 @@ export default function DispatchPage() {
                 <div className="text-[10px] text-wl-text-tertiary">Total</div>
               </div>
               <div>
-                <div className="text-sm font-bold text-emerald-400">{driverStats.available}</div>
+                <div className="text-sm font-bold text-wl-success-400">{driverStats.available}</div>
                 <div className="text-[10px] text-wl-text-tertiary">Free</div>
               </div>
               <div>
-                <div className="text-sm font-bold text-amber-400">{driverStats.busy}</div>
+                <div className="text-sm font-bold text-wl-warning-400">{driverStats.busy}</div>
                 <div className="text-[10px] text-wl-text-tertiary">Busy</div>
               </div>
               <div>
@@ -724,10 +724,10 @@ export default function DispatchPage() {
             <div className="grid grid-cols-5 gap-0 w-full">
               {[
                 { value: stats.unassigned, label: 'Unassigned', color: 'text-white' },
-                { value: stats.inTransit, label: 'In Transit', color: 'text-blue-400' },
-                { value: stats.completedToday, label: 'Completed', color: 'text-emerald-400' },
+                { value: stats.inTransit, label: 'In Transit', color: 'text-wl-info-400' },
+                { value: stats.completedToday, label: 'Completed', color: 'text-wl-success-400' },
                 { value: `${stats.avgDeliveryTime}m`, label: 'Avg Delivery', color: 'text-orange-400' },
-                { value: `${stats.onTimePercent}%`, label: 'On-Time', color: 'text-green-400' },
+                { value: `${stats.onTimePercent}%`, label: 'On-Time', color: 'text-wl-success-400' },
               ].map((stat, i) => (
                 <div
                   key={stat.label}

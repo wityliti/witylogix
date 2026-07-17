@@ -274,29 +274,29 @@ export default function LiveTracking() {
               label: 'Active Deliveries',
               value: inTransitCount,
               sub: `${activeOrders.length} total active`,
-              icon: <Truck size={18} className="text-blue-400" />,
-              color: 'text-blue-400',
+              icon: <Truck size={18} className="text-wl-info-400" />,
+              color: 'text-wl-info-400',
             },
             {
               label: 'Delivered Today',
               value: deliveredCount,
               sub: `${orders.length > 0 ? Math.round((deliveredCount / orders.length) * 100) : 0}% completion`,
-              icon: <TrendingUp size={18} className="text-emerald-400" />,
-              color: 'text-emerald-400',
+              icon: <TrendingUp size={18} className="text-wl-success-400" />,
+              color: 'text-wl-success-400',
             },
             {
               label: 'Total Orders',
               value: orders.length,
               sub: `${orders.filter((o) => o.status === 'pending').length} pending`,
-              icon: <Clock size={18} className="text-amber-400" />,
+              icon: <Clock size={18} className="text-wl-warning-400" />,
               color: 'text-wl-text-primary',
             },
             {
               label: 'Cancelled',
               value: orders.filter((o) => o.status === 'cancelled').length,
               sub: 'orders cancelled',
-              icon: <AlertCircle size={18} className="text-red-400" />,
-              color: 'text-red-400',
+              icon: <AlertCircle size={18} className="text-wl-danger-400" />,
+              color: 'text-wl-danger-400',
             },
           ].map((m) => (
             <Card
@@ -347,9 +347,9 @@ export default function LiveTracking() {
             <div className="overflow-y-auto flex flex-col gap-3">
               {selectedOrder && (
                 <>
-                  <Card className="bg-wl-bg-surface border-blue-500/30">
+                  <Card className="bg-wl-bg-surface border-wl-info-500/30">
                     <CardContent className="p-4">
-                      <p className="text-xs font-semibold text-blue-400 mb-3 uppercase">
+                      <p className="text-xs font-semibold text-wl-info-400 mb-3 uppercase">
                         Order Details
                       </p>
                       <div className="space-y-2.5">
@@ -391,7 +391,7 @@ export default function LiveTracking() {
                             {selectedOrder.driver.phone && (
                               <a
                                 href={`tel:${selectedOrder.driver.phone}`}
-                                className="mt-2 flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                                className="mt-2 flex items-center gap-1 text-xs text-wl-info-400 hover:text-wl-info-400 transition-colors"
                               >
                                 <Phone size={11} />
                                 {selectedOrder.driver.phone}
@@ -484,7 +484,7 @@ export default function LiveTracking() {
                               {order.deliveryAddress.city}
                             </p>
                             {order.estimatedDelivery && (
-                              <p className="text-[10px] font-semibold text-blue-400 shrink-0 ml-2">
+                              <p className="text-[10px] font-semibold text-wl-info-400 shrink-0 ml-2">
                                 ETA:{' '}
                                 {new Date(
                                   order.estimatedDelivery,
@@ -507,9 +507,9 @@ export default function LiveTracking() {
             <div className="flex flex-col gap-4">
               {/* Selected Order Details */}
               {selectedOrder && (
-                <Card className="bg-wl-bg-surface border-blue-500/30">
+                <Card className="bg-wl-bg-surface border-wl-info-500/30">
                   <CardContent className="p-4">
-                    <p className="text-xs font-semibold text-blue-400 mb-3 uppercase">
+                    <p className="text-xs font-semibold text-wl-info-400 mb-3 uppercase">
                       Order Details
                     </p>
 

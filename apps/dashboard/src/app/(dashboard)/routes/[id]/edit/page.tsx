@@ -266,15 +266,15 @@ export default function EditRoutePage() {
               <CardContent>
                 <div className="grid grid-cols-3 gap-3 mb-6">
                   <div className="p-4 rounded-md bg-wl-bg-root border border-wl-border-default text-center">
-                    <div className="text-lg font-bold text-blue-500 mb-0.5">{currentFormData.stops.length}</div>
+                    <div className="text-lg font-bold text-wl-info-500 mb-0.5">{currentFormData.stops.length}</div>
                     <div className="text-xs text-wl-text-secondary">Total Stops</div>
                   </div>
                   <div className="p-4 rounded-md bg-wl-bg-root border border-wl-border-default text-center">
-                    <div className="text-lg font-bold text-blue-500 mb-0.5">{estimatedDistance.toFixed(1)}km</div>
+                    <div className="text-lg font-bold text-wl-info-500 mb-0.5">{estimatedDistance.toFixed(1)}km</div>
                     <div className="text-xs text-wl-text-secondary">Est. Distance</div>
                   </div>
                   <div className="p-4 rounded-md bg-wl-bg-root border border-wl-border-default text-center">
-                    <div className="text-lg font-bold text-blue-500 mb-0.5">{estimatedDuration}min</div>
+                    <div className="text-lg font-bold text-wl-info-500 mb-0.5">{estimatedDuration}min</div>
                     <div className="text-xs text-wl-text-secondary">Est. Duration</div>
                   </div>
                 </div>
@@ -287,7 +287,7 @@ export default function EditRoutePage() {
                         'p-3 rounded-md grid gap-3 items-center cursor-grab transition-all',
                         'border border-wl-border-default',
                         draggedStop === idx
-                          ? 'bg-blue-600/20 border-blue-500 opacity-70'
+                          ? 'bg-wl-info-500/20 border-blue-500 opacity-70'
                           : 'bg-wl-bg-surface',
                       )}
                       style={{ gridTemplateColumns: '24px 1fr auto auto' }}
@@ -429,12 +429,12 @@ export default function EditRoutePage() {
             </Card>
 
             {saveError && (
-              <div className="p-3 rounded-md bg-red-500/10 border border-red-500 text-red-500 text-xs text-center">
+              <div className="p-3 rounded-md bg-wl-danger-500/10 border border-red-500 text-wl-danger-500 text-xs text-center">
                 {saveError}
               </div>
             )}
             {hasChanges && !saveError && (
-              <div className="p-3 rounded-md bg-amber-500/10 border border-amber-500 text-amber-400 text-xs text-center">
+              <div className="p-3 rounded-md bg-wl-warning-500/10 border border-amber-500 text-wl-warning-400 text-xs text-center">
                 You have unsaved changes
               </div>
             )}

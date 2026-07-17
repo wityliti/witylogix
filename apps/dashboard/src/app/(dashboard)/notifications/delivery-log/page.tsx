@@ -164,7 +164,7 @@ export default function DeliveryLogPage() {
             <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-emerald-500">
+                  <div className="text-2xl font-bold text-wl-success-500">
                     {stats.delivered}
                   </div>
                   <p className="text-sm text-wl-neutral-300 mt-1">
@@ -177,7 +177,7 @@ export default function DeliveryLogPage() {
             <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-red-500">
+                  <div className="text-2xl font-bold text-wl-danger-500">
                     {stats.failed}
                   </div>
                   <p className="text-sm text-wl-neutral-300 mt-1">
@@ -190,7 +190,7 @@ export default function DeliveryLogPage() {
             <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-amber-500">
+                  <div className="text-2xl font-bold text-wl-warning-500">
                     {stats.rate}%
                   </div>
                   <p className="text-sm text-wl-neutral-300 mt-1">
@@ -236,7 +236,7 @@ export default function DeliveryLogPage() {
                         "w-full px-4 py-2 rounded-md",
                         "bg-wl-bg-elevated border border-wl-border-default",
                         "text-white",
-                        "focus:outline-none focus:border-blue-500",
+                        "focus:outline-none focus:border-wl-info-500",
                         "transition-colors duration-fast"
                       )}
                     >
@@ -265,7 +265,7 @@ export default function DeliveryLogPage() {
                         "w-full px-4 py-2 rounded-md",
                         "bg-wl-bg-elevated border border-wl-border-default",
                         "text-white",
-                        "focus:outline-none focus:border-blue-500",
+                        "focus:outline-none focus:border-wl-info-500",
                         "transition-colors duration-fast"
                       )}
                     >
@@ -425,7 +425,7 @@ export default function DeliveryLogPage() {
                         <p className="text-wl-text-secondary uppercase text-xs font-semibold tracking-wide mb-1">
                           Delivered At
                         </p>
-                        <p className="text-emerald-500">
+                        <p className="text-wl-success-500">
                           {new Date(
                             entry.deliveredAt
                           ).toLocaleString()}
@@ -438,7 +438,7 @@ export default function DeliveryLogPage() {
                         <p className="text-wl-text-secondary uppercase text-xs font-semibold tracking-wide mb-1">
                           Read At
                         </p>
-                        <p className="text-emerald-500">
+                        <p className="text-wl-success-500">
                           {new Date(entry.readAt).toLocaleString()}
                         </p>
                       </div>
@@ -458,7 +458,7 @@ export default function DeliveryLogPage() {
                         <p className="text-wl-text-secondary uppercase text-xs font-semibold tracking-wide mb-1">
                           Error
                         </p>
-                        <p className="text-red-500">{entry.error}</p>
+                        <p className="text-wl-danger-500">{entry.error}</p>
                       </div>
                     )}
                   </div>

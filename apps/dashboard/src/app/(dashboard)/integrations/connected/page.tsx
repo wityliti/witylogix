@@ -160,7 +160,7 @@ export default function ConnectedIntegrationsPage() {
                     {stats.connected}
                   </div>
                 </div>
-                <Plug className="w-8 h-8 text-blue-500" />
+                <Plug className="w-8 h-8 text-wl-info-500" />
               </div>
             </CardContent>
           </Card>
@@ -172,11 +172,11 @@ export default function ConnectedIntegrationsPage() {
                   <div className="text-sm text-wl-text-tertiary mb-1">
                     Healthy
                   </div>
-                  <div className="text-3xl font-bold text-emerald-500">
+                  <div className="text-3xl font-bold text-wl-success-500">
                     {stats.healthy}
                   </div>
                 </div>
-                <CheckCircle className="w-8 h-8 text-emerald-500" />
+                <CheckCircle className="w-8 h-8 text-wl-success-500" />
               </div>
             </CardContent>
           </Card>
@@ -188,11 +188,11 @@ export default function ConnectedIntegrationsPage() {
                   <div className="text-sm text-wl-text-tertiary mb-1">
                     Errors
                   </div>
-                  <div className="text-3xl font-bold text-red-500">
+                  <div className="text-3xl font-bold text-wl-danger-500">
                     {stats.errors}
                   </div>
                 </div>
-                <AlertCircle className="w-8 h-8 text-red-500" />
+                <AlertCircle className="w-8 h-8 text-wl-danger-500" />
               </div>
             </CardContent>
           </Card>
@@ -208,7 +208,7 @@ export default function ConnectedIntegrationsPage() {
             placeholder="Search integrations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-white placeholder-gray-500 focus:border-blue-500 outline-none"
+            className="w-full pl-10 pr-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-white placeholder-gray-500 focus:border-wl-info-500 outline-none"
           />
         </div>
 
@@ -221,7 +221,7 @@ export default function ConnectedIntegrationsPage() {
                 "px-4 py-2 rounded-lg border text-sm font-medium transition-all whitespace-nowrap",
                 statusFilter === status
                   ? "bg-blue-500 text-black border-blue-600"
-                  : "border-wl-border-default text-wl-text-secondary hover:border-blue-500/50"
+                  : "border-wl-border-default text-wl-text-secondary hover:border-wl-info-500/50"
               )}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -232,7 +232,7 @@ export default function ConnectedIntegrationsPage() {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortBy)}
-          className="px-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-white focus:border-blue-500 outline-none"
+          className="px-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-white focus:border-wl-info-500 outline-none"
         >
           <option value="name">Sort by Name</option>
           <option value="lastSync">Sort by Last Sync</option>
@@ -247,11 +247,11 @@ export default function ConnectedIntegrationsPage() {
             const health = getHealthStatus(connection);
             const healthIcon =
               health === "error" ? (
-                <AlertCircle className="w-5 h-5 text-red-500" />
+                <AlertCircle className="w-5 h-5 text-wl-danger-500" />
               ) : health === "warning" ? (
-                <AlertTriangle className="w-5 h-5 text-amber-500" />
+                <AlertTriangle className="w-5 h-5 text-wl-warning-500" />
               ) : (
-                <CheckCircle className="w-5 h-5 text-emerald-500" />
+                <CheckCircle className="w-5 h-5 text-wl-success-500" />
               );
 
             const healthBadge =
@@ -286,8 +286,8 @@ export default function ConnectedIntegrationsPage() {
               <Card
                 key={connection.id}
                 className={cn(
-                  "bg-wl-bg-elevated border-wl-border-default cursor-pointer transition-all hover:border-blue-500/50",
-                  selectedId === connection.id && "ring-1 ring-blue-500"
+                  "bg-wl-bg-elevated border-wl-border-default cursor-pointer transition-all hover:border-wl-info-500/50",
+                  selectedId === connection.id && "ring-1 ring-wl-info-500"
                 )}
                 onClick={() =>
                   setSelectedId(
@@ -298,8 +298,8 @@ export default function ConnectedIntegrationsPage() {
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                        <Plug className="w-5 h-5 text-blue-500" />
+                      <div className="w-10 h-10 rounded-lg bg-wl-info-500/10 flex items-center justify-center">
+                        <Plug className="w-5 h-5 text-wl-info-500" />
                       </div>
                       <div>
                         <CardTitle className="text-lg">
@@ -343,7 +343,7 @@ export default function ConnectedIntegrationsPage() {
                       <div className="text-xs text-wl-text-tertiary uppercase tracking-wide mb-1">
                         Errors
                       </div>
-                      <div className="font-semibold text-red-500 flex items-center gap-2">
+                      <div className="font-semibold text-wl-danger-500 flex items-center gap-2">
                         <AlertCircle className="w-4 h-4" />
                         {connection.errorCount}
                       </div>
@@ -400,7 +400,7 @@ export default function ConnectedIntegrationsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="w-full text-blue-500 hover:text-blue-400"
+                        className="w-full text-wl-info-500 hover:text-wl-info-400"
                       >
                         Details
                       </Button>
@@ -425,7 +425,7 @@ export default function ConnectedIntegrationsPage() {
               setSearchQuery("");
               setStatusFilter("all");
             }}
-            className="text-blue-500 hover:text-blue-400 text-sm font-medium"
+            className="text-wl-info-500 hover:text-wl-info-400 text-sm font-medium"
           >
             Clear filters
           </button>

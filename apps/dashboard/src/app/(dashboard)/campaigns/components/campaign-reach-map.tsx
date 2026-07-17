@@ -56,7 +56,7 @@ export function CampaignReachMap() {
 
       {/* Legend */}
       <div className="absolute bottom-4 left-4 z-10 bg-black/70 backdrop-blur-sm rounded-xl px-4 py-3 space-y-1.5">
-        <p className="text-[10px] font-semibold text-white/50 uppercase tracking-wider mb-1">
+        <p className="text-[10px] font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">
           Zone Health
         </p>
         {[
@@ -66,22 +66,22 @@ export function CampaignReachMap() {
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-sm opacity-70" style={{ background: color }} />
-            <span className="text-xs text-white/70">{label}</span>
+            <span className="text-xs text-wl-text-secondary">{label}</span>
           </div>
         ))}
       </div>
 
       {/* Zone count badge */}
-      <div className="absolute top-4 right-4 z-10 bg-black/70 backdrop-blur-sm rounded-xl px-3 py-2 text-xs text-white/70">
+      <div className="absolute top-4 right-4 z-10 bg-black/70 backdrop-blur-sm rounded-xl px-3 py-2 text-xs text-wl-text-secondary">
         {hasZones ? `${zonesGeo!.features.length} delivery zones` : 'No zones configured'}
       </div>
 
       {!hasZones && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center bg-black/70 backdrop-blur-sm rounded-xl px-6 py-5">
-            <MapPin className="w-8 h-8 text-white/20 mx-auto mb-3" />
-            <p className="text-sm font-medium text-white/50">No delivery zones configured</p>
-            <p className="text-xs text-white/30 mt-1">
+            <MapPin className="w-8 h-8 text-wl-text-tertiary mx-auto mb-3" />
+            <p className="text-sm font-medium text-wl-text-secondary">No delivery zones configured</p>
+            <p className="text-xs text-wl-text-tertiary mt-1">
               Add delivery zones to see campaign geographic reach
             </p>
           </div>

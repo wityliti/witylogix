@@ -80,7 +80,7 @@ export default function GeneralSettingsPage() {
                 <input
                   type="text"
                   defaultValue="Witylogix Inc."
-                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                 />
               </div>
               <div>

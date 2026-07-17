@@ -81,8 +81,8 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
       <CardContent className="pt-5">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-600/10 rounded-lg">
-              <Icon className="w-5 h-5 text-blue-500" />
+            <div className="p-2 bg-wl-info-500/10 rounded-lg">
+              <Icon className="w-5 h-5 text-wl-info-500" />
             </div>
             <div>
               <h4 className="text-sm font-semibold text-white">{service.name}</h4>
@@ -125,14 +125,14 @@ function UsageGauge({
   icon: React.ComponentType<{ className?: string }>;
 }) {
   const getColor = (val: number) => {
-    if (val < 50) return "text-emerald-500";
-    if (val < 75) return "text-amber-500";
-    return "text-red-500";
+    if (val < 50) return "text-wl-success-500";
+    if (val < 75) return "text-wl-warning-500";
+    return "text-wl-danger-500";
   };
   const getBgColor = (val: number) => {
-    if (val < 50) return "bg-emerald-600/20";
-    if (val < 75) return "bg-amber-600/20";
-    return "bg-red-600/20";
+    if (val < 50) return "bg-wl-success-500/20";
+    if (val < 75) return "bg-wl-warning-500/20";
+    return "bg-wl-danger-500/20";
   };
   const circumference = 2 * Math.PI * 45;
   const offset = circumference - (value / 100) * circumference;
@@ -245,7 +245,7 @@ export default function SystemPage() {
                     <div>
                       <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-1">Version</p>
                       <p className="text-sm font-semibold text-white flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <CheckCircle2 className="w-4 h-4 text-wl-success-500" />
                         {metrics.deploymentVersion}
                       </p>
                     </div>
@@ -272,12 +272,12 @@ export default function SystemPage() {
             {degradedServices.length > 0 && (
               <div className="space-y-3">
                 {degradedServices.map(service => (
-                  <Card key={service.name} className="border border-amber-600/30 bg-amber-600/10">
+                  <Card key={service.name} className="border border-amber-600/30 bg-wl-warning-500/10">
                     <CardContent className="pt-5">
                       <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <AlertCircle className="w-5 h-5 text-wl-warning-500 flex-shrink-0 mt-0.5" />
                         <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-amber-500">
+                          <h4 className="text-sm font-semibold text-wl-warning-500">
                             {service.status === "critical" ? "Critical" : "Degraded"}: {service.name}
                           </h4>
                           <p className="text-sm text-wl-text-secondary mt-1">
@@ -292,11 +292,11 @@ export default function SystemPage() {
             )}
 
             {degradedServices.length === 0 && services.length > 0 && (
-              <Card className="border border-emerald-600/30 bg-emerald-600/10">
+              <Card className="border border-emerald-600/30 bg-wl-success-500/10">
                 <CardContent className="pt-5">
                   <div className="flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                    <p className="text-sm font-semibold text-emerald-500">
+                    <CheckCircle2 className="w-5 h-5 text-wl-success-500" />
+                    <p className="text-sm font-semibold text-wl-success-500">
                       All services are healthy
                     </p>
                   </div>

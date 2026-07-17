@@ -79,23 +79,23 @@ interface IntegrationConnection {
 
 function dutyBadge(duty: string) {
   const d = duty.toLowerCase();
-  if (d === 'driving') return <Badge variant="danger" className="text-xs bg-red-500/10 text-red-400">Driving</Badge>;
-  if (d === 'on_duty') return <Badge variant="warning" className="text-xs bg-amber-500/10 text-amber-400">On Duty</Badge>;
-  if (d === 'sleeper') return <Badge variant="info" className="text-xs bg-blue-500/10 text-blue-400">Sleeper</Badge>;
+  if (d === 'driving') return <Badge variant="danger" className="text-xs bg-wl-danger-500/10 text-wl-danger-400">Driving</Badge>;
+  if (d === 'on_duty') return <Badge variant="warning" className="text-xs bg-wl-warning-500/10 text-wl-warning-400">On Duty</Badge>;
+  if (d === 'sleeper') return <Badge variant="info" className="text-xs bg-wl-info-500/10 text-wl-info-400">Sleeper</Badge>;
   return <Badge variant="default" className="text-xs">Off Duty</Badge>;
 }
 
 function severityBadge(sev: string) {
   const s = sev.toLowerCase();
-  if (s === 'critical') return <Badge variant="danger" className="text-xs bg-red-500/10 text-red-400">Critical</Badge>;
-  if (s === 'warning') return <Badge variant="warning" className="text-xs bg-amber-500/10 text-amber-400">Warning</Badge>;
+  if (s === 'critical') return <Badge variant="danger" className="text-xs bg-wl-danger-500/10 text-wl-danger-400">Critical</Badge>;
+  if (s === 'warning') return <Badge variant="warning" className="text-xs bg-wl-warning-500/10 text-wl-warning-400">Warning</Badge>;
   return <Badge variant="info" className="text-xs">Info</Badge>;
 }
 
 function connStatusBadge(health: string | null) {
-  if (health === 'HEALTHY') return <Badge variant="success" className="text-xs bg-emerald-500/10 text-emerald-400"><CheckCircle2 className="w-3 h-3 mr-1" />Connected</Badge>;
-  if (health === 'DEGRADED') return <Badge variant="warning" className="text-xs bg-amber-500/10 text-amber-400">Degraded</Badge>;
-  if (health === 'UNHEALTHY') return <Badge variant="danger" className="text-xs bg-red-500/10 text-red-400">Error</Badge>;
+  if (health === 'HEALTHY') return <Badge variant="success" className="text-xs bg-wl-success-500/10 text-wl-success-400"><CheckCircle2 className="w-3 h-3 mr-1" />Connected</Badge>;
+  if (health === 'DEGRADED') return <Badge variant="warning" className="text-xs bg-wl-warning-500/10 text-wl-warning-400">Degraded</Badge>;
+  if (health === 'UNHEALTHY') return <Badge variant="danger" className="text-xs bg-wl-danger-500/10 text-wl-danger-400">Error</Badge>;
   return <Badge variant="default" className="text-xs">Disconnected</Badge>;
 }
 
@@ -200,21 +200,21 @@ export default function ELDIntegrationPage() {
               value: compLoading ? '…' : `${compliance?.hosCompliance ?? '—'}%`,
               sub: 'fleet average',
               icon: <Clock className="w-4 h-4" />,
-              color: 'text-emerald-400',
+              color: 'text-wl-success-400',
             },
             {
               label: 'Violations',
               value: violLoading ? '…' : violations.length.toString(),
               sub: `${criticalCount} critical`,
               icon: <AlertTriangle className="w-4 h-4" />,
-              color: violations.length > 0 ? 'text-red-400' : 'text-emerald-400',
+              color: violations.length > 0 ? 'text-wl-danger-400' : 'text-wl-success-400',
             },
             {
               label: 'DVIR Pass Rate',
               value: compLoading ? '…' : `${compliance?.dvirCompliance ?? '—'}%`,
               sub: `${dvirFails} failures`,
               icon: <Shield className="w-4 h-4" />,
-              color: dvirFails > 0 ? 'text-amber-400' : 'text-emerald-400',
+              color: dvirFails > 0 ? 'text-wl-warning-400' : 'text-wl-success-400',
             },
           ].map(({ label, value, sub, icon, color }) => (
             <div key={label} className="rounded-xl bg-wl-bg-surface border border-wl-border-default p-5">
@@ -231,7 +231,7 @@ export default function ELDIntegrationPage() {
         {/* ── ELD Providers ────────────────────────────────────────────── */}
         <Section
           label="ELD Providers"
-          badge={<Badge variant="success" className="bg-emerald-500/10 text-emerald-400 text-xs">{connectedCount} connected</Badge>}
+          badge={<Badge variant="success" className="bg-wl-success-500/10 text-wl-success-400 text-xs">{connectedCount} connected</Badge>}
           expanded={sections.providers}
           onToggle={() => toggle('providers')}
         >
@@ -291,11 +291,11 @@ export default function ELDIntegrationPage() {
           label="HOS Driver Status"
           badge={
             violations.length > 0 ? (
-              <Badge variant="warning" className="bg-amber-500/10 text-amber-400 text-xs">
+              <Badge variant="warning" className="bg-wl-warning-500/10 text-wl-warning-400 text-xs">
                 {violations.length} violations
               </Badge>
             ) : (
-              <Badge variant="success" className="bg-emerald-500/10 text-emerald-400 text-xs">All compliant</Badge>
+              <Badge variant="success" className="bg-wl-success-500/10 text-wl-success-400 text-xs">All compliant</Badge>
             )
           }
           expanded={sections.drivers}
@@ -334,16 +334,16 @@ export default function ELDIntegrationPage() {
                       </td>
                       <td className="px-4 py-3">
                         {drv.violations > 0 ? (
-                          <span className="inline-flex items-center gap-1 text-red-400 text-sm font-semibold">
+                          <span className="inline-flex items-center gap-1 text-wl-danger-400 text-sm font-semibold">
                             <AlertTriangle className="w-3.5 h-3.5" />
                             {drv.violations}
                           </span>
                         ) : (
-                          <span className="text-emerald-400 text-sm">—</span>
+                          <span className="text-wl-success-400 text-sm">—</span>
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={cn('text-xs', drv.breakStatus === 'REQUIRED' ? 'text-amber-400 font-medium' : 'text-wl-text-tertiary')}>
+                        <span className={cn('text-xs', drv.breakStatus === 'REQUIRED' ? 'text-wl-warning-400 font-medium' : 'text-wl-text-tertiary')}>
                           {drv.breakStatus === 'REQUIRED' ? 'Required' : 'OK'}
                         </span>
                       </td>
@@ -369,9 +369,9 @@ export default function ELDIntegrationPage() {
         <Section
           label="Recent DVIR Reports"
           badge={dvirFails > 0 ? (
-            <Badge variant="danger" className="bg-red-500/10 text-red-400 text-xs">{dvirFails} failures</Badge>
+            <Badge variant="danger" className="bg-wl-danger-500/10 text-wl-danger-400 text-xs">{dvirFails} failures</Badge>
           ) : (
-            <Badge variant="success" className="bg-emerald-500/10 text-emerald-400 text-xs">All clear</Badge>
+            <Badge variant="success" className="bg-wl-success-500/10 text-wl-success-400 text-xs">All clear</Badge>
           )}
           expanded={sections.dvir}
           onToggle={() => toggle('dvir')}
@@ -406,11 +406,11 @@ export default function ELDIntegrationPage() {
                         <td className="px-4 py-3 text-wl-text-secondary text-xs">{dvir.vehicleId}</td>
                         <td className="px-4 py-3">
                           {fail ? (
-                            <Badge variant="danger" className="text-xs bg-red-500/10 text-red-400">Fail</Badge>
+                            <Badge variant="danger" className="text-xs bg-wl-danger-500/10 text-wl-danger-400">Fail</Badge>
                           ) : pending ? (
-                            <Badge variant="warning" className="text-xs bg-amber-500/10 text-amber-400">Pending</Badge>
+                            <Badge variant="warning" className="text-xs bg-wl-warning-500/10 text-wl-warning-400">Pending</Badge>
                           ) : (
-                            <Badge variant="success" className="text-xs bg-emerald-500/10 text-emerald-400">Pass</Badge>
+                            <Badge variant="success" className="text-xs bg-wl-success-500/10 text-wl-success-400">Pass</Badge>
                           )}
                         </td>
                         <td className="px-4 py-3 text-wl-text-secondary text-xs">
@@ -439,11 +439,11 @@ export default function ELDIntegrationPage() {
         <Section
           label="Violation Alerts"
           badge={criticalCount > 0 ? (
-            <Badge variant="danger" className="bg-red-500/10 text-red-400 text-xs">{criticalCount} critical</Badge>
+            <Badge variant="danger" className="bg-wl-danger-500/10 text-wl-danger-400 text-xs">{criticalCount} critical</Badge>
           ) : violations.length > 0 ? (
-            <Badge variant="warning" className="bg-amber-500/10 text-amber-400 text-xs">{violations.length} open</Badge>
+            <Badge variant="warning" className="bg-wl-warning-500/10 text-wl-warning-400 text-xs">{violations.length} open</Badge>
           ) : (
-            <Badge variant="success" className="bg-emerald-500/10 text-emerald-400 text-xs">No violations</Badge>
+            <Badge variant="success" className="bg-wl-success-500/10 text-wl-success-400 text-xs">No violations</Badge>
           )}
           expanded={sections.violations}
           onToggle={() => toggle('violations')}
@@ -454,7 +454,7 @@ export default function ELDIntegrationPage() {
             <ErrorState title="Failed to load violations" onRetry={violRefetch} />
           ) : violations.length === 0 ? (
             <div className="rounded-xl bg-wl-bg-surface border border-wl-border-default p-8 text-center">
-              <CheckCircle2 className="w-7 h-7 text-emerald-400 mx-auto mb-3" />
+              <CheckCircle2 className="w-7 h-7 text-wl-success-400 mx-auto mb-3" />
               <p className="text-sm font-medium text-wl-text-secondary">No active violations</p>
               <p className="text-xs text-wl-text-tertiary mt-1">All drivers are within HOS limits</p>
             </div>
@@ -466,7 +466,7 @@ export default function ELDIntegrationPage() {
                   className={cn(
                     'rounded-xl border px-5 py-4',
                     v.severity.toLowerCase() === 'critical'
-                      ? 'bg-red-950/20 border-red-500/20'
+                      ? 'bg-red-950/20 border-wl-danger-500/20'
                       : 'bg-wl-bg-surface border-wl-border-default',
                   )}
                 >
@@ -482,7 +482,7 @@ export default function ELDIntegrationPage() {
                   </p>
                   <p className="text-xs text-wl-text-tertiary">{v.description}</p>
                   {v.suggestedAction && (
-                    <p className="text-xs text-amber-400 mt-2 flex items-center gap-1">
+                    <p className="text-xs text-wl-warning-400 mt-2 flex items-center gap-1">
                       <AlertTriangle className="w-3 h-3" />
                       {v.suggestedAction}
                     </p>

@@ -317,9 +317,9 @@ export default function ShipmentDetailPage() {
                 />
               </div>
               {mapData?.driverLocation && (
-                <div className="px-4 py-2 bg-emerald-500/10 border-t border-emerald-500/20 flex items-center gap-2">
+                <div className="px-4 py-2 bg-wl-success-500/10 border-t border-wl-success-500/20 flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-xs text-emerald-400 font-semibold">
+                  <span className="text-xs text-wl-success-400 font-semibold">
                     {mapData.driverLocation.driverName} is live on this route
                   </span>
                 </div>
@@ -348,7 +348,7 @@ export default function ShipmentDetailPage() {
                         isCurrent
                           ? 'bg-blue-500 text-white border-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.3)]'
                           : isCompleted
-                            ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                            ? 'bg-wl-success-500/20 text-wl-success-400 border-wl-success-500/30'
                             : 'bg-transparent text-wl-text-tertiary border-wl-border-default',
                       )}
                     >
@@ -358,7 +358,7 @@ export default function ShipmentDetailPage() {
                 })}
                 {/* Handle non-standard statuses */}
                 {!STATUS_PROGRESSION.includes(shipment.status) && (
-                  <div className="px-3 py-1.5 rounded-full text-xs font-medium border bg-red-500/20 text-red-400 border-red-500/30">
+                  <div className="px-3 py-1.5 rounded-full text-xs font-medium border bg-wl-danger-500/20 text-wl-danger-400 border-wl-danger-500/30">
                     {shipment.status.replace(/_/g, ' ')}
                   </div>
                 )}
@@ -383,14 +383,14 @@ export default function ShipmentDetailPage() {
                       )}
                     >
                       <div className="flex flex-col items-center flex-shrink-0">
-                        <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center bg-blue-500/20 border-blue-500">
+                        <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center bg-wl-info-500/20 border-blue-500">
                           {index === 0 ? (
                             <CheckCircle
                               size={14}
-                              className="text-blue-400"
+                              className="text-wl-info-400"
                             />
                           ) : (
-                            <Circle size={14} className="text-blue-400" />
+                            <Circle size={14} className="text-wl-info-400" />
                           )}
                         </div>
                         {index < timeline.length - 1 && (
@@ -416,7 +416,7 @@ export default function ShipmentDetailPage() {
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="p-6">
               <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
-                <Package size={16} className="text-blue-500" />
+                <Package size={16} className="text-wl-info-500" />
                 Package Details
               </h2>
 
@@ -471,7 +471,7 @@ export default function ShipmentDetailPage() {
                           </p>
                         </div>
                         {item.price > 0 && (
-                          <p className="text-xs font-semibold text-blue-400">
+                          <p className="text-xs font-semibold text-wl-info-400">
                             {formatCurrency(item.price)}
                           </p>
                         )}
@@ -487,7 +487,7 @@ export default function ShipmentDetailPage() {
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="p-6">
               <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
-                <User size={16} className="text-blue-500" />
+                <User size={16} className="text-wl-info-500" />
                 Recipient Information
               </h2>
 
@@ -500,7 +500,7 @@ export default function ShipmentDetailPage() {
                 </div>
                 <div>
                   <p className="text-xs text-wl-text-secondary mb-1 flex items-center gap-1">
-                    <MapPin size={12} className="text-blue-500" />
+                    <MapPin size={12} className="text-wl-info-500" />
                     Delivery Address
                   </p>
                   <p className="text-sm text-white leading-relaxed">
@@ -542,10 +542,10 @@ export default function ShipmentDetailPage() {
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardContent className="p-6">
                 <h2 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
-                  <FileText size={16} className="text-blue-500" />
+                  <FileText size={16} className="text-wl-info-500" />
                   Delivery Notes
                 </h2>
-                <div className="p-3 rounded-lg bg-wl-bg-elevated border-l-4 border-l-blue-500">
+                <div className="p-3 rounded-lg bg-wl-bg-elevated border-l-4 border-l-wl-info-500">
                   <p className="text-sm text-wl-neutral-300 leading-relaxed">
                     {shipment.notes}
                   </p>
@@ -647,7 +647,7 @@ export default function ShipmentDetailPage() {
           {/* Quick Info */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="p-5">
-              <p className="text-xs font-semibold text-blue-500 mb-4 uppercase tracking-wide">
+              <p className="text-xs font-semibold text-wl-info-500 mb-4 uppercase tracking-wide">
                 Quick Info
               </p>
 
@@ -666,28 +666,28 @@ export default function ShipmentDetailPage() {
                   <InfoRow
                     label="ETA"
                     value={formatDateShort(shipment.estimatedArrival)}
-                    className="text-emerald-400"
+                    className="text-wl-success-400"
                   />
                 )}
                 {shipment.actualDelivery && (
                   <InfoRow
                     label="Delivered"
                     value={formatDate(shipment.actualDelivery)}
-                    className="text-emerald-400"
+                    className="text-wl-success-400"
                   />
                 )}
                 {shipment.shippingCost && (
                   <InfoRow
                     label="Shipping Cost"
                     value={formatCurrency(Number(shipment.shippingCost))}
-                    className="text-blue-400"
+                    className="text-wl-info-400"
                   />
                 )}
                 {shipment.codAmount && (
                   <InfoRow
                     label="COD Amount"
                     value={formatCurrency(Number(shipment.codAmount))}
-                    className="text-amber-400"
+                    className="text-wl-warning-400"
                   />
                 )}
               </div>
@@ -699,7 +699,7 @@ export default function ShipmentDetailPage() {
                     {shipment.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="px-2 py-0.5 text-[10px] rounded-full bg-blue-500/15 text-blue-400 font-semibold uppercase tracking-wide"
+                        className="px-2 py-0.5 text-[10px] rounded-full bg-wl-info-500/15 text-wl-info-400 font-semibold uppercase tracking-wide"
                       >
                         {tag}
                       </span>
@@ -714,7 +714,7 @@ export default function ShipmentDetailPage() {
           {shipment.driver && (
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardContent className="p-5">
-                <p className="text-xs font-semibold text-blue-500 mb-4 flex items-center gap-1.5 uppercase tracking-wide">
+                <p className="text-xs font-semibold text-wl-info-500 mb-4 flex items-center gap-1.5 uppercase tracking-wide">
                   <Truck size={13} /> Assigned Driver
                 </p>
                 <div className="p-3 rounded-lg bg-wl-bg-elevated space-y-1">
@@ -731,10 +731,10 @@ export default function ShipmentDetailPage() {
                   </p>
                 </div>
                 {driverLocationData && (
-                  <div className="mt-3 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                  <div className="mt-3 p-2.5 rounded-lg bg-wl-success-500/10 border border-wl-success-500/20">
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-xs font-semibold text-emerald-400">
+                      <span className="text-xs font-semibold text-wl-success-400">
                         Live Location
                       </span>
                     </div>
@@ -754,7 +754,7 @@ export default function ShipmentDetailPage() {
           {shipment.location && (
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardContent className="p-5">
-                <p className="text-xs font-semibold text-blue-500 mb-3 flex items-center gap-1.5 uppercase tracking-wide">
+                <p className="text-xs font-semibold text-wl-info-500 mb-3 flex items-center gap-1.5 uppercase tracking-wide">
                   <MapPin size={13} /> Origin Location
                 </p>
                 <div className="p-3 rounded-lg bg-wl-bg-elevated">
@@ -774,10 +774,10 @@ export default function ShipmentDetailPage() {
             className={cn(
               'border-2',
               shipment.status === 'DELIVERED'
-                ? 'bg-emerald-500/5 border-emerald-500/40'
+                ? 'bg-emerald-500/5 border-wl-success-500/40'
                 : shipment.status === 'FAILED' || shipment.status === 'CANCELLED'
-                  ? 'bg-red-500/5 border-red-500/40'
-                  : 'bg-blue-500/5 border-blue-500/40',
+                  ? 'bg-red-500/5 border-wl-danger-500/40'
+                  : 'bg-blue-500/5 border-wl-info-500/40',
             )}
           >
             <CardContent className="p-5">

@@ -356,7 +356,7 @@ export default function OrderDetailPage() {
                 <span>Items</span>
                 <span className="text-wl-neutral-300">{order.itemCount}</span>
               </div>
-              <div className="flex items-center gap-8 py-2 border-t border-wl-border-default text-base font-bold text-blue-400">
+              <div className="flex items-center gap-8 py-2 border-t border-wl-border-default text-base font-bold text-wl-info-400">
                 <span>Total</span>
                 <span>₹{total.toLocaleString()}</span>
               </div>
@@ -414,7 +414,7 @@ export default function OrderDetailPage() {
             {order.notes ? 'Update Notes' : 'Add Notes'}
           </label>
           <textarea
-            className="w-full p-3 bg-wl-bg-root border border-wl-border-default rounded-lg text-wl-neutral-300 text-sm min-h-[80px] resize-y focus:outline-none focus:border-blue-500 transition-colors"
+            className="w-full p-3 bg-wl-bg-root border border-wl-border-default rounded-lg text-wl-neutral-300 text-sm min-h-[80px] resize-y focus:outline-none focus:border-wl-info-500 transition-colors"
             placeholder="Add internal notes…"
             value={noteInput}
             onChange={(e) => setNoteInput(e.target.value)}

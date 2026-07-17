@@ -214,7 +214,7 @@ export default function SupplyChainPage() {
             {/* Order Fulfillment Pipeline */}
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
               <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <BoxIcon className="w-5 h-5 text-blue-500" />
+                <BoxIcon className="w-5 h-5 text-wl-info-500" />
                 Order Fulfillment Pipeline
               </h2>
               <div className="space-y-4">
@@ -270,7 +270,7 @@ export default function SupplyChainPage() {
             {/* Warehouse Utilization */}
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
               <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <Warehouse className="w-5 h-5 text-emerald-500" />
+                <Warehouse className="w-5 h-5 text-wl-success-500" />
                 Warehouse Utilization
               </h2>
               <div className="space-y-4">
@@ -312,7 +312,7 @@ export default function SupplyChainPage() {
           {/* Demand vs Supply */}
           <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-500" />
+              <TrendingUp className="w-5 h-5 text-wl-info-500" />
               Demand vs Supply Forecast
             </h2>
             <div className="space-y-4">
@@ -348,7 +348,7 @@ export default function SupplyChainPage() {
           {/* Inventory ABC Distribution */}
           <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <Package className="w-5 h-5 text-amber-500" />
+              <Package className="w-5 h-5 text-wl-warning-500" />
               Inventory ABC Distribution
             </h2>
             <div className="space-y-4">
@@ -374,21 +374,21 @@ export default function SupplyChainPage() {
 
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:border-blue-500/30 transition-colors">
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:border-wl-info-500/30 transition-colors">
               <Button variant="primary" className="w-full mb-3">
                 <Plus className="w-4 h-4 mr-2" />
                 Create Transfer Order
               </Button>
               <p className="text-xs text-wl-text-tertiary text-center">Move inventory between warehouses</p>
             </Card>
-            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:border-emerald-500/30 transition-colors">
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:border-wl-success-500/30 transition-colors">
               <Button variant="primary" className="w-full mb-3">
                 <Plus className="w-4 h-4 mr-2" />
                 Schedule Cycle Count
               </Button>
               <p className="text-xs text-wl-text-tertiary text-center">Plan inventory verification</p>
             </Card>
-            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:border-amber-500/30 transition-colors">
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:border-wl-warning-500/30 transition-colors">
               <Button variant="primary" className="w-full mb-3">
                 <Plus className="w-4 h-4 mr-2" />
                 Process Reorders

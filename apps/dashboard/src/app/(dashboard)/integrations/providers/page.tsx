@@ -212,10 +212,10 @@ export default function ProvidersPage() {
   const circuitBreakerColor = useMemo(() => {
     if (!metrics) return "text-wl-text-secondary";
     if (metrics.currentCircuitBreaker === "closed")
-      return "text-emerald-500";
+      return "text-wl-success-500";
     if (metrics.currentCircuitBreaker === "half-open")
-      return "text-amber-500";
-    return "text-red-500";
+      return "text-wl-warning-500";
+    return "text-wl-danger-500";
   }, [metrics?.currentCircuitBreaker]);
 
   if (error) {
@@ -252,7 +252,7 @@ export default function ProvidersPage() {
         <select
           value={selectedProviderId}
           onChange={(e) => setSelectedProviderId(e.target.value)}
-          className="w-full md:w-80 px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
+          className="w-full md:w-80 px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
         >
           <optgroup label="Payment">
             <option value="stripe">Stripe</option>
@@ -290,9 +290,9 @@ export default function ProvidersPage() {
                   {metrics.slaTarget}%
                 </p>
                 {metrics.uptime >= metrics.slaTarget ? (
-                  <CheckCircle className="w-4 h-4 text-emerald-500" />
+                  <CheckCircle className="w-4 h-4 text-wl-success-500" />
                 ) : (
-                  <AlertTriangle className="w-4 h-4 text-amber-500" />
+                  <AlertTriangle className="w-4 h-4 text-wl-warning-500" />
                 )}
               </div>
             </CardContent>
@@ -536,7 +536,7 @@ export default function ProvidersPage() {
             </div>
 
             {saveError && (
-              <p className="text-sm text-red-400">{saveError}</p>
+              <p className="text-sm text-wl-danger-400">{saveError}</p>
             )}
 
             {configMode && (

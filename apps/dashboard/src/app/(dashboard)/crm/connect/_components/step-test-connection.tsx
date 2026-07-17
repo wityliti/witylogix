@@ -48,7 +48,7 @@ export function StepTestConnection({
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="text-emerald-400 mt-0.5 flex-shrink-0"
+                    className="text-wl-success-400 mt-0.5 flex-shrink-0"
                   >
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
@@ -60,7 +60,7 @@ export function StepTestConnection({
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
-                    className="text-red-400 mt-0.5 flex-shrink-0"
+                    className="text-wl-danger-400 mt-0.5 flex-shrink-0"
                   >
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="15" y1="9" x2="9" y2="15"></line>
@@ -71,8 +71,8 @@ export function StepTestConnection({
                   className={cn(
                     'm-0',
                     testResults.success
-                      ? 'text-emerald-400'
-                      : 'text-red-400'
+                      ? 'text-wl-success-400'
+                      : 'text-wl-danger-400'
                   )}
                 >
                   {testResults.message}

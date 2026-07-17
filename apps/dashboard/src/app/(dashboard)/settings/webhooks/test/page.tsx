@@ -146,9 +146,9 @@ export default function WebhookTestPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "success":
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircle className="w-4 h-4 text-wl-success-500" />;
       case "failed":
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
+        return <AlertCircle className="w-4 h-4 text-wl-danger-500" />;
       case "pending":
         return <Clock className="w-4 h-4 text-yellow-500" />;
       default:
@@ -238,7 +238,7 @@ export default function WebhookTestPage() {
                 <textarea
                   value={customPayload}
                   onChange={(e) => setCustomPayload(e.target.value)}
-                  className="w-full h-48 p-3 rounded-lg border border-wl-border-default bg-wl-bg-elevated font-mono text-xs resize-none focus:outline-none focus:border-blue-500 text-white"
+                  className="w-full h-48 p-3 rounded-lg border border-wl-border-default bg-wl-bg-elevated font-mono text-xs resize-none focus:outline-none focus:border-wl-info-500 text-white"
                 />
               </CardContent>
             </Card>

@@ -34,7 +34,7 @@ export function MessageRoutes({ routes, onAddRoute }: MessageRoutesProps) {
                 </div>
                 <div className="flex-1 flex items-center justify-center">
                   <div className="flex-1 h-px bg-wl-bg-elevated" />
-                  <Send className="w-4 h-4 text-blue-500 mx-3" />
+                  <Send className="w-4 h-4 text-wl-info-500 mx-3" />
                   <div className="flex-1 h-px bg-wl-bg-elevated" />
                 </div>
                 <div className="text-left min-w-max">
@@ -82,7 +82,7 @@ export function MessageRoutes({ routes, onAddRoute }: MessageRoutesProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex-1 text-red-500 hover:bg-red-500/10"
+                className="flex-1 text-wl-danger-500 hover:bg-wl-danger-500/10"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Remove

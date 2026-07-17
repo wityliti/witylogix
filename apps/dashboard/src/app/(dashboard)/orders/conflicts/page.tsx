@@ -243,7 +243,7 @@ export default function ConflictsPage() {
                 onChange={(e) =>
                   setFilterPlatform(e.target.value as SyncPlatform | "all")
                 }
-                className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-wl-neutral-300 outline-none focus:border-blue-500"
+                className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-wl-neutral-300 outline-none focus:border-wl-info-500"
               >
                 <option value="all">All Platforms</option>
                 {Object.entries(PLATFORMS).map(([key, { name }]) => (
@@ -262,7 +262,7 @@ export default function ConflictsPage() {
               <select
                 value={filterField}
                 onChange={(e) => setFilterField(e.target.value)}
-                className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-wl-neutral-300 outline-none focus:border-blue-500"
+                className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-wl-neutral-300 outline-none focus:border-wl-info-500"
               >
                 <option value="all">All Fields</option>
                 {uniqueFields.map((field) => (
@@ -285,7 +285,7 @@ export default function ConflictsPage() {
                     e.target.value as "all" | "today" | "week" | "month"
                   )
                 }
-                className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-wl-neutral-300 outline-none focus:border-blue-500"
+                className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-wl-neutral-300 outline-none focus:border-wl-info-500"
               >
                 <option value="all">All Time</option>
                 <option value="today">Today</option>
@@ -366,10 +366,10 @@ export default function ConflictsPage() {
                               <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                                 {platform?.name} Value
                               </p>
-                              <div className="p-3 rounded-lg bg-wl-bg-root border border-emerald-500/30 font-mono text-sm text-wl-neutral-300 break-words max-h-32 overflow-y-auto">
+                              <div className="p-3 rounded-lg bg-wl-bg-root border border-wl-success-500/30 font-mono text-sm text-wl-neutral-300 break-words max-h-32 overflow-y-auto">
                                 {conflict.externalValue || "(empty)"}
                               </div>
-                              <p className="text-xs text-emerald-500 mt-2 font-medium">
+                              <p className="text-xs text-wl-success-500 mt-2 font-medium">
                                 Source: External
                               </p>
                             </div>
@@ -379,10 +379,10 @@ export default function ConflictsPage() {
                               <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                                 Witylogix Value
                               </p>
-                              <div className="p-3 rounded-lg bg-wl-bg-root border border-blue-500/30 font-mono text-sm text-wl-neutral-300 break-words max-h-32 overflow-y-auto">
+                              <div className="p-3 rounded-lg bg-wl-bg-root border border-wl-info-500/30 font-mono text-sm text-wl-neutral-300 break-words max-h-32 overflow-y-auto">
                                 {conflict.internalValue || "(empty)"}
                               </div>
-                              <p className="text-xs text-blue-500 mt-2 font-medium">
+                              <p className="text-xs text-wl-info-500 mt-2 font-medium">
                                 Source: Internal
                               </p>
                             </div>
@@ -396,7 +396,7 @@ export default function ConflictsPage() {
                             <input
                               type="text"
                               placeholder="Enter custom value (optional)"
-                              className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-wl-neutral-300 outline-none focus:border-blue-500"
+                              className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-wl-neutral-300 outline-none focus:border-wl-info-500"
                             />
                           </div>
                         </div>
@@ -456,8 +456,8 @@ export default function ConflictsPage() {
 
         {/* Error State */}
         {error && (
-          <Card className="p-4 border-red-500/20 bg-[rgba(255,69,69,0.05)] border border-red-500/20">
-            <div className="flex items-center gap-2 text-red-500">
+          <Card className="p-4 border-wl-danger-500/20 bg-[rgba(255,69,69,0.05)] border border-wl-danger-500/20">
+            <div className="flex items-center gap-2 text-wl-danger-500">
               <span>⚠️</span>
               <span className="text-sm font-medium">{error}</span>
             </div>

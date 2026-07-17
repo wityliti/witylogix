@@ -43,7 +43,7 @@ export default function DocsPortal() {
               className={cn(
                 'border-b-2 px-1 py-4 text-sm font-medium transition-colors',
                 activeTab === tab
-                  ? 'border-blue-500 text-blue-500'
+                  ? 'border-blue-500 text-wl-info-500'
                   : 'border-transparent text-wl-text-secondary hover:text-white'
               )}
             >
@@ -111,12 +111,12 @@ function SDKReference({
 
             <div className="rounded bg-wl-bg-root p-4">
               <div className="text-sm text-wl-text-secondary">Base URL</div>
-              <code className="mt-1 block text-sm font-mono text-blue-500">{sdk.baseUrl}</code>
+              <code className="mt-1 block text-sm font-mono text-wl-info-500">{sdk.baseUrl}</code>
             </div>
 
             <div className="rounded bg-wl-bg-root p-4">
               <div className="text-sm text-wl-text-secondary">Authentication</div>
-              <code className="mt-1 block text-sm font-mono text-blue-500">{sdk.authentication}</code>
+              <code className="mt-1 block text-sm font-mono text-wl-info-500">{sdk.authentication}</code>
             </div>
           </div>
 
@@ -131,7 +131,7 @@ function SDKReference({
             <div className="space-y-4">
               {displayedMethods.map((method) => (
                 <div key={method.name} className="rounded border border-wl-border-default bg-wl-bg-root p-4">
-                  <h4 className="font-mono text-sm font-semibold text-blue-500">{method.name}</h4>
+                  <h4 className="font-mono text-sm font-semibold text-wl-info-500">{method.name}</h4>
                   <p className="mt-2 text-sm text-wl-text-secondary">{method.description}</p>
 
                   {method.parameters.length > 0 && (
@@ -140,8 +140,8 @@ function SDKReference({
                       <ul className="mt-2 space-y-1 text-xs text-wl-text-secondary">
                         {method.parameters.map((param) => (
                           <li key={param.name}>
-                            <code className="text-blue-500">{param.name}</code> ({param.type})
-                            {param.required && <span className="ml-1 text-red-500">*</span>}
+                            <code className="text-wl-info-500">{param.name}</code> ({param.type})
+                            {param.required && <span className="ml-1 text-wl-danger-500">*</span>}
                           </li>
                         ))}
                       </ul>
@@ -150,7 +150,7 @@ function SDKReference({
 
                   <div className="mt-3">
                     <div className="text-xs font-semibold text-white">Example:</div>
-                    <code className="mt-2 block overflow-x-auto rounded bg-wl-bg-surface p-2 text-xs font-mono text-blue-500">
+                    <code className="mt-2 block overflow-x-auto rounded bg-wl-bg-surface p-2 text-xs font-mono text-wl-info-500">
                       {method.example}
                     </code>
                   </div>
@@ -197,7 +197,7 @@ function WebhookCatalog({
               <Card key={idx} className="border border-wl-border-default bg-wl-bg-surface p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-mono text-sm font-semibold text-blue-500">{event.type}</h4>
+                    <h4 className="font-mono text-sm font-semibold text-wl-info-500">{event.type}</h4>
                     <p className="mt-1 text-sm text-wl-text-secondary">{event.description}</p>
                   </div>
                   <Badge variant="info">{provider}</Badge>
@@ -205,7 +205,7 @@ function WebhookCatalog({
 
                 <div className="mt-4">
                   <div className="text-xs font-semibold text-white">Example Payload:</div>
-                  <code className="mt-2 block overflow-x-auto rounded bg-wl-bg-root p-3 text-xs font-mono text-blue-500">
+                  <code className="mt-2 block overflow-x-auto rounded bg-wl-bg-root p-3 text-xs font-mono text-wl-info-500">
                     {event.example}
                   </code>
                 </div>
@@ -221,7 +221,7 @@ function WebhookCatalog({
               <div className="mt-4 space-y-2">
                 {catalog.events.slice(0, 5).map((event) => (
                   <div key={event.type} className="text-sm text-wl-text-secondary">
-                    <code className="text-blue-500">{event.type}</code>
+                    <code className="text-wl-info-500">{event.type}</code>
                   </div>
                 ))}
                 {catalog.events.length > 5 && (
@@ -325,7 +325,7 @@ function ConfigurationGuides({
 
               {step === 1 && (
                 <div className="mt-3 rounded bg-wl-bg-surface p-3">
-                  <code className="text-xs font-mono text-blue-500">
+                  <code className="text-xs font-mono text-wl-info-500">
                     API_KEY=your_key_here
                   </code>
                 </div>
@@ -334,7 +334,7 @@ function ConfigurationGuides({
           ))}
         </div>
 
-        <div className="mt-6 rounded bg-blue-500 bg-opacity-10 p-4 text-sm text-blue-400">
+        <div className="mt-6 rounded bg-blue-500 bg-opacity-10 p-4 text-sm text-wl-info-400">
           Screenshot placeholder: Setup dashboard walkthrough
         </div>
       </Card>

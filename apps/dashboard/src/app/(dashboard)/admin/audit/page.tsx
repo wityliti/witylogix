@@ -56,10 +56,10 @@ interface AuditResponse {
 // ── Helpers ──────────────────────────────────────────────────────
 
 const ACTION_META: Record<AuditAction, { label: string; color: string; icon: typeof Plus }> = {
-  CREATE: { label: 'Create', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20', icon: Plus },
-  READ:   { label: 'Read',   color: 'text-blue-400 bg-blue-400/10 border-blue-400/20',          icon: Eye },
-  UPDATE: { label: 'Update', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20',        icon: Edit3 },
-  DELETE: { label: 'Delete', color: 'text-red-400 bg-red-400/10 border-red-400/20',              icon: Trash2 },
+  CREATE: { label: 'Create', color: 'text-wl-success-400 bg-wl-success-400/10 border-wl-success-400/20', icon: Plus },
+  READ:   { label: 'Read',   color: 'text-wl-info-400 bg-wl-info-400/10 border-wl-info-400/20',          icon: Eye },
+  UPDATE: { label: 'Update', color: 'text-wl-warning-400 bg-wl-warning-400/10 border-wl-warning-400/20',        icon: Edit3 },
+  DELETE: { label: 'Delete', color: 'text-wl-danger-400 bg-wl-danger-400/10 border-wl-danger-400/20',              icon: Trash2 },
   EXPORT: { label: 'Export', color: 'text-purple-400 bg-purple-400/10 border-purple-400/20',     icon: Download },
 };
 
@@ -94,12 +94,12 @@ function ChangePill({ changes }: { changes: Record<string, unknown> | null }) {
       {keys.slice(0, 3).map((k) => {
         const val = changes[k] as [unknown, unknown] | undefined;
         return (
-          <span key={k} className="text-[10px] font-mono bg-white/[0.04] border border-white/[0.06] rounded px-1.5 py-0.5 text-white/40">
+          <span key={k} className="text-[10px] font-mono bg-white/[0.04] border border-wl-border-subtle rounded px-1.5 py-0.5 text-wl-text-tertiary">
             {k}: {Array.isArray(val) ? `${String(val[0])} → ${String(val[1])}` : String(val)}
           </span>
         );
       })}
-      {keys.length > 3 && <span className="text-[10px] text-white/20">+{keys.length - 3} more</span>}
+      {keys.length > 3 && <span className="text-[10px] text-wl-text-tertiary">+{keys.length - 3} more</span>}
     </div>
   );
 }
@@ -179,21 +179,21 @@ export default function AuditTrailPage() {
               <ShieldCheck className="w-5 h-5 text-rose-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white/90 tracking-tight">Audit Trail</h1>
-              <p className="text-sm text-white/35 mt-0.5">Compliance log of all admin and system actions</p>
+              <h1 className="text-2xl font-bold text-wl-text-primary tracking-tight">Audit Trail</h1>
+              <p className="text-sm text-wl-text-tertiary mt-0.5">Compliance log of all admin and system actions</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => refetch()}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs text-white/40 hover:text-white/60 border border-white/[0.06] rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs text-wl-text-tertiary hover:text-wl-text-secondary border border-wl-border-subtle rounded-lg transition-colors"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               Refresh
             </button>
             <a
               href={exportUrl}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs text-white/60 hover:text-white/80 bg-white/[0.04] border border-white/[0.08] rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs text-wl-text-secondary hover:text-wl-text-primary bg-white/[0.04] border border-wl-border-default rounded-lg transition-colors"
             >
               <Download className="w-3.5 h-3.5" />
               Export CSV
@@ -214,7 +214,7 @@ export default function AuditTrailPage() {
                 onClick={() => { setActionFilter(actionFilter === action ? '' : action); setPage(1); }}
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all',
-                  actionFilter === action ? meta.color : 'bg-white/[0.03] border-white/[0.06] text-white/30 hover:text-white/50',
+                  actionFilter === action ? meta.color : 'bg-white/[0.03] border-wl-border-subtle text-wl-text-tertiary hover:text-wl-text-secondary',
                 )}
               >
                 <IconC className="w-3 h-3" />
@@ -224,7 +224,7 @@ export default function AuditTrailPage() {
             );
           })}
           {(actionFilter || resourceFilter || dateFrom || dateTo || search) && (
-            <button onClick={resetFilters} className="text-xs text-white/25 hover:text-white/50 px-2 py-1.5 transition-colors">
+            <button onClick={resetFilters} className="text-xs text-wl-text-tertiary hover:text-wl-text-secondary px-2 py-1.5 transition-colors">
               Clear filters
             </button>
           )}
@@ -234,13 +234,13 @@ export default function AuditTrailPage() {
         <div className="flex items-center gap-2 flex-wrap">
           {/* Search */}
           <div className="relative flex-1 min-w-52">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-tertiary" />
             <input
               type="text"
               placeholder="Search resource, ID, user…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-wl-bg-surface border border-white/[0.06] rounded-lg pl-9 pr-4 py-2 text-sm text-white/60 placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors"
+              className="w-full bg-wl-bg-surface border border-wl-border-subtle rounded-lg pl-9 pr-4 py-2 text-sm text-wl-text-secondary placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-border-strong transition-colors"
             />
           </div>
 
@@ -248,7 +248,7 @@ export default function AuditTrailPage() {
           <select
             value={resourceFilter}
             onChange={(e) => { setResourceFilter(e.target.value); setPage(1); }}
-            className="bg-wl-bg-surface border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white/50 focus:outline-none focus:border-white/20 transition-colors"
+            className="bg-wl-bg-surface border border-wl-border-subtle rounded-lg px-3 py-2 text-sm text-wl-text-secondary focus:outline-none focus:border-wl-border-strong transition-colors"
           >
             <option value="">All resources</option>
             {RESOURCE_TYPES.map((r) => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
@@ -256,27 +256,27 @@ export default function AuditTrailPage() {
 
           {/* Date range */}
           <div className="flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-white/20" />
+            <Calendar className="w-3.5 h-3.5 text-wl-text-tertiary" />
             <input
               type="date"
               value={dateFrom}
               onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-              className="bg-wl-bg-surface border border-white/[0.06] rounded-lg px-2.5 py-2 text-sm text-white/50 focus:outline-none focus:border-white/20 transition-colors"
+              className="bg-wl-bg-surface border border-wl-border-subtle rounded-lg px-2.5 py-2 text-sm text-wl-text-secondary focus:outline-none focus:border-wl-border-strong transition-colors"
             />
-            <span className="text-white/20 text-xs">to</span>
+            <span className="text-wl-text-tertiary text-xs">to</span>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-              className="bg-wl-bg-surface border border-white/[0.06] rounded-lg px-2.5 py-2 text-sm text-white/50 focus:outline-none focus:border-white/20 transition-colors"
+              className="bg-wl-bg-surface border border-wl-border-subtle rounded-lg px-2.5 py-2 text-sm text-wl-text-secondary focus:outline-none focus:border-wl-border-strong transition-colors"
             />
           </div>
         </div>
 
         {/* Table */}
-        <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] overflow-hidden">
+        <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle overflow-hidden">
           {/* Column headers */}
-          <div className="grid grid-cols-[7rem_1fr_7rem_9rem_9rem] gap-3 px-5 py-2.5 text-[10px] text-white/20 font-medium uppercase tracking-wider border-b border-white/[0.05] bg-white/[0.01]">
+          <div className="grid grid-cols-[7rem_1fr_7rem_9rem_9rem] gap-3 px-5 py-2.5 text-[10px] text-wl-text-tertiary font-medium uppercase tracking-wider border-b border-wl-border-subtle bg-white/[0.01]">
             <span>Action</span>
             <span>Resource</span>
             <span>User</span>
@@ -292,8 +292,8 @@ export default function AuditTrailPage() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="py-16 text-center">
-              <ShieldCheck className="w-10 h-10 text-white/10 mx-auto mb-3" />
-              <p className="text-sm text-white/25">No audit entries match your filters</p>
+              <ShieldCheck className="w-10 h-10 text-wl-text-tertiary mx-auto mb-3" />
+              <p className="text-sm text-wl-text-tertiary">No audit entries match your filters</p>
             </div>
           ) : (
             <div>
@@ -304,7 +304,7 @@ export default function AuditTrailPage() {
                 return (
                   <div
                     key={entry.id}
-                    className="grid grid-cols-[7rem_1fr_7rem_9rem_9rem] gap-3 px-5 py-3 items-start border-b border-white/[0.03] last:border-0 hover:bg-white/[0.02] transition-colors"
+                    className="grid grid-cols-[7rem_1fr_7rem_9rem_9rem] gap-3 px-5 py-3 items-start border-b border-wl-border-subtle last:border-0 hover:bg-white/[0.02] transition-colors"
                   >
                     {/* Action badge */}
                     <div>
@@ -317,30 +317,30 @@ export default function AuditTrailPage() {
                     {/* Resource */}
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <ResIcon className="w-3.5 h-3.5 text-white/25 shrink-0" />
-                        <span className="text-sm text-white/70 capitalize font-medium">{entry.resource_type}</span>
-                        <span className="text-[11px] font-mono text-white/30 truncate">{entry.resource_id}</span>
+                        <ResIcon className="w-3.5 h-3.5 text-wl-text-tertiary shrink-0" />
+                        <span className="text-sm text-wl-text-secondary capitalize font-medium">{entry.resource_type}</span>
+                        <span className="text-[11px] font-mono text-wl-text-tertiary truncate">{entry.resource_id}</span>
                       </div>
                       <ChangePill changes={entry.changes} />
                       {entry.metadata && Object.keys(entry.metadata).length > 0 && (
-                        <div className="mt-1 text-[10px] text-white/20 font-mono truncate">
+                        <div className="mt-1 text-[10px] text-wl-text-tertiary font-mono truncate">
                           {Object.entries(entry.metadata).slice(0, 2).map(([k, v]) => `${k}: ${String(v)}`).join(' · ')}
                         </div>
                       )}
                     </div>
 
                     {/* User */}
-                    <div className="text-[11px] font-mono text-white/30 truncate">
+                    <div className="text-[11px] font-mono text-wl-text-tertiary truncate">
                       {entry.user_id ? entry.user_id.slice(-8) : 'system'}
                     </div>
 
                     {/* IP */}
-                    <div className="text-[11px] font-mono text-white/25">
+                    <div className="text-[11px] font-mono text-wl-text-tertiary">
                       {entry.ip_address ?? '—'}
                     </div>
 
                     {/* Timestamp */}
-                    <div className="text-[11px] font-mono text-white/35 text-right">
+                    <div className="text-[11px] font-mono text-wl-text-tertiary text-right">
                       {formatTs(entry.created_at)}
                     </div>
                   </div>
@@ -351,7 +351,7 @@ export default function AuditTrailPage() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between text-sm text-white/30">
+        <div className="flex items-center justify-between text-sm text-wl-text-tertiary">
           <span className="text-[12px]">
             {pagination.total.toLocaleString()} entries · page {pagination.page} of {pagination.pages}
           </span>
@@ -369,7 +369,7 @@ export default function AuditTrailPage() {
                 onClick={() => setPage(p)}
                 className={cn(
                   'w-7 h-7 text-xs font-mono rounded transition-colors',
-                  p === pagination.page ? 'bg-white/10 text-white/70' : 'hover:bg-white/[0.05] text-white/30',
+                  p === pagination.page ? 'bg-white/10 text-wl-text-secondary' : 'hover:bg-white/[0.05] text-wl-text-tertiary',
                 )}
               >
                 {p}

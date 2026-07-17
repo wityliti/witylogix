@@ -122,7 +122,7 @@ export default function InventoryPage() {
                 <p className={cn("text-wl-text-secondary text-xs font-medium")}>Total Quantity</p>
                 <p className={cn("text-white text-2xl font-bold mt-1")}>{totalQuantity.toLocaleString()}</p>
               </div>
-              <Package size={32} className={cn("text-blue-500 opacity-70")} />
+              <Package size={32} className={cn("text-wl-info-500 opacity-70")} />
             </CardContent>
           </Card>
 
@@ -132,7 +132,7 @@ export default function InventoryPage() {
                 <p className={cn("text-wl-text-secondary text-xs font-medium")}>Low Stock</p>
                 <p className={cn("text-white text-2xl font-bold mt-1")}>{lowStockCount}</p>
               </div>
-              <AlertTriangle size={32} className="text-amber-500 opacity-70" />
+              <AlertTriangle size={32} className="text-wl-warning-500 opacity-70" />
             </CardContent>
           </Card>
 
@@ -142,7 +142,7 @@ export default function InventoryPage() {
                 <p className={cn("text-wl-text-secondary text-xs font-medium")}>Out of Stock</p>
                 <p className={cn("text-white text-2xl font-bold mt-1")}>{outOfStockCount}</p>
               </div>
-              <TrendingDown size={32} className="text-red-500 opacity-70" />
+              <TrendingDown size={32} className="text-wl-danger-500 opacity-70" />
             </CardContent>
           </Card>
 
@@ -152,7 +152,7 @@ export default function InventoryPage() {
                 <p className={cn("text-wl-text-secondary text-xs font-medium")}>Total SKUs</p>
                 <p className={cn("text-white text-2xl font-bold mt-1")}>{items.length}</p>
               </div>
-              <CheckCircle size={32} className="text-emerald-500 opacity-70" />
+              <CheckCircle size={32} className="text-wl-success-500 opacity-70" />
             </CardContent>
           </Card>
         </div>
@@ -328,7 +328,7 @@ export default function InventoryPage() {
                   lowStockAlerts.map((item) => (
                     <div key={item.id} className={cn("p-3 bg-wl-bg-elevated rounded border border-wl-border-default")}>
                       <div className={cn("flex items-start gap-2 mb-1.5")}>
-                        <AlertTriangle size={14} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                        <AlertTriangle size={14} className="text-wl-warning-500 mt-0.5 flex-shrink-0" />
                         <div>
                           <p className={cn("text-white text-xs font-medium")}>{item.name}</p>
                           <p className={cn("text-wl-text-secondary text-xs")}>{item.quantity} / {item.reorderPoint}</p>
@@ -379,13 +379,13 @@ export default function InventoryPage() {
                             <div className={cn("flex items-center justify-center gap-1")}>
                               {movement.type === "in" ? (
                                 <>
-                                  <ArrowDownLeft size={14} className="text-emerald-500" />
-                                  <span className="text-emerald-500 text-xs font-semibold">IN</span>
+                                  <ArrowDownLeft size={14} className="text-wl-success-500" />
+                                  <span className="text-wl-success-500 text-xs font-semibold">IN</span>
                                 </>
                               ) : (
                                 <>
-                                  <ArrowUpRight size={14} className="text-red-500" />
-                                  <span className="text-red-500 text-xs font-semibold">OUT</span>
+                                  <ArrowUpRight size={14} className="text-wl-danger-500" />
+                                  <span className="text-wl-danger-500 text-xs font-semibold">OUT</span>
                                 </>
                               )}
                             </div>

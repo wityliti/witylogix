@@ -107,7 +107,7 @@ export default function BillingPage() {
         </Link>
 
         {/* Current Plan Card */}
-        <Card className="mb-8 bg-gradient-to-r from-blue-500/10 to-blue-500/5 border-blue-500/30 bg-wl-bg-surface border border-wl-border-default">
+        <Card className="mb-8 bg-gradient-to-r from-blue-500/10 to-blue-500/5 border-wl-info-500/30 bg-wl-bg-surface border border-wl-border-default">
           <CardContent className="pt-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
@@ -145,7 +145,7 @@ export default function BillingPage() {
               <Button variant="secondary" className="border-wl-border-default text-white hover:bg-wl-bg-elevated">
                 Downgrade Plan
               </Button>
-              <Button variant="ghost" className="text-red-400">
+              <Button variant="ghost" className="text-wl-danger-400">
                 Cancel Subscription
               </Button>
             </div>
@@ -197,7 +197,7 @@ export default function BillingPage() {
           <CardContent>
             <div className="text-sm text-wl-text-secondary mb-4">
               Payment method management requires Stripe integration.{' '}
-              <Link href="/settings/payments" className="text-blue-400 hover:underline">
+              <Link href="/settings/payments" className="text-wl-info-400 hover:underline">
                 Configure payment gateways →
               </Link>
             </div>
@@ -221,7 +221,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.fullName ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,fullName: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                     placeholder="Full name"
                   />
                 </div>
@@ -231,7 +231,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.company ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,company: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                     placeholder="Company name"
                   />
                 </div>
@@ -242,7 +242,7 @@ export default function BillingPage() {
                   type="text"
                   value={addr.address ?? ''}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,address: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                   placeholder="Street address"
                 />
               </div>
@@ -253,7 +253,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.city ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,city: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                     placeholder="City"
                   />
                 </div>
@@ -263,7 +263,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.state ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,state: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                     placeholder="State"
                   />
                 </div>
@@ -273,7 +273,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.postalCode ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,postalCode: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                     placeholder="Postal code"
                   />
                 </div>
@@ -321,7 +321,7 @@ export default function BillingPage() {
                           {invoiceStatusLabel(invoice.status)}
                         </Badge>
                       </div>
-                      <Button variant="ghost" size="sm" className="text-blue-400 hover:bg-wl-bg-elevated">
+                      <Button variant="ghost" size="sm" className="text-wl-info-400 hover:bg-wl-bg-elevated">
                         <Download className="w-4 h-4 mr-2" />
                         <span className="hidden sm:inline">Download</span>
                       </Button>
@@ -335,8 +335,8 @@ export default function BillingPage() {
 
         {/* Auto-renewal Notice */}
         {billing?.renewalDate && (
-          <div className="mt-8 p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 flex gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+          <div className="mt-8 p-4 rounded-lg border border-wl-warning-500/30 bg-amber-500/5 flex gap-3">
+            <AlertCircle className="w-5 h-5 text-wl-warning-400 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-wl-text-secondary">
               Your subscription will automatically renew on{' '}
               <strong>{new Date(billing.renewalDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</strong>.

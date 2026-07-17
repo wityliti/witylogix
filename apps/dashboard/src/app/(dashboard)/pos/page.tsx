@@ -287,7 +287,7 @@ export default function POSPage() {
                           </div>
 
                           <div className="text-right flex-shrink-0">
-                            <div className="text-sm font-bold text-emerald-400">
+                            <div className="text-sm font-bold text-wl-success-400">
                               ${txn.amount.toFixed(2)}
                             </div>
                             <Badge variant={txnStatusVariant(txn.status)} className="mt-1">
@@ -343,7 +343,7 @@ export default function POSPage() {
                       <td className="px-4 py-3 text-wl-text-secondary font-mono">
                         {item.unitsSold}
                       </td>
-                      <td className="px-4 py-3 text-emerald-400 font-bold">
+                      <td className="px-4 py-3 text-wl-success-400 font-bold">
                         ${item.revenue.toFixed(2)}
                       </td>
                     </tr>

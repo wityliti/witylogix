@@ -205,7 +205,7 @@ export default function ActivityPage() {
                   "flex items-center gap-2 px-3 py-1.5 rounded-md border",
                   "transition-all duration-300",
                   isLiveMode
-                    ? "bg-emerald-500/10 border-emerald-500/30"
+                    ? "bg-wl-success-500/10 border-wl-success-500/30"
                     : "bg-wl-bg-elevated border-wl-border-default"
                 )}
               >
@@ -221,7 +221,7 @@ export default function ActivityPage() {
                   className={cn(
                     "text-xs font-medium",
                     isLiveMode
-                      ? "text-emerald-500"
+                      ? "text-wl-success-500"
                       : "text-wl-neutral-300"
                   )}
                 >
@@ -255,7 +255,7 @@ export default function ActivityPage() {
                   "pl-10 pr-4 py-2.5 w-full",
                   "bg-wl-bg-surface border border-wl-border-default",
                   "text-white placeholder-wl-text-tertiary",
-                  "focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
+                  "focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/20",
                   "rounded-md transition-all duration-200"
                 )}
               />
@@ -283,7 +283,7 @@ export default function ActivityPage() {
                   <Badge
                     key={type}
                     variant="primary"
-                    className="gap-1.5 cursor-pointer hover:bg-blue-500/20"
+                    className="gap-1.5 cursor-pointer hover:bg-wl-info-500/20"
                     onClick={() => {
                       setFilters((prev) => ({
                         ...prev,
@@ -328,7 +328,7 @@ export default function ActivityPage() {
                         userId: null,
                       })
                     }
-                    className="text-xs text-blue-400 hover:text-blue-300 font-medium"
+                    className="text-xs text-wl-info-400 hover:text-wl-info-400 font-medium"
                   >
                     Clear all
                   </button>
@@ -455,7 +455,7 @@ export default function ActivityPage() {
                           <p className="text-xs text-wl-neutral-300 mb-1">
                             {selectedEvent.entity.type.toUpperCase()}
                           </p>
-                          <p className="text-sm font-medium text-blue-400">
+                          <p className="text-sm font-medium text-wl-info-400">
                             {selectedEvent.entity.name}
                           </p>
                           <p className="text-xs text-wl-text-secondary mt-1">

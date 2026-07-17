@@ -154,7 +154,7 @@ export default function TrackingConfigPage() {
 
       {saveMutation.error && (
         <div className="max-w-6xl mx-auto px-6 pt-4">
-          <div className="px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30 text-sm text-red-400">
+          <div className="px-4 py-3 rounded-lg bg-wl-danger-500/10 border border-wl-danger-500/30 text-sm text-wl-danger-400">
             Failed to save: {saveMutation.error.message}
           </div>
         </div>
@@ -175,10 +175,10 @@ export default function TrackingConfigPage() {
                   return (
                     <div
                       key={feature.key}
-                      className="flex items-center justify-between p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default hover:border-blue-500/30 transition-colors"
+                      className="flex items-center justify-between p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default hover:border-wl-info-500/30 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <Icon size={18} className="text-blue-500 shrink-0" />
+                        <Icon size={18} className="text-wl-info-500 shrink-0" />
                         <div>
                           <p className="text-white text-sm font-medium">{feature.label}</p>
                           <p className="text-wl-text-secondary text-xs">{feature.desc}</p>
@@ -216,7 +216,7 @@ export default function TrackingConfigPage() {
                   value={config.customDomain}
                   onChange={(e) => update("customDomain", e.target.value)}
                   placeholder="track.yourshop.com"
-                  className="flex-1 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm font-mono focus:outline-none focus:border-blue-500/50"
+                  className="flex-1 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm font-mono focus:outline-none focus:border-wl-info-500/50"
                 />
                 <Button
                   onClick={handleCopyDomain}
@@ -229,7 +229,7 @@ export default function TrackingConfigPage() {
                   {copied ? "Copied" : "Copy"}
                 </Button>
               </div>
-              <p className="text-wl-text-tertiary text-xs">Configure a CNAME DNS record pointing to <code className="text-blue-400">tracking.witylogix.com</code></p>
+              <p className="text-wl-text-tertiary text-xs">Configure a CNAME DNS record pointing to <code className="text-wl-info-400">tracking.witylogix.com</code></p>
             </Card>
 
             {/* SEO Settings */}
@@ -244,9 +244,9 @@ export default function TrackingConfigPage() {
                     value={config.metaTitle}
                     onChange={(e) => update("metaTitle", e.target.value)}
                     maxLength={60}
-                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-xs focus:outline-none focus:border-blue-500/50"
+                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-xs focus:outline-none focus:border-wl-info-500/50"
                   />
-                  <p className={cn("text-xs mt-1", config.metaTitle.length > 55 ? "text-amber-400" : "text-wl-text-tertiary")}>
+                  <p className={cn("text-xs mt-1", config.metaTitle.length > 55 ? "text-wl-warning-400" : "text-wl-text-tertiary")}>
                     {config.metaTitle.length}/60 characters
                   </p>
                 </div>
@@ -256,10 +256,10 @@ export default function TrackingConfigPage() {
                     value={config.metaDescription}
                     onChange={(e) => update("metaDescription", e.target.value)}
                     maxLength={160}
-                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-xs focus:outline-none focus:border-blue-500/50 resize-none"
+                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-xs focus:outline-none focus:border-wl-info-500/50 resize-none"
                     rows={3}
                   />
-                  <p className={cn("text-xs mt-1", config.metaDescription.length > 150 ? "text-amber-400" : "text-wl-text-tertiary")}>
+                  <p className={cn("text-xs mt-1", config.metaDescription.length > 150 ? "text-wl-warning-400" : "text-wl-text-tertiary")}>
                     {config.metaDescription.length}/160 characters
                   </p>
                 </div>
@@ -272,7 +272,7 @@ export default function TrackingConfigPage() {
             {/* Tracking Page Preview */}
             <Card className="bg-wl-bg-surface border border-wl-border-default p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Eye size={18} className="text-blue-500" />
+                <Eye size={18} className="text-wl-info-500" />
                 <h3 className="text-lg font-semibold text-white">Page Preview</h3>
               </div>
 
@@ -287,7 +287,7 @@ export default function TrackingConfigPage() {
                 )}
                 <div className="flex items-center justify-between pb-3 border-b border-white/10">
                   <p className="text-wl-text-secondary text-xs">Preview URL:</p>
-                  <code className="text-blue-400 text-xs font-mono truncate max-w-[180px]">{trackingPageUrl}</code>
+                  <code className="text-wl-info-400 text-xs font-mono truncate max-w-[180px]">{trackingPageUrl}</code>
                 </div>
                 <div className="space-y-2">
                   <p className="text-white text-sm font-semibold">Order #12345</p>
@@ -331,7 +331,7 @@ export default function TrackingConfigPage() {
             {/* Branding Configuration */}
             <Card className="bg-wl-bg-surface border border-wl-border-default p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Palette size={18} className="text-blue-500" />
+                <Palette size={18} className="text-wl-info-500" />
                 <h3 className="text-lg font-semibold text-white">Branding</h3>
               </div>
               <p className="text-wl-text-secondary text-xs mb-4">Customize colors and logo for the tracking page</p>
@@ -349,7 +349,7 @@ export default function TrackingConfigPage() {
                       type="text"
                       value={config.primaryColor}
                       onChange={(e) => update("primaryColor", e.target.value)}
-                      className="flex-1 px-2 py-1.5 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-neutral-300 text-xs font-mono focus:outline-none focus:border-blue-500/50"
+                      className="flex-1 px-2 py-1.5 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-neutral-300 text-xs font-mono focus:outline-none focus:border-wl-info-500/50"
                     />
                   </div>
                 </div>
@@ -367,7 +367,7 @@ export default function TrackingConfigPage() {
                       type="text"
                       value={config.secondaryColor}
                       onChange={(e) => update("secondaryColor", e.target.value)}
-                      className="flex-1 px-2 py-1.5 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-neutral-300 text-xs font-mono focus:outline-none focus:border-blue-500/50"
+                      className="flex-1 px-2 py-1.5 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-neutral-300 text-xs font-mono focus:outline-none focus:border-wl-info-500/50"
                     />
                   </div>
                 </div>
@@ -379,7 +379,7 @@ export default function TrackingConfigPage() {
                     value={config.logoUrl}
                     onChange={(e) => update("logoUrl", e.target.value)}
                     placeholder="https://example.com/logo.png"
-                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-neutral-300 text-xs focus:outline-none focus:border-blue-500/50"
+                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-neutral-300 text-xs focus:outline-none focus:border-wl-info-500/50"
                   />
                   <p className="text-wl-text-tertiary text-xs mt-1">Recommended: 200×50px PNG or SVG</p>
                 </div>

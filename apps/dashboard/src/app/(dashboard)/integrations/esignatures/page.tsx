@@ -56,8 +56,8 @@ export default function ESignaturesIntegrationPage() {
       <div className="p-6 bg-wl-bg-root space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
           {[
-            { label: 'Signing Templates', value: stats.templates, icon: FileCheck, color: 'text-blue-400' },
-            { label: 'Active Templates', value: stats.active, icon: PenLine, color: 'text-emerald-400' },
+            { label: 'Signing Templates', value: stats.templates, icon: FileCheck, color: 'text-wl-info-400' },
+            { label: 'Active Templates', value: stats.active, icon: PenLine, color: 'text-wl-success-400' },
           ].map((s) => {
             const Icon = s.icon;
             return (

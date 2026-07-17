@@ -67,7 +67,7 @@ function TemplateGrid({ templates, viewMode }: { templates: Template[]; viewMode
                       onClick={() => setSelectedTemplate(tpl)}
                     >
                       <td className="py-3 px-4 text-white font-medium">
-                        <button className="hover:underline text-blue-500">
+                        <button className="hover:underline text-wl-info-500">
                           {tpl.name}
                         </button>
                       </td>
@@ -108,11 +108,11 @@ function TemplateGrid({ templates, viewMode }: { templates: Template[]; viewMode
         {templates.map((tpl) => (
           <Card
             key={tpl.id}
-            className="bg-wl-bg-surface border-wl-border-default hover:border-blue-500/30 transition-colors cursor-pointer"
+            className="bg-wl-bg-surface border-wl-border-default hover:border-wl-info-500/30 transition-colors cursor-pointer"
             onClick={() => setSelectedTemplate(tpl)}
           >
             <div className="h-32 bg-gradient-to-br from-blue-500/10 to-emerald-500/10 flex items-center justify-center border-b border-wl-border-default">
-              <FileText className="text-blue-500" size={48} />
+              <FileText className="text-wl-info-500" size={48} />
             </div>
             <CardContent className="pt-4">
               <h3 className="font-semibold text-white mb-2">{tpl.name}</h3>
@@ -306,7 +306,7 @@ export default function TemplatesPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-wl-text-secondary text-sm font-medium">Total Templates</span>
-              <FileText className="text-blue-500" size={20} />
+              <FileText className="text-wl-info-500" size={20} />
             </div>
             <p className="text-3xl font-bold text-white">{data.length}</p>
             <p className="text-wl-text-secondary text-xs mt-2">Available templates</p>

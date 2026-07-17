@@ -352,7 +352,7 @@ export default function OnboardingPage() {
                     isActive
                       ? "bg-blue-500 text-white"
                       : isCompleted
-                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-400/30"
+                        ? "bg-wl-success-500/20 text-wl-success-400 border border-wl-success-400/30"
                         : "bg-wl-bg-elevated text-wl-text-secondary border border-wl-border-default hover:border-wl-border-strong"
                   )}
                 >

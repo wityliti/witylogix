@@ -210,10 +210,10 @@ export default function ProductSyncPage() {
   };
 
   const syncStatusColor = {
-    synced: 'bg-emerald-500 text-emerald-500',
-    syncing: 'bg-blue-500 text-blue-500',
-    error: 'bg-red-500 text-red-500',
-    pending: 'bg-amber-500 text-amber-500',
+    synced: 'bg-emerald-500 text-wl-success-500',
+    syncing: 'bg-blue-500 text-wl-info-500',
+    error: 'bg-red-500 text-wl-danger-500',
+    pending: 'bg-amber-500 text-wl-warning-500',
   };
 
   const syncStatusIcon = {
@@ -253,7 +253,7 @@ export default function ProductSyncPage() {
                 className={cn(
                   'flex items-center justify-between p-4 rounded-lg border transition-all',
                   effectivePlatformId === platform.id
-                    ? 'hover:bg-wl-bg-elevated border-blue-500 ring-2 ring-blue-500/20'
+                    ? 'hover:bg-wl-bg-elevated border-blue-500 ring-2 ring-wl-info-500/20'
                     : 'bg-wl-bg-surface border-wl-border-default hover:border-wl-border-default'
                 )}
               >
@@ -318,7 +318,7 @@ export default function ProductSyncPage() {
                 className={cn(
                   'px-4 py-3 font-medium text-sm transition-colors border-b-2',
                   activeTab === tab
-                    ? 'border-blue-500 text-blue-500'
+                    ? 'border-blue-500 text-wl-info-500'
                     : 'border-transparent text-wl-neutral-300 hover:text-white'
                 )}
               >
@@ -352,10 +352,10 @@ export default function ProductSyncPage() {
               <CardContent className="space-y-4">
                 {/* Unmapped Required Fields Warning */}
                 {unmappedRequired.length > 0 && (
-                  <div className="p-4 bg-amber-500/20 border border-amber-500/30 rounded-lg flex gap-3">
-                    <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <div className="p-4 bg-wl-warning-500/20 border border-wl-warning-500/30 rounded-lg flex gap-3">
+                    <AlertCircle className="w-5 h-5 text-wl-warning-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-amber-600 mb-1">
+                      <h4 className="font-semibold text-wl-warning-500 mb-1">
                         Unmapped Required Fields
                       </h4>
                       <p className="text-sm text-wl-neutral-300">
@@ -396,7 +396,7 @@ export default function ProductSyncPage() {
                         'flex-1 px-3 py-2 text-sm rounded-md',
                         'bg-wl-bg-surface border border-wl-border-default',
                         'text-white placeholder:text-wl-neutral-300',
-                        'focus:outline-none focus:ring-2 focus:ring-blue-500'
+                        'focus:outline-none focus:ring-2 focus:ring-wl-info-500'
                       )}
                     />
                     <Button
@@ -532,8 +532,8 @@ export default function ProductSyncPage() {
                 </div>
 
                 {testSyncInProgress && (
-                  <div className="p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg flex items-center gap-3">
-                    <RefreshCw className="w-5 h-5 text-blue-500 animate-spin" />
+                  <div className="p-4 bg-wl-info-500/20 border border-wl-info-500/30 rounded-lg flex items-center gap-3">
+                    <RefreshCw className="w-5 h-5 text-wl-info-500 animate-spin" />
                     <span className="text-sm text-wl-neutral-300">
                       Testing sync with 5 sample products...
                     </span>

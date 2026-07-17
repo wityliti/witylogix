@@ -140,7 +140,7 @@ export default function TransactionsPage() {
                   <label className="text-sm font-medium text-wl-neutral-300 block mb-1">
                     Amount
                   </label>
-                  <div className="px-3 py-2 rounded border border-wl-border-default bg-wl-bg-root text-white text-sm font-bold text-emerald-500">
+                  <div className="px-3 py-2 rounded border border-wl-border-default bg-wl-bg-root text-white text-sm font-bold text-wl-success-500">
                     ${selectedTxnData.amount.toFixed(2)}
                   </div>
                 </div>
@@ -152,7 +152,7 @@ export default function TransactionsPage() {
                   <select
                     value={refundReason}
                     onChange={(e) => setRefundReason(e.target.value)}
-                    className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-elevated text-white text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-elevated text-white text-sm focus:outline-none focus:border-wl-info-500"
                   >
                     <option value="">Select reason...</option>
                     <option value="customer_request">Customer Request</option>
@@ -197,7 +197,7 @@ export default function TransactionsPage() {
             placeholder="Search by transaction ID, receipt, or customer name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500"
+            className="w-full px-4 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-white text-sm placeholder-gray-500 focus:outline-none focus:border-wl-info-500"
           />
 
           {/* Filter Pills */}
@@ -257,7 +257,7 @@ export default function TransactionsPage() {
                 onChange={(e) =>
                   setAmountRange({ ...amountRange, min: Math.max(0, parseInt(e.target.value) || 0) })
                 }
-                className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-white text-sm focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-white text-sm focus:outline-none focus:border-wl-info-500"
               />
             </div>
             <div>
@@ -270,7 +270,7 @@ export default function TransactionsPage() {
                 onChange={(e) =>
                   setAmountRange({ ...amountRange, max: Math.max(0, parseInt(e.target.value) || 10000) })
                 }
-                className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-white text-sm focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-white text-sm focus:outline-none focus:border-wl-info-500"
               />
             </div>
           </div>
@@ -329,7 +329,7 @@ export default function TransactionsPage() {
                       <td className="px-4 py-3 text-wl-neutral-300">
                         {txn.customerName || "Guest"}
                       </td>
-                      <td className="px-4 py-3 text-emerald-500 font-bold">
+                      <td className="px-4 py-3 text-wl-success-500 font-bold">
                         ${txn.amount.toFixed(2)}
                       </td>
                       <td className="px-4 py-3">
@@ -428,7 +428,7 @@ export default function TransactionsPage() {
                             <span>
                               {item.name} x{item.quantity}
                             </span>
-                            <span className="text-emerald-500 font-bold">
+                            <span className="text-wl-success-500 font-bold">
                               ${item.totalPrice.toFixed(2)}
                             </span>
                           </div>
@@ -451,7 +451,7 @@ export default function TransactionsPage() {
                   {selectedTxnData.discount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-wl-text-secondary">Discount</span>
-                      <span className="text-emerald-500">
+                      <span className="text-wl-success-500">
                         -${selectedTxnData.discount.toFixed(2)}
                       </span>
                     </div>
@@ -464,7 +464,7 @@ export default function TransactionsPage() {
                   </div>
                   <div className="flex justify-between text-base font-bold border-t border-wl-border-default pt-2">
                     <span className="text-white">Total</span>
-                    <span className="text-emerald-500">
+                    <span className="text-wl-success-500">
                       ${selectedTxnData.amount.toFixed(2)}
                     </span>
                   </div>
@@ -496,7 +496,7 @@ export default function TransactionsPage() {
                       <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
                         Refund
                       </div>
-                      <div className="text-sm text-amber-500 font-bold">
+                      <div className="text-sm text-wl-warning-500 font-bold">
                         ${selectedTxnData.refundedAmount.toFixed(2)}
                       </div>
                       {selectedTxnData.refundReason && (

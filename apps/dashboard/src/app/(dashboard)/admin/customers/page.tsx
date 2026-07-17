@@ -108,7 +108,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Email
                 </p>
-                <a href={`mailto:${customer.email}`} className="text-blue-500 no-underline text-sm font-medium">
+                <a href={`mailto:${customer.email}`} className="text-wl-info-500 no-underline text-sm font-medium">
                   {customer.email}
                 </a>
               </div>
@@ -169,7 +169,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Total Spent
                 </p>
-                <p className="text-blue-500 text-lg font-bold m-0">
+                <p className="text-wl-info-500 text-lg font-bold m-0">
                   ${customer.totalSpent.toLocaleString()}
                 </p>
               </div>
@@ -511,7 +511,7 @@ export default function AdminCustomersPage() {
                           <td className="p-3 text-white font-medium">
                             {customer.ordersCount}
                           </td>
-                          <td className="p-3 text-blue-500 font-semibold">
+                          <td className="p-3 text-wl-info-500 font-semibold">
                             ${customer.totalSpent.toLocaleString()}
                           </td>
                           <td className="p-3 text-wl-text-secondary text-xs">

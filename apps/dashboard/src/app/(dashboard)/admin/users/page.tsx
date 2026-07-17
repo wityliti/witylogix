@@ -306,7 +306,7 @@ export default function AdminUsersPage() {
                     {users.length}
                   </p>
                 </div>
-                <Users className="w-6 h-6 text-blue-600" />
+                <Users className="w-6 h-6 text-wl-info-500" />
               </div>
             </CardContent>
           </Card>
@@ -322,7 +322,7 @@ export default function AdminUsersPage() {
                     {users.filter((u) => u.status === 'active').length}
                   </p>
                 </div>
-                <UserCheck className="w-6 h-6 text-green-500" />
+                <UserCheck className="w-6 h-6 text-wl-success-500" />
               </div>
             </CardContent>
           </Card>
@@ -338,7 +338,7 @@ export default function AdminUsersPage() {
                     {users.filter((u) => u.role === 'admin').length}
                   </p>
                 </div>
-                <Shield className="w-6 h-6 text-red-500" />
+                <Shield className="w-6 h-6 text-wl-danger-500" />
               </div>
             </CardContent>
           </Card>
@@ -354,7 +354,7 @@ export default function AdminUsersPage() {
                     {users.filter((u) => u.status === 'invited').length}
                   </p>
                 </div>
-                <Mail className="w-6 h-6 text-amber-500" />
+                <Mail className="w-6 h-6 text-wl-warning-500" />
               </div>
             </CardContent>
           </Card>

@@ -577,10 +577,10 @@ export default function CreateRoutePage() {
                   </p>
                 </div>
                 {createRoute.error && (
-                  <p className="text-red-400 text-sm mt-2">{createRoute.error.message}</p>
+                  <p className="text-wl-danger-400 text-sm mt-2">{createRoute.error.message}</p>
                 )}
                 {createRoute.success && (
-                  <p className="text-green-400 text-sm mt-2">Route created successfully!</p>
+                  <p className="text-wl-success-400 text-sm mt-2">Route created successfully!</p>
                 )}
               </div>
             </div>

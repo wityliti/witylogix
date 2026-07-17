@@ -249,7 +249,7 @@ export default function FormsPage() {
                     </label>
                   </div>
                   {validationErrors.agreeTerms && (
-                    <span className="text-xs text-red-500">
+                    <span className="text-xs text-wl-danger-500">
                       {validationErrors.agreeTerms}
                     </span>
                   )}

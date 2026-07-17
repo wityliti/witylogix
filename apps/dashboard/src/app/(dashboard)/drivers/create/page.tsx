@@ -74,7 +74,7 @@ export default function CreateDriverPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="driver-name" className="block text-sm font-medium text-wl-text-primary mb-1">
-                Full name <span className="text-red-400">*</span>
+                Full name <span className="text-wl-danger-400">*</span>
               </label>
               <input
                 id="driver-name"
@@ -87,7 +87,7 @@ export default function CreateDriverPage() {
             </div>
             <div>
               <label htmlFor="driver-phone" className="block text-sm font-medium text-wl-text-primary mb-1">
-                Phone <span className="text-red-400">*</span>
+                Phone <span className="text-wl-danger-400">*</span>
               </label>
               <input
                 id="driver-phone"
@@ -140,7 +140,7 @@ export default function CreateDriverPage() {
                 />
               </div>
             </div>
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {error && <p className="text-sm text-wl-danger-400">{error}</p>}
             <div className="flex gap-3 pt-2">
               <Button type="submit" variant="primary" size="md" disabled={create.loading}>
                 {create.loading ? 'Creating…' : 'Create driver'}

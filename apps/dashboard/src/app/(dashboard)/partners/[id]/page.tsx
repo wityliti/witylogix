@@ -64,7 +64,7 @@ function KPICard({ label, value, suffix, icon: Icon }: KPICardProps) {
           {label}
         </span>
         {Icon && (
-          <div className="w-8 h-8 rounded bg-blue-500/20 flex items-center justify-center text-blue-400">
+          <div className="w-8 h-8 rounded bg-wl-info-500/20 flex items-center justify-center text-wl-info-400">
             <Icon className="w-4 h-4" />
           </div>
         )}
@@ -228,7 +228,7 @@ export default function PartnerDetailPage() {
                     {serviceAreas.map((area) => (
                       <span
                         key={area}
-                        className="inline-flex items-center px-3 py-2 rounded-full bg-blue-500/20 text-blue-400 text-sm font-medium"
+                        className="inline-flex items-center px-3 py-2 rounded-full bg-wl-info-500/20 text-wl-info-400 text-sm font-medium"
                       >
                         <MapPin className="w-3 h-3 mr-1.5" />
                         {area}
@@ -430,7 +430,7 @@ export default function PartnerDetailPage() {
                   {serviceAreas.map((area) => (
                     <span
                       key={area}
-                      className="inline-flex items-center px-3 py-2 rounded-full bg-blue-500/20 text-blue-400 text-sm font-medium"
+                      className="inline-flex items-center px-3 py-2 rounded-full bg-wl-info-500/20 text-wl-info-400 text-sm font-medium"
                     >
                       {area}
                     </span>
@@ -478,16 +478,16 @@ export default function PartnerDetailPage() {
                 className={cn(
                   "p-4 rounded-lg border",
                   partner.healthStatus === "HEALTHY" || partner.isEnabled
-                    ? "bg-emerald-500/10 border-emerald-500/20"
-                    : "bg-red-500/10 border-red-500/20"
+                    ? "bg-wl-success-500/10 border-wl-success-500/20"
+                    : "bg-wl-danger-500/10 border-wl-danger-500/20"
                 )}
               >
                 <p
                   className={cn(
                     "text-sm",
                     partner.healthStatus === "HEALTHY" || partner.isEnabled
-                      ? "text-emerald-400"
-                      : "text-red-400"
+                      ? "text-wl-success-400"
+                      : "text-wl-danger-400"
                   )}
                 >
                   {partner.healthStatus === "HEALTHY"

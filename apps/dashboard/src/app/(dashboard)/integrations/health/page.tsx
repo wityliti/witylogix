@@ -148,11 +148,11 @@ export default function IntegrationHealthPage() {
   const getStatusIcon = (status: HealthStatus) => {
     switch (status) {
       case "healthy":
-        return <CheckCircle className="w-5 h-5 text-emerald-500" />;
+        return <CheckCircle className="w-5 h-5 text-wl-success-500" />;
       case "degraded":
-        return <AlertTriangle className="w-5 h-5 text-amber-500" />;
+        return <AlertTriangle className="w-5 h-5 text-wl-warning-500" />;
       case "down":
-        return <AlertCircle className="w-5 h-5 text-red-500" />;
+        return <AlertCircle className="w-5 h-5 text-wl-danger-500" />;
     }
   };
 
@@ -241,11 +241,11 @@ export default function IntegrationHealthPage() {
               <div className={cn("flex items-center justify-between")}>
                 <div>
                   <p className={cn("text-sm text-wl-text-tertiary mb-1")}>Healthy</p>
-                  <p className={cn("text-3xl font-bold text-emerald-500")}>
+                  <p className={cn("text-3xl font-bold text-wl-success-500")}>
                     {healthyCount}
                   </p>
                 </div>
-                <CheckCircle className={cn("w-10 h-10 text-emerald-500/40")} />
+                <CheckCircle className={cn("w-10 h-10 text-wl-success-500/40")} />
               </div>
             </CardContent>
           </Card>
@@ -255,11 +255,11 @@ export default function IntegrationHealthPage() {
               <div className={cn("flex items-center justify-between")}>
                 <div>
                   <p className={cn("text-sm text-wl-text-tertiary mb-1")}>Degraded</p>
-                  <p className={cn("text-3xl font-bold text-amber-500")}>
+                  <p className={cn("text-3xl font-bold text-wl-warning-500")}>
                     {degradedCount}
                   </p>
                 </div>
-                <AlertTriangle className={cn("w-10 h-10 text-amber-500/40")} />
+                <AlertTriangle className={cn("w-10 h-10 text-wl-warning-500/40")} />
               </div>
             </CardContent>
           </Card>
@@ -269,11 +269,11 @@ export default function IntegrationHealthPage() {
               <div className={cn("flex items-center justify-between")}>
                 <div>
                   <p className={cn("text-sm text-wl-text-tertiary mb-1")}>Down</p>
-                  <p className={cn("text-3xl font-bold text-red-500")}>
+                  <p className={cn("text-3xl font-bold text-wl-danger-500")}>
                     {downCount}
                   </p>
                 </div>
-                <AlertCircle className={cn("w-10 h-10 text-red-500/40")} />
+                <AlertCircle className={cn("w-10 h-10 text-wl-danger-500/40")} />
               </div>
             </CardContent>
           </Card>
@@ -286,7 +286,7 @@ export default function IntegrationHealthPage() {
               <CheckCircle className={cn("w-12 h-12 text-wl-text-tertiary mx-auto mb-4")} />
               <p className={cn("text-wl-text-tertiary text-sm")}>
                 No integrations installed yet. Visit the{" "}
-                <a href="/integrations/marketplace" className="text-blue-400 hover:underline">
+                <a href="/integrations/marketplace" className="text-wl-info-400 hover:underline">
                   marketplace
                 </a>{" "}
                 to connect your first integration.
@@ -300,9 +300,9 @@ export default function IntegrationHealthPage() {
                 key={integration.id}
                 className={cn(
                   "hover:border-wl-border-default transition-colors",
-                  integration.status === "healthy" && "border-emerald-500/20",
-                  integration.status === "degraded" && "border-amber-500/20",
-                  integration.status === "down" && "border-red-500/20"
+                  integration.status === "healthy" && "border-wl-success-500/20",
+                  integration.status === "degraded" && "border-wl-warning-500/20",
+                  integration.status === "down" && "border-wl-danger-500/20"
                 )}
               >
                 <CardContent className={cn("pt-6 space-y-4")}>
@@ -312,9 +312,9 @@ export default function IntegrationHealthPage() {
                       <div
                         className={cn(
                           "p-2 rounded-md",
-                          integration.status === "healthy" && "bg-emerald-500/10 text-emerald-500",
-                          integration.status === "degraded" && "bg-amber-500/10 text-amber-500",
-                          integration.status === "down" && "bg-red-500/10 text-red-500"
+                          integration.status === "healthy" && "bg-wl-success-500/10 text-wl-success-500",
+                          integration.status === "degraded" && "bg-wl-warning-500/10 text-wl-warning-500",
+                          integration.status === "down" && "bg-wl-danger-500/10 text-wl-danger-500"
                         )}
                       >
                         {categoryIcon(integration.category)}
@@ -355,10 +355,10 @@ export default function IntegrationHealthPage() {
                         className={cn(
                           "font-medium font-mono",
                           integration.uptime >= 99.5
-                            ? "text-emerald-500"
+                            ? "text-wl-success-500"
                             : integration.uptime >= 98
-                            ? "text-amber-500"
-                            : "text-red-500"
+                            ? "text-wl-warning-500"
+                            : "text-wl-danger-500"
                         )}
                       >
                         {integration.uptime.toFixed(1)}%

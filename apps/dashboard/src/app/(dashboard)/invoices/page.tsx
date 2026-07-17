@@ -351,19 +351,19 @@ export default function InvoicesPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <p className="text-sm font-medium text-wl-text-secondary mb-2">Total Overdue</p>
-            <p className="text-3xl font-bold text-red-400">${stats.totalOverdue.toFixed(2)}</p>
+            <p className="text-3xl font-bold text-wl-danger-400">${stats.totalOverdue.toFixed(2)}</p>
           </CardContent>
         </Card>
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <p className="text-sm font-medium text-wl-text-secondary mb-2">Paid This Month</p>
-            <p className="text-3xl font-bold text-emerald-400">${stats.paidThisMonth.toFixed(2)}</p>
+            <p className="text-3xl font-bold text-wl-success-400">${stats.paidThisMonth.toFixed(2)}</p>
           </CardContent>
         </Card>
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <p className="text-sm font-medium text-wl-text-secondary mb-2">Avg Days to Pay</p>
-            <p className="text-3xl font-bold text-blue-400">{stats.avgDaysToPay} days</p>
+            <p className="text-3xl font-bold text-wl-info-400">{stats.avgDaysToPay} days</p>
           </CardContent>
         </Card>
       </div>
@@ -559,7 +559,7 @@ export default function InvoicesPage() {
                   key: "number",
                   header: "Invoice #",
                   render: (item: Invoice) => (
-                    <div className="font-mono text-sm font-medium text-blue-400">
+                    <div className="font-mono text-sm font-medium text-wl-info-400">
                       {item.number}
                     </div>
                   ),

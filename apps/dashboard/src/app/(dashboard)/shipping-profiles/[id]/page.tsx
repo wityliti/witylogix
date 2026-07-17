@@ -201,7 +201,7 @@ export default function ShippingProfileDetailPage() {
             <p className="text-xs text-wl-text-secondary font-semibold mb-2 flex items-center gap-1.5">
               <DollarSign size={14} /> Flat Rate
             </p>
-            <p className="text-base font-semibold text-blue-500">
+            <p className="text-base font-semibold text-wl-info-500">
               {profile.flatRate !== null
                 ? profile.flatRate > 0
                   ? formatCurrency(Number(profile.flatRate))
@@ -237,7 +237,7 @@ export default function ShippingProfileDetailPage() {
         <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
           <CardHeader className="pb-4 border-b border-wl-border-default">
             <CardTitle className="flex items-center gap-2">
-              <AlertCircle size={18} className="text-blue-500" /> Description
+              <AlertCircle size={18} className="text-wl-info-500" /> Description
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
@@ -245,7 +245,7 @@ export default function ShippingProfileDetailPage() {
               <textarea
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
-                className="w-full p-3 bg-wl-bg-root border border-wl-border-default rounded text-white text-sm outline-none resize-none focus:border-blue-500"
+                className="w-full p-3 bg-wl-bg-root border border-wl-border-default rounded text-white text-sm outline-none resize-none focus:border-wl-info-500"
                 rows={3}
                 placeholder="Profile description..."
               />
@@ -260,7 +260,7 @@ export default function ShippingProfileDetailPage() {
       <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
         <CardHeader className="pb-4 border-b border-wl-border-default">
           <CardTitle className="flex items-center gap-2">
-            <DollarSign size={18} className="text-blue-500" /> Rate Configuration
+            <DollarSign size={18} className="text-wl-info-500" /> Rate Configuration
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -277,7 +277,7 @@ export default function ShippingProfileDetailPage() {
             </div>
             <div>
               <p className="text-xs text-wl-text-secondary mb-1">Free Shipping Above</p>
-              <p className="text-sm font-semibold text-emerald-400">
+              <p className="text-sm font-semibold text-wl-success-400">
                 {profile.freeShippingAbove
                   ? formatCurrency(Number(profile.freeShippingAbove))
                   : '—'}
@@ -299,7 +299,7 @@ export default function ShippingProfileDetailPage() {
       <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
         <CardHeader className="pb-4 border-b border-wl-border-default">
           <CardTitle className="flex items-center gap-2">
-            <MapPin size={18} className="text-blue-500" /> Attached Locations
+            <MapPin size={18} className="text-wl-info-500" /> Attached Locations
             <Badge variant="info" className="ml-auto">
               {profile.locations.length}
             </Badge>
@@ -334,7 +334,7 @@ export default function ShippingProfileDetailPage() {
       <Card className="bg-wl-bg-surface border border-wl-border-default">
         <CardHeader className="pb-4 border-b border-wl-border-default">
           <CardTitle className="flex items-center gap-2">
-            <Calendar size={18} className="text-blue-500" /> Calendar Rules
+            <Calendar size={18} className="text-wl-info-500" /> Calendar Rules
             <Badge variant="info" className="ml-auto">
               {profile.calendarRules.length}
             </Badge>

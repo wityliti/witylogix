@@ -129,9 +129,9 @@ export default function NotificationTemplatesPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: 'Total', value: templates.length, color: 'text-wl-text-primary' },
-            { label: 'Active', value: templates.filter((t) => t.isActive).length, color: 'text-emerald-400' },
-            { label: 'Inactive', value: templates.filter((t) => !t.isActive).length, color: 'text-amber-400' },
-            { label: 'Event Types', value: eventTypes.length - 1, color: 'text-blue-400' },
+            { label: 'Active', value: templates.filter((t) => t.isActive).length, color: 'text-wl-success-400' },
+            { label: 'Inactive', value: templates.filter((t) => !t.isActive).length, color: 'text-wl-warning-400' },
+            { label: 'Event Types', value: eventTypes.length - 1, color: 'text-wl-info-400' },
           ].map((s) => (
             <Card key={s.label} className="bg-wl-bg-surface border-wl-border-default">
               <CardContent className="pt-5 pb-4">
@@ -267,10 +267,10 @@ export default function NotificationTemplatesPage() {
                             <button
                               onClick={() => handleDelete(template.id)}
                               disabled={actionInProgress === template.id}
-                              className="p-2 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-40"
+                              className="p-2 hover:bg-wl-danger-500/10 rounded-lg transition-colors disabled:opacity-40"
                               aria-label="Delete"
                             >
-                              <Trash2 className="w-4 h-4 text-red-400" />
+                              <Trash2 className="w-4 h-4 text-wl-danger-400" />
                             </button>
                           </div>
                         </TableCell>

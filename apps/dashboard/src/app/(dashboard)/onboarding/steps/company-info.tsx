@@ -186,7 +186,7 @@ export function CompanyInfo({ data, onUpdate }: CompanyInfoProps) {
           </div>
         )}
         {logoError && (
-          <p className="text-xs text-red-400 mt-2">{logoError}</p>
+          <p className="text-xs text-wl-danger-400 mt-2">{logoError}</p>
         )}
       </div>
 

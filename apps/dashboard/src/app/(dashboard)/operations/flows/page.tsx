@@ -104,7 +104,7 @@ export default function ActivityFlowsPage() {
         {loading && <TableSkeleton rows={4} />}
         {error && <ErrorState message={error.message} onRetry={refetch} />}
         {deleteError && (
-          <div className="p-3 rounded-lg bg-red-900/20 border border-red-500/50 text-red-400 text-sm">
+          <div className="p-3 rounded-lg bg-red-900/20 border border-wl-danger-500/50 text-wl-danger-400 text-sm">
             {deleteError}
           </div>
         )}

@@ -229,7 +229,7 @@ export default function WebhooksPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, url: e.target.value })
                   }
-                  className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-neutral-700 text-white placeholder-blue-500 focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-neutral-700 text-white placeholder-blue-500 focus:outline-none focus:border-wl-info-500"
                 />
               </div>
 
@@ -282,7 +282,7 @@ export default function WebhooksPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, secret: e.target.value })
                     }
-                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-neutral-700 text-white placeholder-blue-500 focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-neutral-700 text-white placeholder-blue-500 focus:outline-none focus:border-wl-info-500"
                   />
                   <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary" />
                 </div>
@@ -298,7 +298,7 @@ export default function WebhooksPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, retryPolicy: e.target.value })
                     }
-                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-neutral-700 text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-neutral-700 text-white focus:outline-none focus:border-wl-info-500"
                   >
                     <option value="exponential">Exponential Backoff</option>
                     <option value="linear">Linear Backoff</option>
@@ -318,7 +318,7 @@ export default function WebhooksPage() {
                         maxRetries: parseInt(e.target.value),
                       })
                     }
-                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-neutral-700 text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-neutral-700 text-white focus:outline-none focus:border-wl-info-500"
                   />
                 </div>
               </div>
@@ -385,7 +385,7 @@ export default function WebhooksPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div>
                 <p className="text-sm text-wl-text-secondary">Success Rate</p>
-                <p className="text-3xl font-bold text-emerald-500 mt-2">
+                <p className="text-3xl font-bold text-wl-success-500 mt-2">
                   {webhooks.successRate?.toFixed(1) ?? 0}%
                 </p>
               </div>
@@ -397,7 +397,7 @@ export default function WebhooksPage() {
               </div>
               <div>
                 <p className="text-sm text-wl-text-secondary">Failed Deliveries</p>
-                <p className="text-3xl font-bold text-red-500 mt-2">
+                <p className="text-3xl font-bold text-wl-danger-500 mt-2">
                   {failedDeliveries.length}
                 </p>
               </div>
@@ -536,10 +536,10 @@ export default function WebhooksPage() {
 
       {/* DLQ Viewer */}
       {(webhooks?.dlqCount ?? 0) > 0 && (
-        <Card className="bg-red-500/10 border border-red-500/20">
+        <Card className="bg-wl-danger-500/10 border border-wl-danger-500/20">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-red-500">
+              <CardTitle className="text-wl-danger-500">
                 Dead Letter Queue ({webhooks?.dlqCount})
               </CardTitle>
               <Button

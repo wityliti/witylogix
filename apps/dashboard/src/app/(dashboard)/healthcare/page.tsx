@@ -19,10 +19,10 @@ interface KPICard {
 
 function KPICardComponent({ card }: { card: KPICard }) {
   const icons: Record<string, React.ReactNode> = {
-    patients: <Users className="w-8 h-8 text-blue-500/30" />,
+    patients: <Users className="w-8 h-8 text-wl-info-500/30" />,
     encounters: <Clock className="w-8 h-8 text-cyan-500/30" />,
     lab: <FileText className="w-8 h-8 text-purple-500/30" />,
-    alerts: <AlertCircle className="w-8 h-8 text-amber-500/30" />,
+    alerts: <AlertCircle className="w-8 h-8 text-wl-warning-500/30" />,
   };
 
   return (
@@ -96,8 +96,8 @@ function ComplianceStatusCard({ compliance, loading }: { compliance: Compliance 
           </Badge>
         </div>
         {c.outstandingIssues > 0 && (
-          <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-            <p className="text-xs text-amber-400 font-medium">
+          <div className="p-3 bg-wl-warning-500/10 border border-wl-warning-500/30 rounded-lg">
+            <p className="text-xs text-wl-warning-400 font-medium">
               ⚠ {c.outstandingIssues} outstanding compliance issue{c.outstandingIssues !== 1 ? 's' : ''}
             </p>
           </div>
@@ -135,7 +135,7 @@ function RecentRecordsCard({ patients }: { patients: LocalPatient[] }) {
             {patients.slice(0, 5).map((patient) => (
               <div
                 key={patient.id}
-                className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default hover:border-blue-500/30 transition-colors"
+                className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default hover:border-wl-info-500/30 transition-colors"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>
@@ -224,9 +224,9 @@ export default function HealthcarePage() {
     if (platformLoading || !platformStatus) return { label: '—', color: 'text-wl-text-secondary' };
     const s = (platformStatus as any)?.data ?? platformStatus;
     const score = s?.score ?? 0;
-    if (score >= 90) return { label: 'Operational', color: 'text-emerald-400' };
-    if (score >= 50) return { label: 'Degraded', color: 'text-amber-400' };
-    return { label: 'Disrupted', color: 'text-red-400' };
+    if (score >= 90) return { label: 'Operational', color: 'text-wl-success-400' };
+    if (score >= 50) return { label: 'Degraded', color: 'text-wl-warning-400' };
+    return { label: 'Disrupted', color: 'text-wl-danger-400' };
   }, [platformStatus, platformLoading]);
 
   const activePatients = patients.filter((p) => p.status === 'ACTIVE').length;
@@ -243,12 +243,12 @@ export default function HealthcarePage() {
     <div className="p-6 space-y-6 bg-wl-bg-root min-h-screen">
       {/* Secondary error banners */}
       {shopError && (
-        <div className="px-4 py-2 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm">
+        <div className="px-4 py-2 rounded-md bg-wl-warning-500/10 border border-wl-warning-500/30 text-wl-warning-400 text-sm">
           Could not load compliance settings: {shopError.message}
         </div>
       )}
       {platformError && (
-        <div className="px-4 py-2 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm">
+        <div className="px-4 py-2 rounded-md bg-wl-warning-500/10 border border-wl-warning-500/30 text-wl-warning-400 text-sm">
           Could not load platform status: {platformError.message}
         </div>
       )}
@@ -338,16 +338,16 @@ export default function HealthcarePage() {
       </div>
 
       {/* HIPAA Notice */}
-      <Card className="bg-blue-500/10 border border-blue-500/30">
+      <Card className="bg-wl-info-500/10 border border-wl-info-500/30">
         <CardContent className="pt-6">
           <div className="flex gap-3">
-            <Shield className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+            <Shield className="w-5 h-5 text-wl-info-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-blue-400 mb-1">HIPAA Compliance Notice</p>
+              <p className="text-sm font-medium text-wl-info-400 mb-1">HIPAA Compliance Notice</p>
               <p className="text-sm text-wl-text-secondary">
                 All patient information is encrypted at rest and access is logged for audit purposes.
                 {!compliance?.hipaaCompliant && (
-                  <span className="block mt-1 text-amber-400">
+                  <span className="block mt-1 text-wl-warning-400">
                     Enable HIPAA Mode in Settings → Organization to activate full compliance controls.
                   </span>
                 )}

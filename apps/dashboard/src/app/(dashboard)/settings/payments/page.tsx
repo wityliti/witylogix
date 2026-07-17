@@ -185,13 +185,13 @@ export default function PaymentSettingsPage() {
                         <div className="flex items-center gap-2">
                           {gateway.status === 'connected' ? (
                             <>
-                              <CheckCircle className="w-4 h-4 text-green-500" />
-                              <span className="text-sm font-medium text-green-600">Connected</span>
+                              <CheckCircle className="w-4 h-4 text-wl-success-500" />
+                              <span className="text-sm font-medium text-wl-success-500">Connected</span>
                             </>
                           ) : (
                             <>
-                              <AlertCircle className="w-4 h-4 text-red-500" />
-                              <span className="text-sm font-medium text-red-600">Disconnected</span>
+                              <AlertCircle className="w-4 h-4 text-wl-danger-500" />
+                              <span className="text-sm font-medium text-wl-danger-500">Disconnected</span>
                             </>
                           )}
                         </div>
@@ -212,7 +212,7 @@ export default function PaymentSettingsPage() {
                         <div className="grid grid-cols-1 gap-3">
                           <div className="bg-wl-bg-elevated rounded-lg p-3">
                             <span className="text-xs text-wl-text-secondary">Health Score</span>
-                            <p className="text-lg font-semibold text-blue-500 mt-1">{gateway.healthScore}%</p>
+                            <p className="text-lg font-semibold text-wl-info-500 mt-1">{gateway.healthScore}%</p>
                           </div>
                         </div>
                       )}
@@ -250,7 +250,7 @@ export default function PaymentSettingsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="flex-1 text-red-600 hover:text-red-700"
+                          className="flex-1 text-wl-danger-500 hover:text-red-700"
                           onClick={() => handleDisconnect(gateway.id)}
                         >
                           <Trash2 className="w-4 h-4 mr-2" />
@@ -379,7 +379,7 @@ export default function PaymentSettingsPage() {
                               <td className="py-3 px-4 text-right text-white">${(row.for1000 / 100).toFixed(2)}</td>
                               <td className="py-3 px-4 text-right">
                                 {savings100 > 0 ? (
-                                  <span className="text-emerald-500 font-medium">+${(savings100 / 100).toFixed(2)}</span>
+                                  <span className="text-wl-success-500 font-medium">+${(savings100 / 100).toFixed(2)}</span>
                                 ) : (
                                   <span className="text-wl-text-secondary">—</span>
                                 )}

@@ -125,9 +125,9 @@ export default function WebhooksDebuggerPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'success':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircle className="w-4 h-4 text-wl-success-500" />;
       case 'failed':
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
+        return <AlertCircle className="w-4 h-4 text-wl-danger-500" />;
       default:
         return <Clock className="w-4 h-4 text-yellow-500" />;
     }
@@ -146,7 +146,7 @@ export default function WebhooksDebuggerPage() {
           <Card className="border border-wl-border-default bg-wl-bg-surface">
             <CardHeader><CardDescription>Success Rate</CardDescription></CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-green-500">
+              <div className="text-3xl font-bold text-wl-success-500">
                 {stats.successRate.toFixed(1)}%
               </div>
             </CardContent>
@@ -275,7 +275,7 @@ export default function WebhooksDebuggerPage() {
                         className={cn(
                           'p-3 rounded-lg border cursor-pointer transition-all',
                           selectedEvent?.id === event.id
-                            ? 'bg-blue-500/10 border-blue-500'
+                            ? 'bg-wl-info-500/10 border-blue-500'
                             : 'border-wl-border-default hover:bg-wl-bg-elevated',
                         )}
                       >
@@ -389,7 +389,7 @@ export default function WebhooksDebuggerPage() {
                     {selectedEvent.error && (
                       <div>
                         <div className="text-xs font-semibold text-wl-text-secondary mb-1">Error</div>
-                        <div className="text-xs text-red-500 bg-red-500/10 p-2 rounded">
+                        <div className="text-xs text-wl-danger-500 bg-wl-danger-500/10 p-2 rounded">
                           {selectedEvent.error}
                         </div>
                       </div>

@@ -186,7 +186,7 @@ export default function CreateOrderPage() {
                 setTags('');
                 setDeliveryNotes('');
               }}
-              className="flex-1 px-4 py-2.5 rounded bg-transparent text-blue-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
+              className="flex-1 px-4 py-2.5 rounded bg-transparent text-wl-info-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
             >
               Create Another
             </button>
@@ -204,7 +204,7 @@ export default function CreateOrderPage() {
       </div>
 
       {submitError && (
-        <div className="mb-6 p-4 bg-red-900/20 border border-red-500 rounded text-red-400 text-sm">
+        <div className="mb-6 p-4 bg-red-900/20 border border-red-500 rounded text-wl-danger-400 text-sm">
           {submitError}
         </div>
       )}
@@ -238,7 +238,7 @@ export default function CreateOrderPage() {
               <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Search Customer</label>
               <input
                 type="text"
-                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
                 placeholder="Search by name or email..."
                 value={customerSearch}
                 onChange={(e) => {
@@ -276,7 +276,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Full Name *</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
               placeholder="Enter customer name"
               value={customer.name}
               onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
@@ -287,7 +287,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Email *</label>
             <input
               type="email"
-              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
               placeholder="customer@example.com"
               value={customer.email}
               onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
@@ -298,7 +298,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Phone Number</label>
             <input
               type="tel"
-              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
               placeholder="+91-9876543210"
               value={customer.phone}
               onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
@@ -314,7 +314,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Street Address *</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
               placeholder="Enter street address"
               value={address.street}
               onChange={(e) => setAddress({ ...address, street: e.target.value })}
@@ -325,7 +325,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">City *</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
               placeholder="Enter city"
               value={address.city}
               onChange={(e) => setAddress({ ...address, city: e.target.value })}
@@ -337,7 +337,7 @@ export default function CreateOrderPage() {
               <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">State *</label>
               <input
                 type="text"
-                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
                 placeholder="Enter state"
                 value={address.state}
                 onChange={(e) => setAddress({ ...address, state: e.target.value })}
@@ -348,7 +348,7 @@ export default function CreateOrderPage() {
               <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Zip Code *</label>
               <input
                 type="text"
-                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
                 placeholder="Enter zip code"
                 value={address.zip}
                 onChange={(e) => setAddress({ ...address, zip: e.target.value })}
@@ -365,7 +365,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Preferred Delivery Date</label>
             <input
               type="date"
-              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
               value={deliveryDate}
               onChange={(e) => setDeliveryDate(e.target.value)}
             />
@@ -374,7 +374,7 @@ export default function CreateOrderPage() {
           <div className="mb-4">
             <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Time Slot</label>
             <select
-              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
               value={timeSlot}
               onChange={(e) => setTimeSlot(e.target.value)}
             >
@@ -388,7 +388,7 @@ export default function CreateOrderPage() {
           <div className="mb-4">
             <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Delivery Notes</label>
             <textarea
-              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm min-h-20 font-inherit box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm min-h-20 font-inherit box-border focus:outline-none focus:border-wl-info-500"
               placeholder="Add special delivery instructions..."
               value={deliveryNotes}
               onChange={(e) => setDeliveryNotes(e.target.value)}
@@ -427,7 +427,7 @@ export default function CreateOrderPage() {
                     'px-4 py-2 rounded border text-sm font-semibold transition-all',
                     priority === pri
                       ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-transparent text-blue-500 border-blue-500'
+                      : 'bg-transparent text-wl-info-500 border-blue-500'
                   )}
                 >
                   {pri === 'normal' ? 'Normal' : pri === 'express' ? 'Express' : 'Same Day'}
@@ -448,7 +448,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Tags (comma-separated)</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
               placeholder="e.g., VIP, Fragile, Gift Wrap"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
@@ -466,7 +466,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Product Name</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
               placeholder={productsLoading ? 'Loading products…' : 'Search product…'}
               value={newLineItem.productName}
               onChange={(e) => {
@@ -502,7 +502,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Quantity</label>
             <input
               type="number"
-              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
               min="1"
               value={newLineItem.quantity}
               onChange={(e) => setNewLineItem({ ...newLineItem, quantity: parseInt(e.target.value) || 1 })}
@@ -513,7 +513,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Unit Price</label>
             <input
               type="number"
-              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
               min="0"
               value={newLineItem.unitPrice}
               onChange={(e) => setNewLineItem({ ...newLineItem, unitPrice: parseFloat(e.target.value) || 0 })}
@@ -531,7 +531,7 @@ export default function CreateOrderPage() {
           </div>
         </div>
         {lineItemError && (
-          <p className="text-red-400 text-xs -mt-2 mb-3">{lineItemError}</p>
+          <p className="text-wl-danger-400 text-xs -mt-2 mb-3">{lineItemError}</p>
         )}
 
         {lineItems.length > 0 && (
@@ -579,7 +579,7 @@ export default function CreateOrderPage() {
               <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Tax (%)</label>
               <input
                 type="number"
-                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
                 min="0"
                 max="100"
                 value={tax}
@@ -590,7 +590,7 @@ export default function CreateOrderPage() {
               <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Discount (₹)</label>
               <input
                 type="number"
-                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
                 min="0"
                 value={discount}
                 onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
@@ -613,7 +613,7 @@ export default function CreateOrderPage() {
             <span className="font-semibold">-₹{discountAmount.toLocaleString()}</span>
           </div>
 
-          <div className="flex justify-between py-4 border-t border-wl-border-default text-base font-bold text-blue-500">
+          <div className="flex justify-between py-4 border-t border-wl-border-default text-base font-bold text-wl-info-500">
             <span>Total Amount:</span>
             <span>₹{total.toLocaleString()}</span>
           </div>
@@ -633,7 +633,7 @@ export default function CreateOrderPage() {
           <button
             onClick={handleSaveDraft}
             disabled={creating}
-            className="flex-1 px-4 py-2.5 rounded bg-transparent text-blue-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white disabled:opacity-50"
+            className="flex-1 px-4 py-2.5 rounded bg-transparent text-wl-info-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white disabled:opacity-50"
           >
             Save as Draft
           </button>

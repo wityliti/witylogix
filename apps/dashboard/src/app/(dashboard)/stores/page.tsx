@@ -111,7 +111,7 @@ export default function StoresManagement() {
           </div>
         ) : shopError ? (
           <Card className="bg-wl-bg-surface border border-wl-border-default p-8 text-center mb-8">
-            <p className="text-red-400 mb-4">Failed to load store data.</p>
+            <p className="text-wl-danger-400 mb-4">Failed to load store data.</p>
             <Button variant="secondary" size="sm" onClick={handleRefresh}>Retry</Button>
           </Card>
         ) : shop ? (
@@ -127,7 +127,7 @@ export default function StoresManagement() {
                         {stats?.orders.total?.toLocaleString() ?? shop._count?.orders?.toLocaleString() ?? '—'}
                       </p>
                     </div>
-                    <ShoppingCart size={28} className="text-blue-500" />
+                    <ShoppingCart size={28} className="text-wl-info-500" />
                   </div>
                 </CardContent>
               </Card>
@@ -151,7 +151,7 @@ export default function StoresManagement() {
                       <p className="text-wl-text-secondary mb-2 text-xs">Active Drivers</p>
                       <p className="text-2xl font-bold text-white">{stats?.drivers.active ?? '—'}</p>
                     </div>
-                    <Zap size={28} className="text-emerald-500" />
+                    <Zap size={28} className="text-wl-success-500" />
                   </div>
                 </CardContent>
               </Card>
@@ -163,7 +163,7 @@ export default function StoresManagement() {
                       <p className="text-wl-text-secondary mb-2 text-xs">Active Zones</p>
                       <p className="text-2xl font-bold text-white">{stats?.zones.active ?? '—'}</p>
                     </div>
-                    <Globe size={28} className="text-blue-400" />
+                    <Globe size={28} className="text-wl-info-400" />
                   </div>
                 </CardContent>
               </Card>
@@ -174,7 +174,7 @@ export default function StoresManagement() {
               <CardContent className="p-5">
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-3">
-                    <Store size={24} className="text-blue-500" />
+                    <Store size={24} className="text-wl-info-500" />
                     <div>
                       <h3 className="text-base font-semibold text-white">{shop.name}</h3>
                       {shop.domain && <p className="text-wl-text-secondary text-xs">{shop.domain}</p>}

@@ -58,23 +58,23 @@ export default function AnalyticsHeatmapView({ points, loading, total }: Props) 
       {/* Stats overlay */}
       <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
         <div className="rounded-lg bg-black/70 backdrop-blur border border-white/10 px-3 py-1.5 flex items-center gap-2">
-          <Flame className="w-3.5 h-3.5 text-amber-400" />
-          <span className="text-xs font-medium text-white/80">Delivery Heatmap</span>
+          <Flame className="w-3.5 h-3.5 text-wl-warning-400" />
+          <span className="text-xs font-medium text-wl-text-primary">Delivery Heatmap</span>
         </div>
         {total > 0 && (
           <div className="rounded-lg bg-black/70 backdrop-blur border border-white/10 px-3 py-1.5">
-            <span className="text-xs text-white/60">{total.toLocaleString()} deliveries</span>
+            <span className="text-xs text-wl-text-secondary">{total.toLocaleString()} deliveries</span>
           </div>
         )}
       </div>
 
       {/* Legend */}
       <div className="absolute bottom-3 right-3 z-10 rounded-lg bg-black/70 backdrop-blur border border-white/10 px-3 py-2">
-        <p className="text-[10px] text-white/40 mb-1.5 uppercase tracking-wide">Density</p>
+        <p className="text-[10px] text-wl-text-tertiary mb-1.5 uppercase tracking-wide">Density</p>
         <div className="flex items-center gap-1">
           <div className="w-16 h-2 rounded-full" style={{ background: 'linear-gradient(90deg, rgba(96,165,250,0.4), rgba(245,158,11,0.7), rgba(239,68,68,1))' }} />
         </div>
-        <div className="flex justify-between text-[9px] text-white/30 mt-0.5">
+        <div className="flex justify-between text-[9px] text-wl-text-tertiary mt-0.5">
           <span>Low</span>
           <span>High</span>
         </div>

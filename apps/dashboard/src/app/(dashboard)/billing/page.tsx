@@ -167,7 +167,7 @@ export default function BillingPage() {
 
       <div className="p-6 space-y-6 bg-wl-bg-root min-h-screen">
         {/* ── Current Plan Card ───────────────────────────────────────────── */}
-        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/30 border-2">
+        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-wl-info-500/30 border-2">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
@@ -236,7 +236,7 @@ export default function BillingPage() {
                 Upgrade Plan
               </Button>
               <Button variant="secondary">Manage Plan</Button>
-              <Button variant="ghost" className="text-red-400 hover:text-red-300">
+              <Button variant="ghost" className="text-wl-danger-400 hover:text-wl-danger-400">
                 Cancel Subscription
               </Button>
             </div>
@@ -261,7 +261,7 @@ export default function BillingPage() {
                       'relative overflow-hidden cursor-pointer transition-all border-2',
                       isCurrent
                         ? 'border-blue-500 bg-blue-500/5'
-                        : 'border-wl-border-default bg-wl-bg-surface hover:border-blue-500/50'
+                        : 'border-wl-border-default bg-wl-bg-surface hover:border-wl-info-500/50'
                     )}
                     onClick={() => setExpandedPlan(isExpanded ? null : plan.tier)}
                   >
@@ -285,7 +285,7 @@ export default function BillingPage() {
                         {visibleFeatures.map((feat, idx) => (
                           <div key={idx} className="flex items-start gap-2">
                             {feat.included ? (
-                              <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                              <Check className="w-4 h-4 text-wl-success-500 flex-shrink-0 mt-0.5" />
                             ) : (
                               <X className="w-4 h-4 text-wl-text-tertiary flex-shrink-0 mt-0.5" />
                             )}
@@ -302,7 +302,7 @@ export default function BillingPage() {
                       {features.length > 4 && (
                         <button
                           onClick={(e) => { e.stopPropagation(); setExpandedPlan(isExpanded ? null : plan.tier); }}
-                          className="flex items-center gap-1 text-blue-400 hover:text-blue-300 text-xs font-medium mb-4 transition-colors"
+                          className="flex items-center gap-1 text-wl-info-400 hover:text-wl-info-400 text-xs font-medium mb-4 transition-colors"
                         >
                           {isExpanded ? (
                             <><ChevronUp className="w-3 h-3" /> Show less</>
@@ -429,8 +429,8 @@ export default function BillingPage() {
         </Card>
 
         {/* ── Auto-Renewal Notice ─────────────────────────────────────────── */}
-        <div className="p-5 rounded-lg border border-amber-500/30 bg-amber-500/10 flex gap-4">
-          <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+        <div className="p-5 rounded-lg border border-wl-warning-500/30 bg-wl-warning-500/10 flex gap-4">
+          <AlertCircle className="w-5 h-5 text-wl-warning-500 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-wl-neutral-300">
             Your subscription will automatically renew on{' '}
             <strong className="text-white">

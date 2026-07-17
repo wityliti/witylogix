@@ -38,9 +38,9 @@ interface GaugeProps {
 
 function HealthGauge({ score, size = "lg" }: GaugeProps) {
   const getColor = (score: number) => {
-    if (score >= 90) return "text-emerald-500";
-    if (score >= 70) return "text-amber-500";
-    return "text-red-500";
+    if (score >= 90) return "text-wl-success-500";
+    if (score >= 70) return "text-wl-warning-500";
+    return "text-wl-danger-500";
   };
 
   const getBgColor = (score: number) => {
@@ -190,10 +190,10 @@ export default function IntegrationsPage() {
           <CardContent className="pt-6">
             <div className="space-y-2">
               <p className="text-sm text-wl-text-secondary flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-500" />
+                <CheckCircle className="w-4 h-4 text-wl-success-500" />
                 Healthy
               </p>
-              <p className="text-3xl font-bold text-emerald-500">
+              <p className="text-3xl font-bold text-wl-success-500">
                 {health?.healthyProviders ?? 0}
               </p>
             </div>
@@ -204,10 +204,10 @@ export default function IntegrationsPage() {
           <CardContent className="pt-6">
             <div className="space-y-2">
               <p className="text-sm text-wl-text-secondary flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-500" />
+                <AlertTriangle className="w-4 h-4 text-wl-warning-500" />
                 Degraded / Down
               </p>
-              <p className="text-3xl font-bold text-amber-500">
+              <p className="text-3xl font-bold text-wl-warning-500">
                 {(health?.degradedProviders ?? 0) + (health?.downProviders ?? 0)}
               </p>
             </div>
@@ -254,13 +254,13 @@ export default function IntegrationsPage() {
                 >
                   <div className="flex gap-3 flex-1 min-w-0">
                     {alert.severity === "critical" && (
-                      <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                      <XCircle className="w-5 h-5 text-wl-danger-500 flex-shrink-0 mt-0.5" />
                     )}
                     {alert.severity === "warning" && (
-                      <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <AlertTriangle className="w-5 h-5 text-wl-warning-500 flex-shrink-0 mt-0.5" />
                     )}
                     {alert.severity === "info" && (
-                      <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                      <AlertCircle className="w-5 h-5 text-wl-info-400 flex-shrink-0 mt-0.5" />
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-white truncate">
@@ -347,7 +347,7 @@ export default function IntegrationsPage() {
               placeholder="Search providers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white placeholder-wl-text-secondary focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white placeholder-wl-text-secondary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500"
             />
           </div>
         </div>
@@ -360,7 +360,7 @@ export default function IntegrationsPage() {
               onChange={(e) =>
                 setSelectedCategory(e.target.value || null)
               }
-              className="px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white text-sm focus:outline-none focus:border-blue-500"
+              className="px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white text-sm focus:outline-none focus:border-wl-info-500"
             >
               <option value="">All Categories</option>
               {categories.map((cat) => (
@@ -376,7 +376,7 @@ export default function IntegrationsPage() {
           <select
             value={selectedStatus ?? ""}
             onChange={(e) => setSelectedStatus(e.target.value || null)}
-            className="px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white text-sm focus:outline-none focus:border-blue-500"
+            className="px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white text-sm focus:outline-none focus:border-wl-info-500"
           >
             <option value="">All Status</option>
             {statuses.map((status) => (

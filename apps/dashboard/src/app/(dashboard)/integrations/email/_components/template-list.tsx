@@ -28,8 +28,8 @@ export function TemplateList({
           className={cn(
             'w-full text-left p-4 rounded-lg border transition-all',
             selectedId === template.id
-              ? 'bg-blue-500/10 border-blue-500'
-              : 'bg-wl-bg-elevated border-wl-border-default hover:border-blue-500/50'
+              ? 'bg-wl-info-500/10 border-blue-500'
+              : 'bg-wl-bg-elevated border-wl-border-default hover:border-wl-info-500/50'
           )}
         >
           <div className="font-medium text-white">{template.name}</div>

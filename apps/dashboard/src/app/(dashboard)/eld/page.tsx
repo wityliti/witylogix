@@ -160,7 +160,7 @@ export default function ELDOverviewPage() {
             <CardContent>
               {driversLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <div className="w-6 h-6 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
+                  <div className="w-6 h-6 rounded-full border-2 border-wl-info-500/30 border-t-blue-500 animate-spin" />
                 </div>
               ) : drivers.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-wl-text-secondary">
@@ -178,9 +178,9 @@ export default function ELDOverviewPage() {
                       onClick={() => setSelectedDriver(driver.driverId)}
                       className={cn(
                         "p-3 rounded-lg border transition-all text-left",
-                        "hover:border-blue-500/30 hover:bg-wl-bg-elevated",
+                        "hover:border-wl-info-500/30 hover:bg-wl-bg-elevated",
                         selectedDriver === driver.driverId
-                          ? "border-blue-500/50 bg-blue-500/5"
+                          ? "border-wl-info-500/50 bg-blue-500/5"
                           : "border-wl-border-default"
                       )}
                     >
@@ -220,10 +220,10 @@ export default function ELDOverviewPage() {
                             className={cn(
                               "font-semibold",
                               driver.drivingRemaining > 4
-                                ? "text-emerald-500"
+                                ? "text-wl-success-500"
                                 : driver.drivingRemaining > 2
-                                  ? "text-amber-500"
-                                  : "text-red-500"
+                                  ? "text-wl-warning-500"
+                                  : "text-wl-danger-500"
                             )}
                           >
                             {driver.drivingRemaining.toFixed(1)}h
@@ -313,7 +313,7 @@ export default function ELDOverviewPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2 text-white">
-              <Wrench className="w-5 h-5 text-blue-500" />
+              <Wrench className="w-5 h-5 text-wl-info-500" />
               DVIR Status
             </CardTitle>
           </CardHeader>
@@ -324,7 +324,7 @@ export default function ELDOverviewPage() {
                 <span className="text-xs font-semibold text-wl-text-secondary">
                   Completion Rate
                 </span>
-                <span className="text-lg font-bold text-emerald-500">
+                <span className="text-lg font-bold text-wl-success-500">
                   {(compliance?.dvirCompletionRate ?? 0).toFixed(1)}%
                 </span>
               </div>
@@ -339,13 +339,13 @@ export default function ELDOverviewPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-wl-text-secondary">Open Defects</span>
-                <span className="font-semibold text-amber-500">
+                <span className="font-semibold text-wl-warning-500">
                   {compliance?.openDefects ?? 0}
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-wl-text-secondary">Critical Issues</span>
-                <span className="font-semibold text-red-500">
+                <span className="font-semibold text-wl-danger-500">
                   {compliance?.criticalDefects ?? 0}
                 </span>
               </div>
@@ -363,7 +363,7 @@ export default function ELDOverviewPage() {
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2 text-white">
-                <Activity className="w-5 h-5 text-blue-500" />
+                <Activity className="w-5 h-5 text-wl-info-500" />
                 Recent ELD Events
               </CardTitle>
             </CardHeader>
@@ -371,7 +371,7 @@ export default function ELDOverviewPage() {
             <CardContent>
               {eventsLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="w-6 h-6 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
+                  <div className="w-6 h-6 rounded-full border-2 border-wl-info-500/30 border-t-blue-500 animate-spin" />
                 </div>
               ) : events.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-wl-text-secondary">

@@ -137,12 +137,12 @@ export default function MapsSettingsPage() {
 
       <div className="p-6 max-w-4xl space-y-6">
         {/* Keyless notice */}
-        <Card className="border border-emerald-600/30 bg-emerald-600/10">
+        <Card className="border border-emerald-600/30 bg-wl-success-500/10">
           <CardContent className="pt-4">
             <div className="flex items-start gap-3">
-              <Map className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <Map className="w-5 h-5 text-wl-success-400 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-emerald-400">Maps work without an API key</p>
+                <p className="text-sm font-semibold text-wl-success-400">Maps work without an API key</p>
                 <p className="text-xs text-wl-text-secondary mt-1">
                   All dashboard maps use free CARTO basemaps (MapLibre GL) — no API key required. The
                   optional Google Maps API key below enables enhanced geocoding, places autocomplete, and
@@ -162,7 +162,7 @@ export default function MapsSettingsPage() {
                 href="https://console.cloud.google.com/apis/credentials"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-blue-400 hover:text-blue-300"
+                className="text-xs text-wl-info-400 hover:text-wl-info-400"
               >
                 Google Cloud Console →
               </a>
@@ -215,7 +215,7 @@ export default function MapsSettingsPage() {
                       'w-full px-4 py-2.5 rounded-md',
                       'bg-wl-bg-root border border-wl-border-default',
                       'text-white placeholder:text-wl-text-tertiary',
-                      'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                      'focus:outline-none focus:ring-2 focus:ring-wl-info-500 focus:border-transparent',
                       'font-mono text-sm'
                     )}
                   />
@@ -259,24 +259,24 @@ export default function MapsSettingsPage() {
                   {testStatus === 'testing' ? 'Testing…' : 'Test Connection'}
                 </Button>
                 {testStatus === 'success' && (
-                  <span className="flex items-center gap-1 text-xs text-emerald-400">
+                  <span className="flex items-center gap-1 text-xs text-wl-success-400">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Connection OK
                   </span>
                 )}
                 {testStatus === 'error' && (
-                  <span className="flex items-center gap-1 text-xs text-red-400">
+                  <span className="flex items-center gap-1 text-xs text-wl-danger-400">
                     <AlertCircle className="w-3.5 h-3.5" /> {testError}
                   </span>
                 )}
               </div>
             )}
             {isEditingApiKey && testStatus === 'success' && (
-              <p className="text-xs text-emerald-400 flex items-center gap-1">
+              <p className="text-xs text-wl-success-400 flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Key is valid
               </p>
             )}
             {isEditingApiKey && testStatus === 'error' && (
-              <p className="text-xs text-red-400 flex items-center gap-1">
+              <p className="text-xs text-wl-danger-400 flex items-center gap-1">
                 <AlertCircle className="w-3.5 h-3.5" /> {testError}
               </p>
             )}
@@ -308,7 +308,7 @@ export default function MapsSettingsPage() {
                     'w-full px-4 py-2.5 rounded-md',
                     'bg-wl-bg-root border border-wl-border-default',
                     'text-white',
-                    'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                    'focus:outline-none focus:ring-2 focus:ring-wl-info-500 focus:border-transparent'
                   )}
                 />
               </div>
@@ -330,7 +330,7 @@ export default function MapsSettingsPage() {
                     'w-full px-4 py-2.5 rounded-md',
                     'bg-wl-bg-root border border-wl-border-default',
                     'text-white',
-                    'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                    'focus:outline-none focus:ring-2 focus:ring-wl-info-500 focus:border-transparent'
                   )}
                 />
               </div>
@@ -369,7 +369,7 @@ export default function MapsSettingsPage() {
               ].map(({ key, label, desc }) => (
                 <div
                   key={key}
-                  className="flex items-center justify-between p-4 rounded-lg bg-wl-bg-root border border-wl-border-default hover:border-blue-500/30 transition-colors"
+                  className="flex items-center justify-between p-4 rounded-lg bg-wl-bg-root border border-wl-border-default hover:border-wl-info-500/30 transition-colors"
                 >
                   <div>
                     <p className="text-sm font-semibold text-white">{label}</p>
@@ -381,7 +381,7 @@ export default function MapsSettingsPage() {
                     onClick={() => handleSettingChange(key, !config[key])}
                     className={cn(
                       'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent',
-                      'transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500',
+                      'transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-wl-info-500',
                       config[key] ? 'bg-blue-600' : 'bg-wl-bg-elevated'
                     )}
                   >
@@ -403,7 +403,7 @@ export default function MapsSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Settings2 className="w-4 h-4 text-blue-400" />
+              <Settings2 className="w-4 h-4 text-wl-info-400" />
               Preview
             </CardTitle>
             <p className="text-xs text-wl-text-secondary mt-1">
@@ -426,13 +426,13 @@ export default function MapsSettingsPage() {
         {/* Save footer */}
         <div className="flex items-center justify-between py-2">
           {saveSuccess && (
-            <span className="flex items-center gap-2 text-sm text-emerald-400">
+            <span className="flex items-center gap-2 text-sm text-wl-success-400">
               <CheckCircle2 className="w-4 h-4" />
               Settings saved
             </span>
           )}
           {saveError && (
-            <span className="flex items-center gap-2 text-sm text-red-400">
+            <span className="flex items-center gap-2 text-sm text-wl-danger-400">
               <AlertCircle className="w-4 h-4" />
               {saveError}
             </span>

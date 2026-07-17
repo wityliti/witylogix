@@ -56,7 +56,7 @@ function MetricTile({
   const isUp = (trend ?? 0) >= 0;
   return (
     <div
-      className="relative overflow-hidden rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 group hover:border-white/[0.12] transition-all"
+      className="relative overflow-hidden rounded-xl bg-wl-bg-surface border border-wl-border-subtle p-5 group hover:border-wl-border-default transition-all"
       style={{ animationDelay: `${delay}ms` }}
     >
       <div
@@ -64,7 +64,7 @@ function MetricTile({
         style={{ background: `linear-gradient(90deg, ${accent}, transparent 60%)` }}
       />
       <div className="flex items-start justify-between mb-3">
-        <span className="text-[13px] font-medium text-white/40 tracking-wide">{label}</span>
+        <span className="text-[13px] font-medium text-wl-text-tertiary tracking-wide">{label}</span>
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center"
           style={{ backgroundColor: `${accent}18`, color: accent }}
@@ -73,22 +73,22 @@ function MetricTile({
         </div>
       </div>
       <div className="flex items-baseline gap-1.5">
-        <span className="text-[28px] font-bold text-white/90 leading-none tracking-tight font-mono">
+        <span className="text-[28px] font-bold text-wl-text-primary leading-none tracking-tight font-mono">
           {value}
         </span>
-        {suffix && <span className="text-sm text-white/30">{suffix}</span>}
+        {suffix && <span className="text-sm text-wl-text-tertiary">{suffix}</span>}
       </div>
       {trend !== undefined && (
         <div className="flex items-center gap-1.5 mt-2.5">
           {isUp ? (
-            <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+            <TrendingUp className="w-3.5 h-3.5 text-wl-success-400" />
           ) : (
-            <TrendingDown className="w-3.5 h-3.5 text-red-400" />
+            <TrendingDown className="w-3.5 h-3.5 text-wl-danger-400" />
           )}
-          <span className={cn('text-xs font-medium font-mono', isUp ? 'text-emerald-400' : 'text-red-400')}>
+          <span className={cn('text-xs font-medium font-mono', isUp ? 'text-wl-success-400' : 'text-wl-danger-400')}>
             {isUp ? '+' : ''}{trend}%
           </span>
-          {trendLabel && <span className="text-xs text-white/25">{trendLabel}</span>}
+          {trendLabel && <span className="text-xs text-wl-text-tertiary">{trendLabel}</span>}
         </div>
       )}
     </div>
@@ -97,7 +97,7 @@ function MetricTile({
 
 function MetricSkeleton() {
   return (
-    <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 animate-pulse">
+    <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle p-5 animate-pulse">
       <div className="flex items-start justify-between mb-3">
         <div className="h-3 w-24 rounded bg-white/[0.06]" />
         <div className="w-8 h-8 rounded-lg bg-white/[0.04]" />
@@ -124,7 +124,7 @@ function MiniBarChart({
             className="flex-1 rounded-t-sm transition-all hover:opacity-80 group/bar relative"
             style={{ height: `${Math.max(h, 4)}%`, backgroundColor: color, opacity: 0.7 }}
           >
-            <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-wl-bg-elevated text-[10px] text-white/60 px-1.5 py-0.5 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-wl-bg-elevated text-[10px] text-wl-text-secondary px-1.5 py-0.5 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
               {val}
             </div>
           </div>
@@ -147,7 +147,7 @@ function WeeklyChart({ data }: { data: AnalyticsOverview['weekly'] }) {
               <div className="flex-1 rounded-t-sm bg-blue-500/60" style={{ height: `${h}%` }} />
               <div className="flex-1 rounded-t-sm bg-emerald-500/50" style={{ height: `${dh}%` }} />
             </div>
-            <span className="text-[10px] text-white/30 font-medium">{d.day}</span>
+            <span className="text-[10px] text-wl-text-tertiary font-medium">{d.day}</span>
           </div>
         )
       })}
@@ -158,8 +158,8 @@ function WeeklyChart({ data }: { data: AnalyticsOverview['weekly'] }) {
 function EmptyChart({ label }: { label: string }) {
   return (
     <div className="flex flex-col items-center justify-center h-24 gap-2">
-      <BarChart3 className="w-6 h-6 text-white/10" />
-      <p className="text-xs text-white/20">{label}</p>
+      <BarChart3 className="w-6 h-6 text-wl-text-tertiary" />
+      <p className="text-xs text-wl-text-tertiary">{label}</p>
     </div>
   );
 }
@@ -191,19 +191,19 @@ export default function AnalyticsPage() {
       <div className="px-6 lg:px-8 pt-6 pb-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white/90 tracking-tight">Analytics</h1>
-            <p className="text-sm text-white/35 mt-0.5">Monitor dashboards, reports, and data sources</p>
+            <h1 className="text-2xl font-bold text-wl-text-primary tracking-tight">Analytics</h1>
+            <p className="text-sm text-wl-text-tertiary mt-0.5">Monitor dashboards, reports, and data sources</p>
           </div>
           <div className="flex items-center gap-3">
             {/* View toggle */}
-            <div className="flex items-center gap-1 rounded-lg bg-white/[0.05] border border-white/[0.08] p-1">
+            <div className="flex items-center gap-1 rounded-lg bg-white/[0.05] border border-wl-border-default p-1">
               <button
                 onClick={() => setViewMode('charts')}
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all',
                   viewMode === 'charts'
-                    ? 'bg-white/10 text-white/80'
-                    : 'text-white/30 hover:text-white/50'
+                    ? 'bg-white/10 text-wl-text-primary'
+                    : 'text-wl-text-tertiary hover:text-wl-text-secondary'
                 )}
               >
                 <BarChart2 className="w-3.5 h-3.5" />
@@ -214,8 +214,8 @@ export default function AnalyticsPage() {
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all',
                   viewMode === 'heatmap'
-                    ? 'bg-white/10 text-white/80'
-                    : 'text-white/30 hover:text-white/50'
+                    ? 'bg-white/10 text-wl-text-primary'
+                    : 'text-wl-text-tertiary hover:text-wl-text-secondary'
                 )}
               >
                 <MapPin className="w-3.5 h-3.5" />
@@ -231,8 +231,8 @@ export default function AnalyticsPage() {
                   className={cn(
                     'px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all',
                     timeRange === r
-                      ? 'bg-white/10 text-white/80 border border-white/[0.12]'
-                      : 'text-white/30 hover:text-white/50 border border-transparent'
+                      ? 'bg-white/10 text-wl-text-primary border border-wl-border-default'
+                      : 'text-wl-text-tertiary hover:text-wl-text-secondary border border-transparent'
                   )}
                 >
                   {r === 'today' ? 'Today' : r === '7d' ? '7 Days' : '30 Days'}
@@ -283,8 +283,8 @@ export default function AnalyticsPage() {
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 h-28 flex items-center justify-center">
-                <span className="text-xs text-white/15">No data</span>
+              <div key={i} className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle p-5 h-28 flex items-center justify-center">
+                <span className="text-xs text-wl-text-tertiary">No data</span>
               </div>
             ))}
           </div>
@@ -292,10 +292,10 @@ export default function AnalyticsPage() {
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
+          <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-white/60 tracking-wide">Hourly Activity</h3>
-              <div className="flex items-center gap-4 text-[11px] text-white/30">
+              <h3 className="text-sm font-semibold text-wl-text-secondary tracking-wide">Hourly Activity</h3>
+              <div className="flex items-center gap-4 text-[11px] text-wl-text-tertiary">
                 <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500/70" />Orders</span>
                 <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500/70" />Deliveries</span>
               </div>
@@ -305,7 +305,7 @@ export default function AnalyticsPage() {
             ) : hourly.length > 0 ? (
               <>
                 <MiniBarChart data={hourly} dataKey="orders" color="var(--wl-primary-500)" maxVal={maxHourly} />
-                <div className="flex justify-between mt-2 text-[10px] text-white/20 px-0.5">
+                <div className="flex justify-between mt-2 text-[10px] text-wl-text-tertiary px-0.5">
                   <span>12am</span><span>6am</span><span>12pm</span><span>6pm</span><span>11pm</span>
                 </div>
               </>
@@ -314,10 +314,10 @@ export default function AnalyticsPage() {
             )}
           </div>
 
-          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
+          <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-white/60 tracking-wide">Weekly Trend</h3>
-              <div className="flex items-center gap-4 text-[11px] text-white/30">
+              <h3 className="text-sm font-semibold text-wl-text-secondary tracking-wide">Weekly Trend</h3>
+              <div className="flex items-center gap-4 text-[11px] text-wl-text-tertiary">
                 <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500/60" />Orders</span>
                 <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500/50" />Delivered</span>
               </div>
@@ -335,19 +335,19 @@ export default function AnalyticsPage() {
         {/* Bottom Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Top Zones */}
-          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
-            <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Top Delivery Zones</h3>
+          <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle p-5">
+            <h3 className="text-sm font-semibold text-wl-text-secondary tracking-wide mb-4">Top Delivery Zones</h3>
             {loading ? (
               <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-8 rounded-lg bg-white/[0.03] animate-pulse" />)}</div>
             ) : topZones.length > 0 ? (
               <div className="space-y-3">
                 {topZones.map((zone, i) => (
                   <div key={zone.name} className="flex items-center gap-3">
-                    <span className="text-xs font-mono text-white/20 w-4">{i + 1}</span>
+                    <span className="text-xs font-mono text-wl-text-tertiary w-4">{i + 1}</span>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm text-white/70">{zone.name}</span>
-                        <span className="text-xs font-mono text-white/40">{zone.orders}</span>
+                        <span className="text-sm text-wl-text-secondary">{zone.name}</span>
+                        <span className="text-xs font-mono text-wl-text-tertiary">{zone.orders}</span>
                       </div>
                       <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
                         <div
@@ -359,11 +359,11 @@ export default function AnalyticsPage() {
                     {zone.trend !== 0 && (
                       <div className="flex items-center gap-1">
                         {zone.trend >= 0 ? (
-                          <ArrowUpRight className="w-3 h-3 text-emerald-400" />
+                          <ArrowUpRight className="w-3 h-3 text-wl-success-400" />
                         ) : (
-                          <TrendingDown className="w-3 h-3 text-red-400" />
+                          <TrendingDown className="w-3 h-3 text-wl-danger-400" />
                         )}
-                        <span className={cn('text-[11px] font-mono', zone.trend >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                        <span className={cn('text-[11px] font-mono', zone.trend >= 0 ? 'text-wl-success-400' : 'text-wl-danger-400')}>
                           {zone.trend > 0 ? '+' : ''}{zone.trend}%
                         </span>
                       </div>
@@ -373,15 +373,15 @@ export default function AnalyticsPage() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-32 gap-2">
-                <Package className="w-6 h-6 text-white/10" />
-                <p className="text-xs text-white/20">No zone data for this period</p>
+                <Package className="w-6 h-6 text-wl-text-tertiary" />
+                <p className="text-xs text-wl-text-tertiary">No zone data for this period</p>
               </div>
             )}
           </div>
 
           {/* Driver Leaderboard */}
-          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
-            <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Driver Leaderboard</h3>
+          <div className="rounded-xl bg-wl-bg-surface border border-wl-border-subtle p-5">
+            <h3 className="text-sm font-semibold text-wl-text-secondary tracking-wide mb-4">Driver Leaderboard</h3>
             {loading ? (
               <div className="space-y-2.5">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-10 rounded-lg bg-white/[0.03] animate-pulse" />)}</div>
             ) : topDrivers.length > 0 ? (
@@ -390,29 +390,29 @@ export default function AnalyticsPage() {
                   <div key={driver.name} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/[0.02] transition-colors">
                     <div className={cn(
                       'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold',
-                      i === 0 ? 'bg-amber-500/20 text-amber-400' :
+                      i === 0 ? 'bg-wl-warning-500/20 text-wl-warning-400' :
                       i === 1 ? 'bg-wl-neutral-400/20 text-wl-neutral-300' :
                       i === 2 ? 'bg-orange-600/20 text-orange-400' :
-                      'bg-white/[0.05] text-white/30'
+                      'bg-white/[0.05] text-wl-text-tertiary'
                     )}>
                       {i + 1}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white/70 truncate">{driver.name}</p>
+                      <p className="text-sm text-wl-text-secondary truncate">{driver.name}</p>
                     </div>
                     <div className="text-right flex items-center gap-4">
                       <div>
-                        <p className="text-xs font-mono text-white/50">{driver.deliveries}</p>
-                        <p className="text-[10px] text-white/20">deliveries</p>
+                        <p className="text-xs font-mono text-wl-text-secondary">{driver.deliveries}</p>
+                        <p className="text-[10px] text-wl-text-tertiary">deliveries</p>
                       </div>
                       <div>
-                        <p className="text-xs font-mono text-emerald-400">{driver.onTime}%</p>
-                        <p className="text-[10px] text-white/20">on-time</p>
+                        <p className="text-xs font-mono text-wl-success-400">{driver.onTime}%</p>
+                        <p className="text-[10px] text-wl-text-tertiary">on-time</p>
                       </div>
                       {driver.rating > 0 && (
                         <div className="flex items-center gap-0.5">
-                          <span className="text-xs font-mono text-amber-400">{driver.rating}</span>
-                          <span className="text-amber-400 text-[10px]">&#9733;</span>
+                          <span className="text-xs font-mono text-wl-warning-400">{driver.rating}</span>
+                          <span className="text-wl-warning-400 text-[10px]">&#9733;</span>
                         </div>
                       )}
                     </div>
@@ -421,8 +421,8 @@ export default function AnalyticsPage() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-32 gap-2">
-                <Users className="w-6 h-6 text-white/10" />
-                <p className="text-xs text-white/20">No driver data for this period</p>
+                <Users className="w-6 h-6 text-wl-text-tertiary" />
+                <p className="text-xs text-wl-text-tertiary">No driver data for this period</p>
               </div>
             )}
           </div>

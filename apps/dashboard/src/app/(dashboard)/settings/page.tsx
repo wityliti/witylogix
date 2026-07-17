@@ -118,8 +118,8 @@ export default function SettingsHub() {
               <div
                 className={cn(
                   "relative overflow-hidden rounded-xl p-5",
-                  "bg-wl-bg-surface border border-white/[0.06]",
-                  "hover:border-white/[0.14] hover:bg-wl-bg-elevated",
+                  "bg-wl-bg-surface border border-wl-border-subtle",
+                  "hover:border-wl-border-default hover:bg-wl-bg-elevated",
                   "transition-all duration-200 ease-out",
                   "h-full"
                 )}
@@ -147,17 +147,17 @@ export default function SettingsHub() {
                     {tab.icon}
                   </div>
                   <ArrowUpRight
-                    className="w-4 h-4 text-white/20 group-hover:text-white/50 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                    className="w-4 h-4 text-wl-text-tertiary group-hover:text-wl-text-secondary transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                   />
                 </div>
 
                 {/* Label */}
-                <h3 className="text-[15px] font-semibold text-white/90 mb-1.5">
+                <h3 className="text-[15px] font-semibold text-wl-text-primary mb-1.5">
                   {tab.label}
                 </h3>
 
                 {/* Description */}
-                <p className="text-[13px] leading-relaxed text-white/40">
+                <p className="text-[13px] leading-relaxed text-wl-text-tertiary">
                   {tab.description}
                 </p>
               </div>

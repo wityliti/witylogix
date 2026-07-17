@@ -182,7 +182,7 @@ export default function ComparePage() {
                 onClick={() => !isDisabled && handleToggleCourier(courier.id)}
                 className={cn(
                   "cursor-pointer transition-all",
-                  isSelected && "ring-2 ring-blue-400 bg-blue-500/10",
+                  isSelected && "ring-2 ring-blue-400 bg-wl-info-500/10",
                   isDisabled && "opacity-50 cursor-not-allowed"
                 )}
               >
@@ -198,7 +198,7 @@ export default function ComparePage() {
                               className={cn(
                                 "w-3 h-3",
                                 i < Math.floor(courier.rating)
-                                  ? "fill-amber-400 text-amber-400"
+                                  ? "fill-amber-400 text-wl-warning-400"
                                   : "text-wl-text-tertiary"
                               )}
                             />
@@ -278,7 +278,7 @@ export default function ComparePage() {
                               e.stopPropagation();
                               handleToggleCourier(courier.id);
                             }}
-                            className="hover:text-red-400 transition-colors"
+                            className="hover:text-wl-danger-400 transition-colors"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -292,7 +292,7 @@ export default function ComparePage() {
                     <td className="px-4 py-3 font-semibold text-white">Price Range</td>
                     {comparisonCouriers.map((courier) => (
                       <td key={courier.id} className="px-4 py-3 text-center text-white">
-                        <span className="inline-flex items-center px-2 py-1 rounded bg-blue-500/20 text-blue-400 text-xs font-semibold">
+                        <span className="inline-flex items-center px-2 py-1 rounded bg-wl-info-500/20 text-wl-info-400 text-xs font-semibold">
                           ${courier.priceRange.min} – ${courier.priceRange.max}
                         </span>
                       </td>
@@ -321,7 +321,7 @@ export default function ComparePage() {
                     {comparisonCouriers.map((courier) => (
                       <td key={courier.id} className="px-4 py-3 text-center text-white">
                         {courier.successRate > 0 ? (
-                          <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-semibold">
+                          <span className="inline-flex items-center px-2 py-1 rounded bg-wl-success-500/20 text-wl-success-400 text-xs font-semibold">
                             {courier.successRate}%
                           </span>
                         ) : (
@@ -343,7 +343,7 @@ export default function ComparePage() {
                                   className={cn(
                                     "w-3 h-3",
                                     i < Math.floor(courier.rating)
-                                      ? "fill-amber-400 text-amber-400"
+                                      ? "fill-amber-400 text-wl-warning-400"
                                       : "text-wl-text-tertiary"
                                   )}
                                 />
@@ -362,7 +362,7 @@ export default function ComparePage() {
                     {comparisonCouriers.map((courier) => (
                       <td key={courier.id} className="px-4 py-3 text-center text-white">
                         {courier.features.realTimeTracking ? (
-                          <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-semibold gap-1">
+                          <span className="inline-flex items-center px-2 py-1 rounded bg-wl-success-500/20 text-wl-success-400 text-xs font-semibold gap-1">
                             <CheckCircle className="w-3 h-3" />
                             Yes
                           </span>
@@ -377,7 +377,7 @@ export default function ComparePage() {
                     {comparisonCouriers.map((courier) => (
                       <td key={courier.id} className="px-4 py-3 text-center text-white">
                         {courier.features.proofOfDelivery ? (
-                          <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-semibold gap-1">
+                          <span className="inline-flex items-center px-2 py-1 rounded bg-wl-success-500/20 text-wl-success-400 text-xs font-semibold gap-1">
                             <CheckCircle className="w-3 h-3" />
                             Yes
                           </span>
@@ -392,7 +392,7 @@ export default function ComparePage() {
                     {comparisonCouriers.map((courier) => (
                       <td key={courier.id} className="px-4 py-3 text-center text-white">
                         {courier.features.insurance ? (
-                          <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-semibold gap-1">
+                          <span className="inline-flex items-center px-2 py-1 rounded bg-wl-success-500/20 text-wl-success-400 text-xs font-semibold gap-1">
                             <CheckCircle className="w-3 h-3" />
                             Yes
                           </span>

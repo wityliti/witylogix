@@ -85,9 +85,9 @@ export default function FuelPage() {
 
         {/* Anomaly Alerts */}
         {analytics.anomalies.length > 0 && (
-          <Card className="bg-wl-bg-surface border border-red-500/30">
+          <Card className="bg-wl-bg-surface border border-wl-danger-500/30">
             <CardHeader>
-              <CardTitle className="text-sm text-red-400 flex items-center gap-2">
+              <CardTitle className="text-sm text-wl-danger-400 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
                 Fuel Anomalies Detected ({analytics.anomalies.length})
               </CardTitle>
@@ -95,7 +95,7 @@ export default function FuelPage() {
             <CardContent>
               <div className="space-y-2">
                 {analytics.anomalies.slice(0, 3).map((anomaly) => (
-                  <div key={anomaly.id} className="flex items-center justify-between p-3 bg-red-500/10 rounded-md border border-wl-border-default">
+                  <div key={anomaly.id} className="flex items-center justify-between p-3 bg-wl-danger-500/10 rounded-md border border-wl-border-default">
                     <div>
                       <p className="text-sm font-medium text-white">Anomaly Detected</p>
                       <p className="text-xs text-wl-text-secondary">{formatCurrency(anomaly.amount)} • {anomaly.gallons.toFixed(1)} gal • {formatDate(anomaly.date)}</p>
@@ -194,7 +194,7 @@ export default function FuelPage() {
                     <td className="p-3 px-4 text-wl-text-secondary text-xs">{formatDate(tx.date)}</td>
                     <td className="p-3 px-4 text-white font-semibold">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-blue-400 text-xs">
+                        <div className="w-6 h-6 rounded-md bg-wl-info-500/10 flex items-center justify-center text-wl-info-400 text-xs">
                           <Fuel className="w-3 h-3" />
                         </div>
                         <p className="text-sm">Vehicle</p>

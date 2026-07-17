@@ -150,7 +150,7 @@ export default function AdminShopDetail() {
       <div className="px-6 py-6 border-b border-wl-border-default flex gap-4 items-center justify-between">
         <Link
           href="/admin"
-          className="text-blue-600 no-underline flex items-center gap-2 hover:opacity-80"
+          className="text-wl-info-500 no-underline flex items-center gap-2 hover:opacity-80"
         >
           <ArrowLeft size={20} />
           Back to Shops
@@ -218,16 +218,16 @@ export default function AdminShopDetail() {
               {shop.usage.suspension && (
                 <div>
                   <p className="text-wl-text-secondary mb-1 text-xs">Suspended</p>
-                  <p className="text-red-400 text-xs">{shop.usage.suspension.reason ?? 'No reason given'}</p>
+                  <p className="text-wl-danger-400 text-xs">{shop.usage.suspension.reason ?? 'No reason given'}</p>
                 </div>
               )}
             </div>
 
             {isSuspended && shop.usage.suspension && (
               <div className="mt-4 p-3 bg-red-900/20 border border-red-900/40 rounded-lg">
-                <p className="text-red-400 text-sm font-medium">Suspended</p>
+                <p className="text-wl-danger-400 text-sm font-medium">Suspended</p>
                 {shop.usage.suspension.reason && (
-                  <p className="text-red-300 text-xs mt-1">{shop.usage.suspension.reason}</p>
+                  <p className="text-wl-danger-400 text-xs mt-1">{shop.usage.suspension.reason}</p>
                 )}
                 <p className="text-wl-text-secondary text-xs mt-1">
                   Since: {new Date(shop.usage.suspension.suspendedAt).toLocaleString()}
@@ -248,7 +248,7 @@ export default function AdminShopDetail() {
                     {shop.usage.orders.toLocaleString()}
                   </p>
                 </div>
-                <ShoppingCart size={24} className="text-blue-500" />
+                <ShoppingCart size={24} className="text-wl-info-500" />
               </div>
             </CardContent>
           </Card>
@@ -276,7 +276,7 @@ export default function AdminShopDetail() {
                     {shop.usage.drivers}
                   </p>
                 </div>
-                <Truck size={24} className="text-blue-500" />
+                <Truck size={24} className="text-wl-info-500" />
               </div>
             </CardContent>
           </Card>
@@ -292,7 +292,7 @@ export default function AdminShopDetail() {
                       : "—"}
                   </p>
                 </div>
-                <Activity size={24} className="text-emerald-500" />
+                <Activity size={24} className="text-wl-success-500" />
               </div>
             </CardContent>
           </Card>
@@ -329,7 +329,7 @@ export default function AdminShopDetail() {
 
               <Link
                 href={`/admin/users?shopId=${shop.id}`}
-                className="bg-blue-600/10 text-blue-400 border border-blue-600/40 px-4 py-2 rounded text-sm font-medium flex items-center gap-2 hover:opacity-80 no-underline"
+                className="bg-wl-info-500/10 text-wl-info-400 border border-blue-600/40 px-4 py-2 rounded text-sm font-medium flex items-center gap-2 hover:opacity-80 no-underline"
               >
                 <Zap size={16} />
                 View Users
@@ -337,7 +337,7 @@ export default function AdminShopDetail() {
 
               <button
                 onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
-                className="bg-red-500/10 text-red-500 border border-red-500/40 px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-80"
+                className="bg-wl-danger-500/10 text-wl-danger-500 border border-wl-danger-500/40 px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-80"
               >
                 <Trash2 size={16} />
                 Delete Account
@@ -347,7 +347,7 @@ export default function AdminShopDetail() {
             {showSuspendConfirm && (
               <div className="mt-4 p-3 bg-amber-900/20 border border-amber-900/40 rounded">
                 <div className="flex gap-2 items-start mb-3">
-                  <AlertTriangle size={16} className="text-amber-500 flex-shrink-0" />
+                  <AlertTriangle size={16} className="text-wl-warning-500 flex-shrink-0" />
                   <p className="text-white m-0 text-sm">
                     Suspending this shop will disable all access and API calls. This action can be reversed.
                   </p>
@@ -373,7 +373,7 @@ export default function AdminShopDetail() {
             {showDeleteConfirm && (
               <div className="mt-4 p-3 bg-red-900/20 border border-red-900/40 rounded">
                 <div className="flex gap-2 items-start mb-3">
-                  <AlertTriangle size={16} className="text-red-500 flex-shrink-0" />
+                  <AlertTriangle size={16} className="text-wl-danger-500 flex-shrink-0" />
                   <p className="text-white m-0 text-sm">
                     Deleting this account is permanent and cannot be undone. All data will be lost.
                   </p>

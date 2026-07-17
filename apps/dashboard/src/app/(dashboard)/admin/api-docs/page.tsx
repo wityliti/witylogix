@@ -250,11 +250,11 @@ const API_ENDPOINTS: ApiEndpoint[] = [
 
 function MethodBadge({ method }: { method: string }) {
   const colors: Record<string, string> = {
-    GET: "bg-blue-600/20 text-blue-500",
-    POST: "bg-emerald-600/20 text-emerald-500",
-    PUT: "bg-amber-600/20 text-amber-500",
-    DELETE: "bg-red-600/20 text-red-500",
-    PATCH: "bg-blue-600/20 text-blue-500",
+    GET: "bg-wl-info-500/20 text-wl-info-500",
+    POST: "bg-wl-success-500/20 text-wl-success-500",
+    PUT: "bg-wl-warning-500/20 text-wl-warning-500",
+    DELETE: "bg-wl-danger-500/20 text-wl-danger-500",
+    PATCH: "bg-wl-info-500/20 text-wl-info-500",
   };
 
   return (
@@ -346,7 +346,7 @@ function EndpointCard({
                     className="p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default"
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <code className="text-sm font-mono text-blue-500">
+                      <code className="text-sm font-mono text-wl-info-500">
                         {param.name}
                       </code>
                       <span className="text-xs text-wl-text-secondary">
@@ -403,8 +403,8 @@ function EndpointCard({
                   className={cn(
                     "p-4 rounded-lg border",
                     response.code >= 200 && response.code < 300
-                      ? "bg-emerald-600/30 border-emerald-500/30"
-                      : "bg-red-600/30 border-red-500/30"
+                      ? "bg-emerald-600/30 border-wl-success-500/30"
+                      : "bg-red-600/30 border-wl-danger-500/30"
                   )}
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -413,8 +413,8 @@ function EndpointCard({
                         className={cn(
                           "text-sm font-bold",
                           response.code >= 200 && response.code < 300
-                            ? "text-emerald-500"
-                            : "text-red-500"
+                            ? "text-wl-success-500"
+                            : "text-wl-danger-500"
                         )}
                       >
                         {response.code}
@@ -527,7 +527,7 @@ export default function ApiDocsPage() {
           <CardContent className="pt-5">
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-wl-success-500 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-semibold text-white">
                     REST API
@@ -538,7 +538,7 @@ export default function ApiDocsPage() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-wl-success-500 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-semibold text-white">
                     Authentication
@@ -549,7 +549,7 @@ export default function ApiDocsPage() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-wl-success-500 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-semibold text-white">
                     Rate Limiting
@@ -610,17 +610,17 @@ export default function ApiDocsPage() {
         </div>
 
         {/* Footer */}
-        <Card className="bg-blue-600/40 border border-blue-500/30">
+        <Card className="bg-blue-600/40 border border-wl-info-500/30">
           <CardContent className="pt-5">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-wl-info-500 flex-shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-sm font-semibold text-blue-500">
+                <h4 className="text-sm font-semibold text-wl-info-500">
                   Need Help?
                 </h4>
                 <p className="text-sm text-wl-text-secondary mt-1">
-                  Visit our <a href="#" className="text-blue-500 hover:underline">full API documentation</a> or contact{" "}
-                  <a href="#" className="text-blue-500 hover:underline">support@witylogix.com</a>
+                  Visit our <a href="#" className="text-wl-info-500 hover:underline">full API documentation</a> or contact{" "}
+                  <a href="#" className="text-wl-info-500 hover:underline">support@witylogix.com</a>
                 </p>
               </div>
             </div>

@@ -175,7 +175,7 @@ export default function BulkOperationsPage() {
             <label className="text-sm font-medium text-wl-neutral-300">Search Order ID or Customer</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -184,7 +184,7 @@ export default function BulkOperationsPage() {
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-wl-neutral-300">Filter by Status</label>
             <select
-              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
@@ -198,7 +198,7 @@ export default function BulkOperationsPage() {
             <label className="text-sm font-medium text-wl-neutral-300">&nbsp;</label>
             <button
               onClick={() => { setSearchTerm(''); setFilterStatus(''); }}
-              className="px-4 py-2.5 rounded bg-transparent text-blue-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
+              className="px-4 py-2.5 rounded bg-transparent text-wl-info-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
             >
               Reset Filters
             </button>
@@ -216,7 +216,7 @@ export default function BulkOperationsPage() {
           </p>
           <button
             onClick={toggleSelectAll}
-            className="px-4 py-2.5 rounded bg-transparent text-blue-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
+            className="px-4 py-2.5 rounded bg-transparent text-wl-info-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
           >
             {selectedOrders.size === filteredOrders.length && selectedOrders.size > 0 ? 'Deselect All' : 'Select All'}
           </button>
@@ -286,7 +286,7 @@ export default function BulkOperationsPage() {
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-wl-neutral-300">Select Action</label>
               <select
-                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
                 value={bulkAction}
                 onChange={(e) => setBulkAction(e.target.value)}
               >
@@ -301,7 +301,7 @@ export default function BulkOperationsPage() {
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-wl-neutral-300">New Status</label>
                 <select
-                  className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-wl-info-500"
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
                 >
@@ -344,7 +344,7 @@ export default function BulkOperationsPage() {
             <div className="flex gap-2.5 justify-end">
               <button
                 onClick={() => setShowConfirmation(false)}
-                className="px-4 py-2.5 rounded bg-transparent text-blue-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
+                className="px-4 py-2.5 rounded bg-transparent text-wl-info-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
               >
                 Cancel
               </button>
@@ -365,11 +365,11 @@ export default function BulkOperationsPage() {
           <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-8 max-w-md w-11/12 text-white">
             <h2 className="text-lg font-bold mb-4">Operation Complete</h2>
             <div className="text-sm text-wl-neutral-300 mb-5 space-y-1">
-              <div className="text-emerald-500 font-semibold">
+              <div className="text-wl-success-500 font-semibold">
                 {operationResults.success} order{operationResults.success !== 1 ? 's' : ''} updated successfully
               </div>
               {operationResults.failed > 0 && (
-                <div className="text-red-500 font-semibold">
+                <div className="text-wl-danger-500 font-semibold">
                   {operationResults.failed} order{operationResults.failed !== 1 ? 's' : ''} failed
                 </div>
               )}

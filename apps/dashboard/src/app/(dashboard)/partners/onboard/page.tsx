@@ -220,9 +220,9 @@ export default function OnboardPage() {
                     className={cn(
                       "w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all",
                       isCompleted
-                        ? "bg-emerald-500/20 text-emerald-400"
+                        ? "bg-wl-success-500/20 text-wl-success-400"
                         : isActive
-                          ? "bg-blue-500/20 text-blue-400 ring-2 ring-blue-400"
+                          ? "bg-wl-info-500/20 text-wl-info-400 ring-2 ring-blue-400"
                           : "bg-wl-bg-surface text-wl-neutral-300"
                     )}
                   >
@@ -266,7 +266,7 @@ export default function OnboardPage() {
                       className={cn(
                         "p-4 rounded-lg border-2 transition-all flex gap-4 items-start",
                         isSelected
-                          ? "border-blue-400 bg-blue-500/10"
+                          ? "border-blue-400 bg-wl-info-500/10"
                           : "border-wl-border-default hover:border-wl-border-default"
                       )}
                     >
@@ -274,7 +274,7 @@ export default function OnboardPage() {
                         className={cn(
                           "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
                           isSelected
-                            ? "bg-blue-500/20 text-blue-400"
+                            ? "bg-wl-info-500/20 text-wl-info-400"
                             : "bg-wl-bg-surface text-wl-neutral-300"
                         )}
                       >
@@ -289,14 +289,14 @@ export default function OnboardPage() {
                         </p>
                       </div>
                       {isSelected && (
-                        <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                        <CheckCircle className="w-5 h-5 text-wl-success-400 flex-shrink-0" />
                       )}
                     </button>
                   );
                 })}
               </div>
               {errors.partnerType && (
-                <p className="text-sm text-red-400">{errors.partnerType}</p>
+                <p className="text-sm text-wl-danger-400">{errors.partnerType}</p>
               )}
             </CardContent>
           </Card>
@@ -401,18 +401,18 @@ export default function OnboardPage() {
                   </Button>
                 </div>
                 {errors.serviceAreas && (
-                  <p className="text-sm text-red-400">{errors.serviceAreas}</p>
+                  <p className="text-sm text-wl-danger-400">{errors.serviceAreas}</p>
                 )}
                 <div className="flex flex-wrap gap-2 mt-3">
                   {formData.serviceAreas.map((area) => (
                     <div
                       key={area}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-blue-500/20 text-blue-400 text-sm"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-wl-info-500/20 text-wl-info-400 text-sm"
                     >
                       {area}
                       <button
                         onClick={() => handleRemoveServiceArea(area)}
-                        className="hover:text-blue-300 transition-colors"
+                        className="hover:text-wl-info-400 transition-colors"
                       >
                         ×
                       </button>

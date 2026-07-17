@@ -203,7 +203,7 @@ export default function AccountingSettingsPage() {
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="text-blue-500">{getProviderIcon(provider)}</div>
+                    <div className="text-wl-info-500">{getProviderIcon(provider)}</div>
                     <div>
                       <CardTitle className="text-lg">{getProviderLabel(provider)}</CardTitle>
                       <CardDescription>
@@ -230,7 +230,7 @@ export default function AccountingSettingsPage() {
                       </div>
                       <div className="bg-wl-bg-elevated rounded p-2">
                         <div className="text-wl-text-secondary text-xs">Failed</div>
-                        <div className="text-lg font-semibold text-red-500">{connection.failedCount || 0}</div>
+                        <div className="text-lg font-semibold text-wl-danger-500">{connection.failedCount || 0}</div>
                       </div>
                     </div>
 
@@ -245,7 +245,7 @@ export default function AccountingSettingsPage() {
                       <DialogTrigger asChild>
                         <Button
                           variant="ghost"
-                          className="w-full text-red-500 hover:text-red-600"
+                          className="w-full text-wl-danger-500 hover:text-wl-danger-500"
                           disabled={disconnectingProvider === provider}
                         >
                           Disconnect

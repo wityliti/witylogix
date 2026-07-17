@@ -52,7 +52,7 @@ export function ConflictRules() {
               <div className="flex items-center gap-2">
                 {rule.priority.map((source, idx) => (
                   <div key={source} className="flex items-center gap-2">
-                    <div className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm font-medium">
+                    <div className="px-3 py-1 bg-wl-info-500/20 text-wl-info-400 rounded text-sm font-medium">
                       {idx + 1}. {source}
                     </div>
                     {idx < rule.priority.length - 1 && (
@@ -69,7 +69,7 @@ export function ConflictRules() {
         ))}
       </div>
 
-      <Card className="bg-wl-bg-surface border border-blue-500/20">
+      <Card className="bg-wl-bg-surface border border-wl-info-500/20">
         <CardHeader>
           <CardTitle>Order Import Rules</CardTitle>
         </CardHeader>

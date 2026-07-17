@@ -96,7 +96,7 @@ function SummaryCard({
 function StatusBadge({ status }: { status: string }) {
   const variants: Record<string, string> = {
     pending: 'bg-wl-warning-subtle text-wl-warning border-wl-warning/20',
-    collected: 'bg-blue-500/10 text-blue-400 border-blue-400/20',
+    collected: 'bg-wl-info-500/10 text-wl-info-400 border-wl-info-400/20',
     verified: 'bg-purple-500/10 text-purple-400 border-purple-400/20',
     reconciled: 'bg-wl-success-subtle text-wl-success border-wl-success/20',
     failed: 'bg-wl-error-subtle text-wl-error border-wl-error/20',
@@ -317,7 +317,7 @@ export default function CODReconciliationPage() {
                           <span className="ml-2 text-xs text-wl-text-tertiary">{row.driver.phone}</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right text-blue-400">${row.collected}</td>
+                      <td className="px-4 py-3 text-right text-wl-info-400">${row.collected}</td>
                       <td className="px-4 py-3 text-right text-wl-warning">${row.outstanding}</td>
                       <td className="px-4 py-3 text-right text-wl-success">${row.reconciled}</td>
                     </tr>

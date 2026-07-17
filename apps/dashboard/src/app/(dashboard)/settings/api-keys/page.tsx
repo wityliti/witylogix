@@ -124,7 +124,7 @@ export default function APIKeysPage() {
 
           {/* Create Dialog */}
           {showCreateDialog && (
-            <Card className="border-blue-500/30 bg-wl-bg-surface border border-wl-border-default">
+            <Card className="border-wl-info-500/30 bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Create New API Key</CardTitle>
                 <CardDescription className="text-wl-text-secondary">Generate a new API key for your application</CardDescription>
@@ -152,7 +152,7 @@ export default function APIKeysPage() {
                           type="checkbox"
                           checked={selectedScopes.includes(scope.id)}
                           onChange={() => toggleScope(scope.id)}
-                          className="w-4 h-4 rounded border-wl-border-default text-blue-500 cursor-pointer"
+                          className="w-4 h-4 rounded border-wl-border-default text-wl-info-500 cursor-pointer"
                         />
                         <span className="text-sm text-wl-text-secondary">
                           {scope.label}
@@ -162,8 +162,8 @@ export default function APIKeysPage() {
                   </div>
                 </div>
 
-                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 flex gap-2">
-                  <AlertCircle className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                <div className="bg-wl-info-500/10 border border-wl-info-500/30 rounded-lg p-3 flex gap-2">
+                  <AlertCircle className="w-4 h-4 text-wl-info-400 flex-shrink-0 mt-0.5" />
                   <p className="text-xs text-wl-text-secondary">
                     Store your API key securely. You won't be able to see it again after creation.
                   </p>
@@ -264,7 +264,7 @@ export default function APIKeysPage() {
                       </div>
 
                       {deleteConfirmId === apiKey.id && (
-                        <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center justify-between gap-3">
+                        <div className="mt-4 p-3 bg-wl-danger-500/10 border border-wl-danger-500/30 rounded-lg flex items-center justify-between gap-3">
                           <p className="text-xs text-white">
                             Are you sure? This action cannot be undone.
                           </p>
@@ -301,13 +301,13 @@ export default function APIKeysPage() {
           </Card>
 
           {/* Documentation Link */}
-          <Card className="bg-blue-500/5 border border-blue-500/30 bg-wl-bg-surface border border-wl-border-default">
+          <Card className="bg-blue-500/5 border border-wl-info-500/30 bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="pt-6">
               <p className="text-sm text-wl-text-secondary">
                 Learn how to use the Witylogix API in our{" "}
                 <a
                   href="#"
-                  className="text-blue-400 hover:underline font-semibold"
+                  className="text-wl-info-400 hover:underline font-semibold"
                 >
                   API documentation
                 </a>
