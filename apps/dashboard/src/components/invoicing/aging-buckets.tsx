@@ -120,8 +120,8 @@ export const AgingBuckets = forwardRef<HTMLDivElement, AgingBucketsProps>(
         <div
           className="rounded-lg px-4 py-3 border"
           style={{
-            backgroundColor: riskLevel.color + "15",
-            borderColor: riskLevel.color + "30",
+            backgroundColor: `color-mix(in srgb, ${riskLevel.color} 8%, transparent)`,
+            borderColor: `color-mix(in srgb, ${riskLevel.color} 19%, transparent)`,
           }}
         >
           <div className="flex items-center justify-between mb-2">

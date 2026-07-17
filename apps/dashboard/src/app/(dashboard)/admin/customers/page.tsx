@@ -312,7 +312,7 @@ const StatsBar = ({ customers, loading }: { customers: Customer[]; loading: bool
               <div
                 className="p-2 rounded-md flex items-center justify-center flex-shrink-0"
                 style={{
-                  backgroundColor: stat.color + "15",
+                  backgroundColor: `color-mix(in srgb, ${stat.color} 8%, transparent)`,
                 }}
               >
                 <Icon style={{ color: stat.color }} className="w-5 h-5" />

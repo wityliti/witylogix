@@ -135,7 +135,7 @@ function MetricCard({
         <span className="text-[13px] font-medium text-wl-text-tertiary tracking-wide">{label}</span>
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center"
-          style={{ backgroundColor: `${accent}18`, color: accent }}
+          style={{ backgroundColor: `color-mix(in srgb, ${accent} 10%, transparent)`, color: accent }}
         >
           <Icon className="w-4 h-4" />
         </div>

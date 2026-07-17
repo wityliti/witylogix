@@ -219,7 +219,7 @@ export default function DriverInsightsPage() {
               <div className="absolute top-0 left-0 right-0 h-[2px] opacity-50 group-hover:opacity-80 transition-opacity" style={{ background: `linear-gradient(90deg, ${accent}, transparent 60%)` }} />
               <div className="flex items-start justify-between mb-3">
                 <span className="text-[13px] font-medium text-wl-text-tertiary tracking-wide">{label}</span>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${accent}18`, color: accent }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `color-mix(in srgb, ${accent} 10%, transparent)`, color: accent }}>
                   <Icon className="w-4 h-4" />
                 </div>
               </div>

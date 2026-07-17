@@ -140,7 +140,7 @@ export default function SettingsHub() {
                   <div
                     className="flex items-center justify-center w-10 h-10 rounded-lg transition-colors"
                     style={{
-                      backgroundColor: `${tab.accent}15`,
+                      backgroundColor: `color-mix(in srgb, ${tab.accent} 8%, transparent)`,
                       color: tab.accent,
                     }}
                   >

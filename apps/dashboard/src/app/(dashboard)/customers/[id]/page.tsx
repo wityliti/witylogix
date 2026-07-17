@@ -522,13 +522,13 @@ function StatTile({
     <Card className="p-4 bg-wl-bg-surface border border-wl-border-subtle relative overflow-hidden group hover:border-wl-border-default transition-colors">
       <div
         className="absolute top-0 left-0 right-0 h-[1px]"
-        style={{ background: `linear-gradient(90deg, ${accent}60, transparent)` }}
+        style={{ background: `linear-gradient(90deg, color-mix(in srgb, ${accent} 38%, transparent), transparent)` }}
       />
       <div className="flex items-start justify-between mb-2">
         <span className="text-[11px] font-medium text-wl-text-tertiary uppercase tracking-wider">{label}</span>
         <div
           className="w-6 h-6 rounded flex items-center justify-center"
-          style={{ backgroundColor: `${accent}18`, color: accent }}
+          style={{ backgroundColor: `color-mix(in srgb, ${accent} 10%, transparent)`, color: accent }}
         >
           <Icon className="w-3.5 h-3.5" />
         </div>
