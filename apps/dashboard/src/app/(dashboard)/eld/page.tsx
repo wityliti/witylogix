@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import dynamic from 'next/dynamic';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,7 +32,19 @@ import {
   Activity,
   Users,
   Zap,
+  LayoutList,
+  Map as MapIcon,
 } from "lucide-react";
+
+const EldDriverMap = dynamic(
+  () => import('./components/eld-driver-map').then((m) => ({ default: m.EldDriverMap })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[500px] bg-wl-bg-sunken rounded-xl border border-wl-border-default animate-pulse" />
+    ),
+  }
+);
 
 const statusVariant = (
   status: DriverComplianceStatus
@@ -69,6 +82,7 @@ export default function ELDOverviewPage() {
   const driversResult     = useELDDriverStatus();
 
   const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   const compliance        = complianceResult.data;
   const complianceLoading = complianceResult.loading;
@@ -149,16 +163,48 @@ export default function ELDOverviewPage() {
                     Real-time HOS compliance per driver
                   </p>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <Badge variant="success" dot>
+                <div className="flex items-center gap-2">
+                  <Badge variant="success" dot className="text-xs">
                     {statusCounts.compliant} Compliant
                   </Badge>
+                  <div className="flex items-center rounded-lg border border-wl-border-strong overflow-hidden">
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={cn(
+                        'px-2.5 py-1 text-xs flex items-center gap-1 transition-colors',
+                        viewMode === 'list'
+                          ? 'bg-wl-bg-overlay text-wl-text-primary'
+                          : 'bg-transparent text-wl-text-secondary hover:text-wl-text-primary'
+                      )}
+                    >
+                      <LayoutList className="w-3 h-3" />
+                      List
+                    </button>
+                    <button
+                      onClick={() => setViewMode('map')}
+                      className={cn(
+                        'px-2.5 py-1 text-xs flex items-center gap-1 transition-colors',
+                        viewMode === 'map'
+                          ? 'bg-wl-bg-overlay text-wl-text-primary'
+                          : 'bg-transparent text-wl-text-secondary hover:text-wl-text-primary'
+                      )}
+                    >
+                      <MapIcon className="w-3 h-3" />
+                      Map
+                    </button>
+                  </div>
                 </div>
               </div>
             </CardHeader>
 
             <CardContent>
-              {driversLoading ? (
+              {viewMode === 'map' ? (
+                <EldDriverMap
+                  selectedDriverId={selectedDriver}
+                  onDriverClick={setSelectedDriver}
+                  className="h-[500px]"
+                />
+              ) : driversLoading ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="w-6 h-6 rounded-full border-2 border-wl-info-500/30 border-t-blue-500 animate-spin" />
                 </div>

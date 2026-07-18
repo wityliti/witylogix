@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useApiQuery, useApiMutation } from '@/hooks/use-api';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import {
   Code,
   Eye,
@@ -48,7 +49,7 @@ export default function WidgetConfigPage() {
   const [copiedCode, setCopiedCode] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const { data: shopResp, loading: shopLoading } = useApiQuery<{ data: ShopData }>('/api/v4/shops/me');
+  const { data: shopResp, loading: shopLoading, error: shopError, refetch: refetchShop } = useApiQuery<{ data: ShopData }>('/api/v4/shops/me');
   const saveMutation = useApiMutation<{ settings: Record<string, unknown> }>('PATCH', '/api/v4/shops/me');
 
   useEffect(() => {
@@ -69,6 +70,7 @@ export default function WidgetConfigPage() {
   }, [shopResp]);
 
   if (shopLoading) return <TableSkeleton rows={6} columns={2} />;
+  if (shopError) return <ErrorState message={shopError.message} onRetry={refetchShop} />;
 
   const handleSave = async () => {
     try {
