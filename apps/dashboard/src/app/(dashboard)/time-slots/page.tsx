@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { Header } from "@/components/layout/header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +11,12 @@ import { ErrorState } from "@/components/ui/error-state";
 import { Input } from "@/components/ui/input";
 import { cn, formatCurrency } from "@/lib/utils";
 import { useApiList, useApiMutation } from "@/hooks/use-api";
-import { Clock, Plus, Pencil, Power, Filter, Search } from "lucide-react";
+import { Clock, Plus, Pencil, Power, Filter, Search, List, Map } from "lucide-react";
+
+const TimeSlotsZoneMap = dynamic(
+  () => import("./time-slots-zone-map").then((m) => m.TimeSlotsZoneMap),
+  { ssr: false, loading: () => <LoadingSkeleton className="h-[540px] w-full rounded-xl" /> }
+);
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -225,6 +231,7 @@ export default function TimeSlotsPage() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
   const [showCreate, setShowCreate] = useState(false);
+  const [view, setView] = useState<"list" | "map">("list");
 
   const { items: slots, loading, error, refetch } = useApiList<TimeSlot>("/api/v4/time-slots", {
     limit: 100,
@@ -262,20 +269,50 @@ export default function TimeSlotsPage() {
         title="Time Slots"
         subtitle={`${slots.filter((s) => s.isActive).length} active delivery windows`}
         actions={
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => setShowCreate(true)}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Slot
-          </Button>
+          <div className="flex items-center gap-2">
+            <div className="flex gap-0.5 p-0.5 bg-wl-bg-overlay rounded-lg border border-wl-border-default">
+              <button
+                onClick={() => setView("list")}
+                aria-label="List view"
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all",
+                  view === "list"
+                    ? "bg-wl-primary text-white"
+                    : "text-wl-text-muted hover:text-wl-text-primary"
+                )}
+              >
+                <List className="w-3.5 h-3.5" />
+                List
+              </button>
+              <button
+                onClick={() => setView("map")}
+                aria-label="Map view"
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all",
+                  view === "map"
+                    ? "bg-wl-primary text-white"
+                    : "text-wl-text-muted hover:text-wl-text-primary"
+                )}
+              >
+                <Map className="w-3.5 h-3.5" />
+                Map
+              </button>
+            </div>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => setShowCreate(true)}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Slot
+            </Button>
+          </div>
         }
       />
 
       <div className="p-6 bg-wl-bg-primary min-h-screen">
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-5">
+        {/* Filters — only shown in list view */}
+        {view === "list" && <div className="flex flex-col sm:flex-row gap-3 mb-5">
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-muted" />
             <Input
@@ -307,7 +344,7 @@ export default function TimeSlotsPage() {
             <Filter className="w-3.5 h-3.5" />
             {filtered.length} of {slots.length} slots
           </div>
-        </div>
+        </div>}
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
@@ -342,34 +379,38 @@ export default function TimeSlotsPage() {
           ))}
         </div>
 
+        {/* Map view */}
+        {view === "map" && <TimeSlotsZoneMap />}
+
         {/* Slots list */}
-        {filtered.length === 0 ? (
-          <Card className="bg-wl-bg-surface border-wl-border-default">
-            <CardContent className="p-12 text-center">
-              <Clock className="w-12 h-12 text-wl-text-muted mx-auto mb-4" />
-              <h3 className="text-base font-semibold text-wl-text-primary mb-2">
-                {slots.length === 0 ? "No time slots configured" : "No slots match your filter"}
-              </h3>
-              <p className="text-sm text-wl-text-muted mb-4">
-                {slots.length === 0
-                  ? "Create your first delivery window to get started."
-                  : "Try adjusting your search or filter."}
-              </p>
-              {slots.length === 0 && (
-                <Button
-                  variant="primary"
-                  size="md"
-                  onClick={() => setShowCreate(true)}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create First Slot
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {filtered.map((slot) => {
+        {view === "list" && (
+          filtered.length === 0 ? (
+            <Card className="bg-wl-bg-surface border-wl-border-default">
+              <CardContent className="p-12 text-center">
+                <Clock className="w-12 h-12 text-wl-text-muted mx-auto mb-4" />
+                <h3 className="text-base font-semibold text-wl-text-primary mb-2">
+                  {slots.length === 0 ? "No time slots configured" : "No slots match your filter"}
+                </h3>
+                <p className="text-sm text-wl-text-muted mb-4">
+                  {slots.length === 0
+                    ? "Create your first delivery window to get started."
+                    : "Try adjusting your search or filter."}
+                </p>
+                {slots.length === 0 && (
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => setShowCreate(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create First Slot
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {filtered.map((slot) => {
               const surcharge =
                 typeof slot.surcharge === "string"
                   ? parseFloat(slot.surcharge)
@@ -467,8 +508,9 @@ export default function TimeSlotsPage() {
                   </div>
                 </Card>
               );
-            })}
-          </div>
+              })}
+            </div>
+          )
         )}
       </div>
     </>
