@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
+import dynamic from 'next/dynamic';
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +21,19 @@ import {
   Edit2,
   Download,
   RotateCw,
+  LayoutList,
+  Map as MapIcon,
 } from "lucide-react";
+
+const EldDriverMap = dynamic(
+  () => import('../components/eld-driver-map').then((m) => ({ default: m.EldDriverMap })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[350px] bg-wl-bg-sunken rounded-xl border border-wl-border-default animate-pulse" />
+    ),
+  }
+);
 
 const dutyStatusColor = (status: DutyStatus): string => {
   const colors: Record<DutyStatus, string> = {
@@ -42,6 +55,7 @@ const dutyStatusLabel: Record<DutyStatus, string> = {
 export default function HOSPage() {
   const router = useRouter();
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
+  const [driverViewMode, setDriverViewMode] = useState<'list' | 'map'>('list');
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [personalConveyance, setPersonalConveyance] = useState(false);
@@ -131,10 +145,48 @@ export default function HOSPage() {
       {/* Driver Selector */}
       <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
-          <CardTitle className="text-lg text-white">Driver Selection</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg text-white">Driver Selection</CardTitle>
+            <div className="flex items-center rounded-lg border border-wl-border-strong overflow-hidden">
+              <button
+                onClick={() => setDriverViewMode('list')}
+                className={cn(
+                  'px-2.5 py-1 text-xs flex items-center gap-1 transition-colors',
+                  driverViewMode === 'list'
+                    ? 'bg-wl-bg-overlay text-wl-text-primary'
+                    : 'bg-transparent text-wl-text-secondary hover:text-wl-text-primary'
+                )}
+              >
+                <LayoutList className="w-3 h-3" />
+                List
+              </button>
+              <button
+                onClick={() => setDriverViewMode('map')}
+                className={cn(
+                  'px-2.5 py-1 text-xs flex items-center gap-1 transition-colors',
+                  driverViewMode === 'map'
+                    ? 'bg-wl-bg-overlay text-wl-text-primary'
+                    : 'bg-transparent text-wl-text-secondary hover:text-wl-text-primary'
+                )}
+              >
+                <MapIcon className="w-3 h-3" />
+                Map
+              </button>
+            </div>
+          </div>
         </CardHeader>
 
         <CardContent>
+          {driverViewMode === 'map' ? (
+            <EldDriverMap
+              selectedDriverId={selectedDriverId}
+              onDriverClick={(id) => {
+                setSelectedDriverId(id);
+                setDriverViewMode('list');
+              }}
+              className="h-[350px]"
+            />
+          ) : (
           <div className="relative">
             <button
               onClick={() => setShowSearch(!showSearch)}
@@ -182,6 +234,7 @@ export default function HOSPage() {
               </div>
             )}
           </div>
+          )}
         </CardContent>
       </Card>
 

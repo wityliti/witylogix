@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -411,9 +412,9 @@ export default function PlatformHealthPage() {
               <p className="text-sm text-wl-text-secondary">No integrations installed</p>
               <p className="text-xs text-wl-text-tertiary mt-1">
                 Connect your first integration from the{' '}
-                <a href="/integrations/catalog" className="text-wl-info-400 hover:underline">
+                <Link href="/integrations/catalog" className="text-wl-info-400 hover:underline">
                   Integration Catalog
-                </a>
+                </Link>
               </p>
             </div>
           ) : (

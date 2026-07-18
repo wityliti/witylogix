@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useApiQuery } from '@/hooks/use-api';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -286,9 +287,9 @@ export default function IntegrationHealthPage() {
               <CheckCircle className={cn("w-12 h-12 text-wl-text-tertiary mx-auto mb-4")} />
               <p className={cn("text-wl-text-tertiary text-sm")}>
                 No integrations installed yet. Visit the{" "}
-                <a href="/integrations/marketplace" className="text-wl-info-400 hover:underline">
+                <Link href="/integrations/marketplace" className="text-wl-info-400 hover:underline">
                   marketplace
-                </a>{" "}
+                </Link>{" "}
                 to connect your first integration.
               </p>
             </CardContent>
