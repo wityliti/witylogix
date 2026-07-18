@@ -437,7 +437,7 @@ export default function CreateOrderPage() {
             <div className="mt-2.5">
               <span
                 className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-                style={{ color: getPriorityColor(priority), background: `${getPriorityColor(priority)}22` }}
+                style={{ color: getPriorityColor(priority), background: `color-mix(in srgb, ${getPriorityColor(priority)} 13%, transparent)` }}
               >
                 {priority.charAt(0).toUpperCase() + priority.slice(1)}
               </span>

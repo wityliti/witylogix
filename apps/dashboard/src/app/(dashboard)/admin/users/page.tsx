@@ -121,11 +121,11 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                 </p>
                 <Badge
                   variant="default"
+                  className="text-xs"
                   style={{
-                    backgroundColor: getRoleColor(user.role) + "20",
+                    backgroundColor: `color-mix(in srgb, ${getRoleColor(user.role)} 13%, transparent)`,
                     color: getRoleColor(user.role),
-                    fontSize: "'0.75rem'",
-                    border: `1px solid ${getRoleColor(user.role)}40`,
+                    border: `1px solid color-mix(in srgb, ${getRoleColor(user.role)} 25%, transparent)`,
                   }}
                 >
                   {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
@@ -434,11 +434,11 @@ export default function AdminUsersPage() {
                     <td className="p-3">
                       <Badge
                         variant="default"
+                        className="text-xs"
                         style={{
-                          backgroundColor: getRoleColor(user.role) + "20",
+                          backgroundColor: `color-mix(in srgb, ${getRoleColor(user.role)} 13%, transparent)`,
                           color: getRoleColor(user.role),
-                          fontSize: "'0.75rem'",
-                          border: `1px solid ${getRoleColor(user.role)}40`,
+                          border: `1px solid color-mix(in srgb, ${getRoleColor(user.role)} 25%, transparent)`,
                         }}
                       >
                         {user.role.charAt(0).toUpperCase() + user.role.slice(1)}

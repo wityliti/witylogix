@@ -240,8 +240,8 @@ export default function DemandPage() {
               key={zone.id}
               className="relative overflow-hidden rounded-md border border-wl-border-default p-3 text-center"
               style={{
-                background: `linear-gradient(135deg, ${getHeatmapColor(intensity)}22 0%, transparent 100%)`,
-                borderColor: `${getHeatmapColor(intensity)}44`,
+                background: `linear-gradient(135deg, color-mix(in srgb, ${getHeatmapColor(intensity)} 13%, transparent) 0%, transparent 100%)`,
+                borderColor: `color-mix(in srgb, ${getHeatmapColor(intensity)} 27%, transparent)`,
               }}
             >
               <p className="text-xs font-medium text-wl-text-secondary">{zone.name}</p>

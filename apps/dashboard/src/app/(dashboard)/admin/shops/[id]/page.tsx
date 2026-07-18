@@ -176,18 +176,18 @@ export default function AdminShopDetail() {
               <div className="flex gap-3 items-center">
                 <Badge
                   style={{
-                    background: getStatusColor(shop.status) + "20",
+                    background: `color-mix(in srgb, ${getStatusColor(shop.status)} 13%, transparent)`,
                     color: getStatusColor(shop.status),
-                    border: `1px solid ${getStatusColor(shop.status)}40`,
+                    border: `1px solid color-mix(in srgb, ${getStatusColor(shop.status)} 25%, transparent)`,
                   }}
                 >
                   {shop.status}
                 </Badge>
                 <Badge
                   style={{
-                    background: getPlanColor(planTier) + "20",
+                    background: `color-mix(in srgb, ${getPlanColor(planTier)} 13%, transparent)`,
                     color: getPlanColor(planTier),
-                    border: `1px solid ${getPlanColor(planTier)}40`,
+                    border: `1px solid color-mix(in srgb, ${getPlanColor(planTier)} 25%, transparent)`,
                   }}
                 >
                   {planTier.toUpperCase()}
