@@ -65,13 +65,11 @@ export default function DashboardLoading() {
             >
               <div className="h-4 bg-wl-bg-primary rounded w-1/4 mb-6" />
               <div className="space-y-2">
-                {Array.from({ length: 5 }).map((_, i) => (
+                {[90, 75, 85, 65, 80].map((w, i) => (
                   <div
                     key={i}
                     className="h-2 bg-wl-bg-primary rounded"
-                    style={{
-                      width: `${Math.random() * 40 + 60}%`,
-                    }}
+                    style={{ width: `${w}%` }}
                   />
                 ))}
               </div>

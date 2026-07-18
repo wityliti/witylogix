@@ -31,23 +31,23 @@ const DEFAULT_CENTER: [number, number] = [77.12, 28.65]; // per-org override to 
 
 function ZoneCardSkeleton() {
   return (
-    <div className="relative overflow-hidden bg-[#12121a] border border-[#1e1e2e] rounded-xl p-4 animate-pulse">
-      <div className="absolute top-0 left-0 right-0 h-1 bg-[#1e1e2e]" />
+    <div className="relative overflow-hidden bg-wl-bg-surface border border-wl-border-default rounded-xl p-4 animate-pulse">
+      <div className="absolute top-0 left-0 right-0 h-1 bg-wl-border-default" />
       <div className="flex justify-between mb-4">
-        <div className="h-5 w-36 bg-[#1e1e2e] rounded" />
-        <div className="h-5 w-16 bg-[#1e1e2e] rounded" />
+        <div className="h-5 w-36 bg-wl-bg-overlay rounded" />
+        <div className="h-5 w-16 bg-wl-bg-overlay rounded" />
       </div>
-      <div className="grid grid-cols-2 gap-3 p-3 bg-[#1a1a2e] rounded-md mb-4">
+      <div className="grid grid-cols-2 gap-3 p-3 bg-wl-bg-elevated rounded-md mb-4">
         {[...Array(4)].map((_, j) => (
           <div key={j}>
-            <div className="h-3 w-16 bg-[#1e1e2e] rounded mb-1" />
-            <div className="h-4 w-20 bg-[#1e1e2e] rounded" />
+            <div className="h-3 w-16 bg-wl-bg-overlay rounded mb-1" />
+            <div className="h-4 w-20 bg-wl-bg-overlay rounded" />
           </div>
         ))}
       </div>
       <div className="flex justify-between">
-        <div className="h-4 w-28 bg-[#1e1e2e] rounded" />
-        <div className="h-6 w-12 bg-[#1e1e2e] rounded" />
+        <div className="h-4 w-28 bg-wl-bg-overlay rounded" />
+        <div className="h-6 w-12 bg-wl-bg-overlay rounded" />
       </div>
     </div>
   );

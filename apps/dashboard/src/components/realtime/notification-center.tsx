@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import {
   Settings,
   CheckCheck as CheckAll,
   X,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 
 interface ApiNotification {
@@ -33,6 +35,9 @@ interface Notification {
   read: boolean;
   timestamp: Date;
   actionUrl?: string;
+  category?: string;
+  channel?: string;
+  status?: string;
 }
 
 interface NotificationCenterProps {
@@ -88,32 +93,7 @@ const notificationTypeColors: Record<Notification["type"], string> = {
   system: "bg-wl-bg-surface text-wl-text-secondary",
 };
 
-function mapApiNotification(n: ApiNotification): Notification {
-  const rawType = n.category?.toLowerCase() ?? "system";
-  const type: Notification["type"] = (
-    ["order", "delivery", "alert", "system"].includes(rawType)
-      ? rawType
-      : "system"
-  ) as Notification["type"];
 
-  const rawSeverity = n.severity?.toLowerCase() ?? "info";
-  const severity: Notification["severity"] = (
-    ["info", "warning", "critical"].includes(rawSeverity)
-      ? rawSeverity
-      : "info"
-  ) as Notification["severity"];
-
-  return {
-    id: n.id,
-    type,
-    title: n.title,
-    message: n.message,
-    severity,
-    read: n.status !== "UNREAD",
-    timestamp: new Date(n.timestamp),
-    actionUrl: n.actionUrl,
-  };
-}
 
 function timeAgo(date: Date): string {
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -132,9 +112,9 @@ function NotificationItem({
   onClick?: () => void;
   onMarkAsRead?: () => void;
 }) {
-  const isUnread = notification.status === "UNREAD";
-  const icon = CATEGORY_ICON[notification.category] ?? <Bell className="w-4 h-4" />;
-  const colorCls = CATEGORY_COLORS[notification.category] ?? "bg-wl-bg-surface text-wl-text-secondary";
+  const isUnread = !notification.read;
+  const icon = notificationIcons[notification.type] ?? <Bell className="w-4 h-4" />;
+  const colorCls = CATEGORY_COLORS[notification.category ?? "SYSTEM"] ?? "bg-wl-bg-surface text-wl-text-secondary";
 
   return (
     <div
@@ -197,21 +177,25 @@ export function NotificationCenter({
   const { items: rawNotifs, loading: isLoading, refetch } = useApiList<any>('/api/v4/notifications', { limit: 20 });
 
   const apiNotifs = useMemo<Notification[]>(() =>
-    rawNotifs.map((n) => ({
-      id: n.id,
-      category: (CATEGORY_MAP[n.type ?? n.category] ?? n.category ?? "SYSTEM") as Notification["category"],
-      channel: (n.channel ?? "EMAIL") as Notification["channel"],
-      iconChannel: (n.channel ?? "EMAIL") as Notification["channel"],
-      title: n.title ?? n.action ?? "Notification",
-      message: n.message ?? n.description ?? "",
-      status: ((n.read ?? n.status === "READ") ? "READ" : "UNREAD") as Notification["status"],
-      timestamp: typeof n.timestamp === "string" ? n.timestamp : (n.createdAt ?? new Date().toISOString()),
-      actionUrl: n.actionUrl,
-    })),
+    rawNotifs.map((n) => {
+      const isRead = n.read ?? n.status === "READ";
+      return {
+        id: n.id,
+        type: inferType(n.eventType ?? n.type ?? "") as Notification["type"],
+        category: (CATEGORY_MAP[n.type ?? n.category] ?? n.category ?? "SYSTEM") as Notification["category"],
+        channel: (n.channel ?? "EMAIL") as Notification["channel"],
+        title: n.title ?? n.action ?? "Notification",
+        message: n.message ?? n.description ?? "",
+        severity: (n.status === "FAILED" || n.status === "BOUNCED" ? "warning" : "info") as Notification["severity"],
+        read: Boolean(isRead),
+        status: (isRead ? "READ" : "UNREAD") as Notification["status"],
+        timestamp: new Date(typeof n.timestamp === "string" ? n.timestamp : (n.createdAt ?? new Date().toISOString())),
+        actionUrl: n.actionUrl,
+      };
+    }),
   [rawNotifs]);
 
   // Local overlay for optimistic read/delete operations
-  const [readIds, setReadIds] = useState<Set<string>>(new Set());
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
 
   const notifications = useMemo(() =>
@@ -246,7 +230,7 @@ export function NotificationCenter({
   const unreadCount = notifications.filter((n) => n.status === "UNREAD").length;
 
   const markAsRead = (id: string) => setReadIds((prev) => new Set([...prev, id]));
-  const markAllAsRead = () => setReadIds(new Set(rawItems.map((r) => r.id)));
+  const markAllAsRead = () => setReadIds(new Set(rawNotifs.map((r) => r.id)));
 
   const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id);

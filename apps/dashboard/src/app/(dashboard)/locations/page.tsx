@@ -137,7 +137,7 @@ export default function LocationsPage() {
                   aria-pressed={viewMode === v}
                   className={cn(
                     "px-3 py-1.5 text-xs font-semibold transition-colors capitalize",
-                    view === v ? "bg-blue-600 text-white" : "bg-wl-bg-surface text-gray-400 hover:text-white"
+                    viewMode === v ? "bg-blue-600 text-white" : "bg-wl-bg-surface text-gray-400 hover:text-white"
                   )}
                 >
                   {v}
@@ -480,9 +480,8 @@ function LocationDetailPanel({ location: loc, onClose }: { location: Location; o
           <div>
             <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-3 tracking-wider")}>Map</div>
             <div className={cn("rounded-lg overflow-hidden border border-wl-border-default")} style={{ height: 160 }}>
-              <WLMap center={[loc.latitude, loc.longitude]} zoom={13} onReady={setDetailMapId} className="w-full h-full">
-                {detailMapId && (
-                  <LocationMarkerLayer
+              <WLMap center={[loc.latitude, loc.longitude]} zoom={13} className="w-full h-full">
+                <LocationMarkerLayer
                     mapId="detail-map"
                     locations={[{
                       id: loc.id,

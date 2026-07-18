@@ -462,7 +462,7 @@ export default function DriverPerformancePage() {
                         background: `conic-gradient(${color} 0deg ${value * 3.6}deg, rgba(255,255,255,0.05) ${value * 3.6}deg)`,
                       }}
                     >
-                      <div className="w-16 h-16 rounded-full bg-[#12121a] flex items-center justify-center">
+                      <div className="w-16 h-16 rounded-full bg-wl-bg-surface flex items-center justify-center">
                         <span className="font-bold text-white text-sm">{value.toFixed(0)}</span>
                       </div>
                     </div>

@@ -139,13 +139,13 @@ function KPICard({ metric }: { metric: KPIMetric }) {
       </div>
 
       <div className="mb-3">
-        <Sparkline data={metric.sparkline} color={sparkColor} />
+        <Sparkline data={metric.sparkline} color={sparklineColor} />
       </div>
 
       <div className="flex items-center gap-1">
         <TrendIcon className={cn("w-3 h-3", trendColor)} />
         <span className={cn("text-xs font-semibold", trendColor)}>
-          {isUp ? "+" : ""}{trendPct}%
+          {isPositiveTrend ? "+" : ""}{trendPct}%
         </span>
         <span className="text-xs text-wl-text-secondary">vs yesterday</span>
       </div>
@@ -228,28 +228,27 @@ function buildMetrics(stats: DashboardStats): KPIMetric[] {
 }
 
 export function LiveKPICounters({ className }: LiveKPICountersProps) {
-  const { data: stats, loading } = useDashboardStats();
+  const { data: stats, loading, error, refetch } = useDashboardStats();
 
-  const completionRate = stats?.completionRate ?? 0;
   const metrics: KPIMetric[] = stats
     ? [
         {
           label: "Orders Today",
-          value: stats.totalOrdersToday,
-          previousValue: Math.round(stats.totalOrdersToday * 0.9),
+          value: stats.totalOrders,
+          previousValue: Math.round(stats.totalOrders * 0.9),
           icon: <Package className="w-5 h-5" />,
           unit: "orders",
           status: "good",
-          sparkline: [stats.totalOrdersToday],
+          sparkline: [stats.totalOrders],
         },
         {
           label: "Active Deliveries",
-          value: stats.pendingDeliveries,
-          previousValue: Math.round(stats.pendingDeliveries * 0.95),
+          value: stats.pendingOrders,
+          previousValue: Math.round(stats.pendingOrders * 0.95),
           icon: <Truck className="w-5 h-5" />,
           unit: "in transit",
           status: "good",
-          sparkline: [stats.pendingDeliveries],
+          sparkline: [stats.pendingOrders],
         },
         {
           label: "Active Drivers",
@@ -261,61 +260,16 @@ export function LiveKPICounters({ className }: LiveKPICountersProps) {
           sparkline: [stats.activeDrivers],
         },
         {
-          label: "SLA Performance",
-          value: Math.round(completionRate * 10) / 10,
-          previousValue: Math.round(completionRate * 0.98 * 10) / 10,
+          label: "Delivered Today",
+          value: stats.deliveredToday,
+          previousValue: Math.round(stats.deliveredToday * 0.98),
           icon: <Gauge className="w-5 h-5" />,
-          unit: "%",
-          status: completionRate < 90 ? "critical" : completionRate < 95 ? "warning" : "good",
-          sparkline: [completionRate],
+          unit: "orders",
+          status: stats.deliveredToday < 10 ? "warning" : "good",
+          sparkline: [stats.deliveredToday],
         },
       ]
     : [];
-
-  const metrics: KPIMetric[] = data ? buildMetrics(data) : [];
-
-  const metrics = useMemo<KPIMetric[]>(() => {
-    if (!data) return [];
-    const onTime = data.onTimeRate ?? 0;
-    return [
-      {
-        label: "Orders Today",
-        value: data.totalOrders,
-        previousValue: 0,
-        icon: <Package className="w-5 h-5" />,
-        unit: "orders",
-        status: "good",
-        sparkline: [data.totalOrders],
-      },
-      {
-        label: "Active Deliveries",
-        value: data.totalDeliveries,
-        previousValue: 0,
-        icon: <Truck className="w-5 h-5" />,
-        unit: "in transit",
-        status: "good",
-        sparkline: [data.totalDeliveries],
-      },
-      {
-        label: "Available Drivers",
-        value: data.activeDrivers,
-        previousValue: 0,
-        icon: <Users className="w-5 h-5" />,
-        unit: "drivers",
-        status: data.activeDrivers < 5 ? "critical" : data.activeDrivers < 10 ? "warning" : "good",
-        sparkline: [data.activeDrivers],
-      },
-      {
-        label: "SLA Performance",
-        value: Math.round(onTime * 10) / 10,
-        previousValue: 0,
-        icon: <Gauge className="w-5 h-5" />,
-        unit: "%",
-        status: onTime < 85 ? "critical" : onTime < 95 ? "warning" : "good",
-        sparkline: [onTime],
-      },
-    ];
-  }, [data]);
 
   return (
     <div className={cn("grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4", className)}>

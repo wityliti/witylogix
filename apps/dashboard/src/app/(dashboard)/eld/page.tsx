@@ -7,7 +7,21 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { cn } from "@/lib/utils";
 import { useFleetCompliance, useViolations, useELDEvents, DutyStatus } from "@/hooks/use-eld";
-import { useApiList, ApiFilters } from "@/hooks/use-api";
+import { useApiList } from "@/hooks/use-api";
+
+type DriverComplianceStatus = 'COMPLIANT' | 'WARNING' | 'VIOLATION' | 'OFFLINE';
+type DriverStatus = DriverComplianceStatus;
+
+interface DriverStatusInfo {
+  driverId: string;
+  name: string;
+  status: DriverStatus;
+  currentDuty: DutyStatus;
+  drivingRemaining: number;
+  breakStatus: 'TAKEN' | 'DUE' | 'OVERDUE';
+  violations: number;
+  lastUpdate: string;
+}
 import { TableSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 
@@ -86,8 +100,6 @@ export default function ELDOverviewPage() {
   const violationsLoading = violationsResult.loading;
   const events            = eventsResult.items;
   const eventsLoading     = eventsResult.loading;
-  const drivers           = driversResult.items;
-  const driversLoading    = driversResult.loading;
 
   if (driversLoading && !apiDrivers.length) return <TableSkeleton rows={10} columns={6} />;
   if (driversError) return <ErrorState message={driversError.message} onRetry={driversRefetch} />;
@@ -193,10 +205,10 @@ export default function ELDOverviewPage() {
                     onClick={() => setSelectedDriver(driver.driverId)}
                     className={cn(
                       "p-3 rounded-lg border transition-all text-left",
-                      "hover:border-blue-500/30 hover:bg-[#1a1a2e]",
+                      "hover:border-blue-500/30 hover:bg-wl-bg-elevated",
                       selectedDriver === driver.driverId
                         ? "border-blue-500/50 bg-blue-500/5"
-                        : "border-[#1e1e2e]"
+                        : "border-wl-border-default"
                     )}
                   >
                     <div className="flex items-start justify-between gap-2 mb-2">
@@ -247,10 +259,10 @@ export default function ELDOverviewPage() {
                           minute: "2-digit",
                         })}
                       </div>
-                    </button>
+                    </div>
+                  </button>
                   ))}
                 </div>
-              )}
             </CardContent>
           </Card>
         </div>
