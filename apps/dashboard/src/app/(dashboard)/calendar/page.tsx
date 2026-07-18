@@ -20,7 +20,6 @@ interface CalendarRule {
   effectiveFrom?: string;
   endDate?: string;
   effectiveTo?: string;
-  zones: string[];
   maxCapacityPerDay?: number;
   isActive: boolean;
   recurrencePattern?: string;
@@ -177,7 +176,6 @@ export default function CalendarPage() {
                             <span>Days: {rule.daysOfWeek.map((d) => DAY_NAMES[d]).join(", ")}</span>
                           )}
                           {rule.maxCapacityPerDay && <span>Capacity: {rule.maxCapacityPerDay}/day</span>}
-                          {rule.zones && rule.zones.length > 0 && <span>Zones: {rule.zones.join(", ")}</span>}
                         </div>
                       </div>
                       <Button
