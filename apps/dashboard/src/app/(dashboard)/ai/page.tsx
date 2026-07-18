@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { CardSkeleton } from '@/components/ui/loading-skeleton';
 import { useApiQuery } from '@/hooks/use-api';
+import { Header } from '@/components/layout/header';
 
 interface FeatureCard {
   name: string;
@@ -157,6 +158,11 @@ export default function AiHubPage() {
   const { isLoading, hasError, counts } = useFeatureUsageCounts();
 
   return (
+    <>
+      <Header
+        title="AI & Intelligence"
+        subtitle="AI-powered logistics features and predictions"
+      />
     <div className="flex flex-col gap-8 p-6 max-w-6xl mx-auto">
       {/* Hero */}
       <div className="flex flex-col gap-2">
@@ -204,5 +210,6 @@ export default function AiHubPage() {
         </div>
       )}
     </div>
+    </>
   );
 }
