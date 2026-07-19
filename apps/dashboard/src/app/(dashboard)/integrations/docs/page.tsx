@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Header } from '@/components/layout/header';
 import {
   useSDKReference,
   useWebhookCatalog,
@@ -25,13 +26,7 @@ export default function DocsPortal() {
 
   return (
     <div className="flex h-screen flex-col bg-wl-bg-root">
-      {/* Header */}
-      <div className="border-b border-wl-border-default bg-wl-bg-root px-8 py-6">
-        <h1 className="text-3xl font-bold text-white">Integration Documentation</h1>
-        <p className="mt-2 text-wl-text-secondary">
-          Complete reference for all providers, webhooks, and integration guides
-        </p>
-      </div>
+      <Header title="Integration Documentation" subtitle="Complete reference for all providers, webhooks, and integration guides" />
 
       {/* Tabs */}
       <div className="border-b border-wl-border-default px-8">
@@ -43,7 +38,7 @@ export default function DocsPortal() {
               className={cn(
                 'border-b-2 px-1 py-4 text-sm font-medium transition-colors',
                 activeTab === tab
-                  ? 'border-blue-500 text-wl-info-500'
+                  ? 'border-wl-primary-500 text-wl-primary-400'
                   : 'border-transparent text-wl-text-secondary hover:text-white'
               )}
             >
@@ -306,7 +301,7 @@ function ConfigurationGuides({
           {[1, 2, 3, 4].map((step) => (
             <div key={step} className="rounded border border-wl-border-default bg-wl-bg-root p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 font-semibold text-white">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-wl-primary-500 font-semibold text-white">
                   {step}
                 </div>
                 <h3 className="font-semibold text-white">
@@ -334,8 +329,15 @@ function ConfigurationGuides({
           ))}
         </div>
 
-        <div className="mt-6 rounded bg-blue-500 bg-opacity-10 p-4 text-sm text-wl-info-400">
-          Screenshot placeholder: Setup dashboard walkthrough
+        <div className="mt-6 rounded border border-wl-border-default bg-wl-bg-root p-4">
+          <p className="mb-2 text-sm font-medium text-wl-text-primary">Integration Checklist</p>
+          <ul className="space-y-1 text-sm text-wl-text-secondary">
+            <li>✓ API credentials stored in environment variables</li>
+            <li>✓ Webhook endpoint registered and signature verified</li>
+            <li>✓ Idempotency keys used for all payment requests</li>
+            <li>✓ Retry logic with exponential backoff implemented</li>
+            <li>✓ Sandbox testing completed before production go-live</li>
+          </ul>
         </div>
       </Card>
     </div>

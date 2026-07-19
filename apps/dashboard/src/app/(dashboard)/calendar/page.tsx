@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Plus, Calendar, Trash2, X } from "lucide-react";
+import { Header } from "@/components/layout/header";
 import { useToast } from "@/components/ui/toast";
 
 interface CalendarRule {
@@ -109,36 +110,34 @@ export default function CalendarPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-wl-bg-root">
-      <div className="sticky top-0 z-10 bg-wl-bg-root/95 backdrop-blur border-b border-wl-border-default">
-        <div className="p-6">
-          <div className="flex items-center justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-white">Calendar Rules</h1>
-              <p className="text-sm text-wl-text-secondary mt-1">Manage delivery calendar</p>
-            </div>
-            <Button variant="primary" size="md" onClick={() => setShowCreateModal(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              New Rule
-            </Button>
-          </div>
+      <Header
+        title="Calendar Rules"
+        subtitle="Manage delivery calendar"
+        actions={
+          <Button variant="primary" size="md" onClick={() => setShowCreateModal(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            New Rule
+          </Button>
+        }
+      />
 
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className={cn(
-              "px-3 py-2 rounded-md text-sm font-medium",
-              "bg-wl-bg-surface border border-wl-border-default",
-              "text-white",
-              "focus:outline-none focus:ring-2 focus:ring-wl-info-500"
-            )}
-          >
-            <option value="all">All Types</option>
-            <option value="BLACKOUT">Blackout</option>
-            <option value="SPECIAL_HOURS">Special Hours</option>
-            <option value="CAPACITY_OVERRIDE">Capacity Override</option>
-            <option value="OPERATING_DAYS">Operating Days</option>
-          </select>
-        </div>
+      <div className="px-6 pt-4 border-b border-wl-border-default bg-wl-bg-root pb-4">
+        <select
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+          className={cn(
+            "px-3 py-2 rounded-md text-sm font-medium",
+            "bg-wl-bg-surface border border-wl-border-default",
+            "text-white",
+            "focus:outline-none focus:ring-2 focus:ring-wl-primary-500"
+          )}
+        >
+          <option value="all">All Types</option>
+          <option value="BLACKOUT">Blackout</option>
+          <option value="SPECIAL_HOURS">Special Hours</option>
+          <option value="CAPACITY_OVERRIDE">Capacity Override</option>
+          <option value="OPERATING_DAYS">Operating Days</option>
+        </select>
       </div>
 
       <div className="flex-1 overflow-auto p-6">
@@ -292,8 +291,8 @@ export default function CalendarPage() {
                       className={cn(
                         "w-11 h-9 rounded text-xs font-semibold transition-colors",
                         formData.daysOfWeek.includes(i)
-                          ? "bg-blue-600 text-white"
-                          : "bg-wl-bg-root border border-wl-border-default text-wl-text-tertiary hover:border-blue-500"
+                          ? "bg-wl-primary-600 text-white"
+                          : "bg-wl-bg-root border border-wl-border-default text-wl-text-tertiary hover:border-wl-primary-500"
                       )}
                     >
                       {name}
