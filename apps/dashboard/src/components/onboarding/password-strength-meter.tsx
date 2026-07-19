@@ -91,9 +91,9 @@ const getStrengthColor = (
       };
     case 3:
       return {
-        bg: "bg-yellow-900/20",
-        text: "text-yellow-400",
-        segments: ["bg-yellow-500", "bg-yellow-500", "bg-yellow-500", "bg-wl-border-subtle"],
+        bg: "bg-wl-warning-bg",
+        text: "text-wl-warning-400",
+        segments: ["bg-wl-warning-500", "bg-wl-warning-500", "bg-wl-warning-500", "bg-wl-border-subtle"],
       };
     case 4:
       return {

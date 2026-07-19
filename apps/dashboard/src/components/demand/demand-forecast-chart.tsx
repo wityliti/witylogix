@@ -351,7 +351,7 @@ export function DemandForecastChart({
 
               {/* Confidence band */}
               <div className="flex items-center gap-2">
-                <div className="w-8 h-4 bg-blue-500/10 rounded border border-blue-500/30" />
+                <div className="w-8 h-4 bg-wl-info-500/10 rounded border border-wl-info-500/30" />
                 <span className="text-xs text-wl-text-tertiary">Confidence Band</span>
               </div>
 
@@ -394,7 +394,7 @@ export function DemandForecastChart({
               </p>
             )}
             {data[hoveredIndex].anomaly && (
-              <p className="text-xs text-red-400 font-medium mt-1">Anomaly detected</p>
+              <p className="text-xs text-wl-danger-400 font-medium mt-1">Anomaly detected</p>
             )}
           </div>
         )}

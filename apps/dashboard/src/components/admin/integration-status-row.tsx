@@ -144,10 +144,10 @@ export function IntegrationStatusRow({
                 className={cn(
                   "h-full transition-all duration-300",
                   data.successRate >= 0.95
-                    ? "bg-green-500"
+                    ? "bg-wl-success-500"
                     : data.successRate >= 0.8
-                    ? "bg-yellow-500"
-                    : "bg-red-500"
+                    ? "bg-wl-warning-500"
+                    : "bg-wl-danger-500"
                 )}
                 style={{ width: `${data.successRate * 100}%` }}
               />

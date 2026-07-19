@@ -214,12 +214,12 @@ export function FilterPanel({
             {filters.map((filter) => (
               <div
                 key={filter.field}
-                className="inline-flex items-center gap-2 rounded-full bg-blue-900 px-3 py-1 text-sm text-blue-100"
+                className="inline-flex items-center gap-2 rounded-full bg-wl-primary-500/20 px-3 py-1 text-sm text-wl-primary-400"
               >
                 <span>{filter.label}</span>
                 <button
                   onClick={() => removeFilter(filter.field)}
-                  className="text-blue-300 hover:text-blue-100"
+                  className="text-wl-primary-300 hover:text-wl-primary-100"
                   title="Remove filter"
                 >
                   ✕
@@ -243,7 +243,7 @@ export function FilterPanel({
                     type="checkbox"
                     checked={selectedStatuses.has(status)}
                     onChange={() => toggleStatus(status)}
-                    className="h-4 w-4 rounded border-wl-border-strong bg-wl-bg-elevated checked:bg-blue-600"
+                    className="h-4 w-4 rounded border-wl-border-strong bg-wl-bg-elevated checked:bg-wl-primary-500"
                   />
                   <span className="text-sm text-wl-neutral-300">{status}</span>
                 </label>
@@ -262,7 +262,7 @@ export function FilterPanel({
                   className={cn(
                     "w-full rounded px-3 py-2 text-left text-sm transition-colors",
                     selectedDateShortcut === shortcut
-                      ? "bg-blue-600 text-white"
+                      ? "bg-wl-primary-500 text-wl-text-inverse"
                       : "bg-wl-bg-elevated text-wl-neutral-300 hover:bg-wl-bg-overlay"
                   )}
                 >
@@ -279,7 +279,7 @@ export function FilterPanel({
                     type="date"
                     value={dateRange[0]}
                     onChange={(e) => setDateRange([e.target.value, dateRange[1]])}
-                    className="mt-1 w-full rounded bg-wl-bg-overlay px-2 py-1 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500"
+                    className="mt-1 w-full rounded bg-wl-bg-overlay px-2 py-1 text-sm text-wl-text-primary outline-none focus:ring-2 focus:ring-wl-primary-500"
                   />
                 </div>
                 <div>
@@ -288,12 +288,12 @@ export function FilterPanel({
                     type="date"
                     value={dateRange[1]}
                     onChange={(e) => setDateRange([dateRange[0], e.target.value])}
-                    className="mt-1 w-full rounded bg-wl-bg-overlay px-2 py-1 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500"
+                    className="mt-1 w-full rounded bg-wl-bg-overlay px-2 py-1 text-sm text-wl-text-primary outline-none focus:ring-2 focus:ring-wl-primary-500"
                   />
                 </div>
                 <button
                   onClick={applyCustomDateRange}
-                  className="w-full rounded bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
+                  className="w-full rounded bg-wl-primary-500 px-3 py-2 text-sm text-wl-text-inverse hover:bg-wl-primary-600"
                 >
                   Apply
                 </button>
@@ -309,7 +309,7 @@ export function FilterPanel({
             <div className="space-y-2">
               <button
                 onClick={() => setShowSavePreset(true)}
-                className="w-full rounded bg-green-900 px-4 py-2 text-sm font-medium text-green-100 hover:bg-green-800"
+                className="w-full rounded bg-wl-success-bg px-4 py-2 text-sm font-medium text-wl-success-400 hover:bg-wl-success-500/20"
               >
                 Save as Preset
               </button>
@@ -334,13 +334,13 @@ export function FilterPanel({
               placeholder="Preset name..."
               value={presetName}
               onChange={(e) => setPresetName(e.target.value)}
-              className="mb-4 w-full rounded bg-wl-bg-elevated px-4 py-2 text-white outline-none focus:ring-2 focus:ring-blue-500"
+              className="mb-4 w-full rounded bg-wl-bg-elevated px-4 py-2 text-wl-text-primary outline-none focus:ring-2 focus:ring-wl-primary-500"
               autoFocus
             />
             <div className="flex gap-2">
               <button
                 onClick={savePreset}
-                className="flex-1 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                className="flex-1 rounded bg-wl-primary-500 px-4 py-2 text-wl-text-inverse hover:bg-wl-primary-600"
               >
                 Save
               </button>

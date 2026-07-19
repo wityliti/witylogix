@@ -359,9 +359,9 @@ export function CourierLiveMap({
                 className={cn(
                   "inline-block w-2 h-2 rounded-full",
                   hoveredCourier.status === "idle" && "bg-wl-neutral-500",
-                  hoveredCourier.status === "en-route" && "bg-blue-500",
-                  hoveredCourier.status === "delivering" && "bg-amber-500",
-                  hoveredCourier.status === "returning" && "bg-purple-500"
+                  hoveredCourier.status === "en-route" && "bg-wl-info-500",
+                  hoveredCourier.status === "delivering" && "bg-wl-warning-500",
+                  hoveredCourier.status === "returning" && "bg-wl-primary-500"
                 )}
               />
               <span className="capitalize text-wl-text-secondary">{hoveredCourier.status.replace("-", " ")}</span>
@@ -384,11 +384,11 @@ export function CourierLiveMap({
         <div className="space-y-2 text-xs">
           <div className="font-semibold text-wl-text-primary mb-2">Legend</div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-500" />
+            <div className="w-3 h-3 rounded-full bg-wl-info-500" />
             <span className="text-wl-text-secondary">Pickup Point</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-green-500" />
+            <div className="w-3 h-3 rounded-full bg-wl-success-500" />
             <span className="text-wl-text-secondary">Dropoff Point</span>
           </div>
           <div className="flex items-center gap-2">

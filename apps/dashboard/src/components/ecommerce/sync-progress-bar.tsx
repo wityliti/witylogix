@@ -81,8 +81,8 @@ const SyncProgressBar = forwardRef<HTMLDivElement, SyncProgressBarProps>(
           'p-4 rounded-lg',
           'bg-wl-bg-surface dark:bg-wl-bg-surface/30',
           'border border-wl-border-subtle',
-          state === 'error' && 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-900/50',
-          state === 'success' && 'bg-green-50 dark:bg-green-500/10 border-green-200 dark:border-green-900/50',
+          state === 'error' && 'bg-wl-danger-bg border-wl-danger-400/40',
+          state === 'success' && 'bg-wl-success-bg border-wl-success-400/40',
           className
         )}
         {...props}
@@ -92,23 +92,23 @@ const SyncProgressBar = forwardRef<HTMLDivElement, SyncProgressBarProps>(
           <div className="flex items-center gap-2 min-w-0 flex-1">
             {state === 'syncing' && (
               <div
-                className="w-4 h-4 rounded-full border-2 border-blue-500 border-t-transparent animate-spin flex-shrink-0"
+                className="w-4 h-4 rounded-full border-2 border-wl-info-500 border-t-transparent animate-spin flex-shrink-0"
                 aria-hidden="true"
               />
             )}
             {state === 'success' && (
-              <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-wl-success-600 flex-shrink-0" />
             )}
             {state === 'error' && (
-              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0" />
+              <AlertCircle className="w-4 h-4 text-wl-danger-600 flex-shrink-0" />
             )}
 
             <div className="min-w-0 flex-1">
               <h3
                 className={cn(
                   'text-sm font-semibold truncate',
-                  state === 'error' && 'text-red-700 dark:text-red-400',
-                  state === 'success' && 'text-green-700 dark:text-green-400',
+                  state === 'error' && 'text-wl-danger-600',
+                  state === 'success' && 'text-wl-success-600',
                   state !== 'error' && state !== 'success' && 'text-wl-text-primary dark:text-wl-neutral-300'
                 )}
               >
@@ -145,9 +145,9 @@ const SyncProgressBar = forwardRef<HTMLDivElement, SyncProgressBarProps>(
             <div
               className={cn(
                 'h-full transition-all duration-300 ease-default rounded-full',
-                state === 'syncing' && 'bg-blue-500 dark:bg-blue-600',
-                state === 'success' && 'bg-green-500 dark:bg-green-600',
-                state === 'error' && 'bg-red-500 dark:bg-red-600',
+                state === 'syncing' && 'bg-wl-info-500',
+                state === 'success' && 'bg-wl-success-500',
+                state === 'error' && 'bg-wl-danger-500',
                 state === 'idle' && 'bg-wl-neutral-400'
               )}
               style={{
@@ -195,7 +195,7 @@ const SyncProgressBar = forwardRef<HTMLDivElement, SyncProgressBarProps>(
 
           {/* Success message */}
           {state === 'success' && (
-            <div className="text-xs font-semibold text-green-700 dark:text-green-400">
+            <div className="text-xs font-semibold text-wl-success-600">
               Sync completed
             </div>
           )}
@@ -203,7 +203,7 @@ const SyncProgressBar = forwardRef<HTMLDivElement, SyncProgressBarProps>(
 
         {/* Error message */}
         {state === 'error' && errorMessage && (
-          <div className="text-xs text-red-700 dark:text-red-400 p-2 bg-red-100/50 dark:bg-red-500/10 rounded">
+          <div className="text-xs text-wl-danger-600 p-2 bg-wl-danger-bg rounded">
             {errorMessage}
           </div>
         )}

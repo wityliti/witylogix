@@ -221,7 +221,7 @@ export function DateRangePicker({
         </div>
 
         {dateError && (
-          <p className="text-xs text-red-400">{dateError}</p>
+          <p className="text-xs text-wl-danger-400">{dateError}</p>
         )}
 
         <Button

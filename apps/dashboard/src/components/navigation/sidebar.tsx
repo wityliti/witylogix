@@ -720,7 +720,7 @@ export function NavSidebar({
             "border-none bg-transparent cursor-pointer font-sans",
             "text-wl-text-tertiary text-sm",
             "transition-colors duration-150",
-            "hover:text-red-400 hover:bg-wl-bg-overlay",
+            "hover:text-wl-danger-400 hover:bg-wl-bg-overlay",
             collapsed ? "justify-center" : "justify-start gap-3"
           )}
         >

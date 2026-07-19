@@ -58,13 +58,13 @@ export function IntegrationLogo({
 
   // Category to color mapping
   const categoryColors: Record<IntegrationCategory, { bg: string; text: string }> = {
-    ecommerce: { bg: "bg-blue-500/20 dark:bg-blue-900/30", text: "text-blue-600 dark:text-blue-400" },
-    payment: { bg: "bg-green-500/20 dark:bg-green-900/30", text: "text-green-600 dark:text-green-400" },
-    communication: { bg: "bg-purple-500/20 dark:bg-purple-900/30", text: "text-purple-600 dark:text-purple-400" },
-    automation: { bg: "bg-orange-500/20 dark:bg-orange-900/30", text: "text-orange-600 dark:text-orange-400" },
-    analytics: { bg: "bg-pink-500/20 dark:bg-pink-900/30", text: "text-pink-600 dark:text-pink-400" },
-    routing: { bg: "bg-amber-500/20 dark:bg-amber-900/30", text: "text-amber-600 dark:text-amber-400" },
-    maps: { bg: "bg-red-500/20 dark:bg-red-900/30", text: "text-red-600 dark:text-red-400" },
+    ecommerce: { bg: "bg-wl-info-bg", text: "text-wl-info-500" },
+    payment: { bg: "bg-wl-success-bg", text: "text-wl-success-500" },
+    communication: { bg: "bg-wl-primary-500/20", text: "text-wl-primary-500" },
+    automation: { bg: "bg-wl-warning-bg", text: "text-wl-warning-500" },
+    analytics: { bg: "bg-wl-chart-pink/20", text: "text-wl-chart-pink" },
+    routing: { bg: "bg-wl-warning-bg", text: "text-wl-warning-400" },
+    maps: { bg: "bg-wl-danger-bg", text: "text-wl-danger-500" },
   };
 
   const colors = categoryColors[category];
@@ -117,13 +117,13 @@ export function IntegrationLogoWithFallback({
 
   // Category to color mapping for initials
   const categoryColors: Record<IntegrationCategory, { bg: string; text: string }> = {
-    ecommerce: { bg: "bg-blue-500", text: "text-white" },
-    payment: { bg: "bg-green-500", text: "text-white" },
-    communication: { bg: "bg-purple-500", text: "text-white" },
-    automation: { bg: "bg-orange-500", text: "text-white" },
-    analytics: { bg: "bg-pink-500", text: "text-white" },
-    routing: { bg: "bg-amber-600", text: "text-white" },
-    maps: { bg: "bg-red-500", text: "text-white" },
+    ecommerce: { bg: "bg-wl-info-500", text: "text-wl-text-inverse" },
+    payment: { bg: "bg-wl-success-500", text: "text-wl-text-inverse" },
+    communication: { bg: "bg-wl-primary-500", text: "text-wl-text-inverse" },
+    automation: { bg: "bg-wl-warning-500", text: "text-wl-text-inverse" },
+    analytics: { bg: "bg-wl-chart-pink", text: "text-wl-text-inverse" },
+    routing: { bg: "bg-wl-warning-400", text: "text-wl-text-inverse" },
+    maps: { bg: "bg-wl-danger-500", text: "text-wl-text-inverse" },
   };
 
   const colors = categoryColors[category];

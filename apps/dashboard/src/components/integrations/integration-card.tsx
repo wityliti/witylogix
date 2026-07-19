@@ -68,19 +68,19 @@ export function IntegrationCard({
       bgColor: "bg-wl-bg-surface dark:bg-wl-bg-elevated",
     },
     connected: {
-      color: "text-green-600 dark:text-green-400",
+      color: "text-wl-success-600",
       label: "Connected",
-      bgColor: "bg-green-100 dark:bg-green-900/30",
+      bgColor: "bg-wl-success-bg",
     },
     error: {
-      color: "text-red-600 dark:text-red-400",
+      color: "text-wl-danger-600",
       label: "Error",
-      bgColor: "bg-red-100 dark:bg-red-900/30",
+      bgColor: "bg-wl-danger-bg",
     },
     syncing: {
-      color: "text-blue-600 dark:text-blue-400",
+      color: "text-wl-info-500",
       label: "Syncing",
-      bgColor: "bg-blue-100 dark:bg-blue-900/30",
+      bgColor: "bg-wl-info-bg",
     },
   };
 

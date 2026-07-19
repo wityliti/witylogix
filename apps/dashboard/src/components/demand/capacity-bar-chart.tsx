@@ -242,7 +242,7 @@ export function CapacityBarChart({
           <div className="flex items-center gap-4">
             {/* Current capacity */}
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green-500 rounded" />
+              <div className="w-4 h-4 bg-wl-success-500 rounded" />
               <span className="text-xs text-wl-text-tertiary">
                 Current Capacity
               </span>
@@ -250,7 +250,7 @@ export function CapacityBarChart({
 
             {/* Recommended capacity */}
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green-500/30 rounded border border-green-500 border-dashed" />
+              <div className="w-4 h-4 bg-wl-success-500/30 rounded border border-wl-success-500 border-dashed" />
               <span className="text-xs text-wl-text-tertiary">
                 Recommended
               </span>
@@ -259,17 +259,17 @@ export function CapacityBarChart({
             {/* Status indicators */}
             <div className="ml-4 flex items-center gap-4 pl-4 border-l border-wl-border-subtle">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500" />
+                <div className="w-2 h-2 rounded-full bg-wl-success-500" />
                 <span className="text-xs text-wl-text-tertiary">Adequate</span>
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                <div className="w-2 h-2 rounded-full bg-wl-warning-500" />
                 <span className="text-xs text-wl-text-tertiary">Tight</span>
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-red-500" />
+                <div className="w-2 h-2 rounded-full bg-wl-danger-500" />
                 <span className="text-xs text-wl-text-tertiary">
                   Insufficient
                 </span>
@@ -309,7 +309,7 @@ export function CapacityBarChart({
                     Utilization: {Math.round(zone.utilizationRate * 100)}%
                   </p>
                   {gapPct > 0 && (
-                    <p className="text-xs font-medium text-yellow-400 mt-1">
+                    <p className="text-xs font-medium text-wl-warning-400 mt-1">
                       Gap: +{Math.round(gapPct)}%
                     </p>
                   )}
