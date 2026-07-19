@@ -224,7 +224,7 @@ export default function AdminShopDetail() {
             </div>
 
             {isSuspended && shop.usage.suspension && (
-              <div className="mt-4 p-3 bg-red-900/20 border border-red-900/40 rounded-lg">
+              <div className="mt-4 p-3 bg-wl-danger-500/10 border border-wl-danger-500/20 rounded-lg">
                 <p className="text-wl-danger-400 text-sm font-medium">Suspended</p>
                 {shop.usage.suspension.reason && (
                   <p className="text-wl-danger-400 text-xs mt-1">{shop.usage.suspension.reason}</p>
@@ -262,7 +262,7 @@ export default function AdminShopDetail() {
                     {shop.usage.users.toLocaleString()}
                   </p>
                 </div>
-                <Users size={24} className="text-purple-500" />
+                <Users size={24} className="text-wl-primary-400" />
               </div>
             </CardContent>
           </Card>
@@ -303,33 +303,37 @@ export default function AdminShopDetail() {
           <CardContent className="p-5">
             <h3 className="text-base font-semibold text-white mb-4">Admin Actions</h3>
             <div className="flex gap-3 flex-wrap">
-              <Button className="bg-blue-600 text-white border-none px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-90">
+              <Button variant="primary" size="sm" className="flex items-center gap-2">
                 <Crown size={16} />
                 Upgrade Plan
               </Button>
 
               {isSuspended ? (
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={handleRestore}
                   disabled={actionLoading === "restore"}
-                  className="bg-emerald-500 text-white border-none px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-90 disabled:opacity-50"
+                  className="flex items-center gap-2 border-wl-success-500/40 text-wl-success-400 hover:bg-wl-success-500/10"
                 >
                   <Lock size={16} />
                   {actionLoading === "restore" ? "Restoring…" : "Restore Shop"}
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => setShowSuspendConfirm(!showSuspendConfirm)}
-                  className="bg-amber-500 text-white border-none px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-90"
+                  className="flex items-center gap-2 border-wl-warning-500/40 text-wl-warning-400 hover:bg-wl-warning-500/10"
                 >
                   <Lock size={16} />
                   Suspend Shop
-                </button>
+                </Button>
               )}
 
               <Link
                 href={`/admin/users?shopId=${shop.id}`}
-                className="bg-wl-info-500/10 text-wl-info-400 border border-blue-600/40 px-4 py-2 rounded text-sm font-medium flex items-center gap-2 hover:opacity-80 no-underline"
+                className="bg-wl-info-500/10 text-wl-info-400 border border-wl-info-400/40 px-4 py-2 rounded text-sm font-medium flex items-center gap-2 hover:opacity-80 no-underline"
               >
                 <Zap size={16} />
                 View Users
@@ -345,7 +349,7 @@ export default function AdminShopDetail() {
             </div>
 
             {showSuspendConfirm && (
-              <div className="mt-4 p-3 bg-amber-900/20 border border-amber-900/40 rounded">
+              <div className="mt-4 p-3 bg-wl-warning-500/10 border border-wl-warning-500/20 rounded">
                 <div className="flex gap-2 items-start mb-3">
                   <AlertTriangle size={16} className="text-wl-warning-500 flex-shrink-0" />
                   <p className="text-white m-0 text-sm">
@@ -356,7 +360,7 @@ export default function AdminShopDetail() {
                   <button
                     onClick={handleSuspend}
                     disabled={actionLoading === "suspend"}
-                    className="bg-amber-500 text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90 disabled:opacity-50"
+                    className="bg-wl-warning-500 text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90 disabled:opacity-50"
                   >
                     {actionLoading === "suspend" ? "Suspending…" : "Confirm Suspension"}
                   </button>
@@ -371,7 +375,7 @@ export default function AdminShopDetail() {
             )}
 
             {showDeleteConfirm && (
-              <div className="mt-4 p-3 bg-red-900/20 border border-red-900/40 rounded">
+              <div className="mt-4 p-3 bg-wl-danger-500/10 border border-wl-danger-500/20 rounded">
                 <div className="flex gap-2 items-start mb-3">
                   <AlertTriangle size={16} className="text-wl-danger-500 flex-shrink-0" />
                   <p className="text-white m-0 text-sm">
@@ -379,7 +383,7 @@ export default function AdminShopDetail() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <button className="bg-red-500 text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90">
+                  <button className="bg-wl-danger-500 text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90">
                     Confirm Delete
                   </button>
                   <button
