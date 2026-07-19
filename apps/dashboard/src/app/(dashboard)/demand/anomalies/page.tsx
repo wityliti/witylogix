@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import {
   AlertTriangle,
@@ -23,6 +23,8 @@ import { useApiQuery } from '@/hooks/use-api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { useZonesGeoJson } from '@/hooks/use-zones-geojson';
+import { useWLMap } from '@/components/map/wl-map-context';
+import { fitBounds } from '@/components/map/use-fit-bounds';
 
 const WLMap = dynamic(
   () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
@@ -32,6 +34,29 @@ const DemandZoneLayer = dynamic(
   () => import('@/components/map/demand-zone-layer').then((m) => m.DemandZoneLayer),
   { ssr: false },
 );
+
+function AutoFit({ zones }: { zones: import('geojson').FeatureCollection }) {
+  const map = useWLMap();
+  useEffect(() => {
+    if (!zones.features.length) return;
+    const coords: Array<{ lat: number; lng: number }> = [];
+    for (const f of zones.features) {
+      const g = f.geometry;
+      if (g.type === 'Polygon') {
+        for (const [lng, lat] of g.coordinates[0]) coords.push({ lat, lng });
+      } else if (g.type === 'MultiPolygon') {
+        for (const poly of g.coordinates)
+          for (const [lng, lat] of poly[0]) coords.push({ lat, lng });
+      }
+    }
+    if (!coords.length) return;
+    const ready = () => fitBounds(map, coords, 60);
+    if (map.isStyleLoaded()) ready();
+    else map.once('load', ready);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, zones]);
+  return null;
+}
 
 interface AnomalyEvent {
   id: string;
@@ -269,6 +294,7 @@ export default function AnomaliesPage() {
                 zones={zonesGeojson}
                 demandData={anomalyDemandData}
               />
+              <AutoFit zones={zonesGeojson} />
             </WLMap>
           ) : (
             <div className="h-full flex items-center justify-center bg-wl-bg-root">

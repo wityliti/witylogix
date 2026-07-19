@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useApiList } from '@/hooks/use-api';
 import { ErrorState } from '@/components/ui/error-state';
+import { CardSkeleton } from '@/components/ui/loading-skeleton';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
@@ -140,6 +141,22 @@ export default function SupplyChainIntegrationsPage() {
     () => syncs.reduce((sum, s) => sum + s.itemsTracked, 0),
     [syncs]
   );
+
+  if ((warehousesLoading || inventoryLoading) && connections.length === 0 && syncs.length === 0) {
+    return (
+      <>
+        <Header title="Supply Chain Integrations" subtitle="Loading..." />
+        <div className="p-6 bg-wl-bg-root">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton />
+          </div>
+          <div className="space-y-3">
+            <CardSkeleton /><CardSkeleton /><CardSkeleton />
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if ((warehousesError || inventoryError) && !warehousesLoading && !inventoryLoading) {
     return (

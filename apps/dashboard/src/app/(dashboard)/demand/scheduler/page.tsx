@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import {
   Download,
@@ -18,11 +18,37 @@ import { useApiQuery } from '@/hooks/use-api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { useZonesGeoJson } from '@/hooks/use-zones-geojson';
+import { useWLMap } from '@/components/map/wl-map-context';
+import { fitBounds } from '@/components/map/use-fit-bounds';
 
 const WLMap = dynamic(
   () => import('@/components/map/wl-map').then((m) => m.WLMap),
   { ssr: false },
 );
+
+function AutoFit({ zones }: { zones: import('geojson').FeatureCollection }) {
+  const map = useWLMap();
+  useEffect(() => {
+    if (!zones.features.length) return;
+    const coords: Array<{ lat: number; lng: number }> = [];
+    for (const f of zones.features) {
+      const g = f.geometry;
+      if (g.type === 'Polygon') {
+        for (const [lng, lat] of g.coordinates[0]) coords.push({ lat, lng });
+      } else if (g.type === 'MultiPolygon') {
+        for (const poly of g.coordinates)
+          for (const [lng, lat] of poly[0]) coords.push({ lat, lng });
+      }
+    }
+    if (!coords.length) return;
+    const ready = () => fitBounds(map, coords, 60);
+    if (map.isStyleLoaded()) ready();
+    else map.once('load', ready);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, zones]);
+  return null;
+}
+
 const SchedulerCoverageLayer = dynamic(
   () =>
     import('@/components/map/scheduler-coverage-layer').then(
@@ -368,6 +394,7 @@ export default function SchedulerPage() {
                       requiredDrivers: z.requiredDrivers,
                     }))}
                   />
+                  <AutoFit zones={zonesGeojson} />
                 </WLMap>
               ) : (
                 <div className="h-full flex items-center justify-center bg-wl-bg-surface">
@@ -382,9 +409,9 @@ export default function SchedulerPage() {
               <div className="absolute bottom-4 left-4 bg-wl-bg-surface/90 backdrop-blur border border-wl-border-default rounded-xl p-4 text-xs pointer-events-none">
                 <p className="font-semibold text-wl-text-primary mb-2">Driver Coverage</p>
                 {[
-                  { color: '#ef4444', label: 'Understaffed' },
-                  { color: '#10b981', label: 'Optimal' },
-                  { color: '#3b82f6', label: 'Overstaffed' },
+                  { color: 'var(--wl-danger-500)', label: 'Understaffed' },
+                  { color: 'var(--wl-success-500)', label: 'Optimal' },
+                  { color: 'var(--wl-info-500)', label: 'Overstaffed' },
                 ].map(({ color, label }) => (
                   <div key={label} className="flex items-center gap-2 mt-1">
                     <div className="w-3 h-3 rounded-sm" style={{ background: color }} />

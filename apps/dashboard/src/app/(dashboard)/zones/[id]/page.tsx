@@ -1,10 +1,12 @@
 'use client';
 
-import { use, useMemo } from 'react';
+import { use, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Badge } from '@/components/ui/badge';
 import { WLMap } from '@/components/map/wl-map';
+import { useWLMap } from '@/components/map/wl-map-context';
+import { fitBounds } from '@/components/map/use-fit-bounds';
 import { ZoneLayer } from '@/components/map/zone-layer';
 import { ZoneInspector } from '@/components/zones/zone-inspector';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
@@ -12,6 +14,29 @@ import { ErrorState } from '@/components/ui/error-state';
 import { api } from '@/lib/api';
 import { useApiQuery } from '@/hooks/use-api';
 import type { FeatureCollection } from 'geojson';
+
+function AutoFit({ zones }: { zones: FeatureCollection }) {
+  const map = useWLMap();
+  useEffect(() => {
+    if (!zones.features.length) return;
+    const coords: Array<{ lat: number; lng: number }> = [];
+    for (const f of zones.features) {
+      const g = f.geometry;
+      if (g.type === 'Polygon') {
+        for (const [lng, lat] of g.coordinates[0]) coords.push({ lat, lng });
+      } else if (g.type === 'MultiPolygon') {
+        for (const poly of g.coordinates)
+          for (const [lng, lat] of poly[0]) coords.push({ lat, lng });
+      }
+    }
+    if (!coords.length) return;
+    const ready = () => fitBounds(map, coords, 60);
+    if (map.isStyleLoaded()) ready();
+    else map.once('load', ready);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, zones]);
+  return null;
+}
 
 interface ZoneData {
   id: string;
@@ -126,6 +151,7 @@ export default function ZoneDetailPage({
         </div>
         <WLMap center={[77.12, 28.65]} zoom={12}>
           <ZoneLayer zones={geojson} selectedId={id} onSelect={() => {}} />
+          <AutoFit zones={geojson} />
         </WLMap>
       </div>
     </>

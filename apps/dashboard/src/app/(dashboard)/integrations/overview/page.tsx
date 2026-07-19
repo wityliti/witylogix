@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useApiList } from '@/hooks/use-api';
 import { ErrorState } from '@/components/ui/error-state';
+import { CardSkeleton } from '@/components/ui/loading-skeleton';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
 import { Card, CardContent } from '@/components/ui/card';
@@ -98,6 +99,22 @@ export default function IntegrationOverviewPage() {
 
     return items;
   }, [categories, searchQuery, selectedCategory, filterStatus]);
+
+  if (connectionsLoading && connections.length === 0) {
+    return (
+      <>
+        <Header title="Integration Hub" subtitle="Loading..." />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <CardSkeleton /><CardSkeleton /><CardSkeleton />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton />
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (connectionsError && !connectionsLoading) {
     return (
