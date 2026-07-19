@@ -98,8 +98,8 @@ export default function SlotAIPage() {
       {/* Header */}
       <div className="px-6 lg:px-8 pt-6 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-teal-500/15 flex items-center justify-center">
-            <CalendarDays className="w-5 h-5 text-teal-400" />
+          <div className="w-9 h-9 rounded-lg bg-wl-primary-500/15 flex items-center justify-center">
+            <CalendarDays className="w-5 h-5 text-wl-primary-400" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-wl-text-primary tracking-tight">Delivery Slot AI</h1>
@@ -166,10 +166,10 @@ export default function SlotAIPage() {
           <button
             onClick={handleSearch}
             disabled={loading}
-            className="mt-4 flex items-center gap-2 px-4 py-2 bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/30 text-teal-300 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            className="mt-4 flex items-center gap-2 px-4 py-2 bg-wl-primary-500/20 hover:bg-wl-primary-500/30 border border-wl-primary-500/30 text-wl-primary-300 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
           >
             {loading ? (
-              <div className="w-4 h-4 border-2 border-teal-400/30 border-t-teal-400 rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-wl-primary-400/30 border-t-wl-primary-400 rounded-full animate-spin" />
             ) : (
               <Search className="w-4 h-4" />
             )}
@@ -290,7 +290,7 @@ export default function SlotAIPage() {
                             </div>
                             <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
                               <div
-                                className="h-full rounded-full bg-blue-400/70"
+                                className="h-full rounded-full bg-wl-info-400/70"
                                 style={{ width: `${slot.demandForecast.confidence * 100}%` }}
                               />
                             </div>

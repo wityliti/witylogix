@@ -139,7 +139,7 @@ export default function StoresManagement() {
                       <p className="text-wl-text-secondary mb-2 text-xs">Today's Orders</p>
                       <p className="text-2xl font-bold text-white">{stats?.orders.today ?? '—'}</p>
                     </div>
-                    <Package size={28} className="text-purple-500" />
+                    <Package size={28} className="text-wl-primary-400" />
                   </div>
                 </CardContent>
               </Card>
